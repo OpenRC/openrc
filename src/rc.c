@@ -395,7 +395,7 @@ static void sulogin (bool cont)
 	  newenv = rc_filter_env ();
 	  mycmd = rc_xstrdup ("/sbin/sulogin");
 	  myarg = rc_xstrdup (getenv ("CONSOLE"));
-	  execle (mycmd, mycmd, myarg, NULL, newenv);
+	  execle (mycmd, mycmd, myarg, (char *) NULL, newenv);
 	  eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
 	}
       waitpid (pid, &status, 0);
@@ -406,7 +406,7 @@ static void sulogin (bool cont)
       newenv = rc_filter_env ();
       mycmd = rc_xstrdup ("/sbin/sulogin");
       myarg = rc_xstrdup (getenv ("CONSOLE"));
-      execle (mycmd, mycmd, myarg, NULL, newenv);
+      execle (mycmd, mycmd, myarg, (char *) NULL, newenv);
       eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
     }
 #else
@@ -599,7 +599,7 @@ int main (int argc, char **argv)
 	      if (pid == 0)
 		{
 		  mycmd = rc_xstrdup (INITSH);
-		  execl (mycmd, mycmd, NULL);
+		  execl (mycmd, mycmd, (char *) NULL);
 		  eerrorx ("%s: unable to exec `" INITSH "': %s",
 			   applet, strerror (errno));
 		}
@@ -699,7 +699,7 @@ int main (int argc, char **argv)
 		{
 		  mycmd = rc_xstrdup ("/sbin/telinit");
 		  myarg = rc_xstrdup (lvl);
-		  execl (mycmd, mycmd, myarg, NULL);
+		  execl (mycmd, mycmd, myarg, (char *) NULL);
 		  eerrorx ("%s: unable to exec `/sbin/telinit': %s",
 			   applet, strerror (errno));
 		}
@@ -732,7 +732,7 @@ int main (int argc, char **argv)
 #ifdef __linux__
 	      mycmd = rc_xstrdup ("/sbin/telinit");
 	      myarg = rc_xstrdup ("S");
-	      execl (mycmd, mycmd, myarg, NULL);
+	      execl (mycmd, mycmd, myarg, (char *) NULL);
 	      eerrorx ("%s: unable to exec `/%s': %s",
 		       mycmd, applet, strerror (errno));
 #else
@@ -751,7 +751,7 @@ int main (int argc, char **argv)
 	      mycmd = rc_xstrdup ("/sbin/shutdown");
 	      myarg = rc_xstrdup ("-r");
 	      tmp = rc_xstrdup ("now");
-	      execl (mycmd, mycmd, myarg, tmp, NULL);
+	      execl (mycmd, mycmd, myarg, tmp, (char *) NULL);
 	      eerrorx ("%s: unable to exec `%s': %s",
 		       mycmd, applet, strerror (errno));
 	    }
@@ -768,7 +768,7 @@ int main (int argc, char **argv)
 	      myarg = rc_xstrdup ("-p");
 #endif
 	      tmp = rc_xstrdup ("now");
-	      execl (mycmd, mycmd, myarg, tmp, NULL);
+	      execl (mycmd, mycmd, myarg, tmp, (char *) NULL);
 	      eerrorx ("%s: unable to exec `%s': %s",
 		       mycmd, applet, strerror (errno));
 	    }
@@ -830,7 +830,7 @@ int main (int argc, char **argv)
   /* Check if runlevel is valid if we're changing */
   if (newlevel && strcmp (runlevel, newlevel) != 0 && ! going_down)
     {
-      tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel, NULL);
+      tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel, (char *) NULL);
       if (! rc_is_dir (tmp))
 	eerrorx ("%s: is not a valid runlevel", newlevel);
       CHAR_FREE (tmp);
@@ -949,7 +949,8 @@ int main (int argc, char **argv)
 	    }
 	  printf ("\n");
 	}
-      tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel ? newlevel : runlevel, NULL);
+      tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel ? newlevel : runlevel,
+			    (char *) NULL);
       start_services = rc_ls_dir (start_services, tmp, RC_LS_INITD);
       CHAR_FREE (tmp);
     }
@@ -969,7 +970,7 @@ int main (int argc, char **argv)
 	   start_services = rc_strlist_add (start_services, service);
 
 	  tmp = rc_strcatpaths (RC_RUNLEVELDIR,
-				newlevel ? newlevel : runlevel, NULL);
+				newlevel ? newlevel : runlevel, (char *) NULL);
 	  start_services = rc_ls_dir (start_services, tmp, RC_LS_INITD);
 	  CHAR_FREE (tmp);
 	}
@@ -1017,7 +1018,7 @@ int main (int argc, char **argv)
 	  
 	  tmp = rc_xmalloc (strlen (service) + strlen (runlevel) + 2);
 	  sprintf (tmp, "%s.%s", service, runlevel);
-	  conf = rc_strcatpaths (RC_CONFDIR, tmp, NULL);
+	  conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
 	  found = rc_exists (conf);
 	  CHAR_FREE (conf);
 	  CHAR_FREE (tmp);
@@ -1025,7 +1026,7 @@ int main (int argc, char **argv)
 	    {
 	      tmp = rc_xmalloc (strlen (service) + strlen (newlevel) + 2);
 	      sprintf (tmp, "%s.%s", service, newlevel);
-	      conf = rc_strcatpaths (RC_CONFDIR, tmp, NULL);
+	      conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
 	      found = rc_exists (conf);
 	      CHAR_FREE (conf);
 	      CHAR_FREE (tmp);
@@ -1092,7 +1093,7 @@ int main (int argc, char **argv)
     {
       mycmd = rc_xstrdup (HALTSH);
       myarg = rc_xstrdup (runlevel);
-      execl (mycmd, mycmd, myarg, NULL);
+      execl (mycmd, mycmd, myarg, (char *) NULL);
       eerrorx ("%s: unable to exec `%s': %s",
 	       applet, HALTSH, strerror (errno));
     }

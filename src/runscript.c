@@ -165,7 +165,7 @@ static bool in_control ()
 
   while (tests[i])
     {
-      path = rc_strcatpaths (RC_SVCDIR, tests[i], applet, NULL);
+      path = rc_strcatpaths (RC_SVCDIR, tests[i], applet, (char *) NULL);
       if (rc_exists (path))
 	{
 	  int m = get_mtime (path, false);
@@ -184,7 +184,8 @@ static bool in_control ()
 
 static void uncoldplug (char *service)
 {
-  char *cold = rc_strcatpaths (RC_SVCDIR "coldplugged", basename (service), NULL);
+  char *cold = rc_strcatpaths (RC_SVCDIR "coldplugged", basename (service),
+			       (char *) NULL);
   if (rc_exists (cold) && unlink (cold) != 0)
     eerror ("%s: unlink `%s': %s", applet, cold, strerror (errno));
   free (cold);
@@ -283,13 +284,15 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 
       if (rc_exists (RC_SVCDIR "runscript.sh"))
 	{
-	  execl (RC_SVCDIR "runscript.sh", mycmd, mycmd, myarg1, myarg2, NULL);
+	  execl (RC_SVCDIR "runscript.sh", mycmd, mycmd, myarg1, myarg2,
+		 (char *) NULL);
 	  eerrorx ("%s: exec `" RC_SVCDIR "runscript.sh': %s",
 		   service, strerror (errno));
 	}
       else
 	{
-	  execl (RC_LIBDIR "sh/runscript.sh", mycmd, mycmd, myarg1, myarg2, NULL);
+	  execl (RC_LIBDIR "sh/runscript.sh", mycmd, mycmd, myarg1, myarg2,
+		 (char *) NULL);
 	  eerrorx ("%s: exec `" RC_LIBDIR "sh/runscript.sh': %s",
 		   service, strerror (errno));
 	}
@@ -364,14 +367,14 @@ static void make_exclusive (const char *service)
 
   /* We create a fifo so that other services can wait until we complete */
   if (! exclusive)
-    exclusive = rc_strcatpaths (RC_SVCDIR, "exclusive", applet, NULL);
+    exclusive = rc_strcatpaths (RC_SVCDIR, "exclusive", applet, (char *) NULL);
 
   if (mkfifo (exclusive, 0600) != 0 && errno != EEXIST &&
       (errno != EACCES || geteuid () == 0))
     eerrorx ("%s: unable to create fifo `%s': %s",
 	     applet, exclusive, strerror (errno));
 
-  path = rc_strcatpaths (RC_SVCDIR, "exclusive", applet, NULL);
+  path = rc_strcatpaths (RC_SVCDIR, "exclusive", applet, (char *) NULL);
   i = strlen (path) + 16;
   mtime_test = rc_xmalloc (sizeof (char *) * i);
   snprintf (mtime_test, i, "%s.%d", path, getpid ());
@@ -854,7 +857,7 @@ int main (int argc, char **argv)
   /* Show help if insufficient args */
   if (argc < 3)
     {
-      execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, NULL);
+      execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
       eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 	       applet, strerror (errno));
     }
@@ -867,7 +870,7 @@ int main (int argc, char **argv)
       eerror ("%s: cannot run until sysvinit completes", applet);
       if (mkdir ("/dev/.rcboot", 0755) != 0 && errno != EEXIST)
 	eerrorx ("%s: mkdir `/dev/.rcboot': %s", applet, strerror (errno));
-      tmp = rc_strcatpaths ("/dev/.rcboot", applet, NULL);
+      tmp = rc_strcatpaths ("/dev/.rcboot", applet, (char *) NULL);
       symlink (service, tmp);
       exit (EXIT_FAILURE);
     }
@@ -932,7 +935,7 @@ int main (int argc, char **argv)
       char *eb;
 
       snprintf (ebname, sizeof (ebname), "%s.%s", applet, pid);
-      eb = rc_strcatpaths (RC_SVCDIR "ebuffer", ebname, NULL);
+      eb = rc_strcatpaths (RC_SVCDIR "ebuffer", ebname, (char *) NULL);
       setenv ("RC_EBUFFER", eb, 1);
       free (eb);
     }
@@ -965,7 +968,7 @@ int main (int argc, char **argv)
 	setenv ("RC_DEBUG", "yes", 1);
       else if (strcmp (argv[i], "--help") == 0)
 	{
-	  execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, NULL);
+	  execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
 	  eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 		   applet, strerror (errno));
 	}
@@ -1071,7 +1074,7 @@ int main (int argc, char **argv)
 	}
       else if (strcmp (argv[i], "help") == 0)
 	{
-	  execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", NULL);
+	  execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
 	  eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 		   applet, strerror (errno));
 	}
@@ -1088,7 +1091,7 @@ int main (int argc, char **argv)
 
   if (! doneone)
     {
-      execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, NULL);
+      execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
       eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 	       applet, strerror (errno));
     }

@@ -489,7 +489,8 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
       /* If we're not the boot runlevel then add that too */
       if (strcmp (runlevel, RC_LEVEL_BOOT) != 0)
 	{
-	  char *path = rc_strcatpaths (RC_RUNLEVELDIR, RC_LEVEL_BOOT, NULL);
+	  char *path = rc_strcatpaths (RC_RUNLEVELDIR, RC_LEVEL_BOOT,
+				       (char *) NULL);
 	  list = rc_ls_dir (list, path, RC_LS_INITD);
 	  free (path);
 	}
@@ -534,7 +535,7 @@ static bool is_newer_than (const char *file, const char *target)
       bool newer = true;
       STRLIST_FOREACH (targets, t, i)
 	{
-	  char *path = rc_strcatpaths (target, t, NULL);
+	  char *path = rc_strcatpaths (target, t, (char *) NULL);
 	  newer = is_newer_than (file, path);
 	  free (path);
 	  if (! newer)

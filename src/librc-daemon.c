@@ -8,7 +8,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined (__OpenBSD__) 
+#if defined(__DragonFly__) || defined(__FreeBSD__) || \
+ defined(__NetBSD__) || defined (__OpenBSD__)
 #include <sys/param.h>
 #include <sys/user.h>
 #include <sys/sysctl.h>
@@ -178,18 +179,20 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
   return (pids);
 }
 
-#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#elif defined(__DragonFly__) || defined(__FreeBSD__) || \
+ defined(__NetBSD__) || defined(__OpenBSD__)
 
-# if defined(__FreeBSD__)
+# if defined(__DragonFly__) || defined(__FreeBSD__)
+#  ifndef KERN_PROC_PROC
+#    define KERN_PROC_PROC KERN_PROC_ALL
+#  endif
 #  define _KINFO_PROC kinfo_proc
-#  define _KVM_GETPROCS kvm_getprocs
 #  define _KVM_GETARGV kvm_getargv
 #  define _GET_KINFO_UID(kp) (kp.ki_ruid)
 #  define _GET_KINFO_COMM(kp) (kp.ki_comm)
 #  define _GET_KINFO_PID(kp) (kp.ki_pid)
 # else
 #  define _KINFO_PROC kinfo_proc2
-#  define _KVM_GETPROCS kvm_getprocs2
 #  define _KVM_GETARGV kvm_getargv2
 #  define _GET_KINFO_UID(kp) (kp.p_ruid)
 #  define _GET_KINFO_COMM(kp) (kp.p_comm)
@@ -212,7 +215,12 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
   if ((kd = kvm_openfiles (NULL, NULL, NULL, O_RDONLY, errbuf)) == NULL)
     eerrorx ("kvm_open: %s", errbuf);
 
-  kp = _KVM_GETPROCS (kd, KERN_PROC_PROC, 0, &processes);
+#if defined(__DragonFly__) || defined( __FreeBSD__)
+  kp = kvm_getprocs (kd, KERN_PROC_PROC, 0, &processes);
+#else
+  kp = kvm_getproc2 (kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
+		     &processes);
+#endif
   for (i = 0; i < processes; i++)
     {
       pid_t p = _GET_KINFO_PID (kp[i]);
@@ -260,7 +268,7 @@ static bool _match_daemon (const char *path, const char *file,
 			   const char *mpidfile)
 {
   char buffer[RC_LINEBUFFER];
-  char *ffile = rc_strcatpaths (path, file, NULL);
+  char *ffile = rc_strcatpaths (path, file, (char *) NULL);
   FILE *fp;
   int lc = 0;
   int m = 0;
@@ -314,7 +322,8 @@ void rc_set_service_daemon (const char *service, const char *exec,
 			    const char *name, const char *pidfile,
 			    bool started)
 {
-  char *dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service), NULL);
+  char *dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service),
+				  (char *) NULL);
   char **files = NULL;
   char *file;
   char *ffile = NULL;
@@ -361,7 +370,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
       files = rc_ls_dir (NULL, dirpath, 0);
       STRLIST_FOREACH (files, file, i)
 	{
-	  ffile = rc_strcatpaths (dirpath, file, NULL);
+	  ffile = rc_strcatpaths (dirpath, file, (char *) NULL);
 	  nfiles++;
 
 	  if (! oldfile)
@@ -396,7 +405,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 	  eerror ("mkdir `%s': %s", dirpath, strerror (errno));
 
       snprintf (buffer, sizeof (buffer), "%03d", nfiles + 1);
-      file = rc_strcatpaths (dirpath, buffer, NULL);
+      file = rc_strcatpaths (dirpath, buffer, (char *) NULL);
       if ((fp = fopen (file, "w")) == NULL)
 	eerror ("fopen `%s': %s", file, strerror (errno));
       else
@@ -425,7 +434,8 @@ bool rc_service_started_daemon (const char *service, const char *exec,
   if (! service || ! exec)
     return (false);
 
-  dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service), NULL);
+  dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service),
+			    (char *) NULL);
   if (! rc_is_dir (dirpath))
     {
       free (dirpath);
@@ -480,7 +490,8 @@ bool rc_service_daemons_crashed (const char *service)
   if (! service)
     return (false);
 
-  dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service), NULL);
+  dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service),
+			    (char *) NULL);
   if (! rc_is_dir (dirpath))
     {
       free (dirpath);
@@ -491,7 +502,7 @@ bool rc_service_daemons_crashed (const char *service)
   files = rc_ls_dir (NULL, dirpath, 0);
   STRLIST_FOREACH (files, file, i)
     {
-      path = rc_strcatpaths (dirpath, file, NULL);
+      path = rc_strcatpaths (dirpath, file, (char *) NULL);
       fp = fopen (path, "r");
       free (path);
       if (! fp)

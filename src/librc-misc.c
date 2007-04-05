@@ -237,7 +237,8 @@ char **rc_ls_dir (char **list, const char *dir, int options)
 	  if (options & RC_LS_INITD)
 	    {
 	      int l = strlen (d->d_name);
-	      char *init = rc_strcatpaths (RC_INITDIR, d->d_name, NULL);
+	      char *init = rc_strcatpaths (RC_INITDIR, d->d_name,
+					   (char *) NULL);
 	      bool ok = rc_exists (init);
 	      free (init);
 	      if (! ok)
@@ -283,7 +284,7 @@ bool rc_rm_dir (const char *pathname, bool top)
     {
       if (strcmp (d->d_name, ".") != 0 && strcmp (d->d_name, "..") != 0)
 	{
-	  char *tmp = rc_strcatpaths (pathname, d->d_name, NULL);
+	  char *tmp = rc_strcatpaths (pathname, d->d_name, (char *) NULL);
 	  if (d->d_type == DT_DIR)
 	    {
 	      if (! rc_rm_dir (tmp, true))

@@ -8,6 +8,10 @@
 #ifndef __RC_H__
 #define __RC_H__
 
+#ifdef __GNUC__
+#  define SENTINEL __attribute__ ((__sentinel__))
+#endif
+
 #include <sys/types.h>
 #include <stdbool.h>
 
@@ -145,7 +149,7 @@ void *rc_xrealloc (void *ptr, size_t size);
 char *rc_xstrdup (const char *str);
 
 /* Concat paths adding '/' if needed. */
-char *rc_strcatpaths (const char *path1, const char *paths, ...);
+char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
 
 bool rc_is_env (const char *variable, const char *value);
 bool rc_exists (const char *pathname);

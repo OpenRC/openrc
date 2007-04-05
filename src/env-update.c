@@ -79,7 +79,7 @@ int main (int argc, char **argv)
 
   STRLIST_FOREACH (files, file, i)
     {
-      char *path = rc_strcatpaths (ENVDIR, file, NULL);
+      char *path = rc_strcatpaths (ENVDIR, file, (char *) NULL);
       char **entries = NULL;
       char *entry;
       int j;

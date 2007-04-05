@@ -12,6 +12,8 @@
 #define POLL_INTERVAL 20000
 #define START_WAIT    100000
 
+#include <sys/types.h>
+#include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/termios.h>
@@ -727,7 +729,7 @@ int main (int argc, char **argv)
     {
       char *tmp;
       if (ch_root)
-	tmp = rc_strcatpaths (ch_root, exec, NULL);
+	tmp = rc_strcatpaths (ch_root, exec, (char *) NULL);
       else
 	tmp = exec;
       if (! rc_is_file (tmp))
