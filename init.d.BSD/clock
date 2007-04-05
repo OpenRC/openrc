@@ -1,0 +1,41 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	# BSD adjkerntz needs to be able to write to /etc
+	if [ "${CLOCK}" = "UTC" -a -e /etc/wall_cmos_clock ] ||
+	   [ "${CLOCK}" != "UTC" -a ! -e /etc/wall_cmos_clock ] ; then
+		need checkroot
+	fi
+}
+
+start() {
+	if [ "${TIMEZONE-Factory}" = "Factory" ] ; then
+		ewarn "Your TIMEZONE in /etc/conf.d/clock is still set to Factory!"
+	fi
+
+	local TBLURB="Local Time"
+	[ "${CLOCK}" = "UTC" ] && TBLURB="UTC"
+	ebegin "Starting the System Clock Adjuster [${TBLURB}]"
+	if [ "${CLOCK}" != "UTC" ] ; then
+		touch /etc/wall_cmos_clock
+		start-stop-daemon --start --exec /sbin/adjkerntz -- -i
+	else
+		rm -f /etc/wall_cmos_clock
+		/sbin/adjkerntz -i
+	fi
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping the System Clock Adjuster"
+	if start-stop-daemon --test --quiet --stop --exec /sbin/adjkerntz ; then
+		start-stop-daemon --stop --exec /sbin/adjkerntz
+		eend $?
+	else
+		eend 0
+	fi
+}
+
+# vim: set ts=4 :

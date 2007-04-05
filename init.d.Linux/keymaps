@@ -1,0 +1,80 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	need localmount
+}
+
+checkconfig() {
+	if [ -z "${KEYMAP}" ] ; then
+		eerror "You need to setup KEYMAP in /etc/conf.d/keymaps first"
+		return 1
+	fi
+
+	# Make sure user isn't using rc.conf anymore
+	if grep -q "^KEYMAP=" /etc/rc.conf ; then
+		ewarn "KEYMAP should not be set in /etc/rc.conf but in /etc/conf.d/keymaps"
+	fi
+}
+
+start() {
+	case "${RC_SYS}" in
+		UML|VPS|XEN)
+			ebegin "Loading key mappings"
+			eend 0
+			return 0
+			;;
+	esac
+
+	local WINDOWKEYS_KEYMAP=
+
+	checkconfig || return 1
+
+	# Force linux keycodes for PPC.
+	if [ -f /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes ] ; then
+		echo 1 > /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
+	fi
+
+	# Turn on unicode if user wants it
+	[ "${UNICODE}" = "yes" ] && kbd_mode -u
+
+	ebegin "Loading key mappings"
+	if [ -x /bin/loadkeys ] ; then
+		[ "${SET_WINDOWKEYS}" = "yes" ] && WINDOWKEYS_KEYMAP="windowkeys"
+		loadkeys -q ${WINDOWKEYS_KEYMAP} ${KEYMAP} \
+			${EXTENDED_KEYMAPS} > /dev/null
+		eend $? "Error loading key mappings"
+	else
+		eend 1 "/bin/loadkeys not found"
+		return 1
+	fi
+
+	# Set terminal encoding to either ASCII or UNICODE.
+	# See utf-8(7) for more information.
+	local termencoding= termmsg=
+	if [ "${UNICODE}" = "yes" ] ; then
+		local dumpkey_opts=
+		[ -n "${DUMPKEYS_CHARSET}" ] && dumpkey_opts="-c ${DUMPKEYS_CHARSET}"
+
+		dumpkeys ${dumpkey_opts} | loadkeys --unicode
+		termencoding="\033%%G"
+		termmsg="UTF-8"
+	else
+		termencoding="\033(K"
+		termmsg="ASCII"
+	fi
+	local n=1 ttydev=
+	[ -d /dev/vc ] \
+		&& ttydev=/dev/vc/ \
+		|| ttydev=/dev/tty
+	ebegin "Setting terminal encoding to" ${termmsg}
+	while [ ${n} -le "${RC_TTY_NUMBER}" ] ; do
+		printf "${termencoding}" >"${ttydev}${n}"
+		n=$((${n} + 1))
+	done
+	eend 0
+}
+
+
+# vim:ts=4

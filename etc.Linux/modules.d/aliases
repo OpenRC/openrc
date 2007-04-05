@@ -1,0 +1,42 @@
+# Aliases to tell insmod/modprobe which modules to use 
+
+# Uncomment the network protocols you don't want loaded:
+# alias net-pf-1 off		# Unix
+# alias net-pf-2 off		# IPv4
+# alias net-pf-3 off		# Amateur Radio AX.25
+# alias net-pf-4 off		# IPX
+# alias net-pf-5 off		# DDP / appletalk
+# alias net-pf-6 off		# Amateur Radio NET/ROM
+# alias net-pf-9 off		# X.25
+# alias net-pf-10 off		# IPv6
+# alias net-pf-11 off		# ROSE / Amateur Radio X.25 PLP
+# alias net-pf-19 off		# Acorn Econet
+
+alias char-major-10-175	agpgart
+alias char-major-10-200	tun
+alias char-major-81	bttv
+alias char-major-108	ppp_generic
+alias /dev/ppp		ppp_generic
+alias tty-ldisc-3	ppp_async
+alias tty-ldisc-14	ppp_synctty
+alias ppp-compress-21	bsd_comp
+alias ppp-compress-24	ppp_deflate
+alias ppp-compress-26	ppp_deflate
+
+# Crypto modules (see http://www.kerneli.org/)
+alias loop-xfer-gen-0	loop_gen
+alias loop-xfer-3	loop_fish2
+alias loop-xfer-gen-10	loop_gen
+alias cipher-2		des
+alias cipher-3		fish2
+alias cipher-4		blowfish
+alias cipher-6		idea
+alias cipher-7		serp6f
+alias cipher-8		mars6
+alias cipher-11		rc62
+alias cipher-15		dfc2
+alias cipher-16		rijndael
+alias cipher-17		rc5
+
+# Support for i2c and lm_sensors
+alias char-major-89    i2c-dev

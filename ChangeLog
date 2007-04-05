@@ -1,0 +1,26 @@
+# ChangeLog for Gentoo System Intialization ("rc") scripts
+# Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
+
+  05 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Rewrite the core parts in C. We now provide librc so other programs can
+    query runlevels, services and state without using bash. We also provide
+    libeinfo so other programs can easily use our informational functions.
+    
+    As such, we have dropped the requirement of using bash as the init script
+    shell. We now use /bin/sh and have strived to make the scripts as portable
+    as possible. Shells that work are bash and dash. busybox works provided
+    you disable s-s-d. If you have WIPE_TMP set to yes in conf.d/bootmisc you
+    should disable find too.
+    zsh and ksh do not work at this time.
+
+    Networking support is currently being re-vamped also as it was heavily bash
+    array based. As such, a new config format is available like so
+    config_eth0="1.2.3.4/24 5.6.7.8/16"
+    or like so
+    config_eth0="'1.2.3.4 netmask 255.255.255.0' '5.6.7.8 netmask 255.255.0.0'"
+
+    We will still support the old bash array format provided that /bin/sh IS
+    a link it bash.
+
+    ChangeLog for baselayout-1 can be found in our SVN repo.

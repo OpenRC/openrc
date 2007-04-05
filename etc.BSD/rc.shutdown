@@ -1,0 +1,17 @@
+#!/bin/sh
+# Copyright 2006-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+# Ensure we are called by init
+[ "$PPID" = "1" ] || exit 0
+
+# Try and use stuff in /lib over anywhere else so we can shutdown
+# local mounts correctly.
+LD_LIBRARY_PATH="/lib${LD_LIBRARY_PATH:+:}${LDLIBRARY_PATH}"
+export LD_LIBRARY_PATH
+
+# BSD's init works somewhat differently to sysvinit.
+# This block should 'translate' from the way init calls it to the way it would
+# be called by sysvinit on linux.
+export RUNLEVEL=S
+exec /sbin/rc "$1"

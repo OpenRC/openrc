@@ -1,0 +1,19 @@
+.TH MODULES.AUTOLOAD 5 "Gentoo Linux" "Nov 2001"
+.SH NAME
+\fI/etc/modules.autoload\fR - kernel modules to load at boot time
+.SH DESCRIPTION
+.PP
+The \fI/etc/modules.autoload\fR
+file contains the names of kernel modules that are to be loaded at boot
+time, one per line.  Arguments can be given on the same line as the module
+name.  Comments begin with a `#', and everything on the line after it is 
+ignored.  This file is read by the \fI/etc/init.d/modules\fR initscript,
+which is usually linked in the \fI/etc/runlevels/boot\fR directory.
+.SH "SEE ALSO"
+.BR modules-update (8),
+.BR modprobe (8),
+.BR modules.conf (5)
+.TP
+The \fI/sbin/modules-update\fR script.
+.TP
+The files in \fI/etc/modules.d\fR.

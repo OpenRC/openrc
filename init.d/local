@@ -1,0 +1,34 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	after *
+}
+
+start() {
+	ebegin "Starting local"
+
+	# Add any misc programs that should be started
+	# to /etc/conf.d/local.start
+	if [ -e /etc/conf.d/local.start ] ; then
+		. /etc/conf.d/local.start
+	fi
+
+	eend $? "Failed to start local"
+}
+
+stop() {
+	ebegin "Stopping local"
+
+	# Add any misc programs that should be stopped
+	# to /etc/conf.d/local.stop
+	if [ -e /etc/conf.d/local.stop ] ; then
+		. /etc/conf.d/local.stop
+	fi
+
+	eend $? $"Failed to stop local"
+}
+
+
+# vim:ts=4

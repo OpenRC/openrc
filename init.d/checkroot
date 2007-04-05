@@ -1,0 +1,149 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+do_mtab() {
+	# Don't create mtab if /etc is readonly
+	if ! touch /etc/mtab 2> /dev/null ; then
+		ewarn "Skipping /etc/mtab initialization" "(ro root?)"
+		return 0
+	fi
+
+	# Clear the existing mtab
+	> /etc/mtab
+
+	# Add the entry for / to mtab
+	mount -f /
+
+	# Don't list root more than once
+	grep -v "^[^ ]* / " /proc/mounts >> /etc/mtab
+
+	# Now make sure /etc/mtab have additional info (gid, etc) in there
+	local mnt= mnts="$(mountinfo | sed -e "s/^/'/g" -e "s/$/'/g")"
+	eval set -- ${mnts}
+	for mnt in "$@" ; do
+		if fstabinfo --mount-cmd "${mnt}" >/dev/null ; then
+			mount -f -o remount "${mnt}"
+		fi
+	done
+
+	# Remove stale backups
+	rm -f /etc/mtab~ /etc/mtab~~
+}
+
+start() {
+	local retval=0
+
+	# Don't bother doing a fsck on these
+	if [ -n "${CDBOOT}" ] || is_net_fs / || is_union_fs / ; then
+		return 0
+	fi
+
+	if touch /.test.$$ 2> /dev/null ; then
+		einfo "root filesystem is mounted read-write - skipping"
+		rm -f /.test.$$
+		return 0
+	fi
+
+	if get_bootparam "forcefsck" ; then
+		ebegin "Checking root filesystem (full fsck forced)"
+		if [ "${RC_UNAME}" = "Linux" ] ; then
+			fsck -C -a -f /
+		else
+			fsck -F /
+		fi
+		# /forcefsck isn't deleted because checkfs needs it.
+		# it'll be deleted in that script.
+		retval=$?
+	else
+		# Obey the fs_passno setting for / (see fstab(5))
+		# - find the / entry
+		# - make sure we have 6 fields
+		# - see if fs_passno is something other than 0
+		local pass=$(fstabinfo --passno /)
+		if [ ${pass:-0} != "0" ] ; then
+			ebegin "Checking root filesystem"
+			if [ "${RC_UNAME}" = "Linux" ] ; then
+				fsck -C -T -a /
+			else
+				fsck -p -F /
+			fi
+			retval=$?
+		else
+			ebegin "Skipping root filesystem check" "(fstab's passno == 0)"
+			retval=0
+		fi
+	fi
+
+	if [ ${retval} -eq 0 ] ; then
+		eend 0
+	elif [ ${retval} -eq 1 ] ; then
+		ewend 1 "Filesystem repaired"
+		retval=0
+	elif [ ${retval} -eq 8 ] ; then
+		ewend 1 $"Operational error, continuing"
+		retval=0
+	elif [ ${retval} -eq 2 -o ${retval} -eq 3 ] ; then
+		ewend 1 "Filesystem repaired, but reboot needed!"
+		if [ "${RC_FORCE_AUTO}" != "yes" ] ; then
+			printf "\a"; sleep 1; printf "\a"; sleep 1
+			printf "\a"; sleep 1; printf "\a"; sleep 1
+			ewarn "Rebooting in 10 seconds ..."
+			sleep 10
+		fi
+		einfo "Rebooting"
+		/sbin/reboot -f
+	else
+		if [ "${RC_FORCE_AUTO}" = "yes" ] ; then
+			eend 2 "Rerunning fsck in force mode"
+			if [ "${RC_UNAME}" = "Linux" ] ; then
+				fsck -y -C -T /
+			else
+				fsck -y /
+			fi
+			retval=$?
+		else
+			eend 2 "Filesystem couldn't be fixed :("
+			[ "${RC_UNAME}" = "Linux" ] || return 1
+			sulogin "${CONSOLE}"
+		fi
+		if [ ${retval} != "0" ] ; then
+			einfo "Unmounting filesystems"
+			if [ "${RC_UNAME}" = "Linux" ] ; then
+				mount -a -o remount,ro /
+			else
+				mount -u -o ro /
+			fi
+			einfo "Rebooting"
+			reboot -f
+		fi
+	fi
+
+	ebegin "Remounting root filesystem read/write"
+	if [ "${RC_UNAME}" = "Linux" ] ; then
+		mount -n -o remount,rw /
+	else
+		mount -u -o rw /
+	fi
+	eend $? "Root filesystem could not be mounted read/write :(" || return 1
+
+	# Only Linux has mtab
+	[ "${RC_UNAME}" = "Linux" ] && do_mtab
+
+	# If the user's /dev/null or /dev/console are missing, we 
+	# should help them out and explain how to rectify the situation
+	if [ ! -c /dev/null -o ! -c /dev/console ] ; then
+		if [ -e /usr/share/baselayout/issue.devfix ] ; then
+			# Backup current /etc/issue
+			if [ -e /etc/issue -a ! -e /etc/issue.devfix ] ; then
+				mv -f /etc/issue /etc/issue.devfix
+			fi
+			cp -f /usr/share/baselayout/issue.devfix /etc/issue
+		fi
+	fi
+
+	# We got here, so return 0
+	return 0
+}
+
+# vim: set ts=4 :

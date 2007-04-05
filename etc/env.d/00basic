@@ -1,0 +1,10 @@
+# /etc/env.d/00basic
+
+PATH="/opt/bin"
+ROOTPATH="/opt/bin"
+LDPATH="/usr/local/lib"
+MANPATH="/usr/local/share/man:/usr/share/man"
+INFOPATH="/usr/share/info"
+CVS_RSH="ssh"
+PAGER="/usr/bin/less"
+LESSOPEN="|lesspipe.sh %s"

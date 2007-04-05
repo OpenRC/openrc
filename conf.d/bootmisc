@@ -1,0 +1,12 @@
+# /etc/conf.d/bootmisc
+
+# Put a nologin file in /etc to prevent people from logging in before
+# system startup is complete
+
+DELAYLOGIN="no"
+
+
+# Should we completely wipe out /tmp or just selectively remove known
+# locks / files / etc... ?
+
+WIPE_TMP="yes"

@@ -1,0 +1,16 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	need localmount
+}
+
+start() {
+	if [ -f /etc/nologin.boot ] ; then
+		rm -f /etc/nologin /etc/nologin.boot
+	fi
+}
+
+
+# vim:ts=4

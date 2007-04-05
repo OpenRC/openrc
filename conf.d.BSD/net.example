@@ -1,0 +1,309 @@
+#  BSD NOTE: Network functionality support is still being written and
+#  many parts here are missing compared to Gentoo/Linux
+#  Feel free to write the needed modules and submit them to us :)
+#
+##############################################################################
+# QUICK-START
+#
+# The quickest start is if you want to use DHCP.
+# In that case, everything should work out of the box, no configuration
+# necessary, though the startup script will warn you that you haven't
+# specified anything.
+
+# WARNING :- some examples have a mixture of IPv4 (ie 192.168.0.1) and IPv6
+# (ie 4321:0:1:2:3:4:567:89ab) internet addresses. They only work if you have
+# the relevant kernel option enabled. So if you don't have an IPv6 enabled
+# kernel then remove the IPv6 address from your config.
+
+# If you want to use a static address or use DHCP explicitly, jump
+# down to the section labelled INTERFACE HANDLERS.
+#
+# If you want to do anything more fancy, you should take the time to
+# read through the rest of this file.
+
+##############################################################################
+# MODULES
+#
+# We now support modular networking scripts which means we can easily
+# add support for new interface types and modules while keeping
+# compatability with existing ones.
+# 
+# Modules load by default if the package they need is installed.  If
+# you specify a module here that doesn't have it's package installed
+# then you get an error stating which package you need to install.
+# Ideally, you only use the modules setting when you have two or more
+# packages installed that supply the same service.
+#
+# In other words, you probably should DO NOTHING HERE...
+
+##############################################################################
+# INTERFACE HANDLERS
+
+# For a static configuration, use something like this
+# (They all do exactly the same thing btw)
+#config_eth0="192.168.0.2/24"
+#config_eth0="'192.168.0.2 netmask 255.255.255.0'"
+
+# We can also specify a broadcast
+#config_eth0="'192.168.0.2/24 brd 192.168.0.255'"
+#config_eth0="'192.168.0.2 netmask 255.255.255.0 broadcast 192.168.0.255'"
+
+# If you need more than one address, you can use something like this
+# NOTE: ifconfig creates an aliased device for each extra IPv4 address
+#       (eth0:1, eth0:2, etc)
+#       iproute2 does not do this as there is no need to
+#config_eth0="'192.168.0.2/24' '192.168.0.3/24' '192.168.0.4/24'"
+# Or you can use sequence expressions
+#config_eth0="'192.168.0.{2..4}/24'"  FIXME - may not work with baselayout2
+# which does the same as above. Be careful though as if you use this and
+# fallbacks, you have to ensure that both end up with the same number of
+# values otherwise your fallback won't work correctly.
+
+# You can also use IPv6 addresses
+# (you should always specify a prefix length with IPv6 here)
+#config_eth0="192.168.0.2/24 \
+#4321:0:1:2:3:4:567:89ab/64 \
+#4321:0:1:2:3:4:567:89ac/64"
+
+# If you wish to keep existing addresses + routing and the interface is up,
+# you can specify a noop (no operation). If the interface is down or there
+# are no addresses assigned, then we move onto the next step (default dhcp)
+# This is useful when configuring your interface with a kernel command line
+# or similar
+#config_eth0="noop 192.168.0.2/24"
+
+# If you don't want ANY address (only useful when calling for advanced stuff)
+#config_eth0="null"
+
+# Here's how to do routing if you need it
+# We add an IPv4 default route, IPv4 subnet route and an IPv6 unicast route
+#routes_eth0=" \
+#	'default via 192.168.0.1' \
+#	'10.0.0.0/8 via 192.168.0.1' \
+#	'::/0' \
+#"
+
+# If a specified module fails (like dhcp - see below), you can specify a
+# fallback like so
+#fallback_eth0="'192.168.0.2 netmask 255.255.255.0'"
+#fallback_route_eth0="'default via 192.168.0.1'"
+
+# NOTE: fallback entry must match the entry location in config_eth0
+# As such you can only have one fallback route.
+
+# Some users may need to alter the MTU - here's how
+#mtu_eth0="1500"
+
+# Most drivers that report carrier status function correctly, but some do not
+# One of these faulty drivers is for the Intel e1000 network card, but only
+# at boot time. To get around this you may alter the carrier_timeout value for
+# the interface. -1 is disable, 0 is infinite and any other number of seconds
+# is how long we wait for carrier. The current default is 3 seconds
+#carrier_timeout_eth0=-1
+
+##############################################################################
+# OPTIONAL MODULES
+
+#-----------------------------------------------------------------------------
+# WIRELESS (802.11 support)
+# Wireless can be provided by BSDs ifconfig or wpa_supplicant
+
+# ifconfig support is a one shot script - wpa_supplicant is daemon that
+# scans, assoicates and re-configures if assocation is lost.
+# wpa_supplicant is preferred
+# See wireless.example for details about using ifconfig for wireless
+
+# emerge net-wireless/wpa-supplicant
+# Wireless options are held in /etc/wpa_supplicant/wpa_supplicant.conf
+# Console the wpa_supplicant.conf.example that is installed in
+# /usr/share/doc/wpa_supplicant
+
+# By default we don't wait for wpa_suppliant to associate and authenticate.
+# If you would like to, so can specify how long in seconds
+#associate_timeout_eth0=60
+# A value of 0 means wait forever.
+
+# You can also override any settings found here per SSID - which is very
+# handy if you use different networks a lot. See below for using the SSID
+# in our variables
+#config_SSID="dhcp"
+# See the System module below for setting dns/nis/ntp per SSID
+
+# You can also override any settings found here per MAC address of the AP
+# in case you use Access Points with the same SSID but need different
+# networking configs. Below is an example - of course you use the same
+# method with other variables
+#mac_config_001122334455="dhcp"
+#mac_dns_servers_001122334455="192.168.0.1 192.168.0.2"
+
+# When an interface has been associated with an Access Point, a global
+# variable called SSID is set to the Access Point's SSID for use in the
+# pre/post user functions below (although it's not available in preup as you
+# won't have associated then)
+
+# If you're using anything else to configure wireless on your interface AND
+# you have installed wpa_supplicant, you need to disable wpa_supplicant 
+#modules="!iwconfig !wpa_supplicant"
+#or
+#modules="!wireless"
+
+##############################################################################
+# WIRELESS SSID IN VARIABLES 
+##############################################################################
+# Remember to change SSID to your SSID.
+# Say that your SSID is My NET - the line
+#      #key_SSID="s:passkey"
+# becomes
+#      #key_My_NET="s:passkey"
+# Notice that the space has changed to an underscore - do the same with all
+# characters not in a-z A-Z (English alphabet) 0-9. This only applies to
+# variables and not values.
+#
+# Any SSID's in values like essid_eth0="My NET" may need to be escaped
+# This means placing the character \ before the character
+# \" need to be escaped for example
+# So if your SSID is
+#      My "\ NET
+# it becomes
+#      My \"\\ NET
+# for example
+#      #essid_eth0="My\"\\NET"
+#
+# So using the above we can use
+#      #dns_domain_My____NET="My\"\\NET"
+# which is an invalid dns domain, but shows the how to use the variable
+# structure
+#########################################################
+
+#-----------------------------------------------------------------------------
+# DHCP
+# DHCP can be provided by dhclient.
+#
+# dhcpcd:   emerge net-misc/dhcpcd
+# dhclient: emerge net-misc/dhcp
+
+# Regardless of which DHCP client you prefer, you configure them the
+# same way using one of following depending on which interface modules
+# you're using.
+#config_eth0="dhcp"
+
+# For passing custom options to dhcpcd use something like the following.  This
+# example reduces the timeout for retrieving an address from 60 seconds (the
+# default) to 10 seconds.
+#dhcpcd_eth0="-t 10"
+
+# GENERIC DHCP OPTIONS
+# Set generic DHCP options like so
+#dhcp_eth0="release nodns nontp nonis nogateway nosendhost"
+
+# This tells the dhcp client to release it's lease when it stops, not to
+# overwrite dns, ntp and nis settings, not to set a default route and not to
+# send the current hostname to the dhcp server and when it starts.
+# You can use any combination of the above options - the default is not to
+# use any of them.
+
+
+#-----------------------------------------------------------------------------
+# System
+# For configuring system specifics such as domain, dns, ntp and nis servers
+# It's rare that you would need todo this, but you can anyway.
+# This is most benefit to wireless users who don't use DHCP so they can change
+# their configs based on SSID. See above for more details
+
+# Setting name/domain server causes /etc/resolv.conf to be overwritten
+# Note that if DHCP is used, and you want this to take precedence then
+# set dhcp_SSID="nodns"
+# To use dns settings such as these, dns_servers_eth0 must be set!
+# If you omit the _eth0 suffix, then it applies to all interfaces unless
+# overridden by the interface suffix.
+#dns_domain_eth0="your.domain"
+#dns_servers_eth0="192.168.0.2 192.168.0.3"
+#dns_search_eth0="this.domain that.domain"
+#dns_options_eth0="'timeout 1' 'rotate'"
+#dns_sortlist_eth0="130.155.160.0/255.255.240.0 130.155.0.0"
+# See the man page for resolv.conf for details about the options and sortlist
+# directives
+
+#ntp_servers_eth0="192.168.0.2 192.168.0.3"
+
+#nis_domain_eth0="domain"
+#nis_servers_eth0="192.168.0.2 192.168.0.3"
+
+# NOTE: Setting any of these will stamp on the files in question. So if you
+# don't specify dns_servers but you do specify dns_domain then no nameservers
+# will be listed in /etc/resolv.conf even if there were any there to start
+# with.
+# If this is an issue for you then maybe you should look into a resolv.conf
+# manager like resolvconf-gentoo to manage this file for you. All packages
+# that baselayout supports use resolvconf-gentoo if installed.
+
+#-----------------------------------------------------------------------------
+# Cable in/out detection
+# Sometimes the cable is in, others it's out. Obviously you don't want to
+# restart net.eth0 every time when you plug it in either.
+# BSD has the Device State Change Daemon - or devd for short
+# To enable this,  simple add devd to the boot runlevel
+#rc-update add devd boot
+#rc
+
+##############################################################################
+# ADVANCED CONFIGURATION
+# 
+# Four functions can be defined which will be called surrounding the
+# start/stop operations.  The functions are called with the interface
+# name first so that one function can control multiple adapters. An extra two
+# functions can be defined when an interface fails to start or stop.
+#
+# The return values for the preup and predown functions should be 0
+# (success) to indicate that configuration or deconfiguration of the
+# interface can continue.  If preup returns a non-zero value, then
+# interface configuration will be aborted.  If predown returns a
+# non-zero value, then the interface will not be allowed to continue
+# deconfiguration.
+#
+# The return values for the postup, postdown, failup and faildown functions are
+# ignored since there's nothing to do if they indicate failure.
+#
+# ${IFACE} is set to the interface being brought up/down
+# ${IFVAR} is ${IFACE} converted to variable name bash allows
+
+#preup() {
+#	# Remember to return 0 on success
+#	return 0
+#}
+
+#predown() {
+#	# The default in the script is to test for NFS root and disallow
+#	# downing interfaces in that case.  Note that if you specify a
+#	# predown() function you will override that logic.  Here it is, in
+#	# case you still want it...
+#	if is_net_fs /; then
+#		eerror "root filesystem is network mounted -- can't stop ${IFACE}"
+#		return 1
+#	fi
+#
+#	# Remember to return 0 on success
+#	return 0
+#}
+
+#postup() {
+#	# This function could be used, for example, to register with a
+#	# dynamic DNS service.  Another possibility would be to
+#	# send/receive mail once the interface is brought up.
+
+#}
+
+#postdown() {
+#	# Return 0 always
+#	return 0
+#}
+
+#failup() {
+#       # This function is mostly here for completeness... I haven't
+#       # thought of anything nifty to do with it yet ;-)
+#}
+
+#faildown() {
+#       # This function is mostly here for completeness... I haven't
+#       # thought of anything nifty to do with it yet ;-)
+#}

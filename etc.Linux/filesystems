@@ -1,0 +1,14 @@
+# /etc/filesystems
+#
+# This file defines the filesystems search order used by a
+# 'mount -t auto' command.
+#
+
+# Uncomment the following line if your modular kernel has vfat
+# support and you want mount to try vfat.
+#vfat
+
+# Keep the last '*' intact as it directs mount to use the
+# filesystems list available at /proc/filesystems also.
+# Don't remove it unless you REALLY know what you are doing!
+*

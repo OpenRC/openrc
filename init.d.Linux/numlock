@@ -1,0 +1,35 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	need localmount
+}
+
+_setleds() {
+	[ -z "$1" ] && return 1
+
+	local dev=/dev/tty t= i=1 retval=0
+	[ -d /dev/vc ] && dev=/dev/vc/
+
+	while [ ${i} -le ${RC_TTY_NUMBER:-11} ] ; do
+		setleds -D "$1"num < ${dev}${i} || retval=1
+		i=$((${i} + 1))
+	done
+
+	return ${retval}
+}
+
+start() {
+	ebegin "Enabling numlock on ttys"
+	_setleds +
+	eend $? "Failed to enable numlock"
+}
+
+stop() {
+	ebegin "Disabling numlock on ttys"
+	_setleds -
+	eend $? "Failed to disable numlock"
+}
+
+# vim: set ts=4 :

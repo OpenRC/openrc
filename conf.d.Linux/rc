@@ -1,0 +1,34 @@
+
+##############################################################################
+# LINUX SPECIFIC OPTIONS
+
+# This is the number of tty's used in most of the rc-scripts (like
+# consolefont, numlock, etc ...)
+RC_TTY_NUMBER=11
+
+# RC_DOWN_INTERFACE allows you to specify if RC will bring the interface
+# completely down when it stops. The default is yes, but there are some
+# instances where you may not want this to happen such as using Wake On LAN.
+RC_DOWN_INTERFACE="yes"
+
+# RC_DOWN_HARDDISK allows you to specify if RC will put harddisks to
+# standby mode when it stops.
+RC_DOWN_HARDDISK="yes"
+
+# Use this variable to control the /dev management behavior.
+#  auto   - let the scripts figure out what's best at boot
+#  devfs  - use devfs (requires sys-fs/devfsd)
+#  udev   - use udev (requires sys-fs/udev)
+#  static - let the user manage /dev (YOU need to create ALL device nodes)
+RC_DEVICES="auto"
+
+# UDEV OPTION:
+# Set to "yes" if you want to save /dev to a tarball on shutdown
+# and restore it on startup.  This is useful if you have a lot of
+# custom device nodes that udev does not handle/know about.
+RC_DEVICE_TARBALL="no"
+
+# RC_DMESG_LEVEL sets the level at which logging of messages is done to the
+# console.  See dmesg(8) for more info.
+RC_DMESG_LEVEL="1"
+

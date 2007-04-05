@@ -1,0 +1,8 @@
+# FSCK_SHUTDOWN causes checkfs to trigger during shutdown as well as startup.
+# The end result of this is that if any periodic non-root filesystem checks are
+# scheduled, under normal circumstances the actual check will happen during
+# shutdown rather than at next boot.
+# This is useful when periodic filesystem checks are causing undesirable
+# delays at startup, but such delays at shutdown are acceptable.
+
+FSCK_SHUTDOWN="no"

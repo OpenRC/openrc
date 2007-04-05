@@ -1,0 +1,85 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+have_nfs() {
+	local IFS=\n x=
+	set -- $(fstabinfo --fstype nfs,nfs4)
+	for x in "$@" ; do
+		! fstabinfo --opts "${x}" | grep -q noauto && return 0 
+	done
+	return 1
+}
+
+depend() {
+	local myneed= myuse= pmap="portmap" nfsmounts= x
+	[ -x /etc/init.d/rpcbind ] && pmap="rpcbind"
+
+	# Only have Portmap as a dependency if there is a nfs mount in fstab that
+	# is set to mount at boot
+	if have_nfs ; then
+		myneed="${myneed} ${pmap}"
+	else
+		myuse="${myuse} ${pmap}"
+	fi
+
+	need net ${myneed}
+	use afc-client amd autofs dns nfs nfsmount ${myuse}
+}
+
+start() {
+	local myneed= myuse= pmap="portmap" nfsmounts=
+	[ -x /etc/init.d/rpcbind ] && pmap="rpcbind"
+
+	local x= fs=
+	for x in ${RC_NET_FS_LIST} ; do
+		case "${x}" in
+			nfs|nfs4)
+    			# If the nfsmount script took care of the nfs filesystems,
+	    		# then there's no point in trying them twice
+				service_started nfsmount && continue
+
+        		# Only try to mount NFS filesystems if portmap was started.
+		        # This is to fix "hang" problems for new users who do not
+				# add portmap to the default runlevel.
+				if have_nfs && ! service_started "${pmap}" ; then
+					continue
+				fi
+				;;
+		esac
+		fs="${fs}${fs:+,}${x}"
+	done
+
+	ebegin "Mounting network filesystems"
+	mount -at ${fs}
+	ewend $? "Could not mount all network filesystems!"
+	return 0
+}
+
+stop() {
+	local x= fs=
+	for x in ${RC_NET_FS_LIST} ; do
+		fs="${fs}${fs:+,}${x}"
+	done
+
+	ebegin "Unmounting network filesystems"
+	umount -at ${fs}
+	local retval=$?
+	eend ${retval} "Failed to simply unmount filesystems"
+
+	if [ ${retval} -ne 0 ] ; then
+		. "${RC_SVCLIB}/sh/rc-mount.sh"
+		eindent
+		fs=
+		for x in ${RC_NET_FS_LIST} ; do
+			fs="${fs:+|}${x}"
+		done
+		do_unmount "umount" "" "" "^(${fs})$"
+		retval=$?
+		eoutent
+	fi
+
+	return ${retval}
+}
+
+# vim: set ts=4 :

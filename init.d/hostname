@@ -1,0 +1,20 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	need checkroot
+}
+
+start() {
+	if [ -f /etc/hostname ] ; then
+		ewarn "You should stop using /etc/hostname and use /etc/conf.d/hostname"
+		HOSTNAME=$(cat /etc/hostname)
+	fi
+
+	ebegin "Setting hostname to ${HOSTNAME}"
+	hostname "${HOSTNAME}"
+	eend $? "Failed to set the hostname"
+}
+
+# vim: ts=4 :

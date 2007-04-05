@@ -1,0 +1,6 @@
+# /etc/conf.d/env_whitelist:  Environment whitelist for rc-system
+
+# Specify which variables are allowed to be passed from the environment to the
+# rc-system.  If it is not set by the environment, then the variable will be
+# taken from /etc/profile.env - meaning, if you need to set LANG or such,
+# do it in a /etc/env.d/99myownstuff file for example, and run env-update.

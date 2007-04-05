@@ -1,0 +1,21 @@
+# /etc/fstab: static file system information.
+#
+# noatime turns off atimes for increased performance (atimes normally aren't 
+# needed. 
+#
+# The root filesystem should have a pass number of either 0 or 1.
+# All other filesystems should have a pass number of 0 or greater than 1.
+#
+# See the manpage fstab(5) for more information.
+#
+
+# <fs>		<mountpoint>	<type>		<opts>		<dump/pass>
+
+/dev/ad0s1a	/		ufs		rw,noatime		1 1
+/dev/ad0s1b	none		swap		sw			0 0
+
+/dev/acd0	/mnt/cdrom	cd9660		ro,noauto		0 0
+
+# Enable this line to mount /proc automatically.
+# Required for Linux emulation.
+#none		/proc		linprocfs	rw,noexec,nosuid	0 0

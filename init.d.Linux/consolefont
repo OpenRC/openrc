@@ -1,0 +1,87 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	need localmount
+	need keymaps    # sets up terminal encoding scheme
+	after hotplug
+}
+
+start() {
+	# Forget about any font until we are successful
+	rm -rf "${RC_LIBDIR}"/console
+
+	case "${RC_SYS}" in
+		UML|VPS|XEN) return 0 ;;
+	esac
+
+	if [ -z "${CONSOLEFONT}" ] ; then
+		ebegin $"Using the default console font"
+		eend 0
+		return 0
+	fi
+
+	local x= param= sf_param= retval=1
+
+	# Get additional parameters
+	if [ -n "${CONSOLETRANSLATION}" ] ; then
+		param="${param} -m ${CONSOLETRANSLATION}"
+	fi
+	if [ -n "${UNICODEMAP}" ] ; then
+		param="${param} -u ${UNICODEMAP}"
+	fi
+
+	# Set the console font
+	local errmsg=
+	ebegin "Setting user font"
+	if [ -x /bin/setfont ] ; then
+		# We patched setfont to have --tty support ...
+		if [ -n "$(setfont --help 2>&1 | grep -e '--tty')" ] || \
+			[ -n "$(setfont --help 2>&1 | grep -e '-C')" ]
+		then
+			if [ -n "$(setfont --help 2>&1 | grep -e '--tty')" ] ; then
+				sf_param="--tty="
+			else
+				sf_param="-C "
+			fi
+			local ttydev=
+			[ -d /dev/vc ] \
+				&& ttydev=/dev/vc/ \
+				|| ttydev=/dev/tty
+
+			x=1
+			while [ ${x} -le "${RC_TTY_NUMBER}" ] ; do
+				/bin/setfont ${CONSOLEFONT} ${param} \
+					${sf_param}/${ttydev}${x} > /dev/null
+				retval=$?
+				x=$((${x} + 1))
+			done
+		else
+			/bin/setfont ${CONSOLEFONT} ${param} > /dev/null
+			retval=$?
+		fi
+		errmsg="Failed to set user font"
+	else
+		retval=1
+		errmsg="/bin/setfont not found"
+	fi
+	eend ${retval} "${errmsg}"
+
+	# Store the last font so we can use it ASAP on boot
+	if [ ${retval} -eq 0 -a -w "${RC_LIBDIR}" ] ; then
+		mkdir -p "${RC_LIBDIR}"/console
+
+		# Pipe errors to null as maps may not be in use
+		/bin/setfont -o "${RC_LIBDIR}"/console/font 2>/dev/null \
+			|| rm -f "${RC_LIBDIR}"/console/font
+		/bin/setfont -om "${RC_LIBDIR}"/console/map 2>/dev/null \
+			|| rm -f "${RC_LIBDIR}"/console/map
+		/bin/setfont -ou "${RC_LIBDIR}"/console/unimap 2>/dev/null \
+			|| rm -f "${RC_LIBDIR}"/console/unimap
+	fi
+
+	return ${retval}
+}
+
+# vim: set ts=4 :

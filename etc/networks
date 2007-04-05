@@ -1,0 +1,8 @@
+# /etc/networks
+#
+# This file describes a number of netname-to-adress
+# mappings for the TCP/IP subsytem. It is mostly
+# used at boot time, when no name servers are running.
+#
+
+loopback	127.0.0.0

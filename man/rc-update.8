@@ -1,0 +1,43 @@
+.TH "BASELAYOUT" "8" "May 2004" "baselayout" "baselayout"
+.SH NAME
+rc-update \- add and remove init scripts to a runlevel
+.SH SYNOPSIS
+\fBrc-update\fR \fIadd\fR \fIscript\fR \fI<runlevels>\fR
+.br
+\fBrc-update\fR \fIdel\fR \fIscript\fR \fI[runlevels]\fR
+.br
+\fBrc-update\fR \fIshow\fR \fI[\-\-verbose]\fR \fI[runlevels]\fR
+.SH DESCRIPTION
+Gentoo's init system uses named runlevels.  Rather than editing some obscure 
+file or managing a directory of symlinks, \fBrc-update\fR exists to quickly 
+add or delete init scripts from different runlevels.
+
+All scripts specified with this utility must reside in the \fI/etc/init.d\fR 
+directory.  They must also conform to the Gentoo runscript standard.
+.SH OPTIONS
+.TP
+\fBadd (\-a)\fR \fIscript\fR \fI<runlevels>\fR
+Add the specified \fIinit script\fR to the specified \fIrunlevels\fR.  You 
+must specify at least one runlevel.
+
+Example: rc-update add net.eth0 default
+.TP
+\fBdel (\-d)\fR \fIscript\fR \fI[runlevels]\fR
+Delete the specified \fIinit script\fR from the specified \fIrunlevels\fR.  
+If you do not specify the \fIrunlevels\fR from which to delete, the script 
+will be removed from all exists runlevels.
+
+Example: rc-update del sysklogd
+.TP
+\fBshow (\-s)\fR \fI[\-v|\-\-verbose]\fR \fI[runlevels]\fR
+Show all enabled scripts and the runlevels they belong to.  If you specify 
+\fIrunlevels\fR to show, then only those will be included in the output.  To 
+view all init scripts, run with the \fI\-\-verbose\fR option.
+
+Example: rc-update show
+.SH "REPORTING BUGS"
+Please report bugs via http://bugs.gentoo.org/
+.SH "SEE ALSO"
+.BR rc-status (8)
+
+http://www.gentoo.org/doc/en/handbook/handbook-x86.xml?part=2&chap=4

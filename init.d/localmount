@@ -1,0 +1,183 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	need checkfs
+}
+
+start() {
+	# Mount local filesystems in /etc/fstab.
+	local types="noproc" x=
+	for x in ${RC_NET_FS_LIST} ; do
+		types="${types},${x}"
+	done
+
+	ebegin "Mounting local filesystems"
+	mount -at "${types}"
+	eend $? "Some local filesystem failed to mount"
+
+	# Change the mount options of already mounted paritions
+	# This is needed when /usr is separate and coming back from single user
+	if [ "${RC_UNAME}" != "Linux" ] ; then
+		mount -uao fstab -t "${types},linprocfs"
+	fi
+
+	if [ -x /sbin/savecore ] ; then
+		local dumpdir=${KERNEL_DUMP_DIR:-/var/crash}
+		if ! [ -d "${dumpdir}" ]; then
+			mkdir -p "${dumpdir}"
+			chmod 700 "${dumpdir}"
+		fi
+
+		# Don't quote ${KERNEL_DUMP_DEVICE}, so that if it's unset, savecore
+		# will check on the partitions listed in fstab without errors in the
+		# output
+		if savecore -C "${dumpdir}" ${KERNEL_DUMP_DEVICE} >/dev/null ; then
+			local savecoreopts="${dumpdir} ${KERNEL_DUMP_DEVICE}"
+			[ "${KERNEL_DUMP_COMPRESS}" = "yes" ] \
+				&& savecoreopts="-z ${savecoreopts}"
+			ebegin "Saving kernel core dump in" "${dumpdir}"
+			savecore ${savecoreopts} >/dev/null
+			eend $?
+		fi
+	fi
+
+	# Sync bootlog now as /var should be mounted
+	if type bootlog >/dev/null 2>/dev/null ; then
+		bootlog sync 2>/dev/null
+	fi
+
+	# Make sure we insert usbcore if its a module
+	if [ -f /proc/modules -a ! -d /proc/bus/usb ] ; then
+		# >/dev/null to hide errors from non-USB users
+		modprobe usbcore &> /dev/null
+	fi
+
+	if [ -e /proc/filessystems ] ; then
+		# Check what USB fs the kernel support.  Currently
+		# 2.5+ kernels, and later 2.4 kernels have 'usbfs',
+		# while older kernels have 'usbdevfs'.
+		if [ -d /proc/bus/usb -a ! -e /proc/bus/usb/devices ] ; then
+			local usbfs=$(grep -Fow usbfs /proc/filesystems ||
+			grep -Fow usbdevfs /proc/filesystems)
+
+			if [ -n "${usbfs}" ] ; then
+				ebegin $"Mounting USB device filesystem" "(${usbfs})"
+				local usbgid="$(getent group usb | \
+					sed -e 's/.*:.*:\(.*\):.*/\1/')"
+				mount -t ${usbfs} \
+					-o ${usbgid:+devmode=0664,devgid=${usbgid},}noexec,nosuid \
+					usbfs /proc/bus/usb
+				eend $?
+			fi
+		fi
+
+		# Setup Kernel Support for miscellaneous Binary Formats
+		if [ -d /proc/sys/fs/binfmt_misc ] ; then
+			if [ -n "$(grep -Fow binfmt_misc /proc/filesystems)" ] ; then
+				ebegin "Mounting misc binary format filesystem"
+				mount -t binfmt_misc -o nodev,noexec,nosuid \
+					binfmt_misc /proc/sys/fs/binfmt_misc
+				eend $?
+			fi
+		fi
+		if [ -d /sys/kernel/security ] ; then
+			if [ -n "$(grep -Fow securityfs /proc/filesystems)" ] ; then
+				ebegin "Mounting security filesystem"
+					mount -t securityfs securityfs /sys/kernel/security \
+					-o nodev,noexec,nosuid
+				eend $?
+			fi
+		fi	
+	fi
+
+	# We do our swapping here instead of rc so we can get urandom started
+	# before us for people that like an encrypted swap.
+	ebegin "Activating (possible) swap"
+	swapon -a >/dev/null
+	eend 0 # If swapon has nothing todo it errors, so always return 0 
+
+	# Start dm-crypt mappings, if any
+	start_addon dm-crypt
+
+	# Setup any user requested dump device
+	if [ -x /sbin/dumpon -a -n "${KERNEL_DUMP_DEVICE}" ] ; then
+		ebegin "Activating kernel core dump device" "(${KERNEL_DUMP_DEVICE})"
+		dumpon "${KERNEL_DUMP_DEVICE}"
+		eend $?
+	fi
+
+	# Always return 0 - some local mounts may not be critical for boot
+	return 0
+}
+
+stop() {
+	# Don't unmount anything for VPS systems
+	[ "${RC_SYS}" = "VPS" ] && return 0
+
+	# We never unmount / or /dev or $RC_LIBDIR
+	local x= no_umounts="/|/dev|${RC_SVCDIR}"
+
+	# NO_UMOUNTS is taken from /etc/conf.d/localmount
+	# RC_NO_UMOUNTS is taken from /etc/conf.d/rc and can also be
+	# set by plugins
+	local OIFS=$IFS SIFS=${IFS-y}
+	IFS=$IFS:
+	for x in ${NO_UMOUNTS} ${RC_NO_UMOUNTS} ; do
+		no_umounts="${no_umounts}|${x}"
+	done
+	if [ "${SIFS}" = "y" ] ; then
+		IFS=$OIFS
+	else
+		unset IFS
+	fi
+
+	if [ "${RC_UNAME}" = "Linux" ] ; then
+		no_umounts="${no_umounts}|/dev/pts|/dev/shm|/proc|/proc/.*|/sys"
+	fi
+	no_umounts="^(${no_umounts})$"
+
+	# Flush all pending disk writes now
+	sync ; sync
+
+	# Try to unmount all tmpfs filesystems not in use, else a deadlock may
+	# occure, bug #13599.
+	# As $RC_SVCDIR may also be tmpfs we cd to it to lock it
+	cd "${RC_SVCDIR}"
+	umount -a -t tmpfs 2>/dev/null
+
+	# As we're turning off swap below, we need to disable kernel dumps
+	[ -x /sbin/dumpon ] && dumpon off
+
+	local swap_list=
+	# Turn off swap
+	if [ -r /proc/swaps ] ;then
+		swap_list=$(sed -e '1d' /proc/swaps)
+	else
+		swap_list=$(swapctl -l 2>/dev/null | sed -e '1d')
+	fi
+	if [ -n "${swap_list}" ] ; then
+		ebegin "Deactivating swap"
+		swapoff -a >/dev/null
+		eend $?
+	fi
+
+	. "${RC_LIBDIR}"/sh/rc-mount.sh
+
+	# Umount loopback devices
+	einfo "Unmounting loopback devices"
+	eindent
+	do_unmount "umount -d" "${no_umounts}" "^/dev/loop"
+	eoutdent
+
+	# Now everything else
+	einfo "Unmounting filesystems"
+	eindent
+	do_unmount "umount" "${no_umounts}"
+	eoutdent
+
+	return 0
+}
+
+# vim: set ts=4 :

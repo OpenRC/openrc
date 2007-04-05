@@ -1,0 +1,4 @@
+alias parport_lowlevel parport_pc
+alias char-major-10-144 nvram
+alias binfmt-0064 binfmt_aout
+alias char-major-10-135 rtc

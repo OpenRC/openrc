@@ -1,0 +1,26 @@
+# /etc/conf.d/keymaps
+
+# Use KEYMAP to specify the default console keymap.  There is a complete tree
+# of keymaps in /usr/share/keymaps to choose from.
+
+KEYMAP="us"
+
+
+# Should we first load the 'windowkeys' console keymap?  Most x86 users will
+# say "yes" here.  Note that non-x86 users should leave it as "no".
+
+SET_WINDOWKEYS="no"
+
+
+# The maps to load for extended keyboards.  Most users will leave this as is.
+
+EXTENDED_KEYMAPS=""
+#EXTENDED_KEYMAPS="backspace keypad euro"
+
+
+# Tell dumpkeys(1) to interpret character action codes to be 
+# from the specified character set.
+# This only matters if you set UNICODE="yes" in /etc/rc.conf.
+# For a list of valid sets, run `dumpkeys --help`
+
+DUMPKEYS_CHARSET=""

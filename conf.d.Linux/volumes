@@ -1,0 +1,15 @@
+# IMPORTANT
+# volumes dependancy order is specified here so users can move it before
+# checkroot so that it can create the needed nodes in /dev.
+# By default it comes after modules in case the volume required modules
+# are not compiled into the kernel.
+
+#RC_BEFORE="checkroot"
+RC_NEED="checkroot"
+RC_USE="modules"
+
+# VOLUME_ORDER allows you to specify, or even remove the volume setup
+# for various volume managers (MD, EVMS2, LVM, DM, etc).  Note that they are
+# stopped in reverse order.
+
+#VOLUME_ORDER="raid evms lvm dm"

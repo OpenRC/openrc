@@ -1,0 +1,21 @@
+-----------------------------------------------------
+Your system seems to be missing critical device files 
+in /dev !  Although you may be running udev or devfs, 
+the root partition is missing these required files !
+
+To rectify this situation, please do the following:
+mkdir /mnt/fixit
+mount --bind / /mnt/fixit
+cp -a /dev/* /mnt/fixit/dev/
+umount /mnt/fixit
+rmdir /mnt/fixit
+
+You may refer to these instructions at /etc/issue.  
+If you previously had an issue file, it has been 
+backed up at /etc/issue.devfix.  Once you've fixed 
+your system, you will have to restore your old issue 
+file in order to get rid of this warning.
+
+Thanks for using Gentoo ! :)
+http://bugs.gentoo.org/show_bug.cgi?id=40987
+-----------------------------------------------------

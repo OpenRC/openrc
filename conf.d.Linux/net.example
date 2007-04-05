@@ -1,0 +1,846 @@
+##############################################################################
+# QUICK-START
+#
+# The quickest start is if you want to use DHCP.
+# In that case, everything should work out of the box, no configuration
+# necessary, though the startup script will warn you that you haven't
+# specified anything.
+
+# WARNING :- some examples have a mixture of IPv4 (ie 192.168.0.1) and IPv6
+# (ie 4321:0:1:2:3:4:567:89ab) internet addresses. They only work if you have
+# the relevant kernel option enabled. So if you don't have an IPv6 enabled
+# kernel then remove the IPv6 address from your config.
+
+# If you want to use a static address or use DHCP explicitly, jump
+# down to the section labelled INTERFACE HANDLERS.
+#
+# If you want to do anything more fancy, you should take the time to
+# read through the rest of this file.
+
+
+##############################################################################
+# VARIABLES
+#
+# We've changed from using arrays to evaluated strings.
+# This has the benefit of being slightly more readable but more importantly it
+# works across all shells.
+# OLD
+# config_eth0=( "192.168.0.24 netmask 255.255.255.0" "192.168.0.25/24" )
+# NEW
+# config_eth0="'192.168.0.24 netmask 255.255.255.0' 192.168.0.25/24"
+# INVALID
+# config_eth0='192.168.0.24 netmask 255.255.255.0'
+#
+# As the 1st value has spaces in it, it needs additional quoting. The 2nd
+# value has no spaces, therefore no additional quoting is required.
+# The last statement is invalid because when it is evaluated, it only has one
+# set of quotes.
+
+##############################################################################
+# MODULES
+#
+# We now support modular networking scripts which means we can easily
+# add support for new interface types and modules while keeping
+# compatability with existing ones.
+# 
+# Modules load by default if the package they need is installed.  If
+# you specify a module here that doesn't have it's package installed
+# then you get an error stating which package you need to install.
+# Ideally, you only use the modules setting when you have two or more
+# packages installed that supply the same service.
+#
+# In other words, you probably should DO NOTHING HERE...
+
+# Prefer ifconfig over iproute2
+#modules="ifconfig"
+
+# You can also specify other modules for an interface
+# In this case we prefer udhcpc over dhcpcd
+#modules_eth0="udhcpc"
+
+# You can also specify which modules not to use - for example you may be
+# using a supplicant or linux-wlan-ng to control wireless configuration but
+# you still want to configure network settings per SSID associated with.
+#modules="!iwconfig !wpa_supplicant"
+# IMPORTANT: If you need the above, please disable modules in that order
+
+
+##############################################################################
+# INTERFACE HANDLERS
+# 
+# We provide two interface handlers presently: ifconfig and iproute2.
+# You need one of these to do any kind of network configuration.
+# For ifconfig support, emerge sys-apps/net-tools
+# For iproute2 support, emerge sys-apps/iproute2
+
+# If you don't specify an interface then we prefer iproute2 if it's installed
+# To prefer ifconfig over iproute2
+#modules="ifconfig"
+
+# For a static configuration, use something like this
+# (They all do exactly the same thing btw)
+#config_eth0="192.168.0.2/24"
+#config_eth0="'192.168.0.2 netmask 255.255.255.0'"
+
+# We can also specify a broadcast
+#config_eth0="'192.168.0.2/24 brd 192.168.0.255'"
+#config_eth0="'192.168.0.2 netmask 255.255.255.0 broadcast 192.168.0.255'"
+
+# If you need more than one address, you can use something like this
+# NOTE: ifconfig creates an aliased device for each extra IPv4 address
+#       (eth0:1, eth0:2, etc)
+#       iproute2 does not do this as there is no need to
+#config_eth0="'192.168.0.2/24' '192.168.0.3/24' '192.168.0.4/24'"
+# Or you can use sequence expressions
+#config_eth0="192.168.0.{2..4}/24" # FIXME - does it work?
+# which does the same as above. Be careful though as if you use this and
+# fallbacks, you have to ensure that both end up with the same number of
+# values otherwise your fallback won't work correctly.
+
+# You can also use IPv6 addresses
+# (you should always specify a prefix length with IPv6 here)
+#config_eth0="192.168.0.2/24 \
+#4321:0:1:2:3:4:567:89ab/64 \
+#4321:0:1:2:3:4:567:89ac/64"
+#)
+
+# If you wish to keep existing addresses + routing and the interface is up,
+# you can specify a noop (no operation). If the interface is down or there
+# are no addresses assigned, then we move onto the next step (default dhcp)
+# This is useful when configuring your interface with a kernel command line
+# or similar
+#config_eth0="noop 192.168.0.2/24"
+
+# If you don't want ANY address (only useful when calling for advanced stuff)
+#config_eth0="null"
+
+# Here's how to do routing if you need it
+# We add an IPv4 default route, IPv4 subnet route and an IPv6 unicast route
+#routes_eth0=" \
+#	'default via 192.168.0.1' \
+#	'10.0.0.0/8 via 192.168.0.1' \
+#	'::/0' \
+#"
+
+# If a specified module fails (like dhcp - see below), you can specify a
+# fallback like so
+#fallback_eth0="'192.168.0.2 netmask 255.255.255.0'"
+#fallback_route_eth0="'default via 192.168.0.1'"
+
+# NOTE: fallback entry must match the entry location in config_eth0
+# As such you can only have one fallback route.
+
+# Some users may need to alter the MTU - here's how
+#mtu_eth0="1500"
+
+# Each module described below can set a default base metric, lower is
+# preferred over higher. This is so we can prefer a wired route over a
+# wireless route automaticaly. You can override this by setting
+#metric_eth0="100"
+# or on a global basis
+#metric="100"
+# The only downside of the global setting is that you have to ensure that
+# there are no conflicting routes yourself. For users with large routing
+# tables you may have to set a global metric as the due to a simple read of
+# the routing table taking over a minute at a time.
+
+##############################################################################
+# OPTIONAL MODULES
+
+#-----------------------------------------------------------------------------
+# WIRELESS (802.11 support)
+# Wireless can be provided by iwconfig or wpa_supplicant
+
+# iwconfig
+# emerge net-wireless/wireless-tools
+# Wireless options are held in /etc/conf.d/wireless - but could be here too
+# Consult the sample file /etc/conf.d/wireless.example for instructions
+# wpa_supplicant is the default if it is installed
+
+# wpa_supplicant
+# emerge net-wireless/wpa-supplicant
+# Wireless options are held in /etc/wpa_supplicant/wpa_supplicant.conf
+# Console the wpa_supplicant.conf.example that is installed in
+# /usr/share/doc/wpa_supplicant
+# To configure wpa_supplicant
+#wpa_supplicant_ath0="-Dmadwifi" # For Atheros based cards
+# Consult wpa_supplicant for more drivers - the default is -Dwext which should
+# work for most cards.
+
+# By default we don't wait for wpa_suppliant to associate and authenticate.
+# If you need to change this behaviour then you don't know how our scripts work
+# and setting this value could cause strange things to happen.
+# If you would like to, so can specify how long in seconds.
+#associate_timeout_eth0=60
+# A value of 0 means wait forever.
+
+# You can also override any settings found here per SSID - which is very
+# handy if you use different networks a lot. See below for using the SSID
+# in our variables
+#config_SSID="dhcp"
+# See the System module below for setting dns/nis/ntp per SSID
+
+# You can also override any settings found here per MAC address of the AP
+# in case you use Access Points with the same SSID but need different
+# networking configs. Below is an example - of course you use the same
+# method with other variables
+#mac_config_001122334455="dhcp"
+#mac_dns_servers_001122334455="192.168.0.1 192.168.0.2"
+
+# When an interface has been associated with an Access Point, a global
+# variable called SSID is set to the Access Point's SSID for use in the
+# pre/post user functions below (although it's not available in preup as you
+# won't have associated then)
+
+# If you're using anything else to configure wireless on your interface AND
+# you have installed wpa_supplicant, you need to disable wpa_supplicant 
+#modules="!iwconfig !wpa_supplicant"
+#or
+#modules="!wireless"
+
+##############################################################################
+# WIRELESS SSID IN VARIABLES 
+##############################################################################
+# Remember to change SSID to your SSID.
+# Say that your SSID is My NET - the line
+#      #key_SSID="s:passkey"
+# becomes
+#      #key_My_NET="s:passkey"
+# Notice that the space has changed to an underscore - do the same with all
+# characters not in a-z A-Z (English alphabet) 0-9. This only applies to
+# variables and not values.
+#
+# Any SSID's in values like essid_eth0="My NET" may need to be escaped
+# This means placing the character \ before the character
+# \" need to be escaped for example
+# So if your SSID is
+#      My "\ NET
+# it becomes
+#      My \"\\ NET
+# for example
+#      #essid_eth0="My\"\\NET"
+#
+# So using the above we can use
+#      #dns_domain_My____NET="My\"\\NET"
+# which is an invalid dns domain, but shows the how to use the variable
+# structure
+#########################################################
+
+
+#-----------------------------------------------------------------------------
+# DHCP
+# DHCP can be provided by dhclient, dhcpcd, pump or udhcpc.
+#
+# dhclient: emerge net-misc/dhcp
+# dhcpcd:   emerge net-misc/dhcpcd
+# pump:     emerge net-misc/pump
+# udhcpc:   emerge net-misc/udhcp
+
+# If you have more than one DHCP client installed, you need to specify which
+# one to use - otherwise we default to dhcpcd if available.
+#modules=( "dhclient" ) # to select dhclient over dhcpcd
+#
+# Notes:
+# - All clients send the current hostname to the DHCP server by default
+# - dhcpcd does not daemonize when the lease time is infinite
+# - udhcp-0.9.3-r3 and earlier do not support getting NTP servers 
+# - pump does not support getting NIS servers
+# - DHCP tends to erase any existing device information - so add
+#   static addresses after dhcp if you need them
+# - dhclient and udhcpc can set other resolv.conf options such as "option"
+#   and "sortlist"- see the System module for more details
+
+# Regardless of which DHCP client you prefer, you configure them the
+# same way using one of following depending on which interface modules
+# you're using.
+#config_eth0="dhcp"
+
+# For passing custom options to dhcpcd use something like the following.  This
+# example reduces the timeout for retrieving an address from 60 seconds (the
+# default) to 10 seconds.
+#dhcpcd_eth0="-t 10"
+
+# dhclient, udhcpc and pump don't have many runtime options
+# You can pass options to them in a similar manner to dhcpcd though
+#dhclient_eth0="..."
+#udhcpc_eth0="..."
+#pump_eth0="..."
+
+# GENERIC DHCP OPTIONS
+# Set generic DHCP options like so
+#dhcp_eth0="release nodns nontp nonis nogateway nosendhost"
+
+# This tells the dhcp client to release it's lease when it stops, not to
+# overwrite dns, ntp and nis settings, not to set a default route and not to
+# send the current hostname to the dhcp server and when it starts.
+# You can use any combination of the above options - the default is not to
+# use any of them.
+
+#-----------------------------------------------------------------------------
+# For APIPA support, emerge net-misc/iputils or net-analyzer/arping
+
+# APIPA is a module that tries to find a free address in the range
+# 169.254.0.0-169.254.255.255 by arping a random address in that range on the
+# interface. If no reply is found then we assign that address to the interface
+
+# This is only useful for LANs where there is no DHCP server and you don't
+# connect directly to the internet.
+#config_eth0="dhcp"
+#fallback_eth0="apipa"
+
+#-----------------------------------------------------------------------------
+# ARPING Gateway configuration 
+# and
+# Automatic Private IP Addressing (APIPA)
+# For arpingnet / apipa support, emerge net-misc/iputils or net-analyzer/arping
+#
+# This is a module that tries to find a gateway IP. If it exists then we use
+# that gateways configuration for our own. For the configuration variables
+# simply ensure that each octet is zero padded and the dots are removed.
+# Below is an example.
+#
+#gateways_eth0="192.168.0.1 10.0.0.1"
+#config_192168000001="192.168.0.2/24"
+#routes_192168000001="'default via 192.168.0.1'"
+#dns_servers_192168000001="192.168.0.1"
+#config_010000000001="10.0.0.254/8"
+#routes_010000000001="default via 10.0.0.1"
+#dns_servers_010000000001="10.0.0.1"
+
+# We can also specify a specific MAC address for each gateway if different
+# networks have the same gateway.
+#gateways_eth0="192.168.0.1,00:11:22:AA:BB:CC 10.0.0.1,33:44:55:DD:EE:FF"
+#config_192168000001_001122AABBCC="192.168.0.2/24"
+#routes_192168000001_001122AABBCC="default via 192.168.0.1"
+#dns_servers_192168000001_001122AABBCC="192.168.0.1"
+#config_010000000001_334455DDEEFF="10.0.0.254/8"
+#routes_010000000001_334455DDEEFF="default via 10.0.0.1"
+#dns_servers_010000000001_334455DDEEFF="10.0.0.1"
+
+# If we don't find any gateways (or there are none configured) then we try and
+# use APIPA to find a free address in the range 169.254.0.0-169.254.255.255
+# by arping a random address in that range on the interface. If no reply is
+# found then we assign that address to the interface.
+
+# This is only useful for LANs where there is no DHCP server.
+#config_eth0="arping"
+
+# or if no DHCP server can be found
+#config_eth0="dhcp"
+#fallback_eth0="arping"
+
+# NOTE: We default to sleeping for 1 second the first time we attempt an
+# arping to give the interface time to settle on the LAN. This appears to
+# be a good default for most instances, but if not you can alter it here.
+#arping_sleep=5
+#arping_sleep_lan=7
+
+# NOTE: We default to waiting 3 seconds to get an arping response. You can
+# change the default wait like so.
+#arping_wait=3
+#arping_wait_lan=2
+
+#-----------------------------------------------------------------------------
+# VLAN (802.1q support)
+# For VLAN support, emerge net-misc/vconfig
+
+# Specify the VLAN numbers for the interface like so
+# Please ensure your VLAN IDs are NOT zero-padded
+#vlans_eth0="1 2"
+
+# You may not want to assign an IP the the physical interface, but we still
+# need it up.
+#config_eth0="null"
+
+# You can also configure the VLAN - see for vconfig man page for more details
+#vconfig_eth0="'set_name_type VLAN_PLUS_VID_NO_PAD'"
+#vconfig_vlan1="'set_flag 1' 'set_egress_map 2 6'"
+#config_vlan1="'172.16.3.1 netmask 255.255.254.0'"
+#config_vlan2="'172.16.2.1 netmask 255.255.254.0'"
+
+# NOTE: Vlans can be configured with a . in their interface names
+# When configuring vlans with this name type, you need to replace . with a _
+#config_eth0.1="dhcp" - does not work
+#config_eth0_1="dhcp" - does work
+
+# NOTE: Vlans are controlled by their physical interface and not per vlan
+# This means you do not need to create init scripts in /etc/init.d for each
+# vlan, you must need to create one for the physical interface.
+# If you wish to control the configuration of each vlan through a separate
+# script, or wish to rename the vlan interface to something that vconfig
+# cannot then you need to do this.
+#vlan_start_eth0="no"
+
+# If you do the above then you may want to depend on eth0 like so
+# RC_NEED_vlan1="net.eth0"
+# NOTE: depend functions only work in /etc/conf.d/net
+# and not in profile configs such as /etc/conf.d/net.foo
+
+#-----------------------------------------------------------------------------
+# Bonding
+# For link bonding/trunking emerge net-misc/ifenslave
+
+# To bond interfaces together
+#slaves_bond0="eth0 eth1 eth2"
+#config_bond0="null" # You may not want to assign an IP the the bond
+
+# If any of the slaves require extra configuration - for example wireless or
+# ppp devices - we need to depend function on the bonded interfaces
+#RC_NEED_bond0="net.eth0 net.eth1"
+
+
+#-----------------------------------------------------------------------------
+# Classical IP over ATM 
+# For CLIP support emerge net-dialup/linux-atm
+
+# Ensure that you have /etc/atmsigd.conf setup correctly
+# Now setup each clip interface like so
+#clip_atm0=( "peer_ip [if.]vpi.vci [opts]" ... )
+#  where "peer_ip" is the IP address of a PVC peer (in case of an ATM connection
+#  with your ISP, your only peer is usually the ISP gateway closest to you),
+#  "if" is the number of the ATM interface which will carry the PVC, "vpi.vci"
+#  is the ATM VC address, and "opts" may optionally specify VC parameters like
+#  qos, pcr, and the like (see "atmarp -s" for further reference). Please also
+#  note quoting: it is meant to distinguish the VCs you want to create. You may,
+#  in example, create an atm0 interface to more peers, like this:
+#clip_atm0="'1.1.1.254 0.8.35' 1.1.1.253 1.8.35'"
+
+#  By default, the PVC will use the LLC/SNAP encapsulation. If you rather need a
+#  null encapsulation (aka "VC mode"), please add the keyword "null" to opts.
+
+
+#-----------------------------------------------------------------------------
+# PPP
+# For PPP support, emerge net-dialup/ppp
+# PPP is used for most dialup connections, including ADSL.
+# The older ADSL module is documented below, but you are encouraged to try
+# this module first.
+#
+# You need to create the PPP net script yourself. Make it like so
+#ln -s net.lo /etc/init.d/net.ppp0
+#
+# We have to instruct ppp0 to actually use ppp
+#config_ppp0="ppp"
+#
+# Each PPP interface requires an interface to use as a "Link"
+#link_ppp0="/dev/ttyS0" 		# Most PPP links will use a serial port
+#link_ppp0="eth0"       		# PPPoE requires an ethernet interface
+#link_ppp0="[itf.]vpi.vci"		# PPPoA requires the ATM VC's address
+#link_ppp0="/dev/null"			# ISDN links should have this
+#link_ppp0="pty 'your_link_command'"	# PPP links over ssh, rsh, etc
+#
+# Here you should specify what pppd plugins you want to use
+# Available plugins are: pppoe, pppoa, capi, dhcpc, minconn, radius,
+#			 radattr, radrealms and winbind 
+#plugins_ppp0="pppoe"			# Required plugin for PPPoE
+#plugins_ppp0="pppoa vc-encaps"		# Required plugin for PPPoA with an option
+#plugins_ppp0="capi"			# Required plugin for ISDN
+#
+# PPP requires at least a username. You can optionally set a password here too
+# If you don't, then it will use the password specified in /etc/ppp/*-secrets
+# against the specified username
+#username_ppp0='user'
+#password_ppp0='password'
+# NOTE: You can set a blank password like so
+#password_ppp0=
+#
+# The PPP daemon has many options you can specify - although there are many
+# and may seem daunting, it is recommended that you read the pppd man page
+# before enabling any of them
+#pppd_ppp0=(
+#	"maxfail 0"	# WARNING: It's not recommended you use this
+#			# if you don't specify maxfail then we assume 0
+#	"updetach" 	# If not set, "/etc/init.d/net.ppp0 start" will return
+#			# immediately,  without waiting the link to come up
+#			# for the first time.
+#			# Do not use it for dial-on-demand links!
+#	"debug" 	# Enables syslog debugging
+#	"noauth"	# Do not require the peer to authenticate itself
+#	"defaultroute"	# Make this PPP interface the default route
+#	"usepeerdns"	# Use the DNS settings provided by PPP
+#
+# On demand options
+#	"demand"		# Enable dial on demand
+#	"idle 30"		# Link goes down after 30 seconds of inactivity
+#	"10.112.112.112:10.112.112.113"	# Phony IP addresses
+#	"ipcp-accept-remote"	# Accept the peers idea of remote address
+#	"ipcp-accept-local"	# Accept the peers idea of local address
+#	"holdoff 3" 	# Wait 3 seconds after link dies before re-starting
+#
+# Dead peer detection
+#	"lcp-echo-interval 15"	# Send a LCP echo every 15 seconds
+#	"lcp-echo-failure 3"	# Make peer dead after 3 consective
+#				# echo-requests
+#	
+# Compression options - use these to completely disable compression
+#	noaccomp noccp nobsdcomp nodeflate nopcomp novj novjccomp
+#
+# Dial-up settings
+#	"lock"				# Lock serial port
+#	"115200"			# Set the serial port baud rate
+#	"modem crtscts"			# Enable hardware flow control
+#	"192.168.0.1:192.168.0.2"	# Local and remote IP addresses
+#)
+#
+# Dial-up PPP users need to specify at least one telephone number
+#phone_number_ppp0=( "12345689" ) # Maximum 2 phone numbers are supported
+# They will also need a chat script - here's a good one
+#chat_ppp0=(
+#	'ABORT' 'BUSY'
+#	'ABORT' 'ERROR'
+#	'ABORT' 'NO ANSWER'
+#	'ABORT' 'NO CARRIER'
+#	'ABORT' 'NO DIALTONE'
+#	'ABORT' 'Invalid Login'
+#	'ABORT' 'Login incorrect'
+#	'TIMEOUT' '5'
+#	'' 'ATZ'
+#	'OK' 'AT' # Put your modem initialization string here
+#	'OK' 'ATDT\T'
+#	'TIMEOUT' '60'
+#	'CONNECT' ''
+#	'TIMEOUT' '5'
+#	'~--' ''
+#)
+
+# If the link require extra configuration - for example wireless or
+# RFC 268 bridge - we need to depend on the bridge so they get
+# configured correctly.
+#RC_NEED_ppp0="net.nas0"
+
+#WARNING: if MTU of the PPP interface is less than 1500 and you use this
+#machine as a router, you should add the following rule to your firewall
+#
+#iptables -I FORWARD 1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+
+#-----------------------------------------------------------------------------
+# ADSL
+# For ADSL support, emerge net-dialup/rp-pppoe
+# WARNING: This ADSL module is being deprecated in favour of the PPP module
+# above.
+# You should make the following settings and also put your
+# username/password information in /etc/ppp/pap-secrets
+
+# Configure the interface to use ADSL
+#config_eth0="adsl"
+
+# You probably won't need to edit /etc/ppp/pppoe.conf if you set this
+#adsl_user_eth0="my-adsl-username"
+
+#-----------------------------------------------------------------------------
+# ISDN
+# For ISDN support, emerge net-dialup/isdn4k-utils
+# You should make the following settings and also put your
+# username/password information in /etc/ppp/pap-secrets
+
+# Configure the interface to use ISDN
+#config_ippp0="dhcp"
+# It's important to specify dhcp if you need it!
+#config_ippp0="192.168.0.1/24"
+# Otherwise, you can use a static IP
+
+# NOTE: The interface name must be either ippp or isdn followed by a number
+
+# You may need this option to set the default route
+#ipppd_eth0="defaultroute"
+
+#-----------------------------------------------------------------------------
+# MAC changer
+# To set a specific MAC address
+#mac_eth0="00:11:22:33:44:55"
+
+# For changing MAC addresses using the below, emerge net-analyzer/macchanger
+# - to randomize the last 3 bytes only
+#mac_eth0="random-ending"
+# - to randomize between the same physical type of connection (e.g. fibre,
+# copper, wireless) , all vendors
+#mac_eth0="random-samekind"
+# - to randomize between any physical type of connection (e.g. fibre, copper,
+# wireless) , all vendors
+#mac_eth0="random-anykind"
+# - full randomization - WARNING: some MAC addresses generated by this may NOT
+# act as expected
+#mac_eth0="random-full"
+# custom - passes all parameters directly to net-analyzer/macchanger
+#mac_eth0="some custom set of parameters"
+
+# You can also set other options based on the MAC address of your network card
+# Handy if you use different docking stations with laptops
+#config_001122334455="dhcp"
+
+#-----------------------------------------------------------------------------
+# TUN/TAP
+# For TUN/TAP support emerge net-misc/openvpn or sys-apps/usermode-utilities
+#
+# You must specify if we're a tun or tap device. Then you can give it any
+# name you like - such as vpn
+#tuntap_vpn="tun"
+#config_vpn="192.168.0.1/24"
+
+# Or stick wit the generic names - like tap0
+#tuntap_tap0="tap"
+#config_tap0="192.168.0.1/24"
+
+# For passing custom options to tunctl use something like the following.  This
+# example sets the owner to adm
+#tunctl_tun1="-u adm"
+# When using openvpn, there are no options
+
+#-----------------------------------------------------------------------------
+# Bridging (802.1d)
+# For bridging support emerge net-misc/bridge-utils
+
+# To add ports to bridge br0
+#bridge_br0="eth0 eth1"
+# or dynamically add them when the interface comes up
+#bridge_add_eth0="br0"
+#bridge_add_eth1="br0"
+
+# You need to configure the ports to null values so dhcp does not get started 
+#config_eth0="null"
+#config_eth1="null"
+
+# Finally give the bridge an address - dhcp or a static IP
+#config_br0="dhcp" # may not work when adding ports dynamically
+#config_br0="192.168.0.1/24"
+
+# If any of the ports require extra configuration - for example wireless or
+# ppp devices - we need to depend on them like so.
+#RC_NEED_br0="net.eth0 net.eth1"
+
+# Below is an example of configuring the bridge
+# Consult "man brctl" for more details
+#brctl_br0="'setfd 0' 'sethello 0' 'stp off'"
+
+#-----------------------------------------------------------------------------
+# RFC 2684 Bridge Support 
+# For RFC 2684 bridge support emerge net-misc/br2684ctl
+
+# Interface names have to be of the form nas0, nas1, nas2, etc.
+# You have to specify a VPI and VCI for the interface like so
+#br2684ctl_nas0="-a 0.38" # UK VPI and VCI
+
+# You may want to configure the encapsulation method as well by adding the -e
+# option to the command above (may need to be before the -a command)
+# -e 0 # LLC (default)
+# -e 1 # VC mux
+
+# Then you can configure the interface as normal
+#config_nas0="'192.168.0.1/24'"
+
+#-----------------------------------------------------------------------------
+# Tunnelling
+# WARNING: For tunnelling it is highly recommended that you
+# emerge sys-apps/iproute2
+#
+# For GRE tunnels
+#iptunnel_vpn0="mode gre remote 207.170.82.1 key 0xffffffff ttl 255"
+
+# For IPIP tunnels
+#iptunnel_vpn0="mode ipip remote 207.170.82.2 ttl 255"
+
+# To configure the interface
+#config_vpn0="'192.168.0.2 pointopoint 192.168.1.2'"	# ifconfig style
+#config_vpn0="'192.168.0.2 peer 192.168.1.1'"		# iproute2 style
+
+# 6to4 Tunnels allow IPv6 to work over IPv4 addresses, provided you
+# have a non-private address configured on an interface.
+# link_6to4="eth0"		# Interface to base it's addresses on
+# config_6to4="ip6to4"
+# You may want to depend on eth0 like so
+#RC_NEED_6to4="net.eth0"
+# To ensure that eth0 is configured before 6to4. Of course, the tunnel could be
+# any name and this also works for any configured interface.
+# NOTE: If you're not using iproute2 then your 6to4 tunnel has to be called
+# sit0 - otherwise use a different name like 6to4 in the example above.
+
+# You can also specify a relay and suffix if you like.
+# The default relay is 192.88.99.1 and the defualt suffix is :1
+#relay_6to4="192.168.3.2"
+#suffix_6to4=":ff"
+
+
+#-----------------------------------------------------------------------------
+# System
+# For configuring system specifics such as domain, dns, ntp and nis servers
+# It's rare that you would need todo this, but you can anyway.
+# This is most benefit to wireless users who don't use DHCP so they can change
+# their configs based on SSID. See wireless.example for more details
+
+# To use dns settings such as these, dns_servers_eth0 must be set!
+# If you omit the _eth0 suffix, then it applies to all interfaces unless
+# overridden by the interface suffix.
+#dns_domain_eth0="your.domain"
+#dns_servers_eth0="192.168.0.2 192.168.0.3"
+#dns_search_eth0="this.domain that.domain"
+#dns_options_eth0="'timeout 1' rotate"
+#dns_sortlist_eth0="130.155.160.0/255.255.240.0 130.155.0.0"
+# See the man page for resolv.conf for details about the options and sortlist
+# directives
+
+#ntp_servers_eth0="192.168.0.2 192.168.0.3"
+
+#nis_domain_eth0="domain"
+#nis_servers_eth0="192.168.0.2 192.168.0.3"
+
+# NOTE: Setting any of these will stamp on the files in question. So if you
+# don't specify dns_servers but you do specify dns_domain then no nameservers
+# will be listed in /etc/resolv.conf even if there were any there to start
+# with.
+# If this is an issue for you then maybe you should look into a resolv.conf
+# manager like resolvconf-gentoo to manage this file for you. All packages
+# that baselayout supports use resolvconf-gentoo if installed.
+
+#-----------------------------------------------------------------------------
+# Cable in/out detection
+# Sometimes the cable is in, others it's out. Obviously you don't want to
+# restart net.eth0 every time when you plug it in either.
+#
+# netplug is a package that detects this and requires no extra configuration
+# on your part.
+# emerge sys-apps/netplug
+# or
+# emerge sys-apps/ifplugd
+# and you're done :)
+
+# By default we don't wait for netplug/ifplugd to configure the interface.
+# If you would like it to wait so that other services now that network is up
+# then you can specify a timeout here.
+#plug_timeout="10"
+# A value of 0 means wait forever.
+
+# If you don't want to use netplug on a specific interface but you have it
+# installed, you can disable it for that interface via the modules statement
+#modules_eth0="!netplugd"
+# You can do the same for ifplugd
+#
+# You can disable them both with the generic plug
+#modules_eth0="!plug"
+
+# To use specific ifplugd options, fex specifying wireless mode
+#ifplugd_eth0="--api-mode=wlan"
+# man ifplugd for more options
+
+##############################################################################
+# ADVANCED CONFIGURATION
+# 
+# Four functions can be defined which will be called surrounding the
+# start/stop operations.  The functions are called with the interface
+# name first so that one function can control multiple adapters. An extra two
+# functions can be defined when an interface fails to start or stop.
+#
+# The return values for the preup and predown functions should be 0
+# (success) to indicate that configuration or deconfiguration of the
+# interface can continue.  If preup returns a non-zero value, then
+# interface configuration will be aborted.  If predown returns a
+# non-zero value, then the interface will not be allowed to continue
+# deconfiguration.
+#
+# The return values for the postup, postdown, failup and faildown functions are
+# ignored since there's nothing to do if they indicate failure.
+#
+# ${IFACE} is set to the interface being brought up/down
+# ${IFVAR} is ${IFACE} converted to variable name bash allows
+
+#preup() {
+#	# Test for link on the interface prior to bringing it up.  This
+#	# only works on some network adapters and requires the mii-diag
+#	# package to be installed.
+#	if mii-tool "${IFACE}" 2> /dev/null | grep -q 'no link'; then
+#		ewarn "No link on ${IFACE}, aborting configuration"
+#		return 1
+#	fi 
+#
+#	# Test for link on the interface prior to bringing it up.  This
+#	# only works on some network adapters and requires the ethtool
+#	# package to be installed.
+#	if ethtool "${IFACE}" | grep -q 'Link detected: no'; then
+#		ewarn "No link on ${IFACE}, aborting configuration"
+#		return 1
+#	fi
+#
+#
+#	# Remember to return 0 on success
+#	return 0
+#}
+
+#predown() {
+#	# The default in the script is to test for NFS root and disallow
+#	# downing interfaces in that case.  Note that if you specify a
+#	# predown() function you will override that logic.  Here it is, in
+#	# case you still want it...
+#	if is_net_fs /; then
+#		eerror "root filesystem is network mounted -- can't stop ${IFACE}"
+#		return 1
+#	fi
+#
+#	# Remember to return 0 on success
+#	return 0
+#}
+
+#postup() {
+#	# This function could be used, for example, to register with a
+#	# dynamic DNS service.  Another possibility would be to
+#	# send/receive mail once the interface is brought up.
+
+#	# Here is an example that allows the use of iproute rules
+#	# which have been configured using the rules_eth0 variable.
+#	#rules_eth0=" \
+#	#	'from 24.80.102.112/32 to 192.168.1.0/24 table localnet priority 100' \
+#	#	'from 216.113.223.51/32 to 192.168.1.0/24 table localnet priority 100' \
+#	#"
+#	eval set -- $\rules_${IFVAR}
+#	if [ -n "$@" ] ; then
+#		einfo "Adding IP policy routing rules"
+#		eindent
+#		# Ensure that the kernel supports policy routing
+#		if ! ip rule list | grep -q "^" ; then
+#			eerror "You need to enable IP Policy Routing (CONFIG_IP_MULTIPLE_TABLES)"
+#			eerror "in your kernel to use ip rules"
+#		else
+#			for x in "$@" ; do
+#				ebegin "${x}"
+#				ip rule add ${x} dev "${IFACE}"
+#				eend $?
+#			done
+#		fi
+#		eoutdent
+#		# Flush the cache
+#		ip route flush cache dev "${IFACE}"
+#	fi
+
+#}
+
+#postdown() {
+#	# Enable Wake-On-LAN for every interface except for lo
+#	# Probably a good idea to set RC_DOWN_INTERFACE="no" in /etc/conf.d/rc
+#	# as well ;)
+#	[[ ${IFACE} != "lo" ]] && ethtool -s "${IFACE}" wol g
+
+#	Automatically erase any ip rules created in the example postup above
+#	if interface_exists "${IFACE}" ; then
+#		# Remove any rules for this interface
+#		local rule
+#		ip rule list | grep " iif ${IFACE}[ ]*" | {
+#			while read rule ; do
+#				rule="${rule#*:}"	
+#				ip rule del ${rule}
+#			done
+#		}
+#		# Flush the route cache
+#		ip route flush cache dev "${IFACE}"
+#	fi
+
+#	# Return 0 always
+#	return 0
+#}
+
+#failup() {
+#       # This function is mostly here for completeness... I haven't
+#       # thought of anything nifty to do with it yet ;-)
+#}
+
+#faildown() {
+#       # This function is mostly here for completeness... I haven't
+#       # thought of anything nifty to do with it yet ;-)
+#}

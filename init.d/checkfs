@@ -1,0 +1,77 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	need checkroot
+	use volumes
+	after modules
+}
+
+do_checkfs() {
+	local retval=0
+
+	ebegin "Checking all filesystems"
+	if [ "${RC_UNAME}" = "Linux" ] ; then
+		if get_bootparam "forcefsck" ; then
+			ewarn "A full fsck has been forced"
+			fsck -C0 -T -R -A -a -f
+		else
+			fsck -C0 -T -R -A -a
+		fi
+		retval=$?
+	else
+		local parts="$(fstabinfo --passno ">1")"
+		if [ -n "${parts}" ] ; then
+			fsck -p ${parts}
+			retval=$?
+		fi
+	fi
+	if [ ${retval} -eq 0 ] ; then
+		eend 0
+	elif [ ${retval} -eq 1 ] ; then
+		ewend 1 "Filesystem errors corrected."
+		retval=0
+	elif [ ${retval} -eq 2 ] ; then
+		ewend 1 "System should be rebooted"
+	elif [ ${retval} -eq 8 ] ; then
+		ewend 1 "Operational error, continuing"
+		retval=0
+	else
+		if [ "${RC_FORCE_AUTO}" = "yes" ] ; then
+			eend 2 "Fsck could not correct all errors, rerunning"
+			if [ "${RC_UNAME}" = "Linux" ] ; then
+				fsck -C0 -T -R -A -y
+			else
+				fsck -y
+			fi
+			retval=$?
+			eend $?
+		fi
+
+		if [ ${retval} -gt 3 ] ; then
+			eend 2 "Fsck could not correct all errors, manual repair needed"
+			if [ "${RC_SYS}" = "VPS" ] ; then
+				halt -f
+			elif [ -x /sbin/sulogin ] ; then
+				sulogin "${CONSOLE}"
+			else
+				return 1
+			fi
+		fi
+	fi
+	
+	return ${retval}
+}
+
+start() {
+	do_checkfs
+}
+
+stop() {
+	# fsck on shutdown if we need to
+	[ "${FSCK_SHUTDOWN}" = "yes" -a ! -f /forcefsck ] && do_checkfs
+	return 0
+}
+
+# vim: set ts=4 :

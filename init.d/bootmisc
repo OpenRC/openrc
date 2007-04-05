@@ -1,0 +1,138 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+
+depend() {
+	use hostname
+	need localmount
+	before logger
+	after clock sysctl
+}
+
+start() {
+	# Put a nologin file in /etc to prevent people from logging
+	# in before system startup is complete.
+	if [ "${DELAYLOGIN}" = "yes" ] ; then
+		echo "System bootup in progress - please wait" \
+			> /etc/nologin
+		cp /etc/nologin /etc/nologin.boot
+	fi
+
+	if ! touch -c /var/run 2> /dev/null ; then
+		ewarn "Skipping /var and /tmp initialization (ro root?)"
+		return 0
+	fi
+
+	if [ "${RC_UNAME}" = "Linux" ] ; then
+		# Setup login records
+		> /var/run/utmp
+		touch /var/log/wtmp
+		chgrp utmp /var/run/utmp /var/log/wtmp
+		chmod 0664 /var/run/utmp /var/log/wtmp
+	fi
+
+	ebegin "Updating environment"
+	/sbin/env-update
+	eend $?
+
+	# Take care of random stuff [ /var/lock | /var/run | pam ]
+	ebegin "Cleaning" /var/lock, /var/run
+	rm -rf /var/run/console.lock /var/run/console/*
+
+	# Clean up any stale locks.
+	find /var/lock -type f -print0 | xargs -0 rm -f --
+		
+	# Clean up /var/run and create /var/run/utmp so we can login.
+	for x in $(find /var/run ! -type d ! -name utmp ! -name innd.pid ! -name random-seed ! -name ld-elf.so.hints); do
+		[ ! -f "${x}" ] && continue
+		# Do not remove pidfiles of already running daemons
+		case "${x}" in
+			*.pid)
+				start-stop-daemon --test --quiet --stop --pidfile "${x}"
+				[ $? -eq 0 ] && continue
+				;;
+		esac
+		rm -f "${x}"
+	done
+
+	# Reset pam_console permissions if we are actually using it
+	if [ -x /sbin/pam_console_apply -a ! -c /dev/.devfsd ] ; then
+		if [ -n $(grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep 'pam_console') ] ; then
+			/sbin/pam_console_apply -r
+		fi
+	fi
+
+	# Create the .keep to stop portage from removing /var/lock
+	> /var/lock/.keep
+	eend 0
+
+	# Clean up /tmp directory
+	if [ -d /tmp ] ; then
+		cd /tmp
+		if [ "${WIPE_TMP}" = "yes" ] ; then
+			ebegin "Wiping /tmp directory"
+			local startopts="-x . -depth"
+			[ "${RC_UNAME}" = "Linux" ] && startopts=". -xdev -depth"
+
+			# Faster than find
+			rm -rf [b-ikm-pr-zA-Z]*
+
+			find ${startopts} ! -name . \
+				! -path ./lost+found \
+				! -path "./lost+found/*" \
+				! -path ./quota.user \
+				! -path "./quota.user/*" \
+				! -path ./aquota.user \
+				! -path "./aquota.user/*" \
+				! -path ./quota.group \
+				! -path "./quota.group/*" \
+				! -path ./aquota.group \
+				! -path "./aquota.group/*" \
+				! -path ./journal \
+				! -path "./journal/*" \
+				-delete
+			eend 0
+		else
+			ebegin "Cleaning /tmp directory"
+			rm -rf /tmp/.X*-lock /tmp/esrv* /tmp/kio* /tmp/jpsock.* \
+				/tmp/.fam* /tmp/.esd* /tmp/orbit-* /tmp/ssh-* \
+				/tmp/ksocket-* /tmp/.*-unix
+			eend 0
+		fi
+
+		# Make sure our X11 stuff have the correct permissions
+		# Omit the chown as bootmisc is run before network is up
+		# and users may be using lame LDAP auth #139411
+		rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
+		mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
+		chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
+		[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
+	fi
+
+	# Create an 'after-boot' dmesg log
+	touch /var/log/dmesg
+	chmod 640 /var/log/dmesg
+	dmesg > /var/log/dmesg
+
+	# Check for /etc/resolv.conf, and create if missing
+	[ -f /etc/resolv.conf ] || touch /etc/resolv.conf 2>/dev/null
+}
+
+stop() {
+	# Reset pam_console permissions if we are actually using it
+	if [ -x /sbin/pam_console_apply -a ! -c /dev/.devfsd ] && \
+    	[ -n $(grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep 'pam_console') ] ; then
+		/sbin/pam_console_apply -r
+	fi
+
+	# Write a halt record if we're shutting down
+	case "${SOFTLEVEL}" in
+		reboot|shutdown)
+			[ "${RC_UNAME}" = "Linux" ] && halt -w
+			;;
+	esac
+	
+	return 0
+}
+
+# vim: set ts=4 :

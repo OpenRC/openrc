@@ -1,0 +1,212 @@
+.TH "BASELAYOUT" "8" "March 2007" "baselayout" "baselayout"
+.SH NAME
+start\-stop\-daemon \- start and stop system daemon programs
+.SH SYNOPSIS
+.B start-stop-daemon
+.BR -S | --start
+.IR options
+.RB [ \-\- ]
+.IR arguments
+.HP
+.B start-stop-daemon
+.BR -K | --stop
+.IR options
+.HP
+.B start-stop-daemon
+.BR -H | --help
+.HP
+.B start-stop-daemon
+.BR -V | --version
+.SH DESCRIPTION
+.B start\-stop\-daemon
+is used to control the creation and termination of system-level processes.
+Using the
+.BR --exec ", " --pidfile ", " --user ", and " --name " options,"
+.B start\-stop\-daemon
+can be configured to find existing instances of a running process.
+
+With
+.BR --start ,
+.B start\-stop\-daemon
+checks for the existence of a specified process.
+If such a process exists,
+.B start\-stop\-daemon
+does nothing, and exits with error status 1.
+If such a process does not exist, it starts an
+instance, using the executable specified by
+.BR --exec . 
+Any arguments given after
+.BR --
+on the command line are passed unmodified to the program being
+started.
+.B start\-stop\-daemon
+pauses for a little bit then checks the daemon is still running as badly
+written ones like to fork early and then bail on a error in their config.
+As such it may be necessary to use the --name parameter if the daemon in
+question is not a C program, ie a script. Once started, we store how we
+are called in \fBrc\fR if called from an init script.
+
+With 
+.BR --stop ,
+.B start\-stop\-daemon
+also checks for the existence of a specified process.
+If such a process exists,
+.B start\-stop\-daemon
+sends it the signal specified by
+.BR --signal ,
+and exits with error status 0.
+If such a process does not exist, or there was an error stopping it
+.B start\-stop\-daemon
+exits with error status 1. If
+.BR --test
+is specified then we just send the signal and not the schedule. If
+.BR --oknodo
+is specified then we don't remove the daemon information from
+.BR rc.
+
+.SH OPTIONS
+
+.TP
+\fB-x\fP|\fB--exec\fP \fIexecutable\fP
+Check for processes that are instances of this executable.
+.TP
+\fB-p\fP|\fB--pidfile\fP \fIpid-file\fP
+Check for processes whose process-id is specified in 
+.I pid-file.
+.TP
+\fB-u\fP|\fB--user\fP \fIusername\fP|\fIuid\fP
+Check for processes owned by the user specified by
+.I username 
+or
+.I uid.
+.TP
+\fB-n\fP|\fB--name\fP \fIprocess-name\fP
+Check for processes with the name
+.I process-name
+.TP
+\fB-s\fP|\fB--signal\fP \fIsignal\fP
+With
+.BR --stop
+, specifies the signal to send to processes being stopped (default SIGTERM).
+.TP
+\fB-R\fP|\fB--retry\fP \fItimeout\fP|\fIschedule\fP
+With
+.BR --stop ,
+specifies that
+.B start-stop-daemon
+is to check whether the process(es)
+do finish.  It will check repeatedly whether any matching processes
+are running, until none are.  If the processes do not exit it will
+then take further action as determined by the schedule.
+
+If
+.I timeout
+is specified instead of
+.I schedule
+then the schedule
+.IB signal / timeout
+is used, where
+.I signal
+is the signal specified with
+.BR --signal .
+
+.I schedule
+is a list of at least two items separated by slashes
+.RB ( / );
+each item may be
+.BI - signal-number
+or [\fB\-\fP]\fIsignal-name\fP,
+which means to send that signal,
+or
+.IR timeout ,
+which means to wait that many seconds for processes to
+exit,
+or
+.BR forever ,
+which means to repeat the rest of the schedule forever if
+necessary.
+
+If the end of the schedule is reached and
+.BR forever
+is not specified, then
+.B start-stop-daemon
+exits with error status 2.
+If a schedule is specified, then any signal specified
+with
+.B --signal
+is ignored.
+.TP
+.BR -t | --test
+Print actions that would be taken and set appropriate return value,
+but take no action.
+.TP
+.BR -o | --oknodo
+Used for sending signals to a running daemon but not expecting it to stop.
+.TP
+.BR -q | --quiet
+Do not print informational messages; only display error messages.
+.TP
+\fB-c\fP|\fB--chuid\fP \fIusername\fR|\fIuid\fP
+Change to this username/uid before starting the process. You can also
+specify a group by appending a
+.BR : ,
+then the group or gid in the same way
+as you would for the `chown' command (\fIuser\fP\fB:\fP\fIgroup\fP).
+When using this option
+you must realize that the primary and supplemental groups are set as well,
+even if the
+.B --group
+option is not specified.  The
+.B --group
+option is only for
+groups that the user isn't normally a member of (like adding per/process
+group membership for generic users like
+.BR nobody ).
+.TP
+\fB-r\fP|\fB--chroot\fP \fIroot\fP
+Chdir and chroot to
+.I root
+before starting the process. Please note that the pidfile is also written
+after the chroot.
+.TP
+.BR -b | --background
+Typically used with programs that don't detach on their own. This option
+will force
+.B start-stop-daemon
+to fork before starting the process, and force it into the background.
+.TP
+\fB-1\fP|\fB--stdout\fP \fIlogfile\fP
+Redirect the standard output of the process to \fIlogfile\fP when started with \fB--background\fP.
+Must be an absolute pathname, but relative to the \fIpath\fP optionally given with
+\fB--chroot\fP.
+Hint: The \fIlogfile\fP can also be a named pipe.
+.TP
+\fB-2\fP|\fB--stderr\fP \fIlogfile\fP
+The same thing as \fB--stdout\fP but with the standard error output.
+.TP
+.BR -N | --nicelevel
+This alters the prority of the process before starting it.
+.TP
+.BR -m | --make-pidfile
+Used when starting a program that does not create its own pid file. This
+option will make
+.B start-stop-daemon
+create the file referenced with
+.B --pidfile
+and place the pid into it just before executing the process. Note, it will
+not be removed when stopping the program.
+.B NOTE:
+This feature may not work in all cases. Most notably when the program
+being executed forks from its main process. Because of this it is usually
+only useful when combined with the
+.B --background
+option.
+.TP
+.BR -v | --verbose
+Print verbose informational messages.
+.TP
+.BR -H | --help
+Print help information; then exit.
+.TP
+.BR -V | --version
+Print version information; then exit.

@@ -1,0 +1,87 @@
+# /etc/conf.d/rc: Global config file for the Gentoo RC System
+
+# Set to "yes" if you want the rc system to try and start services
+# in parallel for a slight speed improvement. NOTE: When enabled
+# init script output is buffered and displayed in one go when finished.
+RC_PARALLEL_STARTUP="no"
+
+# Set RC_INTERACTIVE to "yes" and you'll be able to press the I key during
+# boot so you can choose to start specific services. Set to "no" to disable
+# this feature.
+RC_INTERACTIVE="yes"
+
+# RC_VERBOSE will make init scripts more verbose and adds
+# "Service FOO starting/started/stopping/stopped" messages around each
+# init script.
+RC_VERBOSE="no"
+
+# RC_QUIET on the other hand will make init scripts quiet and produce no
+# output.
+RC_QUIET="no"
+
+
+# Do we allow any started service in the runlevel to satisfy the depedency
+# or do we want all of them regardless of state? For example, if net.eth0
+# and net.eth0 are in the default runlevel then with RC_STRICT_DEPEND="no"
+# both will be started, but services that depend on 'net' will work if either
+# one comes up. With RC_STRICT_DEPEND="yes" we would require them both to
+# come up.
+RC_STRICT_DEPEND="no"
+
+# Do we allow services to be hotplugged? If not, set to RC_HOTPLUG="no"
+# NOTE: This does not affect anything hotplug/udev/devd related, just the
+# starting/stopping of the init.d service triggered by it.
+RC_HOTPLUG="yes"
+
+# Dynamic /dev managers can trigger coldplug events which cause services to
+# start before we are ready for them. If this happens, we can defer these
+# services to start in the boot runlevel. Set RC_COLDPLUG="no" if you don't
+# want this.
+# NOTE: This also affects module coldplugging in udev-096 and higher
+# If you want module coldplugging but not coldplugging of services then you
+# can set RC_COLDPLUG="yes" and RC_PLUG_SERVICES="!*"
+RC_COLDPLUG="yes"
+
+# Some people want a finer grain over hotplug/coldplug. RC_PLUG_SERVICES is a
+# list of services that are matched in order, either allowing or not. By
+# default we allow services through as RC_COLDPLUG/RC_HOTPLUG has to be yes
+# anyway.
+# Example - RC_PLUG_SERVICES="net.wlan !net.*"
+# This allows net.wlan and any service not matching net.* to be plugged.
+RC_PLUG_SERVICES=""
+
+# Define network fstypes. Below is the default.
+#RC_NET_FS_LIST="afs cifs coda davfs fuse gfs ncpfs nfs nfs4 ocfs2 shfs smbfs"
+
+# RC_FORCE_AUTO tries its best to prevent user interaction during the boot and 
+# shutdown process.  For example, fsck will automatically be run or volumes 
+# remounted to create proper directory trees.  This feature can be dangerous 
+# and is meant ONLY for headless machines where getting a physical console 
+# hooked up is a huge pita.
+RC_FORCE_AUTO="no"
+
+
+##############################################################################
+# SERVICE CONFIGURATION VARIABLES
+# These variables are documented here, but should be configured in
+# /etc/conf.d/foo for service foo and NOT enabled here unless you
+# really want them to work on a global basis.
+
+# Some daemons are started and stopped via start-stop-daemon.
+# We can launch them through other daemons here, for example valgrind.
+# This is only useful for serious debugging of the daemon
+# WARNING: If the script's "stop" function does not supply a PID file then
+# all processes using the same daemon will be killed.
+#RC_DAEMON="/usr/bin/valgrind --tool=memcheck --log-file=/tmp/valgrind.syslog-ng"
+
+# strace needs to be prefixed with --background as it does not detach when
+# it's following
+#RC_DAEMON="--background /usr/sbin/strace -f -o /tmp/strace.syslog-ng"
+
+# Pass ulimit parameters 
+#RC_ULIMIT="-u 30"
+
+# It's possible to define extra dependencies for services like so
+#RC_NEED="openvpn"
+#RC_USE="net.eth0"
+

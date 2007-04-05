@@ -1,0 +1,34 @@
+/*
+   rc-misc.h
+   This is private to us and not for user consumption
+   Copyright 2007 Gentoo Foundation
+   */
+
+#ifndef __RC_MISC_H__
+#define __RC_MISC_H__
+
+#ifndef LIBDIR
+#  define LIBDIR	"lib"
+#endif
+
+#define RC_LIBDIR	"/" LIBDIR "/rcscripts/"
+#define RC_SVCDIR	RC_LIBDIR "init.d/"
+#define RC_DEPTREE 	RC_SVCDIR "deptree"
+#define RC_RUNLEVELDIR 	"/etc/runlevels/"
+#define RC_INITDIR	"/etc/init.d/"
+#define RC_CONFDIR	"/etc/conf.d/"
+
+#define RC_SVCDIR_STARTING	RC_SVCDIR "starting/"
+#define RC_SVCDIR_INACTIVE	RC_SVCDIR "inactive/"
+#define RC_SVCDIR_STARTED	RC_SVCDIR "started/"
+#define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "coldplugged/"
+
+#define RC_PLUGINDIR	RC_LIBDIR "plugins/"
+
+/* Max buffer to read a line from a file */
+#define RC_LINEBUFFER	4096 
+
+/* Good defaults just incase user has none set */
+#define RC_NET_FS_LIST_DEFAULT "afs cifs coda davfs fuse gfs ncpfs nfs nfs4 ocfs2 shfs smbfs"
+
+#endif
