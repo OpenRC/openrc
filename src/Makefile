@@ -5,7 +5,7 @@ CC ?= gcc
 
 CFLAGS ?= -Wall -O2 -pipe
 CFLAGS += -pedantic -std=c99 \
-    -Wall -Wextra -Wunused -Wimplicit -Wshadow -Wformat=2 \
+    -Wall -Wunused -Wimplicit -Wshadow -Wformat=2 \
     -Wmissing-declarations -Wno-missing-prototypes -Wwrite-strings \
     -Wbad-function-cast -Wnested-externs -Wcomment -Winline \
     -Wchar-subscripts -Wcast-align -Wno-format-nonliteral
