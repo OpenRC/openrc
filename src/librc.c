@@ -86,7 +86,7 @@ char *rc_get_runlevel (void)
 
   if (! (fp = fopen (SOFTLEVEL, "r")))
     {
-      strcpy (buffer, "sysinit");
+      snprintf (buffer, sizeof (buffer), "sysinit");
       return (buffer);
     }
 
@@ -100,7 +100,7 @@ char *rc_get_runlevel (void)
     }
 
   fclose (fp);
-  strcpy (buffer, "sysinit");
+  snprintf (buffer, sizeof (buffer), "sysinit");
   return (buffer);
 }
 
