@@ -512,7 +512,7 @@ char **rc_filter_env (void)
 	  got_path = true;
 	  env_len = strlen (env_name) + strlen (env_var) + pplen + 2;
 	  e = p = rc_xmalloc (sizeof (char *) * env_len);
-	  p += sprintf (e, "%s=%s", env_name, PATH_PREFIX);
+	  p += snprintf (e, env_len, "%s=%s", env_name, PATH_PREFIX);
 
 	  /* Now go through the env var and only add bits not in our PREFIX */
 	  sep = env_var;
@@ -525,7 +525,7 @@ char **rc_filter_env (void)
 		if (strcmp (tok, token) == 0)
 		  break;
 	      if (! tok)
-		p += sprintf (p, ":%s", token);
+		p += snprintf (p, env_len - (p - e), ":%s", token);
 	      free (np);
 	    }
 	  *p++ = 0;
