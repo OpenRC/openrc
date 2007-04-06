@@ -76,7 +76,7 @@ vlan_post_start() {
 
 		# We need to work out the interface name of our new vlan id
 		local ifname="$( \
-			sed -n -e 's/^\([^ \t]*\) *| '"${vlan}"' *| .*'"${iface}"'$/\1/p' \
+			sed -n -e 's/^\([^[:space:]]*\) *| '"${vlan}"' *| .*'"${iface}"'$/\1/p' \
 			/proc/net/vlan/config )"
 		mark_service_started "net.${ifname}"
 		(

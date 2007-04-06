@@ -475,14 +475,6 @@ iwconfig_configure() {
 		return 1
 	fi
 
-	# Do we have a preferred Access Point list specific to the interface?
-#	x="preferred_aps_${ifvar}[@]"
-#	[[ -n ${!x} ]] && preferred_aps=( "${!x}" )
-
-#	# Do we have a blacklist Access Point list specific to the interface?
-#	x="blacklist_aps_${ifvar}[@]"
-#	[[ -n ${!x} ]] && blacklist_aps=( "${!x}" )
-
 	# Are we forcing preferred only?
 	eval x=\$associate_order_${IFVAR}
 	[ -n "${x}" ] && associate_order=${x}
