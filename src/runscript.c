@@ -949,10 +949,6 @@ int main (int argc, char **argv)
       in_background = rc_is_env ("IN_BACKGROUND", "true");
       ibsave = strdup (getenv ("IN_BACKGROUND"));
       unsetenv ("IN_BACKGROUND");
-
-      /* Don't hang around */
-      if (in_background)
-	setenv ("RC_PARALLEL_STARTUP", "yes", 1);
     }
 
 #ifdef __linux__
