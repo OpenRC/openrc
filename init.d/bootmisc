@@ -32,7 +32,9 @@ start() {
 	fi
 
 	ebegin "Updating environment"
-	/sbin/env-update
+	# As runscript prefixes our path with /$LIBDIR/rcscripts/bin, our
+	# version instead of the portage version should be found first.
+	env-update
 	eend $?
 
 	# Take care of random stuff [ /var/lock | /var/run | pam ]
