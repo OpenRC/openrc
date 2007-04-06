@@ -630,7 +630,7 @@ int rc_update_deptree (bool force)
     setenv ("RC_LIBDIR", RC_LIBDIR, 0);
 
   /* Phase 1 */
-  if ((fp = popen (GENDEP, "r")) == NULL)
+  if (! (fp = popen (GENDEP, "r")))
     eerrorx ("popen: %s", strerror (errno));
 
   deptree = rc_xmalloc (sizeof (rc_depinfo_t));
@@ -809,7 +809,7 @@ int rc_update_deptree (bool force)
      This works and should be entirely shell parseable provided that depend
      names don't have any non shell variable characters in
      */
-  if ((fp = fopen (RC_DEPTREE, "w")) == NULL)
+  if (! (fp = fopen (RC_DEPTREE, "w")))
     eerror ("fopen `%s': %s", RC_DEPTREE, strerror (errno));
   else
     {

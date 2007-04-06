@@ -92,9 +92,9 @@ static bool is_env (const char *var, const char *val)
 
   v = getenv (var);
   if (! v)
-    return (val == NULL ? true : false);
+    return (val ? false : true);
 
-  return (strcasecmp (v, val) == 0 ? true : false);
+  return (strcasecmp (v, val) ? false : true);
 }
 
 bool colour_terminal (void)
@@ -164,8 +164,11 @@ static int ebuffer (const char *cmd, int retval, const char *fmt, va_list ap)
 
   if (fmt)
     {
-      l = vsnprintf (buffer, sizeof (buffer), fmt, ap);
+      va_list apc;
+      va_copy (apc, ap);
+      l = vsnprintf (buffer, sizeof (buffer), fmt, apc);
       fprintf (fp, "%d %s\n", l, buffer);
+      va_end (apc);
     }
   else
     fprintf (fp, "0\n");
@@ -351,12 +354,16 @@ void eflush (void)
 static void elog (int level, const char *fmt, va_list ap)
 {
   char *e = getenv ("RC_ELOG");
+  va_list apc;
 
-  if (e)
+  if (fmt && e)
     {
       closelog ();
       openlog (e, LOG_PID, LOG_DAEMON);
-      vsyslog (level, fmt, ap);
+      va_copy (apc, ap);
+      vsyslog (level, fmt, apc);
+      va_end (apc);
+      closelog ();
     }
 }
 static int _eindent (FILE *stream)
@@ -390,7 +397,12 @@ static int _eindent (FILE *stream)
   else \
     fprintf (_file, " * "); \
   retval += _eindent (_file); \
-  retval += vfprintf (_file, fmt, ap) + 3; \
+  { \
+    va_list _ap; \
+    va_copy (_ap, ap); \
+    retval += vfprintf (_file, fmt, _ap) + 3; \
+    va_end (_ap); \
+  } \
   if (colour_terminal ()) \
     fprintf (_file, "\033[K");
 
@@ -626,22 +638,32 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
 {
   int col = 0;
   FILE *fp;
+  va_list apc;
+  int eb;
 
-  if (ebuffer (cmd, retval, fmt, ap))
-    return (retval);
+  if (fmt)
+    {
+      va_copy (apc, ap);
+      eb = ebuffer (cmd, retval, fmt, apc);
+      va_end (apc);
+      if (eb)
+	return (retval);
+    }
 
   if (fmt && retval != 0)
     {
+      va_copy (apc, ap);
       if (strcmp (cmd, "ewend") == 0)
 	{
-	  col = _vewarnn (fmt, ap);
+	  col = _vewarnn (fmt, apc);
 	  fp = stdout;
 	}
       else
 	{
-	  col = _veerrorn (fmt, ap);
+	  col = _veerrorn (fmt, apc);
 	  fp = stderr;
 	}
+      va_end (apc);
       if (colour_terminal ())
 	fprintf (fp, "\n");
     }

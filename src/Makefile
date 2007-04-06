@@ -30,11 +30,11 @@ LIBRCOBJS= librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
 
 LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
 BIN_TARGETS = rc-status
-SBIN_TARGETS = env-update fstabinfo mountinfo \
-	       rc rc-depend rc-update runscript start-stop-daemon
+SBIN_TARGETS = rc rc-update runscript start-stop-daemon
+PRIV_BIN_TARGETS = env-update fstabinfo mountinfo rc-depend
 SYS_WHITELIST = env_whitelist
 
-TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS)
+TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS) $(PRIV_BIN_TARGETS)
 
 RCLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 	      eindent eoutdent eflush color_terminal \
@@ -142,6 +142,7 @@ install: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/$(LIB)/rcscripts/conf.d
 	install -m 0644 $(SYS_WHITELIST) $(DESTDIR)/$(LIB)/rcscripts/conf.d
 	install -m 0755 -d $(DESTDIR)/$(LIB)/rcscripts/bin
+	install -m 0755 $(PRIV_BIN_TARGETS) $(DESTDIR)/$(LIB)/rcscripts/bin
 	for x in $(RCLINKS); do ln -sf $(DESTDIR)/sbin/rc $(DESTDIR)/$(LIB)/rcscripts/bin/$$x; done
 	if test "$(HAVE_PAM)" != "" ; then \
 		install -m 0755 -d $(DESTDIR)/etc/pam.d ; \

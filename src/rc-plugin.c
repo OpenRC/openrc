@@ -47,6 +47,7 @@ void rc_plugin_load (void)
       void *h = dlopen (p, RTLD_LAZY);
       char *func;
       void *f;
+      int len;
 
       if (! h)
 	{
@@ -57,8 +58,9 @@ void rc_plugin_load (void)
 
       func = file;
       file = strsep (&func, ".");
-      func = rc_xmalloc (strlen (file) + strlen ("__hook") + 1);
-      sprintf (func, "_%s_hook", file);
+      len = strlen (file) + 7;
+      func = rc_xmalloc (sizeof (char *) * len);
+      snprintf (func, len, "_%s_hook", file);
 
       f = dlsym (h, func);
       if (! f)

@@ -1013,19 +1013,22 @@ int main (int argc, char **argv)
       /* Unless we would use a different config file */
       if (found)
 	{
+	  int len;
 	  if (! newlevel)
 	    continue;
-	  
-	  tmp = rc_xmalloc (strlen (service) + strlen (runlevel) + 2);
-	  sprintf (tmp, "%s.%s", service, runlevel);
+
+	  len = strlen (service) + strlen (runlevel) + 2;
+	  tmp = rc_xmalloc (sizeof (char *) * len);
+	  snprintf (tmp, len, "%s.%s", service, runlevel);
 	  conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
 	  found = rc_exists (conf);
 	  CHAR_FREE (conf);
 	  CHAR_FREE (tmp);
 	  if (! found)
 	    {
-	      tmp = rc_xmalloc (strlen (service) + strlen (newlevel) + 2);
-	      sprintf (tmp, "%s.%s", service, newlevel);
+	      len = strlen (service) + strlen (newlevel) + 2;
+	      tmp = rc_xmalloc (sizeof (char *) * len);
+	      snprintf (tmp, len, "%s.%s", service, newlevel);
 	      conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
 	      found = rc_exists (conf);
 	      CHAR_FREE (conf);

@@ -448,8 +448,9 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 
   if (indx > 0)
     {
-      file = rc_xmalloc (sizeof (char *) * 10);
-      snprintf (file, sizeof (file), "%03d", indx);
+      int len = sizeof (char *) * 10;
+      file = rc_xmalloc (len);
+      snprintf (file, len, "%03d", indx);
       retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
       free (file);
     }

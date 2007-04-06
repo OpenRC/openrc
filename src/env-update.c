@@ -134,10 +134,9 @@ int main (int argc, char **argv)
 		{
 		  if (isspecial)
 		    {
-		      envs[k - 1] = rc_xrealloc (envs[k - 1],
-						 strlen (envs[k - 1]) +
-						 strlen (entry) + 1);
-		      sprintf (envs[k - 1] + strlen (envs[k - 1]),
+		      int len =  strlen (envs[k - 1]) + strlen (entry) + 1;
+		      envs[k - 1] = rc_xrealloc (envs[k - 1], len);
+		      snprintf (envs[k - 1] + strlen (envs[k - 1]), len,
 			       "%s%s", isspecial_spaced ? " " : ":", value);
 		    }
 		  else

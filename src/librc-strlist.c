@@ -49,7 +49,7 @@ static char **_rc_strlist_addsort (char **list, const char *item,
 
   newlist = rc_xrealloc (list, sizeof (char *) * (i + 2));
 
-  if (i == 0)
+  if (! i)
     newlist[i] = NULL;
   newlist[i + 1] = NULL;
 
@@ -88,7 +88,7 @@ char **rc_strlist_delete (char **list, const char *item)
     return (list);
 
   while (list[i])
-    if (strcmp (list[i], item) == 0)
+    if (! strcmp (list[i], item))
       {
 	free (list[i]);
 	do

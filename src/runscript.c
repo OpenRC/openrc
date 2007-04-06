@@ -136,7 +136,7 @@ static time_t get_mtime (const char *pathname, bool follow_link)
     return (0);
 
   retval = follow_link ? stat (pathname, &buf) : lstat (pathname, &buf);
-  if (retval == 0)
+  if (! retval)
     return (buf.st_mtime);
 
   errno = 0;
@@ -154,13 +154,13 @@ static bool in_control ()
   if (sighup)
     return (false);
 
-  if (mtime_test == NULL || ! rc_exists (mtime_test))
+  if (! mtime_test || ! rc_exists (mtime_test))
     return (false);
 
   if (rc_service_state (applet, rc_service_stopped))
     return (false);
 
-  if ((mtime = get_mtime (mtime_test, false)) == 0)
+  if (! (mtime = get_mtime (mtime_test, false)))
     return (false);
 
   while (tests[i])
@@ -214,6 +214,8 @@ static void cleanup (void)
     rc_strlist_free (restart_services);
   if (need_services)
     rc_strlist_free (need_services);
+  if (tmplist)
+    rc_strlist_free (tmplist);
   if (mycmd)
     free (mycmd);
   if (myarg1)
@@ -312,7 +314,7 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
   signal (SIGCHLD, handle_signal);
 
   if (WIFEXITED (status))
-    return (WEXITSTATUS (status) == 0 ? true : false);
+    return (WEXITSTATUS (status) ? false : true);
 
   return (false);
 }
@@ -514,8 +516,7 @@ static void svc_start (const char *service, bool deps)
 	  if (rc_service_state (svc, rc_service_started))
 	    continue;
 	  if (! rc_wait_service (svc))
-	    { eerror ("%s: timed out waiting for %s", applet, svc);
-	      system ("ps ax > /tmp/$SVCNAME.waiting"); }
+	    eerror ("%s: timed out waiting for %s", applet, svc);
 	  if (rc_service_state (svc, rc_service_started))
 	    continue;
 
@@ -560,18 +561,19 @@ static void svc_start (const char *service, bool deps)
 	      n++;
 	    }
 
-	  tmp = rc_xmalloc (sizeof (char *) * len + 5);
+	  len += 5;
+	  tmp = rc_xmalloc (sizeof (char *) * len);
 	  p = tmp;
 	  STRLIST_FOREACH (tmplist, svc, i)
 	    {
 	      if (i > 1)
 		{
 		  if (i == n - 1)
-		    p += sprintf (p, " or ");
+		    p += snprintf (p, len, " or ");
 		  else
-		    p += sprintf (p, ", ");
+		    p += snprintf (p, len, ", ");
 		}
-	      p += sprintf (p, "%s", svc);
+	      p += snprintf (p, len, "%s", svc);
 	    }
 	  ewarnx ("WARNING: %s is scheduled to start when %s has started",
 		  applet, tmp);
