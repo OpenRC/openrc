@@ -30,8 +30,8 @@ LIBRCOBJS= librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
 
 LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
 BIN_TARGETS = rc-status
-SBIN_TARGETS = rc rc-update runscript start-stop-daemon
-PRIV_BIN_TARGETS = env-update fstabinfo mountinfo rc-depend
+SBIN_TARGETS = env-update rc rc-update runscript start-stop-daemon
+PRIV_BIN_TARGETS = fstabinfo mountinfo rc-depend
 SYS_WHITELIST = env_whitelist
 
 TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS) $(PRIV_BIN_TARGETS)
