@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  07 Apr 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    "modules-update" -> "update-modules".
+
   05 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     Rewrite the core parts in C. We now provide librc so other programs can
