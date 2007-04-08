@@ -4,15 +4,29 @@
 CC ?= gcc
 
 CFLAGS ?= -Wall -O2 -pipe
+
+# Saying that, this function only works with GNU Make :/
+check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+	  then echo "$(1)"; else echo "$(2)"; fi)
+
+# Luckily we can do this more long winded thing with pmake used by the BSDs
+# FIXME: Look into making this into a loop
+WAFTST != if $(CC) -Wextra -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+	  then echo "-Wdeclaration-after-statement"; fi
+WSEQ   != if $(CC) -Wextra -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+	  then echo "-Wsequence-point"; fi
+WEXTRA != if $(CC) -Wextra -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+	  then echo "-Wextra"; fi
+
+# Loads of nice flags to ensure our code is good
 CFLAGS += -pedantic -std=c99 \
     -Wall -Wunused -Wimplicit -Wshadow -Wformat=2 \
     -Wmissing-declarations -Wno-missing-prototypes -Wwrite-strings \
     -Wbad-function-cast -Wnested-externs -Wcomment -Winline \
-    -Wchar-subscripts -Wcast-align -Wno-format-nonliteral
-
-# Early GCC versions don't support these flags, so you may need to comment
-# this line out
-CFLAGS += -Wsequence-point -Wextra -Wdeclaration-after-statement
+    -Wchar-subscripts -Wcast-align -Wno-format-nonliteral \
+    $(call check_gcc, -Wdeclaration-after-statement) \
+    $(call check_gcc, -Wsequence-point) \
+    $(call check_gcc, -Wextra) $(WAFTST) $(WSEQ) $(WEXTRA)
 
 # For debugging. -Werror is pointless due to ISO C issues with dlsym
 #CFLAGS += -ggdb
