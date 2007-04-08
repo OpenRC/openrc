@@ -7,11 +7,11 @@
 #ifndef __RC_MISC_H__
 #define __RC_MISC_H__
 
-#ifndef LIBDIR
-#  define LIBDIR	"lib"
+#ifndef LIB
+#  define LIB "lib"
 #endif
 
-#define RC_LIBDIR	"/" LIBDIR "/rcscripts/"
+#define RC_LIBDIR	"/" LIB "/rcscripts/"
 #define RC_SVCDIR	RC_LIBDIR "init.d/"
 #define RC_DEPTREE 	RC_SVCDIR "deptree"
 #define RC_RUNLEVELDIR 	"/etc/runlevels/"

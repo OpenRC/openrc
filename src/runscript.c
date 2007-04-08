@@ -231,19 +231,21 @@ static void cleanup (void)
 	{
 	  if (rc_service_state (applet, rc_service_wasinactive))
 	    rc_mark_service (applet, rc_service_inactive);
-	  else
+	  else 
 	    rc_mark_service (applet, rc_service_stopped);
 	}
       else if (rc_service_state (applet, rc_service_stopping))
 	{
 	  /* If the we're shutting down, do it cleanly */
-	  if ((softlevel && rc_runlevel_stopping () &&
+	  if ((softlevel &&
+	       rc_runlevel_stopping () &&
 	       (strcmp (softlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-		strcmp (softlevel, RC_LEVEL_REBOOT) == 0)) ||
-	      ! rc_service_state (applet, rc_service_wasinactive)) 
+		strcmp (softlevel, RC_LEVEL_REBOOT) == 0)))
 	    rc_mark_service (applet, rc_service_stopped);
-	  else
+	  else if (rc_service_state (applet, rc_service_wasinactive))
 	    rc_mark_service (applet, rc_service_inactive);
+	  else
+	    rc_mark_service (applet, rc_service_started);
 	}
       if (exclusive && rc_exists (exclusive))
 	unlink (exclusive);
@@ -1049,10 +1051,13 @@ int main (int argc, char **argv)
 	{
 	  if (in_background)
 	    get_started_services ();
-	  else if (! rc_runlevel_stopping ())
-	    uncoldplug (applet);
 
 	  svc_stop (service, deps);
+
+	  if (! in_background &&
+	      ! rc_runlevel_stopping () &&
+	      rc_service_state (service, rc_service_stopped))
+	    uncoldplug (applet);
 
 	  if (in_background &&
 	      rc_service_state (service, rc_service_inactive))
@@ -1069,7 +1074,7 @@ int main (int argc, char **argv)
 	  einfo ("Manually resetting %s to stopped state", applet);
 	  rc_mark_service (applet, rc_service_stopped);
 	  uncoldplug (applet);
-	}
+	}	
       else if (strcmp (argv[i], "help") == 0)
 	{
 	  execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);

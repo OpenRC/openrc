@@ -1109,7 +1109,7 @@ int main (int argc, char **argv)
       sulogin (false);
     }
 
-  mkdir (RC_SVCDIR "/softscripts.old", 0755);
+  mkdir (RC_SVCDIR "softscripts.old", 0755);
   rc_plugin_run (rc_hook_runlevel_start_in, runlevel);
 
   /* Re-add our coldplugged services if they stopped */

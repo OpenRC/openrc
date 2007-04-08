@@ -637,15 +637,17 @@ char **rc_config_env (char **env)
     }
   rc_strlist_free (config);
 
-  i = strlen ("RC_LIBDIR=//rcscripts") + strlen (LIBDIR) + 2;
+  /* One char less to drop the trailing / */
+  i = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR);
   line = rc_xmalloc (sizeof (char *) * i);
-  snprintf (line, i, "RC_LIBDIR=/" LIBDIR "/rcscripts");
+  snprintf (line, i, "RC_LIBDIR=" RC_LIBDIR);
   env = rc_strlist_add (env, line);
   free (line);
-  
-  i += strlen ("/init.d");
+
+  /* One char less to drop the trailing / */
+  i = strlen ("RC_SVCDIR=") + strlen (RC_SVCDIR);
   line = rc_xmalloc (sizeof (char *) * i);
-  snprintf (line, i, "RC_SVCDIR=/" LIBDIR "/rcscripts/init.d");
+  snprintf (line, i, "RC_SVCDIR=" RC_SVCDIR);
   env = rc_strlist_add (env, line);
   free (line);
 

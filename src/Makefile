@@ -77,7 +77,7 @@ endif
 
 # We also define _BSD_SOURCE so both Linux and the BSDs get a few
 # handy functions which makes our lives a lot easier
-override CFLAGS += -DLIBDIR=\"$(LIB)\"
+override CFLAGS += -DLIB=\"$(LIB)\"
 
 # IMPORTANT!!!
 # Remove this when releasing as it's a security risk

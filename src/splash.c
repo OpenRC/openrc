@@ -22,11 +22,11 @@
 
 #include <rc.h>
 
-#ifndef LIBDIR
-#  define LIBDIR "lib"
+#ifndef LIB
+#  define LIB "lib"
 #endif
 
-#define SPLASH_CACHEDIR "/" LIBDIR "/splash/cache"
+#define SPLASH_CACHEDIR "/" LIB "/splash/cache"
 
 #define SPLASH_CMD "bash -c 'export SOFTLEVEL='%s'; export BOOTLEVEL=${RC_BOOTLEVEL}; export DEFAULTLEVEL=${RC_DEFAULTLEVEL}; export svcdir=${RC_SVCDIR}; add_suffix() { echo \"$@\"; }; . /etc/init.d/functions.sh; . /sbin/splash-functions.sh; splash %s %s %s'"
 
