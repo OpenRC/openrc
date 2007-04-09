@@ -11,4 +11,12 @@
 
 RUNLEVEL="1" /sbin/rc sysinit || exit 1
 RUNLEVEL="1" /sbin/rc boot || exit 1
-/sbin/rc default || exit 1
+PREVLEVEL="1" /sbin/rc default
+
+# If we return non zero after starting rc then 2 things may happen
+# 1) We get the message "init: can't get /dev/console for controlling terminal"
+#    every few seconds
+# 2) We get no error and console freezes.
+# This is probably a bug somewhere in rc, but until that is fixed we have to
+# return 0.
+exit 0

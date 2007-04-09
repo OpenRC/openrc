@@ -458,26 +458,11 @@ static void wait_for_services ()
 
 static void handle_signal (int sig)
 {
-  pid_t pid;
-  int status;
   int serrno = errno;
   char signame[10] = { '\0' };
 
   switch (sig)
     {
-    case SIGCHLD:
-      do
-	{
-	  pid = waitpid (-1, &status, WNOHANG);
-	  if (pid < 0)
-	    {
-	      if (errno && errno != ECHILD)
-		eerror ("waitpid: %s", strerror (errno));
-	      return;
-	    }
-	} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
-      break;
-
     case SIGINT:
       if (! signame[0])
 	snprintf (signame, sizeof (signame), "SIGINT");
@@ -557,7 +542,6 @@ int main (int argc, char **argv)
   signal (SIGINT, handle_signal);
   signal (SIGQUIT, handle_signal);
   signal (SIGTERM, handle_signal);
-  signal (SIGCHLD, handle_signal);
 
   /* Ensure our environment is pure
      Also, add our configuration to it */
