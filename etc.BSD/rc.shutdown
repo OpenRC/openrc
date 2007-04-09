@@ -13,5 +13,9 @@ export LD_LIBRARY_PATH
 # BSD's init works somewhat differently to sysvinit.
 # This block should 'translate' from the way init calls it to the way it would
 # be called by sysvinit on linux.
-export RUNLEVEL=S
+case "$1" in
+    reboot) 	export RUNLEVEL=6;;
+    shutdown)	export RUNLEVEL=0;;
+    single)	export RUNLEVEL=S;;
+esac
 exec /sbin/rc "$1"
