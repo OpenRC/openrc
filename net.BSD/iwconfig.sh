@@ -145,7 +145,7 @@ iwconfig_associate() {
 	    mode="adhoc"
 	    if ! LC_ALL=C ifconfig "${IFACE}" | \
 		grep -q "^[[:space:]]*media: .*adhoc" ; then
-		ifconfig "${IFACE}" down -mediaopt adhoc up
+		ifconfig "${IFACE}" down mediaopt adhoc up
 	    fi
 	    ;;
 	*)
