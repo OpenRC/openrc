@@ -97,7 +97,7 @@ iwconfig_setup_specific() {
     local key=$(iwconfig_get_wep_key)
 
     # Now set the key
-    ifconfig "${IFACE}" wepkey ${key}
+    eval ifconfig "${IFACE}" wepkey "${key}"
 
     ifconfig "${IFACE}" ssid "${ESSID}" || return 1
 
@@ -134,10 +134,23 @@ iwconfig_associate() {
 
     # Set mode accordingly
     case "${caps}" in
-	*E*) mode="managed"; ifconfig "${IFACE}" -mediaopt adhoc ;;
-	*I*) mode="adhoc"; ifconfig "${IFACE}" mediaopt adhoc ;;
+	*E*)
+	    mode="managed"
+	    if LC_ALL=C ifconfig "${IFACE}" | \
+		grep -q "^[[:space:]]*media: .*adhoc" ; then
+		ifconfig "${IFACE}" down -mediaopt adhoc up
+	    fi
+	    ;;
+	*I*)
+	    mode="adhoc"
+	    if ! LC_ALL=C ifconfig "${IFACE}" | \
+		grep -q "^[[:space:]]*media: .*adhoc" ; then
+		ifconfig "${IFACE}" down -mediaopt adhoc up
+	    fi
+	    ;;
 	*)
-	    if LC_ALL=C ifconfig "${IFACE}" | grep -q "^[[:space:]]*media: .*adhoc" ; then
+	    if LC_ALL=C ifconfig "${IFACE}" \
+		| grep -q "^[[:space:]]*media: .*adhoc" ; then
 		mode="adhoc"
 	    else
 		mode="managed"
@@ -152,10 +165,10 @@ iwconfig_associate() {
 	ifconfig "${IFACE}" deftxkey 1
 	w=$(iwconfig_get_wep_status)
     fi
-    
+
     ebegin "Connecting to \"${SSID}\" in ${mode} mode ${w}"
-   
-    if ! ifconfig "${IFACE}" wepkey ${key} ; then
+  
+    if ! eval ifconfig "${IFACE}" wepkey "${key}" ; then
 	eerror "Invalid WEP key ${key}"
 	return 1
     fi
@@ -239,10 +252,10 @@ iwconfig_scan() {
 		shift
 	    done
 	    eval MAC_${APS}="$(echo "$1" | tr '[:lower:]' '[:upper:]')"
-	    eval CHAN_${APS}=$2
+	    eval CHAN_${APS}="$2"
 	    quality=${4%:*}
 	    shift ; shift ; shift ; shift ; shift
-	    eval CAPS_${APS}=$*
+	    eval CAPS_${APS}="\"$*\""
 
 	    # Add 1000 for managed nodes as we prefer them to adhoc
 	    set -- $*
