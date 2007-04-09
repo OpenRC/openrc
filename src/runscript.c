@@ -94,6 +94,7 @@ static void handle_signal (int sig)
   pid_t pid;
   int status;
   int serrno = errno;
+  char signame[10] = { '\0' };
 
   switch (sig)
     {
@@ -113,11 +114,17 @@ static void handle_signal (int sig)
 	    }
 	} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
       break;
-
+    
     case SIGINT:
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGINT");
     case SIGTERM:
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGTERM");
     case SIGQUIT:
-      eerrorx ("%s: caught signal %d, aborting", applet, sig);
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGQUIT");
+      eerrorx ("%s: caught %s, aborting", applet, signame);
 
     default:
       eerror ("%s: caught unknown signal %d", applet, sig);

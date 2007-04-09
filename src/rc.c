@@ -55,6 +55,7 @@
 
 extern char **environ;
 
+static char *applet = NULL;
 static char **env = NULL;
 static char **newenv = NULL;
 static char **coldplugged_services;
@@ -65,7 +66,6 @@ static char **types = NULL;
 static char *mycmd = NULL;
 static char *myarg = NULL;
 static char *tmp = NULL;
-static char *applet = NULL;
 
 struct termios *termios_orig;
 
@@ -103,6 +103,9 @@ static void cleanup (void)
     rc_rm_dir (RC_SVCDIR "softscripts.new", true);
   if (rc_is_dir (RC_SVCDIR "softscripts.old"))
     rc_rm_dir (RC_SVCDIR "softscripts.old", true);
+
+  if (applet)
+    free (applet);
 }
 
 static int do_e (int argc, char **argv)
@@ -453,6 +456,47 @@ static void wait_for_services ()
   select (0, NULL, NULL, NULL, &tv);
 }
 
+static void handle_signal (int sig)
+{
+  pid_t pid;
+  int status;
+  int serrno = errno;
+  char signame[10] = { '\0' };
+
+  switch (sig)
+    {
+    case SIGCHLD:
+      do
+	{
+	  pid = waitpid (-1, &status, WNOHANG);
+	  if (pid < 0)
+	    {
+	      if (errno && errno != ECHILD)
+		eerror ("waitpid: %s", strerror (errno));
+	      return;
+	    }
+	} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+      break;
+
+    case SIGINT:
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGINT");
+    case SIGTERM:
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGTERM");
+    case SIGQUIT:
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGQUIT");
+      eerrorx ("%s: caught %s, aborting", applet, signame);
+
+    default:
+      eerror ("%s: caught unknown signal %d", applet, sig);
+    }
+
+  /* Restore errno */
+  errno = serrno;
+}
+
 int main (int argc, char **argv)
 {
   char *RUNLEVEL = NULL;
@@ -469,7 +513,7 @@ int main (int argc, char **argv)
   char ksoftbuffer [PATH_MAX];
 
   if (argv[0])
-    applet = basename (argv[0]);
+    applet = strdup (basename (argv[0]));
 
   if (! applet)
     eerrorx ("arguments required");
@@ -508,6 +552,12 @@ int main (int argc, char **argv)
 
   atexit (cleanup);
   newlevel = argv[0];
+
+  /* Setup a signal handler */
+  signal (SIGINT, handle_signal);
+  signal (SIGQUIT, handle_signal);
+  signal (SIGTERM, handle_signal);
+  signal (SIGCHLD, handle_signal);
 
   /* Ensure our environment is pure
      Also, add our configuration to it */

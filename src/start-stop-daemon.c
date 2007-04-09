@@ -459,13 +459,20 @@ static void handle_signal (int sig)
   int pid;
   int status;
   int serrno = errno;
+  char signame[10] = { '\0' };
 
   switch (sig)
     {
     case SIGINT:
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGINT");
     case SIGTERM:
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGTERM");
     case SIGQUIT:
-      eerrorx ("%s: caught signal %d, aborting", progname, sig);
+      if (! signame[0])
+	snprintf (signame, sizeof (signame), "SIGQUIT");
+      eerrorx ("%s: caught %s, aborting", progname, signame);
 
     case SIGCHLD:
       while (1)

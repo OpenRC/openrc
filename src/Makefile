@@ -98,7 +98,7 @@ override CFLAGS += -DLIB=\"$(LIB)\"
 # However, this does save us using libtool when we're testing
 # NOTE: The toplevel Makefile for baselayout will automatically
 # disable then when doing `make dist`
-##override LDFLAGS += -Wl,-rpath .
+override LDFLAGS += -Wl,-rpath .
 
 all: $(TARGET)
 
