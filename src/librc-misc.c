@@ -133,7 +133,7 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
   while ((p = va_arg (ap, char *)) != NULL)
     {
       if (*pathp != '/')
-	*pathp++ = '/';
+        *pathp++ = '/';
       i = strlen (p);
       memcpy (pathp, p, i);
       pathp += i;
@@ -168,7 +168,7 @@ bool rc_is_file (const char *pathname)
 
   if (stat (pathname, &buf) == 0)
     return (S_ISREG (buf.st_mode));
-    
+
   errno = 0;
   return (false);
 }
@@ -196,7 +196,7 @@ bool rc_is_link (const char *pathname)
 
   if (lstat (pathname, &buf) == 0)
     return (S_ISLNK (buf.st_mode));
-    
+
   errno = 0;
   return (false);
 }
@@ -207,7 +207,7 @@ bool rc_is_exec (const char *pathname)
 
   if (! pathname)
     return (false);
-  
+
   if (lstat (pathname, &buf) == 0)
     return (buf.st_mode & S_IXUGO);
 
@@ -233,25 +233,25 @@ char **rc_ls_dir (char **list, const char *dir, int options)
   while (((d = readdir (dp)) != NULL) && errno == 0)
     {
       if (d->d_name[0] != '.')
-	{
-	  if (options & RC_LS_INITD)
-	    {
-	      int l = strlen (d->d_name);
-	      char *init = rc_strcatpaths (RC_INITDIR, d->d_name,
-					   (char *) NULL);
-	      bool ok = rc_exists (init);
-	      free (init);
-	      if (! ok)
-		continue;
-	      
-	      /* .sh files are not init scripts */
-	      if (l > 2 && d->d_name[l - 3] == '.' &&
-		  d->d_name[l - 2] == 's' &&
-		  d->d_name[l - 1] == 'h')
-		continue;
-	    }
-	  list = rc_strlist_addsort (list, d->d_name);
-	}
+        {
+          if (options & RC_LS_INITD)
+            {
+              int l = strlen (d->d_name);
+              char *init = rc_strcatpaths (RC_INITDIR, d->d_name,
+                                           (char *) NULL);
+              bool ok = rc_exists (init);
+              free (init);
+              if (! ok)
+                continue;
+
+              /* .sh files are not init scripts */
+              if (l > 2 && d->d_name[l - 3] == '.' &&
+                  d->d_name[l - 2] == 's' &&
+                  d->d_name[l - 1] == 'h')
+                continue;
+            }
+          list = rc_strlist_addsort (list, d->d_name);
+        }
     }
   closedir (dp);
 
@@ -283,29 +283,29 @@ bool rc_rm_dir (const char *pathname, bool top)
   while (((d = readdir (dp)) != NULL) && errno == 0)
     {
       if (strcmp (d->d_name, ".") != 0 && strcmp (d->d_name, "..") != 0)
-	{
-	  char *tmp = rc_strcatpaths (pathname, d->d_name, (char *) NULL);
-	  if (d->d_type == DT_DIR)
-	    {
-	      if (! rc_rm_dir (tmp, true))
-		{
-		  free (tmp);
-		  closedir (dp);
-		  return (false);
-		}
-	    }
-	  else
-	    {
-	      if (unlink (tmp))
-		{
-		  eerror ("failed to unlink `%s': %s", tmp, strerror (errno));
-		  free (tmp);
-		  closedir (dp);
-		  return (false);
-		}
-	    }
-	  free (tmp);
-	}
+        {
+          char *tmp = rc_strcatpaths (pathname, d->d_name, (char *) NULL);
+          if (d->d_type == DT_DIR)
+            {
+              if (! rc_rm_dir (tmp, true))
+                {
+                  free (tmp);
+                  closedir (dp);
+                  return (false);
+                }
+            }
+          else
+            {
+              if (unlink (tmp))
+                {
+                  eerror ("failed to unlink `%s': %s", tmp, strerror (errno));
+                  free (tmp);
+                  closedir (dp);
+                  return (false);
+                }
+            }
+          free (tmp);
+        }
     }
   if (errno != 0)
     eerror ("failed to readdir `%s': %s", pathname, strerror (errno));
@@ -346,29 +346,29 @@ char **rc_get_config (char **list, const char *file)
 
       /* Strip leading spaces/tabs */
       while ((*p == ' ') || (*p == '\t'))
-	p++;
+        p++;
 
       if (! p || strlen (p) < 3 || p[0] == '#')
-	continue;
+        continue;
 
       /* Get entry */
       token = strsep (&p, "=");
       if (! token)
-	continue;
+        continue;
 
       entry = rc_xstrdup (token);
 
       do
-	{
-	  /* Bash variables are usually quoted */
-	  token = strsep (&p, "\"\'");
-	}
+        {
+          /* Bash variables are usually quoted */
+          token = strsep (&p, "\"\'");
+        }
       while ((token) && (strlen (token) == 0));
 
       /* Drop a newline if that's all we have */
       i = strlen (token) - 1;
       if (token[i] == 10)
-	token[i] = 0;
+        token[i] = 0;
 
       i = strlen (entry) + strlen (token) + 2;
       newline = rc_xmalloc (i);
@@ -376,29 +376,29 @@ char **rc_get_config (char **list, const char *file)
 
       replaced = false;
       /* In shells the last item takes precedence, so we need to remove
-	 any prior values we may already have */
+         any prior values we may already have */
       STRLIST_FOREACH (list, line, i)
-	{
-	  char *tmp = rc_xstrdup (line);
-	  linep = tmp; 
-	  linetok = strsep (&linep, "=");
-	  if (strcmp (linetok, entry) == 0)
-	    {
-	      /* We have a match now - to save time we directly replace it */
-	      free (list[i - 1]);
-	      list[i - 1] = newline; 
-	      replaced = true;
-	      free (tmp);
-	      break;
-	    }
-	  free (tmp);
-	}
+        {
+          char *tmp = rc_xstrdup (line);
+          linep = tmp; 
+          linetok = strsep (&linep, "=");
+          if (strcmp (linetok, entry) == 0)
+            {
+              /* We have a match now - to save time we directly replace it */
+              free (list[i - 1]);
+              list[i - 1] = newline; 
+              replaced = true;
+              free (tmp);
+              break;
+            }
+          free (tmp);
+        }
 
       if (! replaced)
-	{
-	  list = rc_strlist_addsort (list, newline);
-	  free (newline);
-	}
+        {
+          list = rc_strlist_addsort (list, newline);
+          free (newline);
+        }
       free (entry);
     }
   fclose (fp);
@@ -416,7 +416,7 @@ char *rc_get_config_entry (char **list, const char *entry)
     {
       p = strchr (line, '=');
       if (p && strncmp (entry, line, p - line) == 0)
-	return (p += 1);
+        return (p += 1);
     }
 
   return (NULL);
@@ -441,18 +441,18 @@ char **rc_get_list (char **list, const char *file)
 
       /* Strip leading spaces/tabs */
       while ((*p == ' ') || (*p == '\t'))
-	p++;
+        p++;
 
       /* Get entry - we do not want comments */
       token = strsep (&p, "#");
       if (token && (strlen (token) > 1))
-	{
-	  /* Stip the newline if present */
-	  if (token[strlen (token) - 1] == '\n')
-	    token[strlen (token) - 1] = 0;
+        {
+          /* Stip the newline if present */
+          if (token[strlen (token) - 1] == '\n')
+            token[strlen (token) - 1] = 0;
 
-	  list = rc_strlist_add (list, token);
-	}
+          list = rc_strlist_add (list, token);
+        }
     }
   fclose (fp);
 
@@ -491,54 +491,54 @@ char **rc_filter_env (void)
     {
       char *space = strchr (env_name, ' ');
       if (space)
-	*space = 0;
+        *space = 0;
 
       env_var = getenv (env_name);
 
       if (! env_var && profile)
-	{
-	  env_len = strlen (env_name) + strlen ("export ") + 1;
-	  p = rc_xmalloc (sizeof (char *) * env_len);
-	  snprintf (p, env_len, "export %s", env_name);
-	  env_var = rc_get_config_entry (profile, p);
-	  free (p);
-	}
+        {
+          env_len = strlen (env_name) + strlen ("export ") + 1;
+          p = rc_xmalloc (sizeof (char *) * env_len);
+          snprintf (p, env_len, "export %s", env_name);
+          env_var = rc_get_config_entry (profile, p);
+          free (p);
+        }
 
       if (! env_var)
-	continue;
+        continue;
 
       /* Ensure our PATH is prefixed with the system locations first
-	 for a little extra security */
-       if (strcmp (env_name, "PATH") == 0 &&
-	   strncmp (PATH_PREFIX, env_var, pplen) != 0)
-	{
-	  got_path = true;
-	  env_len = strlen (env_name) + strlen (env_var) + pplen + 2;
-	  e = p = rc_xmalloc (sizeof (char *) * env_len);
-	  p += snprintf (e, env_len, "%s=%s", env_name, PATH_PREFIX);
+         for a little extra security */
+      if (strcmp (env_name, "PATH") == 0 &&
+          strncmp (PATH_PREFIX, env_var, pplen) != 0)
+        {
+          got_path = true;
+          env_len = strlen (env_name) + strlen (env_var) + pplen + 2;
+          e = p = rc_xmalloc (sizeof (char *) * env_len);
+          p += snprintf (e, env_len, "%s=%s", env_name, PATH_PREFIX);
 
-	  /* Now go through the env var and only add bits not in our PREFIX */
-	  sep = env_var;
-	  while ((token = strsep (&sep, ":")))
-	    {
-	      char *np = strdup (PATH_PREFIX);
-	      char *npp = np;
-	      char *tok = NULL;
-	      while ((tok = strsep (&npp, ":")))
-		if (strcmp (tok, token) == 0)
-		  break;
-	      if (! tok)
-		p += snprintf (p, env_len - (p - e), ":%s", token);
-	      free (np);
-	    }
-	  *p++ = 0;
-	}
+          /* Now go through the env var and only add bits not in our PREFIX */
+          sep = env_var;
+          while ((token = strsep (&sep, ":")))
+            {
+              char *np = strdup (PATH_PREFIX);
+              char *npp = np;
+              char *tok = NULL;
+              while ((tok = strsep (&npp, ":")))
+                if (strcmp (tok, token) == 0)
+                  break;
+              if (! tok)
+                p += snprintf (p, env_len - (p - e), ":%s", token);
+              free (np);
+            }
+          *p++ = 0;
+        }
       else
-	{
-	  env_len = strlen (env_name) + strlen (env_var) + 2;
-	  e = rc_xmalloc (sizeof (char *) * env_len);
-	  snprintf (e, env_len, "%s=%s", env_name, env_var);
-	}
+        {
+          env_len = strlen (env_name) + strlen (env_var) + 2;
+          e = rc_xmalloc (sizeof (char *) * env_len);
+          snprintf (e, env_len, "%s=%s", env_name, env_var);
+        }
 
       env = rc_strlist_add (env, e);
       free (e);
@@ -591,10 +591,10 @@ static bool file_regex (const char *file, const char *regex)
   while (fgets (buffer, RC_LINEBUFFER, fp))
     {
       if (regexec (&re, buffer, 0, NULL, 0) == 0)
-	{
-	  retval = true;
-	  break;
-	}
+        {
+          retval = true;
+          break;
+        }
     }
   fclose (fp);
   regfree (&re);
@@ -620,23 +620,23 @@ char **rc_config_env (char **env)
     {
       p = strchr (line, '=');
       if (! p)
-	continue;
+        continue;
 
       *p = 0;
       e = getenv (line);
       if (! e)
-	{
-	  *p = '=';
-	  env = rc_strlist_add (env, line);
-	}
+        {
+          *p = '=';
+          env = rc_strlist_add (env, line);
+        }
       else
-	{
-	  int len = strlen (line) + strlen (e) + 2;
-	  char *new = rc_xmalloc (sizeof (char *) * len);
-	  snprintf (new, len, "%s=%s", line, e);
-	  env = rc_strlist_add (env, new);
-	  free (new);
-	}
+        {
+          int len = strlen (line) + strlen (e) + 2;
+          char *new = rc_xmalloc (sizeof (char *) * len);
+          snprintf (new, len, "%s=%s", line, e);
+          env = rc_strlist_add (env, new);
+          free (new);
+        }
     }
   rc_strlist_free (config);
 
@@ -666,59 +666,59 @@ char **rc_config_env (char **env)
   if (rc_exists (RC_SVCDIR "ksoftlevel"))
     {
       if (! (fp = fopen (RC_SVCDIR "ksoftlevel", "r")))
-	eerror ("fopen `%s': %s", RC_SVCDIR "ksoftlevel",
-		strerror (errno));
+        eerror ("fopen `%s': %s", RC_SVCDIR "ksoftlevel",
+                strerror (errno));
       else
-	{
-	  memset (buffer, 0, sizeof (buffer));
-	  if (fgets (buffer, sizeof (buffer), fp))
-	    {
-	      i = strlen (buffer) - 1;
-	      if (buffer[i] == '\n')
-		buffer[i] = 0;
-	      i += strlen ("RC_DEFAULTLEVEL=") + 2;
-	      line = rc_xmalloc (sizeof (char *) * i);
-	      snprintf (line, i, "RC_DEFAULTLEVEL=%s", buffer);
-	      env = rc_strlist_add (env, line);
-	      free (line);
-	    }
-	  fclose (fp);
-	}
+        {
+          memset (buffer, 0, sizeof (buffer));
+          if (fgets (buffer, sizeof (buffer), fp))
+            {
+              i = strlen (buffer) - 1;
+              if (buffer[i] == '\n')
+                buffer[i] = 0;
+              i += strlen ("RC_DEFAULTLEVEL=") + 2;
+              line = rc_xmalloc (sizeof (char *) * i);
+              snprintf (line, i, "RC_DEFAULTLEVEL=%s", buffer);
+              env = rc_strlist_add (env, line);
+              free (line);
+            }
+          fclose (fp);
+        }
     }
   else
     env = rc_strlist_add (env, "RC_DEFAULTLEVEL=" RC_LEVEL_DEFAULT);
 
   memset (sys, 0, sizeof (sys));
 
-/* Linux can run some funky stuff like Xen, VServer, UML, etc
-   We store this special system in RC_SYS so our scripts run fast */
+  /* Linux can run some funky stuff like Xen, VServer, UML, etc
+     We store this special system in RC_SYS so our scripts run fast */
 #ifdef __linux__
   if (rc_is_dir ("/proc/xen"))
     {
       fp = fopen ("/proc/xen/capabilities", "r");
       if (fp)
-	{
-	  fclose (fp);
-	  if (file_regex ("/proc/xen/capabilities", "control_d"))
-	    snprintf (sys, sizeof (sys), "XENU");
-	}
+        {
+          fclose (fp);
+          if (file_regex ("/proc/xen/capabilities", "control_d"))
+            snprintf (sys, sizeof (sys), "XENU");
+        }
       if (! sys)
-	snprintf (sys, sizeof (sys), "XEN0");
+        snprintf (sys, sizeof (sys), "XEN0");
     }
   else if (file_regex ("/proc/cpuinfo", "UML"))
     snprintf (sys, sizeof (sys), "UML");
   else if (file_regex ("/proc/self/status",
-		       "(s_context|VxID|envID):[[:space:]]*[1-9]"))
-    snprintf (sys, sizeof (sys), "VPS"); 
+                       "(s_context|VxID|envID):[[:space:]]*[1-9]"))
+                                                  snprintf (sys, sizeof (sys), "VPS"); 
 #endif
 
   /* Only add a NET_FS list if not defined */
   STRLIST_FOREACH (env, line, i)
-    if (strncmp (line, "RC_NET_FS_LIST=", strlen ("RC_NET_FS_LIST=")) == 0)
-      {
-	has_net_fs_list = true;
-	break;
-      }
+   if (strncmp (line, "RC_NET_FS_LIST=", strlen ("RC_NET_FS_LIST=")) == 0)
+     {
+       has_net_fs_list = true;
+       break;
+     }
   if (! has_net_fs_list)
     {
       i = strlen ("RC_NET_FS_LIST=") + strlen (RC_NET_FS_LIST_DEFAULT) + 1;
@@ -736,7 +736,7 @@ char **rc_config_env (char **env)
       env = rc_strlist_add (env, line);
       free (line);
     }
- 
+
   /* Some scripts may need to take a different code path if Linux/FreeBSD, etc
      To save on calling uname, we store it in an environment variable */
   if (uname (&uts) == 0)

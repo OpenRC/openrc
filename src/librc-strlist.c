@@ -33,8 +33,8 @@ char **rc_strlist_add (char **list, const char *item)
 }
 
 static char **_rc_strlist_addsort (char **list, const char *item,
-				   int (*sortfunc) (const char *s1,
-						    const char *s2))
+                                   int (*sortfunc) (const char *s1,
+                                                    const char *s2))
 {
   char **newlist;
   int i = 0;
@@ -90,12 +90,12 @@ char **rc_strlist_delete (char **list, const char *item)
   while (list[i])
     if (! strcmp (list[i], item))
       {
-	free (list[i]);
-	do
-	  {
-	    list[i] = list[i + 1];
-	    i++;
-	  } while (list[i]);
+        free (list[i]);
+        do
+          {
+            list[i] = list[i + 1];
+            i++;
+          } while (list[i]);
       }
 
   return (list);

@@ -59,13 +59,13 @@ void rc_free_deptree (rc_depinfo_t *deptree)
       rc_deptype_t *dt = di->depends;
       free (di->service);
       while (dt)
-	{
-	  rc_deptype_t *dtp = dt->next;
-	  free (dt->type);  
-	  rc_strlist_free (dt->services);
-	  free (dt);
-	  dt = dtp;
-	}
+        {
+          rc_deptype_t *dtp = dt->next;
+          free (dt->type);  
+          rc_strlist_free (dt->services);
+          free (dt);
+          dt = dtp;
+        }
       free (di);
       di = dip;
     }
@@ -94,63 +94,63 @@ rc_depinfo_t *rc_load_deptree (void)
       p = buffer;
       e = strsep (&p, "_");
       if (! e || strcmp (e, "depinfo") != 0)
-	continue;
+        continue;
 
       e = strsep (&p, "_");
       if (! e || sscanf (e, "%d", &i) != 1)
-	continue;
+        continue;
 
       if (! (type = strsep (&p, "_=")))
-	continue;
+        continue;
 
       if (strcmp (type, "service") == 0)
-	{
-	  /* Sanity */
-	  e = get_shell_value (p);
-	  if (! e || strlen (e) == 0)
-	    continue;
+        {
+          /* Sanity */
+          e = get_shell_value (p);
+          if (! e || strlen (e) == 0)
+            continue;
 
-	  if (! deptree)
-	    {
-	      deptree = rc_xmalloc (sizeof (rc_depinfo_t));
-	      depinfo = deptree;
-	    }
-	  else
-	    {
-	      depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
-	      depinfo = depinfo->next;
-	    }
-	  memset (depinfo, 0, sizeof (rc_depinfo_t));
-	  depinfo->service = strdup (e);
-	  deptype = NULL;
-	  continue;
-	}
+          if (! deptree)
+            {
+              deptree = rc_xmalloc (sizeof (rc_depinfo_t));
+              depinfo = deptree;
+            }
+          else
+            {
+              depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
+              depinfo = depinfo->next;
+            }
+          memset (depinfo, 0, sizeof (rc_depinfo_t));
+          depinfo->service = strdup (e);
+          deptype = NULL;
+          continue;
+        }
 
       e = strsep (&p, "=");
       if (! e || sscanf (e, "%d", &i) != 1)
-	continue;
+        continue;
 
       /* Sanity */
       e = get_shell_value (p);
       if (! e || strlen (e) == 0)
-	continue;
+        continue;
 
       if (! deptype)
-	{
-	  depinfo->depends = rc_xmalloc (sizeof (rc_deptype_t));
-	  deptype = depinfo->depends;
-	  memset (deptype, 0, sizeof (rc_deptype_t));
-	}
+        {
+          depinfo->depends = rc_xmalloc (sizeof (rc_deptype_t));
+          deptype = depinfo->depends;
+          memset (deptype, 0, sizeof (rc_deptype_t));
+        }
       else
-	if (strcmp (deptype->type, type) != 0)
-	  {
-	    deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
-	    deptype = deptype->next;
-	    memset (deptype, 0, sizeof (rc_deptype_t));
-	  }
+        if (strcmp (deptype->type, type) != 0)
+          {
+            deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
+            deptype = deptype->next;
+            memset (deptype, 0, sizeof (rc_deptype_t));
+          }
 
       if (! deptype->type)
-	deptype->type = strdup (type);
+        deptype->type = strdup (type);
 
       deptype->services = rc_strlist_addsort (deptype->services, e);
     }
@@ -190,16 +190,16 @@ rc_deptype_t *rc_get_deptype (rc_depinfo_t *depinfo, const char *type)
 static bool valid_service (const char *runlevel, const char *service)
 {
   return ((strcmp (runlevel, RC_LEVEL_BOOT) != 0 &&
-	   rc_service_in_runlevel (service, RC_LEVEL_BOOT)) ||
-	  rc_service_in_runlevel (service, runlevel) ||
-	  rc_service_state (service, rc_service_coldplugged) ||
-	  rc_service_state (service, rc_service_started));
+           rc_service_in_runlevel (service, RC_LEVEL_BOOT)) ||
+          rc_service_in_runlevel (service, runlevel) ||
+          rc_service_state (service, rc_service_coldplugged) ||
+          rc_service_state (service, rc_service_started));
 }
 
 static bool get_provided1 (const char *runlevel, struct lhead *providers,
-			   rc_deptype_t *deptype,
-			   const char *level, bool coldplugged,
-			   bool started, bool inactive)
+                           rc_deptype_t *deptype,
+                           const char *level, bool coldplugged,
+                           bool started, bool inactive)
 {
   char *service;
   int i;
@@ -209,25 +209,25 @@ static bool get_provided1 (const char *runlevel, struct lhead *providers,
     {
       bool ok = true;
       if (level)
-	ok = rc_service_in_runlevel (service, level);
+        ok = rc_service_in_runlevel (service, level);
       else if (coldplugged)
-	ok = (rc_service_state (service, rc_service_coldplugged) &&
-	      ! rc_service_in_runlevel (service, runlevel) &&
-	      ! rc_service_in_runlevel (service, RC_LEVEL_BOOT));
+        ok = (rc_service_state (service, rc_service_coldplugged) &&
+              ! rc_service_in_runlevel (service, runlevel) &&
+              ! rc_service_in_runlevel (service, RC_LEVEL_BOOT));
 
       if (! ok)
-	continue;
+        continue;
 
       if (started)
-	ok = (rc_service_state (service, rc_service_starting) ||
-	      rc_service_state (service, rc_service_started) ||
-	      rc_service_state (service, rc_service_stopping));
+        ok = (rc_service_state (service, rc_service_starting) ||
+              rc_service_state (service, rc_service_started) ||
+              rc_service_state (service, rc_service_stopping));
       else if (inactive)
-	ok = rc_service_state (service, rc_service_inactive);
+        ok = rc_service_state (service, rc_service_inactive);
 
       if (! ok)
-	continue;
-    
+        continue;
+
       retval = true;
       providers->list = rc_strlist_add (providers->list, service);
     }
@@ -245,7 +245,7 @@ static bool get_provided1 (const char *runlevel, struct lhead *providers,
    provided dependancy can change depending on runlevel state.
    */
 static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
-			    const char *runlevel, int options)
+                            const char *runlevel, int options)
 {
   rc_deptype_t *dt;
   struct lhead providers; 
@@ -268,7 +268,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
   if (options & RC_DEP_STOP)
     {
       STRLIST_FOREACH (dt->services, service, i)
-	providers.list = rc_strlist_add (providers.list, service);
+       providers.list = rc_strlist_add (providers.list, service);
 
       return (providers.list);
     }
@@ -277,11 +277,11 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
   if (options & RC_DEP_STRICT)
     {
       STRLIST_FOREACH (dt->services, service, i)
-	if (rc_service_in_runlevel (service, runlevel))
-	  providers.list = rc_strlist_add (providers.list, service);
+       if (rc_service_in_runlevel (service, runlevel))
+         providers.list = rc_strlist_add (providers.list, service);
 
       if (providers.list)
-	return (providers.list);
+        return (providers.list);
     }
 
   /* OK, we're not strict or there were no services in our runlevel.
@@ -298,7 +298,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
       return (NULL); \
     } \
   else if (providers.list)  \
-    return providers.list; \
+  return providers.list; \
 
   /* Anything in the runlevel has to come first */
   if (get_provided1 (runlevel, &providers, dt, runlevel, false, true, false))
@@ -316,9 +316,9 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
   if (strcmp (runlevel, RC_LEVEL_BOOT) != 0)
     {
       if (get_provided1 (runlevel, &providers, dt, RC_LEVEL_BOOT, false, true, false))
-	{ DO }
+        { DO }
       if (get_provided1 (runlevel, &providers, dt, RC_LEVEL_BOOT, false, false, true))
-	{ DO }
+        { DO }
     }
 
   /* Check coldplugged inactive services */
@@ -340,15 +340,15 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 
   /* Still nothing? OK, list all services */
   STRLIST_FOREACH (dt->services, service, i)
-    providers.list = rc_strlist_add (providers.list, service);
+   providers.list = rc_strlist_add (providers.list, service);
 
   return (providers.list);
 }
 
 static void visit_service (rc_depinfo_t *deptree, char **types,
-			   struct lhead *sorted, struct lhead *visited,
-			   rc_depinfo_t *depinfo,
-			   const char *runlevel, int options)
+                           struct lhead *sorted, struct lhead *visited,
+                           rc_depinfo_t *depinfo,
+                           const char *runlevel, int options)
 {
   int i, j, k;
   char *lp, *item;
@@ -372,55 +372,55 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
   STRLIST_FOREACH (types, item, i)
     {
       if ((dt = rc_get_deptype (depinfo, item)))
-	{
-	  STRLIST_FOREACH (dt->services, service, j)
-	    {
-	      if (! options & RC_DEP_TRACE || strcmp (item, "iprovide") == 0)
-		{
-		  sorted->list = rc_strlist_add (sorted->list, service);
-		  continue;
-		}
+        {
+          STRLIST_FOREACH (dt->services, service, j)
+            {
+              if (! options & RC_DEP_TRACE || strcmp (item, "iprovide") == 0)
+                {
+                  sorted->list = rc_strlist_add (sorted->list, service);
+                  continue;
+                }
 
-	      di = rc_get_depinfo (deptree, service);
-	      if ((provides = get_provided (deptree, di, runlevel, options)))
-		{
-		  STRLIST_FOREACH (provides, lp, k) 
-		    {
-		      di = rc_get_depinfo (deptree, lp);
-		      if (di && (strcmp (item, "ineed") == 0 ||
-				 valid_service (runlevel, di->service)))
-			visit_service (deptree, types, sorted, visited, di,
-				       runlevel, options | RC_DEP_TRACE);
-		    }
-		  rc_strlist_free (provides);
-		}
-	      else
-		if (di && (strcmp (item, "ineed") == 0 ||
-			   valid_service (runlevel, service)))
-		  visit_service (deptree, types, sorted, visited, di,
-				 runlevel, options | RC_DEP_TRACE);
-	    }
-	}
+              di = rc_get_depinfo (deptree, service);
+              if ((provides = get_provided (deptree, di, runlevel, options)))
+                {
+                  STRLIST_FOREACH (provides, lp, k) 
+                    {
+                      di = rc_get_depinfo (deptree, lp);
+                      if (di && (strcmp (item, "ineed") == 0 ||
+                                 valid_service (runlevel, di->service)))
+                        visit_service (deptree, types, sorted, visited, di,
+                                       runlevel, options | RC_DEP_TRACE);
+                    }
+                  rc_strlist_free (provides);
+                }
+              else
+                if (di && (strcmp (item, "ineed") == 0 ||
+                           valid_service (runlevel, service)))
+                  visit_service (deptree, types, sorted, visited, di,
+                                 runlevel, options | RC_DEP_TRACE);
+            }
+        }
     }
 
   /* Now visit the stuff we provide for */
   if (options & RC_DEP_TRACE && (dt = rc_get_deptype (depinfo, "iprovide")))
     {
       STRLIST_FOREACH (dt->services, service, i)
-	{
-	  if ((di = rc_get_depinfo (deptree, service)))
-	    if ((provides = get_provided (deptree, di, runlevel, options)))
-	      {
-		STRLIST_FOREACH (provides, lp, j)
-		  if (strcmp (lp, depinfo->service) == 0)
-		    {
-		      visit_service (deptree, types, sorted, visited, di,
-				     runlevel, options | RC_DEP_TRACE);
-		      break;
-		    }
-		rc_strlist_free (provides);
-	      }
-	}
+        {
+          if ((di = rc_get_depinfo (deptree, service)))
+            if ((provides = get_provided (deptree, di, runlevel, options)))
+              {
+                STRLIST_FOREACH (provides, lp, j)
+                 if (strcmp (lp, depinfo->service) == 0)
+                   {
+                     visit_service (deptree, types, sorted, visited, di,
+                                    runlevel, options | RC_DEP_TRACE);
+                     break;
+                   }
+                rc_strlist_free (provides);
+              }
+        }
     }
 
   /* We've visited everything we need, so add ourselves unless we
@@ -432,8 +432,8 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 }
 
 char **rc_get_depends (rc_depinfo_t *deptree,
-		       char **types, char **services,
-		       const char *runlevel, int options)
+                       char **types, char **services,
+                       const char *runlevel, int options)
 {  
   struct lhead sorted;
   struct lhead visited;
@@ -458,7 +458,7 @@ char **rc_get_depends (rc_depinfo_t *deptree,
 }
 
 char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
-			  int options)
+                          int options)
 {
   char **list = NULL;
   char **types = NULL;
@@ -487,12 +487,12 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
 
       /* If we're not the boot runlevel then add that too */
       if (strcmp (runlevel, RC_LEVEL_BOOT) != 0)
-	{
-	  char *path = rc_strcatpaths (RC_RUNLEVELDIR, RC_LEVEL_BOOT,
-				       (char *) NULL);
-	  list = rc_ls_dir (list, path, RC_LS_INITD);
-	  free (path);
-	}
+        {
+          char *path = rc_strcatpaths (RC_RUNLEVELDIR, RC_LEVEL_BOOT,
+                                       (char *) NULL);
+          list = rc_ls_dir (list, path, RC_LS_INITD);
+          free (path);
+        }
     } 
 
   /* Now we have our lists, we need to pull in any dependencies
@@ -501,7 +501,7 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
   types = rc_strlist_add (types, "iuse");
   types = rc_strlist_add (types, "iafter");
   services = rc_get_depends (deptree, types, list, runlevel,
-			     RC_DEP_STRICT | RC_DEP_TRACE | options);
+                             RC_DEP_STRICT | RC_DEP_TRACE | options);
   rc_strlist_free (list);
   rc_strlist_free (types);
 
@@ -533,13 +533,13 @@ static bool is_newer_than (const char *file, const char *target)
       int i;
       bool newer = true;
       STRLIST_FOREACH (targets, t, i)
-	{
-	  char *path = rc_strcatpaths (target, t, (char *) NULL);
-	  newer = is_newer_than (file, path);
-	  free (path);
-	  if (! newer)
-	    break;
-	}
+        {
+          char *path = rc_strcatpaths (target, t, (char *) NULL);
+          newer = is_newer_than (file, path);
+          free (path);
+          if (! newer)
+            break;
+        }
       rc_strlist_free (targets);
       return (newer);
     }
@@ -613,13 +613,13 @@ int rc_update_deptree (bool force)
   for (i = 0; depdirs[i]; i++)
     if (! rc_is_dir (depdirs[i]))
       if (mkdir (depdirs[i], 0755) != 0)
-	eerrorx ("mkdir `%s': %s", depdirs[i], strerror (errno));
+        eerrorx ("mkdir `%s': %s", depdirs[i], strerror (errno));
 
   if (! force)
     if (is_newer_than (RC_DEPTREE, RC_INITDIR) &&
-	is_newer_than (RC_DEPTREE, RC_CONFDIR) &&
-	is_newer_than (RC_DEPTREE, "/etc/rc.conf"))
-    return 0;
+        is_newer_than (RC_DEPTREE, RC_CONFDIR) &&
+        is_newer_than (RC_DEPTREE, "/etc/rc.conf"))
+      return 0;
 
   ebegin ("Caching service dependencies");
 
@@ -641,79 +641,79 @@ int rc_update_deptree (bool force)
     {
       /* Trim the newline */
       if (buffer[strlen (buffer) - 1] == '\n')
-	buffer[strlen(buffer) -1] = 0;
+        buffer[strlen(buffer) -1] = 0;
 
       depends = buffer;
       service = strsep (&depends, " ");
       if (! service)
-	continue;
+        continue;
       type = strsep (&depends, " ");
 
       for (depinfo = deptree; depinfo; depinfo = depinfo->next)
-	{
-	  last_depinfo = depinfo;
-	  if (depinfo->service && strcmp (depinfo->service, service) == 0)
-	    break;
-	}
+        {
+          last_depinfo = depinfo;
+          if (depinfo->service && strcmp (depinfo->service, service) == 0)
+            break;
+        }
 
       if (! depinfo)
-	{
-	  if (! last_depinfo->service)
-	    depinfo = last_depinfo;
-	  else
-	    {
-	      last_depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
-	      depinfo = last_depinfo->next;
-	    }
-	  memset (depinfo, 0, sizeof (rc_depinfo_t));
-	  depinfo->service = strdup (service);
-	}
+        {
+          if (! last_depinfo->service)
+            depinfo = last_depinfo;
+          else
+            {
+              last_depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
+              depinfo = last_depinfo->next;
+            }
+          memset (depinfo, 0, sizeof (rc_depinfo_t));
+          depinfo->service = strdup (service);
+        }
 
       /* We may not have any depends */
       if (! type || ! depends)
-	continue;
+        continue;
 
       last_deptype = NULL;
       for (deptype = depinfo->depends; deptype; deptype = deptype->next)
-	{
-	  last_deptype = deptype;
-	  if (strcmp (deptype->type, type) == 0)
-	    break;
-	}
+        {
+          last_deptype = deptype;
+          if (strcmp (deptype->type, type) == 0)
+            break;
+        }
 
       if (! deptype)
-	{
-	  if (! last_deptype)
-	    {
-	      depinfo->depends = rc_xmalloc (sizeof (rc_deptype_t));
-	      deptype = depinfo->depends;
-	    }
-	  else
-	    {
-	      last_deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
-	      deptype = last_deptype->next;
-	    }
-	  memset (deptype, 0, sizeof (rc_deptype_t));
-	  deptype->type = strdup (type);
-	}
+        {
+          if (! last_deptype)
+            {
+              depinfo->depends = rc_xmalloc (sizeof (rc_deptype_t));
+              deptype = depinfo->depends;
+            }
+          else
+            {
+              last_deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
+              deptype = last_deptype->next;
+            }
+          memset (deptype, 0, sizeof (rc_deptype_t));
+          deptype->type = strdup (type);
+        }
 
       /* Now add each depend to our type.
-	 We do this individually so we handle multiple spaces gracefully */
+         We do this individually so we handle multiple spaces gracefully */
       while ((depend = strsep (&depends, " ")))
-	{
-	  if (depend[0] == 0)
-	    continue;
+        {
+          if (depend[0] == 0)
+            continue;
 
-	  /* .sh files are not init scripts */
-	  len = strlen (depend);
-	  if (len > 2 &&
-	      depend[len - 3] == '.' &&
-	      depend[len - 2] == 's' &&
-	      depend[len - 1] == 'h')
-	    continue;
+          /* .sh files are not init scripts */
+          len = strlen (depend);
+          if (len > 2 &&
+              depend[len - 3] == '.' &&
+              depend[len - 2] == 's' &&
+              depend[len - 1] == 'h')
+            continue;
 
-	  deptype->services = rc_strlist_addsort (deptype->services, depend);
-	}
+          deptype->services = rc_strlist_addsort (deptype->services, depend);
+        }
 
     }
   pclose (fp);
@@ -722,84 +722,84 @@ int rc_update_deptree (bool force)
   for (depinfo = deptree; depinfo; depinfo = depinfo->next)
     {
       if ((deptype = rc_get_deptype (depinfo, "iprovide")))
-	STRLIST_FOREACH (deptype->services, service, i)
-	  {
-	    for (di = deptree; di; di = di->next)
-	      {
-		last_depinfo = di;
-		if (strcmp (di->service, service) == 0)
-		  break;
-	      }
-	    if (! di)
-	      {
-		last_depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
-		di = last_depinfo->next;
-		memset (di, 0, sizeof (rc_depinfo_t));
-		di->service = strdup (service);
-	      }
-	  }
+        STRLIST_FOREACH (deptype->services, service, i)
+          {
+            for (di = deptree; di; di = di->next)
+              {
+                last_depinfo = di;
+                if (strcmp (di->service, service) == 0)
+                  break;
+              }
+            if (! di)
+              {
+                last_depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
+                di = last_depinfo->next;
+                memset (di, 0, sizeof (rc_depinfo_t));
+                di->service = strdup (service);
+              }
+          }
     }
 
   /* Phase 4 - backreference our depends */
   for (depinfo = deptree; depinfo; depinfo = depinfo->next)
     {
       for (i = 0; deppairs[i].depend; i++)
-	{
-	  deptype = rc_get_deptype (depinfo, deppairs[i].depend);
-	  if (! deptype)
-	    continue;
+        {
+          deptype = rc_get_deptype (depinfo, deppairs[i].depend);
+          if (! deptype)
+            continue;
 
-	  STRLIST_FOREACH (deptype->services, service, j)
-	    {
-	      di = rc_get_depinfo (deptree, service);
-	      if (! di)
-		{
-		  if (strcmp (deptype->type, "ineed") == 0)
-		    {
-		      eerror ("Service `%s' needs non existant service `%s'",
-			      depinfo->service, service);
-		      retval = -1;
-		    } 
-		  continue;
-		}
+          STRLIST_FOREACH (deptype->services, service, j)
+            {
+              di = rc_get_depinfo (deptree, service);
+              if (! di)
+                {
+                  if (strcmp (deptype->type, "ineed") == 0)
+                    {
+                      eerror ("Service `%s' needs non existant service `%s'",
+                              depinfo->service, service);
+                      retval = -1;
+                    } 
+                  continue;
+                }
 
-	      /* Add our deptype now */
-	      last_deptype = NULL;
-	      for (dt = di->depends; dt; dt = dt->next)
-		{
-		  last_deptype = dt;
-		  if (strcmp (dt->type, deppairs[i].addto) == 0)
-		    break;
-		}
-	      if (! dt)
-		{
-		  if (! last_deptype)
-		    {
-		      di->depends = rc_xmalloc (sizeof (rc_deptype_t));
-		      dt = di->depends;
-		    }
-		  else
-		    {
-		      last_deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
-		      dt = last_deptype->next;
-		    }
-		  memset (dt, 0, sizeof (rc_deptype_t));
-		  dt->type = strdup (deppairs[i].addto);
-		}
+              /* Add our deptype now */
+              last_deptype = NULL;
+              for (dt = di->depends; dt; dt = dt->next)
+                {
+                  last_deptype = dt;
+                  if (strcmp (dt->type, deppairs[i].addto) == 0)
+                    break;
+                }
+              if (! dt)
+                {
+                  if (! last_deptype)
+                    {
+                      di->depends = rc_xmalloc (sizeof (rc_deptype_t));
+                      dt = di->depends;
+                    }
+                  else
+                    {
+                      last_deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
+                      dt = last_deptype->next;
+                    }
+                  memset (dt, 0, sizeof (rc_deptype_t));
+                  dt->type = strdup (deppairs[i].addto);
+                }
 
-	      already_added = false;
-	      STRLIST_FOREACH (dt->services, service, k)
-	       if (strcmp (service, depinfo->service) == 0)
-		 {
-		   already_added = true;
-		   break;
-		 }
+              already_added = false;
+              STRLIST_FOREACH (dt->services, service, k)
+               if (strcmp (service, depinfo->service) == 0)
+                 {
+                   already_added = true;
+                   break;
+                 }
 
-	      if (! already_added)
-		dt->services = rc_strlist_addsort (dt->services,
-						   depinfo->service);
-	    }
-	}
+              if (! already_added)
+                dt->services = rc_strlist_addsort (dt->services,
+                                                   depinfo->service);
+            }
+        }
     }
 
   /* Phase 5 - save to disk
@@ -814,20 +814,20 @@ int rc_update_deptree (bool force)
     {
       i = 0;
       for (depinfo = deptree; depinfo; depinfo = depinfo->next)
-	{
-	  fprintf (fp, "depinfo_%d_service='%s'\n", i, depinfo->service);
-	  for (deptype = depinfo->depends; deptype; deptype = deptype->next)
-	    {
-	      k = 0;
-	      STRLIST_FOREACH (deptype->services, service, j)
-		{
-		  fprintf (fp, "depinfo_%d_%s_%d='%s'\n", i, deptype->type,
-			   k, service);
-		  k++;
-		}
-	    }
-	  i++;
-	}
+        {
+          fprintf (fp, "depinfo_%d_service='%s'\n", i, depinfo->service);
+          for (deptype = depinfo->depends; deptype; deptype = deptype->next)
+            {
+              k = 0;
+              STRLIST_FOREACH (deptype->services, service, j)
+                {
+                  fprintf (fp, "depinfo_%d_%s_%d='%s'\n", i, deptype->type,
+                           k, service);
+                  k++;
+                }
+            }
+          i++;
+        }
       fclose (fp);
     }
 

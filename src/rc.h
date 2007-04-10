@@ -45,19 +45,19 @@ bool rc_mark_service (const char *service, rc_service_state_t state);
 pid_t rc_stop_service (const char *service);
 pid_t rc_start_service (const char *service);
 void rc_schedule_start_service (const char *service,
-				const char *service_to_start);
+                                const char *service_to_start);
 char **rc_services_scheduled_by (const char *service);
 void rc_schedule_clear (const char *service);
 bool rc_wait_service (const char *service);
 bool rc_get_service_option (const char *service, const char *option,
-			    char *value);
+                            char *value);
 bool rc_set_service_option (const char *service, const char *option,
-			    const char *value);
+                            const char *value);
 void rc_set_service_daemon (const char *service, const char *exec,
-			    const char *name, const char *pidfile,
-			    bool started);
+                            const char *name, const char *pidfile,
+                            bool started);
 bool rc_service_started_daemon (const char *service, const char *exec,
-				int indx);
+                                int indx);
 
 bool rc_allow_plug (char *service);
 
@@ -75,7 +75,7 @@ char **rc_services_scheduled (const char *service);
 
 /* Find pids based on criteria - free the pointer returned after use */
 pid_t *rc_find_pids (const char *exec, const char *cmd,
-		     uid_t uid, pid_t pid);
+                     uid_t uid, pid_t pid);
 /* Checks that all daemons started with start-stop-daemon by the service
    are still running. If so, return false otherwise true.
    You should check that the service has been started before calling this. */
@@ -110,14 +110,14 @@ rc_depinfo_t *rc_load_deptree (void);
 rc_depinfo_t *rc_get_depinfo (rc_depinfo_t *deptree, const char *service);
 rc_deptype_t *rc_get_deptype (rc_depinfo_t *depinfo, const char *type);
 char **rc_get_depends (rc_depinfo_t *deptree, char **types,
-		       char **services, const char *runlevel, int options);
+                       char **services, const char *runlevel, int options);
 /* List all the services that should be started, in order, the the
    given runlevel, including sysinit and boot services where
    approriate.
    If reboot, shutdown or single are given then we list all the services
    we that we need to shutdown in order. */
 char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
-			  int options);
+                          int options);
 
 void rc_free_deptree (rc_depinfo_t *deptree);
 

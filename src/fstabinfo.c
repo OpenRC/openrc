@@ -46,8 +46,8 @@ static struct mntent *getmntfile (FILE *fp, const char *file)
   struct mntent *ent;
 
   while ((ent = getmntent (fp)))
-   if (strcmp (file, ent->mnt_dir) == 0)
-     return (ent);
+    if (strcmp (file, ent->mnt_dir) == 0)
+      return (ent);
 
   return (NULL);
 }
@@ -74,71 +74,71 @@ int main (int argc, char **argv)
 #endif
 
       if (strcmp (argv[i], "--fstype") == 0 && i + 1 < argc)
-	{
-	  i++;
-	  p = argv[i];
-	  while ((token = strsep (&p, ",")))
-	    while ((ent = GET_ENT))
-	     if (strcmp (token, ENT_TYPE (ent)) == 0)
-	       printf ("%s\n", ENT_FILE (ent));
-	  result = EXIT_SUCCESS;
-	}
+        {
+          i++;
+          p = argv[i];
+          while ((token = strsep (&p, ",")))
+            while ((ent = GET_ENT))
+              if (strcmp (token, ENT_TYPE (ent)) == 0)
+                printf ("%s\n", ENT_FILE (ent));
+          result = EXIT_SUCCESS;
+        }
 
       if (strcmp (argv[i], "--mount-cmd") == 0 && i + 1 < argc)
-	{
-	  i++;
-	  if ((ent = GET_ENT_FILE (argv[i])) == NULL)
-	    continue;
-	  printf ("-o %s -t %s %s %s\n", ENT_OPTS (ent), ENT_TYPE (ent),
-		  ENT_DEVICE (ent), ENT_FILE (ent));
-	  result = EXIT_SUCCESS;
-	}
+        {
+          i++;
+          if ((ent = GET_ENT_FILE (argv[i])) == NULL)
+            continue;
+          printf ("-o %s -t %s %s %s\n", ENT_OPTS (ent), ENT_TYPE (ent),
+                  ENT_DEVICE (ent), ENT_FILE (ent));
+          result = EXIT_SUCCESS;
+        }
 
       if (strcmp (argv[i], "--opts") == 0 && i + 1 < argc)
-	{
-	  i++;
-	  if ((ent = GET_ENT_FILE (argv[i])) == NULL)
-	    continue;
-	  printf ("%s\n", ENT_OPTS (ent));
-	  result = EXIT_SUCCESS;
-	}
-	  
+        {
+          i++;
+          if ((ent = GET_ENT_FILE (argv[i])) == NULL)
+            continue;
+          printf ("%s\n", ENT_OPTS (ent));
+          result = EXIT_SUCCESS;
+        }
+
       if (strcmp (argv[i], "--passno") == 0 && i + 1 < argc)
-	{
-	  i++;
-	  switch (argv[i][0])
-	    {
-	    case '=':
-	    case '<':
-	    case '>':
-	      if (sscanf (argv[i] + 1, "%d", &n) != 1)
-		eerrorx ("%s: invalid passno %s", argv[0], argv[i] + 1);
+        {
+          i++;
+          switch (argv[i][0])
+            {
+            case '=':
+            case '<':
+            case '>':
+              if (sscanf (argv[i] + 1, "%d", &n) != 1)
+                eerrorx ("%s: invalid passno %s", argv[0], argv[i] + 1);
 
-	      while ((ent = GET_ENT))
-		{
-		  if (((argv[i][0] == '=' && n == ENT_PASS (ent)) ||
-		       (argv[i][0] == '<' && n > ENT_PASS (ent)) ||
-		       (argv[i][0] == '>' && n < ENT_PASS (ent))) &&
-		      strcmp (ENT_FILE (ent), "none") != 0)
-		    printf ("%s\n", ENT_FILE (ent));
-		}
+              while ((ent = GET_ENT))
+                {
+                  if (((argv[i][0] == '=' && n == ENT_PASS (ent)) ||
+                       (argv[i][0] == '<' && n > ENT_PASS (ent)) ||
+                       (argv[i][0] == '>' && n < ENT_PASS (ent))) &&
+                      strcmp (ENT_FILE (ent), "none") != 0)
+                    printf ("%s\n", ENT_FILE (ent));
+                }
 
-	    default:
-	      if ((ent = GET_ENT_FILE (argv[i])) == NULL)
-		continue;
-	      printf ("%d\n", ENT_PASS (ent));
-	      result = EXIT_SUCCESS;
-	    }
-	}
+            default:
+              if ((ent = GET_ENT_FILE (argv[i])) == NULL)
+                continue;
+              printf ("%d\n", ENT_PASS (ent));
+              result = EXIT_SUCCESS;
+            }
+        }
 
       END_ENT;
 
       if (result != EXIT_SUCCESS)
-	{
-	  eerror ("%s: unknown option `%s'", basename (argv[0]), argv[i]);
-	  break;
-	}
- 
+        {
+          eerror ("%s: unknown option `%s'", basename (argv[0]), argv[i]);
+          break;
+        }
+
     }
 
   exit (result);

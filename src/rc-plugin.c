@@ -50,11 +50,11 @@ void rc_plugin_load (void)
       int len;
 
       if (! h)
-	{
-	  eerror ("dlopen `%s': %s", p, dlerror ());
-	  free (p);
-	  continue;
-	}
+        {
+          eerror ("dlopen `%s': %s", p, dlerror ());
+          free (p);
+          continue;
+        }
 
       func = file;
       file = strsep (&func, ".");
@@ -64,25 +64,25 @@ void rc_plugin_load (void)
 
       f = dlsym (h, func);
       if (! f)
-	{
-	  eerror ("`%s' does not expose the symbol `%s'", p, func);
-	  dlclose (h);
-	}
+        {
+          eerror ("`%s' does not expose the symbol `%s'", p, func);
+          dlclose (h);
+        }
       else
-	{
-	  if (plugin)
-	    {
-	      plugin->next = rc_xmalloc (sizeof (plugin_t));
-	      plugin = plugin->next;
-	    }
-	  else
-	    plugin = plugins = rc_xmalloc (sizeof (plugin_t));
+        {
+          if (plugin)
+            {
+              plugin->next = rc_xmalloc (sizeof (plugin_t));
+              plugin = plugin->next;
+            }
+          else
+            plugin = plugins = rc_xmalloc (sizeof (plugin_t));
 
-	  memset (plugin, 0, sizeof (plugin_t));
-	  plugin->name = strdup (file);
-	  plugin->handle = h;
-	  plugin->hook = f;
-	}
+          memset (plugin, 0, sizeof (plugin_t));
+          plugin->name = strdup (file);
+          plugin->handle = h;
+          plugin->hook = f;
+        }
 
       free (func);
       free (p);
@@ -98,7 +98,7 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
   while (plugin)
     {
       if (plugin->hook)
-	plugin->hook (hook, value);
+        plugin->hook (hook, value);
 
       plugin = plugin->next;
     }

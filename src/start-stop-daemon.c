@@ -130,7 +130,7 @@ static int parse_signal (const char *sig)
   if (sscanf (sig, "%u", &i) == 1)
     {
       if (i > 0 && i < sizeof (signallist) / sizeof (signallist[0]))
-	return (i);
+        return (i);
       eerrorx ("%s: `%s' is not a valid signal", progname, sig);
     }
 
@@ -141,7 +141,7 @@ static int parse_signal (const char *sig)
 
   for (i = 0; i < sizeof (signallist) / sizeof (signallist[0]); i++)
     if (strcmp (sig, signallist[i].name) == 0 ||
-	(s && strcmp (s, signallist[i].name) == 0))
+        (s && strcmp (s, signallist[i].name) == 0))
       return (signallist[i].signal);
 
   eerrorx ("%s: `%s' is not a valid signal", progname, sig);
@@ -159,11 +159,11 @@ static void parse_schedule_item (schedulelist_t *item, const char *string)
       item->type = schedule_timeout;
       errno = 0;
       if (sscanf (string, "%d", &item->value) != 1)
-	eerrorx ("%s: invalid timeout value in schedule `%s'", progname,
-		 string);
+        eerrorx ("%s: invalid timeout value in schedule `%s'", progname,
+                 string);
     }
   else if ((after_hyph = string + (string[0] == '-')) &&
-	   ((sig = parse_signal (after_hyph)) != -1))
+           ((sig = parse_signal (after_hyph)) != -1))
     {
       item->type = schedule_signal;
       item->value = (int) sig;
@@ -184,7 +184,7 @@ static void parse_schedule (const char *string, int default_signal)
   if (string)
     for (slash = string; *slash; slash++)
       if (*slash == '/')
-	count++;
+        count++;
 
   if (schedule)
     free_schedulelist (&schedule);
@@ -201,12 +201,12 @@ static void parse_schedule (const char *string, int default_signal)
       next->type = schedule_timeout;
       next->gotolist = NULL;
       if (string)
-	{
-	  if (sscanf (string, "%d", &next->value) != 1)
-	    eerrorx ("%s: invalid timeout value in schedule", progname);
-	}
+        {
+          if (sscanf (string, "%d", &next->value) != 1)
+            eerrorx ("%s: invalid timeout value in schedule", progname);
+        }
       else
-	next->value = 5;
+        next->value = 5;
       next->next = NULL;
 
       return;
@@ -216,12 +216,12 @@ static void parse_schedule (const char *string, int default_signal)
   while (string != NULL)
     {
       if ((slash = strchr (string, '/')))
-	len = slash - string;
+        len = slash - string;
       else
-	len = strlen (string);
+        len = strlen (string);
 
       if (len >= (ptrdiff_t) sizeof (buffer))
-	eerrorx ("%s: invalid schedule item, far too long", progname);
+        eerrorx ("%s: invalid schedule item, far too long", progname);
 
       memcpy (buffer, string, len);
       buffer[len] = 0;
@@ -229,21 +229,21 @@ static void parse_schedule (const char *string, int default_signal)
 
       parse_schedule_item (next, buffer);
       if (next->type == schedule_forever)
-	{
-	  if (repeatat)
-	    eerrorx ("%s: invalid schedule, `forever' appears more than once",
-		     progname);
+        {
+          if (repeatat)
+            eerrorx ("%s: invalid schedule, `forever' appears more than once",
+                     progname);
 
-	  repeatat = next;
-	  continue;
-	}
+          repeatat = next;
+          continue;
+        }
 
       if (string)
-	{
-	  next->next = rc_xmalloc (sizeof (schedulelist_t));
-	  next = next->next;
-	  next->gotolist = NULL;
-	}
+        {
+          next->next = rc_xmalloc (sizeof (schedulelist_t));
+          next = next->next;
+          next->gotolist = NULL;
+        }
     }
 
   if (repeatat)
@@ -270,14 +270,14 @@ static pid_t get_pid (const char *pidfile, bool quiet)
   if ((fp = fopen (pidfile, "r")) == NULL)
     {
       if (! quiet)
-	eerror ("%s: fopen `%s': %s", progname, pidfile, strerror (errno));
+        eerror ("%s: fopen `%s': %s", progname, pidfile, strerror (errno));
       return (-1);
     }
 
   if (fscanf (fp, "%d", &pid) != 1)
     {
       if (! quiet)
-	eerror ("%s: no pid found in `%s'", progname, pidfile);
+        eerror ("%s: no pid found in `%s'", progname, pidfile);
       fclose (fp);
       return (-1);
     }
@@ -288,8 +288,8 @@ static pid_t get_pid (const char *pidfile, bool quiet)
 
 /* return number of processed killed, -1 on error */
 static int do_stop (const char *exec, const char *cmd,
-		    const char *pidfile, uid_t uid,int sig,
-		    bool quiet, bool verbose, bool test)
+                    const char *pidfile, uid_t uid,int sig,
+                    bool quiet, bool verbose, bool test)
 {
   pid_t *pids; 
   bool killed;
@@ -307,33 +307,33 @@ static int do_stop (const char *exec, const char *cmd,
   for (i = 0; pids[i]; i++)
     {
       if (test)
-	{
-	  if (! quiet)
-	    einfo ("Would send signal %d to PID %d", sig, pids[i]);
-	  nkilled++;
-	  continue;
-	}
+        {
+          if (! quiet)
+            einfo ("Would send signal %d to PID %d", sig, pids[i]);
+          nkilled++;
+          continue;
+        }
 
       if (verbose)
-	ebegin ("Sending signal %d to PID %d", sig, pids[i]);
+        ebegin ("Sending signal %d to PID %d", sig, pids[i]);
       errno = 0;
       killed = (kill (pids[i], sig) == 0 || errno == ESRCH ? true : false);
       if (! killed)
-	{
-	  if (! quiet)
-	    eerror ("%s: failed to send signal %d to PID %d: %s",
-		    progname, sig, pids[i], strerror (errno));
-	  if (verbose)
-	    eend (1, NULL);
-	  nkilled = -1;
-	}
+        {
+          if (! quiet)
+            eerror ("%s: failed to send signal %d to PID %d: %s",
+                    progname, sig, pids[i], strerror (errno));
+          if (verbose)
+            eend (1, NULL);
+          nkilled = -1;
+        }
       else
-	{
-	  if (verbose)
-	    eend (0, NULL);
-	  if (nkilled != -1)
-	    nkilled++;
-	}
+        {
+          if (verbose)
+            eend (0, NULL);
+          if (nkilled != -1)
+            nkilled++;
+        }
     }
 
   free (pids);
@@ -341,8 +341,8 @@ static int do_stop (const char *exec, const char *cmd,
 }
 
 static int run_stop_schedule (const char *exec, const char *cmd,
-			       const char *pidfile, uid_t uid,
-			       bool quiet, bool verbose, bool test)
+                              const char *pidfile, uid_t uid,
+                              bool quiet, bool verbose, bool test)
 {
   schedulelist_t *item = schedule;
   int nkilled = 0;
@@ -355,89 +355,89 @@ static int run_stop_schedule (const char *exec, const char *cmd,
   if (verbose)
     {
       if (pidfile)
-	einfo ("Will stop PID in pidfile `%s'", pidfile);
+        einfo ("Will stop PID in pidfile `%s'", pidfile);
       if (uid)
-	einfo ("Will stop processes owned by UID %d", uid);
+        einfo ("Will stop processes owned by UID %d", uid);
       if (exec)
-	einfo ("Will stop processes of `%s'", exec);
+        einfo ("Will stop processes of `%s'", exec);
       if (cmd)
-	einfo ("Will stop processes called `%s'", cmd);
+        einfo ("Will stop processes called `%s'", cmd);
     }
 
   while (item)
     {
       switch (item->type)
-	{
-	case schedule_goto:
-	  item = item->gotolist;
-	  continue;
+        {
+        case schedule_goto:
+          item = item->gotolist;
+          continue;
 
-	case schedule_signal:
-	  nrunning = 0;
-	  nkilled = do_stop (exec, cmd, pidfile, uid, item->value,
-			     quiet, verbose, test);
-	  if (nkilled == 0)
-	    {
-	      if (tkilled == 0)
-		{
-		  if (! quiet)
-		    eerror ("%s: no matching processes found", progname);
-		}
-	      return (tkilled);
-	    }
-	  else if (nkilled == -1)
-	    return (0);
+        case schedule_signal:
+          nrunning = 0;
+          nkilled = do_stop (exec, cmd, pidfile, uid, item->value,
+                             quiet, verbose, test);
+          if (nkilled == 0)
+            {
+              if (tkilled == 0)
+                {
+                  if (! quiet)
+                    eerror ("%s: no matching processes found", progname);
+                }
+              return (tkilled);
+            }
+          else if (nkilled == -1)
+            return (0);
 
-	  tkilled += nkilled;
-	  break;
-	case schedule_timeout:
-	  if (item->value < 1)
-	    {
-	      item = NULL;
-	      break;
-	    }
+          tkilled += nkilled;
+          break;
+        case schedule_timeout:
+          if (item->value < 1)
+            {
+              item = NULL;
+              break;
+            }
 
-	  if (gettimeofday (&stopat, NULL) != 0)
-	    {
-	      eerror ("%s: gettimeofday: %s", progname, strerror (errno));
-	      return (0);
-	    }
+          if (gettimeofday (&stopat, NULL) != 0)
+            {
+              eerror ("%s: gettimeofday: %s", progname, strerror (errno));
+              return (0);
+            }
 
-	  stopat.tv_sec += item->value;
-	  while (1)
-	    {
-	      if ((nrunning = do_stop (exec, cmd, pidfile,
-				       uid, 0, true, false, true)) == 0)
-		return (true);
+          stopat.tv_sec += item->value;
+          while (1)
+            {
+              if ((nrunning = do_stop (exec, cmd, pidfile,
+                                       uid, 0, true, false, true)) == 0)
+                return (true);
 
-	      tv.tv_sec = 0;
-	      tv.tv_usec = POLL_INTERVAL;
-	      if (select (0, 0, 0, 0, &tv) < 0)
-		{
-		  if (errno == EINTR)
-		    eerror ("%s: caught an interupt", progname);
-		  else
-		    eerror ("%s: select: %s", progname, strerror (errno));
-		  return (0);
-		}
+              tv.tv_sec = 0;
+              tv.tv_usec = POLL_INTERVAL;
+              if (select (0, 0, 0, 0, &tv) < 0)
+                {
+                  if (errno == EINTR)
+                    eerror ("%s: caught an interupt", progname);
+                  else
+                    eerror ("%s: select: %s", progname, strerror (errno));
+                  return (0);
+                }
 
-	      if (gettimeofday (&now, NULL) != 0)
-		{
-		  eerror ("%s: gettimeofday: %s", progname, strerror (errno));
-		  return (0);
-		}
-	      if (timercmp (&now, &stopat, >))
-		break;
-	    }
-	  break;
+              if (gettimeofday (&now, NULL) != 0)
+                {
+                  eerror ("%s: gettimeofday: %s", progname, strerror (errno));
+                  return (0);
+                }
+              if (timercmp (&now, &stopat, >))
+                break;
+            }
+          break;
 
-	default:
-	  eerror ("%s: invalid schedule item `%d'", progname, item->type);
-	  return (0);
-	}
+        default:
+          eerror ("%s: invalid schedule item `%d'", progname, item->type);
+          return (0);
+        }
 
       if (item)
-	item = item->next;
+        item = item->next;
     }
 
   if (test || (tkilled > 0 && nrunning == 0))
@@ -446,9 +446,9 @@ static int run_stop_schedule (const char *exec, const char *cmd,
   if (! quiet)
     {
       if (nrunning == 1)
-	eerror ("%s: %d process refused to stop", progname, nrunning);
+        eerror ("%s: %d process refused to stop", progname, nrunning);
       else
-	eerror ("%s: %d process(es) refused to stop", progname, nrunning);
+        eerror ("%s: %d process(es) refused to stop", progname, nrunning);
     }
 
   return (-nrunning);
@@ -465,27 +465,27 @@ static void handle_signal (int sig)
     {
     case SIGINT:
       if (! signame[0])
-	snprintf (signame, sizeof (signame), "SIGINT");
+        snprintf (signame, sizeof (signame), "SIGINT");
     case SIGTERM:
       if (! signame[0])
-	snprintf (signame, sizeof (signame), "SIGTERM");
+        snprintf (signame, sizeof (signame), "SIGTERM");
     case SIGQUIT:
       if (! signame[0])
-	snprintf (signame, sizeof (signame), "SIGQUIT");
+        snprintf (signame, sizeof (signame), "SIGQUIT");
       eerrorx ("%s: caught %s, aborting", progname, signame);
 
     case SIGCHLD:
       while (1)
-	{
-	  if ((pid = waitpid (-1, &status, WNOHANG)) < 0)
-	    {
-	      if (errno != ECHILD)
-	        eerror ("%s: waitpid: %s", progname, strerror (errno));
-	      break;
-	    }
-	}
+        {
+          if ((pid = waitpid (-1, &status, WNOHANG)) < 0)
+            {
+              if (errno != ECHILD)
+                eerror ("%s: waitpid: %s", progname, strerror (errno));
+              break;
+            }
+        }
       break;
-  
+
     default:
       eerror ("%s: caught unknown signal %d", progname, sig);
     }
@@ -568,141 +568,141 @@ int main (int argc, char **argv)
   signal (SIGTERM, handle_signal);
 
   while ((c = getopt_long (argc, argv,
-			   "KN:R:Sbc:d:g:mn:op:qs:tu:r:vx:1:2:",
-			   longopts, (int *) 0)) != -1)
+                           "KN:R:Sbc:d:g:mn:op:qs:tu:r:vx:1:2:",
+                           longopts, (int *) 0)) != -1)
     switch (c)
       {
       case 'K':  /* --stop */
-	stop = true;
-	break;
+        stop = true;
+        break;
 
       case 'N':  /* --nice */
-	if (sscanf (optarg, "%d", &nicelevel) != 1)
-	  eerrorx ("%s: invalid nice level `%s'", progname, optarg);
-	break;
+        if (sscanf (optarg, "%d", &nicelevel) != 1)
+          eerrorx ("%s: invalid nice level `%s'", progname, optarg);
+        break;
 
       case 'R':  /* --retry <schedule>|<timeout> */
-	parse_schedule (optarg, sig);
-	break;
+        parse_schedule (optarg, sig);
+        break;
 
       case 'S':  /* --start */
-	start = true;
-	break;
+        start = true;
+        break;
 
       case 'b':  /* --background */
-	background = true;
-	break;
+        background = true;
+        break;
 
       case 'c':  /* --chuid <username>|<uid> */
-	/* we copy the string just in case we need the
-	 * argument later. */
-	  {
-	    char *p = optarg;
-	    char *cu = strsep (&p, ":");
-	    changeuser = strdup (cu);
-	    if (sscanf (cu, "%d", &tid) != 1)
-	      {
-		struct passwd *pw = getpwnam (cu);
-		if (! pw)
-		  eerrorx ("%s: user `%s' not found", progname, cu);
-		ch_uid = pw->pw_uid;
-	      }
-	    else
-	      ch_uid = tid;
-	    if (p)
-	      {
-		char *cg = strsep (&p, ":");
-		if (sscanf (cg, "%d", &tid) != 1)
-		  {
-		    struct group *gr = getgrnam (cg);
-		    if (! gr)
-		      eerrorx ("%s: group `%s' not found", progname, cg);
-		    ch_gid = gr->gr_gid;
-		  }
-		else
-		  ch_gid = tid;
-	      }
-	  }
-	break;
+        /* we copy the string just in case we need the
+         * argument later. */
+          {
+            char *p = optarg;
+            char *cu = strsep (&p, ":");
+            changeuser = strdup (cu);
+            if (sscanf (cu, "%d", &tid) != 1)
+              {
+                struct passwd *pw = getpwnam (cu);
+                if (! pw)
+                  eerrorx ("%s: user `%s' not found", progname, cu);
+                ch_uid = pw->pw_uid;
+              }
+            else
+              ch_uid = tid;
+            if (p)
+              {
+                char *cg = strsep (&p, ":");
+                if (sscanf (cg, "%d", &tid) != 1)
+                  {
+                    struct group *gr = getgrnam (cg);
+                    if (! gr)
+                      eerrorx ("%s: group `%s' not found", progname, cg);
+                    ch_gid = gr->gr_gid;
+                  }
+                else
+                  ch_gid = tid;
+              }
+          }
+        break;
 
       case 'd':  /* --chdir /new/dir */
-	ch_dir = optarg;
-	break;
+        ch_dir = optarg;
+        break;
 
       case 'g':  /* --group <group>|<gid> */
-	if (sscanf (optarg, "%d", &tid) != 1)
-	  {
-	    struct group *gr = getgrnam (optarg);
-	    if (! gr)
-	      eerrorx ("%s: group `%s' not found", progname, optarg);
-	    ch_gid = gr->gr_gid;
-	  }
-	else
-	  ch_gid = tid;
-	break;
+        if (sscanf (optarg, "%d", &tid) != 1)
+          {
+            struct group *gr = getgrnam (optarg);
+            if (! gr)
+              eerrorx ("%s: group `%s' not found", progname, optarg);
+            ch_gid = gr->gr_gid;
+          }
+        else
+          ch_gid = tid;
+        break;
 
       case 'm':  /* --make-pidfile */
-	makepidfile = true;
-	break;
+        makepidfile = true;
+        break;
 
       case 'n':  /* --name <process-name> */
-	cmd = optarg;
-	break;
+        cmd = optarg;
+        break;
 
       case 'o':  /* --oknodo */
-	oknodo = true;
-	break;
+        oknodo = true;
+        break;
 
       case 'p':  /* --pidfile <pid-file> */
-	pidfile = optarg;
-	break;
+        pidfile = optarg;
+        break;
 
       case 'q':  /* --quiet */
-	quiet = true;
-	break;
+        quiet = true;
+        break;
 
       case 's':  /* --signal <signal> */
-	sig = parse_signal (optarg);
-	break;
+        sig = parse_signal (optarg);
+        break;
 
       case 't':  /* --test */
-	test = true;
-	break;
+        test = true;
+        break;
 
       case 'u':  /* --user <username>|<uid> */
-	if (sscanf (optarg, "%d", &tid) != 1)
-	  {
-	    struct passwd *pw = getpwnam (optarg);
-	    if (! pw)
-	      eerrorx ("%s: user `%s' not found", progname, optarg);
-	    uid = pw->pw_uid;
-	  }
-	else
-	  uid = tid;
-	break;
+        if (sscanf (optarg, "%d", &tid) != 1)
+          {
+            struct passwd *pw = getpwnam (optarg);
+            if (! pw)
+              eerrorx ("%s: user `%s' not found", progname, optarg);
+            uid = pw->pw_uid;
+          }
+        else
+          uid = tid;
+        break;
 
       case 'r':  /* --chroot /new/root */
-	ch_root = optarg;
-	break;
+        ch_root = optarg;
+        break;
 
       case 'v':  /* --verbose */
-	verbose = true;
-	break;
+        verbose = true;
+        break;
 
       case 'x':  /* --exec <executable> */
-	exec = optarg;
-	break;
+        exec = optarg;
+        break;
 
       case '1':   /* --stdout /path/to/stdout.lgfile */
-	redirect_stdout = optarg;
-	break;
+        redirect_stdout = optarg;
+        break;
 
       case '2':  /* --stderr /path/to/stderr.logfile */
-	redirect_stderr = optarg;
-	break;
+        redirect_stderr = optarg;
+        break;
 
       default:
-	exit (EXIT_FAILURE);
+        exit (EXIT_FAILURE);
       }
 
   /* Respect RC as well as how we are called */
@@ -726,7 +726,7 @@ int main (int argc, char **argv)
 
   if ((redirect_stdout || redirect_stderr) && ! background)
     eerrorx ("%s: --stdout and --stderr are only relevant with --background",
-	     progname);
+             progname);
 
   argc -= optind;
   argv += optind;
@@ -736,18 +736,18 @@ int main (int argc, char **argv)
     {
       char *tmp;
       if (ch_root)
-	tmp = rc_strcatpaths (ch_root, exec, (char *) NULL);
+        tmp = rc_strcatpaths (ch_root, exec, (char *) NULL);
       else
-	tmp = exec;
+        tmp = exec;
       if (! rc_is_file (tmp))
-	{
-	  eerror ("%s: %s does not exist", progname, tmp);
-	  if (ch_root)
-	    free (tmp);
-	  exit (EXIT_FAILURE);
-	}
+        {
+          eerror ("%s: %s does not exist", progname, tmp);
+          if (ch_root)
+            free (tmp);
+          exit (EXIT_FAILURE);
+        }
       if (ch_root)
-	free (tmp);
+        free (tmp);
     }
 
   if (stop)
@@ -755,24 +755,24 @@ int main (int argc, char **argv)
       int result;
 
       if (! schedule)
-	{
-	  if (test || oknodo)
-	    parse_schedule ("0", sig);
-	  else
-	    parse_schedule (NULL, sig);
-	}
+        {
+          if (test || oknodo)
+            parse_schedule ("0", sig);
+          else
+            parse_schedule (NULL, sig);
+        }
 
       result = run_stop_schedule (exec, cmd, pidfile, uid, quiet, verbose, test);
       if (test || oknodo)
-	return (result > 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+        return (result > 0 ? EXIT_SUCCESS : EXIT_FAILURE);
       if (result < 1)
-	exit (result == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+        exit (result == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 
       if (pidfile && rc_is_file (pidfile))
-	unlink (pidfile);
+        unlink (pidfile);
 
       if (svcname)
-	rc_set_service_daemon (svcname, exec, cmd, pidfile, false);
+        rc_set_service_daemon (svcname, exec, cmd, pidfile, false);
 
       exit (EXIT_SUCCESS);
     }
@@ -783,23 +783,23 @@ int main (int argc, char **argv)
   if (test)
     {
       if (quiet)
-	exit (EXIT_SUCCESS);
+        exit (EXIT_SUCCESS);
 
       einfon ("Would start %s", exec);
       while (argc-- > 0)
-	printf("%s ", *argv++);
+        printf("%s ", *argv++);
       printf ("\n");
       eindent ();
       if (ch_uid != 0)
-	einfo ("as user %d", ch_uid);
+        einfo ("as user %d", ch_uid);
       if (ch_gid != 0)
-	einfo ("as group %d", ch_gid);
+        einfo ("as group %d", ch_gid);
       if (ch_root)
-	einfo ("in root `%s'", ch_root);
+        einfo ("in root `%s'", ch_root);
       if (ch_dir)
-	einfo ("in dir `%s'", ch_dir);
+        einfo ("in dir `%s'", ch_dir);
       if (nicelevel != 0)
-	einfo ("with a priority of %d", nicelevel);
+        einfo ("with a priority of %d", nicelevel);
       eoutdent ();
       exit (EXIT_SUCCESS);
     }
@@ -833,64 +833,64 @@ int main (int argc, char **argv)
       devnull_fd = open("/dev/null", O_RDWR);
 
       if (nicelevel)
-	{
-	  if (setpriority (PRIO_PROCESS, mypid, nicelevel) == -1)
-	    eerrorx ("%s: setpritory %d: %s", progname, nicelevel,
-		     strerror(errno));
-	}
+        {
+          if (setpriority (PRIO_PROCESS, mypid, nicelevel) == -1)
+            eerrorx ("%s: setpritory %d: %s", progname, nicelevel,
+                     strerror(errno));
+        }
 
       if (ch_root && chroot (ch_root) < 0)
-	eerrorx ("%s: chroot `%s': %s", progname, ch_root, strerror (errno));
+        eerrorx ("%s: chroot `%s': %s", progname, ch_root, strerror (errno));
 
       if (ch_dir && chdir (ch_dir) < 0)
-	eerrorx ("%s: chdir `%s': %s", progname, ch_dir, strerror (errno));
+        eerrorx ("%s: chdir `%s': %s", progname, ch_dir, strerror (errno));
 
       if (makepidfile && pidfile)
-	{
-	  FILE *fp = fopen (pidfile, "w");
-	  if (! fp)
-	    eerrorx ("%s: fopen `%s': %s", progname, pidfile, strerror
-		     (errno));
-	  fprintf (fp, "%d\n", mypid);
-	  fclose (fp);
-	}
+        {
+          FILE *fp = fopen (pidfile, "w");
+          if (! fp)
+            eerrorx ("%s: fopen `%s': %s", progname, pidfile, strerror
+                     (errno));
+          fprintf (fp, "%d\n", mypid);
+          fclose (fp);
+        }
 
 #ifdef HAVE_PAM
       if (changeuser != NULL)
-	pamr = pam_start ("start-stop-daemon", changeuser, &conv, &pamh);
+        pamr = pam_start ("start-stop-daemon", changeuser, &conv, &pamh);
       else
-	pamr = pam_start ("start-stop-daemon", "nobody", &conv, &pamh);
+        pamr = pam_start ("start-stop-daemon", "nobody", &conv, &pamh);
 
       if (pamr == PAM_SUCCESS)
-	pamr = pam_authenticate (pamh, PAM_SILENT);
+        pamr = pam_authenticate (pamh, PAM_SILENT);
       if (pamr == PAM_SUCCESS)
-	pamr = pam_acct_mgmt (pamh, PAM_SILENT);
+        pamr = pam_acct_mgmt (pamh, PAM_SILENT);
       if (pamr == PAM_SUCCESS)
-	pamr = pam_open_session (pamh, PAM_SILENT);
+        pamr = pam_open_session (pamh, PAM_SILENT);
       if (pamr != PAM_SUCCESS)
-	eerrorx ("%s: pam error: %s", progname, pam_strerror(pamh, pamr));
+        eerrorx ("%s: pam error: %s", progname, pam_strerror(pamh, pamr));
 #endif
 
       if ((ch_gid) && setgid(ch_gid))
-	eerrorx ("%s: unable to set groupid to %d", progname, ch_gid);
+        eerrorx ("%s: unable to set groupid to %d", progname, ch_gid);
       if (changeuser && ch_gid)
-	if (initgroups (changeuser, ch_gid))
-	  eerrorx ("%s: initgroups (%s, %d)", progname, changeuser, ch_gid);
+        if (initgroups (changeuser, ch_gid))
+          eerrorx ("%s: initgroups (%s, %d)", progname, changeuser, ch_gid);
       if (ch_uid && setuid (ch_uid))
-	eerrorx ("%s: unable to set userid to %d", progname, ch_uid);
+        eerrorx ("%s: unable to set userid to %d", progname, ch_uid);
       else
-	{
-	  struct passwd *passwd = getpwuid (ch_uid);
-	  if (passwd)
-	    {
-	      unsetenv ("HOME");
-	      if (passwd->pw_dir)
-		setenv ("HOME", passwd->pw_dir, 1);
-	      unsetenv ("USER");
-	      if (passwd->pw_name)
-		setenv ("USER", passwd->pw_name, 1);
-	    }
-	}
+        {
+          struct passwd *passwd = getpwuid (ch_uid);
+          if (passwd)
+            {
+              unsetenv ("HOME");
+              if (passwd->pw_dir)
+                setenv ("HOME", passwd->pw_dir, 1);
+              unsetenv ("USER");
+              if (passwd->pw_name)
+                setenv ("USER", passwd->pw_name, 1);
+            }
+        }
 
       /* Close any fd's to the passwd database */
       endpwent ();
@@ -903,60 +903,60 @@ int main (int argc, char **argv)
       /* Clean the environment of any RC_ variables */
       STRLIST_FOREACH (environ, env, i)
        if (env && strncmp (env, "RC_", 3) != 0)
-	 {
-	   /* For the path character, remove the rcscript bin dir from it */
-	   if (strncmp (env, "PATH=" RC_LIBDIR "bin:",
-			strlen ("PATH=" RC_LIBDIR "bin:")) == 0)
-	     {
-	       char *path = env;
-	       char *newpath;
-	       int len;
-	       path += strlen ("PATH=" RC_LIBDIR "bin:");
-	       len = sizeof (char *) * strlen (path) + 6;
-	       newpath = rc_xmalloc (len);
-	       snprintf (newpath, len, "PATH=%s", path);
-	       newenv = rc_strlist_add (newenv, newpath);
-	       free (newpath);
-	     }
-	   else
-	     newenv = rc_strlist_add (newenv, env);
-	 }
+         {
+           /* For the path character, remove the rcscript bin dir from it */
+           if (strncmp (env, "PATH=" RC_LIBDIR "bin:",
+                        strlen ("PATH=" RC_LIBDIR "bin:")) == 0)
+             {
+               char *path = env;
+               char *newpath;
+               int len;
+               path += strlen ("PATH=" RC_LIBDIR "bin:");
+               len = sizeof (char *) * strlen (path) + 6;
+               newpath = rc_xmalloc (len);
+               snprintf (newpath, len, "PATH=%s", path);
+               newenv = rc_strlist_add (newenv, newpath);
+               free (newpath);
+             }
+           else
+             newenv = rc_strlist_add (newenv, env);
+         }
 
       umask (022);
 
       stdout_fd = devnull_fd;
       stderr_fd = devnull_fd;
       if (redirect_stdout)
-	{
-	  if ((stdout_fd = open (redirect_stdout, O_WRONLY | O_CREAT | O_APPEND,
-				 S_IRUSR | S_IWUSR)) == -1)
-	    eerrorx ("%s: unable to open the logfile for stdout `%s': %s",
-		     progname, redirect_stdout, strerror (errno));
-	}
+        {
+          if ((stdout_fd = open (redirect_stdout, O_WRONLY | O_CREAT | O_APPEND,
+                                 S_IRUSR | S_IWUSR)) == -1)
+            eerrorx ("%s: unable to open the logfile for stdout `%s': %s",
+                     progname, redirect_stdout, strerror (errno));
+        }
       if (redirect_stderr)
-	{
-	  if ((stderr_fd = open (redirect_stderr, O_WRONLY | O_CREAT | O_APPEND,
-				 S_IRUSR | S_IWUSR)) == -1)
-	    eerrorx ("%s: unable to open the logfile for stderr `%s': %s",
-		     progname, redirect_stderr, strerror (errno));
-	}
+        {
+          if ((stderr_fd = open (redirect_stderr, O_WRONLY | O_CREAT | O_APPEND,
+                                 S_IRUSR | S_IWUSR)) == -1)
+            eerrorx ("%s: unable to open the logfile for stderr `%s': %s",
+                     progname, redirect_stderr, strerror (errno));
+        }
 
       dup2 (devnull_fd, STDIN_FILENO);
       if (background)
-	{
-	  dup2 (stdout_fd, STDOUT_FILENO);
-	  dup2 (stderr_fd, STDERR_FILENO);
-	}
+        {
+          dup2 (stdout_fd, STDOUT_FILENO);
+          dup2 (stderr_fd, STDERR_FILENO);
+        }
 
       for (i = getdtablesize () - 1; i >= 3; --i)
-	close(i);
+        close(i);
 
       setsid ();
 
       execve (exec, argv, newenv);
 #ifdef HAVE_PAM
       if (pamr == PAM_SUCCESS)
-	pam_close_session (pamh, PAM_SILENT);
+        pam_close_session (pamh, PAM_SILENT);
 #endif
       eerrorx ("%s: failed to exec `%s': %s", progname, exec, strerror (errno));
     }
@@ -970,21 +970,21 @@ int main (int argc, char **argv)
 
       errno = 0;
       do
-	{
-	  pid = waitpid (savepid, &status, 0);
-	  if (pid < 1)
-	    {
-	      eerror ("waitpid %d: %s", savepid, strerror (errno));
-	      return (-1);
-	    }
-	} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+        {
+          pid = waitpid (savepid, &status, 0);
+          if (pid < 1)
+            {
+              eerror ("waitpid %d: %s", savepid, strerror (errno));
+              return (-1);
+            }
+        } while (! WIFEXITED (status) && ! WIFSIGNALED (status));
 
       if (! WIFEXITED (status) || WEXITSTATUS (status) != 0)
-	{
-	  if (! quiet)
-	    eerrorx ("%s: failed to started `%s'", progname, exec);
-	  exit (EXIT_FAILURE);
-	}
+        {
+          if (! quiet)
+            eerrorx ("%s: failed to started `%s'", progname, exec);
+          exit (EXIT_FAILURE);
+        }
 
       pid = savepid;
     }
@@ -997,56 +997,56 @@ int main (int argc, char **argv)
       struct timeval now;
 
       if (gettimeofday (&stopat, NULL) != 0)
-	eerrorx ("%s: gettimeofday: %s", progname, strerror (errno));
+        eerrorx ("%s: gettimeofday: %s", progname, strerror (errno));
 
       stopat.tv_usec += START_WAIT;
       while (1)
-	{
-	  bool alive = false;
-	  
-	  tv.tv_sec = 0;
-	  tv.tv_usec = POLL_INTERVAL;
-	  if (select (0, 0, 0, 0, &tv) < 0)
-	    {
-	      /* Let our signal handler handle the interupt */
-	      if (errno != EINTR)
-		eerrorx ("%s: select: %s", progname, strerror (errno));
-	    }
+        {
+          bool alive = false;
 
-	  if (gettimeofday (&now, NULL) != 0)
-	    eerrorx ("%s: gettimeofday: %s", progname, strerror (errno));
+          tv.tv_sec = 0;
+          tv.tv_usec = POLL_INTERVAL;
+          if (select (0, 0, 0, 0, &tv) < 0)
+            {
+              /* Let our signal handler handle the interupt */
+              if (errno != EINTR)
+                eerrorx ("%s: select: %s", progname, strerror (errno));
+            }
 
-	  /* This is knarly.
-	     If we backgrounded then we know the exact pid.
-	     Otherwise if we have a pidfile then it *may* know the exact pid.
-	     Failing that, we'll have to query processes.
-	     We sleep first as some programs like ntp like to fork, and write
-	     their pidfile a LONG time later. */
-	  if (background)
-	    {
-	      if (kill (pid, 0) == 0)
-		alive = true;
-	    }
-	  else
-	    {
-	      if (pidfile && rc_exists (pidfile))
-		{
-		  if (do_stop (NULL, NULL, pidfile, uid, 0, true, false, true) > 0)
-		    alive = true;
-		}
-	      else
-		{
-		  if (do_stop (exec, cmd, NULL, uid, 0, true, false, true) > 0)
-		    alive = true;
-		}
-	    }
+          if (gettimeofday (&now, NULL) != 0)
+            eerrorx ("%s: gettimeofday: %s", progname, strerror (errno));
 
-	  if (! alive)
-	    eerrorx ("%s: %s died", progname, exec);
+          /* This is knarly.
+             If we backgrounded then we know the exact pid.
+             Otherwise if we have a pidfile then it *may* know the exact pid.
+             Failing that, we'll have to query processes.
+             We sleep first as some programs like ntp like to fork, and write
+             their pidfile a LONG time later. */
+          if (background)
+            {
+              if (kill (pid, 0) == 0)
+                alive = true;
+            }
+          else
+            {
+              if (pidfile && rc_exists (pidfile))
+                {
+                  if (do_stop (NULL, NULL, pidfile, uid, 0, true, false, true) > 0)
+                    alive = true;
+                }
+              else
+                {
+                  if (do_stop (exec, cmd, NULL, uid, 0, true, false, true) > 0)
+                    alive = true;
+                }
+            }
 
-	  if (timercmp (&now, &stopat, >))
-	    break;
-	}
+          if (! alive)
+            eerrorx ("%s: %s died", progname, exec);
+
+          if (timercmp (&now, &stopat, >))
+            break;
+        }
     }
 
   if (svcname)

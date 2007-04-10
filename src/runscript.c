@@ -71,20 +71,20 @@ void setup_selinux (int argc, char **argv)
   if (lib_handle)
     {
       /* FIXME: the below code generates the warning
-	 ISO C forbids assignment between function pointer and 'void *'
-	 which sucks ass
-	 http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html */
+         ISO C forbids assignment between function pointer and 'void *'
+         which sucks ass
+http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html */
       selinux_run_init_old = dlsym (lib_handle, "selinux_runscript");
       selinux_run_init_new = dlsym (lib_handle, "selinux_runscript2");
 
       /* Use new run_init if it rc_exists, else fall back to old */
       if (selinux_run_init_new)
-	selinux_run_init_new (argc, argv);
+        selinux_run_init_new (argc, argv);
       else if (selinux_run_init_old)
-	selinux_run_init_old ();
+        selinux_run_init_old ();
       else
-	/* This shouldnt happen... probably corrupt lib */
-	eerrorx ("run_init is missing from runscript_selinux.so!");
+        /* This shouldnt happen... probably corrupt lib */
+        eerrorx ("run_init is missing from runscript_selinux.so!");
     }
 }
 #endif
@@ -104,26 +104,26 @@ static void handle_signal (int sig)
 
     case SIGCHLD:
       do
-	{
-	  pid = waitpid (-1, &status, WNOHANG);
-	  if (pid < 0)
-	    {
-	      if (errno != ECHILD)
-		eerror ("waitpid: %s", strerror (errno));
-	      return;
-	    }
-	} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+        {
+          pid = waitpid (-1, &status, WNOHANG);
+          if (pid < 0)
+            {
+              if (errno != ECHILD)
+                eerror ("waitpid: %s", strerror (errno));
+              return;
+            }
+        } while (! WIFEXITED (status) && ! WIFSIGNALED (status));
       break;
-    
+
     case SIGINT:
       if (! signame[0])
-	snprintf (signame, sizeof (signame), "SIGINT");
+        snprintf (signame, sizeof (signame), "SIGINT");
     case SIGTERM:
       if (! signame[0])
-	snprintf (signame, sizeof (signame), "SIGTERM");
+        snprintf (signame, sizeof (signame), "SIGTERM");
     case SIGQUIT:
       if (! signame[0])
-	snprintf (signame, sizeof (signame), "SIGQUIT");
+        snprintf (signame, sizeof (signame), "SIGQUIT");
       eerrorx ("%s: caught %s, aborting", applet, signame);
 
     default:
@@ -174,14 +174,14 @@ static bool in_control ()
     {
       path = rc_strcatpaths (RC_SVCDIR, tests[i], applet, (char *) NULL);
       if (rc_exists (path))
-	{
-	  int m = get_mtime (path, false);
-	  if (mtime < m && m != 0)
-	    {
-	      free (path);
-	      return (false);
-	    }
-	}
+        {
+          int m = get_mtime (path, false);
+          if (mtime < m && m != 0)
+            {
+              free (path);
+              return (false);
+            }
+        }
       free (path);
       i++;
     }
@@ -192,7 +192,7 @@ static bool in_control ()
 static void uncoldplug (char *service)
 {
   char *cold = rc_strcatpaths (RC_SVCDIR "coldplugged", basename (service),
-			       (char *) NULL);
+                               (char *) NULL);
   if (rc_exists (cold) && unlink (cold) != 0)
     eerror ("%s: unlink `%s': %s", applet, cold, strerror (errno));
   free (cold);
@@ -235,27 +235,27 @@ static void cleanup (void)
   if (in_control ())
     {
       if (rc_service_state (applet, rc_service_stopping))
-	{
-	  /* If the we're shutting down, do it cleanly */
-	  if ((softlevel &&
-	       rc_runlevel_stopping () &&
-	       (strcmp (softlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-		strcmp (softlevel, RC_LEVEL_REBOOT) == 0)))
-	    rc_mark_service (applet, rc_service_stopped);
-	  else if (rc_service_state (applet, rc_service_wasinactive))
-	    rc_mark_service (applet, rc_service_inactive);
-	  else
-	    rc_mark_service (applet, rc_service_started);
-	}
+        {
+          /* If the we're shutting down, do it cleanly */
+          if ((softlevel &&
+               rc_runlevel_stopping () &&
+               (strcmp (softlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+                strcmp (softlevel, RC_LEVEL_REBOOT) == 0)))
+            rc_mark_service (applet, rc_service_stopped);
+          else if (rc_service_state (applet, rc_service_wasinactive))
+            rc_mark_service (applet, rc_service_inactive);
+          else
+            rc_mark_service (applet, rc_service_started);
+        }
       else if (rc_service_state (applet, rc_service_starting))
-	{
-	  if (rc_service_state (applet, rc_service_wasinactive))
-	    rc_mark_service (applet, rc_service_inactive);
-	  else 
-	    rc_mark_service (applet, rc_service_stopped);
-	}
+        {
+          if (rc_service_state (applet, rc_service_wasinactive))
+            rc_mark_service (applet, rc_service_inactive);
+          else 
+            rc_mark_service (applet, rc_service_stopped);
+        }
       if (exclusive && rc_exists (exclusive))
-	unlink (exclusive);
+        unlink (exclusive);
     }
 
   if (env)
@@ -281,7 +281,7 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
   /* We need to disable our child signal handler now so we block
      until our script returns. */
   signal (SIGCHLD, NULL);
- 
+
   pid = fork();
 
   if (pid == -1)
@@ -291,32 +291,32 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
       mycmd = rc_xstrdup (service);
       myarg1 = rc_xstrdup (arg1);
       if (arg2)
-	myarg2 = rc_xstrdup (arg2);
+        myarg2 = rc_xstrdup (arg2);
 
       if (rc_exists (RC_SVCDIR "runscript.sh"))
-	{
-	  execl (RC_SVCDIR "runscript.sh", mycmd, mycmd, myarg1, myarg2,
-		 (char *) NULL);
-	  eerrorx ("%s: exec `" RC_SVCDIR "runscript.sh': %s",
-		   service, strerror (errno));
-	}
+        {
+          execl (RC_SVCDIR "runscript.sh", mycmd, mycmd, myarg1, myarg2,
+                 (char *) NULL);
+          eerrorx ("%s: exec `" RC_SVCDIR "runscript.sh': %s",
+                   service, strerror (errno));
+        }
       else
-	{
-	  execl (RC_LIBDIR "sh/runscript.sh", mycmd, mycmd, myarg1, myarg2,
-		 (char *) NULL);
-	  eerrorx ("%s: exec `" RC_LIBDIR "sh/runscript.sh': %s",
-		   service, strerror (errno));
-	}
+        {
+          execl (RC_LIBDIR "sh/runscript.sh", mycmd, mycmd, myarg1, myarg2,
+                 (char *) NULL);
+          eerrorx ("%s: exec `" RC_LIBDIR "sh/runscript.sh': %s",
+                   service, strerror (errno));
+        }
     }
 
   do
     {
       if (waitpid (pid, &status, 0) < 0)
-	{
-	  if (errno != ECHILD)
-	    eerror ("waitpid: %s", strerror (errno));
-	  break;
-	}
+        {
+          if (errno != ECHILD)
+            eerror ("waitpid: %s", strerror (errno));
+          break;
+        }
     } while (! WIFEXITED (status) && ! WIFSIGNALED (status));
 
   /* Done, so restore the signal handler */
@@ -383,7 +383,7 @@ static void make_exclusive (const char *service)
   if (mkfifo (exclusive, 0600) != 0 && errno != EEXIST &&
       (errno != EACCES || geteuid () == 0))
     eerrorx ("%s: unable to create fifo `%s': %s",
-	     applet, exclusive, strerror (errno));
+             applet, exclusive, strerror (errno));
 
   path = rc_strcatpaths (RC_SVCDIR, "exclusive", applet, (char *) NULL);
   i = strlen (path) + 16;
@@ -394,7 +394,7 @@ static void make_exclusive (const char *service)
   if (rc_exists (mtime_test) && unlink (mtime_test) != 0)
     {
       eerror ("%s: unlink `%s': %s",
-	      applet, mtime_test, strerror (errno));
+              applet, mtime_test, strerror (errno));
       free (mtime_test);
       mtime_test = NULL;
       return;
@@ -403,7 +403,7 @@ static void make_exclusive (const char *service)
   if (symlink (service, mtime_test) != 0)
     {
       eerror ("%s: symlink `%s' to `%s': %s",
-	      applet, service, mtime_test, strerror (errno));
+              applet, service, mtime_test, strerror (errno));
       free (mtime_test);
       mtime_test = NULL;
     }
@@ -451,7 +451,7 @@ static void svc_start (const char *service, bool deps)
   if (rc_is_env ("IN_HOTPLUG", "1") || in_background)
     {
       if (! rc_service_state (service, rc_service_inactive))
-	exit (EXIT_FAILURE);
+        exit (EXIT_FAILURE);
       background = true;
     }
 
@@ -472,7 +472,7 @@ static void svc_start (const char *service, bool deps)
   if (deps)
     {
       if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
-	eerrorx ("failed to load deptree");
+        eerrorx ("failed to load deptree");
 
       rc_strlist_free (types);
       types = rc_strlist_add (NULL, "broken");
@@ -481,16 +481,16 @@ static void svc_start (const char *service, bool deps)
       rc_strlist_free (services);
       services = rc_get_depends (deptree, types, svclist, softlevel, 0);
       if (services)
-	{
-	  eerrorn ("ERROR: `%s' needs ", applet);
-	  STRLIST_FOREACH (services, svc, i)
-	    {
-	      if (i > 0)
-		fprintf (stderr, ", ");
-	      fprintf (stderr, "%s", svc);
-	    }
-	  exit (EXIT_FAILURE);
-	}
+        {
+          eerrorn ("ERROR: `%s' needs ", applet);
+          STRLIST_FOREACH (services, svc, i)
+            {
+              if (i > 0)
+                fprintf (stderr, ", ");
+              fprintf (stderr, "%s", svc);
+            }
+          exit (EXIT_FAILURE);
+        }
       rc_strlist_free (services);
       services = NULL;
 
@@ -498,95 +498,95 @@ static void svc_start (const char *service, bool deps)
       types = rc_strlist_add (NULL, "ineed");
       rc_strlist_free (need_services);
       need_services = rc_get_depends (deptree, types, svclist,
-				      softlevel, depoptions);
+                                      softlevel, depoptions);
       types = rc_strlist_add (types, "iuse");
       if (! rc_runlevel_starting ())
-	{
-	  services = rc_get_depends (deptree, types, svclist,
-				     softlevel, depoptions);
-	  STRLIST_FOREACH (services, svc, i)
-	   if (rc_service_state (svc, rc_service_stopped))
-	     rc_start_service (svc);
+        {
+          services = rc_get_depends (deptree, types, svclist,
+                                     softlevel, depoptions);
+          STRLIST_FOREACH (services, svc, i)
+           if (rc_service_state (svc, rc_service_stopped))
+             rc_start_service (svc);
 
-	  rc_strlist_free (services);
-	}
+          rc_strlist_free (services);
+        }
 
       /* Now wait for them to start */
       types = rc_strlist_add (types, "iafter");
       services = rc_get_depends (deptree, types, svclist,
-				 softlevel, depoptions);
+                                 softlevel, depoptions);
 
       /* We use tmplist to hold our scheduled by list */
       rc_strlist_free (tmplist);
       tmplist = NULL;
 
       STRLIST_FOREACH (services, svc, i)
-	{
-	  if (rc_service_state (svc, rc_service_started))
-	    continue;
-	  if (! rc_wait_service (svc))
-	    eerror ("%s: timed out waiting for %s", applet, svc);
-	  if (rc_service_state (svc, rc_service_started))
-	    continue;
+        {
+          if (rc_service_state (svc, rc_service_started))
+            continue;
+          if (! rc_wait_service (svc))
+            eerror ("%s: timed out waiting for %s", applet, svc);
+          if (rc_service_state (svc, rc_service_started))
+            continue;
 
-	  STRLIST_FOREACH (need_services, svc2, j)
-	   if (strcmp (svc, svc2) == 0)
-	     {
-	       if (rc_service_state (svc, rc_service_inactive) ||
-		   rc_service_state (svc, rc_service_wasinactive))
-		 tmplist = rc_strlist_add (tmplist, svc);
-	       else
-		 eerrorx ("ERROR: cannot start %s as %s would not start",
-			  applet, svc);
-	     }
-	}
+          STRLIST_FOREACH (need_services, svc2, j)
+           if (strcmp (svc, svc2) == 0)
+             {
+               if (rc_service_state (svc, rc_service_inactive) ||
+                   rc_service_state (svc, rc_service_wasinactive))
+                 tmplist = rc_strlist_add (tmplist, svc);
+               else
+                 eerrorx ("ERROR: cannot start %s as %s would not start",
+                          applet, svc);
+             }
+        }
 
       if (tmplist)
-	{
-	  int n = 0;
-	  int len = 0;
-	  char *p;
+        {
+          int n = 0;
+          int len = 0;
+          char *p;
 
-	  /* Set the state now, then unlink our exclusive so that
-	     our scheduled list is preserved */
-	  rc_mark_service (service, rc_service_stopped);
-	  unlink_mtime_test ();
+          /* Set the state now, then unlink our exclusive so that
+             our scheduled list is preserved */
+          rc_mark_service (service, rc_service_stopped);
+          unlink_mtime_test ();
 
-	  rc_strlist_free (types);
-	  types = rc_strlist_add (NULL, "iprovide");
-	  STRLIST_FOREACH (tmplist, svc, i)
-	    {
-	      rc_schedule_start_service (svc, service);
+          rc_strlist_free (types);
+          types = rc_strlist_add (NULL, "iprovide");
+          STRLIST_FOREACH (tmplist, svc, i)
+            {
+              rc_schedule_start_service (svc, service);
 
-	      rc_strlist_free (svclist);
-	      svclist = rc_strlist_add (NULL, svc);
-	      rc_strlist_free (providelist);
-	      providelist = rc_get_depends (deptree, types, svclist,
-					    softlevel, depoptions);
-	      STRLIST_FOREACH (providelist, svc2, j)
-	       rc_schedule_start_service (svc2, service);
+              rc_strlist_free (svclist);
+              svclist = rc_strlist_add (NULL, svc);
+              rc_strlist_free (providelist);
+              providelist = rc_get_depends (deptree, types, svclist,
+                                            softlevel, depoptions);
+              STRLIST_FOREACH (providelist, svc2, j)
+               rc_schedule_start_service (svc2, service);
 
-	      len += strlen (svc) + 2;
-	      n++;
-	    }
+              len += strlen (svc) + 2;
+              n++;
+            }
 
-	  len += 5;
-	  tmp = rc_xmalloc (sizeof (char *) * len);
-	  p = tmp;
-	  STRLIST_FOREACH (tmplist, svc, i)
-	    {
-	      if (i > 1)
-		{
-		  if (i == n - 1)
-		    p += snprintf (p, len, " or ");
-		  else
-		    p += snprintf (p, len, ", ");
-		}
-	      p += snprintf (p, len, "%s", svc);
-	    }
-	  ewarnx ("WARNING: %s is scheduled to start when %s has started",
-		  applet, tmp);
-	}
+          len += 5;
+          tmp = rc_xmalloc (sizeof (char *) * len);
+          p = tmp;
+          STRLIST_FOREACH (tmplist, svc, i)
+            {
+              if (i > 1)
+                {
+                  if (i == n - 1)
+                    p += snprintf (p, len, " or ");
+                  else
+                    p += snprintf (p, len, ", ");
+                }
+              p += snprintf (p, len, "%s", svc);
+            }
+          ewarnx ("WARNING: %s is scheduled to start when %s has started",
+                  applet, tmp);
+        }
 
       rc_strlist_free (services);
       services = NULL;
@@ -607,17 +607,17 @@ static void svc_start (const char *service, bool deps)
   if (in_control ())
     {
       if (! started)
-	{
-	  if (rc_service_state (service, rc_service_wasinactive))
-	    rc_mark_service (service, rc_service_inactive);
-	  else
-	    {
-	      rc_mark_service (service, rc_service_stopped);
-	      if (rc_runlevel_starting ())
-		rc_mark_service (service, rc_service_failed);
-	    }
-	  eerrorx ("ERROR: %s failed to start", applet);
-	}
+        {
+          if (rc_service_state (service, rc_service_wasinactive))
+            rc_mark_service (service, rc_service_inactive);
+          else
+            {
+              rc_mark_service (service, rc_service_stopped);
+              if (rc_runlevel_starting ())
+                rc_mark_service (service, rc_service_failed);
+            }
+          eerrorx ("ERROR: %s failed to start", applet);
+        }
 
       rc_mark_service (service, rc_service_started);
       unlink_mtime_test ();
@@ -628,9 +628,9 @@ static void svc_start (const char *service, bool deps)
   else
     {
       if (rc_service_state (service, rc_service_inactive))
-	ewarn ("WARNING: %s has started, but is inactive", applet);
+        ewarn ("WARNING: %s has started, but is inactive", applet);
       else
-	ewarn ("WARNING: %s not under our control, aborting", applet);
+        ewarn ("WARNING: %s not under our control, aborting", applet);
     }
 
   /* Now start any scheduled services */
@@ -656,7 +656,7 @@ static void svc_start (const char *service, bool deps)
       services = rc_services_scheduled (svc2);
       STRLIST_FOREACH (services, svc, i)
        if (rc_service_state (svc, rc_service_stopped))
-	 rc_start_service (svc);
+         rc_start_service (svc);
     }
 }
 
@@ -683,20 +683,20 @@ static void svc_stop (const char *service, bool deps)
   make_exclusive (service);
 
   if (! rc_runlevel_stopping () &&
-    rc_service_in_runlevel (service, RC_LEVEL_BOOT))
-      ewarn ("WARNING: you are stopping a boot service");
+      rc_service_in_runlevel (service, RC_LEVEL_BOOT))
+    ewarn ("WARNING: you are stopping a boot service");
 
   if (deps || ! rc_service_state (service, rc_service_wasinactive))
     {
       int depoptions = RC_DEP_TRACE;
       char *svc;
       int i;
-      
+
       if (rc_is_env ("RC_STRICT_DEPEND", "yes"))
-	depoptions |= RC_DEP_STRICT;
+        depoptions |= RC_DEP_STRICT;
 
       if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
-	eerrorx ("failed to load deptree");
+        eerrorx ("failed to load deptree");
 
       rc_strlist_free (types);
       types = rc_strlist_add (NULL, "needsme");
@@ -706,55 +706,55 @@ static void svc_stop (const char *service, bool deps)
       tmplist = NULL;
       rc_strlist_free (services);
       services = rc_get_depends (deptree, types, svclist,
-				 softlevel, depoptions);
+                                 softlevel, depoptions);
       rc_strlist_reverse (services);
       STRLIST_FOREACH (services, svc, i)
-	{
-	  if (rc_service_state (svc, rc_service_started) || 
-	      rc_service_state (svc, rc_service_inactive))
-	    {
-	      rc_wait_service (svc);
-	      if (rc_service_state (svc, rc_service_started) || 
-		  rc_service_state (svc, rc_service_inactive))
-		{
-		  rc_stop_service (svc);
-		  tmplist = rc_strlist_add (tmplist, svc);
-		}
-	    }
-	}
+        {
+          if (rc_service_state (svc, rc_service_started) || 
+              rc_service_state (svc, rc_service_inactive))
+            {
+              rc_wait_service (svc);
+              if (rc_service_state (svc, rc_service_started) || 
+                  rc_service_state (svc, rc_service_inactive))
+                {
+                  rc_stop_service (svc);
+                  tmplist = rc_strlist_add (tmplist, svc);
+                }
+            }
+        }
       rc_strlist_free (services);
       services = NULL;
 
       STRLIST_FOREACH (tmplist, svc, i)
-	{
-	  if (rc_service_state (svc, rc_service_stopped))
-	    continue;
+        {
+          if (rc_service_state (svc, rc_service_stopped))
+            continue;
 
-	  /* We used to loop 3 times here - maybe re-do this if needed */
-	  rc_wait_service (svc);
-	  if (! rc_service_state (svc, rc_service_stopped))
-	    {
-	      if (rc_runlevel_stopping ())
-		rc_mark_service (svc, rc_service_failed);
-	      eerrorx ("ERROR:  cannot stop %s as %s is still up",
-		       applet, svc);
-	    }
-	}
+          /* We used to loop 3 times here - maybe re-do this if needed */
+          rc_wait_service (svc);
+          if (! rc_service_state (svc, rc_service_stopped))
+            {
+              if (rc_runlevel_stopping ())
+                rc_mark_service (svc, rc_service_failed);
+              eerrorx ("ERROR:  cannot stop %s as %s is still up",
+                       applet, svc);
+            }
+        }
       rc_strlist_free (tmplist);
       tmplist = NULL;
 
       /* We now wait for other services that may use us and are stopping
-	 This is important when a runlevel stops */
+         This is important when a runlevel stops */
       types = rc_strlist_add (types, "usesme");
       types = rc_strlist_add (types, "ibefore");
       services = rc_get_depends (deptree, types, svclist,
-				 softlevel, depoptions);
+                                 softlevel, depoptions);
       STRLIST_FOREACH (services, svc, i)
-	{
-	  if (rc_service_state (svc, rc_service_stopped))
-	    continue;
-	  rc_wait_service (svc);
-	}
+        {
+          if (rc_service_state (svc, rc_service_stopped))
+            continue;
+          rc_wait_service (svc);
+        }
 
       rc_strlist_free (services);
       services = NULL;
@@ -776,9 +776,9 @@ static void svc_stop (const char *service, bool deps)
   if (! stopped)
     {
       if (rc_service_state (service, rc_service_wasinactive))
-	rc_mark_service (service, rc_service_inactive);
+        rc_mark_service (service, rc_service_inactive);
       else
-	rc_mark_service (service, rc_service_started);
+        rc_mark_service (service, rc_service_started);
       eerrorx ("ERROR: %s failed to stop", applet);
     }
 
@@ -797,7 +797,7 @@ static void svc_restart (const char *service, bool deps)
   char *svc;
   int i;
   bool inactive = false;
- 
+
   /* This is hairly and a better way needs to be found I think!
      The issue is this - openvpn need net and dns. net can restart
      dns via resolvconf, so you could have openvpn trying to restart dnsmasq
@@ -809,10 +809,10 @@ static void svc_restart (const char *service, bool deps)
   if (! deps)
     {
       if (rc_service_state (service, rc_service_started) ||
-	  rc_service_state (service, rc_service_inactive))
-	svc_exec (service, "stop", "start");
+          rc_service_state (service, rc_service_inactive))
+        svc_exec (service, "stop", "start");
       else
-	svc_exec (service, "start", NULL);
+        svc_exec (service, "start", NULL);
       return;
     }
 
@@ -830,25 +830,25 @@ static void svc_restart (const char *service, bool deps)
   inactive = rc_service_state (service, rc_service_inactive);
   if (! inactive)
     inactive = rc_service_state (service, rc_service_wasinactive);
-  
+
   if (inactive ||
       rc_service_state (service, rc_service_starting) ||
       rc_service_state (service, rc_service_started))
     {
       STRLIST_FOREACH (restart_services, svc, i)
-	{
-	  if (rc_service_state (svc, rc_service_stopped))
-	    {
-	      if (inactive)
-		{
-		  rc_schedule_start_service (service, svc);
-		  ewarn ("WARNING: %s is scheduled to started when %s has started",
-			 svc, basename (service));
-		}
-	      else
-		rc_start_service (svc);
-	    }
-	}
+        {
+          if (rc_service_state (svc, rc_service_stopped))
+            {
+              if (inactive)
+                {
+                  rc_schedule_start_service (service, svc);
+                  ewarn ("WARNING: %s is scheduled to started when %s has started",
+                         svc, basename (service));
+                }
+              else
+                rc_start_service (svc);
+            }
+        }
     }
 }
 
@@ -870,7 +870,7 @@ int main (int argc, char **argv)
     {
       execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
       eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-	       applet, strerror (errno));
+               applet, strerror (errno));
     }
 
 #ifdef __linux__
@@ -880,7 +880,7 @@ int main (int argc, char **argv)
     {
       eerror ("%s: cannot run until sysvinit completes", applet);
       if (mkdir ("/dev/.rcboot", 0755) != 0 && errno != EEXIST)
-	eerrorx ("%s: mkdir `/dev/.rcboot': %s", applet, strerror (errno));
+        eerrorx ("%s: mkdir `/dev/.rcboot': %s", applet, strerror (errno));
       tmp = rc_strcatpaths ("/dev/.rcboot", applet, (char *) NULL);
       symlink (service, tmp);
       exit (EXIT_FAILURE);
@@ -890,40 +890,40 @@ int main (int argc, char **argv)
   if ((softlevel = getenv ("RC_SOFTLEVEL")) == NULL)
     {
       /* Ensure our environment is pure
-	 Also, add our configuration to it */
+         Also, add our configuration to it */
       env = rc_filter_env ();
       env = rc_config_env (env);
 
       if (env)
-	{
-	  char *p;
+        {
+          char *p;
 
 #ifdef __linux__
-	  /* clearenv isn't portable, but there's no harm in using it
-	     if we have it */
-	  clearenv ();
+          /* clearenv isn't portable, but there's no harm in using it
+             if we have it */
+          clearenv ();
 #else
-	  char *var;
-	  /* No clearenv present here then.
-	     We could manipulate environ directly ourselves, but it seems that
-	     some kernels bitch about this according to the environ man pages
-	     so we walk though environ and call unsetenv for each value. */
-	  while (environ[0])
-	    {
-	      tmp = rc_xstrdup (environ[0]);
-	      p = tmp;
-	      var = strsep (&p, "=");
-	      unsetenv (var);
-	      free (tmp);
-	    }
-	  tmp = NULL;
+          char *var;
+          /* No clearenv present here then.
+             We could manipulate environ directly ourselves, but it seems that
+             some kernels bitch about this according to the environ man pages
+             so we walk though environ and call unsetenv for each value. */
+          while (environ[0])
+            {
+              tmp = rc_xstrdup (environ[0]);
+              p = tmp;
+              var = strsep (&p, "=");
+              unsetenv (var);
+              free (tmp);
+            }
+          tmp = NULL;
 #endif
 
-	  STRLIST_FOREACH (env, p, i)
-	   putenv (p);
+          STRLIST_FOREACH (env, p, i)
+           putenv (p);
 
-	  /* We don't free our list as that would be null in environ */
-	}
+          /* We don't free our list as that would be null in environ */
+        }
 
       softlevel = rc_get_runlevel ();
 
@@ -969,44 +969,44 @@ int main (int argc, char **argv)
   for (i = 2; i < argc; i++)
     {
       if (strlen (argv[i]) < 2 || argv[i][0] != '-' || argv[i][1] != '-')
-	continue;
+        continue;
 
       if (strcmp (argv[i], "--debug") == 0)
-	setenv ("RC_DEBUG", "yes", 1);
+        setenv ("RC_DEBUG", "yes", 1);
       else if (strcmp (argv[i], "--help") == 0)
-	{
-	  execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
-	  eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-		   applet, strerror (errno));
-	}
+        {
+          execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
+          eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
+                   applet, strerror (errno));
+        }
       else if (strcmp (argv[i],"--ifstarted") == 0)
-	ifstarted = true;
+        ifstarted = true;
       else if (strcmp (argv[i], "--nocolour") == 0 ||
-	       strcmp (argv[i], "--nocolor") == 0)
-	setenv ("RC_NOCOLOR", "yes", 1);
+               strcmp (argv[i], "--nocolor") == 0)
+        setenv ("RC_NOCOLOR", "yes", 1);
       else if (strcmp (argv[i], "--nodeps") == 0)
-	deps = false;
+        deps = false;
       else if (strcmp (argv[i], "--quiet") == 0)
-	setenv ("RC_QUIET", "yes", 1);
+        setenv ("RC_QUIET", "yes", 1);
       else if (strcmp (argv[i], "--verbose") == 0)
-	setenv ("RC_VERBOSE", "yes", 1);
+        setenv ("RC_VERBOSE", "yes", 1);
       else if (strcmp (argv[i], "--version") == 0)
-	printf ("version me\n");
+        printf ("version me\n");
       else
-	eerror ("%s: unknown option `%s'", applet, argv[i]);
+        eerror ("%s: unknown option `%s'", applet, argv[i]);
     }
 
   if (ifstarted && ! rc_service_state (applet, rc_service_started))
     {
       if (! rc_is_env("RC_QUIET", "yes"))
-	eerror ("ERROR: %s is not started", applet);
+        eerror ("ERROR: %s is not started", applet);
       exit (EXIT_FAILURE);
     }
 
   if (rc_is_env ("IN_HOTPLUG", "1"))
     {
       if (! rc_is_env ("RC_HOTPLUG", "yes") || ! rc_allow_plug (applet))
-	eerrorx ("%s: not allowed to be hotplugged", applet);
+        eerrorx ("%s: not allowed to be hotplugged", applet);
     }
 
   /* Setup a signal handler */
@@ -1025,71 +1025,71 @@ int main (int argc, char **argv)
     {
       /* Abort on a sighup here */
       if (sighup)
-	exit (EXIT_FAILURE);
+        exit (EXIT_FAILURE);
 
       if (strlen (argv[i]) < 2 ||
-	  (argv[i][0] == '-' && argv[i][1] == '-'))
-	continue;
+          (argv[i][0] == '-' && argv[i][1] == '-'))
+        continue;
 
       /* Export the command we're running.
-	 This is important as we stamp on the restart function now but
-	 some start/stop routines still need to behave differently if
-	 restarting. */
+         This is important as we stamp on the restart function now but
+         some start/stop routines still need to behave differently if
+         restarting. */
       unsetenv ("RC_CMD");
       setenv ("RC_CMD", argv[i], 1);
- 
+
       doneone = true;
       if (strcmp (argv[i], "conditionalrestart") == 0 ||
-	  strcmp (argv[i], "condrestart") == 0)
-	{
-	  if (rc_service_state (service, rc_service_started))
-	    svc_restart (service, deps);
-	}
+          strcmp (argv[i], "condrestart") == 0)
+        {
+          if (rc_service_state (service, rc_service_started))
+            svc_restart (service, deps);
+        }
       else if (strcmp (argv[i], "restart") == 0)
-	svc_restart (service, deps);
+        svc_restart (service, deps);
       else if (strcmp (argv[i], "start") == 0)
-	svc_start (service, deps);
+        svc_start (service, deps);
       else if (strcmp (argv[i], "status") == 0)
-	{
-	  rc_service_state_t r = svc_status (service);
-	  retval = (int) r;
-	}
+        {
+          rc_service_state_t r = svc_status (service);
+          retval = (int) r;
+        }
       else if (strcmp (argv[i], "stop") == 0)
-	{
-	  if (in_background)
-	    get_started_services ();
+        {
+          if (in_background)
+            get_started_services ();
 
-	  svc_stop (service, deps);
+          svc_stop (service, deps);
 
-	  if (! in_background &&
-	      ! rc_runlevel_stopping () &&
-	      rc_service_state (service, rc_service_stopped))
-	    uncoldplug (applet);
+          if (! in_background &&
+              ! rc_runlevel_stopping () &&
+              rc_service_state (service, rc_service_stopped))
+            uncoldplug (applet);
 
-	  if (in_background &&
-	      rc_service_state (service, rc_service_inactive))
-	    {
-	      char *svc;
-	      int j;
-	      STRLIST_FOREACH (restart_services, svc, j)
-	       if (rc_service_state (svc, rc_service_stopped))
-		 rc_schedule_start_service (service, svc);
-	    }
-	}
+          if (in_background &&
+              rc_service_state (service, rc_service_inactive))
+            {
+              char *svc;
+              int j;
+              STRLIST_FOREACH (restart_services, svc, j)
+               if (rc_service_state (svc, rc_service_stopped))
+                 rc_schedule_start_service (service, svc);
+            }
+        }
       else if (strcmp (argv[i], "zap") == 0)
-	{
-	  einfo ("Manually resetting %s to stopped state", applet);
-	  rc_mark_service (applet, rc_service_stopped);
-	  uncoldplug (applet);
-	}	
+        {
+          einfo ("Manually resetting %s to stopped state", applet);
+          rc_mark_service (applet, rc_service_stopped);
+          uncoldplug (applet);
+        }	
       else if (strcmp (argv[i], "help") == 0)
-	{
-	  execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
-	  eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-		   applet, strerror (errno));
-	}
+        {
+          execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
+          eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
+                   applet, strerror (errno));
+        }
       else
-	svc_exec (service, argv[i], NULL);
+        svc_exec (service, argv[i], NULL);
 
       /* Flush our buffered output if any */
       eflush ();
@@ -1103,7 +1103,7 @@ int main (int argc, char **argv)
     {
       execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
       eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-	       applet, strerror (errno));
+               applet, strerror (errno));
     }
 
   return (retval);

@@ -116,10 +116,10 @@ bool colour_terminal (void)
   while (colour_terms[i])
     {
       if (strcmp (colour_terms[i], term) == 0)
-	{
-	  in_colour = 1;
-	  return (true);
-	}
+        {
+          in_colour = 1;
+          return (true);
+        }
       i++;
     }
 
@@ -235,12 +235,12 @@ void eflush (void)
     {
       snprintf (newfile, sizeof (newfile), "%s.%d", file, i);
       if (stat (newfile, &buf) != 0)
-	{
-	  if (rename (file, newfile))
-	    fprintf (stderr, "rename `%s' `%s': %s\n", file, newfile,
-		     strerror (errno));
-	  break;
-	}
+        {
+          if (rename (file, newfile))
+            fprintf (stderr, "rename `%s' `%s': %s\n", file, newfile,
+                     strerror (errno));
+          break;
+        }
       i++;
     }
 
@@ -263,10 +263,10 @@ void eflush (void)
       select (0, NULL, NULL, NULL, &tv);
       errno = 0;
       if (link (newfile, EBUFFER_LOCK) == 0)
-	break;
+        break;
       if (errno != EEXIST)
-	fprintf (stderr, "link `%s' `%s': %s\n", newfile, EBUFFER_LOCK,
-		 strerror (errno));
+        fprintf (stderr, "link `%s' `%s': %s\n", newfile, EBUFFER_LOCK,
+                 strerror (errno));
     }
 
   if (! (fp = fopen (newfile, "r")))
@@ -282,62 +282,62 @@ void eflush (void)
     {
       i = strlen (buffer) - 1;
       if (i < 1)
-	continue;
+        continue;
 
       if (buffer[i] == '\n')
-	buffer[i] = 0;
+        buffer[i] = 0;
 
       p = buffer;
       cmd = strsep (&p, " ");
       token = strsep (&p, " ");
       if (sscanf (token, "%d", &retval) != 1)
-	{
-	  fprintf (stderr, "eflush `%s': not a number", token);
-	  continue;
-	}
+        {
+          fprintf (stderr, "eflush `%s': not a number", token);
+          continue;
+        }
       token = strsep (&p, " ");
       if (sscanf (token, "%d", &length) != 1)
-	{
-	  fprintf (stderr, "eflush `%s': not a number", token);
-	  continue;
-	}
+        {
+          fprintf (stderr, "eflush `%s': not a number", token);
+          continue;
+        }
 
       i = 0;
       while (funcmap[i].name)
-	{
-	  if (strcmp (funcmap[i].name, cmd) == 0)
-	    {
-	      if (funcmap[i].efunc)
-		{
-		  if (p)
-		    funcmap[i].efunc ("%s", p);
-		  else
-		    funcmap[i].efunc (NULL, NULL);
-		}
-	      else if (funcmap[i].eefunc)
-		{
-		  if (p)
-		    funcmap[i].eefunc (retval, "%s", p);
-		  else
-		    funcmap[i].eefunc (retval, NULL, NULL);
-		}
-	      else if (funcmap[i].eind)
-		funcmap[i].eind ();
-	      else
-		fprintf (stderr, "eflush `%s': no function defined\n", cmd);
-	      break;
-	    }
-	  i++;
-	}
+        {
+          if (strcmp (funcmap[i].name, cmd) == 0)
+            {
+              if (funcmap[i].efunc)
+                {
+                  if (p)
+                    funcmap[i].efunc ("%s", p);
+                  else
+                    funcmap[i].efunc (NULL, NULL);
+                }
+              else if (funcmap[i].eefunc)
+                {
+                  if (p)
+                    funcmap[i].eefunc (retval, "%s", p);
+                  else
+                    funcmap[i].eefunc (retval, NULL, NULL);
+                }
+              else if (funcmap[i].eind)
+                funcmap[i].eind ();
+              else
+                fprintf (stderr, "eflush `%s': no function defined\n", cmd);
+              break;
+            }
+          i++;
+        }
 
       if (! funcmap[i].name)
-	fprintf (stderr, "eflush `%s': invalid function\n", cmd);
+        fprintf (stderr, "eflush `%s': invalid function\n", cmd);
     }
   fclose (fp);
 
   if (unlink (EBUFFER_LOCK))
     fprintf (stderr, "unlink `%s': %s", EBUFFER_LOCK, strerror (errno));
-  
+
   if (unlink (newfile))
     fprintf (stderr, "unlink `%s': %s", newfile, strerror (errno));
 
@@ -348,7 +348,7 @@ void eflush (void)
 { \
   int _i = ebuffer (_cmd, _retval, _fmt, _ap); \
   if (_i) \
-    return (_i); \
+  return (_i); \
 }
 
 static void elog (int level, const char *fmt, va_list ap)
@@ -377,12 +377,12 @@ static int _eindent (FILE *stream)
       errno = 0;
       amount = strtol (env, NULL, 0);
       if (errno != 0 || amount < 0)
-	amount = 0;
+        amount = 0;
       else if (amount > INDENT_MAX)
-	amount = INDENT_MAX;
+        amount = INDENT_MAX;
 
       if (amount > 0)
-	memset (indent, ' ', amount);
+        memset (indent, ' ', amount);
     }
 
   /* Terminate it */
@@ -392,19 +392,19 @@ static int _eindent (FILE *stream)
 }
 
 #define VEINFON(_file, _colour) \
-  if (colour_terminal ()) \
-    fprintf (_file, " " _colour "*" EINFO_NORMAL " "); \
-  else \
-    fprintf (_file, " * "); \
-  retval += _eindent (_file); \
-  { \
-    va_list _ap; \
-    va_copy (_ap, ap); \
-    retval += vfprintf (_file, fmt, _ap) + 3; \
-    va_end (_ap); \
-  } \
-  if (colour_terminal ()) \
-    fprintf (_file, "\033[K");
+ if (colour_terminal ()) \
+fprintf (_file, " " _colour "*" EINFO_NORMAL " "); \
+else \
+fprintf (_file, " * "); \
+retval += _eindent (_file); \
+{ \
+  va_list _ap; \
+  va_copy (_ap, ap); \
+  retval += vfprintf (_file, fmt, _ap) + 3; \
+  va_end (_ap); \
+} \
+if (colour_terminal ()) \
+fprintf (_file, "\033[K");
 
 static int _veinfon (const char *fmt, va_list ap)
 {
@@ -453,7 +453,7 @@ int ewarnn (const char *fmt, ...)
 
   if (! fmt || is_env ("RC_QUIET", "yes"))
     return (0);
- 
+
   va_start (ap, fmt);
   if (! (retval = ebuffer ("ewarnn", 0, fmt, ap)))
     retval = _vewarnn (fmt, ap);
@@ -591,45 +591,45 @@ static void _eend (int col, einfo_color_t color, const char *msg)
   FILE *fp = stdout;
   int i;
   int cols;
-  
+
   if (! msg)
     return;
 
   if (color == einfo_bad)
     fp = stderr;
-  
+
   cols = get_term_columns () - (strlen (msg) + 6);
 
   if (cols > 0 && colour_terminal ())
     {
       fprintf (fp, "\033[A\033[%dC %s[ ", cols, EINFO_BRACKET);
       switch (color)
-	{
-	case einfo_good:
-	  fprintf (fp, EINFO_GOOD);
-	  break;
-	case einfo_warn:
-	  fprintf (fp, EINFO_WARN);
-	  break;
-	case einfo_bad:
-	  fprintf (fp, EINFO_BAD);
-	  break;
-	case einfo_hilite:
-	  fprintf (fp, EINFO_HILITE);
-	  break;
-	case einfo_bracket:
-	  fprintf (fp, EINFO_BRACKET);
-	  break;
-	case einfo_normal:
-	  fprintf (fp, EINFO_NORMAL);
-	  break;
-	}
+        {
+        case einfo_good:
+          fprintf (fp, EINFO_GOOD);
+          break;
+        case einfo_warn:
+          fprintf (fp, EINFO_WARN);
+          break;
+        case einfo_bad:
+          fprintf (fp, EINFO_BAD);
+          break;
+        case einfo_hilite:
+          fprintf (fp, EINFO_HILITE);
+          break;
+        case einfo_bracket:
+          fprintf (fp, EINFO_BRACKET);
+          break;
+        case einfo_normal:
+          fprintf (fp, EINFO_NORMAL);
+          break;
+        }
       fprintf (fp, "%s%s ]%s\n", msg, EINFO_BRACKET, EINFO_NORMAL);
     }
   else
     {
       for (i = -1; i < cols - col; i++)
-	fprintf (fp, " ");
+        fprintf (fp, " ");
       fprintf (fp, "[ %s ]\n", msg);
     }
 }
@@ -647,25 +647,25 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
       eb = ebuffer (cmd, retval, fmt, apc);
       va_end (apc);
       if (eb)
-	return (retval);
+        return (retval);
     }
 
   if (fmt && retval != 0)
     {
       va_copy (apc, ap);
       if (strcmp (cmd, "ewend") == 0)
-	{
-	  col = _vewarnn (fmt, apc);
-	  fp = stdout;
-	}
+        {
+          col = _vewarnn (fmt, apc);
+          fp = stdout;
+        }
       else
-	{
-	  col = _veerrorn (fmt, apc);
-	  fp = stderr;
-	}
+        {
+          col = _veerrorn (fmt, apc);
+          fp = stderr;
+        }
       va_end (apc);
       if (colour_terminal ())
-	fprintf (fp, "\n");
+        fprintf (fp, "\n");
     }
 
   _eend (col, retval == 0 ? einfo_good : einfo_bad, retval == 0 ? OK : NOT_OK);
@@ -685,7 +685,7 @@ int eend (int retval, const char *fmt, ...)
 
   return (retval);
 }
- 
+
 int ewend (int retval, const char *fmt, ...)
 {
   va_list ap;
@@ -719,7 +719,7 @@ void eindent (void)
       errno = 0;
       amount = strtol (env, NULL, 0);
       if (errno != 0)
-	amount = 0;
+        amount = 0;
     }
 
   amount += INDENT_WIDTH;
@@ -738,10 +738,10 @@ void eoutdent (void)
 
   if (ebuffer ("eoutdent", 0, NULL, NULL))
     return;
-  
+
   if (! env)
     return;
-  
+
   errno = 0;
   amount = strtol (env, NULL, 0);
   if (errno != 0)
@@ -785,7 +785,7 @@ int vewarnn (const char *fmt, ...)
 
   if (! fmt)
     return (0);
- 
+
   va_start (ap, fmt);
   if (! (retval = ebuffer ("vewarnn", 0, fmt, ap)))
     retval = _vewarnn (fmt, ap);
@@ -810,7 +810,7 @@ int veinfo (const char *fmt, ...)
       retval = _veinfon (fmt, ap);
       retval += printf ("\n");
     }
- va_end (ap);
+  va_end (ap);
 
   return (retval);
 }
@@ -831,7 +831,7 @@ int vewarn (const char *fmt, ...)
       retval = _vewarnn (fmt, ap);
       retval += printf ("\n");
     }
-    va_end (ap);
+  va_end (ap);
   retval += printf ("\n");
 
   return (retval);
@@ -853,7 +853,7 @@ int vebegin (const char *fmt, ...)
       retval = _veinfon (fmt, ap);
       retval += printf (" ...");
       if (colour_terminal ())
-	retval += printf ("\n");
+        retval += printf ("\n");
     }
   va_end (ap);
 

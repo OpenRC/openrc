@@ -72,53 +72,53 @@ int main (int argc, char **argv)
 
   const struct option longopts[] =
     {
-	{"all", no_argument, NULL, 'a'},
-	{"list", no_argument, NULL, 'l'},
-	{"servicelist", no_argument, NULL, 's'},
-	{"unused", no_argument, NULL, 'u'},
-	{NULL, 0, NULL, 0}
+        {"all", no_argument, NULL, 'a'},
+        {"list", no_argument, NULL, 'l'},
+        {"servicelist", no_argument, NULL, 's'},
+        {"unused", no_argument, NULL, 'u'},
+        {NULL, 0, NULL, 0}
     };
 
   while ((c = getopt_long(argc, argv, "alsu", longopts, &option_index)) != -1)
     switch (c)
       {
       case 'a':
-	levels = rc_get_runlevels ();
-	break;
+        levels = rc_get_runlevels ();
+        break;
       case 'l':
-	levels = rc_get_runlevels ();
-	STRLIST_FOREACH (levels, level, i)
-	 printf ("%s\n", level);
-	rc_strlist_free (levels);
-	exit (EXIT_SUCCESS);
+        levels = rc_get_runlevels ();
+        STRLIST_FOREACH (levels, level, i)
+         printf ("%s\n", level);
+        rc_strlist_free (levels);
+        exit (EXIT_SUCCESS);
       case 's':
-	services = rc_services_in_runlevel (NULL);
-	STRLIST_FOREACH (services, service, i)
-	 print_service (service);
-	rc_strlist_free (services);
-	exit (EXIT_SUCCESS);
+        services = rc_services_in_runlevel (NULL);
+        STRLIST_FOREACH (services, service, i)
+         print_service (service);
+        rc_strlist_free (services);
+        exit (EXIT_SUCCESS);
       case 'u':
-	services = rc_services_in_runlevel (NULL);
-	levels = rc_get_runlevels ();
-	STRLIST_FOREACH (services, service, i)
-	  {
-	    bool found = false;
-	    STRLIST_FOREACH (levels, level, j)
-	      if (rc_service_in_runlevel (service, level))
-		{
-		  found = true;
-		  break;
-		}
-	    if (! found)
-	      print_service (service);
-	  }
-	rc_strlist_free (levels);
-	rc_strlist_free (services);
-	exit (EXIT_SUCCESS);
+        services = rc_services_in_runlevel (NULL);
+        levels = rc_get_runlevels ();
+        STRLIST_FOREACH (services, service, i)
+          {
+            bool found = false;
+            STRLIST_FOREACH (levels, level, j)
+             if (rc_service_in_runlevel (service, level))
+               {
+                 found = true;
+                 break;
+               }
+            if (! found)
+              print_service (service);
+          }
+        rc_strlist_free (levels);
+        rc_strlist_free (services);
+        exit (EXIT_SUCCESS);
       case '?':
-	exit (EXIT_FAILURE);
+        exit (EXIT_FAILURE);
       default:
-	exit (EXIT_FAILURE);
+        exit (EXIT_FAILURE);
       }
 
   while (optind < argc)

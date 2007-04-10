@@ -75,19 +75,19 @@ static bool pid_is_exec (pid_t pid, const char *exec)
   if (readlink (cmdline, buffer, sizeof (buffer)) != -1)
     {
       if (strcmp (exec, buffer) == 0)
-	return (true);
+        return (true);
 
       /* We should cater for deleted binaries too */
       if (strlen (buffer) > 10)
-	{
-	  p = buffer + (strlen (buffer) - 10);
-	  if (strcmp (p, " (deleted)") == 0)
-	    {
-	      *p = 0;
-	      if (strcmp (buffer, exec) == 0)
-		return (true);
-	    }
-	}
+        {
+          p = buffer + (strlen (buffer) - 10);
+          if (strcmp (p, " (deleted)") == 0)
+            {
+              *p = 0;
+              if (strcmp (buffer, exec) == 0)
+                return (true);
+            }
+        }
     }
 
   snprintf (cmdline, sizeof (cmdline), "/proc/%u/cmdline", pid);
@@ -105,7 +105,7 @@ static bool pid_is_exec (pid_t pid, const char *exec)
 }
 
 pid_t *rc_find_pids (const char *exec, const char *cmd,
-		     uid_t uid, pid_t pid)
+                     uid_t uid, pid_t pid)
 {
   DIR *procdir;
   struct dirent *entry;
@@ -130,42 +130,42 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
      catching /etc/init.d/ntpd stop
 
      nasty
-  */
+     */
 
   if ((pp = getenv ("RC_RUNSCRIPT_PID")))
     {
       if (sscanf (pp, "%d", &runscript_pid) != 1)
-	runscript_pid = 0;
+        runscript_pid = 0;
     }
 
   while ((entry = readdir (procdir)) != NULL)
     {
       if (sscanf (entry->d_name, "%d", &p) != 1)
-	continue;
+        continue;
       foundany = true;
 
       if (runscript_pid != 0 && runscript_pid == p)
-	continue;
+        continue;
 
       if (pid != 0 && pid != p)
-	continue;
+        continue;
 
       if (uid)
-	{
-	  snprintf (buffer, sizeof (buffer), "/proc/%d", pid);
-	  if (stat (buffer, &sb) != 0 || sb.st_uid != uid)
-	    continue;
-	}
+        {
+          snprintf (buffer, sizeof (buffer), "/proc/%d", pid);
+          if (stat (buffer, &sb) != 0 || sb.st_uid != uid)
+            continue;
+        }
 
       if (cmd && ! pid_is_cmd (p, cmd))
-	continue;
-     
+        continue;
+
       if (exec && ! cmd && ! pid_is_exec (p, exec))
-	continue;
+        continue;
 
       pids = realloc (pids, sizeof (pid_t) * (npids + 2));
       if (! pids)
-	eerrorx ("memory exhausted");
+        eerrorx ("memory exhausted");
 
       pids[npids] = p;
       pids[npids + 1] = 0;
@@ -200,7 +200,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 # endif
 
 pid_t *rc_find_pids (const char *exec, const char *cmd,
-		     uid_t uid, pid_t pid)
+                     uid_t uid, pid_t pid)
 {
   static kvm_t *kd = NULL;
   char errbuf[_POSIX2_LINE_MAX];
@@ -219,36 +219,36 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
   kp = kvm_getprocs (kd, KERN_PROC_PROC, 0, &processes);
 #else
   kp = kvm_getproc2 (kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
-		     &processes);
+                     &processes);
 #endif
   for (i = 0; i < processes; i++)
     {
       pid_t p = _GET_KINFO_PID (kp[i]);
       if (pid != 0 && pid != p)
-	continue;
+        continue;
 
       if (uid != 0 && uid != _GET_KINFO_UID (kp[i]))
-	continue;
+        continue;
 
       if (cmd)
-	{
-	  if (! _GET_KINFO_COMM (kp[i]) ||
-	      strcmp (cmd, _GET_KINFO_COMM (kp[i])) != 0)
-	    continue;
-	}
+        {
+          if (! _GET_KINFO_COMM (kp[i]) ||
+              strcmp (cmd, _GET_KINFO_COMM (kp[i])) != 0)
+            continue;
+        }
 
       if (exec && ! cmd)
-	{
-	  if ((argv = _KVM_GETARGV (kd, &kp[i], argc)) == NULL || ! *argv)
-	    continue;
+        {
+          if ((argv = _KVM_GETARGV (kd, &kp[i], argc)) == NULL || ! *argv)
+            continue;
 
-	  if (strcmp (*argv, exec) != 0) 
-	    continue;
-	}
+          if (strcmp (*argv, exec) != 0) 
+            continue;
+        }
 
       pids = realloc (pids, sizeof (pid_t) * (npids + 2));
       if (! pids)
-	eerrorx ("memory exhausted");
+        eerrorx ("memory exhausted");
 
       pids[npids] = p;
       pids[npids + 1] = 0;
@@ -264,8 +264,8 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 #endif
 
 static bool _match_daemon (const char *path, const char *file,
-			   const char *mexec, const char *mname,
-			   const char *mpidfile)
+                           const char *mexec, const char *mname,
+                           const char *mpidfile)
 {
   char buffer[RC_LINEBUFFER];
   char *ffile = rc_strcatpaths (path, file, (char *) NULL);
@@ -296,21 +296,21 @@ static bool _match_daemon (const char *path, const char *file,
     {
       int lb = strlen (buffer) - 1;
       if (buffer[lb] == '\n')
-	buffer[lb] = 0;
+        buffer[lb] = 0;
 
       if (strcmp (buffer, mexec) == 0)
-	m += 1;
+        m += 1;
       else if (mname && strcmp (buffer, mname) == 0)
-	m += 10;
+        m += 10;
       else if (mpidfile && strcmp (buffer, mpidfile) == 0)
-	m += 100;
+        m += 100;
 
       if (m == 111)
-	break;
+        break;
 
       lc++;
       if (lc > 5)
-	break;
+        break;
     }
   fclose (fp);
   free (ffile);
@@ -319,11 +319,11 @@ static bool _match_daemon (const char *path, const char *file,
 }
 
 void rc_set_service_daemon (const char *service, const char *exec,
-			    const char *name, const char *pidfile,
-			    bool started)
+                            const char *name, const char *pidfile,
+                            bool started)
 {
   char *dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service),
-				  (char *) NULL);
+                                  (char *) NULL);
   char **files = NULL;
   char *file;
   char *ffile = NULL;
@@ -369,28 +369,28 @@ void rc_set_service_daemon (const char *service, const char *exec,
       char *oldfile = NULL;
       files = rc_ls_dir (NULL, dirpath, 0);
       STRLIST_FOREACH (files, file, i)
-	{
-	  ffile = rc_strcatpaths (dirpath, file, (char *) NULL);
-	  nfiles++;
+        {
+          ffile = rc_strcatpaths (dirpath, file, (char *) NULL);
+          nfiles++;
 
-	  if (! oldfile)
-	    {
-	      if (_match_daemon (dirpath, file, mexec, mname, mpidfile))
-		{
-		  unlink (ffile);
-		  oldfile = ffile;
-		  nfiles--;
-		}
-	    }
-	  else
-	    {
-	      rename (ffile, oldfile);
-	      free (oldfile);
-	      oldfile = ffile;
-	    }
-	}
+          if (! oldfile)
+            {
+              if (_match_daemon (dirpath, file, mexec, mname, mpidfile))
+                {
+                  unlink (ffile);
+                  oldfile = ffile;
+                  nfiles--;
+                }
+            }
+          else
+            {
+              rename (ffile, oldfile);
+              free (oldfile);
+              oldfile = ffile;
+            }
+        }
       if (ffile)
-	free (ffile); 
+        free (ffile); 
       free (files);
     }
 
@@ -401,18 +401,18 @@ void rc_set_service_daemon (const char *service, const char *exec,
       FILE *fp;
 
       if (! rc_is_dir (dirpath))
-	if (mkdir (dirpath, 0755) != 0)
-	  eerror ("mkdir `%s': %s", dirpath, strerror (errno));
+        if (mkdir (dirpath, 0755) != 0)
+          eerror ("mkdir `%s': %s", dirpath, strerror (errno));
 
       snprintf (buffer, sizeof (buffer), "%03d", nfiles + 1);
       file = rc_strcatpaths (dirpath, buffer, (char *) NULL);
       if ((fp = fopen (file, "w")) == NULL)
-	eerror ("fopen `%s': %s", file, strerror (errno));
+        eerror ("fopen `%s': %s", file, strerror (errno));
       else
-	{
-	  fprintf (fp, "%s\n%s\n%s\n", mexec, mname, mpidfile);
-	  fclose (fp);
-	}
+        {
+          fprintf (fp, "%s\n%s\n%s\n", mexec, mname, mpidfile);
+          fclose (fp);
+        }
       free (file);
     }
 
@@ -423,7 +423,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 }
 
 bool rc_service_started_daemon (const char *service, const char *exec,
-				int indx)
+                                int indx)
 {
   char *dirpath;
   char *file;
@@ -435,7 +435,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
     return (false);
 
   dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service),
-			    (char *) NULL);
+                            (char *) NULL);
   if (! rc_is_dir (dirpath))
     {
       free (dirpath);
@@ -458,11 +458,11 @@ bool rc_service_started_daemon (const char *service, const char *exec,
     {
       char **files = rc_ls_dir (NULL, dirpath, 0);
       STRLIST_FOREACH (files, file, i)
-	{
-	  retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
-	  if (retval)
-	    break;
-	}
+        {
+          retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
+          if (retval)
+            break;
+        }
       free (files);
     }
 
@@ -492,7 +492,7 @@ bool rc_service_daemons_crashed (const char *service)
     return (false);
 
   dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (service),
-			    (char *) NULL);
+                            (char *) NULL);
   if (! rc_is_dir (dirpath))
     {
       free (dirpath);
@@ -507,91 +507,91 @@ bool rc_service_daemons_crashed (const char *service)
       fp = fopen (path, "r");
       free (path);
       if (! fp)
-	{
-	  eerror ("fopen `%s': %s", file, strerror (errno));
-	  continue;
-	}
+        {
+          eerror ("fopen `%s': %s", file, strerror (errno));
+          continue;
+        }
 
       while ((fgets (buffer, RC_LINEBUFFER, fp)))
-	{
-	  int lb = strlen (buffer) - 1;
-	  if (buffer[lb] == '\n')
-	    buffer[lb] = 0;
+        {
+          int lb = strlen (buffer) - 1;
+          if (buffer[lb] == '\n')
+            buffer[lb] = 0;
 
-	  p = buffer;
-	  if ((token = strsep (&p, "=")) == NULL || ! p)
-	    continue;
+          p = buffer;
+          if ((token = strsep (&p, "=")) == NULL || ! p)
+            continue;
 
-	  if (strlen (p) == 0)
-	    continue;
+          if (strlen (p) == 0)
+            continue;
 
-	  if (strcmp (token, "exec") == 0)
-	    {
-	      if (exec)
-		free (exec);
-	      exec = strdup (p);
-	    }
-	  else if (strcmp (token, "name") == 0)
-	    {
-	      if (name)
-		free (name);
-	      name = strdup (p);
-	    }
-	  else if (strcmp (token, "pidfile") == 0)
-	    {
-	      if (pidfile)
-		free (pidfile);
-	      pidfile = strdup (p);
-	    }
-	}
+          if (strcmp (token, "exec") == 0)
+            {
+              if (exec)
+                free (exec);
+              exec = strdup (p);
+            }
+          else if (strcmp (token, "name") == 0)
+            {
+              if (name)
+                free (name);
+              name = strdup (p);
+            }
+          else if (strcmp (token, "pidfile") == 0)
+            {
+              if (pidfile)
+                free (pidfile);
+              pidfile = strdup (p);
+            }
+        }
       fclose (fp);
 
       pid = 0;
       if (pidfile)
-	{
-	  if (! rc_exists (pidfile))
-	    {
-	      retval = true;
-	      break;
-	    }
+        {
+          if (! rc_exists (pidfile))
+            {
+              retval = true;
+              break;
+            }
 
-	  if ((fp = fopen (pidfile, "r")) == NULL)
-	    {
-		eerror ("fopen `%s': %s", pidfile, strerror (errno));
-		retval = true;
-		break;
-	    }
+          if ((fp = fopen (pidfile, "r")) == NULL)
+            {
+              eerror ("fopen `%s': %s", pidfile, strerror (errno));
+              retval = true;
+              break;
+            }
 
-	  if (fscanf (fp, "%d", &pid) != 1)
-	    {
-	      eerror ("no pid found in `%s'", pidfile);
-	      fclose (fp);
-	      retval = true;
-	      break;
-	    }
+          if (fscanf (fp, "%d", &pid) != 1)
+            {
+              eerror ("no pid found in `%s'", pidfile);
+              fclose (fp);
+              retval = true;
+              break;
+            }
 
-	    fclose (fp);
-	    free (pidfile);
-	    pidfile = NULL;
-	}
+          fclose (fp);
+          free (pidfile);
+          pidfile = NULL;
+        }
 
       if ((pids = rc_find_pids (exec, name, 0, pid)) == NULL)
-	{
-	  retval = true;
-	  break;
-	}
+        {
+          retval = true;
+          break;
+        }
       free (pids);
 
       if (exec)
-	{
-	  free (exec);
-	  exec = NULL;
-	}
+        {
+          free (exec);
+          exec = NULL;
+        }
       if (name)
-	{
-	  free (name);
-	  name = NULL;
-	}
+        {
+          free (name);
+          name = NULL;
+        }
     }
 
   if (exec)

@@ -38,43 +38,43 @@ int main (int argc, char **argv)
   for (i = 1; i < argc; i++)
     {
       if (strcmp (argv[i], "--update") == 0)
-	{
-	  if (! update)
-	    {
-	      rc_update_deptree (true);
-	      update = true;
-	    }
-	  continue;
-	}
+        {
+          if (! update)
+            {
+              rc_update_deptree (true);
+              update = true;
+            }
+          continue;
+        }
 
       if (strcmp (argv[i], "--strict") == 0)
-	{
-	  options |= RC_DEP_STRICT;
-	  continue;
-	}
+        {
+          options |= RC_DEP_STRICT;
+          continue;
+        }
 
       if (strcmp (argv[i], "--notrace") == 0)
-	{
-	  options &= RC_DEP_TRACE;
-	  continue;
-	}
+        {
+          options &= RC_DEP_TRACE;
+          continue;
+        }
 
       if (argv[i][0] == '-')
-	{
-	  argv[i]++;
-	  types = rc_strlist_add (types, argv[i]);
-	}
+        {
+          argv[i]++;
+          types = rc_strlist_add (types, argv[i]);
+        }
       else
-	{
-	  if ((deptree = rc_load_deptree ()) == NULL)
-	    eerrorx ("failed to load deptree");
+        {
+          if ((deptree = rc_load_deptree ()) == NULL)
+            eerrorx ("failed to load deptree");
 
-	  di = rc_get_depinfo (deptree, argv[i]);
-	  if (! di)
-	    eerror ("no dependency info for service `%s'", argv[i]);
-	  else
-	    services = rc_strlist_add (services, argv[i]);
-	}
+          di = rc_get_depinfo (deptree, argv[i]);
+          if (! di)
+            eerror ("no dependency info for service `%s'", argv[i]);
+          else
+            services = rc_strlist_add (services, argv[i]);
+        }
     }
 
   if (! services)
@@ -82,7 +82,7 @@ int main (int argc, char **argv)
       rc_strlist_free (types);
       rc_free_deptree (deptree);
       if (update)
-	return (EXIT_SUCCESS);
+        return (EXIT_SUCCESS);
       eerrorx ("no services specified");
     }
 
@@ -98,16 +98,16 @@ int main (int argc, char **argv)
   if (depends)
     {
       STRLIST_FOREACH (depends, service, i)
-	{
-	  if (first)
-	    first = false;
-	  else
-	    printf (" ");
+        {
+          if (first)
+            first = false;
+          else
+            printf (" ");
 
-	  if (service)
-	    printf ("%s", service);
+          if (service)
+            printf ("%s", service);
 
-	}
+        }
       printf ("\n");
     }
 
