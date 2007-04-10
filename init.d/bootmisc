@@ -18,6 +18,12 @@ start() {
 		cp /etc/nologin /etc/nologin.boot
 	fi
 
+    if [ -e /etc/sysctl.conf -a ! -x /etc/init.d/sysctl ] ; then
+		ebegin "Configuring kernel parameters"
+		sysctl -q -p /etc/sysctl.conf
+		eend $?
+	fi
+	
 	if ! touch -c /var/run 2> /dev/null ; then
 		ewarn "Skipping /var and /tmp initialization (ro root?)"
 		return 0
