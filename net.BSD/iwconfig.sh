@@ -233,7 +233,7 @@ iwconfig_scan() {
 	eindent
 
 	scan="$(LC_ALL=C ifconfig -v "${IFACE}" list scan 2>/dev/null | sed -e "1 d" -e "s/$/'/g" -e "s/^/'/g")"
-	while [ ${i} -lt 3 -o -z "${scan}" ] ; do
+	while [ ${i} -lt 3 -a -z "${scan}" ] ; do
 	    scan="${scan}${scan:+ }$(LC_ALL=C ifconfig -v "${IFACE}" scan 2>/dev/null | sed -e "1 d" -e "s/$/'/g" -e "s/^/'/g")"
 	    i=$((${i} + 1))
 	done
@@ -453,6 +453,7 @@ iwconfig_defaults() {
 	#ifconfig "${iface}" txpower 100 2>/dev/null
 	ifconfig "${IFACE}" bssid -
 	ifconfig "${IFACE}" ssid -
+	ifconfig "${IFACE}" wepkey 1:- wepkey 2:- wepkey 3:- wepkey 4:- 
 	ifconfig "${IFACE}" authmode open
 	ifconfig "${IFACE}" -mediaopt adhoc
 	ifconfig "${IFACE}" -mediaopt hostap
