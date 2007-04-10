@@ -7,21 +7,6 @@ iproute2_depend() {
 	after ifconfig
 }
 
-_get_mac_address() {
-	local mac=$(LC_ALL=C ip link show "${IFACE}" | sed -n \
-		-e 'y/abcdef/ABCDEF/' \
-		-e '/link\// s/^.*\<\(..:..:..:..:..:..\)\>.*/\1/p')
-
-	case "${mac}" in
-		00:00:00:00:00:00) ;;
-		44:44:44:44:44:44) ;;
-		FF:FF:FF:FF:FF:FF) ;;
-		"") ;;
-		*) echo "${mac}"; return 0 ;;
-	esac
-
-	return 1
-}
 
 _up() {
 	ip link set up dev "${IFACE}"
@@ -53,6 +38,26 @@ _is_wireless() {
 
 	[ ! -e /proc/net/wireless ] && return 1
 	grep -Eq "^[[:space:]]*${IFACE}:[[:space:]]+" /proc/net/wireless
+}
+
+_get_mac_address() {
+	local mac=$(LC_ALL=C ip link show "${IFACE}" | sed -n \
+		-e 'y/abcdef/ABCDEF/' \
+		-e '/link\// s/^.*\<\(..:..:..:..:..:..\)\>.*/\1/p')
+
+	case "${mac}" in
+		00:00:00:00:00:00) ;;
+		44:44:44:44:44:44) ;;
+		FF:FF:FF:FF:FF:FF) ;;
+		"") ;;
+		*) echo "${mac}"; return 0 ;;
+	esac
+
+	return 1
+}
+
+_set_mac_address() {
+	ip link set address "$1" dev "${IFACE}"
 }
 
 _get_inet_addresses() {
@@ -160,8 +165,9 @@ iproute2_pre_start() {
 		metric=1000
 
 		ebegin "Creating tunnel ${IFVAR}"
-		ip tunnel add "${tunnel}"
+		ip tunnel add ${tunnel} name "${IFACE}"
 		eend $? || return 1
+		_up	
 	fi
 
 	return 0

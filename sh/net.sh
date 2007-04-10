@@ -553,7 +553,7 @@ stop() {
 
     [ -x /sbin/resolvconf ] && resolvconf -d "${IFACE}"
 
-    if type predown >/dev/null 2>/dev/null ; then
+    if type postdown >/dev/null 2>/dev/null ; then
 		ebegin "Running postdown"
 		eindent
 		postdown

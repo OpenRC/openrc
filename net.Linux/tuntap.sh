@@ -17,9 +17,9 @@ tuntap_pre_start() {
 
 	[ -z "${tuntap}" ] && return 0
 
-	if [ ! -a /dev/net/tun ] ; then
+	if [ ! -e /dev/net/tun ] ; then
 		modprobe tun && sleep 1
-		if [ ! -a /dev/net/tun ] ; then
+		if [ ! -e /dev/net/tun ] ; then
 			eerror "TUN/TAP support is not present in this kernel"
 			return 1
 		fi
@@ -37,7 +37,7 @@ tuntap_pre_start() {
 		eval opts=\$tunctl_${IFVAR}
 		tunctl ${opts} -t "${IFACE}" >/dev/null
 	fi
-	eend $? && save_options tuntap "${tuntap}"
+	eend $? && _up && save_options tuntap "${tuntap}"
 }
 
 tuntap_post_stop() {

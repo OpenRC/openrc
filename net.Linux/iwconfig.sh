@@ -3,7 +3,7 @@
 # Many thanks to all the people in the Gentoo forums for their ideas and
 # motivation for me to make this and keep on improving it
 
-_config_vars="$_config_vars essid mode associate_timeout sleep_scan preferred_aps blacklist_aps"
+_config_vars="$_config_vars ssid mode associate_timeout sleep_scan preferred_aps blacklist_aps"
 
 iwconfig_depend() {
 	program /sbin/iwconfig
@@ -155,8 +155,8 @@ iwconfig_setup_specific() {
 	fi
 
 	# Then set the SSID
-	if ! eval iwconfig "${IFACE}" essid "${SSID}" ; then
-		eerror "${IFACE} does not support setting SSID to \"${ESSID}\""
+	if ! iwconfig "${IFACE}" essid "${SSID}" ; then
+		eerror "${IFACE} does not support setting SSID to \"${SSID}\""
 		return 1
 	fi
 
@@ -187,7 +187,7 @@ iwconfig_wait_for_association() {
 		# Use sysfs if we can
 		if [ -e /sys/class/net/"${IFACE}"/carrier ] ; then
 			if [ "$(cat /sys/class/net/"${IFACE}"/carrier)" = "1" ] ; then
-				# Double check we have an essid. This is mainly for buggy
+				# Double check we have an ssid. This is mainly for buggy
 				# prism54 drivers that always set their carrier on :/
 				[ -n "$(iwgetid --raw "${IFACE}")" ] && return 0
 			fi
@@ -220,7 +220,7 @@ iwconfig_associate() {
 
 	if [ "${SSID}" = "any" ]; then
 		iwconfig "${IFACE}" ap any 2>/dev/null
-		unset ESSIDVAR
+		unset SSIDVAR
 	else
 		SSIDVAR=$(_shell_var "${SSID}")
 		key="$(iwconfig_get_wep_key "${mac}")"
@@ -243,9 +243,9 @@ iwconfig_associate() {
 		[ "${key}" != "off" ] && w="$(iwconfig_get_wep_status "${iface}")"
 	fi
 
-	if ! eval iwconfig "${IFACE}" essid "${SSID}" ; then
+	if ! iwconfig "${IFACE}" essid "${SSID}" ; then
 		if [ "${SSID}" != "any" ] ; then
-			ewarn "${IFACE} does not support setting ESSID to \"${SSID}\""
+			ewarn "${IFACE} does not support setting SSID to \"${SSID}\""
 		fi
 	fi
 
@@ -315,7 +315,7 @@ iwconfig_scan() {
 	if [ -z "${scan}" ] ; then
 		ewarn "${iface} does not support scanning"
 		eoutdent
-		eval x=\$adhoc_essid_${IFVAR}
+		eval x=\$adhoc_ssid_${IFVAR}
 		[ -n "${x}" ] && return 0
 		if [ -n "${preferred_aps}" ] ; then
 			[ "${associate_order}" = "forcepreferred" ] || \
@@ -328,9 +328,9 @@ iwconfig_scan() {
 		eerror "or hardcode the  SSID to \"any\" and let the driver find an Access Point"
 		eerror "   ssid_${IFVAR}=\"any\""
 		eerror "or configure defaulting to Ad-Hoc when Managed fails"
-		eerror "   adhoc_essid_${IFVAR}=\"WLAN\""
-		eerror "or hardcode the ESSID against the interface (not recommended)"
-		eerror "   essid_${IFVAR}=\"ESSID\""
+		eerror "   adhoc_ssid_${IFVAR}=\"WLAN\""
+		eerror "or hardcode the SSID against the interface (not recommended)"
+		eerror "   ssid_${IFVAR}=\"SSID\""
 		return 1
 	fi
 
@@ -507,13 +507,13 @@ iwconfig_force_preferred() {
 }
 
 iwconfig_connect_preferred() {
-	local essid= i=0 mode= mac= enc= freq= chan=
+	local ssid= i=0 mode= mac= enc= freq= chan=
 
 	eval "$(_get_array preferred_aps)"
-	for essid in "$@"; do
+	for ssid in "$@"; do
 		while [ ${i} -le ${APS} ]  ; do
 			eval e=\$SSID_${i}
-			if [ "${e}" = "${essid}" ] ; then
+			if [ "${e}" = "${ssid}" ] ; then
 				SSID=${e}
 				eval mode=\$MODE_${i}
 				eval mac=\$MAC_${i}
@@ -531,13 +531,13 @@ iwconfig_connect_preferred() {
 }
 
 iwconfig_connect_not_preferred() {
-	local essid= i=0 mode= mac= enc= freq= chan= pref=false
+	local ssid= i=0 mode= mac= enc= freq= chan= pref=false
 
 	while [ ${i} -le ${APS} ] ; do
 		eval e=\$SSID_${i}
 		eval "$(_get_array preferred_aps)"
-		for essid in "$@" ; do
-			if [ "${e}" = "${essid}" ] ; then
+		for ssid in "$@" ; do
+			if [ "${e}" = "${ssid}" ] ; then
 				pref=true
 				break
 			fi
@@ -566,14 +566,17 @@ iwconfig_defaults() {
 	done
 
 	# Release the AP forced
-	# Must do ap and then essid otherwise scanning borks
+	# Must do ap and then ssid otherwise scanning borks
 	iwconfig "${IFACE}" ap off 2>/dev/null
 	iwconfig "${IFACE}" essid off 2>/dev/null
 }
 
 iwconfig_configure() {
 	local x APS
-	eval ESSID=\$ssid_${IFVAR}
+	eval SSID=\$ssid_${IFVAR}
+
+	# Support old variable
+	[ -z "${SSID}" ] && eval SSID=\$essid_${IFVAR}
 
 	# Setup ad-hoc mode?
 	eval x=\$mode_${IFVAR}
@@ -588,14 +591,14 @@ iwconfig_configure() {
 		return 1
 	fi
 
-	# Has an ESSID been forced?
-	if [ -n "${ESSID}" ]; then
+	# Has an SSID been forced?
+	if [ -n "${SSID}" ]; then
 		iwconfig_set_mode "${x}"
 		iwconfig_associate && return 0
-		[ "${ESSID}" = "any" ] && iwconfig_force_preferred && return 0
+		[ "${SSID}" = "any" ] && iwconfig_force_preferred && return 0
 
-		eval ESSID=\$adhoc_essid_${IFVAR}
-		if [ -n "${ESSID}" ]; then
+		eval SSID=\$adhoc_ssid_${IFVAR}
+		if [ -n "${SSID}" ]; then
 			iwconfig_setup_specific ad-hoc
 			return $?
 		fi
@@ -688,14 +691,14 @@ iwconfig_pre_start() {
 	fi
 
 	if iwconfig_configure ; then
-		save_options "ESSID" "${ESSID}"
+		save_options "SSID" "${SSID}"
 		return 0
 	fi
 
 	eerror "Failed to configure wireless for ${IFACE}"
 	iwconfig_defaults
 	iwconfig "${IFACE}" txpower off 2>/dev/null
-	unset ESSID ESSIDVAR
+	unset SSID SSIDVAR
 	_down
 	return 1
 }

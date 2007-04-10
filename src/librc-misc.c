@@ -447,7 +447,10 @@ char **rc_get_list (char **list, const char *file)
       token = strsep (&p, "#");
       if (token && (strlen (token) > 1))
 	{
-	  token[strlen (token) - 1] = 0;
+	  /* Stip the newline if present */
+	  if (token[strlen (token) - 1] == '\n')
+	    token[strlen (token) - 1] = 0;
+
 	  list = rc_strlist_add (list, token);
 	}
     }
@@ -744,10 +747,6 @@ char **rc_config_env (char **env)
       env = rc_strlist_add (env, line);
       free (line);
     }
-
-  /* Set this var to ensure that things are POSIX, which makes scripts work
-     on non GNU systems with less effort. */
-  env = rc_strlist_add (env, "POSIXLY_CORRECT=1");
 
   return (env);
 }

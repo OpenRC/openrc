@@ -34,6 +34,7 @@ macchanger_pre_start() {
 				eindent
 				einfo "changed to ${mac}"
 				eoutdent
+				_up
 				return 0
 			fi
 			;;

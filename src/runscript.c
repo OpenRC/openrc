@@ -234,14 +234,7 @@ static void cleanup (void)
 
   if (in_control ())
     {
-      if (rc_service_state (applet, rc_service_starting))
-	{
-	  if (rc_service_state (applet, rc_service_wasinactive))
-	    rc_mark_service (applet, rc_service_inactive);
-	  else 
-	    rc_mark_service (applet, rc_service_stopped);
-	}
-      else if (rc_service_state (applet, rc_service_stopping))
+      if (rc_service_state (applet, rc_service_stopping))
 	{
 	  /* If the we're shutting down, do it cleanly */
 	  if ((softlevel &&
@@ -253,6 +246,13 @@ static void cleanup (void)
 	    rc_mark_service (applet, rc_service_inactive);
 	  else
 	    rc_mark_service (applet, rc_service_started);
+	}
+      else if (rc_service_state (applet, rc_service_starting))
+	{
+	  if (rc_service_state (applet, rc_service_wasinactive))
+	    rc_mark_service (applet, rc_service_inactive);
+	  else 
+	    rc_mark_service (applet, rc_service_stopped);
 	}
       if (exclusive && rc_exists (exclusive))
 	unlink (exclusive);
@@ -778,7 +778,7 @@ static void svc_stop (const char *service, bool deps)
       if (rc_service_state (service, rc_service_wasinactive))
 	rc_mark_service (service, rc_service_inactive);
       else
-	rc_mark_service (service, rc_service_stopped);
+	rc_mark_service (service, rc_service_started);
       eerrorx ("ERROR: %s failed to stop", applet);
     }
 

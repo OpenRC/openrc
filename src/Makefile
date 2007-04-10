@@ -113,10 +113,6 @@ $(LIBRCSO): $(LIBRCOBJS)
 	$(CC) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LIBRCOBJS)
 	ln -sf $(LIBRCSO) librc.so
 
-splash: CFLAGS += -fPIC
-splash: splash.o
-	$(CC) -fPIC -shared -Wl,-soname,splash.so -o splash.so splash.o
-
 env-update: $(LIBEINFOSO) $(LIBRCSO) env-update.o
 
 fstabinfo: $(LIBEINFOSO) fstabinfo.o

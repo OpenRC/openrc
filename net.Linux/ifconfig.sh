@@ -6,22 +6,6 @@ ifconfig_depend() {
 	provide interface
 }
 
-_get_mac_address() {
-	local mac=$(LC_ALL=C ifconfig "${IFACE}" | \
-	sed -n -e 's/.* HWaddr \(..:..:..:..:..:..\).*/\1/p')
-
-
-	case "${mac}" in
-		00:00:00:00:00:00) ;;
-		44:44:44:44:44:44) ;;
-		FF:FF:FF:FF:FF:FF) ;;
-		"") ;;
-		*) echo "${mac}"; return 0 ;;
-	esac
-
-	return 1
-}
-
 _up() {
 	ifconfig "${IFACE}" up
 }
@@ -52,6 +36,26 @@ _is_wireless() {
 
 	[ ! -e /proc/net/wireless ] && return 1
 	grep -Eq "^[[:space:]]*${IFACE}:[[:space:]]+" /proc/net/wireless
+}
+
+_get_mac_address() {
+	local mac=$(LC_ALL=C ifconfig "${IFACE}" | \
+	sed -n -e 's/.* HWaddr \(..:..:..:..:..:..\).*/\1/p')
+
+
+	case "${mac}" in
+		00:00:00:00:00:00) ;;
+		44:44:44:44:44:44) ;;
+		FF:FF:FF:FF:FF:FF) ;;
+		"") ;;
+		*) echo "${mac}"; return 0 ;;
+	esac
+
+	return 1
+}
+
+_set_mac_address() {
+	ifconfig "${IFACE}" hw ether "$1"
 }
 
 _get_inet_address() {
