@@ -175,7 +175,7 @@ static bool in_control ()
       path = rc_strcatpaths (RC_SVCDIR, tests[i], applet, (char *) NULL);
       if (rc_exists (path))
         {
-          int m = get_mtime (path, false);
+          time_t m = get_mtime (path, false);
           if (mtime < m && m != 0)
             {
               free (path);

@@ -514,7 +514,7 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
 static bool is_newer_than (const char *file, const char *target)
 {
   struct stat buf;
-  int mtime;
+  time_t mtime;
 
   if (stat (file, &buf) != 0 || buf.st_size == 0)
     return (false);
