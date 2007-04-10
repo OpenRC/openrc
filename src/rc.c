@@ -184,27 +184,27 @@ static int do_e (int argc, char **argv)
   else if (strcmp (applet, "ewend") == 0)
     ewend (retval, fmt, message);
   else if (strcmp (applet, "veinfo") == 0) 
-    veinfo (fmt, message);
+    einfov (fmt, message);
   else if (strcmp (applet, "veinfon") == 0)
-    veinfon (fmt, message);
+    einfovn (fmt, message);
   else if (strcmp (applet, "vewarn") == 0) 
-    vewarn (fmt, message);
+    ewarnv (fmt, message);
   else if (strcmp (applet, "vewarnn") == 0)
-    vewarnn (fmt, message);
+    ewarnvn (fmt, message);
   else if (strcmp (applet, "vebegin") == 0)
-    vebegin (fmt, message);
+    ebeginv (fmt, message);
   else if (strcmp (applet, "veend") == 0)
-    veend (retval, fmt, message);
+    eendv (retval, fmt, message);
   else if (strcmp (applet, "vewend") == 0)
-    vewend (retval, fmt, message);
+    ewendv (retval, fmt, message);
   else if (strcmp (applet, "eindent") == 0)
     eindent ();
   else if (strcmp (applet, "eoutdent") == 0)
     eoutdent ();
   else if (strcmp (applet, "veindent") == 0)
-    veindent ();
+    eindentv ();
   else if (strcmp (applet, "veoutdent") == 0)
-    veoutdent ();
+    eoutdentv ();
   else if (strcmp (applet, "eflush") == 0)
     eflush ();
   else

@@ -44,9 +44,13 @@ typedef enum
 
 /* We work out if the terminal supports colour or not through the use
    of the TERM env var. We cache the reslt in a static bool, so
-   subsequent calls are very fast. */
-/* The n suffix means that a newline is NOT appended to the string
-   The v prefix means that we only print it when RC_VERBOSE=yes */
+   subsequent calls are very fast.
+   The n suffix means that a newline is NOT appended to the string
+   The v suffix means that we only print it when RC_VERBOSE=yes
+   NOTE We use the v suffix here so we can add veinfo for va_list
+   in the future, but veinfo is used by shell scripts as they don't
+   have the va_list concept
+*/
 bool colour_terminal (void);
 int einfon (const char *fmt, ...) EINFO_PRINTF (1, 2);
 int ewarnn (const char *fmt, ...) EINFO_PRINTF (1, 2);
@@ -63,18 +67,18 @@ void ebracket (int col, einfo_color_t color, const char *msg);
 void eindent (void);
 void eoutdent (void);
 
-int veinfon (const char *fmt, ...) EINFO_PRINTF (1, 2);
-int vewarnn (const char *fmt, ...) EINFO_PRINTF (1, 2);
-int vebeginn (const char *fmt, ...) EINFO_PRINTF (1, 2);
-int veendn (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
-int vewendn (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
-int veinfo (const char *fmt, ...) EINFO_PRINTF (1, 2);
-int vewarn (const char *fmt, ...) EINFO_PRINTF (1, 2);
-int vebegin (const char *fmt, ...) EINFO_PRINTF (1, 2);
-int veend (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
-int vewend (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
-void veindent (void);
-void veoutdent (void);
+int einfovn (const char *fmt, ...) EINFO_PRINTF (1, 2);
+int ewarnvn (const char *fmt, ...) EINFO_PRINTF (1, 2);
+int ebeginvn (const char *fmt, ...) EINFO_PRINTF (1, 2);
+int eendvn (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
+int ewendvn (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
+int einfov (const char *fmt, ...) EINFO_PRINTF (1, 2);
+int ewarnv (const char *fmt, ...) EINFO_PRINTF (1, 2);
+int ebeginv (const char *fmt, ...) EINFO_PRINTF (1, 2);
+int eendv (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
+int ewendv (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
+void eindentv (void);
+void eoutdentv (void);
 
 /* If RC_EBUFFER is set, then we buffer all the above commands.
    As such, we need to flush the buffer when done. */

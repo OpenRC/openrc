@@ -520,8 +520,10 @@ static bool is_newer_than (const char *file, const char *target)
     return (false);
   mtime = buf.st_mtime;
 
+  /* Of course we are newever than targets that don't exist
+     Such as broken symlinks */
   if (stat (target, &buf) != 0)
-    return (false);
+    return (true);
 
   if (mtime < buf.st_mtime)
     return (false);

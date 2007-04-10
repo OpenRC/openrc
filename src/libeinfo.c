@@ -197,15 +197,15 @@ static const func_t funcmap[] = {
     { "ewend", NULL, &ewend, NULL },
     { "eindent", NULL, NULL, &eindent },
     { "eoutdent", NULL, NULL, &eoutdent },
-    { "veinfon", &veinfon, NULL, NULL },
-    { "vewarnn", &vewarnn, NULL, NULL },
-    { "veinfo", &veinfo, NULL, NULL },
-    { "vewarn", &vewarn, NULL, NULL },
-    { "vebegin", &vebegin, NULL, NULL },
-    { "veend", NULL, &veend, NULL },
-    { "vewend", NULL, &vewend, NULL },
-    { "veindent" ,NULL, NULL, &veindent },
-    { "veoutdent", NULL, NULL, &veoutdent },
+    { "einfovn", &einfovn, NULL, NULL },
+    { "ewarnvn", &ewarnvn, NULL, NULL },
+    { "einfov", &einfov, NULL, NULL },
+    { "ewarnv", &ewarnv, NULL, NULL },
+    { "ebeginv", &ebeginv, NULL, NULL },
+    { "eendv", NULL, &eendv, NULL },
+    { "ewendv", NULL, &ewendv, NULL },
+    { "eindentv" ,NULL, NULL, &eindentv },
+    { "eoutdentv", NULL, NULL, &eoutdentv },
     { NULL, NULL, NULL, NULL },
 };
 
@@ -391,7 +391,7 @@ static int _eindent (FILE *stream)
   return (fprintf (stream, "%s", indent));
 }
 
-#define VEINFON(_file, _colour) \
+#define EINFOVN(_file, _colour) \
  if (colour_terminal ()) \
 fprintf (_file, " " _colour "*" EINFO_NORMAL " "); \
 else \
@@ -406,27 +406,27 @@ retval += _eindent (_file); \
 if (colour_terminal ()) \
 fprintf (_file, "\033[K");
 
-static int _veinfon (const char *fmt, va_list ap)
+static int _einfovn (const char *fmt, va_list ap)
 {
   int retval = 0;
 
-  VEINFON (stdout, EINFO_GOOD);
+  EINFOVN (stdout, EINFO_GOOD);
   return (retval);
 }
 
-static int _vewarnn (const char *fmt, va_list ap)
+static int _ewarnvn (const char *fmt, va_list ap)
 {
   int retval = 0;
 
-  VEINFON (stdout, EINFO_WARN);
+  EINFOVN (stdout, EINFO_WARN);
   return (retval);
 }
 
-static int _veerrorn (const char *fmt, va_list ap)
+static int _eerrorvn (const char *fmt, va_list ap)
 {
   int retval = 0;
 
-  VEINFON (stderr, EINFO_BAD);
+  EINFOVN (stderr, EINFO_BAD);
   return (retval);
 }
 
@@ -440,7 +440,7 @@ int einfon (const char *fmt, ...)
 
   va_start (ap, fmt);
   if (! (retval = ebuffer ("einfon", 0, fmt, ap)))
-    retval = _veinfon (fmt, ap);
+    retval = _einfovn (fmt, ap);
   va_end (ap);
 
   return (retval);
@@ -456,7 +456,7 @@ int ewarnn (const char *fmt, ...)
 
   va_start (ap, fmt);
   if (! (retval = ebuffer ("ewarnn", 0, fmt, ap)))
-    retval = _vewarnn (fmt, ap);
+    retval = _ewarnvn (fmt, ap);
   va_end (ap);
 
   return (retval);
@@ -469,7 +469,7 @@ int eerrorn (const char *fmt, ...)
 
   va_start (ap, fmt);
   if (! (retval = ebuffer ("eerrorn", 0, fmt, ap)))
-    retval = _veerrorn (fmt, ap);
+    retval = _eerrorvn (fmt, ap);
   va_end (ap);
 
   return (retval);
@@ -486,7 +486,7 @@ int einfo (const char *fmt, ...)
   va_start (ap, fmt);
   if (! (retval = ebuffer ("einfo", 0, fmt, ap)))
     {
-      retval = _veinfon (fmt, ap);
+      retval = _einfovn (fmt, ap);
       retval += printf ("\n");
     }
   va_end (ap);
@@ -506,7 +506,7 @@ int ewarn (const char *fmt, ...)
   elog (LOG_WARNING, fmt, ap);
   if (! (retval = ebuffer ("ewarn", 0, fmt, ap)))
     {
-      retval = _vewarnn (fmt, ap);
+      retval = _ewarnvn (fmt, ap);
       retval += printf ("\n");
     }
   va_end (ap);
@@ -523,7 +523,7 @@ void ewarnx (const char *fmt, ...)
     {
       va_start (ap, fmt);
       elog (LOG_WARNING, fmt, ap);
-      retval = _vewarnn (fmt, ap);
+      retval = _ewarnvn (fmt, ap);
       va_end (ap);
       retval += printf ("\n");
     }
@@ -540,7 +540,7 @@ int eerror (const char *fmt, ...)
 
   va_start (ap, fmt);
   elog (LOG_ERR, fmt, ap);
-  retval = _veerrorn (fmt, ap);
+  retval = _eerrorvn (fmt, ap);
   va_end (ap);
   retval += fprintf (stderr, "\n");
 
@@ -555,7 +555,7 @@ void eerrorx (const char *fmt, ...)
     {
       va_start (ap, fmt);
       elog (LOG_ERR, fmt, ap);
-      _veerrorn (fmt, ap);
+      _eerrorvn (fmt, ap);
       va_end (ap);
       printf ("\n");
     }
@@ -577,7 +577,7 @@ int ebegin (const char *fmt, ...)
       return (retval);
     }
 
-  retval = _veinfon (fmt, ap);
+  retval = _einfovn (fmt, ap);
   va_end (ap);
   retval += printf (" ...");
   if (colour_terminal ())
@@ -655,12 +655,12 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
       va_copy (apc, ap);
       if (strcmp (cmd, "ewend") == 0)
         {
-          col = _vewarnn (fmt, apc);
+          col = _ewarnvn (fmt, apc);
           fp = stdout;
         }
       else
         {
-          col = _veerrorn (fmt, apc);
+          col = _eerrorvn (fmt, apc);
           fp = stderr;
         }
       va_end (apc);
@@ -758,7 +758,7 @@ void eoutdent (void)
     }
 }
 
-int veinfon (const char *fmt, ...)
+int einfovn (const char *fmt, ...)
 {
   int retval;
   va_list ap;
@@ -769,14 +769,14 @@ int veinfon (const char *fmt, ...)
     return (0);
 
   va_start (ap, fmt);
-  if (! (retval = ebuffer ("veinfon", 0, fmt, ap)))
-    retval = _veinfon (fmt, ap);
+  if (! (retval = ebuffer ("einfovn", 0, fmt, ap)))
+    retval = _einfovn (fmt, ap);
   va_end (ap);
 
   return (retval);
 }
 
-int vewarnn (const char *fmt, ...)
+int ewarnvn (const char *fmt, ...)
 {
   int retval;
   va_list ap;
@@ -787,14 +787,14 @@ int vewarnn (const char *fmt, ...)
     return (0);
 
   va_start (ap, fmt);
-  if (! (retval = ebuffer ("vewarnn", 0, fmt, ap)))
-    retval = _vewarnn (fmt, ap);
+  if (! (retval = ebuffer ("ewarnvn", 0, fmt, ap)))
+    retval = _ewarnvn (fmt, ap);
   va_end (ap);
 
   return (retval);
 }
 
-int veinfo (const char *fmt, ...)
+int einfov (const char *fmt, ...)
 {
   int retval;
   va_list ap;
@@ -805,9 +805,9 @@ int veinfo (const char *fmt, ...)
     return (0);
 
   va_start (ap, fmt);
-  if (! (retval = ebuffer ("veinfo", 0, fmt, ap)))
+  if (! (retval = ebuffer ("einfov", 0, fmt, ap)))
     {
-      retval = _veinfon (fmt, ap);
+      retval = _einfovn (fmt, ap);
       retval += printf ("\n");
     }
   va_end (ap);
@@ -815,7 +815,7 @@ int veinfo (const char *fmt, ...)
   return (retval);
 }
 
-int vewarn (const char *fmt, ...)
+int ewarnv (const char *fmt, ...)
 {
   int retval;
   va_list ap;
@@ -826,9 +826,9 @@ int vewarn (const char *fmt, ...)
     return (0);
 
   va_start (ap, fmt);
-  if (! (retval = ebuffer ("vewarn", 0, fmt, ap)))
+  if (! (retval = ebuffer ("ewarnv", 0, fmt, ap)))
     {
-      retval = _vewarnn (fmt, ap);
+      retval = _ewarnvn (fmt, ap);
       retval += printf ("\n");
     }
   va_end (ap);
@@ -837,7 +837,7 @@ int vewarn (const char *fmt, ...)
   return (retval);
 }
 
-int vebegin (const char *fmt, ...)
+int ebeginv (const char *fmt, ...)
 {
   int retval;
   va_list ap;
@@ -848,9 +848,9 @@ int vebegin (const char *fmt, ...)
     return (0);
 
   va_start (ap, fmt);
-  if (! (retval = ebuffer ("vewarn", 0, fmt, ap)))
+  if (! (retval = ebuffer ("ebeginv", 0, fmt, ap)))
     {
-      retval = _veinfon (fmt, ap);
+      retval = _einfovn (fmt, ap);
       retval += printf (" ...");
       if (colour_terminal ())
         retval += printf ("\n");
@@ -860,39 +860,39 @@ int vebegin (const char *fmt, ...)
   return (retval);
 }
 
-int veend (int retval, const char *fmt, ...)
+int eendv (int retval, const char *fmt, ...)
 {
   va_list ap;
 
   CHECK_VERBOSE;
 
   va_start (ap, fmt);
-  _do_eend ("veend", retval, fmt, ap);
+  _do_eend ("eendv", retval, fmt, ap);
   va_end (ap);
 
   return (retval);
 }
 
-int vewend (int retval, const char *fmt, ...)
+int ewendv (int retval, const char *fmt, ...)
 {
   va_list ap;
 
   CHECK_VERBOSE;
 
   va_start (ap, fmt);
-  _do_eend ("vewend", retval, fmt, ap);
+  _do_eend ("ewendv", retval, fmt, ap);
   va_end (ap);
 
   return (retval);
 }
 
-void veindent (void)
+void eindentv (void)
 {
   if (is_env ("RC_VERBOSE", "yes"))
     eindent ();
 }
 
-void veoutdent (void)
+void eoutdentv (void)
 {
   if (is_env ("RC_VERBOSE", "yes"))
     eoutdent ();
