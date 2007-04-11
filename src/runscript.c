@@ -425,7 +425,8 @@ static void svc_start (const char *service, bool deps)
 		depoptions |= RC_DEP_STRICT;
 
 	if (rc_is_env ("IN_HOTPLUG", "1") || in_background) {
-		if (! rc_service_state (service, rc_service_inactive))
+		if (! rc_service_state (service, rc_service_inactive) &&
+		    ! rc_service_state (service, rc_service_stopped))
 			exit (EXIT_FAILURE);
 		background = true;
 	}
@@ -631,7 +632,8 @@ static void svc_stop (const char *service, bool deps)
 		exit (EXIT_FAILURE);
 
 	if (rc_is_env ("IN_HOTPLUG", "1") || in_background)
-		if (! rc_service_state (service, rc_service_started))
+		if (! rc_service_state (service, rc_service_started) && 
+		    ! rc_service_state (service, rc_service_inactive))
 			exit (EXIT_FAILURE);
 
 	if (rc_service_state (service, rc_service_stopped))
