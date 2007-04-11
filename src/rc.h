@@ -127,7 +127,11 @@ void rc_free_deptree (rc_depinfo_t *deptree);
    int _splash_hook (rc_hook_t hook, const char *name);
    Plugins are called when rc does something. This does not indicate an
    end result and the plugin should use the above functions to query things
-   like service status. */
+   like service status.
+   The service hooks have extra ones - now and done. This is because after
+   start_in we may start other services before we start the service in
+   question. now shows we really will start the service now and done shows
+   when we have done it as may start scheduled services at this point. */
 typedef enum
 {
   rc_hook_runlevel_stop_in = 1,
@@ -135,8 +139,12 @@ typedef enum
   rc_hook_runlevel_start_in,
   rc_hook_runlevel_start_out,
   rc_hook_service_stop_in,
+  rc_hook_service_stop_now,
+  rc_hook_service_stop_done,
   rc_hook_service_stop_out,
   rc_hook_service_start_in,
+  rc_hook_service_start_now,
+  rc_hook_service_start_done,
   rc_hook_service_start_out
 } rc_hook_t;
 
@@ -177,6 +185,7 @@ char **rc_config_env (char **env);
 char **rc_strlist_add (char **list, const char *item);
 char **rc_strlist_addsort (char **list, const char *item);
 char **rc_strlist_addsortc (char **list, const char *item);
+char **rc_strlist_addsortu (char **list, const char *item);
 char **rc_strlist_delete (char **list, const char *item);
 void rc_strlist_reverse (char **list);
 void rc_strlist_free (char **list);

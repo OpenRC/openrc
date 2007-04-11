@@ -47,6 +47,7 @@ static const char *rc_service_state_names[] = {
   "wasinactive",
   "coldplugged",
   "failed",
+  "scheduled",
   NULL
 };
 
@@ -261,6 +262,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
       if ((i != skip_state &&
            i != rc_service_stopped &&
            i != rc_service_coldplugged &&
+           i != rc_service_scheduled &&
            i != rc_service_crashed) &&
           (! skip_wasinactive || i != rc_service_wasinactive))
         {
@@ -547,7 +549,8 @@ void rc_schedule_start_service (const char *service,
   char *init;
   char *file;
 
-  if (! rc_service_exists (service) || ! rc_service_exists (service_to_start))
+  /* service may be a provided service, like net */
+  if (! service || ! rc_service_exists (service_to_start))
     return;
 
   dir = rc_strcatpaths (RC_SVCDIR, "scheduled", basename (service),
@@ -656,8 +659,34 @@ char **rc_services_in_state (rc_service_state_t state)
                               (char *) NULL);
   char **list = NULL;
 
-  if (rc_is_dir (dir))
-    list = rc_ls_dir (list, dir, RC_LS_INITD);
+  if (state == rc_service_scheduled)
+    {
+      char **dirs = rc_ls_dir (NULL, dir, 0);
+      char *d;
+      int i;
+
+      STRLIST_FOREACH (dirs, d, i)
+        {
+          char *p = rc_strcatpaths (dir, d, (char *) NULL);
+          char **entries = rc_ls_dir (NULL, p, RC_LS_INITD);
+          char *e;
+          int j;
+
+          STRLIST_FOREACH (entries, e, j)
+           list = rc_strlist_addsortu (list, e);
+
+          if (entries)
+            free (entries);
+        }
+
+      if (dirs)
+        free (dirs);
+    }
+  else
+    {
+      if (rc_is_dir (dir))
+        list = rc_ls_dir (list, dir, RC_LS_INITD);
+    }
 
   free (dir);
   return (list);

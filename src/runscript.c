@@ -445,6 +445,9 @@ static void svc_start (const char *service, bool deps)
   int j;
   int depoptions = RC_DEP_TRACE;
 
+  rc_plugin_run (rc_hook_service_start_in, applet);
+  hook_out = rc_hook_service_start_out;
+
   if (rc_is_env ("RC_STRICT_DEPEND", "yes"))
     depoptions |= RC_DEP_STRICT;
 
@@ -563,7 +566,7 @@ static void svc_start (const char *service, bool deps)
               rc_strlist_free (providelist);
               providelist = rc_get_depends (deptree, types, svclist,
                                             softlevel, depoptions);
-              STRLIST_FOREACH (providelist, svc2, j)
+              STRLIST_FOREACH (providelist, svc2, j) 
                rc_schedule_start_service (svc2, service);
 
               len += strlen (svc) + 2;
@@ -598,8 +601,7 @@ static void svc_start (const char *service, bool deps)
 
   if (ibsave)
     setenv ("IN_BACKGROUND", ibsave, 1);
-  rc_plugin_run (rc_hook_service_start_in, applet);
-  hook_out = rc_hook_service_start_out;
+  rc_plugin_run (rc_hook_service_start_now, applet);
   started = svc_exec (service, "start", NULL);
   if (ibsave)
     unsetenv ("IN_BACKGROUND");
@@ -616,21 +618,20 @@ static void svc_start (const char *service, bool deps)
               if (rc_runlevel_starting ())
                 rc_mark_service (service, rc_service_failed);
             }
+          rc_plugin_run (rc_hook_service_start_done, applet);
           eerrorx ("ERROR: %s failed to start", applet);
         }
-
       rc_mark_service (service, rc_service_started);
       unlink_mtime_test ();
-
-      hook_out = 0;
-      rc_plugin_run (rc_hook_service_start_out, applet);
+      rc_plugin_run (rc_hook_service_start_done, applet);
     }
   else
     {
+      rc_plugin_run (rc_hook_service_start_done, applet);
       if (rc_service_state (service, rc_service_inactive))
-        ewarn ("WARNING: %s has started, but is inactive", applet);
+        ewarnx ("WARNING: %s has started, but is inactive", applet);
       else
-        ewarn ("WARNING: %s not under our control, aborting", applet);
+        ewarnx ("WARNING: %s not under our control, aborting", applet);
     }
 
   /* Now start any scheduled services */
@@ -658,11 +659,16 @@ static void svc_start (const char *service, bool deps)
        if (rc_service_state (svc, rc_service_stopped))
          rc_start_service (svc);
     }
+
+  hook_out = 0;
+  rc_plugin_run (rc_hook_service_start_out, applet);
 }
 
 static void svc_stop (const char *service, bool deps)
 {
   bool stopped;
+
+  hook_out = rc_hook_service_stop_out;
 
   if (rc_runlevel_stopping () &&
       rc_service_state (service, rc_service_failed))
@@ -764,14 +770,16 @@ static void svc_stop (const char *service, bool deps)
 
   if (ibsave)
     setenv ("IN_BACKGROUND", ibsave, 1);
-  rc_plugin_run (rc_hook_service_stop_in, applet);
-  hook_out = rc_hook_service_stop_out;
+  rc_plugin_run (rc_hook_service_stop_now, applet);
   stopped = svc_exec (service, "stop", NULL);
   if (ibsave)
     unsetenv ("IN_BACKGROUND");
 
   if (! in_control ())
-    ewarnx ("WARNING: %s not under our control, aborting", applet);
+    {
+      rc_plugin_run (rc_hook_service_stop_done, applet);
+      ewarnx ("WARNING: %s not under our control, aborting", applet);
+    }
 
   if (! stopped)
     {
@@ -779,6 +787,7 @@ static void svc_stop (const char *service, bool deps)
         rc_mark_service (service, rc_service_inactive);
       else
         rc_mark_service (service, rc_service_started);
+      rc_plugin_run (rc_hook_service_stop_done, applet);
       eerrorx ("ERROR: %s failed to stop", applet);
     }
 
@@ -788,6 +797,7 @@ static void svc_stop (const char *service, bool deps)
     rc_mark_service (service, rc_service_stopped);
 
   unlink_mtime_test ();
+  rc_plugin_run (rc_hook_service_stop_done, applet);
   hook_out = 0;
   rc_plugin_run (rc_hook_service_stop_out, applet);
 }

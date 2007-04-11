@@ -34,7 +34,8 @@ char **rc_strlist_add (char **list, const char *item)
 
 static char **_rc_strlist_addsort (char **list, const char *item,
                                    int (*sortfunc) (const char *s1,
-                                                    const char *s2))
+                                                    const char *s2),
+                                   bool uniq)
 {
   char **newlist;
   int i = 0;
@@ -45,7 +46,11 @@ static char **_rc_strlist_addsort (char **list, const char *item,
     return (list);
 
   while (list && list[i])
-    i++;
+    {
+      if (uniq && strcmp (list[i], item) == 0)
+        return (list);
+      i++;
+    }
 
   newlist = rc_xrealloc (list, sizeof (char *) * (i + 2));
 
@@ -72,12 +77,17 @@ static char **_rc_strlist_addsort (char **list, const char *item,
 
 char **rc_strlist_addsort (char **list, const char *item)
 {
-  return (_rc_strlist_addsort (list, item, strcoll));
+  return (_rc_strlist_addsort (list, item, strcoll, false));
 }
 
 char **rc_strlist_addsortc (char **list, const char *item)
 {
-  return (_rc_strlist_addsort (list, item, strcmp));
+  return (_rc_strlist_addsort (list, item, strcmp, false));
+}
+
+char **rc_strlist_addsortu (char **list, const char *item)
+{
+  return (_rc_strlist_addsort (list, item, strcmp, true));
 }
 
 char **rc_strlist_delete (char **list, const char *item)
