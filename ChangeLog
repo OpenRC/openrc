@@ -1,6 +1,8 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+* baselayout-2.0.0_alpha1 (11 Apr 2007)
+
   07 Apr 2007; Mike Frysinger <vapier@gentoo.org>:
 
     "modules-update" -> "update-modules".
