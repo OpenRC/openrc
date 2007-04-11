@@ -13,8 +13,6 @@ dhclient_start() {
 	local args= opt= opts= pidfile="/var/run/dhclient-${IFACE}.pid"
 	local sendhost=true dconf=
 
-	_wait_for_carrier || return 1
-
 	# Get our options
 	eval opts=\$dhcp_${IFVAR}
 	[ -z "${opts}" ] && opts=${dhcp}

@@ -68,13 +68,15 @@ _wait_for_carrier() {
 		sleep 1
 		if _has_carrier ; then
 	    	[ -z "${RC_EBUFFER}" ] && echo
+			eend 0
 	    	return 0
 		fi
 		timeout=$((${timeout} - 1))
-		[ -z "${RC_EBUFFER}" ] && echo -n "."
+		[ -z "${RC_EBUFFER}" ] && printf "."
     done
 
-    echo
+    [ -z "${RC_EBUFFER}" ] && echo
+	eend 1
     return 1
 }
 
@@ -391,6 +393,16 @@ start() {
 	    	fi
 		fi
     done
+
+	if ! _wait_for_carrier ; then
+		if service_started devd ; then
+			ewarn "no carrier, but devd will start us when we have one"
+			mark_service_inactive "${SVCNAME}"
+		else
+			eerror "no carrier"
+		fi
+		return 1
+	fi
 
     local config= config_index=
     _load_config

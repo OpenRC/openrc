@@ -13,8 +13,6 @@ udhcpc_start() {
 	local args= opt= opts= pidfile="/var/run/udhcpc-${IFACE}.pid"
 	local sendhost=true cachefile="/var/cache/udhcpc-${IFACE}.lease"
 
-	_wait_for_carrier || return 1
-
 	eval args=\$udhcpc_${IFVAR}
 
 	# Get our options

@@ -15,8 +15,6 @@ _config_vars="$_config_vars dhcp dhcpcd"
 dhcpcd_start() {
 	local args= opt= opts= pidfile="/var/run/dhcpcd-${IFACE}.pid"
 
-	_wait_for_carrier || return 1
-
 	eval args=\$dhcpcd_${IFVAR}
 
 	# Get our options

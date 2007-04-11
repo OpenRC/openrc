@@ -135,10 +135,11 @@ void rc_free_deptree (rc_depinfo_t *deptree);
 typedef enum
 {
   rc_hook_runlevel_stop_in = 1,
-  rc_hook_runlevel_stop_out,
-  rc_hook_runlevel_start_in,
-  rc_hook_runlevel_start_out,
-  rc_hook_service_stop_in,
+  rc_hook_runlevel_stop_out = 4,
+  rc_hook_runlevel_start_in = 5,
+  rc_hook_runlevel_start_out = 8,
+  /* We reserved a few numbers if we need rc_runlevel_stop_now and done */
+  rc_hook_service_stop_in = 101,
   rc_hook_service_stop_now,
   rc_hook_service_stop_done,
   rc_hook_service_stop_out,
