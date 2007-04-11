@@ -13,25 +13,20 @@ load_modules() {
 
 	[ -z "${config}" -o ! -r "${config}" ] && return 0
 
-	modules=$(sed -e 's:#.*::' -e '/^[[:space:]]*$/d' "${config}")
-	[ -z "${modules}" ] && return 0
+	eval set -- $(sed -e 's:#.*::' -e '/^[[:space:]]*$/d' \
+	-e "s/'/'\\\\''/g" -e "s/^/'/g" -e "s/$/'/g" "${config}")
+	[ $# = 0 ] && return 0
 
 	einfo "Using ${config} as config:"
 	eindent
 
-	local x= cnt=0 OIFS=${IFS} SIFS=${IFS-y}
-	IFS=\n
-	for x in ${modules} ; do
+	local x= cnt=0
+	for x in "$@" ; do
 		set -- ${x}
 		ebegin "Loading module $1"
-		modprobe -q "$@" >& /dev/null
+		eval modprobe -q "$@"
 		eend $? "Failed to load $1" && cnt=$((${cnt} + 1))
 	done
-	if [ "${SIFS}" = "y" ] ; then
-		IFS=${save_IFS}
-	else
-		unset IFS
-	fi
 
 	einfo "Autoloaded ${cnt} module(s)"
 
