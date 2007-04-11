@@ -10,8 +10,7 @@
 SUBDIRS = conf.d etc init.d man net sh share src
 
 NAME = baselayout
-#VERSION = 2.0.0_alpha1
-VERSION = 1.13.99
+VERSION = 2.0.0_alpha1
 
 PKG = $(NAME)-$(VERSION)
 
