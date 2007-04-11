@@ -25,16 +25,16 @@
 
 typedef enum
 {
-  rc_service_started,
-  rc_service_stopped,
-  rc_service_starting,
-  rc_service_stopping,
-  rc_service_inactive,
-  rc_service_wasinactive,
-  rc_service_coldplugged,
-  rc_service_failed,
-  rc_service_scheduled,
-  rc_service_crashed
+	rc_service_started,
+	rc_service_stopped,
+	rc_service_starting,
+	rc_service_stopping,
+	rc_service_inactive,
+	rc_service_wasinactive,
+	rc_service_coldplugged,
+	rc_service_failed,
+	rc_service_scheduled,
+	rc_service_crashed
 } rc_service_state_t;
 
 char *rc_resolve_service (const char *service);
@@ -45,19 +45,19 @@ bool rc_mark_service (const char *service, rc_service_state_t state);
 pid_t rc_stop_service (const char *service);
 pid_t rc_start_service (const char *service);
 void rc_schedule_start_service (const char *service,
-                                const char *service_to_start);
+								const char *service_to_start);
 char **rc_services_scheduled_by (const char *service);
 void rc_schedule_clear (const char *service);
 bool rc_wait_service (const char *service);
 bool rc_get_service_option (const char *service, const char *option,
-                            char *value);
+							char *value);
 bool rc_set_service_option (const char *service, const char *option,
-                            const char *value);
+							const char *value);
 void rc_set_service_daemon (const char *service, const char *exec,
-                            const char *name, const char *pidfile,
-                            bool started);
+							const char *name, const char *pidfile,
+							bool started);
 bool rc_service_started_daemon (const char *service, const char *exec,
-                                int indx);
+								int indx);
 
 bool rc_allow_plug (char *service);
 
@@ -75,7 +75,7 @@ char **rc_services_scheduled (const char *service);
 
 /* Find pids based on criteria - free the pointer returned after use */
 pid_t *rc_find_pids (const char *exec, const char *cmd,
-                     uid_t uid, pid_t pid);
+					 uid_t uid, pid_t pid);
 /* Checks that all daemons started with start-stop-daemon by the service
    are still running. If so, return false otherwise true.
    You should check that the service has been started before calling this. */
@@ -84,16 +84,16 @@ bool rc_service_daemons_crashed (const char *service);
 /* Dependency tree structs and functions. */
 typedef struct rc_deptype
 {
-  char *type;
-  char **services;
-  struct rc_deptype *next;
+	char *type;
+	char **services;
+	struct rc_deptype *next;
 } rc_deptype_t;
 
 typedef struct rc_depinfo
 {
-  char *service;
-  rc_deptype_t *depends;
-  struct rc_depinfo *next;
+	char *service;
+	rc_deptype_t *depends;
+	struct rc_depinfo *next;
 } rc_depinfo_t;
 
 
@@ -110,14 +110,14 @@ rc_depinfo_t *rc_load_deptree (void);
 rc_depinfo_t *rc_get_depinfo (rc_depinfo_t *deptree, const char *service);
 rc_deptype_t *rc_get_deptype (rc_depinfo_t *depinfo, const char *type);
 char **rc_get_depends (rc_depinfo_t *deptree, char **types,
-                       char **services, const char *runlevel, int options);
+					   char **services, const char *runlevel, int options);
 /* List all the services that should be started, in order, the the
    given runlevel, including sysinit and boot services where
    approriate.
    If reboot, shutdown or single are given then we list all the services
    we that we need to shutdown in order. */
 char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
-                          int options);
+						  int options);
 
 void rc_free_deptree (rc_depinfo_t *deptree);
 
@@ -134,19 +134,19 @@ void rc_free_deptree (rc_depinfo_t *deptree);
    when we have done it as may start scheduled services at this point. */
 typedef enum
 {
-  rc_hook_runlevel_stop_in = 1,
-  rc_hook_runlevel_stop_out = 4,
-  rc_hook_runlevel_start_in = 5,
-  rc_hook_runlevel_start_out = 8,
-  /* We reserved a few numbers if we need rc_runlevel_stop_now and done */
-  rc_hook_service_stop_in = 101,
-  rc_hook_service_stop_now,
-  rc_hook_service_stop_done,
-  rc_hook_service_stop_out,
-  rc_hook_service_start_in,
-  rc_hook_service_start_now,
-  rc_hook_service_start_done,
-  rc_hook_service_start_out
+	rc_hook_runlevel_stop_in = 1,
+	rc_hook_runlevel_stop_out = 4,
+	rc_hook_runlevel_start_in = 5,
+	rc_hook_runlevel_start_out = 8,
+	/* We reserved a few numbers if we need rc_runlevel_stop_now and done */
+	rc_hook_service_stop_in = 101,
+	rc_hook_service_stop_now,
+	rc_hook_service_stop_done,
+	rc_hook_service_stop_out,
+	rc_hook_service_start_in,
+	rc_hook_service_start_now,
+	rc_hook_service_start_done,
+	rc_hook_service_start_out
 } rc_hook_t;
 
 /* RC utility functions.

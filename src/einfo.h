@@ -18,12 +18,12 @@
 
 typedef enum
 {
-  einfo_good,
-  einfo_warn,
-  einfo_bad,
-  einfo_hilite,
-  einfo_bracket,
-  einfo_normal
+	einfo_good,
+	einfo_warn,
+	einfo_bad,
+	einfo_hilite,
+	einfo_bracket,
+	einfo_normal
 } einfo_color_t;
 
 /* Colour codes used by the below functions. */
@@ -50,7 +50,7 @@ typedef enum
    NOTE We use the v suffix here so we can add veinfo for va_list
    in the future, but veinfo is used by shell scripts as they don't
    have the va_list concept
-*/
+   */
 bool colour_terminal (void);
 int einfon (const char *fmt, ...) EINFO_PRINTF (1, 2);
 int ewarnn (const char *fmt, ...) EINFO_PRINTF (1, 2);

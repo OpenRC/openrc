@@ -18,7 +18,7 @@
    it should usually by +1 from what you expect, and should only be
    used in the scope of the macro) */
 #define STRLIST_FOREACH(_list, _pos, _counter) \
- if ((_list) && _list[0] && ! (_counter = 0)) \
-   while ((_pos = _list[_counter++]))
+	if ((_list) && _list[0] && ! (_counter = 0)) \
+		while ((_pos = _list[_counter++]))
 
 #endif /* __STRLIST_H__ */
