@@ -661,6 +661,13 @@ iwconfig_pre_start() {
 		return 0
 	fi
 
+	# Warn about old file - we want to punt it really
+	if [ -e /etc/conf.d/wireless ] ; then
+		ewarn "/etc/conf.d/wireless is deprecated"
+		ewarn "Please put all settings into /etc/conf.d/net"
+		. /etc/conf.d/wireless
+	fi
+
 	iwconfig_defaults 
 	iwconfig_user_config 
 	
