@@ -16,12 +16,12 @@
 #include <stdbool.h>
 
 /* Special level names */
-#define RC_LEVEL_SYSINIT	"sysinit"
-#define RC_LEVEL_BOOT		"boot"
-#define RC_LEVEL_SINGLE		"single"
-#define RC_LEVEL_SHUTDOWN	"shutdown"
-#define RC_LEVEL_REBOOT		"reboot"
-#define RC_LEVEL_DEFAULT	"default"
+#define RC_LEVEL_SYSINIT    "sysinit"
+#define RC_LEVEL_BOOT       "boot"
+#define RC_LEVEL_SINGLE     "single"
+#define RC_LEVEL_SHUTDOWN   "shutdown"
+#define RC_LEVEL_REBOOT     "reboot"
+#define RC_LEVEL_DEFAULT    "default"
 
 typedef enum
 {
@@ -100,8 +100,8 @@ typedef struct rc_depinfo
 /* Options for rc_dep_depends and rc_order_services.
    When changing runlevels, you should use RC_DEP_START and RC_DEP_STOP for
    the start and stop lists as we tweak the provided services for this. */
-#define RC_DEP_TRACE  	0x01
-#define RC_DEP_STRICT	0x02
+#define RC_DEP_TRACE    0x01
+#define RC_DEP_STRICT   0x02
 #define RC_DEP_START    0x04
 #define RC_DEP_STOP     0x08
 

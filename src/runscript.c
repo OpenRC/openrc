@@ -29,8 +29,8 @@
 #include "rc-plugin.h"
 #include "strlist.h"
 
-#define RCSCRIPT_HELP	RC_LIBDIR "/sh/rc-help.sh"
-#define SELINUX_LIB	RC_LIBDIR "/runscript_selinux.so"
+#define RCSCRIPT_HELP   RC_LIBDIR "/sh/rc-help.sh"
+#define SELINUX_LIB     RC_LIBDIR "/runscript_selinux.so"
 
 static char *applet = NULL;
 static char *exclusive = NULL;
@@ -427,7 +427,7 @@ static void svc_start (const char *service, bool deps)
 
 	if (rc_is_env ("IN_HOTPLUG", "1") || in_background) {
 		if (! rc_service_state (service, rc_service_inactive) &&
-		    ! rc_service_state (service, rc_service_stopped))
+			! rc_service_state (service, rc_service_stopped))
 			exit (EXIT_FAILURE);
 		background = true;
 	}
@@ -634,7 +634,7 @@ static void svc_stop (const char *service, bool deps)
 
 	if (rc_is_env ("IN_HOTPLUG", "1") || in_background)
 		if (! rc_service_state (service, rc_service_started) && 
-		    ! rc_service_state (service, rc_service_inactive))
+			! rc_service_state (service, rc_service_inactive))
 			exit (EXIT_FAILURE);
 
 	if (rc_service_state (service, rc_service_stopped))
@@ -819,14 +819,14 @@ int main (int argc, char **argv)
 	char c;
 
 	static struct option longopts[] = {
-		{ "debug",		0, NULL, 'd'},
-		{ "help",		0, NULL, 'h'},
-		{ "nocolor",	0, NULL, 'C'},
-		{ "nocolour",	0, NULL, 'C'},
-		{ "nodeps",		0, NULL, 'D'},
-		{ "quiet",		0, NULL, 'q'},
-		{ "verbose",	0, NULL, 'v'},
-		{ NULL,			0, NULL, 0}
+		{ "debug",      0, NULL, 'd'},
+		{ "help",       0, NULL, 'h'},
+		{ "nocolor",    0, NULL, 'C'},
+		{ "nocolour",   0, NULL, 'C'},
+		{ "nodeps",     0, NULL, 'D'},
+		{ "quiet",      0, NULL, 'q'},
+		{ "verbose",    0, NULL, 'v'},
+		{ NULL,         0, NULL, 0}
 	};
 
 	/* Show help if insufficient args */

@@ -145,13 +145,13 @@ int main (int argc, char **argv)
 	char c;
 
 	static struct option longopts[] = {
-		{ "fstype-regex",	1, NULL, 'F'},
-		{ "node-regex",		1, NULL, 'N'},
-		{ "skip-regex",		1, NULL, 'S'},
-		{ "fstype",			0, NULL, 'f'},
-		{ "node",			0, NULL, 'n'},
-		{ "reverse",		0, NULL, 'r'},
-		{ NULL,				0, NULL, 0}
+		{ "fstype-regex",   1, NULL, 'F'},
+		{ "node-regex",     1, NULL, 'N'},
+		{ "skip-regex",     1, NULL, 'S'},
+		{ "fstype",         0, NULL, 'f'},
+		{ "node",           0, NULL, 'n'},
+		{ "reverse",        0, NULL, 'r'},
+		{ NULL,             0, NULL, 0}
 	};
 
 	while ((c = getopt_long (argc, argv, "F:N:S:fnr",
