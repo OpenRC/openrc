@@ -12,6 +12,7 @@
 #include <sys/wait.h>
 #include <dlfcn.h>
 #include <errno.h>
+#include <getopt.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -815,7 +816,17 @@ int main (int argc, char **argv)
 	bool doneone = false;
 	char pid[16];
 	int retval;
-	bool ifstarted = false;
+	char c;
+
+	static struct option longopts[] = {
+		{ "debug",		0, NULL, 'd'},
+		{ "help",		0, NULL, 'h'},
+		{ "nocolor",	0, NULL, 'C'},
+		{ "nocolour",	0, NULL, 'C'},
+		{ "nodeps",		0, NULL, 'D'},
+		{ "verbose",	0, NULL, 'v'},
+		{ NULL,			0, NULL, 0}
+	};
 
 	applet = strdup (basename (service));
 	atexit (cleanup);
@@ -914,38 +925,31 @@ int main (int argc, char **argv)
 #endif
 
 	/* Right then, parse any options there may be */
-	for (i = 2; i < argc; i++) {
-		if (strlen (argv[i]) < 2 || argv[i][0] != '-' || argv[i][1] != '-')
-			continue;
-
-		if (strcmp (argv[i], "--debug") == 0)
-			setenv ("RC_DEBUG", "yes", 1);
-		else if (strcmp (argv[i], "--help") == 0) {
-			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
-			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-					 applet, strerror (errno));
-		} else if (strcmp (argv[i],"--ifstarted") == 0)
-			ifstarted = true;
-		else if (strcmp (argv[i], "--nocolour") == 0 ||
-				 strcmp (argv[i], "--nocolor") == 0)
-			setenv ("RC_NOCOLOR", "yes", 1);
-		else if (strcmp (argv[i], "--nodeps") == 0)
-			deps = false;
-		else if (strcmp (argv[i], "--quiet") == 0)
-			setenv ("RC_QUIET", "yes", 1);
-		else if (strcmp (argv[i], "--verbose") == 0)
-			setenv ("RC_VERBOSE", "yes", 1);
-		else if (strcmp (argv[i], "--version") == 0)
-			printf ("version me\n");
-		else
-			eerror ("%s: unknown option `%s'", applet, argv[i]);
-	}
-
-	if (ifstarted && ! rc_service_state (applet, rc_service_started)) {
-		if (! rc_is_env("RC_QUIET", "yes"))
-			eerror ("ERROR: %s is not started", applet);
-		exit (EXIT_FAILURE);
-	}
+	while ((c = getopt_long (argc, argv, "dhCDNqv",
+							 longopts, (int *) 0)) != -1)
+		switch (c) {
+			case 'd':
+				setenv ("RC_DEBUG", "yes", 1);
+				break;
+			case 'h':
+				execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
+				eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
+						 applet, strerror (errno));
+			case 'C':
+				setenv ("RC_NOCOLOR", "yes", 1);
+				break;
+			case 'D':
+				deps = false;
+				break;
+			case 'q':
+				setenv ("RC_QUIET", "yes", 1);
+				break;
+			case 'v':
+				setenv ("RC_VERBOSE", "yes", 1);
+				break;
+			default:
+				exit (EXIT_FAILURE);
+		}
 
 	if (rc_is_env ("IN_HOTPLUG", "1")) {
 		if (! rc_is_env ("RC_HOTPLUG", "yes") || ! rc_allow_plug (applet))
@@ -964,37 +968,35 @@ int main (int argc, char **argv)
 
 	/* Now run each option */
 	retval = EXIT_SUCCESS;
-	for (i = 2; i < argc; i++) {
+	while (optind < argc) {
+		optarg = argv[optind++];
+
 		/* Abort on a sighup here */
 		if (sighup)
 			exit (EXIT_FAILURE);
-
-		if (strlen (argv[i]) < 2 ||
-			(argv[i][0] == '-' && argv[i][1] == '-'))
-			continue;
 
 		/* Export the command we're running.
 		   This is important as we stamp on the restart function now but
 		   some start/stop routines still need to behave differently if
 		   restarting. */
 		unsetenv ("RC_CMD");
-		setenv ("RC_CMD", argv[i], 1);
+		setenv ("RC_CMD", optarg, 1);
 
 		doneone = true;
-		if (strcmp (argv[i], "conditionalrestart") == 0 ||
-			strcmp (argv[i], "condrestart") == 0)
+		if (strcmp (optarg, "conditionalrestart") == 0 ||
+			strcmp (optarg, "condrestart") == 0)
 		{
 			if (rc_service_state (service, rc_service_started))
 				svc_restart (service, deps);
 		}
-		else if (strcmp (argv[i], "restart") == 0)
+		else if (strcmp (optarg, "restart") == 0)
 			svc_restart (service, deps);
-		else if (strcmp (argv[i], "start") == 0)
+		else if (strcmp (optarg, "start") == 0)
 			svc_start (service, deps);
-		else if (strcmp (argv[i], "status") == 0) {
+		else if (strcmp (optarg, "status") == 0) {
 			rc_service_state_t r = svc_status (service);
 			retval = (int) r;
-		} else if (strcmp (argv[i], "stop") == 0) {
+		} else if (strcmp (optarg, "stop") == 0) {
 			if (in_background)
 				get_started_services ();
 
@@ -1014,16 +1016,16 @@ int main (int argc, char **argv)
 					if (rc_service_state (svc, rc_service_stopped))
 						rc_schedule_start_service (service, svc);
 			}
-		} else if (strcmp (argv[i], "zap") == 0) {
+		} else if (strcmp (optarg, "zap") == 0) {
 			einfo ("Manually resetting %s to stopped state", applet);
 			rc_mark_service (applet, rc_service_stopped);
 			uncoldplug (applet);
-		} else if (strcmp (argv[i], "help") == 0) {
+		} else if (strcmp (optarg, "help") == 0) {
 			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
 			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 					 applet, strerror (errno));
 		}else
-			svc_exec (service, argv[i], NULL);
+			svc_exec (service, optarg, NULL);
 
 		/* Flush our buffered output if any */
 		eflush ();

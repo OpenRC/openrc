@@ -63,11 +63,11 @@ int main (int argc, char **argv)
 	int j;
 
 	const struct option longopts[] = {
-		{"all", no_argument, NULL, 'a'},
-		{"list", no_argument, NULL, 'l'},
-		{"servicelist", no_argument, NULL, 's'},
-		{"unused", no_argument, NULL, 'u'},
-		{NULL, 0, NULL, 0}
+		{"all", 		0, NULL, 'a'},
+		{"list", 		0, NULL, 'l'},
+		{"servicelist", 0, NULL, 's'},
+		{"unused", 		0, NULL, 'u'},
+		{NULL, 			0, NULL, 0}
 	};
 
 	while ((c = getopt_long(argc, argv, "alsu", longopts, &option_index)) != -1)
