@@ -36,7 +36,6 @@ static char **find_mounts (regex_t *node_regex, regex_t *fstype_regex,
 	int nmnts;
 	int i;
 	char **list = NULL;
-	char c;
 
 	if ((nmnts = getmntinfo (&mnts, MNT_NOWAIT)) == 0)
 		eerrorx ("getmntinfo: %s", strerror (errno));
@@ -155,7 +154,7 @@ int main (int argc, char **argv)
 		{ NULL,				0, NULL, 0}
 	};
 
-	while ((c = getopt_long (argc, argv, "F:N:S;fnr",
+	while ((c = getopt_long (argc, argv, "F:N:S:fnr",
 							 longopts, (int *) 0)) != -1)
 		switch (c) {
 			case 'F':
@@ -182,7 +181,7 @@ int main (int argc, char **argv)
 				}
 				break;
 
-			case 'R':
+			case 'S':
 				if (skip_regex)
 					free (skip_regex);
 				skip_regex = rc_xmalloc (sizeof (regex_t));

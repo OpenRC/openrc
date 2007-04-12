@@ -824,12 +824,10 @@ int main (int argc, char **argv)
 		{ "nocolor",	0, NULL, 'C'},
 		{ "nocolour",	0, NULL, 'C'},
 		{ "nodeps",		0, NULL, 'D'},
+		{ "quiet",		0, NULL, 'q'},
 		{ "verbose",	0, NULL, 'v'},
 		{ NULL,			0, NULL, 0}
 	};
-
-	applet = strdup (basename (service));
-	atexit (cleanup);
 
 	/* Show help if insufficient args */
 	if (argc < 3) {
@@ -837,6 +835,9 @@ int main (int argc, char **argv)
 		eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 				 applet, strerror (errno));
 	}
+
+	applet = strdup (basename (service));
+	atexit (cleanup);
 
 #ifdef __linux__
 	/* coldplug events can trigger init scripts, but we don't want to run them
@@ -911,18 +912,14 @@ int main (int argc, char **argv)
 		free (eb);
 	}
 
-	/* Save the IN_BACKGROUND env flag so it's ONLY passed to the service
-	   that is being called and not any dependents */
-	if (getenv ("IN_BACKGROUND")) {
-		in_background = rc_is_env ("IN_BACKGROUND", "true");
-		ibsave = strdup (getenv ("IN_BACKGROUND"));
-		unsetenv ("IN_BACKGROUND");
-	}
-
 #ifdef __linux__
 	/* Ok, we are ready to go, so setup selinux if applicable */
 	setup_selinux (argc, argv);
 #endif
+
+	/* Punt the first arg as it's our service name */
+	argc--;
+	argv++;
 
 	/* Right then, parse any options there may be */
 	while ((c = getopt_long (argc, argv, "dhCDNqv",
@@ -950,6 +947,14 @@ int main (int argc, char **argv)
 			default:
 				exit (EXIT_FAILURE);
 		}
+
+	/* Save the IN_BACKGROUND env flag so it's ONLY passed to the service
+	   that is being called and not any dependents */
+	if (getenv ("IN_BACKGROUND")) {
+		in_background = rc_is_env ("IN_BACKGROUND", "true");
+		ibsave = strdup (getenv ("IN_BACKGROUND"));
+		unsetenv ("IN_BACKGROUND");
+	}
 
 	if (rc_is_env ("IN_HOTPLUG", "1")) {
 		if (! rc_is_env ("RC_HOTPLUG", "yes") || ! rc_allow_plug (applet))
