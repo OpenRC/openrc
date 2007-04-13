@@ -136,7 +136,7 @@ install: $(TARGET)
 	install -m 0755 $(BIN_TARGETS) $(DESTDIR)/bin
 	install -m 0755 -d $(DESTDIR)/sbin
 	install -m 0755 $(SBIN_TARGETS) $(DESTDIR)/sbin
-	ln -s rc-update $(DESTDIR)/sbin/update-rc
+	ln -sf rc-update $(DESTDIR)/sbin/update-rc
 	install -m 0755 -d $(DESTDIR)/$(LIB)/rcscripts/conf.d
 	install -m 0644 $(SYS_WHITELIST) $(DESTDIR)/$(LIB)/rcscripts/conf.d
 	install -m 0755 -d $(DESTDIR)/$(LIB)/rcscripts/bin
