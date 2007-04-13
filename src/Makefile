@@ -128,6 +128,8 @@ links: rc
 install: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/$(LIB)
 	install -m 0755 $(LIB_TARGETS) $(DESTDIR)/$(LIB)
+	ln -sf $(LIBEINFOSO) $(DESTDIR)/$(LIB)/libeinfo.so
+	ln -sf $(LIBRCSO) $(DESTDIR)/$(LIB)/librc.so
 	install -m 0755 -d $(DESTDIR)/usr/include
 	install -m 0644 einfo.h rc.h $(DESTDIR)/usr/include
 	install -m 0755 -d $(DESTDIR)/bin
