@@ -154,7 +154,7 @@ clean:
 	rm -f *.o *~ *.core *.so
 
 -include .depend
-.depend:
+.depend: $(wildcard *.c *.h)
 	$(CC) $(CPPFLAGS) -MM *.c > .depend
 
 .PHONY: all clean install links
