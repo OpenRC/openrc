@@ -152,3 +152,9 @@ install: $(TARGET)
 clean:
 	rm -f $(TARGET) $(RCLINKS) $(RCPRIVLINKS)
 	rm -f *.o *~ *.core *.so
+
+-include .depend
+.depend:
+	$(CC) $(CPPFLAGS) -MM *.c > .depend
+
+.PHONY: all clean install links

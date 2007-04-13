@@ -1,0 +1,16 @@
+env-update.o: env-update.c einfo.h rc.h rc-misc.h strlist.h
+fstabinfo.o: fstabinfo.c einfo.h
+libeinfo.o: libeinfo.c einfo.h rc.h rc-misc.h
+librc.o: librc.c librc.h einfo.h rc.h rc-misc.h strlist.h
+librc-daemon.o: librc-daemon.c librc.h einfo.h rc.h rc-misc.h strlist.h
+librc-depend.o: librc-depend.c librc.h einfo.h rc.h rc-misc.h strlist.h
+librc-misc.o: librc-misc.c librc.h einfo.h rc.h rc-misc.h strlist.h
+librc-strlist.o: librc-strlist.c librc.h einfo.h rc.h rc-misc.h strlist.h
+mountinfo.o: mountinfo.c einfo.h rc.h rc-misc.h strlist.h
+rc.o: rc.c einfo.h rc.h rc-misc.h rc-plugin.h strlist.h
+rc-depend.o: rc-depend.c einfo.h rc.h rc-misc.h strlist.h
+rc-plugin.o: rc-plugin.c einfo.h rc.h rc-misc.h rc-plugin.h strlist.h
+rc-status.o: rc-status.c einfo.h rc.h rc-misc.h strlist.h
+rc-update.o: rc-update.c einfo.h rc.h rc-misc.h strlist.h
+runscript.o: runscript.c einfo.h rc.h rc-misc.h rc-plugin.h strlist.h
+start-stop-daemon.o: start-stop-daemon.c einfo.h rc.h rc-misc.h strlist.h
