@@ -128,6 +128,28 @@ static char **find_mounts (regex_t *node_regex, regex_t *fstype_regex,
 #  error "Operating system not supported!"
 #endif
 
+#define getoptstring "F:N:S:fnrhV"
+static struct option longopts[] = {
+	{ "fstype-regex",   1, NULL, 'F'},
+	{ "node-regex",     1, NULL, 'N'},
+	{ "skip-regex",     1, NULL, 'S'},
+	{ "fstype",         0, NULL, 'f'},
+	{ "node",           0, NULL, 'n'},
+	{ "reverse",        0, NULL, 'r'},
+	{ "help",           0, NULL, 'h'},
+	{ NULL,             0, NULL, 0}
+};
+
+static void usage (int exit_status)
+{
+	int i;
+	printf ("Usage: mountinfo [options]\n\n");
+	printf ("Options:\n");
+	for (i = 0; longopts[i].name; ++i)
+		printf ("  -%c, --%s\n", longopts[i].val, longopts[i].name);
+	exit (exit_status);
+}
+
 int main (int argc, char **argv)
 {
 	int i;
@@ -144,17 +166,7 @@ int main (int argc, char **argv)
 	char **mounts = NULL;
 	char c;
 
-	static struct option longopts[] = {
-		{ "fstype-regex",   1, NULL, 'F'},
-		{ "node-regex",     1, NULL, 'N'},
-		{ "skip-regex",     1, NULL, 'S'},
-		{ "fstype",         0, NULL, 'f'},
-		{ "node",           0, NULL, 'n'},
-		{ "reverse",        0, NULL, 'r'},
-		{ NULL,             0, NULL, 0}
-	};
-
-	while ((c = getopt_long (argc, argv, "F:N:S:fnr",
+	while ((c = getopt_long (argc, argv, getoptstring,
 							 longopts, (int *) 0)) != -1)
 		switch (c) {
 			case 'F':
@@ -207,8 +219,11 @@ int main (int argc, char **argv)
 				reverse = true;
 				break;
 
+			case 'h':
+				usage (EXIT_SUCCESS);
+
 			default:
-				exit (EXIT_FAILURE);
+				usage (EXIT_FAILURE);
 		}
 
 	while (optind < argc) {
@@ -241,4 +256,3 @@ int main (int argc, char **argv)
 
 	exit (result);
 }
-
