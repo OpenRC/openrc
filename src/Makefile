@@ -151,7 +151,7 @@ install: $(TARGET)
 
 clean:
 	rm -f $(TARGET) $(RCLINKS) $(RCPRIVLINKS)
-	rm -f *.o *~ *.core *.so
+	rm -f *.o *~ *.core *.so .depend
 
 -include .depend
 .depend: $(wildcard *.c *.h)
