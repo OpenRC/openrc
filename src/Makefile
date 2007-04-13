@@ -64,7 +64,7 @@ LDLIBS_RC = -ldl
 LDLIBS_RS = -ldl
 # Shouldn't need this, but it's the easiest workaround for silly
 # Linux headers that don't work with -std=c99
-override CFLAGS += -D_GNU_SOURCE
+override CPPFLAGS += -D_GNU_SOURCE
 endif
 ifeq ($(OS),BSD)
 override LDLIBS += -lkvm
@@ -72,20 +72,22 @@ endif
 
 HAVE_PAM = 
 ifdef HAVE_PAM
-CFLAGS_SSD = -DHAVE_PAM
+CPPFLAGS_SSD = -DHAVE_PAM
 LDLIBS_SSD = -lpam
 endif
 
 # We also define _BSD_SOURCE so both Linux and the BSDs get a few
 # handy functions which makes our lives a lot easier
-override CFLAGS += -DLIB=\"$(LIB)\"
+override CPPFLAGS += -DLIB=\"$(LIB)\"
 
 # IMPORTANT!!!
 # Remove this when releasing as it's a security risk
 # However, this does save us using libtool when we're testing
 # NOTE: The toplevel Makefile for baselayout will automatically
 # disable then when doing `make dist`
+ifneq ($(wildcard .svn),)
 override LDFLAGS += -Wl,-rpath .
+endif
 
 all: $(TARGET)
 
@@ -118,7 +120,7 @@ rc: $(LIBEINFOSO) $(LIBRCSO) rc-plugin.o rc.o
 runscript: LDLIBS += $(LDLIBS_RS)
 runscript: $(LIBEINFOSO) $(LIBRCSO) rc-plugin.o runscript.o
 
-start-stop-daemon: CFLAGS += $(CFLAGS_SSD)
+start-stop-daemon: CPPFLAGS += $(CPPFLAGS_SSD)
 start-stop-daemon: LDLIBS += $(LDLIBS_SSD)
 start-stop-daemon: $(LIBEINFOSO) $(LIBRCSO) start-stop-daemon.o
 
