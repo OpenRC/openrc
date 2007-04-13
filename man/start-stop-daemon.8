@@ -1,4 +1,4 @@
-.TH "BASELAYOUT" "8" "March 2007" "baselayout" "baselayout"
+.TH "BASELAYOUT" "13" "April 2007" "baselayout" "baselayout"
 .SH NAME
 start\-stop\-daemon \- start and stop system daemon programs
 .SH SYNOPSIS
@@ -10,6 +10,10 @@ start\-stop\-daemon \- start and stop system daemon programs
 .HP
 .B start-stop-daemon
 .BR -K | --stop
+.IR options
+.HP
+.B start-stop-daemon
+.BR -s | --signal
 .IR options
 .HP
 .B start-stop-daemon
@@ -62,7 +66,26 @@ exits with error status 1. If
 is specified then we just send the signal and not the schedule. If
 .BR --oknodo
 is specified then we don't remove the daemon information from
-.BR rc.
+.BR rc. If neither
+.BR --test
+or
+.BR --okndo
+are specified then we kill signalling and waiting according to our
+schedule specified by
+.BR --retry
+until we timeout the process(es) exited. If we didn't timeout then
+we remove our daemon information from rc.
+
+With 
+.BR --signal ,
+.B start\-stop\-daemon
+also checks for the existence of a specified process.
+If such a process exists,
+.B start\-stop\-daemon
+sends it the signal specified and exits with error status 0.
+If such a process does not exist, or there was an error stopping it
+.B start\-stop\-daemon
+exits with error status 1. No futher action is taken
 
 .SH OPTIONS
 
@@ -142,6 +165,7 @@ but take no action.
 .TP
 .BR -o | --oknodo
 Used for sending signals to a running daemon but not expecting it to stop.
+In this version you can don't need --oknodo if you don't use --stop either.
 .TP
 .BR -q | --quiet
 Do not print informational messages; only display error messages.

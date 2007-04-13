@@ -680,6 +680,18 @@ int main (int argc, char **argv)
 	if (rc_is_env ("RC_QUIET", "yes") && ! verbose)
 		quiet = true;
 
+	/* Allow start-stop-daemon --signal HUP --exec /usr/sbin/dnsmasq
+	 * instead of forcing --stop --oknodo as well */
+	if (! start && ! stop)
+		if (sig != SIGINT &&
+			sig != SIGTERM &&
+			sig != SIGQUIT &&
+			sig != SIGKILL)
+		{
+			oknodo = true;
+			stop = true;
+		}
+
 	if (start == stop)
 		eerrorx ("%s: need one of --start or --stop", progname);
 
