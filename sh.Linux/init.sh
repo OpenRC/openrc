@@ -31,7 +31,7 @@ single_user() {
 mount_svcdir() {
 	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="none" devtmp="none" x=
 	local svcsize=${svcsize:-1024}
-	local mntcmd=$(fstabinfo --mount-cmd "${RC_LIBDIR}")
+	local mntcmd=$(fstabinfo --mountcmd "${RC_LIBDIR}")
 
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems ; then
 		fs="tmpfs"
@@ -117,7 +117,7 @@ if [ ! -e /proc/self/stat ] ; then
 	procfs="proc"
 	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
 	ebegin "Mounting ${procfs} at /proc"
-	mntcmd="$(fstabinfo --mount-cmd /proc)"
+	mntcmd="$(fstabinfo --mountcmd /proc)"
 	try mount -n ${mntcmd:--t ${procfs} -o noexec,nosuid,nodev proc /proc}
 	eend $?
 fi
@@ -136,7 +136,7 @@ K26=$?
 if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_NAME}" != "VPS" -a "${K26}" = "0" ] ; then
 	if [ -d /sys ] ; then
 		ebegin "Mounting sysfs at /sys"
-		mntcmd="$(fstabinfo --mount-cmd /sys)"
+		mntcmd="$(fstabinfo --mountcmd /sys)"
 		try mount -n ${mntcmd:--t sysfs -o noexec,nosuid,nodev sysfs /sys}
 		eend $?
 	else
@@ -231,7 +231,7 @@ if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${K26}" = "0" ] ; then
 
 		if [ -d /dev/pts ] ; then
 			ebegin "Mounting devpts at /dev/pts"
-			mntcmd="$(fstabinfo --mount-cmd /dev/pts)"
+			mntcmd="$(fstabinfo --mountcmd /dev/pts)"
 			try mount -n ${mntcmd:--t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts}
 			eend $?
 		fi

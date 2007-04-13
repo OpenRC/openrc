@@ -22,7 +22,7 @@ do_mtab() {
 	local mnt= mnts="$(mountinfo | sed -e "s/^/'/g" -e "s/$/'/g")"
 	eval set -- ${mnts}
 	for mnt in "$@" ; do
-		if fstabinfo --mount-cmd "${mnt}" >/dev/null ; then
+		if fstabinfo --mountcmd "${mnt}" >/dev/null ; then
 			mount -f -o remount "${mnt}"
 		fi
 	done
