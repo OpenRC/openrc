@@ -92,14 +92,14 @@ distforce:
 	cp -pPR . /tmp/$(PKG)
 	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
 	rm -rf /tmp/$(PKG)
-	du -b /tmp/$(PKG).tar.bz2
+	ls -l /tmp/$(PKG).tar.bz2
 
 distit:
 	rm -rf /tmp/$(PKG)
 	svn export . /tmp/$(PKG)
 	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
 	rm -rf /tmp/$(PKG)
-	du -b /tmp/$(PKG).tar.bz2
+	ls -l /tmp/$(PKG).tar.bz2
 
 dist: diststatus distit
 
