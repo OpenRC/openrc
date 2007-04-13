@@ -562,28 +562,35 @@ int main (int argc, char **argv)
 				break;
 
 			case 'c':  /* --chuid <username>|<uid> */
-				/* we copy the string just in case we need the
-				 * argument later. */
 				{
 					char *p = optarg;
 					char *cu = strsep (&p, ":");
+					struct passwd *pw = NULL;
+
 					changeuser = strdup (cu);
-					if (sscanf (cu, "%d", &tid) != 1) {
-						struct passwd *pw = getpwnam (cu);
-						if (! pw)
-							eerrorx ("%s: user `%s' not found", progname, cu);
-						ch_uid = pw->pw_uid;
-					} else
-						ch_uid = tid;
+					if (sscanf (cu, "%d", &tid) != 1)
+						pw = getpwnam (cu);
+					else
+						pw = getpwuid (tid);
+
+					if (! pw)
+						eerrorx ("%s: user `%s' not found", progname, cu);
+					ch_uid = pw->pw_uid;
+					if (! ch_gid)
+						ch_gid = pw->pw_gid;
+
 					if (p) {
+						struct group *gr = NULL;
 						char *cg = strsep (&p, ":");
-						if (sscanf (cg, "%d", &tid) != 1) {
-							struct group *gr = getgrnam (cg);
-							if (! gr)
-								eerrorx ("%s: group `%s' not found", progname, cg);
-							ch_gid = gr->gr_gid;
-						} else
-							ch_gid = tid;
+
+						if (sscanf (cg, "%d", &tid) != 1)
+							gr = getgrnam (cg);
+						else
+							gr = getgrgid (tid);
+
+						if (! gr)
+							eerrorx ("%s: group `%s' not found", progname, cg);
+						ch_gid = gr->gr_gid;
 					}
 				}
 				break;
@@ -593,13 +600,18 @@ int main (int argc, char **argv)
 				break;
 
 			case 'g':  /* --group <group>|<gid> */
-				if (sscanf (optarg, "%d", &tid) != 1) {
+				{
 					struct group *gr = getgrnam (optarg);
+
+					if (sscanf (optarg, "%d", &tid) != 1)
+						gr = getgrnam (optarg);
+					else
+						gr = getgrgid (tid);
+
 					if (! gr)
 						eerrorx ("%s: group `%s' not found", progname, optarg);
 					ch_gid = gr->gr_gid;
-				} else
-					ch_gid = tid;
+				}
 				break;
 
 			case 'm':  /* --make-pidfile */
@@ -821,11 +833,10 @@ int main (int argc, char **argv)
 			eerrorx ("%s: pam error: %s", progname, pam_strerror(pamh, pamr));
 #endif
 
-		if ((ch_gid) && setgid(ch_gid))
+		if (ch_gid && setgid (ch_gid))
 			eerrorx ("%s: unable to set groupid to %d", progname, ch_gid);
-		if (changeuser && ch_gid)
-			if (initgroups (changeuser, ch_gid))
-				eerrorx ("%s: initgroups (%s, %d)", progname, changeuser, ch_gid);
+		if (changeuser && initgroups (changeuser, ch_gid))
+			eerrorx ("%s: initgroups (%s, %d)", progname, changeuser, ch_gid);
 		if (ch_uid && setuid (ch_uid))
 			eerrorx ("%s: unable to set userid to %d", progname, ch_uid);
 		else {
