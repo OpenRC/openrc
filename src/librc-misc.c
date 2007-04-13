@@ -4,24 +4,7 @@
    Copyright 2007 Gentoo Foundation
    */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/utsname.h>
-
-#include <dirent.h>
-#include <errno.h>
-#include <limits.h>
-#include <regex.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "einfo.h"
-#include "rc-misc.h"
-#include "rc.h"
-#include "strlist.h"
+#include "librc.h"
 
 #define ERRX 		eerrorx("out of memory");
 
@@ -45,6 +28,7 @@ void *rc_xcalloc (size_t n, size_t size)
 
 	ERRX
 }
+librc_hidden_def(rc_xcalloc)
 
 void *rc_xmalloc (size_t size)
 {
@@ -55,6 +39,7 @@ void *rc_xmalloc (size_t size)
 
 	ERRX
 }
+librc_hidden_def(rc_xmalloc)
 
 void *rc_xrealloc (void *ptr, size_t size)
 {
@@ -65,7 +50,7 @@ void *rc_xrealloc (void *ptr, size_t size)
 
 	ERRX
 }
-
+librc_hidden_def(rc_xrealloc)
 
 char *rc_xstrdup (const char *str)
 {
@@ -81,6 +66,7 @@ char *rc_xstrdup (const char *str)
 
 	ERRX
 }
+librc_hidden_def(rc_xstrdup)
 
 bool rc_is_env (const char *var, const char *val)
 {
@@ -95,6 +81,7 @@ bool rc_is_env (const char *var, const char *val)
 
 	return (strcasecmp (v, val) == 0 ? true : false);
 }
+librc_hidden_def(rc_is_env)
 
 char *rc_strcatpaths (const char *path1, const char *paths, ...)
 {
@@ -142,6 +129,7 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 
 	return (path);
 }
+librc_hidden_def(rc_strcatpaths)
 
 bool rc_exists (const char *pathname)
 {
@@ -156,6 +144,7 @@ bool rc_exists (const char *pathname)
 	errno = 0;
 	return (false);
 }
+librc_hidden_def(rc_exists)
 
 bool rc_is_file (const char *pathname)
 {
@@ -170,13 +159,14 @@ bool rc_is_file (const char *pathname)
 	errno = 0;
 	return (false);
 }
+librc_hidden_def(rc_is_file)
 
 bool rc_is_dir (const char *pathname)
 {
 	struct stat buf;
 
 	if (! pathname)
-		return (false); 
+		return (false);
 
 	if (stat (pathname, &buf) == 0)
 		return (S_ISDIR (buf.st_mode));
@@ -184,13 +174,14 @@ bool rc_is_dir (const char *pathname)
 	errno = 0;
 	return (false);
 }
+librc_hidden_def(rc_is_dir)
 
 bool rc_is_link (const char *pathname)
 {
 	struct stat buf;
 
 	if (! pathname)
-		return (false); 
+		return (false);
 
 	if (lstat (pathname, &buf) == 0)
 		return (S_ISLNK (buf.st_mode));
@@ -198,6 +189,7 @@ bool rc_is_link (const char *pathname)
 	errno = 0;
 	return (false);
 }
+librc_hidden_def(rc_is_link)
 
 bool rc_is_exec (const char *pathname)
 {
@@ -212,6 +204,7 @@ bool rc_is_exec (const char *pathname)
 	errno = 0;
 	return (false);
 }
+librc_hidden_def(rc_is_exec)
 
 char **rc_ls_dir (char **list, const char *dir, int options)
 {
@@ -257,6 +250,7 @@ char **rc_ls_dir (char **list, const char *dir, int options)
 
 	return (list);
 }
+librc_hidden_def(rc_ls_dir)
 
 bool rc_rm_dir (const char *pathname, bool top)
 {
@@ -304,6 +298,7 @@ bool rc_rm_dir (const char *pathname, bool top)
 
 	return (true);
 }
+librc_hidden_def(rc_rm_dir)
 
 char **rc_get_config (char **list, const char *file)
 {
@@ -365,7 +360,7 @@ char **rc_get_config (char **list, const char *file)
 			if (strcmp (linetok, entry) == 0) {
 				/* We have a match now - to save time we directly replace it */
 				free (list[i - 1]);
-				list[i - 1] = newline; 
+				list[i - 1] = newline;
 				replaced = true;
 				free (tmp);
 				break;
@@ -383,6 +378,7 @@ char **rc_get_config (char **list, const char *file)
 
 	return (list);
 }
+librc_hidden_def(rc_get_config)
 
 char *rc_get_config_entry (char **list, const char *entry)
 {
@@ -398,6 +394,7 @@ char *rc_get_config_entry (char **list, const char *entry)
 
 	return (NULL);
 }
+librc_hidden_def(rc_get_config_entry)
 
 char **rc_get_list (char **list, const char *file)
 {
@@ -432,6 +429,7 @@ char **rc_get_list (char **list, const char *file)
 
 	return (list);
 }
+librc_hidden_def(rc_get_list)
 
 char **rc_filter_env (void)
 {
@@ -528,6 +526,7 @@ char **rc_filter_env (void)
 
 	return (env);
 }
+librc_hidden_def(rc_filter_env)
 
 /* Other systems may need this at some point, but for now it's Linux only */
 #ifdef __linux__
@@ -701,3 +700,4 @@ char **rc_config_env (char **env)
 
 	return (env);
 }
+librc_hidden_def(rc_config_env)

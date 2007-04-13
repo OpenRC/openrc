@@ -5,25 +5,7 @@
    Released under the GPLv2
    */
 
-#include <sys/types.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <errno.h>
-#include <libgen.h>
-#include <limits.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "einfo.h"
-#include "rc.h"
-#include "rc-misc.h"
-#include "strlist.h"
+#include "librc.h"
 
 /* usecs to wait while we poll the fifo */
 #define WAIT_INTERVAL	20000
@@ -50,11 +32,13 @@ bool rc_runlevel_starting (void)
 {
 	return (rc_is_dir (RC_SVCDIR "softscripts.old"));
 }
+librc_hidden_def(rc_runlevel_starting)
 
 bool rc_runlevel_stopping (void)
 {
 	return (rc_is_dir (RC_SVCDIR "softscripts.new"));
 }
+librc_hidden_def(rc_runlevel_stopping)
 
 char **rc_get_runlevels (void)
 {
@@ -73,6 +57,7 @@ char **rc_get_runlevels (void)
 
 	return (runlevels);
 }
+librc_hidden_def(rc_get_runlevels)
 
 char *rc_get_runlevel (void)
 {
@@ -96,6 +81,7 @@ char *rc_get_runlevel (void)
 	snprintf (buffer, sizeof (buffer), "sysinit");
 	return (buffer);
 }
+librc_hidden_def(rc_get_runlevel)
 
 void rc_set_runlevel (const char *runlevel)
 {
@@ -105,6 +91,7 @@ void rc_set_runlevel (const char *runlevel)
 	fprintf (fp, "%s", runlevel);
 	fclose (fp);
 }
+librc_hidden_def(rc_set_runlevel)
 
 bool rc_runlevel_exists (const char *runlevel)
 {
@@ -119,6 +106,7 @@ bool rc_runlevel_exists (const char *runlevel)
 	free (path);
 	return (retval);
 }
+librc_hidden_def(rc_runlevel_exists)
 
 /* Resolve a service name to it's full path */
 char *rc_resolve_service (const char *service)
@@ -154,6 +142,7 @@ char *rc_resolve_service (const char *service)
 	snprintf (buffer, sizeof (buffer), RC_INITDIR "%s", service);
 	return (strdup (buffer));
 }
+librc_hidden_def(rc_resolve_service)
 
 bool rc_service_exists (const char *service)
 {
@@ -178,6 +167,7 @@ bool rc_service_exists (const char *service)
 	free (file);
 	return (retval);
 }
+librc_hidden_def(rc_service_exists)
 
 bool rc_service_in_runlevel (const char *service, const char *runlevel)
 {
@@ -200,6 +190,7 @@ bool rc_service_in_runlevel (const char *service, const char *runlevel)
 
 	return (retval);
 }
+librc_hidden_def(rc_service_in_runlevel)
 
 bool rc_mark_service (const char *service, const rc_service_state_t state)
 {
@@ -344,6 +335,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 	free (init);
 	return (true);
 }
+librc_hidden_def(rc_mark_service)
 
 bool rc_service_state (const char *service, const rc_service_state_t state)
 {
@@ -383,6 +375,7 @@ bool rc_service_state (const char *service, const rc_service_state_t state)
 	free (file);
 	return (retval);
 }
+librc_hidden_def(rc_service_state)
 
 bool rc_get_service_option (const char *service, const char *option,
 							char *value)
@@ -410,6 +403,7 @@ bool rc_get_service_option (const char *service, const char *option,
 	free (file);
 	return (retval);
 }
+librc_hidden_def(rc_get_service_option)
 
 bool rc_set_service_option (const char *service, const char *option,
 							const char *value)
@@ -441,6 +435,7 @@ bool rc_set_service_option (const char *service, const char *option,
 	free (file);
 	return (retval);
 }
+librc_hidden_def(rc_set_service_option)
 
 static pid_t _exec_service (const char *service, const char *arg)
 {
@@ -514,7 +509,7 @@ pid_t rc_stop_service (const char *service)
 
 	return (_exec_service (service, "stop"));
 }
-
+librc_hidden_def(rc_stop_service)
 
 pid_t rc_start_service (const char *service)
 {
@@ -523,6 +518,7 @@ pid_t rc_start_service (const char *service)
 
 	return (_exec_service (service, "start"));
 }
+librc_hidden_def(rc_start_service)
 
 void rc_schedule_start_service (const char *service,
 								const char *service_to_start)
@@ -558,6 +554,7 @@ void rc_schedule_start_service (const char *service,
 	free (file);
 	free (dir);
 }
+librc_hidden_def(rc_schedule_start_service)
 
 void rc_schedule_clear (const char *service)
 {
@@ -570,6 +567,7 @@ void rc_schedule_clear (const char *service)
 		rc_rm_dir (dir, true);
 	free (dir);
 }
+librc_hidden_def(rc_schedule_clear)
 
 bool rc_wait_service (const char *service)
 {
@@ -615,6 +613,7 @@ bool rc_wait_service (const char *service)
 	free (fifo);
 	return (retval);
 }
+librc_hidden_def(rc_wait_service)
 
 char **rc_services_in_runlevel (const char *runlevel)
 {
@@ -638,6 +637,7 @@ char **rc_services_in_runlevel (const char *runlevel)
 	free (dir);
 	return (list);
 }
+librc_hidden_def(rc_services_in_runlevel)
 
 char **rc_services_in_state (rc_service_state_t state)
 {
@@ -673,6 +673,7 @@ char **rc_services_in_state (rc_service_state_t state)
 	free (dir);
 	return (list);
 }
+librc_hidden_def(rc_services_in_state)
 
 bool rc_service_add (const char *runlevel, const char *service)
 {
@@ -701,6 +702,7 @@ bool rc_service_add (const char *runlevel, const char *service)
 	free (file);
 	return (retval);
 }
+librc_hidden_def(rc_service_add)
 
 bool rc_service_delete (const char *runlevel, const char *service)
 {
@@ -721,6 +723,7 @@ bool rc_service_delete (const char *runlevel, const char *service)
 	free (file);
 	return (retval);
 }
+librc_hidden_def(rc_service_delete)
 
 char **rc_services_scheduled_by (const char *service)
 {
@@ -740,6 +743,7 @@ char **rc_services_scheduled_by (const char *service)
 
 	return (list);
 }
+librc_hidden_def(rc_services_scheduled_by)
 
 char **rc_services_scheduled (const char *service)
 {
@@ -755,6 +759,7 @@ char **rc_services_scheduled (const char *service)
 	free (dir);
 	return (list);
 }
+librc_hidden_def(rc_services_scheduled)
 
 bool rc_allow_plug (char *service)
 {
@@ -793,3 +798,4 @@ bool rc_allow_plug (char *service)
 	free (list);
 	return (allow);
 }
+librc_hidden_def(rc_allow_plug)

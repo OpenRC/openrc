@@ -7,12 +7,7 @@
    Released under the GPLv2
    */
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "rc.h"
-#include "rc-misc.h"
+#include "librc.h"
 
 char **rc_strlist_add (char **list, const char *item)
 {
@@ -31,6 +26,7 @@ char **rc_strlist_add (char **list, const char *item)
 
 	return (newlist);
 }
+librc_hidden_def(rc_strlist_add)
 
 static char **_rc_strlist_addsort (char **list, const char *item,
 								   int (*sortfunc) (const char *s1,
@@ -77,16 +73,19 @@ char **rc_strlist_addsort (char **list, const char *item)
 {
 	return (_rc_strlist_addsort (list, item, strcoll, false));
 }
+librc_hidden_def(rc_strlist_addsort)
 
 char **rc_strlist_addsortc (char **list, const char *item)
 {
 	return (_rc_strlist_addsort (list, item, strcmp, false));
 }
+librc_hidden_def(rc_strlist_addsortc)
 
 char **rc_strlist_addsortu (char **list, const char *item)
 {
 	return (_rc_strlist_addsort (list, item, strcmp, true));
 }
+librc_hidden_def(rc_strlist_addsortu)
 
 char **rc_strlist_delete (char **list, const char *item)
 {
@@ -106,6 +105,7 @@ char **rc_strlist_delete (char **list, const char *item)
 
 	return (list);
 }
+librc_hidden_def(rc_strlist_delete)
 
 void rc_strlist_reverse (char **list)
 {
@@ -128,6 +128,7 @@ void rc_strlist_reverse (char **list)
 		j--;
 	}
 }
+librc_hidden_def(rc_strlist_reverse)
 
 void rc_strlist_free (char **list)
 {
@@ -143,3 +144,4 @@ void rc_strlist_free (char **list)
 
 	free (list);
 }
+librc_hidden_def(rc_strlist_free)

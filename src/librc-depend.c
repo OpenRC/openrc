@@ -4,20 +4,7 @@
    Copyright 2006-2007 Gentoo Foundation
    */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <errno.h>
-#include <limits.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "einfo.h"
-#include "rc.h"
-#include "rc-misc.h"
-#include "strlist.h"
+#include "librc.h"
 
 #define GENDEP	RC_LIBDIR "/sh/gendepends.sh"
 
@@ -70,6 +57,7 @@ void rc_free_deptree (rc_depinfo_t *deptree)
       di = dip;
     }
 }
+librc_hidden_def(rc_free_deptree)
 
 rc_depinfo_t *rc_load_deptree (void)
 {
@@ -158,6 +146,7 @@ rc_depinfo_t *rc_load_deptree (void)
 
   return (deptree);
 }
+librc_hidden_def(rc_load_deptree)
 
 rc_depinfo_t *rc_get_depinfo (rc_depinfo_t *deptree, const char *service)
 {
@@ -172,6 +161,7 @@ rc_depinfo_t *rc_get_depinfo (rc_depinfo_t *deptree, const char *service)
 
   return (NULL);
 }
+librc_hidden_def(rc_get_depinfo)
 
 rc_deptype_t *rc_get_deptype (rc_depinfo_t *depinfo, const char *type)
 {
@@ -186,6 +176,7 @@ rc_deptype_t *rc_get_deptype (rc_depinfo_t *depinfo, const char *type)
 
   return (NULL);
 }
+librc_hidden_def(rc_get_deptype)
 
 static bool valid_service (const char *runlevel, const char *service)
 {
@@ -456,6 +447,7 @@ char **rc_get_depends (rc_depinfo_t *deptree,
   rc_strlist_free (visited.list);
   return (sorted.list);
 }
+librc_hidden_def(rc_get_depends)
 
 char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
                           int options)
@@ -510,6 +502,7 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
 
   return (services);
 }
+librc_hidden_def(rc_order_services)
 
 static bool is_newer_than (const char *file, const char *target)
 {
@@ -838,3 +831,4 @@ int rc_update_deptree (bool force)
   eend (retval, "Failed to update the service dependency tree");
   return (retval);
 }
+librc_hidden_def(rc_update_deptree)

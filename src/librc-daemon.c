@@ -5,34 +5,7 @@
    Released under the GPLv2
    */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#if defined(__DragonFly__) || defined(__FreeBSD__) || \
-	defined(__NetBSD__) || defined (__OpenBSD__)
-#include <sys/param.h>
-#include <sys/user.h>
-#include <sys/sysctl.h>
-#include <kvm.h>
-#include <limits.h>
-#endif
-
-#ifndef __linux__
-#include <libgen.h>
-#endif
-
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "einfo.h"
-#include "rc.h"
-#include "rc-misc.h"
-#include "strlist.h"
+#include "librc.h"
 
 #if defined(__linux__)
 static bool pid_is_cmd (pid_t pid, const char *cmd)
@@ -171,6 +144,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 
 	return (pids);
 }
+librc_hidden_def(rc_find_pids)
 
 #elif defined(__DragonFly__) || defined(__FreeBSD__) || \
 	defined(__NetBSD__) || defined(__OpenBSD__)
@@ -248,6 +222,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 
 	return (pids);
 }
+librc_hidden_def(rc_find_pids)
 
 #else
 #  error "Platform not supported!"
@@ -394,6 +369,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 	free (mpidfile);
 	free (dirpath);
 }
+librc_hidden_def(rc_set_service_daemon)
 
 bool rc_service_started_daemon (const char *service, const char *exec,
 								int indx)
@@ -437,6 +413,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	free (mexec);
 	return (retval);
 }
+librc_hidden_def(rc_service_started_daemon)
 
 bool rc_service_daemons_crashed (const char *service)
 {
@@ -560,3 +537,4 @@ bool rc_service_daemons_crashed (const char *service)
 
 	return (retval);
 }
+librc_hidden_def(rc_service_daemons_crashed)
