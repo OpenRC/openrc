@@ -88,9 +88,11 @@ distcheck:
 	fi 
 
 distforce:
+	rm -rf /tmp/$(PKG)
 	svn export . /tmp/$(PKG)
 	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
-	du /tmp/$(PKG).tar.bz2
+	rm -rf /tmp/$(PKG)
+	du -b /tmp/$(PKG).tar.bz2
 
 dist: distcheck	distforce
 
