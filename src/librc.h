@@ -41,23 +41,9 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
-/* internal alias trickery! we dont want internal relocs! */
-#if defined(__ELF__) && defined(__GNUC__)
-# define __hidden_asmname(name) __hidden_asmname1 (__USER_LABEL_PREFIX__, name)
-# define __hidden_asmname1(prefix, name) __hidden_asmname2(prefix, name)
-# define __hidden_asmname2(prefix, name) #prefix name
-# define __hidden_proto(name, internal) \
-	extern __typeof (name) name __asm__ (__hidden_asmname (#internal)) \
-	__attribute__ ((visibility ("hidden")));
-# define __hidden_ver(local, internal, name) \
-   extern __typeof (name) __EI_##name __asm__(__hidden_asmname (#internal)); \
-   extern __typeof (name) __EI_##name __attribute__((alias (__hidden_asmname1 (,#local))))
-# define librc_hidden_proto(name) __hidden_proto(name, __RC_##name)
-# define librc_hidden_def(name) __hidden_ver(__RC_##name, name, name);
-#else
-# define librc_hidden_proto(name)
-# define librc_hidden_def(name)
-#endif
+#include "hidden-visibility.h"
+#define librc_hidden_proto(x) hidden_proto(x)
+#define librc_hidden_def(x) hidden_def(x)
 
 librc_hidden_proto(rc_allow_plug)
 librc_hidden_proto(rc_config_env)

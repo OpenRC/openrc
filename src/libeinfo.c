@@ -21,6 +21,33 @@
 #include "rc.h"
 #include "rc-misc.h"
 
+#include "hidden-visibility.h"
+hidden_proto(colour_terminal)
+hidden_proto(ebegin)
+hidden_proto(ebeginv)
+hidden_proto(ebracket)
+hidden_proto(eend)
+hidden_proto(eendv)
+hidden_proto(eerror)
+hidden_proto(eerrorn)
+hidden_proto(eerrorx)
+hidden_proto(eflush)
+hidden_proto(eindent)
+hidden_proto(eindentv)
+hidden_proto(einfo)
+hidden_proto(einfon)
+hidden_proto(einfov)
+hidden_proto(einfovn)
+hidden_proto(eoutdent)
+hidden_proto(eoutdentv)
+hidden_proto(ewarn)
+hidden_proto(ewarnn)
+hidden_proto(ewarnv)
+hidden_proto(ewarnvn)
+hidden_proto(ewarnx)
+hidden_proto(ewend)
+hidden_proto(ewendv)
+
 /* Incase we cannot work out how many columns from ioctl, supply a default */
 #define DEFAULT_COLS		 80
 
@@ -123,6 +150,7 @@ bool colour_terminal (void)
 	in_colour = 0;
 	return (false);
 }
+hidden_def(colour_terminal)
 
 static int get_term_columns (void)
 {
@@ -322,6 +350,7 @@ void eflush (void)
 
 	_exit (EXIT_SUCCESS);
 }
+hidden_def(eflush)
 
 #define EBUFFER(_cmd, _retval, _fmt, _ap) { \
 	int _i = ebuffer (_cmd, _retval, _fmt, _ap); \
@@ -422,6 +451,7 @@ int einfon (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(einfon)
 
 int ewarnn (const char *fmt, ...)
 {
@@ -438,6 +468,7 @@ int ewarnn (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(ewarnn)
 
 int eerrorn (const char *fmt, ...)
 {
@@ -451,6 +482,7 @@ int eerrorn (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(eerrorn)
 
 int einfo (const char *fmt, ...)
 {
@@ -469,6 +501,7 @@ int einfo (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(einfo)
 
 int ewarn (const char *fmt, ...)
 {
@@ -488,6 +521,7 @@ int ewarn (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(ewarn)
 
 void ewarnx (const char *fmt, ...)
 {
@@ -503,6 +537,7 @@ void ewarnx (const char *fmt, ...)
 	}
 	exit (EXIT_FAILURE);
 }
+hidden_def(ewarnx)
 
 int eerror (const char *fmt, ...)
 {
@@ -520,6 +555,7 @@ int eerror (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(eerror)
 
 void eerrorx (const char *fmt, ...)
 {
@@ -534,6 +570,7 @@ void eerrorx (const char *fmt, ...)
 	}
 	exit (EXIT_FAILURE);
 }
+hidden_def(eerrorx)
 
 int ebegin (const char *fmt, ...)
 {
@@ -557,6 +594,7 @@ int ebegin (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(ebegin)
 
 static void _eend (int col, einfo_color_t color, const char *msg)
 {
@@ -648,6 +686,7 @@ int eend (int retval, const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(eend)
 
 int ewend (int retval, const char *fmt, ...)
 {
@@ -662,11 +701,13 @@ int ewend (int retval, const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(ewend)
 
 void ebracket (int col, einfo_color_t color, const char *msg)
 {
 	_eend (col, color, msg);
 }
+hidden_def(ebracket)
 
 void eindent (void)
 {
@@ -691,6 +732,7 @@ void eindent (void)
 	snprintf (num, 10, "%08d", amount);
 	setenv ("RC_EINDENT", num, 1);
 }
+hidden_def(eindent)
 
 void eoutdent (void)
 {
@@ -718,6 +760,7 @@ void eoutdent (void)
 		setenv ("RC_EINDENT", num, 1);
 	}
 }
+hidden_def(eoutdent)
 
 int einfovn (const char *fmt, ...)
 {
@@ -736,6 +779,7 @@ int einfovn (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(einfovn)
 
 int ewarnvn (const char *fmt, ...)
 {
@@ -754,6 +798,7 @@ int ewarnvn (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(ewarnvn)
 
 int einfov (const char *fmt, ...)
 {
@@ -774,6 +819,7 @@ int einfov (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(einfov)
 
 int ewarnv (const char *fmt, ...)
 {
@@ -795,6 +841,7 @@ int ewarnv (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(ewarnv)
 
 int ebeginv (const char *fmt, ...)
 {
@@ -817,6 +864,7 @@ int ebeginv (const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(ebeginv)
 
 int eendv (int retval, const char *fmt, ...)
 {
@@ -830,6 +878,7 @@ int eendv (int retval, const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(eendv)
 
 int ewendv (int retval, const char *fmt, ...)
 {
@@ -843,15 +892,18 @@ int ewendv (int retval, const char *fmt, ...)
 
 	return (retval);
 }
+hidden_def(ewendv)
 
 void eindentv (void)
 {
 	if (is_env ("RC_VERBOSE", "yes"))
 		eindent ();
 }
+hidden_def(eindentv)
 
 void eoutdentv (void)
 {
 	if (is_env ("RC_VERBOSE", "yes"))
 		eoutdent ();
 }
+hidden_def(eoutdentv)
