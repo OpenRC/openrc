@@ -59,8 +59,6 @@ install::
 		rm -f $(DESTDIR)/$(LIB)/rcscripts/sh/functions.sh.bak ; \
 	fi
 
-.PHONY: all clean install
-
 layout:
 	# Create base filesytem layout
 	for x in $(KEEP_DIRS) ; do \
@@ -90,18 +88,12 @@ distcheck:
 	fi 
 
 distforce:
-	install -d /tmp/$(PKG)
-	cp -PRp . /tmp/$(PKG)
-	`which find` /tmp/$(PKG) -depth -path "*/.svn/*" -delete
-	`which find` /tmp/$(PKG) -depth -path "*/.svn" -delete
-	rm -rf /tmp/$(PKG)/src/core /tmp/$(PKG)/po
-	$(MAKE) -C /tmp/$(PKG) clean
-	sed -i'.bak' -e '/-Wl,-rpath ./ s/^/#/g' /tmp/$(PKG)/src/Makefile
-	rm -f /tmp/$(PKG)/src/Makefile.bak
+	svn export . /tmp/$(PKG)
 	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
-	rm -Rf /tmp/$(PKG)
 	du /tmp/$(PKG).tar.bz2
 
 dist: distcheck	distforce
+
+.PHONY: layout dist distcheck distforce
 
 # vim: set ts=4 :
