@@ -5,6 +5,7 @@
 
 	Fix module loading, #174360.
 	s-s-d now changes group when changing user, #174362.
+	netmask -> CIDR is worked out correctly #174341.
 
 * baselayout-2.0.0_alpha1 (11 Apr 2007)
 

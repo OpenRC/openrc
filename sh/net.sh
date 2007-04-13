@@ -86,7 +86,7 @@ _netmask2cidr() {
     local IFS=.
     for i in $1; do
 		while [ ${i} != "0" ] ; do
-	    	len=$((${len} + 1))
+	    	len=$((${len} + ${i} % 2))
 	    	i=$((${i} >> 1))
 		done
     done
