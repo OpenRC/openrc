@@ -76,7 +76,7 @@ layout:
 	ln -snf /var/tmp $(DESTDIR)/usr/tmp || exit $$?
 	ln -snf share/man $(DESTDIR)/usr/local/man || exit $$?
 
-distcheck:
+diststatus:
 	if test -d .svn ; then \
 		svnfiles=`svn status 2>&1 | egrep -v '^(U|P)'` ; \
 		if test "x$$svnfiles" != "x" ; then \
@@ -89,13 +89,20 @@ distcheck:
 
 distforce:
 	rm -rf /tmp/$(PKG)
+	cp -pPR . /tmp/$(PKG)
+	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
+	rm -rf /tmp/$(PKG)
+	du -b /tmp/$(PKG).tar.bz2
+
+distit:
+	rm -rf /tmp/$(PKG)
 	svn export . /tmp/$(PKG)
 	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
 	rm -rf /tmp/$(PKG)
 	du -b /tmp/$(PKG).tar.bz2
 
-dist: distcheck	distforce
+dist: diststatus distit
 
-.PHONY: layout dist distcheck distforce
+.PHONY: layout dist distforce distit diststatus
 
 # vim: set ts=4 :
