@@ -38,7 +38,7 @@ mount_svcdir() {
 		fsopts="${fsopts},mode=0755,size=${svcsize}k"
 	elif grep -Eq "[[:space:]]+ramfs$" /proc/filesystems ; then
 		fs="ramfs"
-		fsopts="${fsopts},mode=0755,size=${svcsize}k"
+		# ramfs has no special options
 	elif [ -e /dev/ram0 -a -e /dev/ram1 ] \
 		&& grep -Eq "[[:space:]]+ext2$" /proc/filesystems ; then
 		devdir="/dev/ram0"
