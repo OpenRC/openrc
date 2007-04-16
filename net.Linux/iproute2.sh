@@ -7,7 +7,6 @@ iproute2_depend() {
 	after ifconfig
 }
 
-
 _up() {
 	ip link set up dev "${IFACE}"
 }
@@ -17,7 +16,7 @@ _down() {
 }
 
 _exists() {
-	grep -Eq "^[[:space:]]*${IFACE}:[[:space:]]*" /proc/net/dev
+	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/dev
 }
 
 _ifindex() {
@@ -26,7 +25,7 @@ _ifindex() {
 		i=$((${i} + 1))
 		[ ${i} -lt 1 ] && continue
 		case "${line}" in
-			"${IFACE}: "*) echo "${i}"; return 0;;
+			"${IFACE}:"*) echo "${i}"; return 0;;
 		esac
 	done < /proc/net/dev
 	return 1
@@ -37,7 +36,7 @@ _is_wireless() {
 	[ -d /sys/class/net/"${IFACE}"/wireless ] && return 0
 
 	[ ! -e /proc/net/wireless ] && return 1
-	grep -Eq "^[[:space:]]*${IFACE}:[[:space:]]+" /proc/net/wireless
+	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/wireless
 }
 
 _get_mac_address() {

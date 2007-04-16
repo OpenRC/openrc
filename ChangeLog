@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  16 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+  	Don't search for a space after interface names in /proc/net, #174792
+	thanks to Mike Auty.
+
   13 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
 	Fix module loading, #174360.
