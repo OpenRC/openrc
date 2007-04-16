@@ -3,6 +3,9 @@
 
   16 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
+	Punted the volumes init script. Volume handling will be handled by
+	init script that can be run at any point, even before checkroot.
+
   	Don't search for a space after interface names in /proc/net, #174792
 	thanks to Mike Auty.
 
