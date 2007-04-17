@@ -6,11 +6,8 @@ has_addon() {
 }
 
 import_addon() {
-	if has_addon "$1" ; then
-		. "${RC_LIBDIR}/addons/$1.sh"
-		return 0
-	fi
-	return 1
+	has_addon "$1" || return 1
+	. "${RC_LIBDIR}/addons/$1.sh"
 }
 
 start_addon() {

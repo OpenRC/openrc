@@ -1,6 +1,12 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  16 Apr 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Allow addons to pass up their exit status in import_addon.
+
+    Simplify /dev handling in init.sh and add mdev as an option.
+
   16 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
 	Punted the volumes init script. Volume handling will be handled by

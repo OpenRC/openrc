@@ -12,7 +12,7 @@ single_user() {
 		halt -f
 		return
 	fi
-	
+
 	sulogin ${CONSOLE}
 	einfo "Unmounting filesystems"
 	if [ -c /dev/null ] ; then
@@ -164,58 +164,33 @@ elif [ "${RC_UNAME}" = "GNU/kFreeBSD" ] ; then
 	ebegin "Using kFreeBSD devfs in /dev"
 	eend 0
 else
-	fellback_to_devfs="no"
-	case "${RC_DEVICES}" in
-		devfs)	devfs="yes"
-				udev="no"
-				;;
-		udev)	devfs="yes"
-				udev="yes"
-				fellback_to_devfs="yes"
-				;;
-		auto|*)	devfs="yes"
-				udev="yes"
-				;;
+	case ${RC_DEVICES} in
+		devfs)  managers="devfs udev mdev";;
+		udev)   managers="udev devfs mdev";;
+		mdev)   managers="mdev udev devfs";;
+		auto|*) managers="udev devfs mdev";;
 	esac
 
-	# Check udev prerequisites and kernel params
-	if [ "${udev}" = "yes" ] ; then
-		if get_bootparam "noudev" || ! has_addon udev-start || \
-			[ -n "${devfs_mounted}" -o "${K26}" != 0 ] ; then
-			udev="no"
+	for m in ${managers} ; do
+		# Check common manager prerequisites and kernel params
+		if get_bootparam "no${m}" || ! has_addon ${m}-start ; then
+			continue
 		fi
-	fi
+		# Check specific manager prerequisites
+		case ${m} in
+			udev|mdev)
+				if [ -n "${devfs_mounted}" -o "${K26}" != 0 ] ; then
+					continue
+				fi
+				;;
+			devfs)
+				grep -Eqs "[[:space:]]+devfs$" /proc/filesystems || continue
+				;;
+		esac
 
-	# Check devfs prerequisites and kernel params
-	if [ "${devfs}" = "yes" ] ; then
-		if get_bootparam "nodevfs" || ! has_addon devfs-start ||
-		   [ "${udev}" = "yes" -o ! -r /proc/filesystems ] ; then
-			devfs="no"
-		elif ! grep -Eq "[[:space:]]+devfs$" /proc/filesystems ; then
-			devfs="no"
-		fi
-	fi
-
-	# Actually start setting up /dev now
-	if [ "${udev}" = "yes" ] ; then
-		start_addon udev
-
-	# With devfs, /dev can be mounted by the kernel ...
-	elif [ "${devfs}" = "yes" ] ; then
-		start_addon devfs
-
-		# Did the user want udev in the config file but for 
-		# some reason, udev support didnt work out ?
-		if [ "${fellback_to_devfs}" = "yes" ] ; then
-			ewarn "You wanted udev but support for it was not available!"
-			ewarn "Please review your system after it's booted!"
-		fi
-	fi
-
-	# OK, if we got here, things are probably not right :)
-	if [ "${devfs}" = "no" -a "${udev}" = "no" ] ; then
-		:
-	fi
+		# Let's see if we can get this puppy rolling
+		start_addon ${m} && break
+	done
 fi
 
 # From linux-2.6 we need to mount /dev/pts again ...
