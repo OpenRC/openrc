@@ -145,11 +145,11 @@ done
 
 if [ "${RC_NOCOLOR}" != "yes" -a -z "${GOOD}" ] ; then
 	if color_terminal ; then
-		GOOD=$'\e[32;01m'
-		WARN=$'\e[33;01m'
-		BAD=$'\e[31;01m'
-		HILITE=$'\e[36;01m'
-		BRACKET=$'\e[34;01m'
+		GOOD=${EINFO_GOOD:-$'\e[32;01m'}
+		WARN=${EINFO_WARN:-$'\e[33;01m'}
+		BAD=${EINFO_BAD:-$'\e[31;01m'}
+		HILITE=${EINFO_HILITE:-$'\e[36;01m'}
+		BRACKET=${EINFO_BRACKET:-$'\e[34;01m'}
 		NORMAL=$'\e[0m'
 	fi
 fi
