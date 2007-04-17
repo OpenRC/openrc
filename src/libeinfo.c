@@ -162,13 +162,13 @@ static bool colour_terminal (void)
 
 static int get_term_columns (void)
 {
-#ifdef TIOCGSIZE /* BSD */
+#if defined(TIOCGSIZE) /* BSD */
 	struct ttysize ts;
 
 	if (ioctl(0, TIOCGSIZE, &ts) == 0)
 		return (ts.ts_cols);
-#elif TIOCGWINSZ /* Linux */
-	struct winsize ws; 
+#elif defined(TIOCGWINSZ) /* Linux */
+	struct winsize ws;
 
 	if (ioctl(0, TIOCGWINSZ, &ws) == 0)
 		return (ws.ws_col);
