@@ -397,9 +397,41 @@ static int _eindent (FILE *stream)
 	return (fprintf (stream, "%s", indent));
 }
 
-#define EINFOVN(_file, _colour) \
+static const char *ecolor (einfo_color_t color) {
+	const char *col = NULL;
+	
+	switch (color) {
+		case einfo_good:
+			if (! (col = getenv ("EINFO_GOOD")))
+				col = EINFO_GOOD;
+			break;
+		case einfo_warn:
+			if (! (col = getenv ("EINFO_WARN")))
+				col = EINFO_WARN;
+			break;
+		case einfo_bad:
+			if (! (col = getenv ("EINFO_BAD")))
+				col = EINFO_BAD;
+			break;
+		case einfo_hilite:
+			if (! (col = getenv ("EINFO_HILITE")))
+				col = EINFO_HILITE;
+			break;
+		case einfo_bracket:
+			if (! (col = getenv ("EINFO_BRACKET")))
+				col = EINFO_BRACKET;
+			break;
+		case einfo_normal:
+			col = EINFO_NORMAL;
+			break;
+	}
+
+	return (col);
+}
+
+#define EINFOVN(_file, _color) \
 	if (colour_terminal ()) \
-fprintf (_file, " " _colour "*" EINFO_NORMAL " "); \
+fprintf (_file, " %s*%s ", ecolor (_color), ecolor (einfo_normal)); \
 else \
 fprintf (_file, " * "); \
 retval += _eindent (_file); \
@@ -416,7 +448,7 @@ static int _einfovn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stdout, EINFO_GOOD);
+	EINFOVN (stdout, einfo_good);
 	return (retval);
 }
 
@@ -424,7 +456,7 @@ static int _ewarnvn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stdout, EINFO_WARN);
+	EINFOVN (stdout, einfo_warn);
 	return (retval);
 }
 
@@ -432,7 +464,7 @@ static int _eerrorvn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stderr, EINFO_BAD);
+	EINFOVN (stderr, einfo_bad);
 	return (retval);
 }
 
@@ -611,28 +643,9 @@ static void _eend (int col, einfo_color_t color, const char *msg)
 	cols = get_term_columns () - (strlen (msg) + 6);
 
 	if (cols > 0 && colour_terminal ()) {
-		fprintf (fp, "\033[A\033[%dC %s[ ", cols, EINFO_BRACKET);
-		switch (color) {
-			case einfo_good:
-				fprintf (fp, EINFO_GOOD);
-				break;
-			case einfo_warn:
-				fprintf (fp, EINFO_WARN);
-				break;
-			case einfo_bad:
-				fprintf (fp, EINFO_BAD);
-				break;
-			case einfo_hilite:
-				fprintf (fp, EINFO_HILITE);
-				break;
-			case einfo_bracket:
-				fprintf (fp, EINFO_BRACKET);
-				break;
-			case einfo_normal:
-				fprintf (fp, EINFO_NORMAL);
-				break;
-		}
-		fprintf (fp, "%s%s ]%s\n", msg, EINFO_BRACKET, EINFO_NORMAL);
+		fprintf (fp, "\033[A\033[%dC %s[ %s%s %s]%s\n", cols,
+				 ecolor (einfo_bracket), ecolor (color), msg,
+				 ecolor (einfo_bracket), ecolor (einfo_normal));
 	} else {
 		for (i = -1; i < cols - col; i++)
 			fprintf (fp, " ");

@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  17 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+    env vars EINFO_GOOD and friends now override our hardcoded builtins.
+
   16 Apr 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Allow addons to pass up their exit status in import_addon.
