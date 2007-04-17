@@ -98,9 +98,9 @@ fi
 [ -r "${RC_LIBDIR}"/console/unimap ] \
 	&& /bin/setfont ${ttydev:+-C} ${ttydev} -u "${RC_LIBDIR}"/console/unimap
 if [ -e "${RC_LIBDIR}"/console/unicode ] ; then
-	eval printf "\033%%G" ${ttydev:+>} ${ttydev}
+	eval printf '"\033%%G"' ${ttydev:+>} ${ttydev}
 else
-	eval printf "\033(K" ${ttydev:+>} ${ttydev}
+	eval printf '"\033(K"' ${ttydev:+>} ${ttydev}
 fi
 unset ttydev
 
@@ -148,7 +148,6 @@ if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_NAME}" != "VPS" -a "${K26}" = "0" 
 fi
 
 check_statedir /dev
-
 devfs_mounted=
 if [ -e /dev/.devfsd ] ; then
 	# make sure devfs is actually mounted and it isnt a bogus file
