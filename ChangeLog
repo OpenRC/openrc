@@ -3,6 +3,7 @@
 
   17 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Fix bridge, vlan and bonding modules to work together, #174792.
     env vars ECOLOR_GOOD and friends now override our hardcoded builtins.
 
   16 Apr 2007; Mike Frysinger <vapier@gentoo.org>:

@@ -56,7 +56,8 @@ bridge_pre_start() {
 		eval set -- ${ports}
 		for x in "$@" ; do
 			ebegin "${x}"
-			if ! ifconfig "${x}" promisc up && brctl addif "${IFACE}" "${x}" ; then
+			ifconfig "${x}" promisc up
+			if ! brctl addif "${IFACE}" "${x}" ; then
 				ifconfig "${x}" -promisc 2>/dev/null
 				eend 1
 				return 1
@@ -66,6 +67,9 @@ bridge_pre_start() {
 		eoutdent
 	fi
 	)
+
+	# Bring up the bridge
+	_up
 }
 
 bridge_post_stop() {

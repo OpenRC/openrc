@@ -11,7 +11,8 @@ _config_vars="$_config_vars vlans"
 
 _is_vlan() {
 	[ ! -d /proc/net/vlan ] && return 1
-	grep -q "^${IFACE}[[:space:]]+" /proc/net/vlan/config
+	[ -e /proc/net/vlan/"${IFACE}" ] && return 0
+	grep -Eq "^${IFACE}[[:space:]]+" /proc/net/vlan/config
 }
 
 _get_vlans() {

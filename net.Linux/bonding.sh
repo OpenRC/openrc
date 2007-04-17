@@ -15,7 +15,7 @@ _is_bond() {
 bonding_pre_start() {
 	local s= slaves= 
 
-	eval $(_get_array "slaves_${IFACE}")
+	eval $(_get_array "slaves_${IFVAR}")
 	[ $# = "0" ] && return 0
 
 	# Load the kernel module if required
