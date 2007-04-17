@@ -5,6 +5,8 @@
    Copyright 2007 Gentoo Foundation
    */
 
+#define APPLET "fstabinfo"
+
 #include <errno.h>
 #include <getopt.h>
 #include <libgen.h>
@@ -54,6 +56,17 @@ static struct mntent *getmntfile (FILE *fp, const char *file)
 }
 #endif
 
+#define getoptstring "f:m:o:p:h"
+static struct option longopts[] = {
+	{ "fstype",         1, NULL, 'f'},
+	{ "mountcmd",       1, NULL, 'm'},
+	{ "opts",           1, NULL, 'o'},
+	{ "passno",         1, NULL, 'p'},
+	{ "help",           0, NULL, 'h'},
+	{ NULL,             0, NULL, 0}
+};
+#include "_usage.c"
+
 int main (int argc, char **argv)
 {
 #ifdef HAVE_GETMNTENT
@@ -67,15 +80,7 @@ int main (int argc, char **argv)
 	int n = 0;
 	char c;
 
-	static struct option longopts[] = {
-		{ "fstype",         1, NULL, 'f'},
-		{ "mountcmd",       1, NULL, 'm'},
-		{ "opts",           1, NULL, 'o'},
-		{ "passno",         1, NULL, 'p'},
-		{ NULL,             0, NULL, 0}
-	};
-
-	while ((c = getopt_long (argc, argv, "f:m:o:p:",
+	while ((c = getopt_long (argc, argv, getoptstring,
 							 longopts, (int *) 0)) != -1)
 	{
 #ifdef HAVE_GETMNTENT
@@ -132,10 +137,13 @@ int main (int argc, char **argv)
 					}
 					break;
 			}
-			
+
+			case 'h':
+				END_ENT;
+				usage (EXIT_SUCCESS);
 			default:
 				END_ENT;
-				exit (EXIT_FAILURE);
+				usage (EXIT_FAILURE);
 		}
 
 		END_ENT;
@@ -146,4 +154,3 @@ int main (int argc, char **argv)
 
 	exit (result);
 }
-

@@ -5,6 +5,8 @@
    Copyright 2007 Gentoo Foundation
    */
 
+#define APPLET "mountinfo"
+
 #include <sys/types.h>
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/param.h>
@@ -139,16 +141,7 @@ static struct option longopts[] = {
 	{ "help",           0, NULL, 'h'},
 	{ NULL,             0, NULL, 0}
 };
-
-static void usage (int exit_status)
-{
-	int i;
-	printf ("Usage: mountinfo [options]\n\n");
-	printf ("Options:\n");
-	for (i = 0; longopts[i].name; ++i)
-		printf ("  -%c, --%s\n", longopts[i].val, longopts[i].name);
-	exit (exit_status);
-}
+#include "_usage.c"
 
 int main (int argc, char **argv)
 {
@@ -219,11 +212,7 @@ int main (int argc, char **argv)
 				reverse = true;
 				break;
 
-			case 'h':
-				usage (EXIT_SUCCESS);
-
-			default:
-				usage (EXIT_FAILURE);
+			case_RC_COMMON_GETOPT
 		}
 
 	while (optind < argc) {

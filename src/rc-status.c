@@ -5,6 +5,8 @@
    Released under the GPLv2
    */
 
+#define APPLET "rc-status"
+
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,9 +53,20 @@ static void print_service (char *service)
 	ebracket (cols, color, status);
 }
 
+#define getoptstring "alsuh"
+const struct option longopts[] = {
+	{"all",         0, NULL, 'a'},
+	{"list",        0, NULL, 'l'},
+	{"servicelist", 0, NULL, 's'},
+	{"unused",      0, NULL, 'u'},
+	{"help",        0, NULL, 'h'},
+	{NULL,          0, NULL, 0}
+};
+#include "_usage.c"
+
 int main (int argc, char **argv)
 {
-	char **levels = NULL; 
+	char **levels = NULL;
 	char **services = NULL;
 	char *level;
 	char *service;
@@ -62,15 +75,7 @@ int main (int argc, char **argv)
 	int i;
 	int j;
 
-	const struct option longopts[] = {
-		{"all",         0, NULL, 'a'},
-		{"list",        0, NULL, 'l'},
-		{"servicelist", 0, NULL, 's'},
-		{"unused",      0, NULL, 'u'},
-		{NULL,          0, NULL, 0}
-	};
-
-	while ((c = getopt_long(argc, argv, "alsu", longopts, &option_index)) != -1)
+	while ((c = getopt_long(argc, argv, getoptstring, longopts, &option_index)) != -1)
 		switch (c) {
 			case 'a':
 				levels = rc_get_runlevels ();
@@ -103,10 +108,8 @@ int main (int argc, char **argv)
 				rc_strlist_free (levels);
 				rc_strlist_free (services);
 				exit (EXIT_SUCCESS);
-			case '?':
-				exit (EXIT_FAILURE);
-			default:
-				exit (EXIT_FAILURE);
+
+			case_RC_COMMON_GETOPT
 		}
 
 	while (optind < argc)

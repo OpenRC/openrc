@@ -6,6 +6,8 @@
  * Distributed under the terms of the GNU General Public License v2
  */
 
+#define APPLET "runscript"
+
 #include <sys/types.h>
 #include <sys/signal.h>
 #include <sys/stat.h>
@@ -808,6 +810,19 @@ static void svc_restart (const char *service, bool deps)
 	}
 }
 
+#define getoptstring "dCDNqvh"
+static struct option longopts[] = {
+	{ "debug",      0, NULL, 'd'},
+	{ "nocolor",    0, NULL, 'C'},
+	{ "nocolour",   0, NULL, 'C'},
+	{ "nodeps",     0, NULL, 'D'},
+	{ "quiet",      0, NULL, 'q'},
+	{ "verbose",    0, NULL, 'v'},
+	{ "help",       0, NULL, 'h'},
+	{ NULL,         0, NULL, 0}
+};
+#include "_usage.c"
+
 int main (int argc, char **argv)
 {
 	const char *service = argv[1];
@@ -817,17 +832,6 @@ int main (int argc, char **argv)
 	char pid[16];
 	int retval;
 	char c;
-
-	static struct option longopts[] = {
-		{ "debug",      0, NULL, 'd'},
-		{ "help",       0, NULL, 'h'},
-		{ "nocolor",    0, NULL, 'C'},
-		{ "nocolour",   0, NULL, 'C'},
-		{ "nodeps",     0, NULL, 'D'},
-		{ "quiet",      0, NULL, 'q'},
-		{ "verbose",    0, NULL, 'v'},
-		{ NULL,         0, NULL, 0}
-	};
 
 	/* Show help if insufficient args */
 	if (argc < 3) {
@@ -922,7 +926,7 @@ int main (int argc, char **argv)
 	argv++;
 
 	/* Right then, parse any options there may be */
-	while ((c = getopt_long (argc, argv, "dhCDNqv",
+	while ((c = getopt_long (argc, argv, getoptstring,
 							 longopts, (int *) 0)) != -1)
 		switch (c) {
 			case 'd':
