@@ -3,7 +3,7 @@
 
   17 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
-    env vars EINFO_GOOD and friends now override our hardcoded builtins.
+    env vars ECOLOR_GOOD and friends now override our hardcoded builtins.
 
   16 Apr 2007; Mike Frysinger <vapier@gentoo.org>:
 

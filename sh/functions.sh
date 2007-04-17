@@ -144,14 +144,7 @@ for arg in "$@" ; do
 done
 
 if [ "${RC_NOCOLOR}" != "yes" -a -z "${GOOD}" ] ; then
-	if color_terminal ; then
-		GOOD=${EINFO_GOOD:-$'\e[32;01m'}
-		WARN=${EINFO_WARN:-$'\e[33;01m'}
-		BAD=${EINFO_BAD:-$'\e[31;01m'}
-		HILITE=${EINFO_HILITE:-$'\e[36;01m'}
-		BRACKET=${EINFO_BRACKET:-$'\e[34;01m'}
-		NORMAL=$'\e[0m'
-	fi
+	eval $(eval_ecolors)
 fi
 
 # vim: set ts=4 :

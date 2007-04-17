@@ -18,34 +18,34 @@
 
 static void print_level (char *level)
 {
-	printf ("Runlevel: ");
-	PEINFO_HILITE;
-	printf ("%s\n", level);
-	PEINFO_NORMAL;
+	printf ("Runlevel: %s%s%s\n",
+			ecolor (ecolor_hilite),
+			level,
+			ecolor (ecolor_normal));
 }
 
 static void print_service (char *service)
 {
 	char status[10];
 	int cols =  printf (" %s\n", service);
-	einfo_color_t color = einfo_bad;
+	einfo_color_t color = ecolor_bad;
 
 	if (rc_service_state (service, rc_service_stopping))
 		snprintf (status, sizeof (status),   "stopping ");
 	else if (rc_service_state (service, rc_service_starting)) {
 		snprintf (status, sizeof (status), "starting ");
-		color = einfo_warn;
+		color = ecolor_warn;
 	} else if (rc_service_state (service, rc_service_inactive)) {
 		snprintf (status, sizeof (status), "inactive ");
-		color = einfo_warn;
+		color = ecolor_warn;
 	} else if (geteuid () == 0 && rc_service_state (service, rc_service_crashed))
 		snprintf (status, sizeof (status),   " crashed ");
 	else if (rc_service_state (service, rc_service_started)) {
 		snprintf (status, sizeof (status), " started ");
-		color = einfo_good;
+		color = ecolor_good;
 	} else if (rc_service_state (service, rc_service_scheduled)) {
 		snprintf (status, sizeof (status), "scheduled");
-		color = einfo_warn;
+		color = ecolor_warn;
 	} else
 		snprintf (status, sizeof (status),   " stopped ");
 	ebracket (cols, color, status);

@@ -22,7 +22,7 @@
 #include "rc-misc.h"
 
 #include "hidden-visibility.h"
-hidden_proto(colour_terminal)
+hidden_proto(ecolor)
 hidden_proto(ebegin)
 hidden_proto(ebeginv)
 hidden_proto(ebracket)
@@ -48,26 +48,35 @@ hidden_proto(ewarnx)
 hidden_proto(ewend)
 hidden_proto(ewendv)
 
-/* Incase we cannot work out how many columns from ioctl, supply a default */
+    /* Incase we cannot work out how many columns from ioctl, supply a default */
 #define DEFAULT_COLS		 80
 
-#define OK			"ok"
-#define NOT_OK			"!!"
+#define OK					"ok"
+#define NOT_OK				"!!"
 
 #define CHECK_VERBOSE		if (! is_env ("RC_VERBOSE", "yes")) return 0
 
-/* Number of spaces for an indent */
+    /* Number of spaces for an indent */
 #define INDENT_WIDTH		2
 
-/* How wide can the indent go? */
-#define INDENT_MAX		40
+    /* How wide can the indent go? */
+#define INDENT_MAX			40
 
 #define EBUFFER_LOCK		RC_SVCDIR "ebuffer/.lock"
+
+/* Default colours */
+#define ECOLOR_GOOD      "\033[32;01m"
+#define ECOLOR_WARN      "\033[33;01m"
+#define ECOLOR_BAD       "\033[31;01m"
+#define ECOLOR_HILITE    "\033[36;01m"
+#define ECOLOR_BRACKET   "\033[34;01m"
+#define ECOLOR_NORMAL    "\033[0m"
+#define ECOLOR_FLUSH     "\033[K"
 
 /* A cheat sheet of colour capable terminals
    This is taken from DIR_COLORS from GNU coreutils
    We embed it here as we shouldn't depend on coreutils */
-static const char *colour_terms[] = {
+static const char *color_terms[] = {
 	"Eterm",
 	"ansi",
 	"color-xterm",
@@ -123,7 +132,7 @@ static bool is_env (const char *var, const char *val)
 	return (strcasecmp (v, val) ? false : true);
 }
 
-bool colour_terminal (void)
+static bool colour_terminal (void)
 {
 	static int in_colour = -1;
 	int i = 0;
@@ -139,8 +148,8 @@ bool colour_terminal (void)
 	if (! term)
 		return (true);
 
-	while (colour_terms[i]) {
-		if (strcmp (colour_terms[i], term) == 0) {
+	while (color_terms[i]) {
+		if (strcmp (color_terms[i], term) == 0) {
 			in_colour = 1;
 			return (true);
 		}
@@ -150,7 +159,6 @@ bool colour_terminal (void)
 	in_colour = 0;
 	return (false);
 }
-hidden_def(colour_terminal)
 
 static int get_term_columns (void)
 {
@@ -397,43 +405,44 @@ static int _eindent (FILE *stream)
 	return (fprintf (stream, "%s", indent));
 }
 
-static const char *ecolor (einfo_color_t color) {
+const char *ecolor (einfo_color_t color) {
 	const char *col = NULL;
+
+	if (! colour_terminal ())
+		return ("");
 	
 	switch (color) {
-		case einfo_good:
-			if (! (col = getenv ("EINFO_GOOD")))
-				col = EINFO_GOOD;
+		case ecolor_good:
+			if (! (col = getenv ("ECOLOR_GOOD")))
+				col = ECOLOR_GOOD;
 			break;
-		case einfo_warn:
-			if (! (col = getenv ("EINFO_WARN")))
-				col = EINFO_WARN;
+		case ecolor_warn:
+			if (! (col = getenv ("ECOLOR_WARN")))
+				col = ECOLOR_WARN;
 			break;
-		case einfo_bad:
-			if (! (col = getenv ("EINFO_BAD")))
-				col = EINFO_BAD;
+		case ecolor_bad:
+			if (! (col = getenv ("ECOLOR_BAD")))
+				col = ECOLOR_BAD;
 			break;
-		case einfo_hilite:
-			if (! (col = getenv ("EINFO_HILITE")))
-				col = EINFO_HILITE;
+		case ecolor_hilite:
+			if (! (col = getenv ("ECOLOR_HILITE")))
+				col = ECOLOR_HILITE;
 			break;
-		case einfo_bracket:
-			if (! (col = getenv ("EINFO_BRACKET")))
-				col = EINFO_BRACKET;
+		case ecolor_bracket:
+			if (! (col = getenv ("ECOLOR_BRACKET")))
+				col = ECOLOR_BRACKET;
 			break;
-		case einfo_normal:
-			col = EINFO_NORMAL;
+		case ecolor_normal:
+			col = ECOLOR_NORMAL;
 			break;
 	}
 
 	return (col);
 }
+hidden_def(ecolor)
 
 #define EINFOVN(_file, _color) \
-	if (colour_terminal ()) \
-fprintf (_file, " %s*%s ", ecolor (_color), ecolor (einfo_normal)); \
-else \
-fprintf (_file, " * "); \
+fprintf (_file, " %s*%s ", ecolor (_color), ecolor (ecolor_normal)); \
 retval += _eindent (_file); \
 { \
 	va_list _ap; \
@@ -442,13 +451,13 @@ retval += _eindent (_file); \
 	va_end (_ap); \
 } \
 if (colour_terminal ()) \
-fprintf (_file, "\033[K");
+fprintf (_file, ECOLOR_FLUSH);
 
 static int _einfovn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stdout, einfo_good);
+	EINFOVN (stdout, ecolor_good);
 	return (retval);
 }
 
@@ -456,7 +465,7 @@ static int _ewarnvn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stdout, einfo_warn);
+	EINFOVN (stdout, ecolor_warn);
 	return (retval);
 }
 
@@ -464,7 +473,7 @@ static int _eerrorvn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stderr, einfo_bad);
+	EINFOVN (stderr, ecolor_bad);
 	return (retval);
 }
 
@@ -637,15 +646,15 @@ static void _eend (int col, einfo_color_t color, const char *msg)
 	if (! msg)
 		return;
 
-	if (color == einfo_bad)
+	if (color == ecolor_bad)
 		fp = stderr;
 
 	cols = get_term_columns () - (strlen (msg) + 6);
 
 	if (cols > 0 && colour_terminal ()) {
 		fprintf (fp, "\033[A\033[%dC %s[ %s%s %s]%s\n", cols,
-				 ecolor (einfo_bracket), ecolor (color), msg,
-				 ecolor (einfo_bracket), ecolor (einfo_normal));
+				 ecolor (ecolor_bracket), ecolor (color), msg,
+				 ecolor (ecolor_bracket), ecolor (ecolor_normal));
 	} else {
 		for (i = -1; i < cols - col; i++)
 			fprintf (fp, " ");
@@ -682,7 +691,9 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
 			fprintf (fp, "\n");
 	}
 
-	_eend (col, retval == 0 ? einfo_good : einfo_bad, retval == 0 ? OK : NOT_OK);
+	_eend (col,
+		   retval == 0 ? ecolor_good : ecolor_bad,
+		   retval == 0 ? OK : NOT_OK);
 	return (retval);
 }
 

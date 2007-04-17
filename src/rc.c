@@ -33,17 +33,17 @@
 #include "rc-plugin.h"
 #include "strlist.h"
 
-#define INITSH 			RC_LIBDIR "sh/init.sh"
-#define HALTSH			RC_INITDIR "halt.sh"
+#define INITSH 					RC_LIBDIR "sh/init.sh"
+#define HALTSH					RC_INITDIR "halt.sh"
 
-#define RC_SVCDIR_STARTING	RC_SVCDIR "starting/"
-#define RC_SVCDIR_INACTIVE	RC_SVCDIR "inactive/"
-#define RC_SVCDIR_STARTED	RC_SVCDIR "started/"
+#define RC_SVCDIR_STARTING		RC_SVCDIR "starting/"
+#define RC_SVCDIR_INACTIVE		RC_SVCDIR "inactive/"
+#define RC_SVCDIR_STARTED		RC_SVCDIR "started/"
 #define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "coldplugged/"
 
-#define INTERACTIVE		RC_SVCDIR "interactive"
+#define INTERACTIVE				RC_SVCDIR "interactive"
 
-#define DEVBOOT			"/dev/.rcboot"
+#define DEVBOOT					"/dev/.rcboot"
 
 /* Cleanup anything in main */
 #define CHAR_FREE(_item) if (_item) { \
@@ -113,6 +113,17 @@ static int do_e (int argc, char **argv)
 	char *message = NULL;
 	char *p;
 	char *fmt = NULL;
+
+	if (strcmp (applet, "eval_ecolors") == 0) {
+		printf ("GOOD='%s'\nWARN='%s'\nBAD='%s'\nHILITE='%s'\nBRACKET='%s'\nNORMAL='%s'\n",
+				ecolor (ecolor_good),
+				ecolor (ecolor_warn),
+				ecolor (ecolor_bad),
+				ecolor (ecolor_hilite),
+				ecolor (ecolor_bracket),
+				ecolor (ecolor_normal));
+		exit (EXIT_SUCCESS);
+	}
 
 	if (strcmp (applet, "eend") == 0 ||
 		strcmp (applet, "ewend") == 0 ||
@@ -497,8 +508,6 @@ int main (int argc, char **argv)
 		exit (rc_runlevel_starting () ? 0 : 1);
 	else if (strcmp (applet, "is_runlevel_stop") == 0)
 		exit (rc_runlevel_stopping () ? 0 : 1);
-	else if (strcmp (applet, "color_terminal") == 0)
-		exit (colour_terminal () ? 0 : 1);
 
 	if (strcmp (applet, "rc" ) != 0)
 		eerrorx ("%s: unknown applet", applet);
@@ -578,19 +587,14 @@ int main (int argc, char **argv)
 				uname (&uts);
 
 				printf ("\n");
-				PEINFO_GOOD;
-				printf ("   Gentoo/%s; ", uts.sysname);
-				PEINFO_BRACKET;
-				printf ("http://www.gentoo.org/");
-				PEINFO_NORMAL;
-				printf ("\n   Copyright 1999-2007 Gentoo Foundation; "
-						"Distributed under the GPLv2\n\n");
+				printf ("   %sGentoo/%s; %shttp://www.gentoo.org/%s"
+						"\n   Copyright 1999-2007 Gentoo Foundation; "
+						"Distributed under the GPLv2\n\n",
+						ecolor (ecolor_good), uts.sysname, ecolor (ecolor_bracket),
+						ecolor (ecolor_normal));
 
-				printf ("Press ");
-				PEINFO_GOOD;
-				printf ("I");
-				PEINFO_NORMAL;
-				printf (" to enter interactive boot mode\n\n");
+				printf ("Press %sI%s to enter interactive boot mode\n\n",
+						ecolor (ecolor_good), ecolor (ecolor_normal));
 
 				setenv ("RC_SOFTLEVEL", newlevel, 1);
 				rc_plugin_run (rc_hook_runlevel_start_in, newlevel);

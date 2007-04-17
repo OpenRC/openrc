@@ -79,6 +79,12 @@ start() {
 			|| rm -f "${RC_LIBDIR}"/console/map
 		/bin/setfont -ou "${RC_LIBDIR}"/console/unimap 2>/dev/null \
 			|| rm -f "${RC_LIBDIR}"/console/unimap
+
+		if [ "${UNICODE}" = "yes" ] ; then
+			touch "${RC_LIBDIR}"/console/unicode
+		else
+			rm -f "${RC_LIBDIR}"/console/unicode
+		fi
 	fi
 
 	return ${retval}

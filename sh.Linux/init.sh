@@ -88,17 +88,20 @@ get_KV() {
 
 # Try and set a font as early as we can
 ttydev=${CONSOLE:-/dev/tty1}
-if [ -c "${ttydev}" ] ; then
-	ttydev="-C ${ttydev}"
-else
-	[ -c /dev/vc/1 ] && ttydev="-C /dev/vc/1" || ttydev=
+if [ ! -c "${ttydev}" ] ; then
+	[ -c /dev/vc/1 ] && ttydev="/dev/vc/1" || ttydev=
 fi
 [ -r "${RC_LIBDIR}"/console/font ] \
-	&& /bin/setfont ${ttydev} "${RC_LIBDIR}"/console/font
+	&& /bin/setfont ${ttydev:+-C} ${ttydev} "${RC_LIBDIR}"/console/font
 [ -r "${RC_LIBDIR}"/console/map ] \
-	&& /bin/setfont ${ttydev} -m "${RC_LIBDIR}"/console/map
+	&& /bin/setfont ${ttydev:+-C} ${ttydev} -m "${RC_LIBDIR}"/console/map
 [ -r "${RC_LIBDIR}"/console/unimap ] \
-	&& /bin/setfont ${ttydev} -u "${RC_LIBDIR}"/console/unimap
+	&& /bin/setfont ${ttydev:+-C} ${ttydev} -u "${RC_LIBDIR}"/console/unimap
+if [ -e "${RC_LIBDIR}"/console/unicode ] ; then
+	eval printf "\033%%G" ${ttydev:+>} ${ttydev}
+else
+	eval printf "\033(K" ${ttydev:+>} ${ttydev}
+fi
 unset ttydev
 
 . /etc/init.d/functions.sh
