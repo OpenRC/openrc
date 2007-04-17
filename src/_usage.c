@@ -7,10 +7,6 @@
  * Released under the GPLv2
  */
 
-#ifndef APPLET
-# error you forgot to define APPLET
-#endif
-
 static void usage (int exit_status)
 {
 	int i;
