@@ -51,9 +51,10 @@ pppd_start() {
 	esac
 
 	eval $(_get_array "pppd_${IFVAR}")
-	opts=$(requote "$@")
+	opts="$@"
 
-	# We don't work with these options set by the user
+	local mtu= hasmtu=false hasmru=false hasmaxfail=false haspersits=false
+	local hasupdetach=false
 	for i in "$@" ; do
 		set -- ${i}
 		case "$1" in
@@ -61,6 +62,11 @@ pppd_start() {
 				eerror "The option \"$1\" is not allowed in pppd_${IFVAR}"
 				return 1
 			;;
+			mtu) hasmtu=true ;;
+			mru) hasmru=true ;;
+			maxfail) hasmaxfail=true ;;
+			persist) haspersist=true ;;
+			updetach) hasupdetach=true;
 		esac
 	done
 
@@ -74,26 +80,12 @@ pppd_start() {
 		opts="${opts} plugin passwordfd.so passwordfd 0"
 	fi
 	
-	# Check for mtu/mru
-	local mtu= hasmtu=false hasmru=false hasmaxfail=false haspersits=false
-	local hasupdetach=false
-	eval mtu=\$mtu_${IFVAR}
-	eval set -- "${opts}"
-	for i in "$@" ; do
-		case "${i}" in
-			mtu" "*) hasmtu=true ;;
-			mru" "*) hasmru=true ;;
-			maxfail" "*) hasmaxfail=true ;;
-			persist) haspersist=true ;;
-			updetach) hasupdetach=true;
-		esac
-	done
 	if [ -n "${mtu}" ] ; then
-		! ${hasmtu} && opts="${opts} mtu ${mtu}"
-		! ${hasmru} && opts="${opts} mru ${mtu}"
+		${hasmtu} || opts="${opts} mtu ${mtu}"
+		${hasmru} || opts="${opts} mru ${mtu}"
 	fi
-	! ${hasmailfail} && opts="${opts} maxfail 0"
-	! ${haspersist} && opts="${opts} persist"
+	${hasmailfail} || opts="${opts} maxfail 0"
+	${haspersist} || opts="${opts} persist"
 
 	# Set linkname because we need /var/run/ppp-${linkname}.pid
 	# This pidfile has the advantage of being there,
@@ -102,7 +94,7 @@ pppd_start() {
 
 	# Setup auth info
 	if [ -n "${username}" ] ; then
-		opts="user '"${username}"' remotename ${IFACE} ${opts}"
+		opts="user '${username}' remotename ${IFACE} ${opts}"
 	fi
 
 	# Load a custom interface configuration file if it exists
