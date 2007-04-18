@@ -19,14 +19,14 @@ requote() {
 pppd_start() {
 	${IN_BACKGROUND} && return 0
 
-	if [ "${iface%%[0-9]*}" != "ppp" ] ; then
+	if [ "${IFACE%%[0-9]*}" != "ppp" ] ; then
 		eerror "PPP can only be invoked from net.ppp[0-9]"
 		return 1
 	fi
 
 	local link= i= opts= unit="${IFACE#ppp}" mtu=
 	if [ -z "${unit}" ] ; then
-		eerror $"PPP requires a unit - use net.ppp[0-9] instead of net.ppp"
+		eerror "PPP requires a unit - use net.ppp[0-9] instead of net.ppp"
 		return 1
 	fi
 
@@ -51,7 +51,7 @@ pppd_start() {
 	esac
 
 	eval $(_get_array "pppd_${IFVAR}")
-	opts="$@"
+	opts=$(requote "$@")
 
 	# We don't work with these options set by the user
 	for i in "$@" ; do
@@ -76,9 +76,10 @@ pppd_start() {
 	
 	# Check for mtu/mru
 	local mtu= hasmtu=false hasmru=false hasmaxfail=false haspersits=false
-	loal hasupdetach=false
+	local hasupdetach=false
 	eval mtu=\$mtu_${IFVAR}
-	for i in ${opts} ; do
+	eval set -- "${opts}"
+	for i in "$@" ; do
 		case "${i}" in
 			mtu" "*) hasmtu=true ;;
 			mru" "*) hasmru=true ;;
@@ -87,13 +88,16 @@ pppd_start() {
 			updetach) hasupdetach=true;
 		esac
 	done
-	! ${hasmtu} && opts="${opts} mtu ${mtu}"
-	! ${hasmru} && opts="${opts} mru ${mtu}"
+	if [ -n "${mtu}" ] ; then
+		! ${hasmtu} && opts="${opts} mtu ${mtu}"
+		! ${hasmru} && opts="${opts} mru ${mtu}"
+	fi
 	! ${hasmailfail} && opts="${opts} maxfail 0"
 	! ${haspersist} && opts="${opts} persist"
 
 	# Set linkname because we need /var/run/ppp-${linkname}.pid
-	# This pidfile has the advantage of being there, even if ${iface} interface was never started
+	# This pidfile has the advantage of being there,
+	# even if ${IFACE} interface was never started
 	opts="linkname ${IFACE} ${opts}"
 
 	# Setup auth info
@@ -123,13 +127,13 @@ pppd_start() {
 	eval $(_get_array "plugins_${IFVAR}")
 	for i in "$@" ; do
 		set -- ${i}
-		case "${i}" in
+		case "$1" in
 			passwordfd) continue;;
 			pppoa) shift; set -- "rp-pppoe" "$@" ;;
 			pppoe) shift; set -- "pppoatm" "$@" ;;
 			capi) shift; set -- "capiplugin" "$@" ;;
 		esac
-		case "${i}" in
+		case "$1" in
 			rp-pppoe) haspppoe=true ;;
 			pppoatm)  haspppoa=true ;;
 		esac
@@ -174,7 +178,7 @@ pppd_start() {
 		fi
 
 	fi
-	[ "${insert_link_in_opts}" == "0" ] || opts="${link} ${opts}"
+	[ "${insert_link_in_opts}" = "0" ] || opts="${link} ${opts}"
 
 	ebegin "Starting pppd in ${IFACE}"
 	mark_service_inactive "${SVCNAME}"
@@ -188,8 +192,8 @@ pppd_start() {
 			--pidfile "/var/run/ppp-${IFACE}.pid" -- "${opts}" >/dev/null
 	fi
 
-	if ! eend $? $"Failed to start PPP" ; then
-		mark_service_starting "net.${iface}"
+	if ! eend $? "Failed to start PPP" ; then
+		mark_service_starting "net.${IFACE}"
 		return 1
 	fi
 
