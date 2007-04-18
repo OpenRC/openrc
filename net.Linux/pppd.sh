@@ -129,8 +129,8 @@ pppd_start() {
 		set -- ${i}
 		case "$1" in
 			passwordfd) continue;;
-			pppoa) shift; set -- "rp-pppoe" "$@" ;;
-			pppoe) shift; set -- "pppoatm" "$@" ;;
+			pppoa) shift; set -- "pppoatm" "$@" ;;
+			pppoe) shift; set -- "rp-pppoe" "$@" ;;
 			capi) shift; set -- "capiplugin" "$@" ;;
 		esac
 		case "$1" in
