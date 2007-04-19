@@ -176,7 +176,7 @@ pppd_start() {
 	mark_service_inactive "${SVCNAME}"
 	if [ -n "${username}" ] \
 	&& [ -n "${password}" -o -z "${passwordset}" ] ; then
-		echo "${password}" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | \
+		printf "${password}" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | \
 		eval start-stop-daemon --start --exec /usr/sbin/pppd \
 			--pidfile "/var/run/ppp-${IFACE}.pid" -- "${opts}" >/dev/null
 	else
