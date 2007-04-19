@@ -77,7 +77,7 @@ void rc_plugin_load (void)
 				plugin = plugins = rc_xmalloc (sizeof (plugin_t));
 
 			memset (plugin, 0, sizeof (plugin_t));
-			plugin->name = strdup (file);
+			plugin->name = rc_xstrdup (file);
 			plugin->handle = h;
 			plugin->hook = f;
 		}

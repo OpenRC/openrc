@@ -131,7 +131,7 @@ int main (int argc, char **argv)
 								  "%s%s", isspecial_spaced ? " " : ":", value);
 					} else {
 						free (envs[k - 1]);
-						envs[k - 1] = strdup (entry);
+						envs[k - 1] = rc_xstrdup (entry);
 					}
 					replaced = true;
 				}

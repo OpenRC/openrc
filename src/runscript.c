@@ -15,15 +15,12 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <getopt.h>
+#include <libgen.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifndef __linux__
-#include <libgen.h>
-#endif
 
 #include "einfo.h"
 #include "rc.h"
@@ -802,7 +799,7 @@ static void svc_restart (const char *service, bool deps)
 				if (inactive) {
 					rc_schedule_start_service (service, svc);
 					ewarn ("WARNING: %s is scheduled to started when %s has started",
-						   svc, basename (service));
+						   svc, applet);
 				} else
 					rc_start_service (svc);
 			}
@@ -821,11 +818,11 @@ static struct option longopts[] = {
 	{ "help",       0, NULL, 'h'},
 	{ NULL,         0, NULL, 0}
 };
-#include "_usage.c"
+// #include "_usage.c"
 
 int main (int argc, char **argv)
 {
-	const char *service = argv[1];
+	char *service = argv[1];
 	int i;
 	bool deps = true;
 	bool doneone = false;
@@ -840,7 +837,7 @@ int main (int argc, char **argv)
 				 applet, strerror (errno));
 	}
 
-	applet = strdup (basename (service));
+	applet = rc_xstrdup (basename (service));
 	atexit (cleanup);
 
 #ifdef __linux__
@@ -956,7 +953,7 @@ int main (int argc, char **argv)
 	   that is being called and not any dependents */
 	if (getenv ("IN_BACKGROUND")) {
 		in_background = rc_is_env ("IN_BACKGROUND", "true");
-		ibsave = strdup (getenv ("IN_BACKGROUND"));
+		ibsave = rc_xstrdup (getenv ("IN_BACKGROUND"));
 		unsetenv ("IN_BACKGROUND");
 	}
 

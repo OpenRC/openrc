@@ -567,7 +567,7 @@ int main (int argc, char **argv)
 					char *cu = strsep (&p, ":");
 					struct passwd *pw = NULL;
 
-					changeuser = strdup (cu);
+					changeuser = rc_xstrdup (cu);
 					if (sscanf (cu, "%d", &tid) != 1)
 						pw = getpwnam (cu);
 					else

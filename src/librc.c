@@ -136,7 +136,7 @@ char *rc_resolve_service (const char *service)
 		r = readlink (file, buffer, sizeof (buffer));
 		free (file);
 		if (r > 0)
-			return strdup (buffer);
+			return (rc_xstrdup (buffer));
 	}
 
 	snprintf (buffer, sizeof (buffer), RC_INITDIR "%s", service);
@@ -467,7 +467,7 @@ static pid_t _exec_service (const char *service, const char *arg)
 	}
 
 	if ((pid = fork ()) == 0) {
-		char *myarg = strdup (arg);
+		char *myarg = rc_xstrdup (arg);
 		int e = 0;
 		execl (file, file, myarg, (char *) NULL);
 		e = errno;

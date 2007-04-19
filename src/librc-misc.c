@@ -59,7 +59,7 @@ char *rc_xstrdup (const char *str)
 	if (! str)
 		return (NULL);
 
-	value = strdup (str);
+	value = rc_xstrdup (str);
 
 	if (value)
 		return (value);
@@ -490,7 +490,7 @@ char **rc_filter_env (void)
 			/* Now go through the env var and only add bits not in our PREFIX */
 			sep = env_var;
 			while ((token = strsep (&sep, ":"))) {
-				char *np = strdup (PATH_PREFIX);
+				char *np = rc_xstrdup (PATH_PREFIX);
 				char *npp = np;
 				char *tok = NULL;
 				while ((tok = strsep (&npp, ":")))

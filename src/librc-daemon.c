@@ -305,21 +305,21 @@ void rc_set_service_daemon (const char *service, const char *exec,
 		mexec = rc_xmalloc (sizeof (char *) * i);
 		snprintf (mexec, i, "exec=%s", exec);
 	} else
-		mexec = strdup ("exec=");
+		mexec = rc_xstrdup ("exec=");
 
 	if (name) {
 		i = strlen (name) + 6;
 		mname = rc_xmalloc (sizeof (char *) * i);
 		snprintf (mname, i, "name=%s", name);
 	} else
-		mname = strdup ("name=");
+		mname = rc_xstrdup ("name=");
 
 	if (pidfile) {
 		i = strlen (pidfile) + 9;
 		mpidfile = rc_xmalloc (sizeof (char *) * i);
 		snprintf (mpidfile, i, "pidfile=%s", pidfile);
 	} else
-		mpidfile = strdup ("pidfile=");
+		mpidfile = rc_xstrdup ("pidfile=");
 
 	/* Regardless, erase any existing daemon info */
 	if (rc_is_dir (dirpath)) {
@@ -479,15 +479,15 @@ bool rc_service_daemons_crashed (const char *service)
 			if (strcmp (token, "exec") == 0) {
 				if (exec)
 					free (exec);
-				exec = strdup (p);
+				exec = rc_xstrdup (p);
 			} else if (strcmp (token, "name") == 0) {
 				if (name)
 					free (name);
-				name = strdup (p);
+				name = rc_xstrdup (p);
 			} else if (strcmp (token, "pidfile") == 0) {
 				if (pidfile)
 					free (pidfile);
-				pidfile = strdup (p);
+				pidfile = rc_xstrdup (p);
 			}
 		}
 		fclose (fp);

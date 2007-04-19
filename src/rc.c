@@ -161,7 +161,7 @@ static int do_e (int argc, char **argv)
 	}
 
 	if (message)
-		fmt = strdup ("%s");
+		fmt = rc_xstrdup ("%s");
 
 	if (strcmp (applet, "einfo") == 0) 
 		einfo (fmt, message);
@@ -482,7 +482,7 @@ int main (int argc, char **argv)
 	char ksoftbuffer [PATH_MAX];
 
 	if (argv[0])
-		applet = strdup (basename (argv[0]));
+		applet = rc_xstrdup (basename (argv[0]));
 
 	if (! applet)
 		eerrorx ("arguments required");
