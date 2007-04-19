@@ -59,7 +59,7 @@ char *rc_xstrdup (const char *str)
 	if (! str)
 		return (NULL);
 
-	value = rc_xstrdup (str);
+	value = strdup (str);
 
 	if (value)
 		return (value);

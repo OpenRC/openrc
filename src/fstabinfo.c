@@ -111,32 +111,33 @@ int main (int argc, char **argv)
 				break;
 
 			case 'p':
-			switch (optarg[0]) {
-				case '=':
-				case '<':
-				case '>':
-					if (sscanf (optarg + 1, "%d", &n) != 1)
-						eerrorx ("%s: invalid passno %s", argv[0], optarg + 1);
+				switch (optarg[0]) {
+					case '=':
+					case '<':
+					case '>':
+						if (sscanf (optarg + 1, "%d", &n) != 1)
+							eerrorx ("%s: invalid passno %s", argv[0], optarg + 1);
 
-					while ((ent = GET_ENT)) {
-						if (((optarg[0] == '=' && n == ENT_PASS (ent)) ||
-							 (optarg[0] == '<' && n > ENT_PASS (ent)) ||
-							 (optarg[0] == '>' && n < ENT_PASS (ent))) &&
-							strcmp (ENT_FILE (ent), "none") != 0)
-						{
-							printf ("%s\n", ENT_FILE (ent));
+						while ((ent = GET_ENT)) {
+							if (((optarg[0] == '=' && n == ENT_PASS (ent)) ||
+								 (optarg[0] == '<' && n > ENT_PASS (ent)) ||
+								 (optarg[0] == '>' && n < ENT_PASS (ent))) &&
+								strcmp (ENT_FILE (ent), "none") != 0)
+							{
+								printf ("%s\n", ENT_FILE (ent));
+								result = EXIT_SUCCESS;
+							}
+						}
+						break;
+
+					default:
+						if ((ent = GET_ENT_FILE (optarg))) {
+							printf ("%d\n", ENT_PASS (ent));
 							result = EXIT_SUCCESS;
 						}
-					}
-					break;
-
-				default:
-					if ((ent = GET_ENT_FILE (optarg))) {
-						printf ("%d\n", ENT_PASS (ent));
-						result = EXIT_SUCCESS;
-					}
-					break;
-			}
+						break;
+				}
+				break;
 
 			case 'h':
 				END_ENT;
