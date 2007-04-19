@@ -43,13 +43,18 @@ void rc_plugin_load (void)
 	files = rc_ls_dir (NULL, RC_PLUGINDIR, 0);
 	STRLIST_FOREACH (files, file, i) {
 		char *p = rc_strcatpaths (RC_PLUGINDIR, file, NULL);
-		void *h = dlopen (p, RTLD_LAZY);
+		/*
+		 * We load the use RTLD_NOW so that we know it works
+		 * as if we have any unknown symbols when we run then the
+		 * program bails out in rc_plugin_run which is very very bad.
+		 */
+		void *h = dlopen (p, RTLD_NOW);
 		char *func;
 		void *f;
 		int len;
 
 		if (! h) {
-			eerror ("dlopen `%s': %s", p, dlerror ());
+			eerror ("dlopen: %s", dlerror ());
 			free (p);
 			continue;
 		}
