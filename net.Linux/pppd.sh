@@ -17,10 +17,18 @@ requote() {
 }
 
 pppd_pre_start() {
-	${IN_BACKGROUND} && return 0
-
 	# Interface has to be called ppp
 	[ "${IFACE%%[0-9]*}" = "ppp" ] || return 0
+
+	if ${IN_BACKGROUND} ; then
+		local config=
+		eval config=\$config_${IFVAR}
+		# If no config for ppp then don't default to DHCP 
+		if [ -z "${config}" ] ; then
+			eval config_${IFVAR}=\"null\"
+		fi
+		return 0
+	fi
 
 	local link= i= opts= unit="${IFACE#ppp}" mtu=
 	
