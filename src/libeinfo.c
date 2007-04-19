@@ -861,7 +861,6 @@ int ewarnv (const char *fmt, ...)
 		retval += printf ("\n");
 	}
 	va_end (ap);
-	retval += printf ("\n");
 
 	return (retval);
 }

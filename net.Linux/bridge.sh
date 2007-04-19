@@ -38,16 +38,16 @@ bridge_pre_start() {
 			eend 1
 			return 1
 		fi
-
-		eval set -- ${opts}
-		for x in "$@" ; do
-			case " ${x} " in
-				*" ${IFACE} "*) ;;
-				*) x="${x} ${IFACE}" ;;
-			esac
-			brctl ${x}
-		done
 	fi
+
+	eval $(_get_array "brctl_${IFVAR}")
+	for x in "$@" ; do
+		set -- ${x}
+		x=$1
+		shift
+		set -- "${x}" "${IFACE}" "$@"
+		brctl "$@"
+	done
 
 	if [ -n "${ports}" ] ; then
 		einfo "Adding ports to ${IFACE}"
@@ -66,7 +66,7 @@ bridge_pre_start() {
 		done
 		eoutdent
 	fi
-	)
+	) || return 1
 
 	# Bring up the bridge
 	_up

@@ -394,6 +394,12 @@ start() {
 		fi
     done
 
+	if ! _exists ; then
+		eerror "ERROR: interface ${IFACE} does not exist"
+		eerror "Ensure that you have loaded the correct kernel module for your hardware"
+		return 1
+	fi
+
 	if ! _wait_for_carrier ; then
 		if service_started devd ; then
 			ewarn "no carrier, but devd will start us when we have one"
