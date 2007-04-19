@@ -622,9 +622,6 @@
 # You need to create the PPP net script yourself. Make it like so
 #ln -s net.lo /etc/init.d/net.ppp0
 #
-# We have to instruct ppp0 to actually use ppp
-#config_ppp0="ppp"
-#
 # Each PPP interface requires an interface to use as a "Link"
 #link_ppp0="/dev/ttyS0" 		# Most PPP links will use a serial port
 #link_ppp0="eth0"       		# PPPoE requires an ethernet interface

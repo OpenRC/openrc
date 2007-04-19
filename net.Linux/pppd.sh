@@ -16,29 +16,20 @@ requote() {
 	printf "'%s' " "$@"
 }
 
-pppd_start() {
+pppd_pre_start() {
 	${IN_BACKGROUND} && return 0
 
-	if [ "${IFACE%%[0-9]*}" != "ppp" ] ; then
-		eerror "PPP can only be invoked from net.ppp[0-9]"
-		return 1
-	fi
+	# Interface has to be called ppp
+	[ "${IFACE%%[0-9]*}" = "ppp" ] || return 0
 
 	local link= i= opts= unit="${IFACE#ppp}" mtu=
-	if [ -z "${unit}" ] ; then
-		eerror "PPP requires a unit - use net.ppp[0-9] instead of net.ppp"
-		return 1
-	fi
-
+	
 	# PPP requires a link to communicate over - normally a serial port
 	# PPPoE communicates over Ethernet
 	# PPPoA communicates over ATM
 	# In all cases, the link needs to be available before we start PPP
 	eval link=\$link_${IFVAR}
-	if [ -z "${link}" ] ; then
-		eerror "link_${IFVAR} has not been set in /etc/conf.d/net"
-		return 1
-	fi
+	[ -n "${link}" ] || return 0
 
 	case "${link}" in
 		/*)
@@ -49,6 +40,11 @@ pppd_start() {
 			fi
 			;;
 	esac
+
+	if [ -z "${unit}" ] ; then
+		eerror "PPP requires a unit - use net.ppp[0-9] instead of net.ppp"
+		return 1
+	fi
 
 	eval $(_get_array "pppd_${IFVAR}")
 	opts="$@"
@@ -197,6 +193,11 @@ pppd_start() {
 
 	# pppd will re-call us when we bring the interface up
 	exit 0
+}
+
+# Dummy function for users that still have config_ppp0="ppp"
+pppd_start() {
+	return 0
 }
 
 pppd_stop() {
