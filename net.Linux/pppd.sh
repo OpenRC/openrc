@@ -181,7 +181,7 @@ pppd_pre_start() {
 	fi
 
 	if ! eend $? "Failed to start PPP" ; then
-		mark_service_starting "net.${IFACE}"
+		mark_service_stopped "net.${IFACE}"
 		return 1
 	fi
 
