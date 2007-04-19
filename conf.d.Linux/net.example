@@ -629,9 +629,6 @@
 #link_ppp0="/dev/null"			# ISDN links should have this
 #link_ppp0="pty 'your_link_command'"	# PPP links over ssh, rsh, etc
 #
-#As PPP assigns the address itself we need to stop the assumption of DHCP
-#config_ppp0="null"
-#
 # Here you should specify what pppd plugins you want to use
 # Available plugins are: pppoe, pppoa, capi, dhcpc, minconn, radius,
 #			 radattr, radrealms and winbind 
