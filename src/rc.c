@@ -65,13 +65,28 @@ static char *tmp = NULL;
 
 struct termios *termios_orig = NULL;
 
+typedef struct pidlist
+{
+	pid_t pid;
+	struct pidlist *next;
+} pidlist_t;
+static pidlist_t *service_pids = NULL;
+
 static void cleanup (void)
 {
+	pidlist_t *pl = service_pids;
+
 	rc_plugin_unload ();
 
 	if (termios_orig) {
 		tcsetattr (STDIN_FILENO, TCSANOW, termios_orig);
 		free (termios_orig);
+	}
+
+	while (pl) {
+		pidlist_t *p = pl->next;
+		free (pl);
+		pl = p;
 	}
 
 	rc_strlist_free (env);
@@ -371,6 +386,7 @@ static void sulogin (bool cont)
 		execl ("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
 		eerrorx ("%s: unable to exec `/sbin/halt': %s", applet, strerror (errno));
 	}
+#endif
 
 	if (cont) {
 		int status = 0;
@@ -380,22 +396,29 @@ static void sulogin (bool cont)
 			eerrorx ("%s: vfork: %s", applet, strerror (errno));
 		if (pid == 0) {
 			newenv = rc_filter_env ();
-			execl ("/sbin/sulogin", "/sbin/sulogin",
+#ifdef __linux__
+			execle ("/sbin/sulogin", "/sbin/sulogin",
 				   getenv ("CONSOLE"), (char *) NULL, newenv);
 			eerror ("%s: unable to exec `/sbin/sulogin': %s", applet,
 					strerror (errno));
+#else
+			execle ("/bin/sh", "/bin/sh", (char *) NULL, newenv);
+			eerror ("%s: unable to exec `/bin/sh': %s", applet,
+					strerror (errno));
+#endif
 			_exit (EXIT_FAILURE);
 		}
 		waitpid (pid, &status, 0);
 	} else {
+#ifdef __linux
 		newenv = rc_filter_env ();
-		execl ("/sbin/sulogin", "/sbin/sulogin",
+		execle ("/sbin/sulogin", "/sbin/sulogin",
 			   getenv ("CONSOLE"), (char *) NULL, newenv);
 		eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
-	}
 #else
-	exit (cont ? EXIT_FAILURE : EXIT_SUCCESS);
+		exit (EXIT_SUCCESS);
 #endif
+	}
 }
 
 static void single_user (void)
@@ -448,14 +471,64 @@ static void wait_for_services ()
 	select (0, NULL, NULL, NULL, &tv);
 }
 
+static void add_pid (pid_t pid)
+{
+	pidlist_t *sp = service_pids;
+	if (sp) {
+		while (sp->next)
+			sp = sp->next;
+		sp->next = rc_xmalloc (sizeof (pidlist_t));
+		sp = sp->next;
+	} else
+		sp = service_pids = rc_xmalloc (sizeof (pidlist_t));
+	memset (sp, 0, sizeof (pidlist_t));
+	sp->pid = pid;
+}
+
+static void remove_pid (pid_t pid)
+{
+	pidlist_t *last = NULL;
+	pidlist_t *pl;
+
+	for (pl = service_pids; pl; pl = pl->next) {
+		if (pl->pid == pid) {
+			if (last)
+				last->next = pl->next;
+			else
+				service_pids = pl->next;
+			free (pl);
+			break;
+		}
+		last = pl;
+	}
+}
+
 static void handle_signal (int sig)
 {
 	int serrno = errno;
 	char signame[10] = { '\0' };
 	char *run;
 	char *prev;
+	pidlist_t *pl;
+	pid_t pid;
+	int status = 0;
 
 	switch (sig) {
+		case SIGCHLD:
+			do {
+				pid = waitpid (-1, &status, WNOHANG);
+				if (pid < 0) {
+					if (errno != ECHILD)
+						eerror ("waitpid: %s", strerror (errno));
+					return;
+				}
+			} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+
+			/* Remove that pid from our list */
+			if (pid > 0)
+				remove_pid (pid);
+			break;
+					
 		case SIGINT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGINT");
@@ -469,17 +542,21 @@ static void handle_signal (int sig)
 		case SIGUSR1:
 			eerror ("rc: Aborting!");
 			/* Kill any running services we have started */
-			signal (SIGTERM, SIG_IGN);
-			killpg (getpgrp (), SIGTERM);
-
+		
+			signal (SIGCHLD, SIG_IGN);
+			for (pl = service_pids; pl; pl = pl->next)
+				kill (pl->pid, SIGTERM);
+			
 			/* Notify plugins we are aborting */
 			rc_plugin_run (rc_hook_abort, "rc");
-
+	
+			/* Only drop into single user mode if we're booting */
 			run = getenv ("RUNLEVEL");
 			prev = getenv ("PREVLEVEL");
-			/* Only drop into single user mode if we're booting */
 			if ((prev && strcmp (prev, "S") == 0) ||
-				(run && strcmp (run, "S") == 0))
+					(run &&
+					 (strcmp (run, "S") == 0 ||
+					 strcmp (run, "1") == 0)))
 				single_user ();
 
 			exit (EXIT_FAILURE);
@@ -793,6 +870,9 @@ int main (int argc, char **argv)
 	/* Export our current softlevel */
 	runlevel = rc_get_runlevel ();
 
+	/* Now we start handling our children */
+	signal (SIGCHLD, handle_signal);
+
 	/* If we're in the default runlevel and ksoftlevel exists, we should use
 	   that instead */
 	if (newlevel &&
@@ -996,8 +1076,9 @@ int main (int argc, char **argv)
 
 		/* We always stop the service when in these runlevels */
 		if (going_down) {
-			rc_stop_service (service);
-			continue;
+			pid_t pid = rc_stop_service (service);
+			if (pid > 0 && ! rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
+				rc_waitpid (pid);
 		}
 
 		/* If we're in the start list then don't bother stopping us */
@@ -1058,15 +1139,17 @@ int main (int argc, char **argv)
 		deporder = NULL;
 
 		/* After all that we can finally stop the blighter! */
-		if (! found)
-			rc_stop_service (service);
+		if (! found) {
+			pid_t pid = rc_stop_service (service);
+			if (pid > 0 && ! rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
+				rc_waitpid (pid);
+		}
 	}
 	rc_strlist_free (types);
 	types = NULL;
 
 	/* Wait for our services to finish */
-	if (rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
-		wait_for_services ();
+	wait_for_services ();
 
 	/* Notify the plugins we have finished */
 	rc_plugin_run (rc_hook_runlevel_stop_out, runlevel);
@@ -1117,6 +1200,8 @@ int main (int argc, char **argv)
 
 	STRLIST_FOREACH (start_services, service, i) {
 		if (rc_service_state (service, rc_service_stopped))	{
+			pid_t pid;
+
 			if (! interactive)
 				interactive = want_interactive ();
 
@@ -1137,7 +1222,15 @@ interactive_option:
 					default: goto interactive_option;
 				}
 			}
-			rc_start_service (service);
+
+			/* Remember the pid if we're running in parallel */
+			if ((pid = rc_start_service (service)))
+				add_pid (pid);
+
+			if (! rc_is_env ("RC_PARALLEL_STARTUP", "yes")) {
+				rc_waitpid (pid);
+				remove_pid (pid);
+			}
 		}
 	}
 

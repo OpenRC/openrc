@@ -9,7 +9,6 @@
 #define APPLET "runscript"
 
 #include <sys/types.h>
-#include <sys/signal.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <dlfcn.h>
@@ -17,6 +16,7 @@
 #include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,6 +49,7 @@ static bool sighup = false;
 static char *ibsave = NULL;
 static bool in_background = false;
 static rc_hook_t hook_out = 0;
+static pid_t service_pid = 0;
 
 extern char **environ;
 
@@ -108,6 +109,8 @@ static void handle_signal (int sig)
 					return;
 				}
 			} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+			if (pid == service_pid)
+				service_pid = 0;
 			break;
 
 		case SIGINT:
@@ -119,6 +122,9 @@ static void handle_signal (int sig)
 		case SIGQUIT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGQUIT");
+			/* Send the signal to our children too */
+			if (service_pid > 0) 
+				kill (service_pid, sig);
 			eerrorx ("%s: caught %s, aborting", applet, signame);
 
 		default:
@@ -259,18 +265,17 @@ static void cleanup (void)
 
 static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 {
-	int status = 0;
-	pid_t pid;
+	bool retval;
 
 	/* We need to disable our child signal handler now so we block
 	   until our script returns. */
 	signal (SIGCHLD, NULL);
 
-	pid = vfork();
+	service_pid = vfork();
 
-	if (pid == -1)
+	if (service_pid == -1)
 		eerrorx ("%s: vfork: %s", service, strerror (errno));
-	if (pid == 0) {
+	if (service_pid == 0) {
 		if (rc_exists (RC_SVCDIR "runscript.sh")) {
 			execl (RC_SVCDIR "runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
@@ -286,21 +291,13 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 		}
 	}
 
-	do {
-		if (waitpid (pid, &status, 0) < 0) {
-			if (errno != ECHILD)
-				eerror ("waitpid: %s", strerror (errno));
-			break;
-		}
-	} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+	retval = rc_waitpid (service_pid) == 0 ? true : false;
 
+	service_pid = 0;
 	/* Done, so restore the signal handler */
 	signal (SIGCHLD, handle_signal);
 
-	if (WIFEXITED (status))
-		return (WEXITSTATUS (status) ? false : true);
-
-	return (false);
+	return (retval);
 }
 
 static rc_service_state_t svc_status (const char *service)
@@ -467,8 +464,11 @@ static void svc_start (const char *service, bool deps)
 			services = rc_get_depends (deptree, types, svclist,
 									   softlevel, depoptions);
 			STRLIST_FOREACH (services, svc, i)
-				if (rc_service_state (svc, rc_service_stopped))
-					rc_start_service (svc);
+				if (rc_service_state (svc, rc_service_stopped)) {
+					pid_t pid = rc_start_service (svc);
+					if (! rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
+						rc_waitpid (pid);
+				}
 
 			rc_strlist_free (services);
 		}
@@ -669,7 +669,9 @@ static void svc_stop (const char *service, bool deps)
 				if (rc_service_state (svc, rc_service_started) || 
 					rc_service_state (svc, rc_service_inactive))
 				{
-					rc_stop_service (svc);
+					pid_t pid = rc_stop_service (svc);
+					if (! rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
+						rc_waitpid (pid);
 					tmplist = rc_strlist_add (tmplist, svc);
 				}
 			}

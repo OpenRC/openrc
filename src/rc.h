@@ -44,6 +44,7 @@ bool rc_service_state (const char *service, rc_service_state_t state);
 bool rc_mark_service (const char *service, rc_service_state_t state);
 pid_t rc_stop_service (const char *service);
 pid_t rc_start_service (const char *service);
+int rc_waitpid (pid_t pid); 
 void rc_schedule_start_service (const char *service,
 								const char *service_to_start);
 char **rc_services_scheduled_by (const char *service);

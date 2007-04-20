@@ -445,8 +445,6 @@ static pid_t _exec_service (const char *service, const char *arg)
 	char *file;
 	char *fifo;
 	pid_t pid = -1;
-	pid_t savedpid;
-	int status;
 	char *svc;
 
 	file = rc_resolve_service (service);
@@ -483,15 +481,16 @@ static pid_t _exec_service (const char *service, const char *arg)
 	free (fifo);
 	free (file);
 
-	if (pid == -1) {
+	if (pid == -1)
 		eerror ("vfork: %s", strerror (errno));
-		return (pid);
-	}
+	
+	return (pid);
+}
 
-	if (rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
-		return (pid);
+int rc_waitpid (pid_t pid) {
+	int status = 0;
+	pid_t savedpid = pid;
 
-	savedpid = pid;
 	errno = 0;
 	do {
 		pid = waitpid (savedpid, &status, 0);
@@ -501,8 +500,8 @@ static pid_t _exec_service (const char *service, const char *arg)
 			return (-1);
 		}
 	} while (! WIFEXITED (status) && ! WIFSIGNALED (status)); 
-
-	return (0);
+	
+	return (WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE);
 }
 
 pid_t rc_stop_service (const char *service)
