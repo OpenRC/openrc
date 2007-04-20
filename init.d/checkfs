@@ -51,8 +51,7 @@ do_checkfs() {
 
 		if [ ${retval} -gt 3 ] ; then
 			eend 2 "Fsck could not correct all errors, manual repair needed"
-			rc-abort
-			exit 1
+			exec rc-abort || exit 1
 		fi
 	fi
 	
