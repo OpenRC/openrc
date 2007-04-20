@@ -469,22 +469,22 @@ static pid_t _exec_service (const char *service, const char *arg)
 		return (-1);
 	}
 
-	if ((pid = fork ()) == 0) {
-		char *myarg = rc_xstrdup (arg);
+	if ((pid = vfork ()) == 0) {
 		int e = 0;
-		execl (file, file, myarg, (char *) NULL);
+		execl (file, file, arg, (char *) NULL);
 		e = errno;
-		free (myarg);
 		unlink (fifo);
 		free (fifo);
-		eerrorx ("unable to exec `%s': %s", file, strerror (errno));
+		eerror ("unable to exec `%s': %s", file, strerror (errno));
+		free (file);
+		_exit (EXIT_FAILURE);
 	}
 
 	free (fifo);
 	free (file);
 
 	if (pid == -1) {
-		eerror ("unable to fork: %s", strerror (errno));
+		eerror ("vfork: %s", strerror (errno));
 		return (pid);
 	}
 

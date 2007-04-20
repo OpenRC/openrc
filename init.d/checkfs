@@ -51,13 +51,8 @@ do_checkfs() {
 
 		if [ ${retval} -gt 3 ] ; then
 			eend 2 "Fsck could not correct all errors, manual repair needed"
-			if [ "${RC_SYS}" = "VPS" ] ; then
-				halt -f
-			elif [ -x /sbin/sulogin ] ; then
-				sulogin "${CONSOLE}"
-			else
-				return 1
-			fi
+			rc-abort
+			exit 1
 		fi
 	fi
 	

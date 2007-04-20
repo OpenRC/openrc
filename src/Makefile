@@ -5,6 +5,9 @@ CC ?= gcc
 
 CFLAGS ?= -Wall -O2 -pipe
 
+check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+	  then echo "$(1)"; else echo "$(2)"; fi)
+
 # Loads of nice flags to ensure our code is good
 CFLAGS += -pedantic -std=c99 \
     -Wall -Wunused -Wimplicit -Wshadow -Wformat=2 \
@@ -48,7 +51,7 @@ RCLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 	      mark_service_stopping mark_service_stopped \
 	      mark_service_inactive mark_service_wasinactive \
 	      mark_service_coldplugged \
-	      get_options save_options \
+	      get_options save_options rc-abort \
 	      is_runlevel_start is_runlevel_stop service_started_daemon
 
 # Quick hack to make my life easier on BSD and Linux

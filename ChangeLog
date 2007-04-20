@@ -7,6 +7,8 @@
 
   20 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Added the rc-abort command, #175106 thanks to Daniel Drake.
+
     Plugins now run in a forked process for extra resliance.
 
   17 Apr 2007; Roy Marples <uberlord@gentoo.org>:

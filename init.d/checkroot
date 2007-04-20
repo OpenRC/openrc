@@ -104,8 +104,8 @@ start() {
 			retval=$?
 		else
 			eend 2 "Filesystem couldn't be fixed :("
-			[ "${RC_UNAME}" = "Linux" ] || return 1
-			sulogin "${CONSOLE}"
+			rc-abort
+			exit 1
 		fi
 		if [ ${retval} != "0" ] ; then
 			einfo "Unmounting filesystems"

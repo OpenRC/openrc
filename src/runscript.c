@@ -43,9 +43,6 @@ static char **types = NULL;
 static char **restart_services = NULL;
 static char **need_services = NULL;
 static char **env = NULL;
-static char *mycmd = NULL;
-static char *myarg1 = NULL;
-static char *myarg2 = NULL;
 static char *tmp = NULL;
 static char *softlevel = NULL;
 static bool sighup = false;
@@ -69,10 +66,12 @@ void setup_selinux (int argc, char **argv)
 
 	lib_handle = dlopen (SELINUX_LIB, RTLD_NOW | RTLD_GLOBAL);
 	if (lib_handle) {
-		/* FIXME: the below code generates the warning
-		   ISO C forbids assignment between function pointer and 'void *'
-		   which sucks ass
-http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html */
+		/*
+		 * FIXME: the below code generates the warning
+		 * ISO C forbids assignment between function pointer and 'void *'
+		 * which sucks ass
+		 * http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html
+		 */
 		selinux_run_init_old = dlsym (lib_handle, "selinux_runscript");
 		selinux_run_init_new = dlsym (lib_handle, "selinux_runscript2");
 
@@ -216,12 +215,6 @@ static void cleanup (void)
 		rc_strlist_free (need_services);
 	if (tmplist)
 		rc_strlist_free (tmplist);
-	if (mycmd)
-		free (mycmd);
-	if (myarg1)
-		free (myarg1);
-	if (myarg2)
-		free (myarg2);
 	if (ibsave)
 		free (ibsave);
 
@@ -273,26 +266,23 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 	   until our script returns. */
 	signal (SIGCHLD, NULL);
 
-	pid = fork();
+	pid = vfork();
 
 	if (pid == -1)
-		eerrorx ("%s: fork: %s", service, strerror (errno));
+		eerrorx ("%s: vfork: %s", service, strerror (errno));
 	if (pid == 0) {
-		mycmd = rc_xstrdup (service);
-		myarg1 = rc_xstrdup (arg1);
-		if (arg2)
-			myarg2 = rc_xstrdup (arg2);
-
 		if (rc_exists (RC_SVCDIR "runscript.sh")) {
-			execl (RC_SVCDIR "runscript.sh", mycmd, mycmd, myarg1, myarg2,
+			execl (RC_SVCDIR "runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
-			eerrorx ("%s: exec `" RC_SVCDIR "runscript.sh': %s",
+			eerror ("%s: exec `" RC_SVCDIR "runscript.sh': %s",
 					 service, strerror (errno));
+			_exit (EXIT_FAILURE);
 		} else {
-			execl (RC_LIBDIR "sh/runscript.sh", mycmd, mycmd, myarg1, myarg2,
+			execl (RC_LIBDIR "sh/runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
-			eerrorx ("%s: exec `" RC_LIBDIR "sh/runscript.sh': %s",
+			eerror ("%s: exec `" RC_LIBDIR "sh/runscript.sh': %s",
 					 service, strerror (errno));
+			_exit (EXIT_FAILURE);
 		}
 	}
 

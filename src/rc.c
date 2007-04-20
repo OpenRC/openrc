@@ -56,16 +56,14 @@ extern char **environ;
 static char *applet = NULL;
 static char **env = NULL;
 static char **newenv = NULL;
-static char **coldplugged_services;
+static char **coldplugged_services = NULL;
 static char **stop_services = NULL;
 static char **start_services = NULL;
 static rc_depinfo_t *deptree = NULL;
 static char **types = NULL;
-static char *mycmd = NULL;
-static char *myarg = NULL;
 static char *tmp = NULL;
 
-struct termios *termios_orig;
+struct termios *termios_orig = NULL;
 
 static void cleanup (void)
 {
@@ -76,24 +74,13 @@ static void cleanup (void)
 		free (termios_orig);
 	}
 
-	if (env)
-		rc_strlist_free (env);
-	if (newenv)
-		rc_strlist_free (newenv);
-	if (coldplugged_services)
-		rc_strlist_free (coldplugged_services);
-	if (stop_services)
-		rc_strlist_free (stop_services);
-	if (start_services)
-		rc_strlist_free (start_services);
-	if (deptree)
-		rc_free_deptree (deptree);
-	if (types)
-		rc_strlist_free (types);
-	if (mycmd)
-		free (mycmd);
-	if (myarg)
-		free (myarg);
+	rc_strlist_free (env);
+	rc_strlist_free (newenv);
+	rc_strlist_free (coldplugged_services);
+	rc_strlist_free (stop_services);
+	rc_strlist_free (start_services);
+	rc_free_deptree (deptree);
+	rc_strlist_free (types);
 
 	/* Clean runlevel start, stop markers */
 	if (rc_is_dir (RC_SVCDIR "softscripts.new"))
@@ -101,8 +88,7 @@ static void cleanup (void)
 	if (rc_is_dir (RC_SVCDIR "softscripts.old"))
 		rc_rm_dir (RC_SVCDIR "softscripts.old", true);
 
-	if (applet)
-		free (applet);
+	free (applet);
 }
 
 static int do_e (int argc, char **argv)
@@ -335,6 +321,10 @@ static char read_key (bool block)
 	struct termios termios;
 	char c = 0;
 
+	/* This locks up rc for some reason!
+	 * Why? it used to work fine... */
+	return 0;
+
 	if (! isatty (STDIN_FILENO))
 		return (false);
 
@@ -378,30 +368,51 @@ static void mark_interactive (void)
 static void sulogin (bool cont)
 {
 #ifdef __linux__
+	char *e = getenv ("RC_SYS");
+
+	/* VPS systems cannot do an sulogin */
+	if (e && strcmp (e, "VPS") == 0) {
+		execl ("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
+		eerrorx ("%s: unable to exec `/sbin/halt': %s", applet, strerror (errno));
+	}
+
 	if (cont) {
 		int status = 0;
-		pid_t pid = fork();
+		pid_t pid = vfork();
 
 		if (pid == -1)
-			eerrorx ("%s: fork: %s", applet, strerror (errno));
+			eerrorx ("%s: vfork: %s", applet, strerror (errno));
 		if (pid == 0) {
 			newenv = rc_filter_env ();
-			mycmd = rc_xstrdup ("/sbin/sulogin");
-			myarg = rc_xstrdup (getenv ("CONSOLE"));
-			execle (mycmd, mycmd, myarg, (char *) NULL, newenv);
-			eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
+			execl ("/sbin/sulogin", "/sbin/sulogin",
+				   getenv ("CONSOLE"), (char *) NULL, newenv);
+			eerror ("%s: unable to exec `/sbin/sulogin': %s", applet,
+					strerror (errno));
+			_exit (EXIT_FAILURE);
 		}
 		waitpid (pid, &status, 0);
 	} else {
 		newenv = rc_filter_env ();
-		mycmd = rc_xstrdup ("/sbin/sulogin");
-		myarg = rc_xstrdup (getenv ("CONSOLE"));
-		execle (mycmd, mycmd, myarg, (char *) NULL, newenv);
+		execl ("/sbin/sulogin", "/sbin/sulogin",
+			   getenv ("CONSOLE"), (char *) NULL, newenv);
 		eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
 	}
 #else
-	/* Appease gcc */
 	exit (cont ? EXIT_FAILURE : EXIT_SUCCESS);
+#endif
+}
+
+static void single_user (void)
+{
+#ifdef __linux__
+	execl ("/sbin/telinit", "/sbin/telinit", "S", (char *) NULL);
+	eerrorx ("%s: unable to exec `/sbin/telinit': %s",
+			 applet, strerror (errno));
+#else
+	if (kill (1, SIGTERM) != 0)
+		eerrorx ("%s: unable to send SIGTERM to init (pid 1): %s",
+				 applet, strerror (errno));
+	exit (EXIT_SUCCESS);
 #endif
 }
 
@@ -457,6 +468,18 @@ static void handle_signal (int sig)
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGQUIT");
 			eerrorx ("%s: caught %s, aborting", applet, signame);
+		case SIGUSR1:
+			eerror ("rc: Aborting!");
+			/* Kill any running services we have started */
+			signal (SIGTERM, SIG_IGN);
+			killpg (getpgrp (), SIGTERM);
+
+			/* If we're in boot runlevel then change into single-user mode */
+			if (strcmp (rc_get_runlevel (), RC_LEVEL_BOOT) == 0)
+				single_user ();
+
+			exit (EXIT_FAILURE);
+			break;
 
 		default:
 			eerror ("%s: caught unknown signal %d", applet, sig);
@@ -480,6 +503,7 @@ int main (int argc, char **argv)
 	bool interactive = false;
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	char ksoftbuffer [PATH_MAX];
+	char pidstr[6];
 
 	if (argv[0])
 		applet = rc_xstrdup (basename (argv[0]));
@@ -509,6 +533,19 @@ int main (int argc, char **argv)
 	else if (strcmp (applet, "is_runlevel_stop") == 0)
 		exit (rc_runlevel_stopping () ? 0 : 1);
 
+	if (strcmp (applet, "rc-abort") == 0) {
+		char *p = getenv ("RC_PID");
+		pid_t pid = 0;
+
+		if (p && sscanf (p, "%d", &pid) == 1) {
+			if (kill (pid, SIGUSR1) != 0)
+				eerrorx ("rc-abort: failed to signal parent %d: %s",
+						 pid, strerror (errno));
+			exit (EXIT_SUCCESS);
+		}
+		exit (EXIT_FAILURE);
+	}
+
 	if (strcmp (applet, "rc" ) != 0)
 		eerrorx ("%s: unknown applet", applet);
 
@@ -520,10 +557,14 @@ int main (int argc, char **argv)
 	atexit (cleanup);
 	newlevel = argv[0];
 
+	/* Start a new process group */
+	setpgrp();
+
 	/* Setup a signal handler */
 	signal (SIGINT, handle_signal);
 	signal (SIGQUIT, handle_signal);
 	signal (SIGTERM, handle_signal);
+	signal (SIGUSR1, handle_signal);
 
 	/* Ensure our environment is pure
 	   Also, add our configuration to it */
@@ -563,6 +604,10 @@ int main (int argc, char **argv)
 	/* Enable logging */
 	setenv ("RC_ELOG", "rc", 1);
 
+	/* Export our PID */
+	snprintf (pidstr, sizeof (pidstr), "%d", getpid ());
+	setenv ("RC_PID", pidstr, 1);
+
 	interactive = rc_exists (INTERACTIVE);
 	rc_plugin_load ();
 
@@ -599,14 +644,14 @@ int main (int argc, char **argv)
 				setenv ("RC_SOFTLEVEL", newlevel, 1);
 				rc_plugin_run (rc_hook_runlevel_start_in, newlevel);
 
-				if ((pid = fork ()) == -1)
-					eerrorx ("%s: fork: %s", applet, strerror (errno));
+				if ((pid = vfork ()) == -1)
+					eerrorx ("%s: vfork: %s", applet, strerror (errno));
 
 				if (pid == 0) {
-					mycmd = rc_xstrdup (INITSH);
-					execl (mycmd, mycmd, (char *) NULL);
-					eerrorx ("%s: unable to exec `" INITSH "': %s",
-							 applet, strerror (errno));
+					execl (INITSH, INITSH, (char *) NULL);
+					eerror ("%s: unable to exec `" INITSH "': %s",
+							applet, strerror (errno));
+					_exit (EXIT_FAILURE);
 				}
 
 				do {
@@ -695,9 +740,7 @@ int main (int argc, char **argv)
 					eerrorx ("%s: couldn't find a runlevel called `%s'",
 							 applet, newlevel);
 				} else {
-					mycmd = rc_xstrdup ("/sbin/telinit");
-					myarg = rc_xstrdup (lvl);
-					execl (mycmd, mycmd, myarg, (char *) NULL);
+					execl ("/sbin/telinit", "/sbin/telinit", lvl, (char *) NULL);
 					eerrorx ("%s: unable to exec `/sbin/telinit': %s",
 							 applet, strerror (errno));
 				}
@@ -712,11 +755,6 @@ int main (int argc, char **argv)
 	   rc reboot
 	   */
 	if (newlevel) {
-		if (myarg) {
-			free (myarg);
-			myarg = NULL;
-		}
-
 		if (strcmp (newlevel, RC_LEVEL_SINGLE) == 0) {
 			if (! RUNLEVEL ||
 				(strcmp (RUNLEVEL, "S") != 0 &&
@@ -724,44 +762,29 @@ int main (int argc, char **argv)
 			{
 				/* Remember the current runlevel for when we come back */
 				set_ksoftlevel (runlevel);
-#ifdef __linux__
-				mycmd = rc_xstrdup ("/sbin/telinit");
-				myarg = rc_xstrdup ("S");
-				execl (mycmd, mycmd, myarg, (char *) NULL);
-				eerrorx ("%s: unable to exec `/%s': %s",
-						 mycmd, applet, strerror (errno));
-#else
-				if (kill (1, SIGTERM) != 0)
-					eerrorx ("%s: unable to send SIGTERM to init (pid 1): %s",
-							 applet, strerror (errno));
-				exit (EXIT_SUCCESS);
-#endif
+				single_user ();
 			}
 		} else if (strcmp (newlevel, RC_LEVEL_REBOOT) == 0) {
 			if (! RUNLEVEL ||
 				strcmp (RUNLEVEL, "6") != 0)
 			{
-				mycmd = rc_xstrdup ("/sbin/shutdown");
-				myarg = rc_xstrdup ("-r");
-				tmp = rc_xstrdup ("now");
-				execl (mycmd, mycmd, myarg, tmp, (char *) NULL);
-				eerrorx ("%s: unable to exec `%s': %s",
-						 mycmd, applet, strerror (errno));
+				execl ("/sbin/shutdown", "/sbin/shutdown", "-r", "now", (char *) NULL);
+				eerrorx ("%s: unable to exec `/sbin/shutdown': %s",
+						 applet, strerror (errno));
 			}
 		} else if (strcmp (newlevel, RC_LEVEL_SHUTDOWN) == 0) {
 			if (! RUNLEVEL ||
 				strcmp (RUNLEVEL, "0") != 0)
 			{
-				mycmd = rc_xstrdup ("/sbin/shutdown");
-#ifdef __linux__
-				myarg = rc_xstrdup ("-h");
+				execl ("/sbin/shutdown", "/sbin/shutdown",
+#ifdef __linux
+					   "-h",
 #else
-				myarg = rc_xstrdup ("-p");
+					   "-p",
 #endif
-				tmp = rc_xstrdup ("now");
-				execl (mycmd, mycmd, myarg, tmp, (char *) NULL);
-				eerrorx ("%s: unable to exec `%s': %s",
-						 mycmd, applet, strerror (errno));
+					   "now", (char *) NULL);
+				eerrorx ("%s: unable to exec `/sbin/shutdown': %s",
+						 applet, strerror (errno));
 			}
 		}
 	}
@@ -1060,9 +1083,7 @@ int main (int argc, char **argv)
 	if (strcmp (runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
 		strcmp (runlevel, RC_LEVEL_REBOOT) == 0)
 	{
-		mycmd = rc_xstrdup (HALTSH);
-		myarg = rc_xstrdup (runlevel);
-		execl (mycmd, mycmd, myarg, (char *) NULL);
+		execl (HALTSH, HALTSH, runlevel, (char *) NULL);
 		eerrorx ("%s: unable to exec `%s': %s",
 				 applet, HALTSH, strerror (errno));
 	}
