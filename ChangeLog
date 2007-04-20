@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  20 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Plugins now run in a forked process for extra resliance.
+
   17 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     Fix bridge, vlan and bonding modules to work together, #174792.

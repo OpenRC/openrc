@@ -15,6 +15,9 @@
 
 #define SOFTLEVEL	RC_SVCDIR "softlevel"
 
+/* File stream used for plugins to write environ vars to */
+FILE *rc_environ_fd = NULL;
+
 static const char *rc_service_state_names[] = {
 	"started",
 	"stopped",

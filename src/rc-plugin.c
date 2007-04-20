@@ -6,6 +6,8 @@
    */
 
 #include <dlfcn.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,12 +45,7 @@ void rc_plugin_load (void)
 	files = rc_ls_dir (NULL, RC_PLUGINDIR, 0);
 	STRLIST_FOREACH (files, file, i) {
 		char *p = rc_strcatpaths (RC_PLUGINDIR, file, NULL);
-		/*
-		 * We load the use RTLD_NOW so that we know it works
-		 * as if we have any unknown symbols when we run then the
-		 * program bails out in rc_plugin_run which is very very bad.
-		 */
-		void *h = dlopen (p, RTLD_NOW);
+		void *h = dlopen (p, RTLD_LAZY);
 		char *func;
 		void *f;
 		int len;
@@ -94,9 +91,67 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 	plugin_t *plugin = plugins;
 
 	while (plugin) {
-		if (plugin->hook)
-			plugin->hook (hook, value);
+		if (plugin->hook) {
+			int i;
+			int flags;
+			int pfd[2];
+			pid_t pid;
 
+			/* We create a pipe so that plugins can affect our environment
+			 * vars, which in turn influence our scripts. */
+			if (pipe (pfd) == -1) {
+				eerror ("pipe: %s", strerror (errno));
+				return;
+			}
+
+			/* Stop any scripts from inheriting us.
+			 * This is actually quite important as without this, the splash
+			 * plugin will probably hang when running in silent mode. */
+			for (i = 0; i < 2; i++)
+				if ((flags = fcntl (pfd[i], F_GETFD, 0)) < 0 ||
+					fcntl (pfd[i], F_SETFD, flags | FD_CLOEXEC) < 0)
+					eerror ("fcntl: %s", strerror (errno));
+
+			/* We run the plugin in a new process so we never crash
+			 * or otherwise affected by it */
+			if ((pid = fork ()) == -1) {
+				eerror ("fork: %s", strerror (errno));
+				return;
+			}
+
+			if (pid == 0) {
+				int retval;
+
+				close (pfd[0]);
+				rc_environ_fd = fdopen (pfd[1], "w");
+				retval = plugin->hook (hook, value);
+				fclose (rc_environ_fd);
+				rc_environ_fd = NULL;
+				_exit (retval);
+			} else {
+				char buffer[RC_LINEBUFFER];
+				char *token;
+				char *p;
+
+				close (pfd[1]);
+				memset (buffer, 0, sizeof (buffer));
+
+				/* Not the best implementation in the world.
+				 * We should be able to handle >1 env var.
+				 * Maybe split the strings with a NULL character? */
+				while (read (pfd[0], buffer, sizeof (buffer)) > 0) {
+					p = buffer;
+					token = strsep (&p, "=");
+					if (token) {
+						unsetenv (token);
+						if (p)
+							setenv (token, p, 1);
+					}
+				}
+
+				close (pfd[0]);
+			}
+		}
 		plugin = plugin->next;
 	}
 }

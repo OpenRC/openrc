@@ -1120,8 +1120,7 @@ interactive_option:
 	}
 
 	/* Wait for our services to finish */
-	if (rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
-		wait_for_services ();
+	wait_for_services ();
 
 	rc_plugin_run (rc_hook_runlevel_start_out, runlevel);
 

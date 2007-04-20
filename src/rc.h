@@ -149,6 +149,10 @@ typedef enum
 	rc_hook_service_start_out
 } rc_hook_t;
 
+/* Plugins should write FOO=BAR to this fd to set any environment variables
+ * they wish. At this time we only support the setting of one env var. */
+extern FILE *rc_environ_fd;
+
 /* RC utility functions.
    Although not directly related to RC in general, they are used by RC
    itself and the supporting applications. */
