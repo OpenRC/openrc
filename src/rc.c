@@ -320,11 +320,7 @@ static char read_key (bool block)
 {
 	struct termios termios;
 	char c = 0;
-
-	/* This locks up rc for some reason!
-	 * Why? it used to work fine... */
-	return 0;
-
+	
 	if (! isatty (STDIN_FILENO))
 		return (false);
 
@@ -456,6 +452,8 @@ static void handle_signal (int sig)
 {
 	int serrno = errno;
 	char signame[10] = { '\0' };
+	char *run;
+	char *prev;
 
 	switch (sig) {
 		case SIGINT:
@@ -474,8 +472,14 @@ static void handle_signal (int sig)
 			signal (SIGTERM, SIG_IGN);
 			killpg (getpgrp (), SIGTERM);
 
-			/* If we're in boot runlevel then change into single-user mode */
-			if (strcmp (rc_get_runlevel (), RC_LEVEL_BOOT) == 0)
+			/* Notify plugins we are aborting */
+			rc_plugin_run (rc_hook_abort, "rc");
+
+			run = getenv ("RUNLEVEL");
+			prev = getenv ("PREVLEVEL");
+			/* Only drop into single user mode if we're booting */
+			if ((prev && strcmp (prev, "S") == 0) ||
+				(run && strcmp (run, "S") == 0))
 				single_user ();
 
 			exit (EXIT_FAILURE);
@@ -556,9 +560,6 @@ int main (int argc, char **argv)
 
 	atexit (cleanup);
 	newlevel = argv[0];
-
-	/* Start a new process group */
-	setpgrp();
 
 	/* Setup a signal handler */
 	signal (SIGINT, handle_signal);

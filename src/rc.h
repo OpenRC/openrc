@@ -139,6 +139,9 @@ typedef enum
 	rc_hook_runlevel_start_in = 5,
 	rc_hook_runlevel_start_out = 8,
 	/* We reserved a few numbers if we need rc_runlevel_stop_now and done */
+	rc_hook_abort = 99,
+	/* We send the abort if an init script requests we abort and drop
+	 * into single user mode if system not fully booted */
 	rc_hook_service_stop_in = 101,
 	rc_hook_service_stop_now,
 	rc_hook_service_stop_done,
