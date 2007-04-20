@@ -280,13 +280,13 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 			execl (RC_SVCDIR "runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
 			eerror ("%s: exec `" RC_SVCDIR "runscript.sh': %s",
-					 service, strerror (errno));
+					service, strerror (errno));
 			_exit (EXIT_FAILURE);
 		} else {
 			execl (RC_LIBDIR "sh/runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
 			eerror ("%s: exec `" RC_LIBDIR "sh/runscript.sh': %s",
-					 service, strerror (errno));
+					service, strerror (errno));
 			_exit (EXIT_FAILURE);
 		}
 	}

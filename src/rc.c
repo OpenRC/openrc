@@ -335,7 +335,7 @@ static char read_key (bool block)
 {
 	struct termios termios;
 	char c = 0;
-	
+
 	if (! isatty (STDIN_FILENO))
 		return (false);
 
@@ -398,7 +398,7 @@ static void sulogin (bool cont)
 			newenv = rc_filter_env ();
 #ifdef __linux__
 			execle ("/sbin/sulogin", "/sbin/sulogin",
-				   getenv ("CONSOLE"), (char *) NULL, newenv);
+					getenv ("CONSOLE"), (char *) NULL, newenv);
 			eerror ("%s: unable to exec `/sbin/sulogin': %s", applet,
 					strerror (errno));
 #else
@@ -413,7 +413,7 @@ static void sulogin (bool cont)
 #ifdef __linux
 		newenv = rc_filter_env ();
 		execle ("/sbin/sulogin", "/sbin/sulogin",
-			   getenv ("CONSOLE"), (char *) NULL, newenv);
+				getenv ("CONSOLE"), (char *) NULL, newenv);
 		eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
 #else
 		exit (EXIT_SUCCESS);
@@ -528,7 +528,7 @@ static void handle_signal (int sig)
 			if (pid > 0)
 				remove_pid (pid);
 			break;
-					
+
 		case SIGINT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGINT");
@@ -542,21 +542,21 @@ static void handle_signal (int sig)
 		case SIGUSR1:
 			eerror ("rc: Aborting!");
 			/* Kill any running services we have started */
-		
+
 			signal (SIGCHLD, SIG_IGN);
 			for (pl = service_pids; pl; pl = pl->next)
 				kill (pl->pid, SIGTERM);
-			
+
 			/* Notify plugins we are aborting */
 			rc_plugin_run (rc_hook_abort, "rc");
-	
+
 			/* Only drop into single user mode if we're booting */
 			run = getenv ("RUNLEVEL");
 			prev = getenv ("PREVLEVEL");
 			if ((prev && strcmp (prev, "S") == 0) ||
-					(run &&
-					 (strcmp (run, "S") == 0 ||
-					 strcmp (run, "1") == 0)))
+				(run &&
+				 (strcmp (run, "S") == 0 ||
+				  strcmp (run, "1") == 0)))
 				single_user ();
 
 			exit (EXIT_FAILURE);
