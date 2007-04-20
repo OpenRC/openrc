@@ -75,21 +75,32 @@ start() {
 
 		# Setup Kernel Support for miscellaneous Binary Formats
 		if [ -d /proc/sys/fs/binfmt_misc ] ; then
-			if [ -n "$(grep -Fow binfmt_misc /proc/filesystems)" ] ; then
+			if grep -qs binfmt_misc /proc/filesystems ; then
 				ebegin "Mounting misc binary format filesystem"
 				mount -t binfmt_misc -o nodev,noexec,nosuid \
 					binfmt_misc /proc/sys/fs/binfmt_misc
 				eend $?
 			fi
 		fi
+
+		# Setup Kernel Support for securityfs
 		if [ -d /sys/kernel/security ] ; then
-			if [ -n "$(grep -Fow securityfs /proc/filesystems)" ] ; then
+			if grep -qs securityfs /proc/filesystems ; then
 				ebegin "Mounting security filesystem"
-					mount -t securityfs securityfs /sys/kernel/security \
+				mount -t securityfs securityfs /sys/kernel/security \
 					-o nodev,noexec,nosuid
 				eend $?
 			fi
-		fi	
+		fi
+
+		# Setup Kernel Support for SELinux
+		if [ -d /selinux ] ; then
+			if grep -qs selinuxfs /proc/filesystems ; then
+				ebegin "Mounting SELinux filesystem"
+				mount -t selinuxfs selinuxfs /selinux
+				eend $?
+			fi
+		fi
 	fi
 
 	# We do our swapping here instead of rc so we can get urandom started
