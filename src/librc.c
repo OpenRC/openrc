@@ -468,11 +468,9 @@ static pid_t _exec_service (const char *service, const char *arg)
 	}
 
 	if ((pid = vfork ()) == 0) {
-		int e = 0;
 		execl (file, file, arg, (char *) NULL);
-		e = errno;
-		unlink (fifo);
 		eerror ("unable to exec `%s': %s", file, strerror (errno));
+		unlink (fifo);
 		_exit (EXIT_FAILURE);
 	}
 
