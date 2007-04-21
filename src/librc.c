@@ -472,9 +472,7 @@ static pid_t _exec_service (const char *service, const char *arg)
 		execl (file, file, arg, (char *) NULL);
 		e = errno;
 		unlink (fifo);
-		free (fifo);
 		eerror ("unable to exec `%s': %s", file, strerror (errno));
-		free (file);
 		_exit (EXIT_FAILURE);
 	}
 
