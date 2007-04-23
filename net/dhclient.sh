@@ -41,11 +41,9 @@ dhclient_start() {
 
 	# Bring up DHCP for this interface
 	ebegin "Running dhclient"
-	set -x
 	echo "${dhconf}" | start-stop-daemon --start --exec /sbin/dhclient \
 		--pidfile "${pidfile}" -- ${args} -q -1 -pf "${pidfile}" "${IFACE}"
 	eend $? || return 1
-	set +x
 
 	_show_address
 	return 0
