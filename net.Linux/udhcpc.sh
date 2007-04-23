@@ -75,7 +75,7 @@ udhcpc_start() {
 }
 
 udhcpc_stop() {
-	local pidfile="/var/run/udhcpc-${IFACE}.pid" opts= sig="TERM"
+	local pidfile="/var/run/udhcpc-${IFACE}.pid" opts=
 	[ ! -f "${pidfile}" ] && return 0
 
 	# Get our options
@@ -85,15 +85,15 @@ udhcpc_stop() {
 	ebegin "Stopping udhcpc on ${IFACE}"
 	case " ${opts} " in
 		*" release "*)
-			sig="USR2"
+			start-stop-daemon --stop --quiet --oknodo --signal USR2 \
+				--exec /sbin/udhcpc --pidfile "${pidfile}"
 			if [ -f /var/cache/udhcpc-"${IFACE}".lease ] ; then
 				rm -f /var/cache/udhcpc-"${IFACE}".lease
 			fi
 			;;
 	esac
 
-	start-stop-daemon --stop --quiet --signal "${sig}" \
-		--exec /sbin/udhcpc --pidfile "${pidfile}"
+	start-stop-daemon --stop --exec /sbin/udhcpc --pidfile "${pidfile}"
 	eend $?
 }
 
