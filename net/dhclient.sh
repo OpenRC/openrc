@@ -33,7 +33,7 @@ dhclient_start() {
 	if ${sendhost} ; then
 		local hname="$(hostname)"
 		if [ "${hname}" != "(none)" -a "${hname}" != "localhost" ]; then
-			dhconf="${dhconf} interface \"${iface}\" {"
+			dhconf="${dhconf} interface \"${IFACE}\" {"
 			dhconf="${dhconf} send host-name \"${hname}\";"
 			dhconf="${dhconf}}"
 		fi
@@ -41,9 +41,11 @@ dhclient_start() {
 
 	# Bring up DHCP for this interface
 	ebegin "Running dhclient"
+	set -x
 	echo "${dhconf}" | start-stop-daemon --start --exec /sbin/dhclient \
-		--pidfile "${pidfile}" -- ${opts} -q -1 -pf "${pidfile}" "${IFACE}"
+		--pidfile "${pidfile}" -- ${args} -q -1 -pf "${pidfile}" "${IFACE}"
 	eend $? || return 1
+	set +x
 
 	_show_address
 	return 0
