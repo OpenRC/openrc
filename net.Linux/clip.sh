@@ -67,17 +67,15 @@ atmclip_svcs_stop() {
 }
 
 are_atmclip_svcs_running() {
-    is_daemon_running atmarpd || return 1
-    if [[ ${clip_full:-yes} == "yes" ]]; then
-		is_daemon_running ilmid	  || return 1
-		is_daemon_running atmsigd || return 1
-    fi
+
+	start-stop-daemon --test --stop --pidfile /var/run/atmarpd.pid || return 1
+
+	if [ "${clip_full:-yes}" = "yes" ]; then
+		start-stop-daemon --test --stop --pidfile /var/run/ilmid.pid || return 1
+		start-stop-daemon --test --stop --pidfile /var/run/atmsigd.pid || return 1
+	fi
 
     return 0
-}
-
-atmarp() {
-    /usr/sbin/atmarp "$@"
 }
 
 clip_pre_start() {
@@ -175,7 +173,7 @@ clip_pre_stop() {
 	{
 		read left && \
 		while read itf t encp idle ipaddr left ; do
-			if [ "${itf}" = "${IFACE}" ]]; then
+			if [ "${itf}" = "${IFACE}" ]; then
 				ebegin "Removing PVC to ${ipaddr}"
 				atmarp -d "${ipaddr}"
 				eend $?
