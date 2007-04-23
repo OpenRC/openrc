@@ -58,10 +58,10 @@ start() {
 		[ -n "${DUMPKEYS_CHARSET}" ] && dumpkey_opts="-c ${DUMPKEYS_CHARSET}"
 
 		dumpkeys ${dumpkey_opts} | loadkeys --unicode
-		termencoding="\033%%G"
+		termencoding='\033%%G'
 		termmsg="UTF-8"
 	else
-		termencoding="\033(K"
+		termencoding='\033(K'
 		termmsg="ASCII"
 	fi
 	local n=1 ttydev=
