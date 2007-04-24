@@ -3,7 +3,7 @@
 # Set to "yes" if you want the rc system to try and start services
 # in parallel for a slight speed improvement. NOTE: When enabled
 # init script output is buffered and displayed in one go when finished.
-RC_PARALLEL_STARTUP="no"
+RC_PARALLEL="no"
 
 # Set RC_INTERACTIVE to "yes" and you'll be able to press the I key during
 # boot so you can choose to start specific services. Set to "no" to disable

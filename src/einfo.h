@@ -64,8 +64,12 @@ int ewendv (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
 void eindentv (void);
 void eoutdentv (void);
 
-/* If RC_EBUFFER is set, then we buffer all the above commands.
-   As such, we need to flush the buffer when done. */
-void eflush(void);
+/* Handy utils to buffer stdout and stderr so our output is always
+ * sane when forking around.
+ * Don't depend on these being here though as we may take a different
+ * approach at a later date. */
+void ebuffer (const char *file);
+void eflush (void);
+void eclose (void);
 
 #endif

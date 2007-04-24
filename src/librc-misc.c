@@ -644,6 +644,20 @@ char **rc_config_env (char **env)
 	} else
 		env = rc_strlist_add (env, "RC_DEFAULTLEVEL=" RC_LEVEL_DEFAULT);
 
+	/* Store the name of the tty that stdout is connected to
+	 * We do this so our init scripts can call eflush without any knowledge
+	 * of our fd's */
+	if (isatty (fileno (stdout))) {
+		if ((p = rc_xstrdup (ttyname (fileno (stdout))))) {
+			i = strlen ("RC_TTY=") + strlen (p) + 1;
+			line = rc_xmalloc (sizeof (char *) * i);
+			snprintf (line, i, "RC_TTY=%s", p);
+			env = rc_strlist_add (env, line);
+			free (p);
+			free (line);
+		}
+	}
+
 	memset (sys, 0, sizeof (sys));
 
 	/* Linux can run some funky stuff like Xen, VServer, UML, etc

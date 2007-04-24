@@ -199,7 +199,7 @@ static void uncoldplug (char *service)
 static void cleanup (void)
 {
 	/* Flush our buffered output if any */
-	eflush ();
+	eclose ();
 
 	if (hook_out)
 		rc_plugin_run (hook_out, applet);
@@ -266,6 +266,10 @@ static void cleanup (void)
 static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 {
 	bool retval;
+
+	/* To ensure any output has hit our ebuffer */
+	fflush (stdout);
+	fflush (stderr);
 
 	/* We need to disable our child signal handler now so we block
 	   until our script returns. */
@@ -466,7 +470,7 @@ static void svc_start (const char *service, bool deps)
 			STRLIST_FOREACH (services, svc, i)
 				if (rc_service_state (svc, rc_service_stopped)) {
 					pid_t pid = rc_start_service (svc);
-					if (! rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
+					if (! rc_is_env ("RC_PARALLEL", "yes"))
 						rc_waitpid (pid);
 				}
 
@@ -670,7 +674,7 @@ static void svc_stop (const char *service, bool deps)
 					rc_service_state (svc, rc_service_inactive))
 				{
 					pid_t pid = rc_stop_service (svc);
-					if (! rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
+					if (! rc_is_env ("RC_PARALLEL", "yes"))
 						rc_waitpid (pid);
 					tmplist = rc_strlist_add (tmplist, svc);
 				}
@@ -883,7 +887,7 @@ int main (int argc, char **argv)
 		softlevel = rc_get_runlevel ();
 
 		/* If not called from RC or another service then don't be parallel */
-		unsetenv ("RC_PARALLEL_STARTUP");
+		unsetenv ("RC_PARALLEL");
 	}
 
 	setenv ("RC_ELOG", service, 1);
@@ -895,13 +899,13 @@ int main (int argc, char **argv)
 	snprintf (pid, sizeof (pid), "%d", (int) getpid ());
 	setenv ("RC_RUNSCRIPT_PID", pid, 1);
 
-	if (rc_is_env ("RC_PARALLEL_STARTUP", "yes")) {
+	if (rc_is_env ("RC_PARALLEL", "yes")) {
 		char ebname[PATH_MAX];
 		char *eb;
 
 		snprintf (ebname, sizeof (ebname), "%s.%s", applet, pid);
 		eb = rc_strcatpaths (RC_SVCDIR "ebuffer", ebname, (char *) NULL);
-		setenv ("RC_EBUFFER", eb, 1);
+		ebuffer (eb);
 		free (eb);
 	}
 

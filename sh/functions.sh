@@ -6,22 +6,14 @@
 RC_GOT_FUNCTIONS="yes"
 
 eindent() {
-	if [ -n "${RC_EBUFFER}" ] ; then
-		"${RC_LIBDIR}"/bin/eindent
-	else
-		RC_EINDENT=$((${RC_EINDENT:-0} + 2))
-		[ "${RC_EINDENT}" -gt 40 ] && RC_EINDENT=40
-		export RC_EINDENT
-	fi
+	RC_EINDENT=$((${RC_EINDENT:-0} + 2))
+	[ "${RC_EINDENT}" -gt 40 ] && RC_EINDENT=40
+	export RC_EINDENT
 }
 
 eoutdent() {
-	if [ -n "${RC_EBUFFER}" ] ; then
-		"${RC_LIBDIR}"/bin/eoutdent
-	else
-		RC_EINDENT=$((${RC_EINDENT:-0} - 2))
-		[ "${RC_EINDENT}" -lt 0 ] && RC_EINDENT=0
-	fi
+	RC_EINDENT=$((${RC_EINDENT:-0} - 2))
+	[ "${RC_EINDENT}" -lt 0 ] && RC_EINDENT=0
 	return 0
 }
 

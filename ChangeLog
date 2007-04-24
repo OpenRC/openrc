@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  24 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+    We now buffer stdout and stderr to a file and flush that when running in
+	parallel. RC_PARALLEL_STARTUP has been renamed to RC_PARALLEL.
+
   20 Apr 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Automatically mount selinuxfs on /selinux in localmount.

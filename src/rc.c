@@ -462,13 +462,7 @@ static void set_ksoftlevel (const char *runlevel)
 static void wait_for_services ()
 {
 	int status = 0;
-	struct timeval tv;
 	while (wait (&status) != -1);
-
-	/* Wait for a little bit to flush our ebuffer */
-	tv.tv_usec = 50000;
-	tv.tv_sec = 0;
-	select (0, NULL, NULL, NULL, &tv);
 }
 
 static void add_pid (pid_t pid)
@@ -1077,7 +1071,7 @@ int main (int argc, char **argv)
 		/* We always stop the service when in these runlevels */
 		if (going_down) {
 			pid_t pid = rc_stop_service (service);
-			if (pid > 0 && ! rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
+			if (pid > 0 && ! rc_is_env ("RC_PARALLEL", "yes"))
 				rc_waitpid (pid);
 		}
 
@@ -1141,7 +1135,7 @@ int main (int argc, char **argv)
 		/* After all that we can finally stop the blighter! */
 		if (! found) {
 			pid_t pid = rc_stop_service (service);
-			if (pid > 0 && ! rc_is_env ("RC_PARALLEL_STARTUP", "yes"))
+			if (pid > 0 && ! rc_is_env ("RC_PARALLEL", "yes"))
 				rc_waitpid (pid);
 		}
 	}
@@ -1227,7 +1221,7 @@ interactive_option:
 			if ((pid = rc_start_service (service)))
 				add_pid (pid);
 
-			if (! rc_is_env ("RC_PARALLEL_STARTUP", "yes")) {
+			if (! rc_is_env ("RC_PARALLEL", "yes")) {
 				rc_waitpid (pid);
 				remove_pid (pid);
 			}

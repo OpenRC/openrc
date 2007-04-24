@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -32,6 +33,7 @@ hidden_proto(eerror)
 hidden_proto(eerrorn)
 hidden_proto(eerrorx)
 hidden_proto(eflush)
+hidden_proto(eclose)
 hidden_proto(eindent)
 hidden_proto(eindentv)
 hidden_proto(einfo)
@@ -118,6 +120,11 @@ static const char *color_terms[] = {
 	NULL
 };
 
+/* We use this array to save the stdout/stderr fd's for buffering */
+static int stdfd[2] = {-1, -1};
+static FILE *ebfp = NULL;
+static char ebfile[PATH_MAX] = { '\0' };
+
 static bool is_env (const char *var, const char *val)
 {
 	char *v;
@@ -177,194 +184,125 @@ static int get_term_columns (void)
 	return (DEFAULT_COLS);
 }
 
-static int ebuffer (const char *cmd, int retval, const char *fmt, va_list ap)
+void ebuffer (const char *file)
 {
-	char *file = getenv ("RC_EBUFFER");
-	FILE *fp;
-	char buffer[RC_LINEBUFFER];
-	int l = 1;
+	/* Don't ebuffer if we don't have a file or we already are */
+	if (! file || stdfd[0] >= 0 || ! isatty (fileno (stdout)))
+		return;
 
-	if (! file || ! cmd || strlen (cmd) < 4)
-		return (0);
+	/* Save the current fd's */
+	stdfd[0] = dup (fileno (stdout));
+	stdfd[1] = dup (fileno (stderr));
 
-	if (! (fp = fopen (file, "a"))) {
+	if (! (ebfp = fopen (file, "w+"))) {
 		fprintf (stderr, "fopen `%s': %s\n", file, strerror (errno));
-		return (0);
+		return;
 	}
 
-	fprintf (fp, "%s %d ", cmd, retval);
+	snprintf (ebfile, sizeof (ebfile), "%s", file);
 
-	if (fmt) {
-		va_list apc;
-		va_copy (apc, ap);
-		l = vsnprintf (buffer, sizeof (buffer), fmt, apc);
-		fprintf (fp, "%d %s\n", l, buffer);
-		va_end (apc);
-	} else
-		fprintf (fp, "0\n");
+	fflush (stdout);
+	fflush (stderr);
 
-	fclose (fp);
-	return (l);
+	/* Now redirect stdout and stderr */
+	if ((dup2 (fileno (ebfp), fileno (stdout))) < 0)
+		fprintf (stderr, "dup2: %s", strerror (errno));
+	if ((dup2 (fileno (ebfp), fileno (stderr))) < 0)
+		fprintf (stderr, "dup2: %s", strerror (errno));
+
+	/* Store the filename in our environment so scripts can tell if we're
+	 * buffering or not */
+	unsetenv ("RC_EBUFFER");
+	setenv ("RC_EBUFFER", file, 1);
+
+	return;
 }
 
-typedef struct func
+static void _eflush (bool reopen)
 {
-	const char *name;
-	int (*efunc) (const char *fmt, ...);
-	int (*eefunc) (int retval, const char *fmt, ...);
-	void (*eind) (void);
-} func_t;
-
-static const func_t funcmap[] = {
-	{ "einfon", &einfon, NULL, NULL },
-	{ "ewarnn", &ewarnn, NULL, NULL},
-	{ "eerrorn", &eerrorn, NULL, NULL},
-	{ "einfo", &einfo, NULL, NULL },
-	{ "ewarn", &ewarn, NULL, NULL },
-	{ "eerror", &eerror, NULL, NULL },
-	{ "ebegin", &ebegin, NULL, NULL },
-	{ "eend", NULL, &eend, NULL },
-	{ "ewend", NULL, &ewend, NULL },
-	{ "eindent", NULL, NULL, &eindent },
-	{ "eoutdent", NULL, NULL, &eoutdent },
-	{ "einfovn", &einfovn, NULL, NULL },
-	{ "ewarnvn", &ewarnvn, NULL, NULL },
-	{ "einfov", &einfov, NULL, NULL },
-	{ "ewarnv", &ewarnv, NULL, NULL },
-	{ "ebeginv", &ebeginv, NULL, NULL },
-	{ "eendv", NULL, &eendv, NULL },
-	{ "ewendv", NULL, &ewendv, NULL },
-	{ "eindentv" ,NULL, NULL, &eindentv },
-	{ "eoutdentv", NULL, NULL, &eoutdentv },
-	{ NULL, NULL, NULL, NULL },
-};
-
-void eflush (void)
-{
-	FILE *fp;
-	char *file = getenv ("RC_EBUFFER");
 	char buffer[RC_LINEBUFFER];
-	char *cmd;
-	int retval = 0;
-	int length = 0;
-	char *token;
-	char *p;
-	struct stat buf;
-	pid_t pid;
-	char newfile[PATH_MAX];
-	int i = 1;
-
-	if (! file|| (stat (file, &buf) != 0)) {
-		errno = 0;
-		return;
+	int serrno = errno;
+	
+	/* eflush called from an init script? */
+	if (! ebfp) {
+		char *file = getenv ("RC_EBUFFER");
+		if (file)
+			ebfp = fopen (file, "a+");
 	}
 
-	/* Find a unique name for our file */
-	while (true) {
-		snprintf (newfile, sizeof (newfile), "%s.%d", file, i);
-		if (stat (newfile, &buf) != 0) {
-			if (rename (file, newfile))
-				fprintf (stderr, "rename `%s' `%s': %s\n", file, newfile,
-						 strerror (errno));
-			break;
+	if (! ebfp)
+		return;
+
+	fflush (stdout);
+	fflush (stderr);
+
+	/* Restore stdout and stderr now */
+	if (stdfd[0] >= 0) {
+		dup2 (stdfd[0], fileno (stdout));
+		dup2 (stdfd[1], fileno (stderr));
+	} else {
+		char *tty = getenv ("RC_TTY");
+		if (tty) {
+			freopen (tty, "w+", stdout);
+			dup2 (fileno (stdout), fileno (stderr));
 		}
-		i++;
 	}
-
-	/* We fork a child process here so we don't hold anything up */
-	if ((pid = fork ()) == -1) {
-		fprintf (stderr, "fork: %s", strerror (errno));
-		return;
-	}
-
-	if (pid != 0)
-		return;
 
 	/* Spin until we can lock the ebuffer */
 	while (true) {
 		struct timeval tv;
+		errno = 0;
+		if (mkfifo (EBUFFER_LOCK, 0700) == 0)
+			break;
+		if (errno != EEXIST)
+			eerror ("mkfifo `%s': %s\n", EBUFFER_LOCK, strerror (errno));
 		tv.tv_sec = 0;
 		tv.tv_usec = 20000;
 		select (0, NULL, NULL, NULL, &tv);
-		errno = 0;
-		if (link (newfile, EBUFFER_LOCK) == 0)
-			break;
-		if (errno != EEXIST)
-			fprintf (stderr, "link `%s' `%s': %s\n", newfile, EBUFFER_LOCK,
-					 strerror (errno));
 	}
+	errno = serrno;
 
-	if (! (fp = fopen (newfile, "r"))) {
-		fprintf (stderr, "fopen `%s': %s\n", newfile, strerror (errno));
-		return;
-	}
-
-	unsetenv ("RC_EBUFFER");
-
+	/* Dump the file to stdout */
 	memset (buffer, 0, RC_LINEBUFFER);
-	while (fgets (buffer, RC_LINEBUFFER, fp)) {
-		i = strlen (buffer) - 1;
-		if (i < 1)
-			continue;
-
-		if (buffer[i] == '\n')
-			buffer[i] = 0;
-
-		p = buffer;
-		cmd = strsep (&p, " ");
-		token = strsep (&p, " ");
-		if (sscanf (token, "%d", &retval) != 1) {
-			fprintf (stderr, "eflush `%s': not a number", token);
-			continue;
-		}
-		token = strsep (&p, " ");
-		if (sscanf (token, "%d", &length) != 1) {
-			fprintf (stderr, "eflush `%s': not a number", token);
-			continue;
-		}
-
-		i = 0;
-		while (funcmap[i].name) {
-			if (strcmp (funcmap[i].name, cmd) == 0) {
-				if (funcmap[i].efunc) {
-					if (p)
-						funcmap[i].efunc ("%s", p);
-					else
-						funcmap[i].efunc (NULL, NULL);
-				} else if (funcmap[i].eefunc) {
-					if (p)
-						funcmap[i].eefunc (retval, "%s", p);
-					else
-						funcmap[i].eefunc (retval, NULL, NULL);
-				} else if (funcmap[i].eind)
-					funcmap[i].eind ();
-				else
-					fprintf (stderr, "eflush `%s': no function defined\n", cmd);
-				break;
-			}
-			i++;
-		}
-
-		if (! funcmap[i].name)
-			fprintf (stderr, "eflush `%s': invalid function\n", cmd);
+	if (fseek (ebfp, (off_t) 0, SEEK_SET) < 0)
+		eerror ("fseek: %s", strerror (errno));
+	else {
+		while (fgets (buffer, RC_LINEBUFFER, ebfp))
+			printf ("%s", buffer);
 	}
-	fclose (fp);
-
+	fflush (stdout);
+	fflush (stderr);
+	
 	if (unlink (EBUFFER_LOCK))
-		fprintf (stderr, "unlink `%s': %s", EBUFFER_LOCK, strerror (errno));
+		eerror ("unlink `%s': %s", EBUFFER_LOCK, strerror (errno));
 
-	if (unlink (newfile))
-		fprintf (stderr, "unlink `%s': %s", newfile, strerror (errno));
+	if (reopen) {
+		ftruncate (fileno (ebfp), (off_t) 0);
+		fseek (ebfp, (off_t) 0, SEEK_SET); 
+		dup2 (fileno (ebfp), fileno (stdout));
+		dup2 (fileno (ebfp), fileno (stderr));
+	} else {
+		stdfd[0] = -1;
+		stdfd[1] = -1;
+		fclose (ebfp);
+		ebfp = NULL;
+		unlink (ebfile);
+		ebfile[0] = '\0';
+		unsetenv ("RC_EBUFFER");
+	}
 
-	_exit (EXIT_SUCCESS);
+	return;
+}
+
+void eflush () {
+	_eflush (true);
 }
 hidden_def(eflush)
 
-#define EBUFFER(_cmd, _retval, _fmt, _ap) { \
-	int _i = ebuffer (_cmd, _retval, _fmt, _ap); \
-	if (_i) \
-	return (_i); \
+void eclose () {
+	_eflush (false);
 }
+hidden_def(eclose)
 
 static void elog (int level, const char *fmt, va_list ap)
 {
@@ -401,7 +339,6 @@ static int _eindent (FILE *stream)
 
 	/* Terminate it */
 	memset (indent + amount, 0, 1);
-
 	return (fprintf (stream, "%s", indent));
 }
 
@@ -486,8 +423,7 @@ int einfon (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("einfon", 0, fmt, ap)))
-		retval = _einfovn (fmt, ap);
+	retval = _einfovn (fmt, ap);
 	va_end (ap);
 
 	return (retval);
@@ -503,8 +439,7 @@ int ewarnn (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("ewarnn", 0, fmt, ap)))
-		retval = _ewarnvn (fmt, ap);
+	retval = _ewarnvn (fmt, ap);
 	va_end (ap);
 
 	return (retval);
@@ -517,8 +452,7 @@ int eerrorn (const char *fmt, ...)
 	va_list ap;
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("eerrorn", 0, fmt, ap)))
-		retval = _eerrorvn (fmt, ap);
+	retval = _eerrorvn (fmt, ap);
 	va_end (ap);
 
 	return (retval);
@@ -534,10 +468,8 @@ int einfo (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("einfo", 0, fmt, ap))) {
-		retval = _einfovn (fmt, ap);
-		retval += printf ("\n");
-	}
+	retval = _einfovn (fmt, ap);
+	retval += printf ("\n");
 	va_end (ap);
 
 	return (retval);
@@ -554,10 +486,8 @@ int ewarn (const char *fmt, ...)
 
 	va_start (ap, fmt);
 	elog (LOG_WARNING, fmt, ap);
-	if (! (retval = ebuffer ("ewarn", 0, fmt, ap)))	{
-		retval = _ewarnvn (fmt, ap);
-		retval += printf ("\n");
-	}
+	retval = _ewarnvn (fmt, ap);
+	retval += printf ("\n");
 	va_end (ap);
 
 	return (retval);
@@ -569,6 +499,7 @@ void ewarnx (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
+	eclose ();
 	if (fmt && ! is_env ("RC_QUIET", "yes")) {
 		va_start (ap, fmt);
 		elog (LOG_WARNING, fmt, ap);
@@ -594,6 +525,7 @@ int eerror (const char *fmt, ...)
 	va_end (ap);
 	retval += fprintf (stderr, "\n");
 
+	eflush ();
 	return (retval);
 }
 hidden_def(eerror)
@@ -602,6 +534,7 @@ void eerrorx (const char *fmt, ...)
 {
 	va_list ap;
 
+	eclose ();
 	if (fmt) {
 		va_start (ap, fmt);
 		elog (LOG_ERR, fmt, ap);
@@ -609,6 +542,7 @@ void eerrorx (const char *fmt, ...)
 		va_end (ap);
 		printf ("\n");
 	}
+
 	exit (EXIT_FAILURE);
 }
 hidden_def(eerrorx)
@@ -622,11 +556,6 @@ int ebegin (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if ((retval = ebuffer ("ebegin", 0, fmt, ap))) {
-		va_end (ap);
-		return (retval);
-	}
-
 	retval = _einfovn (fmt, ap);
 	va_end (ap);
 	retval += printf (" ...");
@@ -667,15 +596,6 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
 	int col = 0;
 	FILE *fp;
 	va_list apc;
-	int eb;
-
-	if (fmt) {
-		va_copy (apc, ap);
-		eb = ebuffer (cmd, retval, fmt, apc);
-		va_end (apc);
-		if (eb)
-			return (retval);
-	}
 
 	if (fmt && retval != 0)	{
 		va_copy (apc, ap);
@@ -739,9 +659,6 @@ void eindent (void)
 	int amount = 0;
 	char num[10];
 
-	if (ebuffer ("eindent", 0, NULL, NULL))
-		return;
-
 	if (env) {
 		errno = 0;
 		amount = strtol (env, NULL, 0);
@@ -763,9 +680,6 @@ void eoutdent (void)
 	char *env = getenv ("RC_EINDENT");
 	int amount = 0;
 	char num[10];
-
-	if (ebuffer ("eoutdent", 0, NULL, NULL))
-		return;
 
 	if (! env)
 		return;
@@ -797,8 +711,7 @@ int einfovn (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("einfovn", 0, fmt, ap)))
-		retval = _einfovn (fmt, ap);
+	retval = _einfovn (fmt, ap);
 	va_end (ap);
 
 	return (retval);
@@ -816,8 +729,7 @@ int ewarnvn (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("ewarnvn", 0, fmt, ap)))
-		retval = _ewarnvn (fmt, ap);
+	retval = _ewarnvn (fmt, ap);
 	va_end (ap);
 
 	return (retval);
@@ -835,10 +747,8 @@ int einfov (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("einfov", 0, fmt, ap))) {
-		retval = _einfovn (fmt, ap);
-		retval += printf ("\n");
-	}
+	retval = _einfovn (fmt, ap);
+	retval += printf ("\n");
 	va_end (ap);
 
 	return (retval);
@@ -856,10 +766,8 @@ int ewarnv (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("ewarnv", 0, fmt, ap))) {
-		retval = _ewarnvn (fmt, ap);
-		retval += printf ("\n");
-	}
+	retval = _ewarnvn (fmt, ap);
+	retval += printf ("\n");
 	va_end (ap);
 
 	return (retval);
@@ -877,12 +785,10 @@ int ebeginv (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	if (! (retval = ebuffer ("ebeginv", 0, fmt, ap))) {
-		retval = _einfovn (fmt, ap);
-		retval += printf (" ...");
-		if (colour_terminal ())
-			retval += printf ("\n");
-	}
+	retval = _einfovn (fmt, ap);
+	retval += printf (" ...");
+	if (colour_terminal ())
+		retval += printf ("\n");
 	va_end (ap);
 
 	return (retval);
