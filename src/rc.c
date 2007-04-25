@@ -398,8 +398,7 @@ static void sulogin (bool cont)
 			eerrorx ("%s: vfork: %s", applet, strerror (errno));
 		if (pid == 0) {
 #ifdef __linux__
-			execle ("/sbin/sulogin", "/sbin/sulogin",
-					getenv ("CONSOLE"), (char *) NULL, newenv);
+			execle ("/sbin/sulogin", "/sbin/sulogin", (char *) NULL, newenv);
 			eerror ("%s: unable to exec `/sbin/sulogin': %s", applet,
 					strerror (errno));
 #else
@@ -412,8 +411,7 @@ static void sulogin (bool cont)
 		waitpid (pid, &status, 0);
 	} else {
 #ifdef __linux
-		execle ("/sbin/sulogin", "/sbin/sulogin",
-				getenv ("CONSOLE"), (char *) NULL, newenv);
+		execle ("/sbin/sulogin", "/sbin/sulogin", (char *) NULL, newenv);
 		eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
 #else
 		exit (EXIT_SUCCESS);

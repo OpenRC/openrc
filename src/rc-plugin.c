@@ -132,20 +132,23 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 				char buffer[RC_LINEBUFFER];
 				char *token;
 				char *p;
+				ssize_t nr;
 
 				close (pfd[1]);
 				memset (buffer, 0, sizeof (buffer));
 
-				/* Not the best implementation in the world.
-				 * We should be able to handle >1 env var.
-				 * Maybe split the strings with a NULL character? */
-				while (read (pfd[0], buffer, sizeof (buffer)) > 0) {
+				while ((nr = read (pfd[0], buffer, sizeof (buffer))) > 0) {
 					p = buffer;
-					token = strsep (&p, "=");
-					if (token) {
-						unsetenv (token);
-						if (p)
-							setenv (token, p, 1);
+					while (*p && p - buffer < nr) {
+						token = strsep (&p, "=");
+						if (token) {
+							unsetenv (token);
+							if (*p) {
+								setenv (token, p, 1);
+								p += strlen (p) + 1;
+							} else
+								p++;
+						}
 					}
 				}
 
