@@ -136,7 +136,7 @@ fi
 [ "$(KV_to_int "$(uname -r)")" -ge "$(KV_to_int "2.6.0")" ]
 K26=$?
 
-if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_NAME}" != "VPS" -a "${K26}" = "0" ] ; then
+if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" -a "${K26}" = "0" ] ; then
 	if [ -d /sys ] ; then
 		ebegin "Mounting sysfs at /sys"
 		mntcmd="$(fstabinfo --mountcmd /sys)"
