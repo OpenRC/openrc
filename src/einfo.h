@@ -64,6 +64,9 @@ int ewendv (int retval, const char *fmt, ...) EINFO_PRINTF (2, 3);
 void eindentv (void);
 void eoutdentv (void);
 
+/* Pointer to a string that is always prefixed to einfo/ewarn/error */
+void eprefix (const char *prefix);
+
 /* Handy utils to buffer stdout and stderr so our output is always
  * sane when forking around.
  * Don't depend on these being here though as we may take a different

@@ -1,6 +1,12 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  25 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+    We now have an alternative to buffering stdout and stderr.
+	RC_PREFIX="yes" will put the service name as a prefix to all output
+	made by the service. Thanks to Ciaran McCreesh for the idea.
+
   24 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     We now buffer stdout and stderr to a file and flush that when running in

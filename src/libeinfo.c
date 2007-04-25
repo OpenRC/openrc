@@ -125,6 +125,9 @@ static int stdfd[2] = {-1, -1};
 static FILE *ebfp = NULL;
 static char ebfile[PATH_MAX] = { '\0' };
 
+/* A pointer to a string to prefix to einfo/ewarn/eerror messages */
+static const char *_eprefix = NULL;
+
 static bool is_env (const char *var, const char *val)
 {
 	char *v;
@@ -182,6 +185,10 @@ static int get_term_columns (void)
 #endif
 
 	return (DEFAULT_COLS);
+}
+
+void eprefix (const char *prefix) {
+	_eprefix = prefix;
 }
 
 void ebuffer (const char *file)
@@ -379,16 +386,18 @@ const char *ecolor (einfo_color_t color) {
 hidden_def(ecolor)
 
 #define EINFOVN(_file, _color) \
-fprintf (_file, " %s*%s ", ecolor (_color), ecolor (ecolor_normal)); \
-retval += _eindent (_file); \
+		if (_eprefix) \
+	fprintf (_file, "%s%s%s|", ecolor (_color), _eprefix, ecolor (ecolor_normal)); \
+	fprintf (_file, " %s*%s ", ecolor (_color), ecolor (ecolor_normal)); \
+	retval += _eindent (_file); \
 { \
 	va_list _ap; \
 	va_copy (_ap, ap); \
 	retval += vfprintf (_file, fmt, _ap) + 3; \
 	va_end (_ap); \
 } \
-if (colour_terminal ()) \
-fprintf (_file, ECOLOR_FLUSH);
+	if (colour_terminal ()) \
+	fprintf (_file, ECOLOR_FLUSH);
 
 static int _einfovn (const char *fmt, va_list ap)
 {

@@ -9,10 +9,12 @@
 #define APPLET "runscript"
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <dlfcn.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
@@ -50,6 +52,9 @@ static char *ibsave = NULL;
 static bool in_background = false;
 static rc_hook_t hook_out = 0;
 static pid_t service_pid = 0;
+static char *prefix = NULL;
+
+/* Pipes for prefixed output */
 
 extern char **environ;
 
@@ -57,11 +62,11 @@ extern char **environ;
 static void (*selinux_run_init_old) (void);
 static void (*selinux_run_init_new) (int argc, char **argv);
 
-void setup_selinux (int argc, char **argv);
+static void setup_selinux (int argc, char **argv);
 #endif
 
 #ifdef __linux__
-void setup_selinux (int argc, char **argv)
+static void setup_selinux (int argc, char **argv)
 {
 	void *lib_handle = NULL;
 
@@ -205,24 +210,15 @@ static void cleanup (void)
 		rc_plugin_run (hook_out, applet);
 	rc_plugin_unload ();
 
-	if (deptree)
-		rc_free_deptree (deptree);
-	if (services)
-		rc_strlist_free (services);
-	if (types)
-		rc_strlist_free (types);
-	if (svclist)
-		rc_strlist_free (svclist);
-	if (providelist)
-		rc_strlist_free (providelist);
-	if (restart_services)
-		rc_strlist_free (restart_services);
-	if (need_services)
-		rc_strlist_free (need_services);
-	if (tmplist)
-		rc_strlist_free (tmplist);
-	if (ibsave)
-		free (ibsave);
+	rc_free_deptree (deptree);
+	rc_strlist_free (services);
+	rc_strlist_free (types);
+	rc_strlist_free (svclist);
+	rc_strlist_free (providelist);
+	rc_strlist_free (restart_services);
+	rc_strlist_free (need_services);
+	rc_strlist_free (tmplist);
+	free (ibsave);
 
 	if (in_control ()) {
 		if (rc_service_state (applet, rc_service_stopping)) {
@@ -248,28 +244,70 @@ static void cleanup (void)
 			unlink (exclusive);
 	}
 
-	if (env)
-		rc_strlist_free (env);
+	rc_strlist_free (env);
 
 	if (mtime_test)
 	{
 		unlink (mtime_test);
 		free (mtime_test);
 	}
-	if (exclusive)
-		free (exclusive);
+	free (exclusive);
+	free (applet);
+	free (prefix);
+}
 
-	if (applet)
-		free (applet);
+static int write_prefix (int fd, const char *buffer, size_t bytes, bool *prefixed) {
+	unsigned int i;
+	int j;
+	const char *ec;
+	const char *ec_normal = ecolor (ecolor_normal);
+	ssize_t ret = 0;
+
+	if (fd == fileno (stdout))
+		ec = ecolor (ecolor_hilite);
+	else
+		ec = ecolor (ecolor_bad);
+
+	for (i = 0; i < bytes; i++) {
+		/* We don't prefix escape codes, like eend */
+		if (buffer[i] == '\033')
+			*prefixed = true;
+
+		if (! *prefixed) {
+			ret += write (fd, ec, strlen (ec));
+			ret += write (fd, applet, strlen (applet));
+			for (j = strlen (applet); j < 11; j++)
+				ret += write (fd, " ", 1);
+			ret += write (fd, ec_normal, strlen (ec_normal));
+			ret += write (fd, " |", 2);
+			*prefixed = true;
+		}
+
+		if (buffer[i] == '\n')
+			*prefixed = false;
+		ret += write (fd, buffer + i, 1);
+	}
+
+	return (ret);
 }
 
 static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 {
-	bool retval;
+	bool execok;
+	int stdout_pipes[2];
+	int stderr_pipes[2];
 
 	/* To ensure any output has hit our ebuffer */
 	fflush (stdout);
 	fflush (stderr);
+
+	/* Setup our pipes for prefixed output */
+	if (rc_is_env ("RC_PREFIX", "yes")) {
+		if (pipe (stdout_pipes))
+			eerror ("pipe: %s", strerror (errno));
+		if (pipe (stderr_pipes))
+			eerror ("pipe: %s", strerror (errno));
+	}
 
 	/* We need to disable our child signal handler now so we block
 	   until our script returns. */
@@ -280,6 +318,25 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 	if (service_pid == -1)
 		eerrorx ("%s: vfork: %s", service, strerror (errno));
 	if (service_pid == 0) {
+		if (rc_is_env ("RC_PREFIX", "yes")) {
+			int flags;
+
+			if (dup2 (stdout_pipes[1], fileno (stdout)) == -1)
+				eerror ("dup2 stdout: %s", strerror (errno));
+			close (stdout_pipes[0]);
+			if (dup2 (stderr_pipes[1], fileno (stderr)) == -1)
+				eerror ("dup2 stderr: %s", strerror (errno));
+			close (stderr_pipes[0]);
+
+			/* Stop any scripts from inheriting us */
+			if ((flags = fcntl (stdout_pipes[1], F_GETFD, 0)) < 0 ||
+				fcntl (stdout_pipes[1], F_SETFD, flags | FD_CLOEXEC) < 0)
+				eerror ("fcntl: %s", strerror (errno));
+			if ((flags = fcntl (stderr_pipes[1], F_GETFD, 0)) < 0 ||
+				fcntl (stderr_pipes[1], F_SETFD, flags | FD_CLOEXEC) < 0)
+				eerror ("fcntl: %s", strerror (errno));
+		}
+
 		if (rc_exists (RC_SVCDIR "runscript.sh")) {
 			execl (RC_SVCDIR "runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
@@ -295,13 +352,66 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 		}
 	}
 
-	retval = rc_waitpid (service_pid) == 0 ? true : false;
+	/* Prefix our piped output */
+	if (rc_is_env ("RC_PREFIX", "yes")) {
+		bool stdout_done = false;
+		bool stdout_prefix_shown = false;
+		bool stderr_done = false;
+		bool stderr_prefix_shown = false;
+		char buffer[RC_LINEBUFFER];
 
+		close (stdout_pipes[1]);
+		close (stderr_pipes[1]);
+
+		memset (buffer, 0, RC_LINEBUFFER);
+		while (! stdout_done && ! stderr_done) {
+			fd_set fds;
+			int retval;
+
+			FD_ZERO (&fds);
+			FD_SET (stdout_pipes[0], &fds);
+			FD_SET (stderr_pipes[0], &fds);
+			retval = select (MAX (stdout_pipes[0], stderr_pipes[0]) + 1,
+							 &fds, 0, 0, 0);
+			if (retval < 0) {
+				if (errno != EINTR)
+					eerror ("select: %s", strerror (errno));
+				break;
+			} else if (retval) {
+				ssize_t nr;
+
+				if (FD_ISSET (stdout_pipes[0], &fds)) {
+					if ((nr = read (stdout_pipes[0], buffer,
+									sizeof (buffer))) <= 0)
+						stdout_done = true;
+					else
+						write_prefix (fileno (stdout), buffer, nr,
+									  &stdout_prefix_shown);
+				}
+
+				if (FD_ISSET (stderr_pipes[0], &fds)) {
+					if ((nr = read (stderr_pipes[0], buffer,
+									sizeof (buffer))) <= 0)
+						stderr_done = true;
+					else
+						write_prefix (fileno (stderr), buffer, nr,
+									  &stderr_prefix_shown);
+				}
+			}
+		}
+
+		/* Done now, so close the pipes */
+		close(stdout_pipes[0]);
+		close(stderr_pipes[0]);
+	}
+
+	execok = rc_waitpid (service_pid) == 0 ? true : false;
 	service_pid = 0;
+
 	/* Done, so restore the signal handler */
 	signal (SIGCHLD, handle_signal);
 
-	return (retval);
+	return (execok);
 }
 
 static rc_service_state_t svc_status (const char *service)
@@ -899,7 +1009,18 @@ int main (int argc, char **argv)
 	snprintf (pid, sizeof (pid), "%d", (int) getpid ());
 	setenv ("RC_RUNSCRIPT_PID", pid, 1);
 
-	if (rc_is_env ("RC_PARALLEL", "yes")) {
+	/* eprefix is kinda klunky, but it works for our purposes */
+	if (rc_is_env ("RC_PREFIX", "yes")) {
+		int l = strlen (applet);
+		if (l < 13)
+			l = 13;
+		prefix = rc_xmalloc (sizeof (char *) * l);
+		snprintf (prefix, l, "%s%s", applet, "           ");
+		eprefix (prefix);
+	}
+
+	/* If we're in parallel and we're not prefixing then we need the ebuffer */
+	if (rc_is_env ("RC_PARALLEL", "yes") && ! rc_is_env ("RC_PREFIX", "yes")) {
 		char ebname[PATH_MAX];
 		char *eb;
 

@@ -388,14 +388,15 @@ static void sulogin (bool cont)
 	}
 #endif
 
+	newenv = rc_filter_env ();
+
 	if (cont) {
 		int status = 0;
-		pid_t pid = vfork();
+		pid_t pid = vfork ();
 
 		if (pid == -1)
 			eerrorx ("%s: vfork: %s", applet, strerror (errno));
 		if (pid == 0) {
-			newenv = rc_filter_env ();
 #ifdef __linux__
 			execle ("/sbin/sulogin", "/sbin/sulogin",
 					getenv ("CONSOLE"), (char *) NULL, newenv);
@@ -411,7 +412,6 @@ static void sulogin (bool cont)
 		waitpid (pid, &status, 0);
 	} else {
 #ifdef __linux
-		newenv = rc_filter_env ();
 		execle ("/sbin/sulogin", "/sbin/sulogin",
 				getenv ("CONSOLE"), (char *) NULL, newenv);
 		eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
@@ -542,7 +542,7 @@ static void handle_signal (int sig)
 				kill (pl->pid, SIGTERM);
 
 			/* Notify plugins we are aborting */
-			rc_plugin_run (rc_hook_abort, "rc");
+			rc_plugin_run (rc_hook_abort, NULL);
 
 			/* Only drop into single user mode if we're booting */
 			run = getenv ("RUNLEVEL");
