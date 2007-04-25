@@ -90,6 +90,8 @@ diststatus:
 distforce:
 	rm -rf /tmp/$(PKG)
 	cp -pPR . /tmp/$(PKG)
+	$(MAKE) -C /tmp/$(PKG) clean
+	(find /tmp/$(PKG) -type d -name .svn -exec rm -rf {} \; 2>/dev/null; exit 0)
 	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
 	rm -rf /tmp/$(PKG)
 	ls -l /tmp/$(PKG).tar.bz2
@@ -97,6 +99,7 @@ distforce:
 distit:
 	rm -rf /tmp/$(PKG)
 	svn export . /tmp/$(PKG)
+	$(MAKE) -C /tmp/$(PKG) clean
 	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
 	rm -rf /tmp/$(PKG)
 	ls -l /tmp/$(PKG).tar.bz2

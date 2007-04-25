@@ -52,8 +52,14 @@ do_unmount() {
 
 			# OK, try forcing things
 			if [ ${retry} -le 0 ] ; then
-				${cmd} -f "${mnt}" || retry=-999
-				retry=-999
+				local extra_opts="-f"
+				case "${cmd}" in
+					mount*)
+						# Silly reiserfs helper blocks us, so bypass it
+						[ "${RC_UNAME}" = "Linux" ] && extra_opts="-i" 
+						;;
+				esac
+				${cmd} ${extra_opts} "${mnt}" || retry=-999
 				break
 			fi
 		done
