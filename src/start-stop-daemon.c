@@ -390,9 +390,10 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 					if (select (0, 0, 0, 0, &tv) < 0) {
 						if (errno == EINTR)
 							eerror ("%s: caught an interupt", progname);
-						else
+						else {
 							eerror ("%s: select: %s", progname, strerror (errno));
-						return (0);
+							return (0);
+						}
 					}
 
 					if (gettimeofday (&now, NULL) != 0) {

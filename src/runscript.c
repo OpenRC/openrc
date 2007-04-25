@@ -374,9 +374,10 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 			retval = select (MAX (stdout_pipes[0], stderr_pipes[0]) + 1,
 							 &fds, 0, 0, 0);
 			if (retval < 0) {
-				if (errno != EINTR)
+				if (errno != EINTR) {
 					eerror ("select: %s", strerror (errno));
-				break;
+					break;
+				}
 			} else if (retval) {
 				ssize_t nr;
 

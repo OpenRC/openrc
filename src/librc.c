@@ -593,9 +593,10 @@ bool rc_wait_service (const char *service)
 		tv.tv_sec = 0;
 		tv.tv_usec = WAIT_INTERVAL;
 		if (select (0, 0, 0, 0, &tv) < 0) {
-			if (errno != EINTR)
+			if (errno != EINTR) {
 				eerror ("select: %s",strerror (errno));
-			break;
+				break;
+			}
 		}
 
 		/* Don't hang around forever */
