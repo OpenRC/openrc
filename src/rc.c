@@ -33,15 +33,16 @@
 #include "rc-plugin.h"
 #include "strlist.h"
 
-#define INITSH 					RC_LIBDIR "sh/init.sh"
-#define HALTSH					RC_INITDIR "halt.sh"
+#define INITSH                  RC_LIBDIR "sh/init.sh"
+#define INITEARLYSH             RC_LIBDIR "sh/init-early.sh"
+#define HALTSH                  RC_INITDIR "halt.sh"
 
-#define RC_SVCDIR_STARTING		RC_SVCDIR "starting/"
-#define RC_SVCDIR_INACTIVE		RC_SVCDIR "inactive/"
-#define RC_SVCDIR_STARTED		RC_SVCDIR "started/"
-#define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "coldplugged/"
+#define RC_SVCDIR_STARTING      RC_SVCDIR "starting/"
+#define RC_SVCDIR_INACTIVE      RC_SVCDIR "inactive/"
+#define RC_SVCDIR_STARTED       RC_SVCDIR "started/"
+#define RC_SVCDIR_COLDPLUGGED   RC_SVCDIR "coldplugged/"
 
-#define INTERACTIVE				RC_SVCDIR "interactive"
+#define INTERACTIVE             RC_SVCDIR "interactive"
 
 #define DEVBOOT					"/dev/.rcboot"
 
@@ -699,6 +700,27 @@ int main (int argc, char **argv)
 				FILE *fp;
 #endif
 
+                /* exec init-early.sh if it exists
+                 * This should just setup the console to use the correct
+                 * font. Maybe it should setup the keyboard too? */
+                if (rc_exists (INITEARLYSH)) {
+                    if ((pid = vfork ()) == -1)
+                        eerrorx ("%s: vfork: %s", applet, strerror (errno));
+
+                    if (pid == 0) {
+                        execl (INITEARLYSH, INITEARLYSH, (char *) NULL);
+                        eerror ("%s: unable to exec `" INITEARLYSH "': %s",
+                                applet, strerror (errno));
+                        _exit (EXIT_FAILURE);
+                    }
+
+                    do {
+                        wpid = waitpid (pid, &status, 0);
+                        if (wpid < 1)
+                            eerror ("waitpid: %s", strerror (errno));
+                    } while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+                }
+
 				uname (&uts);
 
 				printf ("\n");
@@ -1071,6 +1093,7 @@ int main (int argc, char **argv)
 			pid_t pid = rc_stop_service (service);
 			if (pid > 0 && ! rc_is_env ("RC_PARALLEL", "yes"))
 				rc_waitpid (pid);
+			continue;
 		}
 
 		/* If we're in the start list then don't bother stopping us */

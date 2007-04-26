@@ -33,6 +33,8 @@
 #define RCSCRIPT_HELP   RC_LIBDIR "/sh/rc-help.sh"
 #define SELINUX_LIB     RC_LIBDIR "/runscript_selinux.so"
 
+#define PREFIX_LOCK		RC_SVCDIR "/prefix.lock"
+
 static char *applet = NULL;
 static char *exclusive = NULL;
 static char *mtime_test = NULL;
@@ -53,8 +55,7 @@ static bool in_background = false;
 static rc_hook_t hook_out = 0;
 static pid_t service_pid = 0;
 static char *prefix = NULL;
-
-/* Pipes for prefixed output */
+static bool prefix_locked = false;
 
 extern char **environ;
 
@@ -203,6 +204,9 @@ static void uncoldplug (char *service)
 
 static void cleanup (void)
 {
+	if (prefix_locked)
+		unlink (PREFIX_LOCK);
+
 	/* Flush our buffered output if any */
 	eclose ();
 
@@ -381,6 +385,22 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 			} else if (retval) {
 				ssize_t nr;
 
+				/* Wait until we get a lock */
+				while (true) {
+					struct timeval tv;
+
+					if (mkfifo (PREFIX_LOCK, 0700) == 0) {
+						prefix_locked = true;
+						break;
+					}
+
+					if (errno != EEXIST)
+						eerror ("mkfifo `%s': %s\n", PREFIX_LOCK, strerror (errno));
+					tv.tv_sec = 0;
+					tv.tv_usec = 20000;
+					select (0, NULL, NULL, NULL, &tv);
+				}
+
 				if (FD_ISSET (stdout_pipes[0], &fds)) {
 					if ((nr = read (stdout_pipes[0], buffer,
 									sizeof (buffer))) <= 0)
@@ -398,6 +418,10 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 						write_prefix (fileno (stderr), buffer, nr,
 									  &stderr_prefix_shown);
 				}
+
+				/* Clear the lock */
+				unlink (PREFIX_LOCK);
+				prefix_locked = false;
 			}
 		}
 

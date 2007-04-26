@@ -86,15 +86,6 @@ get_KV() {
 	return $?
 }
 
-# Try and set a font as early as we can
-termencoding="(K"
-[ -e "${RC_LIBDIR}"/console/unicode ] && termencoding="%G"
-printf "\033%s" "${termencoding}" >/dev/console
-if [ -r "${RC_LIBDIR}"/console/font ] ; then
-	font="$(cat "${RC_LIBDIR}"/console/font)"
-	setfont -C /dev/console "${RC_LIBDIR}"/console/"${font}"
-fi
-
 . /etc/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/init-functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
