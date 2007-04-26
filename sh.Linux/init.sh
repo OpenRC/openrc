@@ -87,22 +87,13 @@ get_KV() {
 }
 
 # Try and set a font as early as we can
-ttydev=${CONSOLE:-/dev/tty1}
-if [ ! -c "${ttydev}" ] ; then
-	[ -c /dev/vc/1 ] && ttydev="/dev/vc/1" || ttydev=
+termencoding="(K"
+[ -e "${RC_LIBDIR}"/console/unicode ] && termencoding="%G"
+printf "\033%s" "${termencoding}" >/dev/console
+if [ -r "${RC_LIBDIR}"/console/font ] ; then
+	font="$(cat "${RC_LIBDIR}"/console/font)"
+	setfont -C /dev/console "${RC_LIBDIR}"/console/"${font}"
 fi
-[ -r "${RC_LIBDIR}"/console/font ] \
-	&& /bin/setfont ${ttydev:+-C} ${ttydev} "${RC_LIBDIR}"/console/font
-[ -r "${RC_LIBDIR}"/console/map ] \
-	&& /bin/setfont ${ttydev:+-C} ${ttydev} -m "${RC_LIBDIR}"/console/map
-[ -r "${RC_LIBDIR}"/console/unimap ] \
-	&& /bin/setfont ${ttydev:+-C} ${ttydev} -u "${RC_LIBDIR}"/console/unimap
-if [ -e "${RC_LIBDIR}"/console/unicode ] ; then
-	eval printf '"\033%%G"' ${ttydev:+>} ${ttydev}
-else
-	eval printf '"\033(K"' ${ttydev:+>} ${ttydev}
-fi
-unset ttydev
 
 . /etc/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/init-functions.sh

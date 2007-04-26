@@ -58,10 +58,10 @@ start() {
 		[ -n "${DUMPKEYS_CHARSET}" ] && dumpkey_opts="-c ${DUMPKEYS_CHARSET}"
 
 		dumpkeys ${dumpkey_opts} | loadkeys --unicode
-		termencoding='\033%%G'
+		termencoding="%G"
 		termmsg="UTF-8"
 	else
-		termencoding='\033(K'
+		termencoding="(K"
 		termmsg="ASCII"
 	fi
 	local n=1 ttydev=
@@ -70,7 +70,7 @@ start() {
 		|| ttydev=/dev/tty
 	ebegin "Setting terminal encoding to" ${termmsg}
 	while [ ${n} -le "${RC_TTY_NUMBER}" ] ; do
-		printf "${termencoding}" >"${ttydev}${n}"
+		printf "\033%s" "${termencoding}" >"${ttydev}${n}"
 		n=$((${n} + 1))
 	done
 	eend 0
