@@ -32,7 +32,8 @@ do_mtab() {
 }
 
 start() {
-	local retval=0
+	local retval=0 opts="-F"
+	[ "${RC_UNAME}" = "Linux" ] && opts="-T -C0"
 
 	# Don't bother doing a fsck on these
 	if [ -n "${CDBOOT}" ] || is_net_fs / || is_union_fs / ; then
@@ -45,29 +46,18 @@ start() {
 		return 0
 	fi
 
-	if get_bootparam "forcefsck" ; then
+	if [ -e /forcefsck ] || get_bootparam "forcefsck" ; then
 		ebegin "Checking root filesystem (full fsck forced)"
-		if [ "${RC_UNAME}" = "Linux" ] ; then
-			fsck -C -a -f /
-		else
-			fsck -F /
-		fi
+		fsck ${opts} -f /
 		# /forcefsck isn't deleted because checkfs needs it.
 		# it'll be deleted in that script.
 		retval=$?
 	else
 		# Obey the fs_passno setting for / (see fstab(5))
-		# - find the / entry
-		# - make sure we have 6 fields
-		# - see if fs_passno is something other than 0
 		local pass=$(fstabinfo --passno /)
 		if [ ${pass:-0} != "0" ] ; then
 			ebegin "Checking root filesystem"
-			if [ "${RC_UNAME}" = "Linux" ] ; then
-				fsck -C -T -a /
-			else
-				fsck -p -F /
-			fi
+			fsck ${opts} -p /
 			retval=$?
 		else
 			ebegin "Skipping root filesystem check" "(fstab's passno == 0)"
@@ -92,15 +82,11 @@ start() {
 			sleep 10
 		fi
 		einfo "Rebooting"
-		/sbin/reboot -f
+		reboot -f
 	else
 		if [ "${RC_FORCE_AUTO}" = "yes" ] ; then
 			eend 2 "Rerunning fsck in force mode"
-			if [ "${RC_UNAME}" = "Linux" ] ; then
-				fsck -y -C -T /
-			else
-				fsck -y /
-			fi
+			fsck ${opts} -y /
 			retval=$?
 		else
 			eend 2 "Filesystem couldn't be fixed :("

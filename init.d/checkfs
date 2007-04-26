@@ -4,29 +4,30 @@
 
 depend() {
 	need checkroot
-	use volumes
 	after modules
 }
 
 do_checkfs() {
-	local retval=0
+	local retval=0 mode="-p" opts= parts=
 
 	ebegin "Checking all filesystems"
-	if [ "${RC_UNAME}" = "Linux" ] ; then
-		if get_bootparam "forcefsck" ; then
-			ewarn "A full fsck has been forced"
-			fsck -C0 -T -R -A -a -f
-		else
-			fsck -C0 -T -R -A -a
-		fi
-		retval=$?
-	else
-		local parts="$(fstabinfo --passno ">1")"
-		if [ -n "${parts}" ] ; then
-			fsck -p ${parts}
-			retval=$?
-		fi
+	
+
+	if  [ -e /forcefsck ] || get_bootparam "forcefsck" ; then
+		ewarn "A full fsck has been forced"
+		mode="-f"
 	fi
+
+	if [ "${RC_UNAME}" = "Linux" ] ; then
+		opts="-A -C0 -R -T"
+	else
+		parts="$(fstabinfo --passno ">1")"
+		[ -z "${parts}" ] && return 0
+	fi
+
+	fsck ${opts} ${mode} ${parts}
+	retval=$?
+	
 	if [ ${retval} -eq 0 ] ; then
 		eend 0
 	elif [ ${retval} -eq 1 ] ; then
@@ -40,13 +41,9 @@ do_checkfs() {
 	else
 		if [ "${RC_FORCE_AUTO}" = "yes" ] ; then
 			eend 2 "Fsck could not correct all errors, rerunning"
-			if [ "${RC_UNAME}" = "Linux" ] ; then
-				fsck -C0 -T -R -A -y
-			else
-				fsck -y
-			fi
+			fsck ${opts} -y ${parts}
 			retval=$?
-			eend $?
+			eend ${retval}
 		fi
 
 		if [ ${retval} -gt 3 ] ; then
@@ -54,7 +51,9 @@ do_checkfs() {
 			exec rc-abort || exit 1
 		fi
 	fi
-	
+
+	[ ${retval} = 0 -a -e /forcefsck ] && rm /forcefsck
+
 	return ${retval}
 }
 

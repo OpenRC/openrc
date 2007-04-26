@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  26 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+    checkroot and checkfs now use more friendly generic options, #116016.
+
   25 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     We now have an alternative to buffering stdout and stderr.
