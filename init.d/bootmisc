@@ -120,9 +120,11 @@ start() {
 	fi
 
 	# Create an 'after-boot' dmesg log
-	touch /var/log/dmesg
-	chmod 640 /var/log/dmesg
-	dmesg > /var/log/dmesg
+	if [ "${RC_SYS}" != "VPS" ] ; then
+		touch /var/log/dmesg
+		chmod 640 /var/log/dmesg
+		dmesg > /var/log/dmesg
+	fi
 
 	# Check for /etc/resolv.conf, and create if missing
 	[ -f /etc/resolv.conf ] || touch /etc/resolv.conf 2>/dev/null
