@@ -192,10 +192,12 @@ char **rc_config_env (char **env);
 
 /* Handy functions for dealing with string arrays of char ** */
 char **rc_strlist_add (char **list, const char *item);
+char **rc_strlist_addu (char **list, const char *item);
 char **rc_strlist_addsort (char **list, const char *item);
 char **rc_strlist_addsortc (char **list, const char *item);
 char **rc_strlist_addsortu (char **list, const char *item);
 char **rc_strlist_delete (char **list, const char *item);
+char **rc_strlist_join (char **this, char **that);
 void rc_strlist_reverse (char **list);
 void rc_strlist_free (char **list);
 

@@ -9,7 +9,7 @@
 
 #include "librc.h"
 
-char **rc_strlist_add (char **list, const char *item)
+static char **_rc_strlist_add (char **list, const char *item, bool uniq)
 {
 	char **newlist;
 	int i = 0;
@@ -17,8 +17,11 @@ char **rc_strlist_add (char **list, const char *item)
 	if (! item)
 		return (list);
 
-	while (list && list[i])
+	while (list && list[i]) {
+		if (uniq && strcmp (list[i], item) == 0)
+			return (list);
 		i++;
+	}
 
 	newlist = rc_xrealloc (list, sizeof (char *) * (i + 2));
 	newlist[i] = rc_xstrdup (item);
@@ -26,7 +29,18 @@ char **rc_strlist_add (char **list, const char *item)
 
 	return (newlist);
 }
+
+char **rc_strlist_add (char **list, const char *item)
+{
+	return (_rc_strlist_add (list, item, false));
+}
 librc_hidden_def(rc_strlist_add)
+
+char **rc_strlist_addu (char **list, const char *item)
+{
+	return (_rc_strlist_add (list, item, true));
+}
+librc_hidden_def(rc_strlist_addu)
 
 static char **_rc_strlist_addsort (char **list, const char *item,
 								   int (*sortfunc) (const char *s1,
@@ -106,6 +120,39 @@ char **rc_strlist_delete (char **list, const char *item)
 	return (list);
 }
 librc_hidden_def(rc_strlist_delete)
+
+char **rc_strlist_join (char **this, char **that)
+{
+	char **newlist;
+	int i = 0;
+	int j = 0;
+
+	if (! this && that)
+		return (that);
+	if (! that && this)
+		return (this);
+	if (! that && ! this)
+		return (NULL);
+
+	while (this[i])
+		i++;
+
+	while (that[j])
+		j++;
+
+	newlist = rc_xrealloc (this, sizeof (char *) * (i + j + 1));
+
+	j = 0;
+	while (that[j]) {
+		newlist[i] = that[j];
+		i++;
+		j++;
+	}
+	newlist[i] = NULL;
+
+	return (newlist);
+}
+librc_hidden_def(rc_strlist_join)
 
 void rc_strlist_reverse (char **list)
 {

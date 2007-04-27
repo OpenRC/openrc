@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  27 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+    env-update now respects COLON_SEPARATED and SPACE_SEPARATED env.d
+	values, #176198.
+
   26 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     checkroot and checkfs now use more friendly generic options, #116016.
