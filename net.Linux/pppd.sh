@@ -114,7 +114,7 @@ pppd_pre_start() {
 	[ -n "$1" ] && chatopts="${chatopts} -T '$1'"
 	[ -n "$2" ] && chatopts="${chatopts} -U '$2'"
 	eval $(_get_array "chat_${IFVAR}")
-	if [ -n "$@" ] ; then
+	if [ $# != 0 ] ; then
 		opts="${opts} connect $(printf "'%s' " "${chatopts} $(printf "'%s' " "$@")")"
 	fi
 

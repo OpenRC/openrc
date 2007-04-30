@@ -3,6 +3,8 @@
 
   30 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Stop using the [ -z "$@" ] test, use [ $# = 0 ] instead, #176554.
+
     /etc/init.d/foo start and stop no longer exit when service is fully
     started or stopped, #176452.
 

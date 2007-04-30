@@ -80,7 +80,7 @@ are_atmclip_svcs_running() {
 
 clip_pre_start() {
 	eval $(_get_array "clip_${IFVAR}")
-	[ -z "$@" ] && return 0
+	[ $# = 0 ] && return 0
 
     if [ ! -r /proc/net/atm/arp ] ; then
 		modprobe clip && sleep 2
@@ -110,7 +110,7 @@ clip_pre_start() {
 
 clip_post_start() {
 	eval $(_get_array "clip_${IFVAR}")
-	[ -z "$@" ] && return 0
+	[ $# = 0 ] && return 0
 
 	are_atmclip_svcs_running || return 1
 

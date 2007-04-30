@@ -990,7 +990,7 @@
 #	#	'from 216.113.223.51/32 to 192.168.1.0/24 table localnet priority 100' \
 #	#"
 #	eval set -- $\rules_${IFVAR}
-#	if [ -n "$@" ] ; then
+#	if [ $# != 0 ] ; then
 #		einfo "Adding IP policy routing rules"
 #		eindent
 #		# Ensure that the kernel supports policy routing

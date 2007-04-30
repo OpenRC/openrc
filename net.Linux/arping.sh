@@ -44,7 +44,7 @@ arping_start() {
 	einfo "Pinging gateways on ${IFACE} for configuration"
 
 	eval $(_get_array "gateways_${IFVAR}")
-	if [ -z "$@" ] ; then
+	if [ $# = 0 ] ; then
 		eerror "No gateways have been defined (gateways_${IFVAR}=\"...\")"
 		return 1
 	fi
