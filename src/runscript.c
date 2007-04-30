@@ -36,6 +36,7 @@
 #define PREFIX_LOCK		RC_SVCDIR "/prefix.lock"
 
 static char *applet = NULL;
+static char *service = NULL;
 static char *exclusive = NULL;
 static char *mtime_test = NULL;
 static rc_depinfo_t *deptree = NULL;
@@ -193,13 +194,41 @@ static bool in_control ()
 	return (true);
 }
 
-static void uncoldplug (char *service)
+static void uncoldplug ()
 {
-	char *cold = rc_strcatpaths (RC_SVCDIR "coldplugged", basename (service),
-								 (char *) NULL);
+	char *cold = rc_strcatpaths (RC_SVCDIR "coldplugged", applet, (char *) NULL);
 	if (rc_exists (cold) && unlink (cold) != 0)
 		eerror ("%s: unlink `%s': %s", applet, cold, strerror (errno));
 	free (cold);
+}
+
+static void start_services (char **list) {
+	bool inactive;
+	char *svc;
+	int i;
+
+	if (! list)
+		return;
+
+	inactive = rc_service_state (service, rc_service_inactive);
+	if (! inactive)
+		inactive = rc_service_state (service, rc_service_wasinactive);
+
+	if (inactive ||
+		rc_service_state (service, rc_service_starting) ||
+		rc_service_state (service, rc_service_started))
+	{
+		STRLIST_FOREACH (list, svc, i) {
+			if (rc_service_state (svc, rc_service_stopped)) {
+				if (inactive) {
+					rc_schedule_start_service (service, svc);
+					ewarn ("WARNING: %s is scheduled to started when %s has started",
+						   svc, applet);
+				} else
+					rc_start_service (svc);
+			}
+		}
+	}
 }
 
 static void cleanup (void)
@@ -214,12 +243,16 @@ static void cleanup (void)
 		rc_plugin_run (hook_out, applet);
 	rc_plugin_unload ();
 
+	if (restart_services ) {
+		start_services (restart_services);
+		rc_strlist_free (restart_services);
+	}
+
 	rc_free_deptree (deptree);
 	rc_strlist_free (services);
 	rc_strlist_free (types);
 	rc_strlist_free (svclist);
 	rc_strlist_free (providelist);
-	rc_strlist_free (restart_services);
 	rc_strlist_free (need_services);
 	rc_strlist_free (tmplist);
 	free (ibsave);
@@ -295,7 +328,7 @@ static int write_prefix (int fd, const char *buffer, size_t bytes, bool *prefixe
 	return (ret);
 }
 
-static bool svc_exec (const char *service, const char *arg1, const char *arg2)
+static bool svc_exec (const char *arg1, const char *arg2)
 {
 	bool execok;
 	int stdout_pipes[2];
@@ -439,7 +472,7 @@ static bool svc_exec (const char *service, const char *arg1, const char *arg2)
 	return (execok);
 }
 
-static rc_service_state_t svc_status (const char *service)
+static rc_service_state_t svc_status ()
 {
 	char status[10];
 	int (*e) (const char *fmt, ...) = &einfo;
@@ -472,7 +505,7 @@ static rc_service_state_t svc_status (const char *service)
 	return (retval);
 }
 
-static void make_exclusive (const char *service)
+static void make_exclusive ()
 {
 	char *path;
 	int i;
@@ -518,7 +551,7 @@ static void unlink_mtime_test ()
 
 static void get_started_services ()
 {
-	char *service;
+	char *svc;
 	int i;
 
 	rc_strlist_free (tmplist);
@@ -527,14 +560,14 @@ static void get_started_services ()
 	rc_strlist_free (restart_services);
 	restart_services = rc_services_in_state (rc_service_started);
 
-	STRLIST_FOREACH (tmplist, service, i)
-		restart_services = rc_strlist_addsort (restart_services, service);
+	STRLIST_FOREACH (tmplist, svc, i)
+		restart_services = rc_strlist_addsort (restart_services, svc);
 
 	rc_strlist_free (tmplist);
 	tmplist = NULL;
 }
 
-static void svc_start (const char *service, bool deps)
+static void svc_start (bool deps)
 {
 	bool started;
 	bool background = false;
@@ -695,7 +728,7 @@ static void svc_start (const char *service, bool deps)
 	if (ibsave)
 		setenv ("IN_BACKGROUND", ibsave, 1);
 	rc_plugin_run (rc_hook_service_start_now, applet);
-	started = svc_exec (service, "start", NULL);
+	started = svc_exec ("start", NULL);
 	if (ibsave)
 		unsetenv ("IN_BACKGROUND");
 
@@ -751,7 +784,7 @@ static void svc_start (const char *service, bool deps)
 	rc_plugin_run (rc_hook_service_start_out, applet);
 }
 
-static void svc_stop (const char *service, bool deps)
+static void svc_stop (bool deps)
 {
 	bool stopped;
 
@@ -857,7 +890,7 @@ static void svc_stop (const char *service, bool deps)
 	if (ibsave)
 		setenv ("IN_BACKGROUND", ibsave, 1);
 	rc_plugin_run (rc_hook_service_stop_now, applet);
-	stopped = svc_exec (service, "stop", NULL);
+	stopped = svc_exec ("stop", NULL);
 	if (ibsave)
 		unsetenv ("IN_BACKGROUND");
 
@@ -886,12 +919,8 @@ static void svc_stop (const char *service, bool deps)
 	rc_plugin_run (rc_hook_service_stop_out, applet);
 }
 
-static void svc_restart (const char *service, bool deps)
+static void svc_restart (bool deps)
 {
-	char *svc;
-	int i;
-	bool inactive = false;
-
 	/* This is hairly and a better way needs to be found I think!
 	   The issue is this - openvpn need net and dns. net can restart
 	   dns via resolvconf, so you could have openvpn trying to restart dnsmasq
@@ -903,41 +932,24 @@ static void svc_restart (const char *service, bool deps)
 	if (! deps) {
 		if (rc_service_state (service, rc_service_started) ||
 			rc_service_state (service, rc_service_inactive))
-			svc_exec (service, "stop", "start");
+			svc_exec ("stop", "start");
 		else
-			svc_exec (service, "start", NULL);
+			svc_exec ("start", NULL);
 		return;
 	}
 
 	if (! rc_service_state (service, rc_service_stopped)) {
 		get_started_services ();
-		svc_stop (service, deps);
+		svc_stop (deps);
 
 		/* Flush our buffered output if any */
 		eflush ();
 	}
 
-	svc_start (service, deps);
-
-	inactive = rc_service_state (service, rc_service_inactive);
-	if (! inactive)
-		inactive = rc_service_state (service, rc_service_wasinactive);
-
-	if (inactive ||
-		rc_service_state (service, rc_service_starting) ||
-		rc_service_state (service, rc_service_started))
-	{
-		STRLIST_FOREACH (restart_services, svc, i) {
-			if (rc_service_state (svc, rc_service_stopped)) {
-				if (inactive) {
-					rc_schedule_start_service (service, svc);
-					ewarn ("WARNING: %s is scheduled to started when %s has started",
-						   svc, applet);
-				} else
-					rc_start_service (svc);
-			}
-		}
-	}
+	svc_start (deps);
+	start_services (restart_services);
+	rc_strlist_free (restart_services);
+	restart_services = NULL;
 }
 
 #define getoptstring "dCDNqvh"
@@ -955,7 +967,6 @@ static struct option longopts[] = {
 
 int main (int argc, char **argv)
 {
-	char *service = argv[1];
 	int i;
 	bool deps = true;
 	bool doneone = false;
@@ -963,6 +974,7 @@ int main (int argc, char **argv)
 	int retval;
 	char c;
 
+	service = argv[1];
 	/* Show help if insufficient args */
 	if (argc < 3) {
 		execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
@@ -1137,12 +1149,12 @@ int main (int argc, char **argv)
 			strcmp (optarg, "condrestart") == 0)
 		{
 			if (rc_service_state (service, rc_service_started))
-				svc_restart (service, deps);
+				svc_restart (deps);
 		}
 		else if (strcmp (optarg, "restart") == 0)
-			svc_restart (service, deps);
+			svc_restart (deps);
 		else if (strcmp (optarg, "start") == 0)
-			svc_start (service, deps);
+			svc_start (deps);
 		else if (strcmp (optarg, "status") == 0) {
 			rc_service_state_t r = svc_status (service);
 			retval = (int) r;
@@ -1150,12 +1162,12 @@ int main (int argc, char **argv)
 			if (in_background)
 				get_started_services ();
 
-			svc_stop (service, deps);
+			svc_stop (deps);
 
 			if (! in_background &&
 				! rc_runlevel_stopping () &&
 				rc_service_state (service, rc_service_stopped))
-				uncoldplug (applet);
+				uncoldplug ();
 
 			if (in_background &&
 				rc_service_state (service, rc_service_inactive))
@@ -1169,13 +1181,13 @@ int main (int argc, char **argv)
 		} else if (strcmp (optarg, "zap") == 0) {
 			einfo ("Manually resetting %s to stopped state", applet);
 			rc_mark_service (applet, rc_service_stopped);
-			uncoldplug (applet);
+			uncoldplug ();
 		} else if (strcmp (optarg, "help") == 0) {
 			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
 			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 					 applet, strerror (errno));
 		}else
-			svc_exec (service, optarg, NULL);
+			svc_exec (optarg, NULL);
 
 		/* Flush our buffered output if any */
 		eflush ();
