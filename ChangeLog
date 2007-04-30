@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  30 Apr 2007; Roy Marples <uberlord@gentoo.org>:
+
+    /etc/init.d/foo start and stop no longer exit when service is fully
+	started or stopped, #176452.
+
   27 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     env-update now respects COLON_SEPARATED and SPACE_SEPARATED env.d

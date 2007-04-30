@@ -557,9 +557,10 @@ static void svc_start (const char *service, bool deps)
 		background = true;
 	}
 
-	if (rc_service_state (service, rc_service_started))
-		ewarnx ("WARNING: %s has already been started", applet);
-	else if (rc_service_state (service, rc_service_starting))
+	if (rc_service_state (service, rc_service_started)) {
+		ewarn ("WARNING: %s has already been started", applet);
+		return;
+	} else if (rc_service_state (service, rc_service_starting))
 		ewarnx ("WARNING: %s is already starting", applet);
 	else if (rc_service_state (service, rc_service_stopping))
 		ewarnx ("WARNING: %s is stopping", applet);
@@ -765,9 +766,10 @@ static void svc_stop (const char *service, bool deps)
 			! rc_service_state (service, rc_service_inactive))
 			exit (EXIT_FAILURE);
 
-	if (rc_service_state (service, rc_service_stopped))
-		ewarnx ("WARNING: %s is already stopped", applet);
-	else if (rc_service_state (service, rc_service_stopping))
+	if (rc_service_state (service, rc_service_stopped)) {
+		ewarn ("WARNING: %s is already stopped", applet);
+		return;
+	} else if (rc_service_state (service, rc_service_stopping))
 		ewarnx ("WARNING: %s is already stopping", applet);
 
 	if (! rc_mark_service (service, rc_service_stopping))
