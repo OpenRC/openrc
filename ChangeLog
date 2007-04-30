@@ -4,12 +4,12 @@
   30 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     /etc/init.d/foo start and stop no longer exit when service is fully
-	started or stopped, #176452.
+    started or stopped, #176452.
 
   27 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     env-update now respects COLON_SEPARATED and SPACE_SEPARATED env.d
-	values, #176198.
+    values, #176198.
 
   26 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
@@ -18,13 +18,13 @@
   25 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     We now have an alternative to buffering stdout and stderr.
-	RC_PREFIX="yes" will put the service name as a prefix to all output
-	made by the service. Thanks to Ciaran McCreesh for the idea.
+    RC_PREFIX="yes" will put the service name as a prefix to all output
+    made by the service. Thanks to Ciaran McCreesh for the idea.
 
   24 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     We now buffer stdout and stderr to a file and flush that when running in
-	parallel. RC_PARALLEL_STARTUP has been renamed to RC_PARALLEL.
+    parallel. RC_PARALLEL_STARTUP has been renamed to RC_PARALLEL.
 
   20 Apr 2007; Mike Frysinger <vapier@gentoo.org>:
 
@@ -49,23 +49,23 @@
 
   16 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
-	Punted the volumes init script. Volume handling will be handled by
-	init script that can be run at any point, even before checkroot.
+    Punted the volumes init script. Volume handling will be handled by
+    init script that can be run at any point, even before checkroot.
 
-  	Don't search for a space after interface names in /proc/net, #174792
-	thanks to Mike Auty.
+    Don't search for a space after interface names in /proc/net, #174792
+    thanks to Mike Auty.
 
   13 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
-	Fix module loading, #174360.
-	s-s-d now changes group when changing user, #174362.
-	netmask -> CIDR is worked out correctly #174341.
+    Fix module loading, #174360.
+    s-s-d now changes group when changing user, #174362.
+    netmask -> CIDR is worked out correctly #174341.
 
 * baselayout-2.0.0_alpha1 (11 Apr 2007)
 
   07 Apr 2007; Mike Frysinger <vapier@gentoo.org>:
 
-  	"modules-update" -> "update-modules".
+    "modules-update" -> "update-modules".
 
   05 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
