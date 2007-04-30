@@ -93,6 +93,16 @@ start() {
 			fi
 		fi
 
+		# Setup Kernel Support for debugfs
+		if [ -d /sys/kernel/debug ] ; then
+			if grep -qs debugfs /proc/filesystems ; then
+				ebegin "Mounting debug filesystem"
+				mount -t debugfs debugfs /sys/kernel/debug \
+					-o nodev,noexec,nosuid
+				eend $?
+			fi
+		fi
+
 		# Setup Kernel Support for SELinux
 		if [ -d /selinux ] ; then
 			if grep -qs selinuxfs /proc/filesystems ; then
