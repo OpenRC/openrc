@@ -59,10 +59,13 @@ _wait_for_carrier() {
 
     _has_carrier  && return 0
 
-    eval timeout=\$carrier_timeout_${IF_VAR}
-    timeout=${timeout:-5}
+    eval timeout=\$carrier_timeout_${IFVAR}
+    timeout=${timeout:-${carrier_timeout:-5}}
 
-    [ -n "${RC_EBUFFER}" ] && efunc=einfo
+	# Incase users don't want this nice feature ...
+	[ ${timeout} -le 0 ] && return 0
+
+    [ -n "${RC_EBUFFER}" -o "${RC_PREFIX}" = "yes" ] && efunc=einfo
     ${efunc} "Waiting for carrier (${timeout} seconds) "
     while [ ${timeout} -gt 0 ] ; do
 		sleep 1
@@ -72,10 +75,10 @@ _wait_for_carrier() {
 	    	return 0
 		fi
 		timeout=$((${timeout} - 1))
-		[ -z "${RC_EBUFFER}" ] && printf "."
+		[ -z "${RC_EBUFFER}" -a "${RC_PREFIX}" != "yes" ] && printf "."
     done
 
-    [ -z "${RC_EBUFFER}" ] && echo
+    [ -z "${RC_EBUFFER}" -a "${RC_PREFIX}" != "yes" ] && echo
 	eend 1
     return 1
 }
