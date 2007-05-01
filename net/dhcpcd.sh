@@ -38,9 +38,7 @@ dhcpcd_start() {
 	# Bring up DHCP for this interface
 	ebegin "Running dhcpcd"
 
-	eval start-stop-daemon --start --exec /sbin/dhcpcd \
-		--pidfile /var/run/"dhcpcd-${IFACE}.pid" \
-		-- "${args}" "${IFACE}"
+	eval /sbin/dhcpcd "${args}" "${IFACE}"
 	eend $? || return 1
 
 	_show_address
