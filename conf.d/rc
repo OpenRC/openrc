@@ -74,15 +74,8 @@ RC_FORCE_AUTO="no"
 # really want them to work on a global basis.
 
 # Some daemons are started and stopped via start-stop-daemon.
-# We can launch them through other daemons here, for example valgrind.
-# This is only useful for serious debugging of the daemon
-# WARNING: If the script's "stop" function does not supply a PID file then
-# all processes using the same daemon will be killed.
-#RC_DAEMON="/usr/bin/valgrind --tool=memcheck --log-file=/tmp/valgrind.syslog-ng"
-
-# strace needs to be prefixed with --background as it does not detach when
-# it's following
-#RC_DAEMON="--background /usr/sbin/strace -f -o /tmp/strace.syslog-ng"
+# We can set some things on a per service basis, like the nicelevel.
+#export SSD_NICELEVEL="-19"
 
 # Pass ulimit parameters 
 #RC_ULIMIT="-u 30"
@@ -90,4 +83,5 @@ RC_FORCE_AUTO="no"
 # It's possible to define extra dependencies for services like so
 #RC_NEED="openvpn"
 #RC_USE="net.eth0"
+
 

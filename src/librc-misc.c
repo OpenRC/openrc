@@ -6,14 +6,14 @@
 
 #include "librc.h"
 
-#define ERRX 		eerrorx("out of memory");
+#define ERRX            eerrorx("out of memory");
 
-#define PROFILE_ENV	"/etc/profile.env"
-#define SYS_WHITELIST	RC_LIBDIR "conf.d/env_whitelist"
-#define USR_WHITELIST	"/etc/conf.d/env_whitelist"
-#define RC_CONFIG	"/etc/conf.d/rc"
+#define PROFILE_ENV     "/etc/profile.env"
+#define SYS_WHITELIST   RC_LIBDIR "conf.d/env_whitelist"
+#define USR_WHITELIST   "/etc/conf.d/env_whitelist"
+#define RC_CONFIG       "/etc/conf.d/rc"
 
-#define PATH_PREFIX 	RC_LIBDIR "bin:/bin:/sbin:/usr/bin:/usr/sbin"
+#define PATH_PREFIX     RC_LIBDIR "bin:/bin:/sbin:/usr/bin:/usr/sbin"
 
 #ifndef S_IXUGO
 # define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)

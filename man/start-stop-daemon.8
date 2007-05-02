@@ -200,16 +200,17 @@ will force
 to fork before starting the process, and force it into the background.
 .TP
 \fB-1\fP|\fB--stdout\fP \fIlogfile\fP
-Redirect the standard output of the process to \fIlogfile\fP when started with \fB--background\fP.
-Must be an absolute pathname, but relative to the \fIpath\fP optionally given with
-\fB--chroot\fP.
+Redirect the standard output of the process to \fIlogfile\fP when started with
+\fB--background\fP. Must be an absolute pathname, but relative to the
+\fIpath\fP optionally given with \fB--chroot\fP.
 Hint: The \fIlogfile\fP can also be a named pipe.
 .TP
 \fB-2\fP|\fB--stderr\fP \fIlogfile\fP
 The same thing as \fB--stdout\fP but with the standard error output.
 .TP
 .BR -N | --nicelevel
-This alters the prority of the process before starting it.
+This alters the prority of the process before starting it. This can also be set
+by the environment variable \fBSSD_NICELEVEL\fR.
 .TP
 .BR -m | --make-pidfile
 Used when starting a program that does not create its own pid file. This

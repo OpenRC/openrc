@@ -3,6 +3,9 @@
 
   02 May 2007; Roy Marples <uberlord@gentoo.org>:
 
+    SSD_NICELEVEL can now affect the nicelevel for daemons started
+    by start-stop-daemon, #175397.
+
     Don't delete addresses for PPP interfaces, #176764.
 
   30 Apr 2007; Roy Marples <uberlord@gentoo.org>:

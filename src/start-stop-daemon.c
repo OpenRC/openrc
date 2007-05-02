@@ -537,6 +537,10 @@ int main (int argc, char **argv)
 	signal (SIGQUIT, handle_signal);
 	signal (SIGTERM, handle_signal);
 
+	if ((env = getenv ("SSD_NICELEVEL")))
+		if (sscanf (env, "%d", &nicelevel) != 1)
+			eerror ("%s: invalid nice level `%s' (SSD_NICELEVEL)", progname, env);
+
 	while ((c = getopt_long (argc, argv,
 							 "KN:R:Sbc:d:g:mn:op:qs:tu:r:vx:1:2:",
 							 longopts, (int *) 0)) != -1)
