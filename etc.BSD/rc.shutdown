@@ -7,8 +7,11 @@
 
 # Try and use stuff in /lib over anywhere else so we can shutdown
 # local mounts correctly.
-LD_LIBRARY_PATH="/lib${LD_LIBRARY_PATH:+:}${LDLIBRARY_PATH}"
-export LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="/lib${LD_LIBRARY_PATH:+:}${LDLIBRARY_PATH}"
+
+# If $TERM is not set then assume default of cons25
+# This gives us a nice colour shutdown :)
+[ -z "$TERM" ] && export TERM="cons25"
 
 # BSD's init works somewhat differently to sysvinit.
 # This block should 'translate' from the way init calls it to the way it would
@@ -16,6 +19,6 @@ export LD_LIBRARY_PATH
 case "$1" in
     reboot) 	export RUNLEVEL=6;;
     shutdown)	export RUNLEVEL=0;;
-    single)	export RUNLEVEL=S;;
+    single)		export RUNLEVEL=S;;
 esac
 exec /sbin/rc "$1"

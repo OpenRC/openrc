@@ -124,6 +124,8 @@ static const char *color_terms[] = {
 static int stdfd[2] = {-1, -1};
 static FILE *ebfp = NULL;
 static char ebfile[PATH_MAX] = { '\0' };
+static const char *term = NULL;
+static bool term_is_cons25 = false;
 
 /* A pointer to a string to prefix to einfo/ewarn/eerror messages */
 static const char *_eprefix = NULL;
@@ -146,17 +148,22 @@ static bool colour_terminal (void)
 {
 	static int in_colour = -1;
 	int i = 0;
-	char *term;
 
 	if (in_colour == 0)
 		return (false);
 	if (in_colour == 1)
 		return (true);
 
-	term = getenv ("TERM");
-	/* If $TERM isn't set then the chances are we're in single user mode */
-	if (! term)
-		return (true);
+	if (! term) {
+		term = getenv ("TERM");
+		if (! term)
+			return (false);
+	}
+
+	if (strcmp (term, "cons25") == 0)
+		term_is_cons25 = true;
+	else
+		term_is_cons25 = false;
 
 	while (color_terms[i]) {
 		if (strcmp (color_terms[i], term) == 0) {
@@ -575,35 +582,44 @@ int ebegin (const char *fmt, ...)
 }
 hidden_def(ebegin)
 
-static void _eend (int col, einfo_color_t color, const char *msg)
+static void _eend (FILE *fp, int col, einfo_color_t color, const char *msg)
 {
-	FILE *fp = stdout;
 	int i;
 	int cols;
 
 	if (! msg)
 		return;
 
-	if (color == ecolor_bad)
-		fp = stderr;
+	cols = get_term_columns () - (strlen (msg) + 5);
 
-	cols = get_term_columns () - (strlen (msg) + 6);
+	/* cons25 is special - we need to remove one char, otherwise things
+	 * do not align properly at all. */
+	if (! term) {
+		term = getenv ("TERM");
+		if (term && strcmp (term, "cons25") == 0)
+			term_is_cons25 = true;
+		else
+			term_is_cons25 = false;
+	}
+	if (term_is_cons25)
+		cols--;
 
 	if (cols > 0 && colour_terminal ()) {
 		fprintf (fp, "\033[A\033[%dC %s[ %s%s %s]%s\n", cols,
 				 ecolor (ecolor_bracket), ecolor (color), msg,
 				 ecolor (ecolor_bracket), ecolor (ecolor_normal));
 	} else {
-		for (i = -1; i < cols - col; i++)
-			fprintf (fp, " ");
-		fprintf (fp, "[ %s ]\n", msg);
+		if (col > 0)
+			for (i = 0; i < cols - col; i++)
+				fprintf (fp, " ");
+		fprintf (fp, " [ %s ]\n", msg);
 	}
 }
 
 static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
 {
 	int col = 0;
-	FILE *fp;
+	FILE *fp = stdout;
 	va_list apc;
 
 	if (fmt && retval != 0)	{
@@ -616,11 +632,9 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
 			fp = stderr;
 		}
 		va_end (apc);
-		if (colour_terminal ())
-			fprintf (fp, "\n");
 	}
 
-	_eend (col,
+	_eend (fp, col,
 		   retval == 0 ? ecolor_good : ecolor_bad,
 		   retval == 0 ? OK : NOT_OK);
 	return (retval);
@@ -658,7 +672,7 @@ hidden_def(ewend)
 
 void ebracket (int col, einfo_color_t color, const char *msg)
 {
-	_eend (col, color, msg);
+	_eend (stdout, col, color, msg);
 }
 hidden_def(ebracket)
 

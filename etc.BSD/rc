@@ -5,10 +5,13 @@
 # Ensure we are called by init
 [ "$PPID" = "1" ] || exit 0
 
+# If $TERM is not set then assume default of cons25
+# This gives us a nice colour boot :)
+[ -z "$TERM" ] && export TERM="cons25"
+
 # BSD's init works somewhat differently to sysvinit.
 # This block should 'translate' from the way init calls it to the way it would
 # be called by sysvinit on linux.
-
 RUNLEVEL="1" /sbin/rc sysinit || exit 1
 RUNLEVEL="1" /sbin/rc boot || exit 1
 PREVLEVEL="1" /sbin/rc default
