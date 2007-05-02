@@ -48,7 +48,7 @@ start() {
 
 	if [ -e /forcefsck ] || get_bootparam "forcefsck" ; then
 		ebegin "Checking root filesystem (full fsck forced)"
-		fsck ${opts} -f /
+		fsck ${opts} -f -n /
 		# /forcefsck isn't deleted because checkfs needs it.
 		# it'll be deleted in that script.
 		retval=$?

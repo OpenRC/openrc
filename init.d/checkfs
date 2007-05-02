@@ -15,7 +15,7 @@ do_checkfs() {
 
 	if  [ -e /forcefsck ] || get_bootparam "forcefsck" ; then
 		ewarn "A full fsck has been forced"
-		mode="-f"
+		mode="-f -n"
 	fi
 
 	if [ "${RC_UNAME}" = "Linux" ] ; then
