@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  02 May 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Don't delete addresses for PPP interfaces, #176764.
+
   30 Apr 2007; Roy Marples <uberlord@gentoo.org>:
 
     Stop using the [ -z "$@" ] test, use [ $# = 0 ] instead, #176554.

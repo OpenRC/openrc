@@ -560,7 +560,10 @@ stop() {
 		fi
     done
 
-    _delete_addresses "${IFACE}"
+	# Only delete addresses for non PPP interfaces
+	if ! type is_ppp >/dev/null 2>/dev/null || ! is_ppp ; then
+		_delete_addresses "${IFACE}"
+	fi
 
     for module in ${MODULES} ; do
 		if type "${module}_post_stop" >/dev/null 2>/dev/null ; then
