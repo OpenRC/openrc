@@ -546,10 +546,12 @@ static void handle_signal (int sig)
 			/* Only drop into single user mode if we're booting */
 			run = getenv ("RUNLEVEL");
 			prev = getenv ("PREVLEVEL");
-			if ((prev && strcmp (prev, "S") == 0) ||
-				(run &&
-				 (strcmp (run, "S") == 0 ||
-				  strcmp (run, "1") == 0)))
+			if ((prev &&
+				 (strcmp (prev, "S") == 0 ||
+				  strcmp (prev, "1") == 0)) ||
+				 (run &&
+				  (strcmp (run, "S") == 0 ||
+				   strcmp (run, "1") == 0)))
 				single_user ();
 
 			exit (EXIT_FAILURE);

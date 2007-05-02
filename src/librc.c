@@ -569,20 +569,32 @@ librc_hidden_def(rc_schedule_clear)
 
 bool rc_wait_service (const char *service)
 {
-	char *svc = rc_xstrdup (service);
-	char *fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", basename (svc),
-								 (char *) NULL);
+	char *svc;
+	char *base;
+	char *fifo;
 	struct timeval tv;
 	struct timeval stopat;
 	struct timeval now;
 	bool retval = false;
+	bool forever = false;
 
-	free (svc);
+	if (! service)
+		return (false);
+
 	if (gettimeofday (&stopat, NULL) != 0) {
 		eerror ("gettimeofday: %s", strerror (errno));
 		return (false);
 	}
 	stopat.tv_sec += WAIT_MAX;
+
+	svc = rc_xstrdup (service);
+	base = basename (svc);
+	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", base, (char *) NULL);
+	/* FIXME: find a better way of doing this
+	 * Maybe a setting in the init script? */
+	if (strcmp (base, "checkfs") == 0 || strcmp (base, "checkroot") == 0)
+		forever = true;
+	free (svc);
 
 	while (true) {
 		if (! rc_exists (fifo)) {
@@ -599,14 +611,16 @@ bool rc_wait_service (const char *service)
 			}
 		}
 
-		/* Don't hang around forever */
-		if (gettimeofday (&now, NULL) != 0) {
-			eerror ("gettimeofday: %s", strerror (errno));
-			break;
-		}
+		if (! forever) {
+			/* Don't hang around forever */
+			if (gettimeofday (&now, NULL) != 0) {
+				eerror ("gettimeofday: %s", strerror (errno));
+				break;
+			}
 
-		if (timercmp (&now, &stopat, >))
-			break;
+			if (timercmp (&now, &stopat, >))
+				break;
+		}
 	}
 
 	free (fifo);
