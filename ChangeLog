@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  03 May 2007; Roy Marples <uberlord@gentoo.org>:
+
+    dns_sortlist and dns_options now work as documented, #175367.
+
   02 May 2007; Roy Marples <uberlord@gentoo.org>:
 
     SSD_NICELEVEL can now affect the nicelevel for daemons started

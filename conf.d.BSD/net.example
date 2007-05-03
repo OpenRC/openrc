@@ -345,12 +345,8 @@
 # For configuring system specifics such as domain, dns, ntp and nis servers
 # It's rare that you would need todo this, but you can anyway.
 # This is most benefit to wireless users who don't use DHCP so they can change
-# their configs based on SSID. See above for more details
+# their configs based on SSID.
 
-# Setting name/domain server causes /etc/resolv.conf to be overwritten
-# Note that if DHCP is used, and you want this to take precedence then
-# set dhcp_SSID="nodns"
-# To use dns settings such as these, dns_servers_eth0 must be set!
 # If you omit the _eth0 suffix, then it applies to all interfaces unless
 # overridden by the interface suffix.
 #dns_domain_eth0="your.domain"

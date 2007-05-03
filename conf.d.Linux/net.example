@@ -867,7 +867,6 @@
 # This is most benefit to wireless users who don't use DHCP so they can change
 # their configs based on SSID.
 
-# To use dns settings such as these, dns_servers_eth0 must be set!
 # If you omit the _eth0 suffix, then it applies to all interfaces unless
 # overridden by the interface suffix.
 #dns_domain_eth0="your.domain"
