@@ -80,7 +80,7 @@ ip6to4_start() {
 
 	if [ "${IFACE}" != "sit0" ] ; then
 		ebegin "Creating 6to4 tunnel on ${IFACE}"
-		_tunnel add "${IFACE}" mode sit ttl 255 remote any local "${ip}"
+		_tunnel add "${IFACE}" mode sit ttl 255 remote any local any 
 		eend $? || return 1
 		_up
 	fi

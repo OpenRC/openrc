@@ -3,6 +3,8 @@
 
   03 May 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Allow ip6to4 tunnels to use any derived address, #170290.
+
     dns_sortlist and dns_options now work as documented, #175367.
 
   02 May 2007; Roy Marples <uberlord@gentoo.org>:
