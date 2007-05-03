@@ -36,6 +36,7 @@
 #define INITSH                  RC_LIBDIR "sh/init.sh"
 #define INITEARLYSH             RC_LIBDIR "sh/init-early.sh"
 #define HALTSH                  RC_INITDIR "halt.sh"
+#define SULOGIN                 "/sbin/sulogin"
 
 #define RC_SVCDIR_STARTING      RC_SVCDIR "starting/"
 #define RC_SVCDIR_INACTIVE      RC_SVCDIR "inactive/"
@@ -393,14 +394,22 @@ static void sulogin (bool cont)
 
 	if (cont) {
 		int status = 0;
+#ifdef __linux__
+		char *tty = ttyname (fileno (stdout));
+#endif
+
 		pid_t pid = vfork ();
 
 		if (pid == -1)
 			eerrorx ("%s: vfork: %s", applet, strerror (errno));
 		if (pid == 0) {
 #ifdef __linux__
-			execle ("/sbin/sulogin", "/sbin/sulogin", (char *) NULL, newenv);
-			eerror ("%s: unable to exec `/sbin/sulogin': %s", applet,
+			if (tty)
+				execle (SULOGIN, SULOGIN, tty, (char *) NULL, newenv);
+			else
+				execle (SULOGIN, SULOGIN, (char *) NULL, newenv);
+
+			eerror ("%s: unable to exec `%s': %s", applet, SULOGIN,
 					strerror (errno));
 #else
 			execle ("/bin/sh", "/bin/sh", (char *) NULL, newenv);
