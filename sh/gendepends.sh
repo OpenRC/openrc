@@ -33,14 +33,15 @@ for SVCNAME in * ; do
 
     SVCNAME=${SVCNAME##*/}
     (
-	if . /etc/init.d/"${SVCNAME}" ; then
-	    rc_c=${SVCNAME%%.*}
-	    if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ] ; then
-			[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}"
-	    fi
-	    unset rc_c
+	rc_c=${SVCNAME%%.*}
+	if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ] ; then
+		[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}" >&2
+	fi
+	unset rc_c
 
-		[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}"
+	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}" >&2
+	
+	if . /etc/init.d/"${SVCNAME}" ; then
 
 		echo "${SVCNAME}"
 	    depend
