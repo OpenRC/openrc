@@ -17,7 +17,7 @@ ip6to4_start() {
 			fi
 	esac
 
-	local host= suffix= relay= addr= iface=${IFACE} new=
+	local host= suffix= relay= addr= iface=${IFACE} new= localip=
 	eval host=\$link_${IFVAR}
 	if [ -z "${host}" ] ; then
 		eerror "link_${IFVAR} not set"
@@ -71,6 +71,12 @@ ip6to4_start() {
 
 		# Now apply our IPv6 address to our config
 		new="${new}${new:+ }${ip6}/16"
+
+		if [ -n "${localip}" ] ; then
+			localip="any"
+		else
+			localip="${ip}"
+		fi
 	done
 
 	if [ -z "${new}" ] ; then
@@ -80,7 +86,7 @@ ip6to4_start() {
 
 	if [ "${IFACE}" != "sit0" ] ; then
 		ebegin "Creating 6to4 tunnel on ${IFACE}"
-		_tunnel add "${IFACE}" mode sit ttl 255 remote any local any 
+		_tunnel add "${IFACE}" mode sit ttl 255 remote any local "${localip}"
 		eend $? || return 1
 		_up
 	fi
