@@ -27,7 +27,7 @@ start() {
 			;;
 	esac
 
-	local WINDOWKEYS_KEYMAP=
+	local WINDOWKEYS_KEYMAP= LOADKEYS_UNI=
 
 	checkconfig || return 1
 
@@ -37,14 +37,22 @@ start() {
 	fi
 
 	# Turn on unicode if user wants it
-	[ "${UNICODE}" = "yes" ] && kbd_mode -u
+	if [ "${UNICODE}" = "yes" ] ; then
+		kbd_mode -u
+		LOADKEYS_UNI="--unicode"
+	fi
 
 	ebegin "Loading key mappings"
 	if [ -x /bin/loadkeys ] ; then
 		[ "${SET_WINDOWKEYS}" = "yes" ] && WINDOWKEYS_KEYMAP="windowkeys"
-		loadkeys -q ${WINDOWKEYS_KEYMAP} ${KEYMAP} \
-			${EXTENDED_KEYMAPS} > /dev/null
+		loadkeys -q ${LOADKEYS_UNI} ${WINDOWKEYS_KEYMAP} ${KEYMAP} \
+			${EXTENDED_KEYMAPS}
 		eend $? "Error loading key mappings"
+
+		if [ "${FIX_EURO}" = "yes" ] ; then
+			# Fix some fonts displaying the Euro, #173528.
+			echo "altgr keycode 18 = U+20AC" | loadkeys -q
+		fi
 	else
 		eend 1 "/bin/loadkeys not found"
 		return 1
@@ -61,7 +69,7 @@ start() {
 		termencoding="%G"
 		termmsg="UTF-8"
 	else
-		termencoding="(K"
+		termencoding="%@"
 		termmsg="ASCII"
 	fi
 	local n=1 ttydev=

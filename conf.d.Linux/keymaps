@@ -15,7 +15,7 @@ SET_WINDOWKEYS="no"
 # The maps to load for extended keyboards.  Most users will leave this as is.
 
 EXTENDED_KEYMAPS=""
-#EXTENDED_KEYMAPS="backspace keypad euro"
+#EXTENDED_KEYMAPS="backspace keypad euro2"
 
 
 # Tell dumpkeys(1) to interpret character action codes to be 
@@ -24,3 +24,9 @@ EXTENDED_KEYMAPS=""
 # For a list of valid sets, run `dumpkeys --help`
 
 DUMPKEYS_CHARSET=""
+
+
+# Some fonts map AltGr-E to the currency symbol ¤ instead of the Euro €
+# To fix this, set to "yes"
+
+FIX_EURO="no"

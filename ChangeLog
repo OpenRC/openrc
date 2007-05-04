@@ -1,6 +1,14 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+* baselayout-2.0.0_alpha2 (05 May 2007)
+
+  05 May 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Fix unicode keymaps, #173528.
+	Some fonts show the currency symbol instead of the Euro when doing
+	AltGr-E, so we provide an easy setting to fix this.
+
   03 May 2007; Roy Marples <uberlord@gentoo.org>:
 
     Allow ip6to4 tunnels to use any derived address, #170290.
