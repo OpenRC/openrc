@@ -1,9 +1,13 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
-* baselayout-2.0.0_alpha2 (05 May 2007)
-
   05 May 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Fix KV_to_int working with funky kernel versions, #177197.
+
+* baselayout-2.0.0_alpha2 (04 May 2007)
+
+  04 May 2007; Roy Marples <uberlord@gentoo.org>:
 
     Fix unicode keymaps, #173528.
 	Some fonts show the currency symbol instead of the Euro when doing

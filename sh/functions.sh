@@ -104,11 +104,12 @@ uniqify() {
 KV_to_int() {
 	[ -z $1 ] && return 1
 
-	local KV_MAJOR=${1%%.*}
-	local x=${1#*.}
+	local x=${1%%-*}
+	local KV_MAJOR=${x%%.*}
+	x=${x#*.}
 	local KV_MINOR=${x%%.*}
 	x=${1#*.*.}
-	local KV_MICRO=${x%%-*}
+	local KV_MICRO=${x%%.*}
 	local KV_int=$((${KV_MAJOR} * 65536 + ${KV_MINOR} * 256 + ${KV_MICRO} ))
 
 	# We make version 2.2.0 the minimum version we will handle as
