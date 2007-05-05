@@ -119,9 +119,6 @@ start() {
 	swapon -a >/dev/null
 	eend 0 # If swapon has nothing todo it errors, so always return 0 
 
-	# Start dm-crypt mappings, if any
-	start_addon dm-crypt
-
 	# Setup any user requested dump device
 	if [ -x /sbin/dumpon -a -n "${KERNEL_DUMP_DEVICE}" ] ; then
 		ebegin "Activating kernel core dump device" "(${KERNEL_DUMP_DEVICE})"
