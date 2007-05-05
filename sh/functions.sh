@@ -108,7 +108,7 @@ KV_to_int() {
 	local KV_MAJOR=${x%%.*}
 	x=${x#*.}
 	local KV_MINOR=${x%%.*}
-	x=${1#*.*.}
+	x=${x#*.}
 	local KV_MICRO=${x%%.*}
 	local KV_int=$((${KV_MAJOR} * 65536 + ${KV_MINOR} * 256 + ${KV_MICRO} ))
 
