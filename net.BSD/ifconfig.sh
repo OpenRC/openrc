@@ -51,9 +51,10 @@ _is_wireless() {
 _get_inet_address() {
 	set -- $(LC_ALL=C ifconfig "${IFACE}" |
 	sed -n -e 's/^[[:space:]]*inet \([^ ]*\) netmask 0x\(..\)\(..\)\(..\)\(..\).*/\1 0x\2.0x\3.0x\4/p')
+	[ -z "$1" ] && return 1
+
 	echo -n "$1"
 	shift
-
 	echo "/$(_netmask2cidr "$1")"
 }
 

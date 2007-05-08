@@ -61,6 +61,8 @@ _set_mac_address() {
 _get_inet_address() {
 	set -- $(LC_ALL=C ifconfig "${IFACE}" |
 	sed -n -e 's/.*inet addr:\([^ ]*\).*Mask:\([^ ]*\).*/\1 \2/p')
+	[ -z "$1" ] && return 1
+
 	echo -n "$1"
 	shift
 	echo "/$(_netmask2cidr "$1")"
