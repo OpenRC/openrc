@@ -6,6 +6,17 @@ depend() {
 	need localmount
 }
 
+save_seed() {
+	local poolsize=1
+
+	if [ -e /proc/sys/kernel/random/poolsize ] ; then
+		poolsize=$(($(cat /proc/sys/kernel/random/poolsize) / 4096))
+	fi
+
+	umask 077
+	dd if=/dev/urandom of=/var/run/random-seed count=${poolsize} 2>/dev/null
+}
+
 start() {
 	[ -c /dev/urandom ] || return
 	if [ -f /var/run/random-seed ] ; then
@@ -16,8 +27,7 @@ start() {
 		return 0
 	fi
 	ebegin "Initializing random number generator"
-	umask 077
-	dd if=/dev/urandom of=/var/run/random-seed count=1 2>/dev/null
+	save_seed
 	eend $? "Error initializing random number generator"
 	umask 022
 }
@@ -26,9 +36,8 @@ stop() {
 	ebegin "Saving random seed"
 	# Carry a random seed from shut-down to start-up;
 	# see documentation in linux/drivers/char/random.c
-	umask 077
-	dd if=/dev/urandom of=/var/run/random-seed count=1 2>/dev/null
+	save_seed
 	eend $? "Failed to save random seed"
 }
 
-# vim:ts=4
+# vim: set ts=4 :

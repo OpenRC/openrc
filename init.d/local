@@ -30,5 +30,4 @@ stop() {
 	eend $? $"Failed to stop local"
 }
 
-
-# vim:ts=4
+# vim: set ts=4 :

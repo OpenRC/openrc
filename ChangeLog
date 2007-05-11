@@ -3,6 +3,7 @@
 
   11 May 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Store the defined random pool size, #177722 thanks to Yaroslav Isakov.
     Use auto for /mnt/cdrom, #177990.
 	Use clock MONOTONIC to timeout, not localtime, #177514.
 
