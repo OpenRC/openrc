@@ -567,25 +567,37 @@ void rc_schedule_clear (const char *service)
 }
 librc_hidden_def(rc_schedule_clear)
 
+static time_t get_uptime(void)
+{
+#ifdef __linux__
+	struct sysinfo info;
+
+	sysinfo (&info);
+	return (time_t) info.uptime;
+#else
+	struct timespec tp;
+
+	if (clock_gettime (CLOCK_MONOTONIC, &tp) == -1) {
+		eerror ("clock_gettime: %s", strerror (errno));
+		return -1;
+	}
+
+	return tp.tv_sec;
+#endif
+}
+
 bool rc_wait_service (const char *service)
 {
 	char *svc;
 	char *base;
 	char *fifo;
 	struct timeval tv;
-	struct timeval stopat;
-	struct timeval now;
+	time_t start = get_uptime ();
 	bool retval = false;
 	bool forever = false;
 
 	if (! service)
 		return (false);
-
-	if (gettimeofday (&stopat, NULL) != 0) {
-		eerror ("gettimeofday: %s", strerror (errno));
-		return (false);
-	}
-	stopat.tv_sec += WAIT_MAX;
 
 	svc = rc_xstrdup (service);
 	base = basename (svc);
@@ -612,13 +624,8 @@ bool rc_wait_service (const char *service)
 		}
 
 		if (! forever) {
-			/* Don't hang around forever */
-			if (gettimeofday (&now, NULL) != 0) {
-				eerror ("gettimeofday: %s", strerror (errno));
-				break;
-			}
-
-			if (timercmp (&now, &stopat, >))
+			time_t now = get_uptime();
+			if (now - start > WAIT_MAX)
 				break;
 		}
 	}
