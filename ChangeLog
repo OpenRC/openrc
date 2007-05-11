@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  11 May 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Use auto for /mnt/cdrom, #177990.
+	Use clock MONOTONIC to timeout, not localtime, #177514.
+
   08 May 2007; Roy Marples <uberlord@gentoo.org>:
 
     When we don't have an address return 1, #176577.
