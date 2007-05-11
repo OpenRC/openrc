@@ -53,7 +53,8 @@ fi
 
 unmounted=0
 # Remount the remaining filesystems read-only
-if [ "${RC_UNAME}" != "FreeBSD" ] ; then
+# Most BSD's don't need this as the kernel handles it nicely
+if [ "${RC_UNAME}" = "Linux" ] ; then
 	ebegin "Remounting remaining filesystems read-only"
 	# We need the do_unmount function
 	. "${RC_LIBDIR}"/sh/rc-mount.sh
