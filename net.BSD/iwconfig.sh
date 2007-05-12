@@ -1,7 +1,7 @@
 # Copyright 2004-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-_config_vars="$_config_vars essid mode associate_timeout preferred_aps blacklist_aps"
+_config_vars="$_config_vars ssid mode associate_timeout preferred_aps blacklist_aps"
 
 iwconfig_depend() {
     program /sbin/ifconfig
@@ -369,11 +369,13 @@ iwconfig_force_preferred() {
 	[ -z "${preferred_aps}" ] && return 1
 
 	ewarn "Trying to force preferred in case they are hidden"
-	eval "(_get_array "preferred_aps")"
+	eval "$(_get_array "preferred_aps_${IFVAR}")"
+	[ $# = 0 ] && eval "$(_get_array "preferred_aps")"
+
 	local ssid=
 	for ssid in "$@"; do
 		local found_AP=false i=0 e=
-		while [ ${i} -le ${APS} ] ; do
+		while [ ${i} -le ${APS:--1} ] ; do
 			eval e=\$SSID_${i}
 			if [ "${e}" = "${ssid}" ] ; then
 				found_AP=true
@@ -382,7 +384,7 @@ iwconfig_force_preferred() {
 			i=$((${i} + 1))
 		done
 		if ! ${found_AP} ; then
-			SSID=${e}
+			SSID=${ssid}
 			iwconfig_associate && return 0
 		fi
 	done
@@ -392,13 +394,15 @@ iwconfig_force_preferred() {
 }
 
 iwconfig_connect_preferred() {
-	local essid= i=0 mode= mac= caps= freq= chan=
+	local ssid= i=0 mode= mac= caps= freq= chan=
 
-	eval "$(_get_array preferred_aps)"
-	for essid in "$@"; do
+	eval "$(_get_array "preferred_aps_${IFVAR}")"
+	[ $# = 0 ] && eval "$(_get_array "preferred_aps")"
+
+	for ssid in "$@"; do
 		while [ ${i} -le ${APS} ]  ; do
 			eval e=\$SSID_${i}
-			if [ "${e}" = "${essid}" ] ; then
+			if [ "${e}" = "${ssid}" ] ; then
 				SSID=${e}
 				eval mac=\$MAC_${i}
 				eval caps=\$CAPS_${i}
@@ -415,7 +419,7 @@ iwconfig_connect_preferred() {
 }
 
 iwconfig_connect_not_preferred() {
-	local essid= i=0 mode= mac= caps= freq= chan= pref=
+	local ssid= i=0 mode= mac= caps= freq= chan= pref=
 
 	while [ ${i} -le ${APS} ] ; do
 		eval e=\$SSID_${i}
@@ -426,8 +430,8 @@ iwconfig_connect_not_preferred() {
 
 		eval "$(_get_array preferred_aps)"
 		pref=false
-		for essid in "$@" ; do
-			if [ "${e}" = "${essid}" ] ; then
+		for ssid in "$@" ; do
+			if [ "${e}" = "${ssid}" ] ; then
 				pref=true
 				break
 			fi
