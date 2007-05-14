@@ -80,8 +80,8 @@ static void setup_selinux (int argc, char **argv)
 		 * which sucks ass
 		 * http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html
 		 */
-		selinux_run_init_old = dlsym (lib_handle, "selinux_runscript");
-		selinux_run_init_new = dlsym (lib_handle, "selinux_runscript2");
+		selinux_run_init_old = (void (*)(void)) dlsym (lib_handle, "selinux_runscript");
+		selinux_run_init_new = (void (*)(int, char **)) dlsym (lib_handle, "selinux_runscript2");
 
 		/* Use new run_init if it rc_exists, else fall back to old */
 		if (selinux_run_init_new)

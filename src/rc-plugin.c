@@ -23,7 +23,7 @@ typedef struct plugin
 {
 	char *name;
 	void *handle;
-	int (*hook) (rc_hook_t hook, const char *name);
+	int (*hook) (rc_hook_t, const char *);
 	struct plugin *next;
 } plugin_t;
 
@@ -47,7 +47,7 @@ void rc_plugin_load (void)
 		char *p = rc_strcatpaths (RC_PLUGINDIR, file, NULL);
 		void *h = dlopen (p, RTLD_LAZY);
 		char *func;
-		void *f;
+		int (*fptr) (rc_hook_t, const char *); 
 		int len;
 
 		if (! h) {
@@ -62,8 +62,12 @@ void rc_plugin_load (void)
 		func = rc_xmalloc (sizeof (char *) * len);
 		snprintf (func, len, "_%s_hook", file);
 
-		f = dlsym (h, func);
-		if (! f) {
+#ifdef __FreeBSD__
+		fptr = (int (*)(rc_hook_t, const char*)) dlfunc (h, func);
+#else
+		fptr = (int (*)(rc_hook_t, const char*)) dlsym (h, func);
+#endif
+		if (! fptr) {
 			eerror ("`%s' does not expose the symbol `%s'", p, func);
 			dlclose (h);
 		} else {
@@ -76,7 +80,7 @@ void rc_plugin_load (void)
 			memset (plugin, 0, sizeof (plugin_t));
 			plugin->name = rc_xstrdup (file);
 			plugin->handle = h;
-			plugin->hook = f;
+			plugin->hook = fptr;
 		}
 
 		free (func);
