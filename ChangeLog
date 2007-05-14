@@ -1,6 +1,8 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+* baselayout-2.0.0_alpha3 (14 May 2007)
+
   14 May 2007; Roy Marples <uberlord@gentoo.org>:
 
     RC_INTERACTIVE now works, #178331.
