@@ -29,6 +29,19 @@ typedef struct plugin
 
 static plugin_t *plugins = NULL;
 
+#ifndef __FreeBSD__
+dlfunc_t dlfunc (void * __restrict handle, const char * __restrict symbol)
+{
+	union {
+		void *d;
+		dlfunc_t f;
+	} rv;
+
+	rv.d = dlsym (handle, symbol);
+	return (rv.f);
+}
+#endif
+
 void rc_plugin_load (void)
 {
 	char **files;
@@ -62,11 +75,7 @@ void rc_plugin_load (void)
 		func = rc_xmalloc (sizeof (char *) * len);
 		snprintf (func, len, "_%s_hook", file);
 
-#ifdef __FreeBSD__
 		fptr = (int (*)(rc_hook_t, const char*)) dlfunc (h, func);
-#else
-		fptr = (int (*)(rc_hook_t, const char*)) dlsym (h, func);
-#endif
 		if (! fptr) {
 			eerror ("`%s' does not expose the symbol `%s'", p, func);
 			dlclose (h);
