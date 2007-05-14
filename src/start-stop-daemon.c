@@ -481,6 +481,7 @@ int main (int argc, char **argv)
 		{ "nicelevel",    1, NULL, 'N'},
 		{ "retry",        1, NULL, 'R'},
 		{ "start",        0, NULL, 'S'},
+		{ "startas",      1, NULL, 'a'},
 		{ "background",   0, NULL, 'b'},
 		{ "chuid",        1, NULL, 'c'},
 		{ "chdir",        1, NULL, 'd'},
@@ -665,6 +666,7 @@ int main (int argc, char **argv)
 				verbose = true;
 				break;
 
+			case 'a':
 			case 'x':  /* --exec <executable> */
 				exec = optarg;
 				break;
