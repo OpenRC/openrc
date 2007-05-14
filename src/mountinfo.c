@@ -157,11 +157,11 @@ int main (int argc, char **argv)
 	bool list_fstype = false;
 	bool reverse = false;
 	char **mounts = NULL;
-	char c;
+	int opt;
 
-	while ((c = getopt_long (argc, argv, getoptstring,
-							 longopts, (int *) 0)) != -1)
-		switch (c) {
+	while ((opt = getopt_long (argc, argv, getoptstring,
+							   longopts, (int *) 0)) != -1)
+		switch (opt) {
 			case 'F':
 				if (fstype_regex)
 					free (fstype_regex);

@@ -78,15 +78,15 @@ int main (int argc, char **argv)
 	int result = EXIT_FAILURE;
 	char *token;
 	int n = 0;
-	char c;
+	int opt;
 
-	while ((c = getopt_long (argc, argv, getoptstring,
-							 longopts, (int *) 0)) != -1)
+	while ((opt = getopt_long (argc, argv, getoptstring,
+							   longopts, (int *) 0)) != -1)
 	{
 #ifdef HAVE_GETMNTENT
 		fp = setmntent ("/etc/fstab", "r");
 #endif
-		switch (c) {
+		switch (opt) {
 			case 'f':
 				while ((token = strsep (&optarg, ",")))
 					while ((ent = GET_ENT))

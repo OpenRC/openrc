@@ -70,13 +70,12 @@ int main (int argc, char **argv)
 	char **services = NULL;
 	char *level;
 	char *service;
-	char c;
-	int option_index = 0;
+	int opt;
 	int i;
 	int j;
 
-	while ((c = getopt_long(argc, argv, getoptstring, longopts, &option_index)) != -1)
-		switch (c) {
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts, (int *) 0)) != -1)
+		switch (opt) {
 			case 'a':
 				levels = rc_get_runlevels ();
 				break;

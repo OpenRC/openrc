@@ -70,7 +70,7 @@ LDLIBS_RS = -ldl
 override CPPFLAGS += -D_GNU_SOURCE
 endif
 ifeq ($(OS),BSD)
-override LDLIBS += -lkvm
+LDLIBS_LIBRC = -lkvm
 endif
 
 HAVE_PAM = 
@@ -102,7 +102,7 @@ $(LIBEINFOSO): $(LIBEINFOOBJS)
 
 $(LIBRCOBJS): CFLAGS += -fPIC
 $(LIBRCSO): $(LIBRCOBJS) 
-	$(CC) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LIBRCOBJS)
+	$(CC) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LDLIBS_LIBRC) $(LIBRCOBJS)
 	ln -sf $(LIBRCSO) librc.so
 
 env-update: $(LIBEINFOSO) $(LIBRCSO) env-update.o

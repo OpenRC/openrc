@@ -500,7 +500,7 @@ int main (int argc, char **argv)
 		{ "stderr",       1, NULL, '2'},
 		{ NULL,           0, NULL, 0}
 	};
-	int c;
+	int opt;
 	bool start = false;
 	bool stop = false;
 	bool oknodo = false;
@@ -541,10 +541,10 @@ int main (int argc, char **argv)
 		if (sscanf (env, "%d", &nicelevel) != 1)
 			eerror ("%s: invalid nice level `%s' (SSD_NICELEVEL)", progname, env);
 
-	while ((c = getopt_long (argc, argv,
-							 "KN:R:Sbc:d:g:mn:op:qs:tu:r:vx:1:2:",
-							 longopts, (int *) 0)) != -1)
-		switch (c) {
+	while ((opt = getopt_long (argc, argv,
+							   "KN:R:Sbc:d:g:mn:op:qs:tu:r:vx:1:2:",
+							   longopts, (int *) 0)) != -1)
+		switch (opt) {
 			case 'K':  /* --stop */
 				stop = true;
 				break;
@@ -962,6 +962,7 @@ int main (int argc, char **argv)
 	if (START_WAIT > 0) {
 		struct timeval stopat;
 		struct timeval now;
+		bool retestpid = false;
 
 		if (gettimeofday (&stopat, NULL) != 0)
 			eerrorx ("%s: gettimeofday: %s", progname, strerror (errno));
@@ -991,11 +992,20 @@ int main (int argc, char **argv)
 				if (kill (pid, 0) == 0)
 					alive = true;
 			} else {
-				if (pidfile && rc_exists (pidfile)) {
-					if (do_stop (NULL, NULL, pidfile, uid, 0, true, false, true) > 0)
+				if (pidfile) {
+					/* The pidfile may not have been written yet - give it some time */
+					if (get_pid (pidfile, true) == -1) {
 						alive = true;
+						retestpid = true;
+					} else {
+						retestpid = false;
+						if (do_stop (NULL, NULL, pidfile, uid, 0,
+									 true, false, true) > 0)
+							alive = true;
+					}
 				} else {
-					if (do_stop (exec, cmd, NULL, uid, 0, true, false, true) > 0)
+					if (do_stop (exec, cmd, NULL, uid, 0, true, false, true)
+						> 0)
 						alive = true;
 				}
 			}
@@ -1005,6 +1015,12 @@ int main (int argc, char **argv)
 
 			if (timercmp (&now, &stopat, >))
 				break;
+		}
+
+		if (retestpid) {
+			if (do_stop (NULL, NULL, pidfile, uid, 0, true,
+						 false, true) < 1)
+				eerrorx ("%s: %s died", progname, exec);
 		}
 	}
 

@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  14 May 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Allow time for pidfiles to be created, #178274.
+	Use int instead of char for getopt, #178084 thanks to drizztbsd.
+
   11 May 2007; Roy Marples <uberlord@gentoo.org>:
 
     Store the defined random pool size, #177722 thanks to Yaroslav Isakov.

@@ -972,7 +972,7 @@ int main (int argc, char **argv)
 	bool doneone = false;
 	char pid[16];
 	int retval;
-	char c;
+	int opt;
 
 	service = argv[1];
 	/* Show help if insufficient args */
@@ -1079,9 +1079,9 @@ int main (int argc, char **argv)
 	argv++;
 
 	/* Right then, parse any options there may be */
-	while ((c = getopt_long (argc, argv, getoptstring,
-							 longopts, (int *) 0)) != -1)
-		switch (c) {
+	while ((opt = getopt_long (argc, argv, getoptstring,
+							   longopts, (int *) 0)) != -1)
+		switch (opt) {
 			case 'd':
 				setenv ("RC_DEBUG", "yes", 1);
 				break;
