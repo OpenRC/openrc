@@ -3,9 +3,10 @@
 
   14 May 2007; Roy Marples <uberlord@gentoo.org>:
 
+    RC_INTERACTIVE now works, #178331.
     Add --startas back to s-s-d, #175980, #175981.
     Allow time for pidfiles to be created, #178274.
-	Use int instead of char for getopt, #178084 thanks to drizztbsd.
+    Use int instead of char for getopt, #178084 thanks to drizztbsd.
 
   11 May 2007; Roy Marples <uberlord@gentoo.org>:
 

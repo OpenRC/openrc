@@ -367,7 +367,12 @@ static char read_key (bool block)
 
 static bool want_interactive (void)
 {
-	char c = read_key (false);
+	char c;
+
+	if (! rc_is_env ("RC_INTERACTIVE", "yes"))
+		return (false);
+
+	c = read_key (false);
 	return ((c == 'I' || c == 'i') ? true : false);
 }
 
@@ -741,8 +746,9 @@ int main (int argc, char **argv)
 						ecolor (ecolor_good), uts.sysname, ecolor (ecolor_bracket),
 						ecolor (ecolor_normal));
 
-				printf ("Press %sI%s to enter interactive boot mode\n\n",
-						ecolor (ecolor_good), ecolor (ecolor_normal));
+				if (rc_is_env ("RC_INTERACTIVE", "yes"))
+					printf ("Press %sI%s to enter interactive boot mode\n\n",
+							ecolor (ecolor_good), ecolor (ecolor_normal));
 
 				setenv ("RC_SOFTLEVEL", newlevel, 1);
 				rc_plugin_run (rc_hook_runlevel_start_in, newlevel);
