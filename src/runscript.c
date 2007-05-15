@@ -975,15 +975,15 @@ int main (int argc, char **argv)
 	int opt;
 
 	service = argv[1];
+	applet = rc_xstrdup (basename (service));
+	atexit (cleanup);
+	
 	/* Show help if insufficient args */
 	if (argc < 3) {
 		execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
 		eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 				 applet, strerror (errno));
 	}
-
-	applet = rc_xstrdup (basename (service));
-	atexit (cleanup);
 
 #ifdef __linux__
 	/* coldplug events can trigger init scripts, but we don't want to run them

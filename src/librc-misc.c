@@ -572,13 +572,20 @@ char **rc_config_env (char **env)
 	char *line;
 	int i;
 	char *p;
-	char **config = rc_get_config (NULL, RC_CONFIG);
+	char **config;
 	char *e;
 	char sys[6];
 	struct utsname uts;
 	bool has_net_fs_list = false;
 	FILE *fp;
 	char buffer[PATH_MAX];
+
+	/* Don't trust environ for softlevel yet */
+	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, rc_get_runlevel());
+	if (rc_exists (buffer))
+		config = rc_get_config (NULL, buffer);
+	else
+		config = rc_get_config (NULL, RC_CONFIG);
 
 	STRLIST_FOREACH (config, line, i) {
 		p = strchr (line, '=');
