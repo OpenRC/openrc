@@ -21,7 +21,7 @@ start() {
     if [ -e /etc/sysctl.conf -a ! -x /etc/init.d/sysctl ] ; then
 		if [ "${RC_SYS}" != "VPS" ] ; then
 			ebegin "Configuring kernel parameters"
-			sysctl -q -p /etc/sysctl.conf
+			sysctl -p /etc/sysctl.conf >/dev/null
 			eend $?
 		fi
 	fi
