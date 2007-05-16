@@ -143,8 +143,6 @@ static int do_e (int argc, char **argv)
 				argv++;
 			}
 		}
-		else
-			retval = EXIT_FAILURE;
 	}
 
 	if (argc > 0) {
