@@ -1008,7 +1008,6 @@ int main (int argc, char **argv)
 						alive = true;
 						retestpid = true;
 					} else {
-						printf ("%d\n", get_pid (pidfile, true));
 						retestpid = false;
 						if (do_stop (NULL, NULL, pidfile, uid, 0,
 									 true, false, true) > 0)
