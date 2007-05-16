@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #ifdef HAVE_PAM
@@ -88,6 +89,20 @@ static void cleanup (void)
 
 	if (newenv)
 		rc_strlist_free (newenv);
+}
+
+static int get_time(struct timeval *tp)
+{
+	struct timespec ts;
+
+	if (clock_gettime (CLOCK_MONOTONIC, &ts) == -1) {
+		eerror ("clock_gettime: %s", strerror (errno));
+		return (-1);
+	}
+
+	tp->tv_sec = ts.tv_sec;
+	tp->tv_usec = ts.tv_nsec / 1000;
+	return (0);
 }
 
 static int parse_signal (const char *sig)
@@ -374,10 +389,8 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 					break;
 				}
 
-				if (gettimeofday (&stopat, NULL) != 0) {
-					eerror ("%s: gettimeofday: %s", progname, strerror (errno));
+				if (get_time (&stopat) != 0)
 					return (0);
-				}
 
 				stopat.tv_sec += item->value;
 				while (1) {
@@ -396,10 +409,8 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 						}
 					}
 
-					if (gettimeofday (&now, NULL) != 0) {
-						eerror ("%s: gettimeofday: %s", progname, strerror (errno));
+					if (get_time (&now) != 0)
 						return (0);
-					}
 					if (timercmp (&now, &stopat, >))
 						break;
 				}
@@ -966,8 +977,8 @@ int main (int argc, char **argv)
 		struct timeval now;
 		bool retestpid = false;
 
-		if (gettimeofday (&stopat, NULL) != 0)
-			eerrorx ("%s: gettimeofday: %s", progname, strerror (errno));
+		if (get_time (&stopat) != 0)
+			exit (EXIT_FAILURE);
 
 		stopat.tv_usec += START_WAIT;
 		while (1) {
@@ -980,9 +991,6 @@ int main (int argc, char **argv)
 				if (errno != EINTR)
 					eerrorx ("%s: select: %s", progname, strerror (errno));
 			}
-
-			if (gettimeofday (&now, NULL) != 0)
-				eerrorx ("%s: gettimeofday: %s", progname, strerror (errno));
 
 			/* This is knarly.
 			   If we backgrounded then we know the exact pid.
@@ -1000,6 +1008,7 @@ int main (int argc, char **argv)
 						alive = true;
 						retestpid = true;
 					} else {
+						printf ("%d\n", get_pid (pidfile, true));
 						retestpid = false;
 						if (do_stop (NULL, NULL, pidfile, uid, 0,
 									 true, false, true) > 0)
@@ -1015,7 +1024,9 @@ int main (int argc, char **argv)
 			if (! alive)
 				eerrorx ("%s: %s died", progname, exec);
 
-			if (timercmp (&now, &stopat, >))
+			if (get_time (&now) != 0)
+				exit (EXIT_FAILURE);
+			if (timercmp (&now, &stopat, >)) 
 				break;
 		}
 

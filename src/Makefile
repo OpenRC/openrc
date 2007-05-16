@@ -65,6 +65,7 @@ endif
 ifeq ($(OS),Linux)
 LDLIBS_RC = -ldl
 LDLIBS_RS = -ldl
+LDLIBS_SSD = -lrt
 # Shouldn't need this, but it's the easiest workaround for silly
 # Linux headers that don't work with -std=c99
 override CPPFLAGS += -D_GNU_SOURCE
@@ -76,7 +77,7 @@ endif
 HAVE_PAM = 
 ifdef HAVE_PAM
 CPPFLAGS_SSD = -DHAVE_PAM
-LDLIBS_SSD = -lpam
+LDLIBS_SSD += -lpam
 endif
 
 # We also define _BSD_SOURCE so both Linux and the BSDs get a few
