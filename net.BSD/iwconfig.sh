@@ -71,7 +71,7 @@ iwconfig_user_config() {
 
 iwconfig_set_mode() {
     local x= opt= unopt="hostap adhoc"
-    case "${mode}" in
+    case "$1" in
 	master|hostap) unopt="adhoc" opt="hostap" ;;
 	ad-hoc|adhoc) unopt="hostap" opt="adhoc" ;;
     esac
@@ -474,7 +474,7 @@ iwconfig_configure() {
 	    ad-hoc|adhoc|hostap|master) iwconfig_setup_specific "${x}" ;;
 	esac
 
-	if [ "${x}" != "managed" -a "${x}" != "auto" ] ; then
+	if [ "${x}" != "managed" -a "${x}" != "auto" -a "${x}" != "ad-hoc" -a "${x}" != "adhoc" -a ${x} != "master" ] ; then
 		eerror "Only managed, ad-hoc, master and auto modes are supported"
 		return 1
 	fi
