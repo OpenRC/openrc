@@ -118,8 +118,8 @@ _show_address() {
 
 # Basically sorts our modules into order and saves the list
 _gen_module_list() {
-	local x= f=
-	if [ -s "${MODULESLIST}" -a "${MODULESLIST}" -nt "${MODULESDIR}" ] ; then
+	local x= f= force=$1
+	if ! ${force} && [ -s "${MODULESLIST}" -a "${MODULESLIST}" -nt "${MODULESDIR}" ] ; then
 		local update=false
 		for x in "${MODULESDIR}"/* ; do
 			[ -e "${x}" ] || continue
@@ -230,10 +230,14 @@ _gen_module_list() {
 }
 
 _load_modules() {
-	# Ensure our list is up to date
-	_gen_module_list
-
 	local starting=$1 mymods=
+
+	# Ensure our list is up to date
+	_gen_module_list false
+	if ! . "${MODULESLIST}" ; then
+		_gen_module_list true
+		. "${MODULESLIST}"
+	fi
 
 	MODULES=
 	if [ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ] ; then
@@ -241,7 +245,6 @@ _load_modules() {
 		[ -z "${mymods}" ] && mymods=${modules}
 	fi
 
-	. "${MODULESLIST}"
 	local i=-1 x= mod= f= provides=
 	while true ; do
 		i=$((${i} + 1))
