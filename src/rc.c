@@ -577,6 +577,29 @@ static void handle_signal (int sig)
 	errno = serrno;
 }
 
+static void run_script (const char *script) {
+	int status = 0;
+	pid_t pid = vfork ();
+	
+	if (pid < 0)
+		eerrorx ("%s: vfork: %s", applet, strerror (errno));
+	else if (pid == 0) {
+		execl (script, script, (char *) NULL);
+		eerror ("%s: unable to exec `%s': %s",
+				script, applet, strerror (errno));
+		_exit (EXIT_FAILURE);
+	}
+
+	do {
+		pid_t wpid = waitpid (pid, &status, 0);
+		if (wpid < 1)
+			eerror ("waitpid: %s", strerror (errno));
+	} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+
+	if (! WIFEXITED (status) || ! WEXITSTATUS (status) == 0)
+		exit (EXIT_FAILURE);
+}
+
 int main (int argc, char **argv)
 {
 	char *RUNLEVEL = NULL;
@@ -707,9 +730,6 @@ int main (int argc, char **argv)
 			/* OK, we're either in runlevel 1 or single user mode */
 			if (strcmp (newlevel, RC_LEVEL_SYSINIT) == 0) {
 				struct utsname uts;
-				pid_t pid;
-				pid_t wpid;
-				int status = 0;
 #ifdef __linux__
 				FILE *fp;
 #endif
@@ -717,23 +737,8 @@ int main (int argc, char **argv)
                 /* exec init-early.sh if it exists
                  * This should just setup the console to use the correct
                  * font. Maybe it should setup the keyboard too? */
-                if (rc_exists (INITEARLYSH)) {
-                    if ((pid = vfork ()) == -1)
-                        eerrorx ("%s: vfork: %s", applet, strerror (errno));
-
-                    if (pid == 0) {
-                        execl (INITEARLYSH, INITEARLYSH, (char *) NULL);
-                        eerror ("%s: unable to exec `" INITEARLYSH "': %s",
-                                applet, strerror (errno));
-                        _exit (EXIT_FAILURE);
-                    }
-
-                    do {
-                        wpid = waitpid (pid, &status, 0);
-                        if (wpid < 1)
-                            eerror ("waitpid: %s", strerror (errno));
-                    } while (! WIFEXITED (status) && ! WIFSIGNALED (status));
-                }
+                if (rc_exists (INITEARLYSH))
+					run_script (INITEARLYSH);
 
 				uname (&uts);
 
@@ -750,25 +755,7 @@ int main (int argc, char **argv)
 
 				setenv ("RC_SOFTLEVEL", newlevel, 1);
 				rc_plugin_run (rc_hook_runlevel_start_in, newlevel);
-
-				if ((pid = vfork ()) == -1)
-					eerrorx ("%s: vfork: %s", applet, strerror (errno));
-
-				if (pid == 0) {
-					execl (INITSH, INITSH, (char *) NULL);
-					eerror ("%s: unable to exec `" INITSH "': %s",
-							applet, strerror (errno));
-					_exit (EXIT_FAILURE);
-				}
-
-				do {
-					wpid = waitpid (pid, &status, 0);
-					if (wpid < 1)
-						eerror ("waitpid: %s", strerror (errno));
-				} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
-
-				if (! WIFEXITED (status) || ! WEXITSTATUS (status) == 0)
-					exit (EXIT_FAILURE);
+				run_script (INITSH);
 
 				/* If we requested a softlevel, save it now */
 #ifdef __linux__
