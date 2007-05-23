@@ -677,13 +677,15 @@ char **rc_config_env (char **env)
 			if (file_regex ("/proc/xen/capabilities", "control_d"))
 				snprintf (sys, sizeof (sys), "XENU");
 		}
-		if (! sys)
+		if (! sys[0])
 			snprintf (sys, sizeof (sys), "XEN0");
-	} else if (file_regex ("/proc/cpuinfo", "UML"))
+	} else if (file_regex ("/proc/cpuinfo", "UML")) {
 		snprintf (sys, sizeof (sys), "UML");
-	else if (file_regex ("/proc/self/status",
-						 "(s_context|VxID|envID):[[:space:]]*[1-9]"))
-													snprintf (sys, sizeof (sys), "VPS"); 
+	} else if (file_regex ("/proc/self/status",
+						   "(s_context|VxID|envID):[[:space:]]*[1-9]"))
+	{
+		snprintf (sys, sizeof (sys), "VPS");
+	}
 #endif
 
 	/* Only add a NET_FS list if not defined */
