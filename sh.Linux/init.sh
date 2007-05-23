@@ -100,7 +100,24 @@ fi
 check_statedir /proc
 
 # By default VServer already has /proc mounted, but OpenVZ does not!
-if [ ! -e /proc/self/stat ] ; then
+# However, some of our users have an old proc image in /proc
+# NFC how they managed that, but the end result means we have to test if
+# /proc actually works or not. We to this by comparing uptime to one a second
+# ago
+mountproc=true
+if [ -e /proc/uptime ] ; then
+	up="$(cat /proc/uptime)"
+	sleep 1
+	if [ "${up}" = "$(cat /proc/uptime)" ] ; then
+		eerror "You have cruft in /proc that should be deleted"
+	else
+		einfo "/proc is already mounted, skipping"
+		mountproc=false
+	fi
+	unset up
+fi
+
+if ${mountproc} ; then
 	procfs="proc"
 	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
 	ebegin "Mounting ${procfs} at /proc"
@@ -108,6 +125,7 @@ if [ ! -e /proc/self/stat ] ; then
 	try mount -n ${mntcmd:--t ${procfs} -o noexec,nosuid,nodev proc /proc}
 	eend $?
 fi
+unset mountproc
 
 # Read off the kernel commandline to see if there's any special settings
 # especially check to see if we need to set the  CDBOOT environment variable
