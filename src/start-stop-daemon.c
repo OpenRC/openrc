@@ -963,7 +963,7 @@ int main (int argc, char **argv)
 
 		if (! WIFEXITED (status) || WEXITSTATUS (status) != 0) {
 			if (! quiet)
-				eerrorx ("%s: failed to started `%s'", progname, exec);
+				eerrorx ("%s: failed to start `%s'", progname, exec);
 			exit (EXIT_FAILURE);
 		}
 
