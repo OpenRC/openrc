@@ -79,24 +79,25 @@ start() {
 
 	ebegin "Setting system clock using the hardware clock" "[${TBLURB}]"
 	if [ ${fakeit} -eq 1 ] ; then
-		ret=0
+		retval=0
 	elif [ -x /sbin/hwclock ] ; then
-		# Since hwclock always exit's with a 0, need to check its output.
-		errstr="$(/sbin/hwclock ${myadj} ${myopts} 2>&1 >/dev/null)"
-		errstr="${errstr}$(/sbin/hwclock --hctosys ${myopts} 2>&1 >/dev/null)"
+		# Don't call hwclock unless we need to
+		if [ "${TBLURB}" != "UTC" -o "${myadj}" != "--noadjfile" ] ; then
+			# Since hwclock always exit's with a 0, need to check its output.
+			errstr="$(/sbin/hwclock ${myadj} ${myopts} 2>&1 >/dev/null)"
+			errstr="${errstr}$(/sbin/hwclock --hctosys ${myopts} 2>&1 >/dev/null)"
 
-		if [ -n "${errstr}" ] ; then
-			ewarn "${errstr}"
-			ret=1
-		else
-			ret=0
+			if [ -n "${errstr}" ] ; then
+				ewarn "${errstr}"
+				retval=1
+			fi
+			errstr="Failed to set clock"
 		fi
-		errstr="Failed to set clock"
 	else
-		ret=1
+		retval=1
 		errstr="/sbin/hwclock not found"
 	fi
-	eend ${ret} "${errstr}" "You will need to set the clock yourself"
+	eend ${retval} "${errstr}" "You will need to set the clock yourself"
 
 	return 0
 }
@@ -111,16 +112,16 @@ stop() {
 
 	ebegin "Setting hardware clock using the system clock" "[${TBLURB}]"
 	if [ ${fakeit} -eq 1 ] ; then
-		ret=0
+		retval=0
 	elif [ -x /sbin/hwclock ] ; then
 		[ -z "$(/sbin/hwclock --systohc ${myopts} 2>&1 >/dev/null)" ]
-		ret=$?
+		retval=$?
 		errstr="Failed to sync clocks"
 	else
-		ret=1
+		retval=1
 		errstr="/sbin/hwclock not found"
 	fi
-	eend ${ret} "${errstr}"
+	eend ${retval} "${errstr}"
 }
 
 save() {
