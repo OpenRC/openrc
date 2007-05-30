@@ -31,7 +31,7 @@ do_mtab() {
 	rm -f /etc/mtab~ /etc/mtab~~
 }
 
-start() {
+do_fsck() {
 	local retval=0 opts="-F"
 	[ "${RC_UNAME}" = "Linux" ] && opts="-T -C0"
 
@@ -110,7 +110,11 @@ start() {
 	else
 		mount -u -o rw /
 	fi
-	eend $? "Root filesystem could not be mounted read/write :(" || return 1
+	eend $? "Root filesystem could not be mounted read/write :("
+}
+
+start() {
+	do_fsck || return 1
 
 	# Only Linux has mtab
 	[ "${RC_UNAME}" = "Linux" ] && do_mtab
