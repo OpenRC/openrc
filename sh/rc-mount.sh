@@ -54,7 +54,7 @@ do_unmount() {
 			if [ ${retry} -le 0 ] ; then
 				case "${cmd}" in
 					umount*)
-						LC_ALL=C ${cmd} ${extra_opts} "${mnt}" || retry=-999
+						LC_ALL=C ${cmd} -f "${mnt}" || retry=-999
 						;;
 					*)
 						retry=-999

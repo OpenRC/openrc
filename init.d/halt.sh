@@ -14,6 +14,12 @@ fi
 stop_addon devfs
 stop_addon udev
 
+# Really kill things off before unmounting
+if [ -x /sbin/killall5 ] ; then
+	killall5 -15
+	killall5 -9
+fi
+
 # Flush all pending disk writes now
 sync ; sync
 

@@ -4,6 +4,8 @@
   30 May 2007; Roy Marples <uberlord@gentoo.org>:
 
     Only call systohw in clock when we don't have adjfile or we aren't UTC.
+    Use killall5 again so we can cleanly remount / readonly, #168977
+    and #177689.
 
 * baselayout-2.0.0_alpha3 (14 May 2007)
 
