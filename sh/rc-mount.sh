@@ -8,7 +8,7 @@ do_unmount() {
 	local cmd="$1" retval=0 retry=
 	local f_opts="-m -c" f_kill="-s " mnt=
 	if [ "${RC_UNAME}" = "Linux" ] ; then
-		f_opts="-c"
+		f_opts="-m"
 		f_kill="-"
 	fi
 
@@ -34,7 +34,7 @@ do_unmount() {
 		esac
 
 		retry=3
-		while ! ${cmd} "${mnt}" 2>/dev/null ; do
+		while ! LC_ALL=C ${cmd} "${mnt}" 2>/dev/null ; do
 			# Don't kill if it's us (/ and possibly /usr)
 			local pids="$(fuser ${f_opts} "${mnt}" 2>/dev/null)"
 			case " ${pids} " in
