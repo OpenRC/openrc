@@ -59,7 +59,7 @@ setupopts() {
 	# Make sure people set their timezone ... we do it here
 	# even though we don't actually use the variable so that
 	# people see the warning on boot.
-	if [ "${TIMEZONE-Factory}" = "Factory" ] ; then
+	if [ -z "${CDBOOT}" -a "${TIMEZONE-Factory}" = "Factory" ] ; then
 		ewarn "Your TIMEZONE in /etc/conf.d/clock is still set to Factory!"
 	fi
 }

@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  31 May 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Don't warn about Factory clock when booting off of livecd.
+
   30 May 2007; Roy Marples <uberlord@gentoo.org>:
 
     Only call systohw in clock when we don't have adjfile or we aren't UTC.
