@@ -50,8 +50,7 @@ start() {
 
 	# Make sure we insert usbcore if its a module
 	if [ -f /proc/modules -a ! -d /proc/bus/usb ] ; then
-		# >/dev/null to hide errors from non-USB users
-		modprobe usbcore &> /dev/null
+		modprobe -q usbcore
 	fi
 
 	if [ -e /proc/filesystems ] ; then
