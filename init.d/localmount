@@ -54,7 +54,7 @@ start() {
 		modprobe usbcore &> /dev/null
 	fi
 
-	if [ -e /proc/filessystems ] ; then
+	if [ -e /proc/filesystems ] ; then
 		# Check what USB fs the kernel support.  Currently
 		# 2.5+ kernels, and later 2.4 kernels have 'usbfs',
 		# while older kernels have 'usbdevfs'.
