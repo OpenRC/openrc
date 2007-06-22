@@ -2,6 +2,8 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+URANDOM_SEED=${URANDOM_SEED:-/var/run/random-seed}
+
 depend() {
 	need localmount
 }
@@ -13,23 +15,24 @@ save_seed() {
 		poolsize=$(($(cat /proc/sys/kernel/random/poolsize) / 4096))
 	fi
 
-	umask 077
-	dd if=/dev/urandom of=/var/run/random-seed count=${poolsize} 2>/dev/null
+	(	# sub shell to prevent umask pollution
+		umask 077
+		dd if=/dev/urandom of="${URANDOM_SEED}" count=${poolsize} 2>/dev/null
+	)
 }
 
 start() {
 	[ -c /dev/urandom ] || return
-	if [ -f /var/run/random-seed ] ; then
-		cat /var/run/random-seed > /dev/urandom
+	if [ -f "${URANDOM_SEED}" ] ; then
+		cat "${URANDOM_SEED}" > /dev/urandom
 	fi
-	if ! rm -f /var/run/random-seed ; then
-		ewarn "Skipping /var/run/random-seed initialization (ro root?)"
+	if ! rm -f "${URANDOM_SEED}" ; then
+		ewarn "Skipping ${URANDOM_SEED} initialization (ro root?)"
 		return 0
 	fi
 	ebegin "Initializing random number generator"
 	save_seed
 	eend $? "Error initializing random number generator"
-	umask 022
 }
 
 stop() {
