@@ -1,6 +1,5 @@
 DIR   = /etc/conf.d
-FILES_NOEXIST = bootmisc checkfs clock env_whitelist hostname \
-		local.start local.stop net rc
+FILES_NOEXIST = $(filter-out Makefile,$(wildcard *))
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk
