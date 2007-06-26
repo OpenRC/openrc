@@ -977,6 +977,9 @@ int main (int argc, char **argv)
 	service = argv[1];
 	applet = rc_xstrdup (basename (service));
 	atexit (cleanup);
+
+	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
+	chdir ("/");
 	
 	/* Show help if insufficient args */
 	if (argc < 3) {

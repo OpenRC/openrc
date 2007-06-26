@@ -4,6 +4,7 @@
   26 Jun 2007; Roy Marples <uberlord@gentoo.org>:
 
     --nocolor works again, #181011 thanks to Daniel Drake.
+    Change pwd to / for all init scripts, #181224.
 
   21 Jun 2007; Mike Frysinger <vapier@gentoo.org>:
 
