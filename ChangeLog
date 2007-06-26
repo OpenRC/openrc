@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  26 Jun 2007; Roy Marples <uberlord@gentoo.org>:
+
+    --nocolor works again, #181011 thanks to Daniel Drake.
+
   21 Jun 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Allow urandom location to be customized #134489.

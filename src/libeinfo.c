@@ -154,6 +154,9 @@ static bool colour_terminal (void)
 	if (in_colour == 1)
 		return (true);
 
+	if (is_env ("RC_NOCOLOR", "yes"))
+		return (false);
+
 	if (! term) {
 		term = getenv ("TERM");
 		if (! term)
