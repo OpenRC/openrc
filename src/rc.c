@@ -668,6 +668,9 @@ int main (int argc, char **argv)
 	atexit (cleanup);
 	newlevel = argv[0];
 
+	/* Change dir to / to ensure all scripts don't use stuff in pwd */
+	chdir ("/");
+
 	/* Setup a signal handler */
 	signal (SIGINT, handle_signal);
 	signal (SIGQUIT, handle_signal);
