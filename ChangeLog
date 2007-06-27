@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  27 Jun 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Add --no-ldconfig option to env-update to match portage.
+
   26 Jun 2007; Roy Marples <uberlord@gentoo.org>:
 
     --nocolor works again, #181011 thanks to Daniel Drake.

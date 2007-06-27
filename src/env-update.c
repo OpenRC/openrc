@@ -8,7 +8,10 @@
 
 */
 
+#define APPLET "env-update"
+
 #include <errno.h>
+#include <getopt.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -58,6 +61,14 @@ static const char *space_separated[] = {
 
 static char *applet = NULL;
 
+#define getoptstring "hL"
+static struct option longopts[] = {
+	{ "help",           0, NULL, 'h'},
+	{ "no-ldconfig",    0, NULL, 'L'},
+	{ NULL,             0, NULL, 0}
+};
+#include "_usage.c"
+
 int main (int argc, char **argv)
 {
 	char **files = rc_ls_dir (NULL, ENVDIR, 0);
@@ -75,9 +86,24 @@ int main (int argc, char **argv)
 	char *entry;
 	char **mycolons = NULL;
 	char **myspaces = NULL;
-
+	int opt;
+	bool ldconfig = true;
+	
 	applet = argv[0];
 
+	while ((opt = getopt_long (argc, argv, getoptstring,
+							   longopts, (int *) 0)) != -1)
+	{
+		switch (opt) {
+			case 'L':
+				ldconfig = false;
+				break;
+			case 'h':
+				usage (EXIT_SUCCESS);
+			default:
+				usage (EXIT_FAILURE);
+		}
+	}
 	if (! files)
 		eerrorx ("%s: no files in " ENVDIR " to process", applet);
 
@@ -230,40 +256,43 @@ int main (int argc, char **argv)
 		nents++;
 	}
 
-	/* Update ld.so.conf only if different */
-	if (rc_exists (LDSOCONF)) {
-		char **lines = rc_get_list (NULL, LDSOCONF);
-		char *line;
-		ld = false;
-		STRLIST_FOREACH (lines, line, i)
-			if (i > nents || strcmp (line, ldents[i - 1]) != 0)
-			{
+	if (ldconfig) {
+		/* Update ld.so.conf only if different */
+		if (rc_exists (LDSOCONF)) {
+			char **lines = rc_get_list (NULL, LDSOCONF);
+			char *line;
+			ld = false;
+			STRLIST_FOREACH (lines, line, i)
+				if (i > nents || strcmp (line, ldents[i - 1]) != 0)
+				{
+					ld = true;
+					break;
+				}
+			rc_strlist_free (lines);
+			if (i - 1 != nents)
 				ld = true;
-				break;
-			}
-		rc_strlist_free (lines);
-		if (i - 1 != nents)
-			ld = true;
-	}
+		}
 
-	if (ld) {
-		int retval = 0;
+		if (ld) {
+			int retval = 0;
 
-		if ((fp = fopen (LDSOCONF, "w")) == NULL)
-			eerrorx ("%s: fopen `%s': %s", applet, LDSOCONF, strerror (errno));
-		fprintf (fp, LDNOTICE);
-		STRLIST_FOREACH (ldents, ldent, i)
-			fprintf (fp, "%s\n", ldent);
-		fclose (fp);
+			if ((fp = fopen (LDSOCONF, "w")) == NULL)
+				eerrorx ("%s: fopen `%s': %s", applet, LDSOCONF,
+						 strerror (errno));
+			fprintf (fp, LDNOTICE);
+			STRLIST_FOREACH (ldents, ldent, i)
+				fprintf (fp, "%s\n", ldent);
+			fclose (fp);
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-		ebegin ("Regenerating /var/run/ld-elf.so.hints");
-		retval = system ("/sbin/ldconfig -elf -i '" LDSOCONF "'");
+			ebegin ("Regenerating /var/run/ld-elf.so.hints");
+			retval = system ("/sbin/ldconfig -elf -i '" LDSOCONF "'");
 #else
-		ebegin ("Regenerating /etc/ld.so.cache");
-		retval = system ("/sbin/ldconfig");
+			ebegin ("Regenerating /etc/ld.so.cache");
+			retval = system ("/sbin/ldconfig");
 #endif
-		eend (retval, NULL);
+			eend (retval, NULL);
+		}
 	}
 
 	rc_strlist_free (ldents);
