@@ -130,7 +130,8 @@ static char **find_mounts (regex_t *node_regex, regex_t *fstype_regex,
 #  error "Operating system not supported!"
 #endif
 
-#define getoptstring "F:N:S:fnrhV"
+#include "_usage.h"
+#define getoptstring "F:N:S:fnrV" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "fstype-regex",   1, NULL, 'F'},
 	{ "node-regex",     1, NULL, 'N'},
@@ -138,7 +139,7 @@ static struct option longopts[] = {
 	{ "fstype",         0, NULL, 'f'},
 	{ "node",           0, NULL, 'n'},
 	{ "reverse",        0, NULL, 'r'},
-	{ "help",           0, NULL, 'h'},
+	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
 #include "_usage.c"

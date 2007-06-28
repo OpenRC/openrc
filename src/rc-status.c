@@ -53,13 +53,14 @@ static void print_service (char *service)
 	ebracket (cols, color, status);
 }
 
-#define getoptstring "alsuh"
+#include "_usage.h"
+#define getoptstring "alsu" getoptstring_COMMON
 const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
 	{"list",        0, NULL, 'l'},
 	{"servicelist", 0, NULL, 's'},
 	{"unused",      0, NULL, 'u'},
-	{"help",        0, NULL, 'h'},
+	longopts_COMMON
 	{NULL,          0, NULL, 0}
 };
 #include "_usage.c"

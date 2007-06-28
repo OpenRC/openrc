@@ -149,13 +149,13 @@ static bool colour_terminal (void)
 	static int in_colour = -1;
 	int i = 0;
 
+	if (is_env ("RC_NOCOLOR", "yes"))
+		return (false);
+
 	if (in_colour == 0)
 		return (false);
 	if (in_colour == 1)
 		return (true);
-
-	if (is_env ("RC_NOCOLOR", "yes"))
-		return (false);
 
 	if (! term) {
 		term = getenv ("TERM");

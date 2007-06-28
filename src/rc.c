@@ -11,12 +11,15 @@
    Released under the GPLv2
    */
 
+#define APPLET "rc"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <errno.h>
 #include <ctype.h>
+#include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -600,6 +603,14 @@ static void run_script (const char *script) {
 		exit (EXIT_FAILURE);
 }
 
+#include "_usage.h"
+#define getoptstring getoptstring_COMMON 
+static struct option longopts[] = {
+	longopts_COMMON
+	{ NULL,             0, NULL, 0}
+};
+#include "_usage.c"
+
 int main (int argc, char **argv)
 {
 	char *RUNLEVEL = NULL;
@@ -615,6 +626,7 @@ int main (int argc, char **argv)
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	char ksoftbuffer [PATH_MAX];
 	char pidstr[6];
+	int opt;
 
 	if (argv[0])
 		applet = rc_xstrdup (basename (argv[0]));
@@ -660,13 +672,7 @@ int main (int argc, char **argv)
 	if (strcmp (applet, "rc" ) != 0)
 		eerrorx ("%s: unknown applet", applet);
 
-	/* OK, so we really are the main RC process
-	   Only root should be able to run us */
-	if (geteuid () != 0)
-		eerrorx ("%s: root access required", applet);
-
 	atexit (cleanup);
-	newlevel = argv[0];
 
 	/* Change dir to / to ensure all scripts don't use stuff in pwd */
 	chdir ("/");
@@ -711,6 +717,23 @@ int main (int argc, char **argv)
 
 		/* We don't free our list as that would be null in environ */
 	}
+
+	argc++;
+	argv--;
+	while ((opt = getopt_long (argc, argv, getoptstring,
+							   longopts, (int *) 0)) != -1)
+	{
+		switch (opt) {
+			case_RC_COMMON_GETOPT
+		}
+	}
+
+	newlevel = argv[optind++];
+	
+	/* OK, so we really are the main RC process
+	   Only root should be able to run us */
+	if (geteuid () != 0)
+		eerrorx ("%s: root access required", applet);
 
 	/* Enable logging */
 	setenv ("RC_ELOG", "rc", 1);

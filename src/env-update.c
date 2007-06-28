@@ -61,10 +61,11 @@ static const char *space_separated[] = {
 
 static char *applet = NULL;
 
-#define getoptstring "hL"
+#include "_usage.h"
+#define getoptstring "L" getoptstring_COMMON
 static struct option longopts[] = {
-	{ "help",           0, NULL, 'h'},
 	{ "no-ldconfig",    0, NULL, 'L'},
+	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
 #include "_usage.c"
@@ -98,12 +99,11 @@ int main (int argc, char **argv)
 			case 'L':
 				ldconfig = false;
 				break;
-			case 'h':
-				usage (EXIT_SUCCESS);
-			default:
-				usage (EXIT_FAILURE);
+
+			case_RC_COMMON_GETOPT
 		}
 	}
+
 	if (! files)
 		eerrorx ("%s: no files in " ENVDIR " to process", applet);
 

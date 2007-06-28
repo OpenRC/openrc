@@ -56,13 +56,14 @@ static struct mntent *getmntfile (FILE *fp, const char *file)
 }
 #endif
 
-#define getoptstring "f:m:o:p:h"
+#include "_usage.h"
+#define getoptstring "f:m:o:p:" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "fstype",         1, NULL, 'f'},
 	{ "mountcmd",       1, NULL, 'm'},
 	{ "opts",           1, NULL, 'o'},
 	{ "passno",         1, NULL, 'p'},
-	{ "help",           0, NULL, 'h'},
+	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
 #include "_usage.c"
@@ -139,12 +140,7 @@ int main (int argc, char **argv)
 				}
 				break;
 
-			case 'h':
-				END_ENT;
-				usage (EXIT_SUCCESS);
-			default:
-				END_ENT;
-				usage (EXIT_FAILURE);
+			case_RC_COMMON_GETOPT
 		}
 
 		END_ENT;

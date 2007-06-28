@@ -17,6 +17,3 @@ static void usage (int exit_status)
 	exit (exit_status);
 }
 
-#define case_RC_COMMON_GETOPT \
-	case 'h': usage (EXIT_SUCCESS); \
-	default:  usage (EXIT_FAILURE);
