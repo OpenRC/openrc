@@ -656,8 +656,13 @@ static void svc_start (bool deps)
 		tmplist = NULL;
 
 		STRLIST_FOREACH (services, svc, i) {
-			if (rc_service_state (svc, rc_service_started))
+			/* don't wait for services which went inactive but are now in
+			 * starting state */
+			if (rc_service_state (svc, rc_service_started) ||
+				(rc_service_state (svc, rc_service_starting) &&
+				 rc_service_state(svc, rc_service_wasinactive)))
 				continue;
+			
 			if (! rc_wait_service (svc))
 				eerror ("%s: timed out waiting for %s", applet, svc);
 			if (rc_service_state (svc, rc_service_started))

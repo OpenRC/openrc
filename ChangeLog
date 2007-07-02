@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  02 Jul 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Don't wait for services that were inactive, #183667 thanks to Daniel Drake
+
   30 Jun 2007; Roy Marples <uberlord@gentoo.org>:
 
     Don't set an early font if consolefont isn't in a runlevel, #183773.
