@@ -190,11 +190,12 @@ static bool valid_service (const char *runlevel, const char *service)
 static bool get_provided1 (const char *runlevel, struct lhead *providers,
                            rc_deptype_t *deptype,
                            const char *level, bool coldplugged,
-                           bool started, bool inactive)
+						   rc_service_state_t state)
 {
   char *service;
   int i;
   bool retval = false;
+  char *bootlevel = getenv ("RC_BOOTLEVEL");
 
   STRLIST_FOREACH (deptype->services, service, i)
     {
@@ -204,19 +205,27 @@ static bool get_provided1 (const char *runlevel, struct lhead *providers,
       else if (coldplugged)
         ok = (rc_service_state (service, rc_service_coldplugged) &&
               ! rc_service_in_runlevel (service, runlevel) &&
-              ! rc_service_in_runlevel (service, RC_LEVEL_BOOT));
+              ! rc_service_in_runlevel (service, bootlevel));
 
       if (! ok)
         continue;
 
-      if (started)
-        ok = (rc_service_state (service, rc_service_starting) ||
-              rc_service_state (service, rc_service_started) ||
-              rc_service_state (service, rc_service_stopping));
-      else if (inactive)
-        ok = rc_service_state (service, rc_service_inactive);
-
-      if (! ok)
+	  switch (state) {
+		case rc_service_started:
+			ok = rc_service_state (service, state);
+			break;
+		case rc_service_inactive:
+		case rc_service_starting:
+		case rc_service_stopping:
+			ok = (rc_service_state (service, rc_service_starting) ||
+				  rc_service_state (service, rc_service_stopping) ||
+				  rc_service_state (service, rc_service_inactive));
+			break;
+		default:
+			break;
+	  }
+      
+	  if (! ok)
         continue;
 
       retval = true;
@@ -242,6 +251,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
   struct lhead providers; 
   char *service;
   int i;
+  char *bootlevel;
 
   if (! deptree || ! depinfo)
     return (NULL);
@@ -292,41 +302,44 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
   return providers.list; \
 
   /* Anything in the runlevel has to come first */
-  if (get_provided1 (runlevel, &providers, dt, runlevel, false, true, false))
+  if (get_provided1 (runlevel, &providers, dt, runlevel, false, rc_service_started))
     { DO }
-  if (get_provided1 (runlevel, &providers, dt, runlevel, false, false, true))
-    { DO }
-  if (get_provided1 (runlevel, &providers, dt, runlevel, false, false, false))
+  if (get_provided1 (runlevel, &providers, dt, runlevel, false, rc_service_starting))
+	return (providers.list);
+  if (get_provided1 (runlevel, &providers, dt, runlevel, false, rc_service_stopped))
     return (providers.list);
 
-  /* Check coldplugged started services */
-  if (get_provided1 (runlevel, &providers, dt, NULL, true, true, false))
+  /* Check coldplugged services */
+  if (get_provided1 (runlevel, &providers, dt, NULL, true, rc_service_started))
     { DO }
+  if (get_provided1 (runlevel, &providers, dt, NULL, true, rc_service_starting))
+	return (providers.list);
 
   /* Check bootlevel if we're not in it */
-  if (strcmp (runlevel, RC_LEVEL_BOOT) != 0)
+  bootlevel = getenv ("RC_BOOTLEVEL");
+  if (bootlevel && strcmp (runlevel, bootlevel) != 0)
     {
-      if (get_provided1 (runlevel, &providers, dt, RC_LEVEL_BOOT, false, true, false))
+      if (get_provided1 (runlevel, &providers, dt, bootlevel, false, rc_service_started))
         { DO }
-      if (get_provided1 (runlevel, &providers, dt, RC_LEVEL_BOOT, false, false, true))
-        { DO }
-    }
+      if (get_provided1 (runlevel, &providers, dt, bootlevel, false, rc_service_starting))
+        return (providers.list);
+	}
 
-  /* Check coldplugged inactive services */
-  if (get_provided1 (runlevel, &providers, dt, NULL, true, false, true))
-    { DO }
+  /* Check coldplugged services */
+  if (get_provided1 (runlevel, &providers, dt, NULL, true, rc_service_stopped))
 
   /* Check manually started */
-  if (get_provided1 (runlevel, &providers, dt, NULL, false, true, false))
+  if (get_provided1 (runlevel, &providers, dt, NULL, false, rc_service_started))
     { DO }
-  if (get_provided1 (runlevel, &providers, dt, NULL, false, false, true))
-    { DO }
+  if (get_provided1 (runlevel, &providers, dt, NULL, false, rc_service_starting))
+    return (providers.list);
 
   /* Nothing started then. OK, lets get the stopped services */
-  if (get_provided1 (runlevel, &providers, dt, NULL, true, false, false))
+  if (get_provided1 (runlevel, &providers, dt, runlevel, false, rc_service_stopped))
     return (providers.list);
-  if ((strcmp (runlevel, RC_LEVEL_BOOT) != 0)
-      && (get_provided1 (runlevel, &providers, dt, RC_LEVEL_BOOT, false, false, false)))
+
+  if (bootlevel && (strcmp (runlevel, bootlevel) != 0)
+      && (get_provided1 (runlevel, &providers, dt, bootlevel, false, rc_service_stopped)))
     return (providers.list);
 
   /* Still nothing? OK, list all services */
