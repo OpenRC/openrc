@@ -1140,6 +1140,13 @@ int main (int argc, char **argv)
 		if (sighup)
 			exit (EXIT_FAILURE);
 
+		if (strcmp (optarg, "status") != 0 &&
+			strcmp (optarg, "help") != 0) {
+			/* Only root should be able to run us */
+			if (geteuid () != 0)
+				eerrorx ("%s: root access required", applet);
+		}
+
 		/* Export the command we're running.
 		   This is important as we stamp on the restart function now but
 		   some start/stop routines still need to behave differently if

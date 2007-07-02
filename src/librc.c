@@ -224,11 +224,10 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 			unlink (file);
 		i = symlink (init, file);
 		if (i != 0)	{
+			eerror ("symlink `%s' to `%s': %s", init, file, strerror (errno));
 			free (file);
 			free (init);
 			free (svc);
-			einfo ("%d %s %s", state, rc_service_state_names[state], base);
-			eerror ("symlink `%s' to `%s': %s", init, file, strerror (errno));
 			return (false);
 		}
 
