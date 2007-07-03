@@ -47,6 +47,7 @@ static char **providelist = NULL;
 static char **types = NULL;
 static char **restart_services = NULL;
 static char **need_services = NULL;
+static char **use_services = NULL;
 static char **env = NULL;
 static char *tmp = NULL;
 static char *softlevel = NULL;
@@ -254,6 +255,7 @@ static void cleanup (void)
 	rc_strlist_free (svclist);
 	rc_strlist_free (providelist);
 	rc_strlist_free (need_services);
+	rc_strlist_free (use_services);
 	rc_strlist_free (tmplist);
 	free (ibsave);
 
@@ -632,18 +634,19 @@ static void svc_start (bool deps)
 		rc_strlist_free (need_services);
 		need_services = rc_get_depends (deptree, types, svclist,
 										softlevel, depoptions);
+
 		types = rc_strlist_add (types, "iuse");
-		if (! rc_runlevel_starting ()) {
-			services = rc_get_depends (deptree, types, svclist,
+		rc_strlist_free (use_services);
+		use_services = rc_get_depends (deptree, types, svclist,
 									   softlevel, depoptions);
-			STRLIST_FOREACH (services, svc, i)
+
+		if (! rc_runlevel_starting ()) {
+			STRLIST_FOREACH (use_services, svc, i)
 				if (rc_service_state (svc, rc_service_stopped)) {
 					pid_t pid = rc_start_service (svc);
 					if (! rc_is_env ("RC_PARALLEL", "yes"))
 						rc_waitpid (pid);
 				}
-
-			rc_strlist_free (services);
 		}
 
 		/* Now wait for them to start */
@@ -656,12 +659,22 @@ static void svc_start (bool deps)
 		tmplist = NULL;
 
 		STRLIST_FOREACH (services, svc, i) {
-			/* don't wait for services which went inactive but are now in
-			 * starting state */
-			if (rc_service_state (svc, rc_service_started) ||
-				(rc_service_state (svc, rc_service_starting) &&
-				 rc_service_state(svc, rc_service_wasinactive)))
+			if (rc_service_state (svc, rc_service_started))
 				continue;
+
+			/* Don't wait for services which went inactive but are now in
+			 * starting state which we are after */
+			if (rc_service_state (svc, rc_service_starting) &&
+				rc_service_state(svc, rc_service_wasinactive)) {
+				bool use = false;
+				STRLIST_FOREACH (use_services, svc2, j)
+					if (strcmp (svc, svc2) == 0) {
+						use = true;
+						break;
+					}
+				if (! use)
+					continue;
+			}
 			
 			if (! rc_wait_service (svc))
 				eerror ("%s: timed out waiting for %s", applet, svc);
