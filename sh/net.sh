@@ -382,15 +382,19 @@ start() {
 		_load_modules true
 	fi
 
-	_up 2>/dev/null
-
+	# We up the iface twice if we have a preup to ensure it's up if
+	# available in preup and afterwards incase the user inadvertently
+	# brings it down
 	if type preup >/dev/null 2>/dev/null ; then
+		_up 2>/dev/null
 		ebegin "Running preup"
 		eindent
 		preup || return 1
 		eoutdent
 	fi
 
+	_up 2>/dev/null
+	
 	for module in ${MODULES} ; do
 		if type "${module}_pre_start" >/dev/null 2>/dev/null ; then
 			if ! ${module}_pre_start ; then
