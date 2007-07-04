@@ -113,6 +113,8 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 	if (rc_in_plugin)
 		return;
 
+	eflush ();
+
 	while (plugin) {
 		if (plugin->hook) {
 			int i;
@@ -181,6 +183,8 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 		}
 		plugin = plugin->next;
 	}
+
+	eflush ();
 }
 
 void rc_plugin_unload (void)
