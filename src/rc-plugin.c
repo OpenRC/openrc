@@ -19,6 +19,8 @@
 #include "rc-plugin.h"
 #include "strlist.h"
 
+bool rc_in_plugin = false;
+
 typedef struct plugin
 {
 	char *name;
@@ -48,6 +50,10 @@ void rc_plugin_load (void)
 	char *file;
 	int i;
 	plugin_t *plugin = plugins;
+
+	/* Don't load plugins if we're in one */
+	if (rc_in_plugin)
+		return;
 
 	/* Ensure some sanity here */
 	rc_plugin_unload ();
@@ -103,6 +109,10 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 {
 	plugin_t *plugin = plugins;
 
+	/* Don't run plugins if we're in one */
+	if (rc_in_plugin)
+		return;
+
 	while (plugin) {
 		if (plugin->hook) {
 			int i;
@@ -135,12 +145,13 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 			if (pid == 0) {
 				int retval;
 
+				rc_in_plugin = true;
 				close (pfd[0]);
 				rc_environ_fd = fdopen (pfd[1], "w");
 				retval = plugin->hook (hook, value);
 				fclose (rc_environ_fd);
 				rc_environ_fd = NULL;
-				_exit (retval);
+				exit (retval);
 			} else {
 				char buffer[RC_LINEBUFFER];
 				char *token;

@@ -83,7 +83,7 @@ static void cleanup (void)
 
 	rc_plugin_unload ();
 
-	if (termios_orig) {
+	if (! rc_in_plugin && termios_orig) {
 		tcsetattr (STDIN_FILENO, TCSANOW, termios_orig);
 		free (termios_orig);
 	}
@@ -103,10 +103,12 @@ static void cleanup (void)
 	rc_strlist_free (types);
 
 	/* Clean runlevel start, stop markers */
-	if (rc_is_dir (RC_SVCDIR "softscripts.new"))
-		rc_rm_dir (RC_SVCDIR "softscripts.new", true);
-	if (rc_is_dir (RC_SVCDIR "softscripts.old"))
-		rc_rm_dir (RC_SVCDIR "softscripts.old", true);
+	if (! rc_in_plugin) {
+		if (rc_is_dir (RC_SVCDIR "softscripts.new"))
+			rc_rm_dir (RC_SVCDIR "softscripts.new", true);
+		if (rc_is_dir (RC_SVCDIR "softscripts.old"))
+			rc_rm_dir (RC_SVCDIR "softscripts.old", true);
+	}
 
 	free (applet);
 }

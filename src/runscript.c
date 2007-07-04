@@ -234,7 +234,7 @@ static void start_services (char **list) {
 
 static void cleanup (void)
 {
-	if (prefix_locked)
+	if (! rc_in_plugin && prefix_locked)
 		unlink (PREFIX_LOCK);
 
 	/* Flush our buffered output if any */
@@ -259,7 +259,7 @@ static void cleanup (void)
 	rc_strlist_free (tmplist);
 	free (ibsave);
 
-	if (in_control ()) {
+	if (! rc_in_plugin && in_control ()) {
 		if (rc_service_state (applet, rc_service_stopping)) {
 			/* If the we're shutting down, do it cleanly */
 			if ((softlevel &&
@@ -287,7 +287,8 @@ static void cleanup (void)
 
 	if (mtime_test)
 	{
-		unlink (mtime_test);
+		if (! rc_in_plugin)
+			unlink (mtime_test);
 		free (mtime_test);
 	}
 	free (exclusive);
