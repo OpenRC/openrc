@@ -293,6 +293,7 @@ static void cleanup (void)
 	free (exclusive);
 	free (applet);
 	free (prefix);
+	free (service);
 }
 
 static int write_prefix (int fd, const char *buffer, size_t bytes, bool *prefixed) {
@@ -992,7 +993,16 @@ int main (int argc, char **argv)
 	int retval;
 	int opt;
 
-	service = argv[1];
+	/* We need the full path to the service */
+	if (*argv[1] == '/')
+		service = rc_xstrdup (argv[1]);
+	else {
+		char pwd[PATH_MAX];
+		if (! getcwd (pwd, PATH_MAX))
+			eerrorx ("getcwd: %s", strerror (errno));
+		service = rc_strcatpaths (pwd, argv[1], (char *) NULL);
+	}
+
 	applet = rc_xstrdup (basename (service));
 	atexit (cleanup);
 
