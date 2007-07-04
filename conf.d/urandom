@@ -4,5 +4,4 @@
 # (say for crypt swap), so you will need to customize this
 # behavior.  If you have /var on a separate partition, then
 # make sure this path lives on your root device somewhere.
-
 URANDOM_SEED="/var/run/random-seed"

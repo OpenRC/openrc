@@ -1,4 +1,2 @@
-# /etc/conf.d/hostname
-
 # Set to the hostname of this machine
 HOSTNAME="localhost"

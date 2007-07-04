@@ -4,11 +4,6 @@
 
 CLOCK_OPTS=""
 
-# If you want to set the Hardware Clock to the current System Time 
-# during shutdown, then say "yes" here.
-
-CLOCK_SYSTOHC="no"
-
 # Newer FHS specs say this file should live in /var/lib rather than
 # /etc.  If you care about such things, feel free to change this value.
 # Note that a blank value means that you do not wish to even use the

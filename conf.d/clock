@@ -4,13 +4,15 @@
 # Greenwich Mean Time).  If your clock is set to the local time, then 
 # set CLOCK to "local".  Note that if you dual boot with Windows, then 
 # you should set it to "local".
-
 CLOCK="UTC"
+
+# If you want to set the Hardware Clock to the current System Time 
+# during shutdown, then say "yes" here.
+CLOCK_SYSTOHC="no"
 
 # Select the proper timezone.  For valid values, peek inside of the
 # /usr/share/zoneinfo/ directory.  For example, some common values are
 # "America/New_York" or "EST5EDT" or "Europe/Berlin".  If you want to
 # manage /etc/localtime yourself, set this to "".
-
 #TIMEZONE="Factory"
 

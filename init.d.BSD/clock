@@ -2,6 +2,8 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+opts="save"
+
 depend() {
 	# BSD adjkerntz needs to be able to write to /etc
 	if [ "${CLOCK}" = "UTC" -a -e /etc/wall_cmos_clock ] ||
@@ -28,7 +30,18 @@ start() {
 	eend $?
 }
 
+save() {
+	local TBLURB="Local Time"
+	[ "${CLOCK}" = "UTC" ] && TBLURB="UTC"
+	ebegin "Setting hardware clock using the system clock" "[${TBLURB}]"
+	adjkerntz -a
+	eend $?
+}
+
 stop() {
+    # Don't tweak the hardware clock on LiveCD halt.
+	[ -z "${CDBOOT}" -a "${CLOCK_SYSTOHC}" = "yes" ] && save 
+
 	ebegin "Stopping the System Clock Adjuster"
 	if start-stop-daemon --test --quiet --stop --exec /sbin/adjkerntz ; then
 		start-stop-daemon --stop --exec /sbin/adjkerntz

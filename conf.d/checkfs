@@ -4,5 +4,4 @@
 # shutdown rather than at next boot.
 # This is useful when periodic filesystem checks are causing undesirable
 # delays at startup, but such delays at shutdown are acceptable.
-
 FSCK_SHUTDOWN="no"
