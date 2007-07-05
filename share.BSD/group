@@ -7,6 +7,7 @@ operator:*:5:root
 mail:*:6:
 bin:*:7:
 news:*:8:
+audio:*:18:
 guest:*:31:
 uucp:*:66:
 dialer:*:68:
