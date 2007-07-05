@@ -153,6 +153,9 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 				retval = plugin->hook (hook, value);
 				fclose (rc_environ_fd);
 				rc_environ_fd = NULL;
+
+				/* Just in case the plugin sets this to false */
+				rc_in_plugin = true;
 				exit (retval);
 			} else {
 				char buffer[RC_LINEBUFFER];
