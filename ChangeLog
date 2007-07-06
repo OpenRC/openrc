@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  06 Jul 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Add and delete IPv6 addresses and routes correctly on FreeBSD, #184430
+    thanks to Friedrich Oslage.
+    
   02 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     Don't wait for services that were inactive, #183667 thanks to Daniel Drake

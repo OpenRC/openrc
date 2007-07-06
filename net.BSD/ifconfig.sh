@@ -63,7 +63,10 @@ _add_address() {
 		set -- "$@" metric ${metric}
 	fi
 
-	ifconfig "${IFACE}" add "$@"
+	case "$@" in
+		*:*) ifconfig "${IFACE}" inet6 add "$@" ;;
+		*)   ifconfig "${IFACE}"       add "$@" ;;
+	esac
 }
 
 _add_route() {
@@ -75,7 +78,10 @@ _add_route() {
 		fi
 	fi
 
-	route add "$@"
+	case "$@" in
+		*:*) route add -inet6 "$@" ;;
+		*)   route add        "$@" ;;
+	esac
 }
 
 _delete_addresses() {
@@ -94,7 +100,7 @@ _delete_addresses() {
 			[ "$1" = "lo" -o "$1" = "lo0" ] && continue
 		fi
 		einfo "${addr}"
-		/sbin/ifconfig "$1" delete "${addr}"
+		ifconfig "$1" delete "${addr}"
 		eend $?
 	done
 
@@ -106,7 +112,7 @@ _delete_addresses() {
 			::1) continue ;;
 		esac
 		einfo "${addr}"
-		/sbin/ifconfig "${IFACE}" inet6 delete "${addr}"
+		ifconfig "${IFACE}" inet6 delete "${addr}"
 		eend $?
 	done
 	
