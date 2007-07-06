@@ -1080,22 +1080,23 @@ int main (int argc, char **argv)
 	/* eprefix is kinda klunky, but it works for our purposes */
 	if (rc_is_env ("RC_PREFIX", "yes")) {
 		int l = 0;
+		int ll;
 		char *svc;
 
 		/* Get the longest service name */
 		services = rc_services_in_runlevel (NULL);
 		STRLIST_FOREACH (services, svc, i) {
-			int ll = strlen (svc);
+			ll = strlen (svc);
 			if (ll > l)
 				l = ll;
 		}
-		// rc_strlist_free (services);
-		
-		svc = prefix = rc_xmalloc (sizeof (char *) * l);
-		svc += strlcpy (prefix, applet, l);
-		i = l - strlen (prefix);
-		memset (svc, ' ', i);
-		memset (svc + i, 0, 1);
+	
+		/* Make our prefix string */
+		prefix = rc_xmalloc (sizeof (char *) * l);
+		ll = strlen (applet);
+		memcpy (prefix, applet, ll);
+		memset (prefix + ll, ' ', l - ll);
+		memset (prefix + l, 0, 1);
 		eprefix (prefix);
 	}
 
