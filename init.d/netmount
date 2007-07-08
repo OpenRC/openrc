@@ -68,7 +68,7 @@ stop() {
 	eend ${retval} "Failed to simply unmount filesystems"
 
 	if [ ${retval} -ne 0 ] ; then
-		. "${RC_SVCLIB}/sh/rc-mount.sh"
+		. "${RC_LIBDIR}/sh/rc-mount.sh"
 		eindent
 		fs=
 		for x in ${RC_NET_FS_LIST} ; do
@@ -76,7 +76,7 @@ stop() {
 		done
 		do_unmount "umount" "" "" "^(${fs})$"
 		retval=$?
-		eoutent
+		eoutdent
 	fi
 
 	return ${retval}
