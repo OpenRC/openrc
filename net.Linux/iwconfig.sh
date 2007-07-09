@@ -308,7 +308,19 @@ iwconfig_scan() {
 	[ -n "${x}" ] && sleep "${x}"
 
 	while [ ${i} -lt 3 ] ; do
-	    scan="${scan} $(iwlist "${IFACE}" scan 2>/dev/null | sed -e "s/'/'\\\\''/g" -e "s/$/'/g" -e "s/^/'/g")"
+	    local scan="${scan}${scan:+ }$(LC_ALL=C iwlist "${IFACE}" scan 2>/dev/null | sed -e "s/'/'\\\\''/g" -e "s/$/'/g" -e "s/^/'/g")"
+		# If this is the first pass and txpower as off and we have no results
+		# then we need to wait for at least 2 seconds whilst the interface
+		# does an initial scan.
+		if [ "${i}" = "0" -a "${txpowerwasoff}" = "0" ] ; then
+			case "${scan}" in
+				"'${IFACE} "*"No scan results"*)
+					sleep 2
+					txpowerwasoff=1
+					continue
+					;;
+			esac
+		fi
 	    i=$((${i} + 1))
 	done
 
@@ -340,7 +352,7 @@ iwconfig_scan() {
 	for line in "$@" ; do
 	    case "${line}" in
 		*Address:*)
-		    APS=$((${APS} + 1))
+			APS=$((${APS} + 1)) 
 		    eval MAC_${APS}=\""$(echo "${line#*: }" | tr '[:lower:]' '[:upper:]')"\"
 		    eval QUALITY_${APS}=0
 		    ;;
@@ -412,22 +424,16 @@ iwconfig_scan() {
 	while [ ${i} -lt ${APS} ] ; do
 	    k=$((${i} + 1))
 	    while [ ${k} -le ${APS} ] ; do
-		eval a=\$MAC_${i}
-		eval b=\$MAC_${k}
-		if [ "${a}" = "${b}" ] ; then
-		    eval a=\$QUALITY_${i}
-		    eval b=\$QUALITY_${k}
-		    if [ -n "${a}" -a -n "${b}" ] ; then
-			if [ ${a} -ge ${b} ] ; then
-			    unset MAC_${k} SSID_${k} CHAN_${k} QUALITY_${k} ENC_${k}
-			else
-			    unset MAC_${i} SSID_${i} CHAN_${i} QUALITY_${i} ENC_${i}
+			eval a=\$MAC_${i}
+			eval b=\$MAC_${k}
+			if [ "${a}" = "${b}" ] ; then
+		    	eval a=\$QUALITY_${i}
+		    	eval b=\$QUALITY_${k}
+				local u=${k}
+		    	[ -n "${a}" -a -n "${b}" -a "${a}" -lt "${b}" ] && u=${i}
+				unset MAC_${u} SSID_${u} CHAN_${u} QUALITY_${u} ENC_${u}
 			fi
-		    else
-			unset MAC_${k} SSID_${k} CHAN_${k} QUALITY_${k} ENC_${k}
-		    fi
-		fi
-		k=$((${k} + 1))
+			k=$((${k} + 1))
 	    done
 	    i=$((${i} + 1))
 	done
@@ -507,10 +513,11 @@ iwconfig_force_preferred() {
 }
 
 iwconfig_connect_preferred() {
-	local ssid= i=0 mode= mac= enc= freq= chan=
+	local ssid= i= mode= mac= enc= freq= chan=
 
 	eval "$(_get_array preferred_aps)"
 	for ssid in "$@"; do
+		i=0
 		while [ ${i} -le ${APS} ]  ; do
 			eval e=\$SSID_${i}
 			if [ "${e}" = "${ssid}" ] ; then
@@ -535,23 +542,25 @@ iwconfig_connect_not_preferred() {
 
 	while [ ${i} -le ${APS} ] ; do
 		eval e=\$SSID_${i}
-		eval "$(_get_array preferred_aps)"
-		for ssid in "$@" ; do
-			if [ "${e}" = "${ssid}" ] ; then
-				pref=true
-				break
+		if [ -n "${e}" ] ; then
+			eval "$(_get_array preferred_aps)"
+			for ssid in "$@" ; do
+				if [ "${e}" = "${ssid}" ] ; then
+					pref=true
+					break
+				fi
+			done
+	
+			if ! ${pref} ; then
+				SSID=${e}
+				eval mode=\$MODE_${i}
+				eval mac=\$MAC_${i}
+				eval enc=\$ENC_${i}
+				eval freq=\$FREQ_${i}
+				eval chan=\$CHAN_${i}
+				iwconfig_associate "${mode}" "${mac}" "${enc}" "${freq}" \
+					"${chan}" && return 0
 			fi
-		done
-
-		if ! ${pref} ; then
-			SSID=${e}
-			eval mode=\$MODE_${i}
-			eval mac=\$MAC_${i}
-			eval enc=\$ENC_${i}
-			eval freq=\$FREQ_${i}
-			eval chan=\$CHAN_${i}
-			iwconfig_associate "${mode}" "${mac}" "${enc}" "${freq}" \
-				"${chan}" && return 0
 		fi
 		i=$((${i} + 1))
 	done
@@ -668,8 +677,13 @@ iwconfig_pre_start() {
 		. /etc/conf.d/wireless
 	fi
 
-	iwconfig_defaults 
-	iwconfig_user_config 
+	# Store the fact that tx-power was off so we default to a longer
+	# wait if our scan returns nothing
+	LC_ALL=C iwconfig iwi0 | sed -e '1d' | grep -q "Tx-Power=off"
+	local txpowerwasoff=$?
+	
+	iwconfig_defaults
+	iwconfig_user_config
 	
 	# Set the base metric to be 2000
 	metric=2000

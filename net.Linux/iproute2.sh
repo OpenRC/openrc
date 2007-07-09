@@ -118,9 +118,8 @@ _add_route() {
 		case "$1" in
 			metric) cmd="${cmd} $1"; have_metric=true ;;
 			netmask) cmd="${cmd}/$(_netmask2cidr "$2")"; shift ;;
-			-net) ;;
+			-host|-net) ;;
 			-A)	[ "$2" = "inet6" ] && shift ;;
-			-host) cmd="${cmd} scope host" ;;
 			*) cmd="${cmd} $1" ;;
 		esac
 		shift
