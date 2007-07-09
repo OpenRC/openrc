@@ -40,9 +40,8 @@ start() {
 	fi
 
 	ebegin "Updating environment"
-	# As runscript prefixes our path with /$LIBDIR/rcscripts/bin, our
-	# version instead of the portage version should be found first.
-	env-update --fork-ldconfig
+	# Use our version, not portage version.
+	/sbin/env-update --fork-ldconfig
 	eend $?
 
 	# Take care of random stuff [ /var/lock | /var/run | pam ]
