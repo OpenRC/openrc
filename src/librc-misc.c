@@ -336,10 +336,14 @@ char **rc_get_config (char **list, const char *file)
 
 		entry = rc_xstrdup (token);
 
-		do {
-			/* Bash variables are usually quoted */
-			token = strsep (&p, "\"\'");
-		} while ((token) && (strlen (token) == 0));
+		/* Preserve shell coloring */
+		if (*p == '$')
+			token = p;
+		else
+			do {
+				/* Bash variables are usually quoted */
+				token = strsep (&p, "\"\'");
+			} while ((token) && (strlen (token) == 0));
 
 		/* Drop a newline if that's all we have */
 		i = strlen (token) - 1;

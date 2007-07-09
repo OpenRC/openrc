@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  09 Jul 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Add an option to fork ldconfig in env-update, #182794
+
   06 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     Add and delete IPv6 addresses and routes correctly on FreeBSD, #184430

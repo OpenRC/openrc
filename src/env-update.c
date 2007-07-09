@@ -64,6 +64,7 @@ static char *applet = NULL;
 #include "_usage.h"
 #define getoptstring "L" getoptstring_COMMON
 static struct option longopts[] = {
+	{ "fork-ldconfig",  0, NULL, 'l'},
 	{ "no-ldconfig",    0, NULL, 'L'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
@@ -89,6 +90,7 @@ int main (int argc, char **argv)
 	char **myspaces = NULL;
 	int opt;
 	bool ldconfig = true;
+	bool fork_ldconfig = false;
 	
 	applet = argv[0];
 
@@ -96,6 +98,9 @@ int main (int argc, char **argv)
 							   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+			case 'l':
+				fork_ldconfig = true;
+				break;
 			case 'L':
 				ldconfig = false;
 				break;
@@ -219,8 +224,12 @@ int main (int argc, char **argv)
 		char *tmpent = rc_xstrdup (env);
 		char *value = tmpent;
 		char *var = strsep (&value, "=");
-		if (strcmp (var, "LDPATH") != 0)
-			fprintf (fp, "export %s='%s'\n", var, value);
+		if (strcmp (var, "LDPATH") != 0) {
+			if (*value == '$')
+				fprintf (fp, "export %s=%s\n", var, value);
+			else
+				fprintf (fp, "export %s='%s'\n", var, value);
+		}
 		free (tmpent);
 	}
 	fclose (fp);
@@ -233,8 +242,12 @@ int main (int argc, char **argv)
 		char *tmpent = rc_xstrdup (env);
 		char *value = tmpent;
 		char *var = strsep (&value, "=");
-		if (strcmp (var, "LDPATH") != 0)
-			fprintf (fp, "setenv %s '%s'\n", var, value);
+		if (strcmp (var, "LDPATH") != 0) {
+			if (*value == '$')
+				fprintf (fp, "setenv %s %s\n", var, value);
+			else
+				fprintf (fp, "setenv %s '%s'\n", var, value);
+		}
 		free (tmpent);
 	}
 	fclose (fp);
@@ -275,6 +288,7 @@ int main (int argc, char **argv)
 
 		if (ld) {
 			int retval = 0;
+			pid_t pid = getpid ();
 
 			if ((fp = fopen (LDSOCONF, "w")) == NULL)
 				eerrorx ("%s: fopen `%s': %s", applet, LDSOCONF,
@@ -284,14 +298,22 @@ int main (int argc, char **argv)
 				fprintf (fp, "%s\n", ldent);
 			fclose (fp);
 
+			if (fork_ldconfig) {
+				if ((pid = fork ()) == -1)
+					eerror ("%s: failed to fork: %s", applet,
+							strerror (errno));
+			}
+
+			if (pid) {
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-			ebegin ("Regenerating /var/run/ld-elf.so.hints");
-			retval = system ("/sbin/ldconfig -elf -i '" LDSOCONF "'");
+				ebegin ("Regenerating /var/run/ld-elf.so.hints");
+				retval = system ("/sbin/ldconfig -elf -i '" LDSOCONF "'");
 #else
-			ebegin ("Regenerating /etc/ld.so.cache");
-			retval = system ("/sbin/ldconfig");
+				ebegin ("Regenerating /etc/ld.so.cache");
+				retval = system ("/sbin/ldconfig");
 #endif
-			eend (retval, NULL);
+				eend (retval, NULL);
+			}
 		}
 	}
 
