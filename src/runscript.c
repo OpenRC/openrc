@@ -1192,7 +1192,10 @@ int main (int argc, char **argv)
 		setenv ("RC_CMD", optarg, 1);
 
 		doneone = true;
-		if (strcmp (optarg, "help") == 0) {
+		
+		if (strcmp (optarg, "describe") == 0) {
+			svc_exec (optarg, NULL);
+		} else if (strcmp (optarg, "help") == 0) {
 			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
 			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 					 applet, strerror (errno));
@@ -1218,6 +1221,7 @@ int main (int argc, char **argv)
 		} else if (strcmp (optarg, "status") == 0) {
 			rc_service_state_t r = svc_status (service);
 			retval = (int) r;
+
 		} else if (strcmp (optarg, "help") == 0) {
 			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
 			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
@@ -1258,7 +1262,7 @@ int main (int argc, char **argv)
 				einfo ("Manually resetting %s to stopped state", applet);
 				rc_mark_service (applet, rc_service_stopped);
 				uncoldplug ();
-			 }else
+			} else
 				svc_exec (optarg, NULL);
 
 			/* Flush our buffered output if any */
