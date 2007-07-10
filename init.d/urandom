@@ -4,6 +4,8 @@
 
 URANDOM_SEED=${URANDOM_SEED:-/var/run/random-seed}
 
+description="Initializes the random number generator."
+
 depend() {
 	need localmount
 }

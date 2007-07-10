@@ -2,6 +2,8 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+description="Removes a file which blocks logins until this service has run."
+
 depend() {
 	need localmount
 }

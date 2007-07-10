@@ -17,6 +17,25 @@ if [ -z "$1" -o -z "$2" ] ; then
 	exit 1
 fi
 
+# Descript the init script to the user
+describe() {
+	if [ -n "${description}" ] ; then
+		einfo "${description}"
+	else
+		ewarn "No description for ${SVCNAME}"
+	fi
+
+	local svc= desc=
+	for svc in ${opts} ; do
+		eval desc=\$description_${svc}
+		if [ -n "${desc}" ] ; then
+			einfo "${HILITE}${svc}${NORMAL}: ${desc}"
+		else
+			ewarn "${HILITE}${svc}${NORMAL}: no description"
+		fi
+	done
+}
+
 [ "${RC_DEBUG}" = "yes" ] && set -x
 
 # If we're net.eth0 or openvpn.work then load net or openvpn config
@@ -50,7 +69,7 @@ shift
 
 while [ -n "$1" ] ; do
 	# See if we have the required function and run it
-	for rc_x in start stop ${opts} ; do
+	for rc_x in describe start stop ${opts} ; do
 		if [ "${rc_x}" = "$1" ] ; then
 			if type "$1" >/dev/null 2>/dev/null ; then
 				unset rc_x

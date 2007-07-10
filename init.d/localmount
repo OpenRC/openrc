@@ -2,6 +2,10 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+description="Mounts disks and swap according to /etc/fstab."
+[ -e /proc/filessystems ] && description="${description} Also mounts various filesystems in /proc."
+[ -x /sbin/dumpon ] && description="${description} Also configures saving kernel dumps to swap."
+
 depend() {
 	need checkfs
 }

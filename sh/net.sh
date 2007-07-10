@@ -8,6 +8,8 @@ _config_vars="config routes"
 
 [ -z "${IN_BACKGROUND}" ] && IN_BACKGROUND=false
 
+description="Configures network interfaces."
+
 depend() {
 	local IFACE=${SVCNAME#*.}
 	local IFVAR=$(echo -n "${IFACE}" | sed -e 's/[^[:alnum:]]/_/g')

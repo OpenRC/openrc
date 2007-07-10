@@ -32,7 +32,7 @@ else
 	NL=
 fi
 
-default_opts="start stop restart pause zap"
+default_opts="describe start stop restart pause zap"
 extra_opts="$(. "${myscript}" 2>/dev/null ; echo "${opts}")"
 
 if [ "${BE_VERBOSE}" = "yes" ] ; then
@@ -48,6 +48,9 @@ ${CYAN}Normal Options:${OFF}"
 
 if [ "${BE_VERBOSE}" = "yes" ] ; then
 printf "
+    ${GREEN}describe${OFF}
+      Describe what the service and any extra options do.
+
     ${GREEN}start${OFF}
       Start service, as well as the services it depends on (if not already
       started).
@@ -67,11 +70,6 @@ printf "
 
     ${GREEN}conditionalrestart|condrestart${OFF}
       Same as 'restart', but only if the service has already been started.
-
-    ${GREEN}pause${OFF}
-      Same as 'stop', but the services that depends on it, will not be
-      stopped.  This is useful for stopping a network interface without
-      stopping all the network services that depend on 'net'.
 
     ${GREEN}zap${OFF}
       Reset a service that is currently stopped, but still marked as started,

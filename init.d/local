@@ -2,6 +2,9 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+description="Executes user command in /etc/conf.d/local.start when starting \
+and /etc/conf.d/local.stop when stopping."
+
 depend() {
 	after *
 }

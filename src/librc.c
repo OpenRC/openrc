@@ -172,6 +172,82 @@ bool rc_service_exists (const char *service)
 }
 librc_hidden_def(rc_service_exists)
 
+char **rc_service_options (const char *service)
+{
+	char *svc;
+	char cmd[PATH_MAX];
+	char buffer[RC_LINEBUFFER];
+	char **opts = NULL;
+	char *token;
+	char *p = buffer;
+	FILE *fp;
+
+	if (! rc_service_exists (service))
+		return (NULL);
+
+	svc = rc_resolve_service (service);
+
+	snprintf (cmd, sizeof (cmd), ". '%s'; echo \"${opts}\"",  svc);
+	if (! (fp = popen (cmd, "r"))) {
+		eerror ("popen `%s': %s", svc, strerror (errno));
+		free (svc);
+		return (NULL);
+	}
+
+	if (fgets (buffer, RC_LINEBUFFER, fp)) {
+		if (buffer[strlen (buffer) - 1] == '\n')
+			buffer[strlen (buffer) - 1] = '\0';
+		while ((token = strsep (&p, " ")))
+			opts = rc_strlist_addsort (opts, token);
+	}
+	pclose (fp);
+	return (opts);
+}
+librc_hidden_def(rc_service_options)
+
+char *rc_service_description (const char *service, const char *function)
+{
+	char *svc;
+	char cmd[PATH_MAX];
+	char buffer[RC_LINEBUFFER];
+	char *desc = NULL;
+	FILE *fp;
+	int i;
+
+	if (! rc_service_exists (service))
+		return (NULL);
+
+	svc = rc_resolve_service (service);
+
+	if (! function)
+		function = "";
+
+	snprintf (cmd, sizeof (cmd), ". '%s'; echo \"${description%s%s}\"",
+			  svc, function ? "_" : "", function);
+	if (! (fp = popen (cmd, "r"))) {
+		eerror ("popen `%s': %s", svc, strerror (errno));
+		free (svc);
+		return (NULL);
+	}
+	free (svc);
+
+	while (fgets (buffer, RC_LINEBUFFER, fp)) {
+		if (! desc) {
+			desc = rc_xmalloc (strlen (buffer) + 1);
+			*desc = '\0';
+		} else {
+			desc = rc_xrealloc (desc, strlen (desc) + strlen (buffer) + 1);
+		}
+		i = strlen (desc);
+		memcpy (desc + i, buffer, strlen (buffer));
+		memset (desc + i + strlen (buffer), 0, 1);
+	}
+
+	pclose (fp);
+	return (desc);
+}
+librc_hidden_def(rc_service_description)
+
 bool rc_service_in_runlevel (const char *service, const char *runlevel)
 {
 	char *file;

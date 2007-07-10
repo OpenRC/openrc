@@ -2,6 +2,8 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+description="Loads a user defined list of kernel modules."
+
 depend() {
 	need checkroot
 	use isapnp

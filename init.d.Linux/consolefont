@@ -2,6 +2,8 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+description="Sets a font for the consoles."
+
 depend() {
 	need localmount
 	need keymaps    # sets up terminal encoding scheme

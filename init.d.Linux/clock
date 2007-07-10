@@ -4,6 +4,9 @@
 
 opts="save"
 
+description="Sets the local clock to UTC or Local Time." 
+description_save="Saves the current time in the BIOS."
+
 depend() {
 	case "${CLOCK_ADJTIME}" in
 		"")     before *;;

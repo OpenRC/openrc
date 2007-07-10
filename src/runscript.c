@@ -1182,8 +1182,6 @@ int main (int argc, char **argv)
 		if (strcmp (optarg, "status") != 0 &&
 			strcmp (optarg, "help") != 0) {
 			/* Only root should be able to run us */
-			if (geteuid () != 0)
-				eerrorx ("%s: root access required", applet);
 		}
 
 		/* Export the command we're running.
@@ -1194,43 +1192,7 @@ int main (int argc, char **argv)
 		setenv ("RC_CMD", optarg, 1);
 
 		doneone = true;
-		if (strcmp (optarg, "conditionalrestart") == 0 ||
-			strcmp (optarg, "condrestart") == 0)
-		{
-			if (rc_service_state (service, rc_service_started))
-				svc_restart (deps);
-		}
-		else if (strcmp (optarg, "restart") == 0)
-			svc_restart (deps);
-		else if (strcmp (optarg, "start") == 0)
-			svc_start (deps);
-		else if (strcmp (optarg, "status") == 0) {
-			rc_service_state_t r = svc_status (service);
-			retval = (int) r;
-		} else if (strcmp (optarg, "stop") == 0) {
-			if (in_background)
-				get_started_services ();
-
-			svc_stop (deps);
-
-			if (! in_background &&
-				! rc_runlevel_stopping () &&
-				rc_service_state (service, rc_service_stopped))
-				uncoldplug ();
-
-			if (in_background &&
-				rc_service_state (service, rc_service_inactive))
-			{
-				int j;
-				STRLIST_FOREACH (restart_services, svc, j)
-					if (rc_service_state (svc, rc_service_stopped))
-						rc_schedule_start_service (service, svc);
-			}
-		} else if (strcmp (optarg, "zap") == 0) {
-			einfo ("Manually resetting %s to stopped state", applet);
-			rc_mark_service (applet, rc_service_stopped);
-			uncoldplug ();
-		} else if (strcmp (optarg, "help") == 0) {
+		if (strcmp (optarg, "help") == 0) {
 			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
 			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 					 applet, strerror (errno));
@@ -1239,8 +1201,8 @@ int main (int argc, char **argv)
 				   strcmp (optarg, "needsme") == 0 ||
 				   strcmp (optarg, "usesme") == 0 ||
 				   strcmp (optarg, "iafter") == 0 ||
-				   strcmp (optarg, "ibefore") == 0
-				   strcmp (optorg, "iprovide") == 0) {
+				   strcmp (optarg, "ibefore") == 0 ||
+				   strcmp (optarg, "iprovide") == 0) {
 			if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
 				eerrorx ("failed to load deptree");
 
@@ -1253,21 +1215,65 @@ int main (int argc, char **argv)
 			STRLIST_FOREACH (services, svc, i)
 				printf ("%s%s", i == 1 ? "" : " ", svc);
 			printf ("\n");
-		}else
-			svc_exec (optarg, NULL);
+		} else if (strcmp (optarg, "status") == 0) {
+			rc_service_state_t r = svc_status (service);
+			retval = (int) r;
+		} else if (strcmp (optarg, "help") == 0) {
+			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
+			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
+					 applet, strerror (errno));
+		} else {
+			if (geteuid () != 0)
+				eerrorx ("%s: root access required", applet);
 
-		/* Flush our buffered output if any */
-		eflush ();
+			if (strcmp (optarg, "conditionalrestart") == 0 ||
+				strcmp (optarg, "condrestart") == 0)
+			{
+				if (rc_service_state (service, rc_service_started))
+					svc_restart (deps);
+			} else if (strcmp (optarg, "restart") == 0) {
+				svc_restart (deps);
+			} else if (strcmp (optarg, "start") == 0) {
+				svc_start (deps);
+			} else if (strcmp (optarg, "stop") == 0) {
+				if (in_background)
+					get_started_services ();
 
-		/* We should ensure this list is empty after an action is done */
-		rc_strlist_free (restart_services);
-		restart_services = NULL;
-	}
+				svc_stop (deps);
 
-	if (! doneone) {
-		execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
-		eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-				 applet, strerror (errno));
+				if (! in_background &&
+					! rc_runlevel_stopping () &&
+					rc_service_state (service, rc_service_stopped))
+					uncoldplug ();
+
+				if (in_background &&
+					rc_service_state (service, rc_service_inactive))
+				{
+					int j;
+					STRLIST_FOREACH (restart_services, svc, j)
+						if (rc_service_state (svc, rc_service_stopped))
+							rc_schedule_start_service (service, svc);
+				}
+			} else if (strcmp (optarg, "zap") == 0) {
+				einfo ("Manually resetting %s to stopped state", applet);
+				rc_mark_service (applet, rc_service_stopped);
+				uncoldplug ();
+			 }else
+				svc_exec (optarg, NULL);
+
+			/* Flush our buffered output if any */
+			eflush ();
+
+			/* We should ensure this list is empty after an action is done */
+			rc_strlist_free (restart_services);
+			restart_services = NULL;
+		}
+
+		if (! doneone) {
+			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
+			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
+					 applet, strerror (errno));
+		}
 	}
 
 	return (retval);
