@@ -205,7 +205,7 @@ char **rc_service_options (const char *service)
 }
 librc_hidden_def(rc_service_options)
 
-char *rc_service_description (const char *service, const char *function)
+char *rc_service_description (const char *service, const char *option)
 {
 	char *svc;
 	char cmd[PATH_MAX];
@@ -219,11 +219,11 @@ char *rc_service_description (const char *service, const char *function)
 
 	svc = rc_resolve_service (service);
 
-	if (! function)
-		function = "";
+	if (! option)
+		option = "";
 
 	snprintf (cmd, sizeof (cmd), ". '%s'; echo \"${description%s%s}\"",
-			  svc, function ? "_" : "", function);
+			  svc, option ? "_" : "", option);
 	if (! (fp = popen (cmd, "r"))) {
 		eerror ("popen `%s': %s", svc, strerror (errno));
 		free (svc);

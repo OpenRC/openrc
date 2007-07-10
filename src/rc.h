@@ -45,7 +45,7 @@ typedef enum
 char *rc_resolve_service (const char *service);
 bool rc_service_exists (const char *service);
 char **rc_service_options (const char *service);
-char *rc_service_description (const char *service, const char *function);
+char *rc_service_description (const char *service, const char *option);
 bool rc_service_in_runlevel (const char *service, const char *runlevel);
 bool rc_service_state (const char *service, rc_service_state_t state);
 bool rc_mark_service (const char *service, rc_service_state_t state);
