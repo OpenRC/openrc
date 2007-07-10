@@ -475,6 +475,30 @@ static void set_ksoftlevel (const char *runlevel)
 	fclose (fp);
 }
 
+static int get_ksoftlevel (char *buffer, int buffer_len)
+{
+	FILE *fp;
+	int i = 0;
+
+	if (! rc_exists (RC_SVCDIR "ksoftlevel"))
+		return 0;
+
+	if (! (fp = fopen (RC_SVCDIR "ksoftlevel", "r"))) {
+		eerror ("fopen `%s': %s", RC_SVCDIR "ksoftlevel",
+				strerror (errno));
+		return -1;
+	}
+
+	if (fgets (buffer, buffer_len, fp)) {
+		i = strlen (buffer) - 1;
+		if (buffer[i] == '\n')
+			buffer[i] = 0;
+	}
+
+	fclose (fp);
+	return i;
+}
+
 static void wait_for_services ()
 {
 	int status = 0;
@@ -566,9 +590,9 @@ static void handle_signal (int sig)
 			if ((prev &&
 				 (strcmp (prev, "S") == 0 ||
 				  strcmp (prev, "1") == 0)) ||
-				 (run &&
-				  (strcmp (run, "S") == 0 ||
-				   strcmp (run, "1") == 0)))
+				(run &&
+				 (strcmp (run, "S") == 0 ||
+				  strcmp (run, "1") == 0)))
 				single_user ();
 
 			exit (EXIT_FAILURE);
@@ -585,7 +609,7 @@ static void handle_signal (int sig)
 static void run_script (const char *script) {
 	int status = 0;
 	pid_t pid = vfork ();
-	
+
 	if (pid < 0)
 		eerrorx ("%s: vfork: %s", applet, strerror (errno));
 	else if (pid == 0) {
@@ -731,7 +755,7 @@ int main (int argc, char **argv)
 	}
 
 	newlevel = argv[optind++];
-	
+
 	/* OK, so we really are the main RC process
 	   Only root should be able to run us */
 	if (geteuid () != 0)
@@ -753,123 +777,9 @@ int main (int argc, char **argv)
 	RUNLEVEL = getenv ("RUNLEVEL");
 	PREVLEVEL = getenv ("PREVLEVEL");
 
-	if (RUNLEVEL && newlevel) {
-		if (strcmp (RUNLEVEL, "S") == 0 || strcmp (RUNLEVEL, "1") == 0) {
-			/* OK, we're either in runlevel 1 or single user mode */
-			if (strcmp (newlevel, RC_LEVEL_SYSINIT) == 0) {
-				struct utsname uts;
-#ifdef __linux__
-				FILE *fp;
-#endif
 
-                /* exec init-early.sh if it exists
-                 * This should just setup the console to use the correct
-                 * font. Maybe it should setup the keyboard too? */
-                if (rc_exists (INITEARLYSH))
-					run_script (INITEARLYSH);
-
-				uname (&uts);
-
-				printf ("\n");
-				printf ("   %sGentoo/%s; %shttp://www.gentoo.org/%s"
-						"\n   Copyright 1999-2007 Gentoo Foundation; "
-						"Distributed under the GPLv2\n\n",
-						ecolor (ecolor_good), uts.sysname, ecolor (ecolor_bracket),
-						ecolor (ecolor_normal));
-
-				if (rc_is_env ("RC_INTERACTIVE", "yes"))
-					printf ("Press %sI%s to enter interactive boot mode\n\n",
-							ecolor (ecolor_good), ecolor (ecolor_normal));
-
-				setenv ("RC_SOFTLEVEL", newlevel, 1);
-				rc_plugin_run (rc_hook_runlevel_start_in, newlevel);
-				run_script (INITSH);
-
-				/* If we requested a softlevel, save it now */
-#ifdef __linux__
-				set_ksoftlevel (NULL);
-
-				if ((fp = fopen ("/proc/cmdline", "r"))) {
-					char buffer[RC_LINEBUFFER];
-					char *soft;
-
-					memset (buffer, 0, sizeof (buffer));
-					if (fgets (buffer, RC_LINEBUFFER, fp) &&
-						(soft = strstr (buffer, "softlevel=")))
-					{ 
-						i = soft - buffer;
-						if (i  == 0 || buffer[i - 1] == ' ') {
-							char *level;
-
-							/* Trim the trailing carriage return if present */
-							i = strlen (buffer) - 1;
-							if (buffer[i] == '\n')
-								buffer[i] = 0;
-
-							soft += strlen ("softlevel=");
-							level = strsep (&soft, " ");
-							set_ksoftlevel (level);
-						}
-					}
-					fclose (fp);
-				}
-#endif
-				rc_plugin_run (rc_hook_runlevel_start_out, newlevel);
-
-				if (want_interactive ())
-					mark_interactive ();
-
-				exit (EXIT_SUCCESS);
-			}
-
-#ifdef __linux__
-			/* Parse the inittab file so we can work out the level to telinit */
-			if (strcmp (newlevel, RC_LEVEL_BOOT) != 0 &&
-				strcmp (newlevel, RC_LEVEL_SINGLE) != 0)
-			{
-				char **inittab = rc_get_list (NULL, "/etc/inittab");
-				char *line;
-				char *p;
-				char *token;
-				char lvl[2] = {0, 0};
-
-				STRLIST_FOREACH (inittab, line, i) {
-					p = line;
-					token = strsep (&p, ":");
-					if (! token || token[0] != 'l')
-						continue;
-
-					if ((token = strsep (&p, ":")) == NULL)
-						continue;
-
-					/* Snag the level */
-					lvl[0] = token[0];
-
-					/* The name is spaced after this */
-					if ((token = strsep (&p, " ")) == NULL)
-						continue;
-
-					if ((token = strsep (&p, " ")) == NULL)
-						continue;
-
-					if (strcmp (token, newlevel) == 0)
-						break;
-				}
-				rc_strlist_free (inittab);
-
-				/* We have a level, so telinit into it */
-				if (lvl[0] == 0) {
-					eerrorx ("%s: couldn't find a runlevel called `%s'",
-							 applet, newlevel);
-				} else {
-					execl ("/sbin/telinit", "/sbin/telinit", lvl, (char *) NULL);
-					eerrorx ("%s: unable to exec `/sbin/telinit': %s",
-							 applet, strerror (errno));
-				}
-			} 
-#endif
-		}
-	}
+	/* Load current softlevel */
+	runlevel = rc_get_runlevel ();
 
 	/* Check we're in the runlevel requested, ie from
 	   rc single
@@ -877,11 +787,81 @@ int main (int argc, char **argv)
 	   rc reboot
 	   */
 	if (newlevel) {
-		if (strcmp (newlevel, RC_LEVEL_SINGLE) == 0) {
+		if (strcmp (newlevel, RC_LEVEL_SYSINIT) == 0 &&
+			RUNLEVEL &&
+			(strcmp (RUNLEVEL, "S") == 0 ||
+			 strcmp (RUNLEVEL, "1") == 0))
+		{
+			/* OK, we're either in runlevel 1 or single user mode */
+			struct utsname uts;
+#ifdef __linux__
+			FILE *fp;
+#endif
+
+			/* exec init-early.sh if it exists
+			 * This should just setup the console to use the correct
+			 * font. Maybe it should setup the keyboard too? */
+			if (rc_exists (INITEARLYSH))
+				run_script (INITEARLYSH);
+
+			uname (&uts);
+
+			printf ("\n");
+			printf ("   %sGentoo/%s; %shttp://www.gentoo.org/%s"
+					"\n   Copyright 1999-2007 Gentoo Foundation; "
+					"Distributed under the GPLv2\n\n",
+					ecolor (ecolor_good), uts.sysname, ecolor (ecolor_bracket),
+					ecolor (ecolor_normal));
+
+			if (rc_is_env ("RC_INTERACTIVE", "yes"))
+				printf ("Press %sI%s to enter interactive boot mode\n\n",
+						ecolor (ecolor_good), ecolor (ecolor_normal));
+
+			setenv ("RC_SOFTLEVEL", newlevel, 1);
+			rc_plugin_run (rc_hook_runlevel_start_in, newlevel);
+			run_script (INITSH);
+
+			/* If we requested a softlevel, save it now */
+#ifdef __linux__
+			set_ksoftlevel (NULL);
+
+			if ((fp = fopen ("/proc/cmdline", "r"))) {
+				char buffer[RC_LINEBUFFER];
+				char *soft;
+
+				memset (buffer, 0, sizeof (buffer));
+				if (fgets (buffer, RC_LINEBUFFER, fp) &&
+					(soft = strstr (buffer, "softlevel=")))
+				{ 
+					i = soft - buffer;
+					if (i  == 0 || buffer[i - 1] == ' ') {
+						char *level;
+
+						/* Trim the trailing carriage return if present */
+						i = strlen (buffer) - 1;
+						if (buffer[i] == '\n')
+							buffer[i] = 0;
+
+						soft += strlen ("softlevel=");
+						level = strsep (&soft, " ");
+						set_ksoftlevel (level);
+					}
+				}
+				fclose (fp);
+			}
+#endif
+			rc_plugin_run (rc_hook_runlevel_start_out, newlevel);
+
+			if (want_interactive ())
+				mark_interactive ();
+
+			exit (EXIT_SUCCESS);
+		} else if (strcmp (newlevel, RC_LEVEL_SINGLE) == 0) {
 			if (! RUNLEVEL ||
 				(strcmp (RUNLEVEL, "S") != 0 &&
 				 strcmp (RUNLEVEL, "1") != 0))
 			{
+				einfo ("Setting %s", runlevel);
 				/* Remember the current runlevel for when we come back */
 				set_ksoftlevel (runlevel);
 				single_user ();
@@ -911,41 +891,24 @@ int main (int argc, char **argv)
 		}
 	}
 
-	/* Export our current softlevel */
-	runlevel = rc_get_runlevel ();
-
 	/* Now we start handling our children */
 	signal (SIGCHLD, handle_signal);
 
-	/* If we're in the default runlevel and ksoftlevel exists, we should use
-	   that instead */
-	if (newlevel &&
-		rc_exists (RC_SVCDIR "ksoftlevel") &&
-		strcmp (newlevel, RC_LEVEL_DEFAULT) == 0)
+	/* We should only use ksoftlevel if we were in single user mode
+	   If not, we need to erase ksoftlevel now. */
+	if (PREVLEVEL &&
+		(strcmp (PREVLEVEL, "1") == 0 ||
+		 strcmp (PREVLEVEL, "S") == 0 ||
+		 strcmp (PREVLEVEL, "N") == 0))
 	{
-		/* We should only use ksoftlevel if we were in single user mode
-		   If not, we need to erase ksoftlevel now. */
-		if (PREVLEVEL &&
-			(strcmp (PREVLEVEL, "1") == 0 ||
-			 strcmp (PREVLEVEL, "S") == 0 ||
-			 strcmp (PREVLEVEL, "N") == 0))
-		{
-			FILE *fp;
-
-			if (! (fp = fopen (RC_SVCDIR "ksoftlevel", "r")))
-				eerror ("fopen `%s': %s", RC_SVCDIR "ksoftlevel",
-						strerror (errno));
-			else {
-				if (fgets (ksoftbuffer, sizeof (ksoftbuffer), fp)) {
-					i = strlen (ksoftbuffer) - 1;
-					if (ksoftbuffer[i] == '\n')
-						ksoftbuffer[i] = 0;
-					newlevel = ksoftbuffer;
-				}
-				fclose (fp);
-			}
-		} else
-			set_ksoftlevel (NULL);
+		if (get_ksoftlevel (ksoftbuffer, sizeof (ksoftbuffer)))
+			newlevel = ksoftbuffer;
+	} else if (! RUNLEVEL ||
+			   (strcmp (RUNLEVEL, "1") != 0 &&
+				strcmp (RUNLEVEL, "S") != 0 &&
+				strcmp (RUNLEVEL, "N") != 0))
+	{
+		set_ksoftlevel (NULL);
 	}
 
 	if (newlevel &&

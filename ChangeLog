@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  10 Jul 2007; Roy Marples <uberlord@gentoo.org>:
+
+    We no longer care about numerical runlevels, #184733.
+
   09 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     Add an option to fork ldconfig in env-update, #182794

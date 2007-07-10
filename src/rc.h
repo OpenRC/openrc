@@ -8,8 +8,13 @@
 #ifndef __RC_H__
 #define __RC_H__
 
+#define SENTINEL
 #ifdef __GNUC__
-#  define SENTINEL __attribute__ ((__sentinel__))
+#  define GCC_VERSION (__GNUC__ * 1000 + __GNUC__MINOR )
+#  if (GCC_VERSION >= 3005)
+#    undef SENTINEL
+#    define SENTINEL __attribute__ ((__sentinel__))
+#  endif
 #endif
 
 #include <sys/types.h>
