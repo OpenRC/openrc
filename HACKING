@@ -1,0 +1,27 @@
+------------
+ QEMU NOTES
+------------
+
+Since the qemu docs blow, I'll make some quick notes here for how to get a
+system running for baselayout testing.
+
+- create rootfs (feel free to tweak 500M):
+	$ dd if=/dev/zero of=root.img bs=1M count=500M
+	$ mke2fs -F -j root.img
+- install Gentoo stage3:
+	$ mkdir loop
+	$ mount -o loop root.img loop
+	$ sudo tar pjxf stage3-x86.tar.bz2 -C loop
+	$ sudo chroot loop
+	<all you really need to configure is like /etc/fstab>
+		/dev/hda / ext3 noatime 0 1
+	$ umount loop
+- create an x86 kernel from a vanilla tarball:
+	- make sure you enable serial console support
+	- you shouldn't need any modifications, just grab a recent vanilla
+- run qemu:
+	$ qemu \
+		-hda root.img \
+		-append "root=/dev/hda console=ttyS0" \
+		-kernel your-compiled-vmlinux \
+		-nographic
