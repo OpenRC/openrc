@@ -141,14 +141,23 @@ _add_address() {
 		set -- "${ip}" netmask "${netmask}" "$@"
 	fi
 
-#		# Support iproute2 style config where possible
-#		r="${config[@]}"
-#		config=( ${r//brd +/} )
-#		config=( "${config[@]//brd/broadcast}" )
-#		config=( "${config[@]//peer/pointopoint}" )
-#	fi
+	local arg= cmd=
+	while [ -n "$1" ] ; do
+		case "$1" in
+			brd)
+				if [ "$2" = "+" ] ; then
+					shift
+				else
+					cmd="${cmd} broadcast"
+				fi
+				;;
+			peer) cmd="${cmd} pointtopoint";;
+			*) cmd="${cmd} $1" ;;
+		esac
+		shift
+	done
 
-	ifconfig "${iface}" "$@"
+	ifconfig "${iface}" ${cmd}
 }
 
 _add_route() {
@@ -180,15 +189,14 @@ _delete_addresses() {
 	# as we delete an address, a new one appears, so we have to
 	# keep polling
 	while true ; do
-		local addr=$(LC_ALL=C ifconfig "${IFACE}" |
-			sed -n -e 's/.*inet addr:\([^ ]*\).*/\1/p')
-
+		local addr=$(_get_inet_address)
 		[ -z "${addr}" ] && break
 		
 		if [ "${addr}" = "127.0.0.1/8" ] ; then
 			# Don't delete the loopback address
 			[ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ] && break
 		fi
+		einfo "${addr}"
 		ifconfig "${IFACE}" 0.0.0.0 || break
 	done
 
