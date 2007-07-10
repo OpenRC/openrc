@@ -861,7 +861,6 @@ int main (int argc, char **argv)
 				(strcmp (RUNLEVEL, "S") != 0 &&
 				 strcmp (RUNLEVEL, "1") != 0))
 			{
-				einfo ("Setting %s", runlevel);
 				/* Remember the current runlevel for when we come back */
 				set_ksoftlevel (runlevel);
 				single_user ();
