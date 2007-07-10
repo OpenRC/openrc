@@ -990,6 +990,7 @@ int main (int argc, char **argv)
 	char pid[16];
 	int retval;
 	int opt;
+	char *svc;
 
 	/* We need the full path to the service */
 	if (*argv[1] == '/')
@@ -1081,7 +1082,6 @@ int main (int argc, char **argv)
 	if (rc_is_env ("RC_PREFIX", "yes")) {
 		int l = 0;
 		int ll;
-		char *svc;
 
 		/* Get the longest service name */
 		services = rc_services_in_runlevel (NULL);
@@ -1221,7 +1221,6 @@ int main (int argc, char **argv)
 			if (in_background &&
 				rc_service_state (service, rc_service_inactive))
 			{
-				char *svc;
 				int j;
 				STRLIST_FOREACH (restart_services, svc, j)
 					if (rc_service_state (svc, rc_service_stopped))
@@ -1235,6 +1234,25 @@ int main (int argc, char **argv)
 			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
 			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 					 applet, strerror (errno));
+		} else if (strcmp (optarg, "ineed") == 0 ||
+				   strcmp (optarg, "iuse") == 0 ||
+				   strcmp (optarg, "needsme") == 0 ||
+				   strcmp (optarg, "usesme") == 0 ||
+				   strcmp (optarg, "iafter") == 0 ||
+				   strcmp (optarg, "ibefore") == 0
+				   strcmp (optorg, "iprovide") == 0) {
+			if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
+				eerrorx ("failed to load deptree");
+
+			rc_strlist_free (types);
+			types = rc_strlist_add (NULL, optarg);
+			rc_strlist_free (svclist);
+			svclist = rc_strlist_add (NULL, applet);
+			rc_strlist_free (services);
+			services = rc_get_depends (deptree, types, svclist, softlevel, 0);
+			STRLIST_FOREACH (services, svc, i)
+				printf ("%s%s", i == 1 ? "" : " ", svc);
+			printf ("\n");
 		}else
 			svc_exec (optarg, NULL);
 
