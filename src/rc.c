@@ -211,8 +211,6 @@ static int do_e (int argc, char **argv)
 		eindentv ();
 	else if (strcmp (applet, "veoutdent") == 0)
 		eoutdentv ();
-	else if (strcmp (applet, "eflush") == 0)
-		eflush ();
 	else {
 		eerror ("%s: unknown applet", applet);
 		retval = EXIT_FAILURE;

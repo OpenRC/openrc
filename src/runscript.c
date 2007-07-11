@@ -237,9 +237,6 @@ static void cleanup (void)
 	if (! rc_in_plugin && prefix_locked)
 		unlink (PREFIX_LOCK);
 
-	/* Flush our buffered output if any */
-	eclose ();
-
 	if (hook_out)
 		rc_plugin_run (hook_out, applet);
 	rc_plugin_unload ();
@@ -317,7 +314,7 @@ static int write_prefix (int fd, const char *buffer, size_t bytes, bool *prefixe
 			ret += write (fd, ec, strlen (ec));
 			ret += write (fd, prefix, strlen (prefix));
 			ret += write (fd, ec_normal, strlen (ec_normal));
-			ret += write (fd, "|", 2);
+			ret += write (fd, "|", 1);
 			*prefixed = true;
 		}
 
@@ -335,12 +332,8 @@ static bool svc_exec (const char *arg1, const char *arg2)
 	int stdout_pipes[2];
 	int stderr_pipes[2];
 
-	/* To ensure any output has hit our ebuffer */
-	fflush (stdout);
-	fflush (stderr);
-
 	/* Setup our pipes for prefixed output */
-	if (rc_is_env ("RC_PREFIX", "yes")) {
+	if (prefix) {
 		if (pipe (stdout_pipes))
 			eerror ("pipe: %s", strerror (errno));
 		if (pipe (stderr_pipes))
@@ -356,7 +349,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 	if (service_pid == -1)
 		eerrorx ("%s: vfork: %s", service, strerror (errno));
 	if (service_pid == 0) {
-		if (rc_is_env ("RC_PREFIX", "yes")) {
+		if (prefix) {
 			int flags;
 
 			if (dup2 (stdout_pipes[1], fileno (stdout)) == -1)
@@ -391,7 +384,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 	}
 
 	/* Prefix our piped output */
-	if (rc_is_env ("RC_PREFIX", "yes")) {
+	if (prefix) {
 		bool stdout_done = false;
 		bool stdout_prefix_shown = false;
 		bool stderr_done = false;
@@ -958,9 +951,6 @@ static void svc_restart (bool deps)
 	if (! rc_service_state (service, rc_service_stopped)) {
 		get_started_services ();
 		svc_stop (deps);
-
-		/* Flush our buffered output if any */
-		eflush ();
 	}
 
 	svc_start (deps);
@@ -1079,7 +1069,7 @@ int main (int argc, char **argv)
 	setenv ("RC_RUNSCRIPT_PID", pid, 1);
 
 	/* eprefix is kinda klunky, but it works for our purposes */
-	if (rc_is_env ("RC_PREFIX", "yes")) {
+	if (rc_is_env ("RC_PARALLEL", "yes")) {
 		int l = 0;
 		int ll;
 
@@ -1098,17 +1088,6 @@ int main (int argc, char **argv)
 		memset (prefix + ll, ' ', l - ll);
 		memset (prefix + l, 0, 1);
 		eprefix (prefix);
-	}
-
-	/* If we're in parallel and we're not prefixing then we need the ebuffer */
-	if (rc_is_env ("RC_PARALLEL", "yes") && ! rc_is_env ("RC_PREFIX", "yes")) {
-		char ebname[PATH_MAX];
-		char *eb;
-
-		snprintf (ebname, sizeof (ebname), "%s.%s", applet, pid);
-		eb = rc_strcatpaths (RC_SVCDIR "ebuffer", ebname, (char *) NULL);
-		ebuffer (eb);
-		free (eb);
 	}
 
 #ifdef __linux__
@@ -1264,9 +1243,6 @@ int main (int argc, char **argv)
 				uncoldplug ();
 			} else
 				svc_exec (optarg, NULL);
-
-			/* Flush our buffered output if any */
-			eflush ();
 
 			/* We should ensure this list is empty after an action is done */
 			rc_strlist_free (restart_services);

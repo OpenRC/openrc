@@ -67,12 +67,4 @@ void eoutdentv (void);
 /* Pointer to a string that is always prefixed to einfo/ewarn/error */
 void eprefix (const char *prefix);
 
-/* Handy utils to buffer stdout and stderr so our output is always
- * sane when forking around.
- * Don't depend on these being here though as we may take a different
- * approach at a later date. */
-void ebuffer (const char *file);
-void eflush (void);
-void eclose (void);
-
 #endif

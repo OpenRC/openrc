@@ -1,15 +1,10 @@
 # /etc/conf.d/rc: Global config file for the Gentoo RC System
 
 # Set to "yes" if you want the rc system to try and start services
-# in parallel for a slight speed improvement.
+# in parallel for a slight speed improvement. When running in parallel we
+# prefix the service output with it's name as the output will get
+# jumbled up.
 RC_PARALLEL="no"
-
-# If we're running in parallel then the output of each service is buffered
-# until the service finishes. This is so the output one service is not mixed
-# with the output of another service.
-# To avoid buffering can prefix each line of output to see the service which
-# it belongs to by setting the RC_PREFIX="yes".
-RC_PREFIX="no"
 
 # Set RC_INTERACTIVE to "yes" and you'll be able to press the I key during
 # boot so you can choose to start specific services. Set to "no" to disable
@@ -24,7 +19,6 @@ RC_VERBOSE="no"
 # RC_QUIET on the other hand will make init scripts quiet and produce no
 # output.
 RC_QUIET="no"
-
 
 # Do we allow any started service in the runlevel to satisfy the depedency
 # or do we want all of them regardless of state? For example, if net.eth0

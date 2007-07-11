@@ -583,7 +583,6 @@ static const char *depdirs[] =
   RC_SVCDIR "options",
   RC_SVCDIR "exclusive",
   RC_SVCDIR "scheduled",
-  RC_SVCDIR "ebuffer",
   NULL
 };
 

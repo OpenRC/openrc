@@ -67,20 +67,20 @@ _wait_for_carrier() {
 	# Incase users don't want this nice feature ...
 	[ ${timeout} -le 0 ] && return 0
 
-	[ -n "${RC_EBUFFER}" -o "${RC_PREFIX}" = "yes" ] && efunc=einfo
+	[ "${RC_PARALLEL}" = "yes" ] && efunc=einfo
 	${efunc} "Waiting for carrier (${timeout} seconds) "
 	while [ ${timeout} -gt 0 ] ; do
 		sleep 1
 		if _has_carrier ; then
-			[ -z "${RC_EBUFFER}" ] && echo
+			[ "${efunc}" = "einfon" ] && echo
 			eend 0
 			return 0
 		fi
 		timeout=$((${timeout} - 1))
-		[ -z "${RC_EBUFFER}" -a "${RC_PREFIX}" != "yes" ] && printf "."
+		[ "${efunc}" = "einfon" ] && printf "."
 	done
 
-	[ -z "${RC_EBUFFER}" -a "${RC_PREFIX}" != "yes" ] && echo
+	[ "${efunc}" = "einfon" ] && echo
 	eend 1
 	return 1
 }

@@ -32,8 +32,6 @@ hidden_proto(eendv)
 hidden_proto(eerror)
 hidden_proto(eerrorn)
 hidden_proto(eerrorx)
-hidden_proto(eflush)
-hidden_proto(eclose)
 hidden_proto(eindent)
 hidden_proto(eindentv)
 hidden_proto(einfo)
@@ -63,8 +61,6 @@ hidden_proto(ewendv)
 
     /* How wide can the indent go? */
 #define INDENT_MAX			40
-
-#define EBUFFER_LOCK		RC_SVCDIR "ebuffer/.lock"
 
 /* Default colours */
 #define ECOLOR_GOOD      "\033[32;01m"
@@ -120,10 +116,6 @@ static const char *color_terms[] = {
 	NULL
 };
 
-/* We use this array to save the stdout/stderr fd's for buffering */
-static int stdfd[2] = {-1, -1};
-static FILE *ebfp = NULL;
-static char ebfile[PATH_MAX] = { '\0' };
 static const char *term = NULL;
 static bool term_is_cons25 = false;
 
@@ -200,126 +192,6 @@ static int get_term_columns (void)
 void eprefix (const char *prefix) {
 	_eprefix = prefix;
 }
-
-void ebuffer (const char *file)
-{
-	/* Don't ebuffer if we don't have a file or we already are */
-	if (! file || stdfd[0] >= 0 || ! isatty (fileno (stdout)))
-		return;
-
-	/* Save the current fd's */
-	stdfd[0] = dup (fileno (stdout));
-	stdfd[1] = dup (fileno (stderr));
-
-	if (! (ebfp = fopen (file, "w+"))) {
-		fprintf (stderr, "fopen `%s': %s\n", file, strerror (errno));
-		return;
-	}
-
-	snprintf (ebfile, sizeof (ebfile), "%s", file);
-
-	fflush (stdout);
-	fflush (stderr);
-
-	/* Now redirect stdout and stderr */
-	if ((dup2 (fileno (ebfp), fileno (stdout))) < 0)
-		fprintf (stderr, "dup2: %s", strerror (errno));
-	if ((dup2 (fileno (ebfp), fileno (stderr))) < 0)
-		fprintf (stderr, "dup2: %s", strerror (errno));
-
-	/* Store the filename in our environment so scripts can tell if we're
-	 * buffering or not */
-	unsetenv ("RC_EBUFFER");
-	setenv ("RC_EBUFFER", file, 1);
-
-	return;
-}
-
-static void _eflush (bool reopen)
-{
-	char buffer[RC_LINEBUFFER];
-	int serrno = errno;
-	
-	/* eflush called from an init script? */
-	if (! ebfp) {
-		char *file = getenv ("RC_EBUFFER");
-		if (file)
-			ebfp = fopen (file, "a+");
-	}
-
-	if (! ebfp)
-		return;
-
-	fflush (stdout);
-	fflush (stderr);
-
-	/* Restore stdout and stderr now */
-	if (stdfd[0] >= 0) {
-		dup2 (stdfd[0], fileno (stdout));
-		dup2 (stdfd[1], fileno (stderr));
-	} else {
-		char *tty = getenv ("RC_TTY");
-		if (tty) {
-			freopen (tty, "w+", stdout);
-			dup2 (fileno (stdout), fileno (stderr));
-		}
-	}
-
-	/* Spin until we can lock the ebuffer */
-	while (true) {
-		struct timeval tv;
-		errno = 0;
-		if (mkfifo (EBUFFER_LOCK, 0700) == 0)
-			break;
-		if (errno != EEXIST)
-			eerror ("mkfifo `%s': %s\n", EBUFFER_LOCK, strerror (errno));
-		tv.tv_sec = 0;
-		tv.tv_usec = 20000;
-		select (0, NULL, NULL, NULL, &tv);
-	}
-	errno = serrno;
-
-	/* Dump the file to stdout */
-	memset (buffer, 0, RC_LINEBUFFER);
-	if (fseek (ebfp, (off_t) 0, SEEK_SET) < 0)
-		eerror ("fseek: %s", strerror (errno));
-	else {
-		while (fgets (buffer, RC_LINEBUFFER, ebfp))
-			printf ("%s", buffer);
-	}
-	fflush (stdout);
-	fflush (stderr);
-	
-	if (unlink (EBUFFER_LOCK))
-		eerror ("unlink `%s': %s", EBUFFER_LOCK, strerror (errno));
-
-	if (reopen) {
-		ftruncate (fileno (ebfp), (off_t) 0);
-		fseek (ebfp, (off_t) 0, SEEK_SET); 
-		dup2 (fileno (ebfp), fileno (stdout));
-		dup2 (fileno (ebfp), fileno (stderr));
-	} else {
-		stdfd[0] = -1;
-		stdfd[1] = -1;
-		fclose (ebfp);
-		ebfp = NULL;
-		unlink (ebfile);
-		ebfile[0] = '\0';
-		unsetenv ("RC_EBUFFER");
-	}
-
-	return;
-}
-
-void eflush () {
-	_eflush (true);
-}
-hidden_def(eflush)
-
-void eclose () {
-	_eflush (false);
-}
-hidden_def(eclose)
 
 static void elog (int level, const char *fmt, va_list ap)
 {
@@ -518,7 +390,6 @@ void ewarnx (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	eclose ();
 	if (fmt && ! is_env ("RC_QUIET", "yes")) {
 		va_start (ap, fmt);
 		elog (LOG_WARNING, fmt, ap);
@@ -544,7 +415,6 @@ int eerror (const char *fmt, ...)
 	va_end (ap);
 	retval += fprintf (stderr, "\n");
 
-	eflush ();
 	return (retval);
 }
 hidden_def(eerror)
@@ -553,7 +423,6 @@ void eerrorx (const char *fmt, ...)
 {
 	va_list ap;
 
-	eclose ();
 	if (fmt) {
 		va_start (ap, fmt);
 		elog (LOG_ERR, fmt, ap);

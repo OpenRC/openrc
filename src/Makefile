@@ -41,7 +41,7 @@ SYS_WHITELIST = env_whitelist
 TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS) $(PRIV_BIN_TARGETS)
 
 RCLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
-	      eindent eoutdent eflush eval_ecolors \
+	      eindent eoutdent eval_ecolors \
 	      veinfo vewarn vebegin veend vewend veindent veoutdent \
 	      service_starting service_inactive service_started \
 	      service_stopping service_stopped \
