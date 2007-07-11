@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  11 Jul 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Don't do interactive when changing init, #174141.
+
   10 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     init scripts and their extra options can now have descriptions, #184327.

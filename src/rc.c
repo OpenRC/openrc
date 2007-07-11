@@ -58,6 +58,9 @@
 
 extern char **environ;
 
+static char *RUNLEVEL = NULL;
+static char *PREVLEVEL = NULL;
+
 static char *applet = NULL;
 static char **env = NULL;
 static char **newenv = NULL;
@@ -84,7 +87,7 @@ static void cleanup (void)
 	rc_plugin_unload ();
 
 	if (! rc_in_plugin && termios_orig) {
-		tcsetattr (STDIN_FILENO, TCSANOW, termios_orig);
+		tcsetattr (fileno (stdin), TCSANOW, termios_orig);
 		free (termios_orig);
 	}
 
@@ -338,18 +341,19 @@ static char read_key (bool block)
 {
 	struct termios termios;
 	char c = 0;
-
-	if (! isatty (STDIN_FILENO))
+	int fd = fileno (stdin);
+	
+	if (! isatty (fd))
 		return (false);
 
 	/* Now save our terminal settings. We need to restore them at exit as we
 	   will be changing it for non-blocking reads for Interactive */
 	if (! termios_orig) {
 		termios_orig = rc_xmalloc (sizeof (struct termios));
-		tcgetattr (STDIN_FILENO, termios_orig);
+		tcgetattr (fd, termios_orig);
 	}
 
-	tcgetattr (STDIN_FILENO, &termios);
+	tcgetattr (fd, &termios);
 	termios.c_lflag &= ~(ICANON | ECHO);
 	if (block)
 		termios.c_cc[VMIN] = 1;
@@ -357,11 +361,11 @@ static char read_key (bool block)
 		termios.c_cc[VMIN] = 0;
 		termios.c_cc[VTIME] = 0;
 	}
-	tcsetattr (STDIN_FILENO, TCSANOW, &termios);
+	tcsetattr (fd, TCSANOW, &termios);
 
-	read (STDIN_FILENO, &c, 1);
+	read (fd, &c, 1);
 
-	tcsetattr (STDIN_FILENO, TCSANOW, termios_orig);
+	tcsetattr (fd, TCSANOW, termios_orig);
 
 	return (c);
 }
@@ -369,6 +373,12 @@ static char read_key (bool block)
 static bool want_interactive (void)
 {
 	char c;
+
+	if (PREVLEVEL &&
+		strcmp (PREVLEVEL, "N") != 0 &&
+		strcmp (PREVLEVEL, "S") != 0 &&
+		strcmp (PREVLEVEL, "1") != 0)
+		return (false);
 
 	if (! rc_is_env ("RC_INTERACTIVE", "yes"))
 		return (false);
@@ -539,8 +549,6 @@ static void handle_signal (int sig)
 {
 	int serrno = errno;
 	char signame[10] = { '\0' };
-	char *run;
-	char *prev;
 	pidlist_t *pl;
 	pid_t pid;
 	int status = 0;
@@ -583,14 +591,12 @@ static void handle_signal (int sig)
 			rc_plugin_run (rc_hook_abort, NULL);
 
 			/* Only drop into single user mode if we're booting */
-			run = getenv ("RUNLEVEL");
-			prev = getenv ("PREVLEVEL");
-			if ((prev &&
-				 (strcmp (prev, "S") == 0 ||
-				  strcmp (prev, "1") == 0)) ||
-				(run &&
-				 (strcmp (run, "S") == 0 ||
-				  strcmp (run, "1") == 0)))
+			if ((PREVLEVEL &&
+				 (strcmp (PREVLEVEL, "S") == 0 ||
+				  strcmp (PREVLEVEL, "1") == 0)) ||
+				(RUNLEVEL &&
+				 (strcmp (RUNLEVEL, "S") == 0 ||
+				  strcmp (RUNLEVEL, "1") == 0)))
 				single_user ();
 
 			exit (EXIT_FAILURE);
@@ -637,8 +643,6 @@ static struct option longopts[] = {
 
 int main (int argc, char **argv)
 {
-	char *RUNLEVEL = NULL;
-	char *PREVLEVEL = NULL;
 	char *runlevel = NULL;
 	char *newlevel = NULL;
 	char *service = NULL;
@@ -700,6 +704,12 @@ int main (int argc, char **argv)
 
 	/* Change dir to / to ensure all scripts don't use stuff in pwd */
 	chdir ("/");
+
+	/* RUNLEVEL is set by sysvinit as is a magic number
+	   RC_SOFTLEVEL is set by us and is the name for this magic number
+	   even though all our userland documentation refers to runlevel */
+	RUNLEVEL = getenv ("RUNLEVEL");
+	PREVLEVEL = getenv ("PREVLEVEL");
 
 	/* Setup a signal handler */
 	signal (SIGINT, handle_signal);
@@ -768,13 +778,6 @@ int main (int argc, char **argv)
 
 	interactive = rc_exists (INTERACTIVE);
 	rc_plugin_load ();
-
-	/* RUNLEVEL is set by sysvinit as is a magic number
-	   RC_SOFTLEVEL is set by us and is the name for this magic number
-	   even though all our userland documentation refers to runlevel */
-	RUNLEVEL = getenv ("RUNLEVEL");
-	PREVLEVEL = getenv ("PREVLEVEL");
-
 
 	/* Load current softlevel */
 	runlevel = rc_get_runlevel ();
