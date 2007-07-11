@@ -1,9 +1,9 @@
 # Copyright 2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-# bool do_unmount(char *cmd, char *no_unmounts, char *nodes, char *fslist)
+# bool do_unmount(char *cmd, char *no_unmounts, char *nodes, char *fslist, char *no_fslist)
 # Handy function to handle all our unmounting needs
-# find-mount is a C program to actually find our mounts on our supported OS's
+# mountinfo is a C program to actually find our mounts on our supported OS's
 do_unmount() {
 	local cmd="$1" retval=0 retry=
 	local f_opts="-m -c" f_kill="-s " mnt=
@@ -12,7 +12,7 @@ do_unmount() {
 		f_kill="-"
 	fi
 
-	local mnts="$(mountinfo ${2:+--skip-regex} $2 ${3:+--node-regex} $3 ${4:+--fstype-regex} $4 --reverse \
+	local mnts="$(mountinfo ${2:+--skip-point-regex} $2 ${3:+--node-regex} $3 ${4:+--fstype-regex} $4 ${5:+--skip-fstype-regex} $5 \
 	| sed -e "s/'/'\\\\''/g" -e "s/^/'/g" -e "s/$/'/g")"
 	eval set -- ${mnts}
 	for mnt in "$@" ; do

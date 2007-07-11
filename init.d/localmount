@@ -202,10 +202,16 @@ stop() {
 	do_unmount "umount -d" "${no_umounts}" "^/dev/loop"
 	eoutdent
 
-	# Now everything else
+	# Now everything else, except network filesystems as the
+	# network should be down by this point.
 	einfo "Unmounting filesystems"
 	eindent
-	do_unmount "umount" "${no_umounts}"
+	local fs=
+	for x in ${RC_NET_FS_LIST} ; do
+		fs="${fs}${fs:+|}${x}"
+	done
+	[ -n "${fs}" ] && fs="^(${fs})$"
+	do_unmount "umount" "${no_umounts}" "" "" "${fs}"
 	eoutdent
 
 	return 0

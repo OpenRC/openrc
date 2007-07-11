@@ -3,6 +3,7 @@
 
   11 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Don't unmount network filesystems in localmount or halt.sh, #175602.
     Don't do interactive when changing init, #174141.
 
   10 Jul 2007; Roy Marples <uberlord@gentoo.org>:

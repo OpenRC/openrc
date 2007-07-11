@@ -65,7 +65,12 @@ if [ "${RC_UNAME}" = "Linux" ] ; then
 	# We need the do_unmount function
 	. "${RC_LIBDIR}"/sh/rc-mount.sh
 	eindent
-	do_unmount "mount -n -o remount,ro" "^(/dev|/dev/pts|/dev/shm|/proc|/proc/.*|/sys)$"
+	fs=
+	for x in ${RC_NET_FS_LIST} ; do
+		fs="${fs}${fs:+|}${x}"
+	done
+	[ -n "${fs}" ] && fs="^(${fs})$"
+	do_unmount "mount -n -o remount,ro" "^(/dev|/dev/pts|/dev/shm|/proc|/proc/.*|/sys)$" "" "" "${fs}"
 	eoutdent
 	eend $?
 	unmounted=$?
