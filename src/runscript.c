@@ -234,18 +234,16 @@ static void start_services (char **list) {
 
 static void cleanup (void)
 {
-	if (! rc_in_plugin && prefix_locked)
-		unlink (PREFIX_LOCK);
-
-	if (hook_out)
-		rc_plugin_run (hook_out, applet);
-	rc_plugin_unload ();
-
-	if (restart_services ) {
-		start_services (restart_services);
-		rc_strlist_free (restart_services);
+	if (! rc_in_plugin) {
+		if (prefix_locked)
+			unlink (PREFIX_LOCK);
+		if (hook_out)
+			rc_plugin_run (hook_out, applet);
+		if (restart_services)
+			start_services (restart_services);
 	}
 
+	rc_plugin_unload ();
 	rc_free_deptree (deptree);
 	rc_strlist_free (services);
 	rc_strlist_free (types);
@@ -253,6 +251,7 @@ static void cleanup (void)
 	rc_strlist_free (providelist);
 	rc_strlist_free (need_services);
 	rc_strlist_free (use_services);
+	rc_strlist_free (restart_services);
 	rc_strlist_free (tmplist);
 	free (ibsave);
 
@@ -716,7 +715,7 @@ static void svc_start (bool deps)
 			p = tmp;
 			STRLIST_FOREACH (tmplist, svc, i) {
 				if (i > 1) {
-					if (i == n - 1)
+					if (i == n)
 						p += snprintf (p, len, " or ");
 					else
 						p += snprintf (p, len, ", ");
@@ -1049,14 +1048,10 @@ int main (int argc, char **argv)
 
 			STRLIST_FOREACH (env, p, i)
 				putenv (p);
-
 			/* We don't free our list as that would be null in environ */
 		}
 
 		softlevel = rc_get_runlevel ();
-
-		/* If not called from RC or another service then don't be parallel */
-		unsetenv ("RC_PARALLEL");
 	}
 
 	setenv ("RC_ELOG", service, 1);
