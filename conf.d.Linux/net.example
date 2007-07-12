@@ -958,6 +958,12 @@
 #		return 1
 #	fi
 #
+#	# Test to see if we're docked or not and configure like so
+#	# config_docked="dhcp"
+#	if grep -q "1" /sys/devices/platform/dock.0/docked ; then
+#       einfo "${IFACE} is docked - configuring"
+#		_configure_variables "docked"
+#	fi
 #
 #	# Remember to return 0 on success
 #	return 0
