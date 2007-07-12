@@ -1,6 +1,8 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+* baselayout-2.0.0_alpha4 (12 Jul 2007)
+
   11 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     Don't unmount network filesystems in localmount or halt.sh, #175602.
