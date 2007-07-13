@@ -121,30 +121,30 @@ char **rc_strlist_delete (char **list, const char *item)
 }
 librc_hidden_def(rc_strlist_delete)
 
-char **rc_strlist_join (char **this, char **that)
+char **rc_strlist_join (char **list1, char **list2)
 {
 	char **newlist;
 	int i = 0;
 	int j = 0;
 
-	if (! this && that)
-		return (that);
-	if (! that && this)
-		return (this);
-	if (! that && ! this)
+	if (! list1 && list2)
+		return (list2);
+	if (! list2 && list1)
+		return (list1);
+	if (! list1 && ! list2)
 		return (NULL);
 
-	while (this[i])
+	while (list1[i])
 		i++;
 
-	while (that[j])
+	while (list2[j])
 		j++;
 
-	newlist = rc_xrealloc (this, sizeof (char *) * (i + j + 1));
+	newlist = rc_xrealloc (list1, sizeof (char *) * (i + j + 1));
 
 	j = 0;
-	while (that[j]) {
-		newlist[i] = that[j];
+	while (list2[j]) {
+		newlist[i] = list2[j];
 		i++;
 		j++;
 	}
