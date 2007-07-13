@@ -26,15 +26,16 @@ start() {
 		fi
 	fi
 	
-	if ! touch -c /var/run 2> /dev/null ; then
+	if ! echo 2>/dev/null >/var/run/.test.$$ ; then
 		ewarn "Skipping /var and /tmp initialization (ro root?)"
 		return 0
 	fi
+	rm -f /var/run/.test.$$
 
 	if [ "${RC_UNAME}" = "Linux" ] ; then
 		# Setup login records
-		> /var/run/utmp
-		touch /var/log/wtmp
+		echo > /var/run/utmp
+		[ -e /var/log/wtmp ] || echo > /var/log/wtmp
 		chgrp utmp /var/run/utmp /var/log/wtmp
 		chmod 0664 /var/run/utmp /var/log/wtmp
 	fi
@@ -72,7 +73,7 @@ start() {
 	fi
 
 	# Create the .keep to stop portage from removing /var/lock
-	> /var/lock/.keep
+	echo > /var/lock/.keep
 	eend 0
 
 	# Clean up /tmp directory
@@ -120,13 +121,12 @@ start() {
 
 	# Create an 'after-boot' dmesg log
 	if [ "${RC_SYS}" != "VPS" ] ; then
-		touch /var/log/dmesg
-		chmod 640 /var/log/dmesg
 		dmesg > /var/log/dmesg
+		chmod 640 /var/log/dmesg
 	fi
 
 	# Check for /etc/resolv.conf, and create if missing
-	[ -f /etc/resolv.conf ] || touch /etc/resolv.conf 2>/dev/null
+	[ -e /etc/resolv.conf ] || echo >/etc/resolv.conf
 }
 
 stop() {

@@ -78,7 +78,7 @@ start() {
 		cp "${font}" "${RC_LIBDIR}"/console
 		echo "$(basename "${font}")" > "${RC_LIBDIR}"/console/font
 		if [ "${UNICODE}" = "yes" ] ; then
-			touch "${RC_LIBDIR}"/console/unicode
+			echo > "${RC_LIBDIR}"/console/unicode
 		else
 			rm -f "${RC_LIBDIR}"/console/unicode
 		fi

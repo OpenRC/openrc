@@ -24,7 +24,7 @@ start() {
 	[ "${CLOCK}" = "UTC" ] && TBLURB="UTC"
 	ebegin "Starting the System Clock Adjuster [${TBLURB}]"
 	if [ "${CLOCK}" != "UTC" ] ; then
-		touch /etc/wall_cmos_clock
+		echo >/etc/wall_cmos_clock
 		start-stop-daemon --start --exec /sbin/adjkerntz -- -i
 	else
 		rm -f /etc/wall_cmos_clock

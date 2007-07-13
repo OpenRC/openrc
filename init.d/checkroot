@@ -7,13 +7,10 @@ and optionally repair them."
 
 do_mtab() {
 	# Don't create mtab if /etc is readonly
-	if ! touch /etc/mtab 2> /dev/null ; then
+	if ! echo 2>/dev/null >/etc/mtab ; then
 		ewarn "Skipping /etc/mtab initialization" "(ro root?)"
 		return 0
 	fi
-
-	# Clear the existing mtab
-	> /etc/mtab
 
 	# Add the entry for / to mtab
 	mount -f /
@@ -43,7 +40,7 @@ do_fsck() {
 		return 0
 	fi
 
-	if touch /.test.$$ 2> /dev/null ; then
+	if echo 2>/dev/null >/.test.$$ ; then
 		einfo "root filesystem is mounted read-write - skipping"
 		rm -f /.test.$$
 		return 0
