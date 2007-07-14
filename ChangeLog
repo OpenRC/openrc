@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  14 Jul 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Add --remove-destination to example /dev recover command #40987.
+
 * baselayout-2.0.0_alpha4 (12 Jul 2007)
 
   11 Jul 2007; Roy Marples <uberlord@gentoo.org>:

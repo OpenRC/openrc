@@ -6,7 +6,7 @@ the root partition is missing these required files !
 To rectify this situation, please do the following:
 mkdir /mnt/fixit
 mount --bind / /mnt/fixit
-cp -a /dev/* /mnt/fixit/dev/
+cp -a --remove-destination /dev/* /mnt/fixit/dev/
 umount /mnt/fixit
 rmdir /mnt/fixit
 
