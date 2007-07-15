@@ -7,7 +7,7 @@ adsl_depend() {
 }
 
 adsl_setup_vars() {
-	local startstop="$2" cfgexe=
+	local startstop="$1" cfgexe=
 
 	if [ -x /usr/sbin/pppoe-start ]; then
 		exe="/usr/sbin/pppoe-${startstop}"
