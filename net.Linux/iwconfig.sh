@@ -679,7 +679,7 @@ iwconfig_pre_start() {
 
 	# Store the fact that tx-power was off so we default to a longer
 	# wait if our scan returns nothing
-	LC_ALL=C iwconfig iwi0 | sed -e '1d' | grep -q "Tx-Power=off"
+	LC_ALL=C iwconfig "${IFACE}" | sed -e '1d' | grep -q "Tx-Power=off"
 	local txpowerwasoff=$?
 	
 	iwconfig_defaults
