@@ -41,7 +41,7 @@
 
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #define LD_MESSAGE	"Regenerating /var/run/ld-elf.so.hints"
-#define LD_SYSTEM	"/sbin/ldconfig -elf -i '" LDSOCONF "'";
+#define LD_SYSTEM	"/sbin/ldconfig -elf -i '" LDSOCONF "'"
 #else
 #define LD_MESSAGE	"Regenerating /etc/ld.so.cache"
 #define LD_SYSTEM	"/sbin/ldconfig"
