@@ -21,7 +21,7 @@ stop_addon() {
 is_net_fs() {
 	[ -z "$1" ] && return 1
 
-	local t=$(mountinfo --fstype "$1" )
+	local t=$(mountinfo --fstype "$1")
 	for x in ${RC_NET_FS_LIST} ; do
 		[ "${x}" = "${t}" ] && return 0
 	done

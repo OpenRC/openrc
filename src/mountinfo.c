@@ -33,7 +33,7 @@
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined (__OpenBSD__)
 static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 						   regex_t *fstype_regex, regex_t *skip_fstype_regex,
-						   char **mounts, bool list_nodes, bool list_fstype)
+						   char **mounts, bool node, bool fstype)
 {
 	struct statfs *mnts;
 	int nmnts;
@@ -70,9 +70,9 @@ static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 				continue;
 		}
 
-		list = rc_strlist_addsortc (list, list_nodes ?
+		list = rc_strlist_addsortc (list, node ?
 									mnts[i].f_mntfromname :
-									list_fstype ? mnts[i].f_fstypename :
+									fstype ? mnts[i].f_fstypename :
 									mnts[i].f_mntonname);
 	}
 
@@ -82,14 +82,14 @@ static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 #elif defined (__linux__)
 static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 						   regex_t *fstype_regex, regex_t *skip_fstype_regex,
-						   char **mounts, bool list_nodes, bool list_fstype)
+						   char **mounts, bool node, bool fstype)
 {
 	FILE *fp;
 	char buffer[PATH_MAX * 3];
 	char *p;
 	char *from;
 	char *to;
-	char *fstype;
+	char *fst;
 	char **list = NULL;
 
 	if ((fp = fopen ("/proc/mounts", "r")) == NULL)
@@ -106,15 +106,15 @@ static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 			continue;
 
 		to = strsep (&p, " ");
-		fstype = strsep (&p, " ");
+		fst = strsep (&p, " ");
 		/* Skip the really silly rootfs */
-		if (strcmp (fstype, "rootfs") == 0)
+		if (strcmp (fst, "rootfs") == 0)
 			continue;
 		if (fstype_regex &&
-			regexec (fstype_regex, fstype, 0, NULL, 0) != 0)
+			regexec (fstype_regex, fst, 0, NULL, 0) != 0)
 			continue;
 		if (skip_fstype_regex &&
-			regexec (skip_fstype_regex, fstype, 0, NULL, 0) == 0)
+			regexec (skip_fstype_regex, fst, 0, NULL, 0) == 0)
 			continue;
 
 		if (mounts)	{
@@ -130,10 +130,7 @@ static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 				continue;
 		}
 
-		list = rc_strlist_addsortc (list,
-									list_nodes ? 
-									list_fstype ? fstype :
-									from : to);
+		list = rc_strlist_addsortc (list, node ? from : fstype ? fst : to);
 	}
 	fclose (fp);
 
@@ -168,8 +165,8 @@ static struct option longopts[] = {
 	{ "skip-node-regex",     1, NULL, 'N'},
 	{ "point-regex",         1, NULL, 'p'},
 	{ "skip-point-regex",    1, NULL, 'P'},
-	{ "list-nodes",          0, NULL, 'o'},
-	{ "list-fstype",         0, NULL, 's'},
+	{ "node",                0, NULL, 'o'},
+	{ "fstype",              0, NULL, 's'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
@@ -185,9 +182,9 @@ int main (int argc, char **argv)
 	regex_t *skip_node_regex = NULL;
 	regex_t *skip_point_regex = NULL;
 	char **nodes = NULL;
-	char *node;
-	bool list_nodes = false;
-	bool list_fstype = false;
+	char *n;
+	bool node = false;
+	bool fstype = false;
 	char **mounts = NULL;
 	int opt;
 	int result;
@@ -219,12 +216,12 @@ int main (int argc, char **argv)
 				DO_REG (skip_point_regex);
 				break;
 			case 'o':
-				list_nodes = true;
-				list_fstype = false;
+				node = true;
+				fstype = false;
 				break;
 			case 's':
-				list_nodes = false;
-				list_fstype = true;
+				node = false;
+				fstype = true;
 				break;
 
 				case_RC_COMMON_GETOPT
@@ -239,7 +236,7 @@ int main (int argc, char **argv)
 
 	nodes = find_mounts (node_regex, skip_node_regex,
 						 fstype_regex, skip_fstype_regex,
-						 mounts, list_nodes, list_fstype);
+						 mounts, node, fstype);
 
 	if (node_regex)
 		regfree (node_regex);
@@ -253,12 +250,12 @@ int main (int argc, char **argv)
 	rc_strlist_reverse (nodes);
 
 	result = EXIT_FAILURE;
-	STRLIST_FOREACH (nodes, node, i) {
-		if (point_regex && regexec (point_regex, node, 0, NULL, 0) != 0)
+	STRLIST_FOREACH (nodes, n, i) {
+		if (point_regex && regexec (point_regex, n, 0, NULL, 0) != 0)
 			continue;
-		if (skip_point_regex && regexec (skip_point_regex, node, 0, NULL, 0) == 0)
+		if (skip_point_regex && regexec (skip_point_regex, n, 0, NULL, 0) == 0)
 			continue;
-		printf ("%s\n", node);
+		printf ("%s\n", n);
 		result = EXIT_SUCCESS;
 	}
 	rc_strlist_free (nodes);

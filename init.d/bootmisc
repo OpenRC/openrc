@@ -34,8 +34,8 @@ start() {
 
 	if [ "${RC_UNAME}" = "Linux" ] ; then
 		# Setup login records
-		echo > /var/run/utmp
-		[ -e /var/log/wtmp ] || echo > /var/log/wtmp
+		printf "" >/var/run/utmp
+		[ -e /var/log/wtmp ] || printf "" >/var/log/wtmp
 		chgrp utmp /var/run/utmp /var/log/wtmp
 		chmod 0664 /var/run/utmp /var/log/wtmp
 	fi
@@ -73,7 +73,7 @@ start() {
 	fi
 
 	# Create the .keep to stop portage from removing /var/lock
-	echo > /var/lock/.keep
+	printf "" >/var/lock/.keep
 	eend 0
 
 	# Clean up /tmp directory
@@ -126,7 +126,7 @@ start() {
 	fi
 
 	# Check for /etc/resolv.conf, and create if missing
-	[ -e /etc/resolv.conf ] || echo >/etc/resolv.conf
+	[ -e /etc/resolv.conf ] || printf "" >/etc/resolv.conf
 }
 
 stop() {
