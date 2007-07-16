@@ -119,6 +119,16 @@ KV_to_int() {
 	echo "${KV_int}"
 }
 
+# Allow our scripts to support zsh
+if [ -n "${ZSH_VERSION}" ] ; then
+  emulate sh
+  NULLCMD=:
+  # Zsh 3.x and 4.x performs word splitting on ${1+"$@"}, which
+  # is contrary to our usage.  Disable this feature.
+  alias -g '${1+"$@"}'='"$@"'
+  setopt NO_GLOB_SUBST
+fi
+
 # Setup a basic $PATH.  Just add system default to existing.
 # This should solve both /sbin and /usr/sbin not present when
 # doing 'su -c foo', or for something like:  PATH= rcscript start

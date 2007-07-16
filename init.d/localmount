@@ -153,7 +153,7 @@ stop() {
 	# NO_UMOUNTS is taken from /etc/conf.d/localmount
 	# RC_NO_UMOUNTS is taken from /etc/conf.d/rc and can also be
 	# set by plugins
-	local OIFS=$IFS SIFS=${IFS-y}
+	OIFS=${IFS} SIFS=${IFS-y}
 	IFS=$IFS:
 	for x in ${NO_UMOUNTS} ${RC_NO_UMOUNTS} ; do
 		no_umounts="${no_umounts}|${x}"
