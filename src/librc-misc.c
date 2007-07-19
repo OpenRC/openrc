@@ -331,6 +331,7 @@ char **rc_get_config (char **list, const char *file)
 
 		/* Get entry */
 		token = strsep (&p, "=");
+
 		if (! token)
 			continue;
 

@@ -127,7 +127,16 @@ int main (int argc, char **argv)
 		char *path = rc_strcatpaths (ENVDIR, file, (char *) NULL);
 		char **entries = NULL;
 
-		if (! rc_is_dir (path))
+		j = strlen (file);
+		if (! rc_is_dir (path) &&
+			j > 2 &&
+			*file >= '0' &&
+			*file <= '9' &&
+			*(file + 1) >= '0' &&
+			*(file + 1) <= '9' &&
+			*(file + j - 1) != '~' &&
+			(j < 4 || strcmp (file + j - 4, ".bak") != 0) &&
+			(j < 5 || strcmp (file + j - 5, ".core") != 0))
 			entries = rc_get_config (NULL, path);
 		free (path);
 
