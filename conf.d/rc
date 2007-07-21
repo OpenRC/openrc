@@ -22,11 +22,11 @@ RC_QUIET="no"
 
 # Do we allow any started service in the runlevel to satisfy the depedency
 # or do we want all of them regardless of state? For example, if net.eth0
-# and net.eth0 are in the default runlevel then with RC_STRICT_DEPEND="no"
+# and net.eth0 are in the default runlevel then with RC_DEPEND_STRICT="no"
 # both will be started, but services that depend on 'net' will work if either
-# one comes up. With RC_STRICT_DEPEND="yes" we would require them both to
+# one comes up. With RC_DEPEND_STRICT="yes" we would require them both to
 # come up.
-RC_STRICT_DEPEND="no"
+RC_DEPEND_STRICT="no"
 
 # Do we allow services to be hotplugged? If not, set to RC_HOTPLUG="no"
 # NOTE: This does not affect anything hotplug/udev/devd related, just the

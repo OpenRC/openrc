@@ -464,7 +464,7 @@ static void set_ksoftlevel (const char *runlevel)
 	FILE *fp;
 
 	if (! runlevel ||
-		strcmp (runlevel, RC_LEVEL_BOOT) == 0 ||
+		strcmp (runlevel, getenv ("RC_BOOTLEVEL")) == 0 ||
 		strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
 		strcmp (runlevel, RC_LEVEL_SYSINIT) == 0)
 	{
@@ -644,6 +644,7 @@ static struct option longopts[] = {
 int main (int argc, char **argv)
 {
 	char *runlevel = NULL;
+	const char *bootlevel = NULL;
 	char *newlevel = NULL;
 	char *service = NULL;
 	char **deporder = NULL;
@@ -780,6 +781,7 @@ int main (int argc, char **argv)
 	rc_plugin_load ();
 
 	/* Load current softlevel */
+	bootlevel = getenv ("RC_BOOTLEVEL");
 	runlevel = rc_get_runlevel ();
 
 	/* Check we're in the runlevel requested, ie from
@@ -965,7 +967,7 @@ int main (int argc, char **argv)
 	   The only downside of this approach and ours is that we have to hard code
 	   the device node to the init script to simulate the coldplug into
 	   runlevel for our dependency tree to work. */
-	if (newlevel && strcmp (newlevel, RC_LEVEL_BOOT) == 0 &&
+	if (newlevel && strcmp (newlevel, bootlevel) == 0 &&
 		(strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
 		 strcmp (runlevel, RC_LEVEL_SYSINIT) == 0) &&
 		rc_is_env ("RC_COLDPLUG", "yes"))
@@ -1015,7 +1017,7 @@ int main (int argc, char **argv)
 	types = rc_strlist_add (types, "iuse");
 	types = rc_strlist_add (types, "iafter");
 	deporder = rc_get_depends (deptree, types, stop_services,
-							   runlevel, depoptions);
+							   runlevel, depoptions | RC_DEP_STOP);
 	rc_strlist_free (stop_services);
 	rc_strlist_free (types);
 	stop_services = deporder;
@@ -1029,7 +1031,7 @@ int main (int argc, char **argv)
 
 	/* Load our start services now.
 	   We have different rules dependent on runlevel. */
-	if (newlevel && strcmp (newlevel, RC_LEVEL_BOOT) == 0) {
+	if (newlevel && strcmp (newlevel, bootlevel) == 0) {
 		if (coldplugged_services) {
 			einfon ("Device initiated services:");
 			STRLIST_FOREACH (coldplugged_services, service, i) {
@@ -1051,15 +1053,16 @@ int main (int argc, char **argv)
 			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
 		{
 			/* We need to include the boot runlevel services if we're not in it */
-			start_services = rc_ls_dir (start_services, RC_RUNLEVELDIR RC_LEVEL_BOOT,
-										RC_LS_INITD);
+			char **services = rc_services_in_runlevel (bootlevel);
+
+			start_services = rc_strlist_join (start_services, services);
+			services = rc_services_in_runlevel (newlevel ? newlevel : runlevel);
+			start_services = rc_strlist_join (start_services, services);
+			services = NULL;
+
 			STRLIST_FOREACH (coldplugged_services, service, i)
 				start_services = rc_strlist_add (start_services, service);
 
-			tmp = rc_strcatpaths (RC_RUNLEVELDIR,
-								  newlevel ? newlevel : runlevel, (char *) NULL);
-			start_services = rc_ls_dir (start_services, tmp, RC_LS_INITD);
-			CHAR_FREE (tmp);
 		}
 	}
 
@@ -1199,7 +1202,7 @@ int main (int argc, char **argv)
 	types = rc_strlist_add (types, "iuse");
 	types = rc_strlist_add (types, "iafter");
 	deporder = rc_get_depends (deptree, types, start_services,
-							   runlevel, depoptions);
+							   runlevel, depoptions | RC_DEP_START);
 	rc_strlist_free (types);
 	types = NULL;
 	rc_strlist_free (start_services);
@@ -1248,7 +1251,7 @@ interactive_option:
 	rc_plugin_run (rc_hook_runlevel_start_out, runlevel);
 
 	/* Store our interactive status for boot */
-	if (interactive && strcmp (runlevel, RC_LEVEL_BOOT) == 0)
+	if (interactive && strcmp (runlevel, bootlevel) == 0)
 		mark_interactive ();
 	else {
 		if (rc_exists (INTERACTIVE))

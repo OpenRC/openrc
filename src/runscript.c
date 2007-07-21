@@ -573,9 +573,6 @@ static void svc_start (bool deps)
 	rc_plugin_run (rc_hook_service_start_in, applet);
 	hook_out = rc_hook_service_start_out;
 
-	if (rc_is_env ("RC_STRICT_DEPEND", "yes"))
-		depoptions |= RC_DEP_STRICT;
-
 	if (rc_is_env ("IN_HOTPLUG", "1") || in_background) {
 		if (! rc_service_state (service, rc_service_inactive) &&
 			! rc_service_state (service, rc_service_stopped))
@@ -597,6 +594,12 @@ static void svc_start (bool deps)
 		eerrorx ("ERROR: %s has been started by something else", applet);
 
 	make_exclusive (service);
+
+	if (rc_is_env ("RC_DEPEND_STRICT", "yes"))
+		depoptions |= RC_DEP_STRICT;
+
+	if (rc_runlevel_starting ())
+		depoptions |= RC_DEP_START;
 
 	if (deps) {
 		if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
@@ -828,8 +831,11 @@ static void svc_stop (bool deps)
 		char *svc;
 		int i;
 
-		if (rc_is_env ("RC_STRICT_DEPEND", "yes"))
+		if (rc_is_env ("RC_DEPEND_STRICT", "yes"))
 			depoptions |= RC_DEP_STRICT;
+
+		if (rc_runlevel_stopping ())
+			depoptions |= RC_DEP_STOP;
 
 		if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
 			eerrorx ("failed to load deptree");
@@ -1180,6 +1186,11 @@ int main (int argc, char **argv)
 				   strcmp (optarg, "iafter") == 0 ||
 				   strcmp (optarg, "ibefore") == 0 ||
 				   strcmp (optarg, "iprovide") == 0) {
+			int depoptions = RC_DEP_TRACE;
+
+			if (rc_is_env ("RC_DEPEND_STRICT", "yes"))
+				depoptions |= RC_DEP_STRICT;
+			
 			if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
 				eerrorx ("failed to load deptree");
 
@@ -1188,7 +1199,8 @@ int main (int argc, char **argv)
 			rc_strlist_free (svclist);
 			svclist = rc_strlist_add (NULL, applet);
 			rc_strlist_free (services);
-			services = rc_get_depends (deptree, types, svclist, softlevel, 0);
+			services = rc_get_depends (deptree, types, svclist,
+									   softlevel, depoptions);
 			STRLIST_FOREACH (services, svc, i)
 				printf ("%s%s", i == 1 ? "" : " ", svc);
 			printf ("\n");
