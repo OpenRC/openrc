@@ -422,20 +422,21 @@ iwconfig_scan() {
 	# Strip any duplicates
 	local i=0 k=1 a= b=
 	while [ ${i} -lt ${APS} ] ; do
-	    k=$((${i} + 1))
-	    while [ ${k} -le ${APS} ] ; do
+		k=$((${i} + 1))
+		while [ ${k} -le ${APS} ] ; do
 			eval a=\$MAC_${i}
 			eval b=\$MAC_${k}
 			if [ "${a}" = "${b}" ] ; then
-		    	eval a=\$QUALITY_${i}
-		    	eval b=\$QUALITY_${k}
+				eval a=\$QUALITY_${i}
+				eval b=\$QUALITY_${k}
 				local u=${k}
-		    	[ -n "${a}" -a -n "${b}" -a "${a}" -lt "${b}" ] && u=${i}
+				# We need to split this into two tests, otherwise bash errors 
+				[ -n "${a}" -a -n "${b}" ] && [ "${a}" -lt "${b}" ] && u=${i}
 				unset MAC_${u} SSID_${u} CHAN_${u} QUALITY_${u} ENC_${u}
 			fi
 			k=$((${k} + 1))
-	    done
-	    i=$((${i} + 1))
+		done
+		i=$((${i} + 1))
 	done
 
 	local i=0 e= m= black= s=
