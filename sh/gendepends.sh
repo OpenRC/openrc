@@ -33,6 +33,9 @@ for SVCNAME in * ; do
 
     SVCNAME=${SVCNAME##*/}
     (
+	# Save stdout in fd3, then remap it to stderr
+	exec 3>&1 1>&2
+
 	rc_c=${SVCNAME%%.*}
 	if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ] ; then
 		[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}" >&2
@@ -42,6 +45,8 @@ for SVCNAME in * ; do
 	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}" >&2
 	
 	if . /etc/init.d/"${SVCNAME}" ; then
+		# Restore stdout now
+		exec 1>&3
 
 		echo "${SVCNAME}"
 	    depend

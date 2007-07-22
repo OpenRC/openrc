@@ -1,13 +1,18 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  22 Jul 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Harden gendepends.sh some more so we only capture the stdout we want from
+    the depend function, #186072.
+
   21 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
-	RC_DEPEND_STRICT now controls dependency strictness.
-	If yes then we only use services in the boot and default runlevels,
-	regradless of service state.
-	If no then we take into account coldplugged services and the state
-	of currently running services.
+    RC_DEPEND_STRICT now controls dependency strictness.
+    If yes then we only use services in the boot and default runlevels,
+    regradless of service state.
+    If no then we take into account coldplugged services and the state
+    of currently running services.
     Fixes #185640.
 
   15 Jul 2007; Roy Marples <uberlord@gentoo.org>:
