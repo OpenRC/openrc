@@ -6,19 +6,29 @@
 . /etc/init.d/functions.sh
 
 need() {
-    [ -n "$*" ] && echo "${SVCNAME} ineed $*"
+	exec 1>&3
+	[ -n "$*" ] && echo "${SVCNAME} ineed $*"
+	exec 1>&2
 }
 use() {
-    [ -n "$*" ] && echo "${SVCNAME} iuse $*"
+	exec 1>&3
+	[ -n "$*" ] && echo "${SVCNAME} iuse $*"
+	exec 1>&2
 }
 before() {
-    [ -n "$*" ] && echo "${SVCNAME} ibefore $*"
+	exec 1>&3
+	[ -n "$*" ] && echo "${SVCNAME} ibefore $*"
+	exec 1>&2
 }
 after() {
-    [ -n "$*" ] && echo "${SVCNAME} iafter $*"
+	exec 1>&3
+	[ -n "$*" ] && echo "${SVCNAME} iafter $*"
+	exec 1>&2
 }
 provide() {
-    [ -n "$*" ] && echo "${SVCNAME} iprovide $*"
+	exec 1>&3
+	[ -n "$*" ] && echo "${SVCNAME} iprovide $*"
+	exec 1>&2
 } 
 depend() {
 	:
@@ -45,10 +55,10 @@ for SVCNAME in * ; do
 	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}" >&2
 	
 	if . /etc/init.d/"${SVCNAME}" ; then
-		# Restore stdout now
 		exec 1>&3
-
 		echo "${SVCNAME}"
+		exec 1>&2
+
 	    depend
 
 		# Add any user defined depends
