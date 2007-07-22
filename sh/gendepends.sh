@@ -6,29 +6,19 @@
 . /etc/init.d/functions.sh
 
 need() {
-	exec 1>&3
-	[ -n "$*" ] && echo "${SVCNAME} ineed $*"
-	exec 1>&2
+	[ -n "$*" ] && echo "${SVCNAME} ineed $*" >&3
 }
 use() {
-	exec 1>&3
-	[ -n "$*" ] && echo "${SVCNAME} iuse $*"
-	exec 1>&2
+	[ -n "$*" ] && echo "${SVCNAME} iuse $*" >&3
 }
 before() {
-	exec 1>&3
-	[ -n "$*" ] && echo "${SVCNAME} ibefore $*"
-	exec 1>&2
+	[ -n "$*" ] && echo "${SVCNAME} ibefore $*" >&3
 }
 after() {
-	exec 1>&3
-	[ -n "$*" ] && echo "${SVCNAME} iafter $*"
-	exec 1>&2
+	[ -n "$*" ] && echo "${SVCNAME} iafter $*" >&3
 }
 provide() {
-	exec 1>&3
-	[ -n "$*" ] && echo "${SVCNAME} iprovide $*"
-	exec 1>&2
+	[ -n "$*" ] && echo "${SVCNAME} iprovide $*" >&3
 } 
 depend() {
 	:
@@ -48,17 +38,14 @@ for SVCNAME in * ; do
 
 	rc_c=${SVCNAME%%.*}
 	if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ] ; then
-		[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}" >&2
+		[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}"
 	fi
 	unset rc_c
 
-	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}" >&2
+	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}"
 	
 	if . /etc/init.d/"${SVCNAME}" ; then
-		exec 1>&3
-		echo "${SVCNAME}"
-		exec 1>&2
-
+		echo "${SVCNAME}" >&3
 	    depend
 
 		# Add any user defined depends
