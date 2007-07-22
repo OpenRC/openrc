@@ -26,13 +26,13 @@ depend() {
 
 cd /etc/init.d
 for SVCNAME in * ; do
-    [ -x "${SVCNAME}" ] || continue
-    case "${SVCNAME}" in
+	[ -x "${SVCNAME}" ] || continue
+	case "${SVCNAME}" in
 		*.sh) continue ;;
-    esac
+	esac
 
-    SVCNAME=${SVCNAME##*/}
-    (
+	SVCNAME=${SVCNAME##*/}
+	(
 	# Save stdout in fd3, then remap it to stderr
 	exec 3>&1 1>&2
 
@@ -43,10 +43,10 @@ for SVCNAME in * ; do
 	unset rc_c
 
 	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}"
-	
+
 	if . /etc/init.d/"${SVCNAME}" ; then
 		echo "${SVCNAME}" >&3
-	    depend
+		depend
 
 		# Add any user defined depends
 		need ${RC_NEED}
@@ -54,8 +54,8 @@ for SVCNAME in * ; do
 		before ${RC_BEFORE}
 		after ${RC_AFTER}
 		provide ${RC_PROVIDE}
-    fi
-    )
+	fi
+	)
 done
 
 # vim: set ts=4 :
