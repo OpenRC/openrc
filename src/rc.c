@@ -337,6 +337,44 @@ static int do_options (int argc, char **argv)
 	return (ok ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
+#ifdef __linux__
+static char *proc_getent (const char *ent)
+{
+	FILE *fp;
+	char buffer[RC_LINEBUFFER];
+	char *p;
+	char *value = NULL;
+	int i;
+			
+	if (! (fp = fopen ("/proc/cmdline", "r"))) {
+		eerror ("failed to open `/proc/cmdline': %s", strerror (errno));
+		return (NULL);
+	}
+
+	memset (buffer, 0, sizeof (buffer));
+	if (fgets (buffer, RC_LINEBUFFER, fp) &&
+		(p = strstr (buffer, ent)))
+	{ 
+		i = p - buffer;
+		if (i == '\0' || buffer[i - 1] == ' ') {
+			/* Trim the trailing carriage return if present */
+			i = strlen (buffer) - 1;
+			if (buffer[i] == '\n')
+				buffer[i] = 0;
+
+			p += strlen (ent);
+			if (*p == '=')
+				p++;
+			value = strdup (strsep (&p, " "));
+		}
+	} else
+		errno = ENOENT;
+	fclose (fp);
+
+	return (value);
+}
+#endif
+
 static char read_key (bool block)
 {
 	struct termios termios;
@@ -798,7 +836,7 @@ int main (int argc, char **argv)
 			/* OK, we're either in runlevel 1 or single user mode */
 			struct utsname uts;
 #ifdef __linux__
-			FILE *fp;
+			char *cmd;
 #endif
 
 			/* exec init-early.sh if it exists
@@ -824,34 +862,14 @@ int main (int argc, char **argv)
 			rc_plugin_run (rc_hook_runlevel_start_in, newlevel);
 			run_script (INITSH);
 
-			/* If we requested a softlevel, save it now */
 #ifdef __linux__
+			/* If we requested a softlevel, save it now */
 			set_ksoftlevel (NULL);
-
-			if ((fp = fopen ("/proc/cmdline", "r"))) {
-				char buffer[RC_LINEBUFFER];
-				char *soft;
-
-				memset (buffer, 0, sizeof (buffer));
-				if (fgets (buffer, RC_LINEBUFFER, fp) &&
-					(soft = strstr (buffer, "softlevel=")))
-				{ 
-					i = soft - buffer;
-					if (i  == 0 || buffer[i - 1] == ' ') {
-						char *level;
-
-						/* Trim the trailing carriage return if present */
-						i = strlen (buffer) - 1;
-						if (buffer[i] == '\n')
-							buffer[i] = 0;
-
-						soft += strlen ("softlevel=");
-						level = strsep (&soft, " ");
-						set_ksoftlevel (level);
-					}
-				}
-				fclose (fp);
+			if ((cmd = proc_getent ("softlevel"))) {
+				set_ksoftlevel (cmd);
+				free (cmd);
 			}
+
 #endif
 			rc_plugin_run (rc_hook_runlevel_start_out, newlevel);
 
@@ -1209,6 +1227,21 @@ int main (int argc, char **argv)
 	start_services = deporder;
 	deporder = NULL;
 
+#ifdef __linux__
+	/* mark any services skipped as started */
+	if (PREVLEVEL && strcmp (PREVLEVEL, "N") == 0) {
+		if ((service = proc_getent ("noinitd"))) {
+			char *p = service;
+			char *token;
+
+			while ((token = strsep (&p, ",")))
+				rc_mark_service (token, rc_service_started);
+			free (service);
+		}
+	}
+#endif
+
+
 	STRLIST_FOREACH (start_services, service, i) {
 		if (rc_service_state (service, rc_service_stopped))	{
 			pid_t pid;
@@ -1249,6 +1282,20 @@ interactive_option:
 	wait_for_services ();
 
 	rc_plugin_run (rc_hook_runlevel_start_out, runlevel);
+
+#ifdef __linux__
+	/* mark any services skipped as stopped */
+	if (PREVLEVEL && strcmp (PREVLEVEL, "N") == 0) {
+		if ((service = proc_getent ("noinitd"))) {
+			char *p = service;
+			char *token;
+
+			while ((token = strsep (&p, ",")))
+				rc_mark_service (token, rc_service_stopped);
+			free (service);
+		}
+	}
+#endif
 
 	/* Store our interactive status for boot */
 	if (interactive && strcmp (runlevel, bootlevel) == 0)

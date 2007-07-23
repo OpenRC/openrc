@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  23 Jul 2007; Roy Marples <uberlord@gentoo.org>:
+
+    appending noinitd=xdm will skip the xdm service when first booting, #181858.
+
   22 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     Harden gendepends.sh some more so we only capture the stdout we want from
