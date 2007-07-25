@@ -40,7 +40,7 @@ mount_svcdir() {
 . "${RC_LIBDIR}"/sh/functions.sh
 
 # Disable devd until we need it
-sysctl hw.bus.devctl_disable=1 >/dev/null
+[ "${RC_UNAME}" = "FreeBSD" ] && sysctl hw.bus.devctl_disable=1 >/dev/null
 
 . "${RC_LIBDIR}"/sh/init-common-post.sh
 

@@ -7,7 +7,13 @@ ifconfig_depend() {
 }
 
 _exists() {
-	[ -e /dev/net/"${IFACE}" ]
+	# Only FreeBSD sees to have /dev/net .... is there something
+	# other than ifconfig we can use for the others?
+	if [ -d /dev/net ] ; then
+		[ -e /dev/net/"${IFACE}" ]
+	else
+		ifconfig "${IFACE}" >/dev/null 2>&1
+	fi
 }
 
 _get_mac_address() {
@@ -33,13 +39,26 @@ _down () {
 }
 
 _ifindex() {
-	local x=
-	for x in /dev/net[0-9]* ; do
-		if [ "${x}" -ef /dev/net/"${IFACE}" ] ; then
-			echo "${x#/dev/net}"
-			return 0
-		fi
-	done
+	local x= i=1
+	case "${RC_UNAME}" in
+		FreeBSD|DragonFly)
+			for x in /dev/net[0-9]* ; do
+				if [ "${x}" -ef /dev/net/"${IFACE}" ] ; then
+					echo "${x#/dev/net}"
+					return 0
+				fi
+			done
+			;;
+		default)
+			for x in $(ifconfig -a | sed -n -e 's/^\([^[:space:]]*\):.*/\1/p') ; do
+				if [ "${x}" = "${IFACE}" ] ; then
+					echo "${i}"
+					return 0
+				fi
+				i=$((${i} + 1))
+			done
+			;;
+	esac
 	return 1
 }
 
@@ -63,9 +82,21 @@ _add_address() {
 		set -- "$@" metric ${metric}
 	fi
 
+	# ifconfig doesn't like CIDR addresses
+	case "${RC_UNAME}" in
+		NetBSD|OpenBSD)
+			local ip="${1%%/*}" cidr="${1##*/}" netmask=
+			if [ -n "${cidr}" -a "${cidr}" != "${ip}" ]; then
+				netmask="$(_cidr2netmask "${cidr}")"
+				shift
+				set -- "${ip}" netmask "${netmask}" "$@"
+			fi
+			;;
+	esac
+
 	case "$@" in
-		*:*) ifconfig "${IFACE}" inet6 add "$@" ;;
-		*)   ifconfig "${IFACE}"       add "$@" ;;
+		*:*) ifconfig "${IFACE}" inet6 "$@" ;;
+		*)   ifconfig "${IFACE}"       "$@" ;;
 	esac
 }
 

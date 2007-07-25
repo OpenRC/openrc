@@ -990,6 +990,7 @@ int main (int argc, char **argv)
 		 strcmp (runlevel, RC_LEVEL_SYSINIT) == 0) &&
 		rc_is_env ("RC_COLDPLUG", "yes"))
 	{
+#if defined(__DragonFly__) || defined(__FreeBSD__)
 		/* The net interfaces are easy - they're all in net /dev/net :) */
 		start_services = rc_ls_dir (NULL, "/dev/net", 0);
 		STRLIST_FOREACH (start_services, service, i) {
@@ -1001,6 +1002,7 @@ int main (int argc, char **argv)
 			CHAR_FREE (tmp);
 		}
 		rc_strlist_free (start_services);
+#endif
 
 		/* The mice are a little more tricky.
 		   If we coldplug anything else, we'll probably do it here. */

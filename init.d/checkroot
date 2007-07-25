@@ -32,8 +32,11 @@ do_mtab() {
 }
 
 do_fsck() {
-	local retval=0 opts="-F"
-	[ "${RC_UNAME}" = "Linux" ] && opts="-T -C0"
+	local retval=0 opts=
+	case "${RC_UNAME}" in
+		FreeBSD) opts="-F";;
+		Linux) opts="-T -C0";;
+	esac
 
 	# Don't bother doing a fsck on these
 	if [ -n "${CDBOOT}" ] || is_net_fs / || is_union_fs / ; then

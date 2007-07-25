@@ -53,7 +53,8 @@ start() {
 	find /var/lock -type f -print0 | xargs -0 rm -f --
 		
 	# Clean up /var/run and create /var/run/utmp so we can login.
-	for x in $(find /var/run ! -type d ! -name utmp ! -name innd.pid ! -name random-seed ! -name ld-elf.so.hints); do
+	for x in $(find /var/run ! -type d ! -name utmp ! -name innd.pid \
+		! -name random-seed ! -name ld-elf.so.hints ! -name ld.so.hints); do
 		[ ! -f "${x}" ] && continue
 		# Do not remove pidfiles of already running daemons
 		case "${x}" in
@@ -66,9 +67,9 @@ start() {
 	done
 
 	# Reset pam_console permissions if we are actually using it
-	if [ -x /sbin/pam_console_apply -a ! -c /dev/.devfsd ] ; then
-		if [ -n $(grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep 'pam_console') ] ; then
-			/sbin/pam_console_apply -r
+	if [ -x /sbin/pam_console_apply ] && ! [ -c /dev/.devfsd ] ; then
+		if grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep -q 'pam_console.so' ; then
+			pam_console_apply -r
 		fi
 	fi
 

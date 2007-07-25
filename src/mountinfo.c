@@ -7,8 +7,11 @@
 
 #define APPLET "mountinfo"
 
+#if defined(__DragonFly__) || defined(__FreeBSD__) || \
+	defined(__NetBSD__) || defined(__OpenBSD__)
+#define BSD
+
 #include <sys/types.h>
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/param.h>
 #include <sys/ucred.h>
 #include <sys/mount.h>
@@ -30,7 +33,7 @@
 #include "strlist.h"
 
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined (__OpenBSD__)
+#ifdef BSD 
 static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 						   regex_t *fstype_regex, regex_t *skip_fstype_regex,
 						   char **mounts, bool node, bool fstype)

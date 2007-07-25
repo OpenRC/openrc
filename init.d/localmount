@@ -21,9 +21,9 @@ start() {
 	mount -at "${types}"
 	eend $? "Some local filesystem failed to mount"
 
-	# Change the mount options of already mounted paritions
+	# Change the mount options of already mounted partitions
 	# This is needed when /usr is separate and coming back from single user
-	if [ "${RC_UNAME}" != "Linux" ] ; then
+	if [ "${RC_UNAME}" = "FreeBSD" ] ; then
 		mount -uao fstab -t "${types},linprocfs"
 	fi
 
@@ -34,13 +34,17 @@ start() {
 			chmod 700 "${dumpdir}"
 		fi
 
-		# Don't quote ${KERNEL_DUMP_DEVICE}, so that if it's unset, savecore
-		# will check on the partitions listed in fstab without errors in the
-		# output
-		if savecore -C "${dumpdir}" ${KERNEL_DUMP_DEVICE} >/dev/null ; then
-			local savecoreopts="${dumpdir} ${KERNEL_DUMP_DEVICE}"
-			[ "${KERNEL_DUMP_COMPRESS}" = "yes" ] \
-				&& savecoreopts="-z ${savecoreopts}"
+		if [ "${RC_UNAME}" = "FreeBSD" ] ; then
+			# Don't quote ${KERNEL_DUMP_DEVICE}, so that if it's unset,
+			# savecore will check on the partitions listed in fstab
+			# without errors in the output
+			savecore -C "${dumpdir}" ${KERNEL_DUMP_DEVICE} >/dev/null
+		else
+			ls "${dumpdir}"/bsd* > /dev/null 2>&1
+		fi
+		if [ $? = 0 ] ; then
+			local sopts="${dumpdir} ${KERNEL_DUMP_DEVICE}"
+			[ "${KERNEL_DUMP_COMPRESS}" = "yes" ] && sopts="-z ${sopts}"
 			ebegin "Saving kernel core dump in" "${dumpdir}"
 			savecore ${savecoreopts} >/dev/null
 			eend $?
