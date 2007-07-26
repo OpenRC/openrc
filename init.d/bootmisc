@@ -132,13 +132,13 @@ start() {
 
 stop() {
 	# Reset pam_console permissions if we are actually using it
-	if [ -x /sbin/pam_console_apply -a ! -c /dev/.devfsd ] && \
-    	[ -n $(grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep 'pam_console') ] ; then
+	if [ -x /sbin/pam_console_apply ] && ! [ -c /dev/.devfsd ] ; then
+		if grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep -q 'pam_console.so' ; then
 		/sbin/pam_console_apply -r
 	fi
 
 	# Write a halt record if we're shutting down
-	case "${SOFTLEVEL}" in
+	case "${RC_SOFTLEVEL}" in
 		reboot|shutdown)
 			[ "${RC_UNAME}" = "Linux" ] && halt -w
 			;;
