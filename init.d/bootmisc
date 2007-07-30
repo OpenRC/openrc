@@ -26,11 +26,21 @@ start() {
 		fi
 	fi
 	
-	if ! echo 2>/dev/null >/var/run/.test.$$ ; then
+	if ! echo 2>/dev/null >/.test.$$ ; then
 		ewarn "Skipping /var and /tmp initialization (ro root?)"
 		return 0
 	fi
-	rm -f /var/run/.test.$$
+	rm -f /.test.$$
+
+	# Ensure that our basic dirs exist
+	for x in /var/lock /var/run /tmp ; do
+		if ! [ -d "${x}" ] ; then
+			if ! mkdir "${x}" ; then
+				eend 1 "failed to create needed directory ${x}"
+				return 1
+			fi
+		fi 
+	done
 
 	if [ "${RC_UNAME}" = "Linux" ] ; then
 		# Setup login records
@@ -46,7 +56,7 @@ start() {
 	eend $?
 
 	# Take care of random stuff [ /var/lock | /var/run | pam ]
-	ebegin "Cleaning" /var/lock, /var/run
+	ebegin "Cleaning /var/lock, /var/run"
 	rm -rf /var/run/console.lock /var/run/console/*
 
 	# Clean up any stale locks.
@@ -78,47 +88,45 @@ start() {
 	eend 0
 
 	# Clean up /tmp directory
-	if [ -d /tmp ] ; then
-		cd /tmp
-		if [ "${WIPE_TMP}" = "yes" ] ; then
-			ebegin "Wiping /tmp directory"
-			local startopts="-x . -depth"
-			[ "${RC_UNAME}" = "Linux" ] && startopts=". -xdev -depth"
+	cd /tmp
+	if [ "${WIPE_TMP}" = "yes" ] ; then
+		ebegin "Wiping /tmp directory"
+		local startopts="-x . -depth"
+		[ "${RC_UNAME}" = "Linux" ] && startopts=". -xdev -depth"
 
-			# Faster than find
-			rm -rf [b-ikm-pr-zA-Z]*
+		# Faster than find
+		rm -rf [b-ikm-pr-zA-Z]*
 
-			find ${startopts} ! -name . \
-				! -path ./lost+found \
-				! -path "./lost+found/*" \
-				! -path ./quota.user \
-				! -path "./quota.user/*" \
-				! -path ./aquota.user \
-				! -path "./aquota.user/*" \
-				! -path ./quota.group \
-				! -path "./quota.group/*" \
-				! -path ./aquota.group \
-				! -path "./aquota.group/*" \
-				! -path ./journal \
-				! -path "./journal/*" \
-				-delete
-			eend 0
-		else
-			ebegin "Cleaning /tmp directory"
-			rm -rf /tmp/.X*-lock /tmp/esrv* /tmp/kio* /tmp/jpsock.* \
-				/tmp/.fam* /tmp/.esd* /tmp/orbit-* /tmp/ssh-* \
-				/tmp/ksocket-* /tmp/.*-unix
-			eend 0
-		fi
-
-		# Make sure our X11 stuff have the correct permissions
-		# Omit the chown as bootmisc is run before network is up
-		# and users may be using lame LDAP auth #139411
-		rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
-		mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
-		chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
-		[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
+		find ${startopts} ! -name . \
+			! -path ./lost+found \
+			! -path "./lost+found/*" \
+			! -path ./quota.user \
+			! -path "./quota.user/*" \
+			! -path ./aquota.user \
+			! -path "./aquota.user/*" \
+			! -path ./quota.group \
+			! -path "./quota.group/*" \
+			! -path ./aquota.group \
+			! -path "./aquota.group/*" \
+			! -path ./journal \
+			! -path "./journal/*" \
+			-delete
+		eend 0
+	else
+		ebegin "Cleaning /tmp directory"
+		rm -rf /tmp/.X*-lock /tmp/esrv* /tmp/kio* /tmp/jpsock.* \
+			/tmp/.fam* /tmp/.esd* /tmp/orbit-* /tmp/ssh-* \
+			/tmp/ksocket-* /tmp/.*-unix
+		eend 0
 	fi
+
+	# Make sure our X11 stuff have the correct permissions
+	# Omit the chown as bootmisc is run before network is up
+	# and users may be using lame LDAP auth #139411
+	rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
+	mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
+	chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
+	[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
 
 	# Create an 'after-boot' dmesg log
 	if [ "${RC_SYS}" != "VPS" ] ; then
