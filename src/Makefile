@@ -30,9 +30,10 @@ LIBEINFOOBJS= libeinfo.o
 
 LIBRCSOVER = 0
 LIBRCSO = librc.so.$(LIBRCSOVER)
-LIBRCOBJS= librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o \
-		   env-update.o fstabinfo.o mountinfo.o \
-		   rc-depend.o rc-status.o runscript.o start-stop-daemon.o
+LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
+
+RCOBJS = env-update.o fstabinfo.o mountinfo.o \
+		 rc-depend.o rc-plugin.o rc-status.o runscript.o start-stop-daemon.o
 
 LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
 SBIN_TARGETS = rc
@@ -122,7 +123,7 @@ rc-status: $(LIBEINFOSO) $(LIBRCSO) rc-status.o
 rc-update: $(LIBEINFOSO) $(LIBRCSO) rc-update.o
 
 rc: LDLIBS += $(LDLIBS_RC)
-rc: $(LIBEINFOSO) $(LIBRCSO) rc-plugin.o rc.o
+rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS) rc.o
 
 runscript: LDLIBS += $(LDLIBS_RS)
 runscript: $(LIBEINFOSO) $(LIBRCSO) rc-plugin.o runscript.o
