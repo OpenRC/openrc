@@ -7,25 +7,23 @@
 
 #define APPLET "mountinfo"
 
+#include <sys/types.h>
+
 #if defined(__DragonFly__) || defined(__FreeBSD__) || \
 	defined(__NetBSD__) || defined(__OpenBSD__)
 #define BSD
-
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/ucred.h>
 #include <sys/mount.h>
-#elif defined(__linux__)
-#include <limits.h>
 #endif
 
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>
-#include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 
 #include "builtins.h"
 #include "einfo.h"
