@@ -9,7 +9,7 @@ check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
 	  then echo "$(1)"; else echo "$(2)"; fi)
 
 # Loads of nice flags to ensure our code is good
-override CFLAGS += -pedantic -std=c99 \
+CFLAGS += -pedantic -std=c99 \
     -Wall -Wunused -Wimplicit -Wshadow -Wformat=2 \
     -Wmissing-declarations -Wno-missing-prototypes -Wwrite-strings \
     -Wbad-function-cast -Wnested-externs -Wcomment -Winline \
