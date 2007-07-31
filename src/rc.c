@@ -30,6 +30,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
@@ -82,35 +83,37 @@ static pidlist_t *service_pids = NULL;
 
 static void cleanup (void)
 {
-	pidlist_t *pl = service_pids;
+	if (applet && strcmp (applet, "rc") == 0) {
+		pidlist_t *pl = service_pids;
 
-	rc_plugin_unload ();
+		rc_plugin_unload ();
 
-	if (! rc_in_plugin && termios_orig) {
-		tcsetattr (fileno (stdin), TCSANOW, termios_orig);
-		free (termios_orig);
-	}
+		if (! rc_in_plugin && termios_orig) {
+			tcsetattr (fileno (stdin), TCSANOW, termios_orig);
+			free (termios_orig);
+		}
 
-	while (pl) {
-		pidlist_t *p = pl->next;
-		free (pl);
-		pl = p;
-	}
+		while (pl) {
+			pidlist_t *p = pl->next;
+			free (pl);
+			pl = p;
+		}
 
-	rc_strlist_free (env);
-	rc_strlist_free (newenv);
-	rc_strlist_free (coldplugged_services);
-	rc_strlist_free (stop_services);
-	rc_strlist_free (start_services);
-	rc_free_deptree (deptree);
-	rc_strlist_free (types);
+		rc_strlist_free (env);
+		rc_strlist_free (newenv);
+		rc_strlist_free (coldplugged_services);
+		rc_strlist_free (stop_services);
+		rc_strlist_free (start_services);
+		rc_free_deptree (deptree);
+		rc_strlist_free (types);
 
-	/* Clean runlevel start, stop markers */
-	if (! rc_in_plugin) {
-		if (rc_is_dir (RC_SVCDIR "softscripts.new"))
-			rc_rm_dir (RC_SVCDIR "softscripts.new", true);
-		if (rc_is_dir (RC_SVCDIR "softscripts.old"))
-			rc_rm_dir (RC_SVCDIR "softscripts.old", true);
+		/* Clean runlevel start, stop markers */
+		if (! rc_in_plugin) {
+			if (rc_is_dir (RC_SVCDIR "softscripts.new"))
+				rc_rm_dir (RC_SVCDIR "softscripts.new", true);
+			if (rc_is_dir (RC_SVCDIR "softscripts.old"))
+				rc_rm_dir (RC_SVCDIR "softscripts.old", true);
+		}
 	}
 
 	free (applet);
@@ -695,11 +698,29 @@ int main (int argc, char **argv)
 	char pidstr[6];
 	int opt;
 
+	atexit (cleanup);
 	if (argv[0])
 		applet = rc_xstrdup (basename (argv[0]));
 
 	if (! applet)
 		eerrorx ("arguments required");
+
+	/* These used to be programs in their own right, so we shouldn't
+	 * touch argc or argv for them */
+	if (strcmp (applet, "env-update") == 0)
+		exit (env_update (argc, argv));
+	else if (strcmp (applet, "fstabinfo") == 0)
+		exit (fstabinfo (argc, argv));
+	else if (strcmp (applet, "mountinfo") == 0)
+		exit (mountinfo (argc, argv));
+	else if (strcmp (applet, "rc-depend") == 0)
+		exit (rc_depend (argc, argv));
+	else if (strcmp (applet, "rc-status") == 0)
+		exit (rc_status (argc, argv));
+	else if (strcmp (applet, "runscript") == 0)
+		exit (runscript (argc, argv));
+	else if (strcmp (applet, "start-stop-daemon") == 0)
+		exit (start_stop_daemon (argc, argv));
 
 	argc--;
 	argv++;
@@ -738,8 +759,6 @@ int main (int argc, char **argv)
 
 	if (strcmp (applet, "rc" ) != 0)
 		eerrorx ("%s: unknown applet", applet);
-
-	atexit (cleanup);
 
 	/* Change dir to / to ensure all scripts don't use stuff in pwd */
 	chdir ("/");

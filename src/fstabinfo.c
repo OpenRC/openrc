@@ -41,6 +41,7 @@
 #define ENT_PASS(_ent) ent->fs_passno
 #endif
 
+#include "builtins.h"
 #include "einfo.h"
 
 #ifdef HAVE_GETMNTENT
@@ -68,7 +69,7 @@ static struct option longopts[] = {
 };
 #include "_usage.c"
 
-int main (int argc, char **argv)
+int fstabinfo (int argc, char **argv)
 {
 #ifdef HAVE_GETMNTENT
 	FILE *fp;

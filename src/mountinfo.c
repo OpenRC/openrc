@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
@@ -175,7 +176,7 @@ static struct option longopts[] = {
 };
 #include "_usage.c"
 
-int main (int argc, char **argv)
+int mountinfo (int argc, char **argv)
 {
 	int i;
 	regex_t *fstype_regex = NULL;

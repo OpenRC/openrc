@@ -22,6 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
@@ -82,7 +83,7 @@ static struct option longopts[] = {
 };
 #include "_usage.c"
 
-int main (int argc, char **argv)
+int env_update (int argc, char **argv)
 {
 	char **files = rc_ls_dir (NULL, ENVDIR, 0);
 	char *file;

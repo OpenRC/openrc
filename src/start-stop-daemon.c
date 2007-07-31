@@ -40,6 +40,7 @@
 static struct pam_conv conv = { NULL, NULL} ;
 #endif
 
+#include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
@@ -475,7 +476,7 @@ static void handle_signal (int sig)
 	errno = serrno;
 }
 
-int main (int argc, char **argv)
+int start_stop_daemon (int argc, char **argv)
 {
 	int devnull_fd = -1;
 

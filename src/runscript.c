@@ -24,6 +24,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
@@ -977,7 +978,7 @@ static struct option longopts[] = {
 };
 // #include "_usage.c"
 
-int main (int argc, char **argv)
+int runscript (int argc, char **argv)
 {
 	int i;
 	bool deps = true;

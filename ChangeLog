@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  31 Jul 2007; Roy Marples <uberlord@gentoo.org>:
+
+    All our binaries are now mulicalls into rc, which makes our on disk size
+	a lot smaller.
+
   23 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     appending noinitd=xdm will skip the xdm service when first booting, #181858.

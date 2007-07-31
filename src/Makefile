@@ -30,12 +30,12 @@ LIBEINFOOBJS= libeinfo.o
 
 LIBRCSOVER = 0
 LIBRCSO = librc.so.$(LIBRCSOVER)
-LIBRCOBJS= librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
+LIBRCOBJS= librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o \
+		   env-update.o fstabinfo.o mountinfo.o \
+		   rc-depend.o rc-status.o runscript.o start-stop-daemon.o
 
 LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
-BIN_TARGETS = rc-status
-SBIN_TARGETS = env-update rc rc-update runscript start-stop-daemon
-PRIV_BIN_TARGETS = fstabinfo mountinfo rc-depend
+SBIN_TARGETS = rc
 SYS_WHITELIST = env_whitelist
 
 TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS) $(PRIV_BIN_TARGETS)
@@ -51,8 +51,11 @@ RCLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 	      mark_service_stopping mark_service_stopped \
 	      mark_service_inactive mark_service_wasinactive \
 	      mark_service_coldplugged \
-	      get_options save_options rc-abort \
-	      is_runlevel_start is_runlevel_stop service_started_daemon
+	      get_options save_options rc-abort rc-depend \
+	      is_runlevel_start is_runlevel_stop service_started_daemon \
+		  fstabinfo mountinfo
+BINLINKS = rc-status
+SBINLINKS = env-update rc-update runscript start-stop-daemon
 
 # Quick hack to make my life easier on BSD and Linux
 ifeq ($(OS),)
@@ -129,7 +132,7 @@ start-stop-daemon: LDLIBS += $(LDLIBS_SSD)
 start-stop-daemon: $(LIBEINFOSO) $(LIBRCSO) start-stop-daemon.o
 
 links: rc
-	for x in $(RCLINKS) $(RCPRIVLINKS); do ln -sf rc $$x; done
+	for x in $(BINLINKS) $(SBINLINKS) $(RCLINKS) $(RCPRIVLINKS); do ln -sf rc $$x; done
 
 install: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/$(LIB)
@@ -139,14 +142,14 @@ install: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/usr/include
 	install -m 0644 einfo.h rc.h $(DESTDIR)/usr/include
 	install -m 0755 -d $(DESTDIR)/bin
-	install -m 0755 $(BIN_TARGETS) $(DESTDIR)/bin
 	install -m 0755 -d $(DESTDIR)/sbin
 	install -m 0755 $(SBIN_TARGETS) $(DESTDIR)/sbin
 	ln -sf rc-update $(DESTDIR)/sbin/update-rc
 	install -m 0755 -d $(DESTDIR)/$(LIB)/rcscripts/conf.d
 	install -m 0644 $(SYS_WHITELIST) $(DESTDIR)/$(LIB)/rcscripts/conf.d
 	install -m 0755 -d $(DESTDIR)/$(LIB)/rcscripts/bin
-	install -m 0755 $(PRIV_BIN_TARGETS) $(DESTDIR)/$(LIB)/rcscripts/bin
+	for x in $(BINLINKS); do ln -sf $(DESTDIR)/sbin/rc $(DESTDIR)/bin/$$x; done
+	for x in $(SBINLINKS); do ln -sf $(DESTDIR)/sbin/rc $(DESTDIR)/sbin/$$x; done
 	for x in $(RCLINKS); do ln -sf $(DESTDIR)/sbin/rc $(DESTDIR)/$(LIB)/rcscripts/bin/$$x; done
 	if test "$(HAVE_PAM)" != "" ; then \
 		install -m 0755 -d $(DESTDIR)/etc/pam.d ; \
@@ -154,7 +157,7 @@ install: $(TARGET)
 	fi
 
 clean:
-	rm -f $(TARGET) $(RCLINKS) $(RCPRIVLINKS)
+	rm -f $(TARGET) $(BINLINKS) $(SBINLINKS) $(RCLINKS) $(RCPRIVLINKS)
 	rm -f *.o *~ *.core *.so .depend
 
 -include .depend

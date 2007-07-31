@@ -13,12 +13,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
 #include "strlist.h"
 
-int main (int argc, char **argv)
+int rc_depend (int argc, char **argv)
 {
 	char **types = NULL;
 	char **services = NULL;

@@ -5,18 +5,19 @@
    Released under the GPLv2
    */
 
-#define APPLET "rc-status"
-
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+#include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
 #include "strlist.h"
+
+#define APPLET "rc-status"
 
 static void print_level (char *level)
 {
@@ -55,7 +56,7 @@ static void print_service (char *service)
 
 #include "_usage.h"
 #define getoptstring "alsu" getoptstring_COMMON
-const struct option longopts[] = {
+static const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
 	{"list",        0, NULL, 'l'},
 	{"servicelist", 0, NULL, 's'},
@@ -65,7 +66,7 @@ const struct option longopts[] = {
 };
 #include "_usage.c"
 
-int main (int argc, char **argv)
+int rc_status (int argc, char **argv)
 {
 	char **levels = NULL;
 	char **services = NULL;
