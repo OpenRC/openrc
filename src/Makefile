@@ -110,27 +110,9 @@ $(LIBRCSO): $(LIBRCOBJS)
 	$(CC) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LDLIBS_LIBRC) $(LIBRCOBJS)
 	ln -sf $(LIBRCSO) librc.so
 
-env-update: $(LIBEINFOSO) $(LIBRCSO) env-update.o
-
-fstabinfo: $(LIBEINFOSO) fstabinfo.o
-
-mountinfo: $(LIBEINFOSO) $(LIBRCSO) mountinfo.o
-
-rc-depend: $(LIBEINFOSO) $(LIBRCSO) rc-depend.o
-
-rc-status: $(LIBEINFOSO) $(LIBRCSO) rc-status.o
-
-rc-update: $(LIBEINFOSO) $(LIBRCSO) rc-update.o
-
-rc: LDLIBS += $(LDLIBS_RC)
+rc: CPPFLAGS += $(CPPFLAGS_SSD)
+rc: LDLIBS += $(LDLIBS_RC) $(LDLIBS_RS) $(LDLIBS_SSD)
 rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS) rc.o
-
-runscript: LDLIBS += $(LDLIBS_RS)
-runscript: $(LIBEINFOSO) $(LIBRCSO) rc-plugin.o runscript.o
-
-start-stop-daemon: CPPFLAGS += $(CPPFLAGS_SSD)
-start-stop-daemon: LDLIBS += $(LDLIBS_SSD)
-start-stop-daemon: $(LIBEINFOSO) $(LIBRCSO) start-stop-daemon.o
 
 links: rc
 	for x in $(BINLINKS) $(SBINLINKS) $(RCLINKS) $(RCPRIVLINKS); do ln -sf rc $$x; done
