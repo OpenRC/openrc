@@ -439,9 +439,7 @@ iwconfig_scan() {
 		i=$((${i} + 1))
 	done
 
-	local i=0 e= m= black= s=
-	eval "$(_get_array "blacklist_aps")"
-	black="$@"
+	local i=0 e= m= s=
 
 	while [ ${i} -le ${APS} ] ; do
 		eval x=\$MAC_${i}
@@ -582,7 +580,7 @@ iwconfig_defaults() {
 }
 
 iwconfig_configure() {
-	local x APS
+	local x= APS=
 	eval SSID=\$ssid_${IFVAR}
 
 	# Support old variable
@@ -615,18 +613,16 @@ iwconfig_configure() {
 		return 1
 	fi
 
-	# Do we have a preferred Access Point list specific to the interface?
-#	x="preferred_aps_${ifvar}[@]"
-#	[[ -n ${!x} ]] && preferred_aps=( "${!x}" )
+	eval x=\$preferred_aps_${IFVAR}
+	[ -n "${x}" ] && preferred_aps=${x}
 
-#	# Do we have a blacklist Access Point list specific to the interface?
-#	x="blacklist_aps_${ifvar}[@]"
-#	[[ -n ${!x} ]] && blacklist_aps=( "${!x}" )
+	eval x=\$blacklist_aps_${IFVAR}
+	[ -n "${x}" ] && blacklist_aps=${x}
 
-	# Are we forcing preferred only?
 	eval x=\$associate_order_${IFVAR}
 	[ -n "${x}" ] && associate_order=${x}
 	associate_order=${associate_order:-any}
+
 	if [ "${associate_order}" = "forcepreferredonly" ]; then
 		iwconfig_force_preferred && return 0
 	else

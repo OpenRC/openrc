@@ -647,61 +647,61 @@
 # The PPP daemon has many options you can specify - although there are many
 # and may seem daunting, it is recommended that you read the pppd man page
 # before enabling any of them
-#pppd_ppp0=(
-#	"maxfail 0"	# WARNING: It's not recommended you use this
+#pppd_ppp0="
+#	'maxfail 0'	# WARNING: It's not recommended you use this
 #			# if you don't specify maxfail then we assume 0
-#	"updetach" 	# If not set, "/etc/init.d/net.ppp0 start" will return
+#	'updetach' 	# If not set, "/etc/init.d/net.ppp0 start" will return
 #			# immediately,  without waiting the link to come up
 #			# for the first time.
 #			# Do not use it for dial-on-demand links!
-#	"debug" 	# Enables syslog debugging
-#	"noauth"	# Do not require the peer to authenticate itself
-#	"defaultroute"	# Make this PPP interface the default route
-#	"usepeerdns"	# Use the DNS settings provided by PPP
+#	'debug' 	# Enables syslog debugging
+#	'noauth'	# Do not require the peer to authenticate itself
+#	'defaultroute'	# Make this PPP interface the default route
+#	'usepeerdns'	# Use the DNS settings provided by PPP
 #
 # On demand options
-#	"demand"		# Enable dial on demand
-#	"idle 30"		# Link goes down after 30 seconds of inactivity
-#	"10.112.112.112:10.112.112.113"	# Phony IP addresses
-#	"ipcp-accept-remote"	# Accept the peers idea of remote address
-#	"ipcp-accept-local"	# Accept the peers idea of local address
-#	"holdoff 3" 	# Wait 3 seconds after link dies before re-starting
+#	'demand'		# Enable dial on demand
+#	'idle 30'		# Link goes down after 30 seconds of inactivity
+#	'10.112.112.112:10.112.112.113'	# Phony IP addresses
+#	'ipcp-accept-remote'	# Accept the peers idea of remote address
+#	'ipcp-accept-local'	# Accept the peers idea of local address
+#	'holdoff 3' 	# Wait 3 seconds after link dies before re-starting
 #
 # Dead peer detection
-#	"lcp-echo-interval 15"	# Send a LCP echo every 15 seconds
-#	"lcp-echo-failure 3"	# Make peer dead after 3 consective
+#	'lcp-echo-interval 15'	# Send a LCP echo every 15 seconds
+#	'lcp-echo-failure 3'	# Make peer dead after 3 consective
 #				# echo-requests
 #	
 # Compression options - use these to completely disable compression
 #	noaccomp noccp nobsdcomp nodeflate nopcomp novj novjccomp
 #
 # Dial-up settings
-#	"lock"				# Lock serial port
-#	"115200"			# Set the serial port baud rate
-#	"modem crtscts"			# Enable hardware flow control
-#	"192.168.0.1:192.168.0.2"	# Local and remote IP addresses
-#)
+#	'lock'				# Lock serial port
+#	'115200'			# Set the serial port baud rate
+#	'modem crtscts'			# Enable hardware flow control
+#	'192.168.0.1:192.168.0.2'	# Local and remote IP addresses
+#"
 #
 # Dial-up PPP users need to specify at least one telephone number
 #phone_number_ppp0=( "12345689" ) # Maximum 2 phone numbers are supported
 # They will also need a chat script - here's a good one
-#chat_ppp0=(
-#	'ABORT' 'BUSY'
-#	'ABORT' 'ERROR'
-#	'ABORT' 'NO ANSWER'
-#	'ABORT' 'NO CARRIER'
-#	'ABORT' 'NO DIALTONE'
-#	'ABORT' 'Invalid Login'
-#	'ABORT' 'Login incorrect'
-#	'TIMEOUT' '5'
-#	'' 'ATZ'
-#	'OK' 'AT' # Put your modem initialization string here
-#	'OK' 'ATDT\T'
-#	'TIMEOUT' '60'
-#	'CONNECT' ''
-#	'TIMEOUT' '5'
-#	'~--' ''
-#)
+#chat_ppp0=" \
+#	'ABORT' 'BUSY' \
+#	'ABORT' 'ERROR' \
+#	'ABORT' 'NO ANSWER' \
+#	'ABORT' 'NO CARRIER' \
+#	'ABORT' 'NO DIALTONE' \
+#	'ABORT' 'Invalid Login' \
+#	'ABORT' 'Login incorrect' \
+#	'TIMEOUT' '5' \
+#	'' 'ATZ' \
+#	'OK' 'AT' # Put your modem initialization string here \
+#	'OK' 'ATDT\T' \
+#	'TIMEOUT' '60' \
+#	'CONNECT' '' \
+#	'TIMEOUT' '5' \
+#	'~--' '' \
+#"
 
 # If the link require extra configuration - for example wireless or
 # RFC 268 bridge - we need to depend on the bridge so they get
@@ -1020,7 +1020,7 @@
 #	# Enable Wake-On-LAN for every interface except for lo
 #	# Probably a good idea to set RC_DOWN_INTERFACE="no" in /etc/conf.d/rc
 #	# as well ;)
-#	[[ ${IFACE} != "lo" ]] && ethtool -s "${IFACE}" wol g
+#	[ "${IFACE}" != "lo" ] && ethtool -s "${IFACE}" wol g
 
 #	Automatically erase any ip rules created in the example postup above
 #	if interface_exists "${IFACE}" ; then
