@@ -9,7 +9,7 @@ check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
 	  then echo "$(1)"; else echo "$(2)"; fi)
 
 # Loads of nice flags to ensure our code is good
-CFLAGS += -pedantic -std=c99 \
+override CFLAGS += -pedantic -std=c99 \
     -Wall -Wunused -Wimplicit -Wshadow -Wformat=2 \
     -Wmissing-declarations -Wno-missing-prototypes -Wwrite-strings \
     -Wbad-function-cast -Wnested-externs -Wcomment -Winline \
@@ -99,19 +99,19 @@ endif
 
 all: $(TARGET)
 
-$(LIBEINFOOBJS): CFLAGS += -fPIC
+$(LIBEINFOOBJS): override CFLAGS += -fPIC
 $(LIBEINFOSO): LDLIBS =
 $(LIBEINFOSO): $(LIBEINFOOBJS) 
 	$(CC) -fPIC -shared -Wl,-soname,$(LIBEINFOSO) -o $(LIBEINFOSO) $(LIBEINFOOBJS)
 	ln -sf $(LIBEINFOSO) libeinfo.so
 
-$(LIBRCOBJS): CFLAGS += -fPIC
+$(LIBRCOBJS): override CFLAGS += -fPIC
 $(LIBRCSO): $(LIBRCOBJS) 
 	$(CC) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LDLIBS_LIBRC) $(LIBRCOBJS)
 	ln -sf $(LIBRCSO) librc.so
 
-rc: CPPFLAGS += $(CPPFLAGS_SSD)
-rc: LDLIBS += $(LDLIBS_RC) $(LDLIBS_RS) $(LDLIBS_SSD)
+rc: override CPPFLAGS += $(CPPFLAGS_SSD)
+rc: override LDLIBS += $(LDLIBS_RC) $(LDLIBS_RS) $(LDLIBS_SSD)
 rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS) rc.o
 
 links: rc
