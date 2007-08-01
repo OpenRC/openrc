@@ -10,6 +10,10 @@
 #
 # See the manpage fstab(5) for more information.
 #
+# Keep in mind that the boot scripts will ignore many of the core mounts
+# (like /proc or /dev or /dev/shm) unless you set RC_USE_FSTAB in your
+# /etc/conf.d/rc file appropriately.
+#
 
 # <fs>			<mountpoint>	<type>		<opts>		<dump/pass>
 
@@ -18,10 +22,4 @@
 /dev/ROOT		/		ext3		noatime		0 1
 /dev/SWAP		none		swap		sw		0 0
 /dev/cdrom		/mnt/cdrom	auto		noauto,ro	0 0
-#/dev/fd0		/mnt/floppy	auto		noauto		0 0
-
-# glibc 2.2 and above expects tmpfs to be mounted at /dev/shm for 
-# POSIX shared memory (shm_open, shm_unlink).
-# (tmpfs is a dynamically expandable/shrinkable ramdisk, and will
-#  use almost no memory if not populated with files)
-shm			/dev/shm	tmpfs		nodev,nosuid,noexec	0 0
+/dev/fd0		/mnt/floppy	auto		noauto		0 0

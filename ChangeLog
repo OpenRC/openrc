@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  01 Aug 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Punt /dev/shm from default /etc/fstab as we handle it and add a helpful
+    hint about the RC_USE_FSTAB option.
+
   31 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     All our binaries are now mulicalls into rc, which makes our on disk size
