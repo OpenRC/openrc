@@ -428,7 +428,7 @@ void eerrorx (const char *fmt, ...)
 		elog (LOG_ERR, fmt, ap);
 		_eerrorvn (fmt, ap);
 		va_end (ap);
-		printf ("\n");
+		fprintf (stderr, "\n");
 	}
 
 	exit (EXIT_FAILURE);
@@ -503,6 +503,7 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
 			col = _eerrorvn (fmt, apc);
 			fp = stderr;
 		}
+		col += fprintf (fp, "\n");
 		va_end (apc);
 	}
 
