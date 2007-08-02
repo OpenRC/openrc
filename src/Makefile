@@ -131,9 +131,9 @@ install: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/$(LIB)/rcscripts/conf.d
 	install -m 0644 $(SYS_WHITELIST) $(DESTDIR)/$(LIB)/rcscripts/conf.d
 	install -m 0755 -d $(DESTDIR)/$(LIB)/rcscripts/bin
-	for x in $(BINLINKS); do ln -sf $(DESTDIR)/sbin/rc $(DESTDIR)/bin/$$x; done
-	for x in $(SBINLINKS); do ln -sf $(DESTDIR)/sbin/rc $(DESTDIR)/sbin/$$x; done
-	for x in $(RCLINKS); do ln -sf $(DESTDIR)/sbin/rc $(DESTDIR)/$(LIB)/rcscripts/bin/$$x; done
+	for x in $(BINLINKS); do ln -sf ../sbin/rc $(DESTDIR)/bin/$$x; done
+	for x in $(SBINLINKS); do ln -sf rc $(DESTDIR)/sbin/$$x; done
+	for x in $(RCLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(LIB)/rcscripts/bin/$$x; done
 	if test "$(HAVE_PAM)" != "" ; then \
 		install -m 0755 -d $(DESTDIR)/etc/pam.d ; \
 		install -m 0644 start-stop-daemon.pam $(DESTDIR)/etc/pam.d/start-stop-daemon ; \
