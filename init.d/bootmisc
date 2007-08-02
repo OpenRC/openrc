@@ -33,7 +33,7 @@ start() {
 	rm -f /.test.$$
 
 	# Ensure that our basic dirs exist
-	for x in /var/lock /var/run /tmp ; do
+	for x in /var/lock /var/log /var/run /tmp ; do
 		if ! [ -d "${x}" ] ; then
 			if ! mkdir "${x}" ; then
 				eend 1 "failed to create needed directory ${x}"
