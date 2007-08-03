@@ -2,7 +2,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 iproute2_depend() {
-	program /sbin/ip 
+	program /sbin/ip
 	provide interface
 	after ifconfig
 }

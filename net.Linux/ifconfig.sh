@@ -161,6 +161,12 @@ _add_address() {
 }
 
 _add_route() {
+	local inet6=
+
+	if [ -n "${metric}" ] ; then
+		set -- "$@" metric ${metric}
+	fi
+
 	if [ $# -eq 3 ] ; then
 		set -- "$1" "$2" gw "$3"
 	elif [ "$3" = "via" ] ; then
@@ -169,11 +175,14 @@ _add_route() {
 		set -- "${one}" "${two}" gw "$@"
 	fi
 
-	if [ -n "${metric}" ] ; then
-		set -- "$@" metric ${metric}
-	fi
+	case "$@" in
+		*:*)
+			inet6="-A inet6"
+			[ "$1" = "-net" ] && shift
+			;;
+	esac
 
-	route add "$@"
+	route ${inet6} add "$@" dev "${IFACE}"
 }
 
 _delete_addresses() {
