@@ -78,6 +78,12 @@ _get_inet_address() {
 }
 
 _add_address() {
+	local inet6=
+
+	case "$@" in
+		*:*) inet6=inet6 ;;
+	esac
+
 	if [ "${metric:-0}" != "0" ] ; then
 		set -- "$@" metric ${metric}
 	fi
@@ -94,10 +100,7 @@ _add_address() {
 			;;
 	esac
 
-	case "$@" in
-		*:*) ifconfig "${IFACE}" inet6 "$@" ;;
-		*)   ifconfig "${IFACE}"       "$@" ;;
-	esac
+	ifconfig "${IFACE}" ${inet6} alias "$@"
 }
 
 _add_route() {

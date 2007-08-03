@@ -3,6 +3,7 @@
 
   03 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Fix adding multiple IP addresses, #187526.
     Fix static IPv6 routes, #187514.
 
 * baselayout-2.0.0_rc1 (02 Aug 2007)
@@ -15,7 +16,7 @@
   31 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
     All our binaries are now multicalls into rc, which makes our on disk size
-	a lot smaller.
+    a lot smaller.
 
   23 Jul 2007; Roy Marples <uberlord@gentoo.org>:
 
