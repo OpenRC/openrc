@@ -10,6 +10,9 @@ if [ -e /etc/runlevels/"${RC_DEFAULTLEVEL}"/consolefont \
 		font="$(cat "${RC_LIBDIR}"/console/font)"
 		CONSOLE="${CONSOLE:-/dev/console}"
 		[ -c "${CONSOLE}" ] && cons="-C ${CONSOLE}"
-		setfont ${cons} "${RC_LIBDIR}"/console/"${font}"
+		setfont ${cons} "${RC_LIBDIR}"/console/"${font}" 2>/dev/null
 	fi
 fi
+
+# Ensure we exit 0 so the boot continues
+exit 0

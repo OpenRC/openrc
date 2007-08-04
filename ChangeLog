@@ -5,6 +5,7 @@
 
   04 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Boot properly when we cannot set an early font, #187628.
     rc-update works again, #187487.
 
   03 Aug 2007; Roy Marples <uberlord@gentoo.org>:

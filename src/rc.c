@@ -671,7 +671,7 @@ static void run_script (const char *script) {
 	} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
 
 	if (! WIFEXITED (status) || ! WEXITSTATUS (status) == 0)
-		exit (EXIT_FAILURE);
+		eerrorx ("%s: failed to exec `%s'", applet, script);
 }
 
 #include "_usage.h"
