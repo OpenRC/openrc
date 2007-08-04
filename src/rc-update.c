@@ -13,6 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
@@ -45,7 +46,7 @@ static bool add (const char *runlevel, const char *service)
 	return (retval);
 }
 
-int main (int argc, char **argv)
+int rc_update (int argc, char **argv)
 {
 	int i;
 	int j;

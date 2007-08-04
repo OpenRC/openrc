@@ -1,6 +1,12 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+* baselayout-2.0.0_rc2 (04 Aug 2007)
+
+  04 Aug 2007; Roy Marples <uberlord@gentoo.org>:
+
+    rc-update works again, #187487.
+
   03 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
     Fix adding multiple IP addresses, #187526.

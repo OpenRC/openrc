@@ -717,6 +717,9 @@ int main (int argc, char **argv)
 		exit (rc_depend (argc, argv));
 	else if (strcmp (applet, "rc-status") == 0)
 		exit (rc_status (argc, argv));
+	else if (strcmp (applet, "rc-update") == 0 ||
+			 strcmp (applet, "update-rc") == 0)
+		exit (rc_update (argc, argv));
 	else if (strcmp (applet, "runscript") == 0)
 		exit (runscript (argc, argv));
 	else if (strcmp (applet, "start-stop-daemon") == 0)
