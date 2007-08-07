@@ -58,7 +58,7 @@ pppd_pre_start() {
 	opts="$@"
 
 	local mtu= hasmtu=false hasmru=false hasmaxfail=false haspersist=false
-	local hasupdetach=false
+	local hasupdetach=false hasdefaultmetric=false
 	for i in "$@" ; do
 		set -- ${i}
 		case "$1" in
@@ -66,6 +66,7 @@ pppd_pre_start() {
 				eerror "The option \"$1\" is not allowed in pppd_${IFVAR}"
 				return 1
 			;;
+			defaultmetric) hasdefaultmetric=true ;;
 			mtu) hasmtu=true ;;
 			mru) hasmru=true ;;
 			maxfail) hasmaxfail=true ;;
@@ -84,6 +85,10 @@ pppd_pre_start() {
 		opts="${opts} plugin passwordfd.so passwordfd 0"
 	fi
 	
+	if ! ${hasdefaultmetric} ; then
+		local m=\$metric_${IFVAR}
+		[ -n "${m}" ] && opts="${opts} defaultmetric ${m}"
+	fi
 	if [ -n "${mtu}" ] ; then
 		${hasmtu} || opts="${opts} mtu ${mtu}"
 		${hasmru} || opts="${opts} mru ${mtu}"
