@@ -47,6 +47,7 @@ _ifindex() {
 					echo "${x#/dev/net}"
 					return 0
 				fi
+				i=$((${i} + 1))
 			done
 			;;
 		default)
@@ -59,6 +60,9 @@ _ifindex() {
 			done
 			;;
 	esac
+
+	# Return the next available index
+	echo "${i}"
 	return 1
 }
 
