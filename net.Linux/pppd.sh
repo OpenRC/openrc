@@ -115,7 +115,7 @@ pppd_pre_start() {
 	[ -n "$2" ] && chatopts="${chatopts} -U '$2'"
 	eval $(_get_array "chat_${IFVAR}")
 	if [ $# != 0 ] ; then
-		opts="${opts} connect $(printf "'%s' " "${chatopts} $(printf "'%s' " "$@")")"
+		opts="${opts} connect $(printf "\\'%s\\'" "${chatopts} $(printf "\\'\\\\'\\'%s\\'\\\'' " "$@")")"
 	fi
 
 	# Add plugins
