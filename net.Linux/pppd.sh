@@ -20,6 +20,9 @@ pppd_pre_start() {
 	# Interface has to be called ppp
 	[ "${IFACE%%[0-9]*}" = "ppp" ] || return 0
 
+	# Set our base metric
+	metric=4000
+
 	if ${IN_BACKGROUND} ; then
 		local config=
 		eval config=\$config_${IFVAR}
@@ -87,7 +90,8 @@ pppd_pre_start() {
 	
 	if ! ${hasdefaultmetric} ; then
 		local m=\$metric_${IFVAR}
-		[ -n "${m}" ] && opts="${opts} defaultmetric ${m}"
+		[ -z "${m}" ] && m=$((${metric} + _ifindex))
+		opts="${opts} defaultmetric ${m}"
 	fi
 	if [ -n "${mtu}" ] ; then
 		${hasmtu} || opts="${opts} mtu ${mtu}"

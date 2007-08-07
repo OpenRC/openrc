@@ -27,6 +27,10 @@ _ifindex() {
 			"${IFACE}:"*) echo "${i}"; return 0;;
 		esac
 	done < /proc/net/dev
+
+	# Return the next available index
+	i=$((${i} + 1))
+	echo "${i}"
 	return 1
 }
 
