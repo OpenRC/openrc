@@ -67,9 +67,7 @@ static void (*selinux_run_init_old) (void);
 static void (*selinux_run_init_new) (int argc, char **argv);
 
 static void setup_selinux (int argc, char **argv);
-#endif
 
-#ifdef __linux__
 static void setup_selinux (int argc, char **argv)
 {
 	void *lib_handle = NULL;

@@ -25,7 +25,7 @@ pppd_pre_start() {
 		eval config=\$config_${IFVAR}
 		# If no config for ppp then don't default to DHCP 
 		if [ -z "${config}" ] ; then
-			eval config_${IFVAR}=\"null\"
+			eval config_${IFVAR}=null
 		fi
 		return 0
 	fi
@@ -57,7 +57,7 @@ pppd_pre_start() {
 	eval $(_get_array "pppd_${IFVAR}")
 	opts="$@"
 
-	local mtu= hasmtu=false hasmru=false hasmaxfail=false haspersits=false
+	local mtu= hasmtu=false hasmru=false hasmaxfail=false haspersist=false
 	local hasupdetach=false
 	for i in "$@" ; do
 		set -- ${i}
@@ -70,7 +70,7 @@ pppd_pre_start() {
 			mru) hasmru=true ;;
 			maxfail) hasmaxfail=true ;;
 			persist) haspersist=true ;;
-			updetach) hasupdetach=true;
+			updetach) hasupdetach=true ;;
 		esac
 	done
 
@@ -78,7 +78,7 @@ pppd_pre_start() {
 	local username= password= passwordset=
 	eval username=\$username_${IFVAR}
 	eval password=\$password_${IFVAR}
-	eval passwordset=\${password_${IFVAR}-x}
+	eval passwordset=\$\{password_${IFVAR}-x\}
 	if [ -n "${username}" ] \
 	&& [ -n "${password}" -o -z "${passwordset}" ] ; then
 		opts="${opts} plugin passwordfd.so passwordfd 0"
@@ -88,7 +88,7 @@ pppd_pre_start() {
 		${hasmtu} || opts="${opts} mtu ${mtu}"
 		${hasmru} || opts="${opts} mru ${mtu}"
 	fi
-	${hasmailfail} || opts="${opts} maxfail 0"
+	${hasmaxfail} || opts="${opts} maxfail 0"
 	${haspersist} || opts="${opts} persist"
 
 	# Set linkname because we need /var/run/ppp-${linkname}.pid
