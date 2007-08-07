@@ -5,10 +5,10 @@ if [ -e /etc/runlevels/"${RC_DEFAULTLEVEL}"/consolefont \
 	 -o -e /etc/runlevels/"${RC_BOOTLEVEL}"/consolefont ] ; then
 	termencoding="(K"
 	[ -e "${RC_LIBDIR}"/console/unicode ] && termencoding="%G"
-	printf "\033%s" "${termencoding}"
+	CONSOLE="${CONSOLE:-/dev/console}"
+	printf "\033%s" "${termencoding}" >"${CONSOLE}" 2>/dev/null
 	if [ -r "${RC_LIBDIR}"/console/font -a -x /bin/setfont ] ; then
 		font="$(cat "${RC_LIBDIR}"/console/font)"
-		CONSOLE="${CONSOLE:-/dev/console}"
 		[ -c "${CONSOLE}" ] && cons="-C ${CONSOLE}"
 		setfont ${cons} "${RC_LIBDIR}"/console/"${font}" 2>/dev/null
 	fi
