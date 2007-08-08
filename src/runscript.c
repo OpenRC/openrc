@@ -71,27 +71,29 @@ static void setup_selinux (int argc, char **argv);
 static void setup_selinux (int argc, char **argv)
 {
 	void *lib_handle = NULL;
+	
+	if (! rc_exists (SELINUX_LIB))
+		return;
 
 	lib_handle = dlopen (SELINUX_LIB, RTLD_NOW | RTLD_GLOBAL);
-	if (lib_handle) {
-		/*
-		 * FIXME: the below code generates the warning
-		 * ISO C forbids assignment between function pointer and 'void *'
-		 * which sucks ass
-		 * http://www.opengroup.org/onlinepubs/009695399/functions/dlsym.html
-		 */
-		selinux_run_init_old = (void (*)(void)) dlfunc (lib_handle, "selinux_runscript");
-		selinux_run_init_new = (void (*)(int, char **)) dlfunc (lib_handle, "selinux_runscript2");
-
-		/* Use new run_init if it rc_exists, else fall back to old */
-		if (selinux_run_init_new)
-			selinux_run_init_new (argc, argv);
-		else if (selinux_run_init_old)
-			selinux_run_init_old ();
-		else
-			/* This shouldnt happen... probably corrupt lib */
-			eerrorx ("run_init is missing from runscript_selinux.so!");
+	if (! lib_handle) {
+		eerror ("dlopen: %s", dlerror ());
+		return;
 	}
+
+	selinux_run_init_old = (void (*)(void)) dlfunc (lib_handle, "selinux_runscript");
+	selinux_run_init_new = (void (*)(int, char **)) dlfunc (lib_handle, "selinux_runscript2");
+
+	/* Use new run_init if it rc_exists, else fall back to old */
+	if (selinux_run_init_new)
+		selinux_run_init_new (argc, argv);
+	else if (selinux_run_init_old)
+		selinux_run_init_old ();
+	else
+		/* This shouldnt happen... probably corrupt lib */
+		eerrorx ("run_init is missing from runscript_selinux.so!");
+
+	dlclose (lib_handle);
 }
 #endif
 
