@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  08 Aug 2007; Roy Marples <uberlord@gentoo.org>:
+
+    If given a pidfile, just match on that for seeing if we have crashed
+	or not, #186159.
+
 * baselayout-2.0.0_rc2 (04 Aug 2007)
 
   04 Aug 2007; Roy Marples <uberlord@gentoo.org>:

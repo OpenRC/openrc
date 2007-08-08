@@ -515,6 +515,12 @@ bool rc_service_daemons_crashed (const char *service)
 			fclose (fp);
 			free (pidfile);
 			pidfile = NULL;
+
+			/* We have the pid, so no need to match on name */
+			free (exec);
+			exec = NULL;
+			free (name);
+			name = NULL;
 		}
 
 		if ((pids = rc_find_pids (exec, name, 0, pid)) == NULL) {
@@ -523,25 +529,14 @@ bool rc_service_daemons_crashed (const char *service)
 		}
 		free (pids);
 
-		if (exec) {
-			free (exec);
-			exec = NULL;
-		}
-		if (name) {
-			free (name);
-			name = NULL;
-		}
-	}
-
-	if (exec) {
 		free (exec);
 		exec = NULL;
-	}
-	if (name) {
 		free (name);
 		name = NULL;
 	}
 
+	free (exec);
+	free (name);
 	free (dirpath);
 	rc_strlist_free (files);
 
