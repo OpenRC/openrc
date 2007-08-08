@@ -257,9 +257,6 @@ bool rc_service_in_runlevel (const char *service, const char *runlevel)
 	if (! runlevel || ! service)
 		return (false);
 
-	if (! rc_service_exists (service))
-		return (false);
-
 	svc = rc_xstrdup (service);
 	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, basename (svc),
 						   (char *) NULL);

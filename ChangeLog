@@ -3,6 +3,7 @@
 
   08 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Add help to rc-update #188170.
     If given a pidfile, just match on that for seeing if we have crashed
 	or not, #186159.
 
