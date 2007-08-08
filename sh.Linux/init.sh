@@ -31,7 +31,7 @@ single_user() {
 mount_svcdir() {
 	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="none" devtmp="none" x=
 	local svcsize=${svcsize:-1024}
-	local mntcmd=$(fstabinfo --mountcmd "${RC_LIBDIR}")
+	local mntcmd=$(fstabinfo --mountcmd "${RC_SVCDIR}")
 
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems ; then
 		fs="tmpfs"
