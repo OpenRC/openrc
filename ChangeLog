@@ -5,7 +5,7 @@
 
     Add help to rc-update #188170.
     If given a pidfile, just match on that for seeing if we have crashed
-	or not, #186159.
+    or not, #186159.
 
 * baselayout-2.0.0_rc2 (04 Aug 2007)
 
