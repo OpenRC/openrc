@@ -8,7 +8,6 @@
 #ifndef _LIBRC_H_
 #define _LIBRC_H_
 
-#include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>

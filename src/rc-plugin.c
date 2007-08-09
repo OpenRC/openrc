@@ -8,6 +8,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,9 +70,9 @@ void rc_plugin_load (void)
 		int (*fptr) (rc_hook_t, const char *); 
 		int len;
 
+		free (p);
 		if (! h) {
 			eerror ("dlopen: %s", dlerror ());
-			free (p);
 			continue;
 		}
 
@@ -99,7 +100,6 @@ void rc_plugin_load (void)
 		}
 
 		free (func);
-		free (p);
 	}
 
 	rc_strlist_free (files);

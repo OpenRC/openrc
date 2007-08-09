@@ -37,17 +37,12 @@
 #include "rc-plugin.h"
 #include "strlist.h"
 
-#define INITSH                  RC_LIBDIR "sh/init.sh"
-#define INITEARLYSH             RC_LIBDIR "sh/init-early.sh"
-#define HALTSH                  RC_INITDIR "halt.sh"
+#define INITSH                  RC_LIBDIR "/sh/init.sh"
+#define INITEARLYSH             RC_LIBDIR "/sh/init-early.sh"
+#define HALTSH                  RC_INITDIR "/halt.sh"
 #define SULOGIN                 "/sbin/sulogin"
 
-#define RC_SVCDIR_STARTING      RC_SVCDIR "starting/"
-#define RC_SVCDIR_INACTIVE      RC_SVCDIR "inactive/"
-#define RC_SVCDIR_STARTED       RC_SVCDIR "started/"
-#define RC_SVCDIR_COLDPLUGGED   RC_SVCDIR "coldplugged/"
-
-#define INTERACTIVE             RC_SVCDIR "interactive"
+#define INTERACTIVE             RC_SVCDIR "/interactive"
 
 #define DEVBOOT					"/dev/.rcboot"
 

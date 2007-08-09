@@ -8,6 +8,7 @@
 
 #define APPLET "runscript"
 
+#include <sys/select.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -81,8 +82,10 @@ static void setup_selinux (int argc, char **argv)
 		return;
 	}
 
-	selinux_run_init_old = (void (*)(void)) dlfunc (lib_handle, "selinux_runscript");
-	selinux_run_init_new = (void (*)(int, char **)) dlfunc (lib_handle, "selinux_runscript2");
+	selinux_run_init_old = (void (*)(void))
+		dlfunc (lib_handle, "selinux_runscript");
+	selinux_run_init_new = (void (*)(int, char **))
+		dlfunc (lib_handle, "selinux_runscript2");
 
 	/* Use new run_init if it rc_exists, else fall back to old */
 	if (selinux_run_init_new)
@@ -198,7 +201,7 @@ static bool in_control ()
 
 static void uncoldplug ()
 {
-	char *cold = rc_strcatpaths (RC_SVCDIR "coldplugged", applet, (char *) NULL);
+	char *cold = rc_strcatpaths (RC_SVCDIR, "coldplugged", applet, (char *) NULL);
 	if (rc_exists (cold) && unlink (cold) != 0)
 		eerror ("%s: unlink `%s': %s", applet, cold, strerror (errno));
 	free (cold);
@@ -368,16 +371,16 @@ static bool svc_exec (const char *arg1, const char *arg2)
 				eerror ("fcntl: %s", strerror (errno));
 		}
 
-		if (rc_exists (RC_SVCDIR "runscript.sh")) {
-			execl (RC_SVCDIR "runscript.sh", service, service, arg1, arg2,
+		if (rc_exists (RC_SVCDIR "/runscript.sh")) {
+			execl (RC_SVCDIR "/runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
-			eerror ("%s: exec `" RC_SVCDIR "runscript.sh': %s",
+			eerror ("%s: exec `" RC_SVCDIR "/runscript.sh': %s",
 					service, strerror (errno));
 			_exit (EXIT_FAILURE);
 		} else {
-			execl (RC_LIBDIR "sh/runscript.sh", service, service, arg1, arg2,
+			execl (RC_LIBDIR "/sh/runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
-			eerror ("%s: exec `" RC_LIBDIR "sh/runscript.sh': %s",
+			eerror ("%s: exec `" RC_LIBDIR "/sh/runscript.sh': %s",
 					service, strerror (errno));
 			_exit (EXIT_FAILURE);
 		}

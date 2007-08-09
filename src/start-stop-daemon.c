@@ -9,8 +9,10 @@
    system so we can monitor daemons a little.
    */
 
-#define POLL_INTERVAL 20000
-#define START_WAIT    100000
+/* nano seconds */
+#define POLL_INTERVAL   20000000
+#define START_WAIT     100000000
+#define ONE_SECOND    1000000000
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -90,20 +92,6 @@ static void cleanup (void)
 
 	if (newenv)
 		rc_strlist_free (newenv);
-}
-
-static int get_time(struct timeval *tp)
-{
-	struct timespec ts;
-
-	if (clock_gettime (CLOCK_MONOTONIC, &ts) == -1) {
-		eerror ("clock_gettime: %s", strerror (errno));
-		return (-1);
-	}
-
-	tp->tv_sec = ts.tv_sec;
-	tp->tv_usec = ts.tv_nsec / 1000;
-	return (0);
 }
 
 static int parse_signal (const char *sig)
@@ -347,9 +335,8 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 	int nkilled = 0;
 	int tkilled = 0;
 	int nrunning = 0;
-	struct timeval tv;
-	struct timeval now;
-	struct timeval stopat;
+	long nloops;
+	struct timespec ts;
 
 	if (verbose) {
 		if (pidfile)
@@ -390,30 +377,24 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 					break;
 				}
 
-				if (get_time (&stopat) != 0)
-					return (0);
+				nloops = (ONE_SECOND / POLL_INTERVAL) * item->value;
+				ts.tv_sec = 0;
+				ts.tv_nsec = POLL_INTERVAL;
 
-				stopat.tv_sec += item->value;
-				while (1) {
+				while (nloops) {
 					if ((nrunning = do_stop (exec, cmd, pidfile,
 											 uid, 0, true, false, true)) == 0)
 						return (true);
 
-					tv.tv_sec = 0;
-					tv.tv_usec = POLL_INTERVAL;
-					if (select (0, 0, 0, 0, &tv) < 0) {
+					if (nanosleep (&ts, NULL) == -1) {
 						if (errno == EINTR)
 							eerror ("%s: caught an interupt", progname);
 						else {
-							eerror ("%s: select: %s", progname, strerror (errno));
+							eerror ("%s: nanosleep: %s", progname, strerror (errno));
 							return (0);
 						}
 					}
-
-					if (get_time (&now) != 0)
-						return (0);
-					if (timercmp (&now, &stopat, >))
-						break;
+					nloops --;
 				}
 				break;
 
@@ -538,7 +519,6 @@ int start_stop_daemon (int argc, char **argv)
 	int stdout_fd;
 	int stderr_fd;
 	pid_t pid;
-	struct timeval tv;
 	int i;
 	char *svcname = getenv ("SVCNAME");
 	char *env;
@@ -733,7 +713,7 @@ int start_stop_daemon (int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	/* Validate that the binary rc_exists if we are starting */
+	/* Validate that the binary exists if we are starting */
 	if (exec && start) {
 		char *tmp;
 		if (ch_root)
@@ -893,14 +873,14 @@ int start_stop_daemon (int argc, char **argv)
 		/* Clean the environment of any RC_ variables */
 		STRLIST_FOREACH (environ, env, i)
 			if (env && strncmp (env, "RC_", 3) != 0) {
-				/* For the path character, remove the rcscript bin dir from it */
-				if (strncmp (env, "PATH=" RC_LIBDIR "bin:",
-							 strlen ("PATH=" RC_LIBDIR "bin:")) == 0)
+				/* For the path r, remove the rcscript bin dir from it */
+				if (strncmp (env, "PATH=" RC_LIBDIR "/bin:",
+							 strlen ("PATH=" RC_LIBDIR "/bin:")) == 0)
 				{
 					char *path = env;
 					char *newpath;
 					int len;
-					path += strlen ("PATH=" RC_LIBDIR "bin:");
+					path += strlen ("PATH=" RC_LIBDIR "/bin:");
 					len = sizeof (char *) * strlen (path) + 6;
 					newpath = rc_xmalloc (len);
 					snprintf (newpath, len, "PATH=%s", path);
@@ -974,24 +954,24 @@ int start_stop_daemon (int argc, char **argv)
 	/* Wait a little bit and check that process is still running
 	   We do this as some badly written daemons fork and then barf */
 	if (START_WAIT > 0) {
-		struct timeval stopat;
-		struct timeval now;
+		struct timespec ts;
+		int nloops = START_WAIT / POLL_INTERVAL;
+		bool alive = false;
 		bool retestpid = false;
+		
+		ts.tv_sec = 0;
+		ts.tv_nsec = POLL_INTERVAL;
 
-		if (get_time (&stopat) != 0)
-			exit (EXIT_FAILURE);
-
-		stopat.tv_usec += START_WAIT;
-		while (1) {
-			bool alive = false;
-
-			tv.tv_sec = 0;
-			tv.tv_usec = POLL_INTERVAL;
-			if (select (0, 0, 0, 0, &tv) < 0) {
-				/* Let our signal handler handle the interupt */
-				if (errno != EINTR)
-					eerrorx ("%s: select: %s", progname, strerror (errno));
+		while (nloops) {
+			if (nanosleep (&ts, NULL) == -1) {
+				if (errno == EINTR)
+					eerror ("%s: caught an interupt", progname);
+				else {
+					eerror ("%s: nanosleep: %s", progname, strerror (errno));
+					return (0);
+				}
 			}
+			nloops --;
 
 			/* This is knarly.
 			   If we backgrounded then we know the exact pid.
@@ -1023,11 +1003,6 @@ int start_stop_daemon (int argc, char **argv)
 
 			if (! alive)
 				eerrorx ("%s: %s died", progname, exec);
-
-			if (get_time (&now) != 0)
-				exit (EXIT_FAILURE);
-			if (timercmp (&now, &stopat, >)) 
-				break;
 		}
 
 		if (retestpid) {

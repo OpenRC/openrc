@@ -8,12 +8,12 @@
 #include "librc.h"
 
 /* usecs to wait while we poll the fifo */
-#define WAIT_INTERVAL	20000
+#define WAIT_INTERVAL	20000000
 
-/* max secs to wait until a service comes up */
-#define WAIT_MAX	60
+/* max nsecs to wait until a service comes up */
+#define WAIT_MAX	60000000000
 
-#define SOFTLEVEL	RC_SVCDIR "softlevel"
+#define SOFTLEVEL	RC_SVCDIR "/softlevel"
 
 /* File stream used for plugins to write environ vars to */
 FILE *rc_environ_fd = NULL;
@@ -33,13 +33,13 @@ static const char *rc_service_state_names[] = {
 
 bool rc_runlevel_starting (void)
 {
-	return (rc_is_dir (RC_SVCDIR "softscripts.old"));
+	return (rc_is_dir (RC_SVCDIR "/softscripts.old"));
 }
 librc_hidden_def(rc_runlevel_starting)
 
 bool rc_runlevel_stopping (void)
 {
-	return (rc_is_dir (RC_SVCDIR "softscripts.new"));
+	return (rc_is_dir (RC_SVCDIR "/softscripts.new"));
 }
 librc_hidden_def(rc_runlevel_stopping)
 
@@ -142,7 +142,7 @@ char *rc_resolve_service (const char *service)
 			return (rc_xstrdup (buffer));
 	}
 
-	snprintf (buffer, sizeof (buffer), RC_INITDIR "%s", service);
+	snprintf (buffer, sizeof (buffer), RC_INITDIR "/%s", service);
 	return (strdup (buffer));
 }
 librc_hidden_def(rc_resolve_service)
@@ -639,32 +639,13 @@ void rc_schedule_clear (const char *service)
 }
 librc_hidden_def(rc_schedule_clear)
 
-static time_t get_uptime(void)
-{
-#ifdef __linux__
-	struct sysinfo info;
-
-	sysinfo (&info);
-	return (time_t) info.uptime;
-#else
-	struct timespec tp;
-
-	if (clock_gettime (CLOCK_MONOTONIC, &tp) == -1) {
-		eerror ("clock_gettime: %s", strerror (errno));
-		return -1;
-	}
-
-	return tp.tv_sec;
-#endif
-}
-
 bool rc_wait_service (const char *service)
 {
 	char *svc;
 	char *base;
 	char *fifo;
-	struct timeval tv;
-	time_t start = get_uptime ();
+	struct timespec ts;
+	int nloops = WAIT_MAX / WAIT_INTERVAL;
 	bool retval = false;
 	bool forever = false;
 
@@ -680,26 +661,24 @@ bool rc_wait_service (const char *service)
 		forever = true;
 	free (svc);
 
-	while (true) {
+	ts.tv_sec = 0;
+	ts.tv_nsec = WAIT_INTERVAL;
+
+	while (nloops) {
 		if (! rc_exists (fifo)) {
 			retval = true;
 			break;
 		}
 
-		tv.tv_sec = 0;
-		tv.tv_usec = WAIT_INTERVAL;
-		if (select (0, 0, 0, 0, &tv) < 0) {
+		if (nanosleep (&ts, NULL) == -1) {
 			if (errno != EINTR) {
-				eerror ("select: %s",strerror (errno));
+				eerror ("nanosleep: %s", strerror (errno));
 				break;
 			}
 		}
 
-		if (! forever) {
-			time_t now = get_uptime();
-			if (now - start > WAIT_MAX)
-				break;
-		}
+		if (! forever)
+			nloops --;
 	}
 
 	free (fifo);
@@ -819,13 +798,13 @@ librc_hidden_def(rc_service_delete)
 
 char **rc_services_scheduled_by (const char *service)
 {
-	char **dirs = rc_ls_dir (NULL, RC_SVCDIR "scheduled", 0);
+	char **dirs = rc_ls_dir (NULL, RC_SVCDIR "/scheduled", 0);
 	char **list = NULL;
 	char *dir;
 	int i;
 
 	STRLIST_FOREACH (dirs, dir, i) {
-		char *file = rc_strcatpaths (RC_SVCDIR "scheduled", dir, service,
+		char *file = rc_strcatpaths (RC_SVCDIR, "scheduled", dir, service,
 									 (char *) NULL);
 		if (rc_exists (file))
 			list = rc_strlist_add (list, file);

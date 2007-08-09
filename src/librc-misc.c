@@ -9,11 +9,11 @@
 #define ERRX            eerrorx("out of memory");
 
 #define PROFILE_ENV     "/etc/profile.env"
-#define SYS_WHITELIST   RC_LIBDIR "conf.d/env_whitelist"
+#define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
 #define USR_WHITELIST   "/etc/conf.d/env_whitelist"
 #define RC_CONFIG       "/etc/conf.d/rc"
 
-#define PATH_PREFIX     RC_LIBDIR "bin:/bin:/sbin:/usr/bin:/usr/sbin"
+#define PATH_PREFIX     RC_LIBDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 
 #ifndef S_IXUGO
 # define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
@@ -95,30 +95,33 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 	if (! path1 || ! paths)
 		return (NULL);
 
-	length = strlen (path1) + strlen (paths) + 3;
-	i = 0;
-	va_start (ap, paths);
-	while ((p = va_arg (ap, char *)) != NULL)
-		length += strlen (p) + 1;
-	va_end (ap);
-
-	path = rc_xmalloc (length);
-	memset (path, 0, length);
-	memcpy (path, path1, strlen (path1));
-	pathp = path + strlen (path1) - 1;
-	if (*pathp != '/') {
-		pathp++;
-		*pathp++ = '/';
-	}
-	else
-		pathp++;
-	memcpy (pathp, paths, strlen (paths));
-	pathp += strlen (paths);
+	length = strlen (path1) + strlen (paths) + 1;
+	if (*paths != '/')
+		length ++;
 
 	va_start (ap, paths);
 	while ((p = va_arg (ap, char *)) != NULL) {
-		if (*pathp != '/')
-			*pathp++ = '/';
+		if (*p != '/')
+			length ++;
+		length += strlen (p);
+	}
+	va_end (ap);
+
+	pathp = path = rc_xmalloc (length * sizeof (char *));
+	memset (path, 0, length);
+	i = strlen (path1);
+	memcpy (path, path1, i);
+	pathp += i;
+	if (*paths != '/')
+		*pathp ++ = '/';
+	i = strlen (paths);
+	memcpy (pathp, paths, i);
+	pathp += i;
+
+	va_start (ap, paths);
+	while ((p = va_arg (ap, char *)) != NULL) {
+		if (*p != '/')
+			*pathp ++= '/';
 		i = strlen (p);
 		memcpy (pathp, p, i);
 		pathp += i;
@@ -615,14 +618,14 @@ char **rc_config_env (char **env)
 	rc_strlist_free (config);
 
 	/* One char less to drop the trailing / */
-	i = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR);
+	i = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
 	line = rc_xmalloc (sizeof (char *) * i);
 	snprintf (line, i, "RC_LIBDIR=" RC_LIBDIR);
 	env = rc_strlist_add (env, line);
 	free (line);
 
 	/* One char less to drop the trailing / */
-	i = strlen ("RC_SVCDIR=") + strlen (RC_SVCDIR);
+	i = strlen ("RC_SVCDIR=") + strlen (RC_SVCDIR) + 1;
 	line = rc_xmalloc (sizeof (char *) * i);
 	snprintf (line, i, "RC_SVCDIR=" RC_SVCDIR);
 	env = rc_strlist_add (env, line);

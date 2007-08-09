@@ -70,7 +70,6 @@ endif
 ifeq ($(OS),Linux)
 LDLIBS_RC = -ldl
 LDLIBS_RS = -ldl
-LDLIBS_SSD = -lrt
 # Shouldn't need this, but it's the easiest workaround for silly
 # Linux headers that don't work with -std=c99
 override CPPFLAGS += -D_GNU_SOURCE

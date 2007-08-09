@@ -19,6 +19,7 @@
 
 #include <sys/types.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 /* Special level names */
 #define RC_LEVEL_SYSINIT    "sysinit"

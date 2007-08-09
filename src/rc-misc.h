@@ -11,19 +11,19 @@
 #  define LIB "lib"
 #endif
 
-#define RC_LIBDIR	"/" LIB "/rcscripts/"
-#define RC_SVCDIR	RC_LIBDIR "init.d/"
-#define RC_DEPTREE 	RC_SVCDIR "deptree"
-#define RC_RUNLEVELDIR 	"/etc/runlevels/"
-#define RC_INITDIR	"/etc/init.d/"
-#define RC_CONFDIR	"/etc/conf.d/"
+#define RC_LIBDIR	"/" LIB "/rcscripts"
+#define RC_SVCDIR	RC_LIBDIR "/init.d"
+#define RC_DEPTREE 	RC_SVCDIR "/deptree"
+#define RC_RUNLEVELDIR 	"/etc/runlevels"
+#define RC_INITDIR	"/etc/init.d"
+#define RC_CONFDIR	"/etc/conf.d"
 
-#define RC_SVCDIR_STARTING	RC_SVCDIR "starting/"
-#define RC_SVCDIR_INACTIVE	RC_SVCDIR "inactive/"
-#define RC_SVCDIR_STARTED	RC_SVCDIR "started/"
-#define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "coldplugged/"
+#define RC_SVCDIR_STARTING	RC_SVCDIR "/starting"
+#define RC_SVCDIR_INACTIVE	RC_SVCDIR "/inactive"
+#define RC_SVCDIR_STARTED	RC_SVCDIR "/started"
+#define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "/coldplugged"
 
-#define RC_PLUGINDIR	RC_LIBDIR "plugins/"
+#define RC_PLUGINDIR	RC_LIBDIR "/plugins"
 
 /* Max buffer to read a line from a file */
 #define RC_LINEBUFFER	4096 

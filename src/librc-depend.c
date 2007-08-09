@@ -582,17 +582,17 @@ static const deppair_t deppairs[] = {
 
 static const char *depdirs[] =
 {
-	RC_SVCDIR "starting",
-	RC_SVCDIR "started",
-	RC_SVCDIR "stopping",
-	RC_SVCDIR "inactive",
-	RC_SVCDIR "wasinactive",
-	RC_SVCDIR "failed",
-	RC_SVCDIR "coldplugged",
-	RC_SVCDIR "daemons",
-	RC_SVCDIR "options",
-	RC_SVCDIR "exclusive",
-	RC_SVCDIR "scheduled",
+	RC_SVCDIR "/starting",
+	RC_SVCDIR "/started",
+	RC_SVCDIR "/stopping",
+	RC_SVCDIR "/inactive",
+	RC_SVCDIR "/wasinactive",
+	RC_SVCDIR "/failed",
+	RC_SVCDIR "/coldplugged",
+	RC_SVCDIR "/daemons",
+	RC_SVCDIR "/options",
+	RC_SVCDIR "/exclusive",
+	RC_SVCDIR "/scheduled",
 	NULL
 };
 
