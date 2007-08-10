@@ -176,7 +176,7 @@ iproute2_pre_start() {
 }
 
 iproute2_post_start() {
-	ip route flush cache dev "${IFACE}"
+	ip route flush table cache dev "${IFACE}"
 }
 
 iproute2_post_stop() {
