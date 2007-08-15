@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  15 Aug 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Add bzr port 4155 to /etc/services, #188970 thanks to Andrew Cowie.
+
   08 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
     Add help to rc-update #188170.

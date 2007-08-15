@@ -913,6 +913,7 @@ pxc-splr	4007/tcp	pxc-splr
 pxc-splr	4007/udp	pxc-splr
 xgrid		4111/tcp			# Mac OS X Server Xgrid
 xgrid		4111/udp
+bzr		4155/tcp			# Bazaar Version Control System
 rwhois		4321/tcp			# Remote Who Is
 rwhois		4321/udp
 epmd		4369/tcp			# Erlang Port Mapper Daemon
@@ -1176,3 +1177,4 @@ fido		60179/udp
 
 # Local services
 
+# vim: set ts=8 :
