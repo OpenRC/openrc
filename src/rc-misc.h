@@ -11,6 +11,9 @@
 #  define LIB "lib"
 #endif
 
+#define RC_LEVEL_BOOT       "boot"
+#define RC_LEVEL_DEFAULT    "default"
+
 #define RC_LIBDIR	"/" LIB "/rcscripts"
 #define RC_SVCDIR	RC_LIBDIR "/init.d"
 #define RC_DEPTREE 	RC_SVCDIR "/deptree"

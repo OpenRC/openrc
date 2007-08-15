@@ -65,13 +65,13 @@ mount_svcdir() {
 	if [ -e "${RC_SVCDIR}"/deptree ] ; then
 		dotmp=true
 		try mount -n -t "${fs}" -o rw "${devtmp}" "${RC_LIBDIR}"/tmp
-		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/nettree \
-			"${RC_LIBDIR}"/tmp 2>/dev/null
+		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
+			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
 	fi
 	try mount -n ${mntcmd}
 	if ${dotmp} ; then
-		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/nettree \
-			"${RC_SVCDIR}" 2>/dev/null
+		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/depconfig \
+			"${RC_LIBDIR}"/tmp/nettree "${RC_SVCDIR}" 2>/dev/null
 		try umount -n "${RC_LIBDIR}"/tmp
 	fi
 }

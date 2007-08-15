@@ -23,11 +23,9 @@
 
 /* Special level names */
 #define RC_LEVEL_SYSINIT    "sysinit"
-#define RC_LEVEL_BOOT       "boot"
 #define RC_LEVEL_SINGLE     "single"
 #define RC_LEVEL_SHUTDOWN   "shutdown"
 #define RC_LEVEL_REBOOT     "reboot"
-#define RC_LEVEL_DEFAULT    "default"
 
 typedef enum
 {

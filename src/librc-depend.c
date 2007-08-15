@@ -6,7 +6,9 @@
 
 #include "librc.h"
 
-#define GENDEP	RC_LIBDIR "/sh/gendepends.sh"
+#define GENDEP          RC_LIBDIR "/sh/gendepends.sh"
+
+#define RC_DEPCONFIG    RC_SVCDIR "/depconfig"
 
 static const char *bootlevel = NULL;
 
@@ -610,13 +612,14 @@ int rc_update_deptree (bool force)
 	char *service;
 	char *type;
 	char *depend;
+	char **config = NULL;
 	int retval = 0;
 	FILE *fp;
 	rc_depinfo_t *deptree;
 	rc_depinfo_t *depinfo;
 	rc_depinfo_t *di;
 	rc_depinfo_t *last_depinfo = NULL;
-	rc_deptype_t *deptype;
+	rc_deptype_t *deptype = NULL;
 	rc_deptype_t *dt;
 	rc_deptype_t *last_deptype = NULL;
 	char buffer[RC_LINEBUFFER];
@@ -632,11 +635,32 @@ int rc_update_deptree (bool force)
 			if (mkdir (depdirs[i], 0755) != 0)
 				eerrorx ("mkdir `%s': %s", depdirs[i], strerror (errno));
 
-	if (! force)
-		if (is_newer_than (RC_DEPTREE, RC_INITDIR) &&
-			is_newer_than (RC_DEPTREE, RC_CONFDIR) &&
-			is_newer_than (RC_DEPTREE, "/etc/rc.conf"))
+	/* Quick test to see if anything we use has changed */
+	if (! force && 
+		is_newer_than (RC_DEPTREE, RC_INITDIR) &&
+		is_newer_than (RC_DEPTREE, RC_CONFDIR) &&
+		is_newer_than (RC_DEPTREE, "/etc/rc.conf"))
+	{
+		bool newer = false;
+
+		/* Some init scripts dependencies change depending on config files
+		 * outside of baselayout, like syslog-ng, so we check those too. */
+		if (! rc_exists (RC_DEPCONFIG))
 			return 0;
+
+		config = rc_get_list (NULL, RC_DEPCONFIG);
+		STRLIST_FOREACH (config, service, i) {
+			if (! is_newer_than (RC_DEPTREE, service)) {
+				newer = true;
+				break;
+			}
+		}
+		rc_strlist_free (config);
+		config = NULL;
+
+		if (! newer)
+			return (0);
+	}
 
 	ebegin ("Caching service dependencies");
 
@@ -690,28 +714,31 @@ int rc_update_deptree (bool force)
 		if (! type || ! depends)
 			continue;
 
-		last_deptype = NULL;
-		for (deptype = depinfo->depends; deptype; deptype = deptype->next)
-		{
-			last_deptype = deptype;
-			if (strcmp (deptype->type, type) == 0)
-				break;
-		}
+		/* Get the type */
+		if (strcmp (type, "config") != 0) {
+			last_deptype = NULL;
+			for (deptype = depinfo->depends; deptype; deptype = deptype->next)
+			{
+				last_deptype = deptype;
+				if (strcmp (deptype->type, type) == 0)
+					break;
+			}
 
-		if (! deptype)
-		{
-			if (! last_deptype)
+			if (! deptype)
 			{
-				depinfo->depends = rc_xmalloc (sizeof (rc_deptype_t));
-				deptype = depinfo->depends;
+				if (! last_deptype)
+				{
+					depinfo->depends = rc_xmalloc (sizeof (rc_deptype_t));
+					deptype = depinfo->depends;
+				}
+				else
+				{
+					last_deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
+					deptype = last_deptype->next;
+				}
+				memset (deptype, 0, sizeof (rc_deptype_t));
+				deptype->type = rc_xstrdup (type);
 			}
-			else
-			{
-				last_deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
-				deptype = last_deptype->next;
-			}
-			memset (deptype, 0, sizeof (rc_deptype_t));
-			deptype->type = rc_xstrdup (type);
 		}
 
 		/* Now add each depend to our type.
@@ -720,6 +747,11 @@ int rc_update_deptree (bool force)
 		{
 			if (depend[0] == 0)
 				continue;
+
+			if (strcmp (type, "config") == 0) {
+				config = rc_strlist_addsort (config, depend);
+				continue;
+			}
 
 			/* .sh files are not init scripts */
 			len = strlen (depend);
@@ -846,6 +878,19 @@ int rc_update_deptree (bool force)
 			i++;
 		}
 		fclose (fp);
+	}
+
+	/* Save our external config files to disk */
+	if (config) {
+		if (! (fp = fopen (RC_DEPCONFIG, "w")))
+			eerror ("fopen `%s': %s", RC_DEPCONFIG, strerror (errno));
+		else
+		{
+			STRLIST_FOREACH (config, service, i)
+				fprintf (fp, "%s\n", service);
+			fclose (fp);
+		}
+		rc_strlist_free (config);
 	}
 
 	rc_free_deptree (deptree);

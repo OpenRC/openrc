@@ -22,15 +22,15 @@ mount_svcdir() {
 		try mdconfig -a -t malloc -s 1m -u 1
 		try newfs /dev/md1
 		try mount /dev/md1 "${RC_LIBDIR}"/tmp
-		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/nettree \
-			"${RC_LIBDIR}"/tmp 2>/dev/null
+		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
+			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
 	fi
 	try mdconfig -a -t malloc -s "${RC_SVCSIZE:-1024}"k -u 0
 	try newfs -b 4096 -i 1024 -n /dev/md0
 	try mount -o rw,noexec,nosuid /dev/md0 "${RC_SVCDIR}"
 	if ${dotmp} ; then
-		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/nettree \
-			"${RC_SVCDIR}" 2>/dev/null
+		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/depconfig \
+			"${RC_LIBDIR}"/tmp/nettree "${RC_SVCDIR}" 2>/dev/null
 		try umount "${RC_LIBDIR}"/tmp
 		try mdconfig -d -u 1
 	fi

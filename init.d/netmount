@@ -25,6 +25,7 @@ depend() {
 		myuse="${myuse} ${pmap}"
 	fi
 
+	config /etc/fstab
 	need net ${myneed}
 	use afc-client amd autofs dns nfs nfsmount ${myuse}
 }

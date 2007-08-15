@@ -42,15 +42,17 @@ if mountinfo "${RC_SVCDIR}" >/dev/null && [ -w "${RC_LIBDIR}" ]  ; then
 		fuser -k ${f_opts} "${svcdir}" 1>/dev/null 2>/dev/null
 		sleep 2
 	fi
-	cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/softlevel \
-		"${RC_SVCDIR}"/nettree "${RC_LIBDIR}" 2>/dev/null
+	cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
+		"${RC_SVCDIR}"/softlevel "${RC_SVCDIR}"/nettree \
+		"${RC_LIBDIR}" 2>/dev/null
 	umount "${RC_SVCDIR}"
 	rm -rf "${RC_SVCDIR}"/*
 	# Pipe errors to /dev/null as we may have future timestamps
-	cp -p "${RC_LIBDIR}"/deptree "${RC_LIBDIR}"/softlevel \
-		"${RC_LIBDIR}"/nettree "${RC_SVCDIR}" 2>/dev/null
-	rm -f "${RC_LIBDIR}"/deptree "${RC_LIBDIR}"/softlevel \
-		"${RC_LIBDIR}"/nettree
+	cp -p "${RC_LIBDIR}"/deptree "${RC_LIBDIR}"/depconfig \
+		"${RC_LIBDIR}"/softlevel "${RC_LIBDIR}"/nettree \
+		"${RC_SVCDIR}" 2>/dev/null
+	rm -f "${RC_LIBDIR}"/deptree "${RC_LIBDIR}"/depconfig \
+		"${RC_LIBDIR}"/softlevel "${RC_LIBDIR}"/nettree
 	# Release the memory disk if we used it
 	case "${mnt}" in
 		"/dev/md"[0-9]*) mdconfig -d -u "${mnt#/dev/md*}" ;;

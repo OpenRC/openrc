@@ -3,6 +3,8 @@
 
   15 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
+    `config /etc/fstab' can now be used in depend() functions to show that
+    the deptree should be regenerated if /etc/fstab has changed.
     Add bzr port 4155 to /etc/services, #188970 thanks to Andrew Cowie.
 
   08 Aug 2007; Roy Marples <uberlord@gentoo.org>:

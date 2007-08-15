@@ -5,6 +5,9 @@
 
 . /etc/init.d/functions.sh
 
+config() {
+	[ -n "$*" ] && echo "${SVCNAME} config $*" >&3
+}
 need() {
 	[ -n "$*" ] && echo "${SVCNAME} ineed $*" >&3
 }
@@ -49,6 +52,7 @@ for SVCNAME in * ; do
 		depend
 
 		# Add any user defined depends
+		config ${RC_CONFIG}
 		need ${RC_NEED}
 		use ${RC_USE}
 		before ${RC_BEFORE}
