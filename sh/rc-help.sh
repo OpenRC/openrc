@@ -178,11 +178,11 @@ ${CYAN}Dependencies:${OFF}
       of a system logger depend on 'logger'.  This should make things much more
       generic.
 
-	${GREEN}config${OFF}
-	  This is not really a dependency type, rather it informs the dependency
-	  system about config files that may affect the dependencies of the service.
-	  One example of this is the netmount service which changes its dependencies
-	  depending on the config of /etc/fstab.
+    ${GREEN}config${OFF}
+      This is not really a dependency type, rather it informs the dependency
+      system about config files that may affect the dependencies of the service.
+      One example of this is the netmount service which changes its dependencies
+      depending on the config of /etc/fstab.
 
     Note that the 'need', 'use', 'before', and 'after' dependency types accept
     an '*' as an argument.  Having:
