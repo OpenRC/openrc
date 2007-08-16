@@ -13,6 +13,8 @@
 
 #define APPLET "rc"
 
+#define SYSLOG_NAMES
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
@@ -27,6 +29,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
+#include <syslog.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -114,6 +117,20 @@ static void cleanup (void)
 	free (applet);
 }
 
+static int syslog_decode (char *name, CODE *codetab)
+{
+	CODE *c;
+
+	if (isdigit (*name))
+		return (atoi (name));
+
+	for (c = codetab; c->c_name; c++)
+		if (! strcasecmp (name, c->c_name))
+			return (c->c_val);
+
+	return (-1);
+}
+
 static int do_e (int argc, char **argv)
 {
 	int retval = EXIT_SUCCESS;
@@ -122,6 +139,7 @@ static int do_e (int argc, char **argv)
 	char *message = NULL;
 	char *p;
 	char *fmt = NULL;
+	int level = 0;
 
 	if (strcmp (applet, "eval_ecolors") == 0) {
 		printf ("GOOD='%s'\nWARN='%s'\nBAD='%s'\nHILITE='%s'\nBRACKET='%s'\nNORMAL='%s'\n",
@@ -134,12 +152,13 @@ static int do_e (int argc, char **argv)
 		exit (EXIT_SUCCESS);
 	}
 
-	if (strcmp (applet, "eend") == 0 ||
-		strcmp (applet, "ewend") == 0 ||
-		strcmp (applet, "veend") == 0 ||
-		strcmp (applet, "vweend") == 0)
-	{
-		if (argc > 0) {
+	if (argc > 0) {
+
+		if (strcmp (applet, "eend") == 0 ||
+			strcmp (applet, "ewend") == 0 ||
+			strcmp (applet, "veend") == 0 ||
+			strcmp (applet, "vweend") == 0)
+		{
 			errno = 0;
 			retval = strtol (argv[0], NULL, 0);
 			if (errno != 0)
@@ -148,8 +167,16 @@ static int do_e (int argc, char **argv)
 				argc--;
 				argv++;
 			}
+		} else if (strcmp (applet, "esyslog") == 0 ||
+				   strcmp (applet, "elog") == 0) {
+			char *dot = strchr (argv[0], '.');
+			if ((level = syslog_decode (dot + 1, prioritynames)) == -1)
+				eerrorx ("%s: invalid log level `%s'", applet, argv[0]);
+			argc--;
+			argv++;
 		}
 	}
+
 
 	if (argc > 0) {
 		for (i = 0; i < argc; i++)
@@ -190,6 +217,8 @@ static int do_e (int argc, char **argv)
 		eend (retval, fmt, message);
 	else if (strcmp (applet, "ewend") == 0)
 		ewend (retval, fmt, message);
+	else if (strcmp (applet, "esyslog") == 0)
+		elog (level, fmt, message);
 	else if (strcmp (applet, "veinfo") == 0) 
 		einfov (fmt, message);
 	else if (strcmp (applet, "veinfon") == 0)

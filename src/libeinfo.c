@@ -38,6 +38,7 @@ hidden_proto(einfo)
 hidden_proto(einfon)
 hidden_proto(einfov)
 hidden_proto(einfovn)
+hidden_proto(elog)
 hidden_proto(eoutdent)
 hidden_proto(eoutdentv)
 hidden_proto(ewarn)
@@ -193,7 +194,7 @@ void eprefix (const char *prefix) {
 	_eprefix = prefix;
 }
 
-static void elog (int level, const char *fmt, va_list ap)
+static void elogv (int level, const char *fmt, va_list ap)
 {
 	char *e = getenv ("RC_ELOG");
 	va_list apc;
@@ -207,6 +208,16 @@ static void elog (int level, const char *fmt, va_list ap)
 		closelog ();
 	}
 }
+
+void elog (int level, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start (ap, fmt);
+	elogv (level, fmt, ap);
+	va_end (ap);
+}
+hidden_def(elog)
 
 static int _eindent (FILE *stream)
 {
@@ -376,7 +387,7 @@ int ewarn (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	elog (LOG_WARNING, fmt, ap);
+	elogv (LOG_WARNING, fmt, ap);
 	retval = _ewarnvn (fmt, ap);
 	retval += printf ("\n");
 	va_end (ap);
@@ -392,7 +403,7 @@ void ewarnx (const char *fmt, ...)
 
 	if (fmt && ! is_env ("RC_QUIET", "yes")) {
 		va_start (ap, fmt);
-		elog (LOG_WARNING, fmt, ap);
+		elogv (LOG_WARNING, fmt, ap);
 		retval = _ewarnvn (fmt, ap);
 		va_end (ap);
 		retval += printf ("\n");
@@ -410,7 +421,7 @@ int eerror (const char *fmt, ...)
 		return (0);
 
 	va_start (ap, fmt);
-	elog (LOG_ERR, fmt, ap);
+	elogv (LOG_ERR, fmt, ap);
 	retval = _eerrorvn (fmt, ap);
 	va_end (ap);
 	retval += fprintf (stderr, "\n");
@@ -425,7 +436,7 @@ void eerrorx (const char *fmt, ...)
 
 	if (fmt) {
 		va_start (ap, fmt);
-		elog (LOG_ERR, fmt, ap);
+		elogv (LOG_ERR, fmt, ap);
 		_eerrorvn (fmt, ap);
 		va_end (ap);
 		fprintf (stderr, "\n");

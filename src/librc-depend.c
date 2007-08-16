@@ -330,10 +330,11 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 
 	/* Check coldplugged services */
 	if (get_provided1 (runlevel, &providers, dt, NULL, true, rc_service_stopped))
+	{ DO }
 
-		/* Check manually started */
-		if (get_provided1 (runlevel, &providers, dt, NULL, false, rc_service_started))
-		{ DO }
+	/* Check manually started */
+	if (get_provided1 (runlevel, &providers, dt, NULL, false, rc_service_started))
+	{ DO }
 	if (get_provided1 (runlevel, &providers, dt, NULL, false, rc_service_starting))
 		return (providers.list);
 

@@ -36,6 +36,7 @@ typedef enum
    have the va_list concept
    */
 const char *ecolor (einfo_color_t);
+void elog (int level, const char *fmt, ...) EINFO_PRINTF (2, 3);
 int einfon (const char *fmt, ...) EINFO_PRINTF (1, 2);
 int ewarnn (const char *fmt, ...) EINFO_PRINTF (1, 2);
 int eerrorn (const char *fmt, ...) EINFO_PRINTF (1, 2);
