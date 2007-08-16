@@ -17,26 +17,6 @@ eoutdent() {
 	return 0
 }
 
-# void esyslog(char* priority, char* tag, char* message)
-#
-#    use the system logger to log a message
-#
-esyslog() {
-	local pri= tag=
-
-	if [ -x /usr/bin/logger ] ; then
-		pri="$1"
-		tag="$2"
-
-		shift 2
-		[ -z "$*" ] && return 0
-
-		/usr/bin/logger -p "${pri}" -t "${tag}" -- "$*"
-	fi
-
-	return 0
-}
-
 # Safer way to list the contents of a directory,
 # as it do not have the "empty dir bug".
 #

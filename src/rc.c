@@ -172,11 +172,17 @@ static int do_e (int argc, char **argv)
 			char *dot = strchr (argv[0], '.');
 			if ((level = syslog_decode (dot + 1, prioritynames)) == -1)
 				eerrorx ("%s: invalid log level `%s'", applet, argv[0]);
-			argc--;
-			argv++;
+
+			if (argc < 3)
+				eerrorx ("%s: not enough arguments", applet);
+
+			unsetenv ("RC_ELOG");
+			setenv ("RC_ELOG", argv[1], 1);
+
+			argc -= 2;
+			argv += 2;
 		}
 	}
-
 
 	if (argc > 0) {
 		for (i = 0; i < argc; i++)
