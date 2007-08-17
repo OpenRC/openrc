@@ -887,7 +887,7 @@ static void svc_stop (bool deps)
 						 strcmp (softlevel, RC_LEVEL_REBOOT) == 0 ||
 						 strcmp (softlevel, RC_LEVEL_SINGLE) == 0))
 						continue;
-					rc_mark_service (svc, rc_service_failed);
+					rc_mark_service (service, rc_service_failed);
 				}
 
 				eerrorx ("ERROR:  cannot stop %s as %s is still up",
@@ -1216,7 +1216,8 @@ int runscript (int argc, char **argv)
 									   softlevel, depoptions);
 			STRLIST_FOREACH (services, svc, i)
 				printf ("%s%s", i == 1 ? "" : " ", svc);
-			printf ("\n");
+			if (services)
+				printf ("\n");
 		} else if (strcmp (optarg, "status") == 0) {
 			rc_service_state_t r = svc_status (service);
 			retval = (int) r;
