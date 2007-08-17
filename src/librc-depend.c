@@ -396,6 +396,7 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 					{
 						di = rc_get_depinfo (deptree, lp);
 						if (di && (strcmp (item, "ineed") == 0 ||
+								   strcmp (item, "needsme") == 0 ||
 								   valid_service (runlevel, di->service)))
 							visit_service (deptree, types, sorted, visited, di,
 										   runlevel, options | RC_DEP_TRACE);
@@ -404,6 +405,7 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 				}
 				else
 					if (di && (strcmp (item, "ineed") == 0 ||
+							   strcmp (item, "needsme") == 0 ||
 							   valid_service (runlevel, service)))
 						visit_service (deptree, types, sorted, visited, di,
 									   runlevel, options | RC_DEP_TRACE);
