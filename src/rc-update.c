@@ -163,7 +163,8 @@ int rc_update (int argc, char **argv)
 		if (optind < argc) {
 			if (strcmp (argv[optind], "add") == 0)
 				action = DOADD;
-			else if (strcmp (argv[optind], "delete") == 0)
+			else if (strcmp (argv[optind], "delete") == 0 ||
+					 strcmp (argv[optind], "del") == 0)
 				action = DODELETE;
 			else if (strcmp (argv[optind], "show") == 0)
 				action = DOSHOW;
