@@ -879,8 +879,17 @@ static void svc_stop (bool deps)
 			/* We used to loop 3 times here - maybe re-do this if needed */
 			rc_wait_service (svc);
 			if (! rc_service_state (svc, rc_service_stopped)) {
-				if (rc_runlevel_stopping ())
+
+				if (rc_runlevel_stopping ()) {
+					/* If shutting down, we should stop even if a dependant failed */
+					if (softlevel &&
+						(strcmp (softlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+						 strcmp (softlevel, RC_LEVEL_REBOOT) == 0 ||
+						 strcmp (softlevel, RC_LEVEL_SINGLE) == 0))
+						continue;
 					rc_mark_service (svc, rc_service_failed);
+				}
+
 				eerrorx ("ERROR:  cannot stop %s as %s is still up",
 						 applet, svc);
 			}
