@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  17 Aug 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Stop un-needed services when changing runlevels, #189050.
+
   15 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
     `config /etc/fstab' can now be used in depend() functions to show that

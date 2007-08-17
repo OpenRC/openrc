@@ -1143,7 +1143,6 @@ int main (int argc, char **argv)
 		rc_set_runlevel (newlevel);
 
 	types = rc_strlist_add (NULL, "needsme");
-	types = rc_strlist_add (types, "usesme");
 	/* Now stop the services that shouldn't be running */
 	STRLIST_FOREACH (stop_services, service, i) {
 		bool found = false;
