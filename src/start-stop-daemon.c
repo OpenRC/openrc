@@ -494,6 +494,7 @@ int start_stop_daemon (int argc, char **argv)
 		{ "stderr",       1, NULL, '2'},
 		{ NULL,           0, NULL, 0}
 	};
+
 	int opt;
 	bool start = false;
 	bool stop = false;
@@ -505,12 +506,11 @@ int start_stop_daemon (int argc, char **argv)
 	char *cmd = NULL;
 	char *pidfile = NULL;
 	int sig = SIGTERM;
-	uid_t uid = 0;
 	int nicelevel = 0;
 	bool background = false;
 	bool makepidfile = false;
-	uid_t ch_uid = 0;
-	gid_t ch_gid = 0;
+	uid_t uid = 0;
+	gid_t gid = 0;
 	char *ch_root = NULL;
 	char *ch_dir = NULL;
 	int tid = 0;
@@ -573,9 +573,9 @@ int start_stop_daemon (int argc, char **argv)
 
 					if (! pw)
 						eerrorx ("%s: user `%s' not found", progname, cu);
-					ch_uid = pw->pw_uid;
-					if (! ch_gid)
-						ch_gid = pw->pw_gid;
+					uid = pw->pw_uid;
+					if (! gid)
+						gid = pw->pw_gid;
 
 					if (p) {
 						struct group *gr = NULL;
@@ -588,7 +588,7 @@ int start_stop_daemon (int argc, char **argv)
 
 						if (! gr)
 							eerrorx ("%s: group `%s' not found", progname, cg);
-						ch_gid = gr->gr_gid;
+						gid = gr->gr_gid;
 					}
 				}
 				break;
@@ -608,7 +608,7 @@ int start_stop_daemon (int argc, char **argv)
 
 					if (! gr)
 						eerrorx ("%s: group `%s' not found", progname, optarg);
-					ch_gid = gr->gr_gid;
+					gid = gr->gr_gid;
 				}
 				break;
 
@@ -767,10 +767,10 @@ int start_stop_daemon (int argc, char **argv)
 			printf("%s ", *argv++);
 		printf ("\n");
 		eindent ();
-		if (ch_uid != 0)
-			einfo ("as user %d", ch_uid);
-		if (ch_gid != 0)
-			einfo ("as group %d", ch_gid);
+		if (uid != 0)
+			einfo ("as user id %d", uid);
+		if (gid != 0)
+			einfo ("as group id %d", gid);
 		if (ch_root)
 			einfo ("in root `%s'", ch_root);
 		if (ch_dir)
@@ -844,14 +844,14 @@ int start_stop_daemon (int argc, char **argv)
 			eerrorx ("%s: pam error: %s", progname, pam_strerror(pamh, pamr));
 #endif
 
-		if (ch_gid && setgid (ch_gid))
-			eerrorx ("%s: unable to set groupid to %d", progname, ch_gid);
-		if (changeuser && initgroups (changeuser, ch_gid))
-			eerrorx ("%s: initgroups (%s, %d)", progname, changeuser, ch_gid);
-		if (ch_uid && setuid (ch_uid))
-			eerrorx ("%s: unable to set userid to %d", progname, ch_uid);
+		if (gid && setgid (gid))
+			eerrorx ("%s: unable to set groupid to %d", progname, gid);
+		if (changeuser && initgroups (changeuser, gid))
+			eerrorx ("%s: initgroups (%s, %d)", progname, changeuser, gid);
+		if (uid && setuid (uid))
+			eerrorx ("%s: unable to set userid to %d", progname, uid);
 		else {
-			struct passwd *passwd = getpwuid (ch_uid);
+			struct passwd *passwd = getpwuid (uid);
 			if (passwd) {
 				unsetenv ("HOME");
 				if (passwd->pw_dir)
