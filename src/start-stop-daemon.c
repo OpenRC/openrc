@@ -9,6 +9,8 @@
    system so we can monitor daemons a little.
    */
 
+#define APPLET "start-stop-daemon"
+
 /* nano seconds */
 #define POLL_INTERVAL   20000000
 #define START_WAIT     100000000
@@ -63,7 +65,7 @@ typedef struct schedulelist
 } schedulelist_t;
 static schedulelist_t *schedule;
 
-static char *progname;
+static char *applet;
 static char *changeuser;
 static char **newenv;
 
@@ -133,7 +135,7 @@ static int parse_signal (const char *sig)
 	if (sscanf (sig, "%u", &i) == 1) {
 		if (i > 0 && i < sizeof (signallist) / sizeof (signallist[0]))
 			return (i);
-		eerrorx ("%s: `%s' is not a valid signal", progname, sig);
+		eerrorx ("%s: `%s' is not a valid signal", applet, sig);
 	}
 
 	if (strncmp (sig, "SIG", 3) == 0)
@@ -146,7 +148,7 @@ static int parse_signal (const char *sig)
 			(s && strcmp (s, signallist[i].name) == 0))
 			return (signallist[i].signal);
 
-	eerrorx ("%s: `%s' is not a valid signal", progname, sig);
+	eerrorx ("%s: `%s' is not a valid signal", applet, sig);
 }
 
 static void parse_schedule_item (schedulelist_t *item, const char *string)
@@ -160,7 +162,7 @@ static void parse_schedule_item (schedulelist_t *item, const char *string)
 		item->type = schedule_timeout;
 		errno = 0;
 		if (sscanf (string, "%d", &item->value) != 1)
-			eerrorx ("%s: invalid timeout value in schedule `%s'", progname,
+			eerrorx ("%s: invalid timeout value in schedule `%s'", applet,
 					 string);
 	} else if ((after_hyph = string + (string[0] == '-')) &&
 			 ((sig = parse_signal (after_hyph)) != -1))
@@ -169,7 +171,7 @@ static void parse_schedule_item (schedulelist_t *item, const char *string)
 		item->value = (int) sig;
 	}
 	else
-		eerrorx ("%s: invalid schedule item `%s'", progname, string);
+		eerrorx ("%s: invalid schedule item `%s'", applet, string);
 }
 
 static void parse_schedule (const char *string, int default_signal)
@@ -201,7 +203,7 @@ static void parse_schedule (const char *string, int default_signal)
 		next->gotolist = NULL;
 		if (string) {
 			if (sscanf (string, "%d", &next->value) != 1)
-				eerrorx ("%s: invalid timeout value in schedule", progname);
+				eerrorx ("%s: invalid timeout value in schedule", applet);
 		}
 		else
 			next->value = 5;
@@ -218,7 +220,7 @@ static void parse_schedule (const char *string, int default_signal)
 			len = strlen (string);
 
 		if (len >= (ptrdiff_t) sizeof (buffer))
-			eerrorx ("%s: invalid schedule item, far too long", progname);
+			eerrorx ("%s: invalid schedule item, far too long", applet);
 
 		memcpy (buffer, string, len);
 		buffer[len] = 0;
@@ -228,7 +230,7 @@ static void parse_schedule (const char *string, int default_signal)
 		if (next->type == schedule_forever) {
 			if (repeatat)
 				eerrorx ("%s: invalid schedule, `forever' appears more than once",
-						 progname);
+						 applet);
 
 			repeatat = next;
 			continue;
@@ -263,13 +265,13 @@ static pid_t get_pid (const char *pidfile, bool quiet)
 
 	if ((fp = fopen (pidfile, "r")) == NULL) {
 		if (! quiet)
-			eerror ("%s: fopen `%s': %s", progname, pidfile, strerror (errno));
+			eerror ("%s: fopen `%s': %s", applet, pidfile, strerror (errno));
 		return (-1);
 	}
 
 	if (fscanf (fp, "%d", &pid) != 1) {
 		if (! quiet)
-			eerror ("%s: no pid found in `%s'", progname, pidfile);
+			eerror ("%s: no pid found in `%s'", applet, pidfile);
 		fclose (fp);
 		return (-1);
 	}
@@ -311,7 +313,7 @@ static int do_stop (const char *exec, const char *cmd,
 		if (! killed) {
 			if (! quiet)
 				eerror ("%s: failed to send signal %d to PID %d: %s",
-						progname, sig, pids[i], strerror (errno));
+						applet, sig, pids[i], strerror (errno));
 			if (verbose)
 				eend (1, NULL);
 			nkilled = -1;
@@ -362,7 +364,7 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 				if (nkilled == 0) {
 					if (tkilled == 0) {
 						if (! quiet)
-							eerror ("%s: no matching processes found", progname);
+							eerror ("%s: no matching processes found", applet);
 					}
 					return (tkilled);
 				}
@@ -388,9 +390,9 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 
 					if (nanosleep (&ts, NULL) == -1) {
 						if (errno == EINTR)
-							eerror ("%s: caught an interupt", progname);
+							eerror ("%s: caught an interupt", applet);
 						else {
-							eerror ("%s: nanosleep: %s", progname, strerror (errno));
+							eerror ("%s: nanosleep: %s", applet, strerror (errno));
 							return (0);
 						}
 					}
@@ -399,7 +401,7 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 				break;
 
 			default:
-				eerror ("%s: invalid schedule item `%d'", progname, item->type);
+				eerror ("%s: invalid schedule item `%d'", applet, item->type);
 				return (0);
 		}
 
@@ -412,9 +414,9 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 
 	if (! quiet) {
 		if (nrunning == 1)
-			eerror ("%s: %d process refused to stop", progname, nrunning);
+			eerror ("%s: %d process refused to stop", applet, nrunning);
 		else
-			eerror ("%s: %d process(es) refused to stop", progname, nrunning);
+			eerror ("%s: %d process(es) refused to stop", applet, nrunning);
 	}
 
 	return (-nrunning);
@@ -437,63 +439,68 @@ static void handle_signal (int sig)
 		case SIGQUIT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGQUIT");
-			eerrorx ("%s: caught %s, aborting", progname, signame);
+			eerrorx ("%s: caught %s, aborting", applet, signame);
 
 		case SIGCHLD:
 			while (1) {
 				if ((pid = waitpid (-1, &status, WNOHANG)) < 0) {
 					if (errno != ECHILD)
-						eerror ("%s: waitpid: %s", progname, strerror (errno));
+						eerror ("%s: waitpid: %s", applet, strerror (errno));
 					break;
 				}
 			}
 			break;
 
 		default:
-			eerror ("%s: caught unknown signal %d", progname, sig);
+			eerror ("%s: caught unknown signal %d", applet, sig);
 	}
 
 	/* Restore errno */
 	errno = serrno;
 }
 
+
+#include "_usage.h"
+#define getoptstring "KN:R:Sbc:d:g:mn:op:qs:tu:r:vx:1:2:" getoptstring_COMMON
+static struct option longopts[] = {
+	{ "stop",         0, NULL, 'K'},
+	{ "nicelevel",    1, NULL, 'N'},
+	{ "retry",        1, NULL, 'R'},
+	{ "start",        0, NULL, 'S'},
+	{ "startas",      1, NULL, 'a'},
+	{ "background",   0, NULL, 'b'},
+	{ "chuid",        1, NULL, 'c'},
+	{ "chdir",        1, NULL, 'd'},
+	{ "group",        1, NULL, 'g'},
+	{ "make-pidfile", 0, NULL, 'm'},
+	{ "name",         1, NULL, 'n'},
+	{ "oknodo",       0, NULL, 'o'},
+	{ "pidfile",      1, NULL, 'p'},
+	{ "quiet",        0, NULL, 'q'},
+	{ "signal",       1, NULL, 's'},
+	{ "test",         0, NULL, 't'},
+	{ "user",         1, NULL, 'u'},
+	{ "chroot",       1, NULL, 'r'},
+	{ "verbose",      0, NULL, 'v'},
+	{ "exec",         1, NULL, 'x'},
+	{ "stdout",       1, NULL, '1'},
+	{ "stderr",       1, NULL, '2'},
+	longopts_COMMON
+	{ NULL,           0, NULL, 0}
+};
+#include "_usage.c"
+
 int start_stop_daemon (int argc, char **argv)
 {
 	int devnull_fd = -1;
-
 #ifdef TIOCNOTTY
 	int tty_fd = -1;
 #endif
+
 #ifdef HAVE_PAM
 	pam_handle_t *pamh = NULL;
 	int pamr;
 #endif
-
-	static struct option longopts[] = {
-		{ "stop",         0, NULL, 'K'},
-		{ "nicelevel",    1, NULL, 'N'},
-		{ "retry",        1, NULL, 'R'},
-		{ "start",        0, NULL, 'S'},
-		{ "startas",      1, NULL, 'a'},
-		{ "background",   0, NULL, 'b'},
-		{ "chuid",        1, NULL, 'c'},
-		{ "chdir",        1, NULL, 'd'},
-		{ "group",        1, NULL, 'g'},
-		{ "make-pidfile", 0, NULL, 'm'},
-		{ "name",         1, NULL, 'n'},
-		{ "oknodo",       0, NULL, 'o'},
-		{ "pidfile",      1, NULL, 'p'},
-		{ "quiet",        0, NULL, 'q'},
-		{ "signal",       1, NULL, 's'},
-		{ "test",         0, NULL, 't'},
-		{ "user",         1, NULL, 'u'},
-		{ "chroot",       1, NULL, 'r'},
-		{ "verbose",      0, NULL, 'v'},
-		{ "exec",         1, NULL, 'x'},
-		{ "stdout",       1, NULL, '1'},
-		{ "stderr",       1, NULL, '2'},
-		{ NULL,           0, NULL, 0}
-	};
 
 	int opt;
 	bool start = false;
@@ -523,7 +530,7 @@ int start_stop_daemon (int argc, char **argv)
 	char *svcname = getenv ("SVCNAME");
 	char *env;
 
-	progname = argv[0];
+	applet = argv[0];
 	atexit (cleanup);
 
 	signal (SIGINT, handle_signal);
@@ -532,11 +539,10 @@ int start_stop_daemon (int argc, char **argv)
 
 	if ((env = getenv ("SSD_NICELEVEL")))
 		if (sscanf (env, "%d", &nicelevel) != 1)
-			eerror ("%s: invalid nice level `%s' (SSD_NICELEVEL)", progname, env);
+			eerror ("%s: invalid nice level `%s' (SSD_NICELEVEL)", applet, env);
 
-	while ((opt = getopt_long (argc, argv,
-							   "KN:R:Sbc:d:g:mn:op:qs:tu:r:vx:1:2:",
-							   longopts, (int *) 0)) != -1)
+	while ((opt = getopt_long (argc, argv, getoptstring, longopts,
+							   (int *) 0)) != -1)
 		switch (opt) {
 			case 'K':  /* --stop */
 				stop = true;
@@ -544,7 +550,7 @@ int start_stop_daemon (int argc, char **argv)
 
 			case 'N':  /* --nice */
 				if (sscanf (optarg, "%d", &nicelevel) != 1)
-					eerrorx ("%s: invalid nice level `%s'", progname, optarg);
+					eerrorx ("%s: invalid nice level `%s'", applet, optarg);
 				break;
 
 			case 'R':  /* --retry <schedule>|<timeout> */
@@ -572,7 +578,7 @@ int start_stop_daemon (int argc, char **argv)
 						pw = getpwuid (tid);
 
 					if (! pw)
-						eerrorx ("%s: user `%s' not found", progname, cu);
+						eerrorx ("%s: user `%s' not found", applet, cu);
 					uid = pw->pw_uid;
 					if (! gid)
 						gid = pw->pw_gid;
@@ -587,7 +593,7 @@ int start_stop_daemon (int argc, char **argv)
 							gr = getgrgid (tid);
 
 						if (! gr)
-							eerrorx ("%s: group `%s' not found", progname, cg);
+							eerrorx ("%s: group `%s' not found", applet, cg);
 						gid = gr->gr_gid;
 					}
 				}
@@ -607,7 +613,7 @@ int start_stop_daemon (int argc, char **argv)
 						gr = getgrgid (tid);
 
 					if (! gr)
-						eerrorx ("%s: group `%s' not found", progname, optarg);
+						eerrorx ("%s: group `%s' not found", applet, optarg);
 					gid = gr->gr_gid;
 				}
 				break;
@@ -644,7 +650,7 @@ int start_stop_daemon (int argc, char **argv)
 				if (sscanf (optarg, "%d", &tid) != 1) {
 					struct passwd *pw = getpwnam (optarg);
 					if (! pw)
-						eerrorx ("%s: user `%s' not found", progname, optarg);
+						eerrorx ("%s: user `%s' not found", applet, optarg);
 					uid = pw->pw_uid;
 				} else
 					uid = tid;
@@ -671,8 +677,7 @@ int start_stop_daemon (int argc, char **argv)
 				redirect_stderr = optarg;
 				break;
 
-			default:
-				exit (EXIT_FAILURE);
+				case_RC_COMMON_GETOPT
 		}
 
 	/* Respect RC as well as how we are called */
@@ -692,23 +697,23 @@ int start_stop_daemon (int argc, char **argv)
 		}
 
 	if (start == stop)
-		eerrorx ("%s: need one of --start or --stop", progname);
+		eerrorx ("%s: need one of --start or --stop", applet);
 
 	if (start && ! exec)
-		eerrorx ("%s: --start needs --exec", progname);
+		eerrorx ("%s: --start needs --exec", applet);
 
 	if (stop && ! exec && ! pidfile && ! cmd && ! uid)
-		eerrorx ("%s: --stop needs --exec, --pidfile, --name or --user", progname);
+		eerrorx ("%s: --stop needs --exec, --pidfile, --name or --user", applet);
 
 	if (makepidfile && ! pidfile)
-		eerrorx ("%s: --make-pidfile is only relevant with --pidfile", progname);
+		eerrorx ("%s: --make-pidfile is only relevant with --pidfile", applet);
 
 	if (background && ! start)
-		eerrorx ("%s: --background is only relevant with --start", progname);
+		eerrorx ("%s: --background is only relevant with --start", applet);
 
 	if ((redirect_stdout || redirect_stderr) && ! background)
 		eerrorx ("%s: --stdout and --stderr are only relevant with --background",
-				 progname);
+				 applet);
 
 	argc -= optind;
 	argv += optind;
@@ -721,7 +726,7 @@ int start_stop_daemon (int argc, char **argv)
 		else
 			tmp = exec;
 		if (! rc_is_file (tmp)) {
-			eerror ("%s: %s does not exist", progname, tmp);
+			eerror ("%s: %s does not exist", applet, tmp);
 			if (ch_root)
 				free (tmp);
 			exit (EXIT_FAILURE);
@@ -756,7 +761,7 @@ int start_stop_daemon (int argc, char **argv)
 	}
 
 	if (do_stop (exec, cmd, pidfile, uid, 0, true, false, true) > 0)
-		eerrorx ("%s: %s is already running", progname, exec);
+		eerrorx ("%s: %s is already running", applet, exec);
 
 	if (test) {
 		if (quiet)
@@ -795,7 +800,7 @@ int start_stop_daemon (int argc, char **argv)
 
 	*--argv = exec;
 	if ((pid = fork ()) == -1)
-		eerrorx ("%s: fork: %s", progname, strerror (errno));
+		eerrorx ("%s: fork: %s", applet, strerror (errno));
 
 	/* Child process - lets go! */
 	if (pid == 0) {
@@ -809,20 +814,20 @@ int start_stop_daemon (int argc, char **argv)
 
 		if (nicelevel) {
 			if (setpriority (PRIO_PROCESS, mypid, nicelevel) == -1)
-				eerrorx ("%s: setpritory %d: %s", progname, nicelevel,
+				eerrorx ("%s: setpritory %d: %s", applet, nicelevel,
 						 strerror(errno));
 		}
 
 		if (ch_root && chroot (ch_root) < 0)
-			eerrorx ("%s: chroot `%s': %s", progname, ch_root, strerror (errno));
+			eerrorx ("%s: chroot `%s': %s", applet, ch_root, strerror (errno));
 
 		if (ch_dir && chdir (ch_dir) < 0)
-			eerrorx ("%s: chdir `%s': %s", progname, ch_dir, strerror (errno));
+			eerrorx ("%s: chdir `%s': %s", applet, ch_dir, strerror (errno));
 
 		if (makepidfile && pidfile) {
 			FILE *fp = fopen (pidfile, "w");
 			if (! fp)
-				eerrorx ("%s: fopen `%s': %s", progname, pidfile, strerror
+				eerrorx ("%s: fopen `%s': %s", applet, pidfile, strerror
 						 (errno));
 			fprintf (fp, "%d\n", mypid);
 			fclose (fp);
@@ -841,15 +846,15 @@ int start_stop_daemon (int argc, char **argv)
 		if (pamr == PAM_SUCCESS)
 			pamr = pam_open_session (pamh, PAM_SILENT);
 		if (pamr != PAM_SUCCESS)
-			eerrorx ("%s: pam error: %s", progname, pam_strerror(pamh, pamr));
+			eerrorx ("%s: pam error: %s", applet, pam_strerror(pamh, pamr));
 #endif
 
 		if (gid && setgid (gid))
-			eerrorx ("%s: unable to set groupid to %d", progname, gid);
+			eerrorx ("%s: unable to set groupid to %d", applet, gid);
 		if (changeuser && initgroups (changeuser, gid))
-			eerrorx ("%s: initgroups (%s, %d)", progname, changeuser, gid);
+			eerrorx ("%s: initgroups (%s, %d)", applet, changeuser, gid);
 		if (uid && setuid (uid))
-			eerrorx ("%s: unable to set userid to %d", progname, uid);
+			eerrorx ("%s: unable to set userid to %d", applet, uid);
 		else {
 			struct passwd *passwd = getpwuid (uid);
 			if (passwd) {
@@ -898,13 +903,13 @@ int start_stop_daemon (int argc, char **argv)
 			if ((stdout_fd = open (redirect_stdout, O_WRONLY | O_CREAT | O_APPEND,
 								   S_IRUSR | S_IWUSR)) == -1)
 				eerrorx ("%s: unable to open the logfile for stdout `%s': %s",
-						 progname, redirect_stdout, strerror (errno));
+						 applet, redirect_stdout, strerror (errno));
 		}
 		if (redirect_stderr) {
 			if ((stderr_fd = open (redirect_stderr, O_WRONLY | O_CREAT | O_APPEND,
 								   S_IRUSR | S_IWUSR)) == -1)
 				eerrorx ("%s: unable to open the logfile for stderr `%s': %s",
-						 progname, redirect_stderr, strerror (errno));
+						 applet, redirect_stderr, strerror (errno));
 		}
 
 		if (background) {
@@ -924,7 +929,7 @@ int start_stop_daemon (int argc, char **argv)
 		if (pamr == PAM_SUCCESS)
 			pam_close_session (pamh, PAM_SILENT);
 #endif
-		eerrorx ("%s: failed to exec `%s': %s", progname, exec, strerror (errno));
+		eerrorx ("%s: failed to exec `%s': %s", applet, exec, strerror (errno));
 	}
 
 	/* Parent process */
@@ -944,7 +949,7 @@ int start_stop_daemon (int argc, char **argv)
 
 		if (! WIFEXITED (status) || WEXITSTATUS (status) != 0) {
 			if (! quiet)
-				eerrorx ("%s: failed to start `%s'", progname, exec);
+				eerrorx ("%s: failed to start `%s'", applet, exec);
 			exit (EXIT_FAILURE);
 		}
 
@@ -965,9 +970,9 @@ int start_stop_daemon (int argc, char **argv)
 		while (nloops) {
 			if (nanosleep (&ts, NULL) == -1) {
 				if (errno == EINTR)
-					eerror ("%s: caught an interupt", progname);
+					eerror ("%s: caught an interupt", applet);
 				else {
-					eerror ("%s: nanosleep: %s", progname, strerror (errno));
+					eerror ("%s: nanosleep: %s", applet, strerror (errno));
 					return (0);
 				}
 			}
@@ -1002,13 +1007,13 @@ int start_stop_daemon (int argc, char **argv)
 			}
 
 			if (! alive)
-				eerrorx ("%s: %s died", progname, exec);
+				eerrorx ("%s: %s died", applet, exec);
 		}
 
 		if (retestpid) {
 			if (do_stop (NULL, NULL, pidfile, uid, 0, true,
 						 false, true) < 1)
-				eerrorx ("%s: %s died", progname, exec);
+				eerrorx ("%s: %s died", applet, exec);
 		}
 	}
 
