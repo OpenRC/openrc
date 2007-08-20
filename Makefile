@@ -10,11 +10,10 @@
 SUBDIRS = conf.d etc init.d man net sh share src
 
 NAME = baselayout
-VERSION = 2.0.0_rc2
+VERSION = 2.0.0_rc3
 
 PKG = $(NAME)-$(VERSION)
 
-ARCH = x86
 ifeq ($(OS),)
 OS=$(shell uname -s)
 ifneq ($(OS),Linux)
