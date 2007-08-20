@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  20 Aug 2007; Roy Marples <uberlord@gentoo.org>:
+
+    As discussed on the -dev ml, RC_DEPEND_STRICT now defaults to yes.
+
   17 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
     Stop un-needed services when changing runlevels, #189050.

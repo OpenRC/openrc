@@ -26,7 +26,7 @@ RC_QUIET="no"
 # both will be started, but services that depend on 'net' will work if either
 # one comes up. With RC_DEPEND_STRICT="yes" we would require them both to
 # come up.
-RC_DEPEND_STRICT="no"
+RC_DEPEND_STRICT="yes"
 
 # Do we allow services to be hotplugged? If not, set to RC_HOTPLUG="no"
 # NOTE: This does not affect anything hotplug/udev/devd related, just the
