@@ -565,6 +565,7 @@ int start_stop_daemon (int argc, char **argv)
 				background = true;
 				break;
 
+			case 'u':  /* --user <username>|<uid> */
 			case 'c':  /* --chuid <username>|<uid> */
 				{
 					char *p = optarg;
@@ -644,16 +645,6 @@ int start_stop_daemon (int argc, char **argv)
 
 			case 't':  /* --test */
 				test = true;
-				break;
-
-			case 'u':  /* --user <username>|<uid> */
-				if (sscanf (optarg, "%d", &tid) != 1) {
-					struct passwd *pw = getpwnam (optarg);
-					if (! pw)
-						eerrorx ("%s: user `%s' not found", applet, optarg);
-					uid = pw->pw_uid;
-				} else
-					uid = tid;
 				break;
 
 			case 'r':  /* --chroot /new/root */
