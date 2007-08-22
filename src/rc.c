@@ -378,7 +378,10 @@ static char *proc_getent (const char *ent)
 	char *p;
 	char *value = NULL;
 	int i;
-			
+
+	if (! rc_exists ("/proc/cmdline"))
+		return (NULL);
+
 	if (! (fp = fopen ("/proc/cmdline", "r"))) {
 		eerror ("failed to open `/proc/cmdline': %s", strerror (errno));
 		return (NULL);

@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  22 Aug 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Only open /proc/cmdline if it exists, #189686 thanks to Christian Affolter
+
   21 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
     Fix pppd getting the interface metric.
