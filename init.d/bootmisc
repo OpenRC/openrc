@@ -42,13 +42,11 @@ start() {
 		fi 
 	done
 
-	if [ "${RC_UNAME}" = "Linux" ] ; then
-		# Setup login records
-		printf "" >/var/run/utmp
-		[ -e /var/log/wtmp ] || printf "" >/var/log/wtmp
-		chgrp utmp /var/run/utmp /var/log/wtmp
-		chmod 0664 /var/run/utmp /var/log/wtmp
-	fi
+	# Setup login records
+	printf "" >/var/run/utmp
+	[ -e /var/log/wtmp ] || printf "" >/var/log/wtmp
+	chgrp utmp /var/run/utmp /var/log/wtmp
+	chmod 0664 /var/run/utmp /var/log/wtmp
 
 	ebegin "Updating environment"
 	# Use our version, not portage version.
