@@ -5,6 +5,8 @@
 
     Make sure we list all config files in rc help output.
 
+    Punt PAGER and EDITOR.  People need to set this themselves now.
+
   22 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
     Only open /proc/cmdline if it exists, #189686 thanks to Christian Affolter.

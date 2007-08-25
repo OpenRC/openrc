@@ -1,4 +1,4 @@
-SUBDIRS = env.d
+SUBDIRS = env.d profile.d
 
 DIR   = /etc
 FILES = hosts networks profile protocols rc.conf services shells

@@ -29,11 +29,6 @@ fi
 export PATH
 unset ROOTPATH
 
-# Extract the value of EDITOR
-[ -z "$EDITOR" ] && EDITOR="`. /etc/rc.conf 2>/dev/null; echo $EDITOR`"
-[ -z "$EDITOR" ] && EDITOR="/bin/nano"
-export EDITOR
-
 if [ -n "${BASH_VERSION}" ] ; then
 	# Newer bash ebuilds include /etc/bash/bashrc which will setup PS1
 	# including color.  We leave out color here because not all
