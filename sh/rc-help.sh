@@ -230,11 +230,13 @@ ${CYAN}Configuration files:${OFF}
 if [ "${BE_VERBOSE}" = "yes" ] ; then
 printf "
     There are two files which will be sourced for possible configuration by
-    the rc-scripts.  They are (sourced from top to bottom):
+    the rc-scripts.  They are (sourced from left to right, top to bottom):
 "
 fi
 
-printf "    /etc/conf.d/${SERVICE}${NL}    /etc/rc.conf"
+printf "    /etc/conf.d/rc${NL:-      }    /etc/conf.d/rc.${SOFTLEVEL}"
+printf "    /etc/conf.d/${SERVICE}${NL}    /etc/conf.d/${SERVICE}.${SOFTLEVEL}"
+printf "    /etc/rc.conf"
 
 if [ "${BE_VERBOSE}" = "yes" ] ; then
 printf "
