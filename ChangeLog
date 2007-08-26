@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  26 Aug 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Add /etc/gentoo-release to CONFIG_PROTECT_MASK.
+
   25 Aug 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Make sure we list all config files in rc help output.
