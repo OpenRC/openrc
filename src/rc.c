@@ -512,7 +512,7 @@ static void sulogin (bool cont)
 		}
 		waitpid (pid, &status, 0);
 	} else {
-#ifdef __linux
+#ifdef __linux__
 		execle ("/sbin/sulogin", "/sbin/sulogin", (char *) NULL, newenv);
 		eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
 #else
@@ -955,7 +955,7 @@ int main (int argc, char **argv)
 				strcmp (RUNLEVEL, "0") != 0)
 			{
 				execl (SHUTDOWN, SHUTDOWN,
-#ifdef __linux
+#ifdef __linux__
 					   "-h",
 #else
 					   "-p",
