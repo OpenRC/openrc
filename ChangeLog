@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  28 Aug 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Fix ksoftlevel handling, #190420.
+
   26 Aug 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Add /etc/gentoo-release to CONFIG_PROTECT_MASK.

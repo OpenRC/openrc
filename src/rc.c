@@ -45,6 +45,7 @@
 #define HALTSH                  RC_INITDIR "/halt.sh"
 #define SULOGIN                 "/sbin/sulogin"
 
+#define KSOFTLEVEL				RC_SVCDIR "/ksoftlevel"
 #define INTERACTIVE             RC_SVCDIR "/interactive"
 
 #define DEVBOOT					"/dev/.rcboot"
@@ -542,14 +543,14 @@ static void set_ksoftlevel (const char *runlevel)
 		strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
 		strcmp (runlevel, RC_LEVEL_SYSINIT) == 0)
 	{
-		if (rc_exists (RC_SVCDIR "ksoftlevel") &&
-			unlink (RC_SVCDIR "ksoftlevel") != 0)
-			eerror ("unlink `%s': %s", RC_SVCDIR "ksoftlevel", strerror (errno));
+		if (rc_exists (KSOFTLEVEL) &&
+			unlink (KSOFTLEVEL) != 0)
+			eerror ("unlink `%s': %s", KSOFTLEVEL, strerror (errno));
 		return;
 	}
 
-	if (! (fp = fopen (RC_SVCDIR "ksoftlevel", "w"))) {
-		eerror ("fopen `%s': %s", RC_SVCDIR "ksoftlevel", strerror (errno));
+	if (! (fp = fopen (KSOFTLEVEL, "w"))) {
+		eerror ("fopen `%s': %s", KSOFTLEVEL, strerror (errno));
 		return;
 	}
 
@@ -562,13 +563,12 @@ static int get_ksoftlevel (char *buffer, int buffer_len)
 	FILE *fp;
 	int i = 0;
 
-	if (! rc_exists (RC_SVCDIR "ksoftlevel"))
-		return 0;
+	if (! rc_exists (KSOFTLEVEL))
+		return (0);
 
-	if (! (fp = fopen (RC_SVCDIR "ksoftlevel", "r"))) {
-		eerror ("fopen `%s': %s", RC_SVCDIR "ksoftlevel",
-				strerror (errno));
-		return -1;
+	if (! (fp = fopen (KSOFTLEVEL, "r"))) {
+		eerror ("fopen `%s': %s", KSOFTLEVEL, strerror (errno));
+		return (-1);
 	}
 
 	if (fgets (buffer, buffer_len, fp)) {
@@ -578,7 +578,7 @@ static int get_ksoftlevel (char *buffer, int buffer_len)
 	}
 
 	fclose (fp);
-	return i;
+	return (i);
 }
 
 static void wait_for_services ()
