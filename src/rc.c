@@ -1016,8 +1016,8 @@ int main (int argc, char **argv)
 		eerrorx ("failed to load deptree");
 
 	/* Clean the failed services state dir now */
-	if (rc_is_dir (RC_SVCDIR "failed"))
-		rc_rm_dir (RC_SVCDIR "failed", false);
+	if (rc_is_dir (RC_SVCDIR "/failed"))
+		rc_rm_dir (RC_SVCDIR "/failed", false);
 
 	mkdir (RC_STOPPING, 0755);
 

@@ -640,10 +640,9 @@ char **rc_config_env (char **env)
 	env = rc_strlist_add (env, line);
 	free (line);
 
-	if (rc_exists (RC_SVCDIR "ksoftlevel")) {
-		if (! (fp = fopen (RC_SVCDIR "ksoftlevel", "r")))
-			eerror ("fopen `%s': %s", RC_SVCDIR "ksoftlevel",
-					strerror (errno));
+	if (rc_exists (RC_KSOFTLEVEL)) {
+		if (! (fp = fopen (RC_KSOFTLEVEL, "r")))
+			eerror ("fopen `%s': %s", RC_KSOFTLEVEL, strerror (errno));
 		else {
 			memset (buffer, 0, sizeof (buffer));
 			if (fgets (buffer, sizeof (buffer), fp)) {
