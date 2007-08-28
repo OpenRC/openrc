@@ -45,7 +45,6 @@
 #define HALTSH                  RC_INITDIR "/halt.sh"
 #define SULOGIN                 "/sbin/sulogin"
 
-#define KSOFTLEVEL				RC_SVCDIR "/ksoftlevel"
 #define INTERACTIVE             RC_SVCDIR "/interactive"
 
 #define DEVBOOT					"/dev/.rcboot"
@@ -108,10 +107,10 @@ static void cleanup (void)
 
 		/* Clean runlevel start, stop markers */
 		if (! rc_in_plugin) {
-			if (rc_is_dir (RC_SVCDIR "softscripts.new"))
-				rc_rm_dir (RC_SVCDIR "softscripts.new", true);
-			if (rc_is_dir (RC_SVCDIR "softscripts.old"))
-				rc_rm_dir (RC_SVCDIR "softscripts.old", true);
+			if (rc_is_dir (RC_STARTING))
+				rc_rm_dir (RC_STARTING, true);
+			if (rc_is_dir (RC_STOPPING))
+				rc_rm_dir (RC_STOPPING, true);
 		}
 	}
 
@@ -543,14 +542,14 @@ static void set_ksoftlevel (const char *runlevel)
 		strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
 		strcmp (runlevel, RC_LEVEL_SYSINIT) == 0)
 	{
-		if (rc_exists (KSOFTLEVEL) &&
-			unlink (KSOFTLEVEL) != 0)
-			eerror ("unlink `%s': %s", KSOFTLEVEL, strerror (errno));
+		if (rc_exists (RC_KSOFTLEVEL) &&
+			unlink (RC_KSOFTLEVEL) != 0)
+			eerror ("unlink `%s': %s", RC_KSOFTLEVEL, strerror (errno));
 		return;
 	}
 
-	if (! (fp = fopen (KSOFTLEVEL, "w"))) {
-		eerror ("fopen `%s': %s", KSOFTLEVEL, strerror (errno));
+	if (! (fp = fopen (RC_KSOFTLEVEL, "w"))) {
+		eerror ("fopen `%s': %s", RC_KSOFTLEVEL, strerror (errno));
 		return;
 	}
 
@@ -563,11 +562,11 @@ static int get_ksoftlevel (char *buffer, int buffer_len)
 	FILE *fp;
 	int i = 0;
 
-	if (! rc_exists (KSOFTLEVEL))
+	if (! rc_exists (RC_KSOFTLEVEL))
 		return (0);
 
-	if (! (fp = fopen (KSOFTLEVEL, "r"))) {
-		eerror ("fopen `%s': %s", KSOFTLEVEL, strerror (errno));
+	if (! (fp = fopen (RC_KSOFTLEVEL, "r"))) {
+		eerror ("fopen `%s': %s", RC_KSOFTLEVEL, strerror (errno));
 		return (-1);
 	}
 
@@ -1015,7 +1014,7 @@ int main (int argc, char **argv)
 	if (rc_is_dir (RC_SVCDIR "failed"))
 		rc_rm_dir (RC_SVCDIR "failed", false);
 
-	mkdir (RC_SVCDIR "/softscripts.new", 0755);
+	mkdir (RC_STOPPING, 0755);
 
 #ifdef __linux__
 	/* udev likes to start services before we're ready when it does
@@ -1239,7 +1238,7 @@ int main (int argc, char **argv)
 	/* Notify the plugins we have finished */
 	rc_plugin_run (rc_hook_runlevel_stop_out, runlevel);
 
-	rmdir (RC_SVCDIR "/softscripts.new");
+	rmdir (RC_STOPPING);
 
 	/* Store the new runlevel */
 	if (newlevel) {
@@ -1264,7 +1263,7 @@ int main (int argc, char **argv)
 		sulogin (false);
 	}
 
-	mkdir (RC_SVCDIR "softscripts.old", 0755);
+	mkdir (RC_STARTING, 0755);
 	rc_plugin_run (rc_hook_runlevel_start_in, runlevel);
 
 	/* Re-add our coldplugged services if they stopped */

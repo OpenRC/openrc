@@ -21,6 +21,10 @@
 #define RC_INITDIR	"/etc/init.d"
 #define RC_CONFDIR	"/etc/conf.d"
 
+#define RC_KSOFTLEVEL           RC_SVCDIR "/ksoftlevel"
+#define RC_STARTING             RC_SVCDIR "/softscripts.new"
+#define RC_STOPPING             RC_SVCDIR "/softscripts.old"
+
 #define RC_SVCDIR_STARTING	RC_SVCDIR "/starting"
 #define RC_SVCDIR_INACTIVE	RC_SVCDIR "/inactive"
 #define RC_SVCDIR_STARTED	RC_SVCDIR "/started"

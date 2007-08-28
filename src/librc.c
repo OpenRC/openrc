@@ -33,13 +33,13 @@ static const char *rc_service_state_names[] = {
 
 bool rc_runlevel_starting (void)
 {
-	return (rc_is_dir (RC_SVCDIR "/softscripts.old"));
+	return (rc_is_dir (RC_STARTING));
 }
 librc_hidden_def(rc_runlevel_starting)
 
 bool rc_runlevel_stopping (void)
 {
-	return (rc_is_dir (RC_SVCDIR "/softscripts.new"));
+	return (rc_is_dir (RC_STOPPING));
 }
 librc_hidden_def(rc_runlevel_stopping)
 
