@@ -32,7 +32,7 @@ else
 	NL=
 fi
 
-default_opts="describe start stop restart pause zap"
+default_opts="describe start stop restart zap"
 extra_opts="$(. "${myscript}" 2>/dev/null ; echo "${opts}")"
 
 if [ "${BE_VERBOSE}" = "yes" ] ; then

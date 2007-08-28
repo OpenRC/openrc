@@ -830,7 +830,7 @@ static void svc_stop (bool deps)
 		rc_service_in_runlevel (service, RC_LEVEL_BOOT))
 		ewarn ("WARNING: you are stopping a boot service");
 
-	if (deps || ! rc_service_state (service, rc_service_wasinactive)) {
+	if (deps && ! rc_service_state (service, rc_service_wasinactive)) {
 		int depoptions = RC_DEP_TRACE;
 		char *svc;
 		int i;
@@ -977,18 +977,18 @@ static void svc_restart (bool deps)
 	restart_services = NULL;
 }
 
-#define getoptstring "dCDNqvh"
+#include "_usage.h"
+#define getoptstring "dDqsv" getoptstring_COMMON 
 static struct option longopts[] = {
 	{ "debug",      0, NULL, 'd'},
-	{ "nocolor",    0, NULL, 'C'},
-	{ "nocolour",   0, NULL, 'C'},
+	{ "ifstarted",  0, NULL, 's'},
 	{ "nodeps",     0, NULL, 'D'},
 	{ "quiet",      0, NULL, 'q'},
 	{ "verbose",    0, NULL, 'v'},
-	{ "help",       0, NULL, 'h'},
+	longopts_COMMON
 	{ NULL,         0, NULL, 0}
 };
-// #include "_usage.c"
+#include "_usage.c"
 
 int runscript (int argc, char **argv)
 {
@@ -1124,6 +1124,10 @@ int runscript (int argc, char **argv)
 				execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
 				eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 						 applet, strerror (errno));
+			case 's':
+				if (! rc_service_state (service, rc_service_started))
+					exit (EXIT_FAILURE);
+				break;
 			case 'C':
 				setenv ("RC_NOCOLOR", "yes", 1);
 				break;
@@ -1137,7 +1141,7 @@ int runscript (int argc, char **argv)
 				setenv ("RC_VERBOSE", "yes", 1);
 				break;
 			default:
-				exit (EXIT_FAILURE);
+				usage (EXIT_FAILURE);
 		}
 
 	/* Save the IN_BACKGROUND env flag so it's ONLY passed to the service
@@ -1240,23 +1244,25 @@ int runscript (int argc, char **argv)
 			} else if (strcmp (optarg, "start") == 0) {
 				svc_start (deps);
 			} else if (strcmp (optarg, "stop") == 0) {
-				if (in_background)
+				if (deps && in_background)
 					get_started_services ();
 
 				svc_stop (deps);
 
-				if (! in_background &&
-					! rc_runlevel_stopping () &&
-					rc_service_state (service, rc_service_stopped))
-					uncoldplug ();
+				if (deps) {
+					if (! in_background &&
+						! rc_runlevel_stopping () &&
+						rc_service_state (service, rc_service_stopped))
+						uncoldplug ();
 
-				if (in_background &&
-					rc_service_state (service, rc_service_inactive))
-				{
-					int j;
-					STRLIST_FOREACH (restart_services, svc, j)
-						if (rc_service_state (svc, rc_service_stopped))
-							rc_schedule_start_service (service, svc);
+					if (in_background &&
+						rc_service_state (service, rc_service_inactive))
+					{
+						int j;
+						STRLIST_FOREACH (restart_services, svc, j)
+							if (rc_service_state (svc, rc_service_stopped))
+								rc_schedule_start_service (service, svc);
+					}
 				}
 			} else if (strcmp (optarg, "zap") == 0) {
 				einfo ("Manually resetting %s to stopped state", applet);

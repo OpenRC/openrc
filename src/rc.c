@@ -977,8 +977,11 @@ int main (int argc, char **argv)
 		 strcmp (PREVLEVEL, "S") == 0 ||
 		 strcmp (PREVLEVEL, "N") == 0))
 	{
-		if (get_ksoftlevel (ksoftbuffer, sizeof (ksoftbuffer)))
-			newlevel = ksoftbuffer;
+		/* Try not to join boot and ksoftlevels together */
+		if (! newlevel ||
+			strcmp (newlevel, getenv ("RC_BOOTLEVEL")) != 0)
+			if (get_ksoftlevel (ksoftbuffer, sizeof (ksoftbuffer)))
+				newlevel = ksoftbuffer;
 	} else if (! RUNLEVEL ||
 			   (strcmp (RUNLEVEL, "1") != 0 &&
 				strcmp (RUNLEVEL, "S") != 0 &&

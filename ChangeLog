@@ -3,6 +3,7 @@
 
   28 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
+	Undocument pause action, fix --nodeps and --ifstarted, #190045.
     Fix ksoftlevel handling, #190420.
 
   26 Aug 2007; Mike Frysinger <vapier@gentoo.org>:

@@ -75,7 +75,8 @@ RC_FORCE_AUTO="no"
 #RC_ULIMIT="-u 30"
 
 # It's possible to define extra dependencies for services like so
+#RC_CONFIG="/etc/foo"
 #RC_NEED="openvpn"
 #RC_USE="net.eth0"
-
-
+#RC_AFTER="clock"
+#RC_BEFORE="local"
