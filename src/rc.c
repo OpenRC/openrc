@@ -43,6 +43,8 @@
 #define INITSH                  RC_LIBDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBDIR "/sh/init-early.sh"
 #define HALTSH                  RC_INITDIR "/halt.sh"
+
+#define SHUTDOWN                "/sbin/shutdown"
 #define SULOGIN                 "/sbin/sulogin"
 
 #define INTERACTIVE             RC_SVCDIR "/interactive"
@@ -944,22 +946,22 @@ int main (int argc, char **argv)
 			if (! RUNLEVEL ||
 				strcmp (RUNLEVEL, "6") != 0)
 			{
-				execl ("/sbin/shutdown", "/sbin/shutdown", "-r", "now", (char *) NULL);
-				eerrorx ("%s: unable to exec `/sbin/shutdown': %s",
+				execl (SHUTDOWN, SHUTDOWN, "-r", "now", (char *) NULL);
+				eerrorx ("%s: unable to exec `" SHUTDOWN "': %s",
 						 applet, strerror (errno));
 			}
 		} else if (strcmp (newlevel, RC_LEVEL_SHUTDOWN) == 0) {
 			if (! RUNLEVEL ||
 				strcmp (RUNLEVEL, "0") != 0)
 			{
-				execl ("/sbin/shutdown", "/sbin/shutdown",
+				execl (SHUTDOWN, SHUTDOWN,
 #ifdef __linux
 					   "-h",
 #else
 					   "-p",
 #endif
 					   "now", (char *) NULL);
-				eerrorx ("%s: unable to exec `/sbin/shutdown': %s",
+				eerrorx ("%s: unable to exec `" SHUTDOWN "': %s",
 						 applet, strerror (errno));
 			}
 		}
