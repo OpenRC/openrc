@@ -30,9 +30,12 @@ depend() {
 cd /etc/init.d
 for SVCNAME in * ; do
 	[ -x "${SVCNAME}" ] || continue
-	case "${SVCNAME}" in
-		*.sh) continue ;;
-	esac
+
+	# Only generate dependencies for Gentoo runscripts
+	local one= two=
+	read one two < "${SVCNAME}"
+	[ "${one}" = "#!/sbin/runscript" ] || continue
+	unset one two
 
 	SVCNAME=${SVCNAME##*/}
 	(

@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  31 Aug 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Only generate dependencies for Gentoo scripts, #190547.
+
   28 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
 	Undocument pause action, fix --nodeps and --ifstarted, #190045.
