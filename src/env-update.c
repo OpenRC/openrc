@@ -286,7 +286,7 @@ int env_update (int argc, char **argv)
 		if (strlen (file) == 0)
 			continue;
 
-		ldents = rc_strlist_add (ldents, file);
+		ldents = rc_strlist_addu (ldents, file);
 		nents++;
 	}
 
