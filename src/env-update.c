@@ -95,7 +95,6 @@ int env_update (int argc, char **argv)
 	bool ld = true;
 	char *ldent;
 	char **ldents = NULL;
-	int nents = 0;
 	char **config = NULL;
 	char *entry;
 	char **mycolons = NULL;
@@ -287,7 +286,6 @@ int env_update (int argc, char **argv)
 			continue;
 
 		ldents = rc_strlist_addu (ldents, file);
-		nents++;
 	}
 
 	if (ldconfig) {
@@ -295,7 +293,12 @@ int env_update (int argc, char **argv)
 		if (rc_exists (LDSOCONF)) {
 			char **lines = rc_get_list (NULL, LDSOCONF);
 			char *line;
+			int nents = 0;
 			ld = false;
+
+			STRLIST_FOREACH (ldents, line, i)
+				nents ++;
+
 			STRLIST_FOREACH (lines, line, i)
 				if (i > nents || strcmp (line, ldents[i - 1]) != 0)
 				{
