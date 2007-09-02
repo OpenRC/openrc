@@ -32,7 +32,6 @@ for SVCNAME in * ; do
 	[ -x "${SVCNAME}" ] || continue
 
 	# Only generate dependencies for Gentoo runscripts
-	local one= two=
 	read one two < "${SVCNAME}"
 	[ "${one}" = "#!/sbin/runscript" ] || continue
 	unset one two
