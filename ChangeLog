@@ -1,6 +1,8 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+* baselayout-2.0.0_rc4 (02 Sep 2007)
+
   02 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     RC_TTY_NUMBER now defaults to 12, #190996 thanks to Pacho Ramos.
@@ -21,7 +23,6 @@
   25 Aug 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Make sure we list all config files in rc help output.
-
     Punt PAGER and EDITOR.  People need to set this themselves now.
 
   22 Aug 2007; Roy Marples <uberlord@gentoo.org>:
