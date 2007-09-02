@@ -4,7 +4,7 @@
 
 # This is the number of tty's used in most of the rc-scripts (like
 # consolefont, numlock, etc ...)
-RC_TTY_NUMBER=11
+RC_TTY_NUMBER=12
 
 # RC_DOWN_INTERFACE allows you to specify if RC will bring the interface
 # completely down when it stops. The default is yes, but there are some

@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  02 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    RC_TTY_NUMBER now defaults to 12, #190996 thanks to Pacho Ramos.
+
   31 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
     Only generate dependencies for Gentoo scripts, #190547.
