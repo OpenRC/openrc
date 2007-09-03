@@ -197,23 +197,21 @@ else
 	done
 fi
 
-# From linux-2.6 we need to mount /dev/pts again ...
-if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${K26}" = "0" ] ; then
-	if grep -Eq "[[:space:]]+devpts$" /proc/filesystems && \
-		! mountinfo /dev/pts > /dev/null ; then
-		if [ ! -d /dev/pts ] && \
-		   [ "${devfs}" = "yes" -o "${udev}" = "yes" ] ; then
-			# Make sure we have /dev/pts
-			mkdir -p /dev/pts >/dev/null 2>/dev/null || \
-				ewarn "Could not create /dev/pts!"
-		fi
+# Mount the new fancy pants /dev/pts whenever possible
+if grep -Eq "[[:space:]]+devpts$" /proc/filesystems && \
+	! mountinfo /dev/pts > /dev/null ; then
+	if [ ! -d /dev/pts ] && \
+	   [ "${devfs}" = "yes" -o "${udev}" = "yes" ] ; then
+		# Make sure we have /dev/pts
+		mkdir -p /dev/pts >/dev/null 2>/dev/null || \
+			ewarn "Could not create /dev/pts!"
+	fi
 
-		if [ -d /dev/pts ] ; then
-			ebegin "Mounting devpts at /dev/pts"
-			mntcmd="$(fstabinfo --mountcmd /dev/pts)"
-			try mount -n ${mntcmd:--t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts}
-			eend $?
-		fi
+	if [ -d /dev/pts ] ; then
+		ebegin "Mounting devpts at /dev/pts"
+		mntcmd="$(fstabinfo --mountcmd /dev/pts)"
+		try mount -n ${mntcmd:--t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts}
+		eend $?
 	fi
 fi
 

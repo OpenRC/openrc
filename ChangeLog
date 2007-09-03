@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  02 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Always attempt to mount /dev/pts when devpts is available as it may appear
+    in some 2.4 setups.
+
 * baselayout-2.0.0_rc4 (02 Sep 2007)
 
   02 Sep 2007; Roy Marples <uberlord@gentoo.org>:
