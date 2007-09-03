@@ -159,7 +159,7 @@ static regex_t *get_regex (char *string)
 }
 
 #include "_usage.h"
-#define getoptstring "f:F:n:N:p:P:os" getoptstring_COMMON
+#define getoptstring "f:F:n:N:op:P:qs" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "fstype-regex",        1, NULL, 'f'},
 	{ "skip-fstype-regex",   1, NULL, 'F'},
@@ -169,6 +169,7 @@ static struct option longopts[] = {
 	{ "skip-point-regex",    1, NULL, 'P'},
 	{ "node",                0, NULL, 'o'},
 	{ "fstype",              0, NULL, 's'},
+	{ "quiet",               0, NULL, 'q'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
@@ -189,6 +190,7 @@ int mountinfo (int argc, char **argv)
 	bool fstype = false;
 	char **mounts = NULL;
 	int opt;
+	bool quiet = false;
 	int result;
 
 #define DO_REG(_var) \
@@ -211,15 +213,18 @@ int mountinfo (int argc, char **argv)
 			case 'N':
 				DO_REG (skip_node_regex);
 				break;
+			case 'o':
+				node = true;
+				fstype = false;
+				break;
 			case 'p':
 				DO_REG (point_regex);
 				break;
 			case 'P':
 				DO_REG (skip_point_regex);
 				break;
-			case 'o':
-				node = true;
-				fstype = false;
+			case 'q':
+				quiet = true;
 				break;
 			case 's':
 				node = false;
@@ -257,7 +262,8 @@ int mountinfo (int argc, char **argv)
 			continue;
 		if (skip_point_regex && regexec (skip_point_regex, n, 0, NULL, 0) == 0)
 			continue;
-		printf ("%s\n", n);
+		if (! quiet)
+			printf ("%s\n", n);
 		result = EXIT_SUCCESS;
 	}
 	rc_strlist_free (nodes);

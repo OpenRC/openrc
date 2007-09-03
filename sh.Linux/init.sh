@@ -199,7 +199,7 @@ fi
 
 # Mount the new fancy pants /dev/pts whenever possible
 if grep -Eq "[[:space:]]+devpts$" /proc/filesystems && \
-	! mountinfo /dev/pts > /dev/null ; then
+	! mountinfo -q /dev/pts ; then
 	if [ ! -d /dev/pts ] && \
 	   [ "${devfs}" = "yes" -o "${udev}" = "yes" ] ; then
 		# Make sure we have /dev/pts

@@ -81,7 +81,7 @@ start() {
 		fi
 
 		# Setup Kernel Support for the NFS daemon status
-		if [ -d /proc/fs/nfsd ] && ! mountinfo /proc/fs/nfsd >/dev/null ; then
+		if [ -d /proc/fs/nfsd ] && ! mountinfo -q /proc/fs/nfsd ; then
 			if grep -qs nfsd /proc/filesystems ; then
 				ebegin "Mounting nfsd filesystem"
 				mount -t nfsd -o nodev,noexec,nosuid \
@@ -91,7 +91,7 @@ start() {
 		fi
 
 		# Setup Kernel Support for miscellaneous Binary Formats
-		if [ -d /proc/sys/fs/binfmt_misc ] && ! mountinfo /proc/sys/fs/binfmt_misc >/dev/null ; then
+		if [ -d /proc/sys/fs/binfmt_misc ] && ! mountinfo -q /proc/sys/fs/binfmt_misc ; then
 			if grep -qs binfmt_misc /proc/filesystems ; then
 				ebegin "Mounting misc binary format filesystem"
 				mount -t binfmt_misc -o nodev,noexec,nosuid \
@@ -101,7 +101,7 @@ start() {
 		fi
 
 		# Setup Kernel Support for securityfs
-		if [ -d /sys/kernel/security ] && ! mountinfo /sys/kernel/security >/dev/null ; then
+		if [ -d /sys/kernel/security ] && ! mountinfo -q /sys/kernel/security ; then
 			if grep -qs securityfs /proc/filesystems ; then
 				ebegin "Mounting security filesystem"
 				mount -t securityfs securityfs /sys/kernel/security \
@@ -111,7 +111,7 @@ start() {
 		fi
 
 		# Setup Kernel Support for debugfs
-		if [ -d /sys/kernel/debug ] && ! mountinfo /sys/kernel/debug >/dev/null ; then
+		if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug ; then
 			if grep -qs debugfs /proc/filesystems ; then
 				ebegin "Mounting debug filesystem"
 				mount -t debugfs debugfs /sys/kernel/debug \
@@ -121,7 +121,7 @@ start() {
 		fi
 
 		# Setup Kernel Support for SELinux
-		if [ -d /selinux ] && ! mountinfo /selinux >/dev/null ; then
+		if [ -d /selinux ] && ! mountinfo -q /selinux ; then
 			if grep -qs selinuxfs /proc/filesystems ; then
 				ebegin "Mounting SELinux filesystem"
 				mount -t selinuxfs selinuxfs /selinux
