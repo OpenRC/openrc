@@ -118,7 +118,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 			continue;
 
 		if (uid) {
-			snprintf (buffer, sizeof (buffer), "/proc/%d", pid);
+			snprintf (buffer, sizeof (buffer), "/proc/%d", p);
 			if (stat (buffer, &sb) != 0 || sb.st_uid != uid)
 				continue;
 		}
