@@ -122,7 +122,7 @@ char *rc_resolve_service (const char *service)
 		return (NULL);
 
 	if (service[0] == '/')
-		return (strdup (service));
+		return (rc_xstrdup (service));
 
 	file = rc_strcatpaths (RC_SVCDIR, "started", service, (char *) NULL);
 	if (! rc_is_link (file)) {
@@ -143,7 +143,7 @@ char *rc_resolve_service (const char *service)
 	}
 
 	snprintf (buffer, sizeof (buffer), RC_INITDIR "/%s", service);
-	return (strdup (buffer));
+	return (rc_xstrdup (buffer));
 }
 librc_hidden_def(rc_resolve_service)
 
