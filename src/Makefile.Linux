@@ -1,0 +1,3 @@
+LDLIBS_RC = -ldl
+LDLIBS_RS = -ldl
+CPPFLAGS += -D_GNU_SOURCE

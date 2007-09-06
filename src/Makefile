@@ -1,12 +1,29 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
+# We should strive to keep this Makefile working with the default make
+# shipped with the OS's we support. Mainly because I'm lazy and just want
+# to type make instead of gmake, but also so that other distros can pick
+# it up and not rely on GNU Make.
+
+# NOTE:- FreeBSD and DragonFly have no way of optionally including files
+# that works with GNU make and vice versa. NetBSD and OpenBSD makes do.
+# You can get a patch from
+# http://www.freebsd.org/cgi/query-pr.cgi?pr=standards/116081
+# to fix this. We include this patch with Gentoo/FreeBSD :)
+
 CC ?= gcc
+CFLAGS += -O2 -pipe
 
-CFLAGS ?= -Wall -O2 -pipe
-
+# GNU Make way of detecting gcc flags we can use
 check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
 	  then echo "$(1)"; else echo "$(2)"; fi)
+
+# pmake check for extra cflags 
+WEXTRA != for x in -Wdeclaration-after-statement -Wsequence-point -Wextra; do \
+	if $(CC) -Wdeclaration-after-statement -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+	then echo -n "$$x "; fi \
+	done
 
 # Loads of nice flags to ensure our code is good
 CFLAGS += -pedantic -std=c99 \
@@ -16,13 +33,23 @@ CFLAGS += -pedantic -std=c99 \
     -Wchar-subscripts -Wcast-align -Wno-format-nonliteral \
     $(call check_gcc, -Wdeclaration-after-statement) \
     $(call check_gcc, -Wsequence-point) \
-    $(call check_gcc, -Wextra)
+    $(call check_gcc, -Wextra) $(WEXTRA)
 
 # For debugging. -Werror is pointless due to ISO C issues with dlsym
 #CFLAGS += -ggdb
 
 DESTDIR =
 LIB = lib
+
+# Set PAM = pam for pam support
+PAM = 
+
+# Load an optional OS Makefile
+_OS_SH = u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${u}";; esac
+_OS != $(_OS_SH)
+OS ?= $(_OS)$(shell $(_OS_SH))
+-include Makefile.$(OS)
+-include Makefile.$(PAM)
 
 LIBEINFOSOVER = 0
 LIBEINFOSO = libeinfo.so.$(LIBRCSOVER)
@@ -34,7 +61,7 @@ LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
 
 RCOBJS = env-update.o fstabinfo.o mountinfo.o \
 		 rc-depend.o rc-plugin.o rc-status.o rc-update.o runscript.o \
-		 start-stop-daemon.o
+		 start-stop-daemon.o rc.o
 
 LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
 SBIN_TARGETS = rc
@@ -59,60 +86,35 @@ RCLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 BINLINKS = rc-status
 SBINLINKS = env-update rc-update runscript start-stop-daemon
 
-# Quick hack to make my life easier on BSD and Linux
-ifeq ($(OS),)
-OS=$(shell uname -s)
-ifneq ($(OS),Linux)
-OS=BSD
-endif
-endif
-
-ifeq ($(OS),Linux)
-LDLIBS_RC = -ldl
-LDLIBS_RS = -ldl
-# Shouldn't need this, but it's the easiest workaround for silly
-# Linux headers that don't work with -std=c99
-override CPPFLAGS += -D_GNU_SOURCE
-endif
-ifeq ($(OS),BSD)
-LDLIBS_LIBRC = -lkvm
-endif
-
-HAVE_PAM = 
-ifdef HAVE_PAM
-CPPFLAGS_SSD = -DHAVE_PAM
-LDLIBS_SSD += -lpam
-endif
-
 # We also define _BSD_SOURCE so both Linux and the BSDs get a few
 # handy functions which makes our lives a lot easier
-override CPPFLAGS += -DLIB=\"$(LIB)\"
+CPPFLAGS += -DLIB=\"$(LIB)\"
 
 # IMPORTANT!!!
-# Remove this when releasing as it's a security risk
-# However, this does save us using libtool when we're testing
-# NOTE: The toplevel Makefile for baselayout will automatically
-# disable then when doing `make dist`
-ifneq ($(wildcard .svn),)
-override LDFLAGS += -Wl,-rpath .
-endif
+# Ensure that we don't ship with a .svn directory to avoid RPATH security
+# issues. However, this does ease development a little
+_SVN_LDFLAGS_SH = if test -d .svn; then echo "-Wl,-rpath ."; else echo ""; fi
+_SVN_LDFLAGS != $(_SVN_LDFLAGS_SH)
+LDFLAGS += $(_SVN_LDFLAGS)$(shell $(_SVN_LDFLAGS_SH))
 
-all: $(TARGET)
+all: .depend $(TARGET)
 
-$(LIBEINFOOBJS): override CFLAGS += -fPIC
-$(LIBEINFOSO): LDLIBS =
+$(LIBEINFOOBJS):
+	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
 $(LIBEINFOSO): $(LIBEINFOOBJS) 
-	$(CC) -fPIC -shared -Wl,-soname,$(LIBEINFOSO) -o $(LIBEINFOSO) $(LIBEINFOOBJS)
+	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBEINFOSO) -o $(LIBEINFOSO) $(LIBEINFOOBJS)
 	ln -sf $(LIBEINFOSO) libeinfo.so
 
-$(LIBRCOBJS): override CFLAGS += -fPIC
+$(LIBRCOBJS):
+	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
 $(LIBRCSO): $(LIBRCOBJS) 
-	$(CC) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LDLIBS_LIBRC) $(LIBRCOBJS)
+	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LDLIBS_LIBRC) $(LIBRCOBJS)
 	ln -sf $(LIBRCSO) librc.so
 
-rc: override CPPFLAGS += $(CPPFLAGS_SSD)
-rc: override LDLIBS += $(LDLIBS_RC) $(LDLIBS_RS) $(LDLIBS_SSD)
-rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS) rc.o
+$(RCOBJS):
+	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
+rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
+	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LIBRCSO) $(LIBEINFOSO) $(LDLIBS_SSD) $(LDLIBS_RC)
 
 links: rc
 	for x in $(BINLINKS) $(SBINLINKS) $(RCLINKS) $(RCPRIVLINKS); do ln -sf rc $$x; done
@@ -134,7 +136,7 @@ install: $(TARGET)
 	for x in $(BINLINKS); do ln -sf ../sbin/rc $(DESTDIR)/bin/$$x; done
 	for x in $(SBINLINKS); do ln -sf rc $(DESTDIR)/sbin/$$x; done
 	for x in $(RCLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(LIB)/rcscripts/bin/$$x; done
-	if test "$(HAVE_PAM)" != "" ; then \
+	if test "$(PAM)" != "pam" ; then \
 		install -m 0755 -d $(DESTDIR)/etc/pam.d ; \
 		install -m 0644 start-stop-daemon.pam $(DESTDIR)/etc/pam.d/start-stop-daemon ; \
 	fi
@@ -144,7 +146,8 @@ clean:
 	rm -f *.o *~ *.core *.so .depend
 
 -include .depend
-.depend: $(wildcard *.c *.h)
+_DEPS != ls *.c *.h
+.depend: $(_DEPS)$(wildcard *.c *.h)
 	$(CC) $(CPPFLAGS) -MM *.c > .depend
 
 .PHONY: all clean install links
