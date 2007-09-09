@@ -1,4 +1,6 @@
-# /etc/conf.d/localmount
+
+##############################################################################
+# BSD SPECIFIC OPTIONS
 
 # Kernel core dump options for FreeBSD kernel.
 # Unless you're a FreeBSD kernel developer or driver writer then this won't
