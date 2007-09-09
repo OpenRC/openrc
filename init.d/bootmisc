@@ -9,6 +9,52 @@ depend() {
 	after clock sysctl
 }
 
+cleanup_tmp_dir() {
+	local dir=$1
+
+	mkdir -p ${dir}
+	cd ${dir}
+	if [ "${WIPE_TMP}" = "yes" ] ; then
+		ebegin "Wiping ${dir} directory"
+		local startopts="-x . -depth"
+		[ "${RC_UNAME}" = "Linux" ] && startopts=". -xdev -depth"
+
+		# Faster than find
+		rm -rf [b-ikm-pr-zA-Z]*
+
+		find ${startopts} ! -name . \
+			! -path ./lost+found \
+			! -path "./lost+found/*" \
+			! -path ./quota.user \
+			! -path "./quota.user/*" \
+			! -path ./aquota.user \
+			! -path "./aquota.user/*" \
+			! -path ./quota.group \
+			! -path "./quota.group/*" \
+			! -path ./aquota.group \
+			! -path "./aquota.group/*" \
+			! -path ./journal \
+			! -path "./journal/*" \
+			-delete
+		eend 0
+	else
+		ebegin "Cleaning ${dir} directory"
+		rm -rf ${dir}/.X*-lock ${dir}/esrv* ${dir}/kio* ${dir}/jpsock.* \
+			${dir}/.fam* ${dir}/.esd* ${dir}/orbit-* ${dir}/ssh-* \
+			${dir}/ksocket-* ${dir}/.*-unix
+		eend 0
+	fi
+	chmod +t ${dir}
+
+	# Make sure our X11 stuff have the correct permissions
+	# Omit the chown as bootmisc is run before network is up
+	# and users may be using lame LDAP auth #139411
+	rm -rf ${dir}/.ICE-unix ${dir}/.X11-unix 
+	mkdir -p ${dir}/.ICE-unix ${dir}/.X11-unix
+	chmod 1777 ${dir}/.ICE-unix ${dir}/.X11-unix
+	[ -x /sbin/restorecon ] && restorecon ${dir}/.ICE-unix ${dir}/.X11-unix
+}
+
 start() {
 	# Put a nologin file in /etc to prevent people from logging
 	# in before system startup is complete.
@@ -85,46 +131,11 @@ start() {
 	printf "" >/var/lock/.keep
 	eend 0
 
-	# Clean up /tmp directory
-	cd /tmp
-	if [ "${WIPE_TMP}" = "yes" ] ; then
-		ebegin "Wiping /tmp directory"
-		local startopts="-x . -depth"
-		[ "${RC_UNAME}" = "Linux" ] && startopts=". -xdev -depth"
-
-		# Faster than find
-		rm -rf [b-ikm-pr-zA-Z]*
-
-		find ${startopts} ! -name . \
-			! -path ./lost+found \
-			! -path "./lost+found/*" \
-			! -path ./quota.user \
-			! -path "./quota.user/*" \
-			! -path ./aquota.user \
-			! -path "./aquota.user/*" \
-			! -path ./quota.group \
-			! -path "./quota.group/*" \
-			! -path ./aquota.group \
-			! -path "./aquota.group/*" \
-			! -path ./journal \
-			! -path "./journal/*" \
-			-delete
-		eend 0
-	else
-		ebegin "Cleaning /tmp directory"
-		rm -rf /tmp/.X*-lock /tmp/esrv* /tmp/kio* /tmp/jpsock.* \
-			/tmp/.fam* /tmp/.esd* /tmp/orbit-* /tmp/ssh-* \
-			/tmp/ksocket-* /tmp/.*-unix
-		eend 0
-	fi
-
-	# Make sure our X11 stuff have the correct permissions
-	# Omit the chown as bootmisc is run before network is up
-	# and users may be using lame LDAP auth #139411
-	rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
-	mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
-	chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
-	[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
+	# Clean up /tmp directories
+	local tmp
+	for tmp in ${WIPE_TMP_DIRS-/tmp} ; do
+		cleanup_tmp_dir ${tmp}
+	done
 
 	# Create an 'after-boot' dmesg log
 	if [ "${RC_SYS}" != "VPS" ] ; then

@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  09 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Allow people to specify a list of temp dirs to clean in bootmisc #191807.
+
   04 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     start-stop-daemon now works with userids correctly when a pidfile

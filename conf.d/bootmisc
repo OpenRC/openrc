@@ -4,5 +4,9 @@
 # system startup is complete
 DELAYLOGIN="no"
 
+# List of /tmp directories we should clean up
+WIPE_TMP_DIRS="/tmp"
+
+# Should we wipe the tmp paths completely or just selectively remove known
 # locks / files / etc... ?
 WIPE_TMP="yes"
