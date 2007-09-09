@@ -44,15 +44,6 @@ cleanup_tmp_dir() {
 			${dir}/ksocket-* ${dir}/.*-unix
 		eend 0
 	fi
-	chmod +t ${dir}
-
-	# Make sure our X11 stuff have the correct permissions
-	# Omit the chown as bootmisc is run before network is up
-	# and users may be using lame LDAP auth #139411
-	rm -rf ${dir}/.ICE-unix ${dir}/.X11-unix 
-	mkdir -p ${dir}/.ICE-unix ${dir}/.X11-unix
-	chmod 1777 ${dir}/.ICE-unix ${dir}/.X11-unix
-	[ -x /sbin/restorecon ] && restorecon ${dir}/.ICE-unix ${dir}/.X11-unix
 }
 
 start() {
@@ -136,6 +127,15 @@ start() {
 	for tmp in ${WIPE_TMP_DIRS-/tmp} ; do
 		cleanup_tmp_dir ${tmp}
 	done
+	chmod +t /tmp /var/tmp
+
+	# Make sure our X11 stuff have the correct permissions
+	# Omit the chown as bootmisc is run before network is up
+	# and users may be using lame LDAP auth #139411
+	rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
+	mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
+	chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
+	[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
 
 	# Create an 'after-boot' dmesg log
 	if [ "${RC_SYS}" != "VPS" ] ; then
