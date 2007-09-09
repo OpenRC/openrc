@@ -143,12 +143,6 @@ start() {
 		eend $?
 	fi
 
-	for x in ${EARLY_MOUNTS} ; do
-		ebegin "Early mounting ${x}"
-		mount ${x}
-		eend $?
-	done
-
 	# Always return 0 - some local mounts may not be critical for boot
 	return 0
 }

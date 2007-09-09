@@ -1,7 +1,0 @@
-# /etc/conf.d/localmount
-
-# A list of mount points you want mounted before any other real
-# services get started.  For example, you may want to define /tmp
-# or /var/tmp as tmpfs mounts in your /etc/fstab and then add those
-# two paths here.
-EARLY_MOUNTS=""

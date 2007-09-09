@@ -6,9 +6,6 @@
     Allow people to specify a list of dirs to clean in bootmisc #191807.  Force
     the +t bit on /tmp and /var/tmp paths.
 
-    Allow people to specify a list of early mount points which will be mounted
-    at the end of localmount so they can do tmpfs on things like /tmp #181527.
-
   04 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     start-stop-daemon now works with userids correctly when a pidfile
