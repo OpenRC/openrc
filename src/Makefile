@@ -58,6 +58,7 @@ LIBEINFOOBJS= libeinfo.o
 LIBRCSOVER = 0
 LIBRCSO = librc.so.$(LIBRCSOVER)
 LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
+LDLIBS_LIBRC = $(LIBEINFOSO)
 
 RCOBJS = env-update.o fstabinfo.o mountinfo.o \
 		 rc-depend.o rc-plugin.o rc-status.o rc-update.o runscript.o \
@@ -107,7 +108,7 @@ $(LIBEINFOSO): $(LIBEINFOOBJS)
 
 $(LIBRCOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
-$(LIBRCSO): $(LIBRCOBJS) 
+$(LIBRCSO): $(LIBRCOBJS) $(LIBEINFOSO) 
 	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LDLIBS_LIBRC) $(LIBRCOBJS)
 	ln -sf $(LIBRCSO) librc.so
 
