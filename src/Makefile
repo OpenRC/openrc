@@ -14,6 +14,7 @@
 
 CC ?= gcc
 CFLAGS += -O2 -pipe
+LDFLAGS += -L.
 
 # GNU Make way of detecting gcc flags we can use
 check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
@@ -44,13 +45,6 @@ LIB = lib
 # Set PAM = pam for pam support
 PAM = 
 
-# Load an optional OS Makefile
-_OS_SH = u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${u}";; esac
-_OS != $(_OS_SH)
-OS ?= $(_OS)$(shell $(_OS_SH))
--include Makefile.$(OS)
--include Makefile.$(PAM)
-
 LIBEINFOSOVER = 0
 LIBEINFOSO = libeinfo.so.$(LIBRCSOVER)
 LIBEINFOOBJS= libeinfo.o
@@ -58,11 +52,12 @@ LIBEINFOOBJS= libeinfo.o
 LIBRCSOVER = 0
 LIBRCSO = librc.so.$(LIBRCSOVER)
 LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
-LDLIBS_LIBRC = $(LIBEINFOSO)
+LDLIBS_LIBRC = -leinfo
 
 RCOBJS = env-update.o fstabinfo.o mountinfo.o \
 		 rc-depend.o rc-plugin.o rc-status.o rc-update.o runscript.o \
 		 start-stop-daemon.o rc.o
+LDLIBS_RC = $(LDLIBS_LIBRC) -lrc
 
 LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
 SBIN_TARGETS = rc
@@ -98,6 +93,13 @@ _SVN_LDFLAGS_SH = if test -d .svn; then echo "-Wl,-rpath ."; else echo ""; fi
 _SVN_LDFLAGS != $(_SVN_LDFLAGS_SH)
 LDFLAGS += $(_SVN_LDFLAGS)$(shell $(_SVN_LDFLAGS_SH))
 
+# Load an optional OS Makefile
+_OS_SH = u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${u}";; esac
+_OS != $(_OS_SH)
+OS ?= $(_OS)$(shell $(_OS_SH))
+-include Makefile.$(OS)
+-include Makefile.$(PAM)
+
 all: .depend $(TARGET)
 
 $(LIBEINFOOBJS):
@@ -109,13 +111,13 @@ $(LIBEINFOSO): $(LIBEINFOOBJS)
 $(LIBRCOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
 $(LIBRCSO): $(LIBRCOBJS) $(LIBEINFOSO) 
-	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LDLIBS_LIBRC) $(LIBRCOBJS)
+	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS_LIBRC)
 	ln -sf $(LIBRCSO) librc.so
 
 $(RCOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
 rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
-	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LIBRCSO) $(LIBEINFOSO) $(LDLIBS_SSD) $(LDLIBS_RC)
+	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LDLIBS_RC)
 
 links: rc
 	for x in $(BINLINKS) $(SBINLINKS) $(RCLINKS) $(RCPRIVLINKS); do ln -sf rc $$x; done
