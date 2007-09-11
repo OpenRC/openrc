@@ -48,6 +48,7 @@ PAM =
 LIBEINFOSOVER = 0
 LIBEINFOSO = libeinfo.so.$(LIBRCSOVER)
 LIBEINFOOBJS= libeinfo.o
+LDLIBS_LIBEINFO = $(LDLIBS)
 
 LIBRCSOVER = 0
 LIBRCSO = librc.so.$(LIBRCSOVER)
@@ -105,19 +106,19 @@ all: .depend $(TARGET)
 $(LIBEINFOOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
 $(LIBEINFOSO): $(LIBEINFOOBJS) 
-	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBEINFOSO) -o $(LIBEINFOSO) $(LIBEINFOOBJS)
+	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBEINFOSO) -o $(LIBEINFOSO) $(LIBEINFOOBJS) $(LDLIBS) $(LDLIBS_LIBEINFO)
 	ln -sf $(LIBEINFOSO) libeinfo.so
 
 $(LIBRCOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
 $(LIBRCSO): $(LIBRCOBJS) $(LIBEINFOSO) 
-	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS_LIBRC)
+	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS) $(LDLIBS_LIBRC)
 	ln -sf $(LIBRCSO) librc.so
 
 $(RCOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
 rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
-	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LDLIBS_RC)
+	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LDLIBS) $(LDLIBS_RC)
 
 links: rc
 	for x in $(BINLINKS) $(SBINLINKS) $(RCLINKS) $(RCPRIVLINKS); do ln -sf rc $$x; done
