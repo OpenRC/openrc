@@ -360,7 +360,7 @@ _load_config() {
 	eval config_${config_index}=
 
 	config_index=0
-	eval $(_get_array fallback_${IFVAR})
+	eval "$(_get_array fallback_${IFVAR})"
 	for cmd in "$@" ; do
 		eval fallback_${config_index}="'${cmd}'"
 		config_index=$((${config_index} + 1))
@@ -459,11 +459,13 @@ start() {
 		if eend $? ; then
 			oneworked=true
 		else
-			eval config=\$fallback_${IFVAR}
+			eval config=\$fallback_${config_index}
 			if [ -n "${config}" ] ; then
-				einfo "Trying fallback configuration"
-				eval config_${config_index}=\$fallback_${IFVAR}
-				eval fallback_${config_index}=
+				eoutdent
+				ewarn "Trying fallback configuration ${config}"
+				eindent
+				eval config_${config_index}=\$config
+				unset fallback_${config_index}
 				config_index=$((${config_index} - 1))
 			fi
 		fi
