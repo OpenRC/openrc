@@ -208,7 +208,7 @@ _gen_module_list() {
 		visit "${MODULE}"
 	done
 
-	> "${MODULESLIST}"
+	printf "" > "${MODULESLIST}"
 	i=0
 	for MODULE in ${SORTED} ; do
 		eval PROGRAM=\$${MODULE}_program
