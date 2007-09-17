@@ -106,11 +106,13 @@
 
 #-----------------------------------------------------------------------------
 # WIRELESS (802.11 support)
-# Wireless can be provided by BSDs ifconfig or wpa_supplicant
+# Wireless can be provided by BSDs ifconfig (iwconfig) or wpa_supplicant
+# wpa_supplicant is preferred, use the modules directive to prefer iwconfig.
+#modules="iwconfig"
 
-# ifconfig support is a one shot script - wpa_supplicant is daemon that
-# scans, assoicates and re-configures if assocation is lost.
-# wpa_supplicant is preferred
+# ifconfig (iwconig) support is a one shot script - wpa_supplicant is daemon
+# that scans, assoicates and re-configures if assocation is lost.
+# We call it iwconfig to seperate the wireless setup from ifconfig.
 ####################################
 # HINTS
 #

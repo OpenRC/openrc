@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  17 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Document the preferance of wpa_supplicant, #192828.
+
   09 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Allow people to specify a list of dirs to clean in bootmisc #191807.  Force
