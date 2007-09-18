@@ -578,8 +578,9 @@ static bool file_regex (const char *file, const char *regex)
 }
 #endif
 
-char **rc_config_env (char **env)
+char **rc_make_env (void)
 {
+	char **env = NULL;
 	char *line;
 	int i;
 	char *p;
@@ -723,4 +724,4 @@ char **rc_config_env (char **env)
 
 	return (env);
 }
-librc_hidden_def(rc_config_env)
+librc_hidden_def(rc_make_env)

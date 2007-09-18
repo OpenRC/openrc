@@ -3,6 +3,8 @@
 
   18 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
+    API change! rc_config_env is renamed to rc_make_env and takes no argument.
+
     API change! rc_ls_dir, rc_get_config and rc_get_list no longer take
     a starting list as a first argument. Instead, use rc_strlist_join
     to append or prepend the new list to an existing list.

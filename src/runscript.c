@@ -1049,7 +1049,7 @@ int runscript (int argc, char **argv)
 		/* Ensure our environment is pure
 		   Also, add our configuration to it */
 		env = rc_filter_env ();
-		env = rc_config_env (env);
+		env = rc_strlist_join (env, rc_make_env ());
 
 		if (env) {
 			char *p;

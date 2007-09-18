@@ -194,7 +194,7 @@ char *rc_get_config_entry (char **list, const char *entry);
 /* Make an environment list which filters out all unwanted values
    and loads it up with our RC config */
 char **rc_filter_env (void);
-char **rc_config_env (char **env);
+char **rc_make_env (void);
 
 /* Handy functions for dealing with string arrays of char ** */
 char *rc_strlist_add (char ***list, const char *item);
