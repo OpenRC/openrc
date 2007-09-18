@@ -182,13 +182,13 @@ bool rc_is_dir (const char *pathname);
 bool rc_is_exec (const char *pathname);
 
 #define RC_LS_INITD	0x01
-char **rc_ls_dir (char **list, const char *dir, int options);
+char **rc_ls_dir (const char *dir, int options);
 
 bool rc_rm_dir (const char *pathname, bool top);
 
 /* Config file functions */
-char **rc_get_list (char **list, const char *file);
-char **rc_get_config (char **list, const char *file);
+char **rc_get_list (const char *file);
+char **rc_get_config (const char *file);
 char *rc_get_config_entry (char **list, const char *entry);
 
 /* Make an environment list which filters out all unwanted values

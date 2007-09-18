@@ -209,17 +209,18 @@ bool rc_is_exec (const char *pathname)
 }
 librc_hidden_def(rc_is_exec)
 
-char **rc_ls_dir (char **list, const char *dir, int options)
+char **rc_ls_dir (const char *dir, int options)
 {
 	DIR *dp;
 	struct dirent *d;
+	char **list = NULL;
 
 	if (! dir)
-		return (list);
+		return (NULL);
 
 	if ((dp = opendir (dir)) == NULL) {
 		eerror ("failed to opendir `%s': %s", dir, strerror (errno));
-		return (list);
+		return (NULL);
 	}
 
 	errno = 0;
@@ -303,8 +304,9 @@ bool rc_rm_dir (const char *pathname, bool top)
 }
 librc_hidden_def(rc_rm_dir)
 
-char **rc_get_config (char **list, const char *file)
+char **rc_get_config (const char *file)
 {
+	char **list = NULL;
 	FILE *fp;
 	char buffer[RC_LINEBUFFER];
 	char *p;
@@ -319,7 +321,7 @@ char **rc_get_config (char **list, const char *file)
 
 	if (! (fp = fopen (file, "r"))) {
 		ewarn ("load_config_file `%s': %s", file, strerror (errno));
-		return (list);
+		return (NULL);
 	}
 
 	while (fgets (buffer, RC_LINEBUFFER, fp)) {
@@ -404,16 +406,17 @@ char *rc_get_config_entry (char **list, const char *entry)
 }
 librc_hidden_def(rc_get_config_entry)
 
-char **rc_get_list (char **list, const char *file)
+char **rc_get_list (const char *file)
 {
 	FILE *fp;
 	char buffer[RC_LINEBUFFER];
 	char *p;
 	char *token;
+	char **list = NULL;
 
 	if (! (fp = fopen (file, "r"))) {
 		ewarn ("rc_get_list `%s': %s", file, strerror (errno));
-		return (list);
+		return (NULL);
 	}
 
 	while (fgets (buffer, RC_LINEBUFFER, fp)) {
@@ -455,17 +458,17 @@ char **rc_filter_env (void)
 	char *e;
 	int pplen = strlen (PATH_PREFIX);
 
-	whitelist = rc_get_list (whitelist, SYS_WHITELIST);
+	whitelist = rc_get_list (SYS_WHITELIST);
 	if (! whitelist)
 		ewarn ("system environment whitelist (" SYS_WHITELIST ") missing");
 
-	whitelist = rc_get_list (whitelist, USR_WHITELIST);
+	whitelist = rc_strlist_join (whitelist, rc_get_list (USR_WHITELIST));
 
 	if (! whitelist)
 		return (NULL);
 
 	if (rc_is_file (PROFILE_ENV))
-		profile = rc_get_config (profile, PROFILE_ENV);
+		profile = rc_get_config (PROFILE_ENV);
 
 	STRLIST_FOREACH (whitelist, env_name, count) {
 		char *space = strchr (env_name, ' ');
@@ -593,9 +596,9 @@ char **rc_config_env (char **env)
 	/* Don't trust environ for softlevel yet */
 	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, rc_get_runlevel());
 	if (rc_exists (buffer))
-		config = rc_get_config (NULL, buffer);
+		config = rc_get_config (buffer);
 	else
-		config = rc_get_config (NULL, RC_CONFIG);
+		config = rc_get_config (RC_CONFIG);
 
 	STRLIST_FOREACH (config, line, i) {
 		p = strchr (line, '=');

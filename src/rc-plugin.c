@@ -62,7 +62,7 @@ void rc_plugin_load (void)
 	if (! rc_exists (RC_PLUGINDIR))
 		return;
 
-	files = rc_ls_dir (NULL, RC_PLUGINDIR, 0);
+	files = rc_ls_dir (RC_PLUGINDIR, 0);
 	STRLIST_FOREACH (files, file, i) {
 		char *p = rc_strcatpaths (RC_PLUGINDIR, file, NULL);
 		void *h = dlopen (p, RTLD_LAZY);

@@ -324,7 +324,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 	/* Regardless, erase any existing daemon info */
 	if (rc_is_dir (dirpath)) {
 		char *oldfile = NULL;
-		files = rc_ls_dir (NULL, dirpath, 0);
+		files = rc_ls_dir (dirpath, 0);
 		STRLIST_FOREACH (files, file, i) {
 			ffile = rc_strcatpaths (dirpath, file, (char *) NULL);
 			nfiles++;
@@ -407,7 +407,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 		retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
 		free (file);
 	} else {
-		char **files = rc_ls_dir (NULL, dirpath, 0);
+		char **files = rc_ls_dir (dirpath, 0);
 		STRLIST_FOREACH (files, file, i) {
 			retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
 			if (retval)
@@ -454,7 +454,7 @@ bool rc_service_daemons_crashed (const char *service)
 	}
 
 	memset (buffer, 0, sizeof (buffer));
-	files = rc_ls_dir (NULL, dirpath, 0);
+	files = rc_ls_dir (dirpath, 0);
 	STRLIST_FOREACH (files, file, i) {
 		path = rc_strcatpaths (dirpath, file, (char *) NULL);
 		fp = fopen (path, "r");

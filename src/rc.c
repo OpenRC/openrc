@@ -1027,7 +1027,7 @@ int main (int argc, char **argv)
 	   stores a list of coldplugged services in DEVBOOT for us to pick up
 	   here when we are ready for them */
 	if (rc_is_dir (DEVBOOT)) {
-		start_services = rc_ls_dir (NULL, DEVBOOT, RC_LS_INITD);
+		start_services = rc_ls_dir (DEVBOOT, RC_LS_INITD);
 		rc_rm_dir (DEVBOOT, true);
 
 		STRLIST_FOREACH (start_services, service, i)
@@ -1051,7 +1051,7 @@ int main (int argc, char **argv)
 	{
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 		/* The net interfaces are easy - they're all in net /dev/net :) */
-		start_services = rc_ls_dir (NULL, "/dev/net", 0);
+		start_services = rc_ls_dir ("/dev/net", 0);
 		STRLIST_FOREACH (start_services, service, i) {
 			j = (strlen ("net.") + strlen (service) + 1);
 			tmp = rc_xmalloc (sizeof (char *) * j);
@@ -1065,7 +1065,7 @@ int main (int argc, char **argv)
 
 		/* The mice are a little more tricky.
 		   If we coldplug anything else, we'll probably do it here. */
-		start_services = rc_ls_dir (NULL, "/dev", 0);
+		start_services = rc_ls_dir ("/dev", 0);
 		STRLIST_FOREACH (start_services, service, i) {
 			if (strncmp (service, "psm", 3) == 0 ||
 				strncmp (service, "ums", 3) == 0)
@@ -1088,9 +1088,11 @@ int main (int argc, char **argv)
 
 	/* Build a list of all services to stop and then work out the
 	   correct order for stopping them */
-	stop_services = rc_ls_dir (stop_services, RC_SVCDIR_STARTING, RC_LS_INITD);
-	stop_services = rc_ls_dir (stop_services, RC_SVCDIR_INACTIVE, RC_LS_INITD);
-	stop_services = rc_ls_dir (stop_services, RC_SVCDIR_STARTED, RC_LS_INITD);
+	stop_services = rc_ls_dir (RC_SVCDIR_STARTING, RC_LS_INITD);
+	stop_services = rc_strlist_join (stop_services,
+									 rc_ls_dir (RC_SVCDIR_INACTIVE, RC_LS_INITD));
+	stop_services = rc_strlist_join (stop_services,
+									 rc_ls_dir (RC_SVCDIR_STARTED, RC_LS_INITD));
 
 	types = NULL;
 	rc_strlist_add (&types, "ineed");
@@ -1106,8 +1108,7 @@ int main (int argc, char **argv)
 	rc_strlist_reverse (stop_services);
 
 	/* Load our list of coldplugged services */
-	coldplugged_services = rc_ls_dir (coldplugged_services,
-									  RC_SVCDIR_COLDPLUGGED, RC_LS_INITD);
+	coldplugged_services = rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD);
 
 	/* Load our start services now.
 	   We have different rules dependent on runlevel. */
@@ -1122,12 +1123,13 @@ int main (int argc, char **argv)
 		}
 		tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel ? newlevel : runlevel,
 							  (char *) NULL);
-		start_services = rc_ls_dir (start_services, tmp, RC_LS_INITD);
+		start_services = rc_strlist_join (start_services,
+										  rc_ls_dir (tmp, RC_LS_INITD));
 		CHAR_FREE (tmp);
 	} else {
 		/* Store our list of coldplugged services */
-		coldplugged_services = rc_ls_dir (coldplugged_services, RC_SVCDIR_COLDPLUGGED,
-										  RC_LS_INITD);
+		coldplugged_services = rc_strlist_join (coldplugged_services,
+												rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD));
 		if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
 			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)

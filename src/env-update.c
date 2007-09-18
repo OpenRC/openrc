@@ -85,7 +85,7 @@ static struct option longopts[] = {
 
 int env_update (int argc, char **argv)
 {
-	char **files = rc_ls_dir (NULL, ENVDIR, 0);
+	char **files = rc_ls_dir (ENVDIR, 0);
 	char *file;
 	char **envs = NULL;
 	char *env;
@@ -138,7 +138,7 @@ int env_update (int argc, char **argv)
 			*(file + j - 1) != '~' &&
 			(j < 4 || strcmp (file + j - 4, ".bak") != 0) &&
 			(j < 5 || strcmp (file + j - 5, ".core") != 0))
-			entries = rc_get_config (NULL, path);
+			entries = rc_get_config (path);
 		free (path);
 
 		STRLIST_FOREACH (entries, entry, j) {
@@ -293,7 +293,7 @@ int env_update (int argc, char **argv)
 	if (ldconfig) {
 		/* Update ld.so.conf only if different */
 		if (rc_exists (LDSOCONF)) {
-			char **lines = rc_get_list (NULL, LDSOCONF);
+			char **lines = rc_get_list (LDSOCONF);
 			char *line;
 			ld = false;
 

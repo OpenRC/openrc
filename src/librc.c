@@ -45,7 +45,7 @@ librc_hidden_def(rc_runlevel_stopping)
 
 char **rc_get_runlevels (void)
 {
-	char **dirs = rc_ls_dir (NULL, RC_RUNLEVELDIR, 0);
+	char **dirs = rc_ls_dir (RC_RUNLEVELDIR, 0);
 	char **runlevels = NULL;
 	int i;
 	char *dir;
@@ -384,7 +384,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 	/* These are final states, so remove us from scheduled */
 	if (state == rc_service_started || state == rc_service_stopped) {
 		char *sdir = rc_strcatpaths (RC_SVCDIR, "scheduled", (char *) NULL);
-		char **dirs = rc_ls_dir (NULL, sdir, 0);
+		char **dirs = rc_ls_dir (sdir, 0);
 		char *dir;
 		int serrno;
 
@@ -692,7 +692,7 @@ char **rc_services_in_runlevel (const char *runlevel)
 	char **list = NULL;
 
 	if (! runlevel)
-		return (rc_ls_dir (NULL, RC_INITDIR, RC_LS_INITD));
+		return (rc_ls_dir (RC_INITDIR, RC_LS_INITD));
 
 	/* These special levels never contain any services */
 	if (strcmp (runlevel, RC_LEVEL_SYSINIT) == 0 ||
@@ -703,7 +703,7 @@ char **rc_services_in_runlevel (const char *runlevel)
 	if (! rc_is_dir (dir))
 		eerror ("runlevel `%s' does not exist", runlevel);
 	else
-		list = rc_ls_dir (list, dir, RC_LS_INITD);
+		list = rc_ls_dir (dir, RC_LS_INITD);
 
 	free (dir);
 	return (list);
@@ -717,13 +717,13 @@ char **rc_services_in_state (rc_service_state_t state)
 	char **list = NULL;
 
 	if (state == rc_service_scheduled) {
-		char **dirs = rc_ls_dir (NULL, dir, 0);
+		char **dirs = rc_ls_dir (dir, 0);
 		char *d;
 		int i;
 
 		STRLIST_FOREACH (dirs, d, i) {
 			char *p = rc_strcatpaths (dir, d, (char *) NULL);
-			char **entries = rc_ls_dir (NULL, p, RC_LS_INITD);
+			char **entries = rc_ls_dir (p, RC_LS_INITD);
 			char *e;
 			int j;
 
@@ -738,7 +738,7 @@ char **rc_services_in_state (rc_service_state_t state)
 			free (dirs);
 	} else {
 		if (rc_is_dir (dir))
-			list = rc_ls_dir (list, dir, RC_LS_INITD);
+			list = rc_ls_dir (dir, RC_LS_INITD);
 	}
 
 	free (dir);
@@ -798,7 +798,7 @@ librc_hidden_def(rc_service_delete)
 
 char **rc_services_scheduled_by (const char *service)
 {
-	char **dirs = rc_ls_dir (NULL, RC_SVCDIR "/scheduled", 0);
+	char **dirs = rc_ls_dir (RC_SVCDIR "/scheduled", 0);
 	char **list = NULL;
 	char *dir;
 	int i;
@@ -824,7 +824,7 @@ char **rc_services_scheduled (const char *service)
 	char **list = NULL;
 
 	if (rc_is_dir (dir))
-		list = rc_ls_dir (list, dir, RC_LS_INITD);
+		list = rc_ls_dir (dir, RC_LS_INITD);
 
 	free (svc);
 	free (dir);
