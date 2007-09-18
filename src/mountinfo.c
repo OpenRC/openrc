@@ -31,60 +31,174 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
+typedef enum {
+	mount_from,
+	mount_to,
+	mount_fstype,
+	mount_options
+} mount_type;
+
+struct args {
+	regex_t *node_regex;
+	regex_t *skip_node_regex;
+	regex_t *fstype_regex;
+	regex_t *skip_fstype_regex;
+	regex_t *options_regex;
+	regex_t *skip_options_regex;
+	char **mounts;
+	mount_type mount_type;
+};
+
+static int process_mount (char ***list, struct args *args,
+						  char *from, char *to, char *fstype, char *options)
+{
+	char *p;
+
+	errno = ENOENT;
+
+#ifdef __linux__
+	/* Skip the really silly rootfs */
+	if (strcmp (fstype, "rootfs") == 0)
+		return (-1);
+#endif
+
+	if (args->node_regex &&
+		regexec (args->node_regex, from, 0, NULL, 0) != 0)
+		return (1);
+	if (args->skip_node_regex &&
+		regexec (args->skip_node_regex, from, 0, NULL, 0) == 0)
+		return (1);
+
+	if (args->fstype_regex &&
+		regexec (args->fstype_regex, fstype, 0, NULL, 0) != 0)
+		return (-1);
+	if (args->skip_fstype_regex &&
+		regexec (args->skip_fstype_regex, fstype, 0, NULL, 0) == 0)
+		return (-1);
+
+	if (args->options_regex &&
+		regexec (args->options_regex, options, 0, NULL, 0) != 0)
+		return (-1);
+	if (args->skip_options_regex &&
+		regexec (args->skip_options_regex, options, 0, NULL, 0) == 0)
+		return (-1);
+
+	if (args->mounts)   {
+		bool found = false;
+		int j;
+		char *mnt;
+		STRLIST_FOREACH (args->mounts, mnt, j)
+			if (strcmp (mnt, to) == 0) {
+				found = true;
+				break;
+			}
+		if (! found)
+			return (-1);
+	}
+
+	switch (args->mount_type) {
+		case mount_from:
+			p = from;
+			break;
+		case mount_to:
+			p = to;
+			break;
+		case mount_fstype:
+			p = fstype;
+			break;
+		case mount_options:
+			p = options;
+			break;
+		default:
+			p = NULL;
+			errno = EINVAL;
+			break;
+	}
+
+	if (p) {
+		errno = 0;
+		*list = rc_strlist_addsortc (*list, p);
+		return (0);
+	}
+
+	return (-1);
+}
 
 #ifdef BSD 
-static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
-						   regex_t *fstype_regex, regex_t *skip_fstype_regex,
-						   char **mounts, bool node, bool fstype)
+
+/* Translate the mounted options to english
+ * This is taken directly from FreeBSD mount.c */
+static struct opt {
+	int o_opt;
+	const char *o_name;
+} optnames[] = {
+	{ MNT_ASYNC,        "asynchronous" },
+	{ MNT_EXPORTED,     "NFS exported" },
+	{ MNT_LOCAL,        "local" },
+	{ MNT_NOATIME,      "noatime" },
+	{ MNT_NOEXEC,       "noexec" },
+	{ MNT_NOSUID,       "nosuid" },
+	{ MNT_NOSYMFOLLOW,  "nosymfollow" },
+	{ MNT_QUOTA,        "with quotas" },
+	{ MNT_RDONLY,       "read-only" },
+	{ MNT_SYNCHRONOUS,  "synchronous" },
+	{ MNT_UNION,        "union" },
+	{ MNT_NOCLUSTERR,   "noclusterr" },
+	{ MNT_NOCLUSTERW,   "noclusterw" },
+	{ MNT_SUIDDIR,      "suiddir" },
+	{ MNT_SOFTDEP,      "soft-updates" },
+	{ MNT_MULTILABEL,   "multilabel" },
+	{ MNT_ACLS,         "acls" },
+#ifdef MNT_GJOURNAL
+	{ MNT_GJOURNAL,     "gjournal" },
+#endif
+	{ 0, NULL }
+};
+
+static char **find_mounts (struct args *args)
 {
 	struct statfs *mnts;
 	int nmnts;
 	int i;
 	char **list = NULL;
+	char *options = NULL;
+	int flags;
+	struct opt *o;
 
 	if ((nmnts = getmntinfo (&mnts, MNT_NOWAIT)) == 0)
 		eerrorx ("getmntinfo: %s", strerror (errno));
 
 	for (i = 0; i < nmnts; i++) {
-		if (node_regex &&
-			regexec (node_regex, mnts[i].f_mntfromname, 0, NULL, 0) != 0)
-			continue;
-		if (skip_node_regex &&
-			regexec (skip_node_regex, mnts[i].f_mntfromname, 0, NULL, 0) == 0)
-			continue;
-		if (fstype_regex &&
-			regexec (fstype_regex, mnts[i].f_fstypename, 0, NULL, 0) != 0)
-			continue;
-		if (skip_fstype_regex &&
-			regexec (skip_fstype_regex, mnts[i].f_fstypename, 0, NULL, 0) == 0)
-			continue;
-
-		if (mounts) {
-			bool found = false;
-			int j;
-			char *mnt;
-			STRLIST_FOREACH (mounts, mnt, j)
-				if (strcmp (mnt, mnts[i].f_mntonname) == 0) {
-					found = true;
-					break;
+		flags = mnts[i].f_flags & MNT_VISFLAGMASK;
+		for (o = optnames; flags && o->o_opt; o++) {
+			if (flags & o->o_opt) {
+				if (! options)
+					options = rc_xstrdup (o->o_name);
+				else {
+					char *tmp = NULL;
+					asprintf (&tmp, "%s, %s", options, o->o_name);
+					free (options);
+					options = tmp;
 				}
-			if (! found)
-				continue;
+			}
+			flags &= ~o->o_opt;
 		}
 
-		list = rc_strlist_addsortc (list, node ?
-									mnts[i].f_mntfromname :
-									fstype ? mnts[i].f_fstypename :
-									mnts[i].f_mntonname);
+		process_mount (&list, args,
+					   mnts[i].f_mntfromname,
+					   mnts[i].f_mntonname,
+					   mnts[i].f_fstypename,
+					   options);
+
+		free (options);
+		options = NULL;
 	}
 
 	return (list);
 }
 
 #elif defined (__linux__)
-static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
-						   regex_t *fstype_regex, regex_t *skip_fstype_regex,
-						   char **mounts, bool node, bool fstype)
+static char **find_mounts (struct args *args)
 {
 	FILE *fp;
 	char buffer[PATH_MAX * 3];
@@ -92,6 +206,7 @@ static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 	char *from;
 	char *to;
 	char *fst;
+	char *opts;
 	char **list = NULL;
 
 	if ((fp = fopen ("/proc/mounts", "r")) == NULL)
@@ -100,39 +215,11 @@ static char **find_mounts (regex_t *node_regex, regex_t *skip_node_regex,
 	while (fgets (buffer, sizeof (buffer), fp)) {
 		p = buffer;
 		from = strsep (&p, " ");
-		if (node_regex &&
-			regexec (node_regex, from, 0, NULL, 0) != 0)
-			continue;
-		if (skip_node_regex &&
-			regexec (skip_node_regex, from, 0, NULL, 0) == 0)
-			continue;
-
 		to = strsep (&p, " ");
 		fst = strsep (&p, " ");
-		/* Skip the really silly rootfs */
-		if (strcmp (fst, "rootfs") == 0)
-			continue;
-		if (fstype_regex &&
-			regexec (fstype_regex, fst, 0, NULL, 0) != 0)
-			continue;
-		if (skip_fstype_regex &&
-			regexec (skip_fstype_regex, fst, 0, NULL, 0) == 0)
-			continue;
+		opts = strsep (&p, " ");
 
-		if (mounts)	{
-			bool found = false;
-			int j;
-			char *mnt;
-			STRLIST_FOREACH (mounts, mnt, j)
-				if (strcmp (mnt, to) == 0) {
-					found = true;
-					break;
-				}
-			if (! found)
-				continue;
-		}
-
-		list = rc_strlist_addsortc (list, node ? from : fstype ? fst : to);
+		process_mount (&list, args, from, to, fst, opts);
 	}
 	fclose (fp);
 
@@ -159,16 +246,19 @@ static regex_t *get_regex (char *string)
 }
 
 #include "_usage.h"
-#define getoptstring "f:F:n:N:op:P:qs" getoptstring_COMMON
+#define getoptstring "f:F:n:N:o:O:p:P:iqst" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "fstype-regex",        1, NULL, 'f'},
 	{ "skip-fstype-regex",   1, NULL, 'F'},
 	{ "node-regex",          1, NULL, 'n'},
 	{ "skip-node-regex",     1, NULL, 'N'},
+	{ "options-regex",       1, NULL, 'o'},
+	{ "skip-options-regex",  1, NULL, 'O'},
 	{ "point-regex",         1, NULL, 'p'},
 	{ "skip-point-regex",    1, NULL, 'P'},
-	{ "node",                0, NULL, 'o'},
+	{ "options",             0, NULL, 'i'},
 	{ "fstype",              0, NULL, 's'},
+	{ "node",                0, NULL, 't'},
 	{ "quiet",               0, NULL, 'q'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
@@ -178,17 +268,11 @@ static struct option longopts[] = {
 int mountinfo (int argc, char **argv)
 {
 	int i;
-	regex_t *fstype_regex = NULL;
-	regex_t *node_regex = NULL;
+	struct args args;
 	regex_t *point_regex = NULL;
-	regex_t *skip_fstype_regex = NULL;
-	regex_t *skip_node_regex = NULL;
 	regex_t *skip_point_regex = NULL;
 	char **nodes = NULL;
 	char *n;
-	bool node = false;
-	bool fstype = false;
-	char **mounts = NULL;
 	int opt;
 	bool quiet = false;
 	int result;
@@ -197,25 +281,30 @@ int mountinfo (int argc, char **argv)
 	if (_var) free (_var); \
 	_var = get_regex (optarg);
 
+	memset (&args, 0, sizeof (struct args));
+	args.mount_type = mount_to;
+
 	while ((opt = getopt_long (argc, argv, getoptstring,
 							   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 			case 'f':
-				DO_REG (fstype_regex);
+				DO_REG (args.fstype_regex);
 				break;
 			case 'F':
-				DO_REG (skip_fstype_regex);
+				DO_REG (args.skip_fstype_regex);
 				break;
 			case 'n':
-				DO_REG (node_regex);
+				DO_REG (args.node_regex);
 				break;
 			case 'N':
-				DO_REG (skip_node_regex);
+				DO_REG (args.skip_node_regex);
 				break;
 			case 'o':
-				node = true;
-				fstype = false;
+				DO_REG (args.options_regex);
+				break;
+			case 'O':
+				DO_REG (args.skip_options_regex);
 				break;
 			case 'p':
 				DO_REG (point_regex);
@@ -223,12 +312,17 @@ int mountinfo (int argc, char **argv)
 			case 'P':
 				DO_REG (skip_point_regex);
 				break;
-			case 'q':
-				quiet = true;
+			case 'i':
+				args.mount_type = mount_options;
 				break;
 			case 's':
-				node = false;
-				fstype = true;
+				args.mount_type = mount_fstype;
+				break;
+			case 't':
+				args.mount_type = mount_from;
+				break;
+			case 'q':
+				quiet = true;
 				break;
 
 				case_RC_COMMON_GETOPT
@@ -238,22 +332,24 @@ int mountinfo (int argc, char **argv)
 	while (optind < argc) {
 		if (argv[optind][0] != '/')
 			eerrorx ("%s: `%s' is not a mount point", argv[0], argv[optind]);
-		mounts = rc_strlist_add (mounts, argv[optind++]);
+		args.mounts = rc_strlist_add (args.mounts, argv[optind++]);
 	}
 
-	nodes = find_mounts (node_regex, skip_node_regex,
-						 fstype_regex, skip_fstype_regex,
-						 mounts, node, fstype);
+	nodes = find_mounts (&args);
 
-	if (node_regex)
-		regfree (node_regex);
-	if (skip_node_regex)
-		regfree (skip_node_regex);
-	if (fstype_regex)
-		regfree (fstype_regex);
-	if (skip_fstype_regex)
-		regfree (skip_fstype_regex);
-
+	if (args.fstype_regex)
+		regfree (args.fstype_regex);
+	if (args.skip_fstype_regex)
+		regfree (args.skip_fstype_regex);
+	if (args.node_regex)
+		regfree (args.node_regex);
+	if (args.skip_node_regex)
+		regfree (args.skip_node_regex);
+	if (args.options_regex)
+		regfree (args.options_regex);
+	if (args.skip_options_regex)
+		regfree (args.skip_options_regex);
+	
 	rc_strlist_reverse (nodes);
 
 	result = EXIT_FAILURE;
