@@ -6,14 +6,14 @@
     API changes!
 
     rc_ls_dir, rc_get_config and rc_get_list no longer take a starting list
-	as a first argument. Instead, use rc_strlist_join to append or prepend
-	the new list to an existing list.
+    as a first argument. Instead, use rc_strlist_join to append or prepend
+    the new list to an existing list.
 
     rc_strlist_add and friends now take char *** instead of char ** and
-	return a pointer to the item added instead of the new list head. This is
-	so we can easily tell if the item was successfully added or not instead
-	of iterating through the list looking for it. rc_strlist_join now frees
-	list2 for ease of use.
+    return a pointer to the item added instead of the new list head. This is
+    so we can easily tell if the item was successfully added or not instead
+    of iterating through the list looking for it. rc_strlist_join now frees
+    list2 for ease of use.
 	
     list = rc_strlist_add (list, item);
     becomes
@@ -50,7 +50,7 @@
 
   28 Aug 2007; Roy Marples <uberlord@gentoo.org>:
 
-	Undocument pause action, fix --nodeps and --ifstarted, #190045.
+    Undocument pause action, fix --nodeps and --ifstarted, #190045.
     Fix ksoftlevel handling, #190420.
 
   26 Aug 2007; Mike Frysinger <vapier@gentoo.org>:
