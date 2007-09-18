@@ -203,7 +203,7 @@ char *rc_strlist_addsort (char ***list, const char *item);
 char *rc_strlist_addsortc (char ***list, const char *item);
 char *rc_strlist_addsortu (char ***list, const char *item);
 int rc_strlist_delete (char ***list, const char *item);
-char **rc_strlist_join (char **list1, char **list2);
+int rc_strlist_join (char ***list1, char **list2);
 void rc_strlist_reverse (char **list);
 void rc_strlist_free (char **list);
 

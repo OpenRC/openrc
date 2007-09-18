@@ -135,26 +135,29 @@ int rc_strlist_delete (char ***list, const char *item)
 }
 librc_hidden_def(rc_strlist_delete)
 
-char **rc_strlist_join (char **list1, char **list2)
+int rc_strlist_join (char ***list1, char **list2)
 {
+	char **lst1 = *list1;
 	char **newlist;
 	int i = 0;
 	int j = 0;
 
-	if (! list1 && list2)
-		return (list2);
-	if (! list2 && list1)
-		return (list1);
-	if (! list1 && ! list2)
-		return (NULL);
+	if (! lst1 && list2) {
+		*list1 = list2;
+		return (0);
+	}
+	if (! list2 && lst1)
+		return (0);
+	if (! lst1 && ! list2)
+		return (0);
 
-	while (list1[i])
+	while (lst1[i])
 		i++;
 
 	while (list2[j])
 		j++;
 
-	newlist = rc_xrealloc (list1, sizeof (char *) * (i + j + 1));
+	newlist = rc_xrealloc (lst1, sizeof (char *) * (i + j + 1));
 
 	j = 0;
 	while (list2[j]) {
@@ -164,7 +167,11 @@ char **rc_strlist_join (char **list1, char **list2)
 	}
 	newlist[i] = NULL;
 
-	return (newlist);
+	/* We free list2 here for ease of use. */
+	free (list2);
+	
+	*list1 = newlist;
+	return (0);
 }
 librc_hidden_def(rc_strlist_join)
 

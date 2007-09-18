@@ -815,7 +815,7 @@ int main (int argc, char **argv)
 	/* Ensure our environment is pure
 	   Also, add our configuration to it */
 	env = rc_filter_env ();
-	env = rc_strlist_join (env, rc_make_env ());
+	rc_strlist_join (&env, rc_make_env ());
 
 	if (env) {
 		char *p;
@@ -1089,10 +1089,10 @@ int main (int argc, char **argv)
 	/* Build a list of all services to stop and then work out the
 	   correct order for stopping them */
 	stop_services = rc_ls_dir (RC_SVCDIR_STARTING, RC_LS_INITD);
-	stop_services = rc_strlist_join (stop_services,
-									 rc_ls_dir (RC_SVCDIR_INACTIVE, RC_LS_INITD));
-	stop_services = rc_strlist_join (stop_services,
-									 rc_ls_dir (RC_SVCDIR_STARTED, RC_LS_INITD));
+	rc_strlist_join (&stop_services,
+					 rc_ls_dir (RC_SVCDIR_INACTIVE, RC_LS_INITD));
+	rc_strlist_join (&stop_services,
+					 rc_ls_dir (RC_SVCDIR_STARTED, RC_LS_INITD));
 
 	types = NULL;
 	rc_strlist_add (&types, "ineed");
@@ -1123,25 +1123,22 @@ int main (int argc, char **argv)
 		}
 		tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel ? newlevel : runlevel,
 							  (char *) NULL);
-		start_services = rc_strlist_join (start_services,
-										  rc_ls_dir (tmp, RC_LS_INITD));
+		rc_strlist_join (&start_services, rc_ls_dir (tmp, RC_LS_INITD));
 		CHAR_FREE (tmp);
 	} else {
 		/* Store our list of coldplugged services */
-		coldplugged_services = rc_strlist_join (coldplugged_services,
-												rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD));
+		rc_strlist_join (&coldplugged_services,
+						 rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD));
 		if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
 			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
 		{
 			/* We need to include the boot runlevel services if we're not in it */
-			char **services = rc_services_in_runlevel (bootlevel);
-
-			start_services = rc_strlist_join (start_services, services);
-			services = rc_services_in_runlevel (newlevel ? newlevel : runlevel);
-			start_services = rc_strlist_join (start_services, services);
-			services = NULL;
-
+			rc_strlist_join (&start_services,
+							 rc_services_in_runlevel (bootlevel));
+			rc_strlist_join (&start_services,
+							 rc_services_in_runlevel (newlevel ?
+													  newlevel : runlevel));
 			STRLIST_FOREACH (coldplugged_services, service, i)
 				rc_strlist_add (&start_services, service);
 

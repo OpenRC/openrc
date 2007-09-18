@@ -462,7 +462,7 @@ char **rc_filter_env (void)
 	if (! whitelist)
 		ewarn ("system environment whitelist (" SYS_WHITELIST ") missing");
 
-	whitelist = rc_strlist_join (whitelist, rc_get_list (USR_WHITELIST));
+	rc_strlist_join (&whitelist, rc_get_list (USR_WHITELIST));
 
 	if (! whitelist)
 		return (NULL);

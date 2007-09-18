@@ -493,25 +493,22 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
 		strcmp (runlevel, RC_LEVEL_REBOOT) == 0)
 	{
 		list = rc_ls_dir (RC_SVCDIR_STARTING, RC_LS_INITD);
-		list = rc_strlist_join (list,
-								rc_ls_dir (RC_SVCDIR_INACTIVE, RC_LS_INITD));
-		list = rc_strlist_join (list,
-								rc_ls_dir (RC_SVCDIR_STARTED, RC_LS_INITD));
+		rc_strlist_join (&list,
+						 rc_ls_dir (RC_SVCDIR_INACTIVE, RC_LS_INITD));
+		rc_strlist_join (&list,
+						 rc_ls_dir (RC_SVCDIR_STARTED, RC_LS_INITD));
 		reverse = true;
 	} else {
 		list = rc_services_in_runlevel (runlevel);
 
 		/* Add coldplugged services */
-		list = rc_strlist_join (list,
-								rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD));
-
+		rc_strlist_join (&list, rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD));
 
 		/* If we're not the boot runlevel then add that too */
 		if (strcmp (runlevel, bootlevel) != 0) {
 			char *path = rc_strcatpaths (RC_RUNLEVELDIR, bootlevel,
 										 (char *) NULL);
-			list = rc_strlist_join (list,
-									rc_ls_dir (path, RC_LS_INITD));
+			rc_strlist_join (&list, rc_ls_dir (path, RC_LS_INITD));
 			free (path);
 		}
 	} 
