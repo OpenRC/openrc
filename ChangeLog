@@ -12,8 +12,7 @@
     rc_strlist_add and friends now take char *** instead of char ** and
     return a pointer to the item added instead of the new list head. This is
     so we can easily tell if the item was successfully added or not instead
-    of iterating through the list looking for it. rc_strlist_join now frees
-    list2 for ease of use.
+    of iterating through the list looking for it. 
 	
     list = rc_strlist_add (list, item);
     becomes

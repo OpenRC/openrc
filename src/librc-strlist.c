@@ -142,16 +142,10 @@ int rc_strlist_join (char ***list1, char **list2)
 	int i = 0;
 	int j = 0;
 
-	if (! lst1 && list2) {
-		*list1 = list2;
-		return (0);
-	}
-	if (! list2 && lst1)
-		return (0);
-	if (! lst1 && ! list2)
+	if (! list2)
 		return (0);
 
-	while (lst1[i])
+	while (lst1 && lst1[i])
 		i++;
 
 	while (list2[j])
@@ -162,14 +156,13 @@ int rc_strlist_join (char ***list1, char **list2)
 	j = 0;
 	while (list2[j]) {
 		newlist[i] = list2[j];
+		/* Take the item off the 2nd list as it's only a shallow copy */
+		list2[j] = NULL;
 		i++;
 		j++;
 	}
 	newlist[i] = NULL;
 
-	/* We free list2 here for ease of use. */
-	free (list2);
-	
 	*list1 = newlist;
 	return (0);
 }
