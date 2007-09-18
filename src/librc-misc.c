@@ -319,8 +319,11 @@ char **rc_get_config (const char *file)
 	char *entry;
 	char *newline;
 
+	if (! file)
+		return (NULL);
+
 	if (! (fp = fopen (file, "r"))) {
-		ewarn ("load_config_file `%s': %s", file, strerror (errno));
+		ewarn ("rc_get_config `%s': %s", file, strerror (errno));
 		return (NULL);
 	}
 
