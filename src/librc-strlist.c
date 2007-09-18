@@ -9,59 +9,67 @@
 
 #include "librc.h"
 
-static char **_rc_strlist_add (char **list, const char *item, bool uniq)
+static char *_rc_strlist_add (char ***list, const char *item, bool uniq)
 {
 	char **newlist;
+	char **lst = *list;
 	int i = 0;
 
 	if (! item)
-		return (list);
+		return (NULL);
 
-	while (list && list[i]) {
-		if (uniq && strcmp (list[i], item) == 0)
-			return (list);
+	while (lst && lst[i]) {
+		if (uniq && strcmp (lst[i], item) == 0) {
+			errno = EEXIST;
+			return (NULL);
+		}
 		i++;
 	}
 
-	newlist = rc_xrealloc (list, sizeof (char *) * (i + 2));
+	newlist = rc_xrealloc (lst, sizeof (char *) * (i + 2));
 	newlist[i] = rc_xstrdup (item);
 	newlist[i + 1] = NULL;
 
-	return (newlist);
+	*list = newlist;
+	return (newlist[i]);
 }
 
-char **rc_strlist_add (char **list, const char *item)
+char *rc_strlist_add (char ***list, const char *item)
 {
 	return (_rc_strlist_add (list, item, false));
 }
 librc_hidden_def(rc_strlist_add)
 
-char **rc_strlist_addu (char **list, const char *item)
+char *rc_strlist_addu (char ***list, const char *item)
 {
 	return (_rc_strlist_add (list, item, true));
 }
 librc_hidden_def(rc_strlist_addu)
 
-static char **_rc_strlist_addsort (char **list, const char *item,
-								   int (*sortfunc) (const char *s1,
-													const char *s2),
-								   bool uniq)
+static char *_rc_strlist_addsort (char ***list, const char *item,
+								  int (*sortfunc) (const char *s1,
+												   const char *s2),
+								  bool uniq)
 {
 	char **newlist;
+	char **lst = *list;
 	int i = 0;
 	char *tmp1;
 	char *tmp2;
+	char *retval;
 
 	if (! item)
-		return (list);
+		return (NULL);
 
-	while (list && list[i])	{
-		if (uniq && strcmp (list[i], item) == 0)
-			return (list);
+	while (lst && lst[i])	{
+		if (uniq && strcmp (lst[i], item) == 0) {
+			errno = EEXIST;
+			return (NULL);
+		}
 		i++;
 	}
 
-	newlist = rc_xrealloc (list, sizeof (char *) * (i + 2));
+	newlist = rc_xrealloc (lst, sizeof (char *) * (i + 2));
 
 	if (! i)
 		newlist[i] = NULL;
@@ -72,7 +80,7 @@ static char **_rc_strlist_addsort (char **list, const char *item,
 		i++;
 
 	tmp1 = newlist[i];
-	newlist[i] = rc_xstrdup (item);
+	retval = newlist[i] = rc_xstrdup (item);
 	do {
 		i++;
 		tmp2 = newlist[i];
@@ -80,44 +88,50 @@ static char **_rc_strlist_addsort (char **list, const char *item,
 		tmp1 = tmp2;
 	} while (tmp1);
 
-	return (newlist);
+	*list = newlist;
+	return (retval);
 }
 
-char **rc_strlist_addsort (char **list, const char *item)
+char *rc_strlist_addsort (char ***list, const char *item)
 {
 	return (_rc_strlist_addsort (list, item, strcoll, false));
 }
 librc_hidden_def(rc_strlist_addsort)
 
-char **rc_strlist_addsortc (char **list, const char *item)
+char *rc_strlist_addsortc (char ***list, const char *item)
 {
 	return (_rc_strlist_addsort (list, item, strcmp, false));
 }
 librc_hidden_def(rc_strlist_addsortc)
 
-char **rc_strlist_addsortu (char **list, const char *item)
+char *rc_strlist_addsortu (char ***list, const char *item)
 {
 	return (_rc_strlist_addsort (list, item, strcmp, true));
 }
 librc_hidden_def(rc_strlist_addsortu)
 
-char **rc_strlist_delete (char **list, const char *item)
+int rc_strlist_delete (char ***list, const char *item)
 {
+	char **lst = *list;
 	int i = 0;
+	int retval = -1;
 
-	if (!list || ! item)
-		return (list);
+	if (!lst || ! item)
+		return (-1);
 
-	while (list[i])
-		if (! strcmp (list[i], item)) {
-			free (list[i]);
+	while (lst[i])
+		if (! strcmp (lst[i], item)) {
+			free (lst[i]);
+			retval = 0;
 			do {
-				list[i] = list[i + 1];
+				lst[i] = lst[i + 1];
 				i++;
-			} while (list[i]);
+			} while (lst[i]);
 		}
 
-	return (list);
+	if (retval)
+		errno = ENOENT;
+	return (retval);
 }
 librc_hidden_def(rc_strlist_delete)
 
@@ -184,10 +198,8 @@ void rc_strlist_free (char **list)
 	if (! list)
 		return;
 
-	while (list[i]) {
-		free (list[i]);
-		list[i++] = NULL;
-	}
+	while (list[i])
+		free (list[i++]);
 
 	free (list);
 }

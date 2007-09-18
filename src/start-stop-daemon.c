@@ -880,10 +880,10 @@ int start_stop_daemon (int argc, char **argv)
 					len = sizeof (char *) * strlen (path) + 6;
 					newpath = rc_xmalloc (len);
 					snprintf (newpath, len, "PATH=%s", path);
-					newenv = rc_strlist_add (newenv, newpath);
+					rc_strlist_add (&newenv, newpath);
 					free (newpath);
 				} else
-					newenv = rc_strlist_add (newenv, env);
+					rc_strlist_add (&newenv, env);
 			}
 
 		umask (022);

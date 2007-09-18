@@ -80,13 +80,13 @@ static void show (char **runlevels, bool verbose)
 
 		STRLIST_FOREACH (runlevels, runlevel, j) {
 			if (rc_service_in_runlevel (service, runlevel)) {
-				in = rc_strlist_add (in, runlevel);
+				rc_strlist_add (&in, runlevel);
 				inone = true;
 			} else {
 				char buffer[PATH_MAX];
 				memset (buffer, ' ', strlen (runlevel));
 				buffer[strlen (runlevel)] = 0;
-				in = rc_strlist_add (in, buffer);
+				rc_strlist_add (&in, buffer);
 			}
 		}
 
@@ -186,7 +186,7 @@ int rc_update (int argc, char **argv)
 
 		while (optind < argc)
 			if (rc_runlevel_exists (argv[optind]))
-				runlevels = rc_strlist_add (runlevels, argv[optind++]);
+				rc_strlist_add (&runlevels, argv[optind++]);
 			else {
 				rc_strlist_free (runlevels);
 				eerrorx ("%s: `%s' is not a valid runlevel", applet, argv[optind]);
@@ -195,7 +195,7 @@ int rc_update (int argc, char **argv)
 
 	if (action & DOSHOW) {
 		if (service)
-			runlevels = rc_strlist_add (runlevels, service);
+			rc_strlist_add (&runlevels, service);
 		if (! runlevels)
 			runlevels = rc_get_runlevels ();
 
@@ -209,7 +209,7 @@ int rc_update (int argc, char **argv)
 		else {
 			retval = EXIT_SUCCESS;
 			if (! runlevels)
-				runlevels = rc_strlist_add (runlevels, rc_get_runlevel ());	
+				rc_strlist_add (&runlevels, rc_get_runlevel ());	
 			STRLIST_FOREACH (runlevels, runlevel, i) {
 				if (action & DOADD) {
 					if (! add (runlevel, service))

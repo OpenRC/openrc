@@ -102,6 +102,7 @@ int env_update (int argc, char **argv)
 	int opt;
 	bool ldconfig = true;
 	bool fork_ldconfig = false;
+	int nents = 0;
 	
 	applet = argv[0];
 
@@ -147,12 +148,12 @@ int env_update (int argc, char **argv)
 
 			if (strcmp (var, "COLON_SEPARATED") == 0)
 				while ((var = strsep (&value, " ")))
-					mycolons = rc_strlist_addu (mycolons, var);
+					rc_strlist_addu (&mycolons, var);
 			else if (strcmp (var, "SPACE_SEPARATED") == 0)
 				while ((var = strsep (&value, " ")))
-					myspaces = rc_strlist_addu (myspaces, var);
-			else
-				config = rc_strlist_add (config, entry);
+					rc_strlist_addu (&myspaces, var);
+			else 
+				rc_strlist_add (&config, entry);
 			free (tmpent);
 		}
 
@@ -227,7 +228,7 @@ int env_update (int argc, char **argv)
 		}
 
 		if (! replaced)
-			envs = rc_strlist_addsort (envs, entry);
+			rc_strlist_addsort (&envs, entry);
 
 		free (tmpent);
 	}
@@ -285,7 +286,8 @@ int env_update (int argc, char **argv)
 		if (strlen (file) == 0)
 			continue;
 
-		ldents = rc_strlist_addu (ldents, file);
+		if (rc_strlist_addu (&ldents, file))
+			nents++;
 	}
 
 	if (ldconfig) {
@@ -293,11 +295,7 @@ int env_update (int argc, char **argv)
 		if (rc_exists (LDSOCONF)) {
 			char **lines = rc_get_list (NULL, LDSOCONF);
 			char *line;
-			int nents = 0;
 			ld = false;
-
-			STRLIST_FOREACH (ldents, line, i)
-				nents ++;
 
 			STRLIST_FOREACH (lines, line, i)
 				if (i > nents || strcmp (line, ldents[i - 1]) != 0)

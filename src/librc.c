@@ -53,7 +53,7 @@ char **rc_get_runlevels (void)
 	STRLIST_FOREACH (dirs, dir, i) {
 		char *path = rc_strcatpaths (RC_RUNLEVELDIR, dir, (char *) NULL);
 		if (rc_is_dir (path))
-			runlevels = rc_strlist_addsort (runlevels, dir);
+			rc_strlist_addsort (&runlevels, dir);
 		free (path);
 	}
 	rc_strlist_free (dirs);
@@ -65,7 +65,7 @@ librc_hidden_def(rc_get_runlevels)
 char *rc_get_runlevel (void)
 {
 	FILE *fp;
-	static char buffer [PATH_MAX];
+	static char buffer[PATH_MAX];
 
 	if (! (fp = fopen (SOFTLEVEL, "r"))) {
 		snprintf (buffer, sizeof (buffer), "sysinit");
@@ -198,7 +198,7 @@ char **rc_service_options (const char *service)
 		if (buffer[strlen (buffer) - 1] == '\n')
 			buffer[strlen (buffer) - 1] = '\0';
 		while ((token = strsep (&p, " ")))
-			opts = rc_strlist_addsort (opts, token);
+			rc_strlist_addsort (&opts, token);
 	}
 	pclose (fp);
 	return (opts);
@@ -728,7 +728,7 @@ char **rc_services_in_state (rc_service_state_t state)
 			int j;
 
 			STRLIST_FOREACH (entries, e, j)
-				list = rc_strlist_addsortu (list, e);
+				rc_strlist_addsortu (&list, e);
 
 			if (entries)
 				free (entries);
@@ -807,7 +807,7 @@ char **rc_services_scheduled_by (const char *service)
 		char *file = rc_strcatpaths (RC_SVCDIR, "scheduled", dir, service,
 									 (char *) NULL);
 		if (rc_exists (file))
-			list = rc_strlist_add (list, file);
+			rc_strlist_add (&list, file);
 		free (file);
 	}
 	rc_strlist_free (dirs);

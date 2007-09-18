@@ -144,7 +144,7 @@ rc_depinfo_t *rc_load_deptree (void)
 		if (! deptype->type)
 			deptype->type = rc_xstrdup (type);
 
-		deptype->services = rc_strlist_addsort (deptype->services, e);
+		rc_strlist_addsort (&deptype->services, e);
 	}
 	fclose (fp);
 
@@ -232,7 +232,7 @@ static bool get_provided1 (const char *runlevel, struct lhead *providers,
 			continue;
 
 		retval = true;
-		providers->list = rc_strlist_add (providers->list, service);
+		rc_strlist_add (&providers->list, service);
 	}
 
 	return (retval);
@@ -271,7 +271,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 	if (options & RC_DEP_STOP)
 	{
 		STRLIST_FOREACH (dt->services, service, i)
-			providers.list = rc_strlist_add (providers.list, service);
+			rc_strlist_add (&providers.list, service);
 
 		return (providers.list);
 	}
@@ -283,7 +283,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 		STRLIST_FOREACH (dt->services, service, i)
 			if (rc_service_in_runlevel (service, runlevel) ||
 				rc_service_in_runlevel (service, bootlevel))
-				providers.list = rc_strlist_add (providers.list, service);
+				rc_strlist_add (&providers.list, service);
 
 		if (providers.list)
 			return (providers.list);
@@ -348,7 +348,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 
 	/* Still nothing? OK, list all services */
 	STRLIST_FOREACH (dt->services, service, i)
-		providers.list = rc_strlist_add (providers.list, service);
+		rc_strlist_add (&providers.list, service);
 
 	return (providers.list);
 }
@@ -375,7 +375,7 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 			return;
 
 	/* Add ourselves as a visited service */
-	visited->list = rc_strlist_add (visited->list, depinfo->service);
+	rc_strlist_add (&visited->list, depinfo->service);
 
 	STRLIST_FOREACH (types, item, i)
 	{
@@ -385,7 +385,7 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 			{
 				if (! options & RC_DEP_TRACE || strcmp (item, "iprovide") == 0)
 				{
-					sorted->list = rc_strlist_add (sorted->list, service);
+					rc_strlist_add (&sorted->list, service);
 					continue;
 				}
 
@@ -438,7 +438,7 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 	svcname = getenv("SVCNAME");
 	if (! svcname || strcmp (svcname, depinfo->service) != 0)
 		if (! rc_get_deptype (depinfo, "providedby"))
-			sorted->list = rc_strlist_add (sorted->list, depinfo->service);
+			rc_strlist_add (&sorted->list, depinfo->service);
 }
 
 char **rc_get_depends (rc_depinfo_t *deptree,
@@ -517,9 +517,9 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
 
 	/* Now we have our lists, we need to pull in any dependencies
 	   and order them */
-	types = rc_strlist_add (NULL, "ineed");
-	types = rc_strlist_add (types, "iuse");
-	types = rc_strlist_add (types, "iafter");
+	rc_strlist_add (&types, "ineed");
+	rc_strlist_add (&types, "iuse");
+	rc_strlist_add (&types, "iafter");
 	services = rc_get_depends (deptree, types, list, runlevel,
 							   RC_DEP_STRICT | RC_DEP_TRACE | options);
 	rc_strlist_free (list);
@@ -752,7 +752,7 @@ int rc_update_deptree (bool force)
 				continue;
 
 			if (strcmp (type, "config") == 0) {
-				config = rc_strlist_addsort (config, depend);
+				rc_strlist_addsort (&config, depend);
 				continue;
 			}
 
@@ -764,7 +764,7 @@ int rc_update_deptree (bool force)
 				depend[len - 1] == 'h')
 				continue;
 
-			deptype->services = rc_strlist_addsort (deptype->services, depend);
+			rc_strlist_addsort (&deptype->services, depend);
 		}
 
 	}
@@ -848,8 +848,7 @@ int rc_update_deptree (bool force)
 					}
 
 				if (! already_added)
-					dt->services = rc_strlist_addsort (dt->services,
-													   depinfo->service);
+					rc_strlist_addsort (&dt->services, depinfo->service);
 			}
 		}
 	}

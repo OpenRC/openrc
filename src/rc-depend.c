@@ -57,7 +57,7 @@ int rc_depend (int argc, char **argv)
 
 		if (argv[i][0] == '-') {
 			argv[i]++;
-			types = rc_strlist_add (types, argv[i]);
+			rc_strlist_add (&types, argv[i]);
 		} else {
 			if ((deptree = rc_load_deptree ()) == NULL)
 				eerrorx ("failed to load deptree");
@@ -66,7 +66,7 @@ int rc_depend (int argc, char **argv)
 			if (! di)
 				eerror ("no dependency info for service `%s'", argv[i]);
 			else
-				services = rc_strlist_add (services, argv[i]);
+				rc_strlist_add (&services, argv[i]);
 		}
 	}
 
@@ -80,8 +80,8 @@ int rc_depend (int argc, char **argv)
 
 	/* If we don't have any types, then supply some defaults */
 	if (! types) {
-		types = rc_strlist_add (NULL, "ineed");
-		rc_strlist_add (types, "iuse");
+		rc_strlist_add (&types, "ineed");
+		rc_strlist_add (&types, "iuse");
 	}
 
 	depends = rc_get_depends (deptree, types, services, runlevel, options);

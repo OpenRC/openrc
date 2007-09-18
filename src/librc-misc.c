@@ -240,7 +240,7 @@ char **rc_ls_dir (char **list, const char *dir, int options)
 					d->d_name[l - 1] == 'h')
 					continue;
 			}
-			list = rc_strlist_addsort (list, d->d_name);
+			rc_strlist_addsort (&list, d->d_name);
 		}
 	}
 	closedir (dp);
@@ -377,7 +377,7 @@ char **rc_get_config (char **list, const char *file)
 		}
 
 		if (! replaced) {
-			list = rc_strlist_addsort (list, newline);
+			rc_strlist_addsort (&list, newline);
 			free (newline);
 		}
 		free (entry);
@@ -430,7 +430,7 @@ char **rc_get_list (char **list, const char *file)
 			if (token[strlen (token) - 1] == '\n')
 				token[strlen (token) - 1] = 0;
 
-			list = rc_strlist_add (list, token);
+			rc_strlist_add (&list, token);
 		}
 	}
 	fclose (fp);
@@ -515,7 +515,7 @@ char **rc_filter_env (void)
 			snprintf (e, env_len, "%s=%s", env_name, env_var);
 		}
 
-		env = rc_strlist_add (env, e);
+		rc_strlist_add (&env, e);
 		free (e);
 	}
 
@@ -525,7 +525,7 @@ char **rc_filter_env (void)
 		env_len = strlen ("PATH=") + strlen (PATH_PREFIX) + 2;
 		p = rc_xmalloc (sizeof (char *) * env_len);
 		snprintf (p, env_len, "PATH=%s", PATH_PREFIX);
-		env = rc_strlist_add (env, p);
+		 rc_strlist_add (&env, p);
 		free (p);
 	}
 
@@ -606,12 +606,12 @@ char **rc_config_env (char **env)
 		e = getenv (line);
 		if (! e) {
 			*p = '=';
-			env = rc_strlist_add (env, line);
+			rc_strlist_add (&env, line);
 		} else {
 			int len = strlen (line) + strlen (e) + 2;
 			char *new = rc_xmalloc (sizeof (char *) * len);
 			snprintf (new, len, "%s=%s", line, e);
-			env = rc_strlist_add (env, new);
+			rc_strlist_add (&env, new);
 			free (new);
 		}
 	}
@@ -621,23 +621,23 @@ char **rc_config_env (char **env)
 	i = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
 	line = rc_xmalloc (sizeof (char *) * i);
 	snprintf (line, i, "RC_LIBDIR=" RC_LIBDIR);
-	env = rc_strlist_add (env, line);
+	rc_strlist_add (&env, line);
 	free (line);
 
 	/* One char less to drop the trailing / */
 	i = strlen ("RC_SVCDIR=") + strlen (RC_SVCDIR) + 1;
 	line = rc_xmalloc (sizeof (char *) * i);
 	snprintf (line, i, "RC_SVCDIR=" RC_SVCDIR);
-	env = rc_strlist_add (env, line);
+	rc_strlist_add (&env, line);
 	free (line);
 
-	env = rc_strlist_add (env, "RC_BOOTLEVEL=" RC_LEVEL_BOOT);
+	rc_strlist_add (&env, "RC_BOOTLEVEL=" RC_LEVEL_BOOT);
 
 	p = rc_get_runlevel ();
 	i = strlen ("RC_SOFTLEVEL=") + strlen (p) + 1;
 	line = rc_xmalloc (sizeof (char *) * i);
 	snprintf (line, i, "RC_SOFTLEVEL=%s", p);
-	env = rc_strlist_add (env, line);
+	rc_strlist_add (&env, line);
 	free (line);
 
 	if (rc_exists (RC_KSOFTLEVEL)) {
@@ -652,13 +652,13 @@ char **rc_config_env (char **env)
 				i += strlen ("RC_DEFAULTLEVEL=") + 2;
 				line = rc_xmalloc (sizeof (char *) * i);
 				snprintf (line, i, "RC_DEFAULTLEVEL=%s", buffer);
-				env = rc_strlist_add (env, line);
+				rc_strlist_add (&env, line);
 				free (line);
 			}
 			fclose (fp);
 		}
 	} else
-		env = rc_strlist_add (env, "RC_DEFAULTLEVEL=" RC_LEVEL_DEFAULT);
+		rc_strlist_add (&env, "RC_DEFAULTLEVEL=" RC_LEVEL_DEFAULT);
 
 
 #ifdef __linux__
@@ -687,7 +687,7 @@ char **rc_config_env (char **env)
 		i = strlen ("RC_SYS=") + strlen (sys) + 2;
 		line = rc_xmalloc (sizeof (char *) * i);
 		snprintf (line, i, "RC_SYS=%s", sys);
-		env = rc_strlist_add (env, line);
+		rc_strlist_add (&env, line);
 		free (line);
 	}
 
@@ -704,7 +704,7 @@ char **rc_config_env (char **env)
 		i = strlen ("RC_NET_FS_LIST=") + strlen (RC_NET_FS_LIST_DEFAULT) + 1;
 		line = rc_xmalloc (sizeof (char *) * i);
 		snprintf (line, i, "RC_NET_FS_LIST=%s", RC_NET_FS_LIST_DEFAULT);
-		env = rc_strlist_add (env, line);
+		rc_strlist_add (&env, line);
 		free (line);
 	}
 
@@ -714,7 +714,7 @@ char **rc_config_env (char **env)
 		i = strlen ("RC_UNAME=") + strlen (uts.sysname) + 2;
 		line = rc_xmalloc (sizeof (char *) * i);
 		snprintf (line, i, "RC_UNAME=%s", uts.sysname);
-		env = rc_strlist_add (env, line);
+		rc_strlist_add (&env, line);
 		free (line);
 	}
 

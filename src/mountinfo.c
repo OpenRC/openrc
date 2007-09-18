@@ -117,7 +117,7 @@ static int process_mount (char ***list, struct args *args,
 
 	if (p) {
 		errno = 0;
-		*list = rc_strlist_addsortc (*list, p);
+		rc_strlist_addsortc (list, p);
 		return (0);
 	}
 
@@ -332,7 +332,7 @@ int mountinfo (int argc, char **argv)
 	while (optind < argc) {
 		if (argv[optind][0] != '/')
 			eerrorx ("%s: `%s' is not a mount point", argv[0], argv[optind]);
-		args.mounts = rc_strlist_add (args.mounts, argv[optind++]);
+		rc_strlist_add (&args.mounts, argv[optind++]);
 	}
 
 	nodes = find_mounts (&args);

@@ -1,6 +1,17 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  18 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    API change! rc_strlist_add and friends now take char *** instead of
+    char ** and return a pointer to the item added instead of the new
+    list head. This is so we can easily tell if the item was successfully
+    added or not instead of iterating through the list looking for it.
+	
+    list = rc_strlist_add (list, item);
+    becomes
+    rc_strlist_add (&list, item);
+
   17 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     Document the preferance of wpa_supplicant, #192828.

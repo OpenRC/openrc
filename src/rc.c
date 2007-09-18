@@ -1092,16 +1092,17 @@ int main (int argc, char **argv)
 	stop_services = rc_ls_dir (stop_services, RC_SVCDIR_INACTIVE, RC_LS_INITD);
 	stop_services = rc_ls_dir (stop_services, RC_SVCDIR_STARTED, RC_LS_INITD);
 
-	types = rc_strlist_add (NULL, "ineed");
-	types = rc_strlist_add (types, "iuse");
-	types = rc_strlist_add (types, "iafter");
+	types = NULL;
+	rc_strlist_add (&types, "ineed");
+	rc_strlist_add (&types, "iuse");
+	rc_strlist_add (&types, "iafter");
 	deporder = rc_get_depends (deptree, types, stop_services,
 							   runlevel, depoptions | RC_DEP_STOP);
 	rc_strlist_free (stop_services);
 	rc_strlist_free (types);
+	types = NULL;
 	stop_services = deporder;
 	deporder = NULL;
-	types = NULL;
 	rc_strlist_reverse (stop_services);
 
 	/* Load our list of coldplugged services */
@@ -1115,7 +1116,7 @@ int main (int argc, char **argv)
 			einfon ("Device initiated services:");
 			STRLIST_FOREACH (coldplugged_services, service, i) {
 				printf (" %s", service);
-				start_services = rc_strlist_add (start_services, service);
+				rc_strlist_add (&start_services, service);
 			}
 			printf ("\n");
 		}
@@ -1140,7 +1141,7 @@ int main (int argc, char **argv)
 			services = NULL;
 
 			STRLIST_FOREACH (coldplugged_services, service, i)
-				start_services = rc_strlist_add (start_services, service);
+				rc_strlist_add (&start_services, service);
 
 		}
 	}
@@ -1149,7 +1150,8 @@ int main (int argc, char **argv)
 	if (going_down)
 		rc_set_runlevel (newlevel);
 
-	types = rc_strlist_add (NULL, "needsme");
+	types = NULL;
+	rc_strlist_add (&types, "needsme");
 	/* Now stop the services that shouldn't be running */
 	STRLIST_FOREACH (stop_services, service, i) {
 		bool found = false;
@@ -1209,7 +1211,7 @@ int main (int argc, char **argv)
 
 		/* We got this far! Or last check is to see if any any service that
 		   going to be started depends on us */
-		stopdeps = rc_strlist_add (stopdeps, service);
+		rc_strlist_add (&stopdeps, service);
 		deporder = rc_get_depends (deptree, types, stopdeps,
 								   runlevel, RC_DEP_STRICT);
 		rc_strlist_free (stopdeps);
@@ -1276,9 +1278,9 @@ int main (int argc, char **argv)
 		rc_mark_service (service, rc_service_coldplugged);
 
 	/* Order the services to start */
-	types = rc_strlist_add (NULL, "ineed");
-	types = rc_strlist_add (types, "iuse");
-	types = rc_strlist_add (types, "iafter");
+	rc_strlist_add (&types, "ineed");
+	rc_strlist_add (&types, "iuse");
+	rc_strlist_add (&types, "iafter");
 	deporder = rc_get_depends (deptree, types, start_services,
 							   runlevel, depoptions | RC_DEP_START);
 	rc_strlist_free (types);
