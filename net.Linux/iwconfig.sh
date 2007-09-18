@@ -346,7 +346,6 @@ iwconfig_scan() {
 		return 1
 	fi
 
-	local OIFS=$IFS
 	APS=-1
 	eval set -- ${scan}
 	for line in "$@" ; do
