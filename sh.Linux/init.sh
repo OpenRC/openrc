@@ -140,10 +140,12 @@ K26=$?
 
 if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" -a "${K26}" = "0" ] ; then
 	if [ -d /sys ] ; then
-		ebegin "Mounting sysfs at /sys"
-		mntcmd="$(fstabinfo --mountcmd /sys)"
-		try mount -n ${mntcmd:--t sysfs -o noexec,nosuid,nodev sysfs /sys}
-		eend $?
+		if ! mountinfo --quiet /sys ; then
+			ebegin "Mounting sysfs at /sys"
+			mntcmd="$(fstabinfo --mountcmd /sys)"
+			try mount -n ${mntcmd:--t sysfs -o noexec,nosuid,nodev sysfs /sys}
+			eend $?
+		fi
 	else
 		ewarn "No /sys to mount sysfs needed in 2.6 and later kernels!"
 	fi

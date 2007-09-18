@@ -3,6 +3,8 @@
 
   18 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Only mount /sys if it's not mounted, #192436.
+
     API changes!
 
     rc_ls_dir, rc_get_config and rc_get_list no longer take a starting list
