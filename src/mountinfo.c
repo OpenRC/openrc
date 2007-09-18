@@ -176,7 +176,7 @@ static char **find_mounts (struct args *args)
 					options = rc_xstrdup (o->o_name);
 				else {
 					char *tmp = NULL;
-					asprintf (&tmp, "%s, %s", options, o->o_name);
+					asprintf (&tmp, "%s,%s", options, o->o_name);
 					free (options);
 					options = tmp;
 				}
