@@ -19,17 +19,6 @@
 # define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
 #endif
 
-void *rc_xcalloc (size_t n, size_t size)
-{
-	void *value = calloc (n, size);
-
-	if (value)
-		return value;
-
-	ERRX
-}
-librc_hidden_def(rc_xcalloc)
-
 void *rc_xmalloc (size_t size)
 {
 	void *value = malloc (size);

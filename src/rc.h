@@ -166,7 +166,6 @@ extern FILE *rc_environ_fd;
 /* RC utility functions.
    Although not directly related to RC in general, they are used by RC
    itself and the supporting applications. */
-void *rc_xcalloc (size_t n, size_t size);
 void *rc_xmalloc (size_t size);
 void *rc_xrealloc (void *ptr, size_t size);
 char *rc_xstrdup (const char *str);
