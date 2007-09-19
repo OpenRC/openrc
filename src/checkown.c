@@ -91,27 +91,20 @@ static struct passwd *get_user (char **name)
 	else
 		pw = getpwuid (tid);
 
-	if (! pw)
-		eerrorx ("%s: user `%s' not found", applet, token);
+	if (pw)
+		*name = p;
 
-	*name = p;
 	return (pw);
 }
 
 static struct group *get_group (const char *name)
 {
-	struct group *gr;
 	int tid;
 
 	if (sscanf (name, "%d", &tid) != 1)
-		gr = getgrnam (name);
+		return (getgrnam (name));
 	else
-		gr = getgrgid (tid);
-
-	if (! gr)
-		eerrorx ("%s: group `%s' not found", applet, name);
-
-	return (gr);
+		return (getgrgid (tid));
 }
 
 #include "_usage.h"
@@ -149,13 +142,15 @@ int checkown (int argc, char **argv)
 				break;
 			case 'u':
 				p = optarg;
-				pw = get_user (&p);
+				if (! (pw = get_user (&p)))
+					eerrorx ("%s: user `%s' not found", applet, optarg);
 				if (p && *p)
 					optarg = p;
 				else
 					break;
 			case 'g':
-				gr = get_group (optarg);
+				if (! (gr = get_group (optarg)))
+					eerrorx ("%s: group `%s' not found", applet, optarg);
 				break;
 
 				case_RC_COMMON_GETOPT
