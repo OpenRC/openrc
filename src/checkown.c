@@ -25,13 +25,13 @@
 
 static char *applet = NULL;
 
-static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, bool file)
+static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 {
-	struct stat dirstat;
+	struct stat st;
 
-	memset (&dirstat, 0, sizeof (dirstat));
+	memset (&st, 0, sizeof (struct stat));
 
-	if (stat (path, &dirstat)) {
+	if (stat (path, &st)) {
 		if (file) {
 			int fd;
 			einfo ("%s: creating file", path);
@@ -50,9 +50,19 @@ static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, bool file)
 			}
 			mode = 0;
 		}
+	} else {
+		if ((file && S_ISDIR (st.st_mode)) ||
+			(! file && ! S_ISDIR (st.st_mode)))
+		{
+			if (file)
+				eerror ("%s: is a directory", path);
+			else
+				eerror ("%s: is a file", path);
+			return (-1);
+		}
 	}
 	
-	if (mode && (dirstat.st_mode & 0777) != mode) {
+	if (mode && (st.st_mode & 0777) != mode) {
 		einfo ("%s: correcting mode", applet);
 		if (chmod (path, mode)) {
 			eerror ("%s: chmod: %s", applet, strerror (errno));
@@ -60,8 +70,8 @@ static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, bool file)
 		}
 	}
 
-	if (dirstat.st_uid != uid || dirstat.st_gid != gid) {
-		if (dirstat.st_dev || dirstat.st_ino)
+	if (st.st_uid != uid || st.st_gid != gid) {
+		if (st.st_dev || st.st_ino)
 			einfo ("%s: correcting owner", path);
 		if (chown (path, uid, gid)) {
 			eerror ("%s: chown: %s", applet, strerror (errno));
