@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  19 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    plugin hook function is now rc_plugin_hook instead of a name based
+	on the name of the plugin.
+
   18 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     Only mount /sys if it's not mounted, #192436.

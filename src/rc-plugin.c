@@ -20,6 +20,8 @@
 #include "rc-plugin.h"
 #include "strlist.h"
 
+#define RC_PLUGIN_HOOK "rc_plugin_hook"
+
 bool rc_in_plugin = false;
 
 typedef struct plugin
@@ -66,9 +68,7 @@ void rc_plugin_load (void)
 	STRLIST_FOREACH (files, file, i) {
 		char *p = rc_strcatpaths (RC_PLUGINDIR, file, NULL);
 		void *h = dlopen (p, RTLD_LAZY);
-		char *func;
 		int (*fptr) (rc_hook_t, const char *); 
-		int len;
 
 		free (p);
 		if (! h) {
@@ -76,15 +76,9 @@ void rc_plugin_load (void)
 			continue;
 		}
 
-		func = file;
-		file = strsep (&func, ".");
-		len = strlen (file) + 7;
-		func = rc_xmalloc (sizeof (char *) * len);
-		snprintf (func, len, "_%s_hook", file);
-
-		fptr = (int (*)(rc_hook_t, const char*)) dlfunc (h, func);
+		fptr = (int (*)(rc_hook_t, const char*)) dlfunc (h, RC_PLUGIN_HOOK);
 		if (! fptr) {
-			eerror ("`%s' does not expose the symbol `%s'", p, func);
+			eerror ("%s: cannot find symbol `%s'", file, RC_PLUGIN_HOOK);
 			dlclose (h);
 		} else {
 			if (plugin) {
@@ -98,8 +92,6 @@ void rc_plugin_load (void)
 			plugin->handle = h;
 			plugin->hook = fptr;
 		}
-
-		free (func);
 	}
 
 	rc_strlist_free (files);
