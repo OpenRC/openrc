@@ -1,6 +1,6 @@
 /*
    checkown.c
-   Checks for the existance of a directory and creates it
+   Checks for the existance of a file or directory and creates it
    if necessary. It can also correct its ownership.
 
    Copyright 2007 Gentoo Foundation
@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <grp.h>
 #include <pwd.h>
@@ -24,21 +25,34 @@
 
 static char *applet = NULL;
 
-static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode)
+static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, bool file)
 {
 	struct stat dirstat;
 
 	memset (&dirstat, 0, sizeof (dirstat));
 
 	if (stat (path, &dirstat)) {
-		einfo ("%s: creating directory", path);
-		if (! mode)
-			mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-		if (mkdir (path, mode)) {
-			eerror ("%s: mkdir: %s", applet, strerror (errno));
-			return (-1);
+		if (file) {
+			int fd;
+			einfo ("%s: creating file", path);
+			if ((fd = open (path, O_CREAT)) == -1) {
+				eerror ("%s: open: %s", applet, strerror (errno));
+				return (-1);
+			}
+			close (fd);	
+		} else {
+			einfo ("%s: creating directory", path);
+			if (! mode)
+				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+			if (mkdir (path, mode)) {
+				eerror ("%s: mkdir: %s", applet, strerror (errno));
+				return (-1);
+			}
+			mode = 0;
 		}
-	} else if (mode && (dirstat.st_mode & 0777) != mode) {
+	}
+	
+	if (mode && (dirstat.st_mode & 0777) != mode) {
 		einfo ("%s: correcting mode", applet);
 		if (chmod (path, mode)) {
 			eerror ("%s: chmod: %s", applet, strerror (errno));
@@ -108,8 +122,10 @@ static struct group *get_group (const char *name)
 }
 
 #include "_usage.h"
-#define getoptstring "m:g:u:" getoptstring_COMMON
+#define getoptstring "fm:g:u:" getoptstring_COMMON
 static struct option longopts[] = {
+	{ "directory",      0, NULL, 'd'},
+	{ "file",           0, NULL, 'f'},
 	{ "mode",			1, NULL, 'm'},
 	{ "user",           1, NULL, 'u'},
 	{ "group",          1, NULL, 'g'},
@@ -124,9 +140,10 @@ int checkown (int argc, char **argv)
 	uid_t uid = geteuid();
 	gid_t gid = getgid();
 	mode_t mode = 0;
-
 	struct passwd *pw = NULL;
 	struct group *gr = NULL;
+	bool file = 0;
+
 	char *p;
 	int retval = EXIT_SUCCESS;
 
@@ -136,6 +153,12 @@ int checkown (int argc, char **argv)
 							   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+			case 'd':
+				file = 0;
+				break;
+			case 'f':
+				file = 1;
+				break;
 			case 'm':
 				if (parse_mode (&mode, optarg))
 					eerrorx ("%s: invalid mode `%s'", applet, optarg);
@@ -165,7 +188,7 @@ int checkown (int argc, char **argv)
 		gid = gr->gr_gid;
 
 	while (optind < argc) {
-		if (do_check (argv[optind], uid, gid, mode))
+		if (do_check (argv[optind], uid, gid, mode, file))
 			retval = EXIT_FAILURE;
 		optind++;
 	}
