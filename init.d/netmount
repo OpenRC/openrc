@@ -8,7 +8,7 @@ have_nfs() {
 	local IFS=\n x=
 	set -- $(fstabinfo --fstype nfs,nfs4)
 	for x in "$@" ; do
-		! fstabinfo --opts "${x}" | grep -q noauto && return 0 
+		! fstabinfo --options "${x}" | grep -q noauto && return 0 
 	done
 	return 1
 }
