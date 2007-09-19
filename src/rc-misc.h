@@ -14,7 +14,7 @@
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
 
-#define RC_LIBDIR               "/" LIB "/rcscripts"
+#define RC_LIBDIR               "/" LIB "/rc"
 #define RC_SVCDIR               RC_LIBDIR "/init.d"
 #define RC_DEPTREE              RC_SVCDIR "/deptree"
 #define RC_RUNLEVELDIR          "/etc/runlevels"

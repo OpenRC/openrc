@@ -1,5 +1,5 @@
-DIR   = /$(LIB)/rcscripts/sh
-EXES = init.sh 
+DIR   = $(RC_LIB)/sh
+EXES = init.sh
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

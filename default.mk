@@ -4,6 +4,7 @@
 DESTDIR = /
 ROOT = /
 LIB = lib
+RC_LIB = /$(LIB)/rc
 
 #
 # Recursive rules

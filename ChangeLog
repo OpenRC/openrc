@@ -3,8 +3,14 @@
 
   19 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Change from /lib/rcscripts to /lib/rc and adjust our files so changing
+    our libdir is much easier in future. This move makes sense it's so much
+    more than a holding place for our scripts now. It also has the added
+    benefit of not loading the splash plugin for rc4 and lower which is
+    ABI incompatible with us now.
+
     plugin hook function is now rc_plugin_hook instead of a name based
-	on the name of the plugin.
+    on the name of the plugin.
 
   18 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 

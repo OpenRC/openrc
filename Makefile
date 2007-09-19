@@ -10,7 +10,7 @@
 SUBDIRS = conf.d etc init.d man net sh share src
 
 NAME = baselayout
-VERSION = 2.0.0_rc4
+VERSION = 2.0.0_rc5
 
 PKG = $(NAME)-$(VERSION)
 
@@ -21,7 +21,7 @@ OS=BSD
 endif
 endif
 
-BASE_DIRS = /$(LIB)/rcscripts/init.d /$(LIB)/rcscripts/tmp
+BASE_DIRS = $(RC_LIB)/init.d $(RC_LIB)/tmp
 KEEP_DIRS = /boot /home /mnt /root \
 	/usr/local/bin /usr/local/sbin /usr/local/share/doc /usr/local/share/man \
 	/var/lock /var/run
@@ -50,12 +50,12 @@ install::
 		$(INSTALL_DIR) $(DESTDIR)/etc/runlevels/single || exit $$? ; \
 		$(INSTALL_DIR) $(DESTDIR)/etc/runlevels/nonetwork || exit $$? ; \
 	fi
-	ln -snf ../../$(LIB)/rcscripts/sh/net.sh $(DESTDIR)/etc/init.d/$(NET_LO) || exit $$?
-	ln -snf ../../$(LIB)/rcscripts/sh/functions.sh $(DESTDIR)/etc/init.d || exit $$?
+	ln -snf ../../$(RC_LIB)/sh/net.sh $(DESTDIR)/etc/init.d/$(NET_LO) || exit $$?
+	ln -snf ../../$(RC_LIB)/sh/functions.sh $(DESTDIR)/etc/init.d || exit $$?
 	# Handle lib correctly
 	if test $(LIB) != "lib" ; then \
-		sed -i'.bak' -e 's,/lib/,/$(LIB)/,g' $(DESTDIR)/$(LIB)/rcscripts/sh/functions.sh || exit $$? ; \
-		rm -f $(DESTDIR)/$(LIB)/rcscripts/sh/functions.sh.bak ; \
+		sed -i'.bak' -e 's,/lib/,/$(LIB)/,g' $(DESTDIR)/$(RC_LIB)/sh/functions.sh || exit $$? ; \
+		rm -f $(DESTDIR)/$(RC_LIB)/sh/functions.sh.bak ; \
 	fi
 
 layout:

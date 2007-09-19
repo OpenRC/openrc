@@ -1,4 +1,4 @@
-DIR   = /$(LIB)/rcscripts/net 
+DIR   = $(RC_LIB)/net 
 FILES = ifconfig.sh iwconfig.sh
 
 TOPDIR = ..

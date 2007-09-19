@@ -1,4 +1,4 @@
-DIR   = /$(LIB)/rcscripts/sh
+DIR   = $(RC_LIB)/sh
 EXES = init.sh init-early.sh
 
 TOPDIR = ..

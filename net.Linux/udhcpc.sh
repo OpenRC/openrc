@@ -65,8 +65,11 @@ udhcpc_start() {
 			;;
 	esac
 
+	local script="${RC_LIBDIR}"/sh/udhcpc.sh
+	[ -x "${script}" ] || script=/lib/rcscripts/sh/udhcpc.sh
+
 	eval "${x}" "${args}" --interface="${IFACE}" --now \
-		--script="${RC_LIBDIR}"/sh/udhcpc.sh \
+		--script="${script}" \
 		--pidfile="${pidfile}" >/dev/null
 	eend $? || return 1
 
