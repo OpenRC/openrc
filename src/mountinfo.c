@@ -259,7 +259,6 @@ static struct option longopts[] = {
 	{ "options",             0, NULL, 'i'},
 	{ "fstype",              0, NULL, 's'},
 	{ "node",                0, NULL, 't'},
-	{ "quiet",               0, NULL, 'q'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
@@ -274,7 +273,6 @@ int mountinfo (int argc, char **argv)
 	char **nodes = NULL;
 	char *n;
 	int opt;
-	bool quiet = false;
 	int result;
 
 #define DO_REG(_var) \
@@ -321,9 +319,6 @@ int mountinfo (int argc, char **argv)
 			case 't':
 				args.mount_type = mount_from;
 				break;
-			case 'q':
-				quiet = true;
-				break;
 
 				case_RC_COMMON_GETOPT
 		}
@@ -358,7 +353,7 @@ int mountinfo (int argc, char **argv)
 			continue;
 		if (skip_point_regex && regexec (skip_point_regex, n, 0, NULL, 0) == 0)
 			continue;
-		if (! quiet)
+		if (! rc_is_env ("RC_QUIET", "yes"))
 			printf ("%s\n", n);
 		result = EXIT_SUCCESS;
 	}

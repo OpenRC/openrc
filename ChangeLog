@@ -3,6 +3,11 @@
 
   19 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Added the checkown applet based on the work by Renato Caldas, #192682
+    checkdir ensures that the specified files (or directories) are owned
+    by the current user/group or as specified on the command line. You can
+    optionally check permissions too.
+
     Change from /lib/rcscripts to /lib/rc and adjust our files so changing
     our libdir is much easier in future. This move makes sense it's so much
     more than a holding place for our scripts now. It also has the added

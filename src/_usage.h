@@ -7,12 +7,14 @@
  * Released under the GPLv2
  */
 
-#define getoptstring_COMMON "Ch"
+#define getoptstring_COMMON "Chq"
 #define longopts_COMMON \
 	{ "help",           0, NULL, 'h'}, \
-	{ "nocolor",        0, NULL, 'C'},
+	{ "nocolor",        0, NULL, 'C'}, \
+	{ "quiet",			0, NULL, 'q'},
 
 #define case_RC_COMMON_GETOPT \
 	case 'C': setenv ("RC_NOCOLOR", "yes", 1); break; \
 	case 'h': usage (EXIT_SUCCESS); \
+	case 'q': setenv ("RC_QUIET", "yes", 1); break; \
 	default:  usage (EXIT_FAILURE);

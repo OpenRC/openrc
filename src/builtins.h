@@ -7,6 +7,7 @@
  * Released under the GPLv2
  */
 
+int checkown (int argc, char **argv);
 int env_update (int argc, char **argv);
 int fstabinfo (int argc, char **argv);
 int mountinfo (int argc, char **argv);

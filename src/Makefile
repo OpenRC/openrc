@@ -56,7 +56,7 @@ LIBRCSO = librc.so.$(LIBRCSOVER)
 LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
 LDLIBS_LIBRC = -leinfo
 
-RCOBJS = env-update.o fstabinfo.o mountinfo.o \
+RCOBJS = checkown.o env-update.o fstabinfo.o mountinfo.o \
 		 rc-depend.o rc-plugin.o rc-status.o rc-update.o runscript.o \
 		 start-stop-daemon.o rc.o
 LDLIBS_RC = $(LDLIBS_LIBRC) -lrc
@@ -80,7 +80,7 @@ RCLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 	      mark_service_coldplugged \
 	      get_options save_options rc-abort rc-depend \
 	      is_runlevel_start is_runlevel_stop service_started_daemon \
-		  fstabinfo mountinfo
+		  checkown fstabinfo mountinfo
 BINLINKS = rc-status
 SBINLINKS = env-update rc-update runscript start-stop-daemon
 
