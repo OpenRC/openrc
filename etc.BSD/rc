@@ -7,7 +7,11 @@
 
 # If $TERM is not set then assume default of cons25
 # This gives us a nice colour boot :)
-[ -z "$TERM" ] && export TERM="cons25"
+[ -z "$TERM" -o "$TERM" = "dumb" ] && export TERM="cons25"
+
+# Handle interupts 
+trap : SIGINT
+trap "echo 'Boot interrupted'; exit 1" SIGQUIT
 
 # BSD's init works somewhat differently to sysvinit.
 # This block should 'translate' from the way init calls it to the way it would
@@ -16,10 +20,6 @@ RUNLEVEL="1" /sbin/rc sysinit || exit 1
 RUNLEVEL="1" /sbin/rc boot || exit 1
 PREVLEVEL="1" /sbin/rc default
 
-# If we return non zero after starting rc then 2 things may happen
-# 1) We get the message "init: can't get /dev/console for controlling terminal"
-#    every few seconds
-# 2) We get no error and console freezes.
-# This is probably a bug somewhere in rc, but until that is fixed we have to
-# return 0.
+# We don't actually care if rc default worked or not, we should exit 0
+# to allow logins
 exit 0
