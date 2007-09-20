@@ -173,17 +173,17 @@ static bool colour_terminal (void)
 	return (false);
 }
 
-static int get_term_columns (void)
+static int get_term_columns (FILE *stream)
 {
 #if defined(TIOCGSIZE) /* BSD */
 	struct ttysize ts;
 
-	if (ioctl(0, TIOCGSIZE, &ts) == 0)
+	if (ioctl(fileno (stream), TIOCGSIZE, &ts) == 0)
 		return (ts.ts_cols);
 #elif defined(TIOCGWINSZ) /* Linux */
 	struct winsize ws;
 
-	if (ioctl(0, TIOCGWINSZ, &ws) == 0)
+	if (ioctl(fileno (stream), TIOCGWINSZ, &ws) == 0)
 		return (ws.ws_col);
 #endif
 
@@ -473,7 +473,7 @@ static void _eend (FILE *fp, int col, einfo_color_t color, const char *msg)
 	if (! msg)
 		return;
 
-	cols = get_term_columns () - (strlen (msg) + 5);
+	cols = get_term_columns (fp) - (strlen (msg) + 5);
 
 	/* cons25 is special - we need to remove one char, otherwise things
 	 * do not align properly at all. */

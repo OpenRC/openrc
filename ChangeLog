@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  20 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    libeinfo now works out the number of columns from stdout rather than
+    stdin, #188506.
+
   19 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     Added the checkown applet based on the work by Renato Caldas, #192682
