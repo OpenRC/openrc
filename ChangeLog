@@ -1,6 +1,18 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  21 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Use a pty for prefixed output instead of pipes for stdout/stderr. This
+    is so that programs can get information about the controlling terminal.
+    This change was triggered by bug #188506 where it's possible that
+    stdin, stdout and stderr didn't point to a terminal but ended up on one
+    via our pipes. Using a pty means that stdout and stderr always point to
+    a terminal, but we lose the ability to tell them apart.
+    If there is not a pty available then we use un-prefixed output as normal.
+    This change has also introduced the need for a signal pipe so that
+    SIGCHLD can exit the loop cleanly.
+
   20 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     libeinfo now works out the number of columns from stdout rather than

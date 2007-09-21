@@ -175,17 +175,10 @@ static bool colour_terminal (void)
 
 static int get_term_columns (FILE *stream)
 {
-#if defined(TIOCGSIZE) /* BSD */
-	struct ttysize ts;
-
-	if (ioctl (fileno (stream), TIOCGSIZE, &ts) == 0)
-		return (ts.ts_cols);
-#elif defined(TIOCGWINSZ) /* Linux */
 	struct winsize ws;
 
 	if (ioctl (fileno (stream), TIOCGWINSZ, &ws) == 0)
 		return (ws.ws_col);
-#endif
 
 	return (DEFAULT_COLS);
 }

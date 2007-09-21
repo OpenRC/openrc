@@ -558,18 +558,15 @@ static pid_t _exec_service (const char *service, const char *arg)
 int rc_waitpid (pid_t pid) {
 	int status = 0;
 	pid_t savedpid = pid;
+	int retval = -1;
 
 	errno = 0;
-	do {
-		pid = waitpid (savedpid, &status, 0);
-		if (pid < 0) {
-			if (errno != ECHILD)
-				eerror ("waitpid %d: %s", savedpid, strerror (errno));
-			return (-1);
-		}
-	} while (! WIFEXITED (status) && ! WIFSIGNALED (status)); 
-	
-	return (WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE);
+	while ((pid = waitpid (savedpid, &status, 0)) > 0) {
+		if (pid == savedpid)
+			retval = WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE;
+	}
+
+	return (retval);
 }
 
 pid_t rc_stop_service (const char *service)

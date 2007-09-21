@@ -10,6 +10,7 @@
 
 #include <sys/select.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -23,7 +24,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
 #include <unistd.h>
+
+#ifdef __linux__
+# include <pty.h>
+#else
+# include <libutil.h>
+#endif
 
 #include "builtins.h"
 #include "einfo.h"
@@ -60,6 +68,8 @@ static rc_hook_t hook_out = 0;
 static pid_t service_pid = 0;
 static char *prefix = NULL;
 static bool prefix_locked = false;
+static int signal_pipe[2] = { -1, -1 };
+static int master_tty = -1;
 
 extern char **environ;
 
@@ -102,10 +112,9 @@ static void setup_selinux (int argc, char **argv)
 
 static void handle_signal (int sig)
 {
-	pid_t pid;
-	int status;
 	int serrno = errno;
 	char signame[10] = { '\0' };
+	struct winsize ws;
 
 	switch (sig) {
 		case SIGHUP:
@@ -113,16 +122,19 @@ static void handle_signal (int sig)
 			break;
 
 		case SIGCHLD:
-			do {
-				pid = waitpid (-1, &status, WNOHANG);
-				if (pid < 0) {
-					if (errno != ECHILD)
-						eerror ("waitpid: %s", strerror (errno));
-					return;
-				}
-			} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
-			if (pid == service_pid)
-				service_pid = 0;
+			if (signal_pipe[1] > -1) {
+				if (write (signal_pipe[1], &sig, sizeof (sig)) == -1)
+					eerror ("%s: send: %s", service, strerror (errno));
+			} else {
+				wait (0);
+			}
+			break;
+
+		case SIGWINCH:
+			if (master_tty >= 0) {
+				ioctl (fileno (stdout), TIOCGWINSZ, &ws);
+				ioctl (master_tty, TIOCSWINSZ, &ws);
+			}
 			break;
 
 		case SIGINT:
@@ -297,16 +309,12 @@ static void cleanup (void)
 	free (service);
 }
 
-static int write_prefix (int fd, const char *buffer, size_t bytes, bool *prefixed) {
+static int write_prefix (const char *buffer, size_t bytes, bool *prefixed) {
 	unsigned int i;
-	const char *ec;
+	const char *ec = ecolor (ecolor_hilite);
 	const char *ec_normal = ecolor (ecolor_normal);
 	ssize_t ret = 0;
-
-	if (fd == fileno (stdout))
-		ec = ecolor (ecolor_hilite);
-	else
-		ec = ecolor (ecolor_bad);
+	int fd = fileno (stdout);
 
 	for (i = 0; i < bytes; i++) {
 		/* We don't prefix escape codes, like eend */
@@ -332,43 +340,56 @@ static int write_prefix (int fd, const char *buffer, size_t bytes, bool *prefixe
 static bool svc_exec (const char *arg1, const char *arg2)
 {
 	bool execok;
-	int stdout_pipes[2];
-	int stderr_pipes[2];
+	int fdout = fileno (stdout);
+	struct termios tt;
+	struct winsize ws;
+	int i;
+	int flags;
+	fd_set rset;
+	int s;
+	char buffer[RC_LINEBUFFER];
+	size_t bytes;
+	bool prefixed = false;
+	int selfd;
+	int slave_tty;
 
-	/* Setup our pipes for prefixed output */
-	if (prefix) {
-		if (pipe (stdout_pipes))
-			eerror ("pipe: %s", strerror (errno));
-		if (pipe (stderr_pipes))
-			eerror ("pipe: %s", strerror (errno));
+	/* Setup our signal pipe */
+	if (pipe (signal_pipe) == -1)
+		eerrorx ("%s: pipe: %s", service, applet);
+	for (i = 0; i < 2; i++)
+		if ((flags = fcntl (signal_pipe[i], F_GETFD, 0) == -1 ||
+			 fcntl (signal_pipe[i], F_SETFD, flags | FD_CLOEXEC) == -1))
+			eerrorx ("%s: fcntl: %s", service, strerror (errno));
+
+	/* Open a pty for our prefixed output
+	 * We do this instead of mapping pipes to stdout, stderr so that
+	 * programs can tell if they're attached to a tty or not.
+	 * The only loss is that we can no longer tell the difference
+	 * between the childs stdout or stderr */
+	master_tty = slave_tty = -1;
+	if (prefix && isatty (fdout)) {
+		tcgetattr (fdout, &tt);
+		ioctl (fdout, TIOCGWINSZ, &ws);
+
+		/* If the below call fails due to not enough ptys then we don't
+		 * prefix the output, but we still work */
+		openpty (&master_tty, &slave_tty, NULL, &tt, &ws);
 	}
 
-	/* We need to disable our child signal handler now so we block
-	   until our script returns. */
-	signal (SIGCHLD, NULL);
-
 	service_pid = vfork();
-
 	if (service_pid == -1)
 		eerrorx ("%s: vfork: %s", service, strerror (errno));
 	if (service_pid == 0) {
-		if (prefix) {
-			int flags;
-
-			if (dup2 (stdout_pipes[1], fileno (stdout)) == -1)
-				eerror ("dup2 stdout: %s", strerror (errno));
-			close (stdout_pipes[0]);
-			if (dup2 (stderr_pipes[1], fileno (stderr)) == -1)
-				eerror ("dup2 stderr: %s", strerror (errno));
-			close (stderr_pipes[0]);
-
-			/* Stop any scripts from inheriting us */
-			if ((flags = fcntl (stdout_pipes[1], F_GETFD, 0)) < 0 ||
-				fcntl (stdout_pipes[1], F_SETFD, flags | FD_CLOEXEC) < 0)
-				eerror ("fcntl: %s", strerror (errno));
-			if ((flags = fcntl (stderr_pipes[1], F_GETFD, 0)) < 0 ||
-				fcntl (stderr_pipes[1], F_SETFD, flags | FD_CLOEXEC) < 0)
-				eerror ("fcntl: %s", strerror (errno));
+		if (slave_tty >= 0) {
+			/* Hmmm, this shouldn't work in a vfork, but it does which is
+			 * good for us */
+			close (master_tty);
+	
+			dup2 (slave_tty, 0);
+			dup2 (slave_tty, 1);
+			dup2 (slave_tty, 2);
+			if (slave_tty > 2)
+				close (slave_tty);
 		}
 
 		if (rc_exists (RC_SVCDIR "/runscript.sh")) {
@@ -386,85 +407,48 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		}
 	}
 
-	/* Prefix our piped output */
-	if (prefix) {
-		bool stdout_done = false;
-		bool stdout_prefix_shown = false;
-		bool stderr_done = false;
-		bool stderr_prefix_shown = false;
-		char buffer[RC_LINEBUFFER];
+	/* We need to notify the child of window resizes now */
+	if (master_tty >= 0)
+		signal (SIGWINCH, handle_signal);
 
-		close (stdout_pipes[1]);
-		close (stderr_pipes[1]);
+	selfd = MAX (master_tty, signal_pipe[0]) + 1;
+	while (1) {
+		FD_ZERO (&rset);
+		FD_SET (signal_pipe[0], &rset);
+		if (master_tty >= 0)
+			FD_SET (master_tty, &rset);
 
-		memset (buffer, 0, RC_LINEBUFFER);
-		while (! stdout_done && ! stderr_done) {
-			fd_set fds;
-			int retval;
-
-			FD_ZERO (&fds);
-			FD_SET (stdout_pipes[0], &fds);
-			FD_SET (stderr_pipes[0], &fds);
-			retval = select (MAX (stdout_pipes[0], stderr_pipes[0]) + 1,
-							 &fds, 0, 0, 0);
-			if (retval < 0) {
-				if (errno != EINTR) {
-					eerror ("select: %s", strerror (errno));
-					break;
-				}
-			} else if (retval) {
-				ssize_t nr;
-
-				/* Wait until we get a lock */
-				while (true) {
-					struct timeval tv;
-
-					if (mkfifo (PREFIX_LOCK, 0700) == 0) {
-						prefix_locked = true;
-						break;
-					}
-
-					if (errno != EEXIST)
-						eerror ("mkfifo `%s': %s\n", PREFIX_LOCK, strerror (errno));
-					tv.tv_sec = 0;
-					tv.tv_usec = 20000;
-					select (0, NULL, NULL, NULL, &tv);
-				}
-
-				if (FD_ISSET (stdout_pipes[0], &fds)) {
-					if ((nr = read (stdout_pipes[0], buffer,
-									sizeof (buffer))) <= 0)
-						stdout_done = true;
-					else
-						write_prefix (fileno (stdout), buffer, nr,
-									  &stdout_prefix_shown);
-				}
-
-				if (FD_ISSET (stderr_pipes[0], &fds)) {
-					if ((nr = read (stderr_pipes[0], buffer,
-									sizeof (buffer))) <= 0)
-						stderr_done = true;
-					else
-						write_prefix (fileno (stderr), buffer, nr,
-									  &stderr_prefix_shown);
-				}
-
-				/* Clear the lock */
-				unlink (PREFIX_LOCK);
-				prefix_locked = false;
+		if ((s = select (selfd, &rset, NULL, NULL, NULL)) == -1) {
+			if (errno != EINTR) {
+				eerror ("%s: select: %s", service, strerror (errno));
+				break;
 			}
 		}
+		
+		if (s > 0) {
+			/* Only SIGCHLD signals come down this pipe */
+			if (FD_ISSET (signal_pipe[0], &rset))
+				break;
 
-		/* Done now, so close the pipes */
-		close(stdout_pipes[0]);
-		close(stderr_pipes[0]);
+			if (master_tty >= 0 && FD_ISSET (master_tty, &rset)) {
+				bytes = read (master_tty, buffer, sizeof (buffer));
+				write_prefix (buffer, bytes, &prefixed);
+			}
+		}
+	}
+
+	close (signal_pipe[0]);
+	close (signal_pipe[1]);
+	signal_pipe[0] = signal_pipe[1] = -1;
+
+	if (master_tty >= 0) {
+		signal (SIGWINCH, SIG_IGN);
+		close (master_tty);
+		master_tty = -1;
 	}
 
 	execok = rc_waitpid (service_pid) == 0 ? true : false;
 	service_pid = 0;
-
-	/* Done, so restore the signal handler */
-	signal (SIGCHLD, handle_signal);
 
 	return (execok);
 }
