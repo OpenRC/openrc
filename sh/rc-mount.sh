@@ -12,10 +12,8 @@ do_unmount() {
 		f_kill="-"
 	fi
 
-	local mnts="$(mountinfo ${2:+--skip-point-regex} $2 ${3:+--node-regex} $3 ${4:+--fstype-regex} $4 ${5:+--skip-fstype-regex} $5 \
-	| sed -e "s/'/'\\\\''/g" -e "s/^/'/g" -e "s/$/'/g")"
-	eval set -- ${mnts}
-	for mnt in "$@" ; do
+	mountinfo ${2:+--skip-point-regex} $2 ${3:+--node-regex} $3 ${4:+--fstype-regex} $4 ${5:+--skip-fstype-regex} $5 | \
+	while read mnt; do
 		case "${cmd}" in
 			umount*)
 				# If we're using the mount (probably /usr) then don't unmount us
