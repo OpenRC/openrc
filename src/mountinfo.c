@@ -246,6 +246,7 @@ static regex_t *get_regex (char *string)
 }
 
 #include "_usage.h"
+#define extraopts "[mount1] [mount2] ..."
 #define getoptstring "f:F:n:N:o:O:p:P:iqst" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "fstype-regex",        1, NULL, 'f'},

@@ -132,6 +132,7 @@ static struct group *get_group (const char *name)
 }
 
 #include "_usage.h"
+#define extraopts "dir1 dir2 ..."
 #define getoptstring "fm:g:u:" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "directory",      0, NULL, 'd'},
@@ -189,6 +190,9 @@ int checkown (int argc, char **argv)
 				case_RC_COMMON_GETOPT
 		}
 	}
+
+	if (optind >= argc)
+		usage (EXIT_FAILURE);
 
 	if (pw) {
 		uid = pw->pw_uid;

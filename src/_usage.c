@@ -10,8 +10,11 @@
 static void usage (int exit_status)
 {
 	int i;
-	printf ("Usage: " APPLET " [options]\n\n");
-	printf ("Options: [" getoptstring "]\n");
+	printf ("Usage: " APPLET " [options] ");
+#ifdef extraopts
+	printf (extraopts);
+#endif
+	printf ("\n\nOptions: [" getoptstring "]\n");
 	for (i = 0; longopts[i].name; ++i)
 		printf ("  -%c, --%s\n", longopts[i].val, longopts[i].name);
 	exit (exit_status);

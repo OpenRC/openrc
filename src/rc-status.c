@@ -55,6 +55,7 @@ static void print_service (char *service)
 }
 
 #include "_usage.h"
+#define extraopts "[runlevel1] [runlevel2] ..."
 #define getoptstring "alsu" getoptstring_COMMON
 static const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
