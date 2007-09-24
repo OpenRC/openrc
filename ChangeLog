@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  24 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Fix pppd metric, #193574 thanks to Martin Väth.
+
   21 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     Use a pty for prefixed output instead of pipes for stdout/stderr. This

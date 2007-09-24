@@ -91,7 +91,7 @@ pppd_pre_start() {
 	if ! ${hasdefaultmetric} ; then
 		local m=
 		eval m=\$metric_${IFVAR}
-		[ -z "${m}" ] && m=$((${metric} + _ifindex))
+		[ -z "${m}" ] && m=$((${metric} + $(_ifindex)))
 		opts="${opts} defaultmetric ${m}"
 	fi
 	if [ -n "${mtu}" ] ; then
