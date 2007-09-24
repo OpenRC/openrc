@@ -1140,8 +1140,9 @@ int main (int argc, char **argv)
 		CHAR_FREE (tmp);
 	} else {
 		/* Store our list of coldplugged services */
-		rc_strlist_join (&coldplugged_services,
-						 rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD));
+		tmplist = rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD);
+		rc_strlist_join (&coldplugged_services, tmplist);
+		rc_strlist_free (tmplist);
 		if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
 			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)

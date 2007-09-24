@@ -341,9 +341,8 @@ void rc_set_service_daemon (const char *service, const char *exec,
 				oldfile = ffile;
 			}
 		}
-		if (ffile)
-			free (ffile); 
-		free (files);
+		free (ffile); 
+		rc_strlist_free (files);
 	}
 
 	/* Now store our daemon info */
@@ -413,7 +412,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 			if (retval)
 				break;
 		}
-		free (files);
+		rc_strlist_free (files);
 	}
 
 	free (mexec);

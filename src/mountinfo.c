@@ -230,7 +230,7 @@ static char **find_mounts (struct args *args)
 #  error "Operating system not supported!"
 #endif
 
-static regex_t *get_regex (char *string)
+static regex_t *get_regex (const char *string)
 {
 	regex_t *reg = rc_xmalloc (sizeof (regex_t));
 	int result;
@@ -279,6 +279,8 @@ int mountinfo (int argc, char **argv)
 #define DO_REG(_var) \
 	if (_var) free (_var); \
 	_var = get_regex (optarg);
+#define REG_FREE(_var) \
+	if (_var) { regfree (_var); free (_var); }
 
 	memset (&args, 0, sizeof (struct args));
 	args.mount_type = mount_to;
@@ -333,18 +335,12 @@ int mountinfo (int argc, char **argv)
 
 	nodes = find_mounts (&args);
 
-	if (args.fstype_regex)
-		regfree (args.fstype_regex);
-	if (args.skip_fstype_regex)
-		regfree (args.skip_fstype_regex);
-	if (args.node_regex)
-		regfree (args.node_regex);
-	if (args.skip_node_regex)
-		regfree (args.skip_node_regex);
-	if (args.options_regex)
-		regfree (args.options_regex);
-	if (args.skip_options_regex)
-		regfree (args.skip_options_regex);
+	REG_FREE (args.fstype_regex);
+	REG_FREE (args.skip_fstype_regex);
+	REG_FREE (args.node_regex);
+	REG_FREE (args.skip_node_regex);
+	REG_FREE (args.options_regex);
+	REG_FREE (args.skip_options_regex);
 	
 	rc_strlist_reverse (nodes);
 
@@ -360,10 +356,8 @@ int mountinfo (int argc, char **argv)
 	}
 	rc_strlist_free (nodes);
 
-	if (point_regex)
-		regfree (point_regex);
-	if (skip_point_regex)
-		regfree (skip_point_regex);
+	REG_FREE (point_regex);
+	REG_FREE (skip_point_regex);
 
 	exit (result);
 }
