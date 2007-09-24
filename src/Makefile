@@ -65,22 +65,23 @@ LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
 SBIN_TARGETS = rc
 SYS_WHITELIST = env_whitelist
 
-TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS) $(PRIV_BIN_TARGETS)
+TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS)
 
-RCLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
-	      eindent eoutdent esyslog eval_ecolors \
-	      veinfo vewarn vebegin veend vewend veindent veoutdent \
-	      service_starting service_inactive service_started \
-	      service_stopping service_stopped \
-	      service_inactive service_wasinactive \
-	      service_coldplugged \
-	      mark_service_starting mark_service_inactive mark_service_started \
-	      mark_service_stopping mark_service_stopped \
-	      mark_service_inactive mark_service_wasinactive \
-	      mark_service_coldplugged \
-	      get_options save_options rc-abort rc-depend \
-	      is_runlevel_start is_runlevel_stop service_started_daemon \
-		  checkown fstabinfo mountinfo
+RC_BINLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
+			  eindent eoutdent esyslog eval_ecolors \
+			  veinfo vewarn vebegin veend vewend veindent veoutdent \
+			  service_starting service_inactive service_started \
+			  service_stopping service_stopped \
+			  service_inactive service_wasinactive \
+			  service_coldplugged \
+			  is_runlevel_start is_runlevel_stop service_started_daemon \
+			  checkown fstabinfo mountinfo rc-depend
+RC_SBINLINKS =  mark_service_starting mark_service_inactive \
+				mark_service_started \
+				mark_service_stopping mark_service_stopped \
+				mark_service_inactive mark_service_wasinactive \
+				mark_service_coldplugged \
+				get_options save_options rc-abort
 BINLINKS = rc-status
 SBINLINKS = env-update rc-update runscript start-stop-daemon
 
@@ -122,7 +123,7 @@ rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
 	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LDLIBS) $(LDLIBS_RC)
 
 links: rc
-	for x in $(BINLINKS) $(SBINLINKS) $(RCLINKS) $(RCPRIVLINKS); do ln -sf rc $$x; done
+	for x in $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS); do ln -sf rc $$x; done
 
 install: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/$(LIB)
@@ -138,9 +139,11 @@ install: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/$(RC_LIB)/conf.d
 	install -m 0644 $(SYS_WHITELIST) $(DESTDIR)/$(RC_LIB)/conf.d
 	install -m 0755 -d $(DESTDIR)/$(RC_LIB)/bin
+	install -m 0755 -d $(DESTDIR)/$(RC_LIB)/sbin
 	for x in $(BINLINKS); do ln -sf ../sbin/rc $(DESTDIR)/bin/$$x; done
 	for x in $(SBINLINKS); do ln -sf rc $(DESTDIR)/sbin/$$x; done
-	for x in $(RCLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/bin/$$x; done
+	for x in $(RC_BINLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/bin/$$x; done
+	for x in $(RC_SBINLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/sbin/$$x; done
 	if test "$(PAM)" = "pam" ; then \
 		install -m 0755 -d $(DESTDIR)/etc/pam.d ; \
 		install -m 0644 start-stop-daemon.pam $(DESTDIR)/etc/pam.d/start-stop-daemon ; \

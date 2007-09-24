@@ -860,24 +860,38 @@ int start_stop_daemon (int argc, char **argv)
 #endif
 
 		/* Clean the environment of any RC_ variables */
-		STRLIST_FOREACH (environ, env, i)
-			if (env && strncmp (env, "RC_", 3) != 0) {
-				/* For the path r, remove the rcscript bin dir from it */
-				if (strncmp (env, "PATH=" RC_LIBDIR "/bin:",
-							 strlen ("PATH=" RC_LIBDIR "/bin:")) == 0)
-				{
-					char *path = env;
-					char *newpath;
-					int len;
-					path += strlen ("PATH=" RC_LIBDIR "/bin:");
-					len = sizeof (char *) * strlen (path) + 6;
-					newpath = rc_xmalloc (len);
-					snprintf (newpath, len, "PATH=%s", path);
-					rc_strlist_add (&newenv, newpath);
-					free (newpath);
-				} else
-					rc_strlist_add (&newenv, env);
-			}
+		STRLIST_FOREACH (environ, env, i) {
+			if (strncmp (env, "RC_", 3) == 0 ||
+				strncmp (env, "SSD_NICELEVEL=", strlen ("SSD_NICELEVEL=")) == 0)
+				continue;
+
+			/* For the path, remove the rcscript bin dir from it */
+			if (strncmp (env, "PATH=", 5) == 0) {
+				char *path = rc_xstrdup (env);
+				char *newpath = NULL;
+				char *p = path;
+				char *token;
+
+				p += 5;
+				while ((token = strsep (&p, ":"))) {
+					if (strcmp (token, RC_LIBDIR "/bin") == 0 ||
+						strcmp (token, RC_LIBDIR "/sbin") == 0)
+						continue;
+					
+					if (newpath)
+						asprintf (&newpath, "%s:%s", newpath, token);
+					else
+						asprintf (&newpath, "PATH=%s", token);
+				}
+				rc_strlist_add (&newenv, newpath);
+				free (path);
+				free (newpath);
+			} else
+				rc_strlist_add (&newenv, env);
+		}
+
+		STRLIST_FOREACH (newenv, env, i)
+			einfo ("env %s", env);
 
 		umask (022);
 

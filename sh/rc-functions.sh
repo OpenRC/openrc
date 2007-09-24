@@ -59,4 +59,10 @@ get_bootparam() {
 	return 1
 }
 
+# Add our sbin to $PATH
+case "${PATH}" in
+	/lib/rc/sbin|/lib/rc/sbin:*) ;;
+	*) export PATH="/lib/rc/sbin:${PATH}" ;;
+esac
+
 # vim: set ts=4 :
