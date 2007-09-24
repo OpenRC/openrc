@@ -890,9 +890,6 @@ int start_stop_daemon (int argc, char **argv)
 				rc_strlist_add (&newenv, env);
 		}
 
-		STRLIST_FOREACH (newenv, env, i)
-			einfo ("env %s", env);
-
 		umask (022);
 
 		stdout_fd = devnull_fd;
