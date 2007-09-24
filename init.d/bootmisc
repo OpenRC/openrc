@@ -12,8 +12,8 @@ depend() {
 cleanup_tmp_dir() {
 	local dir=$1
 
-	mkdir -p ${dir}
-	cd ${dir}
+	mkdir -p "${dir}"
+	cd "${dir}"
 	if [ "${WIPE_TMP}" = "yes" ] ; then
 		ebegin "Wiping ${dir} directory"
 		local startopts="-x . -depth"
@@ -39,9 +39,10 @@ cleanup_tmp_dir() {
 		eend 0
 	else
 		ebegin "Cleaning ${dir} directory"
-		rm -rf ${dir}/.X*-lock ${dir}/esrv* ${dir}/kio* ${dir}/jpsock.* \
-			${dir}/.fam* ${dir}/.esd* ${dir}/orbit-* ${dir}/ssh-* \
-			${dir}/ksocket-* ${dir}/.*-unix
+		rm -rf "${dir}"/.X*-lock "${dir}"/esrv* "${dir}"/kio* \
+			"${dir}"/jpsock.* "${dir}"/.fam* "${dir}"/.esd* \
+			"${dir}"/orbit-* "${dir}"/ssh-* "${dir}"/ksocket-*
+			"${dir}"/.*-unix
 		eend 0
 	fi
 }
@@ -50,8 +51,7 @@ start() {
 	# Put a nologin file in /etc to prevent people from logging
 	# in before system startup is complete.
 	if [ "${DELAYLOGIN}" = "yes" ] ; then
-		echo "System bootup in progress - please wait" \
-			> /etc/nologin
+		echo "System bootup in progress - please wait" > /etc/nologin
 		cp /etc/nologin /etc/nologin.boot
 	fi
 
@@ -63,11 +63,11 @@ start() {
 		fi
 	fi
 	
-	if ! echo 2>/dev/null >/.test.$$ ; then
+	if ! mkdir /.test.$$ 2>/dev/null ; then
 		ewarn "Skipping /var and /tmp initialization (ro root?)"
 		return 0
 	fi
-	rm -f /.test.$$
+	rmdir /.test.$$
 
 	# Ensure that our basic dirs exist
 	for x in /var/lock /var/log /var/run /tmp ; do
@@ -125,7 +125,7 @@ start() {
 	# Clean up /tmp directories
 	local tmp
 	for tmp in ${WIPE_TMP_DIRS-/tmp} ; do
-		cleanup_tmp_dir ${tmp}
+		cleanup_tmp_dir "${tmp}"
 	done
 	chmod +t /tmp /var/tmp
 
