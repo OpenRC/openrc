@@ -972,13 +972,11 @@ static void svc_restart (bool deps)
 }
 
 #include "_usage.h"
-#define getoptstring "dDqsv" getoptstring_COMMON
+#define getoptstring "dDsv" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "debug",      0, NULL, 'd'},
 	{ "ifstarted",  0, NULL, 's'},
 	{ "nodeps",     0, NULL, 'D'},
-	{ "quiet",      0, NULL, 'q'},
-	{ "verbose",    0, NULL, 'v'},
 	longopts_COMMON
 	{ NULL,         0, NULL, 0}
 };
@@ -986,10 +984,12 @@ static const char * const longopts_help[] = {
 	"",
 	"",
 	"",
-	"",
-	"",
 	longopts_help_COMMON
 };
+#undef case_RC_COMMON_getopt_case_h
+#define case_RC_COMMON_getopt_case_h \
+	execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL); \
+	eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s", applet, strerror (errno));
 #include "_usage.c"
 
 int runscript (int argc, char **argv)
@@ -1125,28 +1125,14 @@ int runscript (int argc, char **argv)
 			case 'd':
 				setenv ("RC_DEBUG", "yes", 1);
 				break;
-			case 'h':
-				execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
-				eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-						 applet, strerror (errno));
 			case 's':
 				if (! rc_service_state (service, rc_service_started))
 					exit (EXIT_FAILURE);
 				break;
-			case 'C':
-				setenv ("RC_NOCOLOR", "yes", 1);
-				break;
 			case 'D':
 				deps = false;
 				break;
-			case 'q':
-				setenv ("RC_QUIET", "yes", 1);
-				break;
-			case 'v':
-				setenv ("RC_VERBOSE", "yes", 1);
-				break;
-			default:
-				usage (EXIT_FAILURE);
+			case_RC_COMMON_GETOPT
 		}
 
 	/* Save the IN_BACKGROUND env flag so it's ONLY passed to the service

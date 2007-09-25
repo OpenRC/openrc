@@ -110,12 +110,11 @@ static void show (char **runlevels, bool verbose)
 }
 
 #include "_usage.h"
-#define getoptstring "adsv" getoptstring_COMMON
+#define getoptstring "ads" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "add",      0, NULL, 'a'},
 	{ "delete",   0, NULL, 'd'},
 	{ "show",     0, NULL, 's'},
-	{ "verbose",  0, NULL, 'v'},
 	longopts_COMMON
 	{ NULL,       0, NULL, 0}
 };
@@ -123,7 +122,6 @@ static const char * const longopts_help[] = {
 	"Add the init.d to runlevels",
 	"Delete init.d from runlevels",
 	"Show init.d's in runlevels",
-	"Be verbose!",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -158,13 +156,12 @@ int rc_update (int argc, char **argv)
 			case 's':
 				action |= DOSHOW;
 				break;
-			case 'v':
-				verbose = true;
-				break;
 
-				case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 	}
+
+	verbose = rc_is_env ("RC_VERBOSE", "yes");
 
 	if ((action & DOSHOW   && action != DOSHOW) ||
 		(action & DOADD    && action != DOADD) ||

@@ -461,7 +461,7 @@ static void handle_signal (int sig)
 
 
 #include "_usage.h"
-#define getoptstring "KN:R:Sbc:d:g:mn:op:s:tu:r:vx:1:2:" getoptstring_COMMON
+#define getoptstring "KN:R:Sbc:d:g:mn:op:s:tu:r:x:1:2:" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
@@ -480,7 +480,6 @@ static struct option longopts[] = {
 	{ "test",         0, NULL, 't'},
 	{ "user",         1, NULL, 'u'},
 	{ "chroot",       1, NULL, 'r'},
-	{ "verbose",      0, NULL, 'v'},
 	{ "exec",         1, NULL, 'x'},
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
@@ -488,7 +487,6 @@ static struct option longopts[] = {
 	{ NULL,           0, NULL, 0}
 };
 static const char * const longopts_help[] = {
-	"",
 	"",
 	"",
 	"",
@@ -670,10 +668,6 @@ int start_stop_daemon (int argc, char **argv)
 				ch_root = optarg;
 				break;
 
-			case 'v':  /* --verbose */
-				verbose = true;
-				break;
-
 			case 'a':
 			case 'x':  /* --exec <executable> */
 				exec = optarg;
@@ -687,10 +681,11 @@ int start_stop_daemon (int argc, char **argv)
 				redirect_stderr = optarg;
 				break;
 
-				case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 
 	quiet = rc_is_env ("RC_QUIET", "yes");
+	verbose = rc_is_env ("RC_VERBOSE", "yes");
 
 	/* Allow start-stop-daemon --signal HUP --exec /usr/sbin/dnsmasq
 	 * instead of forcing --stop --oknodo as well */
