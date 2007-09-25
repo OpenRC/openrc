@@ -2,7 +2,11 @@
 # Distributed under the terms of the GNU General Public License v2
 
 wpa_supplicant_depend() {
-	program start /sbin/wpa_supplicant
+	if [ -x /usr/sbin/wpa_supplicant ]; then
+		program start /usr/sbin/wpa_supplicant
+	else
+		program start /sbin/wpa_supplicant
+	fi
 	after macnet plug
 	before interface
 	provide wireless
@@ -38,6 +42,12 @@ fi
 
 wpa_supplicant_pre_start() {
 	local opts= cfgfile= ctrl_dir=
+	local wpas=/usr/sbin/wpa_supplicant wpac=/usr/bin/wpa_cli
+
+	if [ ! -x "${wpas}" ]; then
+		wpas=/sbin/wpa_supplicant
+		wpac=/bin/wpa_cli
+	fi
 
 	_is_wireless || return 0
 
@@ -104,7 +114,7 @@ wpa_supplicant_pre_start() {
 
 	actfile="/etc/wpa_supplicant/wpa_cli.sh"
 
-	start-stop-daemon --start --exec /sbin/wpa_supplicant \
+	start-stop-daemon --start --exec "${wpas}" \
 		--pidfile "/var/run/wpa_supplicant-${IFACE}.pid" \
 		-- ${opts} -W -B -i "${IFACE}" \
 		-P "/var/run/wpa_supplicant-${IFACE}.pid"
@@ -117,7 +127,7 @@ wpa_supplicant_pre_start() {
 	mark_service_inactive "${SVCNAME}"
 
 	ebegin "Starting wpa_cli on" "${IFACE}"
-	start-stop-daemon --start --exec /bin/wpa_cli \
+	start-stop-daemon --start --exec "${wpac}" \
 		--pidfile "/var/run/wpa_cli-${IFACE}.pid" \
 		-- -a /etc/wpa_supplicant/wpa_cli.sh -p "${ctrl_dir}" -i "${IFACE}" \
 		-P "/var/run/wpa_cli-${IFACE}.pid" -B
@@ -127,32 +137,37 @@ wpa_supplicant_pre_start() {
 	fi
 
 	# wpa_cli failed to start? OK, error here
-	start-stop-daemon --quiet --stop --exec /sbin/wpa_supplicant \
+	start-stop-daemon --quiet --stop --exec "${wpas}" \
 		--pidfile "/var/run/wpa_supplicant-${IFACE}.pid"
 	${inact} ||	mark_service_stopped "${SVCNAME}"
 	return 1
 }
 
 wpa_supplicant_post_stop() {
+	local wpas=/usr/sbin/wpa_supplicant wpac=/usr/bin/wpa_cli
+
+	if [ ! -x "${wpas}" ]; then
+		wpas=/sbin/wpa_supplicant
+		wpac=/bin/wpa_cli
+	fi
+
 	if [ "${IN_BACKGROUND}" = "true" ] ; then
 		# Only stop wpa_supplicant if it's not the controlling daemon
-		! service_started_daemon "${SVCNAME}" /sbin/wpa_supplicant 1 
+		! service_started_daemon "${SVCNAME}" "${wpas}" 1
 	fi
 	[ $? != 0 ] && return 0
 
 	local pidfile="/var/run/wpa_cli-${IFACE}.pid"
 	if [ -f ${pidfile} ] ; then
 		ebegin "Stopping wpa_cli on ${IFACE}"
-		start-stop-daemon --stop --exec /bin/wpa_cli \
-			--pidfile "${pidfile}"
+		start-stop-daemon --stop --exec "${wpac}" --pidfile "${pidfile}"
 		eend $?
 	fi
 
 	pidfile="/var/run/wpa_supplicant-${IFACE}.pid"
 	if [ -f ${pidfile} ] ; then
 		ebegin "Stopping wpa_supplicant on ${IFACE}"
-		start-stop-daemon --stop --exec /sbin/wpa_supplicant \
-			--pidfile "${pidfile}"
+		start-stop-daemon --stop --exec "${wpas}" --pidfile "${pidfile}"
 		eend $?
 	fi
 
