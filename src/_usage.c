@@ -1,4 +1,4 @@
-/*
+/*!
  * @file _usage.c
  * @brief standardize help/usage output across all our programs
  * @internal

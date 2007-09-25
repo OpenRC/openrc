@@ -307,6 +307,7 @@ static void cleanup (void)
 	free (applet);
 	free (prefix);
 	free (service);
+	free (softlevel);
 }
 
 static int write_prefix (const char *buffer, size_t bytes, bool *prefixed) {
@@ -1029,7 +1030,7 @@ int runscript (int argc, char **argv)
 	}
 #endif
 
-	if ((softlevel = getenv ("RC_SOFTLEVEL")) == NULL) {
+	if ((softlevel = rc_xstrdup (getenv ("RC_SOFTLEVEL"))) == NULL) {
 		/* Ensure our environment is pure
 		   Also, add our configuration to it */
 		tmplist = rc_make_env();

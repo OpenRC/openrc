@@ -208,8 +208,11 @@ int rc_update (int argc, char **argv)
 			eerror ("%s: service `%s' does not exist", applet, service);
 		else {
 			retval = EXIT_SUCCESS;
-			if (! runlevels)
-				rc_strlist_add (&runlevels, rc_get_runlevel ());	
+			if (! runlevels) {
+				runlevel = rc_get_runlevel ();
+				rc_strlist_add (&runlevels, runlevel);
+				free (runlevel);
+			}
 			STRLIST_FOREACH (runlevels, runlevel, i) {
 				if (action & DOADD) {
 					if (! add (runlevel, service))

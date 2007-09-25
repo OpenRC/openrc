@@ -65,24 +65,23 @@ librc_hidden_def(rc_get_runlevels)
 char *rc_get_runlevel (void)
 {
 	FILE *fp;
-	static char buffer[PATH_MAX];
+	char buffer[RC_LINEBUFFER];
+	char *runlevel = NULL;
 
-	if (! (fp = fopen (SOFTLEVEL, "r"))) {
-		snprintf (buffer, sizeof (buffer), "sysinit");
-		return (buffer);
-	}
-
-	if (fgets (buffer, PATH_MAX, fp)) {
-		int i = strlen (buffer) - 1;
-		if (buffer[i] == '\n')
-			buffer[i] = 0;
+	if ((fp = fopen (SOFTLEVEL, "r"))) {
+		if (fgets (buffer, PATH_MAX, fp)) {
+			int i = strlen (buffer) - 1;
+			if (buffer[i] == '\n')
+				buffer[i] = 0;
+			runlevel = rc_xstrdup (buffer);
+		}
 		fclose (fp);
-		return (buffer);
 	}
 
-	fclose (fp);
-	snprintf (buffer, sizeof (buffer), "sysinit");
-	return (buffer);
+	if (! runlevel)
+		runlevel = rc_xstrdup (RC_LEVEL_SYSINIT);
+
+	return (runlevel);
 }
 librc_hidden_def(rc_get_runlevel)
 
@@ -452,31 +451,27 @@ bool rc_service_state (const char *service, const rc_service_state_t state)
 }
 librc_hidden_def(rc_service_state)
 
-bool rc_get_service_option (const char *service, const char *option,
-							char *value)
+char *rc_get_service_option (const char *service, const char *option)
 {
 	FILE *fp;
 	char buffer[RC_LINEBUFFER];
 	char *file = rc_strcatpaths (RC_SVCDIR, "options", service, option,
 								 (char *) NULL);
-	bool retval = false;
+	char *value = NULL;
 
 	if (rc_exists (file)) {
 		if ((fp = fopen (file, "r")) == NULL)
 			eerror ("fopen `%s': %s", file, strerror (errno));
 		else {
 			memset (buffer, 0, sizeof (buffer));
-			while (fgets (buffer, RC_LINEBUFFER, fp)) {
-				memcpy (value, buffer, strlen (buffer));
-				value += strlen (buffer);
-			}
+			if (fgets (buffer, RC_LINEBUFFER, fp)) 
+				value = rc_xstrdup (buffer);
 			fclose (fp);
-			retval = true;
 		}
 	}
 
 	free (file);
-	return (retval);
+	return (value);
 }
 librc_hidden_def(rc_get_service_option)
 

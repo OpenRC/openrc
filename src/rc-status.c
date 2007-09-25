@@ -117,8 +117,11 @@ int rc_status (int argc, char **argv)
 	while (optind < argc)
 		rc_strlist_add (&levels, argv[optind++]);
 
-	if (! levels)
-		rc_strlist_add (&levels, rc_get_runlevel ());
+	if (! levels) {
+		level = rc_get_runlevel ();
+		rc_strlist_add (&levels, level);
+		free (level);
+	}
 
 	STRLIST_FOREACH (levels, level, i) {
 		print_level (level);

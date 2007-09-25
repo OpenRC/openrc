@@ -588,9 +588,10 @@ char **rc_make_env (void)
 	bool has_net_fs_list = false;
 	FILE *fp;
 	char buffer[PATH_MAX];
+	char *runlevel = rc_get_runlevel ();
 
 	/* Don't trust environ for softlevel yet */
-	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, rc_get_runlevel());
+	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, runlevel);
 	if (rc_exists (buffer))
 		config = rc_get_config (buffer);
 	else
@@ -632,10 +633,9 @@ char **rc_make_env (void)
 
 	rc_strlist_add (&env, "RC_BOOTLEVEL=" RC_LEVEL_BOOT);
 
-	p = rc_get_runlevel ();
-	i = strlen ("RC_SOFTLEVEL=") + strlen (p) + 1;
+	i = strlen ("RC_SOFTLEVEL=") + strlen (runlevel) + 1;
 	line = rc_xmalloc (sizeof (char *) * i);
-	snprintf (line, i, "RC_SOFTLEVEL=%s", p);
+	snprintf (line, i, "RC_SOFTLEVEL=%s", runlevel);
 	rc_strlist_add (&env, line);
 	free (line);
 
@@ -717,6 +717,7 @@ char **rc_make_env (void)
 		free (line);
 	}
 
+	free (runlevel);
 	return (env);
 }
 librc_hidden_def(rc_make_env)

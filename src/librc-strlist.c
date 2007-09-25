@@ -135,7 +135,7 @@ int rc_strlist_delete (char ***list, const char *item)
 }
 librc_hidden_def(rc_strlist_delete)
 
-int rc_strlist_join (char ***list1, char **list2)
+char *rc_strlist_join (char ***list1, char **list2)
 {
 	char **lst1 = *list1;
 	char **newlist;
@@ -143,7 +143,7 @@ int rc_strlist_join (char ***list1, char **list2)
 	int j = 0;
 
 	if (! list2)
-		return (0);
+		return (NULL);
 
 	while (lst1 && lst1[i])
 		i++;
@@ -164,7 +164,7 @@ int rc_strlist_join (char ***list1, char **list2)
 	newlist[i] = NULL;
 
 	*list1 = newlist;
-	return (0);
+	return (newlist[i == 0 ? 0 : i - 1]);
 }
 librc_hidden_def(rc_strlist_join)
 
