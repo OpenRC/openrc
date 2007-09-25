@@ -457,8 +457,8 @@ char *rc_strlist_addsortu (char ***list, const char *item);
 /*! Free the item and remove it from the list. Return 0 on success otherwise -1.
  * @param list to add the item too
  * @param item to add.
- * @return 0 on success, otherwise -1 */
-int rc_strlist_delete (char ***list, const char *item);
+ * @return true on success, otherwise false */
+bool rc_strlist_delete (char ***list, const char *item);
 /*! Moves the contents of list2 onto list1, so list2 is effectively emptied.
  * Returns a pointer to the last item on the new list.
  * @param list1 to append to

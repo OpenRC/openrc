@@ -110,26 +110,26 @@ char *rc_strlist_addsortu (char ***list, const char *item)
 }
 librc_hidden_def(rc_strlist_addsortu)
 
-int rc_strlist_delete (char ***list, const char *item)
+bool rc_strlist_delete (char ***list, const char *item)
 {
 	char **lst = *list;
 	int i = 0;
-	int retval = -1;
+	bool retval = false;
 
 	if (!lst || ! item)
-		return (-1);
+		return (false);
 
 	while (lst[i])
 		if (! strcmp (lst[i], item)) {
 			free (lst[i]);
-			retval = 0;
+			retval = true;
 			do {
 				lst[i] = lst[i + 1];
 				i++;
 			} while (lst[i]);
 		}
 
-	if (retval)
+	if (! retval)
 		errno = ENOENT;
 	return (retval);
 }
