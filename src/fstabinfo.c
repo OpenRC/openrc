@@ -65,7 +65,7 @@ static struct mntent *getmntfile (const char *file)
 #endif
 
 #include "_usage.h"
-#define getoptstring "m:o:p:t:" getoptstring_COMMON
+#define getoptstring "mop:t:" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "mountcmd",       0, NULL, 'm'},
 	{ "options",        0, NULL, 'o'},
