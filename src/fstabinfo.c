@@ -58,12 +58,12 @@ static struct mntent *getmntfile (FILE *fp, const char *file)
 #endif
 
 #include "_usage.h"
-#define getoptstring "f:m:o:p:" getoptstring_COMMON
+#define getoptstring "m:o:p:t:" getoptstring_COMMON
 static struct option longopts[] = {
-	{ "fstype",         1, NULL, 'f'},
 	{ "mountcmd",       1, NULL, 'm'},
 	{ "options",        1, NULL, 'o'},
 	{ "passno",         1, NULL, 'p'},
+	{ "fstype",         1, NULL, 't'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
@@ -89,14 +89,6 @@ int fstabinfo (int argc, char **argv)
 		fp = setmntent ("/etc/fstab", "r");
 #endif
 		switch (opt) {
-			case 'f':
-				while ((token = strsep (&optarg, ",")))
-					while ((ent = GET_ENT))
-						if (strcmp (token, ENT_TYPE (ent)) == 0)
-							printf ("%s\n", ENT_FILE (ent));
-				result = EXIT_SUCCESS;
-				break;
-
 			case 'm':
 				if ((ent = GET_ENT_FILE (optarg))) {
 					printf ("-o %s -t %s %s %s\n", ENT_OPTS (ent), ENT_TYPE (ent),
@@ -141,6 +133,14 @@ int fstabinfo (int argc, char **argv)
 				}
 				break;
 
+			case 't':
+				while ((token = strsep (&optarg, ",")))
+					while ((ent = GET_ENT))
+						if (strcmp (token, ENT_TYPE (ent)) == 0)
+							printf ("%s\n", ENT_FILE (ent));
+				result = EXIT_SUCCESS;
+				break;
+
 			case_RC_COMMON_GETOPT
 		}
 
@@ -151,7 +151,7 @@ int fstabinfo (int argc, char **argv)
 	}
 
 	if (result != EXIT_SUCCESS && argc == optind)
-		fprintf (stderr, "%s: no arguments specified\n", argv[0]);
+		eerrorx ("%s: no arguments specified", argv[0]);
 
 	exit (result);
 }
