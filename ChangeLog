@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  25 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Skip consolefont setup when RC_TTY_NUMBER is set to 0.
+
   24 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Do not require portmap in netmount when nolock option is used with nfs

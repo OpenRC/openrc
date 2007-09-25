@@ -24,6 +24,12 @@ start() {
 		return 0
 	fi
 
+	if [ ${RC_TTY_NUMBER} -eq 0 ] ; then
+		ebegin "Skipping font setup (RC_TTY_NUMBER == 0); you should disable this init.d"
+		eend 0
+		return 0
+	fi
+
 	local x= param= sf_param= retval=1
 
 	# Get additional parameters
