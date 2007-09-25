@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  25 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    We no longer use bool in our public headers, using int instead.
+    This makes us more like our base libraries.
+
   25 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Skip consolefont setup when RC_TTY_NUMBER is set to 0.

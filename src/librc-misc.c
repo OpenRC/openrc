@@ -57,18 +57,18 @@ char *rc_xstrdup (const char *str)
 }
 librc_hidden_def(rc_xstrdup)
 
-bool rc_is_env (const char *var, const char *val)
+int rc_is_env (const char *var, const char *val)
 {
 	char *v;
 
 	if (! var)
-		return (false);
+		return (-1);
 
 	v = getenv (var);
 	if (! v)
-		return (val == NULL ? true : false);
+		return (val == NULL ? 0 : -1);
 
-	return (strcasecmp (v, val) == 0 ? true : false);
+	return (strcasecmp (v, val));
 }
 librc_hidden_def(rc_is_env)
 
@@ -123,78 +123,58 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 }
 librc_hidden_def(rc_strcatpaths)
 
-bool rc_exists (const char *pathname)
+int rc_exists (const char *pathname)
 {
 	struct stat buf;
 
 	if (! pathname)
-		return (false);
+		return (-1);
 
-	if (stat (pathname, &buf) == 0)
-		return (true);
-
-	errno = 0;
-	return (false);
+	return (stat (pathname, &buf));
 }
 librc_hidden_def(rc_exists)
 
-bool rc_is_file (const char *pathname)
+int rc_is_file (const char *pathname)
 {
 	struct stat buf;
 
-	if (! pathname)
-		return (false);
+	if (pathname && stat (pathname, &buf) == 0)
+		return (S_ISREG (buf.st_mode) ? 0 : -1);
 
-	if (stat (pathname, &buf) == 0)
-		return (S_ISREG (buf.st_mode));
-
-	errno = 0;
-	return (false);
+	return (-1);
 }
 librc_hidden_def(rc_is_file)
 
-bool rc_is_dir (const char *pathname)
+int rc_is_dir (const char *pathname)
 {
 	struct stat buf;
 
-	if (! pathname)
-		return (false);
+	if (pathname && stat (pathname, &buf) == 0)
+		return (S_ISDIR (buf.st_mode) ? 0 : -1);
 
-	if (stat (pathname, &buf) == 0)
-		return (S_ISDIR (buf.st_mode));
-
-	errno = 0;
-	return (false);
+	return (-1);
 }
 librc_hidden_def(rc_is_dir)
 
-bool rc_is_link (const char *pathname)
+int rc_is_link (const char *pathname)
 {
 	struct stat buf;
 
-	if (! pathname)
-		return (false);
+	if (pathname && lstat (pathname, &buf) == 0)
+		return (S_ISLNK (buf.st_mode) ? 0 : -1);
 
-	if (lstat (pathname, &buf) == 0)
-		return (S_ISLNK (buf.st_mode));
-
-	errno = 0;
-	return (false);
+	return (-1);
 }
 librc_hidden_def(rc_is_link)
 
-bool rc_is_exec (const char *pathname)
+int rc_is_exec (const char *pathname)
 {
 	struct stat buf;
 
-	if (! pathname)
-		return (false);
+	if (pathname && lstat (pathname, &buf) == 0)
+		return (buf.st_mode & S_IXUGO ? 0 : -1);
 
-	if (lstat (pathname, &buf) == 0)
-		return (buf.st_mode & S_IXUGO);
-
-	errno = 0;
-	return (false);
+	return (-1);
 }
 librc_hidden_def(rc_is_exec)
 
@@ -219,9 +199,9 @@ char **rc_ls_dir (const char *dir, int options)
 				int l = strlen (d->d_name);
 				char *init = rc_strcatpaths (RC_INITDIR, d->d_name,
 											 (char *) NULL);
-				bool ok = rc_exists (init);
+				int ok = rc_exists (init);
 				free (init);
-				if (! ok)
+				if (ok != 0)
 					continue;
 
 				/* .sh files are not init scripts */
@@ -245,17 +225,17 @@ char **rc_ls_dir (const char *dir, int options)
 }
 librc_hidden_def(rc_ls_dir)
 
-bool rc_rm_dir (const char *pathname, bool top)
+int rc_rm_dir (const char *pathname, bool top)
 {
 	DIR *dp;
 	struct dirent *d;
 
 	if (! pathname)
-		return (false);
+		return (-1);
 
 	if ((dp = opendir (pathname)) == NULL) {
 		eerror ("failed to opendir `%s': %s", pathname, strerror (errno));
-		return (false);
+		return (-1);
 	}
 
 	errno = 0;
@@ -263,18 +243,18 @@ bool rc_rm_dir (const char *pathname, bool top)
 		if (strcmp (d->d_name, ".") != 0 && strcmp (d->d_name, "..") != 0) {
 			char *tmp = rc_strcatpaths (pathname, d->d_name, (char *) NULL);
 			if (d->d_type == DT_DIR) {
-				if (! rc_rm_dir (tmp, true))
+				if (rc_rm_dir (tmp, true) != 0)
 				{
 					free (tmp);
 					closedir (dp);
-					return (false);
+					return (-1);
 				}
 			} else {
 				if (unlink (tmp)) {
 					eerror ("failed to unlink `%s': %s", tmp, strerror (errno));
 					free (tmp);
 					closedir (dp);
-					return (false);
+					return (-1);
 				}
 			}
 			free (tmp);
@@ -286,10 +266,10 @@ bool rc_rm_dir (const char *pathname, bool top)
 
 	if (top && rmdir (pathname) != 0) {
 		eerror ("failed to rmdir `%s': %s", pathname, strerror (errno));
-		return false;
+		return (-1);
 	}
 
-	return (true);
+	return (0);
 }
 librc_hidden_def(rc_rm_dir)
 
@@ -462,7 +442,7 @@ char **rc_filter_env (void)
 	if (! whitelist)
 		return (NULL);
 
-	if (rc_is_file (PROFILE_ENV))
+	if (rc_is_file (PROFILE_ENV) == 0)
 		profile = rc_get_config (PROFILE_ENV);
 
 	STRLIST_FOREACH (whitelist, env_name, count) {
@@ -544,7 +524,7 @@ static bool file_regex (const char *file, const char *regex)
 	bool retval = false;
 	int result;
 
-	if (! rc_exists (file))
+	if (rc_exists (file) != 0)
 		return (false);
 
 	if (! (fp = fopen (file, "r"))) {
@@ -592,7 +572,7 @@ char **rc_make_env (void)
 
 	/* Don't trust environ for softlevel yet */
 	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, runlevel);
-	if (rc_exists (buffer))
+	if (rc_exists (buffer) == 0)
 		config = rc_get_config (buffer);
 	else
 		config = rc_get_config (RC_CONFIG);
@@ -639,7 +619,7 @@ char **rc_make_env (void)
 	rc_strlist_add (&env, line);
 	free (line);
 
-	if (rc_exists (RC_KSOFTLEVEL)) {
+	if (rc_exists (RC_KSOFTLEVEL) == 0) {
 		if (! (fp = fopen (RC_KSOFTLEVEL, "r")))
 			eerror ("fopen `%s': %s", RC_KSOFTLEVEL, strerror (errno));
 		else {
@@ -665,7 +645,7 @@ char **rc_make_env (void)
 	   We store this special system in RC_SYS so our scripts run fast */
 	memset (sys, 0, sizeof (sys));
 
-	if (rc_is_dir ("/proc/xen")) {
+	if (rc_is_dir ("/proc/xen") == 0) {
 		fp = fopen ("/proc/xen/capabilities", "r");
 		if (fp) {
 			fclose (fp);

@@ -147,7 +147,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 librc_hidden_def(rc_find_pids)
 
 #elif defined(__DragonFly__) || defined(__FreeBSD__) || \
-	defined(__NetBSD__) || defined(__OpenBSD__)
+		defined(__NetBSD__) || defined(__OpenBSD__)
 
 # if defined(__DragonFly__) || defined(__FreeBSD__)
 #  ifndef KERN_PROC_PROC
@@ -228,9 +228,9 @@ librc_hidden_def(rc_find_pids)
 #  error "Platform not supported!"
 #endif
 
-static bool _match_daemon (const char *path, const char *file,
-						   const char *mexec, const char *mname,
-						   const char *mpidfile)
+static int _match_daemon (const char *path, const char *file,
+						  const char *mexec, const char *mname,
+						  const char *mpidfile)
 {
 	char buffer[RC_LINEBUFFER];
 	char *ffile = rc_strcatpaths (path, file, (char *) NULL);
@@ -238,15 +238,15 @@ static bool _match_daemon (const char *path, const char *file,
 	int lc = 0;
 	int m = 0;
 
-	if (! rc_exists (ffile)) {
+	if (rc_exists (ffile) != 0) {
 		free (ffile);
-		return (false);
+		return (-1);
 	}
 
 	if ((fp = fopen (ffile, "r")) == NULL) {
 		eerror ("fopen `%s': %s", ffile, strerror (errno));
 		free (ffile);
-		return (false);
+		return (-1);
 	}
 
 	if (! mname)
@@ -277,12 +277,12 @@ static bool _match_daemon (const char *path, const char *file,
 	fclose (fp);
 	free (ffile);
 
-	return (m == 111 ? true : false);
+	return (m == 111 ? 0 : -1);
 }
 
-void rc_set_service_daemon (const char *service, const char *exec,
-							const char *name, const char *pidfile,
-							bool started)
+int rc_set_service_daemon (const char *service, const char *exec,
+						   const char *name, const char *pidfile,
+						   bool started)
 {
 	char *svc = rc_xstrdup (service);
 	char *dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
@@ -295,10 +295,11 @@ void rc_set_service_daemon (const char *service, const char *exec,
 	char *mname;
 	char *mpidfile;
 	int nfiles = 0;
+	int retval = -1;
 
 	free (svc);
 	if (! exec && ! name && ! pidfile)
-		return;
+		return (-1);
 
 	if (exec) {
 		i = strlen (exec) + 6;
@@ -322,7 +323,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 		mpidfile = rc_xstrdup ("pidfile=");
 
 	/* Regardless, erase any existing daemon info */
-	if (rc_is_dir (dirpath)) {
+	if (rc_is_dir (dirpath) == 0) {
 		char *oldfile = NULL;
 		files = rc_ls_dir (dirpath, 0);
 		STRLIST_FOREACH (files, file, i) {
@@ -330,7 +331,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 			nfiles++;
 
 			if (! oldfile) {
-				if (_match_daemon (dirpath, file, mexec, mname, mpidfile)) {
+				if (_match_daemon (dirpath, file, mexec, mname, mpidfile) == 0) {
 					unlink (ffile);
 					oldfile = ffile;
 					nfiles--;
@@ -350,7 +351,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 		char buffer[10];
 		FILE *fp;
 
-		if (! rc_is_dir (dirpath))
+		if (rc_is_dir (dirpath) != 0)
 			if (mkdir (dirpath, 0755) != 0)
 				eerror ("mkdir `%s': %s", dirpath, strerror (errno));
 
@@ -360,6 +361,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 			eerror ("fopen `%s': %s", file, strerror (errno));
 		else {
 			fprintf (fp, "%s\n%s\n%s\n", mexec, mname, mpidfile);
+			retval = 0;
 			fclose (fp);
 		}
 		free (file);
@@ -369,30 +371,32 @@ void rc_set_service_daemon (const char *service, const char *exec,
 	free (mname);
 	free (mpidfile);
 	free (dirpath);
+
+	return (retval);
 }
 librc_hidden_def(rc_set_service_daemon)
 
-bool rc_service_started_daemon (const char *service, const char *exec,
-								int indx)
+int rc_service_started_daemon (const char *service, const char *exec,
+							   int indx)
 {
 	char *dirpath;
 	char *file;
 	int i;
 	char *mexec;
-	bool retval = false;
+	int retval = -1;
 	char *svc;
 
 	if (! service || ! exec)
-		return (false);
+		return (-1);
 
 	svc = rc_xstrdup (service);
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
 							  (char *) NULL);
 	free (svc);
 
-	if (! rc_is_dir (dirpath)) {
+	if (rc_is_dir (dirpath) != 0) {
 		free (dirpath);
-		return (false);
+		return (-1);
 	}
 
 	i = strlen (exec) + 6;
@@ -409,7 +413,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 		char **files = rc_ls_dir (dirpath, 0);
 		STRLIST_FOREACH (files, file, i) {
 			retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
-			if (retval)
+			if (retval == 0)
 				break;
 		}
 		rc_strlist_free (files);
@@ -420,7 +424,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 }
 librc_hidden_def(rc_service_started_daemon)
 
-bool rc_service_daemons_crashed (const char *service)
+int rc_service_daemons_crashed (const char *service)
 {
 	char *dirpath;
 	char **files;
@@ -436,20 +440,20 @@ bool rc_service_daemons_crashed (const char *service)
 	pid_t *pids = NULL;
 	char *p;
 	char *token;
-	bool retval = false;
+	int retval = -1;
 	char *svc;
 
 	if (! service)
-		return (false);
+		return (-1);
 
 	svc = rc_xstrdup (service);
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
 							  (char *) NULL);
 	free (svc);
 
-	if (! rc_is_dir (dirpath)) {
+	if (rc_is_dir (dirpath) != 0) {
 		free (dirpath);
-		return (false);
+		return (-1);
 	}
 
 	memset (buffer, 0, sizeof (buffer));
@@ -493,21 +497,21 @@ bool rc_service_daemons_crashed (const char *service)
 
 		pid = 0;
 		if (pidfile) {
-			if (! rc_exists (pidfile)) {
-				retval = true;
+			if (rc_exists (pidfile) != 0) {
+				retval = 0;
 				break;
 			}
 
 			if ((fp = fopen (pidfile, "r")) == NULL) {
 				eerror ("fopen `%s': %s", pidfile, strerror (errno));
-				retval = true;
+				retval = 0;
 				break;
 			}
 
 			if (fscanf (fp, "%d", &pid) != 1) {
 				eerror ("no pid found in `%s'", pidfile);
 				fclose (fp);
-				retval = true;
+				retval = 0;
 				break;
 			}
 
@@ -523,7 +527,7 @@ bool rc_service_daemons_crashed (const char *service)
 		}
 
 		if ((pids = rc_find_pids (exec, name, 0, pid)) == NULL) {
-			retval = true;
+			retval = 0;
 			break;
 		}
 		free (pids);

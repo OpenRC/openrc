@@ -33,20 +33,21 @@ static void print_service (char *service)
 	int cols =  printf (" %s\n", service);
 	einfo_color_t color = ecolor_bad;
 
-	if (rc_service_state (service, rc_service_stopping))
+	if (rc_service_state (service, rc_service_stopping) == 0)
 		snprintf (status, sizeof (status),   "stopping ");
-	else if (rc_service_state (service, rc_service_starting)) {
+	else if (rc_service_state (service, rc_service_starting) == 0) {
 		snprintf (status, sizeof (status), "starting ");
 		color = ecolor_warn;
-	} else if (rc_service_state (service, rc_service_inactive)) {
+	} else if (rc_service_state (service, rc_service_inactive) == 0) {
 		snprintf (status, sizeof (status), "inactive ");
 		color = ecolor_warn;
-	} else if (geteuid () == 0 && rc_service_state (service, rc_service_crashed))
+	} else if (geteuid () == 0 &&
+			   rc_service_state (service, rc_service_crashed) == 0)
 		snprintf (status, sizeof (status),   " crashed ");
-	else if (rc_service_state (service, rc_service_started)) {
+	else if (rc_service_state (service, rc_service_started) == 0) {
 		snprintf (status, sizeof (status), " started ");
 		color = ecolor_good;
-	} else if (rc_service_state (service, rc_service_scheduled)) {
+	} else if (rc_service_state (service, rc_service_scheduled) == 0) {
 		snprintf (status, sizeof (status), "scheduled");
 		color = ecolor_warn;
 	} else
@@ -107,7 +108,7 @@ int rc_status (int argc, char **argv)
 				STRLIST_FOREACH (services, service, i) {
 					bool found = false;
 					STRLIST_FOREACH (levels, level, j)
-						if (rc_service_in_runlevel (service, level)) {
+						if (rc_service_in_runlevel (service, level) == 0) {
 							found = true;
 							break;
 						}

@@ -109,9 +109,9 @@ static void cleanup (void)
 
 		/* Clean runlevel start, stop markers */
 		if (! rc_in_plugin) {
-			if (rc_is_dir (RC_STARTING))
+			if (rc_is_dir (RC_STARTING) == 0)
 				rc_rm_dir (RC_STARTING, true);
-			if (rc_is_dir (RC_STOPPING))
+			if (rc_is_dir (RC_STOPPING) == 0)
 				rc_rm_dir (RC_STOPPING, true);
 		}
 	}
@@ -263,7 +263,7 @@ static int do_e (int argc, char **argv)
 
 static int do_service (int argc, char **argv)
 {
-	bool ok = false;
+	int ok = -1;
 
 	if (argc < 1 || ! argv[0] || strlen (argv[0]) == 0)
 		eerrorx ("%s: no service specified", applet);
@@ -286,17 +286,16 @@ static int do_service (int argc, char **argv)
 		int idx = 0;
 		if (argc > 2)
 			sscanf (argv[2], "%d", &idx);
-		exit (rc_service_started_daemon (argv[0], argv[1], idx)
-			  ? 0 : 1);
+		ok = rc_service_started_daemon (argv[0], argv[1], idx);
 	} else
 		eerrorx ("%s: unknown applet", applet);
 
-	return (ok ? EXIT_SUCCESS : EXIT_FAILURE);
+	return (ok);
 }
 
 static int do_mark_service (int argc, char **argv)
 {
-	bool ok = false;
+	int ok = -1;
 	char *svcname = getenv ("SVCNAME");
 
 	if (argc < 1 || ! argv[0] || strlen (argv[0]) == 0)
@@ -319,7 +318,7 @@ static int do_mark_service (int argc, char **argv)
 
 	/* If we're marking ourselves then we need to inform our parent runscript
 	   process so they do not mark us based on our exit code */
-	if (ok && svcname && strcmp (svcname, argv[0]) == 0) {
+	if (ok == 0 && svcname && strcmp (svcname, argv[0]) == 0) {
 		char *runscript_pid = getenv ("RC_RUNSCRIPT_PID");
 		char *mtime;
 		pid_t pid = 0;
@@ -339,17 +338,17 @@ static int do_mark_service (int argc, char **argv)
 		mtime = rc_xmalloc (l);
 		snprintf (mtime, l, RC_SVCDIR "exclusive/%s.%s",
 				  svcname, runscript_pid);
-		if (rc_exists (mtime) && unlink (mtime) != 0)
+		if (rc_exists (mtime) == 0 && unlink (mtime) != 0)
 			eerror ("%s: unlink: %s", applet, strerror (errno));
 		free (mtime);
 	}
 
-	return (ok ? EXIT_SUCCESS : EXIT_FAILURE);
+	return (ok);
 }
 
 static int do_options (int argc, char **argv)
 {
-	bool ok = false;
+	int ok = -1;
 	char *service = getenv ("SVCNAME");
 
 	if (! service)
@@ -363,14 +362,14 @@ static int do_options (int argc, char **argv)
 		if (option) {
 			printf ("%s", option);
 			free (option);
-			ok = true;
+			ok = 0;
 		}
 	} else if (strcmp (applet, "save_options") == 0)
 		ok = rc_set_service_option (service, argv[0], argv[1]);
 	else
 		eerrorx ("%s: unknown applet", applet);
 
-	return (ok ? EXIT_SUCCESS : EXIT_FAILURE);
+	return (ok);
 }
 
 #ifdef __linux__
@@ -382,7 +381,7 @@ static char *proc_getent (const char *ent)
 	char *value = NULL;
 	int i;
 
-	if (! rc_exists ("/proc/cmdline"))
+	if (rc_exists ("/proc/cmdline") != 0)
 		return (NULL);
 
 	if (! (fp = fopen ("/proc/cmdline", "r"))) {
@@ -545,7 +544,7 @@ static void set_ksoftlevel (const char *runlevel)
 		strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
 		strcmp (runlevel, RC_LEVEL_SYSINIT) == 0)
 	{
-		if (rc_exists (RC_KSOFTLEVEL) &&
+		if (rc_exists (RC_KSOFTLEVEL) == 0 &&
 			unlink (RC_KSOFTLEVEL) != 0)
 			eerror ("unlink `%s': %s", RC_KSOFTLEVEL, strerror (errno));
 		return;
@@ -565,7 +564,7 @@ static int get_ksoftlevel (char *buffer, int buffer_len)
 	FILE *fp;
 	int i = 0;
 
-	if (! rc_exists (RC_KSOFTLEVEL))
+	if (rc_exists (RC_KSOFTLEVEL) != 0)
 		return (0);
 
 	if (! (fp = fopen (RC_KSOFTLEVEL, "r"))) {
@@ -784,9 +783,9 @@ int main (int argc, char **argv)
 		exit (do_mark_service (argc, argv));
 
 	if (strcmp (applet, "is_runlevel_start") == 0)
-		exit (rc_runlevel_starting () ? 0 : 1);
+		exit (rc_runlevel_starting ());
 	else if (strcmp (applet, "is_runlevel_stop") == 0)
-		exit (rc_runlevel_stopping () ? 0 : 1);
+		exit (rc_runlevel_stopping ());
 
 	if (strcmp (applet, "rc-abort") == 0) {
 		char *p = getenv ("RC_PID");
@@ -880,7 +879,7 @@ int main (int argc, char **argv)
 	snprintf (pidstr, sizeof (pidstr), "%d", getpid ());
 	setenv ("RC_PID", pidstr, 1);
 
-	interactive = rc_exists (INTERACTIVE);
+	interactive = (rc_exists (INTERACTIVE) == 0);
 	rc_plugin_load ();
 
 	/* Load current softlevel */
@@ -907,7 +906,7 @@ int main (int argc, char **argv)
 			/* exec init-early.sh if it exists
 			 * This should just setup the console to use the correct
 			 * font. Maybe it should setup the keyboard too? */
-			if (rc_exists (INITEARLYSH))
+			if (rc_exists (INITEARLYSH) == 0)
 				run_script (INITEARLYSH);
 
 			uname (&uts);
@@ -1015,7 +1014,7 @@ int main (int argc, char **argv)
 	/* Check if runlevel is valid if we're changing */
 	if (newlevel && strcmp (runlevel, newlevel) != 0 && ! going_down) {
 		tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel, (char *) NULL);
-		if (! rc_is_dir (tmp))
+		if (rc_is_dir (tmp) != 0)
 			eerrorx ("%s: is not a valid runlevel", newlevel);
 		CHAR_FREE (tmp);
 	}
@@ -1025,7 +1024,7 @@ int main (int argc, char **argv)
 		eerrorx ("failed to load deptree");
 
 	/* Clean the failed services state dir now */
-	if (rc_is_dir (RC_SVCDIR "/failed"))
+	if (rc_is_dir (RC_SVCDIR "/failed") == 0)
 		rc_rm_dir (RC_SVCDIR "/failed", false);
 
 	mkdir (RC_STOPPING, 0755);
@@ -1035,12 +1034,12 @@ int main (int argc, char **argv)
 	   its coldplugging thing. runscript knows when we're not ready so it
 	   stores a list of coldplugged services in DEVBOOT for us to pick up
 	   here when we are ready for them */
-	if (rc_is_dir (DEVBOOT)) {
+	if (rc_is_dir (DEVBOOT) == 0) {
 		start_services = rc_ls_dir (DEVBOOT, RC_LS_INITD);
 		rc_rm_dir (DEVBOOT, true);
 
 		STRLIST_FOREACH (start_services, service, i)
-			if (rc_allow_plug (service))
+			if (rc_allow_plug (service) == 0)
 				rc_mark_service (service, rc_service_coldplugged);
 		/* We need to dump this list now.
 		   This may seem redunant, but only Linux needs this and saves on
@@ -1065,7 +1064,7 @@ int main (int argc, char **argv)
 			j = (strlen ("net.") + strlen (service) + 1);
 			tmp = rc_xmalloc (sizeof (char *) * j);
 			snprintf (tmp, j, "net.%s", service);
-			if (rc_service_exists (tmp) && rc_allow_plug (tmp))
+			if (rc_service_exists (tmp) == 0 && rc_allow_plug (tmp) == 0)
 				rc_mark_service (tmp, rc_service_coldplugged);
 			CHAR_FREE (tmp);
 		}
@@ -1084,7 +1083,7 @@ int main (int argc, char **argv)
 					j = (strlen ("moused.") + strlen (service) + 1);
 					tmp = rc_xmalloc (sizeof (char *) * j);
 					snprintf (tmp, j, "moused.%s", service);
-					if (rc_service_exists (tmp) && rc_allow_plug (tmp))
+					if (rc_service_exists (tmp) == 0 && rc_allow_plug (tmp) == 0)
 						rc_mark_service (tmp, rc_service_coldplugged);
 					CHAR_FREE (tmp);
 				}
@@ -1180,7 +1179,7 @@ int main (int argc, char **argv)
 		char *svc2 = NULL;
 		int k;
 
-		if (rc_service_state (service, rc_service_stopped))
+		if (rc_service_state (service, rc_service_stopped) == 0)
 			continue;
 
 		/* We always stop the service when in these runlevels */
@@ -1208,7 +1207,7 @@ int main (int argc, char **argv)
 			tmp = rc_xmalloc (sizeof (char *) * len);
 			snprintf (tmp, len, "%s.%s", service, runlevel);
 			conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
-			found = rc_exists (conf);
+			found = (rc_exists (conf) == 0);
 			CHAR_FREE (conf);
 			CHAR_FREE (tmp);
 			if (! found) {
@@ -1216,7 +1215,7 @@ int main (int argc, char **argv)
 				tmp = rc_xmalloc (sizeof (char *) * len);
 				snprintf (tmp, len, "%s.%s", service, newlevel);
 				conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
-				found = rc_exists (conf);
+				found = (rc_exists (conf) == 0);
 				CHAR_FREE (conf);
 				CHAR_FREE (tmp);
 				if (!found)
@@ -1224,7 +1223,7 @@ int main (int argc, char **argv)
 			}
 		} else {
 			/* Allow coldplugged services not to be in the runlevels list */
-			if (rc_service_state (service, rc_service_coldplugged))
+			if (rc_service_state (service, rc_service_coldplugged) == 0)
 				continue;
 		}
 
@@ -1284,7 +1283,7 @@ int main (int argc, char **argv)
 
 	/* Single user is done now */
 	if (strcmp (runlevel, RC_LEVEL_SINGLE) == 0) {
-		if (rc_exists (INTERACTIVE))
+		if (rc_exists (INTERACTIVE) == 0)
 			unlink (INTERACTIVE);
 		sulogin (false);
 	}
@@ -1324,7 +1323,7 @@ int main (int argc, char **argv)
 
 
 	STRLIST_FOREACH (start_services, service, i) {
-		if (rc_service_state (service, rc_service_stopped))	{
+		if (rc_service_state (service, rc_service_stopped) == 0) {
 			pid_t pid;
 
 			if (! interactive)
@@ -1382,7 +1381,7 @@ interactive_option:
 	if (interactive && strcmp (runlevel, bootlevel) == 0)
 		mark_interactive ();
 	else {
-		if (rc_exists (INTERACTIVE))
+		if (rc_exists (INTERACTIVE) == 0)
 			unlink (INTERACTIVE);
 	}
 

@@ -33,15 +33,15 @@ static ssize_t add (const char *runlevel, const char *service)
 {
 	ssize_t retval = -1;
 
-	if (! rc_service_exists (service))
+	if (rc_service_exists (service) != 0)
 		eerror ("%s: service `%s' does not exist", applet, service);
-	else if (! rc_runlevel_exists (runlevel))
+	else if (rc_runlevel_exists (runlevel) != 0)
 		eerror ("%s: runlevel `%s' does not exist", applet, runlevel);
-	else if (rc_service_in_runlevel (service, runlevel)) {
+	else if (rc_service_in_runlevel (service, runlevel) == 0) {
 		ewarn ("%s: %s already installed in runlevel `%s'; skipping",
 			   applet, service, runlevel);
 		retval = 0;
-	} else if (rc_service_add (runlevel, service)) {
+	} else if (rc_service_add (runlevel, service) == 0) {
 		einfo ("%s added to runlevel %s", service, runlevel);
 		retval = 1;
 	} else
@@ -55,16 +55,16 @@ static ssize_t delete (const char *runlevel, const char *service)
 {
 	ssize_t retval = -1;
 
-	if (rc_service_in_runlevel (service, runlevel))	{
-		if (rc_service_delete (runlevel, service)) {
+	if (rc_service_in_runlevel (service, runlevel) == 0) {
+		if (rc_service_delete (runlevel, service) == 0) {
 			einfo ("%s removed from runlevel %s", service, runlevel);
 			retval = 1;
 		} else
 			eerror ("%s: failed to remove service `%s' from runlevel `%s': %s",
 					applet, service, runlevel, strerror (errno));
-	} else if (! rc_service_exists (service))
+	} else if (rc_service_exists (service) == -1)
 		eerror ("%s: service `%s' does not exist", applet, service);
-	else if (! rc_runlevel_exists (runlevel))
+	else if (rc_runlevel_exists (runlevel) != 0)
 		eerror ("%s: runlevel `%s' does not exist", applet, runlevel);
 	else
 		retval = 0;
@@ -85,7 +85,7 @@ static void show (char **runlevels, bool verbose)
 		bool inone = false;
 
 		STRLIST_FOREACH (runlevels, runlevel, j) {
-			if (rc_service_in_runlevel (service, runlevel)) {
+			if (rc_service_in_runlevel (service, runlevel) == 0) {
 				rc_strlist_add (&in, runlevel);
 				inone = true;
 			} else {
@@ -198,7 +198,7 @@ int rc_update (int argc, char **argv)
 		optind++;
 
 		while (optind < argc)
-			if (rc_runlevel_exists (argv[optind]))
+			if (rc_runlevel_exists (argv[optind]) == 0)
 				rc_strlist_add (&runlevels, argv[optind++]);
 			else {
 				rc_strlist_free (runlevels);

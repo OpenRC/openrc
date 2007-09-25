@@ -61,7 +61,7 @@ void rc_plugin_load (void)
 	/* Ensure some sanity here */
 	rc_plugin_unload ();
 
-	if (! rc_exists (RC_PLUGINDIR))
+	if (rc_exists (RC_PLUGINDIR) != 0)
 		return;
 
 	files = rc_ls_dir (RC_PLUGINDIR, 0);
