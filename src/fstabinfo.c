@@ -150,5 +150,8 @@ int fstabinfo (int argc, char **argv)
 			break;
 	}
 
+	if (result != EXIT_SUCCESS && argc == optind)
+		fprintf (stderr, "%s: no arguments specified\n", argv[0]);
+
 	exit (result);
 }
