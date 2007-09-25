@@ -7,6 +7,8 @@
 
     Add support for describing the options in the C programs.
 
+    Retain behavior where `rc-update del foo` deletes foo from all runlevels.
+
   24 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Do not require portmap in netmount when nolock option is used with nfs
