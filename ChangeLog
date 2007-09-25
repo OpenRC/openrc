@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  24 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Do not require portmap in netmount when nolock option is used with nfs
+    mounts and fixup the test so that it actually works.
+
   24 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     Fix pppd metric, #193574 thanks to Martin Väth.

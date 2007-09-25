@@ -4,30 +4,32 @@
 
 description="Mounts network shares according to /etc/fstab."
 
-have_nfs() {
-	local IFS=\n x=
+need_portmap() {
+	local mnt opts ret IFS="
+"
 	set -- $(fstabinfo --fstype nfs,nfs4)
-	for x in "$@" ; do
-		! fstabinfo --options "${x}" | grep -q noauto && return 0 
+	for mnt in "$@" ; do
+		case ,$(fstabinfo --options "${mnt}"), in
+			*,noauto,*|*,nolock,*) ;;
+			*) return 0;;
+		esac
 	done
 	return 1
 }
 
 depend() {
-	local myneed= myuse= pmap="portmap" nfsmounts= x
-	[ -x /etc/init.d/rpcbind ] && pmap="rpcbind"
-
-	# Only have Portmap as a dependency if there is a nfs mount in fstab that
+	# Only have portmap as a dependency if there is a nfs mount in fstab that
 	# is set to mount at boot
-	if have_nfs ; then
-		myneed="${myneed} ${pmap}"
-	else
-		myuse="${myuse} ${pmap}"
+	local pmap=""
+	if need_portmap ; then
+		[ -x /etc/init.d/rpcbind ] \
+			&& pmap="rpcbind" \
+			|| pmap="portmap"
 	fi
 
 	config /etc/fstab
-	need net ${myneed}
-	use afc-client amd autofs dns nfs nfsmount ${myuse}
+	need net ${pmap}
+	use afc-client amd autofs dns nfs nfsmount portmap rpcbind
 }
 
 start() {
@@ -45,7 +47,7 @@ start() {
         		# Only try to mount NFS filesystems if portmap was started.
 		        # This is to fix "hang" problems for new users who do not
 				# add portmap to the default runlevel.
-				if have_nfs && ! service_started "${pmap}" ; then
+				if need_portmap && ! service_started "${pmap}" ; then
 					continue
 				fi
 				;;
