@@ -20,8 +20,9 @@
 #ifdef __linux__
 #define HAVE_GETMNTENT
 #include <mntent.h>
+#define START_ENT fp = setmntent ("/etc/fstab", "r");
 #define GET_ENT getmntent (fp)
-#define GET_ENT_FILE(_name) getmntfile (fp, _name)
+#define GET_ENT_FILE(_name) getmntfile (_name)
 #define END_ENT endmntent (fp)
 #define ENT_DEVICE(_ent) ent->mnt_fsname
 #define ENT_FILE(_ent) ent->mnt_dir
@@ -31,6 +32,7 @@
 #else
 #define HAVE_GETFSENT
 #include <fstab.h>
+#define START_ENT
 #define GET_ENT getfsent ()
 #define GET_ENT_FILE(_name) getfsfile (_name)
 #define END_ENT endfsent ()
@@ -43,26 +45,31 @@
 
 #include "builtins.h"
 #include "einfo.h"
+#include "rc.h"
+#include "strlist.h"
 
 #ifdef HAVE_GETMNTENT
-static struct mntent *getmntfile (FILE *fp, const char *file)
+static struct mntent *getmntfile (const char *file)
 {
-	struct mntent *ent;
+	struct mntent *ent = NULL;
+	FILE *fp;
 
+	START_ENT;
 	while ((ent = getmntent (fp)))
 		if (strcmp (file, ent->mnt_dir) == 0)
-			return (ent);
-
-	return (NULL);
+			break;
+	END_ENT;
+	
+	return (ent);
 }
 #endif
 
 #include "_usage.h"
 #define getoptstring "m:o:p:t:" getoptstring_COMMON
 static struct option longopts[] = {
-	{ "mountcmd",       1, NULL, 'm'},
-	{ "options",        1, NULL, 'o'},
-	{ "passno",         1, NULL, 'p'},
+	{ "mountcmd",       0, NULL, 'm'},
+	{ "options",        0, NULL, 'o'},
+	{ "passno",         0, NULL, 'p'},
 	{ "fstype",         1, NULL, 't'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
@@ -76,6 +83,11 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
+#define OUTPUT_FILE      (1 << 1)
+#define OUTPUT_MOUNTCMD  (1 << 2)
+#define OUTPUT_OPTIONS   (1 << 3)
+#define OUTPUT_PASSNO    (1 << 4)
+
 int fstabinfo (int argc, char **argv)
 {
 #ifdef HAVE_GETMNTENT
@@ -86,29 +98,23 @@ int fstabinfo (int argc, char **argv)
 #endif
 	int result = EXIT_FAILURE;
 	char *token;
-	int n = 0;
+	int i;
 	int opt;
+	int output = OUTPUT_FILE;
+	char **files = NULL;
+	char *file;
+	bool filtered = false;
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 							   longopts, (int *) 0)) != -1)
 	{
-#ifdef HAVE_GETMNTENT
-		fp = setmntent ("/etc/fstab", "r");
-#endif
 		switch (opt) {
 			case 'm':
-				if ((ent = GET_ENT_FILE (optarg))) {
-					printf ("-o %s -t %s %s %s\n", ENT_OPTS (ent), ENT_TYPE (ent),
-							ENT_DEVICE (ent), ENT_FILE (ent));
-					result = EXIT_SUCCESS;
-				}
+				output = OUTPUT_MOUNTCMD;
 				break;
 
 			case 'o':
-				if ((ent = GET_ENT_FILE (optarg))) {
-					printf ("%s\n", ENT_OPTS (ent));
-					result = EXIT_SUCCESS;
-				}
+				output = OUTPUT_OPTIONS;
 				break;
 
 			case 'p':
@@ -116,49 +122,93 @@ int fstabinfo (int argc, char **argv)
 					case '=':
 					case '<':
 					case '>':
-						if (sscanf (optarg + 1, "%d", &n) != 1)
+						if (sscanf (optarg + 1, "%d", &i) != 1)
 							eerrorx ("%s: invalid passno %s", argv[0], optarg + 1);
 
+						filtered = true;
+						START_ENT;
 						while ((ent = GET_ENT)) {
-							if (((optarg[0] == '=' && n == ENT_PASS (ent)) ||
-								 (optarg[0] == '<' && n > ENT_PASS (ent)) ||
-								 (optarg[0] == '>' && n < ENT_PASS (ent))) &&
+							if (((optarg[0] == '=' && i == ENT_PASS (ent)) ||
+								 (optarg[0] == '<' && i > ENT_PASS (ent)) ||
+								 (optarg[0] == '>' && i < ENT_PASS (ent))) &&
 								strcmp (ENT_FILE (ent), "none") != 0)
-							{
-								printf ("%s\n", ENT_FILE (ent));
-								result = EXIT_SUCCESS;
-							}
+								rc_strlist_add (&files, ENT_FILE (ent));
 						}
+						END_ENT;
 						break;
 
 					default:
-						if ((ent = GET_ENT_FILE (optarg))) {
-							printf ("%d\n", ENT_PASS (ent));
-							result = EXIT_SUCCESS;
-						}
+						rc_strlist_add (&files, optarg);
+						output = OUTPUT_PASSNO;
 						break;
 				}
 				break;
 
 			case 't':
-				while ((token = strsep (&optarg, ",")))
+				filtered = true;
+				while ((token = strsep (&optarg, ","))) {
+					START_ENT;
 					while ((ent = GET_ENT))
 						if (strcmp (token, ENT_TYPE (ent)) == 0)
-							printf ("%s\n", ENT_FILE (ent));
-				result = EXIT_SUCCESS;
+							rc_strlist_add (&files, ENT_FILE (ent));
+					END_ENT;
+				}
 				break;
 
 			case_RC_COMMON_GETOPT
 		}
-
-		END_ENT;
-
-		if (result != EXIT_SUCCESS)
-			break;
 	}
 
-	if (result != EXIT_SUCCESS && argc == optind)
-		eerrorx ("%s: no arguments specified", argv[0]);
+	while (optind < argc)
+		rc_strlist_add (&files, argv[optind++]);
 
+	if (! files) {
+		if (filtered) {
+			if (! rc_is_env ("RC_QUIET", "yes"))
+				eerror ("%s: no matches found", argv[0]);
+			exit (EXIT_FAILURE);
+		}
+
+		START_ENT;
+		while ((ent = GET_ENT))
+			rc_strlist_add (&files, ENT_FILE (ent));
+		END_ENT;
+
+		if (! files)
+			eerrorx ("%s: emtpy fstab", argv[0]);
+	}
+
+	/* Ensure we always display something */
+	START_ENT;
+	STRLIST_FOREACH (files, file, i) {
+		if (! (ent = GET_ENT_FILE (file))) {
+			if (! rc_is_env ("RC_QUIET", "yes"))
+				eerror ("%s: no such entry `%s'", argv[0], file);
+			result = EXIT_FAILURE;
+			continue;
+		}
+
+		switch (output) {
+			case OUTPUT_MOUNTCMD:
+				printf ("-o %s -t %s %s %s\n", ENT_OPTS (ent), ENT_TYPE (ent),
+						ENT_DEVICE (ent), ENT_FILE (ent));
+				break;
+
+			case OUTPUT_OPTIONS:
+				printf ("%s\n", ENT_OPTS (ent));
+				break;
+
+			case OUTPUT_FILE:
+				printf ("%s\n", file);
+				break;
+
+			case OUTPUT_PASSNO:
+				printf ("%d\n", ENT_PASS (ent));
+				break;
+		}
+	}
+	END_ENT;
+
+	rc_strlist_free (files);
 	exit (result);
 }
