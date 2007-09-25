@@ -96,7 +96,7 @@ int fstabinfo (int argc, char **argv)
 #else
 	struct fstab *ent;
 #endif
-	int result = EXIT_FAILURE;
+	int result = EXIT_SUCCESS;
 	char *token;
 	int i;
 	int opt;
@@ -162,13 +162,7 @@ int fstabinfo (int argc, char **argv)
 	while (optind < argc)
 		rc_strlist_add (&files, argv[optind++]);
 
-	if (! files) {
-		if (filtered) {
-			if (! rc_is_env ("RC_QUIET", "yes"))
-				eerror ("%s: no matches found", argv[0]);
-			exit (EXIT_FAILURE);
-		}
-
+	if (! files && ! filtered) {
 		START_ENT;
 		while ((ent = GET_ENT))
 			rc_strlist_add (&files, ENT_FILE (ent));
@@ -182,11 +176,13 @@ int fstabinfo (int argc, char **argv)
 	START_ENT;
 	STRLIST_FOREACH (files, file, i) {
 		if (! (ent = GET_ENT_FILE (file))) {
-			if (! rc_is_env ("RC_QUIET", "yes"))
-				eerror ("%s: no such entry `%s'", argv[0], file);
 			result = EXIT_FAILURE;
 			continue;
 		}
+
+		/* No point in outputting if quiet */
+		if (rc_is_env ("RC_QUIET", "yes"))
+			continue;
 
 		switch (output) {
 			case OUTPUT_MOUNTCMD:

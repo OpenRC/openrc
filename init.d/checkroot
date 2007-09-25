@@ -21,7 +21,7 @@ do_mtab() {
 	# Now make sure /etc/mtab have additional info (gid, etc) in there
 	local mnt=
 	mountinfo | while read mnt; do
-		if fstabinfo --quiet --mountcmd "${mnt}"; then
+		if fstabinfo --quiet "${mnt}"; then
 			mount -f -o remount "${mnt}"
 		fi
 	done

@@ -83,7 +83,7 @@ static int process_mount (char ***list, struct args *args,
 		regexec (args->skip_options_regex, options, 0, NULL, 0) == 0)
 		return (-1);
 
-	if (args->mounts)   {
+	if (args->mounts) {
 		bool found = false;
 		int j;
 		char *mnt;
