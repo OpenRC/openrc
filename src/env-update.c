@@ -65,7 +65,7 @@ static const char *colon_separated[] = {
 	NULL
 };
 
-static const char *space_separated[] = { 
+static const char *space_separated[] = {
 	"CONFIG_PROTECT",
 	"CONFIG_PROTECT_MASK",
 	NULL,
@@ -80,6 +80,11 @@ static struct option longopts[] = {
 	{ "no-ldconfig",    0, NULL, 'L'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
+};
+static const char * const longopts_help[] = {
+	"Fork ldconfig into the background",
+	"Skip execution of ldconfig",
+	longopts_help_COMMON
 };
 #include "_usage.c"
 
@@ -103,7 +108,7 @@ int env_update (int argc, char **argv)
 	bool ldconfig = true;
 	bool fork_ldconfig = false;
 	int nents = 0;
-	
+
 	applet = argv[0];
 
 	while ((opt = getopt_long (argc, argv, getoptstring,

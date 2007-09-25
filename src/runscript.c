@@ -972,7 +972,7 @@ static void svc_restart (bool deps)
 }
 
 #include "_usage.h"
-#define getoptstring "dDqsv" getoptstring_COMMON 
+#define getoptstring "dDqsv" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "debug",      0, NULL, 'd'},
 	{ "ifstarted",  0, NULL, 's'},
@@ -981,6 +981,14 @@ static struct option longopts[] = {
 	{ "verbose",    0, NULL, 'v'},
 	longopts_COMMON
 	{ NULL,         0, NULL, 0}
+};
+static const char * const longopts_help[] = {
+	"",
+	"",
+	"",
+	"",
+	"",
+	longopts_help_COMMON
 };
 #include "_usage.c"
 

@@ -16,7 +16,8 @@ static void usage (int exit_status)
 #endif
 	printf ("\n\nOptions: [" getoptstring "]\n");
 	for (i = 0; longopts[i].name; ++i)
-		printf ("  -%c, --%s\n", longopts[i].val, longopts[i].name);
+		printf ("  -%c, --%-15s %s\n", longopts[i].val, longopts[i].name,
+		        longopts_help[i]);
 	exit (exit_status);
 }
 

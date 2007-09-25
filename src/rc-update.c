@@ -113,9 +113,16 @@ static struct option longopts[] = {
 	longopts_COMMON
 	{ NULL,       0, NULL, 0}
 };
+static const char * const longopts_help[] = {
+	"Add the init.d to runlevels",
+	"Delete init.d from runlevels",
+	"Show init.d's in runlevels",
+	"Be verbose!",
+	longopts_help_COMMON
+};
 #include "_usage.c"
 
-#define DOADD    (1 << 0) 
+#define DOADD    (1 << 0)
 #define DODELETE (1 << 1)
 #define DOSHOW   (1 << 2)
 

@@ -67,6 +67,13 @@ static struct option longopts[] = {
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
+static const char * const longopts_help[] = {
+	"Construct the arguments to give to mount",
+	"Extract the options field",
+	"Extract the pass number field",
+	"Extract the file system type",
+	longopts_help_COMMON
+};
 #include "_usage.c"
 
 int fstabinfo (int argc, char **argv)

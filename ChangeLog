@@ -5,6 +5,8 @@
 
     Skip consolefont setup when RC_TTY_NUMBER is set to 0.
 
+    Add support for describing the options in the C programs.
+
   24 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Do not require portmap in netmount when nolock option is used with nfs

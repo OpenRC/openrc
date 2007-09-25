@@ -65,6 +65,13 @@ static const struct option longopts[] = {
 	longopts_COMMON
 	{NULL,          0, NULL, 0}
 };
+static const char * const longopts_help[] = {
+	"Show services from all run levels",
+	"Show list of run levels",
+	"Show service list",
+	"Show services not assigned to any run level",
+	longopts_help_COMMON
+};
 #include "_usage.c"
 
 int rc_status (int argc, char **argv)
