@@ -7,7 +7,7 @@ and optionally repair them."
 
 do_mtab() {
 	# Don't create mtab if /etc is readonly
-	if ! echo 2>/dev/null >/etc/mtab ; then
+	if ! printf "" 2>/dev/null >/etc/mtab ; then
 		ewarn "Skipping /etc/mtab initialization" "(ro root?)"
 		return 0
 	fi
@@ -19,10 +19,9 @@ do_mtab() {
 	grep -v "^[^ ]* / " /proc/mounts >> /etc/mtab
 
 	# Now make sure /etc/mtab have additional info (gid, etc) in there
-	local mnt= mnts="$(mountinfo | sed -e "s/^/'/g" -e "s/$/'/g")"
-	eval set -- ${mnts}
-	for mnt in "$@" ; do
-		if fstabinfo --mountcmd "${mnt}" >/dev/null ; then
+	local mnt=
+	mountinfo | while read mnt; do
+		if fstabinfo --quiet --mountcmd "${mnt}"; then
 			mount -f -o remount "${mnt}"
 		fi
 	done
