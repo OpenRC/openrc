@@ -153,6 +153,7 @@ _delete_addresses() {
 		ifconfig "${IFACE}" inet6 delete "${addr}"
 		eend $?
 	done
+	eoutdent
 	
 	return 0
 }
