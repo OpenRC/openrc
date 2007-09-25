@@ -84,6 +84,7 @@ RC_SBINLINKS =  mark_service_starting mark_service_inactive \
 				get_options save_options rc-abort
 BINLINKS = rc-status
 SBINLINKS = env-update rc-update runscript start-stop-daemon
+ALL_LINKS = $(sort $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS))
 
 # We also define _BSD_SOURCE so both Linux and the BSDs get a few
 # handy functions which makes our lives a lot easier
@@ -122,8 +123,9 @@ $(RCOBJS):
 rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
 	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LDLIBS) $(LDLIBS_RC)
 
-links: rc
-	for x in $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS); do ln -sf rc $$x; done
+$(ALL_LINKS): rc
+	ln -sf rc $@
+links: $(ALL_LINKS)
 
 install: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/$(LIB)
@@ -149,8 +151,10 @@ install: $(TARGET)
 		install -m 0644 start-stop-daemon.pam $(DESTDIR)/etc/pam.d/start-stop-daemon ; \
 	fi
 
-clean:
-	rm -f $(TARGET) $(BINLINKS) $(SBINLINKS) $(RCLINKS) $(RCPRIVLINKS)
+clean-links:
+	rm -f $(ALL_LINKS)
+clean: clean-links
+	rm -f $(TARGET)
 	rm -f *.o *~ *.core *.so .depend
 
 -include .depend
@@ -158,4 +162,4 @@ _DEPS != ls *.c *.h
 .depend: $(_DEPS)$(wildcard *.c *.h)
 	$(CC) $(CPPFLAGS) -MM *.c > .depend
 
-.PHONY: all clean install links
+.PHONY: all clean clean-links install links
