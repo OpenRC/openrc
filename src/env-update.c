@@ -134,7 +134,7 @@ int env_update (int argc, char **argv)
 		char **entries = NULL;
 
 		j = strlen (file);
-		if (rc_is_dir (path) != 0 &&
+		if (! rc_is_dir (path) &&
 			j > 2 &&
 			*file >= '0' &&
 			*file <= '9' &&
@@ -297,7 +297,7 @@ int env_update (int argc, char **argv)
 
 	if (ldconfig) {
 		/* Update ld.so.conf only if different */
-		if (rc_exists (LDSOCONF) == 0) {
+		if (rc_exists (LDSOCONF)) {
 			char **lines = rc_get_list (LDSOCONF);
 			char *line;
 			ld = false;

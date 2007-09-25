@@ -60,8 +60,8 @@ typedef enum
 char *rc_resolve_service (const char *service);
 /*! Checks if a service exists or not.
  * @param service to check
- * @return 0 if service exists, otherwise -1 */
-int rc_service_exists (const char *service);
+ * @return true if service exists, otherwise false */
+bool rc_service_exists (const char *service);
 
 /*! Lists the extra options a service has
  * @param service to load the options from
@@ -77,20 +77,20 @@ char *rc_service_description (const char *service, const char *option);
 /*! Checks if a service is in a runlevel
  * @param service to check
  * @param runlevel it should be in
- * @return 0 if service is in the runlevel, otherwise -1 */
-int rc_service_in_runlevel (const char *service, const char *runlevel);
+ * @return true if service is in the runlevel, otherwise false */
+bool rc_service_in_runlevel (const char *service, const char *runlevel);
 
 /*! Checks if a service in in a state
  * @param service to check
  * @param state service should be in
- * @return 0 if service is in the requested state, otherwise -1 */
-int rc_service_state (const char *service, rc_service_state_t state);
+ * @return true if service is in the requested state, otherwise false */
+bool rc_service_state (const char *service, rc_service_state_t state);
 
 /*! Marks the service state
  * @param service to mark
  * @param state service should be in
- * @return 0 if service state change was successful, otherwise -1 */
-int rc_mark_service (const char *service, rc_service_state_t state);
+ * @return true if service state change was successful, otherwise false */
+bool rc_mark_service (const char *service, rc_service_state_t state);
 
 /*! Stop a service
  * @param service to stop
@@ -124,8 +124,8 @@ void rc_schedule_clear (const char *service);
 
 /*! Wait for a service to finish
  * @param service to wait for
- * @return 0 if service finished before timeout, otherwise -1 */
-int rc_wait_service (const char *service);
+ * @return true if service finished before timeout, otherwise false */
+bool rc_wait_service (const char *service);
 
 /*! Return a saved value for a service
  * @param service to check
@@ -136,31 +136,30 @@ char *rc_get_service_option (const char *service, const char *option);
  * @param service to save for
  * @param option to save
  * @param value of the option
- * @return 0 if saved, otherwise -1 */
-int rc_set_service_option (const char *service, const char *option,
-						   const char *value);
+ * @return true if saved, otherwise false */
+bool rc_set_service_option (const char *service, const char *option,
+							const char *value);
 /*! Save the arguments to find a running daemon
  * @param service to save arguments for
  * @param exec that we started
  * @param name of the process (optional)
  * @param pidfile of the process (optional)
- * @param started if true, add the arguments otherwise remove existing matching arguments
- * @return 0 if successful, otherwise -1 */
-int rc_set_service_daemon (const char *service, const char *exec,
-						   const char *name, const char *pidfile,
-						   bool started);
+ * @param started if true, add the arguments otherwise remove existing matching arguments */
+void rc_set_service_daemon (const char *service, const char *exec,
+							const char *name, const char *pidfile,
+							bool started);
 /*! Check if the service started the daemon
  * @param service to check
  * @param exec to check
  * @param indx of the daemon (optional - 1st daemon, 2nd daemon, etc)
- * @return 0 if started by this service, otherwise -1 */
-int rc_service_started_daemon (const char *service, const char *exec,
-							   int indx);
+ * @return true if started by this service, otherwise false */
+bool rc_service_started_daemon (const char *service, const char *exec,
+								int indx);
 
 /*! Check if the service is allowed to be hot/cold plugged
  * @param service to check
- * @return 0 if allowed, otherwise -1 */
-int rc_allow_plug (char *service);
+ * @return true if allowed, otherwise false */
+bool rc_allow_plug (char *service);
 
 /*! Return the current runlevel.
  * @return the current runlevel */
@@ -172,30 +171,30 @@ void rc_set_runlevel (const char *runlevel);
 
 /*! Checks if the runlevel exists or not
  * @param runlevel to check
- * @return 0 if the runlevel exists, otherwise -1 */
-int rc_runlevel_exists (const char *runlevel);
+ * @return true if the runlevel exists, otherwise false */
+bool rc_runlevel_exists (const char *runlevel);
 
 /*! Return a NULL terminated list of runlevels
  * @return a NULL terminated list of runlevels */
 char **rc_get_runlevels (void);
 
 /*! Is the runlevel starting?
- * @return 0 if yes, otherwise -1 */
-int rc_runlevel_starting (void);
+ * @return true if yes, otherwise false */
+bool rc_runlevel_starting (void);
 /*! Is the runlevel stopping?
- * @return 0 if yes, otherwise -1 */
-int rc_runlevel_stopping (void);
+ * @return true if yes, otherwise false */
+bool rc_runlevel_stopping (void);
 
 /*! Add the service to the runlevel
  * @param runlevel to add to
  * @param service to add
- * @return 0 if successful, otherwise -1 */
-int rc_service_add (const char *runlevel, const char *service);
+ * @return true if successful, otherwise false */
+bool rc_service_add (const char *runlevel, const char *service);
 /*! Remove the service from the runlevel
  * @param runlevel to remove from
  * @param service to remove
- * @return 0 if sucessful, otherwise -1 */
-int rc_service_delete (const char *runlevel, const char *service);
+ * @return true if sucessful, otherwise false */
+bool rc_service_delete (const char *runlevel, const char *service);
 /*! List the services in a runlevel
  * @param runlevel to list
  * @return NULL terminated list of services */
@@ -223,8 +222,8 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 /*! Checks that all daemons started with start-stop-daemon by the service
  * are still running.
  * @param service to check
- * @return 0 if all daemons started are still running, otherwise -1 */
-int rc_service_daemons_crashed (const char *service);
+ * @return true if all daemons started are still running, otherwise false */
+bool rc_service_daemons_crashed (const char *service);
 
 /*! @name Dependency options
  * These options can change the services found by the rc_get_depinfo and
@@ -371,28 +370,28 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
 /*! Check if an environment variable matches the given value
  * @param variable to check
  * @param value it should be
- * @return 0 if it matches, otherwise -1 */
-int rc_is_env (const char *variable, const char *value);
+ * @return true if it matches */
+bool rc_is_env (const char *variable, const char *value);
 /*! Check if the file exists or not
  * @param pathname to check
- * @return 0 if it exists, otherwise -1 */
-int rc_exists (const char *pathname);
+ * @return true if it exists, otherwise false */
+bool rc_exists (const char *pathname);
 /*! Check if the file is a real file
  * @param pathname to check
- * @return 0 if it's a real file, otherwise -1 */
-int rc_is_file (const char *pathname);
+ * @return true if it's a real file, otherwise false */
+bool rc_is_file (const char *pathname);
 /*! Check if the file is a symbolic link or not
  * @param pathname to check
- * @return 0 if it's a symbolic link, otherwise -1 */
-int rc_is_link (const char *pathname);
+ * @return true if it's a symbolic link, otherwise false */
+bool rc_is_link (const char *pathname);
 /*! Check if the file is a directory or not
  * @param pathname to check
- * @return 0 if it's a directory, otherwise -1 */
-int rc_is_dir (const char *pathname);
+ * @return true if it's a directory, otherwise false */
+bool rc_is_dir (const char *pathname);
 /*! Check if the file is marked executable or not
  * @param pathname to check
- * @return 0 if it's marked executable, otherwise -1 */
-int rc_is_exec (const char *pathname);
+ * @return true if it's marked executable, otherwise false */
+bool rc_is_exec (const char *pathname);
 
 /*! Return a NULL terminted sorted list of the contents of the directory
  * @param dir to list
@@ -403,8 +402,8 @@ char **rc_ls_dir (const char *dir, int options);
 /*! Remove a directory
  * @param pathname to remove
  * @param top remove the top level directory too
- * @return 0 if successful, otherwise -1 */
-int rc_rm_dir (const char *pathname, bool top);
+ * @return true if successful, otherwise false */
+bool rc_rm_dir (const char *pathname, bool top);
 
 /*! @name Configuration */
 /*! Return a NULL terminated list of non comment lines from a file. */

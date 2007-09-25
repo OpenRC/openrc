@@ -185,10 +185,10 @@ librc_hidden_def(rc_get_deptype)
 static bool valid_service (const char *runlevel, const char *service)
 {
 	return ((strcmp (runlevel, bootlevel) != 0 &&
-			 rc_service_in_runlevel (service, bootlevel) == 0) ||
-			rc_service_in_runlevel (service, runlevel) == 0 ||
-			rc_service_state (service, rc_service_coldplugged) == 0 ||
-			rc_service_state (service, rc_service_started) == 0);
+			 rc_service_in_runlevel (service, bootlevel)) ||
+			rc_service_in_runlevel (service, runlevel) ||
+			rc_service_state (service, rc_service_coldplugged) ||
+			rc_service_state (service, rc_service_started));
 }
 
 static bool get_provided1 (const char *runlevel, struct lhead *providers,
@@ -204,25 +204,25 @@ static bool get_provided1 (const char *runlevel, struct lhead *providers,
 	{
 		bool ok = true;
 		if (level)
-			ok = (rc_service_in_runlevel (service, level) == 0);
+			ok = rc_service_in_runlevel (service, level);
 		else if (coldplugged)
-			ok = (rc_service_state (service, rc_service_coldplugged) == 0 &&
-				  rc_service_in_runlevel (service, runlevel) != 0 &&
-				  rc_service_in_runlevel (service, bootlevel) != 0);
+			ok = (rc_service_state (service, rc_service_coldplugged) &&
+				  ! rc_service_in_runlevel (service, runlevel) &&
+				  ! rc_service_in_runlevel (service, bootlevel));
 
 		if (! ok)
 			continue;
 
 		switch (state) {
 			case rc_service_started:
-				ok = (rc_service_state (service, state) == 0);
+				ok = rc_service_state (service, state);
 				break;
 			case rc_service_inactive:
 			case rc_service_starting:
 			case rc_service_stopping:
-				ok = (rc_service_state (service, rc_service_starting) == 0 ||
-					  rc_service_state (service, rc_service_stopping) == 0 ||
-					  rc_service_state (service, rc_service_inactive) == 0);
+				ok = (rc_service_state (service, rc_service_starting) ||
+					  rc_service_state (service, rc_service_stopping) ||
+					  rc_service_state (service, rc_service_inactive));
 				break;
 			default:
 				break;
@@ -257,7 +257,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 
 	if (! deptree || ! depinfo)
 		return (NULL);
-	if (rc_service_exists (depinfo->service) == -1)
+	if (rc_service_exists (depinfo->service))
 		return (NULL);
 
 	dt = rc_get_deptype (depinfo, "providedby");
@@ -281,8 +281,8 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 	if (options & RC_DEP_STRICT)
 	{
 		STRLIST_FOREACH (dt->services, service, i)
-			if (rc_service_in_runlevel (service, runlevel) == 0 ||
-				rc_service_in_runlevel (service, bootlevel) == 0)
+			if (rc_service_in_runlevel (service, runlevel) ||
+				rc_service_in_runlevel (service, bootlevel))
 				rc_strlist_add (&providers.list, service);
 
 		if (providers.list)
@@ -556,7 +556,7 @@ static bool is_newer_than (const char *file, const char *target)
 	if (mtime < buf.st_mtime)
 		return (false);
 
-	if (rc_is_dir (target) == 0)
+	if (rc_is_dir (target))
 	{
 		char **targets = rc_ls_dir (target, 0);
 		char *t;
@@ -641,7 +641,7 @@ int rc_update_deptree (bool force)
 
 	/* Create base directories if needed */
 	for (i = 0; depdirs[i]; i++)
-		if (rc_is_dir (depdirs[i]) != 0)
+		if (! rc_is_dir (depdirs[i]))
 			if (mkdir (depdirs[i], 0755) != 0)
 				eerrorx ("mkdir `%s': %s", depdirs[i], strerror (errno));
 
@@ -655,7 +655,7 @@ int rc_update_deptree (bool force)
 
 		/* Some init scripts dependencies change depending on config files
 		 * outside of baselayout, like syslog-ng, so we check those too. */
-		if (rc_exists (RC_DEPCONFIG) != 0)
+		if (! rc_exists (RC_DEPCONFIG))
 			return 0;
 
 		config = rc_get_list (RC_DEPCONFIG);
