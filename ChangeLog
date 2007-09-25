@@ -9,6 +9,8 @@
 
     Retain behavior where `rc-update del foo` deletes foo from all runlevels.
 
+    Retain behavior where `rc-update del` warns if nothing changed.
+
   24 Sep 2007; Mike Frysinger <vapier@gentoo.org>:
 
     Do not require portmap in netmount when nolock option is used with nfs

@@ -24,9 +24,14 @@
 
 static char *applet = NULL;
 
-static bool add (const char *runlevel, const char *service)
+/* Return the number of changes made:
+ *  -1 = no changes (error)
+ *   0 = no changes (nothing to do)
+ *  1+ = number of runlevels updated
+ */
+static ssize_t add (const char *runlevel, const char *service)
 {
-	bool retval = false;
+	ssize_t retval = -1;
 
 	if (! rc_service_exists (service))
 		eerror ("%s: service `%s' does not exist", applet, service);
@@ -35,10 +40,10 @@ static bool add (const char *runlevel, const char *service)
 	else if (rc_service_in_runlevel (service, runlevel)) {
 		ewarn ("%s: %s already installed in runlevel `%s'; skipping",
 			   applet, service, runlevel);
-		retval = true;
+		retval = 0;
 	} else if (rc_service_add (runlevel, service)) {
 		einfo ("%s added to runlevel %s", service, runlevel);
-		retval = true;
+		retval = 1;
 	} else
 		eerror ("%s: failed to add service `%s' to runlevel `%s': %s",
 				applet, service, runlevel, strerror (errno));
@@ -46,14 +51,14 @@ static bool add (const char *runlevel, const char *service)
 	return (retval);
 }
 
-static bool delete (const char *runlevel, const char *service)
+static ssize_t delete (const char *runlevel, const char *service)
 {
-	bool retval = false;
+	ssize_t retval = -1;
 
 	if (rc_service_in_runlevel (service, runlevel))	{
 		if (rc_service_delete (runlevel, service)) {
 			einfo ("%s removed from runlevel %s", service, runlevel);
-			retval = true;
+			retval = 1;
 		} else
 			eerror ("%s: failed to remove service `%s' from runlevel `%s': %s",
 					applet, service, runlevel, strerror (errno));
@@ -62,7 +67,8 @@ static bool delete (const char *runlevel, const char *service)
 	else if (! rc_runlevel_exists (runlevel))
 		eerror ("%s: runlevel `%s' does not exist", applet, runlevel);
 	else
-		retval = true;
+		retval = 0;
+
 	return (retval);
 }
 
@@ -200,6 +206,7 @@ int rc_update (int argc, char **argv)
 			}
 	}
 
+	retval = EXIT_SUCCESS;
 	if (action & DOSHOW) {
 		if (service)
 			rc_strlist_add (&runlevels, service);
@@ -207,25 +214,30 @@ int rc_update (int argc, char **argv)
 			runlevels = rc_get_runlevels ();
 
 		show (runlevels, verbose);
-		retval = EXIT_SUCCESS;
 	} else {
 		if (! service)
 			eerror ("%s: no service specified", applet);
 		else if (! rc_service_exists (service))
 			eerror ("%s: service `%s' does not exist", applet, service);
 		else {
-			retval = EXIT_SUCCESS;
+			ssize_t num_updated = 0;
+			ssize_t (*actfunc)(const char *runlevel, const char *service);
+			if (action & DOADD)
+				actfunc = add;
+			else if (action & DODELETE)
+				actfunc = delete;
+			else
+				eerrorx ("%s: invalid action", applet);
 			if (! runlevels)
 				runlevels = rc_get_runlevels ();
 			STRLIST_FOREACH (runlevels, runlevel, i) {
-				if (action & DOADD) {
-					if (! add (runlevel, service))
-						retval = EXIT_FAILURE;
-				} else if (action & DODELETE) {
-					if (! delete (runlevel, service))
-						retval = EXIT_FAILURE;
-				}
+				ssize_t ret = actfunc (runlevel, service);
+				if (ret < 0)
+					retval = EXIT_FAILURE;
+				num_updated += ret;
 			}
+			if (retval == EXIT_SUCCESS && num_updated == 0)
+				ewarnx ("%s: service `%s' not found in any of the specified runlevels", applet, service);
 		}
 	}
 
