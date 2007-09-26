@@ -364,7 +364,7 @@ int mountinfo (int argc, char **argv)
 			continue;
 		if (skip_point_regex && regexec (skip_point_regex, n, 0, NULL, 0) == 0)
 			continue;
-		if (rc_env_bool ("RC_QUIET"))
+		if (! rc_env_bool ("RC_QUIET"))
 			printf ("%s\n", n);
 		result = EXIT_SUCCESS;
 	}
