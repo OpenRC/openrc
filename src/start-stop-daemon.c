@@ -685,7 +685,7 @@ int start_stop_daemon (int argc, char **argv)
 		}
 
 	quiet = rc_env_bool ("RC_QUIET");
-	verbose = rc_is_env ("RC_VERBOSE", "yes");
+	verbose = rc_env_bool ("RC_VERBOSE");
 
 	/* Allow start-stop-daemon --signal HUP --exec /usr/sbin/dnsmasq
 	 * instead of forcing --stop --oknodo as well */

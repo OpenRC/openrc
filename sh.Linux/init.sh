@@ -68,7 +68,7 @@ mount_svcdir() {
 		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
 			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
 	fi
-	try mount -n ${mntcmd}
+	eval try mount -n ${mntcmd}
 	if ${dotmp} ; then
 		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/depconfig \
 			"${RC_LIBDIR}"/tmp/nettree "${RC_SVCDIR}" 2>/dev/null
@@ -122,7 +122,7 @@ if ${mountproc} ; then
 	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
 	ebegin "Mounting ${procfs} at /proc"
 	mntcmd="$(fstabinfo --mountcmd /proc)"
-	try mount -n ${mntcmd:--t ${procfs} -o noexec,nosuid,nodev proc /proc}
+	eval try mount -n ${mntcmd:--t ${procfs} -o noexec,nosuid,nodev proc /proc}
 	eend $?
 fi
 unset mountproc
@@ -143,7 +143,7 @@ if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" -a "${K26}" = "0" ]
 		if ! mountinfo --quiet /sys ; then
 			ebegin "Mounting sysfs at /sys"
 			mntcmd="$(fstabinfo --mountcmd /sys)"
-			try mount -n ${mntcmd:--t sysfs -o noexec,nosuid,nodev sysfs /sys}
+			eval try mount -n ${mntcmd:--t sysfs -o noexec,nosuid,nodev sysfs /sys}
 			eend $?
 		fi
 	else
@@ -212,7 +212,7 @@ if grep -Eq "[[:space:]]+devpts$" /proc/filesystems && \
 	if [ -d /dev/pts ] ; then
 		ebegin "Mounting devpts at /dev/pts"
 		mntcmd="$(fstabinfo --mountcmd /dev/pts)"
-		try mount -n ${mntcmd:--t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts}
+		eval try mount -n ${mntcmd:--t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts}
 		eend $?
 	fi
 fi

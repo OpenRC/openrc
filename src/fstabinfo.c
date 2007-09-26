@@ -186,8 +186,8 @@ int fstabinfo (int argc, char **argv)
 
 		switch (output) {
 			case OUTPUT_MOUNTCMD:
-				printf ("-o %s -t %s %s %s\n", ENT_OPTS (ent), ENT_TYPE (ent),
-						ENT_DEVICE (ent), ENT_FILE (ent));
+				printf ("-o %s -t %s '%s' '%s'\n", ENT_OPTS (ent),
+						ENT_TYPE (ent), ENT_DEVICE (ent), ENT_FILE (ent));
 				break;
 
 			case OUTPUT_OPTIONS:
