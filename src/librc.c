@@ -550,7 +550,8 @@ static pid_t _exec_service (const char *service, const char *arg)
 	return (pid);
 }
 
-int rc_waitpid (pid_t pid) {
+int rc_waitpid (pid_t pid)
+{
 	int status = 0;
 	pid_t savedpid = pid;
 	int retval = -1;
@@ -563,6 +564,7 @@ int rc_waitpid (pid_t pid) {
 
 	return (retval);
 }
+librc_hidden_def(rc_waitpid)
 
 pid_t rc_stop_service (const char *service)
 {
