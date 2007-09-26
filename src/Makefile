@@ -157,6 +157,9 @@ clean: clean-links
 	rm -f $(TARGET)
 	rm -f *.o *~ *.core *.so .depend
 
+check:
+	$(MAKE) -C test $@
+
 -include .depend
 _DEPS != ls *.c *.h
 .depend: $(_DEPS)$(wildcard *.c *.h)
