@@ -69,16 +69,16 @@ bool rc_env_bool (const char *var)
 		return (false);
 	}
 
-	if (strcasecmp (var, "true") == 0 ||
-		strcasecmp (var, "y") == 0 ||
-		strcasecmp (var, "yes") == 0 ||
-		strcasecmp (var, "1") == 0)
+	if (strcasecmp (v, "true") == 0 ||
+		strcasecmp (v, "y") == 0 ||
+		strcasecmp (v, "yes") == 0 ||
+		strcasecmp (v, "1") == 0)
 		return (true);
 
-	if (strcasecmp (var, "false") != 0 &&
-		strcasecmp (var, "n") != 0 &&
-		strcasecmp (var, "no") != 0 &&
-		strcasecmp (var, "0") != 0)
+	if (strcasecmp (v, "false") != 0 &&
+		strcasecmp (v, "n") != 0 &&
+		strcasecmp (v, "no") != 0 &&
+		strcasecmp (v, "0") != 0)
 		errno = EINVAL;
 
 	return (false);

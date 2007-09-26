@@ -7,7 +7,7 @@
  * Released under the GPLv2
  */
 
-#define getoptstring_COMMON "Chq"
+#define getoptstring_COMMON "Chqv"
 
 #define longopts_COMMON \
 	{ "help",           0, NULL, 'h'}, \
