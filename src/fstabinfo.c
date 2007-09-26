@@ -69,7 +69,7 @@ static struct mntent *getmntfile (const char *file)
 static struct option longopts[] = {
 	{ "mountcmd",       0, NULL, 'm'},
 	{ "options",        0, NULL, 'o'},
-	{ "passno",         0, NULL, 'p'},
+	{ "passno",         1, NULL, 'p'},
 	{ "fstype",         1, NULL, 't'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
