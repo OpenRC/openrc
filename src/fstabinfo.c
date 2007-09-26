@@ -67,7 +67,6 @@ static struct mntent *getmntfile (const char *file)
 #include "_usage.h"
 #define getoptstring "mop:t:" getoptstring_COMMON
 static struct option longopts[] = {
-	{ "mountcmd",       0, NULL, 'm'},
 	{ "options",        0, NULL, 'o'},
 	{ "passno",         1, NULL, 'p'},
 	{ "fstype",         1, NULL, 't'},
@@ -84,7 +83,6 @@ static const char * const longopts_help[] = {
 #include "_usage.c"
 
 #define OUTPUT_FILE      (1 << 1)
-#define OUTPUT_MOUNTCMD  (1 << 2)
 #define OUTPUT_OPTIONS   (1 << 3)
 #define OUTPUT_PASSNO    (1 << 4)
 
@@ -109,10 +107,6 @@ int fstabinfo (int argc, char **argv)
 							   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-			case 'm':
-				output = OUTPUT_MOUNTCMD;
-				break;
-
 			case 'o':
 				output = OUTPUT_OPTIONS;
 				break;
@@ -185,11 +179,6 @@ int fstabinfo (int argc, char **argv)
 			continue;
 
 		switch (output) {
-			case OUTPUT_MOUNTCMD:
-				printf ("-o %s -t %s '%s' '%s'\n", ENT_OPTS (ent),
-						ENT_TYPE (ent), ENT_DEVICE (ent), ENT_FILE (ent));
-				break;
-
 			case OUTPUT_OPTIONS:
 				printf ("%s\n", ENT_OPTS (ent));
 				break;

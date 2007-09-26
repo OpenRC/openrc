@@ -7,7 +7,7 @@
 #  Drop to a shell, remount / ro, and then reboot
 #
 single_user() {
-	if [ "${RC_SYS}" = "VPS" ] ; then
+	if [ "${RC_SYS}" = "VPS" ]; then
 		einfo "Halting"
 		halt -f
 		return
@@ -15,7 +15,7 @@ single_user() {
 
 	sulogin ${CONSOLE}
 	einfo "Unmounting filesystems"
-	if [ -c /dev/null ] ; then
+	if [ -c /dev/null ]; then
 		mount -a -o remount,ro 2>/dev/null
 	else
 		mount -a -o remount,ro
@@ -31,20 +31,19 @@ single_user() {
 mount_svcdir() {
 	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="none" devtmp="none" x=
 	local svcsize=${svcsize:-1024}
-	local mntcmd=$(fstabinfo --mountcmd "${RC_SVCDIR}")
 
-	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems ; then
+	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems; then
 		fs="tmpfs"
 		fsopts="${fsopts},mode=0755,size=${svcsize}k"
-	elif grep -Eq "[[:space:]]+ramfs$" /proc/filesystems ; then
+	elif grep -Eq "[[:space:]]+ramfs$" /proc/filesystems; then
 		fs="ramfs"
 		# ramfs has no special options
 	elif [ -e /dev/ram0 -a -e /dev/ram1 ] \
-		&& grep -Eq "[[:space:]]+ext2$" /proc/filesystems ; then
+		&& grep -Eq "[[:space:]]+ext2$" /proc/filesystems; then
 		devdir="/dev/ram0"
 		devtmp="/dev/ram1"
 		fs="ext2"
-		for x in ${devdir} ${devtmp} ; do
+		for x in ${devdir} ${devtmp}; do
 			try dd if=/dev/zero of="${x}" bs=1k count="${svcsize}"
 			try mkfs -t "${fs}" -i 1024 -vm0 "${x}" "${svcsize}"
 		done
@@ -56,20 +55,22 @@ mount_svcdir() {
 		single_user
 	fi
 
-	# If we have no entry in fstab for $svcdir, provide our own
-	if [ -z "${mntcmd}" ] ; then
-		mntcmd="-t ${fs} ${fsopts} ${devdir} ${RC_SVCDIR}"
-	fi
-
 	local dotmp=false
-	if [ -e "${RC_SVCDIR}"/deptree ] ; then
+	if [ -e "${RC_SVCDIR}"/deptree ]; then
 		dotmp=true
 		try mount -n -t "${fs}" -o rw "${devtmp}" "${RC_LIBDIR}"/tmp
 		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
 			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
 	fi
-	eval try mount -n ${mntcmd}
-	if ${dotmp} ; then
+
+	# If we have no entry in fstab for $svcdir, provide our own
+	if fstabinfo --quiet "${RC_SVCDIR}"; then
+		try mount -n "${RC_SVCDIR}"
+	else
+		try mount -n -t "${fs}" ${fsopts} "${devdir}" "${RC_SVCDIR}"
+	fi
+
+	if ${dotmp}; then
 		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/depconfig \
 			"${RC_LIBDIR}"/tmp/nettree "${RC_SVCDIR}" 2>/dev/null
 		try umount -n "${RC_LIBDIR}"/tmp
@@ -93,7 +94,7 @@ get_KV() {
 # Set the console loglevel to 1 for a cleaner boot
 # the logger should anyhow dump the ring-0 buffer at start to the
 # logs, and that with dmesg can be used to check for problems
-if [ -n "${RC_DMESG_LEVEL}" -a "${RC_SYS}" != "VPS" ] ; then
+if [ -n "${RC_DMESG_LEVEL}" -a "${RC_SYS}" != "VPS" ]; then
 	dmesg -n "${RC_DMESG_LEVEL}"
 fi
 
@@ -105,10 +106,10 @@ check_statedir /proc
 # /proc actually works or not. We to this by comparing uptime to one a second
 # ago
 mountproc=true
-if [ -e /proc/uptime ] ; then
+if [ -e /proc/uptime ]; then
 	up="$(cat /proc/uptime)"
 	sleep 1
-	if [ "${up}" = "$(cat /proc/uptime)" ] ; then
+	if [ "${up}" = "$(cat /proc/uptime)" ]; then
 		eerror "You have cruft in /proc that should be deleted"
 	else
 		einfo "/proc is already mounted, skipping"
@@ -121,8 +122,11 @@ if ${mountproc} ; then
 	procfs="proc"
 	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
 	ebegin "Mounting ${procfs} at /proc"
-	mntcmd="$(fstabinfo --mountcmd /proc)"
-	eval try mount -n ${mntcmd:--t ${procfs} -o noexec,nosuid,nodev proc /proc}
+	if fstabinfo --quiet /proc; then
+		try mount -n /proc
+	else
+		try mount -n -t "${procfs}" -o noexec,nosuid,nodev proc /proc
+	fi
 	eend $?
 fi
 unset mountproc
@@ -130,7 +134,7 @@ unset mountproc
 # Read off the kernel commandline to see if there's any special settings
 # especially check to see if we need to set the  CDBOOT environment variable
 # Note: /proc MUST be mounted
-if [ -r /sbin/livecd-functions.sh ] ; then
+if [ -r /sbin/livecd-functions.sh ]; then
 	. /sbin/livecd-functions.sh
 	livecd_read_commandline
 fi
@@ -138,12 +142,15 @@ fi
 [ "$(KV_to_int "$(uname -r)")" -ge "$(KV_to_int "2.6.0")" ]
 K26=$?
 
-if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" -a "${K26}" = "0" ] ; then
-	if [ -d /sys ] ; then
-		if ! mountinfo --quiet /sys ; then
+if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" -a "${K26}" = "0" ]; then
+	if [ -d /sys ]; then
+		if ! mountinfo --quiet /sys; then
 			ebegin "Mounting sysfs at /sys"
-			mntcmd="$(fstabinfo --mountcmd /sys)"
-			eval try mount -n ${mntcmd:--t sysfs -o noexec,nosuid,nodev sysfs /sys}
+			if fstabinfo --quiet /sys; then
+				try mount -n /sys
+			else
+				try mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
+			fi
 			eend $?
 		fi
 	else
@@ -153,7 +160,7 @@ fi
 
 check_statedir /dev
 devfs_mounted=
-if [ -e /dev/.devfsd ] ; then
+if [ -e /dev/.devfsd ]; then
 	# make sure devfs is actually mounted and it isnt a bogus file
 	devfs_mounted=$(mountinfo --fstype-regex devfs)
 fi
@@ -163,10 +170,10 @@ fi
 #  - check boot parameters
 #  - make sure the required binaries exist
 #  - make sure the kernel has support
-if [ "${RC_DEVICES}" = "static" -o "${RC_SYS}" = "VPS" ] ; then
+if [ "${RC_DEVICES}" = "static" -o "${RC_SYS}" = "VPS" ]; then
 	ebegin "Using existing device nodes in /dev"
 	eend 0
-elif [ "${RC_UNAME}" = "GNU/kFreeBSD" ] ; then
+elif [ "${RC_UNAME}" = "GNU/kFreeBSD" ]; then
 	ebegin "Using kFreeBSD devfs in /dev"
 	eend 0
 else
@@ -177,15 +184,15 @@ else
 		auto|*) managers="udev devfs mdev";;
 	esac
 
-	for m in ${managers} ; do
+	for m in ${managers}; do
 		# Check common manager prerequisites and kernel params
-		if get_bootparam "no${m}" || ! has_addon ${m}-start ; then
+		if get_bootparam "no${m}" || ! has_addon ${m}-start; then
 			continue
 		fi
 		# Check specific manager prerequisites
 		case ${m} in
 			udev|mdev)
-				if [ -n "${devfs_mounted}" -o "${K26}" != 0 ] ; then
+				if [ -n "${devfs_mounted}" -o "${K26}" != 0 ]; then
 					continue
 				fi
 				;;
@@ -201,24 +208,27 @@ fi
 
 # Mount the new fancy pants /dev/pts whenever possible
 if grep -Eq "[[:space:]]+devpts$" /proc/filesystems && \
-	! mountinfo -q /dev/pts ; then
+	! mountinfo -q /dev/pts; then
 	if [ ! -d /dev/pts ] && \
-	   [ "${devfs}" = "yes" -o "${udev}" = "yes" ] ; then
+	   [ "${devfs}" = "yes" -o "${udev}" = "yes" ]; then
 		# Make sure we have /dev/pts
 		mkdir -p /dev/pts >/dev/null 2>/dev/null || \
 			ewarn "Could not create /dev/pts!"
 	fi
 
-	if [ -d /dev/pts ] ; then
+	if [ -d /dev/pts ]; then
 		ebegin "Mounting devpts at /dev/pts"
-		mntcmd="$(fstabinfo --mountcmd /dev/pts)"
-		eval try mount -n ${mntcmd:--t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts}
+		if fstabinfo --quiet /dev/pts; then
+			try mount -n /dev/pts
+		else
+			try mount -n -t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts
+		fi
 		eend $?
 	fi
 fi
 
 # If booting off CD, we want to update inittab before setting the runlevel
-if [ -f /sbin/livecd-functions.sh -a -n "${CDBOOT}" ] ; then
+if [ -f /sbin/livecd-functions.sh -a -n "${CDBOOT}" ]; then
 	ebegin "Updating inittab"
 	livecd_fix_inittab
 	eend $?
