@@ -457,7 +457,7 @@ static bool want_interactive (void)
 		strcmp (PREVLEVEL, "1") != 0)
 		return (false);
 
-	if (! rc_is_env ("RC_INTERACTIVE", "yes"))
+	if (! rc_env_bool ("RC_INTERACTIVE"))
 		return (false);
 
 	c = read_key (false);
@@ -919,7 +919,7 @@ int main (int argc, char **argv)
 					ecolor (ecolor_good), uts.sysname, ecolor (ecolor_bracket),
 					ecolor (ecolor_normal));
 
-			if (rc_is_env ("RC_INTERACTIVE", "yes"))
+			if (rc_env_bool ("RC_INTERACTIVE"))
 				printf ("Press %sI%s to enter interactive boot mode\n\n",
 						ecolor (ecolor_good), ecolor (ecolor_normal));
 
@@ -1056,7 +1056,7 @@ int main (int argc, char **argv)
 	if (newlevel && strcmp (newlevel, bootlevel) == 0 &&
 		(strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
 		 strcmp (runlevel, RC_LEVEL_SYSINIT) == 0) &&
-		rc_is_env ("RC_COLDPLUG", "yes"))
+		rc_env_bool ("RC_COLDPLUG"))
 	{
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 		/* The net interfaces are easy - they're all in net /dev/net :) */
@@ -1186,7 +1186,7 @@ int main (int argc, char **argv)
 		/* We always stop the service when in these runlevels */
 		if (going_down) {
 			pid_t pid = rc_stop_service (service);
-			if (pid > 0 && ! rc_is_env ("RC_PARALLEL", "yes"))
+			if (pid > 0 && ! rc_env_bool ("RC_PARALLEL"))
 				rc_waitpid (pid);
 			continue;
 		}
@@ -1251,7 +1251,7 @@ int main (int argc, char **argv)
 		/* After all that we can finally stop the blighter! */
 		if (! found) {
 			pid_t pid = rc_stop_service (service);
-			if (pid > 0 && ! rc_is_env ("RC_PARALLEL", "yes"))
+			if (pid > 0 && ! rc_env_bool ("RC_PARALLEL"))
 				rc_waitpid (pid);
 		}
 	}
@@ -1352,7 +1352,7 @@ interactive_option:
 			if ((pid = rc_start_service (service)))
 				add_pid (pid);
 
-			if (! rc_is_env ("RC_PARALLEL", "yes")) {
+			if (! rc_env_bool ("RC_PARALLEL")) {
 				rc_waitpid (pid);
 				remove_pid (pid);
 			}

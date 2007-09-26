@@ -367,11 +367,12 @@ char *rc_xstrdup (const char *str);
  * @param paths NULL terminated list of paths to add
  * @return pointer to the new path */
 char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
-/*! Check if an environment variable matches the given value
+/*! Check if an environment variable is a boolean and return it's value.
+ * If variable is not a boolean then we set errno to be ENOENT when it does
+ * not exist or EINVAL if it's not a boolean.
  * @param variable to check
- * @param value it should be
- * @return true if it matches */
-bool rc_is_env (const char *variable, const char *value);
+ * @return true if it matches true, yes or 1, false if otherwise. */
+bool rc_env_bool (const char *variable);
 /*! Check if the file exists or not
  * @param pathname to check
  * @return true if it exists, otherwise false */

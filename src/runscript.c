@@ -562,7 +562,7 @@ static void svc_start (bool deps)
 	rc_plugin_run (rc_hook_service_start_in, applet);
 	hook_out = rc_hook_service_start_out;
 
-	if (rc_is_env ("IN_HOTPLUG", "1") || in_background) {
+	if (rc_env_bool ("IN_HOTPLUG") || in_background) {
 		if (! rc_service_state (service, rc_service_inactive) &&
 			! rc_service_state (service, rc_service_stopped))
 			exit (EXIT_FAILURE);
@@ -584,7 +584,7 @@ static void svc_start (bool deps)
 
 	make_exclusive (service);
 
-	if (rc_is_env ("RC_DEPEND_STRICT", "yes"))
+	if (rc_env_bool ("RC_DEPEND_STRICT"))
 		depoptions |= RC_DEP_STRICT;
 
 	if (rc_runlevel_starting ())
@@ -630,7 +630,7 @@ static void svc_start (bool deps)
 			STRLIST_FOREACH (use_services, svc, i)
 				if (rc_service_state (svc, rc_service_stopped)) {
 					pid_t pid = rc_start_service (svc);
-					if (! rc_is_env ("RC_PARALLEL", "yes"))
+					if (! rc_env_bool ("RC_PARALLEL"))
 						rc_waitpid (pid);
 				}
 		}
@@ -802,7 +802,7 @@ static void svc_stop (bool deps)
 		rc_service_state (service, rc_service_failed))
 		exit (EXIT_FAILURE);
 
-	if (rc_is_env ("IN_HOTPLUG", "1") || in_background)
+	if (rc_env_bool ("IN_HOTPLUG") || in_background)
 		if (! rc_service_state (service, rc_service_started) && 
 			! rc_service_state (service, rc_service_inactive))
 			exit (EXIT_FAILURE);
@@ -827,7 +827,7 @@ static void svc_stop (bool deps)
 		char *svc;
 		int i;
 
-		if (rc_is_env ("RC_DEPEND_STRICT", "yes"))
+		if (rc_env_bool ("RC_DEPEND_STRICT"))
 			depoptions |= RC_DEP_STRICT;
 
 		if (rc_runlevel_stopping ())
@@ -857,7 +857,7 @@ static void svc_stop (bool deps)
 					rc_service_state (svc, rc_service_inactive))
 				{
 					pid_t pid = rc_stop_service (svc);
-					if (! rc_is_env ("RC_PARALLEL", "yes"))
+					if (! rc_env_bool ("RC_PARALLEL"))
 						rc_waitpid (pid);
 					rc_strlist_add (&tmplist, svc);
 				}
@@ -1088,7 +1088,7 @@ int runscript (int argc, char **argv)
 	setenv ("RC_RUNSCRIPT_PID", pid, 1);
 
 	/* eprefix is kinda klunky, but it works for our purposes */
-	if (rc_is_env ("RC_PARALLEL", "yes")) {
+	if (rc_env_bool ("RC_PARALLEL")) {
 		int l = 0;
 		int ll;
 
@@ -1138,13 +1138,13 @@ int runscript (int argc, char **argv)
 	/* Save the IN_BACKGROUND env flag so it's ONLY passed to the service
 	   that is being called and not any dependents */
 	if (getenv ("IN_BACKGROUND")) {
-		in_background = rc_is_env ("IN_BACKGROUND", "true");
+		in_background = rc_env_bool ("IN_BACKGROUND");
 		ibsave = rc_xstrdup (getenv ("IN_BACKGROUND"));
 		unsetenv ("IN_BACKGROUND");
 	}
 
-	if (rc_is_env ("IN_HOTPLUG", "1")) {
-		if (! rc_is_env ("RC_HOTPLUG", "yes") || ! rc_allow_plug (applet))
+	if (rc_env_bool ("IN_HOTPLUG")) {
+		if (! rc_env_bool ("RC_HOTPLUG") || ! rc_allow_plug (applet))
 			eerrorx ("%s: not allowed to be hotplugged", applet);
 	}
 
@@ -1196,7 +1196,7 @@ int runscript (int argc, char **argv)
 				   strcmp (optarg, "iprovide") == 0) {
 			int depoptions = RC_DEP_TRACE;
 
-			if (rc_is_env ("RC_DEPEND_STRICT", "yes"))
+			if (rc_env_bool ("RC_DEPEND_STRICT"))
 				depoptions |= RC_DEP_STRICT;
 			
 			if (! deptree && ((deptree = rc_load_deptree ()) == NULL))

@@ -57,20 +57,33 @@ char *rc_xstrdup (const char *str)
 }
 librc_hidden_def(rc_xstrdup)
 
-bool rc_is_env (const char *var, const char *val)
+bool rc_env_bool (const char *var)
 {
 	char *v;
 
 	if (! var)
 		return (false);
 
-	v = getenv (var);
-	if (! v)
-		return (val == NULL ? true : false);
+	if (! (v = getenv (var))) {
+		errno = ENOENT;
+		return (false);
+	}
 
-	return (strcasecmp (v, val) == 0 ? true : false);
+	if (strcasecmp (var, "true") == 0 ||
+		strcasecmp (var, "y") == 0 ||
+		strcasecmp (var, "yes") == 0 ||
+		strcasecmp (var, "1") == 0)
+		return (true);
+
+	if (strcasecmp (var, "false") != 0 &&
+		strcasecmp (var, "n") != 0 &&
+		strcasecmp (var, "no") != 0 &&
+		strcasecmp (var, "0") != 0)
+		errno = EINVAL;
+
+	return (false);
 }
-librc_hidden_def(rc_is_env)
+librc_hidden_def(rc_env_bool)
 
 char *rc_strcatpaths (const char *path1, const char *paths, ...)
 {
