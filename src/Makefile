@@ -84,7 +84,7 @@ RC_SBINLINKS =  mark_service_starting mark_service_inactive \
 				rc-abort
 BINLINKS = rc-status
 SBINLINKS = env-update rc-update runscript start-stop-daemon
-ALL_LINKS = $(sort $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS))
+ALL_LINKS = $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS)
 
 # We also define _BSD_SOURCE so both Linux and the BSDs get a few
 # handy functions which makes our lives a lot easier
