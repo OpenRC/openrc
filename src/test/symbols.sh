@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 top_srcdir=${top_srcdir:-../..}
 srcdir=${builddir:-..}
@@ -6,15 +6,15 @@ top_builddir=${top_srcdir:-../..}
 builddir=${builddir:-..}
 
 export LD_LIBRARY_PATH=${builddir}:${LD_LIBRARY_PATH}
+. ${top_srcdir}/sh/functions.sh
 export PATH=${builddir}:${PATH}
-source ${top_srcdir}/sh/functions.sh
 
 checkit() {
 	local base=$1 ; shift
 	echo "$@" | tr ' ' '\n' > ${base}.out
 	diff -u ${base}.list ${base}.out
 	eend $?
-	((ret+=$?))
+	ret=$(($ret + $?))
 }
 
 ret=0
@@ -60,9 +60,9 @@ readelf -Wr $(grep -l '#include[[:space:]]"librc\.h"' ${builddir}/*.c | sed 's:\
 	| sort -u \
 	| egrep -v '^rc_environ_fd$' \
 	> librc.funcs.hidden.out
-syms=$(diff -u librc.funcs.hidden.{list,out} | sed -n '/^+[^+]/s:^+::p')
-[[ -z ${syms} ]]
+syms=$(diff -u librc.funcs.hidden.list librc.funcs.hidden.out | sed -n '/^+[^+]/s:^+::p')
+[ -z "${syms}" ]
 eend $? "Missing hidden defs:"$'\n'"${syms}"
-((ret+=$?))
+ret=$(($ret + $?))
 
 exit ${ret}
