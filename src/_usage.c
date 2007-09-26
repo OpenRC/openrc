@@ -7,6 +7,7 @@
  * Released under the GPLv2
  */
 
+__attribute__ ((__noreturn__))
 static void usage (int exit_status)
 {
 	const char * const has_arg[] = { "", "<arg>", "[arg]" };
