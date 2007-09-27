@@ -70,17 +70,17 @@ TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS)
 RC_BINLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 			  eindent eoutdent esyslog eval_ecolors \
 			  veinfo vewarn vebegin veend vewend veindent veoutdent \
-			  service_starting service_inactive service_started \
+			  service_starting service_started \
 			  service_stopping service_stopped \
 			  service_inactive service_wasinactive \
 			  service_coldplugged \
 			  is_runlevel_start is_runlevel_stop service_started_daemon \
 			  checkown fstabinfo mountinfo rc-depend \
 			  get_options save_options
-RC_SBINLINKS =  mark_service_starting mark_service_inactive \
-				mark_service_started mark_service_stopping \
-				mark_service_stopped mark_service_inactive \
-				mark_service_wasinactive mark_service_coldplugged \
+RC_SBINLINKS =  mark_service_starting mark_service_started \
+				mark_service_stopping mark_service_stopped \
+				mark_service_inactive mark_service_wasinactive \
+				mark_service_coldplugged \
 				rc-abort
 BINLINKS = rc-status
 SBINLINKS = env-update rc-update runscript start-stop-daemon
