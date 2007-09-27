@@ -239,29 +239,13 @@ bool rc_service_daemons_crashed (const char *service);
 
 /*! @name Dependencies
  * We analyse each init script and cache the resultant dependency tree.
- * This tree can be accessed using the below structures and functions. */
-/*! Singly linked list of dependency types that list the services the
- * type is for */
-typedef struct rc_deptype
-{
-	/*! ineed, iuse, iafter, etc */
-	char *type;
-	/*! NULL terminated list of services */
-	char **services;
-	/*! Next dependency type */
-	struct rc_deptype *next;
-} rc_deptype_t;
+ * This tree can be accessed using the below functions. */ 
 
-/*! Singly linked list of services and their dependencies */
-typedef struct rc_depinfo
-{
-	/*! Name of service */
-	char *service;
-	/*! Dependencies */
-	rc_deptype_t *depends;
-	/*! Next service dependency type */
-	struct rc_depinfo *next;
-} rc_depinfo_t;
+#ifndef _IN_LIBRC
+/* Handles to internal structures */
+typedef void *rc_deptype_t;
+typedef void *rc_depinfo_t;
+#endif
 
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script

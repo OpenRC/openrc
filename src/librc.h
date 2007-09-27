@@ -8,6 +8,8 @@
 #ifndef _LIBRC_H_
 #define _LIBRC_H_
 
+#define _IN_LIBRC
+
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -41,6 +43,7 @@
 #endif
 
 #include "einfo.h"
+#include "librc-depend.h"
 #include "rc.h"
 #include "rc-misc.h"
 #include "strlist.h"
