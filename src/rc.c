@@ -145,12 +145,12 @@ static int do_e (int argc, char **argv)
 
 	if (strcmp (applet, "eval_ecolors") == 0) {
 		printf ("GOOD='%s'\nWARN='%s'\nBAD='%s'\nHILITE='%s'\nBRACKET='%s'\nNORMAL='%s'\n",
-				ecolor (ecolor_good),
-				ecolor (ecolor_warn),
-				ecolor (ecolor_bad),
-				ecolor (ecolor_hilite),
-				ecolor (ecolor_bracket),
-				ecolor (ecolor_normal));
+				ecolor (ECOLOR_GOOD),
+				ecolor (ECOLOR_WARN),
+				ecolor (ECOLOR_BAD),
+				ecolor (ECOLOR_HILITE),
+				ecolor (ECOLOR_BRACKET),
+				ecolor (ECOLOR_NORMAL));
 		exit (EXIT_SUCCESS);
 	}
 
@@ -269,19 +269,19 @@ static int do_service (int argc, char **argv)
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "service_started") == 0)
-		ok = rc_service_state (argv[0], rc_service_started);
+		ok = rc_service_state (argv[0], RC_SERVICE_STARTED);
 	else if (strcmp (applet, "service_stopped") == 0)
-		ok = rc_service_state (argv[0], rc_service_stopped);
+		ok = rc_service_state (argv[0], RC_SERVICE_STOPPED);
 	else if (strcmp (applet, "service_inactive") == 0)
-		ok = rc_service_state (argv[0], rc_service_inactive);
+		ok = rc_service_state (argv[0], RC_SERVICE_INACTIVE);
 	else if (strcmp (applet, "service_starting") == 0)
-		ok = rc_service_state (argv[0], rc_service_starting);
+		ok = rc_service_state (argv[0], RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "service_stopping") == 0)
-		ok = rc_service_state (argv[0], rc_service_stopping);
+		ok = rc_service_state (argv[0], RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "service_coldplugged") == 0)
-		ok = rc_service_state (argv[0], rc_service_coldplugged);
+		ok = rc_service_state (argv[0], RC_SERVICE_COLDPLUGGED);
 	else if (strcmp (applet, "service_wasinactive") == 0)
-		ok = rc_service_state (argv[0], rc_service_wasinactive);
+		ok = rc_service_state (argv[0], RC_SERVICE_WASINACTIVE);
 	else if (strcmp (applet, "service_started_daemon") == 0) {
 		int idx = 0;
 		if (argc > 2)
@@ -303,17 +303,17 @@ static int do_mark_service (int argc, char **argv)
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "mark_service_started") == 0)
-		ok = rc_mark_service (argv[0], rc_service_started);
+		ok = rc_mark_service (argv[0], RC_SERVICE_STARTED);
 	else if (strcmp (applet, "mark_service_stopped") == 0)
-		ok = rc_mark_service (argv[0], rc_service_stopped);
+		ok = rc_mark_service (argv[0], RC_SERVICE_STOPPED);
 	else if (strcmp (applet, "mark_service_inactive") == 0)
-		ok = rc_mark_service (argv[0], rc_service_inactive);
+		ok = rc_mark_service (argv[0], RC_SERVICE_INACTIVE);
 	else if (strcmp (applet, "mark_service_starting") == 0)
-		ok = rc_mark_service (argv[0], rc_service_starting);
+		ok = rc_mark_service (argv[0], RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "mark_service_stopping") == 0)
-		ok = rc_mark_service (argv[0], rc_service_stopping);
+		ok = rc_mark_service (argv[0], RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "mark_service_coldplugged") == 0)
-		ok = rc_mark_service (argv[0], rc_service_coldplugged);
+		ok = rc_mark_service (argv[0], RC_SERVICE_COLDPLUGGED);
 	else
 		eerrorx ("%s: unknown applet", applet);
 
@@ -664,7 +664,7 @@ static void handle_signal (int sig)
 				kill (pl->pid, SIGTERM);
 
 			/* Notify plugins we are aborting */
-			rc_plugin_run (rc_hook_abort, NULL);
+			rc_plugin_run (RC_HOOK_ABORT, NULL);
 
 			/* Only drop into single user mode if we're booting */
 			if ((PREVLEVEL &&
@@ -916,15 +916,15 @@ int main (int argc, char **argv)
 			printf ("   %sGentoo/%s; %shttp://www.gentoo.org/%s"
 					"\n   Copyright 1999-2007 Gentoo Foundation; "
 					"Distributed under the GPLv2\n\n",
-					ecolor (ecolor_good), uts.sysname, ecolor (ecolor_bracket),
-					ecolor (ecolor_normal));
+					ecolor (ECOLOR_GOOD), uts.sysname, ecolor (ECOLOR_BRACKET),
+					ecolor (ECOLOR_NORMAL));
 
 			if (rc_env_bool ("RC_INTERACTIVE"))
 				printf ("Press %sI%s to enter interactive boot mode\n\n",
-						ecolor (ecolor_good), ecolor (ecolor_normal));
+						ecolor (ECOLOR_GOOD), ecolor (ECOLOR_NORMAL));
 
 			setenv ("RC_SOFTLEVEL", newlevel, 1);
-			rc_plugin_run (rc_hook_runlevel_start_in, newlevel);
+			rc_plugin_run (RC_HOOK_RUNLEVEL_START_IN, newlevel);
 			run_script (INITSH);
 
 #ifdef __linux__
@@ -936,7 +936,7 @@ int main (int argc, char **argv)
 			}
 
 #endif
-			rc_plugin_run (rc_hook_runlevel_start_out, newlevel);
+			rc_plugin_run (RC_HOOK_RUNLEVEL_START_OUT, newlevel);
 
 			if (want_interactive ())
 				mark_interactive ();
@@ -1007,9 +1007,9 @@ int main (int argc, char **argv)
 		going_down = true;
 		rc_set_runlevel (newlevel);
 		setenv ("RC_SOFTLEVEL", newlevel, 1);
-		rc_plugin_run (rc_hook_runlevel_stop_in, newlevel);
+		rc_plugin_run (RC_HOOK_RUNLEVEL_STOP_IN, newlevel);
 	} else {
-		rc_plugin_run (rc_hook_runlevel_stop_in, runlevel);
+		rc_plugin_run (RC_HOOK_RUNLEVEL_STOP_IN, runlevel);
 	}
 
 	/* Check if runlevel is valid if we're changing */
@@ -1041,7 +1041,7 @@ int main (int argc, char **argv)
 
 		STRLIST_FOREACH (start_services, service, i)
 			if (rc_allow_plug (service))
-				rc_mark_service (service, rc_service_coldplugged);
+				rc_mark_service (service, RC_SERVICE_COLDPLUGGED);
 		/* We need to dump this list now.
 		   This may seem redunant, but only Linux needs this and saves on
 		   code bloat. */
@@ -1066,7 +1066,7 @@ int main (int argc, char **argv)
 			tmp = rc_xmalloc (sizeof (char *) * j);
 			snprintf (tmp, j, "net.%s", service);
 			if (rc_service_exists (tmp) && rc_allow_plug (tmp))
-				rc_mark_service (tmp, rc_service_coldplugged);
+				rc_mark_service (tmp, RC_SERVICE_COLDPLUGGED);
 			CHAR_FREE (tmp);
 		}
 		rc_strlist_free (start_services);
@@ -1085,7 +1085,7 @@ int main (int argc, char **argv)
 					tmp = rc_xmalloc (sizeof (char *) * j);
 					snprintf (tmp, j, "moused.%s", service);
 					if (rc_service_exists (tmp) && rc_allow_plug (tmp))
-						rc_mark_service (tmp, rc_service_coldplugged);
+						rc_mark_service (tmp, RC_SERVICE_COLDPLUGGED);
 					CHAR_FREE (tmp);
 				}
 			}
@@ -1180,7 +1180,7 @@ int main (int argc, char **argv)
 		char *svc2 = NULL;
 		int k;
 
-		if (rc_service_state (service, rc_service_stopped))
+		if (rc_service_state (service, RC_SERVICE_STOPPED))
 			continue;
 
 		/* We always stop the service when in these runlevels */
@@ -1224,7 +1224,7 @@ int main (int argc, char **argv)
 			}
 		} else {
 			/* Allow coldplugged services not to be in the runlevels list */
-			if (rc_service_state (service, rc_service_coldplugged))
+			if (rc_service_state (service, RC_SERVICE_COLDPLUGGED))
 				continue;
 		}
 
@@ -1262,7 +1262,7 @@ int main (int argc, char **argv)
 	wait_for_services ();
 
 	/* Notify the plugins we have finished */
-	rc_plugin_run (rc_hook_runlevel_stop_out, runlevel);
+	rc_plugin_run (RC_HOOK_RUNLEVEL_STOP_OUT, runlevel);
 
 	rmdir (RC_STOPPING);
 
@@ -1290,11 +1290,11 @@ int main (int argc, char **argv)
 	}
 
 	mkdir (RC_STARTING, 0755);
-	rc_plugin_run (rc_hook_runlevel_start_in, runlevel);
+	rc_plugin_run (RC_HOOK_RUNLEVEL_START_IN, runlevel);
 
 	/* Re-add our coldplugged services if they stopped */
 	STRLIST_FOREACH (coldplugged_services, service, i)
-		rc_mark_service (service, rc_service_coldplugged);
+		rc_mark_service (service, RC_SERVICE_COLDPLUGGED);
 
 	/* Order the services to start */
 	rc_strlist_add (&types, "ineed");
@@ -1316,7 +1316,7 @@ int main (int argc, char **argv)
 			char *token;
 
 			while ((token = strsep (&p, ",")))
-				rc_mark_service (token, rc_service_started);
+				rc_mark_service (token, RC_SERVICE_STARTED);
 			free (service);
 		}
 	}
@@ -1324,7 +1324,7 @@ int main (int argc, char **argv)
 
 
 	STRLIST_FOREACH (start_services, service, i) {
-		if (rc_service_state (service, rc_service_stopped))	{
+		if (rc_service_state (service, RC_SERVICE_STOPPED))	{
 			pid_t pid;
 
 			if (! interactive)
@@ -1362,7 +1362,7 @@ interactive_option:
 	/* Wait for our services to finish */
 	wait_for_services ();
 
-	rc_plugin_run (rc_hook_runlevel_start_out, runlevel);
+	rc_plugin_run (RC_HOOK_RUNLEVEL_START_OUT, runlevel);
 
 #ifdef __linux__
 	/* mark any services skipped as stopped */
@@ -1372,7 +1372,7 @@ interactive_option:
 			char *token;
 
 			while ((token = strsep (&p, ",")))
-				rc_mark_service (token, rc_service_stopped);
+				rc_mark_service (token, RC_SERVICE_STOPPED);
 			free (service);
 		}
 	}

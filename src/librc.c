@@ -18,18 +18,35 @@
 /* File stream used for plugins to write environ vars to */
 FILE *rc_environ_fd = NULL;
 
-static const char *rc_service_state_names[] = {
-	"started",
-	"stopped",
-	"starting",
-	"stopping",
-	"inactive",
-	"wasinactive",
-	"coldplugged",
-	"failed",
-	"scheduled",
-	NULL
+typedef struct rc_service_state_name {
+	rc_service_state_t state;
+	const char *name;
+} rc_service_state_name_t;
+
+static const rc_service_state_name_t rc_service_state_names[] = {
+	{ RC_SERVICE_STARTED,     "started" },
+	{ RC_SERVICE_STOPPED,     "stopped" },
+	{ RC_SERVICE_STARTING,    "starting" },
+	{ RC_SERVICE_STOPPING,    "stopping" },
+	{ RC_SERVICE_INACTIVE,    "inactive" },
+	{ RC_SERVICE_WASINACTIVE, "wasinactive" },
+	{ RC_SERVICE_COLDPLUGGED, "coldplugged" },
+	{ RC_SERVICE_FAILED,      "failed" },
+	{ RC_SERVICE_SCHEDULED,   "scheduled"},
+	{ 0, NULL}
 };
+
+static const char *rc_parse_service_state (rc_service_state_t state)
+{
+	int i;
+
+	for (i = 0; rc_service_state_names[i].name; i++) {
+		if (rc_service_state_names[i].state == state)
+			return (rc_service_state_names[i].name);
+	}
+
+	return (NULL);
+}
 
 bool rc_runlevel_starting (void)
 {
@@ -283,14 +300,14 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 	svc = rc_xstrdup (service);
 	base = basename (svc);
 
-	if (state != rc_service_stopped) {
+	if (state != RC_SERVICE_STOPPED) {
 		if (! rc_is_file(init)) {
 			free (init);
 			free (svc);
 			return (false);
 		}
 
-		file = rc_strcatpaths (RC_SVCDIR, rc_service_state_names[state], base,
+		file = rc_strcatpaths (RC_SVCDIR, rc_parse_service_state (state), base,
 							   (char *) NULL);
 		if (rc_exists (file))
 			unlink (file);
@@ -307,31 +324,32 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 		skip_state = state;
 	}
 
-	if (state == rc_service_coldplugged) {
+	if (state == RC_SERVICE_COLDPLUGGED) {
 		free (init);
 		free (svc);
 		return (true);
 	}
 
 	/* Remove any old states now */
-	i = 0;
-	while (rc_service_state_names[i]) {
-		if ((i != skip_state &&
-			 i != rc_service_stopped &&
-			 i != rc_service_coldplugged &&
-			 i != rc_service_scheduled &&
-			 i != rc_service_crashed) &&
-			(! skip_wasinactive || i != rc_service_wasinactive))
+	for (i = 0; rc_service_state_names[i].name; i++) {
+		int s = rc_service_state_names[i].state;
+
+		if ((s != skip_state &&
+			 s != RC_SERVICE_STOPPED &&
+			 s != RC_SERVICE_COLDPLUGGED &&
+			 s != RC_SERVICE_SCHEDULED &&
+			 s != RC_SERVICE_CRASHED) &&
+			(! skip_wasinactive || i != RC_SERVICE_WASINACTIVE))
 		{
-			file = rc_strcatpaths (RC_SVCDIR, rc_service_state_names[i], base,
+			file = rc_strcatpaths (RC_SVCDIR, rc_parse_service_state(s), base,
 								   (char *) NULL);
 			if (rc_exists (file)) {
-				if ((state == rc_service_starting ||
-					 state == rc_service_stopping) &&
-					i == rc_service_inactive)
+				if ((state == RC_SERVICE_STARTING ||
+					 state == RC_SERVICE_STOPPING) &&
+					s == RC_SERVICE_INACTIVE)
 				{
 					char *wasfile = rc_strcatpaths (RC_SVCDIR,
-													rc_service_state_names[rc_service_wasinactive],
+	rc_parse_service_state (RC_SERVICE_WASINACTIVE),
 													base, (char *) NULL);
 
 					if (symlink (init, wasfile) != 0)
@@ -349,13 +367,12 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 			}
 			free (file);
 		}
-		i++;
 	}
 
 	/* Remove the exclusive state if we're inactive */
-	if (state == rc_service_started ||
-		state == rc_service_stopped ||
-		state == rc_service_inactive)
+	if (state == RC_SERVICE_STARTED ||
+		state == RC_SERVICE_STOPPED ||
+		state == RC_SERVICE_INACTIVE)
 	{
 		file = rc_strcatpaths (RC_SVCDIR, "exclusive", base, (char *) NULL);
 		if (rc_exists (file))
@@ -365,7 +382,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 	}
 
 	/* Remove any options and daemons the service may have stored */
-	if (state == rc_service_stopped) {
+	if (state == RC_SERVICE_STOPPED) {
 		char *dir = rc_strcatpaths (RC_SVCDIR, "options", base, (char *) NULL);
 
 		if (rc_is_dir (dir))
@@ -381,7 +398,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 	}
 
 	/* These are final states, so remove us from scheduled */
-	if (state == rc_service_started || state == rc_service_stopped) {
+	if (state == RC_SERVICE_STARTED || state == RC_SERVICE_STOPPED) {
 		char *sdir = rc_strcatpaths (RC_SVCDIR, "scheduled", (char *) NULL);
 		char **dirs = rc_ls_dir (sdir, 0);
 		char *dir;
@@ -419,19 +436,19 @@ bool rc_service_state (const char *service, const rc_service_state_t state)
 
 	/* If the init script does not exist then we are stopped */
 	if (! rc_service_exists (service))
-		return (state == rc_service_stopped ? true : false);
+		return (state == RC_SERVICE_STOPPED ? true : false);
 
 	/* We check stopped state by not being in any of the others */
-	if (state == rc_service_stopped)
-		return ( ! (rc_service_state (service, rc_service_started) ||
-					rc_service_state (service, rc_service_starting) ||
-					rc_service_state (service, rc_service_stopping) ||
-					rc_service_state (service, rc_service_inactive)));
+	if (state == RC_SERVICE_STOPPED)
+		return ( ! (rc_service_state (service, RC_SERVICE_STARTED) ||
+					rc_service_state (service, RC_SERVICE_STARTING) ||
+					rc_service_state (service, RC_SERVICE_STOPPING) ||
+					rc_service_state (service, RC_SERVICE_INACTIVE)));
 
 	/* The crashed state and scheduled states are virtual */
-	if (state == rc_service_crashed)
+	if (state == RC_SERVICE_CRASHED)
 		return (rc_service_daemons_crashed (service));
-	else if (state == rc_service_scheduled) {
+	else if (state == RC_SERVICE_SCHEDULED) {
 		char **services = rc_services_scheduled_by (service);
 		retval = (services);
 		if (services)
@@ -442,7 +459,7 @@ bool rc_service_state (const char *service, const rc_service_state_t state)
 	/* Now we just check if a file by the service name rc_exists
 	   in the state dir */
 	svc = rc_xstrdup (service);
-	file = rc_strcatpaths (RC_SVCDIR, rc_service_state_names[state],
+	file = rc_strcatpaths (RC_SVCDIR, rc_parse_service_state (state),
 						   basename (svc), (char*) NULL);
 	free (svc);
 	retval = rc_exists (file);
@@ -516,7 +533,7 @@ static pid_t _exec_service (const char *service, const char *arg)
 
 	file = rc_resolve_service (service);
 	if (! rc_is_file (file)) {
-		rc_mark_service (service, rc_service_stopped);
+		rc_mark_service (service, RC_SERVICE_STOPPED);
 		free (file);
 		return (0);
 	}
@@ -568,7 +585,7 @@ librc_hidden_def(rc_waitpid)
 
 pid_t rc_stop_service (const char *service)
 {
-	if (rc_service_state (service, rc_service_stopped))
+	if (rc_service_state (service, RC_SERVICE_STOPPED))
 		return (0);
 
 	return (_exec_service (service, "stop"));
@@ -577,7 +594,7 @@ librc_hidden_def(rc_stop_service)
 
 pid_t rc_start_service (const char *service)
 {
-	if (! rc_service_state (service, rc_service_stopped))
+	if (! rc_service_state (service, RC_SERVICE_STOPPED))
 		return (0);
 
 	return (_exec_service (service, "start"));
@@ -706,11 +723,11 @@ librc_hidden_def(rc_services_in_runlevel)
 
 char **rc_services_in_state (rc_service_state_t state)
 {
-	char *dir = rc_strcatpaths (RC_SVCDIR, rc_service_state_names[state],
+	char *dir = rc_strcatpaths (RC_SVCDIR, rc_parse_service_state (state),
 								(char *) NULL);
 	char **list = NULL;
 
-	if (state == rc_service_scheduled) {
+	if (state == RC_SERVICE_SCHEDULED) {
 		char **dirs = rc_ls_dir (dir, 0);
 		char *d;
 		int i;

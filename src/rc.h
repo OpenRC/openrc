@@ -42,16 +42,24 @@
 /*! @brief States a service can be in */
 typedef enum
 {
-	rc_service_started,
-	rc_service_stopped,
-	rc_service_starting,
-	rc_service_stopping,
-	rc_service_inactive,
-	rc_service_wasinactive,
-	rc_service_coldplugged,
-	rc_service_failed,
-	rc_service_scheduled,
-	rc_service_crashed
+	/* These are actual states
+	 * The service has to be in one only at all times */
+	RC_SERVICE_STARTED     = 0x0001,
+	RC_SERVICE_STOPPED     = 0x0002,
+	RC_SERVICE_STARTING    = 0x0003,
+	RC_SERVICE_STOPPING    = 0x0004,
+	RC_SERVICE_INACTIVE    = 0x0005,
+
+	/* Service may or may not have been coldplugged */
+	RC_SERVICE_COLDPLUGGED = 0x0010,
+
+	/* Optional states service could also be in */
+	RC_SERVICE_FAILED      = 0x0100,
+	RC_SERVICE_SCHEDULED   = 0x0101,
+	RC_SERVICE_WASINACTIVE = 0x0102,
+
+	/* Regardless of state, service may have crashed daemons */
+	RC_SERVICE_CRASHED     = 0x1000
 } rc_service_state_t;
 
 /*! Resolves a service name to its full path.
@@ -297,21 +305,21 @@ void rc_free_deptree (rc_depinfo_t *deptree);
 /*! Points at which a plugin can hook into RC */
 typedef enum
 {
-	rc_hook_runlevel_stop_in = 1,
-	rc_hook_runlevel_stop_out = 4,
-	rc_hook_runlevel_start_in = 5,
-	rc_hook_runlevel_start_out = 8,
+	RC_HOOK_RUNLEVEL_STOP_IN   = 1,
+	RC_HOOK_RUNLEVEL_STOP_OUT  = 4,
+	RC_HOOK_RUNLEVEL_START_IN  = 5,
+	RC_HOOK_RUNLEVEL_START_OUT = 8,
 	/*! We send the abort if an init script requests we abort and drop
 	 * into single user mode if system not fully booted */
-	rc_hook_abort = 99,
-	rc_hook_service_stop_in = 101,
-	rc_hook_service_stop_now,
-	rc_hook_service_stop_done,
-	rc_hook_service_stop_out,
-	rc_hook_service_start_in,
-	rc_hook_service_start_now,
-	rc_hook_service_start_done,
-	rc_hook_service_start_out
+	RC_HOOK_ABORT              = 99,
+	RC_HOOK_SERVICE_STOP_IN    = 101,
+	RC_HOOK_SERVICE_STOP_NOW   = 102,
+	RC_HOOK_SERVICE_STOP_DONE  = 103,
+	RC_HOOK_SERVICE_STOP_OUT   = 104,
+	RC_HOOK_SERVICE_START_IN   = 105,
+	RC_HOOK_SERVICE_START_NOW  = 106,
+	RC_HOOK_SERVICE_START_DONE = 107,
+	RC_HOOK_SERVICE_START_OUT  = 108
 } rc_hook_t;
 
 /*! Plugin entry point

@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  28 Sep 2007; Roy Marples <uberlord@gentoo.org>:
+
+    enums are now fixed to specific values and are in UPPER CASE.
+
   26 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     rc_is_env is now rc_env_bool and just works with boolean values.

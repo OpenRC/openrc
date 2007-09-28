@@ -22,33 +22,33 @@
 static void print_level (char *level)
 {
 	printf ("Runlevel: %s%s%s\n",
-			ecolor (ecolor_hilite),
+			ecolor (ECOLOR_HILITE),
 			level,
-			ecolor (ecolor_normal));
+			ecolor (ECOLOR_NORMAL));
 }
 
 static void print_service (char *service)
 {
 	char status[10];
 	int cols =  printf (" %s\n", service);
-	einfo_color_t color = ecolor_bad;
+	einfo_color_t color = ECOLOR_BAD;
 
-	if (rc_service_state (service, rc_service_stopping))
+	if (rc_service_state (service, RC_SERVICE_STOPPING))
 		snprintf (status, sizeof (status),   "stopping ");
-	else if (rc_service_state (service, rc_service_starting)) {
+	else if (rc_service_state (service, RC_SERVICE_STARTING)) {
 		snprintf (status, sizeof (status), "starting ");
-		color = ecolor_warn;
-	} else if (rc_service_state (service, rc_service_inactive)) {
+		color = ECOLOR_WARN;
+	} else if (rc_service_state (service, RC_SERVICE_INACTIVE)) {
 		snprintf (status, sizeof (status), "inactive ");
-		color = ecolor_warn;
-	} else if (geteuid () == 0 && rc_service_state (service, rc_service_crashed))
+		color = ECOLOR_WARN;
+	} else if (geteuid () == 0 && rc_service_state (service, RC_SERVICE_CRASHED))
 		snprintf (status, sizeof (status),   " crashed ");
-	else if (rc_service_state (service, rc_service_started)) {
+	else if (rc_service_state (service, RC_SERVICE_STARTED)) {
 		snprintf (status, sizeof (status), " started ");
-		color = ecolor_good;
-	} else if (rc_service_state (service, rc_service_scheduled)) {
+		color = ECOLOR_GOOD;
+	} else if (rc_service_state (service, RC_SERVICE_SCHEDULED)) {
 		snprintf (status, sizeof (status), "scheduled");
-		color = ecolor_warn;
+		color = ECOLOR_WARN;
 	} else
 		snprintf (status, sizeof (status),   " stopped ");
 	ebracket (cols, color, status);

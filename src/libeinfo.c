@@ -64,13 +64,13 @@ hidden_proto(ewendv)
 #define INDENT_MAX			40
 
 /* Default colours */
-#define ECOLOR_GOOD      "\033[32;01m"
-#define ECOLOR_WARN      "\033[33;01m"
-#define ECOLOR_BAD       "\033[31;01m"
-#define ECOLOR_HILITE    "\033[36;01m"
-#define ECOLOR_BRACKET   "\033[34;01m"
-#define ECOLOR_NORMAL    "\033[0m"
-#define ECOLOR_FLUSH     "\033[K"
+#define ECOLOR_GOOD_A      "\033[32;01m"
+#define ECOLOR_WARN_A      "\033[33;01m"
+#define ECOLOR_BAD_A       "\033[31;01m"
+#define ECOLOR_HILITE_A    "\033[36;01m"
+#define ECOLOR_BRACKET_A   "\033[34;01m"
+#define ECOLOR_NORMAL_A    "\033[0m"
+#define ECOLOR_FLUSH_A     "\033[K"
 
 /* A cheat sheet of colour capable terminals
    This is taken from DIR_COLORS from GNU coreutils
@@ -242,28 +242,28 @@ const char *ecolor (einfo_color_t color) {
 		return ("");
 	
 	switch (color) {
-		case ecolor_good:
+		case ECOLOR_GOOD:
 			if (! (col = getenv ("ECOLOR_GOOD")))
-				col = ECOLOR_GOOD;
+				col = ECOLOR_GOOD_A;
 			break;
-		case ecolor_warn:
+		case ECOLOR_WARN:
 			if (! (col = getenv ("ECOLOR_WARN")))
-				col = ECOLOR_WARN;
+				col = ECOLOR_WARN_A;
 			break;
-		case ecolor_bad:
+		case ECOLOR_BAD:
 			if (! (col = getenv ("ECOLOR_BAD")))
-				col = ECOLOR_BAD;
+				col = ECOLOR_BAD_A;
 			break;
-		case ecolor_hilite:
+		case ECOLOR_HILITE:
 			if (! (col = getenv ("ECOLOR_HILITE")))
-				col = ECOLOR_HILITE;
+				col = ECOLOR_HILITE_A;
 			break;
-		case ecolor_bracket:
+		case ECOLOR_BRACKET:
 			if (! (col = getenv ("ECOLOR_BRACKET")))
-				col = ECOLOR_BRACKET;
+				col = ECOLOR_BRACKET_A;
 			break;
-		case ecolor_normal:
-			col = ECOLOR_NORMAL;
+		case ECOLOR_NORMAL:
+			col = ECOLOR_NORMAL_A;
 			break;
 	}
 
@@ -273,8 +273,8 @@ hidden_def(ecolor)
 
 #define EINFOVN(_file, _color) \
 		if (_eprefix) \
-	fprintf (_file, "%s%s%s|", ecolor (_color), _eprefix, ecolor (ecolor_normal)); \
-	fprintf (_file, " %s*%s ", ecolor (_color), ecolor (ecolor_normal)); \
+	fprintf (_file, "%s%s%s|", ecolor (_color), _eprefix, ecolor (ECOLOR_NORMAL)); \
+	fprintf (_file, " %s*%s ", ecolor (_color), ecolor (ECOLOR_NORMAL)); \
 	retval += _eindent (_file); \
 { \
 	va_list _ap; \
@@ -283,13 +283,13 @@ hidden_def(ecolor)
 	va_end (_ap); \
 } \
 	if (colour_terminal ()) \
-	fprintf (_file, ECOLOR_FLUSH);
+	fprintf (_file, ECOLOR_FLUSH_A);
 
 static int _einfovn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stdout, ecolor_good);
+	EINFOVN (stdout, ECOLOR_GOOD);
 	return (retval);
 }
 
@@ -297,7 +297,7 @@ static int _ewarnvn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stdout, ecolor_warn);
+	EINFOVN (stdout, ECOLOR_WARN);
 	return (retval);
 }
 
@@ -305,7 +305,7 @@ static int _eerrorvn (const char *fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stderr, ecolor_bad);
+	EINFOVN (stderr, ECOLOR_BAD);
 	return (retval);
 }
 
@@ -482,8 +482,8 @@ static void _eend (FILE *fp, int col, einfo_color_t color, const char *msg)
 
 	if (cols > 0 && colour_terminal ()) {
 		fprintf (fp, "\033[A\033[%dC %s[ %s%s %s]%s\n", cols,
-				 ecolor (ecolor_bracket), ecolor (color), msg,
-				 ecolor (ecolor_bracket), ecolor (ecolor_normal));
+				 ecolor (ECOLOR_BRACKET), ecolor (color), msg,
+				 ecolor (ECOLOR_BRACKET), ecolor (ECOLOR_NORMAL));
 	} else {
 		if (col > 0)
 			for (i = 0; i < cols - col; i++)
@@ -512,7 +512,7 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
 	}
 
 	_eend (fp, col,
-		   retval == 0 ? ecolor_good : ecolor_bad,
+		   retval == 0 ? ECOLOR_GOOD : ECOLOR_BAD,
 		   retval == 0 ? OK : NOT_OK);
 	return (retval);
 }

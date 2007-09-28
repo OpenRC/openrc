@@ -25,12 +25,12 @@
 /*! @brief Color types to use */
 typedef enum
 {
-	ecolor_good,
-	ecolor_warn,
-	ecolor_bad,
-	ecolor_hilite,
-	ecolor_bracket,
-	ecolor_normal
+	ECOLOR_NORMAL = 1,
+	ECOLOR_GOOD = 2,
+	ECOLOR_WARN = 3,
+	ECOLOR_BAD = 4,
+	ECOLOR_HILITE = 5,
+	ECOLOR_BRACKET = 6
 } einfo_color_t;
 
 /*! @brief Returns the ASCII code for the color */
