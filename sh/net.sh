@@ -554,6 +554,11 @@ stop() {
 		eindent
 		predown || return 1
 		eoutdent
+	else
+		if is_net_fs /; then
+			eerror "root filesystem is network mounted -- can't stop ${IFACE}"
+			return 1
+		fi
 	fi
 
 	for module in ${MODULES} ; do
