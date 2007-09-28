@@ -459,11 +459,12 @@ static rc_service_state_t svc_status ()
 	} else if (state & RC_SERVICE_INACTIVE) {
 		snprintf (status, sizeof (status), "inactive");
 		e = &ewarn;
-	} else if (state & RC_SERVICE_CRASHED) {
-		snprintf (status, sizeof (status), "crashed");
-		e = &eerror;
 	} else if (state & RC_SERVICE_STARTED) {
-		snprintf (status, sizeof (status), "started");
+		if (geteuid () == 0 && rc_service_daemons_crashed (service)) {
+			snprintf (status, sizeof (status), "crashed");
+			e = &eerror;
+		} else
+			snprintf (status, sizeof (status), "started");
 	} else
 		snprintf (status, sizeof (status), "stopped");
 

@@ -57,9 +57,6 @@ typedef enum
 	RC_SERVICE_FAILED      = 0x0200,
 	RC_SERVICE_SCHEDULED   = 0x0400,
 	RC_SERVICE_WASINACTIVE = 0x0800,
-
- 	/* Regardless of state, service may have crashed daemons */
- 	RC_SERVICE_CRASHED     = 0x1000
 } rc_service_state_t;
 
 /*! Resolves a service name to its full path.

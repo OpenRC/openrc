@@ -339,9 +339,8 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 		if ((s != skip_state &&
 			 s != RC_SERVICE_STOPPED &&
 			 s != RC_SERVICE_COLDPLUGGED &&
-			 s != RC_SERVICE_SCHEDULED &&
-			 s != RC_SERVICE_CRASHED) &&
-			(! skip_wasinactive || i != RC_SERVICE_WASINACTIVE))
+			 s != RC_SERVICE_SCHEDULED) &&
+			(! skip_wasinactive || s != RC_SERVICE_WASINACTIVE))
 		{
 			file = rc_strcatpaths (RC_SVCDIR, rc_parse_service_state(s), base,
 								   (char *) NULL);
@@ -351,7 +350,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 					s == RC_SERVICE_INACTIVE)
 				{
 					char *wasfile = rc_strcatpaths (RC_SVCDIR,
-	rc_parse_service_state (RC_SERVICE_WASINACTIVE),
+													rc_parse_service_state (RC_SERVICE_WASINACTIVE),
 													base, (char *) NULL);
 
 					if (symlink (init, wasfile) != 0)
@@ -455,11 +454,6 @@ rc_service_state_t rc_service_state (const char *service)
 			state |= RC_SERVICE_SCHEDULED;
 			free (services);
 		}
-	}
-
-	if (state & RC_SERVICE_STARTED && geteuid () == 0) {
-		if (rc_service_daemons_crashed (service))
-			state |= RC_SERVICE_CRASHED;
 	}
 
 	return (state);
