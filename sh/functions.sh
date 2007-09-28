@@ -120,7 +120,7 @@ esac
 
 for arg in "$@" ; do
 	case "${arg}" in
-		--nocolor|--nocolour)
+		--nocolor|--nocolour|-C)
 			export RC_NOCOLOR="yes"
 			;;
 	esac
