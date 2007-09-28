@@ -30,6 +30,10 @@ start() {
 	esac
 
 	local WINDOWKEYS_KEYMAP= LOADKEYS_UNI=
+	local ttydev= n=
+	[ -d /dev/vc ] \
+		&& ttydev=/dev/vc/ \
+		|| ttydev=/dev/tty
 
 	checkconfig || return 1
 
@@ -39,8 +43,12 @@ start() {
 	fi
 
 	# Turn on unicode if user wants it
-	if [ "${UNICODE}" = "yes" ] ; then
-		kbd_mode -u
+	if [ "${UNICODE}" = "yes" ]; then
+		n=1
+		while [ ${n} -le "${RC_TTY_NUMBER}" ]; do
+			kbd_mode -u -C "${ttydev}${n}"
+			n=$((${n} + 1))
+		done
 		LOADKEYS_UNI="--unicode"
 	fi
 
@@ -74,11 +82,9 @@ start() {
 		termencoding="%@"
 		termmsg="ASCII"
 	fi
-	local n=1 ttydev=
-	[ -d /dev/vc ] \
-		&& ttydev=/dev/vc/ \
-		|| ttydev=/dev/tty
+
 	ebegin "Setting terminal encoding to" ${termmsg}
+	n=1
 	while [ ${n} -le "${RC_TTY_NUMBER}" ] ; do
 		printf "\033%s" "${termencoding}" >"${ttydev}${n}"
 		n=$((${n} + 1))

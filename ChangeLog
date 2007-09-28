@@ -3,6 +3,8 @@
 
   28 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
+    keymaps now sets unicode keyboard on all defined ttys, #192442 
+    thanks to Pacho Ramos.
     net.sh now checks to see if root is net mounted if no predown function
     exists, #194074.
     enums are now fixed to specific values and are in UPPER CASE.
