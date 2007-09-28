@@ -269,19 +269,19 @@ static int do_service (int argc, char **argv)
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "service_started") == 0)
-		ok = rc_service_state (argv[0], RC_SERVICE_STARTED);
+		ok = (rc_service_state (argv[0]) & RC_SERVICE_STARTED);
 	else if (strcmp (applet, "service_stopped") == 0)
-		ok = rc_service_state (argv[0], RC_SERVICE_STOPPED);
+		ok = (rc_service_state (argv[0]) & RC_SERVICE_STOPPED);
 	else if (strcmp (applet, "service_inactive") == 0)
-		ok = rc_service_state (argv[0], RC_SERVICE_INACTIVE);
+		ok = (rc_service_state (argv[0]) & RC_SERVICE_INACTIVE);
 	else if (strcmp (applet, "service_starting") == 0)
-		ok = rc_service_state (argv[0], RC_SERVICE_STOPPING);
+		ok = (rc_service_state (argv[0]) & RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "service_stopping") == 0)
-		ok = rc_service_state (argv[0], RC_SERVICE_STOPPING);
+		ok = (rc_service_state (argv[0]) & RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "service_coldplugged") == 0)
-		ok = rc_service_state (argv[0], RC_SERVICE_COLDPLUGGED);
+		ok = (rc_service_state (argv[0]) & RC_SERVICE_COLDPLUGGED);
 	else if (strcmp (applet, "service_wasinactive") == 0)
-		ok = rc_service_state (argv[0], RC_SERVICE_WASINACTIVE);
+		ok = (rc_service_state (argv[0]) & RC_SERVICE_WASINACTIVE);
 	else if (strcmp (applet, "service_started_daemon") == 0) {
 		int idx = 0;
 		if (argc > 2)
@@ -1180,7 +1180,7 @@ int main (int argc, char **argv)
 		char *svc2 = NULL;
 		int k;
 
-		if (rc_service_state (service, RC_SERVICE_STOPPED))
+		if (rc_service_state (service) & RC_SERVICE_STOPPED)
 			continue;
 
 		/* We always stop the service when in these runlevels */
@@ -1224,7 +1224,7 @@ int main (int argc, char **argv)
 			}
 		} else {
 			/* Allow coldplugged services not to be in the runlevels list */
-			if (rc_service_state (service, RC_SERVICE_COLDPLUGGED))
+			if (rc_service_state (service) & RC_SERVICE_COLDPLUGGED)
 				continue;
 		}
 
@@ -1324,7 +1324,7 @@ int main (int argc, char **argv)
 
 
 	STRLIST_FOREACH (start_services, service, i) {
-		if (rc_service_state (service, RC_SERVICE_STOPPED))	{
+		if (rc_service_state (service) & RC_SERVICE_STOPPED)	{
 			pid_t pid;
 
 			if (! interactive)

@@ -31,22 +31,23 @@ static void print_service (char *service)
 {
 	char status[10];
 	int cols =  printf (" %s\n", service);
+	rc_service_state_t state = rc_service_state (service);
 	einfo_color_t color = ECOLOR_BAD;
 
-	if (rc_service_state (service, RC_SERVICE_STOPPING))
+	if (state & RC_SERVICE_STOPPING)
 		snprintf (status, sizeof (status),   "stopping ");
-	else if (rc_service_state (service, RC_SERVICE_STARTING)) {
+	else if (state & RC_SERVICE_STARTING) {
 		snprintf (status, sizeof (status), "starting ");
 		color = ECOLOR_WARN;
-	} else if (rc_service_state (service, RC_SERVICE_INACTIVE)) {
+	} else if (state & RC_SERVICE_INACTIVE) {
 		snprintf (status, sizeof (status), "inactive ");
 		color = ECOLOR_WARN;
-	} else if (geteuid () == 0 && rc_service_state (service, RC_SERVICE_CRASHED))
+	} else if (state & RC_SERVICE_CRASHED)
 		snprintf (status, sizeof (status),   " crashed ");
-	else if (rc_service_state (service, RC_SERVICE_STARTED)) {
+	else if (state & RC_SERVICE_STARTED) {
 		snprintf (status, sizeof (status), " started ");
 		color = ECOLOR_GOOD;
-	} else if (rc_service_state (service, RC_SERVICE_SCHEDULED)) {
+	} else if (state & RC_SERVICE_SCHEDULED) {
 		snprintf (status, sizeof (status), "scheduled");
 		color = ECOLOR_WARN;
 	} else

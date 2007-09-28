@@ -23,6 +23,8 @@ typedef struct rc_service_state_name {
 	const char *name;
 } rc_service_state_name_t;
 
+/* We MUST list the states below 0x10 first
+ * The rest can be in any order */
 static const rc_service_state_name_t rc_service_state_names[] = {
 	{ RC_SERVICE_STARTED,     "started" },
 	{ RC_SERVICE_STOPPED,     "stopped" },
@@ -428,43 +430,39 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 }
 librc_hidden_def(rc_mark_service)
 
-bool rc_service_state (const char *service, const rc_service_state_t state)
+rc_service_state_t rc_service_state (const char *service)
 {
-	char *file;
-	bool retval;
-	char *svc;
+	int i;
+	int state = RC_SERVICE_STOPPED;
+	char *svc = rc_xstrdup (service);
 
-	/* If the init script does not exist then we are stopped */
-	if (! rc_service_exists (service))
-		return (state == RC_SERVICE_STOPPED ? true : false);
+	for (i = 0; rc_service_state_names[i].name; i++) {
+		char *file = rc_strcatpaths (RC_SVCDIR, rc_service_state_names[i].name,
+									 basename (svc), (char*) NULL);
+		if (rc_exists (file)) {
+			if (rc_service_state_names[i].state <= 0x10)
+				state = rc_service_state_names[i].state;
+			else
+				state |= rc_service_state_names[i].state;
+		}
+		free (file);
+	}
+	free (svc);
 
-	/* We check stopped state by not being in any of the others */
-	if (state == RC_SERVICE_STOPPED)
-		return ( ! (rc_service_state (service, RC_SERVICE_STARTED) ||
-					rc_service_state (service, RC_SERVICE_STARTING) ||
-					rc_service_state (service, RC_SERVICE_STOPPING) ||
-					rc_service_state (service, RC_SERVICE_INACTIVE)));
-
-	/* The crashed state and scheduled states are virtual */
-	if (state == RC_SERVICE_CRASHED)
-		return (rc_service_daemons_crashed (service));
-	else if (state == RC_SERVICE_SCHEDULED) {
+	if (state & RC_SERVICE_STOPPED) {
 		char **services = rc_services_scheduled_by (service);
-		retval = (services);
-		if (services)
+		if (services) {
+			state |= RC_SERVICE_SCHEDULED;
 			free (services);
-		return (retval);
+		}
 	}
 
-	/* Now we just check if a file by the service name rc_exists
-	   in the state dir */
-	svc = rc_xstrdup (service);
-	file = rc_strcatpaths (RC_SVCDIR, rc_parse_service_state (state),
-						   basename (svc), (char*) NULL);
-	free (svc);
-	retval = rc_exists (file);
-	free (file);
-	return (retval);
+	if (state & RC_SERVICE_STARTED && geteuid () == 0) {
+		if (rc_service_daemons_crashed (service))
+			state |= RC_SERVICE_CRASHED;
+	}
+
+	return (state);
 }
 librc_hidden_def(rc_service_state)
 
@@ -585,7 +583,7 @@ librc_hidden_def(rc_waitpid)
 
 pid_t rc_stop_service (const char *service)
 {
-	if (rc_service_state (service, RC_SERVICE_STOPPED))
+	if (rc_service_state (service) & RC_SERVICE_STOPPED)
 		return (0);
 
 	return (_exec_service (service, "stop"));
@@ -594,7 +592,7 @@ librc_hidden_def(rc_stop_service)
 
 pid_t rc_start_service (const char *service)
 {
-	if (! rc_service_state (service, RC_SERVICE_STOPPED))
+	if (! rc_service_state (service) & RC_SERVICE_STOPPED)
 		return (0);
 
 	return (_exec_service (service, "start"));

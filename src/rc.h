@@ -44,22 +44,22 @@ typedef enum
 {
 	/* These are actual states
 	 * The service has to be in one only at all times */
-	RC_SERVICE_STARTED     = 0x0001,
-	RC_SERVICE_STOPPED     = 0x0002,
-	RC_SERVICE_STARTING    = 0x0003,
+	RC_SERVICE_STOPPED     = 0x0001,
+	RC_SERVICE_STARTED     = 0x0002,
 	RC_SERVICE_STOPPING    = 0x0004,
-	RC_SERVICE_INACTIVE    = 0x0005,
+	RC_SERVICE_STARTING    = 0x0008,
+	RC_SERVICE_INACTIVE    = 0x0010,
 
 	/* Service may or may not have been coldplugged */
-	RC_SERVICE_COLDPLUGGED = 0x0010,
+	RC_SERVICE_COLDPLUGGED = 0x0100,
 
 	/* Optional states service could also be in */
-	RC_SERVICE_FAILED      = 0x0100,
-	RC_SERVICE_SCHEDULED   = 0x0101,
-	RC_SERVICE_WASINACTIVE = 0x0102,
+	RC_SERVICE_FAILED      = 0x0200,
+	RC_SERVICE_SCHEDULED   = 0x0400,
+	RC_SERVICE_WASINACTIVE = 0x0800,
 
-	/* Regardless of state, service may have crashed daemons */
-	RC_SERVICE_CRASHED     = 0x1000
+ 	/* Regardless of state, service may have crashed daemons */
+ 	RC_SERVICE_CRASHED     = 0x1000
 } rc_service_state_t;
 
 /*! Resolves a service name to its full path.
@@ -90,9 +90,8 @@ bool rc_service_in_runlevel (const char *service, const char *runlevel);
 
 /*! Checks if a service in in a state
  * @param service to check
- * @param state service should be in
- * @return true if service is in the requested state, otherwise false */
-bool rc_service_state (const char *service, rc_service_state_t state);
+ * @return state of the service */
+rc_service_state_t rc_service_state (const char *service);
 
 /*! Marks the service state
  * @param service to mark

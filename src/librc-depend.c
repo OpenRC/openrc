@@ -184,11 +184,13 @@ librc_hidden_def(rc_get_deptype)
 
 static bool valid_service (const char *runlevel, const char *service)
 {
+	rc_service_state_t state = rc_service_state (service);
+
 	return ((strcmp (runlevel, bootlevel) != 0 &&
 			 rc_service_in_runlevel (service, bootlevel)) ||
 			rc_service_in_runlevel (service, runlevel) ||
-			rc_service_state (service, RC_SERVICE_COLDPLUGGED) ||
-			rc_service_state (service, RC_SERVICE_STARTED));
+			state & RC_SERVICE_COLDPLUGGED ||
+			state & RC_SERVICE_STARTED);
 }
 
 static bool get_provided1 (const char *runlevel, struct lhead *providers,
@@ -203,10 +205,11 @@ static bool get_provided1 (const char *runlevel, struct lhead *providers,
 	STRLIST_FOREACH (deptype->services, service, i)
 	{
 		bool ok = true;
+		rc_service_state_t s = rc_service_state (service);
 		if (level)
 			ok = rc_service_in_runlevel (service, level);
 		else if (coldplugged)
-			ok = (rc_service_state (service, RC_SERVICE_COLDPLUGGED) &&
+			ok = (s & RC_SERVICE_COLDPLUGGED &&
 				  ! rc_service_in_runlevel (service, runlevel) &&
 				  ! rc_service_in_runlevel (service, bootlevel));
 
@@ -215,14 +218,14 @@ static bool get_provided1 (const char *runlevel, struct lhead *providers,
 
 		switch (state) {
 			case RC_SERVICE_STARTED:
-				ok = rc_service_state (service, state);
+				ok = (s & RC_SERVICE_STARTED);
 				break;
 			case RC_SERVICE_INACTIVE:
 			case RC_SERVICE_STARTING:
 			case RC_SERVICE_STOPPING:
-				ok = (rc_service_state (service, RC_SERVICE_STARTING) ||
-					  rc_service_state (service, RC_SERVICE_STOPPING) ||
-					  rc_service_state (service, RC_SERVICE_INACTIVE));
+				ok = (s & RC_SERVICE_STARTING ||
+					  s & RC_SERVICE_STOPPING ||
+					  s & RC_SERVICE_INACTIVE);
 				break;
 			default:
 				break;

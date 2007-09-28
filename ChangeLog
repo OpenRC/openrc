@@ -3,6 +3,8 @@
 
   28 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
+    rc_service_state now returns the state as a mask, which means that
+    we can do things with just the one call making is more efficient.
     keymaps now sets unicode keyboard on all defined ttys, #192442 
     thanks to Pacho Ramos.
     net.sh now checks to see if root is net mounted if no predown function
