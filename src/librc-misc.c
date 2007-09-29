@@ -6,7 +6,7 @@
 
 #include "librc.h"
 
-#define ERRX            eerrorx("out of memory");
+#define ERRX            fprintf (stderr, "out of memory\n"); exit (1)
 
 #define PROFILE_ENV     "/etc/profile.env"
 #define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
@@ -26,7 +26,7 @@ void *rc_xmalloc (size_t size)
 	if (value)
 		return (value);
 
-	ERRX
+	ERRX;
 }
 librc_hidden_def(rc_xmalloc)
 
@@ -37,7 +37,7 @@ void *rc_xrealloc (void *ptr, size_t size)
 	if (value)
 		return (value);
 
-	ERRX
+	ERRX;
 }
 librc_hidden_def(rc_xrealloc)
 
@@ -53,7 +53,7 @@ char *rc_xstrdup (const char *str)
 	if (value)
 		return (value);
 
-	ERRX
+	ERRX;
 }
 librc_hidden_def(rc_xstrdup)
 
@@ -217,13 +217,8 @@ char **rc_ls_dir (const char *dir, int options)
 	struct dirent *d;
 	char **list = NULL;
 
-	if (! dir)
+	if ((dp = opendir (dir)) == NULL) 
 		return (NULL);
-
-	if ((dp = opendir (dir)) == NULL) {
-		eerror ("failed to opendir `%s': %s", dir, strerror (errno));
-		return (NULL);
-	}
 
 	errno = 0;
 	while (((d = readdir (dp)) != NULL) && errno == 0) {
@@ -248,12 +243,6 @@ char **rc_ls_dir (const char *dir, int options)
 	}
 	closedir (dp);
 
-	if (errno != 0)	{
-		eerror ("failed to readdir `%s': %s", dir, strerror (errno));
-		rc_strlist_free (list);
-		return (NULL);
-	}
-
 	return (list);
 }
 librc_hidden_def(rc_ls_dir)
@@ -263,13 +252,8 @@ bool rc_rm_dir (const char *pathname, bool top)
 	DIR *dp;
 	struct dirent *d;
 
-	if (! pathname)
+	if ((dp = opendir (pathname)) == NULL)
 		return (false);
-
-	if ((dp = opendir (pathname)) == NULL) {
-		eerror ("failed to opendir `%s': %s", pathname, strerror (errno));
-		return (false);
-	}
 
 	errno = 0;
 	while (((d = readdir (dp)) != NULL) && errno == 0) {
@@ -284,7 +268,6 @@ bool rc_rm_dir (const char *pathname, bool top)
 				}
 			} else {
 				if (unlink (tmp)) {
-					eerror ("failed to unlink `%s': %s", tmp, strerror (errno));
 					free (tmp);
 					closedir (dp);
 					return (false);
@@ -293,14 +276,10 @@ bool rc_rm_dir (const char *pathname, bool top)
 			free (tmp);
 		}
 	}
-	if (errno != 0)
-		eerror ("failed to readdir `%s': %s", pathname, strerror (errno));
 	closedir (dp);
 
-	if (top && rmdir (pathname) != 0) {
-		eerror ("failed to rmdir `%s': %s", pathname, strerror (errno));
-		return false;
-	}
+	if (top && rmdir (pathname) != 0)
+		return (false);
 
 	return (true);
 }
@@ -321,13 +300,8 @@ char **rc_get_config (const char *file)
 	char *entry;
 	char *newline;
 
-	if (! file)
+	if (! (fp = fopen (file, "r"))) 
 		return (NULL);
-
-	if (! (fp = fopen (file, "r"))) {
-		ewarn ("rc_get_config `%s': %s", file, strerror (errno));
-		return (NULL);
-	}
 
 	while (fgets (buffer, RC_LINEBUFFER, fp)) {
 		p = buffer;
@@ -419,10 +393,8 @@ char **rc_get_list (const char *file)
 	char *token;
 	char **list = NULL;
 
-	if (! (fp = fopen (file, "r"))) {
-		ewarn ("rc_get_list `%s': %s", file, strerror (errno));
+	if (! (fp = fopen (file, "r")))
 		return (NULL);
-	}
 
 	while (fgets (buffer, RC_LINEBUFFER, fp)) {
 		p = buffer;
@@ -465,7 +437,7 @@ char **rc_filter_env (void)
 
 	whitelist = rc_get_list (SYS_WHITELIST);
 	if (! whitelist)
-		ewarn ("system environment whitelist (" SYS_WHITELIST ") missing");
+		fprintf (stderr, "system environment whitelist (" SYS_WHITELIST ") missing\n");
 
 	env = rc_get_list (USR_WHITELIST);
 	rc_strlist_join (&whitelist, env);
@@ -557,18 +529,13 @@ static bool file_regex (const char *file, const char *regex)
 	bool retval = false;
 	int result;
 
-	if (! rc_exists (file))
+	if (! (fp = fopen (file, "r")))
 		return (false);
-
-	if (! (fp = fopen (file, "r"))) {
-		ewarn ("file_regex `%s': %s", file, strerror (errno));
-		return (false);
-	}
 
 	if ((result = regcomp (&re, regex, REG_EXTENDED | REG_NOSUB)) != 0) {
 		fclose (fp);
 		regerror (result, &re, buffer, sizeof (buffer));
-		eerror ("file_regex: %s", buffer);
+		fprintf (stderr, "file_regex: %s", buffer);
 		return (false);
 	}
 
@@ -652,23 +619,19 @@ char **rc_make_env (void)
 	rc_strlist_add (&env, line);
 	free (line);
 
-	if (rc_exists (RC_KSOFTLEVEL)) {
-		if (! (fp = fopen (RC_KSOFTLEVEL, "r")))
-			eerror ("fopen `%s': %s", RC_KSOFTLEVEL, strerror (errno));
-		else {
-			memset (buffer, 0, sizeof (buffer));
-			if (fgets (buffer, sizeof (buffer), fp)) {
-				i = strlen (buffer) - 1;
-				if (buffer[i] == '\n')
-					buffer[i] = 0;
-				i += strlen ("RC_DEFAULTLEVEL=") + 2;
-				line = rc_xmalloc (sizeof (char *) * i);
-				snprintf (line, i, "RC_DEFAULTLEVEL=%s", buffer);
-				rc_strlist_add (&env, line);
-				free (line);
-			}
-			fclose (fp);
+	if ((fp = fopen (RC_KSOFTLEVEL, "r"))) {
+		memset (buffer, 0, sizeof (buffer));
+		if (fgets (buffer, sizeof (buffer), fp)) {
+			i = strlen (buffer) - 1;
+			if (buffer[i] == '\n')
+				buffer[i] = 0;
+			i += strlen ("RC_DEFAULTLEVEL=") + 2;
+			line = rc_xmalloc (sizeof (char *) * i);
+			snprintf (line, i, "RC_DEFAULTLEVEL=%s", buffer);
+			rc_strlist_add (&env, line);
+			free (line);
 		}
+		fclose (fp);
 	} else
 		rc_strlist_add (&env, "RC_DEFAULTLEVEL=" RC_LEVEL_DEFAULT);
 
@@ -679,8 +642,7 @@ char **rc_make_env (void)
 	memset (sys, 0, sizeof (sys));
 
 	if (rc_is_dir ("/proc/xen")) {
-		fp = fopen ("/proc/xen/capabilities", "r");
-		if (fp) {
+		if ((fp = fopen ("/proc/xen/capabilities", "r"))) {
 			fclose (fp);
 			if (file_regex ("/proc/xen/capabilities", "control_d"))
 				snprintf (sys, sizeof (sys), "XENU");

@@ -41,7 +41,7 @@ static char *get_shell_value (char *string)
 	return (NULL);
 }
 
-void rc_free_deptree (rc_depinfo_t *deptree)
+void rc_deptree_free (rc_depinfo_t *deptree)
 {
 	rc_depinfo_t *di = deptree;
 	while (di)
@@ -61,9 +61,9 @@ void rc_free_deptree (rc_depinfo_t *deptree)
 		di = dip;
 	}
 }
-librc_hidden_def(rc_free_deptree)
+librc_hidden_def(rc_deptree_free)
 
-rc_depinfo_t *rc_load_deptree (void)
+rc_depinfo_t *rc_deptree_load (void)
 {
 	FILE *fp;
 	rc_depinfo_t *deptree = NULL;
@@ -74,9 +74,6 @@ rc_depinfo_t *rc_load_deptree (void)
 	char *p;
 	char *e;
 	int i;
-
-	/* Update our deptree, but only if we need too */
-	rc_update_deptree (false);
 
 	if (! (fp = fopen (RC_DEPTREE, "r")))
 		return (NULL);
@@ -150,9 +147,9 @@ rc_depinfo_t *rc_load_deptree (void)
 
 	return (deptree);
 }
-librc_hidden_def(rc_load_deptree)
+librc_hidden_def(rc_deptree_load)
 
-rc_depinfo_t *rc_get_depinfo (rc_depinfo_t *deptree, const char *service)
+rc_depinfo_t *rc_deptree_depinfo (rc_depinfo_t *deptree, const char *service)
 {
 	rc_depinfo_t *di;
 
@@ -165,9 +162,9 @@ rc_depinfo_t *rc_get_depinfo (rc_depinfo_t *deptree, const char *service)
 
 	return (NULL);
 }
-librc_hidden_def(rc_get_depinfo)
+librc_hidden_def(rc_deptree_depinfo)
 
-rc_deptype_t *rc_get_deptype (rc_depinfo_t *depinfo, const char *type)
+rc_deptype_t *rc_deptree_deptype (rc_depinfo_t *depinfo, const char *type)
 {
 	rc_deptype_t *dt;
 
@@ -180,7 +177,7 @@ rc_deptype_t *rc_get_deptype (rc_depinfo_t *depinfo, const char *type)
 
 	return (NULL);
 }
-librc_hidden_def(rc_get_deptype)
+librc_hidden_def(rc_deptree_deptype)
 
 static bool valid_service (const char *runlevel, const char *service)
 {
@@ -263,7 +260,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 	if (rc_service_exists (depinfo->service))
 		return (NULL);
 
-	dt = rc_get_deptype (depinfo, "providedby");
+	dt = rc_deptree_deptype (depinfo, "providedby");
 	if (! dt)
 		return (NULL);
 
@@ -382,7 +379,7 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 
 	STRLIST_FOREACH (types, item, i)
 	{
-		if ((dt = rc_get_deptype (depinfo, item)))
+		if ((dt = rc_deptree_deptype (depinfo, item)))
 		{
 			STRLIST_FOREACH (dt->services, service, j)
 			{
@@ -392,12 +389,12 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 					continue;
 				}
 
-				di = rc_get_depinfo (deptree, service);
+				di = rc_deptree_depinfo (deptree, service);
 				if ((provides = get_provided (deptree, di, runlevel, options)))
 				{
 					STRLIST_FOREACH (provides, lp, k) 
 					{
-						di = rc_get_depinfo (deptree, lp);
+						di = rc_deptree_depinfo (deptree, lp);
 						if (di && (strcmp (item, "ineed") == 0 ||
 								   strcmp (item, "needsme") == 0 ||
 								   valid_service (runlevel, di->service)))
@@ -417,11 +414,12 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 	}
 
 	/* Now visit the stuff we provide for */
-	if (options & RC_DEP_TRACE && (dt = rc_get_deptype (depinfo, "iprovide")))
+	if (options & RC_DEP_TRACE &&
+		(dt = rc_deptree_deptype (depinfo, "iprovide")))
 	{
 		STRLIST_FOREACH (dt->services, service, i)
 		{
-			if ((di = rc_get_depinfo (deptree, service)))
+			if ((di = rc_deptree_depinfo (deptree, service)))
 				if ((provides = get_provided (deptree, di, runlevel, options)))
 				{
 					STRLIST_FOREACH (provides, lp, j)
@@ -440,13 +438,13 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 	   are also the service calling us or we are provided by something */
 	svcname = getenv("SVCNAME");
 	if (! svcname || strcmp (svcname, depinfo->service) != 0)
-		if (! rc_get_deptype (depinfo, "providedby"))
+		if (! rc_deptree_deptype (depinfo, "providedby"))
 			rc_strlist_add (&sorted->list, depinfo->service);
 }
 
-char **rc_get_depends (rc_depinfo_t *deptree,
-					   char **types, char **services,
-					   const char *runlevel, int options)
+char **rc_deptree_depends (rc_depinfo_t *deptree,
+						   char **types, char **services,
+						   const char *runlevel, int options)
 {  
 	struct lhead sorted;
 	struct lhead visited;
@@ -466,17 +464,17 @@ char **rc_get_depends (rc_depinfo_t *deptree,
 
 	STRLIST_FOREACH (services, service, i)
 	{
-		di = rc_get_depinfo (deptree, service);
+		di = rc_deptree_depinfo (deptree, service);
 		visit_service (deptree, types, &sorted, &visited, di, runlevel, options);
 	}
 
 	rc_strlist_free (visited.list);
 	return (sorted.list);
 }
-librc_hidden_def(rc_get_depends)
+librc_hidden_def(rc_deptree_depends)
 
-char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
-						  int options)
+char **rc_deptree_order_services (rc_depinfo_t *deptree, const char *runlevel,
+								  int options)
 {
 	char **list = NULL;
 	char **types = NULL;
@@ -530,8 +528,8 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
 	rc_strlist_add (&types, "ineed");
 	rc_strlist_add (&types, "iuse");
 	rc_strlist_add (&types, "iafter");
-	services = rc_get_depends (deptree, types, list, runlevel,
-							   RC_DEP_STRICT | RC_DEP_TRACE | options);
+	services = rc_deptree_depends (deptree, types, list, runlevel,
+								   RC_DEP_STRICT | RC_DEP_TRACE | options);
 	rc_strlist_free (list);
 	rc_strlist_free (types);
 
@@ -540,7 +538,7 @@ char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
 
 	return (services);
 }
-librc_hidden_def(rc_order_services)
+librc_hidden_def(rc_deptree_order_services)
 
 static bool is_newer_than (const char *file, const char *target)
 {
@@ -611,6 +609,39 @@ static const char *depdirs[] =
 	NULL
 };
 
+bool rc_deptree_update_needed (void)
+{
+	bool newer = false;
+	char **config;
+	char *service;
+	int i;
+
+	/* Create base directories if needed */
+	for (i = 0; depdirs[i]; i++)
+		if (mkdir (depdirs[i], 0755) != 0 && errno != EEXIST)
+			fprintf (stderr, "mkdir `%s': %s", depdirs[i], strerror (errno));
+
+	/* Quick test to see if anything we use has changed */
+	if (! is_newer_than (RC_DEPTREE, RC_INITDIR) ||
+		! is_newer_than (RC_DEPTREE, RC_CONFDIR) ||
+		! is_newer_than (RC_DEPTREE, "/etc/rc.conf"))
+		return (true);
+
+	/* Some init scripts dependencies change depending on config files
+	 * outside of baselayout, like syslog-ng, so we check those too. */
+	config = rc_get_list (RC_DEPCONFIG);
+	STRLIST_FOREACH (config, service, i) {
+		if (! is_newer_than (RC_DEPTREE, service)) {
+			newer = true;
+			break;
+		}
+	}
+	rc_strlist_free (config);
+
+	return (newer);
+}
+librc_hidden_def(rc_deptree_update_needed)
+
 /* This is a 5 phase operation
    Phase 1 is a shell script which loads each init script and config in turn
    and echos their dependency info to stdout
@@ -619,7 +650,7 @@ static const char *depdirs[] =
    Phase 4 scans that depinfo object and puts in backlinks
    Phase 5 saves the depinfo object to disk
    */
-int rc_update_deptree (bool force)
+int rc_deptree_update (void)
 {
 	char *depends;
 	char *service;
@@ -642,41 +673,6 @@ int rc_update_deptree (bool force)
 	int k;
 	bool already_added;
 
-	/* Create base directories if needed */
-	for (i = 0; depdirs[i]; i++)
-		if (! rc_is_dir (depdirs[i]))
-			if (mkdir (depdirs[i], 0755) != 0)
-				eerrorx ("mkdir `%s': %s", depdirs[i], strerror (errno));
-
-	/* Quick test to see if anything we use has changed */
-	if (! force && 
-		is_newer_than (RC_DEPTREE, RC_INITDIR) &&
-		is_newer_than (RC_DEPTREE, RC_CONFDIR) &&
-		is_newer_than (RC_DEPTREE, "/etc/rc.conf"))
-	{
-		bool newer = false;
-
-		/* Some init scripts dependencies change depending on config files
-		 * outside of baselayout, like syslog-ng, so we check those too. */
-		if (! rc_exists (RC_DEPCONFIG))
-			return 0;
-
-		config = rc_get_list (RC_DEPCONFIG);
-		STRLIST_FOREACH (config, service, i) {
-			if (! is_newer_than (RC_DEPTREE, service)) {
-				newer = true;
-				break;
-			}
-		}
-		rc_strlist_free (config);
-		config = NULL;
-
-		if (! newer)
-			return (0);
-	}
-
-	ebegin ("Caching service dependencies");
-
 	/* Some init scripts need RC_LIBDIR to source stuff
 	   Ideally we should be setting our full env instead */
 	if (! getenv ("RC_LIBDIR"))
@@ -684,7 +680,7 @@ int rc_update_deptree (bool force)
 
 	/* Phase 1 */
 	if (! (fp = popen (GENDEP, "r")))
-		eerrorx ("popen: %s", strerror (errno));
+		return (-1);
 
 	deptree = rc_xmalloc (sizeof (rc_depinfo_t));
 	memset (deptree, 0, sizeof (rc_depinfo_t));
@@ -783,7 +779,7 @@ int rc_update_deptree (bool force)
 	/* Phase 3 - add our providors to the tree */
 	for (depinfo = deptree; depinfo; depinfo = depinfo->next)
 	{
-		if ((deptype = rc_get_deptype (depinfo, "iprovide")))
+		if ((deptype = rc_deptree_deptype (depinfo, "iprovide")))
 			STRLIST_FOREACH (deptype->services, service, i)
 			{
 				for (di = deptree; di; di = di->next)
@@ -807,19 +803,20 @@ int rc_update_deptree (bool force)
 	{
 		for (i = 0; deppairs[i].depend; i++)
 		{
-			deptype = rc_get_deptype (depinfo, deppairs[i].depend);
+			deptype = rc_deptree_deptype (depinfo, deppairs[i].depend);
 			if (! deptype)
 				continue;
 
 			STRLIST_FOREACH (deptype->services, service, j)
 			{
-				di = rc_get_depinfo (deptree, service);
+				di = rc_deptree_depinfo (deptree, service);
 				if (! di)
 				{
 					if (strcmp (deptype->type, "ineed") == 0)
 					{
-						eerror ("Service `%s' needs non existant service `%s'",
-								depinfo->service, service);
+						fprintf (stderr,
+								 "Service `%s' needs non existant service `%s'",
+								 depinfo->service, service);
 						retval = -1;
 					} 
 					continue;
@@ -869,10 +866,7 @@ int rc_update_deptree (bool force)
 	   This works and should be entirely shell parseable provided that depend
 	   names don't have any non shell variable characters in
 	   */
-	if (! (fp = fopen (RC_DEPTREE, "w")))
-		eerror ("fopen `%s': %s", RC_DEPTREE, strerror (errno));
-	else
-	{
+	if ((fp = fopen (RC_DEPTREE, "w"))) {
 		i = 0;
 		for (depinfo = deptree; depinfo; depinfo = depinfo->next)
 		{
@@ -890,24 +884,22 @@ int rc_update_deptree (bool force)
 			i++;
 		}
 		fclose (fp);
-	}
+	} else
+		fprintf (stderr, "fopen `%s': %s", RC_DEPTREE, strerror (errno));
 
 	/* Save our external config files to disk */
 	if (config) {
-		if (! (fp = fopen (RC_DEPCONFIG, "w")))
-			eerror ("fopen `%s': %s", RC_DEPCONFIG, strerror (errno));
-		else
-		{
+		if ((fp = fopen (RC_DEPCONFIG, "w"))) {
 			STRLIST_FOREACH (config, service, i)
 				fprintf (fp, "%s\n", service);
 			fclose (fp);
-		}
+		} else
+			fprintf (stderr, "fopen `%s': %s\n", RC_DEPCONFIG, strerror (errno));
 		rc_strlist_free (config);
 	}
 
-	rc_free_deptree (deptree);
+	rc_deptree_free (deptree);
 
-	eend (retval, "Failed to update the service dependency tree");
 	return (retval);
 }
-librc_hidden_def(rc_update_deptree)
+librc_hidden_def(rc_deptree_update)

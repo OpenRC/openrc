@@ -104,7 +104,7 @@ static void cleanup (void)
 		rc_strlist_free (coldplugged_services);
 		rc_strlist_free (stop_services);
 		rc_strlist_free (start_services);
-		rc_free_deptree (deptree);
+		rc_deptree_free (deptree);
 		rc_strlist_free (types);
 
 		/* Clean runlevel start, stop markers */
@@ -1021,7 +1021,7 @@ int main (int argc, char **argv)
 	}
 
 	/* Load our deptree now */
-	if ((deptree = rc_load_deptree ()) == NULL)
+	if ((deptree = _rc_deptree_load ()) == NULL)
 		eerrorx ("failed to load deptree");
 
 	/* Clean the failed services state dir now */
@@ -1112,7 +1112,7 @@ int main (int argc, char **argv)
 	rc_strlist_add (&types, "iuse");
 	rc_strlist_add (&types, "iafter");
 
-	deporder = rc_get_depends (deptree, types, stop_services,
+	deporder = rc_deptree_depends (deptree, types, stop_services,
 							   runlevel, depoptions | RC_DEP_STOP);
 
 	rc_strlist_free (stop_services);
@@ -1231,7 +1231,7 @@ int main (int argc, char **argv)
 		/* We got this far! Or last check is to see if any any service that
 		   going to be started depends on us */
 		rc_strlist_add (&stopdeps, service);
-		deporder = rc_get_depends (deptree, types, stopdeps,
+		deporder = rc_deptree_depends (deptree, types, stopdeps,
 								   runlevel, RC_DEP_STRICT);
 		rc_strlist_free (stopdeps);
 		stopdeps = NULL;
@@ -1300,7 +1300,7 @@ int main (int argc, char **argv)
 	rc_strlist_add (&types, "ineed");
 	rc_strlist_add (&types, "iuse");
 	rc_strlist_add (&types, "iafter");
-	deporder = rc_get_depends (deptree, types, start_services,
+	deporder = rc_deptree_depends (deptree, types, start_services,
 							   runlevel, depoptions | RC_DEP_START);
 	rc_strlist_free (types);
 	types = NULL;

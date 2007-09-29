@@ -54,12 +54,12 @@ LDLIBS_LIBEINFO = $(LDLIBS)
 LIBRCSOVER = 0
 LIBRCSO = librc.so.$(LIBRCSOVER)
 LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
-LDLIBS_LIBRC = -leinfo
+LDLIBS_LIBRC =
 
 RCOBJS = checkown.o env-update.o fstabinfo.o mountinfo.o \
 		 rc-depend.o rc-plugin.o rc-status.o rc-update.o runscript.o \
 		 start-stop-daemon.o rc.o
-LDLIBS_RC = $(LDLIBS_LIBRC) -lrc -lutil
+LDLIBS_RC = $(LDLIBS_LIBRC) -leinfo -lrc -lutil
 
 LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
 SBIN_TARGETS = rc

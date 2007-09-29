@@ -104,13 +104,15 @@ char *rc_get_runlevel (void)
 }
 librc_hidden_def(rc_get_runlevel)
 
-void rc_set_runlevel (const char *runlevel)
+bool rc_set_runlevel (const char *runlevel)
 {
 	FILE *fp = fopen (SOFTLEVEL, "w");
+
 	if (! fp)
-		eerrorx ("failed to open `" SOFTLEVEL "': %s", strerror (errno));
+		return (false);
 	fprintf (fp, "%s", runlevel);
 	fclose (fp);
+	return (true);
 }
 librc_hidden_def(rc_set_runlevel)
 
@@ -200,17 +202,13 @@ char **rc_service_options (const char *service)
 	char *p = buffer;
 	FILE *fp;
 
-	if (! rc_service_exists (service))
+	if (! (svc = rc_resolve_service (service)))
 		return (NULL);
-
-	svc = rc_resolve_service (service);
 
 	snprintf (cmd, sizeof (cmd), ". '%s'; echo \"${opts}\"",  svc);
-	if (! (fp = popen (cmd, "r"))) {
-		eerror ("popen `%s': %s", svc, strerror (errno));
-		free (svc);
+	free (svc);
+	if (! (fp = popen (cmd, "r")))
 		return (NULL);
-	}
 
 	if (fgets (buffer, RC_LINEBUFFER, fp)) {
 		if (buffer[strlen (buffer) - 1] == '\n')
@@ -232,22 +230,17 @@ char *rc_service_description (const char *service, const char *option)
 	FILE *fp;
 	int i;
 
-	if (! rc_service_exists (service))
+	if (! (svc = rc_resolve_service (service)))
 		return (NULL);
-
-	svc = rc_resolve_service (service);
 
 	if (! option)
 		option = "";
 
 	snprintf (cmd, sizeof (cmd), ". '%s'; echo \"${description%s%s}\"",
 			  svc, option ? "_" : "", option);
-	if (! (fp = popen (cmd, "r"))) {
-		eerror ("popen `%s': %s", svc, strerror (errno));
-		free (svc);
-		return (NULL);
-	}
 	free (svc);
+	if (! (fp = popen (cmd, "r")))
+		return (NULL);
 
 	while (fgets (buffer, RC_LINEBUFFER, fp)) {
 		if (! desc) {
@@ -315,7 +308,6 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 			unlink (file);
 		i = symlink (init, file);
 		if (i != 0)	{
-			eerror ("symlink `%s' to `%s': %s", init, file, strerror (errno));
 			free (file);
 			free (init);
 			free (svc);
@@ -353,18 +345,11 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 													rc_parse_service_state (RC_SERVICE_WASINACTIVE),
 													base, (char *) NULL);
 
-					if (symlink (init, wasfile) != 0)
-						eerror ("symlink `%s' to `%s': %s", init, wasfile,
-								strerror (errno));
-
+					symlink (init, wasfile);
 					skip_wasinactive = true;
 					free (wasfile);
 				}
-
-				errno = 0;
-				if (unlink (file) != 0 && errno != ENOENT)
-					eerror ("failed to delete `%s': %s", file,
-							strerror (errno));
+				unlink (file);
 			}
 			free (file);
 		}
@@ -376,9 +361,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 		state == RC_SERVICE_INACTIVE)
 	{
 		file = rc_strcatpaths (RC_SVCDIR, "exclusive", base, (char *) NULL);
-		if (rc_exists (file))
-			if (unlink (file) != 0)
-				eerror ("unlink `%s': %s", file, strerror (errno));
+		unlink (file); 
 		free (file);
 	}
 
@@ -408,9 +391,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 		STRLIST_FOREACH (dirs, dir, i) {
 			char *bdir = rc_strcatpaths (sdir, dir, (char *) NULL);
 			file = rc_strcatpaths (bdir, base, (char *) NULL);
-			if (rc_exists (file))
-				if (unlink (file) != 0)
-					eerror ("unlink `%s': %s", file, strerror (errno));
+			unlink (file);
 			free (file);
 
 			/* Try and remove the dir - we don't care about errors */
@@ -468,18 +449,14 @@ char *rc_get_service_option (const char *service, const char *option)
 								 (char *) NULL);
 	char *value = NULL;
 
-	if (rc_exists (file)) {
-		if ((fp = fopen (file, "r")) == NULL)
-			eerror ("fopen `%s': %s", file, strerror (errno));
-		else {
-			memset (buffer, 0, sizeof (buffer));
-			if (fgets (buffer, RC_LINEBUFFER, fp)) 
-				value = rc_xstrdup (buffer);
-			fclose (fp);
-		}
+	if ((fp = fopen (file, "r"))) {
+		memset (buffer, 0, sizeof (buffer));
+		if (fgets (buffer, RC_LINEBUFFER, fp)) 
+			value = rc_xstrdup (buffer);
+		fclose (fp);
 	}
-
 	free (file);
+
 	return (value);
 }
 librc_hidden_def(rc_get_service_option)
@@ -494,16 +471,13 @@ bool rc_set_service_option (const char *service, const char *option,
 
 	if (! rc_is_dir (path)) {
 		if (mkdir (path, 0755) != 0) {
-			eerror ("mkdir `%s': %s", path, strerror (errno));
 			free (path);
 			free (file);
 			return (false);
 		}
 	}
 
-	if ((fp = fopen (file, "w")) == NULL)
-		eerror ("fopen `%s': %s", file, strerror (errno));
-	else {
+	if ((fp = fopen (file, "w"))) {
 		if (value)
 			fprintf (fp, "%s", value);
 		fclose (fp);
@@ -537,7 +511,6 @@ static pid_t _exec_service (const char *service, const char *arg)
 	free (svc);
 
 	if (mkfifo (fifo, 0600) != 0 && errno != EEXIST) {
-		eerror ("unable to create fifo `%s': %s", fifo, strerror (errno));
 		free (fifo);
 		free (file);
 		return (-1);
@@ -545,7 +518,7 @@ static pid_t _exec_service (const char *service, const char *arg)
 
 	if ((pid = vfork ()) == 0) {
 		execl (file, file, arg, (char *) NULL);
-		eerror ("unable to exec `%s': %s", file, strerror (errno));
+		fprintf (stderr, "unable to exec `%s': %s\n", file, strerror (errno));
 		unlink (fifo);
 		_exit (EXIT_FAILURE);
 	}
@@ -554,7 +527,7 @@ static pid_t _exec_service (const char *service, const char *arg)
 	free (file);
 
 	if (pid == -1)
-		eerror ("vfork: %s", strerror (errno));
+		fprintf (stderr, "vfork: %s\n", strerror (errno));
 	
 	return (pid);
 }
@@ -593,17 +566,18 @@ pid_t rc_start_service (const char *service)
 }
 librc_hidden_def(rc_start_service)
 
-void rc_schedule_start_service (const char *service,
+bool rc_schedule_start_service (const char *service,
 								const char *service_to_start)
 {
 	char *dir;
 	char *init;
 	char *file;
 	char *svc;
+	bool retval;
 
 	/* service may be a provided service, like net */
 	if (! service || ! rc_service_exists (service_to_start))
-		return;
+		return (false);
 
 	svc = rc_xstrdup (service);
 	dir = rc_strcatpaths (RC_SVCDIR, "scheduled", basename (svc),
@@ -611,21 +585,20 @@ void rc_schedule_start_service (const char *service,
 	free (svc);
 	if (! rc_is_dir (dir))
 		if (mkdir (dir, 0755) != 0) {
-			eerror ("mkdir `%s': %s", dir, strerror (errno));
 			free (dir);
-			return;
+			return (false);
 		}
 
 	init = rc_resolve_service (service_to_start);
 	svc = rc_xstrdup (service_to_start);
 	file = rc_strcatpaths (dir, basename (svc), (char *) NULL);
 	free (svc);
-	if (! rc_exists (file) && symlink (init, file) != 0)
-		eerror ("symlink `%s' to `%s': %s", init, file, strerror (errno));
-
+	retval = (rc_exists (file) || symlink (init, file) == 0);
 	free (init);
 	free (file);
 	free (dir);
+
+	return (retval);
 }
 librc_hidden_def(rc_schedule_start_service)
 
@@ -674,10 +647,8 @@ bool rc_wait_service (const char *service)
 		}
 
 		if (nanosleep (&ts, NULL) == -1) {
-			if (errno != EINTR) {
-				eerror ("nanosleep: %s", strerror (errno));
+			if (errno != EINTR)
 				break;
-			}
 		}
 
 		if (! forever)
@@ -703,11 +674,7 @@ char **rc_services_in_runlevel (const char *runlevel)
 		return (NULL);
 
 	dir = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, (char *) NULL);
-	if (! rc_is_dir (dir))
-		eerror ("runlevel `%s' does not exist", runlevel);
-	else
-		list = rc_ls_dir (dir, RC_LS_INITD);
-
+	list = rc_ls_dir (dir, RC_LS_INITD);
 	free (dir);
 	return (list);
 }

@@ -259,7 +259,7 @@ static void cleanup (void)
 	}
 
 	rc_plugin_unload ();
-	rc_free_deptree (deptree);
+	rc_deptree_free (deptree);
 	rc_strlist_free (services);
 	rc_strlist_free (types);
 	rc_strlist_free (svclist);
@@ -578,7 +578,7 @@ static void svc_start (bool deps)
 		depoptions |= RC_DEP_START;
 
 	if (deps) {
-		if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
+		if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
 			eerrorx ("failed to load deptree");
 
 		rc_strlist_free (types);
@@ -588,7 +588,7 @@ static void svc_start (bool deps)
 		svclist = NULL;
 		rc_strlist_add (&svclist, applet);
 		rc_strlist_free (services);
-		services = rc_get_depends (deptree, types, svclist, softlevel, 0);
+		services = rc_deptree_depends (deptree, types, svclist, softlevel, 0);
 		if (services) {
 			eerrorn ("ERROR: `%s' needs ", applet);
 			STRLIST_FOREACH (services, svc, i) {
@@ -605,12 +605,12 @@ static void svc_start (bool deps)
 		types = NULL;
 		rc_strlist_add (&types, "ineed");
 		rc_strlist_free (need_services);
-		need_services = rc_get_depends (deptree, types, svclist,
+		need_services = rc_deptree_depends (deptree, types, svclist,
 										softlevel, depoptions);
 
 		rc_strlist_add (&types, "iuse");
 		rc_strlist_free (use_services);
-		use_services = rc_get_depends (deptree, types, svclist,
+		use_services = rc_deptree_depends (deptree, types, svclist,
 									   softlevel, depoptions);
 
 		if (! rc_runlevel_starting ()) {
@@ -624,7 +624,7 @@ static void svc_start (bool deps)
 
 		/* Now wait for them to start */
 		rc_strlist_add (&types, "iafter");
-		services = rc_get_depends (deptree, types, svclist,
+		services = rc_deptree_depends (deptree, types, svclist,
 								   softlevel, depoptions);
 
 		/* We use tmplist to hold our scheduled by list */
@@ -686,7 +686,7 @@ static void svc_start (bool deps)
 				svclist = NULL;
 				rc_strlist_add (&svclist, svc);
 				rc_strlist_free (providelist);
-				providelist = rc_get_depends (deptree, types, svclist,
+				providelist = rc_deptree_depends (deptree, types, svclist,
 											  softlevel, depoptions);
 				STRLIST_FOREACH (providelist, svc2, j) 
 					rc_schedule_start_service (svc2, service);
@@ -766,7 +766,7 @@ static void svc_start (bool deps)
 	svclist = NULL;
 	rc_strlist_add (&svclist, applet);
 	rc_strlist_free (tmplist);
-	tmplist = rc_get_depends (deptree, types, svclist, softlevel, depoptions);
+	tmplist = rc_deptree_depends (deptree, types, svclist, softlevel, depoptions);
 
 	STRLIST_FOREACH (tmplist, svc2, j) {
 		rc_strlist_free (services);
@@ -822,7 +822,7 @@ static void svc_stop (bool deps)
 		if (rc_runlevel_stopping ())
 			depoptions |= RC_DEP_STOP;
 
-		if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
+		if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
 			eerrorx ("failed to load deptree");
 
 		rc_strlist_free (types);
@@ -834,7 +834,7 @@ static void svc_stop (bool deps)
 		rc_strlist_free (tmplist);
 		tmplist = NULL;
 		rc_strlist_free (services);
-		services = rc_get_depends (deptree, types, svclist,
+		services = rc_deptree_depends (deptree, types, svclist,
 								   softlevel, depoptions);
 		rc_strlist_reverse (services);
 		STRLIST_FOREACH (services, svc, i) {
@@ -885,7 +885,7 @@ static void svc_stop (bool deps)
 		   This is important when a runlevel stops */
 		rc_strlist_add (&types, "usesme");
 		rc_strlist_add (&types, "ibefore");
-		services = rc_get_depends (deptree, types, svclist,
+		services = rc_deptree_depends (deptree, types, svclist,
 								   softlevel, depoptions);
 		STRLIST_FOREACH (services, svc, i) {
 			if (rc_service_state (svc) & RC_SERVICE_STOPPED)
@@ -1189,7 +1189,7 @@ int runscript (int argc, char **argv)
 			if (rc_env_bool ("RC_DEPEND_STRICT"))
 				depoptions |= RC_DEP_STRICT;
 			
-			if (! deptree && ((deptree = rc_load_deptree ()) == NULL))
+			if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
 				eerrorx ("failed to load deptree");
 
 			rc_strlist_free (types);
@@ -1199,7 +1199,7 @@ int runscript (int argc, char **argv)
 			svclist = NULL;
 			rc_strlist_add (&svclist, applet);
 			rc_strlist_free (services);
-			services = rc_get_depends (deptree, types, svclist,
+			services = rc_deptree_depends (deptree, types, svclist,
 									   softlevel, depoptions);
 			STRLIST_FOREACH (services, svc, i)
 				printf ("%s%s", i == 1 ? "" : " ", svc);

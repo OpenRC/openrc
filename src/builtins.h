@@ -7,6 +7,8 @@
  * Released under the GPLv2
  */
 
+#include "rc.h"
+
 int checkown (int argc, char **argv);
 int env_update (int argc, char **argv);
 int fstabinfo (int argc, char **argv);
@@ -17,3 +19,5 @@ int rc_update (int argc, char **argv);
 int runscript (int argc, char **argv);
 int start_stop_daemon (int argc, char **argv);
 
+/* Handy function so we can wrap einfo around our deptree */
+rc_depinfo_t *_rc_deptree_load (void);

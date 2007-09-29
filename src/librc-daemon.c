@@ -79,16 +79,16 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 	DIR *procdir;
 	struct dirent *entry;
 	int npids = 0;
-	int foundany = false;
 	pid_t p;
 	pid_t *pids = NULL;
+	pid_t *tmp = NULL;
 	char buffer[PATH_MAX];
 	struct stat sb;
 	pid_t runscript_pid = 0;
 	char *pp;
 
 	if ((procdir = opendir ("/proc")) == NULL)
-		eerrorx ("opendir `/proc': %s", strerror (errno));
+		return (NULL);
 
 	/*
 	   We never match RC_RUNSCRIPT_PID if present so we avoid the below
@@ -109,7 +109,6 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 	while ((entry = readdir (procdir)) != NULL) {
 		if (sscanf (entry->d_name, "%d", &p) != 1)
 			continue;
-		foundany = true;
 
 		if (runscript_pid != 0 && runscript_pid == p)
 			continue;
@@ -129,18 +128,20 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 		if (exec && ! cmd && ! pid_is_exec (p, exec))
 			continue;
 
-		pids = realloc (pids, sizeof (pid_t) * (npids + 2));
-		if (! pids)
-			eerrorx ("memory exhausted");
+		tmp = realloc (pids, sizeof (pid_t) * (npids + 2));
+		if (! tmp) {
+			free (pids);
+			closedir (procdir);
+			errno = ENOMEM;
+			return (NULL);
+		}
+		pids = tmp;
 
 		pids[npids] = p;
 		pids[npids + 1] = 0;
 		npids++;
 	}
 	closedir (procdir);
-
-	if (! foundany)
-		eerrorx ("nothing in /proc");
 
 	return (pids);
 }
@@ -177,6 +178,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 	int argc = 0;
 	char **argv;
 	pid_t *pids = NULL;
+	pid_t *tmp;
 	int npids = 0;
 
 	if ((kd = kvm_openfiles (NULL, NULL, NULL, O_RDONLY, errbuf)) == NULL)
@@ -210,15 +212,20 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 				continue;
 		}
 
-		pids = realloc (pids, sizeof (pid_t) * (npids + 2));
-		if (! pids)
-			eerrorx ("memory exhausted");
+		tmp = realloc (pids, sizeof (pid_t) * (npids + 2));
+		if (! tmp) {
+			free (pids);
+			kvm_close (kd);
+			errno = ENOMEM;
+			return (NULL);
+		}
+		pids = tmp;
 
 		pids[npids] = p;
 		pids[npids + 1] = 0;
 		npids++;
 	}
-	kvm_close(kd);
+	kvm_close (kd);
 
 	return (pids);
 }
@@ -238,13 +245,7 @@ static bool _match_daemon (const char *path, const char *file,
 	int lc = 0;
 	int m = 0;
 
-	if (! rc_exists (ffile)) {
-		free (ffile);
-		return (false);
-	}
-
 	if ((fp = fopen (ffile, "r")) == NULL) {
-		eerror ("fopen `%s': %s", ffile, strerror (errno));
 		free (ffile);
 		return (false);
 	}
@@ -350,19 +351,14 @@ void rc_set_service_daemon (const char *service, const char *exec,
 		char buffer[10];
 		FILE *fp;
 
-		if (! rc_is_dir (dirpath))
-			if (mkdir (dirpath, 0755) != 0)
-				eerror ("mkdir `%s': %s", dirpath, strerror (errno));
-
-		snprintf (buffer, sizeof (buffer), "%03d", nfiles + 1);
-		file = rc_strcatpaths (dirpath, buffer, (char *) NULL);
-		if ((fp = fopen (file, "w")) == NULL)
-			eerror ("fopen `%s': %s", file, strerror (errno));
-		else {
-			fprintf (fp, "%s\n%s\n%s\n", mexec, mname, mpidfile);
+		if (mkdir (dirpath, 0755) == 0 || errno == EEXIST) {
+			snprintf (buffer, sizeof (buffer), "%03d", nfiles + 1);
+			file = rc_strcatpaths (dirpath, buffer, (char *) NULL);
+			if ((fp = fopen (file, "w")))
+				fprintf (fp, "%s\n%s\n%s\n", mexec, mname, mpidfile);
 			fclose (fp);
+			free (file);
 		}
-		free (file);
 	}
 
 	free (mexec);
@@ -458,10 +454,8 @@ bool rc_service_daemons_crashed (const char *service)
 		path = rc_strcatpaths (dirpath, file, (char *) NULL);
 		fp = fopen (path, "r");
 		free (path);
-		if (! fp) {
-			eerror ("fopen `%s': %s", file, strerror (errno));
-			continue;
-		}
+		if (! fp)
+			break;
 
 		while ((fgets (buffer, RC_LINEBUFFER, fp))) {
 			int lb = strlen (buffer) - 1;
@@ -499,13 +493,11 @@ bool rc_service_daemons_crashed (const char *service)
 			}
 
 			if ((fp = fopen (pidfile, "r")) == NULL) {
-				eerror ("fopen `%s': %s", pidfile, strerror (errno));
 				retval = true;
 				break;
 			}
 
 			if (fscanf (fp, "%d", &pid) != 1) {
-				eerror ("no pid found in `%s'", pidfile);
 				fclose (fp);
 				retval = true;
 				break;

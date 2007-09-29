@@ -19,6 +19,18 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
+rc_depinfo_t *_rc_deptree_load (void) {
+	if (rc_deptree_update_needed ()) {
+		int retval;
+
+		ebegin ("Caching service dependencies");
+		retval = rc_deptree_update ();
+		eend (retval, "Failed to update the dependency tree");
+	}
+
+	return (rc_deptree_load ());
+}
+
 int rc_depend (int argc, char **argv)
 {
 	char **types = NULL;
@@ -39,8 +51,9 @@ int rc_depend (int argc, char **argv)
 	for (i = 1; i < argc; i++) {
 		if (strcmp (argv[i], "--update") == 0) {
 			if (! update) {
-				rc_update_deptree (true);
-				update = true;
+				ebegin ("Caching service dependencies");
+				update = (rc_deptree_update () == 0);
+				eend (update ? 0 : -1, "Failed to update the dependency tree");
 			}
 			continue;
 		}
@@ -59,10 +72,10 @@ int rc_depend (int argc, char **argv)
 			argv[i]++;
 			rc_strlist_add (&types, argv[i]);
 		} else {
-			if ((deptree = rc_load_deptree ()) == NULL)
+			if ((deptree = _rc_deptree_load ()) == NULL)
 				eerrorx ("failed to load deptree");
 
-			di = rc_get_depinfo (deptree, argv[i]);
+			di = rc_deptree_depinfo (deptree, argv[i]);
 			if (! di)
 				eerror ("no dependency info for service `%s'", argv[i]);
 			else
@@ -72,7 +85,7 @@ int rc_depend (int argc, char **argv)
 
 	if (! services) {
 		rc_strlist_free (types);
-		rc_free_deptree (deptree);
+		rc_deptree_free (deptree);
 		if (update)
 			return (EXIT_SUCCESS);
 		eerrorx ("no services specified");
@@ -84,7 +97,7 @@ int rc_depend (int argc, char **argv)
 		rc_strlist_add (&types, "iuse");
 	}
 
-	depends = rc_get_depends (deptree, types, services, runlevel, options);
+	depends = rc_deptree_depends (deptree, types, services, runlevel, options);
 
 	if (depends) {
 		STRLIST_FOREACH (depends, service, i) {
@@ -103,7 +116,7 @@ int rc_depend (int argc, char **argv)
 	rc_strlist_free (types);
 	rc_strlist_free (services);
 	rc_strlist_free (depends);
-	rc_free_deptree (deptree);
+	rc_deptree_free (deptree);
 
 	return (EXIT_SUCCESS);
 }

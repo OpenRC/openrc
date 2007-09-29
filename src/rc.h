@@ -114,7 +114,7 @@ int rc_waitpid (pid_t pid);
 /*! Schedule a service to be started when another service starts
  * @param service that starts the scheduled service when started
  * @param service_to_start service that will be started */
-void rc_schedule_start_service (const char *service,
+bool rc_schedule_start_service (const char *service,
 								const char *service_to_start);
 /*! Return a NULL terminated list of services that are scheduled to start
  * when the given service has started
@@ -171,7 +171,7 @@ char *rc_get_runlevel (void);
 /*! Set the runlevel.
  * This just changes the stored runlevel and does not start or stop any services.
  * @param runlevel to store */
-void rc_set_runlevel (const char *runlevel);
+bool rc_set_runlevel (const char *runlevel);
 
 /*! Checks if the runlevel exists or not
  * @param runlevel to check
@@ -254,25 +254,29 @@ typedef void *rc_depinfo_t;
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.
- * @param force an update
  * @return 0 if successful, otherwise -1 */
-int rc_update_deptree (bool force);
+int rc_deptree_update (void);
+/*! Check if the cached dependency tree is older than any init script,
+ * its configuration file or an external configuration file the init script
+ * has specified.
+ * @return true if it needs updating, otherwise false */
+bool rc_deptree_update_needed (void);
 /*! Load the cached dependency tree and return a pointer to it.
- * This pointer should be freed with rc_free_deptree when done.
+ * This pointer should be freed with rc_deptree_free when done.
  * @return pointer to the dependency tree */
-rc_depinfo_t *rc_load_deptree (void);
+rc_depinfo_t *rc_deptree_load (void);
 /*! Get a services depedency information from a loaded tree
  * @param deptree to search
  * @param service to find
  * @return service dependency information */
-rc_depinfo_t *rc_get_depinfo (rc_depinfo_t *deptree, const char *service);
+rc_depinfo_t *rc_deptree_depinfo (rc_depinfo_t *deptree, const char *service);
 /*! Get a depenency type from the service dependency information
  * @param depinfo service dependency to search
  * @param type to find
  * @return service dependency type information */
-rc_deptype_t *rc_get_deptype (rc_depinfo_t *depinfo, const char *type);
-char **rc_get_depends (rc_depinfo_t *deptree, char **types,
-					   char **services, const char *runlevel, int options);
+rc_deptype_t *rc_deptree_deptype (rc_depinfo_t *depinfo, const char *type);
+char **rc_deptree_depends (rc_depinfo_t *deptree, char **types,
+						   char **services, const char *runlevel, int options);
 /*! List all the services that should be stoppned and then started, in order,
  * for the given runlevel, including sysinit and boot services where
  * approriate.
@@ -280,11 +284,11 @@ char **rc_get_depends (rc_depinfo_t *deptree, char **types,
  * @param runlevel to change into
  * @param options to pass
  * @return NULL terminated list of services in order */
-char **rc_order_services (rc_depinfo_t *deptree, const char *runlevel,
-						  int options);
+char **rc_deptree_order_services (rc_depinfo_t *deptree, const char *runlevel,
+								  int options);
 /*! Free a deptree and its information
  * @param deptree to free */
-void rc_free_deptree (rc_depinfo_t *deptree);
+void rc_deptree_free (rc_depinfo_t *deptree);
 
 /*! @name Plugins
  * For each plugin loaded we will call rc_plugin_hook with the below
