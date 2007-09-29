@@ -62,7 +62,7 @@ typedef enum
 /*! Resolves a service name to its full path.
  * @param service to check
  * @return pointer to full path of service */
-char *rc_resolve_service (const char *service);
+char *rc_service_resolve (const char *service);
 /*! Checks if a service exists or not.
  * @param service to check
  * @return true if service exists, otherwise false */
@@ -94,17 +94,17 @@ rc_service_state_t rc_service_state (const char *service);
  * @param service to mark
  * @param state service should be in
  * @return true if service state change was successful, otherwise false */
-bool rc_mark_service (const char *service, rc_service_state_t state);
+bool rc_service_mark (const char *service, rc_service_state_t state);
 
 /*! Stop a service
  * @param service to stop
  * @return pid of service stopping process */
-pid_t rc_stop_service (const char *service);
+pid_t rc_service_stop (const char *service);
 
 /*! Start a service
  * @param service to start
  * @return pid of the service starting process */
-pid_t rc_start_service (const char *service);
+pid_t rc_service_start (const char *service);
 
 /*! Wait for a process to finish
  * @param pid to wait for

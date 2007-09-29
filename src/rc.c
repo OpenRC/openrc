@@ -303,17 +303,17 @@ static int do_mark_service (int argc, char **argv)
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "mark_service_started") == 0)
-		ok = rc_mark_service (argv[0], RC_SERVICE_STARTED);
+		ok = rc_service_mark (argv[0], RC_SERVICE_STARTED);
 	else if (strcmp (applet, "mark_service_stopped") == 0)
-		ok = rc_mark_service (argv[0], RC_SERVICE_STOPPED);
+		ok = rc_service_mark (argv[0], RC_SERVICE_STOPPED);
 	else if (strcmp (applet, "mark_service_inactive") == 0)
-		ok = rc_mark_service (argv[0], RC_SERVICE_INACTIVE);
+		ok = rc_service_mark (argv[0], RC_SERVICE_INACTIVE);
 	else if (strcmp (applet, "mark_service_starting") == 0)
-		ok = rc_mark_service (argv[0], RC_SERVICE_STOPPING);
+		ok = rc_service_mark (argv[0], RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "mark_service_stopping") == 0)
-		ok = rc_mark_service (argv[0], RC_SERVICE_STOPPING);
+		ok = rc_service_mark (argv[0], RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "mark_service_coldplugged") == 0)
-		ok = rc_mark_service (argv[0], RC_SERVICE_COLDPLUGGED);
+		ok = rc_service_mark (argv[0], RC_SERVICE_COLDPLUGGED);
 	else
 		eerrorx ("%s: unknown applet", applet);
 
@@ -1041,7 +1041,7 @@ int main (int argc, char **argv)
 
 		STRLIST_FOREACH (start_services, service, i)
 			if (rc_allow_plug (service))
-				rc_mark_service (service, RC_SERVICE_COLDPLUGGED);
+				rc_service_mark (service, RC_SERVICE_COLDPLUGGED);
 		/* We need to dump this list now.
 		   This may seem redunant, but only Linux needs this and saves on
 		   code bloat. */
@@ -1066,7 +1066,7 @@ int main (int argc, char **argv)
 			tmp = rc_xmalloc (sizeof (char *) * j);
 			snprintf (tmp, j, "net.%s", service);
 			if (rc_service_exists (tmp) && rc_allow_plug (tmp))
-				rc_mark_service (tmp, RC_SERVICE_COLDPLUGGED);
+				rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 			CHAR_FREE (tmp);
 		}
 		rc_strlist_free (start_services);
@@ -1085,7 +1085,7 @@ int main (int argc, char **argv)
 					tmp = rc_xmalloc (sizeof (char *) * j);
 					snprintf (tmp, j, "moused.%s", service);
 					if (rc_service_exists (tmp) && rc_allow_plug (tmp))
-						rc_mark_service (tmp, RC_SERVICE_COLDPLUGGED);
+						rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 					CHAR_FREE (tmp);
 				}
 			}
@@ -1185,7 +1185,7 @@ int main (int argc, char **argv)
 
 		/* We always stop the service when in these runlevels */
 		if (going_down) {
-			pid_t pid = rc_stop_service (service);
+			pid_t pid = rc_service_stop (service);
 			if (pid > 0 && ! rc_env_bool ("RC_PARALLEL"))
 				rc_waitpid (pid);
 			continue;
@@ -1250,7 +1250,7 @@ int main (int argc, char **argv)
 
 		/* After all that we can finally stop the blighter! */
 		if (! found) {
-			pid_t pid = rc_stop_service (service);
+			pid_t pid = rc_service_stop (service);
 			if (pid > 0 && ! rc_env_bool ("RC_PARALLEL"))
 				rc_waitpid (pid);
 		}
@@ -1294,7 +1294,7 @@ int main (int argc, char **argv)
 
 	/* Re-add our coldplugged services if they stopped */
 	STRLIST_FOREACH (coldplugged_services, service, i)
-		rc_mark_service (service, RC_SERVICE_COLDPLUGGED);
+		rc_service_mark (service, RC_SERVICE_COLDPLUGGED);
 
 	/* Order the services to start */
 	rc_strlist_add (&types, "ineed");
@@ -1316,7 +1316,7 @@ int main (int argc, char **argv)
 			char *token;
 
 			while ((token = strsep (&p, ",")))
-				rc_mark_service (token, RC_SERVICE_STARTED);
+				rc_service_mark (token, RC_SERVICE_STARTED);
 			free (service);
 		}
 	}
@@ -1349,7 +1349,7 @@ interactive_option:
 			}
 
 			/* Remember the pid if we're running in parallel */
-			if ((pid = rc_start_service (service)))
+			if ((pid = rc_service_start (service)))
 				add_pid (pid);
 
 			if (! rc_env_bool ("RC_PARALLEL")) {
@@ -1372,7 +1372,7 @@ interactive_option:
 			char *token;
 
 			while ((token = strsep (&p, ",")))
-				rc_mark_service (token, RC_SERVICE_STOPPED);
+				rc_service_mark (token, RC_SERVICE_STOPPED);
 			free (service);
 		}
 	}

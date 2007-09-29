@@ -132,7 +132,7 @@ bool rc_runlevel_exists (const char *runlevel)
 librc_hidden_def(rc_runlevel_exists)
 
 /* Resolve a service name to it's full path */
-char *rc_resolve_service (const char *service)
+char *rc_service_resolve (const char *service)
 {
 	char buffer[PATH_MAX];
 	char *file;
@@ -165,7 +165,7 @@ char *rc_resolve_service (const char *service)
 	snprintf (buffer, sizeof (buffer), RC_INITDIR "/%s", service);
 	return (rc_xstrdup (buffer));
 }
-librc_hidden_def(rc_resolve_service)
+librc_hidden_def(rc_service_resolve)
 
 bool rc_service_exists (const char *service)
 {
@@ -184,7 +184,7 @@ bool rc_service_exists (const char *service)
 		service[len - 1] == 'h')
 		return (false);
 
-	file = rc_resolve_service (service); 
+	file = rc_service_resolve (service); 
 	if (rc_exists (file))
 		retval = rc_is_exec (file);
 	free (file);
@@ -202,7 +202,7 @@ char **rc_service_options (const char *service)
 	char *p = buffer;
 	FILE *fp;
 
-	if (! (svc = rc_resolve_service (service)))
+	if (! (svc = rc_service_resolve (service)))
 		return (NULL);
 
 	snprintf (cmd, sizeof (cmd), ". '%s'; echo \"${opts}\"",  svc);
@@ -230,7 +230,7 @@ char *rc_service_description (const char *service, const char *option)
 	FILE *fp;
 	int i;
 
-	if (! (svc = rc_resolve_service (service)))
+	if (! (svc = rc_service_resolve (service)))
 		return (NULL);
 
 	if (! option)
@@ -279,14 +279,14 @@ bool rc_service_in_runlevel (const char *service, const char *runlevel)
 }
 librc_hidden_def(rc_service_in_runlevel)
 
-bool rc_mark_service (const char *service, const rc_service_state_t state)
+bool rc_service_mark (const char *service, const rc_service_state_t state)
 {
 	char *file;
 	int i = 0;
 	int skip_state = -1;
 	char *base;
 	char *svc;
-	char *init = rc_resolve_service (service);
+	char *init = rc_service_resolve (service);
 	bool skip_wasinactive = false;
 
 	if (! service)
@@ -408,7 +408,7 @@ bool rc_mark_service (const char *service, const rc_service_state_t state)
 	free (init);
 	return (true);
 }
-librc_hidden_def(rc_mark_service)
+librc_hidden_def(rc_service_mark)
 
 rc_service_state_t rc_service_state (const char *service)
 {
@@ -497,9 +497,9 @@ static pid_t _exec_service (const char *service, const char *arg)
 	pid_t pid = -1;
 	char *svc;
 
-	file = rc_resolve_service (service);
+	file = rc_service_resolve (service);
 	if (! rc_is_file (file)) {
-		rc_mark_service (service, RC_SERVICE_STOPPED);
+		rc_service_mark (service, RC_SERVICE_STOPPED);
 		free (file);
 		return (0);
 	}
@@ -548,23 +548,23 @@ int rc_waitpid (pid_t pid)
 }
 librc_hidden_def(rc_waitpid)
 
-pid_t rc_stop_service (const char *service)
+pid_t rc_service_stop (const char *service)
 {
 	if (rc_service_state (service) & RC_SERVICE_STOPPED)
 		return (0);
 
 	return (_exec_service (service, "stop"));
 }
-librc_hidden_def(rc_stop_service)
+librc_hidden_def(rc_service_stop)
 
-pid_t rc_start_service (const char *service)
+pid_t rc_service_start (const char *service)
 {
 	if (! rc_service_state (service) & RC_SERVICE_STOPPED)
 		return (0);
 
 	return (_exec_service (service, "start"));
 }
-librc_hidden_def(rc_start_service)
+librc_hidden_def(rc_service_start)
 
 bool rc_schedule_start_service (const char *service,
 								const char *service_to_start)
@@ -589,7 +589,7 @@ bool rc_schedule_start_service (const char *service,
 			return (false);
 		}
 
-	init = rc_resolve_service (service_to_start);
+	init = rc_service_resolve (service_to_start);
 	svc = rc_xstrdup (service_to_start);
 	file = rc_strcatpaths (dir, basename (svc), (char *) NULL);
 	free (svc);
@@ -733,7 +733,7 @@ bool rc_service_add (const char *runlevel, const char *service)
 		return (false);
 	}
 
-	init = rc_resolve_service (service);
+	init = rc_service_resolve (service);
 	svc = rc_xstrdup (service);
 	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, basename (svc),
 						   (char *) NULL);
