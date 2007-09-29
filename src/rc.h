@@ -129,7 +129,7 @@ void rc_schedule_clear (const char *service);
 /*! Wait for a service to finish
  * @param service to wait for
  * @return true if service finished before timeout, otherwise false */
-bool rc_wait_service (const char *service);
+bool rc_service_wait (const char *service);
 
 /*! Return a saved value for a service
  * @param service to check

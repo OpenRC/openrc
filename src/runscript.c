@@ -650,7 +650,7 @@ static void svc_start (bool deps)
 					continue;
 			}
 			
-			if (! rc_wait_service (svc))
+			if (! rc_service_wait (svc))
 				eerror ("%s: timed out waiting for %s", applet, svc);
 			if ((svcs = rc_service_state (svc)) & RC_SERVICE_STARTED)
 				continue;
@@ -842,7 +842,7 @@ static void svc_stop (bool deps)
 			if (svcs & RC_SERVICE_STARTED || 
 				svcs & RC_SERVICE_INACTIVE)
 			{
-				rc_wait_service (svc);
+				rc_service_wait (svc);
 				svcs = rc_service_state (svc);
 				if (svcs & RC_SERVICE_STARTED || 
 					svcs & RC_SERVICE_INACTIVE)
@@ -862,7 +862,7 @@ static void svc_stop (bool deps)
 				continue;
 
 			/* We used to loop 3 times here - maybe re-do this if needed */
-			rc_wait_service (svc);
+			rc_service_wait (svc);
 			if (! (rc_service_state (svc) & RC_SERVICE_STOPPED)) {
 				if (rc_runlevel_stopping ()) {
 					/* If shutting down, we should stop even if a dependant failed */
@@ -890,7 +890,7 @@ static void svc_stop (bool deps)
 		STRLIST_FOREACH (services, svc, i) {
 			if (rc_service_state (svc) & RC_SERVICE_STOPPED)
 				continue;
-			rc_wait_service (svc);
+			rc_service_wait (svc);
 		}
 
 		rc_strlist_free (services);

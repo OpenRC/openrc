@@ -615,7 +615,7 @@ void rc_schedule_clear (const char *service)
 }
 librc_hidden_def(rc_schedule_clear)
 
-bool rc_wait_service (const char *service)
+bool rc_service_wait (const char *service)
 {
 	char *svc;
 	char *base;
@@ -658,7 +658,7 @@ bool rc_wait_service (const char *service)
 	free (fifo);
 	return (retval);
 }
-librc_hidden_def(rc_wait_service)
+librc_hidden_def(rc_service_wait)
 
 char **rc_services_in_runlevel (const char *runlevel)
 {
