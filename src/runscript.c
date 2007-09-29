@@ -379,7 +379,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 			 * good for us */
 			close (master_tty);
 	
-			dup2 (slave_tty, 0);
+			dup2 (fileno (stdin), 0);
 			dup2 (slave_tty, 1);
 			dup2 (slave_tty, 2);
 			if (slave_tty > 2)
