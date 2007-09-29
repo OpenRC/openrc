@@ -63,6 +63,7 @@ static char *RUNLEVEL = NULL;
 static char *PREVLEVEL = NULL;
 
 static char *applet = NULL;
+static char *runlevel = NULL;
 static char **env = NULL;
 static char **newenv = NULL;
 static char **coldplugged_services = NULL;
@@ -114,6 +115,8 @@ static void cleanup (void)
 			if (rc_is_dir (RC_STOPPING))
 				rc_rm_dir (RC_STOPPING, true);
 		}
+
+		free (runlevel);
 	}
 
 	free (applet);
@@ -536,14 +539,14 @@ static void single_user (void)
 #endif
 }
 
-static void set_ksoftlevel (const char *runlevel)
+static void set_ksoftlevel (const char *level)
 {
 	FILE *fp;
 
-	if (! runlevel ||
-		strcmp (runlevel, getenv ("RC_BOOTLEVEL")) == 0 ||
-		strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
-		strcmp (runlevel, RC_LEVEL_SYSINIT) == 0)
+	if (! level ||
+		strcmp (level, getenv ("RC_BOOTLEVEL")) == 0 ||
+		strcmp (level, RC_LEVEL_SINGLE) == 0 ||
+		strcmp (level, RC_LEVEL_SYSINIT) == 0)
 	{
 		if (rc_exists (RC_KSOFTLEVEL) &&
 			unlink (RC_KSOFTLEVEL) != 0)
@@ -556,7 +559,7 @@ static void set_ksoftlevel (const char *runlevel)
 		return;
 	}
 
-	fprintf (fp, "%s", runlevel);
+	fprintf (fp, "%s", level);
 	fclose (fp);
 }
 
@@ -722,7 +725,6 @@ static const char * const longopts_help[] = {
 
 int main (int argc, char **argv)
 {
-	char *runlevel = NULL;
 	const char *bootlevel = NULL;
 	char *newlevel = NULL;
 	char *service = NULL;
@@ -1269,7 +1271,8 @@ int main (int argc, char **argv)
 	/* Store the new runlevel */
 	if (newlevel) {
 		rc_set_runlevel (newlevel);
-		runlevel = newlevel;
+		free (runlevel);
+		runlevel = rc_xstrdup (newlevel);
 		setenv ("RC_SOFTLEVEL", runlevel, 1);
 	}
 
