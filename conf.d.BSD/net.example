@@ -354,7 +354,7 @@
 #dns_domain_eth0="your.domain"
 #dns_servers_eth0="192.168.0.2 192.168.0.3"
 #dns_search_eth0="this.domain that.domain"
-#dns_options_eth0="'timeout 1' 'rotate'"
+#dns_options_eth0="'timeout:1' 'rotate'"
 #dns_sortlist_eth0="130.155.160.0/255.255.240.0 130.155.0.0"
 # See the man page for resolv.conf for details about the options and sortlist
 # directives
