@@ -181,8 +181,10 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 	pid_t *tmp;
 	int npids = 0;
 
-	if ((kd = kvm_openfiles (NULL, NULL, NULL, O_RDONLY, errbuf)) == NULL)
-		eerrorx ("kvm_open: %s", errbuf);
+	if ((kd = kvm_openfiles (NULL, NULL, NULL, O_RDONLY, errbuf)) == NULL) {
+		fprintf (stderr, "kvm_open: %s", errbuf);
+		return (NULL);
+	}
 
 #if defined(__DragonFly__) || defined( __FreeBSD__)
 	kp = kvm_getprocs (kd, KERN_PROC_PROC, 0, &processes);
