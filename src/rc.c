@@ -1086,7 +1086,7 @@ int main (int argc, char **argv)
 					j = (strlen ("moused.") + strlen (service) + 1);
 					tmp = rc_xmalloc (sizeof (char *) * j);
 					snprintf (tmp, j, "moused.%s", service);
-					if (rc_service_exists (tmp) && rc_allow_plug (tmp))
+					if (rc_service_exists (tmp) && rc_service_plugable (tmp))
 						rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 					CHAR_FREE (tmp);
 				}
