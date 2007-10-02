@@ -128,7 +128,7 @@ int rc_status (int argc, char **argv)
 		rc_strlist_add (&levels, argv[optind++]);
 
 	if (! levels) {
-		level = rc_get_runlevel ();
+		level = rc_runlevel_get ();
 		rc_strlist_add (&levels, level);
 		free (level);
 	}

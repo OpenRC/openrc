@@ -887,7 +887,7 @@ int main (int argc, char **argv)
 
 	/* Load current softlevel */
 	bootlevel = getenv ("RC_BOOTLEVEL");
-	runlevel = rc_get_runlevel ();
+	runlevel = rc_runlevel_get ();
 
 	/* Check we're in the runlevel requested, ie from
 	   rc single
@@ -1007,7 +1007,7 @@ int main (int argc, char **argv)
 		 strcmp (newlevel, RC_LEVEL_SINGLE) == 0))
 	{
 		going_down = true;
-		rc_set_runlevel (newlevel);
+		rc_runlevel_set (newlevel);
 		setenv ("RC_SOFTLEVEL", newlevel, 1);
 		rc_plugin_run (RC_HOOK_RUNLEVEL_STOP_IN, newlevel);
 	} else {
@@ -1042,7 +1042,7 @@ int main (int argc, char **argv)
 		rc_rm_dir (DEVBOOT, true);
 
 		STRLIST_FOREACH (start_services, service, i)
-			if (rc_allow_plug (service))
+			if (rc_service_plugable (service))
 				rc_service_mark (service, RC_SERVICE_COLDPLUGGED);
 		/* We need to dump this list now.
 		   This may seem redunant, but only Linux needs this and saves on
@@ -1067,7 +1067,7 @@ int main (int argc, char **argv)
 			j = (strlen ("net.") + strlen (service) + 1);
 			tmp = rc_xmalloc (sizeof (char *) * j);
 			snprintf (tmp, j, "net.%s", service);
-			if (rc_service_exists (tmp) && rc_allow_plug (tmp))
+			if (rc_service_exists (tmp) && rc_service_plugable (tmp))
 				rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 			CHAR_FREE (tmp);
 		}
@@ -1169,7 +1169,7 @@ int main (int argc, char **argv)
 
 	/* Save out softlevel now */
 	if (going_down)
-		rc_set_runlevel (newlevel);
+		rc_runlevel_set (newlevel);
 
 	types = NULL;
 	rc_strlist_add (&types, "needsme");
@@ -1270,7 +1270,7 @@ int main (int argc, char **argv)
 
 	/* Store the new runlevel */
 	if (newlevel) {
-		rc_set_runlevel (newlevel);
+		rc_runlevel_set (newlevel);
 		free (runlevel);
 		runlevel = rc_xstrdup (newlevel);
 		setenv ("RC_SOFTLEVEL", runlevel, 1);

@@ -46,7 +46,7 @@ int rc_depend (int argc, char **argv)
 	char *runlevel = getenv ("RC_SOFTLEVEL");
 
 	if (! runlevel)
-		runlevel = rc_get_runlevel ();
+		runlevel = rc_runlevel_get ();
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp (argv[i], "--update") == 0) {

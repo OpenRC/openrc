@@ -81,7 +81,7 @@ char **rc_get_runlevels (void)
 }
 librc_hidden_def(rc_get_runlevels)
 
-char *rc_get_runlevel (void)
+char *rc_runlevel_get (void)
 {
 	FILE *fp;
 	char buffer[RC_LINEBUFFER];
@@ -102,9 +102,9 @@ char *rc_get_runlevel (void)
 
 	return (runlevel);
 }
-librc_hidden_def(rc_get_runlevel)
+librc_hidden_def(rc_runlevel_get)
 
-bool rc_set_runlevel (const char *runlevel)
+bool rc_runlevel_set (const char *runlevel)
 {
 	FILE *fp = fopen (SOFTLEVEL, "w");
 
@@ -114,7 +114,7 @@ bool rc_set_runlevel (const char *runlevel)
 	fclose (fp);
 	return (true);
 }
-librc_hidden_def(rc_set_runlevel)
+librc_hidden_def(rc_runlevel_set)
 
 bool rc_runlevel_exists (const char *runlevel)
 {
@@ -802,7 +802,7 @@ char **rc_services_scheduled (const char *service)
 }
 librc_hidden_def(rc_services_scheduled)
 
-bool rc_allow_plug (char *service)
+bool rc_service_plugable (char *service)
 {
 	char *list;
 	char *p;
@@ -839,4 +839,4 @@ bool rc_allow_plug (char *service)
 	free (list);
 	return (allow);
 }
-librc_hidden_def(rc_allow_plug)
+librc_hidden_def(rc_service_plugable)

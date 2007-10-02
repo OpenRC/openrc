@@ -1065,7 +1065,7 @@ int runscript (int argc, char **argv)
 			/* We don't free our list as that would be null in environ */
 		}
 
-		softlevel = rc_get_runlevel ();
+		softlevel = rc_runlevel_get ();
 	}
 
 	setenv ("RC_ELOG", service, 1);
@@ -1134,7 +1134,7 @@ int runscript (int argc, char **argv)
 	}
 
 	if (rc_env_bool ("IN_HOTPLUG")) {
-		if (! rc_env_bool ("RC_HOTPLUG") || ! rc_allow_plug (applet))
+		if (! rc_env_bool ("RC_HOTPLUG") || ! rc_service_plugable (applet))
 			eerrorx ("%s: not allowed to be hotplugged", applet);
 	}
 

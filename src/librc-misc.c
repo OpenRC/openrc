@@ -568,7 +568,7 @@ char **rc_make_env (void)
 	bool has_net_fs_list = false;
 	FILE *fp;
 	char buffer[PATH_MAX];
-	char *runlevel = rc_get_runlevel ();
+	char *runlevel = rc_runlevel_get ();
 
 	/* Don't trust environ for softlevel yet */
 	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, runlevel);

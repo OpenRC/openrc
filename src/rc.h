@@ -163,15 +163,15 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 /*! Check if the service is allowed to be hot/cold plugged
  * @param service to check
  * @return true if allowed, otherwise false */
-bool rc_allow_plug (char *service);
+bool rc_service_plugable (char *service);
 
 /*! Return the current runlevel.
  * @return the current runlevel */
-char *rc_get_runlevel (void);
+char *rc_runlevel_get (void);
 /*! Set the runlevel.
  * This just changes the stored runlevel and does not start or stop any services.
  * @param runlevel to store */
-bool rc_set_runlevel (const char *runlevel);
+bool rc_runlevel_set (const char *runlevel);
 
 /*! Checks if the runlevel exists or not
  * @param runlevel to check
