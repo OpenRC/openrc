@@ -758,7 +758,7 @@ int start_stop_daemon (int argc, char **argv)
 			unlink (pidfile);
 
 		if (svcname)
-			rc_set_service_daemon (svcname, exec, cmd, pidfile, false);
+			rc_service_daemon_set (svcname, exec, cmd, pidfile, false);
 
 		exit (EXIT_SUCCESS);
 	}
@@ -1032,7 +1032,7 @@ int start_stop_daemon (int argc, char **argv)
 	}
 
 	if (svcname)
-		rc_set_service_daemon (svcname, exec, cmd, pidfile, true);
+		rc_service_daemon_set (svcname, exec, cmd, pidfile, true);
 
 	exit (EXIT_SUCCESS);
 }

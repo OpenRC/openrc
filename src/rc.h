@@ -149,7 +149,7 @@ bool rc_service_option_set (const char *service, const char *option,
  * @param name of the process (optional)
  * @param pidfile of the process (optional)
  * @param started if true, add the arguments otherwise remove existing matching arguments */
-void rc_set_service_daemon (const char *service, const char *exec,
+void rc_service_daemon_set (const char *service, const char *exec,
 							const char *name, const char *pidfile,
 							bool started);
 /*! Check if the service started the daemon

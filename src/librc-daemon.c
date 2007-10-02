@@ -283,7 +283,7 @@ static bool _match_daemon (const char *path, const char *file,
 	return (m == 111 ? true : false);
 }
 
-void rc_set_service_daemon (const char *service, const char *exec,
+void rc_service_daemon_set (const char *service, const char *exec,
 							const char *name, const char *pidfile,
 							bool started)
 {
@@ -368,7 +368,7 @@ void rc_set_service_daemon (const char *service, const char *exec,
 	free (mpidfile);
 	free (dirpath);
 }
-librc_hidden_def(rc_set_service_daemon)
+librc_hidden_def(rc_service_daemon_set)
 
 bool rc_service_started_daemon (const char *service, const char *exec,
 								int indx)
