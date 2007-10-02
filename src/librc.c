@@ -441,7 +441,7 @@ rc_service_state_t rc_service_state (const char *service)
 }
 librc_hidden_def(rc_service_state)
 
-char *rc_get_service_option (const char *service, const char *option)
+char *rc_service_option_get (const char *service, const char *option)
 {
 	FILE *fp;
 	char buffer[RC_LINEBUFFER];
@@ -459,9 +459,9 @@ char *rc_get_service_option (const char *service, const char *option)
 
 	return (value);
 }
-librc_hidden_def(rc_get_service_option)
+librc_hidden_def(rc_service_option_get)
 
-bool rc_set_service_option (const char *service, const char *option,
+bool rc_service_option_set (const char *service, const char *option,
 							const char *value)
 {
 	FILE *fp;
@@ -488,7 +488,7 @@ bool rc_set_service_option (const char *service, const char *option,
 	free (file);
 	return (retval);
 }
-librc_hidden_def(rc_set_service_option)
+librc_hidden_def(rc_service_option_set)
 
 static pid_t _exec_service (const char *service, const char *arg)
 {

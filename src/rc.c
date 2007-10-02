@@ -362,14 +362,14 @@ static int do_options (int argc, char **argv)
 		eerrorx ("%s: no option specified", applet);
 
 	if (strcmp (applet, "get_options") == 0) {
-		char *option = rc_get_service_option (service, argv[0]);
+		char *option = rc_service_option_get (service, argv[0]);
 		if (option) {
 			printf ("%s", option);
 			free (option);
 			ok = true;
 		}
 	} else if (strcmp (applet, "save_options") == 0)
-		ok = rc_set_service_option (service, argv[0], argv[1]);
+		ok = rc_service_option_set (service, argv[0], argv[1]);
 	else
 		eerrorx ("%s: unknown applet", applet);
 

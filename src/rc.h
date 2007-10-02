@@ -135,13 +135,13 @@ bool rc_service_wait (const char *service);
  * @param service to check
  * @param option to load
  * @return saved value */
-char *rc_get_service_option (const char *service, const char *option);
+char *rc_service_option_get (const char *service, const char *option);
 /*! Save a persistent value for a service
  * @param service to save for
  * @param option to save
  * @param value of the option
  * @return true if saved, otherwise false */
-bool rc_set_service_option (const char *service, const char *option,
+bool rc_service_option_set (const char *service, const char *option,
 							const char *value);
 /*! Save the arguments to find a running daemon
  * @param service to save arguments for
