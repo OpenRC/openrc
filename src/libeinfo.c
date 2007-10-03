@@ -41,6 +41,7 @@ hidden_proto(einfovn)
 hidden_proto(elog)
 hidden_proto(eoutdent)
 hidden_proto(eoutdentv)
+hidden_proto(eprefix)
 hidden_proto(ewarn)
 hidden_proto(ewarnn)
 hidden_proto(ewarnv)
@@ -199,6 +200,7 @@ void eprefix (const char *prefix)
 {
 	_eprefix = prefix;
 }
+hidden_def(eprefix)
 
 static void elogv (int level, const char *fmt, va_list ap)
 {
