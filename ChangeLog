@@ -3,6 +3,7 @@
 
   03 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
+    librc.so and libeinfo.so now have symbol versions.
     Default to tunctl so we can create the device as a specific
     user, #194588 thanks to Jaco Kroon.
 

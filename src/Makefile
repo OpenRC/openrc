@@ -108,14 +108,20 @@ all: .depend $(TARGET)
 
 $(LIBEINFOOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
-$(LIBEINFOSO): $(LIBEINFOOBJS) 
-	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBEINFOSO) -o $(LIBEINFOSO) $(LIBEINFOOBJS) $(LDLIBS) $(LDLIBS_LIBEINFO)
+$(LIBEINFOSO): einfo.map $(LIBEINFOOBJS) 
+	$(CC) $(LDFLAGS) -fPIC -shared \
+		-Wl,-soname,$(LIBEINFOSO) \
+		-Wl,-version-script einfo.map \
+		-o $(LIBEINFOSO) $(LIBEINFOOBJS) $(LDLIBS) $(LDLIBS_LIBEINFO)
 	ln -sf $(LIBEINFOSO) libeinfo.so
 
 $(LIBRCOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
-$(LIBRCSO): $(LIBRCOBJS)
-	$(CC) $(LDFLAGS) -fPIC -shared -Wl,-soname,$(LIBRCSO) -o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS) $(LDLIBS_LIBRC)
+$(LIBRCSO): rc.map $(LIBRCOBJS)
+	$(CC) $(LDFLAGS) -fPIC -shared \
+		-Wl,-soname,$(LIBRCSO) \
+		-Wl,-version-script rc.map \
+		-o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS) $(LDLIBS_LIBRC)
 	ln -sf $(LIBRCSO) librc.so
 
 $(RCOBJS):
