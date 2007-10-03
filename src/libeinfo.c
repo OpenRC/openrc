@@ -176,6 +176,15 @@ static bool colour_terminal (void)
 static int get_term_columns (FILE *stream)
 {
 	struct winsize ws;
+	char *env = getenv ("COLUMNS");
+	char *p;
+	int i;
+
+	if (env) {
+		i = strtol (env, &p, 10);
+		if (! *p)
+			return (i);
+	}
 
 	if (ioctl (fileno (stream), TIOCGWINSZ, &ws) == 0)
 		return (ws.ws_col);
