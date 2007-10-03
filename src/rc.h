@@ -59,25 +59,16 @@ typedef enum
 	RC_SERVICE_WASINACTIVE = 0x0800,
 } rc_service_state_t;
 
-/*! Resolves a service name to its full path.
- * @param service to check
- * @return pointer to full path of service */
-char *rc_service_resolve (const char *service);
-/*! Checks if a service exists or not.
- * @param service to check
- * @return true if service exists, otherwise false */
-bool rc_service_exists (const char *service);
-
-/*! Lists the extra options a service has
- * @param service to load the options from
- * @return NULL terminated string list of options */
-char **rc_service_options (const char *service);
-
 /*! Returns a description of what the service and/or option does.
  * @param service to check
  * @param option to check (if NULL, service description)
  * @return a newly allocated pointer to the description */
 char *rc_service_description (const char *service, const char *option);
+
+/*! Checks if a service exists or not.
+ * @param service to check
+ * @return true if service exists, otherwise false */
+bool rc_service_exists (const char *service);
 
 /*! Checks if a service is in a runlevel
  * @param service to check
@@ -85,31 +76,36 @@ char *rc_service_description (const char *service, const char *option);
  * @return true if service is in the runlevel, otherwise false */
 bool rc_service_in_runlevel (const char *service, const char *runlevel);
 
-/*! Checks if a service in in a state
- * @param service to check
- * @return state of the service */
-rc_service_state_t rc_service_state (const char *service);
-
 /*! Marks the service state
  * @param service to mark
  * @param state service should be in
  * @return true if service state change was successful, otherwise false */
 bool rc_service_mark (const char *service, rc_service_state_t state);
 
-/*! Stop a service
- * @param service to stop
- * @return pid of service stopping process */
-pid_t rc_service_stop (const char *service);
+/*! Lists the extra options a service has
+ * @param service to load the options from
+ * @return NULL terminated string list of options */
+char **rc_service_options (const char *service);
+
+/*! Resolves a service name to its full path.
+ * @param service to check
+ * @return pointer to full path of service */
+char *rc_service_resolve (const char *service);
+
+/*! Checks if a service in in a state
+ * @param service to check
+ * @return state of the service */
+rc_service_state_t rc_service_state (const char *service);
 
 /*! Start a service
  * @param service to start
  * @return pid of the service starting process */
 pid_t rc_service_start (const char *service);
 
-/*! Wait for a process to finish
- * @param pid to wait for
- * @return exit status of the process */
-int rc_waitpid (pid_t pid); 
+/*! Stop a service
+ * @param service to stop
+ * @return pid of service stopping process */
+pid_t rc_service_stop (const char *service);
 
 /*! Schedule a service to be started when another service starts
  * @param service that starts the scheduled service when started
@@ -212,6 +208,19 @@ char **rc_services_in_state (rc_service_state_t state);
  * @return  NULL terminated list of services */
 char **rc_services_scheduled (const char *service);
 
+/*! Checks that all daemons started with start-stop-daemon by the service
+ * are still running.
+ * @param service to check
+ * @return true if all daemons started are still running, otherwise false */
+bool rc_service_daemons_crashed (const char *service);
+
+
+/*! Wait for a process to finish
+ * @param pid to wait for
+ * @return exit status of the process */
+int rc_waitpid (pid_t pid); 
+
+
 /*! Find processes based on criteria.
  * All of these are optional.
  * pid overrides anything else.
@@ -223,11 +232,6 @@ char **rc_services_scheduled (const char *service);
  * @return NULL terminated list of pids */
 pid_t *rc_find_pids (const char *exec, const char *cmd,
 					 uid_t uid, pid_t pid);
-/*! Checks that all daemons started with start-stop-daemon by the service
- * are still running.
- * @param service to check
- * @return true if all daemons started are still running, otherwise false */
-bool rc_service_daemons_crashed (const char *service);
 
 /*! @name Dependency options
  * These options can change the services found by the rc_get_depinfo and
