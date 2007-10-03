@@ -87,25 +87,24 @@ bool rc_service_mark (const char *service, rc_service_state_t state);
  * @return NULL terminated string list of options */
 char **rc_service_options (const char *service);
 
+/*! Return a saved value for a service
+ * @param service to check
+ * @param option to load
+ * @return saved value */
+char *rc_service_value_get (const char *service, const char *option);
+
+/*! Save a persistent value for a service
+ * @param service to save for
+ * @param option to save
+ * @param value of the option
+ * @return true if saved, otherwise false */
+bool rc_service_value_set (const char *service, const char *option,
+							const char *value);
+
 /*! Resolves a service name to its full path.
  * @param service to check
  * @return pointer to full path of service */
 char *rc_service_resolve (const char *service);
-
-/*! Checks if a service in in a state
- * @param service to check
- * @return state of the service */
-rc_service_state_t rc_service_state (const char *service);
-
-/*! Start a service
- * @param service to start
- * @return pid of the service starting process */
-pid_t rc_service_start (const char *service);
-
-/*! Stop a service
- * @param service to stop
- * @return pid of service stopping process */
-pid_t rc_service_stop (const char *service);
 
 /*! Schedule a service to be started when another service starts
  * @param service that starts the scheduled service when started
@@ -122,23 +121,26 @@ char **rc_services_scheduled_by (const char *service);
  * @param service to clear */
 void rc_service_schedule_clear (const char *service);
 
+/*! Checks if a service in in a state
+ * @param service to check
+ * @return state of the service */
+rc_service_state_t rc_service_state (const char *service);
+
+/*! Start a service
+ * @param service to start
+ * @return pid of the service starting process */
+pid_t rc_service_start (const char *service);
+
+/*! Stop a service
+ * @param service to stop
+ * @return pid of service stopping process */
+pid_t rc_service_stop (const char *service);
+
 /*! Wait for a service to finish
  * @param service to wait for
  * @return true if service finished before timeout, otherwise false */
 bool rc_service_wait (const char *service);
 
-/*! Return a saved value for a service
- * @param service to check
- * @param option to load
- * @return saved value */
-char *rc_service_option_get (const char *service, const char *option);
-/*! Save a persistent value for a service
- * @param service to save for
- * @param option to save
- * @param value of the option
- * @return true if saved, otherwise false */
-bool rc_service_option_set (const char *service, const char *option,
-							const char *value);
 /*! Save the arguments to find a running daemon
  * @param service to save arguments for
  * @param exec that we started

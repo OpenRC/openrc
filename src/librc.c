@@ -131,7 +131,7 @@ bool rc_runlevel_exists (const char *runlevel)
 }
 librc_hidden_def(rc_runlevel_exists)
 
-/* Resolve a service name to it's full path */
+	/* Resolve a service name to it's full path */
 char *rc_service_resolve (const char *service)
 {
 	char buffer[PATH_MAX];
@@ -441,7 +441,7 @@ rc_service_state_t rc_service_state (const char *service)
 }
 librc_hidden_def(rc_service_state)
 
-char *rc_service_option_get (const char *service, const char *option)
+char *rc_service_value_get (const char *service, const char *option)
 {
 	FILE *fp;
 	char buffer[RC_LINEBUFFER];
@@ -459,10 +459,10 @@ char *rc_service_option_get (const char *service, const char *option)
 
 	return (value);
 }
-librc_hidden_def(rc_service_option_get)
+librc_hidden_def(rc_service_value_get)
 
-bool rc_service_option_set (const char *service, const char *option,
-							const char *value)
+bool rc_service_value_set (const char *service, const char *option,
+						   const char *value)
 {
 	FILE *fp;
 	char *path = rc_strcatpaths (RC_SVCDIR, "options", service, (char *) NULL);
@@ -488,7 +488,7 @@ bool rc_service_option_set (const char *service, const char *option,
 	free (file);
 	return (retval);
 }
-librc_hidden_def(rc_service_option_set)
+librc_hidden_def(rc_service_value_set)
 
 static pid_t _exec_service (const char *service, const char *arg)
 {
@@ -528,7 +528,7 @@ static pid_t _exec_service (const char *service, const char *arg)
 
 	if (pid == -1)
 		fprintf (stderr, "vfork: %s\n", strerror (errno));
-	
+
 	return (pid);
 }
 
