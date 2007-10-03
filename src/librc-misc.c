@@ -419,7 +419,7 @@ char **rc_config_list (const char *file)
 }
 librc_hidden_def(rc_config_list)
 
-char **rc_filter_env (void)
+char **rc_env_filter (void)
 {
 	char **env = NULL;
 	char **whitelist = NULL;
@@ -517,7 +517,7 @@ char **rc_filter_env (void)
 
 	return (env);
 }
-librc_hidden_def(rc_filter_env)
+librc_hidden_def(rc_env_filter)
 
 /* Other systems may need this at some point, but for now it's Linux only */
 #ifdef __linux__
@@ -553,7 +553,7 @@ static bool file_regex (const char *file, const char *regex)
 }
 #endif
 
-char **rc_make_env (void)
+char **rc_env_config (void)
 {
 	char **env = NULL;
 	char *line;
@@ -695,4 +695,4 @@ char **rc_make_env (void)
 	free (runlevel);
 	return (env);
 }
-librc_hidden_def(rc_make_env)
+librc_hidden_def(rc_env_config)

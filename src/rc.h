@@ -357,11 +357,11 @@ char *rc_config_value (char **list, const char *entry);
 
 /*! Return a NULL terminated string list of variables allowed through
  * from the current environemnt. */
-char **rc_filter_env (void);
+char **rc_env_filter (void);
 
 /*! Return a NULL terminated string list of enviroment variables made from
  * our configuration files. */
-char **rc_make_env (void);
+char **rc_env_config (void);
 
 /*! @name String List functions
  * Handy functions for dealing with string arrays of char **.

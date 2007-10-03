@@ -1031,8 +1031,8 @@ int runscript (int argc, char **argv)
 	if ((softlevel = rc_xstrdup (getenv ("RC_SOFTLEVEL"))) == NULL) {
 		/* Ensure our environment is pure
 		   Also, add our configuration to it */
-		tmplist = rc_make_env();
-		env = rc_filter_env ();
+		tmplist = rc_env_config ();
+		env = rc_env_filter ();
 		rc_strlist_join (&env, tmplist);
 		rc_strlist_free (tmplist);
 		tmplist = NULL;
