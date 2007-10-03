@@ -93,10 +93,10 @@ int rc_status (int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts, (int *) 0)) != -1)
 		switch (opt) {
 			case 'a':
-				levels = rc_get_runlevels ();
+				levels = rc_runlevel_list ();
 				break;
 			case 'l':
-				levels = rc_get_runlevels ();
+				levels = rc_runlevel_list ();
 				STRLIST_FOREACH (levels, level, i)
 					printf ("%s\n", level);
 				rc_strlist_free (levels);
@@ -109,7 +109,7 @@ int rc_status (int argc, char **argv)
 				exit (EXIT_SUCCESS);
 			case 'u':
 				services = rc_services_in_runlevel (NULL);
-				levels = rc_get_runlevels ();
+				levels = rc_runlevel_list ();
 				STRLIST_FOREACH (services, service, i) {
 					bool found = false;
 					STRLIST_FOREACH (levels, level, j)

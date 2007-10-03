@@ -62,7 +62,7 @@ bool rc_runlevel_stopping (void)
 }
 librc_hidden_def(rc_runlevel_stopping)
 
-char **rc_get_runlevels (void)
+char **rc_runlevel_list (void)
 {
 	char **dirs = rc_ls_dir (RC_RUNLEVELDIR, 0);
 	char **runlevels = NULL;
@@ -79,7 +79,7 @@ char **rc_get_runlevels (void)
 
 	return (runlevels);
 }
-librc_hidden_def(rc_get_runlevels)
+librc_hidden_def(rc_runlevel_list)
 
 char *rc_runlevel_get (void)
 {

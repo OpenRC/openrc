@@ -208,7 +208,7 @@ int rc_update (int argc, char **argv)
 		if (service)
 			rc_strlist_add (&runlevels, service);
 		if (! runlevels)
-			runlevels = rc_get_runlevels ();
+			runlevels = rc_runlevel_list ();
 
 		show (runlevels, verbose);
 	} else {
@@ -226,7 +226,7 @@ int rc_update (int argc, char **argv)
 			else
 				eerrorx ("%s: invalid action", applet);
 			if (! runlevels)
-				runlevels = rc_get_runlevels ();
+				runlevels = rc_runlevel_list ();
 			STRLIST_FOREACH (runlevels, runlevel, i) {
 				ssize_t ret = actfunc (runlevel, service);
 				if (ret < 0)

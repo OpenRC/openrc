@@ -180,7 +180,7 @@ bool rc_runlevel_exists (const char *runlevel);
 
 /*! Return a NULL terminated list of runlevels
  * @return a NULL terminated list of runlevels */
-char **rc_get_runlevels (void);
+char **rc_runlevel_list (void);
 
 /*! Is the runlevel starting?
  * @return true if yes, otherwise false */
