@@ -378,7 +378,7 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 			rc_rm_dir (dir, true);
 		free (dir);
 
-		rc_schedule_clear (service);
+		rc_service_schedule_clear (service);
 	}
 
 	/* These are final states, so remove us from scheduled */
@@ -566,7 +566,7 @@ pid_t rc_service_start (const char *service)
 }
 librc_hidden_def(rc_service_start)
 
-bool rc_schedule_start_service (const char *service,
+bool rc_service_schedule_start (const char *service,
 								const char *service_to_start)
 {
 	char *dir;
@@ -600,9 +600,9 @@ bool rc_schedule_start_service (const char *service,
 
 	return (retval);
 }
-librc_hidden_def(rc_schedule_start_service)
+librc_hidden_def(rc_service_schedule_start)
 
-void rc_schedule_clear (const char *service)
+void rc_service_schedule_clear (const char *service)
 {
 	char *svc  = rc_xstrdup (service);
 	char *dir = rc_strcatpaths (RC_SVCDIR, "scheduled", basename (svc),
@@ -613,7 +613,7 @@ void rc_schedule_clear (const char *service)
 		rc_rm_dir (dir, true);
 	free (dir);
 }
-librc_hidden_def(rc_schedule_clear)
+librc_hidden_def(rc_service_schedule_clear)
 
 bool rc_service_wait (const char *service)
 {

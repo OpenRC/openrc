@@ -237,7 +237,7 @@ static void start_services (char **list) {
 				if (state & RC_SERVICE_INACTIVE ||
 					state & RC_SERVICE_WASINACTIVE)
 				{
-					rc_schedule_start_service (service, svc);
+					rc_service_schedule_start (service, svc);
 					ewarn ("WARNING: %s is scheduled to started when %s has started",
 						   svc, applet);
 				} else
@@ -680,7 +680,7 @@ static void svc_start (bool deps)
 			types = NULL;
 			rc_strlist_add (&types, "iprovide");
 			STRLIST_FOREACH (tmplist, svc, i) {
-				rc_schedule_start_service (svc, service);
+				rc_service_schedule_start (svc, service);
 
 				rc_strlist_free (svclist);
 				svclist = NULL;
@@ -689,7 +689,7 @@ static void svc_start (bool deps)
 				providelist = rc_deptree_depends (deptree, types, svclist,
 											  softlevel, depoptions);
 				STRLIST_FOREACH (providelist, svc2, j) 
-					rc_schedule_start_service (svc2, service);
+					rc_service_schedule_start (svc2, service);
 
 				len += strlen (svc) + 2;
 				n++;
@@ -1244,7 +1244,7 @@ int runscript (int argc, char **argv)
 						int j;
 						STRLIST_FOREACH (restart_services, svc, j)
 							if (rc_service_state (svc) & RC_SERVICE_STOPPED)
-								rc_schedule_start_service (service, svc);
+								rc_service_schedule_start (service, svc);
 					}
 				}
 			} else if (strcmp (optarg, "zap") == 0) {

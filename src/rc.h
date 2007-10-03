@@ -110,7 +110,7 @@ pid_t rc_service_stop (const char *service);
 /*! Schedule a service to be started when another service starts
  * @param service that starts the scheduled service when started
  * @param service_to_start service that will be started */
-bool rc_schedule_start_service (const char *service,
+bool rc_service_schedule_start (const char *service,
 								const char *service_to_start);
 /*! Return a NULL terminated list of services that are scheduled to start
  * when the given service has started
@@ -120,7 +120,7 @@ char **rc_services_scheduled_by (const char *service);
 
 /*! Clear the list of services scheduled to be started by this service
  * @param service to clear */
-void rc_schedule_clear (const char *service);
+void rc_service_schedule_clear (const char *service);
 
 /*! Wait for a service to finish
  * @param service to wait for
