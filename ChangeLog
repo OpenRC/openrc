@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  03 Oct 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Default to tunctl so we can create the device as a specific
+    user, #194588 thanks to Jaco Kroon.
+
   28 Sep 2007; Roy Marples <uberlord@gentoo.org>:
 
     rc_service_state now returns the state as a mask, which means that
