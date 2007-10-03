@@ -137,10 +137,13 @@ static bool is_env (const char *var, const char *val)
 	return (strcasecmp (v, val) ? false : true);
 }
 
-static bool colour_terminal (void)
+static bool colour_terminal (FILE *f)
 {
 	static int in_colour = -1;
 	int i = 0;
+
+	if (f && ! isatty (fileno (f)))
+		return (false);
 
 	if (is_env ("RC_NOCOLOR", "yes"))
 		return (false);
@@ -192,7 +195,8 @@ static int get_term_columns (FILE *stream)
 	return (DEFAULT_COLS);
 }
 
-void eprefix (const char *prefix) {
+void eprefix (const char *prefix)
+{
 	_eprefix = prefix;
 }
 
@@ -244,10 +248,11 @@ static int _eindent (FILE *stream)
 	return (fprintf (stream, "%s", indent));
 }
 
-const char *ecolor (einfo_color_t color) {
+static const char *_ecolor (FILE *f, einfo_color_t color)
+{
 	const char *col = NULL;
 
-	if (! colour_terminal ())
+	if (! colour_terminal (f))
 		return ("");
 	
 	switch (color) {
@@ -280,10 +285,15 @@ const char *ecolor (einfo_color_t color) {
 }
 hidden_def(ecolor)
 
+const char *ecolor (einfo_color_t color)
+{
+	return (_ecolor (NULL, color));
+}
+
 #define EINFOVN(_file, _color) \
 		if (_eprefix) \
-	fprintf (_file, "%s%s%s|", ecolor (_color), _eprefix, ecolor (ECOLOR_NORMAL)); \
-	fprintf (_file, " %s*%s ", ecolor (_color), ecolor (ECOLOR_NORMAL)); \
+	fprintf (_file, "%s%s%s|", _ecolor (_file, _color), _eprefix, _ecolor (_file, ECOLOR_NORMAL)); \
+	fprintf (_file, " %s*%s ", _ecolor (_file, _color), _ecolor (_file, ECOLOR_NORMAL)); \
 	retval += _eindent (_file); \
 { \
 	va_list _ap; \
@@ -291,7 +301,7 @@ hidden_def(ecolor)
 	retval += vfprintf (_file, fmt, _ap) + 3; \
 	va_end (_ap); \
 } \
-	if (colour_terminal ()) \
+	if (colour_terminal (_file)) \
 	fprintf (_file, ECOLOR_FLUSH_A);
 
 static int _einfovn (const char *fmt, va_list ap)
@@ -460,7 +470,7 @@ int ebegin (const char *fmt, ...)
 	retval = _einfovn (fmt, ap);
 	va_end (ap);
 	retval += printf (" ...");
-	if (colour_terminal ())
+	if (colour_terminal (stdout))
 		retval += printf ("\n");
 
 	return (retval);
@@ -489,7 +499,7 @@ static void _eend (FILE *fp, int col, einfo_color_t color, const char *msg)
 	if (term_is_cons25)
 		cols--;
 
-	if (cols > 0 && colour_terminal ()) {
+	if (cols > 0 && colour_terminal (fp)) {
 		fprintf (fp, "\033[A\033[%dC %s[ %s%s %s]%s\n", cols,
 				 ecolor (ECOLOR_BRACKET), ecolor (color), msg,
 				 ecolor (ECOLOR_BRACKET), ecolor (ECOLOR_NORMAL));
@@ -696,7 +706,7 @@ int ebeginv (const char *fmt, ...)
 	va_start (ap, fmt);
 	retval = _einfovn (fmt, ap);
 	retval += printf (" ...");
-	if (colour_terminal ())
+	if (colour_terminal (stdout))
 		retval += printf ("\n");
 	va_end (ap);
 
