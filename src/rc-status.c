@@ -30,7 +30,7 @@ static void print_level (char *level)
 static void print_service (char *service)
 {
 	char status[10];
-	int cols =  printf (" %s\n", service);
+	int cols =  printf (" %s", service);
 	rc_service_state_t state = rc_service_state (service);
 	einfo_color_t color = ECOLOR_BAD;
 
@@ -54,6 +54,9 @@ static void print_service (char *service)
 		color = ECOLOR_WARN;
 	} else
 		snprintf (status, sizeof (status), " stopped ");
+
+	if (! rc_env_bool ("RC_NOCOLOR"))
+		printf ("\n");
 	ebracket (cols, color, status);
 }
 
