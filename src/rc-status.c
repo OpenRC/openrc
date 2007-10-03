@@ -55,7 +55,7 @@ static void print_service (char *service)
 	} else
 		snprintf (status, sizeof (status), " stopped ");
 
-	if (! rc_env_bool ("RC_NOCOLOR"))
+	if (isatty (fileno (stdout)) && ! rc_env_bool ("RC_NOCOLOR"))
 		printf ("\n");
 	ebracket (cols, color, status);
 }
