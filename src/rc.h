@@ -30,9 +30,31 @@
 #define RC_LEVEL_SHUTDOWN   "shutdown"
 #define RC_LEVEL_REBOOT     "reboot"
 
-/*! @name rc_ls_dir options */
-/*! Ensure that an init.d service exists for each file returned */
-#define RC_LS_INITD	0x01
+/*! Return the current runlevel.
+ * @return the current runlevel */
+char *rc_runlevel_get (void);
+
+/*! Checks if the runlevel exists or not
+ * @param runlevel to check
+ * @return true if the runlevel exists, otherwise false */
+bool rc_runlevel_exists (const char *runlevel);
+
+/*! Return a NULL terminated list of runlevels
+ * @return a NULL terminated list of runlevels */
+char **rc_runlevel_list (void);
+
+/*! Set the runlevel.
+ * This just changes the stored runlevel and does not start or stop any services.
+ * @param runlevel to store */
+bool rc_runlevel_set (const char *runlevel);
+
+/*! Is the runlevel starting?
+ * @return true if yes, otherwise false */
+bool rc_runlevel_starting (void);
+
+/*! Is the runlevel stopping?
+ * @return true if yes, otherwise false */
+bool rc_runlevel_stopping (void);
 
 /*! @name RC
  * A service can be given as a full path or just its name.
@@ -58,6 +80,18 @@ typedef enum
 	RC_SERVICE_SCHEDULED   = 0x0400,
 	RC_SERVICE_WASINACTIVE = 0x0800,
 } rc_service_state_t;
+
+/*! Add the service to the runlevel
+ * @param runlevel to add to
+ * @param service to add
+ * @return true if successful, otherwise false */
+bool rc_service_add (const char *runlevel, const char *service);
+
+/*! Remove the service from the runlevel
+ * @param runlevel to remove from
+ * @param service to remove
+ * @return true if sucessful, otherwise false */
+bool rc_service_delete (const char *runlevel, const char *service);
 
 /*! Save the arguments to find a running daemon
  * @param service to save arguments for
@@ -97,19 +131,10 @@ bool rc_service_mark (const char *service, rc_service_state_t state);
  * @return NULL terminated string list of options */
 char **rc_service_options (const char *service);
 
-/*! Return a saved value for a service
+/*! Check if the service is allowed to be hot/cold plugged
  * @param service to check
- * @param option to load
- * @return saved value */
-char *rc_service_value_get (const char *service, const char *option);
-
-/*! Save a persistent value for a service
- * @param service to save for
- * @param option to save
- * @param value of the option
- * @return true if saved, otherwise false */
-bool rc_service_value_set (const char *service, const char *option,
-							const char *value);
+ * @return true if allowed, otherwise false */
+bool rc_service_plugable (char *service);
 
 /*! Resolves a service name to its full path.
  * @param service to check
@@ -146,11 +171,6 @@ pid_t rc_service_start (const char *service);
  * @return pid of service stopping process */
 pid_t rc_service_stop (const char *service);
 
-/*! Wait for a service to finish
- * @param service to wait for
- * @return true if service finished before timeout, otherwise false */
-bool rc_service_wait (const char *service);
-
 /*! Check if the service started the daemon
  * @param service to check
  * @param exec to check
@@ -159,47 +179,24 @@ bool rc_service_wait (const char *service);
 bool rc_service_started_daemon (const char *service, const char *exec,
 								int indx);
 
-/*! Check if the service is allowed to be hot/cold plugged
+/*! Return a saved value for a service
  * @param service to check
- * @return true if allowed, otherwise false */
-bool rc_service_plugable (char *service);
+ * @param option to load
+ * @return saved value */
+char *rc_service_value_get (const char *service, const char *option);
 
-/*! Return the current runlevel.
- * @return the current runlevel */
-char *rc_runlevel_get (void);
+/*! Save a persistent value for a service
+ * @param service to save for
+ * @param option to save
+ * @param value of the option
+ * @return true if saved, otherwise false */
+bool rc_service_value_set (const char *service, const char *option,
+							const char *value);
 
-/*! Set the runlevel.
- * This just changes the stored runlevel and does not start or stop any services.
- * @param runlevel to store */
-bool rc_runlevel_set (const char *runlevel);
-
-/*! Checks if the runlevel exists or not
- * @param runlevel to check
- * @return true if the runlevel exists, otherwise false */
-bool rc_runlevel_exists (const char *runlevel);
-
-/*! Return a NULL terminated list of runlevels
- * @return a NULL terminated list of runlevels */
-char **rc_runlevel_list (void);
-
-/*! Is the runlevel starting?
- * @return true if yes, otherwise false */
-bool rc_runlevel_starting (void);
-/*! Is the runlevel stopping?
- * @return true if yes, otherwise false */
-bool rc_runlevel_stopping (void);
-
-/*! Add the service to the runlevel
- * @param runlevel to add to
- * @param service to add
- * @return true if successful, otherwise false */
-bool rc_service_add (const char *runlevel, const char *service);
-
-/*! Remove the service from the runlevel
- * @param runlevel to remove from
- * @param service to remove
- * @return true if sucessful, otherwise false */
-bool rc_service_delete (const char *runlevel, const char *service);
+/*! Wait for a service to finish
+ * @param service to wait for
+ * @return true if service finished before timeout, otherwise false */
+bool rc_service_wait (const char *service);
 
 /*! List the services in a runlevel
  * @param runlevel to list
@@ -348,91 +345,15 @@ int rc_plugin_hook (rc_hook_t hook, const char *name);
  * variables they wish. Variables should be separated by NULLs. */
 extern FILE *rc_environ_fd;
 
-/*! @name Memory Allocation
- * Ensure that if we cannot allocate the memory then we exit */
-/*@{*/
-
-/*! Allocate a block of memory
- * @param size of memory to allocate
- * @return pointer to memory */
-void *rc_xmalloc (size_t size);
-
-/*! Re-size a block of memory
- * @param ptr to the block of memory to re-size
- * @param size memory should be
- * @return pointer to memory block */
-void *rc_xrealloc (void *ptr, size_t size);
-
-/*! Duplicate a NULL terminated string
- * @param str to duplicate
- * @return pointer to the new string */
-char *rc_xstrdup (const char *str);
-/*@}*/
-
-/*! @name Utility
- * Although not RC specific functions, they are used by the supporting
- * applications */
-
-/*! Concatenate paths adding '/' if needed. The resultant pointer should be
- * freed when finished with.
- * @param path1 starting path
- * @param paths NULL terminated list of paths to add
- * @return pointer to the new path */
-char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
-
-/*! Check if an environment variable is a boolean and return it's value.
- * If variable is not a boolean then we set errno to be ENOENT when it does
- * not exist or EINVAL if it's not a boolean.
- * @param variable to check
- * @return true if it matches true, yes or 1, false if otherwise. */
-bool rc_env_bool (const char *variable);
-
-/*! Check if the file exists or not
- * @param pathname to check
- * @return true if it exists, otherwise false */
-bool rc_exists (const char *pathname);
-
-/*! Check if the file is a real file
- * @param pathname to check
- * @return true if it's a real file, otherwise false */
-bool rc_is_file (const char *pathname);
-
-/*! Check if the file is a symbolic link or not
- * @param pathname to check
- * @return true if it's a symbolic link, otherwise false */
-bool rc_is_link (const char *pathname);
-
-/*! Check if the file is a directory or not
- * @param pathname to check
- * @return true if it's a directory, otherwise false */
-bool rc_is_dir (const char *pathname);
-
-/*! Check if the file is marked executable or not
- * @param pathname to check
- * @return true if it's marked executable, otherwise false */
-bool rc_is_exec (const char *pathname);
-
-/*! Return a NULL terminted sorted list of the contents of the directory
- * @param dir to list
- * @param options any options to apply
- * @return NULL terminated list */
-char **rc_ls_dir (const char *dir, int options);
-
-/*! Remove a directory
- * @param pathname to remove
- * @param top remove the top level directory too
- * @return true if successful, otherwise false */
-bool rc_rm_dir (const char *pathname, bool top);
-
 /*! @name Configuration */
 /*! Return a NULL terminated list of non comment lines from a file. */
-char **rc_get_list (const char *file);
+char **rc_config_list (const char *file);
 
 /*! Return a NULL terminated list of key=value lines from a file. */
-char **rc_get_config (const char *file);
+char **rc_config_load (const char *file);
 
 /*! Return the value of the entry from a key=value list. */
-char *rc_get_config_entry (char **list, const char *entry);
+char *rc_config_value (char **list, const char *entry);
 
 /*! Return a NULL terminated string list of variables allowed through
  * from the current environemnt. */
@@ -502,5 +423,85 @@ void rc_strlist_reverse (char **list);
 /*! Frees each item on the list and the list itself.
  * @param list to free */
 void rc_strlist_free (char **list);
+
+/*! @name Memory Allocation
+ * Ensure that if we cannot allocate the memory then we exit */
+/*@{*/
+
+/*! Allocate a block of memory
+ * @param size of memory to allocate
+ * @return pointer to memory */
+void *rc_xmalloc (size_t size);
+
+/*! Re-size a block of memory
+ * @param ptr to the block of memory to re-size
+ * @param size memory should be
+ * @return pointer to memory block */
+void *rc_xrealloc (void *ptr, size_t size);
+
+/*! Duplicate a NULL terminated string
+ * @param str to duplicate
+ * @return pointer to the new string */
+char *rc_xstrdup (const char *str);
+/*@}*/
+
+/*! @name Utility
+ * Although not RC specific functions, they are used by the supporting
+ * applications */
+
+/*! Concatenate paths adding '/' if needed. The resultant pointer should be
+ * freed when finished with.
+ * @param path1 starting path
+ * @param paths NULL terminated list of paths to add
+ * @return pointer to the new path */
+char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
+
+/*! Check if an environment variable is a boolean and return it's value.
+ * If variable is not a boolean then we set errno to be ENOENT when it does
+ * not exist or EINVAL if it's not a boolean.
+ * @param variable to check
+ * @return true if it matches true, yes or 1, false if otherwise. */
+bool rc_env_bool (const char *variable);
+
+/*! Check if the file exists or not
+ * @param pathname to check
+ * @return true if it exists, otherwise false */
+bool rc_exists (const char *pathname);
+
+/*! Check if the file is a real file
+ * @param pathname to check
+ * @return true if it's a real file, otherwise false */
+bool rc_is_file (const char *pathname);
+
+/*! Check if the file is a symbolic link or not
+ * @param pathname to check
+ * @return true if it's a symbolic link, otherwise false */
+bool rc_is_link (const char *pathname);
+
+/*! Check if the file is a directory or not
+ * @param pathname to check
+ * @return true if it's a directory, otherwise false */
+bool rc_is_dir (const char *pathname);
+
+/*! Check if the file is marked executable or not
+ * @param pathname to check
+ * @return true if it's marked executable, otherwise false */
+bool rc_is_exec (const char *pathname);
+
+/*! @name rc_ls_dir options */
+/*! Ensure that an init.d service exists for each file returned */
+#define RC_LS_INITD	0x01
+
+/*! Return a NULL terminted sorted list of the contents of the directory
+ * @param dir to list
+ * @param options any options to apply
+ * @return NULL terminated list */
+char **rc_ls_dir (const char *dir, int options);
+
+/*! Remove a directory
+ * @param pathname to remove
+ * @param top remove the top level directory too
+ * @return true if successful, otherwise false */
+bool rc_rm_dir (const char *pathname, bool top);
 
 #endif

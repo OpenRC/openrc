@@ -285,7 +285,7 @@ bool rc_rm_dir (const char *pathname, bool top)
 }
 librc_hidden_def(rc_rm_dir)
 
-char **rc_get_config (const char *file)
+char **rc_config_load (const char *file)
 {
 	char **list = NULL;
 	FILE *fp;
@@ -367,9 +367,9 @@ char **rc_get_config (const char *file)
 
 	return (list);
 }
-librc_hidden_def(rc_get_config)
+librc_hidden_def(rc_config_load)
 
-char *rc_get_config_entry (char **list, const char *entry)
+char *rc_config_value (char **list, const char *entry)
 {
 	char *line;
 	int i;
@@ -383,9 +383,9 @@ char *rc_get_config_entry (char **list, const char *entry)
 
 	return (NULL);
 }
-librc_hidden_def(rc_get_config_entry)
+librc_hidden_def(rc_config_value)
 
-char **rc_get_list (const char *file)
+char **rc_config_list (const char *file)
 {
 	FILE *fp;
 	char buffer[RC_LINEBUFFER];
@@ -417,7 +417,7 @@ char **rc_get_list (const char *file)
 
 	return (list);
 }
-librc_hidden_def(rc_get_list)
+librc_hidden_def(rc_config_list)
 
 char **rc_filter_env (void)
 {
@@ -435,11 +435,11 @@ char **rc_filter_env (void)
 	char *e;
 	int pplen = strlen (PATH_PREFIX);
 
-	whitelist = rc_get_list (SYS_WHITELIST);
+	whitelist = rc_config_list (SYS_WHITELIST);
 	if (! whitelist)
 		fprintf (stderr, "system environment whitelist (" SYS_WHITELIST ") missing\n");
 
-	env = rc_get_list (USR_WHITELIST);
+	env = rc_config_list (USR_WHITELIST);
 	rc_strlist_join (&whitelist, env);
 	rc_strlist_free (env);
 	env = NULL;
@@ -448,7 +448,7 @@ char **rc_filter_env (void)
 		return (NULL);
 
 	if (rc_is_file (PROFILE_ENV))
-		profile = rc_get_config (PROFILE_ENV);
+		profile = rc_config_load (PROFILE_ENV);
 
 	STRLIST_FOREACH (whitelist, env_name, count) {
 		char *space = strchr (env_name, ' ');
@@ -461,7 +461,7 @@ char **rc_filter_env (void)
 			env_len = strlen (env_name) + strlen ("export ") + 1;
 			p = rc_xmalloc (sizeof (char *) * env_len);
 			snprintf (p, env_len, "export %s", env_name);
-			env_var = rc_get_config_entry (profile, p);
+			env_var = rc_config_value (profile, p);
 			free (p);
 		}
 
@@ -573,9 +573,9 @@ char **rc_make_env (void)
 	/* Don't trust environ for softlevel yet */
 	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, runlevel);
 	if (rc_exists (buffer))
-		config = rc_get_config (buffer);
+		config = rc_config_load (buffer);
 	else
-		config = rc_get_config (RC_CONFIG);
+		config = rc_config_load (RC_CONFIG);
 
 	STRLIST_FOREACH (config, line, i) {
 		p = strchr (line, '=');

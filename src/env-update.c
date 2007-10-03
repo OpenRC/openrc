@@ -143,7 +143,7 @@ int env_update (int argc, char **argv)
 			*(file + j - 1) != '~' &&
 			(j < 4 || strcmp (file + j - 4, ".bak") != 0) &&
 			(j < 5 || strcmp (file + j - 5, ".core") != 0))
-			entries = rc_get_config (path);
+			entries = rc_config_load (path);
 		free (path);
 
 		STRLIST_FOREACH (entries, entry, j) {
@@ -278,7 +278,7 @@ int env_update (int argc, char **argv)
 	}
 	fclose (fp);
 
-	ldent = rc_get_config_entry (envs, "LDPATH");
+	ldent = rc_config_value (envs, "LDPATH");
 
 	if (! ldent ||
 		(argc > 1 && argv[1] && strcmp (argv[1], "--no-ldconfig") == 0))
@@ -298,7 +298,7 @@ int env_update (int argc, char **argv)
 	if (ldconfig) {
 		/* Update ld.so.conf only if different */
 		if (rc_exists (LDSOCONF)) {
-			char **lines = rc_get_list (LDSOCONF);
+			char **lines = rc_config_list (LDSOCONF);
 			char *line;
 			ld = false;
 

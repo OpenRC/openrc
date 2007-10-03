@@ -629,7 +629,7 @@ bool rc_deptree_update_needed (void)
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
-	config = rc_get_list (RC_DEPCONFIG);
+	config = rc_config_list (RC_DEPCONFIG);
 	STRLIST_FOREACH (config, service, i) {
 		if (! is_newer_than (RC_DEPTREE, service)) {
 			newer = true;
