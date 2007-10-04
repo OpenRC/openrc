@@ -22,7 +22,7 @@
 
 #include <sys/types.h>
 #include <stdbool.h>
-#include <stdio.h>
+//#include <stdio.h>
 
 /*! @name Reserved runlevel names */
 #define RC_LEVEL_SYSINIT    "sysinit"
@@ -462,11 +462,6 @@ bool rc_env_bool (const char *variable);
  * @param pathname to check
  * @return true if it exists, otherwise false */
 bool rc_exists (const char *pathname);
-
-/*! Check if the file is a real file
- * @param pathname to check
- * @return true if it's a real file, otherwise false */
-bool rc_is_file (const char *pathname);
 
 /*! Check if the file is a symbolic link or not
  * @param pathname to check

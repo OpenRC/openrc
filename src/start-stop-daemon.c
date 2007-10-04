@@ -728,7 +728,7 @@ int start_stop_daemon (int argc, char **argv)
 			tmp = rc_strcatpaths (ch_root, exec, (char *) NULL);
 		else
 			tmp = exec;
-		if (! rc_is_file (tmp)) {
+		if (! rc_exists (tmp)) {
 			eerror ("%s: %s does not exist", applet, tmp);
 			if (ch_root)
 				free (tmp);
@@ -754,7 +754,7 @@ int start_stop_daemon (int argc, char **argv)
 		if (result < 1)
 			exit (result == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 
-		if (pidfile && rc_is_file (pidfile))
+		if (pidfile && rc_exists (pidfile))
 			unlink (pidfile);
 
 		if (svcname)

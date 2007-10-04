@@ -151,21 +151,6 @@ bool rc_exists (const char *pathname)
 }
 librc_hidden_def(rc_exists)
 
-bool rc_is_file (const char *pathname)
-{
-	struct stat buf;
-
-	if (! pathname)
-		return (false);
-
-	if (stat (pathname, &buf) == 0)
-		return (S_ISREG (buf.st_mode));
-
-	errno = 0;
-	return (false);
-}
-librc_hidden_def(rc_is_file)
-
 bool rc_is_dir (const char *pathname)
 {
 	struct stat buf;
@@ -447,7 +432,7 @@ char **rc_env_filter (void)
 	if (! whitelist)
 		return (NULL);
 
-	if (rc_is_file (PROFILE_ENV))
+	if (rc_exists (PROFILE_ENV))
 		profile = rc_config_load (PROFILE_ENV);
 
 	STRLIST_FOREACH (whitelist, env_name, count) {

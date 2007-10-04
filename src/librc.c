@@ -296,7 +296,7 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 	base = basename (svc);
 
 	if (state != RC_SERVICE_STOPPED) {
-		if (! rc_is_file(init)) {
+		if (! rc_exists (init)) {
 			free (init);
 			free (svc);
 			return (false);
@@ -498,7 +498,7 @@ static pid_t _exec_service (const char *service, const char *arg)
 	char *svc;
 
 	file = rc_service_resolve (service);
-	if (! rc_is_file (file)) {
+	if (! rc_exists (file)) {
 		rc_service_mark (service, RC_SERVICE_STOPPED);
 		free (file);
 		return (0);

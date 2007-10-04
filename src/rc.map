@@ -17,7 +17,6 @@ global:
 	rc_find_pids;
 	rc_is_dir;
 	rc_is_exec;
-	rc_is_file;
 	rc_is_link;
 	rc_ls_dir;
 	rc_rm_dir;
