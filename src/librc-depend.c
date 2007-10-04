@@ -149,7 +149,7 @@ rc_depinfo_t *rc_deptree_load (void)
 }
 librc_hidden_def(rc_deptree_load)
 
-rc_depinfo_t *rc_deptree_depinfo (rc_depinfo_t *deptree, const char *service)
+static rc_depinfo_t *get_depinfo (rc_depinfo_t *deptree, const char *service)
 {
 	rc_depinfo_t *di;
 
@@ -162,9 +162,8 @@ rc_depinfo_t *rc_deptree_depinfo (rc_depinfo_t *deptree, const char *service)
 
 	return (NULL);
 }
-librc_hidden_def(rc_deptree_depinfo)
 
-rc_deptype_t *rc_deptree_deptype (rc_depinfo_t *depinfo, const char *type)
+static rc_deptype_t *get_deptype (rc_depinfo_t *depinfo, const char *type)
 {
 	rc_deptype_t *dt;
 
@@ -177,7 +176,6 @@ rc_deptype_t *rc_deptree_deptype (rc_depinfo_t *depinfo, const char *type)
 
 	return (NULL);
 }
-librc_hidden_def(rc_deptree_deptype)
 
 static bool valid_service (const char *runlevel, const char *service)
 {
@@ -260,7 +258,7 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 	if (rc_service_exists (depinfo->service))
 		return (NULL);
 
-	dt = rc_deptree_deptype (depinfo, "providedby");
+	dt = get_deptype (depinfo, "providedby");
 	if (! dt)
 		return (NULL);
 
@@ -379,7 +377,7 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 
 	STRLIST_FOREACH (types, item, i)
 	{
-		if ((dt = rc_deptree_deptype (depinfo, item)))
+		if ((dt = get_deptype (depinfo, item)))
 		{
 			STRLIST_FOREACH (dt->services, service, j)
 			{
@@ -389,12 +387,12 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 					continue;
 				}
 
-				di = rc_deptree_depinfo (deptree, service);
+				di = get_depinfo (deptree, service);
 				if ((provides = get_provided (deptree, di, runlevel, options)))
 				{
 					STRLIST_FOREACH (provides, lp, k) 
 					{
-						di = rc_deptree_depinfo (deptree, lp);
+						di = get_depinfo (deptree, lp);
 						if (di && (strcmp (item, "ineed") == 0 ||
 								   strcmp (item, "needsme") == 0 ||
 								   valid_service (runlevel, di->service)))
@@ -415,11 +413,11 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 
 	/* Now visit the stuff we provide for */
 	if (options & RC_DEP_TRACE &&
-		(dt = rc_deptree_deptype (depinfo, "iprovide")))
+		(dt = get_deptype (depinfo, "iprovide")))
 	{
 		STRLIST_FOREACH (dt->services, service, i)
 		{
-			if ((di = rc_deptree_depinfo (deptree, service)))
+			if ((di = get_depinfo (deptree, service)))
 				if ((provides = get_provided (deptree, di, runlevel, options)))
 				{
 					STRLIST_FOREACH (provides, lp, j)
@@ -438,7 +436,7 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 	   are also the service calling us or we are provided by something */
 	svcname = getenv("SVCNAME");
 	if (! svcname || strcmp (svcname, depinfo->service) != 0)
-		if (! rc_deptree_deptype (depinfo, "providedby"))
+		if (! get_deptype (depinfo, "providedby"))
 			rc_strlist_add (&sorted->list, depinfo->service);
 }
 
@@ -452,7 +450,7 @@ char **rc_deptree_depends (rc_depinfo_t *deptree,
 	char *service;
 	int i;
 
-	if (! deptree || ! types || ! services)
+	if (! deptree || ! services)
 		return (NULL);
 
 	memset (&sorted, 0, sizeof (struct lhead));
@@ -464,8 +462,13 @@ char **rc_deptree_depends (rc_depinfo_t *deptree,
 
 	STRLIST_FOREACH (services, service, i)
 	{
-		di = rc_deptree_depinfo (deptree, service);
-		visit_service (deptree, types, &sorted, &visited, di, runlevel, options);
+		if (! (di = get_depinfo (deptree, service))) {
+			errno = ENOENT;
+			continue;
+		}
+		if (types)
+			visit_service (deptree, types, &sorted, &visited,
+						   di, runlevel, options);
 	}
 
 	rc_strlist_free (visited.list);
@@ -650,14 +653,14 @@ librc_hidden_def(rc_deptree_update_needed)
    Phase 4 scans that depinfo object and puts in backlinks
    Phase 5 saves the depinfo object to disk
    */
-int rc_deptree_update (void)
+bool rc_deptree_update (void)
 {
 	char *depends;
 	char *service;
 	char *type;
 	char *depend;
 	char **config = NULL;
-	int retval = 0;
+	int retval = true;
 	FILE *fp;
 	rc_depinfo_t *deptree;
 	rc_depinfo_t *depinfo;
@@ -680,7 +683,7 @@ int rc_deptree_update (void)
 
 	/* Phase 1 */
 	if (! (fp = popen (GENDEP, "r")))
-		return (-1);
+		return (false);
 
 	deptree = rc_xmalloc (sizeof (rc_depinfo_t));
 	memset (deptree, 0, sizeof (rc_depinfo_t));
@@ -779,7 +782,7 @@ int rc_deptree_update (void)
 	/* Phase 3 - add our providors to the tree */
 	for (depinfo = deptree; depinfo; depinfo = depinfo->next)
 	{
-		if ((deptype = rc_deptree_deptype (depinfo, "iprovide")))
+		if ((deptype = get_deptype (depinfo, "iprovide")))
 			STRLIST_FOREACH (deptype->services, service, i)
 			{
 				for (di = deptree; di; di = di->next)
@@ -803,13 +806,13 @@ int rc_deptree_update (void)
 	{
 		for (i = 0; deppairs[i].depend; i++)
 		{
-			deptype = rc_deptree_deptype (depinfo, deppairs[i].depend);
+			deptype = get_deptype (depinfo, deppairs[i].depend);
 			if (! deptype)
 				continue;
 
 			STRLIST_FOREACH (deptype->services, service, j)
 			{
-				di = rc_deptree_depinfo (deptree, service);
+				di = get_depinfo (deptree, service);
 				if (! di)
 				{
 					if (strcmp (deptype->type, "ineed") == 0)
@@ -817,7 +820,7 @@ int rc_deptree_update (void)
 						fprintf (stderr,
 								 "Service `%s' needs non existant service `%s'",
 								 depinfo->service, service);
-						retval = -1;
+						retval = false;
 					} 
 					continue;
 				}
@@ -884,8 +887,10 @@ int rc_deptree_update (void)
 			i++;
 		}
 		fclose (fp);
-	} else
-		fprintf (stderr, "fopen `%s': %s", RC_DEPTREE, strerror (errno));
+	} else {
+		fprintf (stderr, "fopen `%s': %s\n", RC_DEPTREE, strerror (errno));
+		retval = false;
+	}
 
 	/* Save our external config files to disk */
 	if (config) {
@@ -893,8 +898,10 @@ int rc_deptree_update (void)
 			STRLIST_FOREACH (config, service, i)
 				fprintf (fp, "%s\n", service);
 			fclose (fp);
-		} else
+		} else {
 			fprintf (stderr, "fopen `%s': %s\n", RC_DEPCONFIG, strerror (errno));
+			retval = false;
+		}
 		rc_strlist_free (config);
 	}
 

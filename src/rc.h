@@ -254,15 +254,14 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 
 #ifndef _IN_LIBRC
 /* Handles to internal structures */
-typedef void *rc_deptype_t;
 typedef void *rc_depinfo_t;
 #endif
 
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.
- * @return 0 if successful, otherwise -1 */
-int rc_deptree_update (void);
+ * @return true if successful, otherwise false */
+bool rc_deptree_update (void);
 
 /*! Check if the cached dependency tree is older than any init script,
  * its configuration file or an external configuration file the init script
@@ -274,18 +273,6 @@ bool rc_deptree_update_needed (void);
  * This pointer should be freed with rc_deptree_free when done.
  * @return pointer to the dependency tree */
 rc_depinfo_t *rc_deptree_load (void);
-
-/*! Get a services depedency information from a loaded tree
- * @param deptree to search
- * @param service to find
- * @return service dependency information */
-rc_depinfo_t *rc_deptree_depinfo (rc_depinfo_t *deptree, const char *service);
-
-/*! Get a depenency type from the service dependency information
- * @param depinfo service dependency to search
- * @param type to find
- * @return service dependency type information */
-rc_deptype_t *rc_deptree_deptype (rc_depinfo_t *depinfo, const char *type);
 
 char **rc_deptree_depends (rc_depinfo_t *deptree, char **types,
 						   char **services, const char *runlevel, int options);

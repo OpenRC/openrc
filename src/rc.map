@@ -4,8 +4,6 @@ global:
 	rc_config_load;
 	rc_config_value;
 	rc_deptree_depends;
-	rc_deptree_depinfo;
-	rc_deptree_deptype;
 	rc_deptree_free;
 	rc_deptree_load;
 	rc_deptree_order_services;
