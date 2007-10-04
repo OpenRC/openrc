@@ -32,7 +32,7 @@ else
 	NL=
 fi
 
-default_opts="describe start stop restart zap"
+default_opts="describe help start status stop restart zap"
 extra_opts="$(. "${myscript}" 2>/dev/null ; echo "${opts}")"
 
 if [ "${BE_VERBOSE}" = "yes" ] ; then
@@ -50,10 +50,16 @@ if [ "${BE_VERBOSE}" = "yes" ] ; then
 printf "
     ${GREEN}describe${OFF}
       Describe what the service and any extra options do.
+	
+    ${GREEN}help${OFF}
+      This screen - duh.
 
     ${GREEN}start${OFF}
       Start service, as well as the services it depends on (if not already
       started).
+
+    ${GREEN}status${OFF}
+      Display the current status of the service.
 
     ${GREEN}stop${OFF}
       Stop service, as well as the services that depend on it (if not already
@@ -67,9 +73,6 @@ printf "
       'stop' to restart the service.  This is so that the dependencies
       can be handled correctly.  Refer to the portmap rc-script for an
       example.
-
-    ${GREEN}conditionalrestart|condrestart${OFF}
-      Same as 'restart', but only if the service has already been started.
 
     ${GREEN}zap${OFF}
       Reset a service that is currently stopped, but still marked as started,
