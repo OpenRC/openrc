@@ -7,6 +7,9 @@
 #ifndef __RC_MISC_H__
 #define __RC_MISC_H__
 
+#include <sys/stat.h>
+#include <errno.h>
+
 #ifndef LIB
 #  define LIB "lib"
 #endif
@@ -37,5 +40,17 @@
 
 /* Good defaults just incase user has none set */
 #define RC_NET_FS_LIST_DEFAULT  "afs cifs coda davfs fuse gfs ncpfs nfs nfs4 ocfs2 shfs smbfs"
+
+static inline bool rc_exists (const char *pathname)
+{
+	struct stat buf;
+	int serrno = errno;
+
+	if (stat (pathname, &buf) == 0)
+		return (true);
+
+	errno = serrno;
+	return (false);
+}
 
 #endif

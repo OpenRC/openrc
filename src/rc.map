@@ -13,7 +13,6 @@ global:
 	rc_env_config;
 	rc_env_filter;
 	rc_environ_fd;
-	rc_exists;
 	rc_find_pids;
 	rc_ls_dir;
 	rc_rm_dir;

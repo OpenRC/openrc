@@ -458,11 +458,6 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
  * @return true if it matches true, yes or 1, false if otherwise. */
 bool rc_env_bool (const char *variable);
 
-/*! Check if the file exists or not
- * @param pathname to check
- * @return true if it exists, otherwise false */
-bool rc_exists (const char *pathname);
-
 /*! @name rc_ls_dir options */
 /*! Ensure that an init.d service exists for each file returned */
 #define RC_LS_INITD	0x01

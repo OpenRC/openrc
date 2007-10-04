@@ -132,21 +132,6 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 }
 librc_hidden_def(rc_strcatpaths)
 
-bool rc_exists (const char *pathname)
-{
-	struct stat buf;
-
-	if (! pathname)
-		return (false);
-
-	if (stat (pathname, &buf) == 0)
-		return (true);
-
-	errno = 0;
-	return (false);
-}
-librc_hidden_def(rc_exists)
-
 char **rc_ls_dir (const char *dir, int options)
 {
 	DIR *dp;
