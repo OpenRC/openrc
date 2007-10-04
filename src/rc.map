@@ -29,6 +29,7 @@ global:
 	rc_runlevel_stopping;
 	rc_service_add;
 	rc_service_daemons_crashed;
+	rc_service_daemon_set;
 	rc_service_delete;
 	rc_service_description;
 	rc_service_exists;
@@ -67,8 +68,4 @@ global:
 
 local:
 	*;
-};
-
-RC_PRIVATE {
-	__rc_service_daemon_set;
 };

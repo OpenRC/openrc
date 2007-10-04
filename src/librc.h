@@ -42,7 +42,6 @@
 #include <kvm.h>
 #endif
 
-#include "librc-daemon.h"
 #include "librc-depend.h"
 #include "rc.h"
 #include "rc-misc.h"
@@ -80,6 +79,7 @@ librc_hidden_proto(rc_runlevel_starting)
 librc_hidden_proto(rc_runlevel_stopping)
 librc_hidden_proto(rc_service_add)
 librc_hidden_proto(rc_service_daemons_crashed)
+librc_hidden_proto(rc_service_daemon_set)
 librc_hidden_proto(rc_service_delete)
 librc_hidden_proto(rc_service_description)
 librc_hidden_proto(rc_service_exists)
@@ -115,7 +115,5 @@ librc_hidden_proto(rc_waitpid)
 librc_hidden_proto(rc_xmalloc)
 librc_hidden_proto(rc_xrealloc)
 librc_hidden_proto(rc_xstrdup)
-
-librc_hidden_proto(__rc_service_daemon_set)
 
 #endif

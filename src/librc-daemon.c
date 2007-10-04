@@ -148,7 +148,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 librc_hidden_def(rc_find_pids)
 
 #elif defined(__DragonFly__) || defined(__FreeBSD__) || \
-		defined(__NetBSD__) || defined(__OpenBSD__)
+	defined(__NetBSD__) || defined(__OpenBSD__)
 
 # if defined(__DragonFly__) || defined(__FreeBSD__)
 #  ifndef KERN_PROC_PROC
@@ -283,9 +283,9 @@ static bool _match_daemon (const char *path, const char *file,
 	return (m == 111 ? true : false);
 }
 
-void __rc_service_daemon_set (const char *service, const char *exec,
-							  const char *name, const char *pidfile,
-							  bool started)
+void rc_service_daemon_set (const char *service, const char *exec,
+							const char *name, const char *pidfile,
+							bool started)
 {
 	char *svc = rc_xstrdup (service);
 	char *dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
@@ -368,7 +368,7 @@ void __rc_service_daemon_set (const char *service, const char *exec,
 	free (mpidfile);
 	free (dirpath);
 }
-librc_hidden_def(__rc_service_daemon_set)
+librc_hidden_def(rc_service_daemon_set)
 
 bool rc_service_started_daemon (const char *service, const char *exec,
 								int indx)

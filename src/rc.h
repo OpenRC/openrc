@@ -93,6 +93,16 @@ bool rc_service_add (const char *runlevel, const char *service);
  * @return true if sucessful, otherwise false */
 bool rc_service_delete (const char *runlevel, const char *service);
 
+/*! Save the arguments to find a running daemon
+ * @param service to save arguments for
+ * @param exec that we started
+ * @param name of the process (optional)
+ * @param pidfile of the process (optional)
+ * @param started if true, add the arguments otherwise remove existing matching arguments */
+void rc_service_daemon_set (const char *service, const char *exec,
+							const char *name, const char *pidfile,
+							bool started);
+
 /*! Returns a description of what the service and/or option does.
  * @param service to check
  * @param option to check (if NULL, service description)

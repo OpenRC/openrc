@@ -46,7 +46,6 @@ static struct pam_conv conv = { NULL, NULL} ;
 
 #include "builtins.h"
 #include "einfo.h"
-#include "librc-daemon.h"
 #include "rc.h"
 #include "rc-misc.h"
 #include "strlist.h"
@@ -759,7 +758,7 @@ int start_stop_daemon (int argc, char **argv)
 			unlink (pidfile);
 
 		if (svcname)
-			__rc_service_daemon_set (svcname, exec, cmd, pidfile, false);
+			rc_service_daemon_set (svcname, exec, cmd, pidfile, false);
 
 		exit (EXIT_SUCCESS);
 	}
@@ -1033,7 +1032,7 @@ int start_stop_daemon (int argc, char **argv)
 	}
 
 	if (svcname)
-		__rc_service_daemon_set (svcname, exec, cmd, pidfile, true);
+		rc_service_daemon_set (svcname, exec, cmd, pidfile, true);
 
 	exit (EXIT_SUCCESS);
 }
