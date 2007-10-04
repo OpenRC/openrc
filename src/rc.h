@@ -153,8 +153,9 @@ bool rc_service_schedule_start (const char *service,
 char **rc_services_scheduled_by (const char *service);
 
 /*! Clear the list of services scheduled to be started by this service
- * @param service to clear */
-void rc_service_schedule_clear (const char *service);
+ * @param service to clear
+ * @return true if no errors, otherwise false */ 
+bool rc_service_schedule_clear (const char *service);
 
 /*! Checks if a service in in a state
  * @param service to check

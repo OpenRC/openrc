@@ -591,15 +591,18 @@ bool rc_service_schedule_start (const char *service,
 }
 librc_hidden_def(rc_service_schedule_start)
 
-void rc_service_schedule_clear (const char *service)
+bool rc_service_schedule_clear (const char *service)
 {
 	char *svc  = rc_xstrdup (service);
 	char *dir = rc_strcatpaths (RC_SVCDIR, "scheduled", basename (svc),
 								(char *) NULL);
+	bool retval;
 
 	free (svc);
-	rc_rm_dir (dir, true);
+	if (! (retval = rc_rm_dir (dir, true)) && errno == ENOENT)
+		retval = true;
 	free (dir);
+	return (retval);
 }
 librc_hidden_def(rc_service_schedule_clear)
 
