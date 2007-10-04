@@ -419,27 +419,6 @@ void rc_strlist_reverse (char **list);
  * @param list to free */
 void rc_strlist_free (char **list);
 
-/*! @name Memory Allocation
- * Ensure that if we cannot allocate the memory then we exit */
-/*@{*/
-
-/*! Allocate a block of memory
- * @param size of memory to allocate
- * @return pointer to memory */
-void *rc_xmalloc (size_t size);
-
-/*! Re-size a block of memory
- * @param ptr to the block of memory to re-size
- * @param size memory should be
- * @return pointer to memory block */
-void *rc_xrealloc (void *ptr, size_t size);
-
-/*! Duplicate a NULL terminated string
- * @param str to duplicate
- * @return pointer to the new string */
-char *rc_xstrdup (const char *str);
-/*@}*/
-
 /*! @name Utility
  * Although not RC specific functions, they are used by the supporting
  * applications */

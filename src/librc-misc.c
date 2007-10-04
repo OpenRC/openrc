@@ -6,7 +6,6 @@
 
 #include "librc.h"
 
-#define ERRX            fprintf (stderr, "out of memory\n"); exit (1)
 
 #define PROFILE_ENV     "/etc/profile.env"
 #define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
@@ -15,43 +14,6 @@
 
 #define PATH_PREFIX     RC_LIBDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 
-void *rc_xmalloc (size_t size)
-{
-	void *value = malloc (size);
-
-	if (value)
-		return (value);
-
-	ERRX;
-}
-librc_hidden_def(rc_xmalloc)
-
-void *rc_xrealloc (void *ptr, size_t size)
-{
-	void *value = realloc (ptr, size);
-
-	if (value)
-		return (value);
-
-	ERRX;
-}
-librc_hidden_def(rc_xrealloc)
-
-char *rc_xstrdup (const char *str)
-{
-	char *value;
-
-	if (! str)
-		return (NULL);
-
-	value = strdup (str);
-
-	if (value)
-		return (value);
-
-	ERRX;
-}
-librc_hidden_def(rc_xstrdup)
 
 bool rc_env_bool (const char *var)
 {

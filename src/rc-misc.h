@@ -41,6 +41,45 @@
 /* Good defaults just incase user has none set */
 #define RC_NET_FS_LIST_DEFAULT  "afs cifs coda davfs fuse gfs ncpfs nfs nfs4 ocfs2 shfs smbfs"
 
+#define ERRX					fprintf (stderr, "out of memory\n"); exit (1)
+
+static inline void *rc_xmalloc (size_t size)
+{
+	void *value = malloc (size);
+
+	if (value)
+		return (value);
+
+	ERRX;
+}
+
+static inline void *rc_xrealloc (void *ptr, size_t size)
+{
+	void *value = realloc (ptr, size);
+
+	if (value)
+		return (value);
+
+	ERRX;
+}
+
+static inline char *rc_xstrdup (const char *str)
+{
+	char *value;
+
+	if (! str)
+		return (NULL);
+
+	value = strdup (str);
+
+	if (value)
+		return (value);
+
+	ERRX;
+}
+
+#undef ERRX
+
 static inline bool rc_exists (const char *pathname)
 {
 	struct stat buf;

@@ -57,9 +57,6 @@ global:
 	rc_strlist_join;
 	rc_strlist_reverse;
 	rc_waitpid;
-	rc_xmalloc;
-	rc_xrealloc;
-	rc_xstrdup;
 
 local:
 	*;
