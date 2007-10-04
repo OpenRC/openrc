@@ -132,9 +132,10 @@ int env_update (int argc, char **argv)
 	STRLIST_FOREACH (files, file, i) {
 		char *path = rc_strcatpaths (ENVDIR, file, (char *) NULL);
 		char **entries = NULL;
+		struct stat buf;
 
 		j = strlen (file);
-		if (! rc_is_dir (path) &&
+		if (stat (file, &buf) == 0 && S_ISDIR (buf.st_mode) == 0 &&
 			j > 2 &&
 			*file >= '0' &&
 			*file <= '9' &&

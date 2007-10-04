@@ -298,6 +298,7 @@ void rc_service_daemon_set (const char *service, const char *exec,
 	char *mname;
 	char *mpidfile;
 	int nfiles = 0;
+	char *oldfile = NULL;
 
 	free (svc);
 	if (! exec && ! name && ! pidfile)
@@ -325,28 +326,25 @@ void rc_service_daemon_set (const char *service, const char *exec,
 		mpidfile = rc_xstrdup ("pidfile=");
 
 	/* Regardless, erase any existing daemon info */
-	if (rc_is_dir (dirpath)) {
-		char *oldfile = NULL;
-		files = rc_ls_dir (dirpath, 0);
-		STRLIST_FOREACH (files, file, i) {
-			ffile = rc_strcatpaths (dirpath, file, (char *) NULL);
-			nfiles++;
+	files = rc_ls_dir (dirpath, 0);
+	STRLIST_FOREACH (files, file, i) {
+		ffile = rc_strcatpaths (dirpath, file, (char *) NULL);
+		nfiles++;
 
-			if (! oldfile) {
-				if (_match_daemon (dirpath, file, mexec, mname, mpidfile)) {
-					unlink (ffile);
-					oldfile = ffile;
-					nfiles--;
-				}
-			} else {
-				rename (ffile, oldfile);
-				free (oldfile);
+		if (! oldfile) {
+			if (_match_daemon (dirpath, file, mexec, mname, mpidfile)) {
+				unlink (ffile);
 				oldfile = ffile;
+				nfiles--;
 			}
+		} else {
+			rename (ffile, oldfile);
+			free (oldfile);
+			oldfile = ffile;
 		}
-		free (ffile); 
-		rc_strlist_free (files);
 	}
+	free (ffile); 
+	rc_strlist_free (files);
 
 	/* Now store our daemon info */
 	if (started) {
@@ -387,12 +385,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
 							  (char *) NULL);
 	free (svc);
-
-	if (! rc_is_dir (dirpath)) {
-		free (dirpath);
-		return (false);
-	}
-
+	
 	i = strlen (exec) + 6;
 	mexec = rc_xmalloc (sizeof (char *) * i);
 	snprintf (mexec, i, "exec=%s", exec);
@@ -413,6 +406,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 		rc_strlist_free (files);
 	}
 
+	free (dirpath);
 	free (mexec);
 	return (retval);
 }
@@ -444,11 +438,6 @@ bool rc_service_daemons_crashed (const char *service)
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
 							  (char *) NULL);
 	free (svc);
-
-	if (! rc_is_dir (dirpath)) {
-		free (dirpath);
-		return (false);
-	}
 
 	memset (buffer, 0, sizeof (buffer));
 	files = rc_ls_dir (dirpath, 0);

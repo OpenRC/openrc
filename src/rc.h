@@ -463,14 +463,10 @@ bool rc_env_bool (const char *variable);
  * @return true if it exists, otherwise false */
 bool rc_exists (const char *pathname);
 
-/*! Check if the file is a directory or not
- * @param pathname to check
- * @return true if it's a directory, otherwise false */
-bool rc_is_dir (const char *pathname);
-
 /*! @name rc_ls_dir options */
 /*! Ensure that an init.d service exists for each file returned */
 #define RC_LS_INITD	0x01
+#define RC_LS_DIRS  0x02
 
 /*! Return a NULL terminted sorted list of the contents of the directory
  * @param dir to list

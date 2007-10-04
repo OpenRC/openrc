@@ -15,7 +15,6 @@ global:
 	rc_environ_fd;
 	rc_exists;
 	rc_find_pids;
-	rc_is_dir;
 	rc_ls_dir;
 	rc_rm_dir;
 	rc_runlevel_exists;

@@ -110,10 +110,8 @@ static void cleanup (void)
 
 		/* Clean runlevel start, stop markers */
 		if (! rc_in_plugin) {
-			if (rc_is_dir (RC_STARTING))
-				rc_rm_dir (RC_STARTING, true);
-			if (rc_is_dir (RC_STOPPING))
-				rc_rm_dir (RC_STOPPING, true);
+			rmdir (RC_STARTING);
+			rmdir (RC_STOPPING);
 		}
 
 		free (runlevel);
@@ -1016,10 +1014,8 @@ int main (int argc, char **argv)
 
 	/* Check if runlevel is valid if we're changing */
 	if (newlevel && strcmp (runlevel, newlevel) != 0 && ! going_down) {
-		tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel, (char *) NULL);
-		if (! rc_is_dir (tmp))
+		if (! rc_runlevel_exists (newlevel))
 			eerrorx ("%s: is not a valid runlevel", newlevel);
-		CHAR_FREE (tmp);
 	}
 
 	/* Load our deptree now */
@@ -1027,8 +1023,7 @@ int main (int argc, char **argv)
 		eerrorx ("failed to load deptree");
 
 	/* Clean the failed services state dir now */
-	if (rc_is_dir (RC_SVCDIR "/failed"))
-		rc_rm_dir (RC_SVCDIR "/failed", false);
+	rc_rm_dir (RC_SVCDIR "/failed", false);
 
 	mkdir (RC_STOPPING, 0755);
 
@@ -1037,8 +1032,8 @@ int main (int argc, char **argv)
 	   its coldplugging thing. runscript knows when we're not ready so it
 	   stores a list of coldplugged services in DEVBOOT for us to pick up
 	   here when we are ready for them */
-	if (rc_is_dir (DEVBOOT)) {
-		start_services = rc_ls_dir (DEVBOOT, RC_LS_INITD);
+	start_services = rc_ls_dir (DEVBOOT, RC_LS_INITD);
+	if (start_services) {
 		rc_rm_dir (DEVBOOT, true);
 
 		STRLIST_FOREACH (start_services, service, i)

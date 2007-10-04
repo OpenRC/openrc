@@ -147,21 +147,6 @@ bool rc_exists (const char *pathname)
 }
 librc_hidden_def(rc_exists)
 
-bool rc_is_dir (const char *pathname)
-{
-	struct stat buf;
-
-	if (! pathname)
-		return (false);
-
-	if (stat (pathname, &buf) == 0)
-		return (S_ISDIR (buf.st_mode));
-
-	errno = 0;
-	return (false);
-}
-librc_hidden_def(rc_is_dir)
-
 char **rc_ls_dir (const char *dir, int options)
 {
 	DIR *dp;
@@ -187,6 +172,12 @@ char **rc_ls_dir (const char *dir, int options)
 				if (l > 2 && d->d_name[l - 3] == '.' &&
 					d->d_name[l - 2] == 's' &&
 					d->d_name[l - 1] == 'h')
+					continue;
+			}
+			if (options & RC_LS_DIRS) {
+				struct stat buf;
+
+				if (stat (d->d_name, &buf) == 0 && ! S_ISDIR (buf.st_mode))
 					continue;
 			}
 			rc_strlist_addsort (&list, d->d_name);
@@ -592,7 +583,7 @@ char **rc_env_config (void)
 	   We store this special system in RC_SYS so our scripts run fast */
 	memset (sys, 0, sizeof (sys));
 
-	if (rc_is_dir ("/proc/xen")) {
+	if (rc_exists ("/proc/xen")) {
 		if ((fp = fopen ("/proc/xen/capabilities", "r"))) {
 			fclose (fp);
 			if (file_regex ("/proc/xen/capabilities", "control_d"))

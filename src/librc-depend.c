@@ -547,6 +547,10 @@ static bool is_newer_than (const char *file, const char *target)
 {
 	struct stat buf;
 	time_t mtime;
+	char **targets;
+	char *t;
+	int i;
+	bool newer = true;
 
 	if (stat (file, &buf) != 0 || buf.st_size == 0)
 		return (false);
@@ -560,25 +564,17 @@ static bool is_newer_than (const char *file, const char *target)
 	if (mtime < buf.st_mtime)
 		return (false);
 
-	if (rc_is_dir (target))
+	targets = rc_ls_dir (target, 0);
+	STRLIST_FOREACH (targets, t, i)
 	{
-		char **targets = rc_ls_dir (target, 0);
-		char *t;
-		int i;
-		bool newer = true;
-		STRLIST_FOREACH (targets, t, i)
-		{
-			char *path = rc_strcatpaths (target, t, (char *) NULL);
-			newer = is_newer_than (file, path);
-			free (path);
-			if (! newer)
-				break;
-		}
-		rc_strlist_free (targets);
-		return (newer);
+		char *path = rc_strcatpaths (target, t, (char *) NULL);
+		newer = is_newer_than (file, path);
+		free (path);
+		if (! newer)
+			break;
 	}
-
-	return (true);
+	rc_strlist_free (targets);
+	return (newer);
 }
 
 typedef struct deppair
