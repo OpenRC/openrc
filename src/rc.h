@@ -274,6 +274,13 @@ bool rc_deptree_update_needed (void);
  * @return pointer to the dependency tree */
 rc_depinfo_t *rc_deptree_load (void);
 
+/*! List all the services in order that the given services have
+ * for the given types and options.
+ * @param deptree to search
+ * @param types to use (ineed, iuse, etc) 
+ * @param services to check
+ * @param options to pass
+ * @return NULL terminated list of services in order */
 char **rc_deptree_depends (rc_depinfo_t *deptree, char **types,
 						   char **services, const char *runlevel, int options);
 
@@ -286,6 +293,7 @@ char **rc_deptree_depends (rc_depinfo_t *deptree, char **types,
  * @return NULL terminated list of services in order */
 char **rc_deptree_order_services (rc_depinfo_t *deptree, const char *runlevel,
 								  int options);
+
 /*! Free a deptree and its information
  * @param deptree to free */
 void rc_deptree_free (rc_depinfo_t *deptree);
