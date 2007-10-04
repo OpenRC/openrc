@@ -68,7 +68,7 @@ librc_hidden_def(rc_runlevel_stopping)
 
 char **rc_runlevel_list (void)
 {
-	return (rc_ls_dir (RC_RUNLEVELDIR, RC_LS_DIRS));
+	return (rc_ls_dir (RC_RUNLEVELDIR, RC_LS_DIR));
 }
 librc_hidden_def(rc_runlevel_list)
 

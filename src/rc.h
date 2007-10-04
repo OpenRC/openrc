@@ -461,7 +461,7 @@ bool rc_env_bool (const char *variable);
 /*! @name rc_ls_dir options */
 /*! Ensure that an init.d service exists for each file returned */
 #define RC_LS_INITD	0x01
-#define RC_LS_DIRS  0x02
+#define RC_LS_DIR   0x02
 
 /*! Return a NULL terminted sorted list of the contents of the directory
  * @param dir to list

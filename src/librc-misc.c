@@ -159,7 +159,7 @@ char **rc_ls_dir (const char *dir, int options)
 					d->d_name[l - 1] == 'h')
 					continue;
 			}
-			if (options & RC_LS_DIRS) {
+			if (options & RC_LS_DIR) {
 				struct stat buf;
 
 				if (stat (d->d_name, &buf) == 0 && ! S_ISDIR (buf.st_mode))
