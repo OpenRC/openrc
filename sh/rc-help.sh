@@ -234,9 +234,12 @@ printf "
 "
 fi
 
-printf "    /etc/conf.d/rc${NL:-      }    /etc/conf.d/rc.${SOFTLEVEL}"
-printf "    /etc/conf.d/${SERVICE}${NL}    /etc/conf.d/${SERVICE}.${SOFTLEVEL}"
-printf "    /etc/rc.conf"
+printf "     /etc/conf.d/rc
+     /etc/conf.d/rc.\${RC_SOFTLEVEL}
+     /etc/conf.d/${SERVICE}
+     /etc/conf.d/${SERVICE}.\${RC_SOFTLEVEL}
+     /etc/rc.conf
+     \${RC_SOFTLEVEL} denotes the name of the runlevel"
 
 if [ "${BE_VERBOSE}" = "yes" ] ; then
 printf "
