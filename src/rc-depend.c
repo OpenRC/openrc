@@ -91,8 +91,6 @@ int rc_depend (int argc, char **argv)
 			case 'T':
 				options &= RC_DEP_TRACE;
 				break;
-			case '?':
-				einfo ("hello");
 
 			case_RC_COMMON_GETOPT
 		}
