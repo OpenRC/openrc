@@ -468,11 +468,6 @@ bool rc_exists (const char *pathname);
  * @return true if it's a directory, otherwise false */
 bool rc_is_dir (const char *pathname);
 
-/*! Check if the file is marked executable or not
- * @param pathname to check
- * @return true if it's marked executable, otherwise false */
-bool rc_is_exec (const char *pathname);
-
 /*! @name rc_ls_dir options */
 /*! Ensure that an init.d service exists for each file returned */
 #define RC_LS_INITD	0x01

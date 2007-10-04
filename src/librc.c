@@ -15,6 +15,10 @@
 
 #define SOFTLEVEL	RC_SVCDIR "/softlevel"
 
+#ifndef S_IXUGO
+# define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
+#endif
+
 /* File stream used for plugins to write environ vars to */
 FILE *rc_environ_fd = NULL;
 
@@ -173,6 +177,7 @@ bool rc_service_exists (const char *service)
 	char *file;
 	bool retval = false;
 	int len;
+	struct stat buf;
 
 	if (! service)
 		return (false);
@@ -185,9 +190,9 @@ bool rc_service_exists (const char *service)
 		service[len - 1] == 'h')
 		return (false);
 
-	file = rc_service_resolve (service); 
-	if (rc_exists (file))
-		retval = rc_is_exec (file);
+	file = rc_service_resolve (service);
+	if (stat (file, &buf) == 0 && buf.st_mode & S_IXUGO)
+		retval = true;
 	free (file);
 	return (retval);
 }

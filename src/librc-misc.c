@@ -15,10 +15,6 @@
 
 #define PATH_PREFIX     RC_LIBDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 
-#ifndef S_IXUGO
-# define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
-#endif
-
 void *rc_xmalloc (size_t size)
 {
 	void *value = malloc (size);
@@ -165,21 +161,6 @@ bool rc_is_dir (const char *pathname)
 	return (false);
 }
 librc_hidden_def(rc_is_dir)
-
-bool rc_is_exec (const char *pathname)
-{
-	struct stat buf;
-
-	if (! pathname)
-		return (false);
-
-	if (lstat (pathname, &buf) == 0)
-		return (buf.st_mode & S_IXUGO);
-
-	errno = 0;
-	return (false);
-}
-librc_hidden_def(rc_is_exec)
 
 char **rc_ls_dir (const char *dir, int options)
 {
