@@ -99,7 +99,7 @@ bool rc_service_delete (const char *runlevel, const char *service);
  * @param name of the process (optional)
  * @param pidfile of the process (optional)
  * @param started if true, add the arguments otherwise remove existing matching arguments */
-void rc_service_daemon_set (const char *service, const char *exec,
+bool rc_service_daemon_set (const char *service, const char *exec,
 							const char *name, const char *pidfile,
 							bool started);
 

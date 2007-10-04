@@ -283,13 +283,12 @@ static bool _match_daemon (const char *path, const char *file,
 	return (m == 111 ? true : false);
 }
 
-void rc_service_daemon_set (const char *service, const char *exec,
+bool rc_service_daemon_set (const char *service, const char *exec,
 							const char *name, const char *pidfile,
 							bool started)
 {
-	char *svc = rc_xstrdup (service);
-	char *dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
-									(char *) NULL);
+	char *svc;
+	char *dirpath;
 	char **files = NULL;
 	char *file;
 	char *ffile = NULL;
@@ -299,10 +298,16 @@ void rc_service_daemon_set (const char *service, const char *exec,
 	char *mpidfile;
 	int nfiles = 0;
 	char *oldfile = NULL;
+	bool retval = false;
 
+	if (! exec && ! name && ! pidfile) {
+		errno = EINVAL;
+		return (false);
+	}
+	svc = rc_xstrdup (service);
+	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons",
+							  basename (svc), (char *) NULL);
 	free (svc);
-	if (! exec && ! name && ! pidfile)
-		return;
 
 	if (exec) {
 		i = strlen (exec) + 6;
@@ -354,17 +359,22 @@ void rc_service_daemon_set (const char *service, const char *exec,
 		if (mkdir (dirpath, 0755) == 0 || errno == EEXIST) {
 			snprintf (buffer, sizeof (buffer), "%03d", nfiles + 1);
 			file = rc_strcatpaths (dirpath, buffer, (char *) NULL);
-			if ((fp = fopen (file, "w")))
+			if ((fp = fopen (file, "w"))) {
 				fprintf (fp, "%s\n%s\n%s\n", mexec, mname, mpidfile);
-			fclose (fp);
+				fclose (fp);
+				retval = true;
+			}
 			free (file);
 		}
-	}
+	} else
+		retval = true;
 
 	free (mexec);
 	free (mname);
 	free (mpidfile);
 	free (dirpath);
+
+	return (retval);
 }
 librc_hidden_def(rc_service_daemon_set)
 
