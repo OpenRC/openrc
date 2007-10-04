@@ -463,11 +463,6 @@ bool rc_env_bool (const char *variable);
  * @return true if it exists, otherwise false */
 bool rc_exists (const char *pathname);
 
-/*! Check if the file is a symbolic link or not
- * @param pathname to check
- * @return true if it's a symbolic link, otherwise false */
-bool rc_is_link (const char *pathname);
-
 /*! Check if the file is a directory or not
  * @param pathname to check
  * @return true if it's a directory, otherwise false */

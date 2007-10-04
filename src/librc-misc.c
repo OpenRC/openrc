@@ -166,21 +166,6 @@ bool rc_is_dir (const char *pathname)
 }
 librc_hidden_def(rc_is_dir)
 
-bool rc_is_link (const char *pathname)
-{
-	struct stat buf;
-
-	if (! pathname)
-		return (false);
-
-	if (lstat (pathname, &buf) == 0)
-		return (S_ISLNK (buf.st_mode));
-
-	errno = 0;
-	return (false);
-}
-librc_hidden_def(rc_is_link)
-
 bool rc_is_exec (const char *pathname)
 {
 	struct stat buf;

@@ -131,12 +131,13 @@ bool rc_runlevel_exists (const char *runlevel)
 }
 librc_hidden_def(rc_runlevel_exists)
 
-	/* Resolve a service name to it's full path */
+/* Resolve a service name to it's full path */
 char *rc_service_resolve (const char *service)
 {
 	char buffer[PATH_MAX];
 	char *file;
 	int r = 0;
+	struct stat buf;
 
 	if (! service)
 		return (NULL);
@@ -145,10 +146,10 @@ char *rc_service_resolve (const char *service)
 		return (rc_xstrdup (service));
 
 	file = rc_strcatpaths (RC_SVCDIR, "started", service, (char *) NULL);
-	if (! rc_is_link (file)) {
+	if (lstat (file, &buf) || ! S_ISLNK (buf.st_mode)) {
 		free (file);
 		file = rc_strcatpaths (RC_SVCDIR, "inactive", service, (char *) NULL);
-		if (! rc_is_link (file)) {
+		if (lstat (file, &buf) || ! S_ISLNK (buf.st_mode)) {
 			free (file);
 			file = NULL;
 		}
