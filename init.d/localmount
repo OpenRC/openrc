@@ -151,8 +151,8 @@ stop() {
 	# Don't unmount anything for VPS systems
 	[ "${RC_SYS}" = "VPS" ] && return 0
 
-	# We never unmount / or /dev or $RC_LIBDIR
-	local x= no_umounts="/|/dev|${RC_SVCDIR}"
+	# We never unmount / or /dev or $RC_SVCDIR
+	local x= no_umounts="/|/dev|/dev/.*|${RC_SVCDIR}"
 
 	# NO_UMOUNTS is taken from /etc/conf.d/localmount
 	# RC_NO_UMOUNTS is taken from /etc/conf.d/rc and can also be
@@ -169,7 +169,7 @@ stop() {
 	fi
 
 	if [ "${RC_UNAME}" = "Linux" ] ; then
-		no_umounts="${no_umounts}|/dev/pts|/dev/shm|/proc|/proc/.*|/sys"
+		no_umounts="${no_umounts}|/proc|/proc/.*|/sys|/sys/.*"
 	fi
 	no_umounts="^(${no_umounts})$"
 
