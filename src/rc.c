@@ -1078,7 +1078,7 @@ int main (int argc, char **argv)
 				rc_service_plugable (d->d_name))
 				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
 
-			tmp = asprintf (&tmp, RC_SVCDIR "/failed/%s", d->d_name);
+			asprintf (&tmp, DEVBOOT "/%s", d->d_name);
 			if (tmp) {
 				if (unlink (tmp))
 					eerror ("%s: unlink `%s': %s", applet, tmp,
@@ -1106,9 +1106,9 @@ int main (int argc, char **argv)
 				i = (strlen ("net.") + strlen (d->d_name) + 1);
 				tmp = rc_xmalloc (sizeof (char *) * i);
 				snprintf (tmp, i, "net.%s", d->d_name);
-				if (rc_service_exists (d->d_name) &&
-					rc_service_plugable (d->d_name))
-					rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
+				if (rc_service_exists (tmp) &&
+					rc_service_plugable (tmp))
+					rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 				CHAR_FREE (tmp);
 			}
 			closedir (dp);

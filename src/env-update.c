@@ -137,8 +137,9 @@ int env_update (int argc, char **argv)
 		if (d->d_name[0] == '.')
 			continue;
 
+		path = rc_strcatpaths (ENVDIR, d->d_name, (char *) NULL);
 		j = strlen (d->d_name);
-		if (stat (d->d_name, &buf) == 0 && S_ISDIR (buf.st_mode) == 0 &&
+		if (stat (path, &buf) == 0 && S_ISDIR (buf.st_mode) == 0 &&
 			j > 2 &&
 			d->d_name[0] >= '0' &&
 			d->d_name[0] <= '9' &&
@@ -148,9 +149,7 @@ int env_update (int argc, char **argv)
 			(j < 4 || strcmp (d->d_name + j - 4, ".bak") != 0) &&
 			(j < 5 || strcmp (d->d_name + j - 5, ".core") != 0))
 		{
-			path = rc_strcatpaths (ENVDIR, d->d_name, (char *) NULL);
 			entries = rc_config_load (path);
-			free (path);
 
 			STRLIST_FOREACH (entries, entry, j) {
 				char *tmpent = rc_xstrdup (entry);
@@ -169,6 +168,7 @@ int env_update (int argc, char **argv)
 			}
 			rc_strlist_free (entries);
 		}
+		free (path);
 	}
 	closedir (dp);
 
