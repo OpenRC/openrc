@@ -83,13 +83,8 @@ static inline char *rc_xstrdup (const char *str)
 static inline bool rc_exists (const char *pathname)
 {
 	struct stat buf;
-	int serrno = errno;
 
-	if (stat (pathname, &buf) == 0)
-		return (true);
-
-	errno = serrno;
-	return (false);
+	return (stat (pathname, &buf) == 0);
 }
 
 #endif
