@@ -220,23 +220,6 @@ char **rc_services_scheduled (const char *service);
  * @return true if all daemons started are still running, otherwise false */
 bool rc_service_daemons_crashed (const char *service);
 
-/*! Wait for a process to finish
- * @param pid to wait for
- * @return exit status of the process */
-int rc_waitpid (pid_t pid); 
-
-/*! Find processes based on criteria.
- * All of these are optional.
- * pid overrides anything else.
- * If both exec and cmd are given then we ignore exec.
- * @param exec to check for
- * @param cmd to check for
- * @param uid to check for
- * @param pid to check for
- * @return NULL terminated list of pids */
-pid_t *rc_find_pids (const char *exec, const char *cmd,
-					 uid_t uid, pid_t pid);
-
 /*! @name Dependency options
  * These options can change the services found by the rc_get_depinfo and
  * rc_get_depends functions. */
@@ -359,6 +342,13 @@ char **rc_env_filter (void);
  * our configuration files. */
 char **rc_env_config (void);
 
+/*! Check if an environment variable is a boolean and return it's value.
+ * If variable is not a boolean then we set errno to be ENOENT when it does
+ * not exist or EINVAL if it's not a boolean.
+ * @param variable to check
+ * @return true if it matches true, yes or 1, false if otherwise. */
+bool rc_env_bool (const char *variable);
+
 /*! @name String List functions
  * Handy functions for dealing with string arrays of char **.
  * It's safe to assume that any function here that uses char ** is a string
@@ -420,10 +410,6 @@ void rc_strlist_reverse (char **list);
  * @param list to free */
 void rc_strlist_free (char **list);
 
-/*! @name Utility
- * Although not RC specific functions, they are used by the supporting
- * applications */
-
 /*! Concatenate paths adding '/' if needed. The resultant pointer should be
  * freed when finished with.
  * @param path1 starting path
@@ -431,11 +417,17 @@ void rc_strlist_free (char **list);
  * @return pointer to the new path */
 char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
 
-/*! Check if an environment variable is a boolean and return it's value.
- * If variable is not a boolean then we set errno to be ENOENT when it does
- * not exist or EINVAL if it's not a boolean.
- * @param variable to check
- * @return true if it matches true, yes or 1, false if otherwise. */
-bool rc_env_bool (const char *variable);
+/*! Find processes based on criteria.
+ * All of these are optional.
+ * pid overrides anything else.
+ * If both exec and cmd are given then we ignore exec.
+ * @param exec to check for
+ * @param cmd to check for
+ * @param uid to check for
+ * @param pid to check for
+ * @return NULL terminated list of pids */
+pid_t *rc_find_pids (const char *exec, const char *cmd,
+					 uid_t uid, pid_t pid);
+
 
 #endif

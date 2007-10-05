@@ -603,22 +603,6 @@ static pid_t _exec_service (const char *service, const char *arg)
 	return (pid);
 }
 
-int rc_waitpid (pid_t pid)
-{
-	int status = 0;
-	pid_t savedpid = pid;
-	int retval = -1;
-
-	errno = 0;
-	while ((pid = waitpid (savedpid, &status, 0)) > 0) {
-		if (pid == savedpid)
-			retval = WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE;
-	}
-
-	return (retval);
-}
-librc_hidden_def(rc_waitpid)
-
 pid_t rc_service_stop (const char *service)
 {
 	if (rc_service_state (service) & RC_SERVICE_STOPPED)

@@ -331,6 +331,21 @@ static int write_prefix (const char *buffer, size_t bytes, bool *prefixed) {
 	return (ret);
 }
 
+static int wait_pid (pid_t pid)
+{
+	int status = 0;
+	pid_t savedpid = pid;
+	int retval = -1;
+
+	errno = 0;
+	while ((pid = waitpid (savedpid, &status, 0)) > 0) {
+		if (pid == savedpid)
+			retval = WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE;
+	}
+
+	return (retval);
+}
+
 static bool svc_exec (const char *arg1, const char *arg2)
 {
 	bool execok;
@@ -437,7 +452,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		master_tty = -1;
 	}
 
-	execok = rc_waitpid (service_pid) == 0 ? true : false;
+	execok = wait_pid (service_pid) == 0 ? true : false;
 	service_pid = 0;
 
 	return (execok);
@@ -618,7 +633,7 @@ static void svc_start (bool deps)
 				if (rc_service_state (svc) & RC_SERVICE_STOPPED) {
 					pid_t pid = rc_service_start (svc);
 					if (! rc_env_bool ("RC_PARALLEL"))
-						rc_waitpid (pid);
+						wait_pid (pid);
 				}
 		}
 
@@ -849,7 +864,7 @@ static void svc_stop (bool deps)
 				{
 					pid_t pid = rc_service_stop (svc);
 					if (! rc_env_bool ("RC_PARALLEL"))
-						rc_waitpid (pid);
+						wait_pid (pid);
 					rc_strlist_add (&tmplist, svc);
 				}
 			}

@@ -105,9 +105,5 @@ librc_hidden_proto(rc_strlist_delete)
 librc_hidden_proto(rc_strlist_free)
 librc_hidden_proto(rc_strlist_join)
 librc_hidden_proto(rc_strlist_reverse)
-librc_hidden_proto(rc_waitpid)
-librc_hidden_proto(rc_xmalloc)
-librc_hidden_proto(rc_xrealloc)
-librc_hidden_proto(rc_xstrdup)
 
 #endif
