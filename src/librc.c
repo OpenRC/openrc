@@ -86,6 +86,43 @@ static char **ls_dir (const char *dir, int options)
 	return (list);
 }
 
+static bool rm_dir (const char *pathname, bool top)
+{
+	DIR *dp;
+	struct dirent *d;
+
+	if ((dp = opendir (pathname)) == NULL)
+		return (false);
+
+	errno = 0;
+	while (((d = readdir (dp)) != NULL) && errno == 0) {
+		if (strcmp (d->d_name, ".") != 0 && strcmp (d->d_name, "..") != 0) {
+			char *tmp = rc_strcatpaths (pathname, d->d_name, (char *) NULL);
+			if (d->d_type == DT_DIR) {
+				if (! rm_dir (tmp, true))
+				{
+					free (tmp);
+					closedir (dp);
+					return (false);
+				}
+			} else {
+				if (unlink (tmp)) {
+					free (tmp);
+					closedir (dp);
+					return (false);
+				}
+			}
+			free (tmp);
+		}
+	}
+	closedir (dp);
+
+	if (top && rmdir (pathname) != 0)
+		return (false);
+
+	return (true);
+}
+
 static const char *rc_parse_service_state (rc_service_state_t state)
 {
 	int i;
@@ -407,11 +444,11 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 	/* Remove any options and daemons the service may have stored */
 	if (state == RC_SERVICE_STOPPED) {
 		char *dir = rc_strcatpaths (RC_SVCDIR, "options", base, (char *) NULL);
-		rc_rm_dir (dir, true);
+		rm_dir (dir, true);
 		free (dir);
 
 		dir = rc_strcatpaths (RC_SVCDIR, "daemons", base, (char *) NULL);
-		rc_rm_dir (dir, true);
+		rm_dir (dir, true);
 		free (dir);
 
 		rc_service_schedule_clear (service);
@@ -643,7 +680,7 @@ bool rc_service_schedule_clear (const char *service)
 	bool retval;
 
 	free (svc);
-	if (! (retval = rc_rm_dir (dir, true)) && errno == ENOENT)
+	if (! (retval = rm_dir (dir, true)) && errno == ENOENT)
 		retval = true;
 	free (dir);
 	return (retval);

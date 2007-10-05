@@ -438,10 +438,4 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
  * @return true if it matches true, yes or 1, false if otherwise. */
 bool rc_env_bool (const char *variable);
 
-/*! Remove a directory
- * @param pathname to remove
- * @param top remove the top level directory too
- * @return true if successful, otherwise false */
-bool rc_rm_dir (const char *pathname, bool top);
-
 #endif

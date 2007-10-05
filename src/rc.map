@@ -14,7 +14,6 @@ global:
 	rc_env_filter;
 	rc_environ_fd;
 	rc_find_pids;
-	rc_rm_dir;
 	rc_runlevel_exists;
 	rc_runlevel_get;
 	rc_runlevel_list;

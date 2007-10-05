@@ -1026,7 +1026,24 @@ int main (int argc, char **argv)
 		eerrorx ("failed to load deptree");
 
 	/* Clean the failed services state dir now */
-	rc_rm_dir (RC_SVCDIR "/failed", false);
+	if ((dp = opendir (RC_SVCDIR "/failed"))) {
+		while ((d = readdir (dp))) {
+			if (d->d_name[0] == '.' &&
+				(d->d_name[1] == '\0' ||
+				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
+				continue;
+
+			asprintf (&tmp, RC_SVCDIR "/failed/%s", d->d_name);
+			if (tmp) {
+				if (unlink (tmp))
+					eerror ("%s: unlink `%s': %s", applet, tmp,
+							strerror (errno));
+				free (tmp);
+			}
+		}
+		closedir (dp);
+		rmdir (RC_SVCDIR "/failed");
+	}
 
 	mkdir (RC_STOPPING, 0755);
 
@@ -1037,12 +1054,25 @@ int main (int argc, char **argv)
 	   here when we are ready for them */
 	if ((dp = opendir (DEVBOOT))) {
 		while ((d = readdir (dp))) {
+			if (d->d_name[0] == '.' &&
+				(d->d_name[1] == '\0' ||
+				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
+				continue;
+
 			if (rc_service_exists (d->d_name) &&
 				rc_service_plugable (d->d_name))
 				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
+
+			tmp = asprintf (&tmp, RC_SVCDIR "/failed/%s", d->d_name);
+			if (tmp) {
+				if (unlink (tmp))
+					eerror ("%s: unlink `%s': %s", applet, tmp,
+							strerror (errno));
+				free (tmp);
+			}
 		}
 		closedir (dp);
-		rc_rm_dir (DEVBOOT, true);
+		rmdir (DEVBOOT);
 	}
 #else
 	/* BSD's on the other hand populate /dev automagically and use devd.

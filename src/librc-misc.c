@@ -95,44 +95,6 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 librc_hidden_def(rc_strcatpaths)
 
 
-bool rc_rm_dir (const char *pathname, bool top)
-{
-	DIR *dp;
-	struct dirent *d;
-
-	if ((dp = opendir (pathname)) == NULL)
-		return (false);
-
-	errno = 0;
-	while (((d = readdir (dp)) != NULL) && errno == 0) {
-		if (strcmp (d->d_name, ".") != 0 && strcmp (d->d_name, "..") != 0) {
-			char *tmp = rc_strcatpaths (pathname, d->d_name, (char *) NULL);
-			if (d->d_type == DT_DIR) {
-				if (! rc_rm_dir (tmp, true))
-				{
-					free (tmp);
-					closedir (dp);
-					return (false);
-				}
-			} else {
-				if (unlink (tmp)) {
-					free (tmp);
-					closedir (dp);
-					return (false);
-				}
-			}
-			free (tmp);
-		}
-	}
-	closedir (dp);
-
-	if (top && rmdir (pathname) != 0)
-		return (false);
-
-	return (true);
-}
-librc_hidden_def(rc_rm_dir)
-
 char **rc_config_load (const char *file)
 {
 	char **list = NULL;
