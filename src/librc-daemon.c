@@ -289,9 +289,7 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 {
 	char *svc;
 	char *dirpath;
-	char **files = NULL;
-	char *file;
-	char *ffile = NULL;
+	char *file = NULL;
 	int i;
 	char *mexec;
 	char *mname;
@@ -299,6 +297,8 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 	int nfiles = 0;
 	char *oldfile = NULL;
 	bool retval = false;
+	DIR *dp;
+	struct dirent *d;
 
 	if (! exec && ! name && ! pidfile) {
 		errno = EINVAL;
@@ -331,25 +331,30 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 		mpidfile = rc_xstrdup ("pidfile=");
 
 	/* Regardless, erase any existing daemon info */
-	files = rc_ls_dir (dirpath, 0);
-	STRLIST_FOREACH (files, file, i) {
-		ffile = rc_strcatpaths (dirpath, file, (char *) NULL);
-		nfiles++;
+	if ((dp = opendir (dirpath))) {
+		while ((d = readdir (dp))) {
+			if (d->d_name[0] == '.')
+				continue;
+			file = rc_strcatpaths (dirpath, d->d_name, (char *) NULL);
+			nfiles++;
 
-		if (! oldfile) {
-			if (_match_daemon (dirpath, file, mexec, mname, mpidfile)) {
-				unlink (ffile);
-				oldfile = ffile;
-				nfiles--;
+			if (! oldfile) {
+				if (_match_daemon (dirpath, d->d_name,
+								   mexec, mname, mpidfile))
+				{
+					unlink (file);
+					oldfile = file;
+					nfiles--;
+				}
+			} else {
+				rename (file, oldfile);
+				free (oldfile);
+				oldfile = file;
 			}
-		} else {
-			rename (ffile, oldfile);
-			free (oldfile);
-			oldfile = ffile;
 		}
+		free (file);
+		closedir (dp);
 	}
-	free (ffile); 
-	rc_strlist_free (files);
 
 	/* Now store our daemon info */
 	if (started) {
@@ -387,6 +392,8 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	char *mexec;
 	bool retval = false;
 	char *svc;
+	DIR *dp;
+	struct dirent *d;
 
 	if (! service || ! exec)
 		return (false);
@@ -407,13 +414,16 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 		retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
 		free (file);
 	} else {
-		char **files = rc_ls_dir (dirpath, 0);
-		STRLIST_FOREACH (files, file, i) {
-			retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
-			if (retval)
-				break;
+		if ((dp = opendir (dirpath))) {
+			while ((d = readdir (dp))) {
+				if (d->d_name[0] == ',')
+					continue;
+				retval = _match_daemon (dirpath, d->d_name, mexec, NULL, NULL);
+				if (retval)
+					break;
+			}
+			closedir (dp);
 		}
-		rc_strlist_free (files);
 	}
 
 	free (dirpath);
@@ -425,10 +435,9 @@ librc_hidden_def(rc_service_started_daemon)
 bool rc_service_daemons_crashed (const char *service)
 {
 	char *dirpath;
-	char **files;
-	char *file;
+	DIR *dp;
+	struct dirent *d;
 	char *path;
-	int i;
 	FILE *fp;
 	char buffer[RC_LINEBUFFER];
 	char *exec = NULL;
@@ -449,10 +458,16 @@ bool rc_service_daemons_crashed (const char *service)
 							  (char *) NULL);
 	free (svc);
 
+	if (! (dp = opendir (dirpath)))
+		return (false);
+
 	memset (buffer, 0, sizeof (buffer));
-	files = rc_ls_dir (dirpath, 0);
-	STRLIST_FOREACH (files, file, i) {
-		path = rc_strcatpaths (dirpath, file, (char *) NULL);
+
+	while ((d = readdir (dp))) {
+		if (d->d_name[0] == '.')
+			continue;
+
+		path = rc_strcatpaths (dirpath, d->d_name, (char *) NULL);
 		fp = fopen (path, "r");
 		free (path);
 		if (! fp)
@@ -530,7 +545,7 @@ bool rc_service_daemons_crashed (const char *service)
 	free (exec);
 	free (name);
 	free (dirpath);
-	rc_strlist_free (files);
+	closedir (dp);
 
 	return (retval);
 }

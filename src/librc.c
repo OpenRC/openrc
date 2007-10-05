@@ -42,6 +42,50 @@ static const rc_service_state_name_t rc_service_state_names[] = {
 	{ 0, NULL}
 };
 
+
+#define LS_INITD	0x01
+#define LS_DIR   0x02
+static char **ls_dir (const char *dir, int options)
+{
+	DIR *dp;
+	struct dirent *d;
+	char **list = NULL;
+
+	if ((dp = opendir (dir)) == NULL) 
+		return (NULL);
+
+	errno = 0;
+	while (((d = readdir (dp)) != NULL) && errno == 0) {
+		if (d->d_name[0] != '.') {
+			if (options & LS_INITD) {
+				int l = strlen (d->d_name);
+				char *init = rc_strcatpaths (RC_INITDIR, d->d_name,
+											 (char *) NULL);
+				bool ok = rc_exists (init);
+				free (init);
+				if (! ok)
+					continue;
+
+				/* .sh files are not init scripts */
+				if (l > 2 && d->d_name[l - 3] == '.' &&
+					d->d_name[l - 2] == 's' &&
+					d->d_name[l - 1] == 'h')
+					continue;
+			}
+			if (options & LS_DIR) {
+				struct stat buf;
+
+				if (stat (d->d_name, &buf) == 0 && ! S_ISDIR (buf.st_mode))
+					continue;
+			}
+			rc_strlist_addsort (&list, d->d_name);
+		}
+	}
+	closedir (dp);
+
+	return (list);
+}
+
 static const char *rc_parse_service_state (rc_service_state_t state)
 {
 	int i;
@@ -68,7 +112,7 @@ librc_hidden_def(rc_runlevel_stopping)
 
 char **rc_runlevel_list (void)
 {
-	return (rc_ls_dir (RC_RUNLEVELDIR, RC_LS_DIR));
+	return (ls_dir (RC_RUNLEVELDIR, LS_DIR));
 }
 librc_hidden_def(rc_runlevel_list)
 
@@ -376,7 +420,7 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 	/* These are final states, so remove us from scheduled */
 	if (state == RC_SERVICE_STARTED || state == RC_SERVICE_STOPPED) {
 		char *sdir = rc_strcatpaths (RC_SVCDIR, "scheduled", (char *) NULL);
-		char **dirs = rc_ls_dir (sdir, 0);
+		char **dirs = ls_dir (sdir, 0);
 		char *dir;
 		int serrno;
 
@@ -657,7 +701,7 @@ char **rc_services_in_runlevel (const char *runlevel)
 	char **list = NULL;
 
 	if (! runlevel)
-		return (rc_ls_dir (RC_INITDIR, RC_LS_INITD));
+		return (ls_dir (RC_INITDIR, LS_INITD));
 
 	/* These special levels never contain any services */
 	if (strcmp (runlevel, RC_LEVEL_SYSINIT) == 0 ||
@@ -665,7 +709,7 @@ char **rc_services_in_runlevel (const char *runlevel)
 		return (NULL);
 
 	dir = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, (char *) NULL);
-	list = rc_ls_dir (dir, RC_LS_INITD);
+	list = ls_dir (dir, LS_INITD);
 	free (dir);
 	return (list);
 }
@@ -678,13 +722,13 @@ char **rc_services_in_state (rc_service_state_t state)
 	char **list = NULL;
 
 	if (state == RC_SERVICE_SCHEDULED) {
-		char **dirs = rc_ls_dir (dir, 0);
+		char **dirs = ls_dir (dir, 0);
 		char *d;
 		int i;
 
 		STRLIST_FOREACH (dirs, d, i) {
 			char *p = rc_strcatpaths (dir, d, (char *) NULL);
-			char **entries = rc_ls_dir (p, RC_LS_INITD);
+			char **entries = ls_dir (p, LS_INITD);
 			char *e;
 			int j;
 
@@ -698,7 +742,7 @@ char **rc_services_in_state (rc_service_state_t state)
 		if (dirs)
 			free (dirs);
 	} else {
-		list = rc_ls_dir (dir, RC_LS_INITD);
+		list = ls_dir (dir, LS_INITD);
 	}
 
 	free (dir);
@@ -758,7 +802,7 @@ librc_hidden_def(rc_service_delete)
 
 char **rc_services_scheduled_by (const char *service)
 {
-	char **dirs = rc_ls_dir (RC_SVCDIR "/scheduled", 0);
+	char **dirs = ls_dir (RC_SVCDIR "/scheduled", 0);
 	char **list = NULL;
 	char *dir;
 	int i;
@@ -784,7 +828,7 @@ char **rc_services_scheduled (const char *service)
 	char **list = NULL;
 
 	free (svc);
-	list = rc_ls_dir (dir, RC_LS_INITD);
+	list = ls_dir (dir, LS_INITD);
 	free (dir);
 	return (list);
 }

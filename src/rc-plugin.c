@@ -5,6 +5,7 @@
    Released under the GPLv2
    */
 
+#include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -49,10 +50,12 @@ dlfunc_t dlfunc (void * __restrict handle, const char * __restrict symbol)
 
 void rc_plugin_load (void)
 {
-	char **files;
-	char *file;
-	int i;
+	DIR *dp;
+	struct dirent *d;
 	plugin_t *plugin = plugins;
+	char *p;
+	void *h;
+	int (*fptr) (rc_hook_t, const char *);
 
 	/* Don't load plugins if we're in one */
 	if (rc_in_plugin)
@@ -61,15 +64,15 @@ void rc_plugin_load (void)
 	/* Ensure some sanity here */
 	rc_plugin_unload ();
 
-	if (! rc_exists (RC_PLUGINDIR))
+	if (! (dp = opendir (RC_PLUGINDIR)))
 		return;
 
-	files = rc_ls_dir (RC_PLUGINDIR, 0);
-	STRLIST_FOREACH (files, file, i) {
-		char *p = rc_strcatpaths (RC_PLUGINDIR, file, NULL);
-		void *h = dlopen (p, RTLD_LAZY);
-		int (*fptr) (rc_hook_t, const char *); 
+	while ((d = readdir (dp))) {
+		if (d->d_name[0] == '.')
+			continue;
 
+		p = rc_strcatpaths (RC_PLUGINDIR, d->d_name, NULL);
+		h = dlopen (p, RTLD_LAZY);
 		free (p);
 		if (! h) {
 			eerror ("dlopen: %s", dlerror ());
@@ -78,7 +81,7 @@ void rc_plugin_load (void)
 
 		fptr = (int (*)(rc_hook_t, const char*)) dlfunc (h, RC_PLUGIN_HOOK);
 		if (! fptr) {
-			eerror ("%s: cannot find symbol `%s'", file, RC_PLUGIN_HOOK);
+			eerror ("%s: cannot find symbol `%s'", d->d_name, RC_PLUGIN_HOOK);
 			dlclose (h);
 		} else {
 			if (plugin) {
@@ -88,13 +91,12 @@ void rc_plugin_load (void)
 				plugin = plugins = rc_xmalloc (sizeof (plugin_t));
 
 			memset (plugin, 0, sizeof (plugin_t));
-			plugin->name = rc_xstrdup (file);
+			plugin->name = rc_xstrdup (d->d_name);
 			plugin->handle = h;
 			plugin->hook = fptr;
 		}
 	}
-
-	rc_strlist_free (files);
+	closedir (dp);
 }
 
 void rc_plugin_run (rc_hook_t hook, const char *value)

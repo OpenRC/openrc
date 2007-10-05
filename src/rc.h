@@ -438,17 +438,6 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
  * @return true if it matches true, yes or 1, false if otherwise. */
 bool rc_env_bool (const char *variable);
 
-/*! @name rc_ls_dir options */
-/*! Ensure that an init.d service exists for each file returned */
-#define RC_LS_INITD	0x01
-#define RC_LS_DIR   0x02
-
-/*! Return a NULL terminted sorted list of the contents of the directory
- * @param dir to list
- * @param options any options to apply
- * @return NULL terminated list */
-char **rc_ls_dir (const char *dir, int options);
-
 /*! Remove a directory
  * @param pathname to remove
  * @param top remove the top level directory too

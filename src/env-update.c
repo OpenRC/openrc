@@ -12,6 +12,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -90,8 +91,8 @@ static const char * const longopts_help[] = {
 
 int env_update (int argc, char **argv)
 {
-	char **files = rc_ls_dir (ENVDIR, 0);
-	char *file;
+	DIR *dp;
+	struct dirent *d;
 	char **envs = NULL;
 	char *env;
 	int i = 0;
@@ -108,6 +109,9 @@ int env_update (int argc, char **argv)
 	bool ldconfig = true;
 	bool fork_ldconfig = false;
 	int nents = 0;
+	char *path;
+	char **entries = NULL;
+	struct stat buf;
 
 	applet = argv[0];
 
@@ -126,45 +130,50 @@ int env_update (int argc, char **argv)
 		}
 	}
 
-	if (! files)
-		eerrorx ("%s: no files in " ENVDIR " to process", applet);
+	if (! (dp = opendir (ENVDIR)))
+		eerrorx ("%s: opendir `" ENVDIR "': %s", applet, strerror (errno));
 
-	STRLIST_FOREACH (files, file, i) {
-		char *path = rc_strcatpaths (ENVDIR, file, (char *) NULL);
-		char **entries = NULL;
-		struct stat buf;
+	while ((d = readdir (dp))) {
+		if (d->d_name[0] == '.')
+			continue;
 
-		j = strlen (file);
-		if (stat (file, &buf) == 0 && S_ISDIR (buf.st_mode) == 0 &&
+		j = strlen (d->d_name);
+		if (stat (d->d_name, &buf) == 0 && S_ISDIR (buf.st_mode) == 0 &&
 			j > 2 &&
-			*file >= '0' &&
-			*file <= '9' &&
-			*(file + 1) >= '0' &&
-			*(file + 1) <= '9' &&
-			*(file + j - 1) != '~' &&
-			(j < 4 || strcmp (file + j - 4, ".bak") != 0) &&
-			(j < 5 || strcmp (file + j - 5, ".core") != 0))
+			d->d_name[0] >= '0' &&
+			d->d_name[0] <= '9' &&
+			d->d_name[1] >= '0' &&
+			d->d_name[1] <= '9' &&
+			d->d_name[j - 1] != '~' &&
+			(j < 4 || strcmp (d->d_name + j - 4, ".bak") != 0) &&
+			(j < 5 || strcmp (d->d_name + j - 5, ".core") != 0))
+		{
+			path = rc_strcatpaths (ENVDIR, d->d_name, (char *) NULL);
 			entries = rc_config_load (path);
-		free (path);
+			free (path);
 
-		STRLIST_FOREACH (entries, entry, j) {
-			char *tmpent = rc_xstrdup (entry);
-			char *value = tmpent;
-			char *var = strsep (&value, "=");
+			STRLIST_FOREACH (entries, entry, j) {
+				char *tmpent = rc_xstrdup (entry);
+				char *value = tmpent;
+				char *var = strsep (&value, "=");
 
-			if (strcmp (var, "COLON_SEPARATED") == 0)
-				while ((var = strsep (&value, " ")))
-					rc_strlist_addu (&mycolons, var);
-			else if (strcmp (var, "SPACE_SEPARATED") == 0)
-				while ((var = strsep (&value, " ")))
-					rc_strlist_addu (&myspaces, var);
-			else 
-				rc_strlist_add (&config, entry);
-			free (tmpent);
+				if (strcmp (var, "COLON_SEPARATED") == 0)
+					while ((var = strsep (&value, " ")))
+						rc_strlist_addu (&mycolons, var);
+				else if (strcmp (var, "SPACE_SEPARATED") == 0)
+					while ((var = strsep (&value, " ")))
+						rc_strlist_addu (&myspaces, var);
+				else 
+					rc_strlist_add (&config, entry);
+				free (tmpent);
+			}
+			rc_strlist_free (entries);
 		}
-
-		rc_strlist_free (entries);
 	}
+	closedir (dp);
+
+	if (! config)
+		eerrorx ("%s: nothing to process", applet);
 
 	STRLIST_FOREACH (config, entry, i) {
 		char *tmpent = rc_xstrdup (entry);
@@ -241,7 +250,6 @@ int env_update (int argc, char **argv)
 	rc_strlist_free (mycolons);
 	rc_strlist_free (myspaces);
 	rc_strlist_free (config);
-	rc_strlist_free (files);
 
 	if ((fp = fopen (PROFILE_ENV, "w")) == NULL)
 		eerrorx ("%s: fopen `%s': %s", applet, PROFILE_ENV, strerror (errno));
@@ -288,11 +296,8 @@ int env_update (int argc, char **argv)
 		return (EXIT_SUCCESS);
 	}
 
-	while ((file = strsep (&ldent, ":"))) {
-		if (strlen (file) == 0)
-			continue;
-
-		if (rc_strlist_addu (&ldents, file))
+	while ((env = strsep (&ldent, ":"))) {
+		if (*env && rc_strlist_addu (&ldents, env))
 			nents++;
 	}
 

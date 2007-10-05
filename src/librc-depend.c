@@ -497,13 +497,13 @@ char **rc_deptree_order_services (rc_depinfo_t *deptree, const char *runlevel,
 		strcmp (runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
 		strcmp (runlevel, RC_LEVEL_REBOOT) == 0)
 	{
-		list = rc_ls_dir (RC_SVCDIR_STARTING, RC_LS_INITD);
+		list = rc_services_in_state (RC_SERVICE_STARTED);
 
-		tmp = rc_ls_dir (RC_SVCDIR_INACTIVE, RC_LS_INITD);
+		tmp = rc_services_in_state (RC_SERVICE_INACTIVE);
 		rc_strlist_join (&list, tmp);
 		rc_strlist_free (tmp);
 
-		tmp = rc_ls_dir (RC_SVCDIR_INACTIVE, RC_LS_INITD);
+		tmp = rc_services_in_state (RC_SERVICE_STARTING);
 		rc_strlist_join (&list, tmp);
 		rc_strlist_free (tmp);
 		reverse = true;
@@ -511,18 +511,15 @@ char **rc_deptree_order_services (rc_depinfo_t *deptree, const char *runlevel,
 		list = rc_services_in_runlevel (runlevel);
 
 		/* Add coldplugged services */
-		tmp = rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD);
+		tmp = rc_services_in_state (RC_SERVICE_COLDPLUGGED);
 		rc_strlist_join (&list, tmp);
 		rc_strlist_free (tmp);
 
 		/* If we're not the boot runlevel then add that too */
 		if (strcmp (runlevel, bootlevel) != 0) {
-			char *path = rc_strcatpaths (RC_RUNLEVELDIR, bootlevel,
-										 (char *) NULL);
-			tmp = rc_ls_dir (path, RC_LS_INITD);
+			tmp = rc_services_in_runlevel (bootlevel);
 			rc_strlist_join (&list, tmp);
 			rc_strlist_free (tmp);
-			free (path);
 		}
 	}
 
@@ -547,10 +544,10 @@ static bool is_newer_than (const char *file, const char *target)
 {
 	struct stat buf;
 	time_t mtime;
-	char **targets;
-	char *t;
-	int i;
 	bool newer = true;
+	DIR *dp;
+	struct dirent *d;
+	char *path;
 
 	if (stat (file, &buf) != 0 || buf.st_size == 0)
 		return (false);
@@ -564,16 +561,21 @@ static bool is_newer_than (const char *file, const char *target)
 	if (mtime < buf.st_mtime)
 		return (false);
 
-	targets = rc_ls_dir (target, 0);
-	STRLIST_FOREACH (targets, t, i)
-	{
-		char *path = rc_strcatpaths (target, t, (char *) NULL);
+	if (! (dp = opendir (target)))
+		return (true);
+
+	while ((d = readdir (dp))) {
+		if (d->d_name[0] == '.')
+			continue;
+
+		path = rc_strcatpaths (target, d->d_name, (char *) NULL);
 		newer = is_newer_than (file, path);
 		free (path);
 		if (! newer)
 			break;
 	}
-	rc_strlist_free (targets);
+	closedir (dp);
+
 	return (newer);
 }
 

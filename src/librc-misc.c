@@ -94,47 +94,6 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 }
 librc_hidden_def(rc_strcatpaths)
 
-char **rc_ls_dir (const char *dir, int options)
-{
-	DIR *dp;
-	struct dirent *d;
-	char **list = NULL;
-
-	if ((dp = opendir (dir)) == NULL) 
-		return (NULL);
-
-	errno = 0;
-	while (((d = readdir (dp)) != NULL) && errno == 0) {
-		if (d->d_name[0] != '.') {
-			if (options & RC_LS_INITD) {
-				int l = strlen (d->d_name);
-				char *init = rc_strcatpaths (RC_INITDIR, d->d_name,
-											 (char *) NULL);
-				bool ok = rc_exists (init);
-				free (init);
-				if (! ok)
-					continue;
-
-				/* .sh files are not init scripts */
-				if (l > 2 && d->d_name[l - 3] == '.' &&
-					d->d_name[l - 2] == 's' &&
-					d->d_name[l - 1] == 'h')
-					continue;
-			}
-			if (options & RC_LS_DIR) {
-				struct stat buf;
-
-				if (stat (d->d_name, &buf) == 0 && ! S_ISDIR (buf.st_mode))
-					continue;
-			}
-			rc_strlist_addsort (&list, d->d_name);
-		}
-	}
-	closedir (dp);
-
-	return (list);
-}
-librc_hidden_def(rc_ls_dir)
 
 bool rc_rm_dir (const char *pathname, bool top)
 {

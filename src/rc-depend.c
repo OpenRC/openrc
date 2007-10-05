@@ -29,7 +29,7 @@ rc_depinfo_t *_rc_deptree_load (void) {
 
 		ebegin ("Caching service dependencies");
 		retval = rc_deptree_update ();
-		eend (retval, "Failed to update the dependency tree");
+		eend (retval ? 0 : -1, "Failed to update the dependency tree");
 	}
 
 	return (rc_deptree_load ());

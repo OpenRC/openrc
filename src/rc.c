@@ -20,6 +20,7 @@
 #include <sys/utsname.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <dirent.h>
 #include <ctype.h>
 #include <getopt.h>
 #include <libgen.h>
@@ -331,7 +332,7 @@ static int do_mark_service (int argc, char **argv)
 				eerror ("%s: failed to signal parent %d: %s",
 						applet, pid, strerror (errno));
 
-		/* Remove the exclsive time test. This ensures that it's not
+		/* Remove the exclusive time test. This ensures that it's not
 		   in control as well */
 		l = strlen (RC_SVCDIR "exclusive") +
 			strlen (svcname) +
@@ -420,7 +421,7 @@ static char read_key (bool block)
 	struct termios termios;
 	char c = 0;
 	int fd = fileno (stdin);
-	
+
 	if (! isatty (fd))
 		return (false);
 
@@ -736,6 +737,8 @@ int main (int argc, char **argv)
 	char ksoftbuffer [PATH_MAX];
 	char pidstr[6];
 	int opt;
+	DIR *dp;
+	struct dirent *d;
 
 	atexit (cleanup);
 	if (argv[0])
@@ -1032,18 +1035,14 @@ int main (int argc, char **argv)
 	   its coldplugging thing. runscript knows when we're not ready so it
 	   stores a list of coldplugged services in DEVBOOT for us to pick up
 	   here when we are ready for them */
-	start_services = rc_ls_dir (DEVBOOT, RC_LS_INITD);
-	if (start_services) {
+	if ((dp = opendir (DEVBOOT))) {
+		while ((d = readdir (dp))) {
+			if (rc_service_exists (d->d_name) &&
+				rc_service_plugable (d->d_name))
+				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
+		}
+		closedir (dp);
 		rc_rm_dir (DEVBOOT, true);
-
-		STRLIST_FOREACH (start_services, service, i)
-			if (rc_service_plugable (service))
-				rc_service_mark (service, RC_SERVICE_COLDPLUGGED);
-		/* We need to dump this list now.
-		   This may seem redunant, but only Linux needs this and saves on
-		   code bloat. */
-		rc_strlist_free (start_services);
-		start_services = NULL;
 	}
 #else
 	/* BSD's on the other hand populate /dev automagically and use devd.
@@ -1057,50 +1056,52 @@ int main (int argc, char **argv)
 	{
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 		/* The net interfaces are easy - they're all in net /dev/net :) */
-		start_services = rc_ls_dir ("/dev/net", 0);
-		STRLIST_FOREACH (start_services, service, i) {
-			j = (strlen ("net.") + strlen (service) + 1);
-			tmp = rc_xmalloc (sizeof (char *) * j);
-			snprintf (tmp, j, "net.%s", service);
-			if (rc_service_exists (tmp) && rc_service_plugable (tmp))
-				rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
-			CHAR_FREE (tmp);
+		if ((dp = opendir ("/dev/net"))) {
+			while ((d = readdir (dp))) {
+				i = (strlen ("net.") + strlen (d->d_name) + 1);
+				tmp = rc_xmalloc (sizeof (char *) * i);
+				snprintf (tmp, i, "net.%s", d->d_name);
+				if (rc_service_exists (d->d_name) &&
+					rc_service_plugable (d->d_name))
+					rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
+				CHAR_FREE (tmp);
+			}
+			closedir (dp);
 		}
-		rc_strlist_free (start_services);
 #endif
 
 		/* The mice are a little more tricky.
 		   If we coldplug anything else, we'll probably do it here. */
-		start_services = rc_ls_dir ("/dev", 0);
-		STRLIST_FOREACH (start_services, service, i) {
-			if (strncmp (service, "psm", 3) == 0 ||
-				strncmp (service, "ums", 3) == 0)
-			{
-				char *p = service + 3;
-				if (p && isdigit (*p)) {
-					j = (strlen ("moused.") + strlen (service) + 1);
-					tmp = rc_xmalloc (sizeof (char *) * j);
-					snprintf (tmp, j, "moused.%s", service);
-					if (rc_service_exists (tmp) && rc_service_plugable (tmp))
-						rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
-					CHAR_FREE (tmp);
+		if ((dp == opendir ("/dev"))) {
+			while ((d = readdir (dp))) {
+				if (strncmp (d->d_name, "psm", 3) == 0 ||
+					strncmp (d->d_name, "ums", 3) == 0)
+				{
+					char *p = d->d_name + 3;
+					if (p && isdigit (*p)) {
+						i = (strlen ("moused.") + strlen (d->d_name) + 1);
+						tmp = rc_xmalloc (sizeof (char *) * i);
+						snprintf (tmp, i, "moused.%s", d->d_name);
+						if (rc_service_exists (tmp) && rc_service_plugable (tmp))
+							rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
+						CHAR_FREE (tmp);
+					}
 				}
 			}
+			closedir (dp);
 		}
-		rc_strlist_free (start_services);
-		start_services = NULL;
 	}
 #endif
 
 	/* Build a list of all services to stop and then work out the
 	   correct order for stopping them */
-	stop_services = rc_ls_dir (RC_SVCDIR_STARTING, RC_LS_INITD);
-	
-	tmplist = rc_ls_dir (RC_SVCDIR_INACTIVE, RC_LS_INITD);
+	stop_services = rc_services_in_state (RC_SERVICE_STARTING);
+
+	tmplist = rc_services_in_state (RC_SERVICE_INACTIVE);
 	rc_strlist_join (&stop_services, tmplist);
 	rc_strlist_free (tmplist);
 
-	tmplist = rc_ls_dir (RC_SVCDIR_STARTED, RC_LS_INITD);
+	tmplist = rc_services_in_state (RC_SERVICE_STARTED);
 	rc_strlist_join (&stop_services, tmplist);
 	rc_strlist_free (tmplist);
 
@@ -1110,7 +1111,7 @@ int main (int argc, char **argv)
 	rc_strlist_add (&types, "iafter");
 
 	deporder = rc_deptree_depends (deptree, types, stop_services,
-							   runlevel, depoptions | RC_DEP_STOP);
+								   runlevel, depoptions | RC_DEP_STOP);
 
 	rc_strlist_free (stop_services);
 	rc_strlist_free (types);
@@ -1120,7 +1121,7 @@ int main (int argc, char **argv)
 	rc_strlist_reverse (stop_services);
 
 	/* Load our list of coldplugged services */
-	coldplugged_services = rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD);
+	coldplugged_services = rc_services_in_state (RC_SERVICE_COLDPLUGGED);
 
 	/* Load our start services now.
 	   We have different rules dependent on runlevel. */
@@ -1133,15 +1134,12 @@ int main (int argc, char **argv)
 			}
 			printf ("\n");
 		}
-		tmp = rc_strcatpaths (RC_RUNLEVELDIR, newlevel ? newlevel : runlevel,
-							  (char *) NULL);
-		tmplist = rc_ls_dir (tmp, RC_LS_INITD);
+		tmplist = rc_services_in_runlevel (newlevel ? newlevel : runlevel);
 		rc_strlist_join (&start_services, tmplist);
 		rc_strlist_free (tmplist);
-		CHAR_FREE (tmp);
 	} else {
 		/* Store our list of coldplugged services */
-		tmplist = rc_ls_dir (RC_SVCDIR_COLDPLUGGED, RC_LS_INITD);
+		tmplist = rc_services_in_state (RC_SERVICE_COLDPLUGGED);
 		rc_strlist_join (&coldplugged_services, tmplist);
 		rc_strlist_free (tmplist);
 		if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
@@ -1155,7 +1153,7 @@ int main (int argc, char **argv)
 			tmplist = rc_services_in_runlevel (newlevel ? newlevel : runlevel);
 			rc_strlist_join (&start_services, tmplist);
 			rc_strlist_free (tmplist);
-			
+
 			STRLIST_FOREACH (coldplugged_services, service, i)
 				rc_strlist_add (&start_services, service);
 
@@ -1229,7 +1227,7 @@ int main (int argc, char **argv)
 		   going to be started depends on us */
 		rc_strlist_add (&stopdeps, service);
 		deporder = rc_deptree_depends (deptree, types, stopdeps,
-								   runlevel, RC_DEP_STRICT);
+									   runlevel, RC_DEP_STRICT);
 		rc_strlist_free (stopdeps);
 		stopdeps = NULL;
 		found = false;
@@ -1299,7 +1297,7 @@ int main (int argc, char **argv)
 	rc_strlist_add (&types, "iuse");
 	rc_strlist_add (&types, "iafter");
 	deporder = rc_deptree_depends (deptree, types, start_services,
-							   runlevel, depoptions | RC_DEP_START);
+								   runlevel, depoptions | RC_DEP_START);
 	rc_strlist_free (types);
 	types = NULL;
 	rc_strlist_free (start_services);
