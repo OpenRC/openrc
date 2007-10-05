@@ -72,7 +72,7 @@ if [ "${RC_UNAME}" = "Linux" ] ; then
 		fs="${fs}${fs:+|}${x}"
 	done
 	[ -n "${fs}" ] && fs="^(${fs})$"
-	do_unmount "mount -n -o remount,ro" "^(/dev|/dev/pts|/dev/shm|/proc|/proc/.*|/sys)$" "" "" "${fs}"
+	do_unmount "mount -n -o remount,ro" "^(/dev|/dev/.*|/proc|/proc/.*|/sys|/sys/.*)$" "" "" "${fs}"
 	eoutdent
 	eend $?
 	unmounted=$?
