@@ -205,7 +205,7 @@ static int do_e (int argc, char **argv)
 	}
 
 	if (message)
-		fmt = strdup ("%s");
+		fmt = xstrdup ("%s");
 
 	if (strcmp (applet, "einfo") == 0) 
 		einfo (fmt, message);
@@ -406,7 +406,7 @@ static char *proc_getent (const char *ent)
 			p += strlen (ent);
 			if (*p == '=')
 				p++;
-			value = strdup (strsep (&p, " "));
+			value = xstrdup (strsep (&p, " "));
 		}
 	} else
 		errno = ENOENT;
@@ -757,7 +757,7 @@ int main (int argc, char **argv)
 
 	atexit (cleanup);
 	if (argv[0])
-		applet = strdup (basename (argv[0]));
+		applet = xstrdup (basename (argv[0]));
 
 	if (! applet)
 		eerrorx ("arguments required");
@@ -858,7 +858,7 @@ int main (int argc, char **argv)
 		   some kernels bitch about this according to the environ man pages
 		   so we walk though environ and call unsetenv for each value. */
 		while (environ[0]) {
-			tmp = strdup (environ[0]);
+			tmp = xstrdup (environ[0]);
 			p = tmp;
 			var = strsep (&p, "=");
 			unsetenv (var);
@@ -1310,7 +1310,7 @@ int main (int argc, char **argv)
 	if (newlevel) {
 		rc_runlevel_set (newlevel);
 		free (runlevel);
-		runlevel = strdup (newlevel);
+		runlevel = xstrdup (newlevel);
 		setenv ("RC_SOFTLEVEL", runlevel, 1);
 	}
 

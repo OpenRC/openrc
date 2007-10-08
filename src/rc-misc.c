@@ -88,7 +88,7 @@ char **env_filter (void)
 			/* Now go through the env var and only add bits not in our PREFIX */
 			sep = env_var;
 			while ((token = strsep (&sep, ":"))) {
-				char *np = strdup (PATH_PREFIX);
+				char *np = xstrdup (PATH_PREFIX);
 				char *npp = np;
 				char *tok = NULL;
 				while ((tok = strsep (&npp, ":")))

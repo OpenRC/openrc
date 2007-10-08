@@ -120,7 +120,7 @@ char **rc_config_load (const char *file)
 		if (! token)
 			continue;
 
-		entry = strdup (token);
+		entry = xstrdup (token);
 
 		/* Preserve shell coloring */
 		if (*p == '$')
@@ -144,7 +144,7 @@ char **rc_config_load (const char *file)
 		/* In shells the last item takes precedence, so we need to remove
 		   any prior values we may already have */
 		STRLIST_FOREACH (list, line, i) {
-			char *tmp = strdup (line);
+			char *tmp = xstrdup (line);
 			linep = tmp; 
 			linetok = strsep (&linep, "=");
 			if (strcmp (linetok, entry) == 0) {

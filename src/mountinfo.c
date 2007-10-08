@@ -173,7 +173,7 @@ static char **find_mounts (struct args *args)
 		for (o = optnames; flags && o->o_opt; o++) {
 			if (flags & o->o_opt) {
 				if (! options)
-					options = strdup (o->o_name);
+					options = xstrdup (o->o_name);
 				else {
 					char *tmp = NULL;
 					asprintf (&tmp, "%s,%s", options, o->o_name);

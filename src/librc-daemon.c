@@ -304,7 +304,7 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 		errno = EINVAL;
 		return (false);
 	}
-	svc = strdup (service);
+	svc = xstrdup (service);
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons",
 							  basename (svc), (char *) NULL);
 	free (svc);
@@ -314,21 +314,21 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 		mexec = xmalloc (sizeof (char *) * i);
 		snprintf (mexec, i, "exec=%s", exec);
 	} else
-		mexec = strdup ("exec=");
+		mexec = xstrdup ("exec=");
 
 	if (name) {
 		i = strlen (name) + 6;
 		mname = xmalloc (sizeof (char *) * i);
 		snprintf (mname, i, "name=%s", name);
 	} else
-		mname = strdup ("name=");
+		mname = xstrdup ("name=");
 
 	if (pidfile) {
 		i = strlen (pidfile) + 9;
 		mpidfile = xmalloc (sizeof (char *) * i);
 		snprintf (mpidfile, i, "pidfile=%s", pidfile);
 	} else
-		mpidfile = strdup ("pidfile=");
+		mpidfile = xstrdup ("pidfile=");
 
 	/* Regardless, erase any existing daemon info */
 	if ((dp = opendir (dirpath))) {
@@ -398,7 +398,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	if (! service || ! exec)
 		return (false);
 
-	svc = strdup (service);
+	svc = xstrdup (service);
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
 							  (char *) NULL);
 	free (svc);
@@ -453,7 +453,7 @@ bool rc_service_daemons_crashed (const char *service)
 	if (! service)
 		return (false);
 
-	svc = strdup (service);
+	svc = xstrdup (service);
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
 							  (char *) NULL);
 	free (svc);
@@ -488,15 +488,15 @@ bool rc_service_daemons_crashed (const char *service)
 			if (strcmp (token, "exec") == 0) {
 				if (exec)
 					free (exec);
-				exec = strdup (p);
+				exec = xstrdup (p);
 			} else if (strcmp (token, "name") == 0) {
 				if (name)
 					free (name);
-				name = strdup (p);
+				name = xstrdup (p);
 			} else if (strcmp (token, "pidfile") == 0) {
 				if (pidfile)
 					free (pidfile);
-				pidfile = strdup (p);
+				pidfile = xstrdup (p);
 			}
 		}
 		fclose (fp);

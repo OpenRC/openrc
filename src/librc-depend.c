@@ -110,7 +110,7 @@ rc_depinfo_t *rc_deptree_load (void)
 				depinfo = depinfo->next;
 			}
 			memset (depinfo, 0, sizeof (rc_depinfo_t));
-			depinfo->service = strdup (e);
+			depinfo->service = xstrdup (e);
 			deptype = NULL;
 			continue;
 		}
@@ -139,7 +139,7 @@ rc_depinfo_t *rc_deptree_load (void)
 			}
 
 		if (! deptype->type)
-			deptype->type = strdup (type);
+			deptype->type = xstrdup (type);
 
 		rc_strlist_addsort (&deptype->services, e);
 	}
@@ -717,7 +717,7 @@ bool rc_deptree_update (void)
 				depinfo = last_depinfo->next;
 			}
 			memset (depinfo, 0, sizeof (rc_depinfo_t));
-			depinfo->service = strdup (service);
+			depinfo->service = xstrdup (service);
 		}
 
 		/* We may not have any depends */
@@ -747,7 +747,7 @@ bool rc_deptree_update (void)
 					deptype = last_deptype->next;
 				}
 				memset (deptype, 0, sizeof (rc_deptype_t));
-				deptype->type = strdup (type);
+				deptype->type = xstrdup (type);
 			}
 		}
 
@@ -794,7 +794,7 @@ bool rc_deptree_update (void)
 					last_depinfo->next = xmalloc (sizeof (rc_depinfo_t));
 					di = last_depinfo->next;
 					memset (di, 0, sizeof (rc_depinfo_t));
-					di->service = strdup (service);
+					di->service = xstrdup (service);
 				}
 			}
 	}
@@ -844,7 +844,7 @@ bool rc_deptree_update (void)
 						dt = last_deptype->next;
 					}
 					memset (dt, 0, sizeof (rc_deptype_t));
-					dt->type = strdup (deppairs[i].addto);
+					dt->type = xstrdup (deppairs[i].addto);
 				}
 
 				already_added = false;

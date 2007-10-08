@@ -152,7 +152,7 @@ int env_update (int argc, char **argv)
 			entries = rc_config_load (path);
 
 			STRLIST_FOREACH (entries, entry, j) {
-				char *tmpent = strdup (entry);
+				char *tmpent = xstrdup (entry);
 				char *value = tmpent;
 				char *var = strsep (&value, "=");
 
@@ -176,7 +176,7 @@ int env_update (int argc, char **argv)
 		eerrorx ("%s: nothing to process", applet);
 
 	STRLIST_FOREACH (config, entry, i) {
-		char *tmpent = strdup (entry);
+		char *tmpent = xstrdup (entry);
 		char *value = tmpent;
 		char *var = strsep (&value, "=");
 		char *match;
@@ -220,7 +220,7 @@ int env_update (int argc, char **argv)
 		}
 
 		STRLIST_FOREACH (envs, env, j) {
-			char *tmpenv = strdup (env);
+			char *tmpenv = xstrdup (env);
 			char *tmpvalue = tmpenv;
 			char *tmpentry = strsep (&tmpvalue, "=");
 
@@ -232,7 +232,7 @@ int env_update (int argc, char **argv)
 							  "%s%s", colon ? ":" : " ", value);
 				} else {
 					free (envs[j - 1]);
-					envs[j - 1] = strdup (entry);
+					envs[j - 1] = xstrdup (entry);
 				}
 				replaced = true;
 			}
@@ -256,7 +256,7 @@ int env_update (int argc, char **argv)
 	fprintf (fp, NOTICE, "/etc/profile", PROFILE_ENV);
 
 	STRLIST_FOREACH (envs, env, i) {
-		char *tmpent = strdup (env);
+		char *tmpent = xstrdup (env);
 		char *value = tmpent;
 		char *var = strsep (&value, "=");
 		if (strcmp (var, "LDPATH") != 0) {
@@ -274,7 +274,7 @@ int env_update (int argc, char **argv)
 	fprintf (fp, NOTICE, "/etc/csh.cshrc", PROFILE_ENV);
 
 	STRLIST_FOREACH (envs, env, i) {
-		char *tmpent = strdup (env);
+		char *tmpent = xstrdup (env);
 		char *value = tmpent;
 		char *var = strsep (&value, "=");
 		if (strcmp (var, "LDPATH") != 0) {

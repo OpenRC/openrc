@@ -27,7 +27,7 @@ static char *_rc_strlist_add (char ***list, const char *item, bool uniq)
 	}
 
 	newlist = xrealloc (lst, sizeof (char *) * (i + 2));
-	newlist[i] = strdup (item);
+	newlist[i] = xstrdup (item);
 	newlist[i + 1] = NULL;
 
 	*list = newlist;
@@ -80,7 +80,7 @@ static char *_rc_strlist_addsort (char ***list, const char *item,
 		i++;
 
 	tmp1 = newlist[i];
-	retval = newlist[i] = strdup (item);
+	retval = newlist[i] = xstrdup (item);
 	do {
 		i++;
 		tmp2 = newlist[i];

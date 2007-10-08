@@ -1009,7 +1009,7 @@ int runscript (int argc, char **argv)
 
 	/* We need the full path to the service */
 	if (*argv[1] == '/')
-		service = strdup (argv[1]);
+		service = xstrdup (argv[1]);
 	else {
 		char pwd[PATH_MAX];
 		if (! getcwd (pwd, PATH_MAX))
@@ -1017,7 +1017,7 @@ int runscript (int argc, char **argv)
 		service = rc_strcatpaths (pwd, argv[1], (char *) NULL);
 	}
 
-	applet = strdup (basename (service));
+	applet = xstrdup (basename (service));
 	atexit (cleanup);
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
@@ -1043,7 +1043,7 @@ int runscript (int argc, char **argv)
 	}
 #endif
 
-	if ((softlevel = strdup (getenv ("RC_SOFTLEVEL"))) == NULL) {
+	if ((softlevel = xstrdup (getenv ("RC_SOFTLEVEL"))) == NULL) {
 		/* Ensure our environment is pure
 		   Also, add our configuration to it */
 		tmplist = env_config ();
@@ -1066,7 +1066,7 @@ int runscript (int argc, char **argv)
 			   some kernels bitch about this according to the environ man pages
 			   so we walk though environ and call unsetenv for each value. */
 			while (environ[0]) {
-				tmp = strdup (environ[0]);
+				tmp = xstrdup (environ[0]);
 				p = tmp;
 				var = strsep (&p, "=");
 				unsetenv (var);
@@ -1144,7 +1144,7 @@ int runscript (int argc, char **argv)
 	   that is being called and not any dependents */
 	if (getenv ("IN_BACKGROUND")) {
 		in_background = rc_env_bool ("IN_BACKGROUND");
-		ibsave = strdup (getenv ("IN_BACKGROUND"));
+		ibsave = xstrdup (getenv ("IN_BACKGROUND"));
 		unsetenv ("IN_BACKGROUND");
 	}
 

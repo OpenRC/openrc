@@ -593,7 +593,7 @@ int start_stop_daemon (int argc, char **argv)
 					char *cu = strsep (&p, ":");
 					struct passwd *pw = NULL;
 
-					changeuser = strdup (cu);
+					changeuser = xstrdup (cu);
 					if (sscanf (cu, "%d", &tid) != 1)
 						pw = getpwnam (cu);
 					else
@@ -886,7 +886,7 @@ int start_stop_daemon (int argc, char **argv)
 
 			/* For the path, remove the rcscript bin dir from it */
 			if (strncmp (env, "PATH=", 5) == 0) {
-				char *path = strdup (env);
+				char *path = xstrdup (env);
 				char *newpath = NULL;
 				char *p = path;
 				char *token;
