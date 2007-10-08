@@ -54,8 +54,7 @@ static char **ls_dir (const char *dir, int options)
 	if ((dp = opendir (dir)) == NULL) 
 		return (NULL);
 
-	errno = 0;
-	while (((d = readdir (dp)) != NULL) && errno == 0) {
+	while (((d = readdir (dp)) != NULL)) {
 		if (d->d_name[0] != '.') {
 			if (options & LS_INITD) {
 				int l = strlen (d->d_name);
