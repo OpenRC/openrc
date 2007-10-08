@@ -87,4 +87,7 @@ static inline bool rc_exists (const char *pathname)
 	return (stat (pathname, &buf) == 0);
 }
 
+char **env_filter (void);
+char **env_config (void);
+
 #endif

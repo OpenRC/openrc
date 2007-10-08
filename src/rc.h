@@ -334,14 +334,6 @@ char **rc_config_load (const char *file);
 /*! Return the value of the entry from a key=value list. */
 char *rc_config_value (char **list, const char *entry);
 
-/*! Return a NULL terminated string list of variables allowed through
- * from the current environemnt. */
-char **rc_env_filter (void);
-
-/*! Return a NULL terminated string list of enviroment variables made from
- * our configuration files. */
-char **rc_env_config (void);
-
 /*! Check if an environment variable is a boolean and return it's value.
  * If variable is not a boolean then we set errno to be ENOENT when it does
  * not exist or EINVAL if it's not a boolean.

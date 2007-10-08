@@ -485,7 +485,7 @@ static void sulogin (bool cont)
 	}
 #endif
 
-	newenv = rc_env_filter ();
+	newenv = env_filter ();
 
 	if (cont) {
 		int status = 0;
@@ -839,8 +839,8 @@ int main (int argc, char **argv)
 
 	/* Ensure our environment is pure
 	   Also, add our configuration to it */
-	env = rc_env_filter ();
-	tmplist = rc_env_config ();
+	env = env_filter ();
+	tmplist = env_config ();
 	rc_strlist_join (&env, tmplist);
 	rc_strlist_free (tmplist);
 

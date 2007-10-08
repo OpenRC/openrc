@@ -13,12 +13,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/utsname.h>
 #include <sys/wait.h>
-
-#ifdef __linux__
-#include <sys/sysinfo.h>
-#endif
 
 #include <dirent.h>
 #include <errno.h>
@@ -61,9 +56,6 @@ librc_hidden_proto(rc_deptree_order_services)
 librc_hidden_proto(rc_deptree_update)
 librc_hidden_proto(rc_deptree_update_needed)
 librc_hidden_proto(rc_env_bool)
-librc_hidden_proto(rc_env_config)
-librc_hidden_proto(rc_env_filter)
-librc_hidden_proto(rc_exists)
 librc_hidden_proto(rc_find_pids)
 librc_hidden_proto(rc_runlevel_exists)
 librc_hidden_proto(rc_runlevel_get)
