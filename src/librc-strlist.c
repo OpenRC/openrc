@@ -26,8 +26,8 @@ static char *_rc_strlist_add (char ***list, const char *item, bool uniq)
 		i++;
 	}
 
-	newlist = rc_xrealloc (lst, sizeof (char *) * (i + 2));
-	newlist[i] = rc_xstrdup (item);
+	newlist = xrealloc (lst, sizeof (char *) * (i + 2));
+	newlist[i] = strdup (item);
 	newlist[i + 1] = NULL;
 
 	*list = newlist;
@@ -69,7 +69,7 @@ static char *_rc_strlist_addsort (char ***list, const char *item,
 		i++;
 	}
 
-	newlist = rc_xrealloc (lst, sizeof (char *) * (i + 2));
+	newlist = xrealloc (lst, sizeof (char *) * (i + 2));
 
 	if (! i)
 		newlist[i] = NULL;
@@ -80,7 +80,7 @@ static char *_rc_strlist_addsort (char ***list, const char *item,
 		i++;
 
 	tmp1 = newlist[i];
-	retval = newlist[i] = rc_xstrdup (item);
+	retval = newlist[i] = strdup (item);
 	do {
 		i++;
 		tmp2 = newlist[i];
@@ -151,7 +151,7 @@ char *rc_strlist_join (char ***list1, char **list2)
 	while (list2[j])
 		j++;
 
-	newlist = rc_xrealloc (lst1, sizeof (char *) * (i + j + 1));
+	newlist = xrealloc (lst1, sizeof (char *) * (i + j + 1));
 
 	j = 0;
 	while (list2[j]) {

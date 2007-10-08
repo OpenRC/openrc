@@ -101,16 +101,16 @@ rc_depinfo_t *rc_deptree_load (void)
 
 			if (! deptree)
 			{
-				deptree = rc_xmalloc (sizeof (rc_depinfo_t));
+				deptree = xmalloc (sizeof (rc_depinfo_t));
 				depinfo = deptree;
 			}
 			else
 			{
-				depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
+				depinfo->next = xmalloc (sizeof (rc_depinfo_t));
 				depinfo = depinfo->next;
 			}
 			memset (depinfo, 0, sizeof (rc_depinfo_t));
-			depinfo->service = rc_xstrdup (e);
+			depinfo->service = strdup (e);
 			deptype = NULL;
 			continue;
 		}
@@ -126,20 +126,20 @@ rc_depinfo_t *rc_deptree_load (void)
 
 		if (! deptype)
 		{
-			depinfo->depends = rc_xmalloc (sizeof (rc_deptype_t));
+			depinfo->depends = xmalloc (sizeof (rc_deptype_t));
 			deptype = depinfo->depends;
 			memset (deptype, 0, sizeof (rc_deptype_t));
 		}
 		else
 			if (strcmp (deptype->type, type) != 0)
 			{
-				deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
+				deptype->next = xmalloc (sizeof (rc_deptype_t));
 				deptype = deptype->next;
 				memset (deptype, 0, sizeof (rc_deptype_t));
 			}
 
 		if (! deptype->type)
-			deptype->type = rc_xstrdup (type);
+			deptype->type = strdup (type);
 
 		rc_strlist_addsort (&deptype->services, e);
 	}
@@ -683,7 +683,7 @@ bool rc_deptree_update (void)
 	if (! (fp = popen (GENDEP, "r")))
 		return (false);
 
-	deptree = rc_xmalloc (sizeof (rc_depinfo_t));
+	deptree = xmalloc (sizeof (rc_depinfo_t));
 	memset (deptree, 0, sizeof (rc_depinfo_t));
 	memset (buffer, 0, RC_LINEBUFFER);
 
@@ -713,11 +713,11 @@ bool rc_deptree_update (void)
 				depinfo = last_depinfo;
 			else
 			{
-				last_depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
+				last_depinfo->next = xmalloc (sizeof (rc_depinfo_t));
 				depinfo = last_depinfo->next;
 			}
 			memset (depinfo, 0, sizeof (rc_depinfo_t));
-			depinfo->service = rc_xstrdup (service);
+			depinfo->service = strdup (service);
 		}
 
 		/* We may not have any depends */
@@ -738,16 +738,16 @@ bool rc_deptree_update (void)
 			{
 				if (! last_deptype)
 				{
-					depinfo->depends = rc_xmalloc (sizeof (rc_deptype_t));
+					depinfo->depends = xmalloc (sizeof (rc_deptype_t));
 					deptype = depinfo->depends;
 				}
 				else
 				{
-					last_deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
+					last_deptype->next = xmalloc (sizeof (rc_deptype_t));
 					deptype = last_deptype->next;
 				}
 				memset (deptype, 0, sizeof (rc_deptype_t));
-				deptype->type = rc_xstrdup (type);
+				deptype->type = strdup (type);
 			}
 		}
 
@@ -791,10 +791,10 @@ bool rc_deptree_update (void)
 				}
 				if (! di)
 				{
-					last_depinfo->next = rc_xmalloc (sizeof (rc_depinfo_t));
+					last_depinfo->next = xmalloc (sizeof (rc_depinfo_t));
 					di = last_depinfo->next;
 					memset (di, 0, sizeof (rc_depinfo_t));
-					di->service = rc_xstrdup (service);
+					di->service = strdup (service);
 				}
 			}
 	}
@@ -835,16 +835,16 @@ bool rc_deptree_update (void)
 				{
 					if (! last_deptype)
 					{
-						di->depends = rc_xmalloc (sizeof (rc_deptype_t));
+						di->depends = xmalloc (sizeof (rc_deptype_t));
 						dt = di->depends;
 					}
 					else
 					{
-						last_deptype->next = rc_xmalloc (sizeof (rc_deptype_t));
+						last_deptype->next = xmalloc (sizeof (rc_deptype_t));
 						dt = last_deptype->next;
 					}
 					memset (dt, 0, sizeof (rc_deptype_t));
-					dt->type = rc_xstrdup (deppairs[i].addto);
+					dt->type = strdup (deppairs[i].addto);
 				}
 
 				already_added = false;

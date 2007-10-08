@@ -54,7 +54,7 @@ char **env_filter (void)
 	if (! whitelist)
 		return (NULL);
 
-	if (rc_exists (PROFILE_ENV))
+	if (exists (PROFILE_ENV))
 		profile = rc_config_load (PROFILE_ENV);
 
 	STRLIST_FOREACH (whitelist, env_name, count) {
@@ -66,7 +66,7 @@ char **env_filter (void)
 
 		if (! env_var && profile) {
 			env_len = strlen (env_name) + strlen ("export ") + 1;
-			p = rc_xmalloc (sizeof (char *) * env_len);
+			p = xmalloc (sizeof (char *) * env_len);
 			snprintf (p, env_len, "export %s", env_name);
 			env_var = rc_config_value (profile, p);
 			free (p);
@@ -82,13 +82,13 @@ char **env_filter (void)
 		{
 			got_path = true;
 			env_len = strlen (env_name) + strlen (env_var) + pplen + 2;
-			e = p = rc_xmalloc (sizeof (char *) * env_len);
+			e = p = xmalloc (sizeof (char *) * env_len);
 			p += snprintf (e, env_len, "%s=%s", env_name, PATH_PREFIX);
 
 			/* Now go through the env var and only add bits not in our PREFIX */
 			sep = env_var;
 			while ((token = strsep (&sep, ":"))) {
-				char *np = rc_xstrdup (PATH_PREFIX);
+				char *np = strdup (PATH_PREFIX);
 				char *npp = np;
 				char *tok = NULL;
 				while ((tok = strsep (&npp, ":")))
@@ -101,7 +101,7 @@ char **env_filter (void)
 			*p++ = 0;
 		} else {
 			env_len = strlen (env_name) + strlen (env_var) + 2;
-			e = rc_xmalloc (sizeof (char *) * env_len);
+			e = xmalloc (sizeof (char *) * env_len);
 			snprintf (e, env_len, "%s=%s", env_name, env_var);
 		}
 
@@ -113,7 +113,7 @@ char **env_filter (void)
 	   However, we do need a path, so use a default. */
 	if (! got_path) {
 		env_len = strlen ("PATH=") + strlen (PATH_PREFIX) + 2;
-		p = rc_xmalloc (sizeof (char *) * env_len);
+		p = xmalloc (sizeof (char *) * env_len);
 		snprintf (p, env_len, "PATH=%s", PATH_PREFIX);
 		rc_strlist_add (&env, p);
 		free (p);
@@ -178,7 +178,7 @@ char **env_config (void)
 
 	/* Don't trust environ for softlevel yet */
 	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, runlevel);
-	if (rc_exists (buffer))
+	if (exists (buffer))
 		config = rc_config_load (buffer);
 	else
 		config = rc_config_load (RC_CONFIG);
@@ -195,7 +195,7 @@ char **env_config (void)
 			rc_strlist_add (&env, line);
 		} else {
 			int len = strlen (line) + strlen (e) + 2;
-			char *new = rc_xmalloc (sizeof (char *) * len);
+			char *new = xmalloc (sizeof (char *) * len);
 			snprintf (new, len, "%s=%s", line, e);
 			rc_strlist_add (&env, new);
 			free (new);
@@ -205,14 +205,14 @@ char **env_config (void)
 
 	/* One char less to drop the trailing / */
 	i = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
-	line = rc_xmalloc (sizeof (char *) * i);
+	line = xmalloc (sizeof (char *) * i);
 	snprintf (line, i, "RC_LIBDIR=" RC_LIBDIR);
 	rc_strlist_add (&env, line);
 	free (line);
 
 	/* One char less to drop the trailing / */
 	i = strlen ("RC_SVCDIR=") + strlen (RC_SVCDIR) + 1;
-	line = rc_xmalloc (sizeof (char *) * i);
+	line = xmalloc (sizeof (char *) * i);
 	snprintf (line, i, "RC_SVCDIR=" RC_SVCDIR);
 	rc_strlist_add (&env, line);
 	free (line);
@@ -220,7 +220,7 @@ char **env_config (void)
 	rc_strlist_add (&env, "RC_BOOTLEVEL=" RC_LEVEL_BOOT);
 
 	i = strlen ("RC_SOFTLEVEL=") + strlen (runlevel) + 1;
-	line = rc_xmalloc (sizeof (char *) * i);
+	line = xmalloc (sizeof (char *) * i);
 	snprintf (line, i, "RC_SOFTLEVEL=%s", runlevel);
 	rc_strlist_add (&env, line);
 	free (line);
@@ -232,7 +232,7 @@ char **env_config (void)
 			if (buffer[i] == '\n')
 				buffer[i] = 0;
 			i += strlen ("RC_DEFAULTLEVEL=") + 2;
-			line = rc_xmalloc (sizeof (char *) * i);
+			line = xmalloc (sizeof (char *) * i);
 			snprintf (line, i, "RC_DEFAULTLEVEL=%s", buffer);
 			rc_strlist_add (&env, line);
 			free (line);
@@ -247,7 +247,7 @@ char **env_config (void)
 	   We store this special system in RC_SYS so our scripts run fast */
 	memset (sys, 0, sizeof (sys));
 
-	if (rc_exists ("/proc/xen")) {
+	if (exists ("/proc/xen")) {
 		if ((fp = fopen ("/proc/xen/capabilities", "r"))) {
 			fclose (fp);
 			if (file_regex ("/proc/xen/capabilities", "control_d"))
@@ -265,7 +265,7 @@ char **env_config (void)
 
 	if (sys[0]) {
 		i = strlen ("RC_SYS=") + strlen (sys) + 2;
-		line = rc_xmalloc (sizeof (char *) * i);
+		line = xmalloc (sizeof (char *) * i);
 		snprintf (line, i, "RC_SYS=%s", sys);
 		rc_strlist_add (&env, line);
 		free (line);
@@ -282,7 +282,7 @@ char **env_config (void)
 
 	if (! has_net_fs_list) {
 		i = strlen ("RC_NET_FS_LIST=") + strlen (RC_NET_FS_LIST_DEFAULT) + 1;
-		line = rc_xmalloc (sizeof (char *) * i);
+		line = xmalloc (sizeof (char *) * i);
 		snprintf (line, i, "RC_NET_FS_LIST=%s", RC_NET_FS_LIST_DEFAULT);
 		rc_strlist_add (&env, line);
 		free (line);
@@ -292,7 +292,7 @@ char **env_config (void)
 	   To save on calling uname, we store it in an environment variable */
 	if (uname (&uts) == 0) {
 		i = strlen ("RC_UNAME=") + strlen (uts.sysname) + 2;
-		line = rc_xmalloc (sizeof (char *) * i);
+		line = xmalloc (sizeof (char *) * i);
 		snprintf (line, i, "RC_UNAME=%s", uts.sysname);
 		rc_strlist_add (&env, line);
 		free (line);

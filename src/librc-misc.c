@@ -58,7 +58,7 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 	}
 	va_end (ap);
 
-	pathp = path = rc_xmalloc (length * sizeof (char *));
+	pathp = path = xmalloc (length * sizeof (char *));
 	memset (path, 0, length);
 	i = strlen (path1);
 	memcpy (path, path1, i);
@@ -120,7 +120,7 @@ char **rc_config_load (const char *file)
 		if (! token)
 			continue;
 
-		entry = rc_xstrdup (token);
+		entry = strdup (token);
 
 		/* Preserve shell coloring */
 		if (*p == '$')
@@ -137,14 +137,14 @@ char **rc_config_load (const char *file)
 			token[i] = 0;
 
 		i = strlen (entry) + strlen (token) + 2;
-		newline = rc_xmalloc (i);
+		newline = xmalloc (i);
 		snprintf (newline, i, "%s=%s", entry, token);
 
 		replaced = false;
 		/* In shells the last item takes precedence, so we need to remove
 		   any prior values we may already have */
 		STRLIST_FOREACH (list, line, i) {
-			char *tmp = rc_xstrdup (line);
+			char *tmp = strdup (line);
 			linep = tmp; 
 			linetok = strsep (&linep, "=");
 			if (strcmp (linetok, entry) == 0) {

@@ -191,13 +191,13 @@ static void parse_schedule (const char *string, int default_signal)
 	if (schedule)
 		free_schedulelist (&schedule);
 
-	schedule = rc_xmalloc (sizeof (schedulelist_t));
+	schedule = xmalloc (sizeof (schedulelist_t));
 	schedule->gotolist = NULL;
 
 	if (count == 0) {
 		schedule->type = schedule_signal;
 		schedule->value = default_signal;
-		schedule->next = rc_xmalloc (sizeof (schedulelist_t));
+		schedule->next = xmalloc (sizeof (schedulelist_t));
 		next = schedule->next;
 		next->type = schedule_timeout;
 		next->gotolist = NULL;
@@ -237,14 +237,14 @@ static void parse_schedule (const char *string, int default_signal)
 		}
 
 		if (string) {
-			next->next = rc_xmalloc (sizeof (schedulelist_t));
+			next->next = xmalloc (sizeof (schedulelist_t));
 			next = next->next;
 			next->gotolist = NULL;
 		}
 	}
 
 	if (repeatat) {
-		next->next = rc_xmalloc (sizeof (schedulelist_t));
+		next->next = xmalloc (sizeof (schedulelist_t));
 		next = next->next;
 		next->type = schedule_goto;
 		next->value = 0;
@@ -593,7 +593,7 @@ int start_stop_daemon (int argc, char **argv)
 					char *cu = strsep (&p, ":");
 					struct passwd *pw = NULL;
 
-					changeuser = rc_xstrdup (cu);
+					changeuser = strdup (cu);
 					if (sscanf (cu, "%d", &tid) != 1)
 						pw = getpwnam (cu);
 					else
@@ -728,7 +728,7 @@ int start_stop_daemon (int argc, char **argv)
 			tmp = rc_strcatpaths (ch_root, exec, (char *) NULL);
 		else
 			tmp = exec;
-		if (! rc_exists (tmp)) {
+		if (! exists (tmp)) {
 			eerror ("%s: %s does not exist", applet, tmp);
 			if (ch_root)
 				free (tmp);
@@ -754,7 +754,7 @@ int start_stop_daemon (int argc, char **argv)
 		if (result < 1)
 			exit (result == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 
-		if (pidfile && rc_exists (pidfile))
+		if (pidfile && exists (pidfile))
 			unlink (pidfile);
 
 		if (svcname)
@@ -886,7 +886,7 @@ int start_stop_daemon (int argc, char **argv)
 
 			/* For the path, remove the rcscript bin dir from it */
 			if (strncmp (env, "PATH=", 5) == 0) {
-				char *path = rc_xstrdup (env);
+				char *path = strdup (env);
 				char *newpath = NULL;
 				char *p = path;
 				char *token;

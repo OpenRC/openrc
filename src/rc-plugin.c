@@ -85,13 +85,13 @@ void rc_plugin_load (void)
 			dlclose (h);
 		} else {
 			if (plugin) {
-				plugin->next = rc_xmalloc (sizeof (plugin_t));
+				plugin->next = xmalloc (sizeof (plugin_t));
 				plugin = plugin->next;
 			} else
-				plugin = plugins = rc_xmalloc (sizeof (plugin_t));
+				plugin = plugins = xmalloc (sizeof (plugin_t));
 
 			memset (plugin, 0, sizeof (plugin_t));
-			plugin->name = rc_xstrdup (d->d_name);
+			plugin->name = strdup (d->d_name);
 			plugin->handle = h;
 			plugin->hook = fptr;
 		}

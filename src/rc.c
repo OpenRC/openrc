@@ -192,7 +192,7 @@ static int do_e (int argc, char **argv)
 		for (i = 0; i < argc; i++)
 			l += strlen (argv[i]) + 1;
 
-		message = rc_xmalloc (l);
+		message = xmalloc (l);
 		p = message;
 
 		for (i = 0; i < argc; i++) {	
@@ -205,7 +205,7 @@ static int do_e (int argc, char **argv)
 	}
 
 	if (message)
-		fmt = rc_xstrdup ("%s");
+		fmt = strdup ("%s");
 
 	if (strcmp (applet, "einfo") == 0) 
 		einfo (fmt, message);
@@ -338,10 +338,10 @@ static int do_mark_service (int argc, char **argv)
 			strlen (svcname) +
 			strlen (runscript_pid) +
 			4;
-		mtime = rc_xmalloc (l);
+		mtime = xmalloc (l);
 		snprintf (mtime, l, RC_SVCDIR "exclusive/%s.%s",
 				  svcname, runscript_pid);
-		if (rc_exists (mtime) && unlink (mtime) != 0)
+		if (exists (mtime) && unlink (mtime) != 0)
 			eerror ("%s: unlink: %s", applet, strerror (errno));
 		free (mtime);
 	}
@@ -384,7 +384,7 @@ static char *proc_getent (const char *ent)
 	char *value = NULL;
 	int i;
 
-	if (! rc_exists ("/proc/cmdline"))
+	if (! exists ("/proc/cmdline"))
 		return (NULL);
 
 	if (! (fp = fopen ("/proc/cmdline", "r"))) {
@@ -428,7 +428,7 @@ static char read_key (bool block)
 	/* Now save our terminal settings. We need to restore them at exit as we
 	   will be changing it for non-blocking reads for Interactive */
 	if (! termios_orig) {
-		termios_orig = rc_xmalloc (sizeof (struct termios));
+		termios_orig = xmalloc (sizeof (struct termios));
 		tcgetattr (fd, termios_orig);
 	}
 
@@ -547,7 +547,7 @@ static void set_ksoftlevel (const char *level)
 		strcmp (level, RC_LEVEL_SINGLE) == 0 ||
 		strcmp (level, RC_LEVEL_SYSINIT) == 0)
 	{
-		if (rc_exists (RC_KSOFTLEVEL) &&
+		if (exists (RC_KSOFTLEVEL) &&
 			unlink (RC_KSOFTLEVEL) != 0)
 			eerror ("unlink `%s': %s", RC_KSOFTLEVEL, strerror (errno));
 		return;
@@ -567,7 +567,7 @@ static int get_ksoftlevel (char *buffer, int buffer_len)
 	FILE *fp;
 	int i = 0;
 
-	if (! rc_exists (RC_KSOFTLEVEL))
+	if (! exists (RC_KSOFTLEVEL))
 		return (0);
 
 	if (! (fp = fopen (RC_KSOFTLEVEL, "r"))) {
@@ -597,10 +597,10 @@ static void add_pid (pid_t pid)
 	if (sp) {
 		while (sp->next)
 			sp = sp->next;
-		sp->next = rc_xmalloc (sizeof (pidlist_t));
+		sp->next = xmalloc (sizeof (pidlist_t));
 		sp = sp->next;
 	} else
-		sp = service_pids = rc_xmalloc (sizeof (pidlist_t));
+		sp = service_pids = xmalloc (sizeof (pidlist_t));
 	memset (sp, 0, sizeof (pidlist_t));
 	sp->pid = pid;
 }
@@ -757,7 +757,7 @@ int main (int argc, char **argv)
 
 	atexit (cleanup);
 	if (argv[0])
-		applet = rc_xstrdup (basename (argv[0]));
+		applet = strdup (basename (argv[0]));
 
 	if (! applet)
 		eerrorx ("arguments required");
@@ -858,7 +858,7 @@ int main (int argc, char **argv)
 		   some kernels bitch about this according to the environ man pages
 		   so we walk though environ and call unsetenv for each value. */
 		while (environ[0]) {
-			tmp = rc_xstrdup (environ[0]);
+			tmp = strdup (environ[0]);
 			p = tmp;
 			var = strsep (&p, "=");
 			unsetenv (var);
@@ -898,7 +898,7 @@ int main (int argc, char **argv)
 	snprintf (pidstr, sizeof (pidstr), "%d", getpid ());
 	setenv ("RC_PID", pidstr, 1);
 
-	interactive = rc_exists (INTERACTIVE);
+	interactive = exists (INTERACTIVE);
 	rc_plugin_load ();
 
 	/* Load current softlevel */
@@ -925,7 +925,7 @@ int main (int argc, char **argv)
 			/* exec init-early.sh if it exists
 			 * This should just setup the console to use the correct
 			 * font. Maybe it should setup the keyboard too? */
-			if (rc_exists (INITEARLYSH))
+			if (exists (INITEARLYSH))
 				run_script (INITEARLYSH);
 
 			uname (&uts);
@@ -1104,7 +1104,7 @@ int main (int argc, char **argv)
 		if ((dp = opendir ("/dev/net"))) {
 			while ((d = readdir (dp))) {
 				i = (strlen ("net.") + strlen (d->d_name) + 1);
-				tmp = rc_xmalloc (sizeof (char *) * i);
+				tmp = xmalloc (sizeof (char *) * i);
 				snprintf (tmp, i, "net.%s", d->d_name);
 				if (rc_service_exists (tmp) &&
 					rc_service_plugable (tmp))
@@ -1125,7 +1125,7 @@ int main (int argc, char **argv)
 					char *p = d->d_name + 3;
 					if (p && isdigit (*p)) {
 						i = (strlen ("moused.") + strlen (d->d_name) + 1);
-						tmp = rc_xmalloc (sizeof (char *) * i);
+						tmp = xmalloc (sizeof (char *) * i);
 						snprintf (tmp, i, "moused.%s", d->d_name);
 						if (rc_service_exists (tmp) && rc_service_plugable (tmp))
 							rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
@@ -1245,18 +1245,18 @@ int main (int argc, char **argv)
 				continue;
 
 			len = strlen (service) + strlen (runlevel) + 2;
-			tmp = rc_xmalloc (sizeof (char *) * len);
+			tmp = xmalloc (sizeof (char *) * len);
 			snprintf (tmp, len, "%s.%s", service, runlevel);
 			conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
-			found = rc_exists (conf);
+			found = exists (conf);
 			CHAR_FREE (conf);
 			CHAR_FREE (tmp);
 			if (! found) {
 				len = strlen (service) + strlen (newlevel) + 2;
-				tmp = rc_xmalloc (sizeof (char *) * len);
+				tmp = xmalloc (sizeof (char *) * len);
 				snprintf (tmp, len, "%s.%s", service, newlevel);
 				conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
-				found = rc_exists (conf);
+				found = exists (conf);
 				CHAR_FREE (conf);
 				CHAR_FREE (tmp);
 				if (!found)
@@ -1310,7 +1310,7 @@ int main (int argc, char **argv)
 	if (newlevel) {
 		rc_runlevel_set (newlevel);
 		free (runlevel);
-		runlevel = rc_xstrdup (newlevel);
+		runlevel = strdup (newlevel);
 		setenv ("RC_SOFTLEVEL", runlevel, 1);
 	}
 
@@ -1325,7 +1325,7 @@ int main (int argc, char **argv)
 
 	/* Single user is done now */
 	if (strcmp (runlevel, RC_LEVEL_SINGLE) == 0) {
-		if (rc_exists (INTERACTIVE))
+		if (exists (INTERACTIVE))
 			unlink (INTERACTIVE);
 		sulogin (false);
 	}
@@ -1423,7 +1423,7 @@ interactive_option:
 	if (interactive && strcmp (runlevel, bootlevel) == 0)
 		mark_interactive ();
 	else {
-		if (rc_exists (INTERACTIVE))
+		if (exists (INTERACTIVE))
 			unlink (INTERACTIVE);
 	}
 

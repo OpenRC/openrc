@@ -83,7 +83,7 @@ static void setup_selinux (int argc, char **argv)
 {
 	void *lib_handle = NULL;
 	
-	if (! rc_exists (SELINUX_LIB))
+	if (! exists (SELINUX_LIB))
 		return;
 
 	lib_handle = dlopen (SELINUX_LIB, RTLD_NOW | RTLD_GLOBAL);
@@ -97,7 +97,7 @@ static void setup_selinux (int argc, char **argv)
 	selinux_run_init_new = (void (*)(int, char **))
 		dlfunc (lib_handle, "selinux_runscript2");
 
-	/* Use new run_init if it rc_exists, else fall back to old */
+	/* Use new run_init if it exists, else fall back to old */
 	if (selinux_run_init_new)
 		selinux_run_init_new (argc, argv);
 	else if (selinux_run_init_old)
@@ -186,7 +186,7 @@ static bool in_control ()
 	if (sighup)
 		return (false);
 
-	if (! mtime_test || ! rc_exists (mtime_test))
+	if (! mtime_test || ! exists (mtime_test))
 		return (false);
 
 	if (rc_service_state (applet) & RC_SERVICE_STOPPED)
@@ -197,7 +197,7 @@ static bool in_control ()
 
 	while (tests[i]) {
 		path = rc_strcatpaths (RC_SVCDIR, tests[i], applet, (char *) NULL);
-		if (rc_exists (path)) {
+		if (exists (path)) {
 			time_t m = get_mtime (path, false);
 			if (mtime < m && m != 0) {
 				free (path);
@@ -214,7 +214,7 @@ static bool in_control ()
 static void uncoldplug ()
 {
 	char *cold = rc_strcatpaths (RC_SVCDIR, "coldplugged", applet, (char *) NULL);
-	if (rc_exists (cold) && unlink (cold) != 0)
+	if (exists (cold) && unlink (cold) != 0)
 		eerror ("%s: unlink `%s': %s", applet, cold, strerror (errno));
 	free (cold);
 }
@@ -284,7 +284,7 @@ static void cleanup (void)
 			else
 				rc_service_mark (applet, RC_SERVICE_STARTED);
 		}
-		if (exclusive && rc_exists (exclusive))
+		if (exclusive && exists (exclusive))
 			unlink (exclusive);
 	}
 
@@ -401,7 +401,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 				close (slave_tty);
 		}
 
-		if (rc_exists (RC_SVCDIR "/runscript.sh")) {
+		if (exists (RC_SVCDIR "/runscript.sh")) {
 			execl (RC_SVCDIR "/runscript.sh", service, service, arg1, arg2,
 				   (char *) NULL);
 			eerror ("%s: exec `" RC_SVCDIR "/runscript.sh': %s",
@@ -503,11 +503,11 @@ static void make_exclusive ()
 
 	path = rc_strcatpaths (RC_SVCDIR, "exclusive", applet, (char *) NULL);
 	i = strlen (path) + 16;
-	mtime_test = rc_xmalloc (sizeof (char *) * i);
+	mtime_test = xmalloc (sizeof (char *) * i);
 	snprintf (mtime_test, i, "%s.%d", path, getpid ());
 	free (path);
 
-	if (rc_exists (mtime_test) && unlink (mtime_test) != 0) {
+	if (exists (mtime_test) && unlink (mtime_test) != 0) {
 		eerror ("%s: unlink `%s': %s",
 				applet, mtime_test, strerror (errno));
 		free (mtime_test);
@@ -711,7 +711,7 @@ static void svc_start (bool deps)
 			}
 
 			len += 5;
-			tmp = rc_xmalloc (sizeof (char *) * len);
+			tmp = xmalloc (sizeof (char *) * len);
 			p = tmp;
 			STRLIST_FOREACH (tmplist, svc, i) {
 				if (i > 1) {
@@ -1009,7 +1009,7 @@ int runscript (int argc, char **argv)
 
 	/* We need the full path to the service */
 	if (*argv[1] == '/')
-		service = rc_xstrdup (argv[1]);
+		service = strdup (argv[1]);
 	else {
 		char pwd[PATH_MAX];
 		if (! getcwd (pwd, PATH_MAX))
@@ -1017,7 +1017,7 @@ int runscript (int argc, char **argv)
 		service = rc_strcatpaths (pwd, argv[1], (char *) NULL);
 	}
 
-	applet = rc_xstrdup (basename (service));
+	applet = strdup (basename (service));
 	atexit (cleanup);
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
@@ -1033,7 +1033,7 @@ int runscript (int argc, char **argv)
 #ifdef __linux__
 	/* coldplug events can trigger init scripts, but we don't want to run them
 	   until after rc sysinit has completed so we punt them to the boot runlevel */
-	if (rc_exists ("/dev/.rcsysinit")) {
+	if (exists ("/dev/.rcsysinit")) {
 		eerror ("%s: cannot run until sysvinit completes", applet);
 		if (mkdir ("/dev/.rcboot", 0755) != 0 && errno != EEXIST)
 			eerrorx ("%s: mkdir `/dev/.rcboot': %s", applet, strerror (errno));
@@ -1043,7 +1043,7 @@ int runscript (int argc, char **argv)
 	}
 #endif
 
-	if ((softlevel = rc_xstrdup (getenv ("RC_SOFTLEVEL"))) == NULL) {
+	if ((softlevel = strdup (getenv ("RC_SOFTLEVEL"))) == NULL) {
 		/* Ensure our environment is pure
 		   Also, add our configuration to it */
 		tmplist = env_config ();
@@ -1066,7 +1066,7 @@ int runscript (int argc, char **argv)
 			   some kernels bitch about this according to the environ man pages
 			   so we walk though environ and call unsetenv for each value. */
 			while (environ[0]) {
-				tmp = rc_xstrdup (environ[0]);
+				tmp = strdup (environ[0]);
 				p = tmp;
 				var = strsep (&p, "=");
 				unsetenv (var);
@@ -1106,7 +1106,7 @@ int runscript (int argc, char **argv)
 		}
 	
 		/* Make our prefix string */
-		prefix = rc_xmalloc (sizeof (char *) * l);
+		prefix = xmalloc (sizeof (char *) * l);
 		ll = strlen (applet);
 		memcpy (prefix, applet, ll);
 		memset (prefix + ll, ' ', l - ll);
@@ -1144,7 +1144,7 @@ int runscript (int argc, char **argv)
 	   that is being called and not any dependents */
 	if (getenv ("IN_BACKGROUND")) {
 		in_background = rc_env_bool ("IN_BACKGROUND");
-		ibsave = rc_xstrdup (getenv ("IN_BACKGROUND"));
+		ibsave = strdup (getenv ("IN_BACKGROUND"));
 		unsetenv ("IN_BACKGROUND");
 	}
 

@@ -152,7 +152,7 @@ int env_update (int argc, char **argv)
 			entries = rc_config_load (path);
 
 			STRLIST_FOREACH (entries, entry, j) {
-				char *tmpent = rc_xstrdup (entry);
+				char *tmpent = strdup (entry);
 				char *value = tmpent;
 				char *var = strsep (&value, "=");
 
@@ -176,7 +176,7 @@ int env_update (int argc, char **argv)
 		eerrorx ("%s: nothing to process", applet);
 
 	STRLIST_FOREACH (config, entry, i) {
-		char *tmpent = rc_xstrdup (entry);
+		char *tmpent = strdup (entry);
 		char *value = tmpent;
 		char *var = strsep (&value, "=");
 		char *match;
@@ -220,19 +220,19 @@ int env_update (int argc, char **argv)
 		}
 
 		STRLIST_FOREACH (envs, env, j) {
-			char *tmpenv = rc_xstrdup (env);
+			char *tmpenv = strdup (env);
 			char *tmpvalue = tmpenv;
 			char *tmpentry = strsep (&tmpvalue, "=");
 
 			if (strcmp (tmpentry, var) == 0) {
 				if (colon || space) {
 					int len =  strlen (envs[j - 1]) + strlen (entry) + 1;
-					envs[j - 1] = rc_xrealloc (envs[j - 1], len);
+					envs[j - 1] = xrealloc (envs[j - 1], len);
 					snprintf (envs[j - 1] + strlen (envs[j - 1]), len,
 							  "%s%s", colon ? ":" : " ", value);
 				} else {
 					free (envs[j - 1]);
-					envs[j - 1] = rc_xstrdup (entry);
+					envs[j - 1] = strdup (entry);
 				}
 				replaced = true;
 			}
@@ -256,7 +256,7 @@ int env_update (int argc, char **argv)
 	fprintf (fp, NOTICE, "/etc/profile", PROFILE_ENV);
 
 	STRLIST_FOREACH (envs, env, i) {
-		char *tmpent = rc_xstrdup (env);
+		char *tmpent = strdup (env);
 		char *value = tmpent;
 		char *var = strsep (&value, "=");
 		if (strcmp (var, "LDPATH") != 0) {
@@ -274,7 +274,7 @@ int env_update (int argc, char **argv)
 	fprintf (fp, NOTICE, "/etc/csh.cshrc", PROFILE_ENV);
 
 	STRLIST_FOREACH (envs, env, i) {
-		char *tmpent = rc_xstrdup (env);
+		char *tmpent = strdup (env);
 		char *value = tmpent;
 		char *var = strsep (&value, "=");
 		if (strcmp (var, "LDPATH") != 0) {
@@ -303,7 +303,7 @@ int env_update (int argc, char **argv)
 
 	if (ldconfig) {
 		/* Update ld.so.conf only if different */
-		if (rc_exists (LDSOCONF)) {
+		if (exists (LDSOCONF)) {
 			char **lines = rc_config_list (LDSOCONF);
 			char *line;
 			ld = false;

@@ -173,7 +173,7 @@ static char **find_mounts (struct args *args)
 		for (o = optnames; flags && o->o_opt; o++) {
 			if (flags & o->o_opt) {
 				if (! options)
-					options = rc_xstrdup (o->o_name);
+					options = strdup (o->o_name);
 				else {
 					char *tmp = NULL;
 					asprintf (&tmp, "%s,%s", options, o->o_name);
@@ -232,7 +232,7 @@ static char **find_mounts (struct args *args)
 
 static regex_t *get_regex (const char *string)
 {
-	regex_t *reg = rc_xmalloc (sizeof (regex_t));
+	regex_t *reg = xmalloc (sizeof (regex_t));
 	int result;
 	char buffer[256];
 

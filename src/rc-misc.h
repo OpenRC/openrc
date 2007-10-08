@@ -43,7 +43,7 @@
 
 #define ERRX					fprintf (stderr, "out of memory\n"); exit (1)
 
-static inline void *rc_xmalloc (size_t size)
+static inline void *xmalloc (size_t size)
 {
 	void *value = malloc (size);
 
@@ -53,7 +53,7 @@ static inline void *rc_xmalloc (size_t size)
 	ERRX;
 }
 
-static inline void *rc_xrealloc (void *ptr, size_t size)
+static inline void *xrealloc (void *ptr, size_t size)
 {
 	void *value = realloc (ptr, size);
 
@@ -63,7 +63,7 @@ static inline void *rc_xrealloc (void *ptr, size_t size)
 	ERRX;
 }
 
-static inline char *rc_xstrdup (const char *str)
+static inline char *xstrdup (const char *str)
 {
 	char *value;
 
@@ -80,7 +80,7 @@ static inline char *rc_xstrdup (const char *str)
 
 #undef ERRX
 
-static inline bool rc_exists (const char *pathname)
+static inline bool exists (const char *pathname)
 {
 	struct stat buf;
 
