@@ -4,13 +4,15 @@
    Copyright 2007 Gentoo Foundation
    */
 
+#include <sys/types.h>
+
 #ifdef __linux__
 #include <sys/sysinfo.h>
+#include <regex.h>
 #endif
 
 #include <sys/utsname.h>
 #include <limits.h>
-#include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

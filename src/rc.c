@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
+#include <strings.h>
 #include <syslog.h>
 #include <termios.h>
 #include <unistd.h>

@@ -218,7 +218,7 @@ int rc_update (int argc, char **argv)
 			eerror ("%s: service `%s' does not exist", applet, service);
 		else {
 			ssize_t num_updated = 0;
-			ssize_t (*actfunc)(const char *runlevel, const char *service);
+			ssize_t (*actfunc)(const char *, const char *);
 			if (action & DOADD)
 				actfunc = add;
 			else if (action & DODELETE)

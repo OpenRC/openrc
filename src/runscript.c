@@ -353,7 +353,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 	struct termios tt;
 	struct winsize ws;
 	int i;
-	int flags;
+	int flags = 0;
 	fd_set rset;
 	int s;
 	char buffer[RC_LINEBUFFER];
