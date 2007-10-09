@@ -324,7 +324,8 @@ int rc_plugin_hook (rc_hook_t hook, const char *name);
  * variables they wish. Variables should be separated by NULLs. */
 extern FILE *rc_environ_fd;
 
-/*! @name Configuration */
+/*! @name Configuration
+ * These functions help to deal with shell based configuration files */
 /*! Return a NULL terminated list of non comment lines from a file. */
 char **rc_config_list (const char *file);
 
@@ -345,7 +346,7 @@ bool rc_env_bool (const char *variable);
  * Handy functions for dealing with string arrays of char **.
  * It's safe to assume that any function here that uses char ** is a string
  * list that can be manipulated with the below functions. Every string list
- * should be released with a call to rc_strlist_free.*/
+ * should be released with a call to rc_strlist_free. */
 
 /*! Duplicate the item, add it to end of the list and return a pointer to it.
  * @param list to add the item too
@@ -420,6 +421,5 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
  * @return NULL terminated list of pids */
 pid_t *rc_find_pids (const char *exec, const char *cmd,
 					 uid_t uid, pid_t pid);
-
 
 #endif
