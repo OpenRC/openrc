@@ -74,7 +74,6 @@ static struct option longopts[] = {
 	{ NULL,             0, NULL, 0}
 };
 static const char * const longopts_help[] = {
-	"Construct the arguments to give to mount",
 	"Extract the options field",
 	"Extract the pass number field",
 	"Extract the file system type",
