@@ -10,8 +10,10 @@
 /* usecs to wait while we poll the fifo */
 #define WAIT_INTERVAL	20000000
 
-/* max nsecs to wait until a service comes up */
-#define WAIT_MAX	60000000000
+/* max secs to wait until a service comes up */
+#define WAIT_MAX        300
+
+#define ONE_SECOND      1000000000
 
 #define SOFTLEVEL	RC_SVCDIR "/softlevel"
 
@@ -393,7 +395,7 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 		skip_state = state;
 	}
 
-	if (state == RC_SERVICE_COLDPLUGGED) {
+	if (state == RC_SERVICE_COLDPLUGGED || state == RC_SERVICE_FAILED) {
 		free (init);
 		free (svc);
 		return (true);
@@ -604,7 +606,12 @@ static pid_t _exec_service (const char *service, const char *arg)
 
 pid_t rc_service_stop (const char *service)
 {
-	if (rc_service_state (service) & RC_SERVICE_STOPPED)
+	rc_service_state_t state = rc_service_state (service);
+
+	if (state & RC_SERVICE_FAILED)
+		return (-1);
+
+	if (state & RC_SERVICE_STOPPED)
 		return (0);
 
 	return (_exec_service (service, "stop"));
@@ -613,7 +620,12 @@ librc_hidden_def(rc_service_stop)
 
 pid_t rc_service_start (const char *service)
 {
-	if (! rc_service_state (service) & RC_SERVICE_STOPPED)
+	rc_service_state_t state = rc_service_state (service);
+
+	if (state & RC_SERVICE_FAILED)
+		return (-1);
+
+	if (! state & RC_SERVICE_STOPPED)
 		return (0);
 
 	return (_exec_service (service, "start"));
@@ -676,7 +688,7 @@ bool rc_service_wait (const char *service)
 	char *base;
 	char *fifo;
 	struct timespec ts;
-	int nloops = WAIT_MAX / WAIT_INTERVAL;
+	int nloops = WAIT_MAX * (ONE_SECOND / WAIT_INTERVAL);
 	bool retval = false;
 	bool forever = false;
 
@@ -710,6 +722,8 @@ bool rc_service_wait (const char *service)
 			nloops --;
 	}
 
+	if (! exists (fifo))
+		retval = true;
 	free (fifo);
 	return (retval);
 }

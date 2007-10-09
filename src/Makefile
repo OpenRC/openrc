@@ -80,7 +80,7 @@ RC_BINLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 RC_SBINLINKS =  mark_service_starting mark_service_started \
 				mark_service_stopping mark_service_stopped \
 				mark_service_inactive mark_service_wasinactive \
-				mark_service_coldplugged \
+				mark_service_coldplugged mark_service_failed \
 				rc-abort
 BINLINKS = rc-status
 SBINLINKS = env-update rc-update runscript start-stop-daemon

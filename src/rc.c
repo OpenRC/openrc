@@ -317,6 +317,8 @@ static int do_mark_service (int argc, char **argv)
 		ok = rc_service_mark (argv[0], RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "mark_service_coldplugged") == 0)
 		ok = rc_service_mark (argv[0], RC_SERVICE_COLDPLUGGED);
+	else if (strcmp (applet, "mark_service_failed") == 0)
+		ok = rc_service_mark (argv[0], RC_SERVICE_FAILED);
 	else
 		eerrorx ("%s: unknown applet", applet);
 
@@ -1057,7 +1059,6 @@ int main (int argc, char **argv)
 			}
 		}
 		closedir (dp);
-		rmdir (RC_SVCDIR "/failed");
 	}
 
 	mkdir (RC_STOPPING, 0755);
