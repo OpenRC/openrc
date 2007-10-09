@@ -71,7 +71,6 @@ static struct option longopts[] = {
 	{ "passno",         1, NULL, 'p'},
 	{ "fstype",         1, NULL, 't'},
 	longopts_COMMON
-	{ NULL,             0, NULL, 0}
 };
 static const char * const longopts_help[] = {
 	"Extract the options field",

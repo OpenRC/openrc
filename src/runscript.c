@@ -983,7 +983,6 @@ static struct option longopts[] = {
 	{ "ifstarted",  0, NULL, 's'},
 	{ "nodeps",     0, NULL, 'D'},
 	longopts_COMMON
-	{ NULL,         0, NULL, 0}
 };
 static const char * const longopts_help[] = {
 	"",

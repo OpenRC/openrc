@@ -45,7 +45,6 @@ static struct option longopts[] = {
 	{ "strict",   0, NULL, 's'},
 	{ "update",   0, NULL, 'u'},
 	longopts_COMMON
-	{ NULL,       0, NULL, 0}
 };
 static const char * const longopts_help[] = {
 	"Type(s) of dependency to list",

@@ -13,7 +13,8 @@
 	{ "help",           0, NULL, 'h'}, \
 	{ "nocolor",        0, NULL, 'C'}, \
 	{ "verbose",        0, NULL, 'v'}, \
-	{ "quiet",          0, NULL, 'q'},
+	{ "quiet",          0, NULL, 'q'}, \
+	{ NULL,             0, NULL,  0 }
 
 #define longopts_help_COMMON \
 	"Display this help output (duh)", \

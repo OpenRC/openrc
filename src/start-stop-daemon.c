@@ -484,7 +484,6 @@ static struct option longopts[] = {
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
 	longopts_COMMON
-	{ NULL,           0, NULL, 0}
 };
 static const char * const longopts_help[] = {
 	"Stop daemon",

@@ -80,7 +80,6 @@ static struct option longopts[] = {
 	{ "fork-ldconfig",  0, NULL, 'l'},
 	{ "no-ldconfig",    0, NULL, 'L'},
 	longopts_COMMON
-	{ NULL,             0, NULL, 0}
 };
 static const char * const longopts_help[] = {
 	"Fork ldconfig into the background",

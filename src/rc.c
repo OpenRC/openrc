@@ -731,7 +731,6 @@ static void run_script (const char *script) {
 #define getoptstring getoptstring_COMMON
 static struct option longopts[] = {
 	longopts_COMMON
-	{ NULL,             0, NULL, 0}
 };
 static const char * const longopts_help[] = {
 	longopts_help_COMMON

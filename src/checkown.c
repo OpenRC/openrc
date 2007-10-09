@@ -141,14 +141,13 @@ static struct option longopts[] = {
 	{ "user",           1, NULL, 'u'},
 	{ "group",          1, NULL, 'g'},
 	longopts_COMMON
-	{ NULL,             0, NULL, 0}
 };
 static const char * const longopts_help[] = {
-	"",
-	"",
-	"",
-	"",
-	"",
+	"Check if a directory",
+	"Check if a file",
+	"Mode to check",
+	"User to check",
+	"Group to check",
 	longopts_help_COMMON
 };
 #include "_usage.c"

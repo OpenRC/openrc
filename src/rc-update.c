@@ -116,7 +116,6 @@ static struct option longopts[] = {
 	{ "delete",   0, NULL, 'd'},
 	{ "show",     0, NULL, 's'},
 	longopts_COMMON
-	{ NULL,       0, NULL, 0}
 };
 static const char * const longopts_help[] = {
 	"Add the init.d to runlevels",

@@ -72,10 +72,10 @@ static int process_mount (char ***list, struct args *args,
 		return (-1);
 #endif
 
-	if (args->netdev == net_yes && netdev != -1) {
+	if (args->netdev == net_yes && (netdev != -1 || args->mounts)) {
 		if (netdev != 0)
 			return (1);
-	} else if (args->netdev == net_no && netdev != -1) {
+	} else if (args->netdev == net_no && (netdev != -1 || args->mounts)) {
 		if (netdev != 1)
 			return (1);
 	} else {
@@ -307,20 +307,21 @@ static struct option longopts[] = {
 	{ "netdev",				 0, NULL, 'e'},
 	{ "nonetdev",            0, NULL, 'E'},
 	longopts_COMMON
-	{ NULL,             0, NULL, 0}
 };
 static const char * const longopts_help[] = {
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
-	"",
+	"fstype regex to find",
+	"fstype regex to skip",
+	"node regex to find",
+	"node regex to skip",
+	"options regex to find",
+	"options regex to skip",
+	"point regex to find",
+	"point regex to skip",
+	"print options",
+	"print fstype",
+	"print node",
+	"is it a network device",
+	"is it not a network device",
 	longopts_help_COMMON
 };
 #include "_usage.c"
