@@ -30,6 +30,11 @@ do_mtab() {
 	rm -f /etc/mtab~ /etc/mtab~~
 }
 
+root_rw() {
+	echo 2>/dev/null >/.test.$$ || return 1
+	rm -f /.test.$$
+}
+
 do_fsck() {
 	local retval=0 opts=
 	case "${RC_UNAME}" in
@@ -42,9 +47,8 @@ do_fsck() {
 		return 0
 	fi
 
-	if echo 2>/dev/null >/.test.$$ ; then
+	if root_rw; then
 		einfo "root filesystem is mounted read-write - skipping"
-		rm -f /.test.$$
 		return 0
 	fi
 
@@ -106,17 +110,21 @@ do_fsck() {
 		fi
 	fi
 
-	ebegin "Remounting root filesystem read/write"
-	if [ "${RC_UNAME}" = "Linux" ] ; then
-		mount -n -o remount,rw /
-	else
-		mount -u -o rw /
-	fi
-	eend $? "Root filesystem could not be mounted read/write :("
 }
 
 start() {
 	do_fsck || return 1
+
+	if ! root_rw; then
+		ebegin "Remounting root filesystem read/write"
+		if [ "${RC_UNAME}" = "Linux" ] ; then
+			mount -n -o remount,rw /
+		else
+			mount -u -o rw /
+		fi
+		eend $? "Root filesystem could not be mounted read/write :("
+		return $?
+	fi
 
 	# Only Linux has mtab
 	[ "${RC_UNAME}" = "Linux" ] && do_mtab
