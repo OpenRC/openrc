@@ -72,7 +72,9 @@ if [ "${RC_UNAME}" = "Linux" ] ; then
 		fs="${fs}${fs:+|}${x}"
 	done
 	[ -n "${fs}" ] && fs="^(${fs})$"
-	do_unmount "mount -n -o remount,ro" "^(/dev|/dev/.*|/proc|/proc/.*|/sys|/sys/.*)$" "" "" "${fs}"
+	do_unmount "mount -n -o remount,ro" \
+		--skip-point-regex "^(/dev|/dev/.*|/proc|/proc/.*|/sys|/sys/.*)$" \
+		${fs:+--skip-fstype-regex} ${fs} --nonetdev
 	eoutdent
 	eend $?
 	unmounted=$?

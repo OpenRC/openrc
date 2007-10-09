@@ -3,6 +3,9 @@
 
   09 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
+    netmount, localmount, halt.sh and net scripts now check OS specific flags
+    to see if a mount is network mounted (linux = fstab, *bsd = "local" in
+    mount options) or not, #192772.
     txqueuelen_eth0= now works, #190538.
 
   03 Oct 2007; Roy Marples <uberlord@gentoo.org>:

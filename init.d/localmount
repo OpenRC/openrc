@@ -203,7 +203,8 @@ stop() {
 	# Umount loopback devices
 	einfo "Unmounting loopback devices"
 	eindent
-	do_unmount "umount -d" "${no_umounts}" "^/dev/loop"
+	do_unmount "umount -d" --skip-point-regex "${no_umounts}" \
+		--node-regex "^/dev/loop"
 	eoutdent
 
 	# Now everything else, except network filesystems as the
@@ -215,7 +216,8 @@ stop() {
 		fs="${fs}${fs:+|}${x}"
 	done
 	[ -n "${fs}" ] && fs="^(${fs})$"
-	do_unmount "umount" "${no_umounts}" "" "" "${fs}"
+	do_unmount "umount" --skip-point-regex "${no_umounts}" \
+		${fs:+--skip-fstype-regex} ${fs} --nonetdev
 	eoutdent
 
 	return 0

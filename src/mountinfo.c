@@ -15,6 +15,8 @@
 #include <sys/param.h>
 #include <sys/ucred.h>
 #include <sys/mount.h>
+#elif defined (__linux__)
+#include <mntent.h>
 #endif
 
 #include <errno.h>
@@ -38,6 +40,12 @@ typedef enum {
 	mount_options
 } mount_type;
 
+typedef enum {
+	net_ignore,
+	net_yes,
+	net_no
+} net_opts;
+
 struct args {
 	regex_t *node_regex;
 	regex_t *skip_node_regex;
@@ -47,10 +55,12 @@ struct args {
 	regex_t *skip_options_regex;
 	char **mounts;
 	mount_type mount_type;
+	net_opts netdev;
 };
 
 static int process_mount (char ***list, struct args *args,
-						  char *from, char *to, char *fstype, char *options)
+						  char *from, char *to, char *fstype, char *options,
+						  int netdev)
 {
 	char *p;
 
@@ -62,26 +72,34 @@ static int process_mount (char ***list, struct args *args,
 		return (-1);
 #endif
 
-	if (args->node_regex &&
-		regexec (args->node_regex, from, 0, NULL, 0) != 0)
-		return (1);
-	if (args->skip_node_regex &&
-		regexec (args->skip_node_regex, from, 0, NULL, 0) == 0)
-		return (1);
+	if (args->netdev == net_yes && netdev != -1) {
+		if (netdev != 0)
+			return (1);
+	} else if (args->netdev == net_no && netdev != -1) {
+		if (netdev != 1)
+			return (1);
+	} else {
+		if (args->node_regex &&
+			regexec (args->node_regex, from, 0, NULL, 0) != 0)
+			return (1);
+		if (args->skip_node_regex &&
+			regexec (args->skip_node_regex, from, 0, NULL, 0) == 0)
+			return (1);
 
-	if (args->fstype_regex &&
-		regexec (args->fstype_regex, fstype, 0, NULL, 0) != 0)
-		return (-1);
-	if (args->skip_fstype_regex &&
-		regexec (args->skip_fstype_regex, fstype, 0, NULL, 0) == 0)
-		return (-1);
+		if (args->fstype_regex &&
+			regexec (args->fstype_regex, fstype, 0, NULL, 0) != 0)
+			return (-1);
+		if (args->skip_fstype_regex &&
+			regexec (args->skip_fstype_regex, fstype, 0, NULL, 0) == 0)
+			return (-1);
 
-	if (args->options_regex &&
-		regexec (args->options_regex, options, 0, NULL, 0) != 0)
-		return (-1);
-	if (args->skip_options_regex &&
-		regexec (args->skip_options_regex, options, 0, NULL, 0) == 0)
-		return (-1);
+		if (args->options_regex &&
+			regexec (args->options_regex, options, 0, NULL, 0) != 0)
+			return (-1);
+		if (args->skip_options_regex &&
+			regexec (args->skip_options_regex, options, 0, NULL, 0) == 0)
+			return (-1);
+	}
 
 	if (args->mounts) {
 		bool found = false;
@@ -169,9 +187,12 @@ static char **find_mounts (struct args *args)
 		eerrorx ("getmntinfo: %s", strerror (errno));
 
 	for (i = 0; i < nmnts; i++) {
+		int netdev = 0;
 		flags = mnts[i].f_flags & MNT_VISFLAGMASK;
 		for (o = optnames; flags && o->o_opt; o++) {
 			if (flags & o->o_opt) {
+				if (o->o_opt == MNT_LOCAL)
+					netdev = 1;
 				if (! options)
 					options = xstrdup (o->o_name);
 				else {
@@ -188,7 +209,8 @@ static char **find_mounts (struct args *args)
 					   mnts[i].f_mntfromname,
 					   mnts[i].f_mntonname,
 					   mnts[i].f_fstypename,
-					   options);
+					   options,
+					   netdev);
 
 		free (options);
 		options = NULL;
@@ -198,6 +220,20 @@ static char **find_mounts (struct args *args)
 }
 
 #elif defined (__linux__)
+static struct mntent *getmntfile (const char *file)
+{
+	struct mntent *ent = NULL;
+	FILE *fp;
+
+	fp = setmntent ("/etc/fstab", "r");
+	while ((ent = getmntent (fp)))
+		if (strcmp (file, ent->mnt_dir) == 0)
+			break;
+	endmntent (fp);
+	
+	return (ent);
+}
+
 static char **find_mounts (struct args *args)
 {
 	FILE *fp;
@@ -208,18 +244,26 @@ static char **find_mounts (struct args *args)
 	char *fst;
 	char *opts;
 	char **list = NULL;
+	struct mntent *ent;
+	int netdev;
 
 	if ((fp = fopen ("/proc/mounts", "r")) == NULL)
 		eerrorx ("getmntinfo: %s", strerror (errno));
 
 	while (fgets (buffer, sizeof (buffer), fp)) {
+		netdev = -1;
 		p = buffer;
 		from = strsep (&p, " ");
 		to = strsep (&p, " ");
 		fst = strsep (&p, " ");
 		opts = strsep (&p, " ");
 
-		process_mount (&list, args, from, to, fst, opts);
+		if ((ent = getmntfile (to))) {
+			if (strstr (ent->mnt_opts, "_netdev"))
+				netdev = 0;
+		}
+
+		process_mount (&list, args, from, to, fst, opts, netdev);
 	}
 	fclose (fp);
 
@@ -260,6 +304,8 @@ static struct option longopts[] = {
 	{ "options",             0, NULL, 'i'},
 	{ "fstype",              0, NULL, 's'},
 	{ "node",                0, NULL, 't'},
+	{ "netdev",				 0, NULL, 'e'},
+	{ "nonetdev",            0, NULL, 'E'},
 	longopts_COMMON
 	{ NULL,             0, NULL, 0}
 };
@@ -298,11 +344,18 @@ int mountinfo (int argc, char **argv)
 
 	memset (&args, 0, sizeof (struct args));
 	args.mount_type = mount_to;
+	args.netdev = net_ignore;
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 							   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+			case 'e':
+				args.netdev = net_yes;
+				break;
+			case 'E':
+				args.netdev = net_no;
+				break;
 			case 'f':
 				DO_REG (args.fstype_regex);
 				break;

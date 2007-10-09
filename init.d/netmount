@@ -21,7 +21,7 @@ depend() {
 	# Only have portmap as a dependency if there is a nfs mount in fstab that
 	# is set to mount at boot
 	local pmap=""
-	if need_portmap ; then
+	if need_portmap; then
 		[ -x /etc/init.d/rpcbind ] \
 			&& pmap="rpcbind" \
 			|| pmap="portmap"
@@ -37,7 +37,7 @@ start() {
 	[ -x /etc/init.d/rpcbind ] && pmap="rpcbind"
 
 	local x= fs=
-	for x in ${RC_NET_FS_LIST} ; do
+	for x in ${RC_NET_FS_LIST}; do
 		case "${x}" in
 			nfs|nfs4)
     			# If the nfsmount script took care of the nfs filesystems,
@@ -47,7 +47,7 @@ start() {
         		# Only try to mount NFS filesystems if portmap was started.
 		        # This is to fix "hang" problems for new users who do not
 				# add portmap to the default runlevel.
-				if need_portmap && ! service_started "${pmap}" ; then
+				if need_portmap && ! service_started "${pmap}"; then
 					continue
 				fi
 				;;
@@ -63,28 +63,28 @@ start() {
 
 stop() {
 	local x= fs=
+
+	ebegin "Unmounting network filesystems"
+	. "${RC_LIBDIR}/sh/rc-mount.sh"
+
 	for x in ${RC_NET_FS_LIST} ; do
 		fs="${fs}${fs:+,}${x}"
 	done
-
-	ebegin "Unmounting network filesystems"
-	umount -at ${fs}
-	local retval=$?
-	eend ${retval} "Failed to simply unmount filesystems"
-
-	if [ ${retval} -ne 0 ] ; then
-		. "${RC_LIBDIR}/sh/rc-mount.sh"
-		eindent
-		fs=
-		for x in ${RC_NET_FS_LIST} ; do
-			fs="${fs:+|}${x}"
-		done
-		do_unmount "umount" "" "" "^(${fs})$"
-		retval=$?
-		eoutdent
+	if [ -n "${fs}" ]; then
+		umount -at ${fs} ||	eerror "Failed to simply unmount filesystems"
 	fi
 
-	return ${retval}
+	eindent
+	fs=
+	for x in ${RC_NET_FS_LIST}; do
+		fs="${fs}${fs:+|}${x}"
+	done
+	[ -n "${fs}" ] && fs="^(${fs})$"
+	do_unmount "umount" ${fs:+--fstype-regex} ${fs} --netdev
+	retval=$?
+
+	eoutdent
+	eend ${retval} "Failed to unmount network filesystems"
 }
 
 # vim: set ts=4 :

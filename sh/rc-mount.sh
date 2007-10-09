@@ -12,8 +12,8 @@ do_unmount() {
 		f_kill="-"
 	fi
 
-	mountinfo ${2:+--skip-point-regex} $2 ${3:+--node-regex} $3 ${4:+--fstype-regex} $4 ${5:+--skip-fstype-regex} $5 | \
-	while read mnt; do
+	shift
+	mountinfo "$@" | while read mnt; do
 		case "${cmd}" in
 			umount*)
 				# If we're using the mount (probably /usr) then don't unmount us

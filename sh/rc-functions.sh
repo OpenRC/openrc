@@ -26,6 +26,11 @@ stop_addon() {
 is_net_fs() {
 	[ -z "$1" ] && return 1
 
+	# Check OS specific flags to see if we're local or net mounted
+	mountinfo --quiet --netdev "$1"  && return 0
+	mountinfo --quiet --nonetdev "$1" && return 1
+
+	# Fall back on fs types
 	local t=$(mountinfo --fstype "$1")
 	for x in ${RC_NET_FS_LIST}; do
 		[ "${x}" = "${t}" ] && return 0
