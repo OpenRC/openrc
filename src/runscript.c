@@ -1223,7 +1223,7 @@ int runscript (int argc, char **argv)
 		} else if (strcmp (optarg, "status") == 0) {
 			rc_service_state_t r = svc_status (service);
 			retval = (int) r;
-			if (retval == RC_SERVICE_STARTED)
+			if (retval & RC_SERVICE_STARTED)
 				retval = 0;
 		} else if (strcmp (optarg, "help") == 0) {
 			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
