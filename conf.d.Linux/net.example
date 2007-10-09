@@ -132,6 +132,8 @@
 
 # Some users may need to alter the MTU - here's how
 #mtu_eth0="1500"
+# Same for TX Queue Length
+#txqueuelen_eth0="1000"
 
 # Each module described below can set a default base metric, lower is
 # preferred over higher. This is so we can prefer a wired route over a

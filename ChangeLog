@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  09 Oct 2007; Roy Marples <uberlord@gentoo.org>:
+
+    txqueuelen_eth0= now works, #190538.
+
   03 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
     librc.so and libeinfo.so now have symbol versions.

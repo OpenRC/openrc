@@ -239,6 +239,11 @@ ifconfig_pre_start() {
 	eval mtu=\$mtu_${IFVAR}
 	[ -n "${mtu}" ] && ifconfig "${IFACE}" mtu "${mtu}"
 
+	# TX Queue Length support
+	local len=
+	eval len=\$txqueuelen_${IFVAR}
+	[ -n "${len}" ] && ifconfig "${IFACE}" txqueuelen "${len}"
+
 	local tunnel=
 
 	eval tunnel=\$iptunnel_${IFVAR}

@@ -160,6 +160,11 @@ iproute2_pre_start() {
 	eval mtu=\$mtu_${IFVAR}
 	[ -n "${mtu}" ] && ip link set mtu "${mtu}" dev "${IFACE}"
 
+	# TX Queue Length support
+	local len=
+	eval len=\$txqueuelen_${IFVAR}
+	[ -n "${len}" ] && ip link set txqueuelen "${len}" dev "${IFACE}"
+
 	local tunnel=
 	eval tunnel=\$iptunnel_${IFVAR}
 	if [ -n "${tunnel}" ] ; then
