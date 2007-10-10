@@ -937,10 +937,8 @@ static void svc_stop (bool deps)
 	if (ibsave)
 		unsetenv ("IN_BACKGROUND");
 
-	if (! in_control ()) {
-		rc_plugin_run (RC_HOOK_SERVICE_STOP_DONE, applet);
+	if (! in_control ())
 		ewarnx ("WARNING: %s not under our control, aborting", applet);
-	}
 
 	if (! stopped)
 		eerrorx ("ERROR: %s failed to stop", applet);
