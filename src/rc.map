@@ -6,7 +6,7 @@ global:
 	rc_deptree_depends;
 	rc_deptree_free;
 	rc_deptree_load;
-	rc_deptree_order_services;
+	rc_deptree_order;
 	rc_deptree_update;
 	rc_deptree_update_needed;
 	rc_env_bool;
