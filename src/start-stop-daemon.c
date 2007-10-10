@@ -13,7 +13,7 @@
 
 /* nano seconds */
 #define POLL_INTERVAL   20000000
-#define START_WAIT     100000000
+#define START_WAIT     500000000
 #define ONE_SECOND    1000000000
 
 #include <sys/types.h>
