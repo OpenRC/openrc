@@ -192,7 +192,7 @@ char *rc_service_value_get (const char *service, const char *option);
  * @param value of the option
  * @return true if saved, otherwise false */
 bool rc_service_value_set (const char *service, const char *option,
-							const char *value);
+						   const char *value);
 
 /*! Wait for a service to finish
  * @param service to wait for
@@ -275,8 +275,8 @@ char **rc_deptree_depends (rc_depinfo_t *deptree, char **types,
  * @param runlevel to change into
  * @param options to pass
  * @return NULL terminated list of services in order */
-char **rc_deptree_order_services (rc_depinfo_t *deptree, const char *runlevel,
-								  int options);
+char **rc_deptree_order (rc_depinfo_t *deptree, const char *runlevel,
+						 int options);
 
 /*! Free a deptree and its information
  * @param deptree to free */

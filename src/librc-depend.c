@@ -476,8 +476,8 @@ char **rc_deptree_depends (rc_depinfo_t *deptree,
 }
 librc_hidden_def(rc_deptree_depends)
 
-char **rc_deptree_order_services (rc_depinfo_t *deptree, const char *runlevel,
-								  int options)
+char **rc_deptree_order (rc_depinfo_t *deptree, const char *runlevel,
+						 int options)
 {
 	char **list = NULL;
 	char **types = NULL;
@@ -538,7 +538,7 @@ char **rc_deptree_order_services (rc_depinfo_t *deptree, const char *runlevel,
 
 	return (services);
 }
-librc_hidden_def(rc_deptree_order_services)
+librc_hidden_def(rc_deptree_order)
 
 static bool is_newer_than (const char *file, const char *target)
 {
