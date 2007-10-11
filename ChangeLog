@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  11 Oct 2007; Roy Marples <uberlord@gentoo.org>:
+
+    If / block device as in /etc/fstab does not exist, use /dev/root if
+    it's available in checkroot, #171593.
+
   09 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
     netmount, localmount, halt.sh and net scripts now check OS specific flags

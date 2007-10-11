@@ -24,7 +24,7 @@
 #define GET_ENT getmntent (fp)
 #define GET_ENT_FILE(_name) getmntfile (_name)
 #define END_ENT endmntent (fp)
-#define ENT_DEVICE(_ent) ent->mnt_fsname
+#define ENT_BLOCKDEVICE(_ent) ent->mnt_fsname
 #define ENT_FILE(_ent) ent->mnt_dir
 #define ENT_TYPE(_ent) ent->mnt_type
 #define ENT_OPTS(_ent) ent->mnt_opts
@@ -36,7 +36,7 @@
 #define GET_ENT getfsent ()
 #define GET_ENT_FILE(_name) getfsfile (_name)
 #define END_ENT endfsent ()
-#define ENT_DEVICE(_ent) ent->fs_spec
+#define ENT_BLOCKDEVICE(_ent) ent->fs_spec
 #define ENT_TYPE(_ent) ent->fs_vfstype
 #define ENT_FILE(_ent) ent->fs_file
 #define ENT_OPTS(_ent) ent->fs_mntops
@@ -65,17 +65,19 @@ static struct mntent *getmntfile (const char *file)
 #endif
 
 #include "_usage.h"
-#define getoptstring "mop:t:" getoptstring_COMMON
+#define getoptstring "bmop:t:" getoptstring_COMMON
 static struct option longopts[] = {
-	{ "options",        0, NULL, 'o'},
-	{ "passno",         1, NULL, 'p'},
-	{ "fstype",         1, NULL, 't'},
+	{ "blockdevice",    0, NULL, 'b' },
+	{ "options",        0, NULL, 'o' },
+	{ "passno",         1, NULL, 'p' },
+	{ "fstype",         1, NULL, 't' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
+	"Extract the block device",
 	"Extract the options field",
-	"Extract the pass number field",
-	"Extract the file system type",
+	"Extract or query the pass number field",
+	"List entries with matching file system type",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -83,6 +85,7 @@ static const char * const longopts_help[] = {
 #define OUTPUT_FILE      (1 << 1)
 #define OUTPUT_OPTIONS   (1 << 3)
 #define OUTPUT_PASSNO    (1 << 4)
+#define OUTPUT_BLOCKDEV  (1 << 5)
 
 int fstabinfo (int argc, char **argv)
 {
@@ -105,6 +108,9 @@ int fstabinfo (int argc, char **argv)
 							   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+			case 'b':
+				output = OUTPUT_BLOCKDEV;
+				break;
 			case 'o':
 				output = OUTPUT_OPTIONS;
 				break;
@@ -177,6 +183,9 @@ int fstabinfo (int argc, char **argv)
 			continue;
 
 		switch (output) {
+			case OUTPUT_BLOCKDEV:
+				printf ("%s\n", ENT_BLOCKDEVICE (ent));
+				break;
 			case OUTPUT_OPTIONS:
 				printf ("%s\n", ENT_OPTS (ent));
 				break;

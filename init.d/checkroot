@@ -36,7 +36,7 @@ root_rw() {
 }
 
 do_fsck() {
-	local retval=0 opts=
+	local retval=0 opts= root=
 	case "${RC_UNAME}" in
 		FreeBSD) opts="-F";;
 		Linux) opts="-T -C0";;
@@ -52,9 +52,12 @@ do_fsck() {
 		return 0
 	fi
 
+	root=$(fstabinfo --blockdevice /)
+	[ ! -e "${root}" -a -e /dev/root ] && root=/dev/root
+
 	if [ -e /forcefsck ] || get_bootparam "forcefsck" ; then
 		ebegin "Checking root filesystem (full fsck forced)"
-		fsck ${opts} -f -n /
+		fsck ${opts} -f -n "${root}"
 		# /forcefsck isn't deleted because checkfs needs it.
 		# it'll be deleted in that script.
 		retval=$?
@@ -63,7 +66,7 @@ do_fsck() {
 		local pass=$(fstabinfo --passno /)
 		if [ ${pass:-0} != "0" ] ; then
 			ebegin "Checking root filesystem"
-			fsck ${opts} -p /
+			fsck ${opts} -p "${root}"
 			retval=$?
 		else
 			ebegin "Skipping root filesystem check" "(fstab's passno == 0)"
@@ -92,7 +95,7 @@ do_fsck() {
 	else
 		if [ "${RC_FORCE_AUTO}" = "yes" ] ; then
 			eend 2 "Rerunning fsck in force mode"
-			fsck ${opts} -y /
+			fsck ${opts} -y "${root}"
 			retval=$?
 		else
 			eend 2 "Filesystem couldn't be fixed :("
