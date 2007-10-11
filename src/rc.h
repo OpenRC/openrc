@@ -22,7 +22,6 @@
 
 #include <sys/types.h>
 #include <stdbool.h>
-//#include <stdio.h>
 
 /*! @name Reserved runlevel names */
 #define RC_LEVEL_SYSINIT    "sysinit"
