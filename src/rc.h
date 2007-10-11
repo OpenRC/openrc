@@ -77,7 +77,7 @@ typedef enum
 	/* Optional states service could also be in */
 	RC_SERVICE_FAILED      = 0x0200,
 	RC_SERVICE_SCHEDULED   = 0x0400,
-	RC_SERVICE_WASINACTIVE = 0x0800,
+	RC_SERVICE_WASINACTIVE = 0x0800
 } rc_service_state_t;
 
 /*! Add the service to the runlevel
