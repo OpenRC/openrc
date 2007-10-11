@@ -131,7 +131,7 @@ start() {
 	fi
 
 	# Only Linux has mtab
-	[ "${RC_UNAME}" = "Linux" ] && do_mtab
+	[ "${RC_UNAME}" = "Linux" -a -e /proc/mounts ] && do_mtab
 
 	# If the user's /dev/null or /dev/console are missing, we 
 	# should help them out and explain how to rectify the situation
