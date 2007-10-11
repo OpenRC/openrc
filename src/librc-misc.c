@@ -58,7 +58,7 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 	}
 	va_end (ap);
 
-	pathp = path = xmalloc (length * sizeof (char *));
+	pathp = path = xmalloc (length * sizeof (char));
 	memset (path, 0, length);
 	i = strlen (path1);
 	memcpy (path, path1, i);

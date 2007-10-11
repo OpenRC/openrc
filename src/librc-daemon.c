@@ -311,21 +311,21 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 
 	if (exec) {
 		i = strlen (exec) + 6;
-		mexec = xmalloc (sizeof (char *) * i);
+		mexec = xmalloc (sizeof (char) * i);
 		snprintf (mexec, i, "exec=%s", exec);
 	} else
 		mexec = xstrdup ("exec=");
 
 	if (name) {
 		i = strlen (name) + 6;
-		mname = xmalloc (sizeof (char *) * i);
+		mname = xmalloc (sizeof (char) * i);
 		snprintf (mname, i, "name=%s", name);
 	} else
 		mname = xstrdup ("name=");
 
 	if (pidfile) {
 		i = strlen (pidfile) + 9;
-		mpidfile = xmalloc (sizeof (char *) * i);
+		mpidfile = xmalloc (sizeof (char) * i);
 		snprintf (mpidfile, i, "pidfile=%s", pidfile);
 	} else
 		mpidfile = xstrdup ("pidfile=");
@@ -404,11 +404,11 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	free (svc);
 	
 	i = strlen (exec) + 6;
-	mexec = xmalloc (sizeof (char *) * i);
+	mexec = xmalloc (sizeof (char) * i);
 	snprintf (mexec, i, "exec=%s", exec);
 
 	if (indx > 0) {
-		int len = sizeof (char *) * 10;
+		int len = sizeof (char) * 10;
 		file = xmalloc (len);
 		snprintf (file, len, "%03d", indx);
 		retval = _match_daemon (dirpath, file, mexec, NULL, NULL);

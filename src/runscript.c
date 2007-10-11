@@ -523,7 +523,7 @@ static void make_exclusive ()
 
 	path = rc_strcatpaths (RC_SVCDIR, "exclusive", applet, (char *) NULL);
 	i = strlen (path) + 16;
-	mtime_test = xmalloc (sizeof (char *) * i);
+	mtime_test = xmalloc (sizeof (char) * i);
 	snprintf (mtime_test, i, "%s.%d", path, getpid ());
 	free (path);
 
@@ -730,7 +730,7 @@ static void svc_start (bool deps)
 			}
 
 			len += 5;
-			tmp = xmalloc (sizeof (char *) * len);
+			tmp = xmalloc (sizeof (char) * len);
 			p = tmp;
 			STRLIST_FOREACH (tmplist, svc, i) {
 				if (i > 1) {
@@ -1117,7 +1117,7 @@ int runscript (int argc, char **argv)
 		}
 	
 		/* Make our prefix string */
-		prefix = xmalloc (sizeof (char *) * l);
+		prefix = xmalloc (sizeof (char) * l);
 		ll = strlen (applet);
 		memcpy (prefix, applet, ll);
 		memset (prefix + ll, ' ', l - ll);

@@ -1105,7 +1105,7 @@ int main (int argc, char **argv)
 		if ((dp = opendir ("/dev/net"))) {
 			while ((d = readdir (dp))) {
 				i = (strlen ("net.") + strlen (d->d_name) + 1);
-				tmp = xmalloc (sizeof (char *) * i);
+				tmp = xmalloc (sizeof (char) * i);
 				snprintf (tmp, i, "net.%s", d->d_name);
 				if (rc_service_exists (tmp) &&
 					rc_service_plugable (tmp))
@@ -1126,7 +1126,7 @@ int main (int argc, char **argv)
 					char *p = d->d_name + 3;
 					if (p && isdigit (*p)) {
 						i = (strlen ("moused.") + strlen (d->d_name) + 1);
-						tmp = xmalloc (sizeof (char *) * i);
+						tmp = xmalloc (sizeof (char) * i);
 						snprintf (tmp, i, "moused.%s", d->d_name);
 						if (rc_service_exists (tmp) && rc_service_plugable (tmp))
 							rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
@@ -1246,7 +1246,7 @@ int main (int argc, char **argv)
 				continue;
 
 			len = strlen (service) + strlen (runlevel) + 2;
-			tmp = xmalloc (sizeof (char *) * len);
+			tmp = xmalloc (sizeof (char) * len);
 			snprintf (tmp, len, "%s.%s", service, runlevel);
 			conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
 			found = exists (conf);
@@ -1254,7 +1254,7 @@ int main (int argc, char **argv)
 			CHAR_FREE (tmp);
 			if (! found) {
 				len = strlen (service) + strlen (newlevel) + 2;
-				tmp = xmalloc (sizeof (char *) * len);
+				tmp = xmalloc (sizeof (char) * len);
 				snprintf (tmp, len, "%s.%s", service, newlevel);
 				conf = rc_strcatpaths (RC_CONFDIR, tmp, (char *) NULL);
 				found = exists (conf);
