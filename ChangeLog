@@ -3,6 +3,7 @@
 
   11 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Bump librc and libeinfo to .so.1
     If / block device as in /etc/fstab does not exist, use /dev/root if
     it's available in checkroot, #171593.
 

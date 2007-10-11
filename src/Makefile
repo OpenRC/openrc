@@ -46,12 +46,12 @@ RC_LIB = /$(LIB)/rc
 # Set PAM = pam for pam support
 PAM = 
 
-LIBEINFOSOVER = 0
+LIBEINFOSOVER = 1
 LIBEINFOSO = libeinfo.so.$(LIBRCSOVER)
 LIBEINFOOBJS= libeinfo.o
 LDLIBS_LIBEINFO = $(LDLIBS)
 
-LIBRCSOVER = 0
+LIBRCSOVER = 1
 LIBRCSO = librc.so.$(LIBRCSOVER)
 LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
 LDLIBS_LIBRC =
