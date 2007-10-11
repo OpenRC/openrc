@@ -8,9 +8,10 @@ and optionally repair them."
 do_mtab() {
 	# Don't create mtab if /etc is readonly
 	if ! printf "" 2>/dev/null >/etc/mtab ; then
-		ewarn "Skipping /etc/mtab initialization" "(ro root?)"
+		ewarn "Skipping /etc/mtab initialization (ro root?)"
 		return 0
 	fi
+	ebegin "Updating /etc/mtab"
 
 	# Add the entry for / to mtab
 	mount -f /
@@ -28,6 +29,7 @@ do_mtab() {
 
 	# Remove stale backups
 	rm -f /etc/mtab~ /etc/mtab~~
+	eend 0
 }
 
 root_rw() {
@@ -125,8 +127,7 @@ start() {
 		else
 			mount -u -o rw /
 		fi
-		eend $? "Root filesystem could not be mounted read/write :("
-		return $?
+		eend $? "Root filesystem could not be mounted read/write" || return $?
 	fi
 
 	# Only Linux has mtab
