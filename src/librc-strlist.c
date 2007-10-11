@@ -114,24 +114,24 @@ bool rc_strlist_delete (char ***list, const char *item)
 {
 	char **lst = *list;
 	int i = 0;
-	bool retval = false;
 
 	if (!lst || ! item)
 		return (false);
 
-	while (lst[i])
-		if (! strcmp (lst[i], item)) {
+	while (lst[i]) {
+		if (strcmp (lst[i], item) == 0) {
 			free (lst[i]);
-			retval = true;
 			do {
 				lst[i] = lst[i + 1];
 				i++;
 			} while (lst[i]);
+			return (true);
 		}
+		i++;
+	}
 
-	if (! retval)
-		errno = ENOENT;
-	return (retval);
+	errno = ENOENT;
+	return (false);
 }
 librc_hidden_def(rc_strlist_delete)
 
