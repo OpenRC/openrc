@@ -5,4 +5,5 @@
 # used at boot time, when no name servers are running.
 #
 
-loopback	127.0.0.0
+loopback        127.0.0.0
+link-local      169.254.0.0
