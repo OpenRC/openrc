@@ -382,7 +382,7 @@ static int do_options (int argc, char **argv)
 static char *proc_getent (const char *ent)
 {
 	FILE *fp;
-	char buffer[RC_LINEBUFFER];
+	char *buffer;
 	char *p;
 	char *value = NULL;
 	int i;
@@ -395,7 +395,8 @@ static char *proc_getent (const char *ent)
 		return (NULL);
 	}
 
-	memset (buffer, 0, sizeof (buffer));
+	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
+	memset (buffer, 0, RC_LINEBUFFER);
 	if (fgets (buffer, RC_LINEBUFFER, fp) &&
 		(p = strstr (buffer, ent)))
 	{ 
@@ -413,6 +414,7 @@ static char *proc_getent (const char *ent)
 		}
 	} else
 		errno = ENOENT;
+	free (buffer);
 	fclose (fp);
 
 	return (value);

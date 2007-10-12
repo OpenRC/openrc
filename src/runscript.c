@@ -376,7 +376,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 	int flags = 0;
 	fd_set rset;
 	int s;
-	char buffer[RC_LINEBUFFER];
+	char *buffer;
 	size_t bytes;
 	bool prefixed = false;
 	int selfd;
@@ -437,6 +437,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 	}
 
 	selfd = MAX (master_tty, signal_pipe[0]) + 1;
+	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
 	while (1) {
 		FD_ZERO (&rset);
 		FD_SET (signal_pipe[0], &rset);
@@ -456,12 +457,13 @@ static bool svc_exec (const char *arg1, const char *arg2)
 				break;
 
 			if (master_tty >= 0 && FD_ISSET (master_tty, &rset)) {
-				bytes = read (master_tty, buffer, sizeof (buffer));
+				bytes = read (master_tty, buffer, RC_LINEBUFFER);
 				write_prefix (buffer, bytes, &prefixed);
 			}
 		}
 	}
-
+	
+	free (buffer);
 	close (signal_pipe[0]);
 	close (signal_pipe[1]);
 	signal_pipe[0] = signal_pipe[1] = -1;

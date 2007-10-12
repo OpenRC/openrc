@@ -667,7 +667,7 @@ bool rc_deptree_update (void)
 	rc_deptype_t *deptype = NULL;
 	rc_deptype_t *dt;
 	rc_deptype_t *last_deptype = NULL;
-	char buffer[RC_LINEBUFFER];
+	char *buffer = NULL;
 	int len;
 	int i;
 	int j;
@@ -685,6 +685,7 @@ bool rc_deptree_update (void)
 
 	deptree = xmalloc (sizeof (rc_depinfo_t));
 	memset (deptree, 0, sizeof (rc_depinfo_t));
+	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
 	memset (buffer, 0, RC_LINEBUFFER);
 
 	/* Phase 2 */
@@ -776,6 +777,7 @@ bool rc_deptree_update (void)
 
 	}
 	pclose (fp);
+	free (buffer);
 
 	/* Phase 3 - add our providors to the tree */
 	for (depinfo = deptree; depinfo; depinfo = depinfo->next)

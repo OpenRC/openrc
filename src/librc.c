@@ -157,21 +157,23 @@ librc_hidden_def(rc_runlevel_list)
 char *rc_runlevel_get (void)
 {
 	FILE *fp;
-	char buffer[RC_LINEBUFFER];
 	char *runlevel = NULL;
 
 	if ((fp = fopen (SOFTLEVEL, "r"))) {
-		if (fgets (buffer, PATH_MAX, fp)) {
-			int i = strlen (buffer) - 1;
-			if (buffer[i] == '\n')
-				buffer[i] = 0;
-			runlevel = xstrdup (buffer);
-		}
+		runlevel = xmalloc (sizeof (char) * PATH_MAX);
+		if (fgets (runlevel, PATH_MAX, fp)) {
+			int i = strlen (runlevel) - 1;
+			if (runlevel[i] == '\n')
+				runlevel[i] = 0;
+		} else
+			*runlevel = '\0';
 		fclose (fp);
 	}
 
-	if (! runlevel)
+	if (! runlevel || ! *runlevel) {
+		free (runlevel);
 		runlevel = xstrdup (RC_LEVEL_SYSINIT);
+	}
 
 	return (runlevel);
 }
@@ -272,8 +274,8 @@ librc_hidden_def(rc_service_exists)
 char **rc_service_options (const char *service)
 {
 	char *svc;
-	char cmd[PATH_MAX];
-	char buffer[RC_LINEBUFFER];
+	char *cmd = NULL;
+	char *buffer = NULL;
 	char **opts = NULL;
 	char *token;
 	char *p = buffer;
@@ -282,18 +284,19 @@ char **rc_service_options (const char *service)
 	if (! (svc = rc_service_resolve (service)))
 		return (NULL);
 
-	snprintf (cmd, sizeof (cmd), ". '%s'; echo \"${opts}\"",  svc);
+	asprintf (&cmd, ". '%s'; echo \"${opts}\"",  svc);
 	free (svc);
-	if (! (fp = popen (cmd, "r")))
-		return (NULL);
-
-	if (fgets (buffer, RC_LINEBUFFER, fp)) {
-		if (buffer[strlen (buffer) - 1] == '\n')
-			buffer[strlen (buffer) - 1] = '\0';
-		while ((token = strsep (&p, " ")))
-			rc_strlist_addsort (&opts, token);
+	if ((fp = popen (cmd, "r"))) {
+		buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
+		if (fgets (buffer, RC_LINEBUFFER, fp)) {
+			if (buffer[strlen (buffer) - 1] == '\n')
+				buffer[strlen (buffer) - 1] = '\0';
+			while ((token = strsep (&p, " ")))
+				rc_strlist_addsort (&opts, token);
+		}
+		pclose (fp);
+		free (buffer);
 	}
-	pclose (fp);
 	return (opts);
 }
 librc_hidden_def(rc_service_options)
@@ -301,8 +304,8 @@ librc_hidden_def(rc_service_options)
 char *rc_service_description (const char *service, const char *option)
 {
 	char *svc;
-	char cmd[PATH_MAX];
-	char buffer[RC_LINEBUFFER];
+	char *cmd = NULL;
+	char *buffer;
 	char *desc = NULL;
 	FILE *fp;
 	int i;
@@ -313,25 +316,25 @@ char *rc_service_description (const char *service, const char *option)
 	if (! option)
 		option = "";
 
-	snprintf (cmd, sizeof (cmd), ". '%s'; echo \"${description%s%s}\"",
+	asprintf (&cmd, ". '%s'; echo \"${description%s%s}\"",
 			  svc, option ? "_" : "", option);
 	free (svc);
-	if (! (fp = popen (cmd, "r")))
-		return (NULL);
-
-	while (fgets (buffer, RC_LINEBUFFER, fp)) {
-		if (! desc) {
-			desc = xmalloc (strlen (buffer) + 1);
-			*desc = '\0';
-		} else {
-			desc = xrealloc (desc, strlen (desc) + strlen (buffer) + 1);
+	if ((fp = popen (cmd, "r"))) {
+		buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
+		while (fgets (buffer, RC_LINEBUFFER, fp)) {
+			if (! desc) {
+				desc = xmalloc (strlen (buffer) + 1);
+				*desc = '\0';
+			} else {
+				desc = xrealloc (desc, strlen (desc) + strlen (buffer) + 1);
+			}
+			i = strlen (desc);
+			memcpy (desc + i, buffer, strlen (buffer));
+			memset (desc + i + strlen (buffer), 0, 1);
 		}
-		i = strlen (desc);
-		memcpy (desc + i, buffer, strlen (buffer));
-		memset (desc + i + strlen (buffer), 0, 1);
+		free (buffer);
+		pclose (fp);
 	}
-
-	pclose (fp);
 	return (desc);
 }
 librc_hidden_def(rc_service_description)
@@ -518,20 +521,18 @@ librc_hidden_def(rc_service_state)
 char *rc_service_value_get (const char *service, const char *option)
 {
 	FILE *fp;
-	char buffer[RC_LINEBUFFER];
+	char *buffer = NULL;
 	char *file = rc_strcatpaths (RC_SVCDIR, "options", service, option,
 								 (char *) NULL);
-	char *value = NULL;
 
 	if ((fp = fopen (file, "r"))) {
-		memset (buffer, 0, sizeof (buffer));
-		if (fgets (buffer, RC_LINEBUFFER, fp)) 
-			value = xstrdup (buffer);
+		buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
+		fgets (buffer, RC_LINEBUFFER, fp);
 		fclose (fp);
 	}
 	free (file);
 
-	return (value);
+	return (buffer);
 }
 librc_hidden_def(rc_service_value_get)
 

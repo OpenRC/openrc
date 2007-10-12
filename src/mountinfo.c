@@ -237,7 +237,7 @@ static struct mntent *getmntfile (const char *file)
 static char **find_mounts (struct args *args)
 {
 	FILE *fp;
-	char buffer[PATH_MAX * 3];
+	char *buffer;
 	char *p;
 	char *from;
 	char *to;
@@ -250,7 +250,8 @@ static char **find_mounts (struct args *args)
 	if ((fp = fopen ("/proc/mounts", "r")) == NULL)
 		eerrorx ("getmntinfo: %s", strerror (errno));
 
-	while (fgets (buffer, sizeof (buffer), fp)) {
+	buffer = xmalloc (sizeof (char) * PATH_MAX * 3);
+	while (fgets (buffer, PATH_MAX * 3, fp)) {
 		netdev = -1;
 		p = buffer;
 		from = strsep (&p, " ");
@@ -265,6 +266,7 @@ static char **find_mounts (struct args *args)
 
 		process_mount (&list, args, from, to, fst, opts, netdev);
 	}
+	free (buffer);
 	fclose (fp);
 
 	return (list);

@@ -40,7 +40,7 @@ static char *applet = NULL;
 #include "_usage.h"
 #define getoptstring "t:suT" getoptstring_COMMON
 static struct option longopts[] = {
-	{ "type",     0, NULL, 't'},
+	{ "type",     1, NULL, 't'},
 	{ "notrace",  0, NULL, 'T'},
 	{ "strict",   0, NULL, 's'},
 	{ "update",   0, NULL, 'u'},
@@ -67,7 +67,7 @@ int rc_depend (int argc, char **argv)
 	bool first = true;
 	int i;
 	bool update = false;
-	char *runlevel = getenv ("RC_SOFTLEVEL");
+	char *runlevel = xstrdup( getenv ("RC_SOFTLEVEL"));
 	int opt;
 	char *token;
 
@@ -104,11 +104,11 @@ int rc_depend (int argc, char **argv)
 			eerrorx ("Failed to update the dependency tree");
 	}
 
-	if (! runlevel)
-		runlevel = rc_runlevel_get ();
-
 	if (! (deptree = _rc_deptree_load ()))
 		eerrorx ("failed to load deptree");
+
+	if (! runlevel)
+		runlevel = rc_runlevel_get ();
 
 	while (optind < argc) {
 		list = NULL;
@@ -128,6 +128,7 @@ int rc_depend (int argc, char **argv)
 	if (! services) {
 		rc_strlist_free (types);
 		rc_deptree_free (deptree);
+		free (runlevel);
 		if (update)
 			return (EXIT_SUCCESS);
 		eerrorx ("no services specified");
@@ -159,5 +160,6 @@ int rc_depend (int argc, char **argv)
 	rc_strlist_free (services);
 	rc_strlist_free (depends);
 	rc_deptree_free (deptree);
+	free (runlevel);
 	return (EXIT_SUCCESS);
 }

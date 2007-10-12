@@ -150,15 +150,16 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 				rc_in_plugin = true;
 				exit (retval);
 			} else {
-				char buffer[RC_LINEBUFFER];
+				char *buffer;
 				char *token;
 				char *p;
 				ssize_t nr;
 
 				close (pfd[1]);
-				memset (buffer, 0, sizeof (buffer));
+				buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
+				memset (buffer, 0, RC_LINEBUFFER);
 
-				while ((nr = read (pfd[0], buffer, sizeof (buffer))) > 0) {
+				while ((nr = read (pfd[0], buffer, RC_LINEBUFFER)) > 0) {
 					p = buffer;
 					while (*p && p - buffer < nr) {
 						token = strsep (&p, "=");
@@ -172,7 +173,8 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 						}
 					}
 				}
-
+				
+				free (buffer);
 				close (pfd[0]);
 			}
 		}

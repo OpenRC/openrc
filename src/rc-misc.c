@@ -132,7 +132,7 @@ char **env_filter (void)
 static bool file_regex (const char *file, const char *regex)
 {
 	FILE *fp;
-	char buffer[RC_LINEBUFFER];
+	char *buffer;
 	regex_t re;
 	bool retval = false;
 	int result;
@@ -140,10 +140,12 @@ static bool file_regex (const char *file, const char *regex)
 	if (! (fp = fopen (file, "r")))
 		return (false);
 
+	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
 	if ((result = regcomp (&re, regex, REG_EXTENDED | REG_NOSUB)) != 0) {
 		fclose (fp);
-		regerror (result, &re, buffer, sizeof (buffer));
+		regerror (result, &re, buffer, RC_LINEBUFFER);
 		fprintf (stderr, "file_regex: %s", buffer);
+		free (buffer);
 		return (false);
 	}
 
@@ -154,6 +156,7 @@ static bool file_regex (const char *file, const char *regex)
 			break;
 		}
 	}
+	free (buffer);
 	fclose (fp);
 	regfree (&re);
 

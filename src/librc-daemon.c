@@ -241,7 +241,7 @@ static bool _match_daemon (const char *path, const char *file,
 						   const char *mexec, const char *mname,
 						   const char *mpidfile)
 {
-	char buffer[RC_LINEBUFFER];
+	char *buffer;
 	char *ffile = rc_strcatpaths (path, file, (char *) NULL);
 	FILE *fp;
 	int lc = 0;
@@ -257,7 +257,8 @@ static bool _match_daemon (const char *path, const char *file,
 	if (! mpidfile)
 		m += 100;
 
-	memset (buffer, 0, sizeof (buffer));
+	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
+	memset (buffer, 0, RC_LINEBUFFER);
 	while ((fgets (buffer, RC_LINEBUFFER, fp))) {
 		int lb = strlen (buffer) - 1;
 		if (buffer[lb] == '\n')
@@ -277,6 +278,7 @@ static bool _match_daemon (const char *path, const char *file,
 		if (lc > 5)
 			break;
 	}
+	free (buffer);
 	fclose (fp);
 	free (ffile);
 
@@ -439,7 +441,7 @@ bool rc_service_daemons_crashed (const char *service)
 	struct dirent *d;
 	char *path;
 	FILE *fp;
-	char buffer[RC_LINEBUFFER];
+	char *buffer = NULL;
 	char *exec = NULL;
 	char *name = NULL;
 	char *pidfile = NULL;
@@ -458,10 +460,13 @@ bool rc_service_daemons_crashed (const char *service)
 							  (char *) NULL);
 	free (svc);
 
-	if (! (dp = opendir (dirpath)))
+	if (! (dp = opendir (dirpath))) {
+		free (dirpath);
 		return (false);
+	}
 
-	memset (buffer, 0, sizeof (buffer));
+	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
+	memset (buffer, 0, RC_LINEBUFFER);
 
 	while ((d = readdir (dp))) {
 		if (d->d_name[0] == '.')
@@ -542,6 +547,7 @@ bool rc_service_daemons_crashed (const char *service)
 		name = NULL;
 	}
 
+	free (buffer);
 	free (exec);
 	free (name);
 	free (dirpath);

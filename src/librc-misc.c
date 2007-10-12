@@ -90,7 +90,7 @@ char **rc_config_load (const char *file)
 {
 	char **list = NULL;
 	FILE *fp;
-	char buffer[RC_LINEBUFFER];
+	char *buffer;
 	char *p;
 	char *token;
 	char *line;
@@ -104,6 +104,7 @@ char **rc_config_load (const char *file)
 	if (! (fp = fopen (file, "r"))) 
 		return (NULL);
 
+	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
 	while (fgets (buffer, RC_LINEBUFFER, fp)) {
 		p = buffer;
 
@@ -164,6 +165,7 @@ char **rc_config_load (const char *file)
 		}
 		free (entry);
 	}
+	free (buffer);
 	fclose (fp);
 
 	return (list);
@@ -189,7 +191,7 @@ librc_hidden_def(rc_config_value)
 char **rc_config_list (const char *file)
 {
 	FILE *fp;
-	char buffer[RC_LINEBUFFER];
+	char *buffer;
 	char *p;
 	char *token;
 	char **list = NULL;
@@ -197,6 +199,7 @@ char **rc_config_list (const char *file)
 	if (! (fp = fopen (file, "r")))
 		return (NULL);
 
+	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
 	while (fgets (buffer, RC_LINEBUFFER, fp)) {
 		p = buffer;
 
@@ -214,6 +217,7 @@ char **rc_config_list (const char *file)
 			rc_strlist_add (&list, token);
 		}
 	}
+	free (buffer);
 	fclose (fp);
 
 	return (list);
