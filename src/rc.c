@@ -72,7 +72,6 @@ static char **coldplugged_services = NULL;
 static char **stop_services = NULL;
 static char **start_services = NULL;
 static rc_depinfo_t *deptree = NULL;
-static char **types = NULL;
 static char *tmp = NULL;
 
 struct termios *termios_orig = NULL;
@@ -83,6 +82,9 @@ typedef struct pidlist
 	struct pidlist *next;
 } pidlist_t;
 static pidlist_t *service_pids = NULL;
+
+static const char *types_n[] = { "needsme", NULL };
+static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
 static void cleanup (void)
 {
@@ -108,7 +110,6 @@ static void cleanup (void)
 		rc_strlist_free (stop_services);
 		rc_strlist_free (start_services);
 		rc_deptree_free (deptree);
-		rc_strlist_free (types);
 
 		/* Clean runlevel start, stop markers */
 		if (! rc_in_plugin) {
@@ -1153,17 +1154,11 @@ int main (int argc, char **argv)
 	rc_strlist_join (&stop_services, tmplist);
 	rc_strlist_free (tmplist);
 
-	types = NULL;
-	rc_strlist_add (&types, "ineed");
-	rc_strlist_add (&types, "iuse");
-	rc_strlist_add (&types, "iafter");
-
-	deporder = rc_deptree_depends (deptree, types, stop_services,
+	deporder = rc_deptree_depends (deptree, types_nua,
+								   (const char **) stop_services,
 								   runlevel, depoptions | RC_DEP_STOP);
 
 	rc_strlist_free (stop_services);
-	rc_strlist_free (types);
-	types = NULL;
 	stop_services = deporder;
 	deporder = NULL;
 	rc_strlist_reverse (stop_services);
@@ -1212,8 +1207,6 @@ int main (int argc, char **argv)
 	if (going_down)
 		rc_runlevel_set (newlevel);
 
-	types = NULL;
-	rc_strlist_add (&types, "needsme");
 	/* Now stop the services that shouldn't be running */
 	STRLIST_FOREACH (stop_services, service, i) {
 		bool found = false;
@@ -1274,7 +1267,8 @@ int main (int argc, char **argv)
 		/* We got this far! Or last check is to see if any any service that
 		   going to be started depends on us */
 		rc_strlist_add (&stopdeps, service);
-		deporder = rc_deptree_depends (deptree, types, stopdeps,
+		deporder = rc_deptree_depends (deptree, types_n,
+									   (const char **) stopdeps,
 									   runlevel, RC_DEP_STRICT);
 		rc_strlist_free (stopdeps);
 		stopdeps = NULL;
@@ -1298,8 +1292,6 @@ int main (int argc, char **argv)
 				wait_pid (pid);
 		}
 	}
-	rc_strlist_free (types);
-	types = NULL;
 
 	/* Wait for our services to finish */
 	wait_for_services ();
@@ -1341,13 +1333,9 @@ int main (int argc, char **argv)
 		rc_service_mark (service, RC_SERVICE_COLDPLUGGED);
 
 	/* Order the services to start */
-	rc_strlist_add (&types, "ineed");
-	rc_strlist_add (&types, "iuse");
-	rc_strlist_add (&types, "iafter");
-	deporder = rc_deptree_depends (deptree, types, start_services,
+	deporder = rc_deptree_depends (deptree, types_nua,
+								   (const char **) start_services,
 								   runlevel, depoptions | RC_DEP_START);
-	rc_strlist_free (types);
-	types = NULL;
 	rc_strlist_free (start_services);
 	start_services = deporder;
 	deporder = NULL;

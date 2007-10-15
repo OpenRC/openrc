@@ -51,10 +51,8 @@ static char *exclusive = NULL;
 static char *mtime_test = NULL;
 static rc_depinfo_t *deptree = NULL;
 static char **services = NULL;
-static char **svclist = NULL;
 static char **tmplist = NULL;
 static char **providelist = NULL;
-static char **types = NULL;
 static char **restart_services = NULL;
 static char **need_services = NULL;
 static char **use_services = NULL;
@@ -72,6 +70,15 @@ static int signal_pipe[2] = { -1, -1 };
 static int master_tty = -1;
 
 extern char **environ;
+
+static const char *types_b[] = { "broken", NULL };
+static const char *types_n[] = { "ineed", NULL };
+static const char *types_nu[] = { "ineed", "iuse", NULL };
+static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
+static const char *types_p[] = { "iprovide", NULL };
+
+static const char *types_m[] = { "needsme", NULL };
+static const char *types_mua[] = { "needsme", "usesme", "beforeme", NULL };
 
 #ifdef __linux__
 static void (*selinux_run_init_old) (void);
@@ -299,8 +306,6 @@ static void cleanup (void)
 	rc_plugin_unload ();
 	rc_deptree_free (deptree);
 	rc_strlist_free (services);
-	rc_strlist_free (types);
-	rc_strlist_free (svclist);
 	rc_strlist_free (providelist);
 	rc_strlist_free (need_services);
 	rc_strlist_free (use_services);
@@ -580,6 +585,7 @@ static void svc_start (bool deps)
 	int i;
 	int j;
 	int depoptions = RC_DEP_TRACE;
+	const char *svcl[] = { applet, NULL };
 	rc_service_state_t state;
 
 	hook_out = RC_HOOK_SERVICE_START_OUT;
@@ -617,14 +623,8 @@ static void svc_start (bool deps)
 		if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
 			eerrorx ("failed to load deptree");
 
-		rc_strlist_free (types);
-		types = NULL;
-		rc_strlist_add (&types, "broken");
-		rc_strlist_free (svclist);
-		svclist = NULL;
-		rc_strlist_add (&svclist, applet);
 		rc_strlist_free (services);
-		services = rc_deptree_depends (deptree, types, svclist, softlevel, 0);
+		services = rc_deptree_depends (deptree, types_b, svcl, softlevel, 0);
 		if (services) {
 			eerrorn ("ERROR: `%s' needs ", applet);
 			STRLIST_FOREACH (services, svc, i) {
@@ -637,16 +637,12 @@ static void svc_start (bool deps)
 		rc_strlist_free (services);
 		services = NULL;
 
-		rc_strlist_free (types);
-		types = NULL;
-		rc_strlist_add (&types, "ineed");
 		rc_strlist_free (need_services);
-		need_services = rc_deptree_depends (deptree, types, svclist,
+		need_services = rc_deptree_depends (deptree, types_n, svcl,
 										softlevel, depoptions);
 
-		rc_strlist_add (&types, "iuse");
 		rc_strlist_free (use_services);
-		use_services = rc_deptree_depends (deptree, types, svclist,
+		use_services = rc_deptree_depends (deptree, types_nu, svcl,
 									   softlevel, depoptions);
 
 		if (! rc_runlevel_starting ()) {
@@ -659,9 +655,8 @@ static void svc_start (bool deps)
 		}
 
 		/* Now wait for them to start */
-		rc_strlist_add (&types, "iafter");
-		services = rc_deptree_depends (deptree, types, svclist,
-								   softlevel, depoptions);
+		services = rc_deptree_depends (deptree, types_nua, svcl,
+									   softlevel, depoptions);
 
 		/* We use tmplist to hold our scheduled by list */
 		rc_strlist_free (tmplist);
@@ -712,18 +707,13 @@ static void svc_start (bool deps)
 			rc_service_mark (service, RC_SERVICE_STOPPED);
 			unlink_mtime_test ();
 
-			rc_strlist_free (types);
-			types = NULL;
-			rc_strlist_add (&types, "iprovide");
 			STRLIST_FOREACH (tmplist, svc, i) {
+				const char *sl[] = { svc, NULL };
 				rc_service_schedule_start (svc, service);
 
-				rc_strlist_free (svclist);
-				svclist = NULL;
-				rc_strlist_add (&svclist, svc);
 				rc_strlist_free (providelist);
-				providelist = rc_deptree_depends (deptree, types, svclist,
-											  softlevel, depoptions);
+				providelist = rc_deptree_depends (deptree, types_p, sl,
+												  softlevel, depoptions);
 				STRLIST_FOREACH (providelist, svc2, j) 
 					rc_service_schedule_start (svc2, service);
 
@@ -749,10 +739,6 @@ static void svc_start (bool deps)
 
 		rc_strlist_free (services);
 		services = NULL;
-		rc_strlist_free (types);
-		types = NULL;
-		rc_strlist_free (svclist);
-		svclist = NULL;
 	}
 
 	if (ibsave)
@@ -791,14 +777,8 @@ static void svc_start (bool deps)
 	services = NULL;
 
 	/* Do the same for any services we provide */
-	rc_strlist_free (types);
-	types = NULL;
-	rc_strlist_add (&types, "iprovide");
-	rc_strlist_free (svclist);
-	svclist = NULL;
-	rc_strlist_add (&svclist, applet);
 	rc_strlist_free (tmplist);
-	tmplist = rc_deptree_depends (deptree, types, svclist, softlevel, depoptions);
+	tmplist = rc_deptree_depends (deptree, types_p, svcl, softlevel, depoptions);
 
 	STRLIST_FOREACH (tmplist, svc2, j) {
 		rc_strlist_free (services);
@@ -815,6 +795,8 @@ static void svc_start (bool deps)
 static void svc_stop (bool deps)
 {
 	bool stopped;
+	const char *svcl[] = { applet, NULL };
+
 	rc_service_state_t state = rc_service_state (service);
 
 	hook_out = RC_HOOK_SERVICE_STOP_OUT;
@@ -857,17 +839,11 @@ static void svc_stop (bool deps)
 		if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
 			eerrorx ("failed to load deptree");
 
-		rc_strlist_free (types);
-		types = NULL;
-		rc_strlist_add (&types, "needsme");
-		rc_strlist_free (svclist);
-		svclist = NULL;
-		rc_strlist_add (&svclist, applet);
 		rc_strlist_free (tmplist);
 		tmplist = NULL;
 		rc_strlist_free (services);
-		services = rc_deptree_depends (deptree, types, svclist,
-								   softlevel, depoptions);
+		services = rc_deptree_depends (deptree, types_m, svcl,
+									   softlevel, depoptions);
 		rc_strlist_reverse (services);
 		STRLIST_FOREACH (services, svc, i) {
 			rc_service_state_t svcs = rc_service_state (svc);
@@ -915,10 +891,8 @@ static void svc_stop (bool deps)
 
 		/* We now wait for other services that may use us and are stopping
 		   This is important when a runlevel stops */
-		rc_strlist_add (&types, "usesme");
-		rc_strlist_add (&types, "ibefore");
-		services = rc_deptree_depends (deptree, types, svclist,
-								   softlevel, depoptions);
+		services = rc_deptree_depends (deptree, types_mua, svcl,
+									   softlevel, depoptions);
 		STRLIST_FOREACH (services, svc, i) {
 			if (rc_service_state (svc) & RC_SERVICE_STOPPED)
 				continue;
@@ -927,8 +901,6 @@ static void svc_stop (bool deps)
 
 		rc_strlist_free (services);
 		services = NULL;
-		rc_strlist_free (types);
-		types = NULL;
 	}
 
 	if (ibsave)
@@ -957,7 +929,6 @@ static void svc_stop (bool deps)
 		unlink (exclusive);
 	hook_out = 0;
 	rc_plugin_run (RC_HOOK_SERVICE_STOP_OUT, applet);
-
 }
 
 static void svc_restart (bool deps)
@@ -1213,6 +1184,8 @@ int runscript (int argc, char **argv)
 				   strcmp (optarg, "ibefore") == 0 ||
 				   strcmp (optarg, "iprovide") == 0) {
 			int depoptions = RC_DEP_TRACE;
+			const char *t[] = { optarg, NULL };
+			const char *s[] = { applet, NULL };
 
 			if (rc_env_bool ("RC_DEPEND_STRICT"))
 				depoptions |= RC_DEP_STRICT;
@@ -1220,15 +1193,8 @@ int runscript (int argc, char **argv)
 			if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
 				eerrorx ("failed to load deptree");
 
-			rc_strlist_free (types);
-			types = NULL;
-			rc_strlist_add (&types, optarg);
-			rc_strlist_free (svclist);
-			svclist = NULL;
-			rc_strlist_add (&svclist, applet);
 			rc_strlist_free (services);
-			services = rc_deptree_depends (deptree, types, svclist,
-									   softlevel, depoptions);
+			services = rc_deptree_depends (deptree, t, s, softlevel, depoptions);
 			STRLIST_FOREACH (services, svc, i)
 				printf ("%s%s", i == 1 ? "" : " ", svc);
 			if (services)

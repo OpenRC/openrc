@@ -264,8 +264,9 @@ rc_depinfo_t *rc_deptree_load (void);
  * @param services to check
  * @param options to pass
  * @return NULL terminated list of services in order */
-char **rc_deptree_depends (rc_depinfo_t *deptree, char **types,
-						   char **services, const char *runlevel, int options);
+char **rc_deptree_depends (rc_depinfo_t *deptree, const char * const *types,
+						   const char * const *services, const char *runlevel,
+						   int options);
 
 /*! List all the services that should be stoppned and then started, in order,
  * for the given runlevel, including sysinit and boot services where

@@ -19,7 +19,7 @@
 
 #define APPLET "rc-status"
 
-static char const *types[] = { "ineed", "iuse", "iafter", NULL };
+static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
 static void print_level (char *level)
 {
@@ -146,7 +146,8 @@ int rc_status (int argc, char **argv)
 		print_level (level);
 		services = rc_services_in_runlevel (level);
 		if (deptree) {
-			ordered = rc_deptree_depends (deptree, (char **) types, services,
+			ordered = rc_deptree_depends (deptree, types_nua,
+										  (const char **) services,
 										  level, depopts);
 			rc_strlist_free (services);
 			services = ordered;

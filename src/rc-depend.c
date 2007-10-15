@@ -114,7 +114,8 @@ int rc_depend (int argc, char **argv)
 		list = NULL;
 		rc_strlist_add (&list, argv[optind]);
 		errno = 0;
-		depends = rc_deptree_depends (deptree, NULL, list, runlevel, 0);
+		depends = rc_deptree_depends (deptree, NULL, (const char **) list,
+									  runlevel, 0);
 		if (! depends && errno == ENOENT)
 			eerror ("no dependency info for service `%s'", argv[optind]);
 		else
@@ -140,7 +141,8 @@ int rc_depend (int argc, char **argv)
 		rc_strlist_add (&types, "iuse");
 	}
 
-	depends = rc_deptree_depends (deptree, types, services, runlevel, options);
+	depends = rc_deptree_depends (deptree, (const char **) types,
+								  (const char **) services, runlevel, options);
 
 	if (depends) {
 		STRLIST_FOREACH (depends, service, i) {

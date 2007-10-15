@@ -351,13 +351,14 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 	return (providers.list);
 }
 
-static void visit_service (rc_depinfo_t *deptree, char **types,
+static void visit_service (rc_depinfo_t *deptree, const char * const *types,
 						   struct lhead *sorted, struct lhead *visited,
 						   rc_depinfo_t *depinfo,
 						   const char *runlevel, int options)
 {
 	int i, j, k;
-	char *lp, *item;
+	char *lp;
+	const char *item;
 	char *service;
 	rc_depinfo_t *di;
 	rc_deptype_t *dt;
@@ -441,13 +442,13 @@ static void visit_service (rc_depinfo_t *deptree, char **types,
 }
 
 char **rc_deptree_depends (rc_depinfo_t *deptree,
-						   char **types, char **services,
+						   const char * const *types, const char * const *services,
 						   const char *runlevel, int options)
 {  
 	struct lhead sorted;
 	struct lhead visited;
 	rc_depinfo_t *di;
-	char *service;
+	const char *service;
 	int i;
 
 	if (! deptree || ! services)
@@ -476,11 +477,11 @@ char **rc_deptree_depends (rc_depinfo_t *deptree,
 }
 librc_hidden_def(rc_deptree_depends)
 
+static const const char *order_types[] = { "ineed", "iuse", "iafter", NULL };
 char **rc_deptree_order (rc_depinfo_t *deptree, const char *runlevel,
 						 int options)
 {
 	char **list = NULL;
-	char **types = NULL;
 	char **services = NULL;
 	bool reverse = false;
 	char **tmp = NULL;
@@ -525,13 +526,10 @@ char **rc_deptree_order (rc_depinfo_t *deptree, const char *runlevel,
 
 	/* Now we have our lists, we need to pull in any dependencies
 	   and order them */
-	rc_strlist_add (&types, "ineed");
-	rc_strlist_add (&types, "iuse");
-	rc_strlist_add (&types, "iafter");
-	services = rc_deptree_depends (deptree, types, list, runlevel,
+	services = rc_deptree_depends (deptree, order_types, (const char **) list,
+								   runlevel,
 								   RC_DEP_STRICT | RC_DEP_TRACE | options);
 	rc_strlist_free (list);
-	rc_strlist_free (types);
 
 	if (reverse)
 		rc_strlist_reverse (services);
