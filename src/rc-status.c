@@ -141,7 +141,11 @@ int rc_status (int argc, char **argv)
 	}
 
 	/* Output the services in the order in which they would start */
-	deptree = rc_deptree_load ();
+	if (geteuid () == 0)
+		deptree = _rc_deptree_load ();
+	else
+		deptree = rc_deptree_load ();
+
 	STRLIST_FOREACH (levels, level, i) {
 		print_level (level);
 		services = rc_services_in_runlevel (level);
