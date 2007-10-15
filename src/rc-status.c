@@ -19,6 +19,8 @@
 
 #define APPLET "rc-status"
 
+static char const *types[] = { "ineed", "iuse", "iafter", NULL };
+
 static void print_level (char *level)
 {
 	printf ("Runlevel: %s%s%s\n",
@@ -81,8 +83,10 @@ static const char * const longopts_help[] = {
 
 int rc_status (int argc, char **argv)
 {
+	rc_depinfo_t *deptree = NULL;
 	char **levels = NULL;
 	char **services = NULL;
+	char **ordered = NULL;
 	char *level;
 	char *service;
 	int opt;
@@ -135,15 +139,26 @@ int rc_status (int argc, char **argv)
 		free (level);
 	}
 
+	/* Output the services in the order in which they would start */
+	deptree = rc_deptree_load ();
 	STRLIST_FOREACH (levels, level, i) {
 		print_level (level);
 		services = rc_services_in_runlevel (level);
+		if (deptree) {
+			ordered = rc_deptree_depends (deptree, (char **) types, services,
+										  level, RC_DEP_STRICT | RC_DEP_START);
+			rc_strlist_free (services);
+			services = ordered;
+			ordered = NULL;
+		}
 		STRLIST_FOREACH (services, service, j)
-			print_service (service);
+			if (rc_service_in_runlevel (service, level))
+				print_service (service);
 		rc_strlist_free (services);
 	}
 
 	rc_strlist_free (levels);
+	rc_deptree_free (deptree);
 
 	return (EXIT_SUCCESS);
 }
