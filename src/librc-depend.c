@@ -442,7 +442,7 @@ static void visit_service (rc_depinfo_t *deptree, const char * const *types,
 }
 
 char **rc_deptree_depends (rc_depinfo_t *deptree,
-						   const char * const *types, const char * const *services,
+						   const char **types, const char **services,
 						   const char *runlevel, int options)
 {  
 	struct lhead sorted;
