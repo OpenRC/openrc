@@ -92,6 +92,7 @@ int rc_status (int argc, char **argv)
 	int opt;
 	int i;
 	int j;
+	int depopts = RC_DEP_STRICT | RC_DEP_START | RC_DEP_TRACE;
 
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts, (int *) 0)) != -1)
 		switch (opt) {
@@ -146,7 +147,7 @@ int rc_status (int argc, char **argv)
 		services = rc_services_in_runlevel (level);
 		if (deptree) {
 			ordered = rc_deptree_depends (deptree, (char **) types, services,
-										  level, RC_DEP_STRICT | RC_DEP_START);
+										  level, depopts);
 			rc_strlist_free (services);
 			services = ordered;
 			ordered = NULL;
