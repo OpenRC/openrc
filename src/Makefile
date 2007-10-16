@@ -62,6 +62,7 @@ RCOBJS = checkown.o env-update.o fstabinfo.o mountinfo.o \
 LDLIBS_RC = -leinfo -lrc -lutil
 
 LIB_TARGETS = $(LIBEINFOSO) $(LIBRCSO)
+ULIB_TARGETS = libeinfo.a librc.a
 SBIN_TARGETS = rc
 SYS_WHITELIST = env_whitelist
 
@@ -114,6 +115,8 @@ $(LIBEINFOSO): einfo.map $(LIBEINFOOBJS)
 		-Wl,-version-script einfo.map \
 		-o $(LIBEINFOSO) $(LIBEINFOOBJS) $(LDLIBS) $(LDLIBS_LIBEINFO)
 	ln -sf $(LIBEINFOSO) libeinfo.so
+	ar rc libeinfo.a $(LIBEINFOOBJS)
+	ranlib libeinfo.a
 
 $(LIBRCOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
@@ -123,11 +126,13 @@ $(LIBRCSO): rc.map $(LIBRCOBJS)
 		-Wl,-version-script rc.map \
 		-o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS) $(LDLIBS_LIBRC)
 	ln -sf $(LIBRCSO) librc.so
+	ar rc librc.a $(LIBRCOBJS)
+	ranlib librc.a
 
 $(RCOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
 rc: $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
-	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LDLIBS) $(LDLIBS_RC)
+	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LDLIBS) $(LDLIBS_RC) $(LDLIBS_LIBEINFO) $(LDLIBS_LIBRC)
 
 $(ALL_LINKS): rc
 	ln -sf rc $@
@@ -138,6 +143,8 @@ install: $(TARGET)
 	install -m 0755 $(LIB_TARGETS) $(DESTDIR)/$(LIB)
 	ln -sf $(LIBEINFOSO) $(DESTDIR)/$(LIB)/libeinfo.so
 	ln -sf $(LIBRCSO) $(DESTDIR)/$(LIB)/librc.so
+	install -m 0755 -d $(DESTDIR)/usr/$(LIB)
+	install -m 0644 $(ULIB_TARGETS) $(DESTDIR)/usr/$(LIB)
 	install -m 0755 -d $(DESTDIR)/usr/include
 	install -m 0644 einfo.h rc.h $(DESTDIR)/usr/include
 	install -m 0755 -d $(DESTDIR)/bin
@@ -161,7 +168,7 @@ clean-links:
 	rm -f $(ALL_LINKS)
 clean: clean-links
 	rm -f $(TARGET)
-	rm -f *.o *~ *.core *.so .depend
+	rm -f *.o *~ *.core *.so *.a .depend
 
 check:
 	$(MAKE) -C test $@
