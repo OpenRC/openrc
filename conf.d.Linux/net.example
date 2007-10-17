@@ -445,7 +445,7 @@
 
 # If you have more than one DHCP client installed, you need to specify which
 # one to use - otherwise we default to dhcpcd if available.
-#modules=( "dhclient" ) # to select dhclient over dhcpcd
+#modules="dhclient" # to select dhclient over dhcpcd
 #
 # Notes:
 # - All clients send the current hostname to the DHCP server by default
@@ -602,7 +602,7 @@
 
 # Ensure that you have /etc/atmsigd.conf setup correctly
 # Now setup each clip interface like so
-#clip_atm0=( "peer_ip [if.]vpi.vci [opts]" ... )
+#clip_atm0="'peer_ip [if.]vpi.vci [opts]'"
 #  where "peer_ip" is the IP address of a PVC peer (in case of an ATM connection
 #  with your ISP, your only peer is usually the ISP gateway closest to you),
 #  "if" is the number of the ATM interface which will carry the PVC, "vpi.vci"
@@ -687,7 +687,7 @@
 #"
 #
 # Dial-up PPP users need to specify at least one telephone number
-#phone_number_ppp0=( "12345689" ) # Maximum 2 phone numbers are supported
+#phone_number_ppp0="12345689" # Maximum 2 phone numbers are supported
 # They will also need a chat script - here's a good one
 #chat_ppp0=" \
 #	'ABORT' 'BUSY' \
