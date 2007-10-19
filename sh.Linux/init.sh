@@ -206,26 +206,28 @@ else
 	done
 fi
 
-# Mount the new fancy pants /dev/pts whenever possible
-if grep -Eq "[[:space:]]+devpts$" /proc/filesystems && \
-	! mountinfo -q /dev/pts; then
-	if [ ! -d /dev/pts ] && \
+# Mount required stuff as user may not have then in /etc/fstab
+for x in "devpts /dev/pts" "tmpfs /dev/shm ,nodev"; do
+	set -- ${x}
+	grep -Eq "[[:space:]]+$1$" /proc/filesystems || continue
+	mountinfo -q "$2" && continue
+
+	if [ ! -d "$2" ] && \
 	   [ "${devfs}" = "yes" -o "${udev}" = "yes" ]; then
-		# Make sure we have /dev/pts
-		mkdir -p /dev/pts >/dev/null 2>/dev/null || \
-			ewarn "Could not create /dev/pts!"
+		mkdir -p "$2" >/dev/null 2>/dev/null || \
+			ewarn "Could not create $2!"
 	fi
 
-	if [ -d /dev/pts ]; then
-		ebegin "Mounting devpts at /dev/pts"
-		if fstabinfo --quiet /dev/pts; then
-			try mount -n /dev/pts
+	if [ -d "$2" ]; then
+		ebegin "Mounting $1 at $2"
+		if fstabinfo --quiet "$2"; then
+			try mount -n "$2"
 		else
-			try mount -n -t devpts -o gid=5,mode=0620,noexec,nosuid devpts /dev/pts
+			try mount -n -t "$1" -o gid=5,mode=0620,noexec,nosuid"$3" none "$2"
 		fi
 		eend $?
 	fi
-fi
+done
 
 # If booting off CD, we want to update inittab before setting the runlevel
 if [ -f /sbin/livecd-functions.sh -a -n "${CDBOOT}" ]; then

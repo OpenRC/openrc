@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  19 Oct 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Mount /dev/shm for Linux systems, even not when in /etc/fstab, #196345.
+
   16 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
     We now build and optionally work with static libraries.
