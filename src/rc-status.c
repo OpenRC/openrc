@@ -94,7 +94,8 @@ int rc_status (int argc, char **argv)
 	int j;
 	int depopts = RC_DEP_STRICT | RC_DEP_START | RC_DEP_TRACE;
 
-	while ((opt = getopt_long(argc, argv, getoptstring, longopts, (int *) 0)) != -1)
+	while ((opt = getopt_long (argc, argv, getoptstring, longopts,
+							   (int *) 0)) != -1)
 		switch (opt) {
 			case 'a':
 				levels = rc_runlevel_list ();
