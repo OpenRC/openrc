@@ -5,6 +5,8 @@
    Released under the GPLv2
    */
 
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
@@ -99,6 +101,21 @@ void rc_plugin_load (void)
 	closedir (dp);
 }
 
+int rc_waitpid (pid_t pid)
+{
+	int status = 0;
+	pid_t savedpid = pid;
+	int retval = -1;
+
+	errno = 0;
+	while ((pid = waitpid (savedpid, &status, 0)) > 0) {
+		if (pid == savedpid)
+			retval = WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE;
+	}
+
+	return (retval);
+}
+
 void rc_plugin_run (rc_hook_t hook, const char *value)
 {
 	plugin_t *plugin = plugins;
@@ -176,6 +193,8 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 				
 				free (buffer);
 				close (pfd[0]);
+
+				rc_waitpid (pid);
 			}
 		}
 		plugin = plugin->next;

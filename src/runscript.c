@@ -13,7 +13,6 @@
 #include <sys/ioctl.h>
 #include <sys/param.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -132,9 +131,8 @@ static void handle_signal (int sig)
 			if (signal_pipe[1] > -1) {
 				if (write (signal_pipe[1], &sig, sizeof (sig)) == -1)
 					eerror ("%s: send: %s", service, strerror (errno));
-			} else {
-				wait (0);
-			}
+			} else
+				rc_waitpid (-1);
 			break;
 
 		case SIGWINCH:
@@ -356,21 +354,6 @@ static int write_prefix (const char *buffer, size_t bytes, bool *prefixed) {
 	return (ret);
 }
 
-static int wait_pid (pid_t pid)
-{
-	int status = 0;
-	pid_t savedpid = pid;
-	int retval = -1;
-
-	errno = 0;
-	while ((pid = waitpid (savedpid, &status, 0)) > 0) {
-		if (pid == savedpid)
-			retval = WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE;
-	}
-
-	return (retval);
-}
-
 static bool svc_exec (const char *arg1, const char *arg2)
 {
 	bool execok;
@@ -419,7 +402,6 @@ static bool svc_exec (const char *arg1, const char *arg2)
 			 * good for us */
 			close (master_tty);
 	
-			dup2 (fileno (stdin), 0);
 			dup2 (slave_tty, 1);
 			dup2 (slave_tty, 2);
 			if (slave_tty > 2)
@@ -457,14 +439,14 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		}
 		
 		if (s > 0) {
-			/* Only SIGCHLD signals come down this pipe */
-			if (FD_ISSET (signal_pipe[0], &rset))
-				break;
-
 			if (master_tty >= 0 && FD_ISSET (master_tty, &rset)) {
 				bytes = read (master_tty, buffer, RC_LINEBUFFER);
 				write_prefix (buffer, bytes, &prefixed);
 			}
+
+			/* Only SIGCHLD signals come down this pipe */
+			if (FD_ISSET (signal_pipe[0], &rset))
+				break;
 		}
 	}
 	
@@ -479,7 +461,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		master_tty = -1;
 	}
 
-	execok = wait_pid (service_pid) == 0 ? true : false;
+	execok = rc_waitpid (service_pid) == 0 ? true : false;
 	service_pid = 0;
 
 	return (execok);
@@ -650,7 +632,7 @@ static void svc_start (bool deps)
 				if (rc_service_state (svc) & RC_SERVICE_STOPPED) {
 					pid_t pid = rc_service_start (svc);
 					if (! rc_env_bool ("RC_PARALLEL"))
-						wait_pid (pid);
+						rc_waitpid (pid);
 				}
 		}
 
@@ -857,7 +839,7 @@ static void svc_stop (bool deps)
 				{
 					pid_t pid = rc_service_stop (svc);
 					if (! rc_env_bool ("RC_PARALLEL"))
-						wait_pid (pid);
+						rc_waitpid (pid);
 					rc_strlist_add (&tmplist, svc);
 				}
 			}

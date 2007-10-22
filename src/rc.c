@@ -629,21 +629,6 @@ static void remove_pid (pid_t pid)
 	}
 }
 
-static int wait_pid (pid_t pid)
-{
-	int status = 0;
-	pid_t savedpid = pid;
-	int retval = -1;
-
-	errno = 0;
-	while ((pid = waitpid (savedpid, &status, 0)) > 0) {
-		if (pid == savedpid)
-			retval = WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE;
-	}
-
-	return (retval);
-}
-
 static void handle_signal (int sig)
 {
 	int serrno = errno;
@@ -1223,7 +1208,7 @@ int main (int argc, char **argv)
 		if (going_down) {
 			pid_t pid = rc_service_stop (service);
 			if (pid > 0 && ! rc_env_bool ("RC_PARALLEL"))
-				wait_pid (pid);
+				rc_waitpid (pid);
 			continue;
 		}
 
@@ -1289,7 +1274,7 @@ int main (int argc, char **argv)
 		if (! found) {
 			pid_t pid = rc_service_stop (service);
 			if (pid > 0 && ! rc_env_bool ("RC_PARALLEL"))
-				wait_pid (pid);
+				rc_waitpid (pid);
 		}
 	}
 
@@ -1385,7 +1370,7 @@ interactive_option:
 				add_pid (pid);
 
 			if (! rc_env_bool ("RC_PARALLEL")) {
-				wait_pid (pid);
+				rc_waitpid (pid);
 				remove_pid (pid);
 			}
 		}
