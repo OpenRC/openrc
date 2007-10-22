@@ -290,7 +290,7 @@ hidden_def(ecolor)
 
 const char *ecolor (einfo_color_t color)
 {
-	return (_ecolor (NULL, color));
+	return (_ecolor (stdout, color));
 }
 
 #define EINFOVN(_file, _color) \
