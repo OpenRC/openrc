@@ -207,14 +207,14 @@ else
 fi
 
 # Mount required stuff as user may not have then in /etc/fstab
-for x in "devpts /dev/pts" "tmpfs /dev/shm ,nodev"; do
+for x in "devpts /dev/pts 0755 ,gid=5,mode=0620" "tmpfs /dev/shm 1777 ,nodev"; do
 	set -- ${x}
 	grep -Eq "[[:space:]]+$1$" /proc/filesystems || continue
 	mountinfo -q "$2" && continue
 
 	if [ ! -d "$2" ] && \
 	   [ "${devfs}" = "yes" -o "${udev}" = "yes" ]; then
-		mkdir -p "$2" >/dev/null 2>/dev/null || \
+		mkdir -m "$3" -p "$2" >/dev/null 2>/dev/null || \
 			ewarn "Could not create $2!"
 	fi
 
@@ -223,7 +223,7 @@ for x in "devpts /dev/pts" "tmpfs /dev/shm ,nodev"; do
 		if fstabinfo --quiet "$2"; then
 			try mount -n "$2"
 		else
-			try mount -n -t "$1" -o gid=5,mode=0620,noexec,nosuid"$3" none "$2"
+			try mount -n -t "$1" -o noexec,nosuid"$4" none "$2"
 		fi
 		eend $?
 	fi
