@@ -13,7 +13,8 @@
 
 /* nano seconds */
 #define POLL_INTERVAL   20000000
-#define START_WAIT     500000000
+#define WAIT_PIDFILE   500000000
+#define START_WAIT     100000000
 #define ONE_SECOND    1000000000
 
 #include <sys/types.h>
@@ -974,8 +975,8 @@ int start_stop_daemon (int argc, char **argv)
 	if (START_WAIT > 0) {
 		struct timespec ts;
 		int nloops = START_WAIT / POLL_INTERVAL;
+		int nloopsp = WAIT_PIDFILE / POLL_INTERVAL;
 		bool alive = false;
-		bool retestpid = false;
 		
 		ts.tv_sec = 0;
 		ts.tv_nsec = POLL_INTERVAL;
@@ -989,7 +990,15 @@ int start_stop_daemon (int argc, char **argv)
 					return (0);
 				}
 			}
-			nloops --;
+
+			/* We wait for a specific amount of time for a pidfile to be
+			 * created. Once everything is in place we then wait some more
+			 * to ensure that the daemon really is running and won't abort due
+			 * to a config error. */
+			if (! background && pidfile && nloopsp)
+				nloopsp --;
+			else
+				nloops --;
 
 			/* This is knarly.
 			   If we backgrounded then we know the exact pid.
@@ -1005,9 +1014,8 @@ int start_stop_daemon (int argc, char **argv)
 					/* The pidfile may not have been written yet - give it some time */
 					if (get_pid (pidfile, true) == -1) {
 						alive = true;
-						retestpid = true;
 					} else {
-						retestpid = false;
+						nloopsp = 0;
 						if (do_stop (NULL, NULL, pidfile, uid, 0,
 									 true, false, true) > 0)
 							alive = true;
@@ -1020,12 +1028,6 @@ int start_stop_daemon (int argc, char **argv)
 			}
 
 			if (! alive)
-				eerrorx ("%s: %s died", applet, exec);
-		}
-
-		if (retestpid) {
-			if (do_stop (NULL, NULL, pidfile, uid, 0, true,
-						 false, true) < 1)
 				eerrorx ("%s: %s died", applet, exec);
 		}
 	}
