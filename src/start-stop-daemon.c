@@ -391,7 +391,7 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 
 					if (nanosleep (&ts, NULL) == -1) {
 						if (errno == EINTR)
-							eerror ("%s: caught an interupt", applet);
+							eerror ("%s: caught an interrupt", applet);
 						else {
 							eerror ("%s: nanosleep: %s", applet, strerror (errno));
 							return (0);
@@ -984,7 +984,7 @@ int start_stop_daemon (int argc, char **argv)
 		while (nloops) {
 			if (nanosleep (&ts, NULL) == -1) {
 				if (errno == EINTR)
-					eerror ("%s: caught an interupt", applet);
+					eerror ("%s: caught an interrupt", applet);
 				else {
 					eerror ("%s: nanosleep: %s", applet, strerror (errno));
 					return (0);

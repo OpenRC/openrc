@@ -5,7 +5,7 @@
 # Ensure we are called by init
 [ "$PPID" = "1" ] || exit 0
 
-# Handle interupts 
+# Handle interrupts 
 trap : SIGINT SIGQUIT
 
 # Try and use stuff in /lib over anywhere else so we can shutdown

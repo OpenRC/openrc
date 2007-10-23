@@ -9,7 +9,7 @@
 # This gives us a nice colour boot :)
 [ -z "$TERM" -o "$TERM" = "dumb" ] && export TERM="cons25"
 
-# Handle interupts 
+# Handle interrupts 
 trap : SIGINT
 trap "echo 'Boot interrupted'; exit 1" SIGQUIT
 
