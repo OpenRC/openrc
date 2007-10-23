@@ -3,6 +3,7 @@
 
   23 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
+    clock init script now works with busybox hwclock.
     clock init script now handles /etc/adjtime correctly.
     CLOCK_ADJTIME hinted that it could change the location of /etc/adjtime.
     This is not the case.

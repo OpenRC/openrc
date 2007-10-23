@@ -8,54 +8,43 @@ description="Sets the local clock to UTC or Local Time."
 description_save="Saves the current time in the BIOS."
 
 depend() {
-	case "${CLOCK_ADJTIME}" in
-		""|no)      before *;;
-		/etc/*|yes) need checkroot;;
-		*)          need localmount;;
-	esac
+	if [ "${CLOCK_ADJFILE}" = "yes" ]; then
+		use checkroot
+	else
+		before *
+	fi
 }
 
 setupopts() {
-	myopts=
-
-	case "${CLOCK_ADJTIME}" in
-		no)  CLOCK_ADJTIME=;; 
-		yes) CLOCK_ADJTIME="/etc/adjtime";;
-	esac
-
+	hwclock_opts=
 	case "${RC_SYS}" in
 		UML|VPS|XEN)
 			TBLURB="${RC_SYS}"
-			fakeit=1
 			;;
 		*)
 			case "$(uname -m)" in
 				s390*)
 					TBLURB="s390"
-					fakeit=1
 					;;
 				*)
 					if [ -e /proc/devices ] && grep -q " cobd$" /proc/devices ; then
 						TBLURB="coLinux"
-						fakeit=1
 					elif [ "${CLOCK}" = "UTC" ] ; then
-						myopts="--utc"
+						hwclock_opts="--utc"
 						TBLURB="UTC"
 					else
-						myopts="--localtime"
+						hwclock_opts="--localtime"
 						TBLURB="Local Time"
 					fi
 					;;
 			esac
 			;;
 	esac
-	[ ${fakeit} -eq 1 ] && return 0
+	[ -n "${hwclock_opts}" ] || return 0
 
-	[ -w /etc -a -n "${CLOCK_ADJTIME}" ] || myopts="${myopts} --noadjfile"
-
-	[ "${SRM}" = "yes" ] && myopts="${myopts} --srm"
-	[ "${ARC}" = "arc" ] && myopts="${myopts} --arc"
-	myopts="${myopts} ${CLOCK_OPTS}"
+	[ "${SRM}" = "yes" ] && hwclock_opts="${hwclock_opts} --srm"
+	[ "${ARC}" = "yes" ] && hwclock_opts="${hwclock_opts} --arc"
+	hwclock_opts="${hwclock_opts}${CLOCK_OPTS:+ }${CLOCK_OPTS}"
 
 	# Make sure user isn't using rc.conf anymore.
 	if [ -e /etc/rc.conf ] && \
@@ -72,33 +61,31 @@ setupopts() {
 }
 
 start() {
-	local myopts= myadj= TBLURB= fakeit=0 errstr="" retval=0
-
+	local hwclock_opts= TBLURB= errstr="" retval=0
+	
 	setupopts
 
-	if [ ${fakeit} -ne 1 -a -e /proc/modules -a ! -e /dev/rtc ] ; then
-		modprobe -q rtc || modprobe -q genrtc
-	fi
-
 	ebegin "Setting system clock using the hardware clock [${TBLURB}]"
-	if [ ${fakeit} -eq 1 ] ; then
-		retval=0
-	elif [ -x /sbin/hwclock ] ; then
-		# Don't call hwclock unless we need to
-		if [ "${TBLURB}" != "UTC" -o "${myopts#*--noadjfile}" = "${myopts}" ] ; then
-			# Since hwclock always exit's with a 0, need to check its output.
-			[ -n "${CLOCK_ADJTIME}" ] && errstr="$(/sbin/hwclock --adjust 2>&1 >/dev/null)"
-			errstr="${errstr}$(/sbin/hwclock --hctosys ${myopts} 2>&1 >/dev/null)"
-			if [ -n "${errstr}" ] ; then
-				ewarn "${errstr}"
-				retval=1
-			fi
-			errstr="Failed to set clock"
+	if [ -n "${hwclock_opts}" ]; then
+		if [ -e /proc/modules -a ! -e /dev/rtc ] ; then
+			modprobe -q rtc || modprobe -q genrtc
 		fi
-	else
-		retval=1
-		errstr="/sbin/hwclock not found"
+
+		# Since hwclock always exit's with a 0, need to check its output.
+		if [ -e /etc/adjtime ] && [ "${CLOCK_ADJFILE}" = "yes" ]; then
+			errstr="$(hwclock --adjust 2>&1 >/dev/null)"
+		fi
+		# If setting UTC, don't bother to run hwclock when first booting
+		# as that's the default
+		if [ "${PREVLEVEL}" != "N" ] || [ "${hwclock_opts}" != "--utc" ]; then
+			errstr="${errstr}$(hwclock --hctosys ${hwclock_opts} 2>&1 >/dev/null)"
+		fi
 	fi
+	if [ -n "${errstr}" ]; then
+		ewarn "${errstr}"
+		retval=1
+	fi
+	errstr="Failed to set clock"
 	eend ${retval} "${errstr}" "You will need to set the clock yourself"
 
 	return 0
@@ -108,24 +95,25 @@ stop() {
 	# Don't tweak the hardware clock on LiveCD halt.
 	[ -n "${CDBOOT}" -o "${CLOCK_SYSTOHC}" != "yes" ] && return 0
 
-	local myopts= myadj= TBLURB= fakeit=0 errstr="" retval=0
+	local hwclock_opts= TBLURB= errstr="" retval=0
 
 	setupopts
 
 	ebegin "Setting hardware clock using the system clock" "[${TBLURB}]"
-	if [ ${fakeit} -eq 1 ] ; then
-		retval=0
-	elif [ -x /sbin/hwclock ] ; then
-		errstr="$(LC_ALL=C /sbin/hwclock --systohc ${myopts} 2>&1 >/dev/null)"
-		if [ -n "${errstr}" ] ; then
-			ewarn "${errstr}"
-			retval=1
+	if [ -n "${hwclock_opts}" ]; then
+		if [ "${CLOCK_ADJFILE}" != "yes" ]; then
+			# If we have adjtimex then we're probably busybox
+			if ! type adjtimex >/dev/null 2>&1; then
+				hwclock_opts="${hwclock_opts} --noadjfile"
+			fi
 		fi
-		errstr="Failed to sync clocks"
-	else
-		retval=1
-		errstr="hwclock not found"
+		errstr="$(LC_ALL=C hwclock --systohc ${hwclock_opts} 2>&1 >/dev/null)"
 	fi
+	if [ -n "${errstr}" ] ; then
+		ewarn "${errstr}"
+		retval=1
+	fi
+	errstr="Failed to sync clocks"
 	eend ${retval} "${errstr}"
 }
 
