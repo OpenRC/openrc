@@ -1038,7 +1038,9 @@ int main (int argc, char **argv)
 				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
-			asprintf (&tmp, RC_SVCDIR "/failed/%s", d->d_name);
+			i = strlen (RC_SVCDIR "/failed/") + strlen (d->d_name) + 1;
+			tmp = xmalloc (sizeof (char) * i);
+			snprintf (tmp, i, RC_SVCDIR "/failed/%s", d->d_name);
 			if (tmp) {
 				if (unlink (tmp))
 					eerror ("%s: unlink `%s': %s", applet, tmp,
@@ -1067,7 +1069,9 @@ int main (int argc, char **argv)
 				rc_service_plugable (d->d_name))
 				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
 
-			asprintf (&tmp, DEVBOOT "/%s", d->d_name);
+			i = strlen (DEVBOOT "/") + strlen (d->d_name) + 1;
+			tmp = xmalloc (sizeof (char) * i);
+			snprintf (tmp, i, DEVBOOT "/%s", d->d_name);
 			if (tmp) {
 				if (unlink (tmp))
 					eerror ("%s: unlink `%s': %s", applet, tmp,

@@ -197,7 +197,9 @@ static char **find_mounts (struct args *args)
 					options = xstrdup (o->o_name);
 				else {
 					char *tmp = NULL;
-					asprintf (&tmp, "%s,%s", options, o->o_name);
+					int l = strlen (options) + strlen (o->o_name) + 2;
+					tmp = xmalloc (sizeof (char) * l);
+					snprintf (tmp, l, "%s,%s", options, o->o_name);
 					free (options);
 					options = tmp;
 				}

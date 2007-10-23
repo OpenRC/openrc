@@ -271,6 +271,7 @@ bool rc_service_exists (const char *service)
 }
 librc_hidden_def(rc_service_exists)
 
+#define OPTSTR ". '%s'; echo \"${opts}\""
 char **rc_service_options (const char *service)
 {
 	char *svc;
@@ -280,11 +281,14 @@ char **rc_service_options (const char *service)
 	char *token;
 	char *p = buffer;
 	FILE *fp;
+	int l;
 
 	if (! (svc = rc_service_resolve (service)))
 		return (NULL);
 
-	asprintf (&cmd, ". '%s'; echo \"${opts}\"",  svc);
+	l = strlen (OPTSTR) + strlen (svc) + 1;
+	cmd = xmalloc (sizeof (char) * l);
+	snprintf (cmd, l, OPTSTR, svc);
 	free (svc);
 	if ((fp = popen (cmd, "r"))) {
 		buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
@@ -297,10 +301,12 @@ char **rc_service_options (const char *service)
 		pclose (fp);
 		free (buffer);
 	}
+	free (cmd);
 	return (opts);
 }
 librc_hidden_def(rc_service_options)
 
+#define DESCSTR ". '%s'; echo \"${description%s%s}\""
 char *rc_service_description (const char *service, const char *option)
 {
 	char *svc;
@@ -309,6 +315,7 @@ char *rc_service_description (const char *service, const char *option)
 	char *desc = NULL;
 	FILE *fp;
 	int i;
+	int l;
 
 	if (! (svc = rc_service_resolve (service)))
 		return (NULL);
@@ -316,8 +323,9 @@ char *rc_service_description (const char *service, const char *option)
 	if (! option)
 		option = "";
 
-	asprintf (&cmd, ". '%s'; echo \"${description%s%s}\"",
-			  svc, option ? "_" : "", option);
+	l = strlen (DESCSTR) + strlen (svc) + strlen (option) + 2;
+	cmd = xmalloc (sizeof (char) * l);
+	snprintf (cmd, l, DESCSTR, svc, option ? "_" : "", option);
 	free (svc);
 	if ((fp = popen (cmd, "r"))) {
 		buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
@@ -335,6 +343,7 @@ char *rc_service_description (const char *service, const char *option)
 		free (buffer);
 		pclose (fp);
 	}
+	free (cmd);
 	return (desc);
 }
 librc_hidden_def(rc_service_description)

@@ -890,6 +890,8 @@ int start_stop_daemon (int argc, char **argv)
 				char *newpath = NULL;
 				char *p = path;
 				char *token;
+				char *np;
+				int l;
 
 				p += 5;
 				while ((token = strsep (&p, ":"))) {
@@ -897,10 +899,18 @@ int start_stop_daemon (int argc, char **argv)
 						strcmp (token, RC_LIBDIR "/sbin") == 0)
 						continue;
 					
-					if (newpath)
-						asprintf (&newpath, "%s:%s", newpath, token);
-					else
-						asprintf (&newpath, "PATH=%s", token);
+					if (newpath) {
+						l = strlen (newpath);
+						newpath = xrealloc (newpath, sizeof (char) *
+											(l + strlen (token) + 2));
+						np = newpath + l;
+						*np++ = ':';
+						memcpy (np, token, sizeof (char) * strlen (token));
+					} else {
+						l = strlen ("PATH=") + strlen (token) + 1;
+						newpath = xmalloc (sizeof (char) * l);
+						snprintf (newpath, l, "PATH=%s", token);
+					}
 				}
 				rc_strlist_add (&newenv, newpath);
 				free (path);
