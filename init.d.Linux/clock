@@ -9,13 +9,20 @@ description_save="Saves the current time in the BIOS."
 
 depend() {
 	case "${CLOCK_ADJTIME}" in
-		"")     before *;;
-		/etc/*) need checkroot;;
-		*)      need localmount;;
+		""|no)      before *;;
+		/etc/*|yes) need checkroot;;
+		*)          need localmount;;
 	esac
 }
 
 setupopts() {
+	myopts=
+
+	case "${CLOCK_ADJTIME}" in
+		no)  CLOCK_ADJTIME=;; 
+		yes) CLOCK_ADJTIME="/etc/adjtime";;
+	esac
+
 	case "${RC_SYS}" in
 		UML|VPS|XEN)
 			TBLURB="${RC_SYS}"
@@ -44,19 +51,16 @@ setupopts() {
 	esac
 	[ ${fakeit} -eq 1 ] && return 0
 
-	if [ -z "${CLOCK_ADJTIME}" -o ! -w /etc ] ; then
-		myadj="--noadjfile"
-	else
-		myadj="--adjust"
-	fi
+	[ -w /etc -a -n "${CLOCK_ADJTIME}" ] || myopts="${myopts} --noadjfile"
 
 	[ "${SRM}" = "yes" ] && myopts="${myopts} --srm"
 	[ "${ARC}" = "arc" ] && myopts="${myopts} --arc"
 	myopts="${myopts} ${CLOCK_OPTS}"
 
 	# Make sure user isn't using rc.conf anymore.
-	if grep -q "^CLOCK=" /etc/rc.conf ; then
-		ewarn $"CLOCK should not be set in /etc/rc.conf but in /etc/conf.d/clock"
+	if [ -e /etc/rc.conf ] && \
+	[ -n "$(unset CLOCK; . /etc/rc.conf; echo "${CLOCK}")" ] ; then
+		ewarn "CLOCK should not be set in /etc/rc.conf but in /etc/conf.d/clock"
 	fi
 
 	# Make sure people set their timezone ... we do it here
@@ -70,26 +74,21 @@ setupopts() {
 start() {
 	local myopts= myadj= TBLURB= fakeit=0 errstr="" retval=0
 
-	if [ -x /sbin/hwclock ] ; then
-		[ -w "${CLOCK_ADJTIME}" ] && echo "0.0 0 0.0" > "${CLOCK_ADJTIME}"
-	fi
-
 	setupopts
 
 	if [ ${fakeit} -ne 1 -a -e /proc/modules -a ! -e /dev/rtc ] ; then
 		modprobe -q rtc || modprobe -q genrtc
 	fi
 
-	ebegin "Setting system clock using the hardware clock" "[${TBLURB}]"
+	ebegin "Setting system clock using the hardware clock [${TBLURB}]"
 	if [ ${fakeit} -eq 1 ] ; then
 		retval=0
 	elif [ -x /sbin/hwclock ] ; then
 		# Don't call hwclock unless we need to
-		if [ "${TBLURB}" != "UTC" -o "${myadj}" != "--noadjfile" ] ; then
+		if [ "${TBLURB}" != "UTC" -o "${myopts#*--noadjfile}" = "${myopts}" ] ; then
 			# Since hwclock always exit's with a 0, need to check its output.
-			errstr="$(/sbin/hwclock ${myadj} ${myopts} 2>&1 >/dev/null)"
+			[ -n "${CLOCK_ADJTIME}" ] && errstr="$(/sbin/hwclock --adjust 2>&1 >/dev/null)"
 			errstr="${errstr}$(/sbin/hwclock --hctosys ${myopts} 2>&1 >/dev/null)"
-
 			if [ -n "${errstr}" ] ; then
 				ewarn "${errstr}"
 				retval=1
@@ -117,12 +116,15 @@ stop() {
 	if [ ${fakeit} -eq 1 ] ; then
 		retval=0
 	elif [ -x /sbin/hwclock ] ; then
-		[ -z "$(/sbin/hwclock --systohc ${myopts} 2>&1 >/dev/null)" ]
-		retval=$?
+		errstr="$(LC_ALL=C /sbin/hwclock --systohc ${myopts} 2>&1 >/dev/null)"
+		if [ -n "${errstr}" ] ; then
+			ewarn "${errstr}"
+			retval=1
+		fi
 		errstr="Failed to sync clocks"
 	else
 		retval=1
-		errstr="/sbin/hwclock not found"
+		errstr="hwclock not found"
 	fi
 	eend ${retval} "${errstr}"
 }

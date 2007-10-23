@@ -1,19 +1,12 @@
-# If you wish to pass any other arguments to hwclock during bootup, 
+# If you wish to pass any other arguments to hwclock during bootup,
 # you may do so here.
 
 CLOCK_OPTS=""
 
-# Newer FHS specs say this file should live in /var/lib rather than
-# /etc.  If you care about such things, feel free to change this value.
-# Note that a blank value means that you do not wish to even use the
-# adjtime facility.  This is the default behavior as adjtime can be
-# very fragile.  If the clock is updated without updating the adjtime
-# file (which is common when using services such as ntp), then the
-# clock can be screwed up when it gets updated at next boot.
-
-#CLOCK_ADJTIME="/var/lib/adjtime"
-#CLOCK_ADJTIME="/etc/adjtime"
-CLOCK_ADJTIME=""
+# Set CLOCK_ADJTIME if you wish hwclock to try and handle clock drift.
+# Don't set this if you run a ntp service or anything else that handles
+# clock drift.
+CLOCK_ADJTIME="no"
 
 
 ### ALPHA SPECIFIC OPTIONS ###
