@@ -618,7 +618,7 @@ bool rc_deptree_update_needed (void)
 	/* Create base directories if needed */
 	for (i = 0; depdirs[i]; i++)
 		if (mkdir (depdirs[i], 0755) != 0 && errno != EEXIST)
-			fprintf (stderr, "mkdir `%s': %s", depdirs[i], strerror (errno));
+			fprintf (stderr, "mkdir `%s': %s\n", depdirs[i], strerror (errno));
 
 	/* Quick test to see if anything we use has changed */
 	if (! is_newer_than (RC_DEPTREE, RC_INITDIR) ||
@@ -816,9 +816,8 @@ bool rc_deptree_update (void)
 					if (strcmp (deptype->type, "ineed") == 0)
 					{
 						fprintf (stderr,
-								 "Service `%s' needs non existant service `%s'",
+								 "Service `%s' needs non existant service `%s'\n",
 								 depinfo->service, service);
-						retval = false;
 					} 
 					continue;
 				}
