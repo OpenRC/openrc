@@ -41,7 +41,7 @@ cleanup_tmp_dir() {
 		ebegin "Cleaning ${dir} directory"
 		rm -rf "${dir}"/.X*-lock "${dir}"/esrv* "${dir}"/kio* \
 			"${dir}"/jpsock.* "${dir}"/.fam* "${dir}"/.esd* \
-			"${dir}"/orbit-* "${dir}"/ssh-* "${dir}"/ksocket-*
+			"${dir}"/orbit-* "${dir}"/ssh-* "${dir}"/ksocket-* \
 			"${dir}"/.*-unix
 		eend 0
 	fi
