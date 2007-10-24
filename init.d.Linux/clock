@@ -6,6 +6,7 @@ opts="save show"
 
 description="Sets the local clock to UTC or Local Time." 
 description_save="Saves the current time in the BIOS."
+description_show="Displays the current time in the BIOS."
 
 depend() {
 	if [ "${CLOCK_ADJFILE}" = "yes" ]; then
@@ -98,8 +99,8 @@ stop() {
 	ebegin "Setting hardware clock using the system clock" "[${TBLURB}]"
 	if [ -n "${utc}" ]; then
 		if [ "${CLOCK_ADJFILE}" != "yes" ]; then
-			# If we have adjtimex then we're probably busybox
-			if ! type adjtimex >/dev/null 2>&1; then
+			# Some implementations don't handle adjustments
+			if LC_ALL=C hwclock --help | grep -q "\-\-noadjfile"; then
 				utc="${utc} --noadjfile"
 			fi
 		fi

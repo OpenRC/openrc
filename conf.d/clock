@@ -8,6 +8,7 @@ CLOCK="UTC"
 
 # If you want to set the Hardware Clock to the current System Time 
 # during shutdown, then say "yes" here.
+# You normally don't need to do this if you run a ntp daemon.
 CLOCK_SYSTOHC="no"
 
 # Select the proper timezone.  For valid values, peek inside of the
