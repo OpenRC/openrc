@@ -1,18 +1,8 @@
-# If you wish to pass any other arguments to hwclock during bootup,
-# you may do so here.
-
-CLOCK_OPTS=""
-
 # Set CLOCK_ADJTIME if you wish hwclock to try and handle clock drift.
 # Don't set this if you run a ntp service or anything else that handles
 # clock drift.
 CLOCK_ADJTIME="no"
 
-
-### ALPHA SPECIFIC OPTIONS ###
-
-# If your alpha uses the SRM console, set this to "yes".
-SRM="no"
-
-# If your alpha uses the ARC console, set this to "yes".
-ARC="no"
+# If you wish to pass any other arguments to hwclock during bootup,
+# you may do so here. Alpha users may wish to use --arc or --srm here.
+CLOCK_OPTS=""

@@ -2,7 +2,7 @@
 # Copyright 1999-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-opts="save"
+opts="save show"
 
 description="Sets the local clock to UTC or Local Time." 
 description_save="Saves the current time in the BIOS."
@@ -16,7 +16,7 @@ depend() {
 }
 
 setupopts() {
-	hwclock_opts=
+	utc=
 	case "${RC_SYS}" in
 		UML|VPS|XEN)
 			TBLURB="${RC_SYS}"
@@ -30,22 +30,18 @@ setupopts() {
 					if [ -e /proc/devices ] && grep -q " cobd$" /proc/devices ; then
 						TBLURB="coLinux"
 					elif [ "${CLOCK}" = "UTC" ] ; then
-						hwclock_opts="--utc"
+						utc="--utc"
 						TBLURB="UTC"
 					else
-						hwclock_opts="--localtime"
+						utc="--localtime"
 						TBLURB="Local Time"
 					fi
 					;;
 			esac
 			;;
 	esac
-	[ -n "${hwclock_opts}" ] || return 0
-
-	[ "${SRM}" = "yes" ] && hwclock_opts="${hwclock_opts} --srm"
-	[ "${ARC}" = "yes" ] && hwclock_opts="${hwclock_opts} --arc"
-	hwclock_opts="${hwclock_opts}${CLOCK_OPTS:+ }${CLOCK_OPTS}"
-
+	[ -n "${utc}" ] || return 0
+	
 	# Make sure user isn't using rc.conf anymore.
 	if [ -e /etc/rc.conf ] && \
 	[ -n "$(unset CLOCK; . /etc/rc.conf; echo "${CLOCK}")" ] ; then
@@ -61,24 +57,24 @@ setupopts() {
 }
 
 start() {
-	local hwclock_opts= TBLURB= errstr="" retval=0
+	local utc= TBLURB= errstr="" retval=0
 	
 	setupopts
 
 	ebegin "Setting system clock using the hardware clock [${TBLURB}]"
-	if [ -n "${hwclock_opts}" ]; then
+	if [ -n "${utc}" ]; then
 		if [ -e /proc/modules -a ! -e /dev/rtc ] ; then
 			modprobe -q rtc || modprobe -q genrtc
 		fi
 
 		# Since hwclock always exit's with a 0, need to check its output.
-		if [ -e /etc/adjtime ] && [ "${CLOCK_ADJFILE}" = "yes" ]; then
-			errstr="$(hwclock --adjust 2>&1 >/dev/null)"
+		if [ -e /etc/adjtime -a "${CLOCK_ADJFILE}" = "yes" ]; then
+			errstr="$(hwclock --adjust ${utc} 2>&1 >/dev/null)"
 		fi
 		# If setting UTC, don't bother to run hwclock when first booting
 		# as that's the default
-		if [ "${PREVLEVEL}" != "N" ] || [ "${hwclock_opts}" != "--utc" ]; then
-			errstr="${errstr}$(hwclock --hctosys ${hwclock_opts} 2>&1 >/dev/null)"
+		if [ "${PREVLEVEL}" != "N" -o "${utc}" != "--utc" -o -n "${CLOCK_OPTS}" ]; then
+			errstr="${errstr}$(hwclock --hctosys ${utc} ${CLOCK_OPTS} 2>&1 >/dev/null)"
 		fi
 	fi
 	if [ -n "${errstr}" ]; then
@@ -95,19 +91,19 @@ stop() {
 	# Don't tweak the hardware clock on LiveCD halt.
 	[ -n "${CDBOOT}" -o "${CLOCK_SYSTOHC}" != "yes" ] && return 0
 
-	local hwclock_opts= TBLURB= errstr="" retval=0
+	local utc= TBLURB= errstr="" retval=0
 
 	setupopts
 
 	ebegin "Setting hardware clock using the system clock" "[${TBLURB}]"
-	if [ -n "${hwclock_opts}" ]; then
+	if [ -n "${utc}" ]; then
 		if [ "${CLOCK_ADJFILE}" != "yes" ]; then
 			# If we have adjtimex then we're probably busybox
 			if ! type adjtimex >/dev/null 2>&1; then
-				hwclock_opts="${hwclock_opts} --noadjfile"
+				utc="${utc} --noadjfile"
 			fi
 		fi
-		errstr="$(LC_ALL=C hwclock --systohc ${hwclock_opts} 2>&1 >/dev/null)"
+		errstr="$(LC_ALL=C hwclock --systohc ${utc} ${CLOCK_OPTS} 2>&1 >/dev/null)"
 	fi
 	if [ -n "${errstr}" ] ; then
 		ewarn "${errstr}"
@@ -120,6 +116,12 @@ stop() {
 save() {
 	CLOCK_SYSTOHC="yes"
 	stop
+}
+
+show() {
+	local utc= TBLURB=
+	setupopts
+	/sbin/hwclock --show "${utc}" ${CLOCK_OPTS}
 }
 
 # vim: set ts=4 :
