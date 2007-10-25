@@ -23,7 +23,7 @@ iwconfig_get_wep_status() {
 
 _iwconfig_get() {
     LC_ALL=C ifconfig "${IFACE}" | \
-    sed -n -e 's/^[[:space:]]*ssid \(.*\) channel \([0-9]*\) bssid \(..:..:..:..:..:..\)$/\'"$1"'/p'
+    sed -n -e "s/^[[:space:]]*ssid \(.*\) channel \([0-9]*\) bssid \(..:..:..:..:..:..\)\$/\\$1/p"
 }
 
 _get_ssid() {
@@ -99,7 +99,7 @@ iwconfig_setup_specific() {
     # Now set the key
     eval ifconfig "${IFACE}" wepkey "${key}"
 
-    ifconfig "${IFACE}" ssid "${ESSID}" || return 1
+    eval ifconfig "${IFACE}" ssid "${SSID}" || return 1
 
     eval channel=\$channel_${IFVAR}
     # We default the channel to 3
@@ -127,7 +127,7 @@ iwconfig_associate() {
 	*)
 	    if [ "${key}" != "-" ] ; then
 		key="-"
-		ewarn "\"${ESSID}\" is not WEP enabled; ignoring setting"
+		ewarn "\"${SSID}\" is not WEP enabled; ignoring setting"
 	    fi
 	    ;;
     esac
@@ -173,7 +173,7 @@ iwconfig_associate() {
 	return 1
     fi
 
-    ifconfig "${IFACE}" ssid "${SSID}" || return 1
+    eval ifconfig "${IFACE}" ssid "${SSID}" || return 1
     iwconfig_user_config
 
     if [ "${SSID}" != "any" ] && type preassociate >/dev/null 2>/dev/null ; then
@@ -479,7 +479,7 @@ iwconfig_configure() {
 		return 1
 	fi
 
-	# Has an ESSID been forced?
+	# Has an SSID been forced?
 	if [ -n "${SSID}" ]; then
 		iwconfig_set_mode "${x}"
 		iwconfig_associate && return 0
@@ -550,7 +550,7 @@ iwconfig_pre_start() {
 	einfo "Configuring wireless network for ${IFACE}"
 
 	if iwconfig_configure ; then
-		save_options "ESSID" "${ESSID}"
+		save_options "SSID" "${SSID}"
 		return 0
 	fi
 
