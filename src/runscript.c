@@ -232,10 +232,10 @@ static void start_services (char **list) {
 	if (! list)
 		return;
 
-	if ((state & RC_SERVICE_INACTIVE ||
-		 state & RC_SERVICE_WASINACTIVE) &&
-		((state & RC_SERVICE_STARTING) ||
-		 (state & RC_SERVICE_STARTED)))
+	if (state & RC_SERVICE_INACTIVE ||
+		state & RC_SERVICE_WASINACTIVE ||
+		state & RC_SERVICE_STARTING ||
+		state & RC_SERVICE_STARTED)
 	{
 		STRLIST_FOREACH (list, svc, i) {
 			if (rc_service_state (svc) & RC_SERVICE_STOPPED) {
@@ -542,18 +542,11 @@ static void unlink_mtime_test ()
 
 static void get_started_services ()
 {
-	char *svc;
-	int i;
-
 	rc_strlist_free (tmplist);
 	tmplist = rc_services_in_state (RC_SERVICE_INACTIVE);
-
 	rc_strlist_free (restart_services);
 	restart_services = rc_services_in_state (RC_SERVICE_STARTED);
-
-	STRLIST_FOREACH (tmplist, svc, i)
-		rc_strlist_addsort (&restart_services, svc);
-
+	rc_strlist_join (&restart_services, tmplist);
 	rc_strlist_free (tmplist);
 	tmplist = NULL;
 }
