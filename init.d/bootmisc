@@ -14,7 +14,7 @@ cleanup_tmp_dir() {
 
 	mkdir -p "${dir}"
 	cd "${dir}"
-	if [ "${WIPE_TMP}" = "yes" ] ; then
+	if [ "${WIPE_TMP}" = "yes" ]; then
 		ebegin "Wiping ${dir} directory"
 		local startopts="-x . -depth"
 		[ "${RC_UNAME}" = "Linux" ] && startopts=". -xdev -depth"
@@ -50,29 +50,29 @@ cleanup_tmp_dir() {
 start() {
 	# Put a nologin file in /etc to prevent people from logging
 	# in before system startup is complete.
-	if [ "${DELAYLOGIN}" = "yes" ] ; then
+	if [ "${DELAYLOGIN}" = "yes" ]; then
 		echo "System bootup in progress - please wait" > /etc/nologin
 		cp /etc/nologin /etc/nologin.boot
 	fi
 
-    if [ -e /etc/sysctl.conf -a ! -x /etc/init.d/sysctl ] ; then
-		if [ "${RC_SYS}" != "VPS" ] ; then
+	if [ -e /etc/sysctl.conf -a ! -x /etc/init.d/sysctl ]; then
+		if [ "${RC_SYS}" != "VPS" ]; then
 			ebegin "Configuring kernel parameters"
 			sysctl -p /etc/sysctl.conf >/dev/null
 			eend $?
 		fi
 	fi
 	
-	if ! mkdir /.test.$$ 2>/dev/null ; then
+	if ! mkdir /.test.$$ 2>/dev/null; then
 		ewarn "Skipping /var and /tmp initialization (ro root?)"
 		return 0
 	fi
 	rmdir /.test.$$
 
 	# Ensure that our basic dirs exist
-	for x in /var/lock /var/log /var/run /tmp ; do
-		if ! [ -d "${x}" ] ; then
-			if ! mkdir "${x}" ; then
+	for x in /var/lock /var/log /var/run /tmp; do
+		if ! [ -d "${x}" ]; then
+			if ! mkdir "${x}"; then
 				eend 1 "failed to create needed directory ${x}"
 				return 1
 			fi
@@ -112,8 +112,8 @@ start() {
 	done
 
 	# Reset pam_console permissions if we are actually using it
-	if [ -x /sbin/pam_console_apply ] && ! [ -c /dev/.devfsd ] ; then
-		if grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep -q 'pam_console.so' ; then
+	if [ -x /sbin/pam_console_apply ] && ! [ -c /dev/.devfsd ]; then
+		if grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep -q 'pam_console.so'; then
 			pam_console_apply -r
 		fi
 	fi
@@ -124,7 +124,7 @@ start() {
 
 	# Clean up /tmp directories
 	local tmp
-	for tmp in ${WIPE_TMP_DIRS-/tmp} ; do
+	for tmp in ${WIPE_TMP_DIRS-/tmp}; do
 		cleanup_tmp_dir "${tmp}"
 	done
 	chmod +t /tmp /var/tmp
@@ -138,7 +138,7 @@ start() {
 	[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
 
 	# Create an 'after-boot' dmesg log
-	if [ "${RC_SYS}" != "VPS" ] ; then
+	if [ "${RC_SYS}" != "VPS" ]; then
 		dmesg > /var/log/dmesg
 		chmod 640 /var/log/dmesg
 	fi
@@ -149,17 +149,15 @@ start() {
 
 stop() {
 	# Reset pam_console permissions if we are actually using it
-	if [ -x /sbin/pam_console_apply ] && ! [ -c /dev/.devfsd ] ; then
-		if grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep -q 'pam_console.so' ; then
+	if [ -x /sbin/pam_console_apply ] && ! [ -c /dev/.devfsd ]; then
+		if grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep -q 'pam_console.so' ;then
 			/sbin/pam_console_apply -r
 		fi
 	fi
 
 	# Write a halt record if we're shutting down
 	case "${RC_SOFTLEVEL}" in
-		reboot|shutdown)
-			[ "${RC_UNAME}" = "Linux" ] && halt -w
-			;;
+		reboot|shutdown) [ "${RC_UNAME}" = "Linux" ] && halt -w;;
 	esac
 	
 	return 0
