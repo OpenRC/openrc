@@ -17,7 +17,7 @@ do_mtab() {
 	# makes / readonly and dismounts all tmpfs even if in use which is
 	# not good. Luckily, umount uses /etc/mtab instead of /proc/mounts
 	# which allows this hack to work.
-	grep -v "^[^ ]* / tmpfs" /proc/mounts > /etc/mtab
+	grep -v "^[^ ]* / tmpfs " /proc/mounts > /etc/mtab
 
 	# Remove stale backups
 	rm -f /etc/mtab~ /etc/mtab~~
