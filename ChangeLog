@@ -3,6 +3,9 @@
 
   29 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
+    /etc/mtab is now a true reflection on /proc/mounts.
+    The only exception is that we punt any / on tmpfs entry, #194615.
+
     Network config arrays are now split by embedded new lines instead of
     being evaled into space separated values. This makes it easier to read,
     maintain and document as discussed on gentoo-dev.

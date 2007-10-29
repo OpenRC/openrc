@@ -13,19 +13,11 @@ do_mtab() {
 	fi
 	ebegin "Updating /etc/mtab"
 
-	# Add the entry for / to mtab
-	mount -f /
-
-	# Don't list root more than once
-	grep -v "^[^ ]* / " /proc/mounts >> /etc/mtab
-
-	# Now make sure /etc/mtab have additional info (gid, etc) in there
-	local mnt=
-	mountinfo | while read mnt; do
-		if fstabinfo --quiet "${mnt}"; then
-			mount -f -o remount "${mnt}"
-		fi
-	done
+	# With / as tmpfs we cannot umount -at tmpfs in localmount as that
+	# makes / readonly and dismounts all tmpfs even if in use which is
+	# not good. Luckily, umount uses /etc/mtab instead of /proc/mounts
+	# which allows this hack to work.
+	grep -v "^[^ ]* / tmpfs" /proc/mounts > /etc/mtab
 
 	# Remove stale backups
 	rm -f /etc/mtab~ /etc/mtab~~
