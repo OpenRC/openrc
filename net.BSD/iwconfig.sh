@@ -319,9 +319,7 @@ iwconfig_scan() {
 		i=$((${i} + 1))
 	done
 
-	local i=0 e= m= black= s=
-	eval "$(_get_array "blacklist_aps")"
-	black="$@"
+	local i=0 e= m= s= black="$(_get_array "blacklist_aps")"
 
 	while [ ${i} -le ${APS} ] ; do
 		eval x=\$MAC_${i}
@@ -355,13 +353,15 @@ iwconfig_scan() {
 			eoutdent
 		fi
 
-		eval "$(_get_array "blacklist_aps")"
-		for x in "$@" ; do
+		local IFS="
+"
+		for x in ${black}; do
 			if [ "${x}" = "${s}" ] ; then
 				ewarn "${s} has been blacklisted - not connecting"
 				unset SSID_${i} MAC_${i} CHAN_${i} QUALITY_${i} CAPS_${i}
 			fi
 		done
+		unset IFS
 		i=$((${i} + 1))
 	done
 	eoutdent
@@ -372,11 +372,13 @@ iwconfig_force_preferred() {
 	[ -z "${preferred_aps}" ] && return 1
 
 	ewarn "Trying to force preferred in case they are hidden"
-	eval "$(_get_array "preferred_aps_${IFVAR}")"
-	[ $# = 0 ] && eval "$(_get_array "preferred_aps")"
+	local pref="$(_get_array "preferred_aps_${IFVAR}")"
+	[ -z "${pref}" ] && pref="$(_get_array "preferred_aps")"
 
-	local ssid=
-	for ssid in "$@"; do
+	local ssid= IFS="
+"
+	for ssid in ${pref}; do
+		unset IFS
 		local found_AP=false i=0 e=
 		while [ ${i} -le ${APS:--1} ] ; do
 			eval e=\$SSID_${i}
@@ -398,11 +400,13 @@ iwconfig_force_preferred() {
 
 iwconfig_connect_preferred() {
 	local ssid= i=0 mode= mac= caps= freq= chan=
+	local pref="$(_get_array "preferred_aps_${IFVAR}")"
+	[ -z "${pref}" ] && pref="$(_get_array "preferred_aps")"
 
-	eval "$(_get_array "preferred_aps_${IFVAR}")"
-	[ $# = 0 ] && eval "$(_get_array "preferred_aps")"
-
-	for ssid in "$@"; do
+	local IFS="
+"
+	for ssid in ${pref}; do
+		unset IFS
 		while [ ${i} -le ${APS} ]  ; do
 			eval e=\$SSID_${i}
 			if [ "${e}" = "${ssid}" ] ; then
@@ -431,14 +435,17 @@ iwconfig_connect_not_preferred() {
 			continue
 		fi
 
-		eval "$(_get_array preferred_aps)"
+		local prefa="$(_get_array preferred_aps)"
 		pref=false
-		for ssid in "$@" ; do
+		local IFS="
+	"
+		for ssid in ${prefa}; do
 			if [ "${e}" = "${ssid}" ] ; then
 				pref=true
 				break
 			fi
 		done
+		unset IFS
 
 		if ! ${pref} ; then
 			SSID=${e}

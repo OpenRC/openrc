@@ -9,8 +9,8 @@ ccwgroup_depend() {
 }
 
 ccwgroup_pre_start() {
-	eval $(_get_array "ccwgroup_${IFVAR}")
-	[ $# = "0" ] && return 0
+	local ccwgroup="$(_get_array "ccwgroup_${IFVAR}")"
+	[ -z "${ccwgroup}" ] && return 0
 
 	if [ ! -d /sys/bus/ccwgroup ] ; then
 		modprobe qeth
@@ -22,7 +22,7 @@ ccwgroup_pre_start() {
 
 	einfo "Enabling ccwgroup on ${IFACE}"
 	local x= ccw= first= layer2=
-	for x in "$@" ; do
+	for x in ${ccwgroup}; do
 		[ -z "${first}" ] && first=${x}
 		ccw="${ccw}${ccw:+,}${x}"
 	done

@@ -39,21 +39,30 @@ arping_address() {
 	return 0
 }
 
+_arping_in_config() {
+	_get_array "config_${IFVAR}" | while read i; do
+		[ "${i}" = "arping" ] && return 0
+	done
+	return 1
+}
+
 arping_start() {
 	local gateways= x= conf= i=
 	einfo "Pinging gateways on ${IFACE} for configuration"
 
-	eval $(_get_array "gateways_${IFVAR}")
-	if [ $# = 0 ] ; then
+	eval gateways=\$gateways_${IFVAR}
+	if [ -n "${gateways}" ] ; then
 		eerror "No gateways have been defined (gateways_${IFVAR}=\"...\")"
 		return 1
 	fi
 
 	eindent
 	
-	for x in "$@"; do
-		eval set -- "${x}"
+	for x in ${gateways}; do
+		local IFS=,
+		set -- ${x}
 		local ip=$1 mac=$2 extra=
+		unset IFS
 
 		if [ -n "${mac}" ] ; then
 			mac="$(echo "${mac}" | tr '[:lower:]' '[:upper:]')"
@@ -90,13 +99,10 @@ arping_start() {
 			system_pre_start
 
 			# Ensure that we have a valid config - ie arping is no longer there
-			eval $(_get_array "config_${IFVAR}")
-			for i in "$@" ; do
-				if [ "${i}" = "arping" ] ; then
-					veend 1 "No config found for ${ip} (config_${conf}=\"...\")"
-					continue 2
-				fi
-			done
+			if _arping_in_config; then
+				veend 1 "No config found for ${ip} (config_${conf}=\"...\")"
+				continue 2
+			fi
 
 			_load_config
 			return 0

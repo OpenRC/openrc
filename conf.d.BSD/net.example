@@ -42,27 +42,29 @@
 # For a static configuration, use something like this
 # (They all do exactly the same thing btw)
 #config_eth0="192.168.0.2/24"
-#config_eth0="'192.168.0.2 netmask 255.255.255.0'"
+#config_eth0="192.168.0.2 netmask 255.255.255.0"
 
 # We can also specify a broadcast
-#config_eth0="'192.168.0.2/24 brd 192.168.0.255'"
-#config_eth0="'192.168.0.2 netmask 255.255.255.0 broadcast 192.168.0.255'"
+#config_eth0="192.168.0.2/24 brd 192.168.0.255"
+#config_eth0="192.168.0.2 netmask 255.255.255.0 broadcast 192.168.0.255"
 
 # If you need more than one address, you can use something like this
 # NOTE: ifconfig creates an aliased device for each extra IPv4 address
 #       (eth0:1, eth0:2, etc)
 #       iproute2 does not do this as there is no need to
-#config_eth0="'192.168.0.2/24' '192.168.0.3/24' '192.168.0.4/24'"
+#config_eth0="192.168.0.2/24
+#192.168.0.3/24
+#192.168.0.4/24'"
 # Or you can use sequence expressions
-#config_eth0="'192.168.0.{2..4}/24'"  FIXME - may not work with baselayout2
+#config_eth0="192.168.0.{2..4}/24"  FIXME - may not work with baselayout2
 # which does the same as above. Be careful though as if you use this and
 # fallbacks, you have to ensure that both end up with the same number of
 # values otherwise your fallback won't work correctly.
 
 # You can also use IPv6 addresses
 # (you should always specify a prefix length with IPv6 here)
-#config_eth0="192.168.0.2/24 \
-#4321:0:1:2:3:4:567:89ab/64 \
+#config_eth0="192.168.0.2/24
+#4321:0:1:2:3:4:567:89ab/64
 #4321:0:1:2:3:4:567:89ac/64"
 
 # If you wish to keep existing addresses + routing and the interface is up,
@@ -70,23 +72,22 @@
 # are no addresses assigned, then we move onto the next step (default dhcp)
 # This is useful when configuring your interface with a kernel command line
 # or similar
-#config_eth0="noop 192.168.0.2/24"
+#config_eth0="noop
+#192.168.0.2/24"
 
 # If you don't want ANY address (only useful when calling for advanced stuff)
 #config_eth0="null"
 
 # Here's how to do routing if you need it
 # We add an IPv4 default route, IPv4 subnet route and an IPv6 unicast route
-#routes_eth0=" \
-#	'default via 192.168.0.1' \
-#	'10.0.0.0/8 via 192.168.0.1' \
-#	'::/0' \
-#"
+#routes_eth0="default via 192.168.0.1
+#10.0.0.0/8 via 192.168.0.1
+#::/0"
 
 # If a specified module fails (like dhcp - see below), you can specify a
 # fallback like so
-#fallback_eth0="'192.168.0.2 netmask 255.255.255.0'"
-#fallback_route_eth0="'default via 192.168.0.1'"
+#fallback_eth0="192.168.0.2 netmask 255.255.255.0"
+#fallback_route_eth0="default via 192.168.0.1"
 
 # NOTE: fallback entry must match the entry location in config_eth0
 # As such you can only have one fallback route.
@@ -211,10 +212,12 @@
 # Surround each ESSID with the " character and seperate them with a space
 # If the first ESSID isn't found then it moves onto the next
 # If this isn't defined then it connects to the first one found
-#preferred_aps="'ESSID 1' 'ESSID 2'"
+#preferred_aps="ESSID 1
+#ESSID 2"
 
 # You can also define a preferred_aps list per interface
-#preferred_aps_eth0="'ESSID 3' 'ESSID 4'"
+#preferred_aps_eth0="ESSID 3
+#ESSID 4"
 
 # You can also say whether we only connect to preferred APs or not
 # Values are "any", "preferredonly", "forcepreferred", "forcepreferredonly"
@@ -234,8 +237,10 @@
 #associate_order_eth0="any"
 
 # You can define blacklisted Access Points in the same way
-#blacklist_aps="'ESSID 1' 'ESSID 2'"
-#blacklist_aps_eth0="'ESSID 3' 'ESSID 4'"
+#blacklist_aps="ESSID 1
+#ESSID 2"
+#blacklist_aps_eth0="ESSID 3
+#ESSID 4"
 
 # If you have more than one wireless card, you can say if you want
 # to allow each card to associate with the same Access Point or not
@@ -354,7 +359,7 @@
 #dns_domain_eth0="your.domain"
 #dns_servers_eth0="192.168.0.2 192.168.0.3"
 #dns_search_eth0="this.domain that.domain"
-#dns_options_eth0="'timeout:1' 'rotate'"
+#dns_options_eth0="timeout:1 rotate"
 #dns_sortlist_eth0="130.155.160.0/255.255.240.0 130.155.0.0"
 # See the man page for resolv.conf for details about the options and sortlist
 # directives

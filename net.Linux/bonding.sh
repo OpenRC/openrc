@@ -13,10 +13,9 @@ _is_bond() {
 }
 
 bonding_pre_start() {
-	local s= slaves= 
+	local s= slaves="$(_get_array "slaves_${IFVAR}")" 
 
-	eval $(_get_array "slaves_${IFVAR}")
-	[ $# = "0" ] && return 0
+	[ -z "${slaves}" ] && return 0
 
 	# Load the kernel module if required
 	if [ ! -d /proc/net/bonding ] ; then
@@ -40,16 +39,16 @@ bonding_pre_start() {
 
 	ebegin "Adding slaves to ${IFACE}"
 	eindent
-	einfo "$@"
+	einfo "${slaves}"
 
 	# Check that our slaves exist
 	(
-	for IFACE in "$@" ; do
+	for IFACE in ${slaves}; do
 		_exists true || return 1
 	done
 
 	# Must force the slaves to a particular state before adding them
-	for IFACE in "$@" ; do
+	for IFACE in ${slaves}; do
 		_delete_addresses
 		_up
 	done
@@ -60,7 +59,7 @@ bonding_pre_start() {
 
 	# finally add in slaves
 	eoutdent
-	/sbin/ifenslave "${IFACE}" $@ >/dev/null
+	/sbin/ifenslave "${IFACE}" ${slaves} >/dev/null
 	eend $?
 
 	return 0 #important

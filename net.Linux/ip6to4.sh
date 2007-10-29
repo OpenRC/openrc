@@ -96,8 +96,9 @@ ip6to4_start() {
 	config_index=$((${config_index} - 1))
 
 	# Add a route for us, ensuring we don't delete anything else
-	eval $(_get_array "routes_${IFVAR}")
-	eval routes_${IFVAR}="\"$@ '2003::/3 via ::${relay} metric 2147483647'\""
+	local routes="$(_get_array "routes_${IFVAR}")
+2003::/3 via ::${relay} metric 2147483647"
+	eval routes_${IFVAR}=\$routes
 }
 	
 # vim: set ts=4 :

@@ -114,19 +114,26 @@ iwconfig_get_wep_key() {
 }
 
 iwconfig_user_config() {
-	local conf= var=${SSIDVAR}
+	local conf= var=${SSIDVAR} config=
 	[ -z "${var}" ] && var=${IFVAR}
 
-	eval "$(_get_array "iwconfig_${var}")"
-	for conf in "$@" ; do
+	config="$(_get_array "iwconfig_${var}")"
+	local IFS="
+"
+	for conf in ${config}; do
+		unset IFS
 		if ! eval iwconfig "${IFACE}" "${conf}" ; then
 			ewarn "${IFACE} does not support the following configuration commands"
 			ewarn "  ${conf}"
 		fi
 	done
+	unset IFS
 
-	eval "$(_get_array "iwpriv_${var}")"
-	for conf in "$@" ; do
+	config="$(_get_array "iwpriv_${var}")"
+	local IFS="
+"
+	for conf in ${config}; do
+		unset IFS
 		if ! eval iwpriv "${IFACE}" "${conf}" ; then
 			ewarn "${IFACE} does not support the following private ioctls"
 			ewarn "  ${conf}"
@@ -472,13 +479,17 @@ iwconfig_scan() {
 			eoutdent
 		fi
 
-		eval "$(_get_array "blacklist_aps")"
-		for x in "$@" ; do
+		local blacklist="$(_get_array "blacklist_aps")"
+		local IFS="
+"
+		for x in ${blacklist}; do
+			unset IFS
 			if [ "${x}" = "${s}" ] ; then
 				ewarn "${s} has been blacklisted - not connecting"
 				unset SSID_${i} MAC_${i} CHAN_${i} QUALITY_${i} ENC_${i}
 			fi
 		done
+		unset IFS
 		i=$((${i} + 1))
 	done
 	eoutdent
@@ -488,9 +499,11 @@ iwconfig_force_preferred() {
 	[ -z "${preferred_aps}" ] && return 1
 
 	ewarn "Trying to force preferred in case they are hidden"
-	eval "(_get_array "preferred_aps")"
-	local ssid=
-	for ssid in "$@"; do
+	local pref="$(_get_array "preferred_aps")" ssid=
+	local IFS="
+"
+	for ssid in ${pref}; do
+		unset IFS
 		local found_AP=false i=0 e=
 		while [ ${i} -le ${APS} ] ; do
 			eval e=\$SSID_${i}
@@ -512,9 +525,11 @@ iwconfig_force_preferred() {
 
 iwconfig_connect_preferred() {
 	local ssid= i= mode= mac= enc= freq= chan=
-
-	eval "$(_get_array preferred_aps)"
-	for ssid in "$@"; do
+	local pref="$(_get_array preferred_aps)"
+	local IFS="
+"
+	for ssid in ${pref}; do
+		unset IFS
 		i=0
 		while [ ${i} -le ${APS} ]  ; do
 			eval e=\$SSID_${i}
@@ -541,13 +556,16 @@ iwconfig_connect_not_preferred() {
 	while [ ${i} -le ${APS} ] ; do
 		eval e=\$SSID_${i}
 		if [ -n "${e}" ] ; then
-			eval "$(_get_array preferred_aps)"
-			for ssid in "$@" ; do
+			local prefa="$(_get_array preferred_aps)"
+			local IFS="
+"
+			for ssid in ${prefa}; do
 				if [ "${e}" = "${ssid}" ] ; then
 					pref=true
 					break
 				fi
 			done
+			unset IFS
 	
 			if ! ${pref} ; then
 				SSID=${e}

@@ -31,14 +31,17 @@ _check_vlan() {
 }
 
 vlan_pre_start() {
-	eval $(_get_array "vconfig_${IFVAR}")
-	[ $# = "0" ] && return 0
+	local vc="$(_get_array "vconfig_${IFVAR}")"
+	[ -z "${vc}" ] && return 0
 
 	_check_vlan || return 1
 	_exists || return 1
 
 	local v= x= e=
-	for v in "$@" ; do
+	local IFS="
+"
+	for v in ${vc}; do
+		unset IFS
 		case "${v}" in
 			set_name_type" "*) x=${v} ;;
 			*) x="$(echo "${v}" | sed -e "s/ / ${IFACE} /g")"
@@ -56,14 +59,15 @@ vlan_pre_start() {
 }
 
 vlan_post_start() {
-	eval $(_get_array "vlans_${IFVAR}")
-	[ $# = "0" ] && return 0
+	local vlans=
+	eval vlans=\$vlans_${IFACE}
+	[ -z "${vlans}" ] && return 0
 	
 	_check_vlan || return 1
 	_exists || return 1
 
 	local vlan= e= s=
-	for vlan in "$@" ; do
+	for vlan in ${vlans}; do
 		einfo "Adding VLAN ${vlan} to ${IFACE}"
 		e="$(vconfig add "${IFACE}" "${vlan}" 2>&1 1>/dev/null)"
 		if [ -n "${e}" ] ; then
@@ -92,7 +96,7 @@ vlan_post_start() {
 vlan_post_stop() {
 	local vlan=
 
-	for vlan in $(_get_vlans) ; do
+	for vlan in $(_get_vlans); do
 		einfo "Removing VLAN ${vlan##*.} from ${IFACE}"
 		(
 			export SVCNAME="net.${vlan}"

@@ -40,20 +40,24 @@ _shell_var() {
 	echo -n "$1" | sed -e 's/[^[:alnum:]]/_/g'
 }
 
-# Credit to David Leverton for this function which handily maps a bash array
-# structure to positional parameters so existing configs work :)
-# We'll deprecate arrays at some point though.
+# Support bash arrays - sigh
 _get_array() {
+	local _a=
 	if [ -n "${BASH}" ] ; then
 		case "$(declare -p "$1" 2>/dev/null)" in
 			"declare -a "*)
-				echo "set -- \"\${$1[@]}\""
-				return
+				eval "set -- \"\${$1[@]}\""
+				for _a in "$@"; do
+					printf "%s\n" "${_a}"
+				done
+				return 0
 				;;
 		esac
 	fi
 
-	echo "eval set -- \"\$$1\""
+	eval _a=\$$1
+	printf "%s" "${_a}"
+	[ -n "${_a}" ]
 }
 
 _wait_for_carrier() {
@@ -339,20 +343,25 @@ _load_modules() {
 }
 
 _load_config() {
-	eval "$(_get_array "config_${IFVAR}")"
+	local config="$(_get_array "config_${IFVAR}")"
+	local fallback="$(_get_array fallback_${IFVAR})"
+
 	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ] ; then
-		set -- "127.0.0.1/8" "$@"
+		config="127.0.0.1/8
+${config}"
 	else
-		if [ $# -eq 0 ] ; then
+		if [ -z "${config}" ] ; then
 			ewarn "No configuration specified; defaulting to DHCP"
-			set -- "dhcp"
+			config="dhcp"
 		fi
 	fi
 
 	# We store our config in an array like vars
 	# so modules can influence it
 	config_index=0
-	for cmd in "$@" ; do
+	local IFS="
+"
+	for cmd in ${config}; do
 		eval config_${config_index}="'${cmd}'"
 		config_index=$((${config_index} + 1))
 	done
@@ -360,8 +369,7 @@ _load_config() {
 	eval config_${config_index}=
 
 	config_index=0
-	eval "$(_get_array fallback_${IFVAR})"
-	for cmd in "$@" ; do
+	for cmd in ${fallback}; do
 		eval fallback_${config_index}="'${cmd}'"
 		config_index=$((${config_index} + 1))
 	done
@@ -483,14 +491,18 @@ start() {
 		return 1
 	fi
 
-	local hidefirstroute=false first=true routes=
-	eval "$(_get_array "routes_${IFVAR}")"
+	local hidefirstroute=false first=true
+	local routes="$(_get_array "routes_${IFVAR}")"
 	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ] ; then
-		set -- "127.0.0.0/8 via 127.0.0.1" "$@"
+		routes="127.0.0.0/8 via 127.0.0.1
+${routes}"
 		hidefirstroute=true
 	fi
-	for cmd in "$@" ; do
-		if ${first} ; then
+	local IFS="
+"
+	for cmd in ${routes}; do
+		unset IFS
+		if ${first}; then
 			first=false
 			einfo "Adding routes"
 		fi

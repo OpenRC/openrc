@@ -13,12 +13,11 @@ _is_bridge() {
 }
 
 bridge_pre_start() {
-	local ports= brif= opts= iface="${IFACE}" e= x=
-	eval $(_get_array "bridge_${IFVAR}")
-	ports="$@"
+	local ports= brif= iface="${IFACE}" e= x=
+	local ports="$(_get_array "bridge_${IFVAR}")"
+	local opts="$(_get_array "brctl_${IFVAR}")"
+	
 	eval brif=\$bridge_add_${IFVAR}
-	eval $(_get_array "brctl_${IFVAR}")
-	opts="$@"
 	[ -z "${ports}" -a -z "${brif}" -a -z "${opts}" ] && return 0
 
 	[ -n "${ports}" ] && bridge_post_stop
@@ -32,7 +31,7 @@ bridge_pre_start() {
 		metric=1000
 	fi
 
-	if ! _is_bridge ; then
+	if ! _is_bridge; then
 		ebegin "Creating bridge ${IFACE}"
 		if ! brctl addbr "${IFACE}" ; then
 			eend 1
@@ -40,8 +39,10 @@ bridge_pre_start() {
 		fi
 	fi
 
-	eval $(_get_array "brctl_${IFVAR}")
-	for x in "$@" ; do
+	local IFS="
+"
+	for x in ${opts}; do
+		unset IFS
 		set -- ${x}
 		x=$1
 		shift
@@ -53,8 +54,7 @@ bridge_pre_start() {
 		einfo "Adding ports to ${IFACE}"
 		eindent
 
-		eval set -- ${ports}
-		for x in "$@" ; do
+		for x in ${ports}; do
 			ebegin "${x}"
 			ifconfig "${x}" promisc up
 			if ! brctl addif "${IFACE}" "${x}" ; then

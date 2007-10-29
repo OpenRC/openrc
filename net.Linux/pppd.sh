@@ -33,7 +33,7 @@ pppd_pre_start() {
 		return 0
 	fi
 
-	local link= i= opts= unit="${IFACE#ppp}" mtu=
+	local link= i= unit="${IFACE#ppp}" opts= 
 	
 	# PPP requires a link to communicate over - normally a serial port
 	# PPPoE communicates over Ethernet
@@ -57,16 +57,14 @@ pppd_pre_start() {
 		return 1
 	fi
 
-	eval $(_get_array "pppd_${IFVAR}")
-	opts="$@"
+	eval opts=\$pppd_${IFVAR}
 
 	local mtu= hasmtu=false hasmru=false hasmaxfail=false haspersist=false
 	local hasupdetach=false hasdefaultmetric=false
-	for i in "$@" ; do
-		set -- ${i}
-		case "$1" in
+	for i in ${opts}; do
+		case "${i}" in
 			unit|nodetach|linkname)
-				eerror "The option \"$1\" is not allowed in pppd_${IFVAR}"
+				eerror "The option \"${i}\" is not allowed in pppd_${IFVAR}"
 				return 1
 			;;
 			defaultmetric) hasdefaultmetric=true ;;
@@ -113,25 +111,31 @@ pppd_pre_start() {
 
 	# Load a custom interface configuration file if it exists
 	[ -f "/etc/ppp/options.${IFACE}" ] \
-		&& opts="${opts} file /etc/ppp/options.${IFACE}"
+		&& opts="${opts} file '/etc/ppp/options.${IFACE}'"
 
 	# Set unit
 	opts="unit ${unit} ${opts}"
 	
 	# Setup connect script
-	local chatopts="/usr/sbin/chat -e -E -v"
-	eval $(_get_array "phone_number_${IFVAR}")
+	local chatopts="/usr/sbin/chat -e -E -v" phone=
+	eval phone=\$phone_number_${IFVAR}
+	set -- ${phone}
 	[ -n "$1" ] && chatopts="${chatopts} -T '$1'"
 	[ -n "$2" ] && chatopts="${chatopts} -U '$2'"
-	eval $(_get_array "chat_${IFVAR}")
-	if [ $# != 0 ] ; then
+	local chat="$(_get_array "chat_${IFVAR}")"
+	if [ "${chat}" ] ; then
+		local IFS="
+"
 		opts="${opts} connect $(printf "\\'%s\\'" "${chatopts} $(printf "\\'\\\\'\\'%s\\'\\\'' " "$@")")"
+		unset IFS
 	fi
 
 	# Add plugins
-	local haspppoa=false haspppoe=false
-	eval $(_get_array "plugins_${IFVAR}")
-	for i in "$@" ; do
+	local haspppoa=false haspppoe=false plugins="$(_get_array "plugins_${IFVAR}")"
+	local IFS="
+"
+	for i in ${plugins}; do
+		unset IFS
 		set -- ${i}
 		case "$1" in
 			passwordfd) continue;;
@@ -151,6 +155,7 @@ pppd_pre_start() {
 		shift
 		opts="${opts} $@"
 	done
+	unset IFS
 
 	#Specialized stuff. Insert here actions particular to connection type (pppoe,pppoa,capi)
 	local insert_link_in_opts=1

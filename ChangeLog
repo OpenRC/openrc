@@ -1,6 +1,12 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  29 Oct 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Network config arrays are now split by embedded new lines instead of
+    being evaled into space separated values. This makes it easier to read,
+    maintain and document as discussed on gentoo-dev.
+
   23 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
     clock init script now works with busybox hwclock.
