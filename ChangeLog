@@ -3,6 +3,9 @@
 
   29 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
+    rc --override foo will override the runlevel to load after boot
+    or single user runlevels to avoid rc recursion, #196338
+
     /etc/mtab is now a true reflection on /proc/mounts.
     The only exception is that we punt any / on tmpfs entry, #194615.
 

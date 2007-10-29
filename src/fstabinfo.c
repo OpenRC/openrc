@@ -46,6 +46,7 @@
 #include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
+#include "rc-misc.h"
 #include "strlist.h"
 
 #ifdef HAVE_GETMNTENT

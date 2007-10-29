@@ -20,9 +20,18 @@ static void usage (int exit_status)
 	for (i = 0; longopts[i].name; ++i) {
 		int len = printf ("  -%c, --%s %s", longopts[i].val, longopts[i].name,
 		                  has_arg[longopts[i].has_arg]);
-		while (++len < 37)
-			printf (" ");
-		puts (longopts_help[i]);
+
+		char *lo = xstrdup (longopts_help[i]);
+		char *p = lo;
+		char *token;
+
+		while ((token = strsep (&p, "\n"))) {
+			while (++len < 37)
+				printf (" ");
+			puts (token);
+			len = 0;
+		}
+		free (lo);
 	}
 	exit (exit_status);
 }

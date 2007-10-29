@@ -544,7 +544,7 @@ static void single_user (void)
 #endif
 }
 
-static void set_ksoftlevel (const char *level)
+static bool set_ksoftlevel (const char *level)
 {
 	FILE *fp;
 
@@ -556,16 +556,17 @@ static void set_ksoftlevel (const char *level)
 		if (exists (RC_KSOFTLEVEL) &&
 			unlink (RC_KSOFTLEVEL) != 0)
 			eerror ("unlink `%s': %s", RC_KSOFTLEVEL, strerror (errno));
-		return;
+		return (false);
 	}
 
 	if (! (fp = fopen (RC_KSOFTLEVEL, "w"))) {
 		eerror ("fopen `%s': %s", RC_KSOFTLEVEL, strerror (errno));
-		return;
+		return (false);
 	}
 
 	fprintf (fp, "%s", level);
 	fclose (fp);
+	return (true);
 }
 
 static int get_ksoftlevel (char *buffer, int buffer_len)
@@ -718,11 +719,13 @@ static void run_script (const char *script) {
 }
 
 #include "_usage.h"
-#define getoptstring getoptstring_COMMON
+#define getoptstring "o:" getoptstring_COMMON
 static struct option longopts[] = {
+	{ "override", 1, NULL, 'o' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
+	"override the next runlevel to change into\nwhen leaving single user or boot runlevels",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -870,6 +873,10 @@ int main (int argc, char **argv)
 							   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+			case 'o':
+				if (strlen (optarg) == 0)
+					optarg = NULL;
+				exit (set_ksoftlevel (optarg) ? EXIT_SUCCESS : EXIT_FAILURE);
 			case_RC_COMMON_GETOPT
 		}
 	}

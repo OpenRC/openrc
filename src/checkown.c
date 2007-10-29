@@ -22,6 +22,7 @@
 
 #include "builtins.h"
 #include "einfo.h"
+#include "rc-misc.h"
 
 static char *applet = NULL;
 
