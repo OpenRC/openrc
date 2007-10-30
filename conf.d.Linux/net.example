@@ -528,6 +528,13 @@
 #routes_010000000001_334455DDEEFF="default via 10.0.0.1"
 #dns_servers_010000000001_334455DDEEFF="10.0.0.1"
 
+# If you need to spoof the source address, you can add that as third parameter
+# like so
+#gateways_eth0="192.168.0.1,00:11:22:AA:BB:CC,192.168.0.50"
+#or
+#gateways_eth0="192.168.0.1,,192.168.0.50"
+# This requires arping to be installed though
+
 # If we don't find any gateways (or there are none configured) then we try and
 # use APIPA to find a free address in the range 169.254.0.0-169.254.255.255
 # by arping a random address in that range on the interface. If no reply is

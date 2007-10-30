@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  30 Oct 2007; Roy Marples <uberlord@gentoo.org>:
+
+    You can now spoof the source address for arping as the third parameter
+    in gateways_eth0 if you have arping2 installed, #180888.
+
   29 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
     rc --override foo will override the runlevel to load after boot
