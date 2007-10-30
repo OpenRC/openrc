@@ -39,8 +39,7 @@ bridge_pre_start() {
 		fi
 	fi
 
-	local IFS="
-"
+	local IFS="$__IFS"
 	for x in ${opts}; do
 		unset IFS
 		set -- ${x}
@@ -49,12 +48,15 @@ bridge_pre_start() {
 		set -- "${x}" "${IFACE}" "$@"
 		brctl "$@"
 	done
+	unset IFS
 
 	if [ -n "${ports}" ] ; then
 		einfo "Adding ports to ${IFACE}"
 		eindent
 
+		local IFS="$__IFS"
 		for x in ${ports}; do
+			unset IFS
 			ebegin "${x}"
 			ifconfig "${x}" promisc up
 			if ! brctl addif "${IFACE}" "${x}" ; then
@@ -64,6 +66,7 @@ bridge_pre_start() {
 			fi
 			eend 0
 		done
+		unset IFS
 		eoutdent
 	fi
 	) || return 1

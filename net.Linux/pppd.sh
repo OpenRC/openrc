@@ -124,16 +124,14 @@ pppd_pre_start() {
 	[ -n "$2" ] && chatopts="${chatopts} -U '$2'"
 	local chat="$(_get_array "chat_${IFVAR}")"
 	if [ "${chat}" ] ; then
-		local IFS="
-"
+		local IFS="$__IFS"
 		opts="${opts} connect $(printf "\\'%s\\'" "${chatopts} $(printf "\\'\\\\'\\'%s\\'\\\'' " "$@")")"
 		unset IFS
 	fi
 
 	# Add plugins
 	local haspppoa=false haspppoe=false plugins="$(_get_array "plugins_${IFVAR}")"
-	local IFS="
-"
+	local IFS="$__IFS"
 	for i in ${plugins}; do
 		unset IFS
 		set -- ${i}

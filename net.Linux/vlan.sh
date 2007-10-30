@@ -38,8 +38,7 @@ vlan_pre_start() {
 	_exists || return 1
 
 	local v= x= e=
-	local IFS="
-"
+	local IFS="$__IFS"
 	for v in ${vc}; do
 		unset IFS
 		case "${v}" in

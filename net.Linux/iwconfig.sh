@@ -118,8 +118,7 @@ iwconfig_user_config() {
 	[ -z "${var}" ] && var=${IFVAR}
 
 	config="$(_get_array "iwconfig_${var}")"
-	local IFS="
-"
+	local IFS="$__IFS"
 	for conf in ${config}; do
 		unset IFS
 		if ! eval iwconfig "${IFACE}" "${conf}" ; then
@@ -130,8 +129,7 @@ iwconfig_user_config() {
 	unset IFS
 
 	config="$(_get_array "iwpriv_${var}")"
-	local IFS="
-"
+	local IFS="$__IFS"
 	for conf in ${config}; do
 		unset IFS
 		if ! eval iwpriv "${IFACE}" "${conf}" ; then
@@ -480,8 +478,7 @@ iwconfig_scan() {
 		fi
 
 		local blacklist="$(_get_array "blacklist_aps")"
-		local IFS="
-"
+		local IFS="$__IFS"
 		for x in ${blacklist}; do
 			unset IFS
 			if [ "${x}" = "${s}" ] ; then
@@ -500,8 +497,7 @@ iwconfig_force_preferred() {
 
 	ewarn "Trying to force preferred in case they are hidden"
 	local pref="$(_get_array "preferred_aps")" ssid=
-	local IFS="
-"
+	local IFS="$__IFS"
 	for ssid in ${pref}; do
 		unset IFS
 		local found_AP=false i=0 e=
@@ -526,8 +522,7 @@ iwconfig_force_preferred() {
 iwconfig_connect_preferred() {
 	local ssid= i= mode= mac= enc= freq= chan=
 	local pref="$(_get_array preferred_aps)"
-	local IFS="
-"
+	local IFS="$__IFS"
 	for ssid in ${pref}; do
 		unset IFS
 		i=0
@@ -557,8 +552,7 @@ iwconfig_connect_not_preferred() {
 		eval e=\$SSID_${i}
 		if [ -n "${e}" ] ; then
 			local prefa="$(_get_array preferred_aps)"
-			local IFS="
-"
+			local IFS="$__IFS"
 			for ssid in ${prefa}; do
 				if [ "${e}" = "${ssid}" ] ; then
 					pref=true

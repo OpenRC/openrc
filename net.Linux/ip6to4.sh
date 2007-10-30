@@ -56,16 +56,11 @@ ip6to4_start() {
 		esac
 	
 		veinfo "IPv4 address on ${host}: ${ip}/${subnet}"
-		local OIFS=$IFS SIFS=${IFS-y} ipa= ip6=
-		IFS="${IFS}."
-		for i in ${ip} ; do
+		local ipa= ip6= IFS="${IFS}."
+		for i in ${ip}; do
 			ipa="${ipa} ${i}"
 		done
-		if [ "${SIFS}" = "y" ] ; then
-			IFS=$OIFS
-		else
-			unset IFS
-		fi
+		unset IFS
 		eval ip6="$(printf "2002:%02x%02x:%02x%02x::%s" ${ipa} ${suffix})"
 		veinfo "Derived IPv6 address: ${ip6}"
 
