@@ -241,7 +241,6 @@ iwconfig_scan() {
 		i=$((${i} + 1))
 	done
 
-	local OIFS=$IFS
 	APS=-1
 	eval set -- ${scan}
 	for line in "$@" ; do
@@ -353,8 +352,7 @@ iwconfig_scan() {
 			eoutdent
 		fi
 
-		local IFS="
-"
+		local IFS="$__IFS"
 		for x in ${black}; do
 			if [ "${x}" = "${s}" ] ; then
 				ewarn "${s} has been blacklisted - not connecting"
@@ -375,8 +373,7 @@ iwconfig_force_preferred() {
 	local pref="$(_get_array "preferred_aps_${IFVAR}")"
 	[ -z "${pref}" ] && pref="$(_get_array "preferred_aps")"
 
-	local ssid= IFS="
-"
+	local ssid= IFS="$__IFS"
 	for ssid in ${pref}; do
 		unset IFS
 		local found_AP=false i=0 e=
@@ -403,8 +400,7 @@ iwconfig_connect_preferred() {
 	local pref="$(_get_array "preferred_aps_${IFVAR}")"
 	[ -z "${pref}" ] && pref="$(_get_array "preferred_aps")"
 
-	local IFS="
-"
+	local IFS="$__IFS"
 	for ssid in ${pref}; do
 		unset IFS
 		while [ ${i} -le ${APS} ]  ; do
@@ -437,8 +433,7 @@ iwconfig_connect_not_preferred() {
 
 		local prefa="$(_get_array preferred_aps)"
 		pref=false
-		local IFS="
-	"
+		local IFS="$__IFS"
 		for ssid in ${prefa}; do
 			if [ "${e}" = "${ssid}" ] ; then
 				pref=true
