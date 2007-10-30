@@ -43,14 +43,15 @@ vlan_pre_start() {
 		unset IFS
 		case "${v}" in
 			set_name_type" "*) x=${v} ;;
-			*) x="$(echo "${v}" | sed -e "s/ / ${IFACE} /g")"
-			   [ "${x}" = "${v}" ] && x="${x} ${IFACE}"
+			*)
+				set -- ${v}
+				x="$1 ${IFACE}"
+				shift
+				x="${x} $@"
 			   ;;
 		esac
 
-		set -x
 		e="$(vconfig ${x} 2>&1 1>/dev/null)"
-		set +x
 		[ -z "${e}" ] && continue
 		eerror "${e}"
 		return 1
