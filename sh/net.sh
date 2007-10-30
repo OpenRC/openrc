@@ -10,6 +10,10 @@ _config_vars="config routes"
 
 description="Configures network interfaces."
 
+# Handy var so we don't have to embed new lines everywhere for array splitting
+__IFS="	
+"
+
 depend() {
 	local IFACE=${SVCNAME#*.}
 	local IFVAR=$(echo -n "${IFACE}" | sed -e 's/[^[:alnum:]]/_/g')
@@ -57,6 +61,7 @@ _get_array() {
 
 	eval _a=\$$1
 	printf "%s" "${_a}"
+	printf "\n"
 	[ -n "${_a}" ]
 }
 
@@ -218,9 +223,6 @@ _gen_module_list() {
 		eval PROGRAM=\$${MODULE}_program
 		eval PROGRAM_START=\$${MODULE}_program_start
 		eval PROGRAM_STOP=\$${MODULE}_program_stop
-		#for x in ${PROGRAM} ; do
-		#	[ -x "${x}" ] || continue 2
-		#done
 		eval PROVIDE=\$${MODULE}_provide
 		echo "module_${i}='${MODULE}'" >> "${MODULESLIST}"
 		echo "module_${i}_program='${PROGRAM}'" >> "${MODULESLIST}"
@@ -359,8 +361,7 @@ ${config}"
 	# We store our config in an array like vars
 	# so modules can influence it
 	config_index=0
-	local IFS="
-"
+	local IFS="$__IFS"
 	for cmd in ${config}; do
 		eval config_${config_index}="'${cmd}'"
 		config_index=$((${config_index} + 1))
@@ -370,7 +371,6 @@ ${config}"
 
 	config_index=0
 	for cmd in ${fallback}; do
-		eval fallback_${config_index}="'${cmd}'"
 		config_index=$((${config_index} + 1))
 	done
 	# Terminate the list
@@ -498,8 +498,7 @@ start() {
 ${routes}"
 		hidefirstroute=true
 	fi
-	local IFS="
-"
+	local IFS="$__IFS"
 	for cmd in ${routes}; do
 		unset IFS
 		if ${first}; then
@@ -529,6 +528,7 @@ ${routes}"
 		eend $?
 		eoutdent
 	done
+	unset IFS
 
 	for module in ${MODULES} ; do
 		if type "${module}_post_start" >/dev/null 2>/dev/null ; then
