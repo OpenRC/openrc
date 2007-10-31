@@ -88,7 +88,7 @@ static void setup_selinux (int argc, char **argv);
 static void setup_selinux (int argc, char **argv)
 {
 	void *lib_handle = NULL;
-	
+
 	if (! exists (SELINUX_LIB))
 		return;
 
@@ -261,6 +261,7 @@ static void restore_state (void)
 
 	state = rc_service_state (applet);
 	if (state & RC_SERVICE_STOPPING) {
+
 		if (state & RC_SERVICE_WASINACTIVE)
 			rc_service_mark (applet, RC_SERVICE_INACTIVE);
 		else
@@ -285,7 +286,7 @@ static void restore_state (void)
 static void cleanup (void)
 {
 	restore_state ();
-	
+
 	if (! rc_in_plugin) {
 		if (prefix_locked)
 			unlink (PREFIX_LOCK);
@@ -296,7 +297,7 @@ static void cleanup (void)
 			else if (hook_out == RC_HOOK_SERVICE_STOP_DONE)
 				rc_plugin_run (RC_HOOK_SERVICE_STOP_OUT, applet);
 		}
-		
+
 		if (restart_services)
 			start_services (restart_services);
 	}
@@ -401,7 +402,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 			/* Hmmm, this shouldn't work in a vfork, but it does which is
 			 * good for us */
 			close (master_tty);
-	
+
 			dup2 (slave_tty, 1);
 			dup2 (slave_tty, 2);
 			if (slave_tty > 2)
@@ -437,7 +438,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 				break;
 			}
 		}
-		
+
 		if (s > 0) {
 			if (master_tty >= 0 && FD_ISSET (master_tty, &rset)) {
 				bytes = read (master_tty, buffer, RC_LINEBUFFER);
@@ -449,7 +450,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 				break;
 		}
 	}
-	
+
 	free (buffer);
 	close (signal_pipe[0]);
 	close (signal_pipe[1]);
@@ -477,7 +478,7 @@ static rc_service_state_t svc_status ()
 	if (state & RC_SERVICE_STOPPING) {
 		snprintf (status, sizeof (status), "stopping");
 		e = &ewarn;
-	} else if (state & RC_SERVICE_STOPPING) {
+	} else if (state & RC_SERVICE_STARTING) {
 		snprintf (status, sizeof (status), "starting");
 		e = &ewarn;
 	} else if (state & RC_SERVICE_INACTIVE) {
@@ -576,14 +577,14 @@ static void svc_start (bool deps)
 
 	if (state & RC_SERVICE_STARTED)
 		ewarnx ("WARNING: %s has already been started", applet);
-	else if (state & RC_SERVICE_STOPPING)
+	else if (state & RC_SERVICE_STARTING)
 		ewarnx ("WARNING: %s is already starting", applet);
 	else if (state & RC_SERVICE_STOPPING)
 		ewarnx ("WARNING: %s is stopping", applet);
 	else if (state & RC_SERVICE_INACTIVE && ! background)
 		ewarnx ("WARNING: %s has already started, but is inactive", applet);
 
-	if (! rc_service_mark (service, RC_SERVICE_STOPPING))
+	if (! rc_service_mark (service, RC_SERVICE_STARTING))
 		eerrorx ("ERROR: %s has been started by something else", applet);
 
 	make_exclusive (service);
@@ -614,11 +615,11 @@ static void svc_start (bool deps)
 
 		rc_strlist_free (need_services);
 		need_services = rc_deptree_depends (deptree, types_n, svcl,
-										softlevel, depoptions);
+											softlevel, depoptions);
 
 		rc_strlist_free (use_services);
 		use_services = rc_deptree_depends (deptree, types_nu, svcl,
-									   softlevel, depoptions);
+										   softlevel, depoptions);
 
 		if (! rc_runlevel_starting ()) {
 			STRLIST_FOREACH (use_services, svc, i)
@@ -644,7 +645,7 @@ static void svc_start (bool deps)
 
 			/* Don't wait for services which went inactive but are now in
 			 * starting state which we are after */
-			if (svcs & RC_SERVICE_STOPPING &&
+			if (svcs & RC_SERVICE_STARTING &&
 				svcs & RC_SERVICE_WASINACTIVE) {
 				bool use = false;
 				STRLIST_FOREACH (use_services, svc2, j)
@@ -655,7 +656,7 @@ static void svc_start (bool deps)
 				if (! use)
 					continue;
 			}
-			
+
 			if (! rc_service_wait (svc))
 				eerror ("%s: timed out waiting for %s", applet, svc);
 			if ((svcs = rc_service_state (svc)) & RC_SERVICE_STARTED)
@@ -953,7 +954,7 @@ static const char * const longopts_help[] = {
 #undef case_RC_COMMON_getopt_case_h
 #define case_RC_COMMON_getopt_case_h \
 	execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL); \
-	eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s", applet, strerror (errno));
+eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s", applet, strerror (errno));
 #include "_usage.c"
 
 int runscript (int argc, char **argv)
@@ -981,7 +982,7 @@ int runscript (int argc, char **argv)
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
 	chdir ("/");
-	
+
 	/* Show help if insufficient args */
 	if (argc < 3) {
 		execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
@@ -1063,7 +1064,7 @@ int runscript (int argc, char **argv)
 			if (ll > l)
 				l = ll;
 		}
-	
+
 		/* Make our prefix string */
 		prefix = xmalloc (sizeof (char) * l);
 		ll = strlen (applet);
@@ -1096,7 +1097,7 @@ int runscript (int argc, char **argv)
 			case 'D':
 				deps = false;
 				break;
-			case_RC_COMMON_GETOPT
+				case_RC_COMMON_GETOPT
 		}
 
 	/* Save the IN_BACKGROUND env flag so it's ONLY passed to the service
@@ -1144,7 +1145,7 @@ int runscript (int argc, char **argv)
 		setenv ("RC_CMD", optarg, 1);
 
 		doneone = true;
-		
+
 		if (strcmp (optarg, "describe") == 0) {
 			svc_exec (optarg, NULL);
 		} else if (strcmp (optarg, "help") == 0) {
@@ -1164,7 +1165,7 @@ int runscript (int argc, char **argv)
 
 			if (rc_env_bool ("RC_DEPEND_STRICT"))
 				depoptions |= RC_DEP_STRICT;
-			
+
 			if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
 				eerrorx ("failed to load deptree");
 

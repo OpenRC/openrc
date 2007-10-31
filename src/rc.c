@@ -284,7 +284,7 @@ static int do_service (int argc, char **argv)
 	else if (strcmp (applet, "service_inactive") == 0)
 		ok = (rc_service_state (argv[0]) & RC_SERVICE_INACTIVE);
 	else if (strcmp (applet, "service_starting") == 0)
-		ok = (rc_service_state (argv[0]) & RC_SERVICE_STOPPING);
+		ok = (rc_service_state (argv[0]) & RC_SERVICE_STARTING);
 	else if (strcmp (applet, "service_stopping") == 0)
 		ok = (rc_service_state (argv[0]) & RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "service_coldplugged") == 0)
@@ -318,7 +318,7 @@ static int do_mark_service (int argc, char **argv)
 	else if (strcmp (applet, "mark_service_inactive") == 0)
 		ok = rc_service_mark (argv[0], RC_SERVICE_INACTIVE);
 	else if (strcmp (applet, "mark_service_starting") == 0)
-		ok = rc_service_mark (argv[0], RC_SERVICE_STOPPING);
+		ok = rc_service_mark (argv[0], RC_SERVICE_STARTING);
 	else if (strcmp (applet, "mark_service_stopping") == 0)
 		ok = rc_service_mark (argv[0], RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "mark_service_coldplugged") == 0)
