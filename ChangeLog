@@ -1,6 +1,8 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+* baselayout-2.0.0_rc6 (31 Oct 2007)
+
   31 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
     You can now log baselayout-2 again, through the RC_LOGGER conf.d/rc
