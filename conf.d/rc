@@ -60,6 +60,9 @@ RC_PLUG_SERVICES=""
 # hooked up is a huge pita.
 RC_FORCE_AUTO="no"
 
+# RC_LOGGER launches a logging daemon to log the entire rc process to
+# /var/log/rc.log
+RC_LOGGER="no"
 
 ##############################################################################
 # SERVICE CONFIGURATION VARIABLES

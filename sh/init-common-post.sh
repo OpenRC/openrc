@@ -7,7 +7,7 @@
 if mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null ; then
 	rmdir "${RC_SVCDIR}/.test.$$"
 	rm -rf $(ls -d1 "${RC_SVCDIR:-/lib/rcscripts/init.d}"/* 2>/dev/null | \
-		grep -Ev "/(deptree|ksoftlevel)$")
+		grep -Ev "/(deptree|ksoftlevel|rc.log)$")
 else
 	mount_svcdir
 fi

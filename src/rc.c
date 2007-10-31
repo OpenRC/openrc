@@ -16,6 +16,7 @@
 #define SYSLOG_NAMES
 
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
@@ -38,6 +39,7 @@
 #include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
+#include "rc-logger.h"
 #include "rc-misc.h"
 #include "rc-plugin.h"
 #include "strlist.h"
@@ -92,7 +94,7 @@ static void cleanup (void)
 		pidlist_t *pl = service_pids;
 
 		rc_plugin_unload ();
-
+		
 		if (! rc_in_plugin && termios_orig) {
 			tcsetattr (fileno (stdin), TCSANOW, termios_orig);
 			free (termios_orig);
@@ -112,15 +114,18 @@ static void cleanup (void)
 		rc_deptree_free (deptree);
 
 		/* Clean runlevel start, stop markers */
-		if (! rc_in_plugin) {
+		if (! rc_in_plugin && ! rc_in_logger) {
 			rmdir (RC_STARTING);
 			rmdir (RC_STOPPING);
+
+			rc_logger_close ();
 		}
 
 		free (runlevel);
 	}
 
 	free (applet);
+	applet = NULL;
 }
 
 static int syslog_decode (char *name, CODE *codetab)
@@ -484,7 +489,7 @@ static void sulogin (bool cont)
 #ifdef __linux__
 	char *e = getenv ("RC_SYS");
 
-	/* VPS systems cannot do an sulogin */
+	/* VPS systems cannot do a sulogin */
 	if (e && strcmp (e, "VPS") == 0) {
 		execl ("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
 		eerrorx ("%s: unable to exec `/sbin/halt': %s", applet, strerror (errno));
@@ -496,7 +501,7 @@ static void sulogin (bool cont)
 	if (cont) {
 		int status = 0;
 #ifdef __linux__
-		char *tty = ttyname (fileno (stdout));
+		char *tty = ttyname (STDOUT_FILENO);
 #endif
 
 		pid_t pid = vfork ();
@@ -521,6 +526,8 @@ static void sulogin (bool cont)
 		}
 		waitpid (pid, &status, 0);
 	} else {
+		rc_logger_close ();
+
 #ifdef __linux__
 		execle ("/sbin/sulogin", "/sbin/sulogin", (char *) NULL, newenv);
 		eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
@@ -532,6 +539,8 @@ static void sulogin (bool cont)
 
 static void single_user (void)
 {
+	rc_logger_close ();
+
 #ifdef __linux__
 	execl ("/sbin/telinit", "/sbin/telinit", "S", (char *) NULL);
 	eerrorx ("%s: unable to exec `/sbin/telinit': %s",
@@ -592,12 +601,6 @@ static int get_ksoftlevel (char *buffer, int buffer_len)
 	return (i);
 }
 
-static void wait_for_services ()
-{
-	int status = 0;
-	while (wait (&status) != -1);
-}
-
 static void add_pid (pid_t pid)
 {
 	pidlist_t *sp = service_pids;
@@ -630,6 +633,11 @@ static void remove_pid (pid_t pid)
 	}
 }
 
+static void wait_for_services ()
+{
+	while (waitpid (0, 0, 0) != -1);
+}
+
 static void handle_signal (int sig)
 {
 	int serrno = errno;
@@ -637,6 +645,7 @@ static void handle_signal (int sig)
 	pidlist_t *pl;
 	pid_t pid;
 	int status = 0;
+	struct winsize ws;
 
 	switch (sig) {
 		case SIGCHLD:
@@ -652,6 +661,13 @@ static void handle_signal (int sig)
 			/* Remove that pid from our list */
 			if (pid > 0)
 				remove_pid (pid);
+			break;
+
+		case SIGWINCH:
+			if (rc_logger_tty >= 0) {
+				ioctl (STDIN_FILENO, TIOCGWINSZ, &ws);
+				ioctl (rc_logger_tty, TIOCSWINSZ, &ws);
+			}
 			break;
 
 		case SIGINT:
@@ -695,7 +711,8 @@ static void handle_signal (int sig)
 	errno = serrno;
 }
 
-static void run_script (const char *script) {
+static void run_script (const char *script)
+{
 	int status = 0;
 	pid_t pid = vfork ();
 
@@ -824,12 +841,6 @@ int main (int argc, char **argv)
 	RUNLEVEL = getenv ("RUNLEVEL");
 	PREVLEVEL = getenv ("PREVLEVEL");
 
-	/* Setup a signal handler */
-	signal (SIGINT, handle_signal);
-	signal (SIGQUIT, handle_signal);
-	signal (SIGTERM, handle_signal);
-	signal (SIGUSR1, handle_signal);
-
 	/* Ensure our environment is pure
 	   Also, add our configuration to it */
 	env = env_filter ();
@@ -895,12 +906,21 @@ int main (int argc, char **argv)
 	snprintf (pidstr, sizeof (pidstr), "%d", getpid ());
 	setenv ("RC_PID", pidstr, 1);
 
-	interactive = exists (INTERACTIVE);
-	rc_plugin_load ();
-
 	/* Load current softlevel */
 	bootlevel = getenv ("RC_BOOTLEVEL");
 	runlevel = rc_runlevel_get ();
+
+	rc_logger_open (newlevel ? newlevel : runlevel);
+
+	/* Setup a signal handler */
+	signal (SIGINT, handle_signal);
+	signal (SIGQUIT, handle_signal);
+	signal (SIGTERM, handle_signal);
+	signal (SIGUSR1, handle_signal);
+	signal (SIGWINCH, handle_signal);
+
+	interactive = exists (INTERACTIVE);
+	rc_plugin_load ();
 
 	/* Check we're in the runlevel requested, ie from
 	   rc single
@@ -949,8 +969,8 @@ int main (int argc, char **argv)
 				set_ksoftlevel (cmd);
 				free (cmd);
 			}
-
 #endif
+
 			rc_plugin_run (RC_HOOK_RUNLEVEL_START_OUT, newlevel);
 
 			if (want_interactive ())
@@ -970,6 +990,7 @@ int main (int argc, char **argv)
 			if (! RUNLEVEL ||
 				strcmp (RUNLEVEL, "6") != 0)
 			{
+				rc_logger_close ();
 				execl (SHUTDOWN, SHUTDOWN, "-r", "now", (char *) NULL);
 				eerrorx ("%s: unable to exec `" SHUTDOWN "': %s",
 						 applet, strerror (errno));
@@ -978,6 +999,7 @@ int main (int argc, char **argv)
 			if (! RUNLEVEL ||
 				strcmp (RUNLEVEL, "0") != 0)
 			{
+				rc_logger_close ();
 				execl (SHUTDOWN, SHUTDOWN,
 #ifdef __linux__
 					   "-h",
@@ -1022,6 +1044,15 @@ int main (int argc, char **argv)
 		going_down = true;
 		rc_runlevel_set (newlevel);
 		setenv ("RC_SOFTLEVEL", newlevel, 1);
+
+#ifdef __FreeBSD__
+		/* FIXME: we shouldn't have todo this */
+		/* For some reason, wait_for_services waits for the logger proccess
+		 * to finish as well, but only on FreeBSD. We cannot allow this so
+		 * we stop logging now. */
+		rc_logger_close ();
+#endif
+
 		rc_plugin_run (RC_HOOK_RUNLEVEL_STOP_IN, newlevel);
 	} else {
 		rc_plugin_run (RC_HOOK_RUNLEVEL_STOP_IN, runlevel);
@@ -1283,9 +1314,16 @@ int main (int argc, char **argv)
 
 		/* After all that we can finally stop the blighter! */
 		if (! found) {
-			pid_t pid = rc_service_stop (service);
-			if (pid > 0 && ! rc_env_bool ("RC_PARALLEL"))
-				rc_waitpid (pid);
+			pid_t pid;
+
+			if ((pid = rc_service_stop (service)) > 0) {
+				add_pid (pid);
+
+				if (! rc_env_bool ("RC_PARALLEL")) {
+					rc_waitpid (pid);
+					remove_pid (pid);
+				}
+			}
 		}
 	}
 
@@ -1309,6 +1347,7 @@ int main (int argc, char **argv)
 	if (strcmp (runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
 		strcmp (runlevel, RC_LEVEL_REBOOT) == 0)
 	{
+		rc_logger_close ();
 		execl (HALTSH, HALTSH, runlevel, (char *) NULL);
 		eerrorx ("%s: unable to exec `%s': %s",
 				 applet, HALTSH, strerror (errno));
@@ -1377,12 +1416,13 @@ interactive_option:
 			}
 
 			/* Remember the pid if we're running in parallel */
-			if ((pid = rc_service_start (service)))
+			if ((pid = rc_service_start (service)) > 0) {
 				add_pid (pid);
 
-			if (! rc_env_bool ("RC_PARALLEL")) {
-				rc_waitpid (pid);
-				remove_pid (pid);
+				if (! rc_env_bool ("RC_PARALLEL")) {
+					rc_waitpid (pid);
+					remove_pid (pid);
+				}
 			}
 		}
 	}

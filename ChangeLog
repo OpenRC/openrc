@@ -1,6 +1,15 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  31 Oct 2007; Roy Marples <uberlord@gentoo.org>:
+
+    You can now log baselayout-2 again, through the RC_LOGGER conf.d/rc
+    setting. The log is temp stored in /lib/rc/init.d/rc.log and appended
+    to /var/log/rc.log if it's writeable. sysinit cannot be logged in Linux
+    as we rely on sysinit to bring the system up to a point where we can log.
+    single user cannot be logged on FreeBSD due to waitpid(0,0,0) incorrectly
+    waiting for the log daemon in another process group.
+
   30 Oct 2007; Roy Marples <uberlord@gentoo.org>:
 
     You can now spoof the source address for arping as the third parameter

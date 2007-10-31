@@ -57,7 +57,8 @@ LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
 LDLIBS_LIBRC =
 
 RCOBJS = checkown.o env-update.o fstabinfo.o mountinfo.o \
-		 rc-depend.o rc-misc.o rc-plugin.o rc-status.o rc-update.o \
+		 rc-depend.o rc-logger.o rc-misc.o rc-plugin.o rc-status.o \
+		 rc-update.o \
 		 runscript.o  start-stop-daemon.o rc.o
 LDLIBS_RC = -leinfo -lrc -lutil
 

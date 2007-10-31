@@ -44,15 +44,18 @@ if mountinfo -q "${RC_SVCDIR}" && [ -w "${RC_LIBDIR}" ] ; then
 	fi
 	cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
 		"${RC_SVCDIR}"/softlevel "${RC_SVCDIR}"/nettree \
+		"${RC_SVCDIR}"/rc.log \
 		"${RC_LIBDIR}" 2>/dev/null
 	umount "${RC_SVCDIR}"
 	rm -rf "${RC_SVCDIR}"/*
 	# Pipe errors to /dev/null as we may have future timestamps
 	cp -p "${RC_LIBDIR}"/deptree "${RC_LIBDIR}"/depconfig \
 		"${RC_LIBDIR}"/softlevel "${RC_LIBDIR}"/nettree \
+		"${RC_LIBDIR}"/rc.log \
 		"${RC_SVCDIR}" 2>/dev/null
 	rm -f "${RC_LIBDIR}"/deptree "${RC_LIBDIR}"/depconfig \
-		"${RC_LIBDIR}"/softlevel "${RC_LIBDIR}"/nettree
+		"${RC_LIBDIR}"/softlevel "${RC_LIBDIR}"/nettree \
+		"${RC_LIBDIR}"/rc.log
 	# Release the memory disk if we used it
 	case "${mnt}" in
 		"/dev/md"[0-9]*) mdconfig -d -u "${mnt#/dev/md*}" ;;
