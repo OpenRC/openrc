@@ -15,7 +15,6 @@ do_checkfs() {
 
 	ebegin "Checking all filesystems"
 	
-
 	if  [ -e /forcefsck ] || get_bootparam "forcefsck" ; then
 		ewarn "A full fsck has been forced"
 		mode="-f -n"
