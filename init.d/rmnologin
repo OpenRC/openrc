@@ -6,6 +6,7 @@ description="Removes a file which blocks logins until this service has run."
 
 depend() {
 	need localmount
+	after bootmisc net
 }
 
 start() {
