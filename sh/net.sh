@@ -371,6 +371,7 @@ ${config}"
 
 	config_index=0
 	for cmd in ${fallback}; do
+		eval fallback_${config_index}="'${cmd}'"
 		config_index=$((${config_index} + 1))
 	done
 	# Terminate the list
