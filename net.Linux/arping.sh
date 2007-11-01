@@ -24,10 +24,13 @@ arping_address() {
 	[ -z "${w}" ] && w=${arping_wait:-5}
 
 	if type arping2 >/dev/null 2>&1; then
-		[ -z "$(_get_inet_address)" ] && opts="${opts} -0"
-		[ -n "${spoof}" ] && opts="${opts} -S ${spoof}"
+		if [ -n "${spoof}" ]; then
+			opts="${opts} -S ${spoof}"
+		else
+			[ -z "$(_get_inet_address)" ] && opts="${opts} -0"
+		fi
 		while [ ${w} -gt 0 -a -z "${foundmac}" ]; do
-			foundmac="$(arping2 ${opts} -r -c 1 -0 -i "${IFACE}" "${ip}" 2>/dev/null | \
+			foundmac="$(arping2 ${opts} -r -c 1 -i "${IFACE}" "${ip}" 2>/dev/null | \
 			sed -e 'y/abcdef/ABCDEF/')"
 			w=$((${w} - 1))
 		done
