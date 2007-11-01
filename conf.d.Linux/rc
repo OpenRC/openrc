@@ -18,6 +18,7 @@ RC_DOWN_HARDDISK="yes"
 # Use this variable to control the /dev management behavior.
 #  auto   - let the scripts figure out what's best at boot
 #  devfs  - use devfs (requires sys-fs/devfsd)
+#  mdev   - use mdev (requires sys-apps/busybox)
 #  udev   - use udev (requires sys-fs/udev)
 #  static - let the user manage /dev (YOU need to create ALL device nodes)
 RC_DEVICES="auto"
