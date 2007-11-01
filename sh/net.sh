@@ -349,7 +349,7 @@ _load_config() {
 	local fallback="$(_get_array fallback_${IFVAR})"
 
 	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ] ; then
-		config="127.0.0.1/8
+		[ "${config}" != "null" ] && config="127.0.0.1/8
 ${config}"
 	else
 		if [ -z "${config}" ] ; then
@@ -495,9 +495,11 @@ start() {
 	local hidefirstroute=false first=true
 	local routes="$(_get_array "routes_${IFVAR}")"
 	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ] ; then
-		routes="127.0.0.0/8 via 127.0.0.1
+		if [ "${config_0}" != "null" ]; then
+			routes="127.0.0.0/8 via 127.0.0.1
 ${routes}"
-		hidefirstroute=true
+			hidefirstroute=true
+		fi
 	fi
 	local IFS="$__IFS"
 	for cmd in ${routes}; do

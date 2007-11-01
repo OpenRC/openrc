@@ -33,7 +33,7 @@ bridge_pre_start() {
 
 	if ! _is_bridge; then
 		ebegin "Creating bridge ${IFACE}"
-		if ! brctl addbr "${IFACE}" ; then
+		if ! brctl addbr "${IFACE}"; then
 			eend 1
 			return 1
 		fi
@@ -50,15 +50,18 @@ bridge_pre_start() {
 	done
 	unset IFS
 
-	if [ -n "${ports}" ] ; then
+	if [ -n "${ports}" ]; then
 		einfo "Adding ports to ${IFACE}"
 		eindent
 
+		local OIFACE="${IFACE}"
 		for x in ${ports}; do
 			ebegin "${x}"
-			ifconfig "${x}" promisc up
-			if ! brctl addif "${IFACE}" "${x}" ; then
-				ifconfig "${x}" -promisc 2>/dev/null
+			local IFACE="${x}"
+			_set_flag promisc
+			_up
+			if ! brctl addif "${OIFACE}" "${x}"; then
+				_set_flag -promisc
 				eend 1
 				return 1
 			fi
@@ -78,7 +81,7 @@ bridge_post_stop() {
 	if _is_bridge ; then
 		ebegin "Destroying bridge ${IFACE}"
 		_down
-		ports="$( brctl show 2>/dev/null | \
+		ports="$(brctl show 2>/dev/null | \
 			sed -n -e '/^'"${IFACE}"'[[:space:]]/,/^\S/ { /^\('"${IFACE}"'[[:space:]]\|\t\)/s/^.*\t//p }')"
 		delete=true
 		iface=${IFACE}
@@ -87,9 +90,9 @@ bridge_post_stop() {
 		# Work out if we're added to a bridge for removal or not
 		eval set -- $(brctl show 2>/dev/null | sed -e "s/'/'\\\\''/g" -e "s/$/'/g" -e "s/^/'/g")
 		local line=
-		for line in "$@" ; do
+		for line in "$@"; do
 			set -- ${line}
-			if [ "$3" = "${IFACE}" ] ; then
+			if [ "$3" = "${IFACE}" ]; then
 				iface=$1
 				break
 			fi
@@ -98,14 +101,15 @@ bridge_post_stop() {
 		extra=" from ${iface}"
 	fi
 
-	for port in ${ports} ; do
+	for port in ${ports}; do
 		ebegin "Removing port ${port}${extra}"
-		ifconfig "${port}" -promisc
+		local IFACE="${port}"
+		_set_flag -promisc
 		brctl delif "${iface}" "${port}"
 		eend $?
 	done
 
-	if ${delete} ; then
+	if ${delete}; then
 		eoutdent
 		brctl delbr "${iface}"
 		eend $?

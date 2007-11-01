@@ -3,6 +3,7 @@
 
   01 Nov 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Work cleanly with bridges on kernels without TCP, #197791.
     Fix fallback, #197788.
 
 * baselayout-2.0.0_rc6 (31 Oct 2007)

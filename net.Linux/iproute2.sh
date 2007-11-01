@@ -43,6 +43,15 @@ _is_wireless() {
 	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/wireless
 }
 
+_set_flag() {
+	local flag=$1 opt="on"
+	if [ "${flag#-}" != "${flag}" ]; then
+		flag=${flag#-}
+		opt="off"
+	fi
+	ip link set "${IFACE}" "${flag}" "${opt}"
+}
+
 _get_mac_address() {
 	local mac=$(LC_ALL=C ip link show "${IFACE}" | sed -n \
 		-e 'y/abcdef/ABCDEF/' \
@@ -181,7 +190,8 @@ iproute2_pre_start() {
 }
 
 iproute2_post_start() {
-	ip route flush table cache dev "${IFACE}"
+	# Kernel may not have tcp built in
+	[ -e /proc/net/route ] && ip route flush table cache dev "${IFACE}"
 }
 
 iproute2_post_stop() {

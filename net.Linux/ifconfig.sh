@@ -42,6 +42,10 @@ _is_wireless() {
 	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/wireless
 }
 
+_set_flag() {
+	ifconfig "${IFACE}" "$1"
+}
+
 _get_mac_address() {
 	local mac=$(LC_ALL=C ifconfig "${IFACE}" | \
 	sed -n -e 's/.* HWaddr \(..:..:..:..:..:..\).*/\1/p')
