@@ -1,6 +1,11 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  02 Nov 2007; Roy Marples <uberlord@gentoo.org>:
+
+    Fix an ifconfig calculation for shells that don't support the newer
+    POSIX shell math expansion, #197856.
+
   01 Nov 2007; Roy Marples <uberlord@gentoo.org>:
 
     Work cleanly with bridges on kernels without TCP, #197791.

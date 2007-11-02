@@ -106,7 +106,7 @@ _cidr2netmask() {
 		while [ ${i} -lt ${frac} ] ; do
 			sum=$((${sum} + ${cur}))
 			cur=$((${cur} / 2))
-			i=$((i + 1))
+			i=$((${i} + 1))
 		done
 		netmask="${netmask}.${sum}"
 		done=$((${done} + 1))
