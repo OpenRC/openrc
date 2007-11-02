@@ -33,7 +33,7 @@ pppd_pre_start() {
 		return 0
 	fi
 
-	local link= i= unit="${IFACE#ppp}" opts= 
+	local link= i= unit="${IFACE#ppp}" opts=
 	
 	# PPP requires a link to communicate over - normally a serial port
 	# PPPoE communicates over Ethernet
@@ -57,7 +57,9 @@ pppd_pre_start() {
 		return 1
 	fi
 
-	eval opts=\$pppd_${IFVAR}
+	# We need to flatten the useless array
+	set -- $(_get_array "pppd_${IFVAR}")
+	opts="$@"
 
 	local mtu= hasmtu=false hasmru=false hasmaxfail=false haspersist=false
 	local hasupdetach=false hasdefaultmetric=false
@@ -117,16 +119,15 @@ pppd_pre_start() {
 	opts="unit ${unit} ${opts}"
 	
 	# Setup connect script
-	local chatopts="/usr/sbin/chat -e -E -v" phone=
+	local chatprog="/usr/sbin/chat -e -E -v" phone=
 	eval phone=\$phone_number_${IFVAR}
 	set -- ${phone}
-	[ -n "$1" ] && chatopts="${chatopts} -T '$1'"
-	[ -n "$2" ] && chatopts="${chatopts} -U '$2'"
-	local chat="$(_get_array "chat_${IFVAR}")"
-	if [ "${chat}" ] ; then
-		local IFS="$__IFS"
-		opts="${opts} connect $(printf "\\'%s\\'" "${chatopts} $(printf "\\'\\\\'\\'%s\\'\\\'' " "$@")")"
-		unset IFS
+	[ -n "$1" ] && chatprog="${chatprog} -T '$1'"
+	[ -n "$2" ] && chatprog="${chatprog} -U '$2'"
+	# We need to flatten the useless array
+	set -- $(_get_array "chat_${IFVAR}")
+	if [ $# != 0 ]; then
+		opts="${opts} connect '$(echo ${chatprog} $@ | sed -e "s:':'\\\\'':g")'"
 	fi
 
 	# Add plugins

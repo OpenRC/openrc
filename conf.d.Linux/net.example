@@ -701,22 +701,22 @@
 # Dial-up PPP users need to specify at least one telephone number
 #phone_number_ppp0="12345689" # Maximum 2 phone numbers are supported
 # They will also need a chat script - here's a good one
-#chat_ppp0=" \
-#	'ABORT' 'BUSY' \
-#	'ABORT' 'ERROR' \
-#	'ABORT' 'NO ANSWER' \
-#	'ABORT' 'NO CARRIER' \
-#	'ABORT' 'NO DIALTONE' \
-#	'ABORT' 'Invalid Login' \
-#	'ABORT' 'Login incorrect' \
-#	'TIMEOUT' '5' \
-#	'' 'ATZ' \
-#	'OK' 'AT' # Put your modem initialization string here \
-#	'OK' 'ATDT\T' \
-#	'TIMEOUT' '60' \
-#	'CONNECT' '' \
-#	'TIMEOUT' '5' \
-#	'~--' '' \
+#chat_ppp0="
+#ABORT BUSY
+#ABORT ERROR
+#ABORT 'NO ANSWER'
+#ABORT 'NO CARRIER'
+#ABORT 'NO DIALTONE'
+#ABORT 'Invalid Login'
+#ABORT 'Login incorrect'
+#TIMEOUT 5
+#'' ATZ
+#OK AT # Put your modem initialization string here
+#OK 'ATDT\T'
+#TIMEOUT 60
+#CONNECT ''
+#TIMEOUT 5
+#~-- ''
 #"
 
 # If the link require extra configuration - for example wireless or

@@ -3,6 +3,7 @@
 
   02 Nov 2007; Roy Marples <uberlord@gentoo.org>:
 
+    Fix ppp config, #197775.
     Fix an ifconfig calculation for shells that don't support the newer
     POSIX shell math expansion, #197856.
 
