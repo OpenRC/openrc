@@ -446,7 +446,7 @@ start() {
 		[ -z "${config}" ] && break 
 
 		set -- "${config}"
-		ebegin "$1"
+		ebegin $1
 		eindent
 		case "$1" in
 			noop)
@@ -509,7 +509,7 @@ ${routes}"
 			einfo "Adding routes"
 		fi
 		eindent
-		ebegin "${cmd}"
+		ebegin ${cmd}
 		# Work out if we're a host or a net if not told
 		case "${cmd}" in
 			*" -net "*|*" -host "*) ;;
