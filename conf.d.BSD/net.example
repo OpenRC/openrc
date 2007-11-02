@@ -120,7 +120,8 @@
 # Most users will just need to set the following options
 # key_ESSID1="s:yourkeyhere enc open" # s: means a text key
 # key_ESSID2="aaaa-bbbb-cccc-dd"      # no s: means a hex key
-# preferred_aps="'ESSID1' 'ESSID2'"
+# preferred_aps="ESSID 1
+#ESSID 2"
 #
 # Clear? Good. Now configure your wireless network below
 
