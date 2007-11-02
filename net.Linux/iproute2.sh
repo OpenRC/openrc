@@ -190,8 +190,10 @@ iproute2_pre_start() {
 }
 
 iproute2_post_start() {
-	# Kernel may not have tcp built in
-	[ -e /proc/net/route ] && ip route flush table cache dev "${IFACE}"
+	# Kernel may not have IP built in
+	if [ -e /proc/net/route ]; then
+		ip route flush table cache dev "${IFACE}"
+	fi
 }
 
 iproute2_post_stop() {
