@@ -117,7 +117,7 @@ void rc_logger_open (const char *level)
 	struct winsize ws;
 	char *buffer;
 	fd_set rset;
-	int s;
+	int s = 0;
 	size_t bytes;
 	int selfd;
 	int i;
