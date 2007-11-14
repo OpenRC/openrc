@@ -1,6 +1,10 @@
 # ChangeLog for Gentoo System Intialization ("rc") scripts
 # Copyright 1999-2007 Gentoo Foundation; Distributed under the GPLv2
 
+  14 Nov 2007; Mike Frysinger <vapier@gentoo.org>:
+
+    Move mail user/group and postmaster user to the mailbase package.
+
   02 Nov 2007; Roy Marples <uberlord@gentoo.org>:
 
     Fix ppp config, #197775.

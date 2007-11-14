@@ -10,7 +10,6 @@ mem::8:
 kmem::9:
 wheel::10:root
 floppy::11:root
-mail::12:mail
 news::13:news
 uucp::14:uucp
 console::17:
