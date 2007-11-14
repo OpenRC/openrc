@@ -85,11 +85,6 @@ start() {
 	chgrp utmp /var/run/utmp /var/log/wtmp
 	chmod 0664 /var/run/utmp /var/log/wtmp
 
-	ebegin "Updating environment"
-	# Use our version, not portage version.
-	/sbin/env-update --fork-ldconfig
-	eend $?
-
 	# Take care of random stuff [ /var/lock | /var/run | pam ]
 	ebegin "Cleaning /var/lock, /var/run"
 	rm -rf /var/run/console.lock /var/run/console/*

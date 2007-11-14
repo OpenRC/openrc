@@ -56,7 +56,7 @@ LIBRCSO = librc.so.$(LIBRCSOVER)
 LIBRCOBJS = librc.o librc-depend.o librc-daemon.o librc-misc.o librc-strlist.o
 LDLIBS_LIBRC =
 
-RCOBJS = checkown.o env-update.o fstabinfo.o mountinfo.o \
+RCOBJS = checkown.o fstabinfo.o mountinfo.o \
 		 rc-depend.o rc-logger.o rc-misc.o rc-plugin.o rc-status.o \
 		 rc-update.o \
 		 runscript.o  start-stop-daemon.o rc.o
@@ -85,7 +85,7 @@ RC_SBINLINKS =  mark_service_starting mark_service_started \
 				mark_service_coldplugged mark_service_failed \
 				rc-abort
 BINLINKS = rc-status
-SBINLINKS = env-update rc-update runscript start-stop-daemon
+SBINLINKS = rc-update runscript start-stop-daemon
 ALL_LINKS = $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS)
 
 # We also define _BSD_SOURCE so both Linux and the BSDs get a few
