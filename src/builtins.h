@@ -10,7 +10,6 @@
 #include "rc.h"
 
 int checkown (int argc, char **argv);
-int env_update (int argc, char **argv);
 int fstabinfo (int argc, char **argv);
 int mountinfo (int argc, char **argv);
 int rc_depend (int argc, char **argv);

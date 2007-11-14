@@ -774,9 +774,7 @@ int main (int argc, char **argv)
 
 	/* These used to be programs in their own right, so we shouldn't
 	 * touch argc or argv for them */
-	if (strcmp (applet, "env-update") == 0)
-		exit (env_update (argc, argv));
-	else if (strcmp (applet, "fstabinfo") == 0)
+	if (strcmp (applet, "fstabinfo") == 0)
 		exit (fstabinfo (argc, argv));
 	else if (strcmp (applet, "mountinfo") == 0)
 		exit (mountinfo (argc, argv));
