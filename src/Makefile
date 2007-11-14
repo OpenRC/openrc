@@ -95,9 +95,7 @@ CPPFLAGS += -DLIB=\"$(LIB)\"
 # IMPORTANT!!!
 # Ensure that we don't ship with a .svn directory to avoid RPATH security
 # issues. However, this does ease development a little
-_SVN_LDFLAGS_SH = if test -d .svn; then echo "-Wl,-rpath ."; else echo ""; fi
-_SVN_LDFLAGS != $(_SVN_LDFLAGS_SH)
-LDFLAGS += $(_SVN_LDFLAGS)$(shell $(_SVN_LDFLAGS_SH))
+LDFLAGS += -Wl,-rpath .
 
 # Load an optional OS Makefile
 _OS_SH = u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${u}";; esac

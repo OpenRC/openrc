@@ -990,10 +990,17 @@ int runscript (int argc, char **argv)
 	int opt;
 	char *svc;
 
+	/* Show help if insufficient args */
+	if (argc < 2) {
+		execl (RCSCRIPT_HELP, RCSCRIPT_HELP, (char *) NULL);
+		eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s", argv[0],
+				 strerror (errno));
+	}
+	
 	/* We need the full path to the service */
-	if (! realpath (argv[0], service))
+	if (! realpath (argv[1], service))
 		eerrorx ("unable to resolve the path `%s': %s",
-				 argv[0], strerror (errno));
+				 argv[1], strerror (errno));
 
 	applet = xstrdup (basename (service));
 	atexit (cleanup);
