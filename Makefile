@@ -6,7 +6,7 @@ NAME = openrc
 VERSION = 1.0pre1
 PKG = $(NAME)-$(VERSION)
 
-SUBDIRS = conf.d init.d man net sh src
+SUBDIRS = etc conf.d init.d man net sh src
 
 ifeq ($(OS),)
 OS=$(shell uname -s)

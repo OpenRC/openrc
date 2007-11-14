@@ -20,13 +20,13 @@ install:: $(SUBDIRS_INSTALL)
 
 # Hmm ... possible to combine these three and not be ugly ?
 %_all:
-	$(MAKE) -C $(patsubst %_all,%,$@) all
-	if test -d $(patsubst %_all,%,$@).$(OS) ; then $(MAKE) -C $(patsubst %_all,%,$@).$(OS) all ; fi
+	if test -d $(patsubst %_all,%,$@); then $(MAKE) -C $(patsubst %_all,%,$@).$(OS) all; fi
+	if test -d $(patsubst %_all,%,$@).$(OS); then $(MAKE) -C $(patsubst %_all,%,$@).$(OS) all; fi
 %_clean:
-	$(MAKE) -C $(patsubst %_clean,%,$@) clean
+	if test -d $(patsubst %_clean,%,$@) ; then $(MAKE) -C $(patsubst %_clean,%,$@) clean ; fi
 	if test -d $(patsubst %_clean,%,$@).$(OS) ; then $(MAKE) -C $(patsubst %_clean,%,$@).$(OS) clean ; fi
 %_install:
-	$(MAKE) -C $(patsubst %_install,%,$@) install
+	if test -d $(patsubst %_install,%,$@) ; then $(MAKE) -C $(patsubst %_install,%,$@) install ; fi
 	if test -d $(patsubst %_install,%,$@).$(OS) ; then $(MAKE) -C $(patsubst %_install,%,$@).$(OS) install ; fi
 
 
