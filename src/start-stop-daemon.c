@@ -314,16 +314,12 @@ static int do_stop (const char *exec, const char *cmd,
 			ebegin ("Sending signal %d to PID %d", sig, pids[i]);
 		errno = 0;
 		killed = (kill (pids[i], sig) == 0 || errno == ESRCH ? true : false);
+		if (verbose)
+			eend (killed ? 0 : 1, "%s: failed to send signal %d to PID %d: %s",
+				  applet, sig, pids[i], strerror (errno));
 		if (! killed) {
-			if (! quiet)
-				eerror ("%s: failed to send signal %d to PID %d: %s",
-						applet, sig, pids[i], strerror (errno));
-			if (verbose)
-				eend (1, NULL);
 			nkilled = -1;
 		} else {
-			if (verbose)
-				eend (0, NULL);
 			if (nkilled != -1)
 				nkilled++;
 		}
