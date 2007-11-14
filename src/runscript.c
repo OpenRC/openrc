@@ -69,7 +69,7 @@
 #define PREFIX_LOCK		RC_SVCDIR "/prefix.lock"
 
 static char *applet = NULL;
-static char *service = NULL;
+static char service[PATH_MAX];
 static char *exclusive = NULL;
 static char *mtime_test = NULL;
 static rc_depinfo_t *deptree = NULL;
@@ -347,7 +347,6 @@ static void cleanup (void)
 	free (exclusive);
 	free (applet);
 	free (prefix);
-	free (service);
 	free (softlevel);
 }
 
@@ -992,14 +991,9 @@ int runscript (int argc, char **argv)
 	char *svc;
 
 	/* We need the full path to the service */
-	if (*argv[1] == '/')
-		service = xstrdup (argv[1]);
-	else {
-		char pwd[PATH_MAX];
-		if (! getcwd (pwd, PATH_MAX))
-			eerrorx ("getcwd: %s", strerror (errno));
-		service = rc_strcatpaths (pwd, argv[1], (char *) NULL);
-	}
+	if (! realpath (argv[0], service))
+		eerrorx ("unable to resolve the path `%s': %s",
+				 argv[0], strerror (errno));
 
 	applet = xstrdup (basename (service));
 	atexit (cleanup);
