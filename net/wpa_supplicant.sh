@@ -71,7 +71,11 @@ wpa_supplicant_pre_start() {
 		wpac=/bin/wpa_cli
 	fi
 
-	_is_wireless || return 0
+	eval opts=\$wpa_supplicant_${IFVAR}
+	case " ${opts} " in
+		*" -Dwired "*) ;;
+		*) _is_wireless || return 0;;
+	esac
 
 	# We don't configure wireless if we're being called from
 	# the background unless we're not currently running
@@ -86,7 +90,6 @@ wpa_supplicant_pre_start() {
 	fi
 
 	save_options "SSID" ""
-	eval opts=\$wpa_supplicant_${IFVAR}
 	ebegin "Starting wpa_supplicant on" "${IFVAR}"
 
 
