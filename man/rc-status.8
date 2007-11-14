@@ -1,4 +1,4 @@
-.TH "BASELAYOUT" "8" "May 2004" "baselayout" "baselayout"
+.TH "OPENRC" "8" "Nov 2007" "openrc" "openrc"
 .SH NAME
 rc-status \- show status info about runlevels
 .SH SYNOPSIS
@@ -7,7 +7,7 @@ rc-status \- show status info about runlevels
 \fBrc-status\fR gathers and displays information about the status of init 
 scripts in different runlevels.  The default behavior is to show information 
 about the current runlevel, but any runlevel can be quickly examined.
-directory.  They must also conform to the Gentoo runscript standard.
+directory.  They must also conform to the OpenRC runscript standard.
 .SH OPTIONS
 .TP
 \fB\-\-all (\-a)\fR
@@ -27,11 +27,7 @@ Show services not assigned to any runlevel
 .TP
 \fB[runlevel]\fR
 Show information only for the named \fBrunlevel\fR
-.SH "REPORTING BUGS"
-Please report bugs via http://bugs.gentoo.org/
 .SH "SEE ALSO"
 .BR rc-update (8)
-
-http://www.gentoo.org/doc/en/handbook/handbook-x86.xml?part=2&chap=4
 .SH AUTHORS
 Mike Frysinger <vapier@gentoo.org>

@@ -1,15 +1,39 @@
 /*
    rc.c
    rc - manager for init scripts which control the startup, shutdown
-   and the running of daemons on a Gentoo system.
+   and the running of daemons.
 
    Also a multicall binary for various commands that can be used in shell
    scripts to query service state, mark service state and provide the
-   Gentoo einfo family of informational functions.
-
-   Copyright 2007 Gentoo Foundation
-   Released under the GPLv2
+   einfo family of informational functions.
    */
+
+/* 
+ * Copyright 2007 Gentoo Foundation
+ * Copyright 2007 Roy Marples
+ * All rights reserved
+
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
 
 #define APPLET "rc"
 
@@ -944,13 +968,10 @@ int main (int argc, char **argv)
 				run_script (INITEARLYSH);
 
 			uname (&uts);
-
-			printf ("\n");
-			printf ("   %sGentoo/%s; %shttp://www.gentoo.org/%s"
-					"\n   Copyright 1999-2007 Gentoo Foundation; "
-					"Distributed under the GPLv2\n\n",
-					ecolor (ECOLOR_GOOD), uts.sysname, ecolor (ECOLOR_BRACKET),
+			printf ("   %sOpenRC %s" VERSTRING "%s is starting up"
+					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_BRACKET),
 					ecolor (ECOLOR_NORMAL));
+			printf ("\n");
 
 			if (rc_env_bool ("RC_INTERACTIVE"))
 				printf ("Press %sI%s to enter interactive boot mode\n\n",

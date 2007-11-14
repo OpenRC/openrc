@@ -1,4 +1,4 @@
-.TH "BASELAYOUT" "8" "May 2004" "baselayout" "baselayout"
+.TH "OPENRC" "8" "Nov 2007" "openrc" "openrc"
 .SH NAME
 rc-update \- add and remove init scripts to a runlevel
 .SH SYNOPSIS
@@ -8,12 +8,12 @@ rc-update \- add and remove init scripts to a runlevel
 .br
 \fBrc-update\fR \fIshow\fR \fI[\-\-verbose]\fR \fI[runlevels]\fR
 .SH DESCRIPTION
-Gentoo's init system uses named runlevels.  Rather than editing some obscure 
+OpenRC uses named runlevels.  Rather than editing some obscure 
 file or managing a directory of symlinks, \fBrc-update\fR exists to quickly 
 add or delete init scripts from different runlevels.
 
 All scripts specified with this utility must reside in the \fI/etc/init.d\fR 
-directory.  They must also conform to the Gentoo runscript standard.
+directory.  They must also conform to the OpenRC runscript standard.
 .SH OPTIONS
 .TP
 \fBadd (\-a)\fR \fIscript\fR \fI<runlevels>\fR
@@ -35,9 +35,5 @@ Show all enabled scripts and the runlevels they belong to.  If you specify
 view all init scripts, run with the \fI\-\-verbose\fR option.
 
 Example: rc-update show
-.SH "REPORTING BUGS"
-Please report bugs via http://bugs.gentoo.org/
 .SH "SEE ALSO"
 .BR rc-status (8)
-
-http://www.gentoo.org/doc/en/handbook/handbook-x86.xml?part=2&chap=4

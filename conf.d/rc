@@ -1,4 +1,4 @@
-# /etc/conf.d/rc: Global config file for the Gentoo RC System
+# /etc/conf.d/rc: Global config file for OpenRC
 
 # Set to "yes" if you want the rc system to try and start services
 # in parallel for a slight speed improvement. When running in parallel we
