@@ -497,29 +497,26 @@ iwconfig_scan() {
 			eoutdent
 		fi
 
-		local blacklist="$(_get_array "blacklist_aps")"
-		local IFS="$__IFS"
-		for x in ${blacklist}; do
-			unset IFS
+		eval set -- $(_flatten_array "blacklist_aps_${IFVAR}")
+		[ $# = 0 ] && eval set -- $(_flatten_array "blacklist_aps")
+		for x in "$@"; do
 			if [ "${x}" = "${s}" ] ; then
 				ewarn "${s} has been blacklisted - not connecting"
 				unset SSID_${i} MAC_${i} CHAN_${i} QUALITY_${i} ENC_${i}
 			fi
 		done
-		unset IFS
 		i=$((${i} + 1))
 	done
 	eoutdent
 }
 
 iwconfig_force_preferred() {
-	[ -z "${preferred_aps}" ] && return 1
+	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
+	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
+	[ $# = 0 ] && return 1
 
 	ewarn "Trying to force preferred in case they are hidden"
-	local pref="$(_get_array "preferred_aps")" ssid=
-	local IFS="$__IFS"
-	for ssid in ${pref}; do
-		unset IFS
+	for ssid in "$@"; do
 		local found_AP=false i=0 e=
 		while [ ${i} -le ${APS} ] ; do
 			eval e=\$SSID_${i}
@@ -541,9 +538,10 @@ iwconfig_force_preferred() {
 
 iwconfig_connect_preferred() {
 	local ssid= i= mode= mac= enc= freq= chan=
-	local pref="$(_get_array preferred_aps)"
-	local IFS="$__IFS"
-	for ssid in ${pref}; do
+	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
+	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
+
+	for ssid in "$@"; do
 		unset IFS
 		i=0
 		while [ ${i} -le ${APS} ]  ; do
@@ -571,15 +569,14 @@ iwconfig_connect_not_preferred() {
 	while [ ${i} -le ${APS} ] ; do
 		eval e=\$SSID_${i}
 		if [ -n "${e}" ] ; then
-			local prefa="$(_get_array preferred_aps)"
-			local IFS="$__IFS"
-			for ssid in ${prefa}; do
+			eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
+			[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
+			for ssid in "$@"; do
 				if [ "${e}" = "${ssid}" ] ; then
 					pref=true
 					break
 				fi
 			done
-			unset IFS
 	
 			if ! ${pref} ; then
 				SSID=${e}

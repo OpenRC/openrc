@@ -298,7 +298,7 @@
 # please put -R in your dhcpcd options
 #dns_servers_SSID="192.168.0.1 192.168.0.2"
 #dns_domain_SSID="some.domain"
-#dns_search_path_SSID="search.this.domain search.that.domain"
+#dns_search_SSID="search.this.domain search.that.domain"
 # Please check the man page for resolv.conf for more information
 # as domain and search (searchdomains) are mutually exclusive and
 # searchdomains takes precedence
@@ -326,12 +326,10 @@
 # Surround each SSID with the " character and seperate them with a space
 # If the first SSID isn't found then it moves onto the next
 # If this isn't defined then it connects to the first one found
-#preferred_aps="SSID 1
-#SSID 2"
+#preferred_aps="SSID1 SSID2" 
 
 # You can also define a preferred_aps list per interface
-#preferred_aps_eth0="SSID 3
-#SSID 4'"
+#preferred_aps_eth0="SSID3 SSID4"
 
 # You can also say whether we only connect to preferred APs or not
 # Values are "any", "preferredonly", "forcepreferred", "forcepreferredonly" and "forceany"
@@ -348,10 +346,8 @@
 #associate_order_eth0="any"
 
 # You can define blacklisted Access Points in the same way
-#blacklist_aps="SSID 1
-#SSID 2"
-#blacklist_aps_eth0="SSID 3
-#SSID 4"
+#blacklist_aps="SSID1 SSID2"
+#blacklist_aps_eth0="SSID3 SSID4"
 
 # If you have more than one wireless card, you can say if you want
 # to allow each card to associate with the same Access Point or not

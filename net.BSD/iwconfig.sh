@@ -340,7 +340,7 @@ iwconfig_scan() {
 		i=$((${i} + 1))
 	done
 
-	local i=0 e= m= s= black="$(_get_array "blacklist_aps")"
+	local i=0 e= m= s=
 
 	while [ ${i} -le ${APS} ] ; do
 		eval x=\$MAC_${i}
@@ -374,14 +374,14 @@ iwconfig_scan() {
 			eoutdent
 		fi
 
-		local IFS="$__IFS"
-		for x in ${black}; do
+		eval set -- $(_flatten_array "blacklist_aps_${IFVAR}")
+		[ $# = 0 ] && eval set -- $(_flatten_array "blacklist_aps")
+		for x in "$@"; do
 			if [ "${x}" = "${s}" ] ; then
 				ewarn "${s} has been blacklisted - not connecting"
 				unset SSID_${i} MAC_${i} CHAN_${i} QUALITY_${i} CAPS_${i}
 			fi
 		done
-		unset IFS
 		i=$((${i} + 1))
 	done
 	eoutdent
@@ -389,15 +389,13 @@ iwconfig_scan() {
 }
 
 iwconfig_force_preferred() {
-	[ -z "${preferred_aps}" ] && return 1
+	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
+	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
+	[ $# = 0 ] && return 1
 
 	ewarn "Trying to force preferred in case they are hidden"
-	local pref="$(_get_array "preferred_aps_${IFVAR}")"
-	[ -z "${pref}" ] && pref="$(_get_array "preferred_aps")"
-
-	local ssid= IFS="$__IFS"
-	for ssid in ${pref}; do
-		unset IFS
+	local ssid=
+	for ssid in "$@"; do
 		local found_AP=false i=0 e=
 		while [ ${i} -le ${APS:--1} ] ; do
 			eval e=\$SSID_${i}
@@ -418,13 +416,12 @@ iwconfig_force_preferred() {
 }
 
 iwconfig_connect_preferred() {
-	local ssid= i=0 mode= mac= caps= freq= chan=
-	local pref="$(_get_array "preferred_aps_${IFVAR}")"
-	[ -z "${pref}" ] && pref="$(_get_array "preferred_aps")"
+	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
+	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
+	[ $# = 0 ] && return 1
 
-	local IFS="$__IFS"
-	for ssid in ${pref}; do
-		unset IFS
+	local ssid= i=0 mode= mac= caps= freq= chan=
+	for ssid in "$@"; do
 		while [ ${i} -le ${APS} ]  ; do
 			eval e=\$SSID_${i}
 			if [ "${e}" = "${ssid}" ] ; then
@@ -453,16 +450,15 @@ iwconfig_connect_not_preferred() {
 			continue
 		fi
 
-		local prefa="$(_get_array preferred_aps)"
+		eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
+		[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
 		pref=false
-		local IFS="$__IFS"
-		for ssid in ${prefa}; do
+		for ssid in "$@"; do
 			if [ "${e}" = "${ssid}" ] ; then
 				pref=true
 				break
 			fi
 		done
-		unset IFS
 
 		if ! ${pref} ; then
 			SSID=${e}

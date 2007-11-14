@@ -87,6 +87,26 @@ _get_array() {
 	[ -n "${_a}" ]
 }
 
+# Flatten bash arrays to simple strings
+_flatten_array() {
+	if [ -n "${BASH}" ] ; then
+		case "$(declare -p "$1" 2>/dev/null)" in
+			"declare -a "*)
+				eval "set -- \"\${$1[@]}\""
+				for x in "$@"; do
+					printf "'%s' " "$(printf "$x" | sed "s:':'\\\'':g")"
+				done
+				return 0
+				;;
+		esac
+	fi
+
+	eval _a=\$$1
+	printf "%s" "${_a}"
+	printf "\n"
+	[ -n "${_a}" ]
+}
+
 _wait_for_carrier() {
 	local timeout= efunc=einfon
 
