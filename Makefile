@@ -1,18 +1,12 @@
-# baselayout Makefile
+# Open Run Control Makefile
 # Copyright 2006-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-#
-# We've moved the installation logic from Gentoo ebuild into a generic
-# Makefile so that the ebuild is much smaller and more simple.
-# It also has the added bonus of being easier to install on systems
-# without an ebuild style package manager.
 
-SUBDIRS = conf.d etc init.d man net sh share src
-
-NAME = baselayout
-VERSION = 2.0.0_rc6
-
+NAME = openrc
+VERSION = 1.0pre1
 PKG = $(NAME)-$(VERSION)
+
+SUBDIRS = conf.d init.d man net sh src
 
 ifeq ($(OS),)
 OS=$(shell uname -s)
@@ -21,28 +15,15 @@ OS=BSD
 endif
 endif
 
-BASE_DIRS = $(RC_LIB)/init.d $(RC_LIB)/tmp
-KEEP_DIRS = /boot /home /mnt /root \
-	/usr/local/bin /usr/local/sbin /usr/local/share/doc /usr/local/share/man \
-	/var/lock /var/run
-
+NET_LO = net.lo0
 ifeq ($(OS),Linux)
-	KEEP_DIRS += /dev /sys
 	NET_LO = net.lo
-endif
-ifneq ($(OS),Linux)
-	NET_LO = net.lo0
 endif
 
 TOPDIR = .
 include $(TOPDIR)/default.mk
 
 install::
-	# These dirs may not exist from prior versions
-	for x in $(BASE_DIRS) ; do \
-		$(INSTALL_DIR) $(DESTDIR)$$x || exit $$? ; \
-		touch $(DESTDIR)$$x/.keep || exit $$? ; \
-	done
 	# Don't install runlevels if they already exist
 	if ! test -d $(DESTDIR)/etc/runlevels ; then \
 		(cd runlevels; $(MAKE) install) ; \
@@ -60,23 +41,6 @@ install::
 		rm -f $(DESTDIR)/$(RC_LIB)/sh/rc-functions.sh.bak ; \
 	fi
 
-layout:
-	# Create base filesytem layout
-	for x in $(KEEP_DIRS) ; do \
-		$(INSTALL_DIR) $(DESTDIR)$$x || exit $$? ; \
-		touch $(DESTDIR)$$x/.keep || exit $$? ; \
-	done
-	# Special dirs
-	install -m 0700 -d $(DESTDIR)/root || exit $$?
-	touch $(DESTDIR)/root/.keep || exit $$?
-	install -m 1777 -d $(DESTDIR)/var/tmp || exit $$?
-	touch $(DESTDIR)/var/tmp/.keep || exit $$?
-	install -m 1777 -d $(DESTDIR)/tmp || exit $$?
-	touch $(DESTDIR)/tmp/.keep || exit $$?
-	# FHS compatibility symlinks stuff
-	ln -snf /var/tmp $(DESTDIR)/usr/tmp || exit $$?
-	ln -snf share/man $(DESTDIR)/usr/local/man || exit $$?
-
 diststatus:
 	if test -d .svn ; then \
 		svnfiles=`svn status 2>&1 | egrep -v '^(U|P)'` ; \
@@ -88,15 +52,6 @@ diststatus:
 		fi \
 	fi 
 
-distforce:
-	rm -rf /tmp/$(PKG)
-	cp -pPR . /tmp/$(PKG)
-	$(MAKE) -C /tmp/$(PKG) clean
-	(find /tmp/$(PKG) -type d -name .svn -exec rm -rf {} \; 2>/dev/null; exit 0)
-	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
-	rm -rf /tmp/$(PKG)
-	ls -l /tmp/$(PKG).tar.bz2
-
 distit:
 	rm -rf /tmp/$(PKG)
 	svn export . /tmp/$(PKG)
@@ -107,6 +62,6 @@ distit:
 
 dist: diststatus distit
 
-.PHONY: layout dist distforce distit diststatus
+.PHONY: layout dist distit diststatus
 
 # vim: set ts=4 :
