@@ -292,11 +292,14 @@ static int do_stop (const char *exec, const char *cmd,
 	pid_t pid = 0;
 	int i;
 
-	if (pidfile)
+	if (pidfile) {
 		if ((pid = get_pid (pidfile, quiet)) == -1)
 			return (quiet ? 0 : -1);
+		pids = rc_find_pids (NULL, NULL, 0, pid);
+	} else
+		pids = rc_find_pids (exec, cmd, uid, pid);
 
-	if ((pids = rc_find_pids (exec, cmd, uid, pid)) == NULL)
+	if (! pids)
 		return (0);
 
 	for (i = 0; pids[i]; i++) {
@@ -1022,19 +1025,13 @@ int start_stop_daemon (int argc, char **argv)
 			} else {
 				if (pidfile) {
 					/* The pidfile may not have been written yet - give it some time */
-					if (get_pid (pidfile, true) == -1) {
+					if (get_pid (pidfile, true) == -1)
 						alive = true;
-					} else {
+					else
 						nloopsp = 0;
-						if (do_stop (NULL, NULL, pidfile, uid, 0,
-									 true, false, true) > 0)
-							alive = true;
-					}
-				} else {
-					if (do_stop (exec, cmd, NULL, uid, 0, true, false, true)
-						> 0)
-						alive = true;
 				}
+				if (do_stop (exec, cmd, pidfile, uid, 0, true, false, true) > 0)
+					alive = true;
 			}
 
 			if (! alive)
