@@ -968,10 +968,8 @@ int main (int argc, char **argv)
 				run_script (INITEARLYSH);
 
 			uname (&uts);
-			printf ("   %sOpenRC %s" VERSTRING "%s is starting up"
-					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_BRACKET),
-					ecolor (ECOLOR_NORMAL));
-			printf ("\n");
+			printf ("   %sOpenRC%s is starting up\n",
+					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_NORMAL));
 
 			if (rc_env_bool ("RC_INTERACTIVE"))
 				printf ("Press %sI%s to enter interactive boot mode\n\n",
