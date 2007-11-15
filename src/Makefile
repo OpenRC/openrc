@@ -101,8 +101,8 @@ LDFLAGS += -Wl,-rpath .
 _OS_SH = u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${u}";; esac
 _OS != $(_OS_SH)
 OS ?= $(_OS)$(shell $(_OS_SH))
--include Makefile.$(OS)
--include Makefile.$(PAM)
+include Makefile.$(OS)
+include Makefile.$(PAM)
 
 all: .depend $(TARGET)
 
@@ -166,13 +166,15 @@ install: $(TARGET)
 clean-links:
 	rm -f $(ALL_LINKS)
 clean: clean-links
+	echo > .depend
+	touch -r Makefile .depend
 	rm -f $(TARGET)
-	rm -f *.o *~ *.core *.so *.a .depend
+	rm -f *.o *~ *.core *.so *.a
 
 check:
 	$(MAKE) -C test $@
 
--include .depend
+include .depend
 _DEPS != ls *.c *.h
 .depend: $(_DEPS)$(wildcard *.c *.h)
 	$(CC) $(CPPFLAGS) -MM *.c > .depend
