@@ -600,6 +600,10 @@ static void svc_start (bool deps)
 
 	if (state & RC_SERVICE_STARTED) {
 		ewarn ("WARNING: %s has already been started", applet);
+		if (hook_out) {
+			hook_out = 0;
+			rc_plugin_run (hook_out)
+		}
 		return;
 	} else if (state & RC_SERVICE_STARTING)
 		ewarnx ("WARNING: %s is already starting", applet);
@@ -813,6 +817,10 @@ static void svc_stop (bool deps)
 
 	if (state & RC_SERVICE_STOPPED) {
 		ewarn ("WARNING: %s is already stopped", applet);
+		if (hook_out) {
+			hook_out = 0;
+			rc_plugin_run (hook_out)
+		}
 		return;
 	} else if (state & RC_SERVICE_STOPPING)
 		ewarnx ("WARNING: %s is already stopping", applet);
