@@ -598,9 +598,10 @@ static void svc_start (bool deps)
 		background = true;
 	}
 
-	if (state & RC_SERVICE_STARTED)
-		ewarnx ("WARNING: %s has already been started", applet);
-	else if (state & RC_SERVICE_STARTING)
+	if (state & RC_SERVICE_STARTED) {
+		ewarn ("WARNING: %s has already been started", applet);
+		return;
+	} else if (state & RC_SERVICE_STARTING)
 		ewarnx ("WARNING: %s is already starting", applet);
 	else if (state & RC_SERVICE_STOPPING)
 		ewarnx ("WARNING: %s is stopping", applet);
@@ -810,9 +811,10 @@ static void svc_stop (bool deps)
 			! (state & RC_SERVICE_INACTIVE))
 			exit (EXIT_FAILURE);
 
-	if (state & RC_SERVICE_STOPPED)
-		ewarnx ("WARNING: %s is already stopped", applet);
-	else if (state & RC_SERVICE_STOPPING)
+	if (state & RC_SERVICE_STOPPED) {
+		ewarn ("WARNING: %s is already stopped", applet);
+		return;
+	} else if (state & RC_SERVICE_STOPPING)
 		ewarnx ("WARNING: %s is already stopping", applet);
 
 	if (! rc_service_mark (service, RC_SERVICE_STOPPING))
