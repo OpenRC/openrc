@@ -30,6 +30,9 @@
  * SUCH DAMAGE.
  */
 
+const char copyright[] = "Copyright (c) 2007 Gentoo Foundation\n"
+						 "Copyright (c) 2007 Roy Marples";
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>

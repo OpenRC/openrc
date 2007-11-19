@@ -30,6 +30,9 @@
  * SUCH DAMAGE.
  */
 
+const char copyright[] = "Copyright (c) 2007 Gentoo Foundation\n"
+						 "Copyright (c) 2007 Roy Marples";
+
 #include "librc.h"
 
 /* usecs to wait while we poll the fifo */

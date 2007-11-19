@@ -35,6 +35,9 @@
  * SUCH DAMAGE.
  */
 
+const char copyright[] = "Copyright (c) 2007 Gentoo Foundation\n"
+						 "Copyright (c) 2007 Roy Marples";
+
 #define APPLET "rc"
 
 #define SYSLOG_NAMES
@@ -67,6 +70,8 @@
 #include "rc-misc.h"
 #include "rc-plugin.h"
 #include "strlist.h"
+
+#include "version.h"
 
 #define INITSH                  RC_LIBDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBDIR "/sh/init-early.sh"
@@ -796,6 +801,11 @@ int main (int argc, char **argv)
 	if (! applet)
 		eerrorx ("arguments required");
 
+	if (argc > 1 && (strcmp (argv[1], "--version") == 0)) {
+		printf ("%s (Open RC) version " VERSION "\n", applet);
+		exit (EXIT_SUCCESS);
+	}
+
 	/* These used to be programs in their own right, so we shouldn't
 	 * touch argc or argv for them */
 	if (strcmp (applet, "fstabinfo") == 0)
@@ -968,8 +978,9 @@ int main (int argc, char **argv)
 				run_script (INITEARLYSH);
 
 			uname (&uts);
-			printf ("   %sOpenRC%s is starting up\n",
-					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_NORMAL));
+			printf ("   %sOpenRC %s" VERSION "%s is starting up\n",
+					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_BRACKET),
+					ecolor (ECOLOR_NORMAL));
 
 			if (rc_env_bool ("RC_INTERACTIVE"))
 				printf ("Press %sI%s to enter interactive boot mode\n\n",
