@@ -16,25 +16,16 @@ install::
 	ln -snf ../../$(RC_LIB)/sh/net.sh $(DESTDIR)/etc/init.d/$(NET_LO) || exit $$?
 	ln -snf ../../$(RC_LIB)/sh/functions.sh $(DESTDIR)/etc/init.d || exit $$?
 
-diststatus:
-	if test -d .svn ; then \
-		svnfiles=`svn status 2>&1 | egrep -v '^(U|P)'` ; \
-		if test "x$$svnfiles" != "x" ; then \
-			echo "Refusing to package tarball until svn is in sync:" ; \
-			echo "$$svnfiles" ; \
-			echo "make distforce to force packaging" ; \
-			exit 1 ; \
-		fi \
-	fi 
+clean::
+	rm -f *.bz2
 
-distit:
-	rm -rf /tmp/$(PKG)
-	svn export . /tmp/$(PKG)
-	$(MAKE) -C /tmp/$(PKG) clean
-	tar -C /tmp -cvjpf /tmp/$(PKG).tar.bz2 $(PKG)
-	rm -rf /tmp/$(PKG)
-	ls -l /tmp/$(PKG).tar.bz2
-
-dist: diststatus distit
+dist:
+	$(INSTALL) -d /tmp/$(PKG)
+	cp -RPp . /tmp/$(PKG)
+	(cd /tmp/$(PKG); $(MAKE) clean)
+	rm -rf /tmp/$(PKG)/*.bz2 /tmp/$(PKG)/.git /tmp/$(PKG)/test
+	tar cvjpf $(PKG).tar.bz2 -C /tmp $(PKG) 
+	rm -rf /tmp/$(PKG) 
+	ls -l $(PKG).tar.bz2
 
 # vim: set ts=4 :
