@@ -1,8 +1,7 @@
 # Common makefile settings
-# Copyright 2006-2007 Gentoo Foundation
+# We shouldn't use PREFIX as we need to install into /
 
 DESTDIR = /
-ROOT = /
 LIB = lib
 RC_LIB = /$(LIB)/rc
 
@@ -12,10 +11,8 @@ _OS_SH = u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${
 _OS != $(_OS_SH)
 OS ?= $(_OS)$(shell $(_OS_SH))
 
-#
 # Recursive rules
 # Adapted from FreeBSDs bsd.subdir.mk
-#
 ECHODIR ?= true
 _SUBDIR = \
 	@for x in $(SUBDIR); do \
