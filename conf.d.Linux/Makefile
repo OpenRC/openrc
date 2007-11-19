@@ -1,7 +1,6 @@
 DIR = /etc/conf.d
-FILES = net.example
-FILES_APPEND = clock rc
-FILES_NOEXIST = consolefont keymaps
+CONF = consolefont keymaps net.example
+CONF_APPEND = clock rc
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

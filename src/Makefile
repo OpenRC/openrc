@@ -10,7 +10,7 @@
 # that works with GNU make and vice versa. NetBSD and OpenBSD makes do.
 # You can get a patch from
 # http://www.freebsd.org/cgi/query-pr.cgi?pr=standards/116081
-# to fix this. We include this patch with Gentoo/FreeBSD :)
+# to fix this.
 
 CC ?= gcc
 CFLAGS += -O2 -pipe
@@ -38,10 +38,6 @@ CFLAGS += -pedantic -std=c99 \
 
 # For debugging. -Werror is pointless due to ISO C issues with dlsym
 #CFLAGS += -ggdb
-
-DESTDIR =
-LIB = lib
-RC_LIB = /$(LIB)/rc
 
 # Set PAM = pam for pam support
 PAM = 
@@ -98,9 +94,8 @@ CPPFLAGS += -DLIB=\"$(LIB)\"
 LDFLAGS += -Wl,-rpath .
 
 # Load an optional OS Makefile
-_OS_SH = u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${u}";; esac
-_OS != $(_OS_SH)
-OS ?= $(_OS)$(shell $(_OS_SH))
+TOPDIR = ..
+include $(TOPDIR)/default.mk
 include Makefile.$(OS)
 include Makefile.$(PAM)
 
@@ -137,7 +132,7 @@ $(ALL_LINKS): rc
 	ln -sf rc $@
 links: $(ALL_LINKS)
 
-install: $(TARGET)
+install:: $(TARGET)
 	install -m 0755 -d $(DESTDIR)/$(LIB)
 	install -m 0755 $(LIB_TARGETS) $(DESTDIR)/$(LIB)
 	install -m 0755 -d $(DESTDIR)/usr/$(LIB)
@@ -165,7 +160,7 @@ install: $(TARGET)
 
 clean-links:
 	rm -f $(ALL_LINKS)
-clean: clean-links
+clean::
 	echo > .depend
 	touch -r Makefile .depend
 	rm -f $(TARGET)

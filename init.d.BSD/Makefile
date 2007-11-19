@@ -1,5 +1,5 @@
-DIR   = /etc/init.d
-EXES  = clock
+DIR = /etc/init.d
+BIN = clock
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

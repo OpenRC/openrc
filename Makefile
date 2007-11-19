@@ -3,25 +3,14 @@
 # Distributed under the terms of the GNU General Public License v2
 
 NAME = openrc
-VERSION = 1.0pre1
+VERSION = 1.0
 PKG = $(NAME)-$(VERSION)
 
-SUBDIRS = etc conf.d init.d man net sh src
-
-ifeq ($(OS),)
-OS=$(shell uname -s)
-ifneq ($(OS),Linux)
-OS=BSD
-endif
-endif
-
-NET_LO = net.lo0
-ifeq ($(OS),Linux)
-	NET_LO = net.lo
-endif
+SUBDIR = conf.d etc init.d man net sh src
 
 TOPDIR = .
 include $(TOPDIR)/default.mk
+include $(TOPDIR)/Makefile.$(OS)
 
 install::
 	# Don't install runlevels if they already exist

@@ -1,5 +1,5 @@
-DIR   = /etc/init.d
-EXES  = clock consolefont keymaps modules numlock
+DIR = /etc/init.d
+BIN = clock consolefont keymaps modules numlock
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

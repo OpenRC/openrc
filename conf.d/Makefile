@@ -1,5 +1,6 @@
-DIR   = /etc/conf.d
-FILES_NOEXIST = $(filter-out Makefile,$(wildcard *))
+DIR  = /etc/conf.d
+CONF = bootmisc checkfs clock env_whitelist hostname local.start local.stop \
+  	   net rc urandom 
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

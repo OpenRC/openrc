@@ -1,5 +1,5 @@
 DIR = /etc/conf.d
-FILES = localmount net.example
+CONF = localmount net.example
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk
