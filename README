@@ -1,0 +1,46 @@
+OpenRC README
+
+
+Installation
+------------
+make install
+Yup, that simple. Works with GNU make, FreeBSD make and pmake. Should work
+with every other make too.
+
+You may wish to tweak the installation with the below arguments
+LIB=lib64
+DESTDIR=/tmp/openrc-image
+
+If any of the following files exist then we do not overwrite them
+/etc/rc
+/etc/rc.shutdown
+/etc/conf.d/*
+/etc/inittab
+
+rc and rc.shutdown are the hooks from the BSD init into OpenRC.
+inittab is the same, but for SysVInit as used by most Linux distrubtions.
+Obviously, if you're installing this onto a system that does not use OpenRC
+by default then you may wish to backup the above listed files, remove them
+and then install so that the OS hooks into OpenRC.
+
+
+History - by Roy Marples
+------------------------
+I became a Gentoo/Linux developer in 2004 and wrote the modular network
+scripts for the Gentoo baselayout package. baselayout is a collection of
+bash scripts to bring up your computer and it's services.
+Then towards the end of 2005 I found myself as the primary maintainer
+for baselayout.
+
+At the start of 2007, baselayout-2 is announced to the world, re-writing the
+core of baselayout in C and allowing POSIX sh init scripts instead of
+forcing the use of bash. By Mid 2007 I have re-written everything, including
+init scripts, and alpha and pre baselayout-2 snapshots where put into Gentoo.
+Towards the end of 2007 I retired as a Gentoo developer for reasons I won't
+go into here. baselayout-2 was still in the pre stage, and aside from the
+fbsd users, it was masked everywhere. However, I also desired to keep the
+baselayout-2 project alive, but outside of Gentoo and into other projects
+such as FreeBSD.
+
+As such, the Gentoo Council have allowed the creation of OpenRC under the
+2 clause BSD license, managed by me as an external project.
