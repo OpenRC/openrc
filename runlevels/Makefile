@@ -1,12 +1,21 @@
 BOOT = bootmisc checkroot checkfs clock hostname localmount rmnologin urandom
 DEFAULT = local netmount
 
-install:
-	install -d -m 0755 $(DESTDIR)/etc/runlevels/boot || exit $$?
-	for x in $(BOOT) ; do ln -snf ../../init.d/"$$x" $(DESTDIR)/etc/runlevels/boot/"$$x" || exit $$? ; done
-	install -d -m 0755 $(DESTDIR)/etc/runlevels/default || exit $$?
-	for x in $(DEFAULT) ; do ln -snf ../../init.d/"$$x" $(DESTDIR)/etc/runlevels/default/"$$x" || exit $$? ; done
+LEVELDIR = $(DESTDIR)/etc/runlevels
+BOOTDIR = $(LEVELDIR)/boot
+DEFAULTDIR = $(LEVELDIR)/default
 
-.PHONY: all clean
+install:
+	if ! test -d "$(BOOTDIR)" ; then \
+		$(INSTALL) -d $(BOOTDIR) || exit $$?; \
+		for x in $(BOOT); do ln -snf ../../init.d/"$$x" $(BOOTDIR)/"$$x" || exit $$? ; done \
+	fi
+	if ! test -d "$(DEFAULTDIR)" ; then \
+		$(INSTALL) -d $(DEFAULTDIR) || exit $$?; \
+		for x in $(DEFAULT); do ln -snf ../../init.d/"$$x" $(DEFAULTDIR)/"$$x" || exit $$? ; done \
+	fi
+
+all:
+clean:
 
 # vim: set ts=4 :

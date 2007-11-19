@@ -6,29 +6,15 @@ NAME = openrc
 VERSION = 1.0
 PKG = $(NAME)-$(VERSION)
 
-SUBDIR = conf.d etc init.d man net sh src
+SUBDIR = conf.d etc init.d man net runlevels sh src
 
 TOPDIR = .
 include $(TOPDIR)/default.mk
 include $(TOPDIR)/Makefile.$(OS)
 
 install::
-	# Don't install runlevels if they already exist
-	if ! test -d $(DESTDIR)/etc/runlevels ; then \
-		(cd runlevels; $(MAKE) install) ; \
-		test -d runlevels.$(OS) && (cd runlevels.$(OS); $(MAKE) install) ; \
-		$(INSTALL_DIR) $(DESTDIR)/etc/runlevels/single || exit $$? ; \
-		$(INSTALL_DIR) $(DESTDIR)/etc/runlevels/nonetwork || exit $$? ; \
-	fi
 	ln -snf ../../$(RC_LIB)/sh/net.sh $(DESTDIR)/etc/init.d/$(NET_LO) || exit $$?
 	ln -snf ../../$(RC_LIB)/sh/functions.sh $(DESTDIR)/etc/init.d || exit $$?
-	# Handle lib correctly
-	if test $(LIB) != "lib" ; then \
-		sed -i'.bak' -e 's,/lib/,/$(LIB)/,g' $(DESTDIR)/$(RC_LIB)/sh/functions.sh || exit $$? ; \
-		rm -f $(DESTDIR)/$(RC_LIB)/sh/functions.sh.bak ; \
-		sed -i'.bak' -e 's,/lib/,/$(LIB)/,g' $(DESTDIR)/$(RC_LIB)/sh/rc-functions.sh || exit $$? ; \
-		rm -f $(DESTDIR)/$(RC_LIB)/sh/rc-functions.sh.bak ; \
-	fi
 
 diststatus:
 	if test -d .svn ; then \
@@ -50,7 +36,5 @@ distit:
 	ls -l /tmp/$(PKG).tar.bz2
 
 dist: diststatus distit
-
-.PHONY: layout dist distit diststatus
 
 # vim: set ts=4 :

@@ -6,12 +6,6 @@
 # to type make instead of gmake, but also so that other distros can pick
 # it up and not rely on GNU Make.
 
-# NOTE:- FreeBSD and DragonFly have no way of optionally including files
-# that works with GNU make and vice versa. NetBSD and OpenBSD makes do.
-# You can get a patch from
-# http://www.freebsd.org/cgi/query-pr.cgi?pr=standards/116081
-# to fix this.
-
 CC ?= gcc
 CFLAGS += -O2 -pipe
 LDFLAGS += -L.
@@ -22,7 +16,7 @@ check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
 
 # pmake check for extra cflags 
 WEXTRA != for x in -Wdeclaration-after-statement -Wsequence-point -Wextra; do \
-	if $(CC) -Wdeclaration-after-statement -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+	if $(CC) -W$$x -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
 	then echo -n "$$x "; fi \
 	done
 
@@ -101,6 +95,9 @@ include Makefile.$(PAM)
 
 all: .depend $(TARGET)
 
+version.h:
+	sed -n -e 's/^VERSION =[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1\"/p' ../Makefile > version.h
+
 $(LIBEINFOOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
 $(LIBEINFOSO): einfo.map $(LIBEINFOOBJS) 
@@ -160,10 +157,10 @@ install:: $(TARGET)
 
 clean-links:
 	rm -f $(ALL_LINKS)
-clean::
+clean:: clean-links
 	echo > .depend
 	touch -r Makefile .depend
-	rm -f $(TARGET)
+	rm -f $(TARGET) version.h
 	rm -f *.o *~ *.core *.so *.a
 
 check:
@@ -171,7 +168,5 @@ check:
 
 include .depend
 _DEPS != ls *.c *.h
-.depend: $(_DEPS)$(wildcard *.c *.h)
+.depend: version.h $(_DEPS)$(wildcard *.c *.h)
 	$(CC) $(CPPFLAGS) -MM *.c > .depend
-
-.PHONY: all clean clean-links install links
