@@ -1,5 +1,5 @@
 DIR  = /etc
-CONF = rc rc.shutdown
+CONF = inittab 
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk
