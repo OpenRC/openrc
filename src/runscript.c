@@ -587,8 +587,6 @@ static void svc_start (bool deps)
 	const char *svcl[] = { applet, NULL };
 	rc_service_state_t state;
 
-	hook_out = RC_HOOK_SERVICE_START_OUT;
-	rc_plugin_run (RC_HOOK_SERVICE_START_IN, applet);
 	state = rc_service_state (service);
 
 	if (rc_env_bool ("IN_HOTPLUG") || in_background) {
@@ -600,10 +598,6 @@ static void svc_start (bool deps)
 
 	if (state & RC_SERVICE_STARTED) {
 		ewarn ("WARNING: %s has already been started", applet);
-		if (hook_out) {
-			hook_out = 0;
-			rc_plugin_run (hook_out)
-		}
 		return;
 	} else if (state & RC_SERVICE_STARTING)
 		ewarnx ("WARNING: %s is already starting", applet);
@@ -616,6 +610,9 @@ static void svc_start (bool deps)
 		eerrorx ("ERROR: %s has been started by something else", applet);
 
 	make_exclusive (service);
+
+	hook_out = RC_HOOK_SERVICE_START_OUT;
+	rc_plugin_run (RC_HOOK_SERVICE_START_IN, applet);
 
 	if (rc_env_bool ("RC_DEPEND_STRICT"))
 		depoptions |= RC_DEP_STRICT;
@@ -803,9 +800,6 @@ static void svc_stop (bool deps)
 
 	rc_service_state_t state = rc_service_state (service);
 
-	hook_out = RC_HOOK_SERVICE_STOP_OUT;
-	rc_plugin_run (RC_HOOK_SERVICE_STOP_IN, applet);
-
 	if (rc_runlevel_stopping () &&
 		state & RC_SERVICE_FAILED)
 		exit (EXIT_FAILURE);
@@ -817,10 +811,6 @@ static void svc_stop (bool deps)
 
 	if (state & RC_SERVICE_STOPPED) {
 		ewarn ("WARNING: %s is already stopped", applet);
-		if (hook_out) {
-			hook_out = 0;
-			rc_plugin_run (hook_out)
-		}
 		return;
 	} else if (state & RC_SERVICE_STOPPING)
 		ewarnx ("WARNING: %s is already stopping", applet);
@@ -829,6 +819,9 @@ static void svc_stop (bool deps)
 		eerrorx ("ERROR: %s has been stopped by something else", applet);
 
 	make_exclusive (service);
+
+	hook_out = RC_HOOK_SERVICE_STOP_OUT;
+	rc_plugin_run (RC_HOOK_SERVICE_STOP_IN, applet);
 
 	if (! rc_runlevel_stopping () &&
 		rc_service_in_runlevel (service, RC_LEVEL_BOOT))
