@@ -1,0 +1,82 @@
+#!/sbin/runscript
+# Copyright 2007 Roy Marples
+# All rights reserved
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
+name=${SVCNAME##*.}
+if [ -n "${name}" -a "${name}" != "moused" ] ; then
+	device=/dev/"${name}"
+	pidfile=/var/run/moused-"${name}".pid
+else
+	name=
+	pidfile=/var/run/moused.pid
+fi
+
+depend() {
+	need localmount
+	after bootmisc
+}
+
+start() {
+	ebegin "Starting the Console Mouse Daemon" "${name}"
+
+	if [ -z "${device}" ] ; then
+		local dev=
+		for dev in /dev/psm[0-9]* /dev/ums[0-9]* ; do
+			[ -e "${dev}" ] || continue
+			[ -e /var/run/moused-$(basename "${dev}").pid ] && continue 
+			device=${dev}
+			eindent
+			einfo "Using mouse on ${device}"
+			eoutdent
+			break
+		done
+	fi
+
+	if [ -z "${device}" ] ; then
+		eend 1 "No mouse device found" 
+		return 1
+	fi
+
+	start-stop-daemon --start --exec /usr/sbin/moused \
+		--pidfile "${pidfile}" \
+		-- ${MOUSED_ARGS} -p "${device}" -I "${pidfile}"
+	local retval=$?
+	
+	[ -n "${MOUSE_CHAR_START}" ] && MOUSE_CHAR_START="-M ${MOUSE_CHAR_START}"
+	local ttyv=
+	for ttyv in /dev/ttyv*; do
+		vidcontrol < "${ttyv}" ${MOUSE_CHAR_START} -m on
+		: $((${retval} += $?))
+	done
+	
+	eend ${retval} "Failed to start moused"
+}
+
+stop() {
+	ebegin "Stopping the Console Mouse Daemon ${name}"
+	start-stop-daemon --quiet --stop --pidfile "${pidfile}"
+	eend $? "Failed to stop moused"
+}
+
+# vim: set ts=4 :
