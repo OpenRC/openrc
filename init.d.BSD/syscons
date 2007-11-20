@@ -1,0 +1,104 @@
+#!/sbin/runscript
+# Copyright 2007 Roy Marples
+# All rights reserved
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
+depend() {
+	need localmount
+}
+
+start() {
+	if [ -n "${MODE}" ]; then
+		ebegin "Setting mode to ${MODE}"
+		vidcontrol "${MODE}"
+		eend $?
+	fi
+	
+	# XXX: This should handle serial consoles.
+	
+	# Set the keymap.
+	if [ -n "${KEYMAP}" ]; then
+		ebegin "Setting keymap to ${KEYMAP}"
+		kbdcontrol -l ${KEYMAP} </dev/console
+		eend $?
+	fi
+	
+	if [ -n "${KEYRATE}" ]; then
+		ebegin "Setting keyrate to ${KEYRATE}"
+		kbdcontrol -r ${KEYRATE} </dev/console
+		eend $?
+	fi
+
+	if [ -n "${KEYCHANGE}" ]; then
+		ebegin "Changing function keys"
+		eval set -- "${KEYCHANGE}"
+		eindent
+		while [ $# -gt 0 ] ; do
+			veinfo "F$1 -> \`$2'"
+			kbdcontrol -f "$1" "$2" </dev/console
+			veend $?
+			shift; shift
+		done
+		eoutdent
+	fi
+	
+	if [ -n "${CURSOR}" ]; then
+		ebegin "Setting cursor"
+		vidcontrol -c ${CURSOR}
+		eend $?
+	fi
+
+	local v= f=
+	for v in FONT8x16 FONT8x14 FONT8x8; do
+		f=$(eval \$"${v}")
+		if [ -n "${f}" ]; then
+			ebegin "Setting font ${f}"
+			vidcontrol -f ${v##FONT} ${f}
+			eend $?
+		fi
+	done
+
+	if [ -n "${BLANKTIME}" ]; then
+		ebegin "Setting blanktime"
+		vidcontrol -t ${BLANKTIME}
+		eend $?
+	fi
+
+	if [ -n "${SAVER}" ]; then
+		local i=
+		for i in $(kldstat | sed -n -e 's/.* \(splash_.*\)/\1/p'); do
+			kldunload "${i}"
+		done
+		kldstat -v | grep -q _saver || kldload ${SAVER}_saver
+	fi
+
+	if [ -n "${KBDFLAGS}" ]; then
+		ebegin "Setting keyboard flags for all screens"
+		for v in /dev/ttyv*; do
+			kbdcontrol ${KBDFLAGS} <${v} &>${v}
+		done
+		eend $?
+	fi
+
+	return 0
+}
