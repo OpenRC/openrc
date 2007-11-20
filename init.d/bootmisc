@@ -84,9 +84,9 @@ start() {
 	rmdir /.test.$$
 
 	# Ensure that our basic dirs exist
-	for x in /var/lock /var/log /var/run /tmp; do
+	for x in /var/log /var/run /tmp; do
 		if ! [ -d "${x}" ]; then
-			if ! mkdir "${x}"; then
+			if ! mkdir -p "${x}"; then
 				eend 1 "failed to create needed directory ${x}"
 				return 1
 			fi
@@ -99,14 +99,7 @@ start() {
 	chgrp utmp /var/run/utmp /var/log/wtmp
 	chmod 0664 /var/run/utmp /var/log/wtmp
 
-	# Take care of random stuff [ /var/lock | /var/run | pam ]
-	ebegin "Cleaning /var/lock, /var/run"
-	rm -rf /var/run/console.lock /var/run/console/*
-
-	# Clean up any stale locks.
-	find /var/lock -type f -print0 | xargs -0 rm -f --
-		
-	# Clean up /var/run and create /var/run/utmp so we can login.
+	ebegin "Cleaning /var/run"
 	for x in $(find /var/run ! -type d ! -name utmp ! -name innd.pid \
 		! -name random-seed ! -name ld-elf.so.hints ! -name ld.so.hints); do
 		[ ! -f "${x}" ] && continue
@@ -126,13 +119,10 @@ start() {
 			pam_console_apply -r
 		fi
 	fi
-
-	# Create the .keep to stop portage from removing /var/lock
-	printf "" >/var/lock/.keep
 	eend 0
 
 	# Clean up /tmp directories
-	local tmp
+	local tmp=
 	for tmp in ${WIPE_TMP_DIRS-/tmp}; do
 		cleanup_tmp_dir "${tmp}"
 	done
