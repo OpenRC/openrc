@@ -25,19 +25,28 @@
 
 depend() {
 	need localmount net
-	after $(ls -1 | grep -v local)
+	after $(ls -1 | grep -v local | xargs)
 }
 
 start() {
 	ebegin "Starting local rc services"
-	local svc= enabled= retval=0
-	for svc in $(rcorder /usr/local/etc/rc.d/* 2>/dev/null); do
+	local svc= enabled= retval=0 service=
+	for svc in $(rcorder /etc/rc.d/* /usr/local/etc/rc.d/* 2>/dev/null); do
 		[ -x "$svc" ] || continue
+		service=$(basename ${svc})
+
+		# If we have an init script for this service, continue
+		[ -x /etc/init.d/${svc} ]] && continue
+		[ -x /usr/local/etc/init.d/${svc} ] && continue
+
+		# Ensure that the users rc.conf will start us - ignore the defaults
 		eval enabled=\$$(basename ${svc})_enabled
 		case "$enabled" in
 			[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1) ;;
 			*) continue ;;
 		esac
+
+		# Good to go!
 		"$svc" start
 		: $((retval += $?))
 	done
