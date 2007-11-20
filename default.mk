@@ -11,6 +11,11 @@ _OS_SH = u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${
 _OS != $(_OS_SH)
 OS ?= $(_OS)$(shell $(_OS_SH))
 
+# We store the contents of the directory for ease of use in Makefiles
+_CONTENTS_SH = ls -1 | grep -v Makefile | xargs
+_CONTENTS != $(_CONTENTS_SH)
+CONTENTS = $(_CONTENTS)$(shell $(_CONTENTS_SH))
+
 # Recursive rules
 # Adapted from FreeBSDs bsd.subdir.mk
 ECHODIR ?= true

@@ -1,5 +1,5 @@
 DIR = $(RC_LIB)/sh
-BIN = init.sh
+BIN = $(CONTENTS) 
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

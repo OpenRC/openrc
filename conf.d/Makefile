@@ -1,6 +1,5 @@
 DIR  = /etc/conf.d
-CONF = bootmisc checkfs clock env_whitelist hostname local.start local.stop \
-  	   net rc urandom 
+CONF = $(CONTENTS)
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

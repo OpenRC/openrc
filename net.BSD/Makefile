@@ -1,5 +1,5 @@
-DIR =  $(RC_LIB)/net 
-CONF = ifconfig.sh iwconfig.sh
+DIR  = $(RC_LIB)/net 
+CONF = $(CONTENTS)
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

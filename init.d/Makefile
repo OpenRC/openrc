@@ -1,6 +1,5 @@
-DIR	=	/etc/init.d
-BIN =	bootmisc checkfs checkroot hostname local localmount \
-		netmount rmnologin urandom halt.sh
+DIR	= /etc/init.d
+BIN = $(CONTENTS)
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk

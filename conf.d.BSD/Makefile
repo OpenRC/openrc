@@ -1,5 +1,5 @@
 DIR = /etc/conf.d
-CONF = localmount moused net.example powerd syscons
+CONF = $(CONTENTS) 
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk
