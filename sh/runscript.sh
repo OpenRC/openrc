@@ -95,10 +95,16 @@ if [ -n "${command}" ]; then
 	if ! type start >/dev/null 2>&1; then
 		start() {
 			ebegin "Starting ${name:-${SVCNAME}}"
+			case "${command_background}" in
+				[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1)
+					start_stop_daemon_args="${start_stop_daemon_args} --background --pidfile"
+					;;
+			esac
 			start-stop-daemon --start \
 				--exec ${command} \
 				${procname:+--name} ${procname} \
 				${pidfile:+--pidfile} ${pidfile} \
+				${start_stop_daemon_args} \
 				-- ${command_args}
 			eend $? "Failed to start ${SVCNAME}"
 		}
