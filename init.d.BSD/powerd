@@ -30,7 +30,6 @@ pidfile=/var/run/powerd.pid
 name="Power Control Daemon"
 
 depend() {
-	provide logger
 	need localmount
 	after bootmisc
 }
