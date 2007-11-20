@@ -30,28 +30,28 @@
 . "${RC_LIBDIR}"/sh/rc-functions.sh
 
 # Support LiveCD foo
-if [ -r /sbin/livecd-functions.sh ] ; then
+if [ -r /sbin/livecd-functions.sh ]; then
 	. /sbin/livecd-functions.sh
 	livecd_read_commandline
 fi
 
-if [ -z "$1" -o -z "$2" ] ; then
+if [ -z "$1" -o -z "$2" ]; then
 	eerror "${SVCNAME}: not enough arguments"
 	exit 1
 fi
 
 # Descript the init script to the user
 describe() {
-	if [ -n "${description}" ] ; then
+	if [ -n "${description}" ]; then
 		einfo "${description}"
 	else
 		ewarn "No description for ${SVCNAME}"
 	fi
 
 	local svc= desc=
-	for svc in ${opts} ; do
+	for svc in ${opts}; do
 		eval desc=\$description_${svc}
-		if [ -n "${desc}" ] ; then
+		if [ -n "${desc}" ]; then
 			einfo "${HILITE}${svc}${NORMAL}: ${desc}"
 		else
 			ewarn "${HILITE}${svc}${NORMAL}: no description"
@@ -63,19 +63,19 @@ describe() {
 
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 rc_c=${SVCNAME%%.*}
-if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ] ; then
-	if [ -e "/etc/conf.d/${rc_c}.${RC_SOFTLEVEL}" ] ; then
+if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ]; then
+	if [ -e "/etc/conf.d/${rc_c}.${RC_SOFTLEVEL}" ]; then
 		. "/etc/conf.d/${rc_c}.${RC_SOFTLEVEL}"
-	elif [ -e "/etc/conf.d/${rc_c}" ] ; then
+	elif [ -e "/etc/conf.d/${rc_c}" ]; then
 		. "/etc/conf.d/${rc_c}"
 	fi
 fi
 unset rc_c
 
 # Overlay with our specific config
-if [ -e "/etc/conf.d/${SVCNAME}.${RC_SOFTLEVEL}" ] ; then
+if [ -e "/etc/conf.d/${SVCNAME}.${RC_SOFTLEVEL}" ]; then
 	. "/etc/conf.d/${SVCNAME}.${RC_SOFTLEVEL}"
-elif [ -e "/etc/conf.d/${SVCNAME}" ] ; then
+elif [ -e "/etc/conf.d/${SVCNAME}" ]; then
 	. "/etc/conf.d/${SVCNAME}"
 fi
 
@@ -90,17 +90,53 @@ fi
 
 shift
 
-while [ -n "$1" ] ; do
+# If we have a default command then supply a default start function
+if [ -n "${command}" ]; then
+	if ! type start >/dev/null 2>&1; then
+		start() {
+			ebegin "Starting ${name:-${SVCNAME}}"
+			start-stop-daemon --start \
+				--exec ${command} \
+				${procname:+--name} ${procname} \
+				${pidfile:+--pidfile} ${pidfile} \
+				-- ${command_args}
+			eend $? "Failed to start ${SVCNAME}"
+		}
+	fi
+fi
+
+# If we have a default command, procname or pidfile then supply a default stop 
+# function
+if [ -n "${command}" -o -n "${procname}" -o -n "${pidfile}" ]; then
+	if ! type stop >/dev/null 2>&1; then
+		stop() {
+			ebegin "Stopping ${name:-${SVCNAME}}"
+			start-stop-daemon --stop \
+				${command:+--exec} ${command} \
+				${procname:+--name} ${procname} \
+				${pidfile:+--pidfile} ${pidfile}
+			eend $? "Failed to start ${SVCNAME}"
+		}
+	fi
+fi
+
+while [ -n "$1" ]; do
 	# See if we have the required function and run it
-	for rc_x in describe start stop ${opts} ; do
-		if [ "${rc_x}" = "$1" ] ; then
-			if type "$1" >/dev/null 2>/dev/null ; then
+	for rc_x in describe start stop ${opts}; do
+		if [ "${rc_x}" = "$1" ]; then
+			if type "$1" >/dev/null 2>&1; then
 				unset rc_x
+				if type "$1"_pre >/dev/null 2>&1; then
+					"$1"_pre || exit $?
+				fi
 				"$1" || exit $?
+				if type "$1"_post >/dev/null 2>&1; then
+					"$1"_post || exit $?
+				fi
 				shift
 				continue 2
 			else
-				if [ "${rc_x}" = "start" -o "${rc_x}" = "stop" ] ; then
+				if [ "${rc_x}" = "start" -o "${rc_x}" = "stop" ]; then
 					exit 0
 				else
 					eerror "${SVCNAME}: function \`$1' defined but does not exist"
