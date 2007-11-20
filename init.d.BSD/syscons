@@ -30,13 +30,14 @@ depend() {
 start() {
 	if [ -n "${MODE}" ]; then
 		ebegin "Setting mode to ${MODE}"
-		vidcontrol "${MODE}"
+		local tty=
+		for tty in /dev/tty*; do
+			[ -e "${tty}" ] || continue
+			vidcontrol "${MODE}" <"${tty}" >"${tty}" 2>&1
+		done
 		eend $?
 	fi
 	
-	# XXX: This should handle serial consoles.
-	
-	# Set the keymap.
 	if [ -n "${KEYMAP}" ]; then
 		ebegin "Setting keymap to ${KEYMAP}"
 		kbdcontrol -l ${KEYMAP} </dev/console
