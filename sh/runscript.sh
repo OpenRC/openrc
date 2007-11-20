@@ -49,7 +49,7 @@ describe() {
 	fi
 
 	local svc= desc=
-	for svc in ${opts}; do
+	for svc in ${extra_commands:-${opts}}; do
 		eval desc=\$description_${svc}
 		if [ -n "${desc}" ]; then
 			einfo "${HILITE}${svc}${NORMAL}: ${desc}"
@@ -128,7 +128,7 @@ fi
 
 while [ -n "$1" ]; do
 	# See if we have the required function and run it
-	for rc_x in describe start stop ${opts}; do
+	for rc_x in describe start stop ${extra_commands:-${opts}}; do
 		if [ "${rc_x}" = "$1" ]; then
 			if type "$1" >/dev/null 2>&1; then
 				unset rc_x

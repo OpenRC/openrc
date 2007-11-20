@@ -300,12 +300,12 @@ bool rc_service_exists (const char *service)
 librc_hidden_def(rc_service_exists)
 
 #define OPTSTR ". '%s'; echo \"${opts}\""
-char **rc_service_options (const char *service)
+char **rc_service_extra_commands (const char *service)
 {
 	char *svc;
 	char *cmd = NULL;
 	char *buffer = NULL;
-	char **opts = NULL;
+	char **commands = NULL;
 	char *token;
 	char *p = buffer;
 	FILE *fp;
@@ -324,15 +324,15 @@ char **rc_service_options (const char *service)
 			if (buffer[strlen (buffer) - 1] == '\n')
 				buffer[strlen (buffer) - 1] = '\0';
 			while ((token = strsep (&p, " ")))
-				rc_strlist_addsort (&opts, token);
+				rc_strlist_addsort (&commands, token);
 		}
 		pclose (fp);
 		free (buffer);
 	}
 	free (cmd);
-	return (opts);
+	return (commands);
 }
-librc_hidden_def(rc_service_options)
+librc_hidden_def(rc_service_extra_commands)
 
 #define DESCSTR ". '%s'; echo \"${description%s%s}\""
 char *rc_service_description (const char *service, const char *option)

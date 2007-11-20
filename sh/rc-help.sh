@@ -54,12 +54,12 @@ else
 	NL=
 fi
 
-default_opts="describe help start status stop restart zap"
-extra_opts="$(. "${myscript}" 2>/dev/null ; echo "${opts}")"
+default_commands="describe help start status stop restart zap"
+extra_commands="$(. "${myscript}" 2>/dev/null ; echo "${extra_commands:-${opts}}")"
 
 printf "Usage: ${CYAN}${SERVICE}${OFF} [ ${GREEN}flags${OFF} ] < ${GREEN}options${OFF} >
 
-${CYAN}Normal Options:${OFF}"
+${CYAN}Normal Commands:${OFF}"
 
 if [ "${BE_VERBOSE}" = "yes" ] ; then
 printf "
@@ -115,16 +115,16 @@ printf "
 
 else
 
-printf "    ${GREEN}${default_opts}${OFF}
+printf "    ${GREEN}${default_commands}${OFF}
       Default init.d options.
 "
 
 fi
 
-if [ -n "${extra_opts}" ] ; then
+if [ -n "${extra_commands}" ] ; then
 printf "
 ${CYAN}Additional Options:${OFF}${NL}
-    ${GREEN}${extra_opts}${OFF}
+    ${GREEN}${extra_commands}${OFF}
       Extra options supported by this init.d script.
 "
 fi

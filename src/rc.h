@@ -143,10 +143,10 @@ bool rc_service_in_runlevel (const char *service, const char *runlevel);
  * @return true if service state change was successful, otherwise false */
 bool rc_service_mark (const char *service, rc_service_state_t state);
 
-/*! Lists the extra options a service has
- * @param service to load the options from
- * @return NULL terminated string list of options */
-char **rc_service_options (const char *service);
+/*! Lists the extra commands a service has
+ * @param service to load the commands from
+ * @return NULL terminated string list of commands */
+char **rc_service_extra_commands (const char *service);
 
 /*! Check if the service is allowed to be hot/cold plugged
  * @param service to check
