@@ -1,0 +1,7 @@
+# Mode allowed: maximum, minimum, adaptive
+# Default unless specified is adaptive
+AC_MODE="maximum"
+#BATTERY_MODE="minimum"
+
+# Addiditonal arguments for powerd
+POWERD_OPTS=""
