@@ -802,7 +802,7 @@ int main (int argc, char **argv)
 		eerrorx ("arguments required");
 
 	if (argc > 1 && (strcmp (argv[1], "--version") == 0)) {
-		printf ("%s (Open RC) version " VERSION "\n", applet);
+		printf ("%s (OpenRC) version " VERSION "\n", applet);
 		exit (EXIT_SUCCESS);
 	}
 
