@@ -93,11 +93,11 @@ start() {
 		fi 
 	done
 
-	# Setup login records
+	ebegin "Creating user login records"
 	printf "" >/var/run/utmp
 	[ -e /var/log/wtmp ] || printf "" >/var/log/wtmp
-	chgrp utmp /var/run/utmp /var/log/wtmp
-	chmod 0664 /var/run/utmp /var/log/wtmp
+	chmod 0644 /var/run/utmp /var/log/wtmp
+	eend 0
 
 	ebegin "Cleaning /var/run"
 	for x in $(find /var/run ! -type d ! -name utmp ! -name innd.pid \
@@ -112,13 +112,6 @@ start() {
 		esac
 		rm -f "${x}"
 	done
-
-	# Reset pam_console permissions if we are actually using it
-	if [ -x /sbin/pam_console_apply ] && ! [ -c /dev/.devfsd ]; then
-		if grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep -q 'pam_console.so'; then
-			pam_console_apply -r
-		fi
-	fi
 	eend 0
 
 	# Clean up /tmp directories
@@ -147,18 +140,11 @@ start() {
 }
 
 stop() {
-	# Reset pam_console permissions if we are actually using it
-	if [ -x /sbin/pam_console_apply ] && ! [ -c /dev/.devfsd ]; then
-		if grep -v -e '^[[:space:]]*#' /etc/pam.d/* | grep -q 'pam_console.so' ;then
-			/sbin/pam_console_apply -r
-		fi
-	fi
-
 	# Write a halt record if we're shutting down
 	case "${RC_SOFTLEVEL}" in
 		reboot|shutdown) [ "${RC_UNAME}" = "Linux" ] && halt -w;;
 	esac
-	
+
 	return 0
 }
 
