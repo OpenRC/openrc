@@ -115,7 +115,7 @@ if [ -n "${command}" -o -n "${procname}" -o -n "${pidfile}" ]; then
 				${command:+--exec} ${command} \
 				${procname:+--name} ${procname} \
 				${pidfile:+--pidfile} ${pidfile}
-			eend $? "Failed to start ${SVCNAME}"
+			eend $? "Failed to stop ${SVCNAME}"
 		}
 	fi
 fi
