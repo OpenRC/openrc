@@ -27,7 +27,7 @@
 command=/usr/sbin/syslogd
 command_args=${SYSLOGD_ARGS}
 pidfile=/var/run/syslog.pid
-name="System Logger"
+name="System Logger Daemon"
 
 depend() {
 	provide logger

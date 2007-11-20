@@ -1,5 +1,5 @@
 BOOTLEVEL = net.lo0 syscons
-DEFAULT = local.rc syslogd
+DEFAULT = local.rc powerd syslogd
 
 TOPDIR = ..
 include $(TOPDIR)/runlevels.mk

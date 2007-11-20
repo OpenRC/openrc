@@ -1,5 +1,5 @@
 DIR = /etc/init.d
-BIN = clock moused syscons sysctl syslogd
+BIN = clock moused powerd syscons sysctl syslogd
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk
