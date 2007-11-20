@@ -1,0 +1,169 @@
+#!/sbin/runscript
+# Copyright 2007 Roy Marples
+# All rights reserved
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
+# This is based on /etc/rc.firewall and /etc/rc.firewall6 from FreeBSD
+
+IP_IN=${IP_IN-any}
+PORTS_IN=${PORTS_IN-auth ssh}
+PORTS_NOLOG=${PORTS_NOLOG-135-139,445 1026,1027 1433,1434}
+
+opts="panic showstatus"
+
+depend() {
+	before net
+	provide firewall
+}
+
+ipfw() {
+	/sbin/ipfw -f -q "$@"
+}
+
+init() {
+	# Load the kernel module
+	if ! sysctl net.inet.ip.fw.enable=1 >/dev/null 2>/dev/null; then
+		if ! kldload ipfw ; then
+			eend 1 "Unable to load firewall module"
+			return 1
+		fi
+	fi
+
+	# Now all rules and give a good base
+	ipfw flush
+
+	ipfw add pass all from any to any via lo0
+	ipfw add deny all from any to 127.0.0.0/8
+	ipfw add deny ip from 127.0.0.0/8 to any
+
+	ipfw add pass ip6 from any to any via lo0
+	ipfw add deny ip6 from any to ::1
+	ipfw add deny ip6 from ::1 to any
+	
+	ipfw add pass ip6 from :: to ff02::/16 proto ipv6-icmp
+	ipfw add pass ip6 from fe80::/10 to fe80::/10 proto ipv6-icmp
+	ipfw add pass ip6 from fe80::/10 to ff02::/16 proto ipv6-icmp
+}
+
+start() {
+	local i= p= log=
+	ebegin "Starting firewall rules"
+	if ! init ; then
+		eend 1 "Failed to flush firewall ruleset"
+		return 1
+	fi
+
+	# Use a statefull firewall
+	ipfw add check-state
+	ipfw add pass tcp from me to any established
+
+	# Allow any connection out, adding state for each.
+	ipfw add pass tcp  from me  to any setup keep-state
+	ipfw add pass udp  from me  to any       keep-state
+	ipfw add pass icmp from me  to any       keep-state
+
+	ipfw add pass tcp  from me6 to any setup keep-state
+	ipfw add pass udp  from me6 to any       keep-state
+	ipfw add pass icmp from me6 to any       keep-state
+
+	# Allow DHCP.
+	ipfw add pass udp  from 0.0.0.0 68 to 255.255.255.255 67 out
+	ipfw add pass udp  from any 67     to me 68 in
+	ipfw add pass udp  from any 67     to 255.255.255.255 68 in
+	# Some servers will ping the IP while trying to decide if it's 
+	# still in use.
+	ipfw add pass icmp from any to any icmptype 8
+
+	# Allow "mandatory" ICMP in.
+	ipfw add pass icmp from any to any icmptype 3,4,11
+
+	# Allow ICMPv6 destination unreach
+	ipfw add pass ip6 from any to any icmp6types 1 proto ipv6-icmp
+
+	# Allow NS/NA/toobig (don't filter it out)
+	ipfw add pass ip6 from any to any icmp6types 2,135,136 proto ipv6-icmp
+	
+	# Add permits for this workstations published services below
+	# Only IPs and nets in firewall_allowservices is allowed in.
+	for i in ${IP_IN}; do
+		for p in ${PORTS_IN}; do
+	    	ipfw add pass tcp from ${i} to me ${p}
+		done
+	done
+
+	# Allow all connections from trusted IPs.
+	# Playing with the content of firewall_trusted could seriously
+	# degrade the level of protection provided by the firewall.
+	for i in ${IP_TRUST}; do
+		ipfw add pass ip from ${i} to me
+	done
+	
+	ipfw add 65000 count ip from any to any
+
+	# Drop packets to ports where we don't want logging
+	for p in ${PORTS_NOLOG}; do
+		ipfw add deny { tcp or udp } from any to any ${p} in
+	done
+
+	# Broadcasts and muticasts
+	ipfw add deny ip from any to 255.255.255.255
+	ipfw add deny ip from any to 224.0.0.0/24 
+
+	# Noise from routers
+	ipfw add deny udp from any to any 520 in
+
+	# Noise from webbrowsing.
+	# The statefull filter is a bit agressive, and will cause some
+	# connection teardowns to be logged.
+	ipfw add deny tcp from any 80,443 to any 1024-65535 in
+
+	# Deny and (if wanted) log the rest unconditionally.
+	if [ "${LOG_DENY}" = "yes" ]; then
+		log="log"
+		sysctl net.inet.ip.fw.verbose=1 >/dev/null
+	fi
+	ipfw add deny ${log} ip from any to any
+
+	eend 0
+}
+
+stop() {
+	ebegin "Stopping firewall rules"
+	# We don't unload the kernel module as that action
+	# can cause memory leaks as of FreeBSD 6.x
+	sysctl net.inet.ip.fw.enable=0 >/dev/null
+	eend $?
+}
+
+panic() {
+	ebegin "Stopping firewall rules - hard"
+	if ! init ; then
+		eend 1 "Failed to flush firewall ruleset"
+		return 1
+	fi
+	eend 0
+}
+
+showstatus() {
+	ipfw show
+}
