@@ -1,7 +1,7 @@
 # Common makefile settings
 # We shouldn't use PREFIX as we need to install into /
 
-DESTDIR = /
+DESTDIR =
 LIB = lib
 RC_LIB = /$(LIB)/rc
 
