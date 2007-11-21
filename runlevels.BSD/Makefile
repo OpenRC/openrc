@@ -1,4 +1,4 @@
-BOOTLEVEL = net.lo0 syscons
+BOOT = net.lo0 syscons
 DEFAULT = local.rc powerd syslogd
 
 TOPDIR = ..
