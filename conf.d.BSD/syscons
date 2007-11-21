@@ -2,7 +2,9 @@
 
 # Set the video mode - you should check the vidcontrol man page for valid modes
 # NOTE:- This will blank the screen after this command is run
-#MODE="VGA_90x60"
+# NOTE:- You can get more modes if you load the vesa kernel module, but this
+# may require the SC_PIXEL_MODE kernel option
+#MODE="VGA_80x30"
 
 # Set the keymap to "uk.iso".
 #KEYMAP="uk.iso"
