@@ -25,7 +25,7 @@
 
 dhcpcd_depend() {
 	after interface
-	program start /sbin/dhcpcd
+	program start /sbin/dhcpcd /usr/local/sbin/dhcpcd
 	provide dhcp
 
 	# We prefer dhcpcd over the others
@@ -60,7 +60,7 @@ dhcpcd_start() {
 	# Bring up DHCP for this interface
 	ebegin "Running dhcpcd"
 
-	eval /sbin/dhcpcd "${args}" "${IFACE}"
+	eval dhcpcd "${args}" "${IFACE}"
 	eend $? || return 1
 
 	_show_address
@@ -68,23 +68,16 @@ dhcpcd_start() {
 }
 
 dhcpcd_stop() {
-	local pidfile="/var/run/dhcpcd-${IFACE}.pid" opts=
+	local pidfile="/var/run/dhcpcd-${IFACE}.pid" opts= sig=SIGTERM
 	[ ! -f "${pidfile}" ] && return 0
 
-	# Get our options
-	if [ -x /sbin/dhcpcd ] ; then
-		eval opts=\$dhcp_${IFVAR}
-		[ -z "${opts}" ] && opts=${dhcp}
-	fi
-
 	ebegin "Stopping dhcpcd on ${IFACE}"
+	eval opts=\$dhcp_${IFVAR}
+	[ -z "${opts}" ] && opts=${dhcp}
 	case " ${opts} " in
-		*" release "*) dhcpcd -k "${IFACE}" ;;
-		*)
-			start-stop-daemon --stop --quiet \
-				--exec /sbin/dhcpcd --pidfile "${pidfile}"
-			;;
+		*" release "*) sig=SIGHUP;;
 	esac
+	start-stop-daemon --stop --quiet --signal "${sig}" --pidfile "${pidfile}"
 	eend $?
 }
 
