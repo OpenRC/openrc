@@ -70,6 +70,7 @@ wpa_supplicant_pre_start() {
 		wpas=/sbin/wpa_supplicant
 		wpac=/bin/wpa_cli
 	fi
+	[ "${RC_UNAME}" = "Linux" ] || unset wpac
 
 	eval opts=\$wpa_supplicant_${IFVAR}
 	case " ${opts} " in
@@ -91,7 +92,6 @@ wpa_supplicant_pre_start() {
 
 	save_options "SSID" ""
 	ebegin "Starting wpa_supplicant on" "${IFVAR}"
-
 
 	if [ -x /sbin/iwconfig ] ; then
 		local x=
@@ -139,11 +139,21 @@ wpa_supplicant_pre_start() {
 
 	actfile="/etc/wpa_supplicant/wpa_cli.sh"
 
+	if [ -n "${wpac}" ]; then
+		opts="${opts} -W"
+	else
+		sleep 2 # FBSD 7.0 beta2 bug
+		mark_service_inactive "${SVCNAME}"
+	fi
 	start-stop-daemon --start --exec "${wpas}" \
 		--pidfile "/var/run/wpa_supplicant-${IFACE}.pid" \
-		-- ${opts} -W -B -i "${IFACE}" \
+		-- ${opts} -B -i "${IFACE}" \
 		-P "/var/run/wpa_supplicant-${IFACE}.pid"
 	eend $? || return 1
+	if [ -z "${wpac}" ]; then
+		ebegin "Backgrounding ..."
+		exit 1 
+	fi
 
 	# Starting wpa_supplication-0.4.0, we can get wpa_cli to
 	# start/stop our scripts from wpa_supplicant messages
