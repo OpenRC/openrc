@@ -38,10 +38,6 @@ depend() {
 }
 
 start() {
-	if [ "${TIMEZONE-Factory}" = "Factory" ] ; then
-		ewarn "Your TIMEZONE in /etc/conf.d/clock is still set to Factory!"
-	fi
-
 	local TBLURB="Local Time"
 	[ "${CLOCK}" = "UTC" ] && TBLURB="UTC"
 	ebegin "Starting the System Clock Adjuster [${TBLURB}]"

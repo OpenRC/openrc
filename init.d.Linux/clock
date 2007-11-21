@@ -70,13 +70,6 @@ setupopts() {
 	[ -n "$(unset CLOCK; . /etc/rc.conf; echo "${CLOCK}")" ] ; then
 		ewarn "CLOCK should not be set in /etc/rc.conf but in /etc/conf.d/clock"
 	fi
-
-	# Make sure people set their timezone ... we do it here
-	# even though we don't actually use the variable so that
-	# people see the warning on boot.
-	if [ -z "${CDBOOT}" -a "${TIMEZONE-Factory}" = "Factory" ] ; then
-		ewarn "Your TIMEZONE in /etc/conf.d/clock is still set to Factory!"
-	fi
 }
 
 start() {
