@@ -29,11 +29,10 @@ depend() {
 
 start() {
 	if [ -n "${MODE}" ]; then
-		ebegin "Setting mode to ${MODE}"
-		local tty=
-		for tty in /dev/tty*; do
-			[ -e "${tty}" ] || continue
-			vidcontrol "${MODE}" <"${tty}" >"${tty}" 2>&1
+		ebegin "Setting mode to ${MODE} for all screens"
+		for v in /dev/ttyv*; do
+			[ -c "${v}" ] || continue
+			vidcontrol "${MODE}" <"${v}"
 		done
 		eend $?
 	fi
@@ -96,7 +95,8 @@ start() {
 	if [ -n "${KBDFLAGS}" ]; then
 		ebegin "Setting keyboard flags for all screens"
 		for v in /dev/ttyv*; do
-			kbdcontrol ${KBDFLAGS} <${v} &>${v}
+			[ -c "${v}" ] || continue
+			kbdcontrol ${KBDFLAGS} <"${v}"
 		done
 		eend $?
 	fi

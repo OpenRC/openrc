@@ -31,6 +31,7 @@ name="Power Control Daemon"
 
 depend() {
 	need localmount
+	use logger
 	after bootmisc
 }
 

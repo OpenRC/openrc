@@ -67,7 +67,7 @@ start() {
 	local ttyv=
 	for ttyv in /dev/ttyv*; do
 		vidcontrol < "${ttyv}" ${MOUSE_CHAR_START} -m on
-		: $((${retval} += $?))
+		: $((retval+= $?))
 	done
 	
 	eend ${retval} "Failed to start moused"
