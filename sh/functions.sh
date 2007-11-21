@@ -133,9 +133,9 @@ fi
 # This should solve both /sbin and /usr/sbin not present when
 # doing 'su -c foo', or for something like:  PATH= rcscript start
 case "${PATH}" in
-	/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin) ;;
-	/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:*) ;;
-	*) export PATH="/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:${PATH}" ;;
+	/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin) ;;
+	/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:*) ;;
+	*) export PATH="/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:${PATH}" ;;
 esac
 
 for arg in "$@" ; do
