@@ -59,7 +59,7 @@ describe() {
 	done
 }
 
-[ "${RC_DEBUG}" = "yes" ] && set -x
+yesno ${RC_DEBUG} && set -x
 
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 rc_c=${SVCNAME%%.*}

@@ -118,7 +118,7 @@ _wait_for_carrier() {
 	# Incase users don't want this nice feature ...
 	[ ${timeout} -le 0 ] && return 0
 
-	[ "${RC_PARALLEL}" = "yes" ] && efunc=einfo
+	yesno ${RC_PARALLEL} && efunc=einfo
 	${efunc} "Waiting for carrier (${timeout} seconds) "
 	while [ ${timeout} -gt 0 ] ; do
 		sleep 1

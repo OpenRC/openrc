@@ -24,7 +24,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-if [ "${RC_NOCOLOR}" = "yes" ] ; then
+if yesno ${RC_NOCOLOR}; then
 	unset BLUE GREEN OFF CYAN
 else
 	BLUE="\033[34;01m"
@@ -61,7 +61,7 @@ printf "Usage: ${CYAN}${SERVICE}${OFF} [ ${GREEN}flags${OFF} ] < ${GREEN}options
 
 ${CYAN}Normal Commands:${OFF}"
 
-if [ "${BE_VERBOSE}" = "yes" ] ; then
+if yesno ${BE_VERBOSE}; then
 printf "
     ${GREEN}describe${OFF}
       Describe what the service and any extra options do.
@@ -142,7 +142,7 @@ ${CYAN}Flags:${OFF}${NL}
     ${GREEN}--nocolor${OFF}   Suppress the use of colors
 "
 
-if [ "${BE_VERBOSE}" = "yes" ] ; then
+if yesno ${BE_VERBOSE}; then
 printf "
 ${CYAN}Dependencies:${OFF}
 
@@ -245,7 +245,7 @@ printf "
 ${CYAN}Configuration files:${OFF}
 "
 
-if [ "${BE_VERBOSE}" = "yes" ] ; then
+if yesno ${BE_VERBOSE}; then
 printf "
     There are two files which will be sourced for possible configuration by
     the rc-scripts.  They are (sourced from left to right, top to bottom):
@@ -259,7 +259,7 @@ printf "     /etc/conf.d/rc
      /etc/rc.conf
      \${RC_SOFTLEVEL} denotes the name of the runlevel"
 
-if [ "${BE_VERBOSE}" = "yes" ] ; then
+if yesno ${BE_VERBOSE}; then
 printf "
     You can add extra dependencies to ${SERVICE} by adding some variables to
 	/etc/conf.d/${SERVICE}
@@ -273,7 +273,7 @@ printf "
 "
 fi
 
-if [ "${BE_VERBOSE}" = "yes" ] ; then
+if yesno ${BE_VERBOSE}; then
 printf "\n
 ${CYAN}Management:${OFF}
 

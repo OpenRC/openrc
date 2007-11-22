@@ -63,7 +63,7 @@ check_statedir() {
 			#splash "critical" &
 			echo
 			eerror "To function properly, \"$1\" needs to exist."
-			if [ "${RC_FORCE_AUTO}" = "yes" ] ; then
+			if yesno ${RC_FORCE_AUTO}; then
 				eerror "Attempting to create \"$1\" for you ..."
 				mount -o remount,rw /
 				mkdir -p "$1"
