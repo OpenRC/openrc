@@ -45,7 +45,7 @@ pppd_pre_start() {
 	# Set our base metric
 	metric=4000
 
-	if ${IN_BACKGROUND} ; then
+	if yesno ${IN_BACKGROUND}; then
 		local config=
 		eval config=\$config_${IFVAR}
 		# If no config for ppp then don't default to DHCP 
@@ -245,7 +245,7 @@ pppd_start() {
 }
 
 pppd_stop() {
-	${IN_BACKGROUND} && return 0
+	yesno ${IN_BACKGROUND} && return 0
 	local pidfile="/var/run/ppp-${IFACE}.pid"
 
 	[ ! -s "${pidfile}" ] && return 0

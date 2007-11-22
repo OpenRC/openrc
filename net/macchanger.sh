@@ -31,7 +31,7 @@ _config_vars="$_config_vars mac"
 
 macchanger_pre_start() {
 	# We don't change MAC addresses from background
-	${IN_BACKGROUND} && return 0
+	yesno ${IN_BACKGROUND} && return 0
 
 	local mac= opts=
 

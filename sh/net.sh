@@ -28,7 +28,7 @@ MODULESDIR="${RC_LIBDIR}/net"
 MODULESLIST="${RC_SVCDIR}/nettree"
 _config_vars="config routes"
 
-[ -z "${IN_BACKGROUND}" ] && IN_BACKGROUND=false
+[ -z "${IN_BACKGROUND}" ] && IN_BACKGROUND="NO"
 
 description="Configures network interfaces."
 
@@ -644,7 +644,7 @@ stop() {
 		fi
 	done
 
-	[ "${IN_BACKGROUND}" != "true" ] && \
+	! yesno ${IN_BACKGROUND} && \
 	[ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ] && \
 	_down 2>/dev/null
 

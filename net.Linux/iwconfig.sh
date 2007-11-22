@@ -685,7 +685,7 @@ iwconfig_configure() {
 iwconfig_pre_start() {
 	# We don't configure wireless if we're being called from
 	# the background
-	${IN_BACKGROUND} && return 0
+	yesno ${IN_BACKGROUND} && return 0
 
 	save_options "SSID" ""
 	_exists || return 0
@@ -750,7 +750,7 @@ iwconfig_pre_start() {
 }
 
 iwconfig_post_stop() {
-	${IN_BACKGROUND} && return 0
+	yesno ${IN_BACKGROUND} && return 0
 	_exists || return 0
 	iwconfig_defaults
 	iwconfig "${IFACE}" txpower off 2>/dev/null

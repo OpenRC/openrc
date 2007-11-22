@@ -36,7 +36,7 @@ ifplugd_pre_start() {
 	local pidfile="/var/run/ifplugd.${IFACE}.pid" timeout= args=
 
 	# We don't start netplug if we're being called from the background
-	${IN_BACKGROUND} && return 0
+	yesno ${IN_BACKGROUND} && return 0
 
 	_exists || return 0
 
@@ -99,7 +99,7 @@ ifplugd_pre_start() {
 }
 
 ifplugd_stop() {
-	${IN_BACKGROUND} && return 0
+	yesno ${IN_BACKGROUND} && return 0
 
 	local pidfile="/var/run/ifplugd.${IFACE}.pid"
 	[ ! -e "${pidfile}" ] && return 0
