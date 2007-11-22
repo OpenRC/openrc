@@ -978,7 +978,7 @@ int main (int argc, char **argv)
 				run_script (INITEARLYSH);
 
 			uname (&uts);
-			printf ("   %sOpenRC %s" VERSION "%s is starting up\n",
+			printf ("\n   %sOpenRC %s" VERSION "%s is starting up\n",
 					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_BRACKET),
 					ecolor (ECOLOR_NORMAL));
 
@@ -1186,7 +1186,8 @@ int main (int argc, char **argv)
 						i = (strlen ("moused.") + strlen (d->d_name) + 1);
 						tmp = xmalloc (sizeof (char) * i);
 						snprintf (tmp, i, "moused.%s", d->d_name);
-						if (rc_service_exists (tmp) && rc_service_plugable (tmp))
+						if (rc_service_exists (tmp) &&
+							rc_service_plugable (tmp))
 							rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 						CHAR_FREE (tmp);
 					}
