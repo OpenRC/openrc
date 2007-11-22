@@ -190,4 +190,36 @@ _has_carrier() {
 	[ -z "${s}" -o "${s}" = "active" -o "${s}" = "associated" ] 
 }
 
+ifconfig_pre_start() {
+	local config="$(_get_array "ifconfig_${IFVAR}")" conf= arg= args=
+	local IFS="$__IFS"
+
+	[ -z "${config}" ] && return 0
+
+	veinfo "Running ifconfig commands"
+	eindent
+	for conf in ${config}; do
+		unset IFS
+		args=
+		for arg in ${conf}; do
+			case ${arg} in
+				[Dd][Hh][Cc][Pp]) ;;
+				[Nn][Oo][Aa][Uu][Tt][Oo]) ;;
+				[Nn][Oo][Ss][Yy][Nn][Cc][Dd][Hh][Cc][Pp]) ;;
+				[Ss][Yy][Nn][Cc][Dd][Hh][Cc][Pp]) ;;
+				[Ww][Pp][Aa]) ;;
+				*) args="${args} ${arg}";;
+			esac
+		done
+
+		[ -z "${args}" ] && continue
+		vebegin "ifconfig${args}"
+		eval ifconfig "${IFACE}" "${args}"
+		veend $?
+	done
+	eoutdent
+
+	return 0
+}
+
 # vim: set ts=4 :
