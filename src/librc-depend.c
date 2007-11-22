@@ -89,6 +89,34 @@ void rc_deptree_free (rc_depinfo_t *deptree)
 }
 librc_hidden_def(rc_deptree_free)
 
+static rc_depinfo_t *get_depinfo (rc_depinfo_t *deptree, const char *service)
+{
+	rc_depinfo_t *di;
+
+	if (! deptree || ! service)
+		return (NULL);
+
+	for (di = deptree; di; di = di->next)
+		if (strcmp (di->service, service) == 0)
+			return (di);
+
+	return (NULL);
+}
+
+static rc_deptype_t *get_deptype (rc_depinfo_t *depinfo, const char *type)
+{
+	rc_deptype_t *dt;
+
+	if (! depinfo || !type)
+		return (NULL);
+
+	for (dt = depinfo->depends; dt; dt = dt->next)
+		if (strcmp (dt->type, type) == 0)
+			return (dt);
+
+	return (NULL);
+}
+
 rc_depinfo_t *rc_deptree_load (void)
 {
 	FILE *fp;
@@ -174,34 +202,6 @@ rc_depinfo_t *rc_deptree_load (void)
 	return (deptree);
 }
 librc_hidden_def(rc_deptree_load)
-
-static rc_depinfo_t *get_depinfo (rc_depinfo_t *deptree, const char *service)
-{
-	rc_depinfo_t *di;
-
-	if (! deptree || ! service)
-		return (NULL);
-
-	for (di = deptree; di; di = di->next)
-		if (strcmp (di->service, service) == 0)
-			return (di);
-
-	return (NULL);
-}
-
-static rc_deptype_t *get_deptype (rc_depinfo_t *depinfo, const char *type)
-{
-	rc_deptype_t *dt;
-
-	if (! depinfo || !type)
-		return (NULL);
-
-	for (dt = depinfo->depends; dt; dt = dt->next)
-		if (strcmp (dt->type, type) == 0)
-			return (dt);
-
-	return (NULL);
-}
 
 static bool valid_service (const char *runlevel, const char *service)
 {
@@ -797,8 +797,22 @@ bool rc_deptree_update (void)
 				continue;
 
 			rc_strlist_addsort (&deptype->services, depend);
-		}
 
+			/* We need to allow `after *; before local;` to work.
+			 * Conversely, we need to allow 'before *; after modules' also */
+			/* If we're before something, remove us from the after list */
+			if (strcmp (type, "ibefore") == 0) {
+				if ((dt = get_deptype (depinfo, "iafter")))
+					rc_strlist_delete (&dt->services, depend);
+			}
+			/* If we're after something, remove us from the before list */
+			if (strcmp (type, "iafter") == 0 ||
+				strcmp (type, "ineed") == 0 ||
+				strcmp (type, "iuse") == 0) {
+				if ((dt = get_deptype (depinfo, "ibefore")))
+					rc_strlist_delete (&dt->services, depend);
+			}
+		}
 	}
 	pclose (fp);
 	free (buffer);
