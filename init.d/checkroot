@@ -147,18 +147,6 @@ start() {
 	# Only Linux has mtab
 	[ "${RC_UNAME}" = "Linux" -a -e /proc/mounts ] && do_mtab
 
-	# If the user's /dev/null or /dev/console are missing, we 
-	# should help them out and explain how to rectify the situation
-	if [ ! -c /dev/null -o ! -c /dev/console ] ; then
-		if [ -e /usr/share/baselayout/issue.devfix ] ; then
-			# Backup current /etc/issue
-			if [ -e /etc/issue -a ! -e /etc/issue.devfix ] ; then
-				mv -f /etc/issue /etc/issue.devfix
-			fi
-			cp -f /usr/share/baselayout/issue.devfix /etc/issue
-		fi
-	fi
-
 	# We got here, so return 0
 	return 0
 }
