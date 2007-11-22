@@ -434,14 +434,14 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		}
 
 		if (exists (RC_SVCDIR "/runscript.sh")) {
-			execl (RC_SVCDIR "/runscript.sh", service, service, arg1, arg2,
-				   (char *) NULL);
+			execl (RC_SVCDIR "/runscript.sh", RC_SVCDIR "/runscript.sh",
+				   service, arg1, arg2, (char *) NULL);
 			eerror ("%s: exec `" RC_SVCDIR "/runscript.sh': %s",
 					service, strerror (errno));
 			_exit (EXIT_FAILURE);
 		} else {
-			execl (RC_LIBDIR "/sh/runscript.sh", service, service, arg1, arg2,
-				   (char *) NULL);
+			execl (RC_LIBDIR "/sh/runscript.sh", RC_LIBDIR "/sh/runscript.sh",
+				   service, arg1, arg2, (char *) NULL);
 			eerror ("%s: exec `" RC_LIBDIR "/sh/runscript.sh': %s",
 					service, strerror (errno));
 			_exit (EXIT_FAILURE);
