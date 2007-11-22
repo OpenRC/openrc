@@ -164,7 +164,7 @@ for arg in "$@" ; do
 	esac
 done
 
-if [ "${RC_NOCOLOR}" != "yes" -a -z "${GOOD}" ] ; then
+if [ -z "${GOOD}" ] && ! yesno "${RC_NOCOLOR}"; then
 	eval $(eval_ecolors)
 fi
 
