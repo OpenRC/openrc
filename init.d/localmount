@@ -43,12 +43,6 @@ start() {
 	mount -at "${types}"
 	eend $? "Some local filesystem failed to mount"
 
-	# Change the mount options of already mounted partitions
-	# This is needed when /usr is separate and coming back from single user
-	if [ "${RC_UNAME}" = "FreeBSD" ] ; then
-		mount -uao fstab -t "${types},linprocfs"
-	fi
-
 	if [ -x /sbin/savecore ] ; then
 		local dumpdir=${KERNEL_DUMP_DIR:-/var/crash}
 		if ! [ -d "${dumpdir}" ]; then
