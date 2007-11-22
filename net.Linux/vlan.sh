@@ -99,7 +99,7 @@ vlan_post_start() {
 
 		# We may not want to start the vlan ourselves
 		eval s=\$vlan_start_${IFVAR}
-		[ "${s:-yes}" != "yes" ] && continue
+		yesno ${s:-yes} || continue
 
 		# We need to work out the interface name of our new vlan id
 		local ifname="$( \

@@ -28,7 +28,7 @@ atmclip_svcs_start() {
     einfo "First CLIP instance: starting ATM CLIP daemons"
     eindent
 
-    if [ "${clip_full:-yes}" = "yes" ]; then
+	if yesno ${clip_full:-yes}; then
 		atmclip_svc_start atmsigd "Signaling" && \
 		atmclip_svc_start ilmid	  "Integrated Local Management Interface" && \
 		atmclip_svc_start atmarpd "Address Resolution Protocol"
@@ -58,7 +58,7 @@ atmclip_svcs_stop() {
     sync
 
     atmclip_svc_stop atmarpd "Address Resolution Protocol"
-    if [ "${clip_full:-yes}" = "yes" ]; then
+	if yesno ${clip_full:-yes}; then
 		atmclip_svc_stop ilmid "Integrated Local Management Interface"
 		atmclip_svc_stop atmsigd "Signaling"
     fi
@@ -70,7 +70,7 @@ are_atmclip_svcs_running() {
 
 	start-stop-daemon --quiet --test --stop --pidfile /var/run/atmarpd.pid || return 1
 
-	if [ "${clip_full:-yes}" = "yes" ]; then
+	if yesno ${clip_full:-yes}; then
 		start-stop-daemon --quiet --test --stop --pidfile /var/run/ilmid.pid || return 1
 		start-stop-daemon --quiet --test --stop --pidfile /var/run/atmsigd.pid || return 1
 	fi
