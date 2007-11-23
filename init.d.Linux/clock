@@ -30,8 +30,12 @@ description="Sets the local clock to UTC or Local Time."
 description_save="Saves the current time in the BIOS."
 description_show="Displays the current time in the BIOS."
 
+clock_adjfile=${clock_adjfile:-${CLOCK_ADJFILE}}
+clock_args=${clock_args:-${CLOCK_OPTS}}
+clock_systohc=${clock_systohc:-${CLOCK_SYSTOHC}}
+
 depend() {
-	if [ "${CLOCK_ADJFILE}" = "yes" ]; then
+	if yesno ${clock_adjfile}; then
 		use checkroot
 	else
 		before *
@@ -64,12 +68,6 @@ setupopts() {
 			;;
 	esac
 	[ -n "${utc}" ] || return 0
-	
-	# Make sure user isn't using rc.conf anymore.
-	if [ -e /etc/rc.conf ] && \
-	[ -n "$(unset CLOCK; . /etc/rc.conf; echo "${CLOCK}")" ] ; then
-		ewarn "CLOCK should not be set in /etc/rc.conf but in /etc/conf.d/clock"
-	fi
 }
 
 start() {
@@ -84,13 +82,13 @@ start() {
 		fi
 
 		# Since hwclock always exit's with a 0, need to check its output.
-		if [ -e /etc/adjtime -a "${CLOCK_ADJFILE}" = "yes" ]; then
+		if [ -e /etc/adjtime ] && yesno ${clock_adjfile}; then
 			errstr="$(hwclock --adjust ${utc} 2>&1 >/dev/null)"
 		fi
 		# If setting UTC, don't bother to run hwclock when first booting
 		# as that's the default
-		if [ "${PREVLEVEL}" != "N" -o "${utc}" != "--utc" -o -n "${CLOCK_OPTS}" ]; then
-			errstr="${errstr}$(hwclock --hctosys ${utc} ${CLOCK_OPTS} 2>&1 >/dev/null)"
+		if [ "${PREVLEVEL}" != "N" -o "${utc}" != "--utc" -o -n "${clock_args}" ]; then
+			errstr="${errstr}$(hwclock --hctosys ${utc} ${clock_args} 2>&1 >/dev/null)"
 		fi
 	fi
 	if [ -n "${errstr}" ]; then
@@ -105,7 +103,8 @@ start() {
 
 stop() {
 	# Don't tweak the hardware clock on LiveCD halt.
-	[ -n "${CDBOOT}" -o "${CLOCK_SYSTOHC}" != "yes" ] && return 0
+	[ -n "${CDBOOT}" ] && return 0
+	yesno ${clock_systohc} || return 0
 
 	local utc= TBLURB= errstr="" retval=0
 
@@ -113,13 +112,13 @@ stop() {
 
 	ebegin "Setting hardware clock using the system clock" "[${TBLURB}]"
 	if [ -n "${utc}" ]; then
-		if [ "${CLOCK_ADJFILE}" != "yes" ]; then
+		if ! yesno "${clock_adjfile}"; then
 			# Some implementations don't handle adjustments
 			if LC_ALL=C hwclock --help | grep -q "\-\-noadjfile"; then
 				utc="${utc} --noadjfile"
 			fi
 		fi
-		errstr="$(LC_ALL=C hwclock --systohc ${utc} ${CLOCK_OPTS} 2>&1 >/dev/null)"
+		errstr="$(LC_ALL=C hwclock --systohc ${utc} ${clock_args} 2>&1 >/dev/null)"
 	fi
 	if [ -n "${errstr}" ] ; then
 		ewarn "${errstr}"
@@ -130,14 +129,14 @@ stop() {
 }
 
 save() {
-	CLOCK_SYSTOHC="yes"
+	clock_systohc="yes"
 	stop
 }
 
 show() {
 	local utc= TBLURB=
 	setupopts
-	/sbin/hwclock --show "${utc}" ${CLOCK_OPTS}
+	/sbin/hwclock --show "${utc}" ${clock_args} 
 }
 
 # vim: set ts=4 :
