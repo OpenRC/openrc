@@ -34,7 +34,7 @@ name="Network Time Protocol Daemon"
 depend() {
 	use dns
 	need localmount
-	after bootmisc ntp-client
+	after bootmisc ntpdate ntp-client
 }
 
 start_pre() {

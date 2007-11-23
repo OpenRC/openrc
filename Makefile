@@ -3,7 +3,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 NAME = openrc
-VERSION = 1.0
+VERSION = 0.1 
 PKG = $(NAME)-$(VERSION)
 
 SUBDIR = conf.d etc init.d man net runlevels sh src
