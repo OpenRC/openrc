@@ -26,10 +26,15 @@
 # mount $svcdir as something we can write to if it's not rw
 # On vservers, / is always rw at this point, so we need to clean out
 # the old service state data
-if mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null ; then
+if [ "${RC_SVCDIR}" != "/" ] &&  mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null; then
 	rmdir "${RC_SVCDIR}/.test.$$"
-	rm -rf $(ls -d1 "${RC_SVCDIR:-/lib/rcscripts/init.d}"/* 2>/dev/null | \
-		grep -Ev "/(deptree|ksoftlevel|rc.log)$")
+	for x in ${RC_SVCDIR:-/lib/rcscripts/init.d}/*; do
+		[ -e "${x}" ] || continue
+		case ${x##*/} in
+			deptree|ksoftlevel|rc.log) ;;
+			*) rm -rf "${x}";;
+		esac
+	done
 else
 	mount_svcdir
 fi
