@@ -102,7 +102,7 @@ mount_svcdir() {
 _rc_get_kv_cache=""
 get_KV() {
 	[ -z "${_rc_get_kv_cache}" ] \
-		&& _RC_GET_KV_CACHE="$(uname -r)"
+		&& _rc_get_kv_cache="$(uname -r)"
 
 	echo "$(KV_to_int "${_rc_get_kv_cache}")"
 
@@ -112,7 +112,12 @@ get_KV() {
 . /etc/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/init-functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
+[ -r /etc/conf.d/rc ] && . /etc/conf.d/rc
 [ -r /etc/rc.conf ] && . /etc/rc.conf
+
+# Compat shim for udev
+rc_coldplug=${rc_coldplug:-${RC_COLDPLUG:-yes}}
+RC_COLDPLUG=${rc_coldplug}
 
 # Set the console loglevel to 1 for a cleaner boot
 # the logger should anyhow dump the ring-0 buffer at start to the
