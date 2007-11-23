@@ -37,17 +37,22 @@ start() {
 	rm -rf "${RC_LIBDIR}"/console
 
 	case "${RC_SYS}" in
-		UML|VPS|XEN) return 0 ;;
+		UML|VPS|XEN) return 0;;
 	esac
 
-	if [ -z "${CONSOLEFONT}" ] ; then
-		ebegin $"Using the default console font"
+	ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
+	consolefont=${consolefont:-${CONSOLEFONT}}
+	unicodemap=${unicodemap:-${UNICODEMAP}}
+	consoletranslation=${consoletranslation:-${CONSOLETRANSLATION}}
+
+	if [ -z "${consolefont}" ]; then
+		ebegin "Using the default console font"
 		eend 0
 		return 0
 	fi
 
-	if [ ${RC_TTY_NUMBER} -eq 0 ] ; then
-		ebegin "Skipping font setup (RC_TTY_NUMBER == 0); you should disable this init.d"
+	if [ "${ttyn}" = 0 ]; then
+		ebegin "Skipping font setup (rc_tty_number == 0); you should disable this init.d"
 		eend 0
 		return 0
 	fi
@@ -55,11 +60,11 @@ start() {
 	local x= param= sf_param= retval=1
 
 	# Get additional parameters
-	if [ -n "${CONSOLETRANSLATION}" ] ; then
-		param="${param} -m ${CONSOLETRANSLATION}"
+	if [ -n "${consoletranslation}" ]; then
+		param="${param} -m ${consoletranslation}"
 	fi
-	if [ -n "${UNICODEMAP}" ] ; then
-		param="${param} -u ${UNICODEMAP}"
+	if [ -n "${unicodemap}" ]; then
+		param="${param} -u ${unicodemap}"
 	fi
 
 	# Set the console font
@@ -70,7 +75,7 @@ start() {
 		if [ -n "$(setfont --help 2>&1 | grep -e '--tty')" ] || \
 			[ -n "$(setfont --help 2>&1 | grep -e '-C')" ]
 		then
-			if [ -n "$(setfont --help 2>&1 | grep -e '--tty')" ] ; then
+			if [ -n "$(setfont --help 2>&1 | grep -e '--tty')" ]; then
 				sf_param="--tty="
 			else
 				sf_param="-C "
@@ -81,14 +86,14 @@ start() {
 				|| ttydev=/dev/tty
 
 			x=1
-			while [ ${x} -le "${RC_TTY_NUMBER}" ] ; do
-				/bin/setfont ${CONSOLEFONT} ${param} \
+			while [ ${x} -le ${ttyn} ]; do
+				/bin/setfont ${consolefont} ${param} \
 					${sf_param}/${ttydev}${x} > /dev/null
 				retval=$?
 				x=$((${x} + 1))
 			done
 		else
-			/bin/setfont ${CONSOLEFONT} ${param} > /dev/null
+			/bin/setfont ${consolefont} ${param} > /dev/null
 			retval=$?
 		fi
 		errmsg="Failed to set user font"
@@ -99,14 +104,14 @@ start() {
 	eend ${retval} "${errmsg}"
 
 	# Store the last font so we can use it ASAP on boot
-	if [ ${retval} -eq 0 -a -w "${RC_LIBDIR}" ] ; then
+	if [ ${retval} -eq 0 -a -w "${RC_LIBDIR}" ]; then
 		mkdir -p "${RC_LIBDIR}"/console
 
-		for font in /usr/share/consolefonts/"${CONSOLEFONT}".* ; do : ; done
+		for font in /usr/share/consolefonts/"${consolefont}".*; do :; done
 		cp "${font}" "${RC_LIBDIR}"/console
 		echo "$(basename "${font}")" > "${RC_LIBDIR}"/console/font
-		if [ "${UNICODE}" = "yes" ] ; then
-			echo > "${RC_LIBDIR}"/console/unicode
+		if yesno ${unicode:-${UNICODE}} ; then
+			printf "" > "${RC_LIBDIR}"/console/unicode
 		else
 			rm -f "${RC_LIBDIR}"/console/unicode
 		fi

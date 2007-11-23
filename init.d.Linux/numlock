@@ -26,6 +26,8 @@
 
 description="Turns numlock on for the consoles."
 
+ttyn=${rc_tty_number:-${RC_TTY_NUMBER}:-12}
+
 depend() {
 	need localmount
 }
@@ -36,7 +38,7 @@ _setleds() {
 	local dev=/dev/tty t= i=1 retval=0
 	[ -d /dev/vc ] && dev=/dev/vc/
 
-	while [ ${i} -le ${RC_TTY_NUMBER:-11} ] ; do
+	while [ ${i} -le ${ttyn} ] ; do
 		setleds -D "$1"num < ${dev}${i} || retval=1
 		i=$((${i} + 1))
 	done

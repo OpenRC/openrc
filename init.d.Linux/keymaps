@@ -26,20 +26,16 @@
 
 description="Applies a keymap for the consoles."
 
+ttyn=${rc_tty_number:-${RC_TTY_NUMBER}:-12}
+unicode=${unicode:-${UNICODE}}
+keymap=${keymap:-${KEYMAP}}
+extended_keymaps=${extended_keymaps:-${EXTENDED_KEYMAPS}}
+windowskeys=${windowskeys:-${SET_WINDOWSKEYS}} 
+fix_euro=${fix_euro:-${FIX_EURO}}
+dumpkeys_charset=${dumpkeys_charset:-${DUMPKEYS_CHARSET}}
+
 depend() {
 	need localmount
-}
-
-checkconfig() {
-	if [ -z "${KEYMAP}" ] ; then
-		eerror "You need to setup KEYMAP in /etc/conf.d/keymaps first"
-		return 1
-	fi
-
-	# Make sure user isn't using rc.conf anymore
-	if grep -q "^KEYMAP=" /etc/rc.conf ; then
-		ewarn "KEYMAP should not be set in /etc/rc.conf but in /etc/conf.d/keymaps"
-	fi
 }
 
 start() {
@@ -51,13 +47,16 @@ start() {
 			;;
 	esac
 
-	local WINDOWKEYS_KEYMAP= LOADKEYS_UNI=
+	if [ -z "${keymap}" ] ; then
+		eerror "You need to setup keymap in /etc/conf.d/keymaps first"
+		return 1
+	fi
+
+	local loadkeys_uni= wkeys= 
 	local ttydev= n=
 	[ -d /dev/vc ] \
 		&& ttydev=/dev/vc/ \
 		|| ttydev=/dev/tty
-
-	checkconfig || return 1
 
 	# Force linux keycodes for PPC.
 	if [ -f /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes ] ; then
@@ -65,23 +64,22 @@ start() {
 	fi
 
 	# Turn on unicode if user wants it
-	if [ "${UNICODE}" = "yes" ]; then
+	if yesno ${unicode}; then
 		n=1
-		while [ ${n} -le "${RC_TTY_NUMBER}" ]; do
+		while [ ${n} -le "${ttyn}" ]; do
 			kbd_mode -u -C "${ttydev}${n}"
 			n=$((${n} + 1))
 		done
-		LOADKEYS_UNI="--unicode"
+		loadkeys_uni="--unicode"
 	fi
 
 	ebegin "Loading key mappings"
 	if [ -x /bin/loadkeys ] ; then
-		[ "${SET_WINDOWKEYS}" = "yes" ] && WINDOWKEYS_KEYMAP="windowkeys"
-		loadkeys -q ${LOADKEYS_UNI} ${WINDOWKEYS_KEYMAP} ${KEYMAP} \
-			${EXTENDED_KEYMAPS}
+		yesno ${windowskeys} && wkeys="windowkeys"
+		loadkeys -q ${loadkeys_uni} ${wkeys} ${keymap} ${extended_keymaps} 
 		eend $? "Error loading key mappings"
 
-		if [ "${FIX_EURO}" = "yes" ] ; then
+		if yesno ${fix_euro}; then
 			# Fix some fonts displaying the Euro, #173528.
 			echo "altgr keycode 18 = U+20AC" | loadkeys -q
 		fi
@@ -93,11 +91,8 @@ start() {
 	# Set terminal encoding to either ASCII or UNICODE.
 	# See utf-8(7) for more information.
 	local termencoding= termmsg=
-	if [ "${UNICODE}" = "yes" ] ; then
-		local dumpkey_opts=
-		[ -n "${DUMPKEYS_CHARSET}" ] && dumpkey_opts="-c ${DUMPKEYS_CHARSET}"
-
-		dumpkeys ${dumpkey_opts} | loadkeys --unicode
+	if yesno ${unicode}; then
+		dumpkeys ${dumpkeys_charset:+-c} ${dumpkeys_charset} | loadkeys --unicode
 		termencoding="%G"
 		termmsg="UTF-8"
 	else
@@ -107,12 +102,11 @@ start() {
 
 	ebegin "Setting terminal encoding to" ${termmsg}
 	n=1
-	while [ ${n} -le "${RC_TTY_NUMBER}" ] ; do
+	while [ ${n} -le "${ttyn}" ]; do
 		printf "\033%s" "${termencoding}" >"${ttydev}${n}"
 		n=$((${n} + 1))
 	done
 	eend 0
 }
-
 
 # vim:ts=4
