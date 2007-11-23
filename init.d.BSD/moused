@@ -44,8 +44,8 @@ start() {
 	if [ -z "${moused_device}" ] ; then
 		local dev=
 		for dev in /dev/psm[0-9]* /dev/ums[0-9]* ; do
-			[ -e "${dev}" ] || continue
-			[ -e /var/run/moused-$(basename "${dev}").pid ] && continue 
+			[ -c "${dev}" ] || continue
+			[ -e /var/run/moused-"${dev##*/}".pid ] && continue 
 			moused_device=${dev}
 			eindent
 			einfo "Using mouse on ${moused_device}"
