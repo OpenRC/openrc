@@ -1,5 +1,5 @@
-BOOT = dumpon net.lo0 savecore syscons
-DEFAULT = local.rc powerd syslogd
+BOOT = dumpon net.lo0 savecore syscons syslogd
+DEFAULT = local.rc powerd 
 
 TOPDIR = ..
 include $(TOPDIR)/runlevels.mk
