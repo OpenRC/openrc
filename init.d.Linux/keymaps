@@ -26,7 +26,7 @@
 
 description="Applies a keymap for the consoles."
 
-ttyn=${rc_tty_number:-${RC_TTY_NUMBER}:-12}
+ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 unicode=${unicode:-${UNICODE}}
 keymap=${keymap:-${KEYMAP}}
 extended_keymaps=${extended_keymaps:-${EXTENDED_KEYMAPS}}
