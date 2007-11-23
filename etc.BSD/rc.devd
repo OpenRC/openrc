@@ -1,0 +1,27 @@
+#!/bin/sh
+
+export IN_BACKGROUND=yes
+export IN_HOTPLUG=yes
+
+getmedia() {
+	ifconfig $1 | while read line; do
+		case ${line} in
+			media:" "*) echo "${line}"; return;;
+		esac
+	done
+}
+
+set -x
+if [ ! -e /etc/init.d/"$1" ]; then
+	base=$(basename ${1%%.*})
+	if [ "${base}" = "net" ]; then
+		# We only create links for pyhsical interfaces
+		[ -n "$(getmedia ${1#*.})" ] || exit 1
+		base="net.lo0"
+	fi
+	if [ -e /etc/init.d/"${base}" -a "${base}" != "$1" ]; then
+		ln -s "${base}" /etc/init.d/$1
+	fi
+fi
+
+exec /etc/init.d/$1 $2
