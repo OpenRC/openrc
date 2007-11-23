@@ -1,0 +1,108 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Copyright 2007 Roy Marples
+# All rights reserved
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
+description="Mounts misc filesystems in /proc."
+
+depend() {
+	need checkfs
+}
+
+start() {
+	# Make sure we insert usbcore if its a module
+	if [ -f /proc/modules -a ! -d /proc/bus/usb ]; then
+		modprobe -q usbcore
+	fi
+
+	[ -e /proc/filesystems ] || return 0
+
+	# Check what USB fs the kernel support.  Currently
+	# 2.5+ kernels, and later 2.4 kernels have 'usbfs',
+	# while older kernels have 'usbdevfs'.
+	if [ -d /proc/bus/usb -a ! -e /proc/bus/usb/devices ]; then
+		local usbfs=$(grep -Fow usbfs /proc/filesystems ||
+					  grep -Fow usbdevfs /proc/filesystems)
+		if [ -n "${usbfs}" ] ; then
+			ebegin "Mounting USB device filesystem (${usbfs})"
+			local usbgid="$(getent group usb | \
+				sed -e 's/.*:.*:\(.*\):.*/\1/')"
+			mount -t ${usbfs} \
+				-o ${usbgid:+devmode=0664,devgid=${usbgid},}noexec,nosuid \
+				usbfs /proc/bus/usb
+			eend $?
+		fi
+	fi
+
+	# Setup Kernel Support for the NFS daemon status
+	if [ -d /proc/fs/nfsd ] && ! mountinfo -q /proc/fs/nfsd ; then
+		if grep -qs nfsd /proc/filesystems ; then
+			ebegin "Mounting nfsd filesystem"
+			mount -t nfsd -o nodev,noexec,nosuid \
+				nfsd /proc/fs/nfsd
+			eend $?
+		fi
+	fi
+
+	# Setup Kernel Support for miscellaneous Binary Formats
+	if [ -d /proc/sys/fs/binfmt_misc ] && ! mountinfo -q /proc/sys/fs/binfmt_misc ; then
+		if grep -qs binfmt_misc /proc/filesystems ; then
+			ebegin "Mounting misc binary format filesystem"
+			mount -t binfmt_misc -o nodev,noexec,nosuid \
+				binfmt_misc /proc/sys/fs/binfmt_misc
+			eend $?
+		fi
+	fi
+
+	# Setup Kernel Support for securityfs
+	if [ -d /sys/kernel/security ] && ! mountinfo -q /sys/kernel/security ; then
+		if grep -qs securityfs /proc/filesystems ; then
+			ebegin "Mounting security filesystem"
+			mount -t securityfs securityfs /sys/kernel/security \
+				-o nodev,noexec,nosuid
+			eend $?
+		fi
+	fi
+
+	# Setup Kernel Support for debugfs
+	if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug ; then
+		if grep -qs debugfs /proc/filesystems ; then
+			ebegin "Mounting debug filesystem"
+			mount -t debugfs debugfs /sys/kernel/debug \
+				-o nodev,noexec,nosuid
+			eend $?
+		fi
+	fi
+
+	# Setup Kernel Support for SELinux
+	if [ -d /selinux ] && ! mountinfo -q /selinux ; then
+		if grep -qs selinuxfs /proc/filesystems ; then
+			ebegin "Mounting SELinux filesystem"
+			mount -t selinuxfs selinuxfs /selinux
+			eend $?
+		fi
+	fi
+
+	return 0
+}

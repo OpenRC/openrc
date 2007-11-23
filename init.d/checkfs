@@ -63,7 +63,7 @@ do_checkfs() {
 		ewend 1 "Operational error, continuing"
 		retval=0
 	else
-		if [ "${RC_FORCE_AUTO}" = "yes" ] ; then
+		if yesno ${rc_force_auto:-${RC_FORCE_AUTO}}; then
 			eend 2 "Fsck could not correct all errors, rerunning"
 			fsck ${opts} -y ${parts}
 			retval=$?
@@ -87,7 +87,9 @@ start() {
 
 stop() {
 	# fsck on shutdown if we need to
-	[ "${FSCK_SHUTDOWN}" = "yes" -a ! -f /forcefsck ] && do_checkfs
+	if yesno "${fsck_shutdown:-${FSCK_SHUTDOWN}}"; then
+		[ ! -f /forcefsck ] && do_checkfs
+	fi
 	return 0
 }
 

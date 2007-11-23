@@ -25,7 +25,8 @@
 
 depend() {
 	need localmount net
-	after $(ls -1 | grep -v local | xargs)
+	after *
+	before local
 }
 
 start() {

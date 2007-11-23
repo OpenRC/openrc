@@ -45,6 +45,7 @@ stop_addon() {
 	( import_addon "$1-stop" )
 }
 
+net_fs_list="afs cifs coda davfs fuse gfs ncpfs nfs nfs4 ocfs2 shfs smbfs"
 is_net_fs() {
 	[ -z "$1" ] && return 1
 
@@ -54,7 +55,7 @@ is_net_fs() {
 
 	# Fall back on fs types
 	local t=$(mountinfo --fstype "$1")
-	for x in ${RC_NET_FS_LIST}; do
+	for x in ${net_fs_list}; do
 		[ "${x}" = "${t}" ] && return 0
 	done
 	return 1

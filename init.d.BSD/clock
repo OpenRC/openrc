@@ -29,19 +29,24 @@ extra_commands="save"
 description="Sets the local clock to UTC or Local Time." 
 description_save="Saves the current time in the BIOS."
 
+clock=${clock:-${CLOCK:-UTC}}
+if [ "${clock}" = "UTC" ]; then
+	utc="UTC"
+else
+	utc="Local Time"
+fi
+
 depend() {
 	# BSD adjkerntz needs to be able to write to /etc
-	if [ "${CLOCK}" = "UTC" -a -e /etc/wall_cmos_clock ] ||
-	   [ "${CLOCK}" != "UTC" -a ! -e /etc/wall_cmos_clock ] ; then
+	if [ "${clock}" = "UTC" -a -e /etc/wall_cmos_clock ] ||
+	   [ "${clock}" != "UTC" -a ! -e /etc/wall_cmos_clock ]; then
 		need checkroot
 	fi
 }
 
 start() {
-	local TBLURB="Local Time"
-	[ "${CLOCK}" = "UTC" ] && TBLURB="UTC"
-	ebegin "Starting the System Clock Adjuster [${TBLURB}]"
-	if [ "${CLOCK}" != "UTC" ] ; then
+	ebegin "Starting the System Clock Adjuster [${utc}]"
+	if [ "${clock}" != "UTC" ]; then
 		echo >/etc/wall_cmos_clock
 		start-stop-daemon --start --exec /sbin/adjkerntz -- -i
 	else
@@ -52,16 +57,16 @@ start() {
 }
 
 save() {
-	local TBLURB="Local Time"
-	[ "${CLOCK}" = "UTC" ] && TBLURB="UTC"
-	ebegin "Setting hardware clock using the system clock" "[${TBLURB}]"
+	ebegin "Setting hardware clock using the system clock [${utc}]"
 	adjkerntz -a
 	eend $?
 }
 
 stop() {
     # Don't tweak the hardware clock on LiveCD halt.
-	[ -z "${CDBOOT}" -a "${CLOCK_SYSTOHC}" = "yes" ] && save 
+	if yesno "${clock_systohc:-${CLOCK_SYSTOHC}}"; then
+	   [ -z "${CDBOOT}" ] && save
+	fi
 
 	ebegin "Stopping the System Clock Adjuster"
 	if start-stop-daemon --test --quiet --stop --exec /sbin/adjkerntz ; then

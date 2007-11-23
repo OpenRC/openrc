@@ -32,33 +32,28 @@
 
 #include "librc.h"
 
-bool rc_env_bool (const char *var)
+bool rc_yesno (const char *value)
 {
-	char *v;
-
-	if (! var)
-		return (false);
-
-	if (! (v = getenv (var))) {
-		errno = ENOENT;
+	if (! value) {
+		errno = EINVAL;
 		return (false);
 	}
 
-	if (strcasecmp (v, "true") == 0 ||
-		strcasecmp (v, "y") == 0 ||
-		strcasecmp (v, "yes") == 0 ||
-		strcasecmp (v, "1") == 0)
+	if (strcasecmp (value, "yes") == 0 ||
+		strcasecmp (value, "y") == 0 ||
+		strcasecmp (value, "true") == 0 ||
+		strcasecmp (value, "1") == 0)
 		return (true);
 
-	if (strcasecmp (v, "false") != 0 &&
-		strcasecmp (v, "n") != 0 &&
-		strcasecmp (v, "no") != 0 &&
-		strcasecmp (v, "0") != 0)
+	if (strcasecmp (value, "no") != 0 &&
+		strcasecmp (value, "n") != 0 &&
+		strcasecmp (value, "false") != 0 &&
+		strcasecmp (value, "0") != 0)
 		errno = EINVAL;
 
 	return (false);
 }
-librc_hidden_def(rc_env_bool)
+librc_hidden_def(rc_yesno)
 
 char *rc_strcatpaths (const char *path1, const char *paths, ...)
 {

@@ -492,6 +492,8 @@ static char read_key (bool block)
 static bool want_interactive (void)
 {
 	char c;
+	static bool gotinteractive;
+	static bool interactive;
 
 	if (PREVLEVEL &&
 		strcmp (PREVLEVEL, "N") != 0 &&
@@ -499,7 +501,11 @@ static bool want_interactive (void)
 		strcmp (PREVLEVEL, "1") != 0)
 		return (false);
 
-	if (! rc_env_bool ("RC_INTERACTIVE"))
+	if (! gotinteractive) {
+		gotinteractive = true;
+		interactive = rc_conf_yesno ("rc_interactive");
+	}
+	if (! interactive)
 		return (false);
 
 	c = read_key (false);
@@ -793,6 +799,7 @@ int main (int argc, char **argv)
 	int opt;
 	DIR *dp;
 	struct dirent *d;
+	bool parallel;
 
 	atexit (cleanup);
 	if (argv[0])
@@ -982,7 +989,7 @@ int main (int argc, char **argv)
 					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_BRACKET),
 					ecolor (ECOLOR_NORMAL));
 
-			if (rc_env_bool ("RC_INTERACTIVE"))
+			if (rc_conf_yesno ("rc_interactive"))
 				printf ("Press %sI%s to enter interactive boot mode\n\n",
 						ecolor (ECOLOR_GOOD), ecolor (ECOLOR_NORMAL));
 
@@ -1156,7 +1163,7 @@ int main (int argc, char **argv)
 	if (newlevel && strcmp (newlevel, bootlevel) == 0 &&
 		(strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
 		 strcmp (runlevel, RC_LEVEL_SYSINIT) == 0) &&
-		rc_env_bool ("RC_COLDPLUG"))
+		rc_conf_yesno ("rc_coldplug"))
 	{
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 		/* The net interfaces are easy - they're all in net /dev/net :) */
@@ -1263,6 +1270,8 @@ int main (int argc, char **argv)
 	if (going_down)
 		rc_runlevel_set (newlevel);
 
+	parallel = rc_conf_yesno ("rc_parallel");
+
 	/* Now stop the services that shouldn't be running */
 	STRLIST_FOREACH (stop_services, service, i) {
 		bool found = false;
@@ -1278,7 +1287,7 @@ int main (int argc, char **argv)
 		/* We always stop the service when in these runlevels */
 		if (going_down) {
 			pid_t pid = rc_service_stop (service);
-			if (pid > 0 && ! rc_env_bool ("RC_PARALLEL"))
+			if (pid > 0 && ! parallel)
 				rc_waitpid (pid);
 			continue;
 		}
@@ -1348,7 +1357,7 @@ int main (int argc, char **argv)
 			if ((pid = rc_service_stop (service)) > 0) {
 				add_pid (pid);
 
-				if (! rc_env_bool ("RC_PARALLEL")) {
+				if (! parallel) {
 					rc_waitpid (pid);
 					remove_pid (pid);
 				}
@@ -1448,7 +1457,7 @@ interactive_option:
 			if ((pid = rc_service_start (service)) > 0) {
 				add_pid (pid);
 
-				if (! rc_env_bool ("RC_PARALLEL")) {
+				if (! parallel) {
 					rc_waitpid (pid);
 					remove_pid (pid);
 				}

@@ -36,7 +36,7 @@ cleanup_tmp_dir() {
 
 	mkdir -p "${dir}"
 	cd "${dir}"
-	if [ "${WIPE_TMP}" = "yes" ]; then
+	if [ "${wipe_tmp}" = "yes" ]; then
 		ebegin "Wiping ${dir} directory"
 		local startopts="-x . -depth"
 		[ "${RC_UNAME}" = "Linux" ] && startopts=". -xdev -depth"
@@ -116,7 +116,7 @@ start() {
 
 	# Clean up /tmp directories
 	local tmp=
-	for tmp in ${WIPE_TMP_DIRS-/tmp}; do
+	for tmp in ${wipe_tmp_dirs-/tmp}; do
 		cleanup_tmp_dir "${tmp}"
 	done
 	chmod +t /tmp /var/tmp

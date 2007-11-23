@@ -25,7 +25,7 @@
 # SUCH DAMAGE.
 
 command=/usr/sbin/powerd
-command_args=${POWERD_ARGS}
+command_args=${powerd_args}
 pidfile=/var/run/powerd.pid
 name="Power Control Daemon"
 
@@ -36,10 +36,19 @@ depend() {
 }
 
 start_pre() {
-	if [ -n "${BATTERY_MODE}" ]; then
-		command_args="${command_args} -b ${BATTERY_MODE}"
+	if [ -n "${powerd_battery_mode}" ]; then
+		command_args="${command_args} -b ${powerd_battery_mode}"
 	fi
-	if [ -n "${AC_MODE}" ]; then
-		command_args="${command_args} -a ${AC_MODE}"
+	if [ -n "${powerd_ac_mode}" ]; then
+		command_args="${command_args} -a ${powerd_ac_mode}"
+	fi
+}
+
+stop_post()
+{
+	local level=$(sysctl -n dev.cpu.0.freq_levels |
+	    sed -e 's:/.*::')
+	if [ -n "${level}" ]; then
+		sysctl dev.cpu.0.freq="${level}" >/dev/null
 	fi
 }

@@ -25,9 +25,9 @@
 
 # This is based on /etc/rc.firewall and /etc/rc.firewall6 from FreeBSD
 
-IP_IN=${IP_IN-any}
-PORTS_IN=${PORTS_IN-auth ssh}
-PORTS_NOLOG=${PORTS_NOLOG-135-139,445 1026,1027 1433,1434}
+ipfw_ip_in=${ipfw_ip_in-any}
+ipfw_ports_in=${ipfw_ports_in-auth ssh}
+ipfw_ports_nolog=${ipfw_ports_nolog-135-139,445 1026,1027 1433,1434}
 
 opts="panic showstatus"
 
@@ -105,8 +105,8 @@ start() {
 	
 	# Add permits for this workstations published services below
 	# Only IPs and nets in firewall_allowservices is allowed in.
-	for i in ${IP_IN}; do
-		for p in ${PORTS_IN}; do
+	for i in ${ipfw_ip_in}; do
+		for p in ${ipfw_ports_in}; do
 	    	ipfw add pass tcp from ${i} to me ${p}
 		done
 	done
@@ -114,14 +114,14 @@ start() {
 	# Allow all connections from trusted IPs.
 	# Playing with the content of firewall_trusted could seriously
 	# degrade the level of protection provided by the firewall.
-	for i in ${IP_TRUST}; do
+	for i in ${ipfw_ip_trust}; do
 		ipfw add pass ip from ${i} to me
 	done
 	
 	ipfw add 65000 count ip from any to any
 
 	# Drop packets to ports where we don't want logging
-	for p in ${PORTS_NOLOG}; do
+	for p in ${ipfw_ports_nolog}; do
 		ipfw add deny { tcp or udp } from any to any ${p} in
 	done
 
@@ -138,7 +138,7 @@ start() {
 	ipfw add deny tcp from any 80,443 to any 1024-65535 in
 
 	# Deny and (if wanted) log the rest unconditionally.
-	if [ "${LOG_DENY}" = "yes" ]; then
+	if yesno ${ipfw_log_deny:-no}; then
 		log="log"
 		sysctl net.inet.ip.fw.verbose=1 >/dev/null
 	fi

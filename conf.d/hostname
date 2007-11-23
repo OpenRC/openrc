@@ -1,2 +1,2 @@
 # Set to the hostname of this machine
-HOSTNAME="localhost"
+hostname="localhost"

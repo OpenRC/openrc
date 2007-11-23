@@ -150,7 +150,7 @@ void rc_logger_open (const char *level)
 	if (! isatty (STDOUT_FILENO))
 		return;
 
-	if (! rc_env_bool ("RC_LOGGER"))
+	if (! rc_conf_yesno ("rc_logger"))
 		return;
 
 	if (pipe (signal_pipe) == -1)

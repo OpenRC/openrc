@@ -1,7 +1,7 @@
 # Mode allowed: maximum, minimum, adaptive
 # Default unless specified is adaptive
-AC_MODE="maximum"
-#BATTERY_MODE="minimum"
+powerd_ac_mode="maximum"
+#powerd_battery_mode="minimum"
 
-# Addiditonal arguments for powerd
-POWERD_OPTS=""
+# Addiditonal arguments for powerd - see the man page for details
+powerd_args=""

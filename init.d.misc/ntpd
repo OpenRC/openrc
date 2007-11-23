@@ -1,7 +1,4 @@
-#!/bin/sh
-# Shell wrapper to list our dependencies
-
-# Copyright 2007 Gentoo Foundation
+#!/sbin/runscript
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -26,65 +23,37 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-. /etc/init.d/functions.sh
+ntpd_config=${ntpd_config:-/etc/ntp.conf}
+ntpd_drift=${ntpd_drift:-/var/db/ntpd.drift}
 
-config() {
-	[ -n "$*" ] && echo "${SVCNAME} config $*" >&3
-}
-need() {
-	[ -n "$*" ] && echo "${SVCNAME} ineed $*" >&3
-}
-use() {
-	[ -n "$*" ] && echo "${SVCNAME} iuse $*" >&3
-}
-before() {
-	[ -n "$*" ] && echo "${SVCNAME} ibefore $*" >&3
-}
-after() {
-	[ -n "$*" ] && echo "${SVCNAME} iafter $*" >&3
-}
-provide() {
-	[ -n "$*" ] && echo "${SVCNAME} iprovide $*" >&3
-} 
+command=/usr/sbin/ntpd
+pidfile=/var/run/ntpd.pid
+command_args="${ntpd_args} -c ${ntpd_config} -f ${ntpd_drift} -p ${pidfile}"
+name="Network Time Protocol Daemon"
+
 depend() {
-	:
+	use dns
+	need localmount
+	after bootmisc ntp-client
 }
 
-cd /etc/init.d
-for SVCNAME in * ; do
-	[ -x "${SVCNAME}" ] || continue
-
-	# Only generate dependencies for runscripts
-	read one two < "${SVCNAME}"
-	[ "${one}" = "#!/sbin/runscript" ] || continue
-	unset one two
-
-	SVCNAME=${SVCNAME##*/}
-	(
-	# Save stdout in fd3, then remap it to stderr
-	exec 3>&1 1>&2
-
-	rc_c=${SVCNAME%%.*}
-	if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ] ; then
-		[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}"
+start_pre() {
+	if [ ! -r "${ntpd_config}" ]; then
+		eerror "${ntpd_config} is not readable"
+		exit 1
 	fi
-	unset rc_c
 
-	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}"
+	if [ -n "${ntpd_chroot}" ]; then
+		case "${RC_UNAME}" in
+			*BSD|DragonFly)
+				if [ ! -c "${ntpd_chroot}/dev/clockctl" ]; then
+					rm -f "${ntpd_chroot}/dev/clockctl"
+					(cd /dev; /bin/pax -rw -pe clockctl "${ntpd_chroot}/dev")
+				fi
+				;;
+		esac
+		ln -fs "${ntpd_chroot}${ntpd_drift}" "${ntpd_drift}"
 
-	if . /etc/init.d/"${SVCNAME}" ; then
-		echo "${SVCNAME}" >&3
-		depend
-
-		# Add any user defined depends
-		config ${rc_config} ${RC_CONFIG}
-		need ${rc_need} ${RC_NEED}
-		use ${rc_use} ${RC_USE}
-		before ${rc_before} ${RC_BEFORE}
-		after ${rc_after} ${RC_AFTER}
-		provide ${rc_provide} ${RC_PROVIDE}
+		command_args="${command_args} -u ntpd:ntpd -i ${ntpd_chroot}"
 	fi
-	)
-done
-
-# vim: set ts=4 :
+}

@@ -1,4 +1,4 @@
-BOOT = consolefont keymaps modules net.lo
+BOOT = consolefont keymaps modules net.lo procfs
 DEFAULT = hdparm
 
 TOPDIR = ..

@@ -100,7 +100,7 @@ do_fsck() {
 		retval=0
 	elif [ ${retval} -eq 2 -o ${retval} -eq 3 ] ; then
 		ewend 1 "Filesystem repaired, but reboot needed!"
-		if [ "${RC_FORCE_AUTO}" != "yes" ] ; then
+		if ! yesno ${rc_force_auto:-${RC_FORCE_AUTO}}; then
 			printf "\a"; sleep 1; printf "\a"; sleep 1
 			printf "\a"; sleep 1; printf "\a"; sleep 1
 			ewarn "Rebooting in 10 seconds ..."
@@ -109,7 +109,7 @@ do_fsck() {
 		einfo "Rebooting"
 		reboot -f
 	else
-		if [ "${RC_FORCE_AUTO}" = "yes" ] ; then
+		if yesno ${rc_force_auto:-${RC_FORCE_AUTO}}; then
 			eend 2 "Rerunning fsck in force mode"
 			fsck ${opts} -y "${root}"
 			retval=$?
@@ -128,7 +128,6 @@ do_fsck() {
 			reboot -f
 		fi
 	fi
-
 }
 
 start() {

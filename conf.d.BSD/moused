@@ -2,14 +2,10 @@
 
 # Set to your mouse device psm[0-9] for PS/2 ports, ums[0-9] for USB ports
 # Leave blank to try to autodetect it
-MOUSED_DEVICE=""
+#moused_device="/dev/psm0"
 
 # Any additional arguments required
-MOUSED_ARGS=""
-
-# If 0xd0-0xd3 default range is occupied in your language code table, specify
-# alternative range start like MOUSECHAR_START="3", see vidcontrol(1)
-MOUSECHAR_START=""
+moused_args=""
 
 # You can also multiplex the init script for each device like so
 #   ln -s moused /etc/init.d/moused.ums0

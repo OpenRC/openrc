@@ -47,7 +47,7 @@ mount_svcdir() {
 		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
 			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
 	fi
-	try mdconfig -a -t malloc -s "${RC_SVCSIZE:-1024}"k -u 0
+	try mdconfig -a -t malloc -s "${rc_svcsize:-1024}"k -u 0
 	try newfs -b 4096 -i 1024 -n /dev/md0
 	try mount -o rw,noexec,nosuid /dev/md0 "${RC_SVCDIR}"
 	if ${dotmp} ; then
@@ -60,6 +60,7 @@ mount_svcdir() {
 
 . "${RC_LIBDIR}"/sh/init-functions.sh
 . "${RC_LIBDIR}"/sh/functions.sh
+[ -r /etc/rc.conf ] && . /etc/rc.conf
 
 # Disable devd until we need it
 [ "${RC_UNAME}" = "FreeBSD" ] && sysctl hw.bus.devctl_disable=1 >/dev/null

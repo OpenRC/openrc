@@ -146,7 +146,7 @@ if yesno ${BE_VERBOSE}; then
 printf "
 ${CYAN}Dependencies:${OFF}
 
-    This is the heart of the Gentoo RC-Scripts, as it determines the order
+    This is the heart of the OpenRC, as it determines the order
     in which services gets started, and also to some extend what services
     get started in the first place.
 
@@ -252,9 +252,7 @@ printf "
 "
 fi
 
-printf "     /etc/conf.d/rc
-     /etc/conf.d/rc.\${RC_SOFTLEVEL}
-     /etc/conf.d/${SERVICE}
+printf "     /etc/conf.d/${SERVICE}
      /etc/conf.d/${SERVICE}.\${RC_SOFTLEVEL}
      /etc/rc.conf
      \${RC_SOFTLEVEL} denotes the name of the runlevel"
@@ -263,8 +261,8 @@ if yesno ${BE_VERBOSE}; then
 printf "
     You can add extra dependencies to ${SERVICE} by adding some variables to
 	/etc/conf.d/${SERVICE}
-    RC_NEED=\"openvpn ntpd\"
-    RC_USE=\"dns\"
+    rc_need=\"openvpn ntpd\"
+    rc_use=\"dns\"
 
     This makes ${SERVICE} need openvpn and ntpd, while it just uses dns.
 

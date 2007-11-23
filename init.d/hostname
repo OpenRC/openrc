@@ -31,13 +31,9 @@ depend() {
 }
 
 start() {
-	if [ -f /etc/hostname ] ; then
-		ewarn "You should stop using /etc/hostname and use /etc/conf.d/hostname"
-		HOSTNAME=$(cat /etc/hostname)
-	fi
-
-	ebegin "Setting hostname to ${HOSTNAME}"
-	hostname "${HOSTNAME}"
+	hostname=${hostname-${HOSTNAME-localhost}}
+	ebegin "Setting hostname to ${hostname}"
+	hostname "${hostname}"
 	eend $? "Failed to set the hostname"
 }
 

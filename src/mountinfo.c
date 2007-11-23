@@ -365,6 +365,7 @@ int mountinfo (int argc, char **argv)
 	char *n;
 	int opt;
 	int result;
+	bool quiet;
 
 #define DO_REG(_var) \
 	if (_var) free (_var); \
@@ -442,12 +443,13 @@ int mountinfo (int argc, char **argv)
 	rc_strlist_reverse (nodes);
 
 	result = EXIT_FAILURE;
+	quiet = rc_yesno (getenv ("RC_QUIET"));
 	STRLIST_FOREACH (nodes, n, i) {
 		if (point_regex && regexec (point_regex, n, 0, NULL, 0) != 0)
 			continue;
 		if (skip_point_regex && regexec (skip_point_regex, n, 0, NULL, 0) == 0)
 			continue;
-		if (! rc_env_bool ("RC_QUIET"))
+		if (! quiet)
 			printf ("%s\n", n);
 		result = EXIT_SUCCESS;
 	}

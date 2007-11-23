@@ -25,7 +25,7 @@
 # SUCH DAMAGE.
 
 command=/usr/sbin/syslogd
-command_args=${SYSLOGD_ARGS}
+command_args=${syslogd_args}
 pidfile=/var/run/syslog.pid
 name="System Logger Daemon"
 

@@ -4,16 +4,16 @@
 # NOTE:- This will blank the screen after this command is run
 # NOTE:- You can get more modes if you load the vesa kernel module, but this
 # may require the SC_PIXEL_MODE kernel option
-#MODE="VGA_80x30"
+#allscreen_flags="VGA_80x30"
 
 # Set the keymap to "uk.iso".
-#KEYMAP="uk.iso"
+#keymap="uk.iso"
 
 # Set the keyboard rate to 250ms delay, and 34 repeat rate.
-#KEYRATE="250.34"
+#keyrate="250.34"
 
 # Change the behaviour of F-unction keys (see kbdcontrol(1)).
-#KEYCHANGE="10 'ssh myhost'"
+#keychange="10 'ssh myhost'"
 
 # See vidcontrol(1) -t
-#BLANKTIME="off"
+#blanktime="off"

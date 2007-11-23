@@ -24,7 +24,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-URANDOM_SEED=${URANDOM_SEED:-/var/run/random-seed}
+urandom_seed=${urandom_seed:-${URANDOM_SEED:-/var/run/random-seed}}
 
 description="Initializes the random number generator."
 
@@ -41,22 +41,19 @@ save_seed() {
 
 	(	# sub shell to prevent umask pollution
 		umask 077
-		dd if=/dev/urandom of="${URANDOM_SEED}" count=${poolsize} 2>/dev/null
+		dd if=/dev/urandom of="${urandom_seed}" count=${poolsize} 2>/dev/null
 	)
 }
 
 start() {
 	[ -c /dev/urandom ] || return
-	if [ -f "${URANDOM_SEED}" ] ; then
-		cat "${URANDOM_SEED}" > /dev/urandom
+	if [ -f "${urandom_seed}" ] ; then
+		ebegin "Initializing random number generator"
+		cat "${urandom_seed}" > /dev/urandom
+		eend $? "Error initializing random number generator"
 	fi
-	if ! rm -f "${URANDOM_SEED}" ; then
-		ewarn "Skipping ${URANDOM_SEED} initialization (ro root?)"
-		return 0
-	fi
-	ebegin "Initializing random number generator"
-	save_seed
-	eend $? "Error initializing random number generator"
+	rm -f "${urandom_seed}" && save_seed
+	return 0
 }
 
 stop() {

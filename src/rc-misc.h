@@ -64,9 +64,6 @@
 /* Max buffer to read a line from a file */
 #define RC_LINEBUFFER           4096 
 
-/* Good defaults just incase user has none set */
-#define RC_NET_FS_LIST_DEFAULT  "afs cifs coda davfs fuse gfs ncpfs nfs nfs4 ocfs2 shfs smbfs"
-
 #define ERRX					fprintf (stderr, "out of memory\n"); exit (1)
 
 static inline void *xmalloc (size_t size)
@@ -113,6 +110,7 @@ static inline bool exists (const char *pathname)
 	return (stat (pathname, &buf) == 0);
 }
 
+bool rc_conf_yesno (const char *var);
 char **env_filter (void);
 char **env_config (void);
 

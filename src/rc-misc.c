@@ -38,6 +38,7 @@
 #endif
 
 #include <sys/utsname.h>
+#include <ctype.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,9 +51,48 @@
 #define PROFILE_ENV     "/etc/profile.env"
 #define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
 #define USR_WHITELIST   "/etc/conf.d/env_whitelist"
-#define RC_CONFIG       "/etc/conf.d/rc"
+#define RC_CONF         "/etc/rc.conf"
+#define RC_CONF_OLD     "/etc/conf.d/rc"
 
 #define PATH_PREFIX     RC_LIBDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
+
+static char **rc_conf = NULL;
+
+static void _free_rc_conf (void)
+{
+	rc_strlist_free (rc_conf);
+}
+
+bool rc_conf_yesno (const char *setting)
+{
+	if (! rc_conf) {
+		char *line;
+		int i;
+
+		rc_conf = rc_config_load (RC_CONF);
+		atexit (_free_rc_conf);
+
+		/* Support old configs */
+		if (exists (RC_CONF_OLD)) {
+			char **old = rc_config_load (RC_CONF_OLD);
+			rc_strlist_join (&rc_conf, old);
+			rc_strlist_free (old);
+		}
+
+		/* Convert old uppercase to lowercase */
+		STRLIST_FOREACH (rc_conf, line, i) {
+			char *p = line;
+			while (p && *p && *p != '=') {
+				if (isupper (*p))
+					*p = tolower (*p);
+				p++;
+			}
+		}
+	
+	}
+
+	return (rc_yesno (rc_config_value (rc_conf, setting)));
+}
 
 char **env_filter (void)
 {
@@ -64,10 +104,10 @@ char **env_filter (void)
 	bool got_path = false;
 	char *env_var;
 	int env_len;
-	char *p;
 	char *token;
 	char *sep;
 	char *e;
+	char *p;
 	int pplen = strlen (PATH_PREFIX);
 
 	whitelist = rc_config_list (SYS_WHITELIST);
@@ -195,44 +235,13 @@ char **env_config (void)
 	char **env = NULL;
 	char *line;
 	int i;
-	char *p;
-	char **config;
-	char *e;
 #ifdef __linux__
 	char sys[6];
 #endif
 	struct utsname uts;
-	bool has_net_fs_list = false;
 	FILE *fp;
 	char buffer[PATH_MAX];
 	char *runlevel = rc_runlevel_get ();
-
-	/* Don't trust environ for softlevel yet */
-	snprintf (buffer, PATH_MAX, "%s.%s", RC_CONFIG, runlevel);
-	if (exists (buffer))
-		config = rc_config_load (buffer);
-	else
-		config = rc_config_load (RC_CONFIG);
-
-	STRLIST_FOREACH (config, line, i) {
-		p = strchr (line, '=');
-		if (! p)
-			continue;
-
-		*p = 0;
-		e = getenv (line);
-		if (! e) {
-			*p = '=';
-			rc_strlist_add (&env, line);
-		} else {
-			int len = strlen (line) + strlen (e) + 2;
-			char *new = xmalloc (sizeof (char) * len);
-			snprintf (new, len, "%s=%s", line, e);
-			rc_strlist_add (&env, new);
-			free (new);
-		}
-	}
-	rc_strlist_free (config);
 
 	/* One char less to drop the trailing / */
 	i = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
@@ -303,21 +312,6 @@ char **env_config (void)
 	}
 
 #endif
-
-	/* Only add a NET_FS list if not defined */
-	STRLIST_FOREACH (env, line, i)
-		if (strncmp (line, "RC_NET_FS_LIST=", strlen ("RC_NET_FS_LIST=")) == 0) {
-			has_net_fs_list = true;
-			break;
-		}
-
-	if (! has_net_fs_list) {
-		i = strlen ("RC_NET_FS_LIST=") + strlen (RC_NET_FS_LIST_DEFAULT) + 1;
-		line = xmalloc (sizeof (char) * i);
-		snprintf (line, i, "RC_NET_FS_LIST=%s", RC_NET_FS_LIST_DEFAULT);
-		rc_strlist_add (&env, line);
-		free (line);
-	}
 
 	/* Some scripts may need to take a different code path if Linux/FreeBSD, etc
 	   To save on calling uname, we store it in an environment variable */

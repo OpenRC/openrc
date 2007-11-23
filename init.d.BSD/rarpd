@@ -25,14 +25,15 @@
 # SUCH DAMAGE.
 
 command=/usr/sbin/rarpd
-command_args="-f ${RARPD_ARGS}"
+command_args="-f ${rarpd_args}"
 pidfile=/var/run/rarpd.pid
 name="Reverse ARP Daemon"
+required_files="/etc/ethers"
 
-if [ -z "${RARPD_INTERFACE}" ]; then
+if [ -z "${rarpd_interface}" ]; then
 	command_args="${command_args} -a"
 else
-	command_args="${command_args} ${RARPD_INTERFACE}"
+	command_args="${command_args} ${rarpd_interface}"
 fi
 command_background="YES"
 
@@ -40,9 +41,9 @@ depend() {
 	need localmount
 	after bootmisc
 
-	if [ -z "${RARPD_INTERFACE}" ]; then
+	if [ -z "${rarpd_interface}" ]; then
 		need net
 	else
-		net net."${RARPD_INTERFACE}"
+		net net."${rarpd_interface}"
 	fi
 }

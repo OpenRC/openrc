@@ -1,4 +1,4 @@
-BOOT = net.lo0 syscons
+BOOT = dumpon net.lo0 savecore syscons
 DEFAULT = local.rc powerd syslogd
 
 TOPDIR = ..

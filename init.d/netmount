@@ -59,7 +59,7 @@ start() {
 	[ -x /etc/init.d/rpcbind ] && pmap="rpcbind"
 
 	local x= fs=
-	for x in ${RC_NET_FS_LIST}; do
+	for x in ${net_fs_list}; do
 		case "${x}" in
 			nfs|nfs4)
     			# If the nfsmount script took care of the nfs filesystems,
@@ -89,7 +89,7 @@ stop() {
 	ebegin "Unmounting network filesystems"
 	. "${RC_LIBDIR}/sh/rc-mount.sh"
 
-	for x in ${RC_NET_FS_LIST} ; do
+	for x in ${net_fs_list} ; do
 		fs="${fs}${fs:+,}${x}"
 	done
 	if [ -n "${fs}" ]; then
@@ -98,7 +98,7 @@ stop() {
 
 	eindent
 	fs=
-	for x in ${RC_NET_FS_LIST}; do
+	for x in ${net_fs_list}; do
 		fs="${fs}${fs:+|}${x}"
 	done
 	[ -n "${fs}" ] && fs="^(${fs})$"

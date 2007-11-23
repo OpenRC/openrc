@@ -1,7 +1,5 @@
-#!/bin/sh
-# Shell wrapper to list our dependencies
-
-# Copyright 2007 Gentoo Foundation
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -26,65 +24,33 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-. /etc/init.d/functions.sh
+description="Saves a kernel dump."
 
-config() {
-	[ -n "$*" ] && echo "${SVCNAME} config $*" >&3
-}
-need() {
-	[ -n "$*" ] && echo "${SVCNAME} ineed $*" >&3
-}
-use() {
-	[ -n "$*" ] && echo "${SVCNAME} iuse $*" >&3
-}
-before() {
-	[ -n "$*" ] && echo "${SVCNAME} ibefore $*" >&3
-}
-after() {
-	[ -n "$*" ] && echo "${SVCNAME} iafter $*" >&3
-}
-provide() {
-	[ -n "$*" ] && echo "${SVCNAME} iprovide $*" >&3
-} 
 depend() {
-	:
+	need checkfs
+	before swap
 }
 
-cd /etc/init.d
-for SVCNAME in * ; do
-	[ -x "${SVCNAME}" ] || continue
-
-	# Only generate dependencies for runscripts
-	read one two < "${SVCNAME}"
-	[ "${one}" = "#!/sbin/runscript" ] || continue
-	unset one two
-
-	SVCNAME=${SVCNAME##*/}
-	(
-	# Save stdout in fd3, then remap it to stderr
-	exec 3>&1 1>&2
-
-	rc_c=${SVCNAME%%.*}
-	if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ] ; then
-		[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}"
+start() {
+	local dump_dir=${dump_dir:-/var/crash}
+	if ! [ -d "${dump_dir}" ]; then
+		mkdir -p "${dump_dir}"
+		chmod 700 "${dump_dir}"
 	fi
-	unset rc_c
 
-	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}"
-
-	if . /etc/init.d/"${SVCNAME}" ; then
-		echo "${SVCNAME}" >&3
-		depend
-
-		# Add any user defined depends
-		config ${rc_config} ${RC_CONFIG}
-		need ${rc_need} ${RC_NEED}
-		use ${rc_use} ${RC_USE}
-		before ${rc_before} ${RC_BEFORE}
-		after ${rc_after} ${RC_AFTER}
-		provide ${rc_provide} ${RC_PROVIDE}
+	if [ "${RC_UNAME}" = "FreeBSD" ] ; then
+		# Don't quote ${dump_device}, so that if it's unset,
+		# savecore will check on the partitions listed in fstab
+		# without errors in the output
+		savecore -C "${dump_dir}" ${dump_device} >/dev/null
+	else
+		ls "${dump_dir}"/bsd* > /dev/null 2>&1
 	fi
-	)
-done
+	[ $? = 0 ] || return 0
 
-# vim: set ts=4 :
+	local sopts="${dump_dir} ${dump_device}"
+	yesno ${dump_compress} && sopts="-z ${sopts}"
+	ebegin "Saving kernel core dump in ${dump_dir}"
+	savecore ${sopts} >/dev/null
+	eend $?
+}

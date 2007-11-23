@@ -9,7 +9,6 @@ global:
 	rc_deptree_order;
 	rc_deptree_update;
 	rc_deptree_update_needed;
-	rc_env_bool;
 	rc_environ_fd;
 	rc_find_pids;
 	rc_runlevel_exists;
@@ -52,6 +51,7 @@ global:
 	rc_strlist_free;
 	rc_strlist_join;
 	rc_strlist_reverse;
+	rc_yesno;
 
 local:
 	*;

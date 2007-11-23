@@ -185,7 +185,7 @@ int rc_update (int argc, char **argv)
 		}
 	}
 
-	verbose = rc_env_bool ("RC_VERBOSE");
+	verbose = rc_yesno (getenv ("RC_VERBOSE"));
 
 	if ((action & DOSHOW   && action != DOSHOW) ||
 		(action & DOADD    && action != DOADD) ||

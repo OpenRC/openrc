@@ -353,12 +353,12 @@ char **rc_config_load (const char *file);
 /*! Return the value of the entry from a key=value list. */
 char *rc_config_value (char **list, const char *entry);
 
-/*! Check if an environment variable is a boolean and return it's value.
+/*! Check if a variable is a boolean and return it's value.
  * If variable is not a boolean then we set errno to be ENOENT when it does
  * not exist or EINVAL if it's not a boolean.
  * @param variable to check
  * @return true if it matches true, yes or 1, false if otherwise. */
-bool rc_env_bool (const char *variable);
+bool rc_yesno (const char *variable);
 
 /*! @name String List functions
  * Handy functions for dealing with string arrays of char **.

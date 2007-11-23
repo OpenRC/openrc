@@ -26,6 +26,7 @@
 
 . /etc/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
+[ -r /etc/rc.conf ] && . /etc/rc.conf
 
 # Support LiveCD foo
 if [ -r /sbin/livecd-functions.sh ] ; then
@@ -43,12 +44,12 @@ if [ -x /sbin/killall5 ] ; then
 fi
 
 # Flush all pending disk writes now
-sync ; sync
+sync; sync
 
 # If we are in a VPS, we don't need anything below here, because
 #   1) we don't need (and by default can't) umount anything (VServer) or
 #   2) the host utils take care of all umounting stuff (OpenVZ)
-if [ "${RC_SYS}" = "VPS" ] ; then
+if [ "${RC_SYS}" = "VPS" ]; then
 	if [ -e /etc/init.d/"$1".sh ] ; then
 		. /etc/init.d/"$1".sh
 	else
@@ -93,7 +94,7 @@ if [ "${RC_UNAME}" = "Linux" ] ; then
 	. "${RC_LIBDIR}"/sh/rc-mount.sh
 	eindent
 	fs=
-	for x in ${RC_NET_FS_LIST} ; do
+	for x in ${net_fs_list} ; do
 		fs="${fs}${fs:+|}${x}"
 	done
 	[ -n "${fs}" ] && fs="^(${fs})$"
