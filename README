@@ -12,16 +12,23 @@ LIB=lib64
 DESTDIR=/tmp/openrc-image
 
 If any of the following files exist then we do not overwrite them
+/etc/devd.conf
 /etc/rc
 /etc/rc.shutdown
 /etc/conf.d/*
 /etc/inittab
 
 rc and rc.shutdown are the hooks from the BSD init into OpenRC.
+devd.conf is modified from FreeBSD to call /etc/rc.devd which is a generic
+hook into OpenRC.
 inittab is the same, but for SysVInit as used by most Linux distrubtions.
 Obviously, if you're installing this onto a system that does not use OpenRC
 by default then you may wish to backup the above listed files, remove them
 and then install so that the OS hooks into OpenRC.
+
+init.d.misc is not installed by default as the scripts will need
+tweaking on a per distro basis. They are also non essential to the operation
+of the system.
 
 
 History - by Roy Marples

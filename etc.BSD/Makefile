@@ -1,5 +1,6 @@
 DIR  = /etc
-CONF = rc rc.shutdown
+CONF = devd.conf rc rc.shutdown
+BIN  = rc.devd
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk
