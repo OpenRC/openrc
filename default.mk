@@ -2,7 +2,9 @@
 # We shouldn't use PREFIX as we need to install into /
 
 DESTDIR =
-LIB = lib
+_LIB_SH = l=`readlink /lib`; case "$$l" in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
+_LIB != $(_LIB_SH)
+LIB = $(_LIB)$(shell $(_LIB_SH))
 RC_LIB = /$(LIB)/rc
 
 INSTALL ?= install
