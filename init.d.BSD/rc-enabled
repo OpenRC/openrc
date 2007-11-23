@@ -47,10 +47,7 @@ start() {
 
 		# Ensure that the users rc.conf will start us - ignore the defaults
 		eval enabled=\$$(basename "${svc}")_enable
-		case "$enabled" in
-			[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1) ;;
-			*) continue ;;
-		esac
+		yesno ${enabled} || continue
 
 		# Good to go!
 		"$svc" start && started="${started} ${svc}"
