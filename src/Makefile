@@ -130,28 +130,28 @@ $(ALL_LINKS): rc
 links: $(ALL_LINKS)
 
 install:: $(TARGET)
-	install -m 0755 -d $(DESTDIR)/$(LIB)
-	install -m 0755 $(LIB_TARGETS) $(DESTDIR)/$(LIB)
-	install -m 0755 -d $(DESTDIR)/usr/$(LIB)
-	install -m 0644 $(ULIB_TARGETS) $(DESTDIR)/usr/$(LIB)
+	install -d $(DESTDIR)/$(LIB)
+	install -m 0444 $(LIB_TARGETS) $(DESTDIR)/$(LIB)
+	install -d $(DESTDIR)/usr/$(LIB)
+	install -m 0444 $(ULIB_TARGETS) $(DESTDIR)/usr/$(LIB)
 	ln -sf /$(LIB)/$(LIBEINFOSO) $(DESTDIR)/usr/$(LIB)/libeinfo.so
 	ln -sf /$(LIB)/$(LIBRCSO) $(DESTDIR)/usr/$(LIB)/librc.so
-	install -m 0755 -d $(DESTDIR)/usr/include
-	install -m 0644 einfo.h rc.h $(DESTDIR)/usr/include
-	install -m 0755 -d $(DESTDIR)/bin
-	install -m 0755 -d $(DESTDIR)/sbin
-	install -m 0755 $(SBIN_TARGETS) $(DESTDIR)/sbin
+	install -d $(DESTDIR)/usr/include
+	install -m 0444 einfo.h rc.h $(DESTDIR)/usr/include
+	install -d $(DESTDIR)/bin
+	install -d $(DESTDIR)/sbin
+	install -m 0555 $(SBIN_TARGETS) $(DESTDIR)/sbin
 	ln -sf rc-update $(DESTDIR)/sbin/update-rc
-	install -m 0755 -d $(DESTDIR)/$(RC_LIB)/conf.d
-	install -m 0644 $(SYS_WHITELIST) $(DESTDIR)/$(RC_LIB)/conf.d
-	install -m 0755 -d $(DESTDIR)/$(RC_LIB)/bin
-	install -m 0755 -d $(DESTDIR)/$(RC_LIB)/sbin
+	install -d $(DESTDIR)/$(RC_LIB)/conf.d
+	install -m 0444 $(SYS_WHITELIST) $(DESTDIR)/$(RC_LIB)/conf.d
+	install -d $(DESTDIR)/$(RC_LIB)/bin
+	install -d $(DESTDIR)/$(RC_LIB)/sbin
 	for x in $(BINLINKS); do ln -sf ../sbin/rc $(DESTDIR)/bin/$$x; done
 	for x in $(SBINLINKS); do ln -sf rc $(DESTDIR)/sbin/$$x; done
 	for x in $(RC_BINLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/bin/$$x; done
 	for x in $(RC_SBINLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/sbin/$$x; done
 	if test "$(PAM)" = "pam" ; then \
-		install -m 0755 -d $(DESTDIR)/etc/pam.d ; \
+		install -d $(DESTDIR)/etc/pam.d ; \
 		install -m 0644 start-stop-daemon.pam $(DESTDIR)/etc/pam.d/start-stop-daemon ; \
 	fi
 
