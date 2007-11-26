@@ -35,10 +35,22 @@ description="Configures network interfaces."
 # Handy var so we don't have to embed new lines everywhere for array splitting
 __IFS="	
 "
+_shell_var() {
+	local rem=$1 c= r=
+	while [ -n "${rem}" ]; do
+		r=${rem#?}
+		c=${rem%${r}}
+		case "${c}" in
+			[a-zA-Z0-9]) printf "%c" "${c}";;
+			*) printf "_";;
+		esac
+		rem=${r}
+	done
+}
 
 depend() {
 	local IFACE=${SVCNAME#*.}
-	local IFVAR=$(echo -n "${IFACE}" | sed -e 's/[^[:alnum:]]/_/g')
+	local IFVAR=$(_shell_var "${IFACE}")
 
 	need localmount
 	after bootmisc
@@ -60,10 +72,6 @@ depend() {
 			[ -n "${prov}" ] && provide ${prov}
 			;;
 	esac
-}
-
-_shell_var() {
-	echo -n "$1" | sed -e 's/[^[:alnum:]]/_/g'
 }
 
 # Support bash arrays - sigh
