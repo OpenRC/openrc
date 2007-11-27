@@ -1,0 +1,10 @@
+.depend
+rc
+*.[oa]
+*.so
+*.so.*
+version.h
+
+# Experimental stuff
+rc-daemon.c
+rc-daemon.h

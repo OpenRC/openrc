@@ -24,7 +24,7 @@ clean::
 dist:
 	$(INSTALL) -d /tmp/$(PKG)
 	cp -RPp . /tmp/$(PKG)
-	(cd /tmp/$(PKG); $(MAKE) clean)
+	(cd /tmp/$(PKG); git clean; $(MAKE) clean)
 	rm -rf /tmp/$(PKG)/*.bz2 /tmp/$(PKG)/.git /tmp/$(PKG)/test
 	tar cvjpf $(PKG).tar.bz2 -C /tmp $(PKG) 
 	rm -rf /tmp/$(PKG) 
