@@ -58,7 +58,9 @@ if [ "${RC_SYS}" = "VPS" ]; then
 fi
 
 # If $svcdir is still mounted, preserve it if we can
-if mountinfo -q "${RC_SVCDIR}" && [ -w "${RC_LIBDIR}" ] ; then
+
+mnt=$(mountinfo --node "${RC_SVCDIR}")
+if [ -n "${mnt}" -a -w "${RC_LIBDIR}" ] ; then
 	f_opts="-m -c"
 	[ "${RC_UNAME}" = "Linux" ] && f_opts="-c"
 	if [ -n "$(fuser ${f_opts} "${svcdir}" 2>/dev/null)" ] ; then
