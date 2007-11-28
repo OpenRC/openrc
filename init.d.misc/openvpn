@@ -1,0 +1,87 @@
+#!/sbin/runscript
+# Copyright 2007 Roy Marples
+# All rights reserved
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
+if [ -z "${openvpn_dir}" ]; then
+	if [ -d /usr/local/etc/openvpn ]; then
+		openvpn_dir=/usr/local/etc/openvpn
+	else
+		openvpn_dir=/etc/openvpn
+	fi
+fi
+
+vpn=${SVCNAME#*.}
+name="OpenVPN"
+[ "${vpn}" != "openvpn" ] && name="${name} (${vpn})"
+command=/usr/sbin/openvpn
+[ -x ${command} ] || command=/usr/local/sbin/openvpn
+
+pidfile="/var/run/${SVCNAME}.pid"
+openvpn_config=${openvpn_config:-${openvpn_dir}/${vpn}.conf}
+command_args="${openvpn_args} --daemon --config ${openvpn_config} --writepid ${pidfile}"
+required_dirs="${openvpn_dir}"
+required_files="${openvpn_config}"
+
+# If we're an openvpn client, then supply a nice default config
+# You can find sample up/down scripts in the OpenRC support/openvpn dir
+if yesno "${openvpn_client}"; then
+	openvpn_up=${openvpn_up:-${openvpn_dir}/up.sh}
+	openvpn_down=${openvpn_down:-${openvpn_dir}/down.sh}
+	command_args="${command_args} --nobind --up-delay --up-restart --down-pre"
+	command_args="${command_args} --up ${openvpn_up}"
+	command_args="${command_args} --down ${openvpn_down}"
+	required_files="${required_files} ${openvpn_up} ${openvpn_down}"
+	
+	in_background_fake="start stop"
+	start_inactive="YES"
+fi
+
+depend() {
+	need net
+	use dns
+}
+
+start_pre() {
+	# Linux has good dynamic tun/tap creation
+	if [ "${RC_UNAME}" = "Linux" ]; then
+		if [ ! -e /dev/net/tun ]; then
+			if ! modprobe tun; then
+				eerror "TUN/TAP support is not available in this kernel"
+				return 1
+			fi
+		fi
+		if [ -h /dev/net/tun -a -c /dev/misc/net/tun ]; then
+			ebegin "Detected broken /dev/net/tun symlink, fixing..."
+			rm -f /dev/net/tun
+			ln -s /dev/misc/net/tun /dev/net/tun
+			eend $?
+		fi
+	fi
+	
+	# If the config file does not specify the cd option, we do
+	# But if we specify it, we override the config option which we do not want
+	if ! grep -q "^[ \t]*cd[ \t].*" "${openvpn_config}"; then
+		command_args="${command_args} --cd ${openvpn_dir}"
+	fi
+}

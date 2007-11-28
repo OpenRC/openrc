@@ -137,6 +137,16 @@ KV_to_int() {
 	echo "${KV_int}"
 }
 
+_sanitize_path() {
+	local IFS=":" p=
+	for p in ${PATH}; do
+		case "${p}" in
+			/lib/rc/sbin|/bin|/sbin|/usr/bin|/usr/sbin|/usr/local/bin|/usr/local/sbin) ;;
+			*) printf "%s" ":${p}";;
+		esac
+	done
+}
+
 # Allow our scripts to support zsh
 if [ -n "${ZSH_VERSION}" ] ; then
   emulate sh
@@ -147,14 +157,9 @@ if [ -n "${ZSH_VERSION}" ] ; then
   setopt NO_GLOB_SUBST
 fi
 
-# Setup a basic $PATH.  Just add system default to existing.
-# This should solve both /sbin and /usr/sbin not present when
-# doing 'su -c foo', or for something like:  PATH= rcscript start
-case "${PATH}" in
-	/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin) ;;
-	/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:*) ;;
-	*) export PATH="/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:${PATH}" ;;
-esac
+# Add our bin to $PATH
+export PATH="/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin$(_sanitize_path "${PATH}")"
+unset _sanitize_path
 
 for arg in "$@" ; do
 	case "${arg}" in
