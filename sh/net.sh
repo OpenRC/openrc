@@ -652,7 +652,7 @@ stop() {
 	[ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ] && \
 	_down 2>/dev/null
 
-	[ -x /sbin/resolvconf ] && resolvconf -d "${IFACE}"
+	type resolvconf >/dev/null 2>&1 && resolvconf -d "${IFACE}"
 
 	if type postdown >/dev/null 2>/dev/null ; then
 		ebegin "Running postdown"
