@@ -87,8 +87,23 @@ fi
 
 # Load our script
 . $1
-
 shift
+
+for _d in ${required_dirs}; do
+	if [ ! -d ${_d} ]; then
+		eerror "${SVCNAME}: \`${_d}' is not a directory"
+		exit 1
+	fi
+done
+unset _d
+
+for _f in ${required_files}; do
+	if [ ! -r ${_f} ]; then
+		eerror "${SVCNAME}: \`${_f}' is not readable"
+		exit 1
+	fi
+done
+unset _f
 
 # If we have a default command then supply a default start function
 if [ -n "${command}" ]; then
@@ -100,6 +115,7 @@ if [ -n "${command}" ]; then
 					start_stop_daemon_args="${start_stop_daemon_args} --background --pidfile"
 					;;
 			esac
+			yesno "${start_inactive}" && mark_service_inactive "${SVCNAME}"
 			start-stop-daemon --start \
 				--exec ${command} \
 				${procname:+--name} ${procname} \
@@ -131,7 +147,19 @@ while [ -n "$1" ]; do
 	for _cmd in describe start stop ${extra_commands:-${opts}}; do
 		if [ "${_cmd}" = "$1" ]; then
 			if type "$1" >/dev/null 2>&1; then
-				unset _cmd 
+				# If we're in the background, we may wish to fake some
+				# commands. We do this so we can "start" ourselves from
+				# inactive which then triggers other services to start
+				# which depend on us. A good example of this is openvpn.
+				if yesno ${IN_BACKGROUND}; then
+					for _cmd in ${in_background_fake}; do
+						if [ "${_cmd}" = "$1" ]; then
+							shift
+							continue 3
+						fi
+					done
+				fi
+				unset _cmd
 				if type "$1"_pre >/dev/null 2>&1; then
 					"$1"_pre || exit $?
 				fi
