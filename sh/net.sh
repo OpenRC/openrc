@@ -33,7 +33,7 @@ _config_vars="config routes"
 description="Configures network interfaces."
 
 # Handy var so we don't have to embed new lines everywhere for array splitting
-__IFS="	
+__IFS="
 "
 _shell_var() {
 	local rem=$1 c= r=
@@ -561,16 +561,12 @@ ${routes}"
 		eindent
 		ebegin ${cmd}
 		# Work out if we're a host or a net if not told
-		case "${cmd}" in
+		case ${cmd} in
 			*" -net "*|*" -host "*) ;;
-			*" netmask "*) cmd="-net ${cmd}" ;;
-			*)
-				case "${cmd%% *}" in
-					*.*.*.*/32) cmd="-host ${cmd}" ;;
-					*.*.*.*/*|0.0.0.0|default) cmd="-net ${cmd}" ;;
-					*) cmd="-host ${cmd}" ;;
-				esac
-				;;
+			*" netmask "*)             cmd="-net ${cmd}" ;;
+			*.*.*.*/32)                cmd="-host ${cmd}" ;;
+			*.*.*.*/*|0.0.0.0|default) cmd="-net ${cmd}" ;;
+			*)                         cmd="-host ${cmd}" ;;
 		esac
 		if ${hidefirstroute} ; then
 			_add_route ${cmd} >/dev/null 2>/dev/null
