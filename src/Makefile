@@ -141,7 +141,6 @@ install:: $(TARGET)
 	install -d $(DESTDIR)/bin
 	install -d $(DESTDIR)/sbin
 	install -m 0555 $(SBIN_TARGETS) $(DESTDIR)/sbin
-	ln -sf rc-update $(DESTDIR)/sbin/update-rc
 	install -d $(DESTDIR)/$(RC_LIB)/conf.d
 	install -m 0444 $(SYS_WHITELIST) $(DESTDIR)/$(RC_LIB)/conf.d
 	install -d $(DESTDIR)/$(RC_LIB)/bin
