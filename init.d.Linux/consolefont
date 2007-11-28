@@ -70,7 +70,7 @@ start() {
 	# Set the console font
 	local errmsg=
 	ebegin "Setting user font"
-	if [ -x /bin/setfont ] ; then
+	if [ -x /bin/setfont ]; then
 		# We patched setfont to have --tty support ...
 		if [ -n "$(setfont --help 2>&1 | grep -e '--tty')" ] || \
 			[ -n "$(setfont --help 2>&1 | grep -e '-C')" ]
@@ -110,7 +110,7 @@ start() {
 		for font in /usr/share/consolefonts/"${consolefont}".*; do :; done
 		cp "${font}" "${RC_LIBDIR}"/console
 		echo "$(basename "${font}")" > "${RC_LIBDIR}"/console/font
-		if yesno ${unicode:-${UNICODE}} ; then
+		if yesno ${unicode:-${UNICODE}}; then
 			printf "" > "${RC_LIBDIR}"/console/unicode
 		else
 			rm -f "${RC_LIBDIR}"/console/unicode

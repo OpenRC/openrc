@@ -31,7 +31,7 @@ ifconfig_depend() {
 _exists() {
 	# Only FreeBSD sees to have /dev/net .... is there something
 	# other than ifconfig we can use for the others?
-	if [ -d /dev/net ] ; then
+	if [ -d /dev/net ]; then
 		[ -e /dev/net/"${IFACE}" ]
 	else
 		ifconfig "${IFACE}" >/dev/null 2>&1
@@ -43,10 +43,10 @@ _get_mac_address() {
 	sed -n -e 's/^[[:space:]]*ether \(..:..:..:..:..:..\).*/\1/p')
 
 	case "${mac}" in
-		00:00:00:00:00:00) ;;
-		44:44:44:44:44:44) ;;
-		FF:FF:FF:FF:FF:FF) ;;
-		*) echo "${mac}"; return 0 ;;
+		00:00:00:00:00:00);;
+		44:44:44:44:44:44);;
+		FF:FF:FF:FF:FF:FF);;
+		*) echo "${mac}"; return 0;;
 	esac
 
 	return 1
@@ -64,8 +64,8 @@ _ifindex() {
 	local x= i=1
 	case "${RC_UNAME}" in
 		FreeBSD|DragonFly)
-			for x in /dev/net[0-9]* ; do
-				if [ "${x}" -ef /dev/net/"${IFACE}" ] ; then
+			for x in /dev/net[0-9]*; do
+				if [ "${x}" -ef /dev/net/"${IFACE}" ]; then
 					echo "${x#/dev/net}"
 					return 0
 				fi
@@ -73,8 +73,8 @@ _ifindex() {
 			done
 			;;
 		default)
-			for x in $(ifconfig -a | sed -n -e 's/^\([^[:space:]]*\):.*/\1/p') ; do
-				if [ "${x}" = "${IFACE}" ] ; then
+			for x in $(ifconfig -a | sed -n -e 's/^\([^[:space:]]*\):.*/\1/p'); do
+				if [ "${x}" = "${IFACE}" ]; then
 					echo "${i}"
 					return 0
 				fi
@@ -107,10 +107,10 @@ _add_address() {
 	local inet6=
 
 	case "$@" in
-		*:*) inet6=inet6 ;;
+		*:*) inet6=inet6;;
 	esac
 
-	if [ "${metric:-0}" != "0" ] ; then
+	if [ "${metric:-0}" != "0" ]; then
 		set -- "$@" metric ${metric}
 	fi
 
@@ -130,32 +130,32 @@ _add_address() {
 }
 
 _add_route() {
-	if [ $# -gt 3 ] ; then
-		if [ "$3" = "gw" -o "$3" = "via" ] ; then
+	if [ $# -gt 3 ]; then
+		if [ "$3" = "gw" -o "$3" = "via" ]; then
 			local one=$1 two=$2
-			shift ; shift; shift
+			shift; shift; shift
 			set -- "${one}" "${two}" "$@"
 		fi
 	fi
 
 	case "$@" in
-		*:*) route add -inet6 "$@" ;;
-		*)   route add        "$@" ;;
+		*:*) route add -inet6 "$@";;
+		*)   route add        "$@";;
 	esac
 }
 
 _delete_addresses() {
 	# We don't remove addresses from aliases
 	case "${IFACE}" in
-		*:*) return 0 ;;
+		*:*) return 0;;
 	esac
 
 	einfo "Removing addresses"
 	eindent
 	local addr=
 	for addr in $(LC_ALL=C ifconfig "${IFACE}" |
-		sed -n -e 's/^[[:space:]]*inet \([^ ]*\).*/\1/p') ; do
-		if [ "${addr}" = "127.0.0.1" ] ; then
+		sed -n -e 's/^[[:space:]]*inet \([^ ]*\).*/\1/p'); do
+		if [ "${addr}" = "127.0.0.1" ]; then
 			# Don't delete the loopback address
 			[ "$1" = "lo" -o "$1" = "lo0" ] && continue
 		fi
@@ -166,10 +166,10 @@ _delete_addresses() {
 
 	# Remove IPv6 addresses
 	for addr in $(LC_ALL=C ifconfig "${IFACE}" | \
-		sed -n -e 's/^[[:space:]]*inet6 \([^ ]*\).*/\1/p') ; do
+		sed -n -e 's/^[[:space:]]*inet6 \([^ ]*\).*/\1/p'); do
 		case "${addr}" in
-			*"%${IFACE}") continue ;;
-			::1) continue ;;
+			*"%${IFACE}") continue;;
+			::1) continue;;
 		esac
 		einfo "${addr}"
 		ifconfig "${IFACE}" inet6 delete "${addr}"
@@ -203,11 +203,11 @@ ifconfig_pre_start() {
 		args=
 		for arg in ${conf}; do
 			case ${arg} in
-				[Dd][Hh][Cc][Pp]) ;;
-				[Nn][Oo][Aa][Uu][Tt][Oo]) ;;
-				[Nn][Oo][Ss][Yy][Nn][Cc][Dd][Hh][Cc][Pp]) ;;
-				[Ss][Yy][Nn][Cc][Dd][Hh][Cc][Pp]) ;;
-				[Ww][Pp][Aa]) ;;
+				[Dd][Hh][Cc][Pp]);;
+				[Nn][Oo][Aa][Uu][Tt][Oo]);;
+				[Nn][Oo][Ss][Yy][Nn][Cc][Dd][Hh][Cc][Pp]);;
+				[Ss][Yy][Nn][Cc][Dd][Hh][Cc][Pp]);;
+				[Ww][Pp][Aa]);;
 				*) args="${args} ${arg}";;
 			esac
 		done

@@ -45,7 +45,7 @@ load_modules() {
 	eindent
 
 	local x= cnt=0
-	for x in "$@" ; do
+	for x in "$@"; do
 		set -- ${x}
 		ebegin "Loading module $1"
 		eval modprobe -q "$@"
@@ -92,16 +92,16 @@ start() {
 		auto=/etc/modules.autoload
 	else
 		local x= f="/etc/modules.autoload.d/kernel"
-		for x in "${KV}" ${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} ${KV_MAJOR}.${KV_MINOR} ; do
-			if [ -f "${f}-${x}.${RC_SOFTLEVEL}" ] ; then
+		for x in "${KV}" ${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} ${KV_MAJOR}.${KV_MINOR}; do
+			if [ -f "${f}-${x}.${RC_SOFTLEVEL}" ]; then
 				auto="${f}-${x}.${RC_SOFTLEVEL}"
 				break
 			fi
-			if [ "${RC_SOFTLEVEL}" = "${RC_BOOTLEVEL}" -a -f "${f}-${x}.${RC_DEFAULTLEVEL}" ] ; then
+			if [ "${RC_SOFTLEVEL}" = "${RC_BOOTLEVEL}" -a -f "${f}-${x}.${RC_DEFAULTLEVEL}" ]; then
 				auto="${f}-${x}.${RC_DEFAULTLEVEL}"
 				break
 			fi
-			if [ -f "${f}-${x}" ] ; then
+			if [ -f "${f}-${x}" ]; then
 				auto="${f}-${x}"
 				break
 			fi

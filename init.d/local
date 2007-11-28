@@ -36,7 +36,7 @@ start() {
 
 	# Add any misc programs that should be started
 	# to /etc/conf.d/local.start
-	if [ -e /etc/conf.d/local.start ] ; then
+	if [ -e /etc/conf.d/local.start ]; then
 		. /etc/conf.d/local.start
 	fi
 
@@ -48,7 +48,7 @@ stop() {
 
 	# Add any misc programs that should be stopped
 	# to /etc/conf.d/local.stop
-	if [ -e /etc/conf.d/local.stop ] ; then
+	if [ -e /etc/conf.d/local.stop ]; then
 		. /etc/conf.d/local.stop
 	fi
 

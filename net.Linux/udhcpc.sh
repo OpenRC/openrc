@@ -42,11 +42,11 @@ udhcpc_start() {
 	[ -z "${opts}" ] && opts=${dhcp}
 
 	# Map some generic options to dhcpcd
-	for opt in ${opts} ; do
+	for opt in ${opts}; do
 		case "${opt}" in
-			nodns) args="${args} --env PEER_DNS=no" ;;
-			nontp) args="${args} --env PEER_NTP=no" ;;
-			nogateway) args="${args} --env PEER_ROUTERS=no" ;;
+			nodns) args="${args} --env PEER_DNS=no";;
+			nontp) args="${args} --env PEER_NTP=no";;
+			nogateway) args="${args} --env PEER_ROUTERS=no";;
 			nosendhost) sendhost=false;
 		esac
 	done
@@ -58,27 +58,27 @@ udhcpc_start() {
 	# Try and load the cache if it exists
 	if [ -f "${cachefile}" ]; then
 		case "$ {args} " in
-			*" --request="*|*" -r "*) ;;
+			*" --request="*|*" -r "*);;
 			*)
 				local x=$(cat "${cachefile}")
 				# Check for a valid ip
 				case "${x}" in
-					*.*.*.*) args="${args} --request=${x}" ;;
+					*.*.*.*) args="${args} --request=${x}";;
 				esac
 				;;
 		esac
 	fi
 
 	case " ${args} " in
-		*" --quit "*|*" -q "*) x="/sbin/udhcpc" ;;
+		*" --quit "*|*" -q "*) x="/sbin/udhcpc";;
 		*) x="start-stop-daemon --start --exec /sbin/udhcpc \
-			--pidfile \"${pidfile}\" --" ;;
+			--pidfile \"${pidfile}\" --";;
 	esac
 
 	case " ${args} " in
-		*" --hosname="*|*" -h "*|*" -H "*) ;;
+		*" --hosname="*|*" -h "*|*" -H "*);;
 		*)
-			if ${sendhost} ; then
+			if ${sendhost}; then
 				local hname="$(hostname)"
 				if [ "${hname}" != "(none)" ] && [ "${hname}" != "localhost" ]; then
 					args="${args} --hostname='${hname}'"
@@ -112,7 +112,7 @@ udhcpc_stop() {
 		*" release "*)
 			start-stop-daemon --stop --quiet --oknodo --signal USR2 \
 				--exec /sbin/udhcpc --pidfile "${pidfile}"
-			if [ -f /var/cache/udhcpc-"${IFACE}".lease ] ; then
+			if [ -f /var/cache/udhcpc-"${IFACE}".lease ]; then
 				rm -f /var/cache/udhcpc-"${IFACE}".lease
 			fi
 			;;

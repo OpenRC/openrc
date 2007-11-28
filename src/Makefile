@@ -150,9 +150,9 @@ install:: $(TARGET)
 	for x in $(SBINLINKS); do ln -sf rc $(DESTDIR)/sbin/$$x; done
 	for x in $(RC_BINLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/bin/$$x; done
 	for x in $(RC_SBINLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/sbin/$$x; done
-	if test "$(PAM)" = "pam" ; then \
-		install -d $(DESTDIR)/etc/pam.d ; \
-		install -m 0644 start-stop-daemon.pam $(DESTDIR)/etc/pam.d/start-stop-daemon ; \
+	if test "$(PAM)" = "pam"; then \
+		install -d $(DESTDIR)/etc/pam.d; \
+		install -m 0644 start-stop-daemon.pam $(DESTDIR)/etc/pam.d/start-stop-daemon; \
 	fi
 
 clean-links:

@@ -39,11 +39,11 @@ pump_start() {
 	[ -z "${opts}" ] && opts=${dhcp}
 
 	# Map some generic options to dhcpcd
-	for opt in ${opts} ; do
+	for opt in ${opts}; do
 		case "${opt}" in
-			nodns) args="${args} --no-dns" ;;
-			nontp) args="${args} --no-ntp" ;;
-			nogateway) args="${args} --no-gateway" ;;
+			nodns) args="${args} --no-dns";;
+			nontp) args="${args} --no-ntp";;
+			nogateway) args="${args} --no-gateway";;
 		esac
 	done
 
@@ -67,7 +67,7 @@ pump_stop() {
 	start-stop-daemon --quiet --test --stop --exec /sbin/pump || return 0
 
 	# Check that pump is running on the interface
-	if ! pump --status --interface "${IFACE}" >/dev/null 2>/dev/null ; then 
+	if ! pump --status --interface "${IFACE}" >/dev/null 2>&1; then 
 		return 0
 	fi
 

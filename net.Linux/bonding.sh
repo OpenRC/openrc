@@ -40,8 +40,8 @@ bonding_pre_start() {
 	[ -z "${slaves}" ] && return 0
 
 	# Load the kernel module if required
-	if [ ! -d /proc/net/bonding ] ; then
-		if ! modprobe bonding ; then
+	if [ ! -d /proc/net/bonding ]; then
+		if ! modprobe bonding; then
 			eerror "Cannot load the bonding module"
 			return 1
 		fi
@@ -49,12 +49,12 @@ bonding_pre_start() {
 
 	# We can create the interface name we like now, but this
 	# requires sysfs
-	if ! _exists && [ -d /sys/class/net ] ; then
+	if ! _exists && [ -d /sys/class/net ]; then
 		echo "+${IFACE}" > /sys/class/net/bonding_masters
 	fi
 	_exists true || return 1
 
-	if ! _is_bond ; then
+	if ! _is_bond; then
 		eerror "${IFACE} is not capable of bonding"
 		return 1
 	fi
@@ -107,7 +107,7 @@ bonding_stop() {
 	# reset all slaves
 	(
 	for IFACE in ${slaves}; do
-		if _exists ; then
+		if _exists; then
 			_delete_addresses
 			_down
 		fi

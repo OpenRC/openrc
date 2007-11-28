@@ -32,7 +32,7 @@ depend() {
 }
 
 start() {
-	if [ -f /etc/nologin.boot ] ; then
+	if [ -f /etc/nologin.boot ]; then
 		rm -f /etc/nologin /etc/nologin.boot
 	fi
 }

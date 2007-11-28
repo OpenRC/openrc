@@ -32,7 +32,7 @@ do_unmount() {
 
 	local cmd="$1" retval=0 retry=
 	local f_opts="-m -c" f_kill="-s " mnt=
-	if [ "${RC_UNAME}" = "Linux" ] ; then
+	if [ "${RC_UNAME}" = "Linux" ]; then
 		f_opts="-m"
 		f_kill="-"
 	fi
@@ -57,24 +57,24 @@ do_unmount() {
 		esac
 
 		retry=3
-		while ! LC_ALL=C ${cmd} "${mnt}" 2>/dev/null ; do
+		while ! LC_ALL=C ${cmd} "${mnt}" 2>/dev/null; do
 			# Don't kill if it's us (/ and possibly /usr)
 			local pids="$(fuser ${f_opts} "${mnt}" 2>/dev/null)"
 			case " ${pids} " in
-				*" $$ "*) retry=0 ;;
-				"  ") eend 1 "in use but fuser finds nothing"; retry=0 ;;
+				*" $$ "*) retry=0;;
+				"  ") eend 1 "in use but fuser finds nothing"; retry=0;;
 				*)
 					local sig="KILL"
 					[ ${retry} -gt 0 ] && sig="TERM"
 					fuser ${f_kill}${sig} -k ${f_opts} "${mnt}" \
-						>/dev/null 2>/dev/null
+						>/dev/null 2>&1
 					sleep 1
 					retry=$((${retry} - 1))
 					;;
 			esac
 
 			# OK, try forcing things
-			if [ ${retry} -le 0 ] ; then
+			if [ ${retry} -le 0 ]; then
 				case "${cmd}" in
 					umount*)
 						LC_ALL=C ${cmd} -f "${mnt}" || retry=-999
@@ -86,7 +86,7 @@ do_unmount() {
 				break
 			fi
 		done
-		if [ ${retry} -eq -999 ] ; then
+		if [ ${retry} -eq -999 ]; then
 			eend 1
 			retval=1
 		else

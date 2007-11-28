@@ -34,19 +34,19 @@ else
 fi
 
 myscript=$1
-if [ -z "${myscript}" ] ; then
+if [ -z "${myscript}" ]; then
 	echo "Please execute an init.d script"
 	exit 1
 fi
 
-if [ -L "${myscript}" ] ; then
+if [ -L "${myscript}" ]; then
 	SERVICE=$(readlink "${myscript}")
 else
 	SERVICE=${myscript}
 fi
 SERVICE=${SERVICE##*/}
 
-if [ "$2" = "help" ] ; then
+if [ "$2" = "help" ]; then
 	BE_VERBOSE="yes"
 	NL="\n"
 else
@@ -55,7 +55,7 @@ else
 fi
 
 default_commands="describe help start status stop restart zap"
-extra_commands="$(. "${myscript}" 2>/dev/null ; echo "${extra_commands:-${opts}}")"
+extra_commands="$(. "${myscript}" 2>/dev/null; echo "${extra_commands:-${opts}}")"
 
 printf "Usage: ${CYAN}${SERVICE}${OFF} [ ${GREEN}flags${OFF} ] < ${GREEN}options${OFF} >
 
@@ -121,7 +121,7 @@ printf "    ${GREEN}${default_commands}${OFF}
 
 fi
 
-if [ -n "${extra_commands}" ] ; then
+if [ -n "${extra_commands}" ]; then
 printf "
 ${CYAN}Additional Options:${OFF}${NL}
     ${GREEN}${extra_commands}${OFF}

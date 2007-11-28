@@ -36,16 +36,18 @@ description="Configures network interfaces."
 __IFS="
 "
 _shell_var() {
-	local rem=$1 c= r=
+	local rem=$1 c= r= var=
 	while [ -n "${rem}" ]; do
 		r=${rem#?}
 		c=${rem%${r}}
 		case "${c}" in
-			[a-zA-Z0-9]) printf "%c" "${c}";;
-			*) printf "_";;
+			[a-zA-Z0-9]);;
+			*) c=_;;
 		esac
+		var=${var}${c}
 		rem=${r}
 	done
+	echo ${var}
 }
 
 depend() {
@@ -56,7 +58,7 @@ depend() {
 	after bootmisc
 	provide net
 	case "${IFACE}" in
-		lo|lo0) ;;
+		lo|lo0);;
 		*)
 			after net.lo net.lo0
 			local prov=
@@ -77,7 +79,7 @@ depend() {
 # Support bash arrays - sigh
 _get_array() {
 	local _a=
-	if [ -n "${BASH}" ] ; then
+	if [ -n "${BASH}" ]; then
 		case "$(declare -p "$1" 2>/dev/null)" in
 			"declare -a "*)
 				eval "set -- \"\${$1[@]}\""
@@ -97,7 +99,7 @@ _get_array() {
 
 # Flatten bash arrays to simple strings
 _flatten_array() {
-	if [ -n "${BASH}" ] ; then
+	if [ -n "${BASH}" ]; then
 		case "$(declare -p "$1" 2>/dev/null)" in
 			"declare -a "*)
 				eval "set -- \"\${$1[@]}\""
@@ -128,9 +130,9 @@ _wait_for_carrier() {
 
 	yesno ${RC_PARALLEL} && efunc=einfo
 	${efunc} "Waiting for carrier (${timeout} seconds) "
-	while [ ${timeout} -gt 0 ] ; do
+	while [ ${timeout} -gt 0 ]; do
 		sleep 1
-		if _has_carrier ; then
+		if _has_carrier; then
 			[ "${efunc}" = "einfon" ] && echo
 			eend 0
 			return 0
@@ -149,7 +151,7 @@ _netmask2cidr() {
 
 	local IFS=.
 	for i in $1; do
-		while [ ${i} != "0" ] ; do
+		while [ ${i} != "0" ]; do
 			len=$((${len} + ${i} % 2))
 			i=$((${i} >> 1))
 		done
@@ -161,11 +163,11 @@ _netmask2cidr() {
 _configure_variables() {
 	local var= v= t=
 
-	for var in ${_config_vars} ; do
+	for var in ${_config_vars}; do
 		local v=
-		for t in "$@" ; do
+		for t in "$@"; do
 			eval v=\$${var}_${t}
-			if [ -n "${v}" ] ; then
+			if [ -n "${v}" ]; then
 				eval ${var}_${IFVAR}=\$${var}_${t}
 				continue 2
 			fi
@@ -180,11 +182,11 @@ _show_address() {
 # Basically sorts our modules into order and saves the list
 _gen_module_list() {
 	local x= f= force=$1
-	if ! ${force} && [ -s "${MODULESLIST}" -a "${MODULESLIST}" -nt "${MODULESDIR}" ] ; then
+	if ! ${force} && [ -s "${MODULESLIST}" -a "${MODULESLIST}" -nt "${MODULESDIR}" ]; then
 		local update=false
-		for x in "${MODULESDIR}"/* ; do
+		for x in "${MODULESDIR}"/*; do
 			[ -e "${x}" ] || continue
-			if [ "${x}" -nt "${MODULESLIST}" ] ; then
+			if [ "${x}" -nt "${MODULESLIST}" ]; then
 				update=true
 				break
 			fi
@@ -202,13 +204,13 @@ _gen_module_list() {
 	before() {
 		local mod=${MODULE}
 		local MODULE=
-		for MODULE in "$@" ; do
+		for MODULE in "$@"; do
 			after "${mod}"
 		done
 	}
 
 	program() {
-		if [ "$1" = "start" -o "$1" = "stop" ] ; then
+		if [ "$1" = "start" -o "$1" = "stop" ]; then
 			local s="$1"
 			shift
 			eval ${MODULE}_program_${s}="\"\${${MODULE}_program_${s}}\${${MODULE}_program_${s}:+ }$*\""
@@ -220,12 +222,12 @@ _gen_module_list() {
 	provide() {
 		eval ${MODULE}_provide="\"\${${MODULE}_provide}\${${MODULE}_provide:+ }$*\""
 		local x
-		for x in $* ; do
+		for x in $*; do
 			eval ${x}_providedby="\"\${${MODULE}_providedby}\${${MODULE}_providedby:+ }${MODULE}\""
 		done
 	}
 
-	for MODULE in "${MODULESDIR}"/* ; do
+	for MODULE in "${MODULESDIR}"/*; do
 		sh -n "${MODULE}" || continue
 		. "${MODULE}" || continue 
 		MODULE=${MODULE#${MODULESDIR}/}
@@ -238,15 +240,15 @@ _gen_module_list() {
 	SORTED=
 	visit() {
 		case " ${VISITED} " in
-			*" $1 "*) return ;;
+			*" $1 "*) return;;
 		esac
 		VISITED="${VISITED} $1"
 
 		eval AFTER=\$${1}_after
-		for MODULE in ${AFTER} ; do
+		for MODULE in ${AFTER}; do
 			eval PROVIDEDBY=\$${MODULE}_providedby
-			if [ -n "${PROVIDEDBY}" ] ; then
-				for MODULE in ${PROVIDEDBY} ; do
+			if [ -n "${PROVIDEDBY}" ]; then
+				for MODULE in ${PROVIDEDBY}; do
 					visit "${MODULE}"
 				done
 			else
@@ -255,7 +257,7 @@ _gen_module_list() {
 		done
 
 		eval PROVIDE=\$${1}_provide
-		for MODULE in ${PROVIDE} ; do
+		for MODULE in ${PROVIDE}; do
 			visit "${MODULE}"
 		done
 
@@ -263,13 +265,13 @@ _gen_module_list() {
 		[ -z "${PROVIDEDBY}" ] && SORTED="${SORTED} $1"
 	}
 
-	for MODULE in ${MODULES} ; do
+	for MODULE in ${MODULES}; do
 		visit "${MODULE}"
 	done
 
 	printf "" > "${MODULESLIST}"
 	i=0
-	for MODULE in ${SORTED} ; do
+	for MODULE in ${SORTED}; do
 		eval PROGRAM=\$${MODULE}_program
 		eval PROGRAM_START=\$${MODULE}_program_start
 		eval PROGRAM_STOP=\$${MODULE}_program_stop
@@ -292,56 +294,56 @@ _load_modules() {
 
 	# Ensure our list is up to date
 	_gen_module_list false
-	if ! . "${MODULESLIST}" ; then
+	if ! . "${MODULESLIST}"; then
 		_gen_module_list true
 		. "${MODULESLIST}"
 	fi
 
 	MODULES=
-	if [ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ] ; then
+	if [ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ]; then
 		eval mymods=\$modules_${IFVAR}
 		[ -z "${mymods}" ] && mymods=${modules}
 	fi
 
 	local i=-1 x= mod= f= provides=
-	while true ; do
+	while true; do
 		i=$((${i} + 1))
 		eval mod=\$module_${i}
 		[ -z "${mod}" ] && break
 		[ -e "${MODULESDIR}/${mod}.sh" ] || continue
 
 		eval set -- \$module_${i}_program
-		if [ -n "$1" ] ; then
+		if [ -n "$1" ]; then
 			x=
-			for x in "$@" ; do
+			for x in "$@"; do
 				[ -x "${x}" ] && break
 			done
 			[ -x "${x}" ] || continue
 		fi
-		if ${starting} ; then
+		if ${starting}; then
 			eval set -- \$module_${i}_program_start
 		else
 			eval set -- \$module_${i}_program_stop
 		fi
-		if [ -n "$1" ] ; then
+		if [ -n "$1" ]; then
 			x=
-			for x in "$@" ; do
+			for x in "$@"; do
 				[ -x "${x}" ] && break
 			done
 			[ -x "${x}" ] || continue
 		fi
 
 		eval provides=\$module_${i}_provide
-		if ${starting} ; then
+		if ${starting}; then
 			case " ${mymods} " in
-				*" !${mod} "*) continue ;;
-				*" !${provides} "*) [ -n "${provides}" ] && continue ;;
+				*" !${mod} "*) continue;;
+				*" !${provides} "*) [ -n "${provides}" ] && continue;;
 			esac
 		fi
 		MODULES="${MODULES}${MODULES:+ }${mod}"
 
 		# Now load and wrap our functions
-		if ! . "${MODULESDIR}/${mod}.sh" ; then
+		if ! . "${MODULESDIR}/${mod}.sh"; then
 			eend 1 "${SVCNAME}: error loading module \`${mod}'"
 			exit 1
 		fi
@@ -350,8 +352,8 @@ _load_modules() {
 
 		# Wrap our provides
 		local f=
-		for f in pre_start start post_start ; do 
-			eval "${provides}_${f}() { type ${mod}_${f} >/dev/null 2>/dev/null || return 0; ${mod}_${f} \"\$@\"; }"
+		for f in pre_start start post_start; do 
+			eval "${provides}_${f}() { type ${mod}_${f} >/dev/null 2>&1 || return 0; ${mod}_${f} \"\$@\"; }"
 		done
 
 		eval module_${mod}_provides="${provides}"
@@ -359,13 +361,13 @@ _load_modules() {
 	done
 
 	# Wrap our preferred modules
-	for mod in ${mymods} ; do
+	for mod in ${mymods}; do
 		case " ${MODULES} " in
 			*" ${mod} "*)
 			eval x=\$module_${mod}_provides
 			[ -z "${x}" ] && continue
-			for f in pre_start start post_start ; do 
-				eval "${x}_${f}() { type ${mod}_${f} >/dev/null 2>/dev/null || return 0; ${mod}_${f} \"\$@\"; }"
+			for f in pre_start start post_start; do 
+				eval "${x}_${f}() { type ${mod}_${f} >/dev/null 2>&1 || return 0; ${mod}_${f} \"\$@\"; }"
 			done
 			eval module_${x}_providedby="${mod}"
 			;;
@@ -376,17 +378,17 @@ _load_modules() {
 	# Otherwise reverse the list
 	local LIST="${MODULES}" p=
 	MODULES=
-	if ${starting} ; then
-		for mod in ${LIST} ; do
+	if ${starting}; then
+		for mod in ${LIST}; do
 			eval x=\$module_${mod}_provides
-			if [ -n "${x}" ] ; then
+			if [ -n "${x}" ]; then
 				eval p=\$module_${x}_providedby
 				[ "${mod}" != "${p}" ] && continue
 			fi
 			MODULES="${MODULES}${MODULES:+ }${mod}"
 		done
 	else
-		for mod in ${LIST} ; do 
+		for mod in ${LIST}; do 
 			MODULES="${mod}${MODULES:+ }${MODULES}"
 		done
 	fi
@@ -398,11 +400,11 @@ _load_config() {
 	local config="$(_get_array "config_${IFVAR}")"
 	local fallback="$(_get_array fallback_${IFVAR})"
 
-	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ] ; then
+	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ]; then
 		[ "${config}" != "null" ] && config="127.0.0.1/8
 ${config}"
 	else
-		if [ -z "${config}" ] ; then
+		if [ -z "${config}" ]; then
 			ewarn "No configuration specified; defaulting to DHCP"
 			config="dhcp"
 		fi
@@ -438,7 +440,7 @@ start() {
 	einfo "Bringing up interface ${IFACE}"
 	eindent
 
-	if [ -z "${MODULES}" ] ; then
+	if [ -z "${MODULES}" ]; then
 		local MODULES=
 		_load_modules true
 	fi
@@ -446,7 +448,7 @@ start() {
 	# We up the iface twice if we have a preup to ensure it's up if
 	# available in preup and afterwards incase the user inadvertently
 	# brings it down
-	if type preup >/dev/null 2>/dev/null ; then
+	if type preup >/dev/null 2>&1; then
 		_up 2>/dev/null
 		ebegin "Running preup"
 		eindent
@@ -456,23 +458,23 @@ start() {
 
 	_up 2>/dev/null
 	
-	for module in ${MODULES} ; do
-		if type "${module}_pre_start" >/dev/null 2>/dev/null ; then
-			if ! ${module}_pre_start ; then
+	for module in ${MODULES}; do
+		if type "${module}_pre_start" >/dev/null 2>&1; then
+			if ! ${module}_pre_start; then
 				eend 1
 				exit 1
 			fi
 		fi
 	done
 
-	if ! _exists ; then
+	if ! _exists; then
 		eerror "ERROR: interface ${IFACE} does not exist"
 		eerror "Ensure that you have loaded the correct kernel module for your hardware"
 		return 1
 	fi
 
-	if ! _wait_for_carrier ; then
-		if service_started devd ; then
+	if ! _wait_for_carrier; then
+		if service_started devd; then
 			ewarn "no carrier, but devd will start us when we have one"
 			mark_service_inactive "${SVCNAME}"
 		else
@@ -485,13 +487,13 @@ start() {
 	_load_config
 	config_index=0
 
-	if [ -n "${our_metric}" ] ; then
+	if [ -n "${our_metric}" ]; then
 		metric=${our_metric}
-	elif [ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ] ; then
+	elif [ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ]; then
 		metric=$((${metric} + $(_ifindex)))
 	fi
 
-	while true ; do
+	while true; do
 		eval config=\$config_${config_index}
 		[ -z "${config}" ] && break 
 
@@ -500,26 +502,26 @@ start() {
 		eindent
 		case "$1" in
 			noop)
-				if [ -n "$(_get_inet_address)" ] ; then
+				if [ -n "$(_get_inet_address)" ]; then
 					oneworked=true
 					break
 				fi
 				;;
-			null) : ;;
-			[0-9]*|*:*) _add_address ${config} ;;
+			null) :;;
+			[0-9]*|*:*) _add_address ${config};;
 			*)
-				if type "${config}_start" >/dev/null 2>/dev/null ; then
+				if type "${config}_start" >/dev/null 2>&1; then
 					"${config}"_start
 				else
 					eerror "nothing provides \`${config}'"
 				fi
 				;;
 		esac
-		if eend $? ; then
+		if eend $?; then
 			oneworked=true
 		else
 			eval config=\$fallback_${config_index}
-			if [ -n "${config}" ] ; then
+			if [ -n "${config}" ]; then
 				eoutdent
 				ewarn "Trying fallback configuration ${config}"
 				eindent
@@ -532,8 +534,8 @@ start() {
 		config_index=$((${config_index} + 1))
 	done
 
-	if ! ${oneworked} ; then
-		if type failup >/dev/null 2>/dev/null ; then
+	if ! ${oneworked}; then
+		if type failup >/dev/null 2>&1; then
 			ebegin "Running failup"
 			eindent
 			failup
@@ -544,7 +546,7 @@ start() {
 
 	local hidefirstroute=false first=true
 	local routes="$(_get_array "routes_${IFVAR}")"
-	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ] ; then
+	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ]; then
 		if [ "${config_0}" != "null" ]; then
 			routes="127.0.0.0/8 via 127.0.0.1
 ${routes}"
@@ -562,14 +564,14 @@ ${routes}"
 		ebegin ${cmd}
 		# Work out if we're a host or a net if not told
 		case ${cmd} in
-			*" -net "*|*" -host "*) ;;
-			*" netmask "*)             cmd="-net ${cmd}" ;;
-			*.*.*.*/32)                cmd="-host ${cmd}" ;;
-			*.*.*.*/*|0.0.0.0|default) cmd="-net ${cmd}" ;;
-			*)                         cmd="-host ${cmd}" ;;
+			*" -net "*|*" -host "*);;
+			*" netmask "*)             cmd="-net ${cmd}";;
+			*.*.*.*/32)                cmd="-host ${cmd}";;
+			*.*.*.*/*|0.0.0.0|default) cmd="-net ${cmd}";;
+			*)                         cmd="-host ${cmd}";;
 		esac
-		if ${hidefirstroute} ; then
-			_add_route ${cmd} >/dev/null 2>/dev/null
+		if ${hidefirstroute}; then
+			_add_route ${cmd} >/dev/null 2>&1
 			hidefirstroute=false
 		else
 			_add_route ${cmd} >/dev/null
@@ -579,16 +581,16 @@ ${routes}"
 	done
 	unset IFS
 
-	for module in ${MODULES} ; do
-		if type "${module}_post_start" >/dev/null 2>/dev/null ; then
-			if ! ${module}_post_start ; then
+	for module in ${MODULES}; do
+		if type "${module}_post_start" >/dev/null 2>&1; then
+			if ! ${module}_post_start; then
 				eend 1
 				exit 1
 			fi
 		fi
 	done
 
-	if type postup >/dev/null 2>/dev/null ; then
+	if type postup >/dev/null 2>&1; then
 		ebegin "Running postup"
 		eindent
 		postup 
@@ -605,12 +607,12 @@ stop() {
 	einfo "Bringing down interface ${IFACE}"
 	eindent
 
-	if [ -z "${MODULES}" ] ; then
+	if [ -z "${MODULES}" ]; then
 		local MODULES=
 		_load_modules false
 	fi
 
-	if type predown >/dev/null 2>/dev/null ; then
+	if type predown >/dev/null 2>&1; then
 		ebegin "Running predown"
 		eindent
 		predown || return 1
@@ -622,28 +624,28 @@ stop() {
 		fi
 	fi
 
-	for module in ${MODULES} ; do
-		if type "${module}_pre_stop" >/dev/null 2>/dev/null ; then
-			if ! ${module}_pre_stop ; then
+	for module in ${MODULES}; do
+		if type "${module}_pre_stop" >/dev/null 2>&1; then
+			if ! ${module}_pre_stop; then
 				eend 1
 				exit 1
 			fi
 		fi
 	done
 
-	for module in ${MODULES} ; do
-		if type "${module}_stop" >/dev/null 2>/dev/null ; then
+	for module in ${MODULES}; do
+		if type "${module}_stop" >/dev/null 2>&1; then
 			${module}_stop
 		fi
 	done
 
 	# Only delete addresses for non PPP interfaces
-	if ! type is_ppp >/dev/null 2>/dev/null || ! is_ppp ; then
+	if ! type is_ppp >/dev/null 2>&1 || ! is_ppp; then
 		_delete_addresses "${IFACE}"
 	fi
 
-	for module in ${MODULES} ; do
-		if type "${module}_post_stop" >/dev/null 2>/dev/null ; then
+	for module in ${MODULES}; do
+		if type "${module}_post_stop" >/dev/null 2>&1; then
 			${module}_post_stop
 		fi
 	done
@@ -654,7 +656,7 @@ stop() {
 
 	type resolvconf >/dev/null 2>&1 && resolvconf -d "${IFACE}"
 
-	if type postdown >/dev/null 2>/dev/null ; then
+	if type postdown >/dev/null 2>&1; then
 		ebegin "Running postdown"
 		eindent
 		postdown

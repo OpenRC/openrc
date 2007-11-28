@@ -51,15 +51,15 @@ dolisting() {
 	local x= y= mylist= mypath="$*"
 
 	# Here we use file globbing instead of ls to save on forking
-	for x in ${mypath} ; do
+	for x in ${mypath}; do
 		[ ! -e "${x}" ] && continue
 
-		if [ -L "${x}" -o -f "${x}" ] ; then
+		if [ -L "${x}" -o -f "${x}" ]; then
 			mylist="${mylist} "${x}
-		elif [ -d "${x}" ] ; then
+		elif [ -d "${x}" ]; then
 			[ "${x%/}" != "${x}" ] && x=${x%/}
 			
-			for y in "${x}"/* ; do
+			for y in "${x}"/*; do
 				[ -e "${y}" ] && mylist="${mylist} ${y}"
 			done
 		fi
@@ -73,12 +73,12 @@ dolisting() {
 #   return 0 if any of the files/dirs are newer than
 #   the reference file
 #
-#   EXAMPLE: if is_older_than a.out *.o ; then ...
+#   EXAMPLE: if is_older_than a.out *.o; then ...
 is_older_than() {
 	local x= ref="$1"
 	shift
 
-	for x in "$@" ; do
+	for x in "$@"; do
 		[ -e "${x}" ] || continue
 		# We need to check the mtime if it's a directory too as the
 		# contents may have changed.
@@ -91,10 +91,10 @@ is_older_than() {
 
 uniqify() {
     local result=
-    while [ -n "$1" ] ; do
+    while [ -n "$1" ]; do
 		case " ${result} " in
-			*" $1 "*) ;;
-			*) result="${result} $1" ;;
+			*" $1 "*);;
+			*) result="${result} $1";;
 		esac
 		shift
 	done
@@ -138,17 +138,19 @@ KV_to_int() {
 }
 
 _sanitize_path() {
-	local IFS=":" p=
+	local IFS=":" p= path=
 	for p in ${PATH}; do
 		case "${p}" in
-			/lib/rc/sbin|/bin|/sbin|/usr/bin|/usr/sbin|/usr/local/bin|/usr/local/sbin) ;;
-			*) printf "%s" ":${p}";;
+			/lib/rc/sbin|/bin|/sbin|/usr/bin|/usr/sbin|/usr/local/bin|/usr/local/sbin);;
+			*) path="${path}:${p}";;
 		esac
 	done
+
+	echo "${path}"
 }
 
 # Allow our scripts to support zsh
-if [ -n "${ZSH_VERSION}" ] ; then
+if [ -n "${ZSH_VERSION}" ]; then
   emulate sh
   NULLCMD=:
   # Zsh 3.x and 4.x performs word splitting on ${1+"$@"}, which
@@ -161,7 +163,7 @@ fi
 export PATH="/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin$(_sanitize_path "${PATH}")"
 unset _sanitize_path
 
-for arg in "$@" ; do
+for arg in "$@"; do
 	case "${arg}" in
 		--nocolor|--nocolour|-C)
 			export RC_NOCOLOR="yes"

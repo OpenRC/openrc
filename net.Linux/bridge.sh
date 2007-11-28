@@ -45,7 +45,7 @@ bridge_pre_start() {
 	[ -n "${ports}" ] && bridge_post_stop
 
 	(
-	if [ -z "${ports}" -a -n "${brif}" ] ; then
+	if [ -z "${ports}" -a -n "${brif}" ]; then
 		ports="${IFACE}"
 		IFACE="${brif}"
 	else
@@ -100,7 +100,7 @@ bridge_pre_start() {
 bridge_post_stop() {
 	local port= ports= delete=false extra=
 
-	if _is_bridge ; then
+	if _is_bridge; then
 		ebegin "Destroying bridge ${IFACE}"
 		_down
 		ports="$(brctl show 2>/dev/null | \

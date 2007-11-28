@@ -37,12 +37,12 @@ do_checkfs() {
 
 	ebegin "Checking all filesystems"
 	
-	if  [ -e /forcefsck ] || get_bootparam "forcefsck" ; then
+	if  [ -e /forcefsck ] || get_bootparam "forcefsck"; then
 		ewarn "A full fsck has been forced"
 		mode="-f -n"
 	fi
 
-	if [ "${RC_UNAME}" = "Linux" ] ; then
+	if [ "${RC_UNAME}" = "Linux" ]; then
 		opts="-A -C0 -R -T"
 	else
 		parts="$(fstabinfo --passno ">1")"
@@ -52,14 +52,14 @@ do_checkfs() {
 	fsck ${opts} ${mode} ${parts}
 	retval=$?
 	
-	if [ ${retval} -eq 0 ] ; then
+	if [ ${retval} -eq 0 ]; then
 		eend 0
-	elif [ ${retval} -eq 1 ] ; then
+	elif [ ${retval} -eq 1 ]; then
 		ewend 1 "Filesystem errors corrected."
 		retval=0
-	elif [ ${retval} -eq 2 ] ; then
+	elif [ ${retval} -eq 2 ]; then
 		ewend 1 "System should be rebooted"
-	elif [ ${retval} -eq 8 ] ; then
+	elif [ ${retval} -eq 8 ]; then
 		ewend 1 "Operational error, continuing"
 		retval=0
 	else
@@ -70,7 +70,7 @@ do_checkfs() {
 			eend ${retval}
 		fi
 
-		if [ ${retval} -gt 3 ] ; then
+		if [ ${retval} -gt 3 ]; then
 			eend 2 "Fsck could not correct all errors, manual repair needed"
 			exec rc-abort || exit 1
 		fi

@@ -44,12 +44,12 @@ dhcpcd_start() {
 	[ -z "${opts}" ] && opts=${dhcp}
 
 	# Map some generic options to dhcpcd
-	for opt in ${opts} ; do
+	for opt in ${opts}; do
 		case "${opt}" in
-			nodns) args="${args} -R" ;;
-			nontp) args="${args} -N" ;;
-			nonis) args="${args} -Y" ;;
-			nogateway) args="${args} -G" ;;
+			nodns) args="${args} -R";;
+			nontp) args="${args} -N";;
+			nonis) args="${args} -Y";;
+			nogateway) args="${args} -G";;
 			nosendhost) args="${args} -h ''";
 		esac
 	done

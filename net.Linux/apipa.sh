@@ -28,8 +28,9 @@ apipa_depend() {
 }
 
 _random() {
-	if [ -n "${BASH}" ] ; then
-		echo "${RANDOM}"
+	local r=${RANDOM}
+	if [ -n "${r}" ]; then
+		echo "${r}"
 	else
 		uuidgen | sed -n -e 's/[^[:digit:]]//g' -e 's/\(^.\{1,7\}\).*/\1/p'
 	fi
@@ -49,7 +50,7 @@ apipa_start() {
 
 		addr="169.254.${i1}.${i2}"
 		vebegin "${addr}/16"
-		if ! arping_address "${addr}" ; then
+		if ! arping_address "${addr}"; then
 			eval config_${config_index}="\"${addr}/16 broadcast 169.254.255.255\""
 			config_index=$((${config_index} - 1))
 			veend 0

@@ -44,7 +44,7 @@ start() {
 	if [ -d /proc/bus/usb -a ! -e /proc/bus/usb/devices ]; then
 		local usbfs=$(grep -Fow usbfs /proc/filesystems ||
 					  grep -Fow usbdevfs /proc/filesystems)
-		if [ -n "${usbfs}" ] ; then
+		if [ -n "${usbfs}" ]; then
 			ebegin "Mounting USB device filesystem (${usbfs})"
 			local usbgid="$(getent group usb | \
 				sed -e 's/.*:.*:\(.*\):.*/\1/')"
@@ -56,8 +56,8 @@ start() {
 	fi
 
 	# Setup Kernel Support for the NFS daemon status
-	if [ -d /proc/fs/nfsd ] && ! mountinfo -q /proc/fs/nfsd ; then
-		if grep -qs nfsd /proc/filesystems ; then
+	if [ -d /proc/fs/nfsd ] && ! mountinfo -q /proc/fs/nfsd; then
+		if grep -qs nfsd /proc/filesystems; then
 			ebegin "Mounting nfsd filesystem"
 			mount -t nfsd -o nodev,noexec,nosuid \
 				nfsd /proc/fs/nfsd
@@ -66,8 +66,8 @@ start() {
 	fi
 
 	# Setup Kernel Support for miscellaneous Binary Formats
-	if [ -d /proc/sys/fs/binfmt_misc ] && ! mountinfo -q /proc/sys/fs/binfmt_misc ; then
-		if grep -qs binfmt_misc /proc/filesystems ; then
+	if [ -d /proc/sys/fs/binfmt_misc ] && ! mountinfo -q /proc/sys/fs/binfmt_misc; then
+		if grep -qs binfmt_misc /proc/filesystems; then
 			ebegin "Mounting misc binary format filesystem"
 			mount -t binfmt_misc -o nodev,noexec,nosuid \
 				binfmt_misc /proc/sys/fs/binfmt_misc
@@ -76,8 +76,8 @@ start() {
 	fi
 
 	# Setup Kernel Support for securityfs
-	if [ -d /sys/kernel/security ] && ! mountinfo -q /sys/kernel/security ; then
-		if grep -qs securityfs /proc/filesystems ; then
+	if [ -d /sys/kernel/security ] && ! mountinfo -q /sys/kernel/security; then
+		if grep -qs securityfs /proc/filesystems; then
 			ebegin "Mounting security filesystem"
 			mount -t securityfs securityfs /sys/kernel/security \
 				-o nodev,noexec,nosuid
@@ -86,8 +86,8 @@ start() {
 	fi
 
 	# Setup Kernel Support for debugfs
-	if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug ; then
-		if grep -qs debugfs /proc/filesystems ; then
+	if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug; then
+		if grep -qs debugfs /proc/filesystems; then
 			ebegin "Mounting debug filesystem"
 			mount -t debugfs debugfs /sys/kernel/debug \
 				-o nodev,noexec,nosuid
@@ -96,8 +96,8 @@ start() {
 	fi
 
 	# Setup Kernel Support for SELinux
-	if [ -d /selinux ] && ! mountinfo -q /selinux ; then
-		if grep -qs selinuxfs /proc/filesystems ; then
+	if [ -d /selinux ] && ! mountinfo -q /selinux; then
+		if grep -qs selinuxfs /proc/filesystems; then
 			ebegin "Mounting SELinux filesystem"
 			mount -t selinuxfs selinuxfs /selinux
 			eend $?

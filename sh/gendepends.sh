@@ -51,7 +51,7 @@ depend() {
 }
 
 cd /etc/init.d
-for SVCNAME in * ; do
+for SVCNAME in *; do
 	[ -x "${SVCNAME}" ] || continue
 
 	# Only generate dependencies for runscripts
@@ -65,14 +65,14 @@ for SVCNAME in * ; do
 	exec 3>&1 1>&2
 
 	rc_c=${SVCNAME%%.*}
-	if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ] ; then
+	if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ]; then
 		[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}"
 	fi
 	unset rc_c
 
 	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}"
 
-	if . /etc/init.d/"${SVCNAME}" ; then
+	if . /etc/init.d/"${SVCNAME}"; then
 		echo "${SVCNAME}" >&3
 		depend
 

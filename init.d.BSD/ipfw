@@ -42,8 +42,8 @@ ipfw() {
 
 init() {
 	# Load the kernel module
-	if ! sysctl net.inet.ip.fw.enable=1 >/dev/null 2>/dev/null; then
-		if ! kldload ipfw ; then
+	if ! sysctl net.inet.ip.fw.enable=1 >/dev/null 2>&1; then
+		if ! kldload ipfw; then
 			eend 1 "Unable to load firewall module"
 			return 1
 		fi
@@ -68,7 +68,7 @@ init() {
 start() {
 	local i= p= log=
 	ebegin "Starting firewall rules"
-	if ! init ; then
+	if ! init; then
 		eend 1 "Failed to flush firewall ruleset"
 		return 1
 	fi
@@ -157,7 +157,7 @@ stop() {
 
 panic() {
 	ebegin "Stopping firewall rules - hard"
-	if ! init ; then
+	if ! init; then
 		eend 1 "Failed to flush firewall ruleset"
 		return 1
 	fi

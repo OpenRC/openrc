@@ -43,9 +43,9 @@ _get_vlans() {
 }
 
 _check_vlan() {
-	if [ ! -d /proc/net/vlan ] ; then
+	if [ ! -d /proc/net/vlan ]; then
 		modprobe 8021q
-		if [ ! -d /proc/net/vlan ] ; then
+		if [ ! -d /proc/net/vlan ]; then
 			eerror "VLAN (802.1q) support is not present in this kernel"
 			return 1
 		fi
@@ -64,13 +64,13 @@ vlan_pre_start() {
 	for v in ${vc}; do
 		unset IFS
 		case "${v}" in
-			set_name_type" "*) x=${v} ;;
+			set_name_type" "*) x=${v};;
 			*)
 				set -- ${v}
 				x="$1 ${IFACE}"
 				shift
 				x="${x} $@"
-			   ;;
+				;;
 		esac
 
 		e="$(vconfig ${x} 2>&1 1>/dev/null)"
@@ -92,7 +92,7 @@ vlan_post_start() {
 	for vlan in ${vlans}; do
 		einfo "Adding VLAN ${vlan} to ${IFACE}"
 		e="$(vconfig add "${IFACE}" "${vlan}" 2>&1 1>/dev/null)"
-		if [ -n "${e}" ] ; then
+		if [ -n "${e}" ]; then
 			eend 1 "${e}"
 			continue
 		fi

@@ -40,19 +40,19 @@ dhclient_start() {
 	[ -z "${opts}" ] && opts=${dhcp}
 
 	# Map some generic options to dhcpcd
-	for opt in ${opts} ; do
+	for opt in ${opts}; do
 		case "${opt}" in
-			nodns) args="${args} -e PEER_DNS=no" ;;
-			nontp) args="${args} -e PEER_NTP=no" ;;
-			nogateway) args="${args} -e PEER_ROUTERS=no" ;;
-			nosendhost) sendhost=false ;;
+			nodns) args="${args} -e PEER_DNS=no";;
+			nontp) args="${args} -e PEER_NTP=no";;
+			nogateway) args="${args} -e PEER_ROUTERS=no";;
+			nosendhost) sendhost=false;;
 		esac
 	done
 
 	# Add our route metric
 	[ "${metric:-0}" != "0" ] && args="${args} -e IF_METRIC=${metric}"
 
-	if ${sendhost} ; then
+	if ${sendhost}; then
 		local hname="$(hostname)"
 		if [ "${hname}" != "(none)" -a "${hname}" != "localhost" ]; then
 			dhconf="${dhconf} interface \"${IFACE}\" {"
@@ -76,14 +76,14 @@ dhclient_stop() {
 	[ ! -f "${pidfile}" ] && return 0
 
 	# Get our options
-	if [ -x /sbin/dhclient ] ; then
+	if [ -x /sbin/dhclient ]; then
 		eval opts=\$dhcp_${IFVAR}
 		[ -z "${opts}" ] && opts=${dhcp}
 	fi
 
 	ebegin "Stopping dhclient on ${IFACE}"
 	case " ${opts} " in
-		*" release "*) dhclient -q -r -pf "${pidfile}" "${IFACE}" ;;
+		*" release "*) dhclient -q -r -pf "${pidfile}" "${IFACE}";;
 		*)
 			start-stop-daemon --stop --quiet \
 				--exec /sbin/dhclient --pidfile "${pidfile}"

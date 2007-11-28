@@ -27,7 +27,7 @@
 command=/usr/sbin/sshd
 command_args=${sshd_args}
 pidfile=/var/run/sshd.pid
-required_files=/etc/sshd/sshd_config
+required_files=/etc/ssh/sshd_config
 required_dirs=/var/empty
 
 depend() {

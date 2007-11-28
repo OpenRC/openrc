@@ -974,7 +974,7 @@
 #
 #	# Test to see if we're docked or not and configure like so
 #	# config_docked="dhcp"
-#	if grep -q "1" /sys/devices/platform/dock.0/docked ; then
+#	if grep -q "1" /sys/devices/platform/dock.0/docked; then
 #       einfo "${IFACE} is docked - configuring"
 #		_configure_variables "docked"
 #	fi
@@ -1009,15 +1009,15 @@
 #	#	'from 216.113.223.51/32 to 192.168.1.0/24 table localnet priority 100' \
 #	#"
 #	eval set -- $\rules_${IFVAR}
-#	if [ $# != 0 ] ; then
+#	if [ $# != 0 ]; then
 #		einfo "Adding IP policy routing rules"
 #		eindent
 #		# Ensure that the kernel supports policy routing
-#		if ! ip rule list | grep -q "^" ; then
+#		if ! ip rule list | grep -q "^"; then
 #			eerror "You need to enable IP Policy Routing (CONFIG_IP_MULTIPLE_TABLES)"
 #			eerror "in your kernel to use ip rules"
 #		else
-#			for x in "$@" ; do
+#			for x in "$@"; do
 #				ebegin "${x}"
 #				ip rule add ${x} dev "${IFACE}"
 #				eend $?
@@ -1037,11 +1037,11 @@
 #	[ "${IFACE}" != "lo" ] && ethtool -s "${IFACE}" wol g
 
 #	Automatically erase any ip rules created in the example postup above
-#	if interface_exists "${IFACE}" ; then
+#	if interface_exists "${IFACE}"; then
 #		# Remove any rules for this interface
 #		local rule
 #		ip rule list | grep " iif ${IFACE}[ ]*" | {
-#			while read rule ; do
+#			while read rule; do
 #				rule="${rule#*:}"	
 #				ip rule del ${rule}
 #			done

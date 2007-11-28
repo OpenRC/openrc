@@ -69,7 +69,7 @@ stop() {
 	fi
 
 	ebegin "Stopping the System Clock Adjuster"
-	if start-stop-daemon --test --quiet --stop --exec /sbin/adjkerntz ; then
+	if start-stop-daemon --test --quiet --stop --exec /sbin/adjkerntz; then
 		start-stop-daemon --stop --exec /sbin/adjkerntz
 		eend $?
 	else

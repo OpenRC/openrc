@@ -96,8 +96,8 @@ start_pre() {
 			local getuser="stat -f%Su"
 			[ "${RC_UNAME}" = "Linux" ] && getuser="stat -c%U"
 			case $(${getuser} "${named_chroot}${namedb}"/rndc.key) in
-				root|"${named_uid}") ;;
-				*) ${confgen} ;;
+				root|"${named_uid}");;
+				*) ${confgen};;
 			esac
 		else
 			${confgen}

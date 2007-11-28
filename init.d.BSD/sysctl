@@ -34,7 +34,7 @@ start() {
 	
 	ebegin "Configuring kernel parameters"
 	local retval=0 var= comments=
-	while read var comments ; do
+	while read var comments; do
 		case "${var}" in
 			""|"#"*) continue;;
 		esac

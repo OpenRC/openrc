@@ -33,9 +33,9 @@ arping_address() {
 
 	# We only handle IPv4 addresses
 	case "${ip}" in
-		0.0.0.0|0) return 1 ;;
-		*.*.*.*) ;;
-		*) return 1 ;;
+		0.0.0.0|0) return 1;;
+		*.*.*.*);;
+		*) return 1;;
 	esac
 
 	# We need to bring the interface up to test
@@ -64,8 +64,8 @@ arping_address() {
 	fi
 	[ -z "${foundmac}" ] && return 1
 	
-	if [ -n "${mac}" ] ; then
-		if [ "${mac}" != "${foundmac}" ] ; then
+	if [ -n "${mac}" ]; then
+		if [ "${mac}" != "${foundmac}" ]; then
 			vewarn "Found ${ip} but MAC ${foundmac} does not match"
 			return 1
 		fi
@@ -86,7 +86,7 @@ arping_start() {
 	einfo "Pinging gateways on ${IFACE} for configuration"
 
 	eval gateways=\$gateways_${IFVAR}
-	if [ -z "${gateways}" ] ; then
+	if [ -z "${gateways}" ]; then
 		eerror "No gateways have been defined (gateways_${IFVAR}=\"...\")"
 		return 1
 	fi
@@ -99,18 +99,18 @@ arping_start() {
 		local ip=$1 mac=$2 spoof=$3 extra=
 		unset IFS
 
-		if [ -n "${mac}" ] ; then
+		if [ -n "${mac}" ]; then
 			mac="$(echo "${mac}" | tr '[:lower:]' '[:upper:]')"
 			extra="(MAC ${mac})"
 		fi
 
 		vebegin "${ip} ${extra}"
-		if arping_address "${ip}" "${mac}" "${spoof}" ; then
+		if arping_address "${ip}" "${mac}" "${spoof}"; then
 			local IFS=.
-			for i in ${ip} ; do
-				if [ "${#i}" = "2" ] ; then
+			for i in ${ip}; do
+				if [ "${#i}" = "2" ]; then
 					conf="${conf}0${i}"
-				elif [ "${#i}" = "1" ] ; then
+				elif [ "${#i}" = "1" ]; then
 					conf="${conf}00${i}"
 				else
 					conf="${conf}${i}"

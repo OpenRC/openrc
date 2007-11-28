@@ -39,13 +39,13 @@ wpa_supplicant_depend() {
 
 # Only set these functions if not set already
 # IE, prefer to use iwconfig
-if ! type _get_ssid >/dev/null 2>/dev/null ; then
+if ! type _get_ssid >/dev/null 2>&1; then
 _get_ssid() {
 	local timeout=5 ssid=
 
-	while [ ${timeout} -gt 0 ] ;do
+	while [ ${timeout} -gt 0 ]; do
 		ssid=$(wpa_cli -i"${IFACE}" status | sed -n -e 's/^ssid=//p')
-		if [ -n "${ssid}" ] ; then
+		if [ -n "${ssid}" ]; then
 			echo "${ssid}"
 			return 0
 		fi
@@ -74,14 +74,14 @@ wpa_supplicant_pre_start() {
 
 	eval opts=\$wpa_supplicant_${IFVAR}
 	case " ${opts} " in
-		*" -Dwired "*) ;;
+		*" -Dwired "*);;
 		*) _is_wireless || return 0;;
 	esac
 
 	# We don't configure wireless if we're being called from
 	# the background unless we're not currently running
 	if yesno ${IN_BACKGROUND}; then
-		if service_started_daemon "${SVCNAME}" /sbin/wpa_supplicant ; then
+		if service_started_daemon "${SVCNAME}" /sbin/wpa_supplicant; then
 			SSID=$(_get_ssid "${IFACE}")
 			SSIDVAR=$(_shell_var "${SSID}")
 			save_options "SSID" "${SSID}"
@@ -91,19 +91,19 @@ wpa_supplicant_pre_start() {
 	fi
 
 	save_options "SSID" ""
-	ebegin "Starting wpa_supplicant on" "${IFVAR}"
+	ebegin "Starting wpa_supplicant on ${IFVAR}"
 
-	if [ -x /sbin/iwconfig ] ; then
+	if [ -x /sbin/iwconfig ]; then
 		local x=
-		for x in txpower rate rts frag ; do
+		for x in txpower rate rts frag; do
 			iwconfig "${IFACE}" "${x}" auto 2>/dev/null
 		done
 	fi
 
 	cfgfile=${opts##* -c}
-	if [ -n "${cfgfile}" -a "${cfgfile}" != "${opts}" ] ; then
+	if [ -n "${cfgfile}" -a "${cfgfile}" != "${opts}" ]; then
 		case "${cfgfile}" in
-			" "*) cfgfile=${cfgfile# *} ;;
+			" "*) cfgfile=${cfgfile# *};;
 		esac
 		cfgfile=${cfgfile%% *}
 	else
@@ -116,18 +116,18 @@ wpa_supplicant_pre_start() {
 		opts="${opts} -c ${cfgfile}"
 	fi
 
-	if [ ! -f ${cfgfile} ] ; then
+	if [ ! -f ${cfgfile} ]; then
 		eend 1 "/etc/wpa_supplicant/wpa_supplicant.conf not found"
 		return 1
 	fi
 
 	# Work out where the ctrl_interface dir is if it's not specified
 	local ctrl_dir=$(sed -n -e 's/[[:space:]]*#.*//g;s/[[:space:]]*$//g;s/^ctrl_interface=//p' "${cfgfile}")
-	if [ -z "${ctrl_dir}" ] ; then
+	if [ -z "${ctrl_dir}" ]; then
 		ctrl_dir=${opts##* -C}
-		if [ -n "${ctrl_dir}" -a "${ctrl_dir}" != "${opts}" ] ; then
+		if [ -n "${ctrl_dir}" -a "${ctrl_dir}" != "${opts}" ]; then
 			case "${ctrl_dir}" in
-				" "*) ctrl_dir=${ctrl_dir# *} ;;
+				" "*) ctrl_dir=${ctrl_dir# *};;
 			esac
 			ctrl_dir=${ctrl_dir%% *}
 		else
@@ -166,7 +166,7 @@ wpa_supplicant_pre_start() {
 		--pidfile "/var/run/wpa_cli-${IFACE}.pid" \
 		-- -a /etc/wpa_supplicant/wpa_cli.sh -p "${ctrl_dir}" -i "${IFACE}" \
 		-P "/var/run/wpa_cli-${IFACE}.pid" -B
-	if eend $? ; then
+	if eend $?; then
 		ebegin "Backgrounding ..."
 		exit 1 
 	fi
@@ -193,14 +193,14 @@ wpa_supplicant_post_stop() {
 	[ $? != 0 ] && return 0
 
 	local pidfile="/var/run/wpa_cli-${IFACE}.pid"
-	if [ -f ${pidfile} ] ; then
+	if [ -f ${pidfile} ]; then
 		ebegin "Stopping wpa_cli on ${IFACE}"
 		start-stop-daemon --stop --exec "${wpac}" --pidfile "${pidfile}"
 		eend $?
 	fi
 
 	pidfile="/var/run/wpa_supplicant-${IFACE}.pid"
-	if [ -f ${pidfile} ] ; then
+	if [ -f ${pidfile} ]; then
 		ebegin "Stopping wpa_supplicant on ${IFACE}"
 		start-stop-daemon --stop --exec "${wpas}" --pidfile "${pidfile}"
 		eend $?

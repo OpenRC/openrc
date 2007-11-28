@@ -41,9 +41,9 @@ install::
 	$(_SUBDIR)
 
 install:: $(BIN) $(CONF) $(CONF_APPEND)
-	if test -n "$(DIR)" ; then $(INSTALL) -d $(DESTDIR)$(DIR) || exit $$?; fi
-	if test -n "$(BIN)" ; then $(INSTALL) $(BIN) $(DESTDIR)$(DIR) || exit $$?; fi
-	if test -n "$(INC)" ; then $(INSTALL) -m 0644 $(INC) $(DESTDIR)$(DIR) || exit $$?; fi
+	if test -n "$(DIR)"; then $(INSTALL) -d $(DESTDIR)$(DIR) || exit $$?; fi
+	if test -n "$(BIN)"; then $(INSTALL) $(BIN) $(DESTDIR)$(DIR) || exit $$?; fi
+	if test -n "$(INC)"; then $(INSTALL) -m 0644 $(INC) $(DESTDIR)$(DIR) || exit $$?; fi
 	for x in $(CONF); do \
 	 	if ! test -e $(DESTDIR)$(DIR)/$$x; then \
 			$(INSTALL) -m 0644 $$x $(DESTDIR)$(DIR) || exit $$?; \

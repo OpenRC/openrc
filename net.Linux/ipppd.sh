@@ -37,8 +37,8 @@ ipppd_pre_start() {
 
 	# Check that we are a valid ippp interface
 	case "${IFACE}" in
-		ippp[0-9]*) ;;
-		*) return 0 ;;
+		ippp[0-9]*);;
+		*) return 0;;
 	esac
 
 	# Check that the interface exists

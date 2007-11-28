@@ -54,9 +54,9 @@ setupopts() {
 					TBLURB="s390"
 					;;
 				*)
-					if [ -e /proc/devices ] && grep -q " cobd$" /proc/devices ; then
+					if [ -e /proc/devices ] && grep -q " cobd$" /proc/devices; then
 						TBLURB="coLinux"
-					elif [ "${CLOCK}" = "UTC" ] ; then
+					elif [ "${CLOCK}" = "UTC" ]; then
 						utc="--utc"
 						TBLURB="UTC"
 					else
@@ -77,7 +77,7 @@ start() {
 
 	ebegin "Setting system clock using the hardware clock [${TBLURB}]"
 	if [ -n "${utc}" ]; then
-		if [ -e /proc/modules -a ! -e /dev/rtc ] ; then
+		if [ -e /proc/modules -a ! -e /dev/rtc ]; then
 			modprobe -q rtc || modprobe -q genrtc
 		fi
 
@@ -120,7 +120,7 @@ stop() {
 		fi
 		errstr="$(LC_ALL=C hwclock --systohc ${utc} ${clock_args} 2>&1 >/dev/null)"
 	fi
-	if [ -n "${errstr}" ] ; then
+	if [ -n "${errstr}" ]; then
 		ewarn "${errstr}"
 		retval=1
 	fi

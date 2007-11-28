@@ -43,7 +43,7 @@ _exists() {
 
 _ifindex() {
 	local line= i=-2
-	while read line ; do
+	while read line; do
 		i=$((${i} + 1))
 		[ ${i} -lt 1 ] && continue
 		case "${line}" in
@@ -80,11 +80,11 @@ _get_mac_address() {
 		-e '/link\// s/^.*\<\(..:..:..:..:..:..\)\>.*/\1/p')
 
 	case "${mac}" in
-		00:00:00:00:00:00) ;;
-		44:44:44:44:44:44) ;;
-		FF:FF:FF:FF:FF:FF) ;;
-		"") ;;
-		*) echo "${mac}"; return 0 ;;
+		00:00:00:00:00:00);;
+		44:44:44:44:44:44);;
+		FF:FF:FF:FF:FF:FF);;
+		"");;
+		*) echo "${mac}"; return 0;;
 	esac
 
 	return 1
@@ -106,22 +106,22 @@ _get_inet_address() {
 }
 
 _add_address() {
-	if [ "$1" = "127.0.0.1/8" -a "${IFACE}" = "lo" ] ; then
+	if [ "$1" = "127.0.0.1/8" -a "${IFACE}" = "lo" ]; then
 		ip addr add "$@" dev "${IFACE}" 2>/dev/null
 		return 0
 	fi
 
 	# Convert an ifconfig line to iproute2
-	if [ "$2" = "netmask" ] ; then
+	if [ "$2" = "netmask" ]; then
 		local one="$1" three="$3"
-		shift ; shift ; shift
+		shift; shift; shift
 		set -- "${one}/$(_netmask2cidr "${three}")" "$@"
 	fi
 	
 	#config=( "${config[@]//pointopoint/peer}" )
 	
 	# Always scope lo addresses as host unless specified otherwise
-	if [ "${IFACE}" = "lo" ] ; then
+	if [ "${IFACE}" = "lo" ]; then
 		set -- "$@" "scope" "host"
 	fi
 
@@ -129,9 +129,9 @@ _add_address() {
 	case "$1" in
 		*.*.*.*)
 			case "$@" in
-				*" brd "*) ;;
-				*" broadcast "*) ;;
-				*) set -- "$@" brd + ;;
+				*" brd "*);;
+				*" broadcast "*);;
+				*) set -- "$@" brd +;;
 			esac
 			;;
 	esac
@@ -140,27 +140,27 @@ _add_address() {
 }
 
 _add_route() {
-	if [ $# -eq 3 ] ; then
+	if [ $# -eq 3 ]; then
 		set -- "$1" "$2" via "$3"
-	elif [ "$3" = "gw" ] ; then
+	elif [ "$3" = "gw" ]; then
 		local one=$1 two=$2
-		shift ; shift; shift
+		shift; shift; shift
 		set -- "${one}" "${two}" gw "$@"
 	fi
 
 	local cmd= have_metric=false 
-	while [ -n "$1" ] ; do
+	while [ -n "$1" ]; do
 		case "$1" in
-			metric) cmd="${cmd} $1"; have_metric=true ;;
-			netmask) cmd="${cmd}/$(_netmask2cidr "$2")"; shift ;;
-			-host|-net) ;;
-			-A)	[ "$2" = "inet6" ] && shift ;;
-			*) cmd="${cmd} $1" ;;
+			metric) cmd="${cmd} $1"; have_metric=true;;
+			netmask) cmd="${cmd}/$(_netmask2cidr "$2")"; shift;;
+			-host|-net);;
+			-A)	[ "$2" = "inet6" ] && shift;;
+			*) cmd="${cmd} $1";;
 		esac
 		shift
 	done
 
-	if ! ${have_metric} && [ -n "${metric}" ] ; then
+	if ! ${have_metric} && [ -n "${metric}" ]; then
 		cmd="${cmd} metric ${metric}"
 	fi
 
@@ -171,7 +171,7 @@ _add_route() {
 _delete_addresses() {
 	ip addr flush dev "${IFACE}" scope global 2>/dev/null
 	ip addr flush dev "${IFACE}" scope site 2>/dev/null
-	if [ "${IFACE}" != "lo" ] ; then
+	if [ "${IFACE}" != "lo" ]; then
 		ip addr flush dev "${IFACE}" scope host 2>/dev/null
 	fi
 	return 0
@@ -198,7 +198,7 @@ iproute2_pre_start() {
 
 	local tunnel=
 	eval tunnel=\$iptunnel_${IFVAR}
-	if [ -n "${tunnel}" ] ; then
+	if [ -n "${tunnel}" ]; then
 		# Set our base metric to 1000
 		metric=1000
 
@@ -220,8 +220,8 @@ iproute2_post_start() {
 
 iproute2_post_stop() {
 	# Don't delete sit0 as it's a special tunnel
-	if [ "${IFACE}" != "sit0" ] ; then
-		if [ -n "$(ip tunnel show "${IFACE}" 2>/dev/null)" ] ; then
+	if [ "${IFACE}" != "sit0" ]; then
+		if [ -n "$(ip tunnel show "${IFACE}" 2>/dev/null)" ]; then
 			ebegin "Destroying tunnel ${IFACE}"
 			ip tunnel del "${IFACE}"
 			eend $?

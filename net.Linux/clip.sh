@@ -83,24 +83,24 @@ clip_pre_start() {
 	eval clip=\$clip_${IFVAR}
 	[ -z "${clip}" ] && return 0
 
-    if [ ! -r /proc/net/atm/arp ] ; then
+    if [ ! -r /proc/net/atm/arp ]; then
 		modprobe clip && sleep 2
-		if [ ! -r /proc/net/atm/arp ] ; then
+		if [ ! -r /proc/net/atm/arp ]; then
 	    	eerror "You need first to enable kernel support for ATM CLIP"
 	    	return 1
 		fi
     fi
 	
     local started_here=
-    if ! are_atmclip_svcs_running ; then
+    if ! are_atmclip_svcs_running; then
 		atmclip_svcs_start || return 1
 		started_here=1
     fi
 
-    if ! _exists ; then
+    if ! _exists; then
 		ebegin "Creating CLIP interface ${IFACE}"
 		atmarp -c "${IFACE}"
-		if ! eend $? ; then
+		if ! eend $?; then
 			[ -z "${started_here}" ] && atmclip_svcs_stop
 	    	return 1
 		fi
@@ -130,7 +130,7 @@ clip_post_start() {
     # reporting problems. Also, when no defined VC can be established,
     # we stop the ATM daemons.
     local has_failures= i=
-	for i in ${clip} ; do
+	for i in ${clip}; do
 		local IFS=","
 		set -- ${i}
 		unset IFS
@@ -139,14 +139,14 @@ clip_post_start() {
 		ebegin "Creating PVC ${ifvpivci} for peer ${peerip}"
 
 		local nleftretries=10 emsg= ecode=
-		while [ ${nleftretries} -gt 0 ] ; do
+		while [ ${nleftretries} -gt 0 ]; do
 			nleftretries=$((${nleftretries} - 1))
 	    	emsg="$(atmarp -s "${peerip}" "${ifvpivci}" "$@" 2>&1)"
 	    	ecode=$? && break
 	    	sleep 2
 		done
 
-		if ! eend ${ecode} ; then
+		if ! eend ${ecode}; then
 	    	eerror "Creation failed for PVC ${ifvpivci}: ${emsg}"
 	    	has_failures=1
 		fi
@@ -175,7 +175,7 @@ clip_pre_stop() {
 	eindent
 	{
 		read left && \
-		while read itf t encp idle ipaddr left ; do
+		while read itf t encp idle ipaddr left; do
 			if [ "${itf}" = "${IFACE}" ]; then
 				ebegin "Removing PVC to ${ipaddr}"
 				atmarp -d "${ipaddr}"
@@ -197,15 +197,15 @@ clip_post_stop() {
     local itf= left= hasothers=
     {
 		read left && \
-		while read itf left ; do
-	    	if [ "${itf}" != "${IFACE}" ] ; then
+		while read itf left; do
+	    	if [ "${itf}" != "${IFACE}" ]; then
 				hasothers=1
 				break
 	    	fi
 		done
     } < /proc/net/atm/arp
 
-    if [ -z "${hasothers}" ] ; then
+    if [ -z "${hasothers}" ]; then
 		atmclip_svcs_stop || return 1
     fi
 }

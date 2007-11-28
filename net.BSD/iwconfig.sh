@@ -45,7 +45,7 @@ iwconfig_get_wep_status() {
 
 _iwconfig_get() {
 	LC_ALL=C ifconfig "${IFACE}" | \
-	sed -n -e "s/^[[:space:]]*ssid \(.*\) channel \([0-9]*\) bssid \(..:..:..:..:..:..\)\$/\\$1/p"
+	sed -n -e "s/^[[:space:]]*ssid \(.*\) channel \([0-9]*\).* bssid \(..:..:..:..:..:..\)\$/\\$1/p"
 }
 
 _get_ssid() {

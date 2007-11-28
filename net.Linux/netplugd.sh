@@ -45,15 +45,15 @@ netplugd_pre_start() {
 
 	# We need a valid MAC address
 	# It's a basic test to ensure it's not a virtual interface
-	if ! _get_mac_address >/dev/null 2>/dev/null ; then
+	if ! _get_mac_address >/dev/null 2>&1; then
 		vewarn "netplug only works on interfaces with a valid MAC address"
 		return 0
 	fi
 
 	# We don't work on bonded, bridges, tun/tap, vlan or wireless
-	for f in bond bridge tuntap vlan wireless ; do
-		if type "_is_${f}" >/dev/null 2>/dev/null ; then
-			if _is_${f} ; then
+	for f in bond bridge tuntap vlan wireless; do
+		if type "_is_${f}" >/dev/null 2>&1; then
+			if _is_${f}; then
 				veinfo "netplug does not work with" "${f}"
 				return 0
 			fi
@@ -75,28 +75,28 @@ netplugd_pre_start() {
 
 	eval timeout=\$plug_timeout_${IFVAR}
 	[ -z "${timeout}" ] && timeout=-1
-	if [ ${timeout} -eq 0 ] ; then
-		ewarn "WARNING: infinite timeout set for" "${IFACE}" "to come up"
-	elif [ ${timeout} -lt 0 ] ; then
+	if [ ${timeout} -eq 0 ]; then
+		ewarn "WARNING: infinite timeout set for ${IFACE} to come up"
+	elif [ ${timeout} -lt 0 ]; then
 		einfo "Backgrounding ..."
 		exit 1 
 	fi
 
-	veinfo "Waiting for" "${IFACE}" "to be marked as started"
+	veinfo "Waiting for ${IFACE} to be marked as started"
 
 	local i=0
-	while true ; do
-		if service_started "${SVCNAME}" ; then
+	while true; do
+		if service_started "${SVCNAME}"; then
 			_show_address
 			exit 0
 		fi
 		sleep 1
-		[ ${timeout} -eq 0 ]] && continue
+		[ ${timeout} -eq 0 ] && continue
 		i=$((${i} + 1))
 		[ ${i} -ge ${timeout} ] && break
 	done
 
-	eend 1 "Failed to configure" "${IFACE}" "in the background"
+	eend 1 "Failed to configure ${IFACE} in the background"
 	exit 1
 }
 

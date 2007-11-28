@@ -30,9 +30,9 @@ need_portmap() {
 	local mnt opts ret IFS="
 "
 	set -- $(fstabinfo --fstype nfs,nfs4)
-	for mnt in "$@" ; do
+	for mnt in "$@"; do
 		case ,$(fstabinfo --options "${mnt}"), in
-			*,noauto,*|*,nolock,*) ;;
+			*,noauto,*|*,nolock,*);;
 			*) return 0;;
 		esac
 	done
@@ -89,7 +89,7 @@ stop() {
 	ebegin "Unmounting network filesystems"
 	. "${RC_LIBDIR}/sh/rc-mount.sh"
 
-	for x in ${net_fs_list} ; do
+	for x in ${net_fs_list}; do
 		fs="${fs}${fs:+,}${x}"
 	done
 	if [ -n "${fs}" ]; then

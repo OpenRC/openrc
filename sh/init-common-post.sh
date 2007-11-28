@@ -31,7 +31,7 @@ if [ "${RC_SVCDIR}" != "/" ] &&  mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null; then
 	for x in ${RC_SVCDIR:-/lib/rcscripts/init.d}/*; do
 		[ -e "${x}" ] || continue
 		case ${x##*/} in
-			deptree|ksoftlevel|rc.log) ;;
+			deptree|ksoftlevel|rc.log);;
 			*) rm -rf "${x}";;
 		esac
 	done

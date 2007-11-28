@@ -63,7 +63,7 @@ is_net_fs() {
 
 is_union_fs() {
 	[ ! -x /sbin/unionctl ] && return 1
-	unionctl "$1" --list >/dev/null 2>/dev/null
+	unionctl "$1" --list >/dev/null 2>&1
 }
 
 get_bootparam() {
@@ -89,8 +89,8 @@ get_bootparam() {
 
 # Add our sbin to $PATH
 case "${PATH}" in
-	/lib/rc/sbin|/lib/rc/sbin:*) ;;
-	*) export PATH="/lib/rc/sbin:${PATH}" ;;
+	/lib/rc/sbin|/lib/rc/sbin:*);;
+	*) export PATH="/lib/rc/sbin:${PATH}";;
 esac
 
 # vim: set ts=4 :

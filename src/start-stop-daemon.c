@@ -67,7 +67,7 @@
 #include <security/pam_appl.h>
 
 /* We are not supporting authentication conversations */
-static struct pam_conv conv = { NULL, NULL} ;
+static struct pam_conv conv = { NULL, NULL};
 #endif
 
 #include "builtins.h"

@@ -35,7 +35,7 @@ depend() {
 save_seed() {
 	local poolsize=1
 
-	if [ -e /proc/sys/kernel/random/poolsize ] ; then
+	if [ -e /proc/sys/kernel/random/poolsize ]; then
 		poolsize=$(($(cat /proc/sys/kernel/random/poolsize) / 4096))
 	fi
 
@@ -47,7 +47,7 @@ save_seed() {
 
 start() {
 	[ -c /dev/urandom ] || return
-	if [ -f "${urandom_seed}" ] ; then
+	if [ -f "${urandom_seed}" ]; then
 		ebegin "Initializing random number generator"
 		cat "${urandom_seed}" > /dev/urandom
 		eend $? "Error initializing random number generator"

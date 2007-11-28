@@ -31,13 +31,13 @@ try() {
 	local errstr
 	local retval=0
 	
-	if [ -c /dev/null ] ; then
+	if [ -c /dev/null ]; then
 		errstr=$(eval $* 2>&1 >/dev/null)
 	else
 		errstr=$(eval $* 2>&1)
 	fi
 	retval=$?
-	if [ ${retval} -ne 0 ] ; then
+	if [ ${retval} -ne 0 ]; then
 		#splash "critical" &
 		eend 1
 		eerror "The \"$*\" command failed with error:"
@@ -58,8 +58,8 @@ try() {
 check_statedir() {
 	[ -z "$1" ] && return 0
 
-	if [ ! -d "$1" ] ; then
-		if ! mkdir -p "$1" &>/dev/null ; then
+	if [ ! -d "$1" ]; then
+		if ! mkdir -p "$1" &>/dev/null; then
 			#splash "critical" &
 			echo
 			eerror "To function properly, \"$1\" needs to exist."
@@ -72,7 +72,7 @@ check_statedir() {
 				fi
 				mkdir -p "$1"
 			fi
-			if [ ! -d "$1" ] ; then
+			if [ ! -d "$1" ]; then
 				eerror "Please mount your root partition read/write, and execute:"
 				echo
 				eerror "  # mkdir -p $1"

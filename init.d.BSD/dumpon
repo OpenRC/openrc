@@ -33,7 +33,7 @@ depend() {
 
 start() {
 	# Setup any user requested dump device
-	if [ -n "${dump_device}" ] ; then
+	if [ -n "${dump_device}" ]; then
 		ebegin "Activating kernel core dump device (${dump_device})"
 		dumpon ${dump_device}
 		eend $?

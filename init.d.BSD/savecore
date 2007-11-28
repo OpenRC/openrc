@@ -38,7 +38,7 @@ start() {
 		chmod 700 "${dump_dir}"
 	fi
 
-	if [ "${RC_UNAME}" = "FreeBSD" ] ; then
+	if [ "${RC_UNAME}" = "FreeBSD" ]; then
 		# Don't quote ${dump_device}, so that if it's unset,
 		# savecore will check on the partitions listed in fstab
 		# without errors in the output

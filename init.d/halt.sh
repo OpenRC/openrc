@@ -29,7 +29,7 @@
 [ -r /etc/rc.conf ] && . /etc/rc.conf
 
 # Support LiveCD foo
-if [ -r /sbin/livecd-functions.sh ] ; then
+if [ -r /sbin/livecd-functions.sh ]; then
 	. /sbin/livecd-functions.sh
 	livecd_read_commandline
 fi
@@ -38,7 +38,7 @@ stop_addon devfs
 stop_addon udev
 
 # Really kill things off before unmounting
-if [ -x /sbin/killall5 ] ; then
+if [ -x /sbin/killall5 ]; then
 	killall5 -15
 	killall5 -9
 fi
@@ -50,7 +50,7 @@ sync; sync
 #   1) we don't need (and by default can't) umount anything (VServer) or
 #   2) the host utils take care of all umounting stuff (OpenVZ)
 if [ "${RC_SYS}" = "VPS" ]; then
-	if [ -e /etc/init.d/"$1".sh ] ; then
+	if [ -e /etc/init.d/"$1".sh ]; then
 		. /etc/init.d/"$1".sh
 	else
 		exit 0
@@ -60,11 +60,11 @@ fi
 # If $svcdir is still mounted, preserve it if we can
 
 mnt=$(mountinfo --node "${RC_SVCDIR}")
-if [ -n "${mnt}" -a -w "${RC_LIBDIR}" ] ; then
+if [ -n "${mnt}" -a -w "${RC_LIBDIR}" ]; then
 	f_opts="-m -c"
 	[ "${RC_UNAME}" = "Linux" ] && f_opts="-c"
-	if [ -n "$(fuser ${f_opts} "${svcdir}" 2>/dev/null)" ] ; then
-		fuser -k ${f_opts} "${svcdir}" 1>/dev/null 2>/dev/null
+	if [ -n "$(fuser ${f_opts} "${svcdir}" 2>/dev/null)" ]; then
+		fuser -k ${f_opts} "${svcdir}" >/dev/null 2>&1
 		sleep 2
 	fi
 	cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
@@ -83,20 +83,20 @@ if [ -n "${mnt}" -a -w "${RC_LIBDIR}" ] ; then
 		"${RC_LIBDIR}"/rc.log
 	# Release the memory disk if we used it
 	case "${mnt}" in
-		"/dev/md"[0-9]*) mdconfig -d -u "${mnt#/dev/md*}" ;;
+		"/dev/md"[0-9]*) mdconfig -d -u "${mnt#/dev/md*}";;
 	esac
 fi
 
 unmounted=0
 # Remount the remaining filesystems read-only
 # Most BSD's don't need this as the kernel handles it nicely
-if [ "${RC_UNAME}" = "Linux" ] ; then
+if [ "${RC_UNAME}" = "Linux" ]; then
 	ebegin "Remounting remaining filesystems read-only"
 	# We need the do_unmount function
 	. "${RC_LIBDIR}"/sh/rc-mount.sh
 	eindent
 	fs=
-	for x in ${net_fs_list} ; do
+	for x in ${net_fs_list}; do
 		fs="${fs}${fs:+|}${x}"
 	done
 	[ -n "${fs}" ] && fs="^(${fs})$"
@@ -109,14 +109,14 @@ if [ "${RC_UNAME}" = "Linux" ] ; then
 fi
 
 # This UPS code should be moved to out of here and to an addon
-if [ -f /etc/killpower ] ; then
+if [ -f /etc/killpower ]; then
 	UPS_CTL=/sbin/upsdrvctl
 	UPS_POWERDOWN="${UPS_CTL} shutdown"
-elif [ -f /etc/apcupsd/powerfail ] ; then
+elif [ -f /etc/apcupsd/powerfail ]; then
 	UPS_CTL=/etc/apcupsd/apccontrol
 	UPS_POWERDOWN="${UPS_CTL} killpower"
 fi
-if [ -x "${UPS_CTL}" ] ; then
+if [ -x "${UPS_CTL}" ]; then
 	ewarn "Signalling ups driver(s) to kill the load!"
 	${UPS_POWERDOWN}
 	ewarn "Halt system and wait for the UPS to kill our power"
@@ -124,7 +124,7 @@ if [ -x "${UPS_CTL}" ] ; then
 	sleep 60
 fi
 
-if [ ${unmounted} -ne 0 ] ; then
+if [ ${unmounted} -ne 0 ]; then
 	[ -x /sbin/sulogin ] && sulogin -t 10 /dev/console
 	exit 1
 fi

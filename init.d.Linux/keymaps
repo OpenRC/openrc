@@ -47,7 +47,7 @@ start() {
 			;;
 	esac
 
-	if [ -z "${keymap}" ] ; then
+	if [ -z "${keymap}" ]; then
 		eerror "You need to setup keymap in /etc/conf.d/keymaps first"
 		return 1
 	fi
@@ -59,7 +59,7 @@ start() {
 		|| ttydev=/dev/tty
 
 	# Force linux keycodes for PPC.
-	if [ -f /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes ] ; then
+	if [ -f /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes ]; then
 		echo 1 > /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
 	fi
 
@@ -74,7 +74,7 @@ start() {
 	fi
 
 	ebegin "Loading key mappings"
-	if [ -x /bin/loadkeys ] ; then
+	if [ -x /bin/loadkeys ]; then
 		yesno ${windowskeys} && wkeys="windowkeys"
 		loadkeys -q ${loadkeys_uni} ${wkeys} ${keymap} ${extended_keymaps} 
 		eend $? "Error loading key mappings"

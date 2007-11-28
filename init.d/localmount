@@ -58,7 +58,7 @@ stop() {
 	for x in ${no_umounts} ${RC_NO_UMOUNTS}; do
 		no_umounts="${no_umounts}|${x}"
 	done
-	if [ "${SIFS}" = "y" ] ; then
+	if [ "${SIFS}" = "y" ]; then
 		IFS=$OIFS
 	else
 		unset IFS

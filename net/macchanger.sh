@@ -51,7 +51,7 @@ macchanger_pre_start() {
 		[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f])
 			# We don't need macchanger to change to a specific mac address
 			_set_mac_address "${mac}"
-			if eend "$?" ; then
+			if eend "$?"; then
 				mac=$(_get_mac_address)
 				eindent
 				einfo "changed to ${mac}"
@@ -62,25 +62,25 @@ macchanger_pre_start() {
 			;;
 
 		# increment MAC address, default macchanger behavior
-		increment) opts="${opts}" ;;
+		increment) opts="${opts}";;
 
 		# randomize just the ending bytes
-		random-ending) opts="${opts} -e" ;;
+		random-ending) opts="${opts} -e";;
 
 		# keep the same kind of physical layer (eg fibre, copper)
-		random-samekind) opts="${opts} -a" ;;
+		random-samekind) opts="${opts} -a";;
 
 		# randomize to any known vendor of any physical layer type
-		random-anykind) opts="${opts} -A" ;;
+		random-anykind) opts="${opts} -A";;
 
 		# fully random bytes
-		random-full|random) opts="${opts} -r" ;;
+		random-full|random) opts="${opts} -r";;
 
 		# default case is just to pass on all the options
-		*) opts="${opts} ${mac}" ;;
+		*) opts="${opts} ${mac}";;
 	esac
 
-	if [ ! -x /sbin/macchanger ] ; then
+	if [ ! -x /sbin/macchanger ]; then
 		eerror "For changing MAC addresses, emerge net-analyzer/macchanger"
 		return 1
 	fi
@@ -90,12 +90,12 @@ macchanger_pre_start() {
 	_up
 
 	# Sometimes the interface needs to be up ....
-	if [ -z "${mac}" ] ; then
+	if [ -z "${mac}" ]; then
 		mac=$(/sbin/macchanger ${opts} "${IFACE}" \
 			| sed -n -e 's/^Faked MAC:.*\<\(..:..:..:..:..:..\)\>.*/\U\1/p' )
 	fi
 
-	if [ -z "${mac}" ] ; then
+	if [ -z "${mac}" ]; then
 		eend 1 "Failed to set MAC address"
 		return 1
 	fi

@@ -10,7 +10,7 @@ export LD_LIBRARY_PATH=${builddir}:${LD_LIBRARY_PATH}
 export PATH=${builddir}:${PATH}
 
 checkit() {
-	local base=$1 ; shift
+	local base=$1; shift
 	echo "$@" | tr ' ' '\n' > ${base}.out
 	diff -u ${base}.list ${base}.out
 	eend $?

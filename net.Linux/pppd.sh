@@ -49,7 +49,7 @@ pppd_pre_start() {
 		local config=
 		eval config=\$config_${IFVAR}
 		# If no config for ppp then don't default to DHCP 
-		if [ -z "${config}" ] ; then
+		if [ -z "${config}" ]; then
 			eval config_${IFVAR}=null
 		fi
 		return 0
@@ -66,7 +66,7 @@ pppd_pre_start() {
 
 	case "${link}" in
 		/*)
-			if [ ! -e "${link}" ] ; then
+			if [ ! -e "${link}" ]; then
 				eerror "${link} does not exist"
 				eerror "Please verify hardware or kernel module (driver)"
 				return 1
@@ -74,7 +74,7 @@ pppd_pre_start() {
 			;;
 	esac
 
-	if [ -z "${unit}" ] ; then
+	if [ -z "${unit}" ]; then
 		eerror "PPP requires a unit - use net.ppp[0-9] instead of net.ppp"
 		return 1
 	fi
@@ -91,12 +91,12 @@ pppd_pre_start() {
 				eerror "The option \"${i}\" is not allowed in pppd_${IFVAR}"
 				return 1
 			;;
-			defaultmetric) hasdefaultmetric=true ;;
-			mtu) hasmtu=true ;;
-			mru) hasmru=true ;;
-			maxfail) hasmaxfail=true ;;
-			persist) haspersist=true ;;
-			updetach) hasupdetach=true ;;
+			defaultmetric) hasdefaultmetric=true;;
+			mtu) hasmtu=true;;
+			mru) hasmru=true;;
+			maxfail) hasmaxfail=true;;
+			persist) haspersist=true;;
+			updetach) hasupdetach=true;;
 		esac
 	done
 
@@ -106,17 +106,17 @@ pppd_pre_start() {
 	eval password=\$password_${IFVAR}
 	eval passwordset=\$\{password_${IFVAR}-x\}
 	if [ -n "${username}" ] \
-	&& [ -n "${password}" -o -z "${passwordset}" ] ; then
+	&& [ -n "${password}" -o -z "${passwordset}" ]; then
 		opts="${opts} plugin passwordfd.so passwordfd 0"
 	fi
 	
-	if ! ${hasdefaultmetric} ; then
+	if ! ${hasdefaultmetric}; then
 		local m=
 		eval m=\$metric_${IFVAR}
 		[ -z "${m}" ] && m=$((${metric} + $(_ifindex)))
 		opts="${opts} defaultmetric ${m}"
 	fi
-	if [ -n "${mtu}" ] ; then
+	if [ -n "${mtu}" ]; then
 		${hasmtu} || opts="${opts} mtu ${mtu}"
 		${hasmru} || opts="${opts} mru ${mtu}"
 	fi
@@ -129,7 +129,7 @@ pppd_pre_start() {
 	opts="linkname ${IFACE} ${opts}"
 
 	# Setup auth info
-	if [ -n "${username}" ] ; then
+	if [ -n "${username}" ]; then
 		opts="user '${username}' remotename ${IFACE} ${opts}"
 	fi
 
@@ -160,15 +160,15 @@ pppd_pre_start() {
 		set -- ${i}
 		case "$1" in
 			passwordfd) continue;;
-			pppoa) shift; set -- "pppoatm" "$@" ;;
-			pppoe) shift; set -- "rp-pppoe" "$@" ;;
-			capi) shift; set -- "capiplugin" "$@" ;;
+			pppoa) shift; set -- "pppoatm" "$@";;
+			pppoe) shift; set -- "rp-pppoe" "$@";;
+			capi) shift; set -- "capiplugin" "$@";;
 		esac
 		case "$1" in
-			rp-pppoe) haspppoe=true ;;
-			pppoatm)  haspppoa=true ;;
+			rp-pppoe) haspppoe=true;;
+			pppoatm)  haspppoa=true;;
 		esac
-		if [ "$1" = "rp-pppoe" ] || [ "$1" = "pppoatm" -a "${link}" != "/dev/null" ] ; then
+		if [ "$1" = "rp-pppoe" ] || [ "$1" = "pppoatm" -a "${link}" != "/dev/null" ]; then
 			opts="${opts} connect true"
 			set -- "$@" "${link}"
 		fi
@@ -180,30 +180,30 @@ pppd_pre_start() {
 
 	#Specialized stuff. Insert here actions particular to connection type (pppoe,pppoa,capi)
 	local insert_link_in_opts=1
-	if ${haspppoe} ; then
-		if [ ! -e /proc/net/pppoe ] ; then
+	if ${haspppoe}; then
+		if [ ! -e /proc/net/pppoe ]; then
 			# Load the PPPoE kernel module
-			if ! modprobe pppoe ; then
+			if ! modprobe pppoe; then
 				eerror "kernel does not support PPPoE"
 				return 1
 			fi
 		fi
 
 		# Ensure that the link exists and is up
-		( IFACE="${link}" ; _exists true && _up ) || return 1
+		( IFACE="${link}"; _exists true && _up ) || return 1
 		insert_link_in_opts=0
 	fi
 
-	if ${haspppoa} ; then
-		if [ ! -d /proc/net/atm ] ; then
+	if ${haspppoa}; then
+		if [ ! -d /proc/net/atm ]; then
 			# Load the PPPoA kernel module
-			if ! modprobe pppoatm ; then
+			if ! modprobe pppoatm; then
 				eerror "kernel does not support PPPoATM"
 				return 1
 			fi
 		fi
 
-		if [ "${link}" != "/dev/null" ] ; then
+		if [ "${link}" != "/dev/null" ]; then
 			insert_link_in_opts=0
 		else
 			ewarn "WARNING: An [itf.]vpi.vci ATM address was expected in link_${IFVAR}"
@@ -215,7 +215,7 @@ pppd_pre_start() {
 	ebegin "Starting pppd in ${IFACE}"
 	mark_service_inactive "${SVCNAME}"
 	if [ -n "${username}" ] \
-	&& [ -n "${password}" -o -z "${passwordset}" ] ; then
+	&& [ -n "${password}" -o -z "${passwordset}" ]; then
 		printf "%s" "${password}" | \
 		eval start-stop-daemon --start --exec /usr/sbin/pppd \
 			--pidfile "/var/run/ppp-${IFACE}.pid" -- "${opts}" >/dev/null
@@ -224,12 +224,12 @@ pppd_pre_start() {
 			--pidfile "/var/run/ppp-${IFACE}.pid" -- "${opts}" >/dev/null
 	fi
 
-	if ! eend $? "Failed to start PPP" ; then
+	if ! eend $? "Failed to start PPP"; then
 		mark_service_stopped "net.${IFACE}"
 		return 1
 	fi
 
-	if ${hasupdetach} ; then
+	if ${hasupdetach}; then
 		_show_address
 	else
 		einfo "Backgrounding ..."

@@ -35,7 +35,7 @@ br2684ctl_pre_start() {
 	eval opts=\$br2684ctl_${IFVAR}
 	[ -z "${opts}" ] && return 0
 
-	if [ "${IFACE#nas[0-9]*}" = "${IFACE}" ] ; then
+	if [ "${IFACE#nas[0-9]*}" = "${IFACE}" ]; then
 		eerror "Interface must be called nas[0-9] for RFC 2684 Bridging"
 		return 1
 	fi
@@ -45,7 +45,7 @@ br2684ctl_pre_start() {
 			eerror "The -b and -c options are not allowed for br2684ctl_${IVAR}"
 			return 1
 			;;
-		*" -a "*) ;;
+		*" -a "*);;
 		*)
 			eerror "-a option (VPI and VCI) is required in br2684ctl_${IFVAR}"
 			return 1

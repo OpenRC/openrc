@@ -32,7 +32,7 @@ ip6to4_depend() {
 ip6to4_start() {
 	case " ${MODULES} " in
 		*" ifconfig "*)
-			if [ "${IFACE}" != "sit0" ] ; then
+			if [ "${IFACE}" != "sit0" ]; then
 				eerror "ip6to4 can only work on the sit0 interface using ifconfig"
 				eerror "emerge sys-apps/iproute2 to use other interfaces"
 				return 1
@@ -41,7 +41,7 @@ ip6to4_start() {
 
 	local host= suffix= relay= addr= iface=${IFACE} new= localip=
 	eval host=\$link_${IFVAR}
-	if [ -z "${host}" ] ; then
+	if [ -z "${host}" ]; then
 		eerror "link_${IFVAR} not set"
 		return 1
 	fi
@@ -52,24 +52,24 @@ ip6to4_start() {
 	IFACE=${host}
 	addrs=$(_get_inet_addresses)
 	IFACE=${iface}
-	if [ -z "${addrs}" ] ; then
+	if [ -z "${addrs}" ]; then
 		eerror "${host} is not configured with an IPv4 address"
 		return 1
 	fi
 
-	for addr in ${addrs} ; do
+	for addr in ${addrs}; do
 		# Strip the subnet
 		local ip="${addr%/*}" subnet="${addr#*/}"
 		# We don't work on private IPv4 addresses
 		case "${ip}" in
-			127.*) continue ;;
-			10.*) continue ;;
-			192.168.*) continue ;;
+			127.*) continue;;
+			10.*) continue;;
+			192.168.*) continue;;
 			172.*)
 				local i=16
-				while [ ${i} -lt 32 ] ; do
+				while [ ${i} -lt 32 ]; do
 					case "${ip}" in
-						172.${i}.*) break ;;
+						172.${i}.*) break;;
 					esac
 					i=$((${i} + 1))
 				done
@@ -89,19 +89,19 @@ ip6to4_start() {
 		# Now apply our IPv6 address to our config
 		new="${new}${new:+ }${ip6}/16"
 
-		if [ -n "${localip}" ] ; then
+		if [ -n "${localip}" ]; then
 			localip="any"
 		else
 			localip="${ip}"
 		fi
 	done
 
-	if [ -z "${new}" ] ; then
+	if [ -z "${new}" ]; then
 		eerror "No global IPv4 addresses found on interface ${host}"
 		return 1
 	fi
 
-	if [ "${IFACE}" != "sit0" ] ; then
+	if [ "${IFACE}" != "sit0" ]; then
 		ebegin "Creating 6to4 tunnel on ${IFACE}"
 		_tunnel add "${IFACE}" mode sit ttl 255 remote any local "${localip}"
 		eend $? || return 1

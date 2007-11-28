@@ -29,7 +29,7 @@ and optionally repair them."
 
 do_mtab() {
 	# Don't create mtab if /etc is readonly
-	if ! printf "" 2>/dev/null >/etc/mtab ; then
+	if ! printf "" 2>/dev/null >/etc/mtab; then
 		ewarn "Skipping /etc/mtab initialization (ro root?)"
 		return 0
 	fi
@@ -59,7 +59,7 @@ do_fsck() {
 	esac
 
 	# Don't bother doing a fsck on these
-	if [ -n "${CDBOOT}" ] || is_net_fs / || is_union_fs / ; then
+	if [ -n "${CDBOOT}" ] || is_net_fs / || is_union_fs /; then
 		return 0
 	fi
 
@@ -71,7 +71,7 @@ do_fsck() {
 	root=$(fstabinfo --blockdevice /)
 	[ ! -e "${root}" -a -e /dev/root ] && root=/dev/root
 
-	if [ -e /forcefsck ] || get_bootparam "forcefsck" ; then
+	if [ -e /forcefsck ] || get_bootparam "forcefsck"; then
 		ebegin "Checking root filesystem (full fsck forced)"
 		fsck ${opts} -f -n "${root}"
 		# /forcefsck isn't deleted because checkfs needs it.
@@ -80,7 +80,7 @@ do_fsck() {
 	else
 		# Obey the fs_passno setting for / (see fstab(5))
 		local pass=$(fstabinfo --passno /)
-		if [ ${pass:-0} != "0" ] ; then
+		if [ ${pass:-0} != "0" ]; then
 			ebegin "Checking root filesystem"
 			fsck ${opts} -p "${root}"
 			retval=$?
@@ -90,15 +90,15 @@ do_fsck() {
 		fi
 	fi
 
-	if [ ${retval} -eq 0 ] ; then
+	if [ ${retval} -eq 0 ]; then
 		eend 0
-	elif [ ${retval} -eq 1 ] ; then
+	elif [ ${retval} -eq 1 ]; then
 		ewend 1 "Filesystem repaired"
 		retval=0
-	elif [ ${retval} -eq 8 ] ; then
+	elif [ ${retval} -eq 8 ]; then
 		ewend 1 $"Operational error, continuing"
 		retval=0
-	elif [ ${retval} -eq 2 -o ${retval} -eq 3 ] ; then
+	elif [ ${retval} -eq 2 -o ${retval} -eq 3 ]; then
 		ewend 1 "Filesystem repaired, but reboot needed!"
 		if ! yesno ${rc_force_auto:-${RC_FORCE_AUTO}}; then
 			printf "\a"; sleep 1; printf "\a"; sleep 1
@@ -117,9 +117,9 @@ do_fsck() {
 			eend 2 "Filesystem couldn't be fixed :("
 			exec rc-abort || exit 1
 		fi
-		if [ ${retval} != "0" ] ; then
+		if [ ${retval} != "0" ]; then
 			einfo "Unmounting filesystems"
-			if [ "${RC_UNAME}" = "Linux" ] ; then
+			if [ "${RC_UNAME}" = "Linux" ]; then
 				mount -a -o remount,ro /
 			else
 				mount -u -o ro /
@@ -135,7 +135,7 @@ start() {
 
 	if ! root_rw; then
 		ebegin "Remounting root filesystem read/write"
-		if [ "${RC_UNAME}" = "Linux" ] ; then
+		if [ "${RC_UNAME}" = "Linux" ]; then
 			mount -n -o remount,rw /
 		else
 			mount -u -o rw /

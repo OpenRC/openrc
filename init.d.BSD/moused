@@ -24,7 +24,7 @@
 # SUCH DAMAGE.
 
 mouse=${SVCNAME##*.}
-if [ -n "${name}" -a "${mouse}" != "moused" ] ; then
+if [ -n "${name}" -a "${mouse}" != "moused" ]; then
 	moused_device=/dev/"${mouse}"
 	pidfile=/var/run/moused-"${mouse}".pid
 else
@@ -41,9 +41,9 @@ depend() {
 start() {
 	ebegin "Starting ${name}" 
 
-	if [ -z "${moused_device}" ] ; then
+	if [ -z "${moused_device}" ]; then
 		local dev=
-		for dev in /dev/psm[0-9]* /dev/ums[0-9]* ; do
+		for dev in /dev/psm[0-9]* /dev/ums[0-9]*; do
 			[ -c "${dev}" ] || continue
 			[ -e /var/run/moused-"${dev##*/}".pid ] && continue 
 			moused_device=${dev}
@@ -54,7 +54,7 @@ start() {
 		done
 	fi
 
-	if [ -z "${moused_device}" ] ; then
+	if [ -z "${moused_device}" ]; then
 		eend 1 "No mouse device found" 
 		return 1
 	fi

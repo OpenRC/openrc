@@ -33,9 +33,9 @@ ccwgroup_pre_start() {
 	local ccwgroup="$(_get_array "ccwgroup_${IFVAR}")"
 	[ -z "${ccwgroup}" ] && return 0
 
-	if [ ! -d /sys/bus/ccwgroup ] ; then
+	if [ ! -d /sys/bus/ccwgroup ]; then
 		modprobe qeth
-		if [ ! -d /sys/bus/ccwgroup ] ; then
+		if [ ! -d /sys/bus/ccwgroup ]; then
 			eerror "ccwgroup support missing in kernel"
 			return 1
 		fi
@@ -47,7 +47,7 @@ ccwgroup_pre_start() {
 		[ -z "${first}" ] && first=${x}
 		ccw="${ccw}${ccw:+,}${x}"
 	done
-	if [ -e /sys/devices/qeth/"${first}" ] ; then
+	if [ -e /sys/devices/qeth/"${first}" ]; then
 		echo "0" > /sys/devices/qeth/"${first}"/online
 	else
 		echo "${ccw}" > /sys/bus/ccwgroup/drivers/qeth/group
@@ -65,8 +65,8 @@ ccwgroup_pre_stop() {
 	[ ! -L /sys/class/net/"${FACE}"/driver ] && return 0
 	local driver="$(readlink /sys/class/net/"${IFACE}"/driver)"
 	case "${diver}" in
-		*/bus/ccwgroup/*) ;;
-		*) return 0 ;;
+		*/bus/ccwgroup/*);;
+		*) return 0;;
 	esac
 
 	local device="$(readlink /sys/class/net/"${IFACE}"/device)"

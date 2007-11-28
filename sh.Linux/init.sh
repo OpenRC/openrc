@@ -146,7 +146,7 @@ if [ -e /proc/uptime ]; then
 	unset up
 fi
 
-if ${mountproc} ; then
+if ${mountproc}; then
 	procfs="proc"
 	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
 	ebegin "Mounting ${procfs} at /proc"
@@ -242,7 +242,7 @@ for x in "devpts /dev/pts 0755 ,gid=5,mode=0620" "tmpfs /dev/shm 1777 ,nodev"; d
 
 	if [ ! -d "$2" ] && \
 	   [ "${m}" = "devfs" -o "${m}" = "udev" ]; then
-		mkdir -m "$3" -p "$2" >/dev/null 2>/dev/null || \
+		mkdir -m "$3" -p "$2" >/dev/null 2>&1 || \
 			ewarn "Could not create $2!"
 	fi
 

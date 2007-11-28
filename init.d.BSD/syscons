@@ -52,7 +52,7 @@ start() {
 		ebegin "Changing function keys"
 		eval set -- "${keychange}"
 		eindent
-		while [ $# -gt 0 ] ; do
+		while [ $# -gt 0 ]; do
 			veinfo "F$1 -> \`$2'"
 			kbdcontrol -f "$1" "$2" </dev/console
 			veend $?
