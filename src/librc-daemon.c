@@ -172,8 +172,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 }
 librc_hidden_def(rc_find_pids)
 
-#elif defined(__DragonFly__) || defined(__FreeBSD__) || \
-	defined(__NetBSD__) || defined(__OpenBSD__)
+#elif BSD
 
 # if defined(__DragonFly__) || defined(__FreeBSD__)
 #  ifndef KERN_PROC_PROC
@@ -185,6 +184,7 @@ librc_hidden_def(rc_find_pids)
 #  define _GET_KINFO_COMM(kp) (kp.ki_comm)
 #  define _GET_KINFO_PID(kp) (kp.ki_pid)
 # else
+#  define _KVM_GETPROC2
 #  define _KINFO_PROC kinfo_proc2
 #  define _KVM_GETARGV kvm_getargv2
 #  define _GET_KINFO_UID(kp) (kp.p_ruid)
@@ -211,11 +211,11 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 		return (NULL);
 	}
 
-#if defined(__DragonFly__) || defined( __FreeBSD__)
-	kp = kvm_getprocs (kd, KERN_PROC_PROC, 0, &processes);
-#else
+#ifdef _KVM_GETPROC2
 	kp = kvm_getproc2 (kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
 					   &processes);
+#else
+	kp = kvm_getprocs (kd, KERN_PROC_PROC, 0, &processes);
 #endif
 	for (i = 0; i < processes; i++) {
 		pid_t p = _GET_KINFO_PID (kp[i]);

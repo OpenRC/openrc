@@ -72,7 +72,6 @@ static const rc_service_state_name_t rc_service_state_names[] = {
 	{ 0, NULL}
 };
 
-
 #define LS_INITD	0x01
 #define LS_DIR   0x02
 static char **ls_dir (const char *dir, int options)

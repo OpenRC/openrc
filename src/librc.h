@@ -35,6 +35,7 @@
 
 #define _IN_LIBRC
 
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
