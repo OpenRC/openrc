@@ -77,6 +77,10 @@ start_pre() {
 			ln -s /dev/misc/net/tun /dev/net/tun
 			eend $?
 		fi
+	else
+		# Hammer the modules home by default
+		sysctl -a | grep -q '\.tun\.' || kldload if_tun
+		sysctl -a | grep -q '\.tap\.' || kldload if_tap
 	fi
 	
 	# If the config file does not specify the cd option, we do
