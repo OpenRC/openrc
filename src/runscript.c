@@ -833,7 +833,7 @@ static void svc_stop (bool deps)
 		char *svc;
 		int i;
 
-		if (rc_conf_yesno ("RC_DEPEND_STRICT"))
+		if (rc_conf_yesno ("rc_depend_strict"))
 			depoptions |= RC_DEP_STRICT;
 
 		if (rc_runlevel_stopping ())
