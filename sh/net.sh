@@ -497,8 +497,8 @@ start() {
 		eval config=\$config_${config_index}
 		[ -z "${config}" ] && break 
 
-		set -- "${config}"
-		ebegin $1
+		set -- ${config}
+		ebegin "$1"
 		eindent
 		case "$1" in
 			noop)
@@ -564,8 +564,8 @@ ${routes}"
 		ebegin ${cmd}
 		# Work out if we're a host or a net if not told
 		case ${cmd} in
-			*" -net "*|*" -host "*);;
-			*" netmask "*)             cmd="-net ${cmd}";;
+			-net" "*|-host" "*);;
+			*" "netmask" "*)             cmd="-net ${cmd}";;
 			*.*.*.*/32)                cmd="-host ${cmd}";;
 			*.*.*.*/*|0.0.0.0|default) cmd="-net ${cmd}";;
 			*)                         cmd="-host ${cmd}";;
