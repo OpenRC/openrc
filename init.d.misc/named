@@ -27,7 +27,7 @@ command=/usr/sbin/named
 command_args=${named_args}
 pidfile=/var/run/named/pid
 name="Domain Name server"
-extra_commands="reload"
+extra_started_commands="reload"
 
 namedb=/etc/namedb
 named_uid=${named_uid:-bind}

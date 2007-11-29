@@ -144,7 +144,8 @@ fi
 
 while [ -n "$1" ]; do
 	# See if we have the required function and run it
-	for _cmd in describe start stop ${extra_commands:-${opts}}; do
+	for _cmd in describe start stop ${extra_commands:-${opts}} \
+		${extra_started_commands}; do
 		if [ "${_cmd}" = "$1" ]; then
 			if type "$1" >/dev/null 2>&1; then
 				# If we're in the background, we may wish to fake some
@@ -159,6 +160,16 @@ while [ -n "$1" ]; do
 						fi
 					done
 				fi
+				# Check to see if we need to be started before we can run
+				# this command
+				for _cmd in ${extra_started_commands}; do
+					if [ "${_cmd}" = "$1" ]; then
+						if ! service_started "${SVCNAME}"; then
+							eerror "${SVCNAME}: cannot \`$1' as it has not been started"
+							exit 1
+						fi
+					fi
+				done
 				unset _cmd
 				if type "$1"_pre >/dev/null 2>&1; then
 					"$1"_pre || exit $?

@@ -29,8 +29,16 @@ command_args=${dnsmasq_args}
 pidfile=/var/run/dnsmasq.pid
 required_files=/usr/local/etc/dnsmasq.conf
 
+extra_started_commands="reload"
+
 depend() {
 	provide dns
 	need localmount net
 	after bootmisc
+}
+
+reload() {
+	ebegin "Reloading ${SVCNAME}"
+	start-stop-daemon --signal SIGHUP --pidfile "${pidfile}"
+	eend $?
 }

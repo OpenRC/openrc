@@ -58,14 +58,15 @@ if [ "${RC_SYS}" = "VPS" ]; then
 fi
 
 # If $svcdir is still mounted, preserve it if we can
-
 mnt=$(mountinfo --node "${RC_SVCDIR}")
 if [ -n "${mnt}" -a -w "${RC_LIBDIR}" ]; then
 	f_opts="-m -c"
 	[ "${RC_UNAME}" = "Linux" ] && f_opts="-c"
-	if [ -n "$(fuser ${f_opts} "${svcdir}" 2>/dev/null)" ]; then
-		fuser -k ${f_opts} "${svcdir}" >/dev/null 2>&1
-		sleep 2
+	if type fuser >/dev/null 2>&1; then
+		if [ -n "$(fuser ${f_opts} "${svcdir}" 2>/dev/null)" ]; then
+			fuser -k ${f_opts} "${svcdir}" >/dev/null 2>&1
+			sleep 2
+		fi
 	fi
 	cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
 		"${RC_SVCDIR}"/softlevel "${RC_SVCDIR}"/nettree \
