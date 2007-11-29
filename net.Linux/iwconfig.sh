@@ -378,7 +378,7 @@ iwconfig_scan() {
 			*Address:*)
 				APS=$((${APS} + 1)) 
 				eval MAC_${APS}="\""$(echo "${line#*: }" | tr '[:lower:]' '[:upper:]')"\""
-				eva	l QUALITY_${APS}=0
+				eval QUALITY_${APS}=0
 				;;	
 			*ESSID:*)
 				x=${line#*\"}
