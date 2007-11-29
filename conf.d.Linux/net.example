@@ -989,7 +989,7 @@
 #			eerror "You need to enable IP Policy Routing (CONFIG_IP_MULTIPLE_TABLES)"
 #			eerror "in your kernel to use ip rules"
 #		else
-#			for x in "$@"; do
+#			for x; do
 #				ebegin "${x}"
 #				ip rule add ${x} dev "${IFACE}"
 #				eend $?

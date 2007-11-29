@@ -112,7 +112,7 @@ bridge_post_stop() {
 		# Work out if we're added to a bridge for removal or not
 		eval set -- $(brctl show 2>/dev/null | sed -e "s/'/'\\\\''/g" -e "s/$/'/g" -e "s/^/'/g")
 		local line=
-		for line in "$@"; do
+		for line; do
 			set -- ${line}
 			if [ "$3" = "${IFACE}" ]; then
 				iface=$1

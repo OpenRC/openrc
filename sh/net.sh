@@ -83,7 +83,7 @@ _get_array() {
 		case "$(declare -p "$1" 2>/dev/null)" in
 			"declare -a "*)
 				eval "set -- \"\${$1[@]}\""
-				for _a in "$@"; do
+				for _a; do
 					printf "%s\n" "${_a}"
 				done
 				return 0
@@ -103,7 +103,7 @@ _flatten_array() {
 		case "$(declare -p "$1" 2>/dev/null)" in
 			"declare -a "*)
 				eval "set -- \"\${$1[@]}\""
-				for x in "$@"; do
+				for x; do
 					printf "'%s' " "$(printf "$x" | sed "s:':'\\\'':g")"
 				done
 				return 0
@@ -165,7 +165,7 @@ _configure_variables() {
 
 	for var in ${_config_vars}; do
 		local v=
-		for t in "$@"; do
+		for t; do
 			eval v=\$${var}_${t}
 			if [ -n "${v}" ]; then
 				eval ${var}_${IFVAR}=\$${var}_${t}
@@ -204,7 +204,7 @@ _gen_module_list() {
 	before() {
 		local mod=${MODULE}
 		local MODULE=
-		for MODULE in "$@"; do
+		for MODULE; do
 			after "${mod}"
 		done
 	}
@@ -315,7 +315,7 @@ _load_modules() {
 		eval set -- \$module_${i}_program
 		if [ -n "$1" ]; then
 			x=
-			for x in "$@"; do
+			for x; do
 				[ -x "${x}" ] && break
 			done
 			[ -x "${x}" ] || continue
@@ -327,7 +327,7 @@ _load_modules() {
 		fi
 		if [ -n "$1" ]; then
 			x=
-			for x in "$@"; do
+			for x; do
 				[ -x "${x}" ] && break
 			done
 			[ -x "${x}" ] || continue

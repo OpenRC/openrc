@@ -122,7 +122,7 @@ iwconfig_get_wep_key() {
 	else
 		set -- ${key}
 		local x= e=false
-		for x in "$@"; do
+		for x; do
 			if [ "${x}" = "enc" ]; then
 				e=true
 				break
@@ -373,7 +373,7 @@ iwconfig_scan() {
 
 	APS=-1
 	eval set -- ${scan}
-	for line in "$@"; do
+	for line; do
 		case "${line}" in
 			*Address:*)
 				APS=$((${APS} + 1)) 
@@ -499,7 +499,7 @@ iwconfig_scan() {
 
 		eval set -- $(_flatten_array "blacklist_aps_${IFVAR}")
 		[ $# = 0 ] && eval set -- $(_flatten_array "blacklist_aps")
-		for x in "$@"; do
+		for x; do
 			if [ "${x}" = "${s}" ]; then
 				ewarn "${s} has been blacklisted - not connecting"
 				unset SSID_${i} MAC_${i} CHAN_${i} QUALITY_${i} ENC_${i}
@@ -516,7 +516,7 @@ iwconfig_force_preferred() {
 	[ $# = 0 ] && return 1
 
 	ewarn "Trying to force preferred in case they are hidden"
-	for ssid in "$@"; do
+	for ssid; do
 		local found_AP=false i=0 e=
 		while [ ${i} -le ${APS} ]; do
 			eval e=\$SSID_${i}
@@ -541,7 +541,7 @@ iwconfig_connect_preferred() {
 	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
 	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
 
-	for ssid in "$@"; do
+	for ssid; do
 		unset IFS
 		i=0
 		while [ ${i} -le ${APS} ]; do
@@ -571,7 +571,7 @@ iwconfig_connect_not_preferred() {
 		if [ -n "${e}" ]; then
 			eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
 			[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
-			for ssid in "$@"; do
+			for ssid; do
 				if [ "${e}" = "${ssid}" ]; then
 					pref=true
 					break

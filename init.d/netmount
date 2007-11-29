@@ -30,7 +30,7 @@ need_portmap() {
 	local mnt opts ret IFS="
 "
 	set -- $(fstabinfo --fstype nfs,nfs4)
-	for mnt in "$@"; do
+	for mnt; do
 		case ,$(fstabinfo --options "${mnt}"), in
 			*,noauto,*|*,nolock,*);;
 			*) return 0;;

@@ -78,7 +78,7 @@ is_older_than() {
 	local x= ref="$1"
 	shift
 
-	for x in "$@"; do
+	for x; do
 		[ -e "${x}" ] || continue
 		# We need to check the mtime if it's a directory too as the
 		# contents may have changed.
@@ -163,7 +163,7 @@ fi
 export PATH="/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin$(_sanitize_path "${PATH}")"
 unset _sanitize_path
 
-for arg in "$@"; do
+for arg; do
 	case "${arg}" in
 		--nocolor|--nocolour|-C)
 			export RC_NOCOLOR="yes"

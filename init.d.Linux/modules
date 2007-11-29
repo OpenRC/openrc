@@ -45,7 +45,7 @@ load_modules() {
 	eindent
 
 	local x= cnt=0
-	for x in "$@"; do
+	for x; do
 		set -- ${x}
 		ebegin "Loading module $1"
 		eval modprobe -q "$@"
