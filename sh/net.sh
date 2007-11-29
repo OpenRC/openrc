@@ -410,11 +410,27 @@ ${config}"
 		fi
 	fi
 
+	config_index=0
+	local IFS="$__IFS"
+	set -- ${config}
+	
+	# We should support a space separated array for cidr configs
+	if [ $# = 1 ]; then
+		unset IFS
+		set -- ${config}
+		# Of course, we may have a single address added old style.
+		case "$2" in
+			netmask|broadcast|brd|brd+)
+				local IFS="$__IFS"
+				set -- ${config}
+				;;
+		esac
+	fi
+
 	# We store our config in an array like vars
 	# so modules can influence it
 	config_index=0
-	local IFS="$__IFS"
-	for cmd in ${config}; do
+	for cmd; do
 		eval config_${config_index}="'${cmd}'"
 		config_index=$((${config_index} + 1))
 	done
