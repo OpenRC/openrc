@@ -426,7 +426,8 @@ _load_config() {
 	else	
 		if [ -z "$1" ]; then
 			ewarn "No configuration specified; defaulting to DHCP"
-			config="dhcp"
+			config_0="dhcp"
+			config_index=1
 		fi
 	fi
 
