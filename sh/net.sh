@@ -400,16 +400,6 @@ _load_config() {
 	local config="$(_get_array "config_${IFVAR}")"
 	local fallback="$(_get_array fallback_${IFVAR})"
 
-	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ]; then
-		[ "${config}" != "null" ] && config="127.0.0.1/8
-${config}"
-	else
-		if [ -z "${config}" ]; then
-			ewarn "No configuration specified; defaulting to DHCP"
-			config="dhcp"
-		fi
-	fi
-
 	config_index=0
 	local IFS="$__IFS"
 	set -- ${config}
@@ -427,9 +417,22 @@ ${config}"
 		esac
 	fi
 
+	# Ensure that loopback has the correct address
+	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ]; then
+		if [ "$1" != "null" ]; then
+		   	config_0="127.0.0.1/8"
+			config_index=1
+		fi
+	else	
+		if [ -z "$1" ]; then
+			ewarn "No configuration specified; defaulting to DHCP"
+			config="dhcp"
+		fi
+	fi
+
+
 	# We store our config in an array like vars
 	# so modules can influence it
-	config_index=0
 	for cmd; do
 		eval config_${config_index}="'${cmd}'"
 		config_index=$((${config_index} + 1))
