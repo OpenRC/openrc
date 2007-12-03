@@ -1049,9 +1049,12 @@ int start_stop_daemon (int argc, char **argv)
 			} else {
 				if (pidfile) {
 					/* The pidfile may not have been written yet - give it some time */
-					if (get_pid (pidfile, true) == -1)
+					if (get_pid (pidfile, true) == -1) {
+						if (! nloopsp)
+							eerrorx ("%s: did not create a valid pid in `%s'",
+									 applet, pidfile);
 						alive = true;
-					else
+					} else
 						nloopsp = 0;
 				}
 				if (do_stop (exec, cmd, pidfile, uid, 0, true, false, true) > 0)
