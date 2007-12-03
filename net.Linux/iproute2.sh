@@ -216,6 +216,12 @@ iproute2_post_start() {
 	if [ -e /proc/net/route ]; then
 		ip route flush table cache dev "${IFACE}"
 	fi
+
+	vebegin "Waiting for IPv6 addresses"
+	while true; do
+		LC_ALL=C ip addr show dev "${IFACE}" | grep -q "^[[:space:]]*inet6 .* tentative" || break
+	done
+	veend 0
 }
 
 iproute2_post_stop() {

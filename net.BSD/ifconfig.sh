@@ -222,4 +222,12 @@ ifconfig_pre_start() {
 	return 0
 }
 
+ifconfig_post_start() {
+	vebegin "Waiting for IPv6 addresses"
+	while true; do
+		LC_ALL=C ifconfig "${IFACE}" | grep -q "^[[:space:]]*inet6 .* tentative" || break
+	done
+	veend 0
+}
+
 # vim: set ts=4 :
