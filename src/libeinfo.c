@@ -286,7 +286,7 @@ static const char *_ecolor (FILE *f, einfo_color_t color)
 
 	if (! colour_terminal (f))
 		return ("");
-	
+
 	switch (color) {
 		case ECOLOR_GOOD:
 			if (! (col = getenv ("ECOLOR_GOOD")))
@@ -319,7 +319,19 @@ hidden_def(ecolor)
 
 const char *ecolor (einfo_color_t color)
 {
-	return (_ecolor (stdout, color));
+	FILE *f = stdout;
+
+	/* Try and guess a valid tty */
+	if (! isatty (fileno (f))) {
+		f = stderr;
+		if (! isatty (fileno (f))) {
+			f = stdin;
+			if (! isatty (fileno (f)))
+				f = NULL;
+		}
+	}
+
+	return (_ecolor (f, color));
 }
 
 #define EINFOVN(_file, _color) \
