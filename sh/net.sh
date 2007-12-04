@@ -573,6 +573,8 @@ ${routes}"
 			hidefirstroute=true
 		fi
 	fi
+
+	local OIFS="${IFS}" SIFS=${IFS-y}
 	local IFS="$__IFS"
 	for cmd in ${routes}; do
 		unset IFS
@@ -599,7 +601,11 @@ ${routes}"
 		eend $?
 		eoutdent
 	done
-	unset IFS
+	if [ "${SIFS}" = "y" ]; then
+		unset IFS
+	else
+		IFS="${OIFS}"
+	fi
 
 	for module in ${MODULES}; do
 		if type "${module}_post_start" >/dev/null 2>&1; then
