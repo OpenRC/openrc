@@ -39,17 +39,20 @@ _exists() {
 }
 
 _get_mac_address() {
-	local mac=$(LC_ALL=C ifconfig "${IFACE}" | \
-	sed -n -e 's/^[[:space:]]*ether \(..:..:..:..:..:..\).*/\1/p')
-
-	case "${mac}" in
-		00:00:00:00:00:00);;
-		44:44:44:44:44:44);;
-		FF:FF:FF:FF:FF:FF);;
-		*) echo "${mac}"; return 0;;
-	esac
-
-	return 1
+	local proto= address= foo=
+	LC_ALL=C ifconfig "${IFACE}" | while read proto address foo; do
+		case "${proto}" in
+			ether) 
+				case "${address}" in
+					00:00:00:00:00:00);;
+					44:44:44:44:44:44);;
+					FF:FF:FF:FF:FF:FF);;
+					*) echo "${address}";;
+				esac
+				return 0
+				;;
+		esac
+	done
 }
 
 _up () {
@@ -73,7 +76,7 @@ _ifindex() {
 			done
 			;;
 		default)
-			for x in $(ifconfig -a | sed -n -e 's/^\([^[:space:]]*\):.*/\1/p'); do
+			for x in $(ifconfig -l); do
 				if [ "${x}" = "${IFACE}" ]; then
 					echo "${i}"
 					return 0
@@ -88,19 +91,29 @@ _ifindex() {
 	return 1
 }
 
+_ifconfig_ent() {
+	LC_ALL=C ifconfig "${IFACE}" 2>/dev/null | while read ent rest; do
+   		case "${ent}" in
+			"$1") echo "${rest}";;
+		esac
+	done
+}
+
 _is_wireless() {
-	LC_ALL=C ifconfig "${IFACE}" 2>/dev/null | \
-		grep -q "^[[:space:]]*media: IEEE 802.11 Wireless"
+	case "$(_ifconfig_ent "media:")" in
+		"IEEE 802.11 Wireless"*) return 0;;
+		*) return 1;;
+	esac
 }
 
 _get_inet_address() {
-	set -- $(LC_ALL=C ifconfig "${IFACE}" |
-	sed -n -e 's/^[[:space:]]*inet \([^ ]*\) netmask 0x\(..\)\(..\)\(..\)\(..\).*/\1 0x\2.0x\3.0x\4/p')
-	[ -z "$1" ] && return 1
-
-	echo -n "$1"
-	shift
-	echo "/$(_netmask2cidr "$1")"
+	local inet= address= n= netmask= rest=
+	LC_ALL=C ifconfig "${IFACE}" | while read inet address n netmask rest; do
+		if [ "${inet}" = "inet" ]; then
+			echo "${address}/$(_netmask2cidr "${netmask}")"
+			return 0
+		fi
+	done
 }
 
 _add_address() {
@@ -145,38 +158,22 @@ _add_route() {
 }
 
 _delete_addresses() {
-	# We don't remove addresses from aliases
-	case "${IFACE}" in
-		*:*) return 0;;
-	esac
-
 	einfo "Removing addresses"
 	eindent
-	local addr=
-	for addr in $(LC_ALL=C ifconfig "${IFACE}" |
-		sed -n -e 's/^[[:space:]]*inet \([^ ]*\).*/\1/p'); do
-		if [ "${addr}" = "127.0.0.1" ]; then
-			# Don't delete the loopback address
-			[ "$1" = "lo" -o "$1" = "lo0" ] && continue
-		fi
-		einfo "${addr}"
-		ifconfig "$1" "${addr}" -alias
-		eend $?
-	done
-
-	# Remove IPv6 addresses
-	for addr in $(LC_ALL=C ifconfig "${IFACE}" | \
-		sed -n -e 's/^[[:space:]]*inet6 \([^ ]*\).*/\1/p'); do
-		case "${addr}" in
-			*"%${IFACE}") continue;;
-			::1) continue;;
+	LC_ALL=C ifconfig "${IFACE}" | while read inet address rest; do
+		case "${inet}" in
+			inet|inet6)
+				case "${address}" in
+					*"%${IFACE}"|::1) continue;;
+					127.0.0.1) [ "${IFACE}" = "lo0" ] && continue;;
+				esac
+				einfo "${address}"
+				ifconfig "${IFACE}" "${inet}" "${address}" -alias
+				eend $?
+				;;
 		esac
-		einfo "${addr}"
-		ifconfig "${IFACE}" inet6 "${addr}" -alias
-		eend $?
 	done
 	eoutdent
-	
 	return 0
 }
 
@@ -185,9 +182,10 @@ _show_address() {
 }
 
 _has_carrier() {
-	local s=$(LC_ALL=C ifconfig "${IFACE}" | \
-	sed -n -e 's/^[[:space:]]status: \(.*\)$/\1/p')
-	[ -z "${s}" -o "${s}" = "active" -o "${s}" = "associated" ] 
+	case "$(_ifconfig_ent "status:")" in
+		""|active|associated) return 0;;
+		*) return 1;;
+	esac
 }
 
 ifconfig_pre_start() {
@@ -223,7 +221,17 @@ ifconfig_pre_start() {
 }
 
 _ifconfig_ipv6_tentative() {
-		LC_ALL=C ifconfig "${IFACE}" | grep -q "^[[:space:]]*inet6 .* tentative"
+	local inet= address= rest=
+	LC_ALL=C ifconfig "${IFACE}" | while read inet address rest; do
+	 	case "${inet}" in
+			inet6)
+				case "${rest}" in
+					*" "tentative*) return 2;;
+				esac
+				;;
+		esac
+	done
+	[ $? = 2 ]
 }
 
 ifconfig_post_start() {
