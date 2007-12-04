@@ -126,7 +126,7 @@ _add_address() {
 			;;
 	esac
 
-	ifconfig "${IFACE}" ${inet6} alias "$@"
+	ifconfig "${IFACE}" ${inet6} "$@" alias
 }
 
 _add_route() {
@@ -160,7 +160,7 @@ _delete_addresses() {
 			[ "$1" = "lo" -o "$1" = "lo0" ] && continue
 		fi
 		einfo "${addr}"
-		ifconfig "$1" delete "${addr}"
+		ifconfig "$1" "${addr}" -alias
 		eend $?
 	done
 
@@ -172,7 +172,7 @@ _delete_addresses() {
 			::1) continue;;
 		esac
 		einfo "${addr}"
-		ifconfig "${IFACE}" inet6 delete "${addr}"
+		ifconfig "${IFACE}" inet6 "${addr}" -alias
 		eend $?
 	done
 	eoutdent
@@ -222,12 +222,18 @@ ifconfig_pre_start() {
 	return 0
 }
 
+_ifconfig_ipv6_tentative() {
+		LC_ALL=C ifconfig "${IFACE}" | grep -q "^[[:space:]]*inet6 .* tentative"
+}
+
 ifconfig_post_start() {
-	vebegin "Waiting for IPv6 addresses"
-	while true; do
-		LC_ALL=C ifconfig "${IFACE}" | grep -q "^[[:space:]]*inet6 .* tentative" || break
-	done
-	veend 0
+	if _ifconfig_ipv6_tentative; then
+		ebegin "Waiting for IPv6 addresses"
+		while true; do
+			_ifconfig_ipv6_tentative || break
+		done
+		eend 0
+	fi
 }
 
 # vim: set ts=4 :

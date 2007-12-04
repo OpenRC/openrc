@@ -211,17 +211,24 @@ iproute2_pre_start() {
 	return 0
 }
 
+_iproute2_ipv6_tentative() {
+		LC_ALL=C ip addr show dev "${IFACE}" | \
+		grep -q "^[[:space:]]*inet6 .* tentative"
+}
+
 iproute2_post_start() {
 	# Kernel may not have IP built in
 	if [ -e /proc/net/route ]; then
 		ip route flush table cache dev "${IFACE}"
 	fi
 
-	vebegin "Waiting for IPv6 addresses"
-	while true; do
-		LC_ALL=C ip addr show dev "${IFACE}" | grep -q "^[[:space:]]*inet6 .* tentative" || break
-	done
-	veend 0
+	if _iproute2_ipv6_tentative; then
+		ebegin "Waiting for IPv6 addresses"
+		while true; do
+			_iproute2_ipv6_tentative || break
+		done
+		eend 0
+	fi
 }
 
 iproute2_post_stop() {
