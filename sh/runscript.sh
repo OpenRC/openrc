@@ -109,20 +109,29 @@ unset _f
 if [ -n "${command}" ]; then
 	if ! type start >/dev/null 2>&1; then
 		start() {
+			local _background=
 			ebegin "Starting ${name:-${SVCNAME}}"
-			case "${command_background}" in
-				[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1)
-					start_stop_daemon_args="${start_stop_daemon_args} --background --pidfile"
-					;;
-			esac
-			yesno "${start_inactive}" && mark_service_inactive "${SVCNAME}"
+			if yesno "${command_background}"; then 
+				_background="--background --pidfile"
+			fi
+			if yesno "${start_inactive}"; then
+				local _inactive=false
+				service_inactive "${SVCNAME}" && _inactive=true
+				mark_service_inactive "${SVCNAME}"
+			fi
 			start-stop-daemon --start \
 				--exec ${command} \
 				${procname:+--name} ${procname} \
 				${pidfile:+--pidfile} ${pidfile} \
-				${start_stop_daemon_args} \
+				${_background} ${start_stop_daemon_args} \
 				-- ${command_args}
-			eend $? "Failed to start ${SVCNAME}"
+			eend $? "Failed to start ${SVCNAME}" && return 0
+			if yesno "${start_inactive}"; then
+				if ! ${_inactive}; then
+			   		mark_service_stopped "${SVCNAME}"
+				fi
+			fi
+			return 1
 		}
 	fi
 fi
