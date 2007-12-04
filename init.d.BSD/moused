@@ -59,16 +59,22 @@ start() {
 		return 1
 	fi
 
+	local args=
+	eval args=\$moused_args_${moused_device##*/}
+	[ -z "${args}" ] && args=${moused_args}
+
 	start-stop-daemon --start --exec /usr/sbin/moused \
 		--pidfile "${pidfile}" \
-		-- ${moused_args} -p "${moused_device}" -I "${pidfile}"
+		-- ${args} -p "${moused_device}" -I "${pidfile}"
 	local retval=$?
 	
-	local ttyv=
-	for ttyv in /dev/ttyv*; do
-		vidcontrol < "${ttyv}" -m on
-		: $((retval+= $?))
-	done
+	if [ ${retval} = 0 ]; then
+		local ttyv=
+		for ttyv in /dev/ttyv*; do
+			vidcontrol < "${ttyv}" -m on
+			: $((retval+= $?))
+		done
+	fi
 	
 	eend ${retval} "Failed to start moused"
 }
