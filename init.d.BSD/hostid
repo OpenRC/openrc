@@ -1,0 +1,91 @@
+#!/sbin/runscript
+# Copyright 1999-2007 Gentoo Foundation
+# Copyright 2007 Roy Marples
+# All rights reserved
+
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+
+extra_commands="reset"
+hostid_file=${hostid_file:-/etc/hostid}
+
+depend() {
+	need checkroot
+}
+
+_set() {
+	local id=0
+
+	[ -n "$1" ] && id=$1
+	ebegin "Setting Host UUID: ${id}"
+	sysctl kern.hostuuid="${id}" >/dev/null
+	eend $? || return 1
+
+	if [ -n "$1" ]; then
+		id=$(echo "$1" | md5)
+		id="0x${id%????????????????????????}"
+	fi
+	ebegin "Setting Host ID: ${id}"
+	sysctl kern.hostid="${id}" >/dev/null
+	eend $?
+}
+
+# First we check to see if there is a system UUID
+# If so then we use that and erase the hostid file,
+# otherwise we generate a random UUID.
+reset() {
+	local uuid=$(kenv smbios.system.uuid 2>/dev/null)
+	local x="[0-9a-f]"
+	local y="${x}${x}${x}${x}"
+	case "${uuid}" in
+		${y}${y}-${y}-${y}-${y}-${y}${y}${y});;
+		*) uuid=;;
+	esac
+
+	if [ -n "${uuid}" ]; then
+		rm -f "${hostid_file}"
+	else
+		uuid=$(uuidgen)
+		if [ -z "${uuid}" ]; then
+			eerror "Unable to generate a UUID"
+			return 1
+		fi
+		if ! echo "${uuid}" > "${hostid_file}"; then
+			eerror "Failed to store UUID in \`${hostid_file}'"
+			return 1
+		fi
+	fi
+
+	_set "${uuid}"
+}
+
+start()
+{
+	if [ -r "${hostid_file}" ]; then
+		_set $(cat "${hostid_file}") 
+	else
+		reset
+	fi
+}
+
+stop() {
+	_set
+}
