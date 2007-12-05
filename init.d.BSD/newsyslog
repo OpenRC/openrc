@@ -24,13 +24,14 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-command=/usr/sbin/syslogd
-command_args=${syslogd_args}
-pidfile=/var/run/syslog.pid
-name="System Logger Daemon"
+required_files="/etc/newsyslog.conf"
 
 depend() {
-	provide logger
 	need localmount
-	after bootmisc newsyslog
+}
+
+start() {
+	ebegin "Creating and/or trimming log files"
+	newsyslog ${newsyslog_args}
+	eend $?
 }
