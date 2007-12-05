@@ -29,6 +29,7 @@ and /etc/conf.d/local.stop when stopping."
 
 depend() {
 	after *
+	keywords notimeout
 }
 
 start() {

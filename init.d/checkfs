@@ -30,6 +30,7 @@ optionally repair them."
 depend() {
 	need checkroot
 	after modules
+	keywords notimeout
 }
 
 do_checkfs() {

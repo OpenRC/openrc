@@ -211,11 +211,6 @@ char *rc_service_value_get (const char *service, const char *option);
 bool rc_service_value_set (const char *service, const char *option,
 						   const char *value);
 
-/*! Wait for a service to finish
- * @param service to wait for
- * @return true if service finished before timeout, otherwise false */
-bool rc_service_wait (const char *service);
-
 /*! List the services in a runlevel
  * @param runlevel to list
  * @return NULL terminated list of services */
@@ -274,6 +269,14 @@ bool rc_deptree_update_needed (void);
  * This pointer should be freed with rc_deptree_free when done.
  * @return pointer to the dependency tree */
 rc_depinfo_t *rc_deptree_load (void);
+
+/*! List the depend for the type of service
+ * @param deptree to search
+ * @param type to use (keywords, etc)
+ * @param service to check
+ * @return NULL terminated list of services in order */
+char **rc_deptree_depend (rc_depinfo_t *deptree,
+						  const char *type, const char *service);
 
 /*! List all the services in order that the given services have
  * for the given types and options.

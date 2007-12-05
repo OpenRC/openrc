@@ -467,10 +467,34 @@ static void visit_service (rc_depinfo_t *deptree, const char * const *types,
 			rc_strlist_add (&sorted->list, depinfo->service);
 }
 
+char **rc_deptree_depend (rc_depinfo_t *deptree,
+						  const char *service, const char *type)
+{
+	rc_depinfo_t *di;
+	rc_deptype_t *dt;
+	char **svcs = NULL;
+	int i;
+	char *svc;
+
+	if (! (di = get_depinfo (deptree, service)) ||
+		! (dt = get_deptype (di, type)))
+	{
+		errno = ENOENT;
+		return (NULL);
+	}
+
+	/* For consistency, we copy the array */
+	STRLIST_FOREACH (dt->services, svc, i)
+		rc_strlist_add (&svcs, svc);
+
+	return (svcs);
+}
+librc_hidden_def(rc_deptree_depend)
+
 char **rc_deptree_depends (rc_depinfo_t *deptree,
 						   const char **types, const char **services,
 						   const char *runlevel, int options)
-{  
+{
 	struct lhead sorted;
 	struct lhead visited;
 	rc_depinfo_t *di;

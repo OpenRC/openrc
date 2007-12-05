@@ -68,6 +68,14 @@
 
 #define PREFIX_LOCK		RC_SVCDIR "/prefix.lock"
 
+/* usecs to wait while we poll the fifo */
+#define WAIT_INTERVAL	20000000
+
+/* max secs to wait until a service comes up */
+#define WAIT_MAX        300
+
+#define ONE_SECOND      1000000000
+
 static char *applet = NULL;
 static char *service = NULL;
 static char *exclusive = NULL;
@@ -98,7 +106,6 @@ static const char *types_b[] = { "broken", NULL };
 static const char *types_n[] = { "ineed", NULL };
 static const char *types_nu[] = { "ineed", "iuse", NULL };
 static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
-static const char *types_p[] = { "iprovide", NULL };
 
 static const char *types_m[] = { "needsme", NULL };
 static const char *types_mua[] = { "needsme", "usesme", "beforeme", NULL };
@@ -492,6 +499,60 @@ static bool svc_exec (const char *arg1, const char *arg2)
 	return (execok);
 }
 
+static bool svc_wait (rc_depinfo_t *depinfo, const char *svc)
+{
+	char *s;
+	char *base;
+	char *fifo;
+	struct timespec ts;
+	int nloops = WAIT_MAX * (ONE_SECOND / WAIT_INTERVAL);
+	bool retval = false;
+	bool forever = false;
+	char **keywords = NULL;
+	int i;
+
+	if (! service)
+		return (false);
+
+	/* Some services don't have a timeout, like checkroot and checkfs */
+	keywords = rc_deptree_depend (deptree, svc, "keywords"); 
+	STRLIST_FOREACH (keywords, s, i) {
+		if (strcmp (s, "notimeout") == 0) {
+			forever = true;
+			break;
+		}
+	}
+	rc_strlist_free (keywords);
+
+	s = xstrdup (svc);
+	base = basename (s);
+	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", base, (char *) NULL);
+	free (s);
+
+	ts.tv_sec = 0;
+	ts.tv_nsec = WAIT_INTERVAL;
+
+	while (nloops) {
+		if (! exists (fifo)) {
+			retval = true;
+			break;
+		}
+
+		if (nanosleep (&ts, NULL) == -1) {
+			if (errno != EINTR)
+				break;
+		}
+
+		if (! forever)
+			nloops --;
+	}
+
+	if (! exists (fifo))
+		retval = true;
+	free (fifo);
+	return (retval);
+}
+
 static rc_service_state_t svc_status ()
 {
 	char status[10];
@@ -683,7 +744,7 @@ static void svc_start (bool deps)
 					continue;
 			}
 
-			if (! rc_service_wait (svc))
+			if (! svc_wait (deptree, svc))
 				eerror ("%s: timed out waiting for %s", applet, svc);
 			if ((svcs = rc_service_state (svc)) & RC_SERVICE_STARTED)
 				continue;
@@ -710,12 +771,9 @@ static void svc_start (bool deps)
 			unlink_mtime_test ();
 
 			STRLIST_FOREACH (tmplist, svc, i) {
-				const char *sl[] = { svc, NULL };
 				rc_service_schedule_start (svc, service);
-
 				rc_strlist_free (providelist);
-				providelist = rc_deptree_depends (deptree, types_p, sl,
-												  softlevel, depoptions);
+				providelist = rc_deptree_depend (deptree, "iprovide", svc); 
 				STRLIST_FOREACH (providelist, svc2, j) 
 					rc_service_schedule_start (svc2, service);
 
@@ -780,7 +838,7 @@ static void svc_start (bool deps)
 
 	/* Do the same for any services we provide */
 	rc_strlist_free (tmplist);
-	tmplist = rc_deptree_depends (deptree, types_p, svcl, softlevel, depoptions);
+	tmplist = rc_deptree_depend (deptree, "iprovide", applet);
 
 	STRLIST_FOREACH (tmplist, svc2, j) {
 		rc_strlist_free (services);
@@ -853,7 +911,7 @@ static void svc_stop (bool deps)
 			if (svcs & RC_SERVICE_STARTED || 
 				svcs & RC_SERVICE_INACTIVE)
 			{
-				rc_service_wait (svc);
+				svc_wait (deptree, svc);
 				svcs = rc_service_state (svc);
 				if (svcs & RC_SERVICE_STARTED || 
 					svcs & RC_SERVICE_INACTIVE)
@@ -873,7 +931,7 @@ static void svc_stop (bool deps)
 				continue;
 
 			/* We used to loop 3 times here - maybe re-do this if needed */
-			rc_service_wait (svc);
+			svc_wait (deptree, svc);
 			if (! (rc_service_state (svc) & RC_SERVICE_STOPPED)) {
 				if (rc_runlevel_stopping ()) {
 					/* If shutting down, we should stop even if a dependant failed */
@@ -899,7 +957,7 @@ static void svc_stop (bool deps)
 		STRLIST_FOREACH (services, svc, i) {
 			if (rc_service_state (svc) & RC_SERVICE_STOPPED)
 				continue;
-			rc_service_wait (svc);
+			svc_wait (deptree, svc);
 		}
 
 		rc_strlist_free (services);

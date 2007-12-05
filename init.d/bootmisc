@@ -29,6 +29,7 @@ depend() {
 	need localmount
 	before logger
 	after clock sysctl
+	keywords notimeout
 }
 
 cleanup_tmp_dir() {

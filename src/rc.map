@@ -3,6 +3,7 @@ global:
 	rc_config_list;
 	rc_config_load;
 	rc_config_value;
+	rc_deptree_depend;
 	rc_deptree_depends;
 	rc_deptree_free;
 	rc_deptree_load;
@@ -32,7 +33,6 @@ global:
 	rc_service_schedule_start;
 	rc_service_start;
 	rc_service_stop;
-	rc_service_wait;
 	rc_services_in_runlevel;
 	rc_services_in_state;
 	rc_services_scheduled;

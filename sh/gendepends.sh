@@ -45,7 +45,10 @@ after() {
 }
 provide() {
 	[ -n "$*" ] && echo "${SVCNAME} iprovide $*" >&3
-} 
+}
+keywords() {
+	[ -n "$*" ] && echo "${SVCNAME} keywords $*" >&3
+}
 depend() {
 	:
 }
@@ -83,6 +86,7 @@ for SVCNAME in *; do
 		before ${rc_before} ${RC_BEFORE}
 		after ${rc_after} ${RC_AFTER}
 		provide ${rc_provide} ${RC_PROVIDE}
+		keywords ${rc_keywords} ${RC_KEYWORDS}
 	fi
 	)
 done

@@ -35,14 +35,6 @@ const char copyright[] = "Copyright (c) 2007 Gentoo Foundation\n"
 
 #include "librc.h"
 
-/* usecs to wait while we poll the fifo */
-#define WAIT_INTERVAL	20000000
-
-/* max secs to wait until a service comes up */
-#define WAIT_MAX        300
-
-#define ONE_SECOND      1000000000
-
 #define SOFTLEVEL	RC_SVCDIR "/softlevel"
 
 #ifndef S_IXUGO
@@ -719,52 +711,6 @@ bool rc_service_schedule_clear (const char *service)
 }
 librc_hidden_def(rc_service_schedule_clear)
 
-bool rc_service_wait (const char *service)
-{
-	char *svc;
-	char *base;
-	char *fifo;
-	struct timespec ts;
-	int nloops = WAIT_MAX * (ONE_SECOND / WAIT_INTERVAL);
-	bool retval = false;
-	bool forever = false;
-
-	if (! service)
-		return (false);
-
-	svc = xstrdup (service);
-	base = basename (svc);
-	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", base, (char *) NULL);
-	/* FIXME: find a better way of doing this
-	 * Maybe a setting in the init script? */
-	if (strcmp (base, "checkfs") == 0 || strcmp (base, "checkroot") == 0)
-		forever = true;
-	free (svc);
-
-	ts.tv_sec = 0;
-	ts.tv_nsec = WAIT_INTERVAL;
-
-	while (nloops) {
-		if (! exists (fifo)) {
-			retval = true;
-			break;
-		}
-
-		if (nanosleep (&ts, NULL) == -1) {
-			if (errno != EINTR)
-				break;
-		}
-
-		if (! forever)
-			nloops --;
-	}
-
-	if (! exists (fifo))
-		retval = true;
-	free (fifo);
-	return (retval);
-}
-librc_hidden_def(rc_service_wait)
 
 char **rc_services_in_runlevel (const char *runlevel)
 {

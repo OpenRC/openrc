@@ -27,6 +27,10 @@
 description="Check the root filesystem according to /etc/fstab for errors \
 and optionally repair them."
 
+depend() {
+	keywords notimeout
+}
+
 do_mtab() {
 	# Don't create mtab if /etc is readonly
 	if ! printf "" 2>/dev/null >/etc/mtab; then
