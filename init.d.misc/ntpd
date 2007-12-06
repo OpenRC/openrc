@@ -40,7 +40,7 @@ depend() {
 start_pre() {
 	if [ ! -r "${ntpd_config}" ]; then
 		eerror "${ntpd_config} is not readable"
-		exit 1
+		return 1
 	fi
 
 	if [ -n "${ntpd_chroot}" ]; then
