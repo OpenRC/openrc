@@ -495,6 +495,9 @@ static bool want_interactive (void)
 	static bool gotinteractive;
 	static bool interactive;
 
+	if (rc_yesno (getenv ("EINFO_QUIET")))
+		return (false);
+
 	if (PREVLEVEL &&
 		strcmp (PREVLEVEL, "N") != 0 &&
 		strcmp (PREVLEVEL, "S") != 0 &&
@@ -958,7 +961,8 @@ int main (int argc, char **argv)
 	signal (SIGUSR1, handle_signal);
 	signal (SIGWINCH, handle_signal);
 
-	interactive = exists (INTERACTIVE);
+	if (! rc_yesno (getenv ("EINFO_QUIET")))
+		interactive = exists (INTERACTIVE);
 	rc_plugin_load ();
 
 	/* Check we're in the runlevel requested, ie from
@@ -989,7 +993,8 @@ int main (int argc, char **argv)
 					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_HILITE),
 					ecolor (ECOLOR_NORMAL));
 
-			if (rc_conf_yesno ("rc_interactive"))
+			if (! rc_yesno (getenv ("EINFO_QUIET")) &&
+				rc_conf_yesno ("rc_interactive"))
 				printf ("Press %sI%s to enter interactive boot mode\n\n",
 						ecolor (ECOLOR_GOOD), ecolor (ECOLOR_NORMAL));
 
@@ -1233,12 +1238,17 @@ int main (int argc, char **argv)
 	   We have different rules dependent on runlevel. */
 	if (newlevel && strcmp (newlevel, bootlevel) == 0) {
 		if (coldplugged_services) {
-			einfon ("Device initiated services:");
+			bool quiet = rc_yesno (getenv ("EINFO_QUIET"));
+
+			if (! quiet)
+				einfon ("Device initiated services:");
 			STRLIST_FOREACH (coldplugged_services, service, i) {
-				printf (" %s", service);
+				if (! quiet)
+					printf (" %s", service);
 				rc_strlist_add (&start_services, service);
 			}
-			printf ("\n");
+			if (! quiet)
+				printf ("\n");
 		}
 		tmplist = rc_services_in_runlevel (newlevel ? newlevel : runlevel);
 		rc_strlist_join (&start_services, tmplist);
