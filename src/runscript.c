@@ -1098,8 +1098,8 @@ int runscript (int argc, char **argv)
 	if ((softlevel = xstrdup (getenv ("RC_SOFTLEVEL"))) == NULL) {
 		/* Ensure our environment is pure
 		   Also, add our configuration to it */
-		tmplist = env_config ();
 		env = env_filter ();
+		tmplist = env_config ();
 		rc_strlist_join (&env, tmplist);
 		rc_strlist_free (tmplist);
 		tmplist = NULL;
@@ -1135,7 +1135,7 @@ int runscript (int argc, char **argv)
 		softlevel = rc_runlevel_get ();
 	}
 
-	setenv ("RC_ELOG", service, 1);
+	setenv ("EINFO_LOG", service, 1);
 	setenv ("SVCNAME", applet, 1);
 
 	/* Set an env var so that we always know our pid regardless of any

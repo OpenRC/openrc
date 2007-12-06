@@ -82,7 +82,9 @@ static void print_service (char *service)
 	} else
 		snprintf (status, sizeof (status), " stopped ");
 
-	if (isatty (fileno (stdout)) && ! rc_yesno (getenv ("RC_NOCOLOR")))
+	errno = 0;
+	if ((rc_yesno (getenv ("EINFO_COLOR")) || errno == ENOENT) &&
+		isatty (fileno (stdout)))
 		printf ("\n");
 	ebracket (cols, color, status);
 }

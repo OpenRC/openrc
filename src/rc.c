@@ -216,8 +216,8 @@ static int do_e (int argc, char **argv)
 			if (argc < 3)
 				eerrorx ("%s: not enough arguments", applet);
 
-			unsetenv ("RC_ELOG");
-			setenv ("RC_ELOG", argv[1], 1);
+			unsetenv ("EINFO_LOG");
+			setenv ("EINFO_LOG", argv[1], 1);
 
 			argc -= 2;
 			argv += 2;
@@ -939,7 +939,7 @@ int main (int argc, char **argv)
 		eerrorx ("%s: root access required", applet);
 
 	/* Enable logging */
-	setenv ("RC_ELOG", "rc", 1);
+	setenv ("EINFO_LOG", "rc", 1);
 
 	/* Export our PID */
 	snprintf (pidstr, sizeof (pidstr), "%d", getpid ());

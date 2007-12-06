@@ -35,7 +35,7 @@
 bool rc_yesno (const char *value)
 {
 	if (! value) {
-		errno = EINVAL;
+		errno = ENOENT;
 		return (false);
 	}
 

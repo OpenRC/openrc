@@ -63,7 +63,7 @@ static void _free_rc_conf (void)
 	rc_strlist_free (rc_conf);
 }
 
-bool rc_conf_yesno (const char *setting)
+char *rc_conf_value (const char *setting)
 {
 	if (! rc_conf) {
 		char *line;
@@ -88,10 +88,14 @@ bool rc_conf_yesno (const char *setting)
 				p++;
 			}
 		}
-	
 	}
 
-	return (rc_yesno (rc_config_value (rc_conf, setting)));
+	return (rc_config_value (rc_conf, setting));
+}
+
+bool rc_conf_yesno (const char *setting)
+{
+	return (rc_yesno (rc_conf_value (setting)));
 }
 
 char **env_filter (void)
@@ -181,10 +185,10 @@ char **env_filter (void)
 	   However, we do need a path, so use a default. */
 	if (! got_path) {
 		env_len = strlen ("PATH=") + strlen (PATH_PREFIX) + 2;
-		p = xmalloc (sizeof (char) * env_len);
-		snprintf (p, env_len, "PATH=%s", PATH_PREFIX);
-		rc_strlist_add (&env, p);
-		free (p);
+		e = xmalloc (sizeof (char) * env_len);
+		snprintf (e, env_len, "PATH=%s", PATH_PREFIX);
+		rc_strlist_add (&env, e);
+		free (e);
 	}
 
 	rc_strlist_free (whitelist);
@@ -242,6 +246,7 @@ char **env_config (void)
 	FILE *fp;
 	char buffer[PATH_MAX];
 	char *runlevel = rc_runlevel_get ();
+	char *p;
 
 	/* One char less to drop the trailing / */
 	i = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
@@ -322,6 +327,27 @@ char **env_config (void)
 		rc_strlist_add (&env, line);
 		free (line);
 	}
+
+	/* Be quiet or verbose as necessary */
+	if ((p = rc_conf_value ("rc_quiet"))) {
+		i = strlen ("EINFO_QUIET=") + strlen (p) + 1;
+		line = xmalloc (sizeof (char) * i); 
+		snprintf (line, i, "EINFO_QUIET=%s", p);
+		rc_strlist_add (&env, line);
+		free (line);
+	}
+	if ((p = rc_conf_value ("rc_verbose"))) {
+		i = strlen ("EINFO_VERBOSE=") + strlen (p) + 1;
+		line = xmalloc (sizeof (char) * i); 
+		snprintf (line, i, "EINFO_VERBOSE=%s", p);
+		rc_strlist_add (&env, line);
+		free (line);
+	}
+
+	errno = 0;
+	if ((! rc_conf_yesno ("rc_color") && errno == 0) ||
+		rc_conf_yesno ("rc_nocolor"))
+		rc_strlist_add (&env, "EINFO_COLOR=no");
 
 	free (runlevel);
 	return (env);

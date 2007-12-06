@@ -443,7 +443,7 @@ int mountinfo (int argc, char **argv)
 	rc_strlist_reverse (nodes);
 
 	result = EXIT_FAILURE;
-	quiet = rc_yesno (getenv ("RC_QUIET"));
+	quiet = rc_yesno (getenv ("EINFO_QUIET"));
 	STRLIST_FOREACH (nodes, n, i) {
 		if (point_regex && regexec (point_regex, n, 0, NULL, 0) != 0)
 			continue;

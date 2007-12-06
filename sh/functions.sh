@@ -26,14 +26,14 @@
 RC_GOT_FUNCTIONS="yes"
 
 eindent() {
-	RC_EINDENT=$((${RC_EINDENT:-0} + 2))
-	[ "${RC_EINDENT}" -gt 40 ] && RC_EINDENT=40
-	export RC_EINDENT
+	EINFO_INDENT=$((${EINFO_INDENT:-0} + 2))
+	[ "${EINFO_INDENT}" -gt 40 ] && EINFO_INDENT=40
+	export EINFO_INDENT
 }
 
 eoutdent() {
-	RC_EINDENT=$((${RC_EINDENT:-0} - 2))
-	[ "${RC_EINDENT}" -lt 0 ] && RC_EINDENT=0
+	EINFO_INDENT=$((${EINFO_INDENT:-0} - 2))
+	[ "${EINFO_INDENT}" -lt 0 ] && EINFO_INDENT=0
 	return 0
 }
 
@@ -166,12 +166,12 @@ unset _sanitize_path
 for arg; do
 	case "${arg}" in
 		--nocolor|--nocolour|-C)
-			export RC_NOCOLOR="yes"
+			export EINFO_COLOR="NO"
 			;;
 	esac
 done
 
-if [ -z "${GOOD}" ] && ! yesno "${RC_NOCOLOR}"; then
+if [ -z "${GOOD}" ] && yesno ${EINFO_COLOR:-YES}; then
 	eval $(eval_ecolors)
 fi
 

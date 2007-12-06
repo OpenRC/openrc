@@ -71,7 +71,7 @@ void elog (int __level, const char *__fmt, ...) __EEND_PRINTF;
  * - eerror - red
  *
  * The n suffix denotes that no new line should be printed.
- * The v suffix means only print if RC_VERBOSE is yes.
+ * The v suffix means only print if EINFO_VERBOSE is yes.
  */
 /*@{*/
 int einfon (const char *__fmt, ...) __EINFO_PRINTF;

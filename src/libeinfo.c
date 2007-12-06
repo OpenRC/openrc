@@ -86,12 +86,10 @@ hidden_proto(ewendv)
 #define OK					"ok"
 #define NOT_OK				"!!"
 
-#define CHECK_VERBOSE		if (! is_env ("RC_VERBOSE", "yes")) return 0
-
-    /* Number of spaces for an indent */
+/* Number of spaces for an indent */
 #define INDENT_WIDTH		2
 
-    /* How wide can the indent go? */
+/* How wide can the indent go? */
 #define INDENT_MAX			40
 
 /* Default colours */
@@ -154,18 +152,50 @@ static bool term_is_cons25 = false;
 /* A pointer to a string to prefix to einfo/ewarn/eerror messages */
 static const char *_eprefix = NULL;
 
-static bool is_env (const char *var, const char *val)
+static bool yesno (const char *value)
 {
-	char *v;
-
-	if (! var)
+	if (! value) {
+		errno = ENOENT;
 		return (false);
+	}
 
-	v = getenv (var);
-	if (! v)
-		return (val ? false : true);
+	if (strcasecmp (value, "yes") == 0 ||
+		strcasecmp (value, "y") == 0 ||
+		strcasecmp (value, "true") == 0 ||
+		strcasecmp (value, "on") == 0 ||
+		strcasecmp (value, "1") == 0)
+		return (true);
 
-	return (strcasecmp (v, val) ? false : true);
+	if (strcasecmp (value, "no") != 0 &&
+		strcasecmp (value, "n") != 0 &&
+		strcasecmp (value, "false") != 0 &&
+		strcasecmp (value, "off") != 0 &&
+		strcasecmp (value, "0") != 0)
+		errno = EINVAL;
+
+	return (false);
+}
+
+static bool noyes (const char *value) {
+	int serrno = errno;
+	bool retval;
+
+	errno = 0;
+	retval = yesno (value);
+	if (errno == 0) {
+		retval = ! retval;
+		errno = serrno;
+	}
+
+	return (retval);
+}
+
+static bool is_quiet() {
+	return (yesno (getenv ("EINFO_QUIET")));
+}
+
+static bool is_verbose() {
+	return (yesno (getenv ("EINFO_VERBOSE")));
 }
 
 static bool colour_terminal (FILE *f)
@@ -176,7 +206,7 @@ static bool colour_terminal (FILE *f)
 	if (f && ! isatty (fileno (f)))
 		return (false);
 
-	if (is_env ("RC_NOCOLOR", "yes"))
+	if (noyes (getenv ("EINFO_COLOR")))
 		return (false);
 
 	if (in_colour == 0)
@@ -234,7 +264,7 @@ hidden_def(eprefix)
 
 static void elogv (int level, const char *fmt, va_list ap)
 {
-	char *e = getenv ("RC_ELOG");
+	char *e = getenv ("EINFO_LOG");
 	va_list apc;
 
 	if (fmt && e) {
@@ -259,7 +289,7 @@ hidden_def(elog)
 
 static int _eindent (FILE *stream)
 {
-	char *env = getenv ("RC_EINDENT");
+	char *env = getenv ("EINFO_INDENT");
 	int amount = 0;
 	char indent[INDENT_MAX];
 
@@ -377,7 +407,7 @@ int einfon (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_env ("RC_QUIET", "yes"))
+	if (! fmt || is_quiet ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -393,7 +423,7 @@ int ewarnn (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_env ("RC_QUIET", "yes"))
+	if (! fmt || is_quiet ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -422,7 +452,7 @@ int einfo (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_env ("RC_QUIET", "yes"))
+	if (! fmt || is_quiet())
 		return (0);
 
 	va_start (ap, fmt);
@@ -439,7 +469,7 @@ int ewarn (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_env ("RC_QUIET", "yes"))
+	if (! fmt || is_quiet ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -457,7 +487,7 @@ void ewarnx (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (fmt && ! is_env ("RC_QUIET", "yes")) {
+	if (fmt && ! is_quiet ()) {
 		va_start (ap, fmt);
 		elogv (LOG_WARNING, fmt, ap);
 		retval = _ewarnvn (fmt, ap);
@@ -507,7 +537,7 @@ int ebegin (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_env ("RC_QUIET", "yes"))
+	if (! fmt || is_quiet ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -584,7 +614,7 @@ int eend (int retval, const char *fmt, ...)
 {
 	va_list ap;
 
-	if (is_env ("RC_QUIET", "yes"))
+	if (is_quiet ())
 		return (retval);
 
 	va_start (ap, fmt);
@@ -599,7 +629,7 @@ int ewend (int retval, const char *fmt, ...)
 {
 	va_list ap;
 
-	if (is_env ("RC_QUIET", "yes"))
+	if (is_quiet ())
 		return (retval);
 
 	va_start (ap, fmt);
@@ -618,7 +648,7 @@ hidden_def(ebracket)
 
 void eindent (void)
 {
-	char *env = getenv ("RC_EINDENT");
+	char *env = getenv ("EINFO_INDENT");
 	int amount = 0;
 	char num[10];
 
@@ -634,13 +664,13 @@ void eindent (void)
 		amount = INDENT_MAX;
 
 	snprintf (num, 10, "%08d", amount);
-	setenv ("RC_EINDENT", num, 1);
+	setenv ("EINFO_INDENT", num, 1);
 }
 hidden_def(eindent)
 
 void eoutdent (void)
 {
-	char *env = getenv ("RC_EINDENT");
+	char *env = getenv ("EINFO_INDENT");
 	int amount = 0;
 	char num[10];
 
@@ -655,10 +685,10 @@ void eoutdent (void)
 		amount -= INDENT_WIDTH;
 
 	if (amount <= 0)
-		unsetenv ("RC_EINDENT");
+		unsetenv ("EINFO_EINDENT");
 	else {
 		snprintf (num, 10, "%08d", amount);
-		setenv ("RC_EINDENT", num, 1);
+		setenv ("EINFO_EINDENT", num, 1);
 	}
 }
 hidden_def(eoutdent)
@@ -668,9 +698,7 @@ int einfovn (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	CHECK_VERBOSE;
-
-	if (! fmt)
+	if (! fmt || ! is_verbose ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -686,9 +714,7 @@ int ewarnvn (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	CHECK_VERBOSE;
-
-	if (! fmt)
+	if (! fmt || ! is_verbose ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -704,9 +730,7 @@ int einfov (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	CHECK_VERBOSE;
-
-	if (! fmt)
+	if (! fmt || ! is_verbose ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -723,9 +747,7 @@ int ewarnv (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	CHECK_VERBOSE;
-
-	if (! fmt)
+	if (! fmt || ! is_verbose ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -742,9 +764,7 @@ int ebeginv (const char *fmt, ...)
 	int retval;
 	va_list ap;
 
-	CHECK_VERBOSE;
-
-	if (! fmt)
+	if (! fmt || ! is_verbose ())
 		return (0);
 
 	va_start (ap, fmt);
@@ -761,8 +781,9 @@ hidden_def(ebeginv)
 int eendv (int retval, const char *fmt, ...)
 {
 	va_list ap;
-
-	CHECK_VERBOSE;
+	
+	if (! is_verbose ())
+		return (0);
 
 	va_start (ap, fmt);
 	_do_eend ("eendv", retval, fmt, ap);
@@ -776,7 +797,8 @@ int ewendv (int retval, const char *fmt, ...)
 {
 	va_list ap;
 
-	CHECK_VERBOSE;
+	if (! is_verbose ())
+		return (0);
 
 	va_start (ap, fmt);
 	_do_eend ("ewendv", retval, fmt, ap);
@@ -788,14 +810,14 @@ hidden_def(ewendv)
 
 void eindentv (void)
 {
-	if (is_env ("RC_VERBOSE", "yes"))
+	if (is_verbose ())
 		eindent ();
 }
 hidden_def(eindentv)
 
 void eoutdentv (void)
 {
-	if (is_env ("RC_VERBOSE", "yes"))
+	if (is_verbose ())
 		eoutdent ();
 }
 hidden_def(eoutdentv)

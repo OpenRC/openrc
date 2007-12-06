@@ -111,6 +111,7 @@ static inline bool exists (const char *pathname)
 	return (stat (pathname, &buf) == 0);
 }
 
+char *rc_conf_value (const char *var);
 bool rc_conf_yesno (const char *var);
 char **env_filter (void);
 char **env_config (void);

@@ -205,7 +205,7 @@ int fstabinfo (int argc, char **argv)
 		}
 
 		/* No point in outputting if quiet */
-		if (rc_yesno (getenv ("RC_QUIET")))
+		if (rc_yesno (getenv ("EINFO_QUIET")))
 			continue;
 
 		switch (output) {
