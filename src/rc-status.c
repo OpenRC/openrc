@@ -58,6 +58,7 @@ static void print_service (char *service)
 {
 	char status[10];
 	int cols =  printf (" %s", service);
+	const char *c = ecolor (ECOLOR_GOOD);
 	rc_service_state_t state = rc_service_state (service);
 	einfo_color_t color = ECOLOR_BAD;
 
@@ -83,8 +84,7 @@ static void print_service (char *service)
 		snprintf (status, sizeof (status), " stopped ");
 
 	errno = 0;
-	if ((rc_yesno (getenv ("EINFO_COLOR")) || errno == ENOENT) &&
-		isatty (fileno (stdout)))
+	if (c && *c && isatty (fileno (stdout)))
 		printf ("\n");
 	ebracket (cols, color, status);
 }
