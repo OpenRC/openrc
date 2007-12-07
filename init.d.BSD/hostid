@@ -29,6 +29,7 @@ hostid_file=${hostid_file:-/etc/hostid}
 
 depend() {
 	need checkroot
+	before devd net
 }
 
 _set() {
