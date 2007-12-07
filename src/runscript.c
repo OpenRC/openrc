@@ -48,6 +48,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <termios.h>
+#include <time.h>
 #include <unistd.h>
 
 #ifdef __linux__
@@ -515,7 +516,7 @@ static bool svc_wait (rc_depinfo_t *depinfo, const char *svc)
 		return (false);
 
 	/* Some services don't have a timeout, like checkroot and checkfs */
-	keywords = rc_deptree_depend (deptree, svc, "keywords"); 
+	keywords = rc_deptree_depend (depinfo, svc, "keywords"); 
 	STRLIST_FOREACH (keywords, s, i) {
 		if (strcmp (s, "notimeout") == 0) {
 			forever = true;
