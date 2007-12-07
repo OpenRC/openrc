@@ -331,14 +331,14 @@ char **env_config (void)
 	/* Be quiet or verbose as necessary */
 	if ((p = rc_conf_value ("rc_quiet"))) {
 		i = strlen ("EINFO_QUIET=") + strlen (p) + 1;
-		line = xmalloc (sizeof (char) * i); 
+		line = xmalloc (sizeof (char) * i);
 		snprintf (line, i, "EINFO_QUIET=%s", p);
 		rc_strlist_add (&env, line);
 		free (line);
 	}
 	if ((p = rc_conf_value ("rc_verbose"))) {
 		i = strlen ("EINFO_VERBOSE=") + strlen (p) + 1;
-		line = xmalloc (sizeof (char) * i); 
+		line = xmalloc (sizeof (char) * i);
 		snprintf (line, i, "EINFO_VERBOSE=%s", p);
 		rc_strlist_add (&env, line);
 		free (line);
