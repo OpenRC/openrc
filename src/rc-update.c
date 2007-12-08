@@ -243,26 +243,33 @@ int rc_update (int argc, char **argv)
 		else {
 			ssize_t num_updated = 0;
 			ssize_t (*actfunc)(const char *, const char *);
-			if (action & DOADD)
+
+			if (action & DOADD) {
 				actfunc = add;
-			else if (action & DODELETE)
+				if (! runlevels)
+					rc_strlist_add (&runlevels, rc_runlevel_get ());
+			} else if (action & DODELETE) {
 				actfunc = delete;
-			else
+				if (! runlevels)
+					runlevels = rc_runlevel_list ();
+			} else
 				eerrorx ("%s: invalid action", applet);
+
 			if (! runlevels)
-				runlevels = rc_runlevel_list ();
+				eerrorx ("%s: no runlevels found", applet);
+
 			STRLIST_FOREACH (runlevels, runlevel, i) {
 				ssize_t ret = actfunc (runlevel, service);
 				if (ret < 0)
 					retval = EXIT_FAILURE;
 				num_updated += ret;
 			}
-			if (retval == EXIT_SUCCESS && num_updated == 0)
+
+			if (retval == EXIT_SUCCESS && num_updated == 0 && action & DODELETE)
 				ewarnx ("%s: service `%s' not found in any of the specified runlevels", applet, service);
 		}
 	}
 
 	rc_strlist_free (runlevels);
-
 	return (retval);
 }
