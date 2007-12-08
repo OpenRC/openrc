@@ -11,6 +11,8 @@ You may wish to tweak the installation with the below arguments
 LIB=lib64
 DESTDIR=/tmp/openrc-image
 PAM=pam
+TERMCAP=ncurses
+TERMCAP=termcap
 
 If any of the following files exist then we do not overwrite them
 /etc/devd.conf

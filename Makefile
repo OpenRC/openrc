@@ -3,7 +3,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 NAME = openrc
-VERSION = 0.1 
+VERSION = 0.1
 PKG = $(NAME)-$(VERSION)
 
 SUBDIR = conf.d etc init.d man net runlevels sh src
@@ -26,6 +26,7 @@ dist:
 	cp -RPp . /tmp/$(PKG)
 	(cd /tmp/$(PKG); git clean; $(MAKE) clean)
 	rm -rf /tmp/$(PKG)/*.bz2 /tmp/$(PKG)/.git /tmp/$(PKG)/test
+	rm -rf /tmp/$(PKG)/.gitignore /tmp/$(PKG)/src/.gitignore
 	tar cvjpf $(PKG).tar.bz2 -C /tmp $(PKG) 
 	rm -rf /tmp/$(PKG) 
 	ls -l $(PKG).tar.bz2

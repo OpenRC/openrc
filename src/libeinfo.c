@@ -46,6 +46,9 @@ const char copyright[] = "Copyright (c) 2007 Gentoo Foundation\n"
 #include <string.h>
 #include <strings.h>
 #include <syslog.h>
+#ifdef HAVE_TERMCAP
+#include <termcap.h>
+#endif
 #include <unistd.h>
 
 #include "einfo.h"
@@ -93,17 +96,57 @@ hidden_proto(ewendv)
 #define INDENT_MAX			40
 
 /* Default colours */
-#define ECOLOR_GOOD_A      "\033[32;01m"
-#define ECOLOR_WARN_A      "\033[33;01m"
-#define ECOLOR_BAD_A       "\033[31;01m"
-#define ECOLOR_HILITE_A    "\033[36;01m"
-#define ECOLOR_BRACKET_A   "\033[34;01m"
-#define ECOLOR_NORMAL_A    "\033[0m"
-#define ECOLOR_FLUSH_A     "\033[K"
+#define GOOD    2 
+#define WARN    3
+#define BAD     1
+#define HILITE  6
+#define BRACKET 4
 
-/* A cheat sheet of colour capable terminals
-   This is taken from DIR_COLORS from GNU coreutils
-   We embed it here as we shouldn't depend on coreutils */
+/* We fallback to these escape codes if termcap isn't available
+ * like say /usr isn't mounted */
+#define AF "\033[3%dm"
+#define CE "\033[K"
+#define CH "\033[%dC"
+#define MD "\033[1m"
+#define ME "\033[m"
+#define UP "\033[A"
+
+/* A pointer to a string to prefix to einfo/ewarn/eerror messages */
+static const char *_eprefix = NULL;
+
+/* Buffers and structures to hold the final colours */
+static char ebuffer[100];
+struct ecolor {
+	einfo_color_t color;
+	int def;
+	const char *name;
+	char *str;
+};
+static char nullstr = '\0';
+
+static struct ecolor ecolors[] = {
+	{ ECOLOR_GOOD,    GOOD,    "good",    NULL },
+	{ ECOLOR_WARN,    WARN,    "warn",    NULL },
+	{ ECOLOR_BAD,     BAD,     "bad",     NULL },
+	{ ECOLOR_HILITE,  HILITE,  "hilite",  NULL },
+	{ ECOLOR_BRACKET, BRACKET, "bracket", NULL },
+	{ ECOLOR_NORMAL,  0,       NULL,      NULL },
+};
+
+static char *flush = NULL;
+static char *up = NULL;
+static char *goto_column = NULL;
+
+static const char *term = NULL;
+static bool term_is_cons25 = false;
+
+/* Termcap buffers and pointers 
+ * Static buffers suck hard, but some termcap implementations require them */
+#ifdef HAVE_TERMCAP
+static char termcapbuf[2048];
+static char tcapbuf[512];
+#else
+/* No curses support, so we hardcode a list of colour capable terms */
 static const char *color_terms[] = {
 	"Eterm",
 	"ansi",
@@ -145,12 +188,59 @@ static const char *color_terms[] = {
 	"xterm-debian",
 	NULL
 };
+#endif
 
-static const char *term = NULL;
-static bool term_is_cons25 = false;
+/* strlcat and strlcpy are nice, shame glibc does not define them */
+#ifdef __GLIBC__
+#  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
+static size_t strlcat (char *dst, const char *src, size_t size)
+{
+	char *d = dst;
+	const char *s = src;
+	size_t src_n = size;
+	size_t dst_n;
 
-/* A pointer to a string to prefix to einfo/ewarn/eerror messages */
-static const char *_eprefix = NULL;
+	while (src_n-- != 0 && *d != '\0')
+		d++;
+	dst_n = d - dst;
+	src_n = size - dst_n;
+
+	if (src_n == 0)
+		return (dst_n + strlen (src));
+
+	while (*s != '\0') {
+		if (src_n != 1) {
+			*d++ = *s;
+			src_n--;
+		}
+		s++;
+	}
+	*d = '\0';
+
+	return (dst_n + (s - src));
+}
+
+static size_t strlcpy (char *dst, const char *src, size_t size)
+{
+	const char *s = src;
+	size_t n = size;
+
+	if (n && --n)
+		do {
+			if (! (*dst++ = *src++))
+				break;
+		} while (--n);
+
+	if (! n) {
+		if (size)
+			*dst = '\0';
+		while (*src++);
+	}
+
+	return (src - s - 1);
+}
+#  endif
+#endif
 
 static bool yesno (const char *value)
 {
@@ -176,7 +266,8 @@ static bool yesno (const char *value)
 	return (false);
 }
 
-static bool noyes (const char *value) {
+static bool noyes (const char *value)
+{
 	int serrno = errno;
 	bool retval;
 
@@ -190,18 +281,41 @@ static bool noyes (const char *value) {
 	return (retval);
 }
 
-static bool is_quiet() {
+static bool is_quiet()
+{
 	return (yesno (getenv ("EINFO_QUIET")));
 }
 
-static bool is_verbose() {
+static bool is_verbose()
+{
 	return (yesno (getenv ("EINFO_VERBOSE")));
 }
+
+/* Fake tgoto call - very crapy, but works for our needs */
+#ifndef HAVE_TERMCAP
+static char *tgoto (const char *cap, int a, int b)
+{
+	static char buf[20];
+
+	snprintf (buf, sizeof (buf), cap, b, a);
+	return (buf);
+}
+#endif
 
 static bool colour_terminal (FILE *f)
 {
 	static int in_colour = -1;
-	int i = 0;
+	char *e;
+	int c;
+	const char *_af = NULL;
+	const char *_ce = NULL;
+	const char *_ch = NULL;
+	const char *_md = NULL;
+	const char *_me = NULL;
+	const char *_up = NULL;
+	char tmp[100];
+	char *p;
+	unsigned int i = 0;
 
 	if (f && ! isatty (fileno (f)))
 		return (false);
@@ -214,6 +328,8 @@ static bool colour_terminal (FILE *f)
 	if (in_colour == 1)
 		return (true);
 
+	term_is_cons25 = false;
+
 	if (! term) {
 		term = getenv ("TERM");
 		if (! term)
@@ -222,19 +338,120 @@ static bool colour_terminal (FILE *f)
 
 	if (strcmp (term, "cons25") == 0)
 		term_is_cons25 = true;
-	else
-		term_is_cons25 = false;
 
-	while (color_terms[i]) {
-		if (strcmp (color_terms[i], term) == 0) {
-			in_colour = 1;
-			return (true);
-		}
-		i++;
+#ifdef HAVE_TERMCAP
+	/* Check termcap to see if we can do colour or not */
+	if (tgetent (termcapbuf, term) == 1) {
+		char *bp = tcapbuf;
+
+		_af = tgetstr ("AF", &bp);
+		_ce = tgetstr ("ce", &bp);
+		_ch = tgetstr ("ch", &bp);
+		/* Our ch use also works with RI .... for now */
+		if (! _ch)
+			_ch = tgetstr ("RI", &bp);
+		_md = tgetstr ("md", &bp);
+		_me = tgetstr ("me", &bp);
+		_up = tgetstr ("up", &bp);
 	}
 
-	in_colour = 0;
-	return (false);
+	/* Cheat here as vanilla BSD has the whole termcap info in /usr
+	 * which is not available to us when we boot */
+	if (term_is_cons25) {
+#else
+		while (color_terms[i]) {
+			if (strcmp (color_terms[i], term) == 0) {
+				in_colour = 1;
+			}
+			i++;
+		}
+
+		if (in_colour != 1) {
+			in_colour = 0;
+			return (false);
+		}
+#endif
+		if (! _af)
+			_af = AF;
+		if (! _ce)
+			_ce = CE;
+		if (! _ch)
+			_ch = CH;
+		if (! _md)
+			_md = MD;
+		if (! _me)
+			_me = ME;
+		if (! _up)
+			_up = UP;
+#ifdef HAVE_TERMCAP
+	}
+
+	if (! _af || ! _ce || ! _ch || ! _me || !_md || ! _up) {
+		in_colour = 0;
+		return (false);
+	}
+#endif
+
+#define _GET_CAP(_d, _c) strlcpy (_d, tgoto (_c, 0, 0), sizeof (_d));
+#define _ASSIGN_CAP(_v) { \
+	_v = p; \
+	p += strlcpy (p, tmp, sizeof (ebuffer) - (p - ebuffer)) + 1; \
+}
+
+	/* Now setup our colours */
+	p = ebuffer;
+	for (i = 0; i < sizeof (ecolors) / sizeof (ecolors[0]); i++) {
+		tmp[0] = '\0';
+
+		if (ecolors[i].name) {
+			const char *bold = _md;
+			c = ecolors[i].def;
+			
+			/* See if the user wants to override the colour
+			 * We use a :col;bold: format like 2;1: for bold green
+			 * and 1;0: for a normal red */
+			if ((e = getenv("EINFO_COLOR"))) {
+				char *ee = strstr (e, ecolors[i].name);
+
+				if (ee)
+					ee += strlen (ecolors[i].name);
+
+				if (ee && *ee == '=') {
+
+					char *d = xstrdup (ee + 1);
+					char *end = strchr (d, ':');
+					if (end)
+						*end = '\0';
+
+					c = atoi(d);
+			
+					end = strchr (d, ';');
+					if (end && *++end == '0')
+						bold = _me;
+
+					free (d);
+				}
+			}
+			strlcpy (tmp, tgoto (bold, 0, 0), sizeof (tmp));
+			strlcat (tmp, tgoto (_af, 0, c & 0x07), sizeof (tmp));
+		} else
+			_GET_CAP (tmp, _me);
+
+		if (tmp[0])
+			_ASSIGN_CAP (ecolors[i].str)
+		else
+			ecolors[i].str = &nullstr;
+	}
+
+	_GET_CAP (tmp, _ce)
+	_ASSIGN_CAP (flush)
+	_GET_CAP (tmp, _up);
+	_ASSIGN_CAP (up);
+	strlcpy (tmp, _ch, sizeof (tmp));
+	_ASSIGN_CAP (goto_column);
+
+	in_colour = 1;
+	return (true);
 }
 
 static int get_term_columns (FILE *stream)
@@ -312,38 +529,17 @@ static int _eindent (FILE *stream)
 
 static const char *_ecolor (FILE *f, einfo_color_t color)
 {
-	const char *col = NULL;
+	unsigned int i;
 
 	if (! colour_terminal (f))
 		return ("");
 
-	switch (color) {
-		case ECOLOR_GOOD:
-			if (! (col = getenv ("ECOLOR_GOOD")))
-				col = ECOLOR_GOOD_A;
-			break;
-		case ECOLOR_WARN:
-			if (! (col = getenv ("ECOLOR_WARN")))
-				col = ECOLOR_WARN_A;
-			break;
-		case ECOLOR_BAD:
-			if (! (col = getenv ("ECOLOR_BAD")))
-				col = ECOLOR_BAD_A;
-			break;
-		case ECOLOR_HILITE:
-			if (! (col = getenv ("ECOLOR_HILITE")))
-				col = ECOLOR_HILITE_A;
-			break;
-		case ECOLOR_BRACKET:
-			if (! (col = getenv ("ECOLOR_BRACKET")))
-				col = ECOLOR_BRACKET_A;
-			break;
-		case ECOLOR_NORMAL:
-			col = ECOLOR_NORMAL_A;
-			break;
+	for (i = 0; i < sizeof (ecolors) / sizeof (ecolors[0]); i++) {
+		if (ecolors[i].color == color)
+			return (ecolors[i].str);
 	}
 
-	return (col);
+	return ("");
 }
 hidden_def(ecolor)
 
@@ -364,8 +560,17 @@ const char *ecolor (einfo_color_t color)
 	return (_ecolor (f, color));
 }
 
+#define LASTCMD(_cmd) \
+	unsetenv ("EINFO_LASTCMD"); \
+	setenv ("EINFO_LASTCMD", _cmd, 1);
+
 #define EINFOVN(_file, _color) \
-		if (_eprefix) \
+{ \
+	char *_e = getenv ("EINFO_LASTCMD"); \
+	if (_e && ! colour_terminal (_file) && strcmp (_e, "ewarn") != 0 && \
+		_e[strlen (_e) - 1] == 'n') \
+		fprintf (_file, "\n"); \
+	if (_eprefix) \
 	fprintf (_file, "%s%s%s|", _ecolor (_file, _color), _eprefix, _ecolor (_file, ECOLOR_NORMAL)); \
 	fprintf (_file, " %s*%s ", _ecolor (_file, _color), _ecolor (_file, ECOLOR_NORMAL)); \
 	retval += _eindent (_file); \
@@ -376,7 +581,8 @@ const char *ecolor (einfo_color_t color)
 	va_end (_ap); \
 } \
 	if (colour_terminal (_file)) \
-	fprintf (_file, ECOLOR_FLUSH_A);
+	fprintf (_file, "%s", flush); \
+}
 
 static int _einfovn (const char *fmt, va_list ap)
 {
@@ -414,6 +620,8 @@ int einfon (const char *fmt, ...)
 	retval = _einfovn (fmt, ap);
 	va_end (ap);
 
+	LASTCMD ("einfon");
+
 	return (retval);
 }
 hidden_def(einfon)
@@ -430,6 +638,8 @@ int ewarnn (const char *fmt, ...)
 	retval = _ewarnvn (fmt, ap);
 	va_end (ap);
 
+	LASTCMD ("ewarnn");
+
 	return (retval);
 }
 hidden_def(ewarnn)
@@ -442,6 +652,8 @@ int eerrorn (const char *fmt, ...)
 	va_start (ap, fmt);
 	retval = _eerrorvn (fmt, ap);
 	va_end (ap);
+
+	LASTCMD ("errorn");
 
 	return (retval);
 }
@@ -460,6 +672,8 @@ int einfo (const char *fmt, ...)
 	retval += printf ("\n");
 	va_end (ap);
 
+	LASTCMD ("einfo");
+
 	return (retval);
 }
 hidden_def(einfo)
@@ -477,6 +691,8 @@ int ewarn (const char *fmt, ...)
 	retval = _ewarnvn (fmt, ap);
 	retval += printf ("\n");
 	va_end (ap);
+
+	LASTCMD ("ewarn");
 
 	return (retval);
 }
@@ -511,6 +727,8 @@ int eerror (const char *fmt, ...)
 	retval = _eerrorvn (fmt, ap);
 	va_end (ap);
 	retval += fprintf (stderr, "\n");
+
+	LASTCMD ("eerror");
 
 	return (retval);
 }
@@ -547,6 +765,8 @@ int ebegin (const char *fmt, ...)
 	if (colour_terminal (stdout))
 		retval += printf ("\n");
 
+	LASTCMD ("ebegin");
+
 	return (retval);
 }
 hidden_def(ebegin)
@@ -574,7 +794,7 @@ static void _eend (FILE *fp, int col, einfo_color_t color, const char *msg)
 		cols--;
 
 	if (cols > 0 && colour_terminal (fp)) {
-		fprintf (fp, "\033[A\033[%dC %s[ %s%s %s]%s\n", cols,
+		fprintf (fp, "%s%s %s[ %s%s %s]%s\n", up, tgoto (goto_column, 0, cols),
 				 ecolor (ECOLOR_BRACKET), ecolor (color), msg,
 				 ecolor (ECOLOR_BRACKET), ecolor (ECOLOR_NORMAL));
 	} else {
@@ -621,6 +841,8 @@ int eend (int retval, const char *fmt, ...)
 	_do_eend ("eend", retval, fmt, ap);
 	va_end (ap);
 
+	LASTCMD ("eend");
+
 	return (retval);
 }
 hidden_def(eend)
@@ -635,6 +857,8 @@ int ewend (int retval, const char *fmt, ...)
 	va_start (ap, fmt);
 	_do_eend ("ewend", retval, fmt, ap);
 	va_end (ap);
+
+	LASTCMD ("ewend");
 
 	return (retval);
 }
@@ -705,6 +929,8 @@ int einfovn (const char *fmt, ...)
 	retval = _einfovn (fmt, ap);
 	va_end (ap);
 
+	LASTCMD ("einfovn");
+
 	return (retval);
 }
 hidden_def(einfovn)
@@ -720,6 +946,8 @@ int ewarnvn (const char *fmt, ...)
 	va_start (ap, fmt);
 	retval = _ewarnvn (fmt, ap);
 	va_end (ap);
+
+	LASTCMD ("ewarnvn");
 
 	return (retval);
 }
@@ -738,6 +966,8 @@ int einfov (const char *fmt, ...)
 	retval += printf ("\n");
 	va_end (ap);
 
+	LASTCMD ("einfov");
+
 	return (retval);
 }
 hidden_def(einfov)
@@ -754,6 +984,8 @@ int ewarnv (const char *fmt, ...)
 	retval = _ewarnvn (fmt, ap);
 	retval += printf ("\n");
 	va_end (ap);
+
+	LASTCMD ("ewarnv");
 
 	return (retval);
 }
@@ -774,6 +1006,8 @@ int ebeginv (const char *fmt, ...)
 		retval += printf ("\n");
 	va_end (ap);
 
+	LASTCMD ("ebeginv");
+
 	return (retval);
 }
 hidden_def(ebeginv)
@@ -789,6 +1023,8 @@ int eendv (int retval, const char *fmt, ...)
 	_do_eend ("eendv", retval, fmt, ap);
 	va_end (ap);
 
+	LASTCMD ("eendv");
+
 	return (retval);
 }
 hidden_def(eendv)
@@ -803,6 +1039,8 @@ int ewendv (int retval, const char *fmt, ...)
 	va_start (ap, fmt);
 	_do_eend ("ewendv", retval, fmt, ap);
 	va_end (ap);
+
+	LASTCMD ("ewendv");
 
 	return (retval);
 }

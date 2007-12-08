@@ -36,10 +36,13 @@ CFLAGS += -pedantic -std=c99 \
 # Set PAM = pam for pam support
 PAM = 
 
+# Set TERMCAP = termcap for termcap support
+TERMCAP =
+
 LIBEINFOSOVER = 1
 LIBEINFOSO = libeinfo.so.$(LIBRCSOVER)
 LIBEINFOOBJS= libeinfo.o
-LDLIBS_LIBEINFO = $(LDLIBS)
+LDLIBS_LIBEINFO =
 
 LIBRCSOVER = 1
 LIBRCSO = librc.so.$(LIBRCSOVER)
@@ -66,7 +69,6 @@ RC_BINLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 			  service_stopping service_stopped \
 			  service_inactive service_wasinactive \
 			  service_coldplugged \
-			  is_runlevel_start is_runlevel_stop service_started_daemon \
 			  checkown fstabinfo mountinfo rc-depend \
 			  get_options save_options
 RC_SBINLINKS =  mark_service_starting mark_service_started \
@@ -91,6 +93,7 @@ LDFLAGS += -Wl,-rpath .
 TOPDIR = ..
 include $(TOPDIR)/default.mk
 include Makefile.$(OS)
+include Makefile.$(TERMCAP)
 include Makefile.$(PAM)
 
 all: .depend $(TARGET)
@@ -99,7 +102,7 @@ version.h:
 	sed -n -e 's/^VERSION =[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1\"/p' ../Makefile > version.h
 
 $(LIBEINFOOBJS):
-	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
+	$(CC) $(CPPFLAGS) $(CPPFLAGS_LIBEINFO) $(CFLAGS) -fPIC -c $<
 $(LIBEINFOSO): einfo.map $(LIBEINFOOBJS) 
 	$(CC) $(LDFLAGS) -fPIC -shared \
 		-Wl,-soname,$(LIBEINFOSO) \
