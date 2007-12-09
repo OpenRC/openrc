@@ -6,7 +6,7 @@ keymap="us"
 
 # Should we first load the 'windowkeys' console keymap?  Most x86 users will
 # say "yes" here.  Note that non-x86 users should leave it as "no".
-windowkeys="no"
+windowkeys="NO"
 
 # The maps to load for extended keyboards.  Most users will leave this as is.
 extended_keymaps=""
@@ -20,4 +20,4 @@ dumpkeys_charset=""
 
 # Some fonts map AltGr-E to the currency symbol ¤ instead of the Euro €
 # To fix this, set to "yes"
-fix_euro="no"
+fix_euro="NO"
