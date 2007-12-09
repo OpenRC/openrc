@@ -2,7 +2,7 @@
 
 # Put a nologin file in /etc to prevent people from logging in before
 # system startup is complete
-delaylogin="no"
+delay_login="no"
 
 # List of /tmp directories we should clean up
 wipe_tmp_dirs="/tmp"
