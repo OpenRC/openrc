@@ -63,7 +63,7 @@ _get_ap_mac_address() {
 fi
 
 wpa_supplicant_pre_start() {
-	local opts= cfgfile= ctrl_dir=
+	local opts= cfgfile= ctrl_dir= wireless=true
 	local wpas=/usr/sbin/wpa_supplicant wpac=/usr/bin/wpa_cli
 
 	if [ ! -x "${wpas}" ]; then
@@ -74,14 +74,14 @@ wpa_supplicant_pre_start() {
 
 	eval opts=\$wpa_supplicant_${IFVAR}
 	case " ${opts} " in
-		*" -Dwired "*);;
+		*" -Dwired "*) wireless=false;;
 		*) _is_wireless || return 0;;
 	esac
 
 	# We don't configure wireless if we're being called from
 	# the background unless we're not currently running
 	if yesno ${IN_BACKGROUND}; then
-		if service_started_daemon "${SVCNAME}" "${wpas}"; then
+		if ${wireless} && service_started_daemon "${SVCNAME}" "${wpas}"; then
 			SSID=$(_get_ssid "${IFACE}")
 			SSIDVAR=$(_shell_var "${SSID}")
 			save_options "SSID" "${SSID}"
