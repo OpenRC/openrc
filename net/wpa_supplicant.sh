@@ -81,7 +81,7 @@ wpa_supplicant_pre_start() {
 	# We don't configure wireless if we're being called from
 	# the background unless we're not currently running
 	if yesno ${IN_BACKGROUND}; then
-		if service_started_daemon "${SVCNAME}" /sbin/wpa_supplicant; then
+		if service_started_daemon "${SVCNAME}" "${wpas}"; then
 			SSID=$(_get_ssid "${IFACE}")
 			SSIDVAR=$(_shell_var "${SSID}")
 			save_options "SSID" "${SSID}"
