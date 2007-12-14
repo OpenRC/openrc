@@ -60,8 +60,6 @@ static ssize_t add (const char *runlevel, const char *service)
 
 	if (! rc_service_exists (service))
 		eerror ("%s: service `%s' does not exist", applet, service);
-	else if (! rc_runlevel_exists (runlevel))
-		eerror ("%s: runlevel `%s' does not exist", applet, runlevel);
 	else if (rc_service_in_runlevel (service, runlevel)) {
 		ewarn ("%s: %s already installed in runlevel `%s'; skipping",
 			   applet, service, runlevel);
@@ -80,19 +78,18 @@ static ssize_t delete (const char *runlevel, const char *service)
 {
 	ssize_t retval = -1;
 
-	if (rc_service_in_runlevel (service, runlevel))	{
-		if (rc_service_delete (runlevel, service)) {
-			einfo ("%s removed from runlevel %s", service, runlevel);
-			retval = 1;
-		} else
-			eerror ("%s: failed to remove service `%s' from runlevel `%s': %s",
-					applet, service, runlevel, strerror (errno));
-	} else if (! rc_service_exists (service))
-		eerror ("%s: service `%s' does not exist", applet, service);
-	else if (! rc_runlevel_exists (runlevel))
-		eerror ("%s: runlevel `%s' does not exist", applet, runlevel);
-	else
-		retval = 0;
+	errno = 0;
+	if (rc_service_delete (runlevel, service)) {
+		einfo ("%s removed from runlevel %s", service, runlevel);
+		return 1;
+	}
+
+	if (errno == ENOENT)
+		eerror ("%s: service `%s' is not in the runlevel `%s'",
+				applet, service, runlevel);
+	else 
+		eerror ("%s: failed to remove service `%s' from runlevel `%s': %s",
+				applet, service, runlevel, strerror (errno));
 
 	return (retval);
 }
@@ -238,11 +235,10 @@ int rc_update (int argc, char **argv)
 	} else {
 		if (! service)
 			eerror ("%s: no service specified", applet);
-		else if (! rc_service_exists (service))
-			eerror ("%s: service `%s' does not exist", applet, service);
 		else {
 			ssize_t num_updated = 0;
 			ssize_t (*actfunc)(const char *, const char *);
+			size_t ret;
 
 			if (action & DOADD) {
 				actfunc = add;
@@ -259,7 +255,12 @@ int rc_update (int argc, char **argv)
 				eerrorx ("%s: no runlevels found", applet);
 
 			STRLIST_FOREACH (runlevels, runlevel, i) {
-				ssize_t ret = actfunc (runlevel, service);
+				if (! rc_runlevel_exists (runlevel)) {
+					eerror ("%s: runlevel `%s' does not exist", applet, runlevel);
+					continue;
+				}
+
+				ret = actfunc (runlevel, service);
 				if (ret < 0)
 					retval = EXIT_FAILURE;
 				num_updated += ret;

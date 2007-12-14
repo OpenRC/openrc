@@ -71,6 +71,7 @@ static char **ls_dir (const char *dir, int options)
 	DIR *dp;
 	struct dirent *d;
 	char **list = NULL;
+	struct stat buf;
 
 	if ((dp = opendir (dir)) == NULL) 
 		return (NULL);
@@ -79,11 +80,14 @@ static char **ls_dir (const char *dir, int options)
 		if (d->d_name[0] != '.') {
 			if (options & LS_INITD) {
 				int l = strlen (d->d_name);
-				char *init = rc_strcatpaths (RC_INITDIR, d->d_name,
-											 (char *) NULL);
-				bool ok = exists (init);
-				free (init);
-				if (! ok)
+
+				/* Check that our file really exists.
+				 * This is important as a service maybe in a runlevel, but
+				 * could also have been removed. */
+				char *file = rc_strcatpaths (dir, d->d_name, NULL);
+				int ok = stat (file, &buf);
+				free (file);
+				if (ok != 0)
 					continue;
 
 				/* .sh files are not init scripts */
@@ -93,8 +97,6 @@ static char **ls_dir (const char *dir, int options)
 					continue;
 			}
 			if (options & LS_DIR) {
-				struct stat buf;
-
 				if (stat (d->d_name, &buf) == 0 && ! S_ISDIR (buf.st_mode))
 					continue;
 			}
@@ -258,8 +260,15 @@ char *rc_service_resolve (const char *service)
 		if (r > 0)
 			return (xstrdup (buffer));
 	}
-
 	snprintf (buffer, sizeof (buffer), RC_INITDIR "/%s", service);
+
+	/* So we don't exist in /etc/init.d - check /usr/local/etc/init.d */
+	if (stat (buffer, &buf) != 0) {
+		snprintf (buffer, sizeof (buffer), RC_INITDIR_LOCAL "/%s", service);
+		if (stat (buffer, &buf) != 0)
+			return (NULL);
+	}
+
 	return (xstrdup (buffer));
 }
 librc_hidden_def(rc_service_resolve)
@@ -717,8 +726,16 @@ char **rc_services_in_runlevel (const char *runlevel)
 	char *dir;
 	char **list = NULL;
 
-	if (! runlevel)
-		return (ls_dir (RC_INITDIR, LS_INITD));
+	if (! runlevel) {
+		int i;
+		char **local = ls_dir (RC_INITDIR_LOCAL, LS_INITD);
+
+		list = ls_dir (RC_INITDIR, LS_INITD);
+		STRLIST_FOREACH (local, dir, i)
+			rc_strlist_addsortu (&list, dir);
+		rc_strlist_free (local);
+		return (list);
+	}
 
 	/* These special levels never contain any services */
 	if (strcmp (runlevel, RC_LEVEL_SYSINIT) == 0 ||
@@ -785,6 +802,20 @@ bool rc_service_add (const char *runlevel, const char *service)
 	}
 
 	init = rc_service_resolve (service);
+
+	/* We need to ensure that only things in /etc/init.d are added
+	 * to the boot runlevel */
+	if (strcmp (runlevel, RC_LEVEL_BOOT) == 0) {
+		char *tmp = xstrdup (init);
+		retval = (strcmp (dirname (tmp), RC_INITDIR) == 0);
+		free (tmp);
+		if (! retval) {
+			free (init);
+			errno = EPERM;
+			return (false);
+		}
+	}
+
 	svc = xstrdup (service);
 	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, basename (svc),
 						   (char *) NULL);

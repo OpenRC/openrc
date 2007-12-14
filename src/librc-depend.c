@@ -673,6 +673,8 @@ bool rc_deptree_update_needed (void)
 	/* Quick test to see if anything we use has changed */
 	if (! is_newer_than (RC_DEPTREE, RC_INITDIR) ||
 		! is_newer_than (RC_DEPTREE, RC_CONFDIR) ||
+		! is_newer_than (RC_DEPTREE, RC_INITDIR_LOCAL) ||
+		! is_newer_than (RC_DEPTREE, RC_CONFDIR_LOCAL) ||
 		! is_newer_than (RC_DEPTREE, "/etc/rc.conf"))
 		return (true);
 

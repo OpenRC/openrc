@@ -51,6 +51,9 @@
 #define RC_INITDIR              "/etc/init.d"
 #define RC_CONFDIR              "/etc/conf.d"
 
+#define RC_INITDIR_LOCAL        "/usr/local/etc/init.d"
+#define RC_CONFDIR_LOCAL        "/usr/local/etc/conf.d"
+
 #define RC_KSOFTLEVEL           RC_SVCDIR "/ksoftlevel"
 #define RC_STARTING             RC_SVCDIR "/rc.starting"
 #define RC_STOPPING             RC_SVCDIR "/rc.stopping"

@@ -53,42 +53,45 @@ depend() {
 	:
 }
 
-cd /etc/init.d
-for SVCNAME in *; do
-	[ -x "${SVCNAME}" ] || continue
+for _dir in /etc/init.d /usr/local/etc/init.d; do
+	[ -d "${_dir}" ] || continue
+	cd "${_dir}"
+	for SVCNAME in *; do
+		[ -x "${SVCNAME}" ] || continue
 
-	# Only generate dependencies for runscripts
-	read one two < "${SVCNAME}"
-	[ "${one}" = "#!/sbin/runscript" ] || continue
-	unset one two
+		# Only generate dependencies for runscripts
+		read one two < "${SVCNAME}"
+		[ "${one}" = "#!/sbin/runscript" ] || continue
+		unset one two
 
-	SVCNAME=${SVCNAME##*/}
-	(
-	# Save stdout in fd3, then remap it to stderr
-	exec 3>&1 1>&2
+		SVCNAME=${SVCNAME##*/}
+		(
+		# Save stdout in fd3, then remap it to stderr
+		exec 3>&1 1>&2
 
-	rc_c=${SVCNAME%%.*}
-	if [ -n "${rc_c}" -a "${rc_c}" != "${SVCNAME}" ]; then
-		[ -e /etc/conf.d/"${rc_c}" ] && . /etc/conf.d/"${rc_c}"
-	fi
-	unset rc_c
+		_rc_c=${SVCNAME%%.*}
+		if [ -n "${_rc_c}" -a "${_rc_c}" != "${SVCNAME}" ]; then
+			[ -e "${_dir}/../conf.d/${_rc_c}" ] && . "${_dir}/../conf.d/${_rc_c}"
+		fi
+		unset _rc_c
 
-	[ -e /etc/conf.d/"${SVCNAME}" ] && . /etc/conf.d/"${SVCNAME}"
+		[ -e "${_dir}/../conf.d/${SVCNAME}" ] && . "${_dir}/../conf.d/${SVCNAME}"
 
-	if . /etc/init.d/"${SVCNAME}"; then
-		echo "${SVCNAME}" >&3
-		depend
+		if . "${_dir}/${SVCNAME}"; then
+			echo "${SVCNAME}" >&3
+			depend
 
-		# Add any user defined depends
-		config ${rc_config} ${RC_CONFIG}
-		need ${rc_need} ${RC_NEED}
-		use ${rc_use} ${RC_USE}
-		before ${rc_before} ${RC_BEFORE}
-		after ${rc_after} ${RC_AFTER}
-		provide ${rc_provide} ${RC_PROVIDE}
-		keywords ${rc_keywords} ${RC_KEYWORDS}
-	fi
-	)
+			# Add any user defined depends
+			config ${rc_config} ${RC_CONFIG}
+			need ${rc_need} ${RC_NEED}
+			use ${rc_use} ${RC_USE}
+			before ${rc_before} ${RC_BEFORE}
+			after ${rc_after} ${RC_AFTER}
+			provide ${rc_provide} ${RC_PROVIDE}
+			keywords ${rc_keywords} ${RC_KEYWORDS}
+		fi
+		)
+	done
 done
 
 # vim: set ts=4 :
