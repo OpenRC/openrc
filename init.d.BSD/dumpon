@@ -27,7 +27,6 @@ description="Configures a specific kernel dump device."
 
 depend() {
 	need swap
-	before savecore
 }
 
 start() {
