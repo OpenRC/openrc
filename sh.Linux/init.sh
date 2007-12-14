@@ -66,8 +66,8 @@ mount_svcdir() {
 		devtmp="/dev/ram1"
 		fs="ext2"
 		for x in ${devdir} ${devtmp}; do
-			try dd if=/dev/zero of="${x}" bs=1k count="${rc_svcsize:-1024}"
-			try mkfs -t "${fs}" -i 1024 -vm0 "${x}" "${rc_svcsize:-1024}"
+			dd if=/dev/zero of="${x}" bs=1k count="${rc_svcsize:-1024}"
+			mkfs -t "${fs}" -i 1024 -vm0 "${x}" "${rc_svcsize:-1024}"
 		done
 	else
 		echo
@@ -80,22 +80,22 @@ mount_svcdir() {
 	local dotmp=false
 	if [ -e "${RC_SVCDIR}"/deptree ]; then
 		dotmp=true
-		try mount -n -t "${fs}" -o rw "${devtmp}" "${RC_LIBDIR}"/tmp
+		mount -n -t "${fs}" -o rw "${devtmp}" "${RC_LIBDIR}"/tmp
 		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
 			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
 	fi
 
 	# If we have no entry in fstab for $svcdir, provide our own
 	if fstabinfo --quiet "${RC_SVCDIR}"; then
-		try mount -n "${RC_SVCDIR}"
+		mount -n "${RC_SVCDIR}"
 	else
-		try mount -n -t "${fs}" ${fsopts} "${devdir}" "${RC_SVCDIR}"
+		mount -n -t "${fs}" ${fsopts} "${devdir}" "${RC_SVCDIR}"
 	fi
 
 	if ${dotmp}; then
 		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/depconfig \
 			"${RC_LIBDIR}"/tmp/nettree "${RC_SVCDIR}" 2>/dev/null
-		try umount -n "${RC_LIBDIR}"/tmp
+		umount -n "${RC_LIBDIR}"/tmp
 	fi
 }
 
@@ -128,7 +128,6 @@ KV_to_int() {
 }
 
 . /etc/init.d/functions.sh
-. "${RC_LIBDIR}"/sh/init-functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
 [ -r /etc/conf.d/rc ] && . /etc/conf.d/rc
 [ -r /etc/rc.conf ] && . /etc/rc.conf
@@ -143,8 +142,6 @@ RC_COLDPLUG=${rc_coldplug}
 if [ -n "${dmesg_level}" -a "${RC_SYS}" != "VPS" ]; then
 	dmesg -n "${dmesg_level}"
 fi
-
-check_statedir /proc
 
 # By default VServer already has /proc mounted, but OpenVZ does not!
 # However, some of our users have an old proc image in /proc
@@ -169,9 +166,9 @@ if ${mountproc}; then
 	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
 	ebegin "Mounting ${procfs} at /proc"
 	if fstabinfo --quiet /proc; then
-		try mount -n /proc
+		mount -n /proc
 	else
-		try mount -n -t "${procfs}" -o noexec,nosuid,nodev proc /proc
+		mount -n -t "${procfs}" -o noexec,nosuid,nodev proc /proc
 	fi
 	eend $?
 fi
@@ -193,9 +190,9 @@ if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" -a "${K26}" = "0" ]
 		if ! mountinfo --quiet /sys; then
 			ebegin "Mounting sysfs at /sys"
 			if fstabinfo --quiet /sys; then
-				try mount -n /sys
+				mount -n /sys
 			else
-				try mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
+				mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
 			fi
 			eend $?
 		fi
@@ -204,7 +201,6 @@ if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" -a "${K26}" = "0" ]
 	fi
 fi
 
-check_statedir /dev
 devfs_mounted=
 if [ -e /dev/.devfsd ]; then
 	# make sure devfs is actually mounted and it isnt a bogus file
@@ -267,9 +263,9 @@ for x in "devpts /dev/pts 0755 ,gid=5,mode=0620" "tmpfs /dev/shm 1777 ,nodev"; d
 	if [ -d "$2" ]; then
 		ebegin "Mounting $1 at $2"
 		if fstabinfo --quiet "$2"; then
-			try mount -n "$2"
+			mount -n "$2"
 		else
-			try mount -n -t "$1" -o noexec,nosuid"$4" none "$2"
+			mount -n -t "$1" -o noexec,nosuid"$4" none "$2"
 		fi
 		eend $?
 	fi
@@ -280,7 +276,7 @@ if [ -f /sbin/livecd-functions.sh -a -n "${CDBOOT}" ]; then
 	ebegin "Updating inittab"
 	livecd_fix_inittab
 	eend $?
-	/sbin/telinit q &>/dev/null
+	telinit q &>/dev/null
 fi
 
 . "${RC_LIBDIR}"/sh/init-common-post.sh
