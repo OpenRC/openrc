@@ -366,6 +366,9 @@ int mountinfo (int argc, char **argv)
 	int result;
 	bool quiet;
 
+	/* Ensure that we are only quiet when explicitly told to be */
+	unsetenv ("EINFO_QUIET");
+
 #define DO_REG(_var) \
 	if (_var) free (_var); \
 	_var = get_regex (optarg);

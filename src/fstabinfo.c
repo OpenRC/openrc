@@ -129,6 +129,9 @@ int fstabinfo (int argc, char **argv)
 	char *file;
 	bool filtered = false;
 
+	/* Ensure that we are only quiet when explicitly told to be */
+	unsetenv ("EINFO_QUIET");
+
 	while ((opt = getopt_long (argc, argv, getoptstring,
 							   longopts, (int *) 0)) != -1)
 	{
