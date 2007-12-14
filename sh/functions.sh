@@ -171,8 +171,18 @@ for arg; do
 	esac
 done
 
-if [ -z "${GOOD}" ] && yesno ${EINFO_COLOR:-YES}; then
-	eval $(eval_ecolors)
+if [ -t 1 ] && yesno "${EINFO_COLOR:-YES}"; then
+	if [ -z "${GOOD}" ]; then
+		eval $(eval_ecolors)
+	fi
+else
+	# We need to have shell stub functions so our init scripts can remember
+	# the last ecmd
+	for _e in ebegin eend error errorn einfo einfon ewarn ewarnn ewend \
+		vebegin veend veinfo vewarn vewend; do
+		eval "${_e}() { local _r; /lib/rc/bin/${_e} \"\$@\"; _r=$?; \
+		export EINFO_LASTCMD=${_e}; return \$_r; }"
+	done
 fi
 
 # vim: set ts=4 :
