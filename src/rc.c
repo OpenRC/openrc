@@ -803,6 +803,7 @@ int main (int argc, char **argv)
 	DIR *dp;
 	struct dirent *d;
 	bool parallel;
+	int regen = 0;
 
 	atexit (cleanup);
 	if (argv[0])
@@ -1105,7 +1106,7 @@ int main (int argc, char **argv)
 	}
 
 	/* Load our deptree now */
-	if ((deptree = _rc_deptree_load ()) == NULL)
+	if ((deptree = _rc_deptree_load (&regen)) == NULL)
 		eerrorx ("failed to load deptree");
 
 	/* Clean the failed services state dir now */
@@ -1437,7 +1438,6 @@ int main (int argc, char **argv)
 	}
 #endif
 
-
 	STRLIST_FOREACH (start_services, service, i) {
 		if (rc_service_state (service) & RC_SERVICE_STOPPED)	{
 			pid_t pid;
@@ -1501,6 +1501,12 @@ interactive_option:
 		if (exists (INTERACTIVE))
 			unlink (INTERACTIVE);
 	}
+
+	/* If we're in the boot runlevel and we regenerated our dependencies
+	 * we need to delete them so that they are regenerated again in the
+	 * default runlevel as they may depend on things that are now available */
+	if (regen && strcmp (runlevel, bootlevel) == 0)
+		unlink (RC_DEPTREE);
 
 	return (EXIT_SUCCESS);
 }

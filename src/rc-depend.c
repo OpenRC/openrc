@@ -48,9 +48,12 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
-rc_depinfo_t *_rc_deptree_load (void) {
+rc_depinfo_t *_rc_deptree_load (int *regen) {
 	if (rc_deptree_update_needed ()) {
 		int retval;
+
+		if (regen)
+			*regen = 1;
 
 		ebegin ("Caching service dependencies");
 		retval = rc_deptree_update ();
@@ -129,7 +132,7 @@ int rc_depend (int argc, char **argv)
 			eerrorx ("Failed to update the dependency tree");
 	}
 
-	if (! (deptree = _rc_deptree_load ()))
+	if (! (deptree = _rc_deptree_load (NULL)))
 		eerrorx ("failed to load deptree");
 
 	if (! runlevel)

@@ -684,7 +684,7 @@ static void svc_start (bool deps)
 		depoptions |= RC_DEP_START;
 
 	if (deps) {
-		if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
+		if (! deptree && ((deptree = _rc_deptree_load (NULL)) == NULL))
 			eerrorx ("failed to load deptree");
 
 		rc_strlist_free (services);
@@ -898,7 +898,7 @@ static void svc_stop (bool deps)
 		if (rc_runlevel_stopping ())
 			depoptions |= RC_DEP_STOP;
 
-		if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
+		if (! deptree && ((deptree = _rc_deptree_load (NULL)) == NULL))
 			eerrorx ("failed to load deptree");
 
 		rc_strlist_free (tmplist);
@@ -1078,6 +1078,7 @@ int runscript (int argc, char **argv)
 
 	/* Show help if insufficient args */
 	if (argc < 3) {
+		setenv ("SVCNAME", applet, 1);
 		execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
 		eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
 				 applet, strerror (errno));
@@ -1259,7 +1260,7 @@ int runscript (int argc, char **argv)
 			if (rc_conf_yesno ("rc_depend_strict"))
 				depoptions |= RC_DEP_STRICT;
 
-			if (! deptree && ((deptree = _rc_deptree_load ()) == NULL))
+			if (! deptree && ((deptree = _rc_deptree_load (NULL)) == NULL))
 				eerrorx ("failed to load deptree");
 
 			rc_strlist_free (services);
