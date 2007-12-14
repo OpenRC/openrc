@@ -35,3 +35,5 @@ start() {
 	sysctl -p /etc/sysctl.conf >/dev/null
 	eend $?
 }
+
+# vim: set ts=4 :

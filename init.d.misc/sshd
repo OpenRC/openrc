@@ -53,3 +53,5 @@ start_pre() {
 
 	${command} -t	
 }
+
+# vim: set ts=4 :

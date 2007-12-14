@@ -31,3 +31,5 @@ name="Hardware Abstraction Layer Daemon"
 depend() {
 	need dbus
 }
+
+# vim: set ts=4 :

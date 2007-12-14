@@ -36,3 +36,5 @@ depend() {
 start_pre() {
     mkdir -p $(dirname $pidfile)
 }
+
+# vim: set ts=4 :

@@ -56,7 +56,7 @@ start() {
 		return 0
 	fi
 
-	local x= param= sf_param= retval=1 ttydev=
+	local x= param= sf_param= retval=0 ttydev=
 
 	# Get additional parameters
 	if [ -n "${consoletranslation}" ]; then
@@ -74,7 +74,7 @@ start() {
 
 	x=1
 	while [ ${x} -le ${ttyn} ]; do
-		setfont ${consolefont} ${param}-C ${ttydev}${x} >/dev/null 
+		setfont ${consolefont} ${param} -C ${ttydev}${x} >/dev/null 
 		retval=$((${retval} + $?))
 		x=$((${x} + 1))
 	done

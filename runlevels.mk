@@ -16,3 +16,5 @@ install:
 
 all:
 clean:
+
+# vim: set ts=4 :

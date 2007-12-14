@@ -57,3 +57,5 @@ start_pre() {
 		command_args="${command_args} -u ntpd:ntpd -i ${ntpd_chroot}"
 	fi
 }
+
+# vim: set ts=4 :

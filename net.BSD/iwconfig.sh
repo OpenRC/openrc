@@ -591,4 +591,4 @@ iwconfig_post_stop() {
 	#iwconfig "${IFACE}" txpower 0 2>/dev/null
 }
 
-# vim: set ts=4 
+# vim: set ts=4 :

@@ -78,8 +78,8 @@ start() {
 	if [ -d /sys/kernel/security ] && ! mountinfo -q /sys/kernel/security; then
 		if grep -qs securityfs /proc/filesystems; then
 			ebegin "Mounting security filesystem"
-			mount -t securityfs securityfs /sys/kernel/security \
-				-o nodev,noexec,nosuid
+			mount -t securityfs -o nodev,noexec,nosuid \
+				securityfs /sys/kernel/security
 			eend $?
 		fi
 	fi
@@ -88,8 +88,8 @@ start() {
 	if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug; then
 		if grep -qs debugfs /proc/filesystems; then
 			ebegin "Mounting debug filesystem"
-			mount -t debugfs debugfs /sys/kernel/debug \
-				-o nodev,noexec,nosuid
+			mount -t debugfs -o nodev,noexec,nosuid \
+				debugfs /sys/kernel/debug
 			eend $?
 		fi
 	fi
@@ -105,3 +105,5 @@ start() {
 
 	return 0
 }
+
+# vim: set ts=4 :

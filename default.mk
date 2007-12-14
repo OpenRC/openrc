@@ -56,3 +56,6 @@ install:: $(BIN) $(CONF) $(CONF_APPEND)
 	   		$(INSTALL) -m 0644 $$x $(DESTDIR)$(DIR) || exit $$?; \
 		fi; \
 	done
+
+# vim: set ts=4 :
+

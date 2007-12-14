@@ -89,3 +89,5 @@ start_pre() {
 		command_args="${command_args} --cd ${openvpn_dir}"
 	fi
 }
+
+# vim: set ts=4 :

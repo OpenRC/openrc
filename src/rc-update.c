@@ -53,9 +53,9 @@ static char *applet = NULL;
  *   0 = no changes (nothing to do)
  *  1+ = number of runlevels updated
  */
-static ssize_t add (const char *runlevel, const char *service)
+static int add (const char *runlevel, const char *service)
 {
-	ssize_t retval = -1;
+	int retval = -1;
 
 	if (! rc_service_exists (service))
 		eerror ("%s: service `%s' does not exist", applet, service);
@@ -73,9 +73,9 @@ static ssize_t add (const char *runlevel, const char *service)
 	return (retval);
 }
 
-static ssize_t delete (const char *runlevel, const char *service)
+static int delete (const char *runlevel, const char *service)
 {
-	ssize_t retval = -1;
+	int retval = -1;
 
 	errno = 0;
 	if (rc_service_delete (runlevel, service)) {
@@ -235,9 +235,9 @@ int rc_update (int argc, char **argv)
 		if (! service)
 			eerror ("%s: no service specified", applet);
 		else {
-			ssize_t num_updated = 0;
-			ssize_t (*actfunc)(const char *, const char *);
-			size_t ret;
+			int num_updated = 0;
+			int (*actfunc)(const char *, const char *);
+			int ret;
 
 			if (action & DOADD) {
 				actfunc = add;

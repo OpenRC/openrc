@@ -114,3 +114,5 @@ stop_post() {
 		umount "${named_chroot}"/dev 2>/dev/null || true
 	fi
 }
+
+# vim: set ts=4 :

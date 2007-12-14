@@ -103,4 +103,4 @@ start() {
 	eend 0
 }
 
-# vim:ts=4
+# vim: set ts=4 :

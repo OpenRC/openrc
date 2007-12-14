@@ -24,10 +24,11 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-# void single_user()
-#
-#  Drop to a shell, remount / ro, and then reboot
-#
+# udev needs this still
+try() {
+	"$@"
+}
+
 single_user() {
 	if [ "${RC_SYS}" = "VPS" ]; then
 		einfo "Halting"
@@ -99,7 +100,7 @@ mount_svcdir() {
 	fi
 }
 
-_rc_get_kv_cache=""
+_rc_get_kv_cache=
 get_KV() {
 	[ -z "${_rc_get_kv_cache}" ] \
 		&& _rc_get_kv_cache="$(uname -r)"
