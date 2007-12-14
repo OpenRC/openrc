@@ -241,14 +241,13 @@ int rc_update (int argc, char **argv)
 
 			if (action & DOADD) {
 				actfunc = add;
-				if (! runlevels)
-					rc_strlist_add (&runlevels, rc_runlevel_get ());
 			} else if (action & DODELETE) {
 				actfunc = delete;
-				if (! runlevels)
-					runlevels = rc_runlevel_list ();
 			} else
 				eerrorx ("%s: invalid action", applet);
+
+			if (! runlevels)
+				rc_strlist_add (&runlevels, rc_runlevel_get ());
 
 			if (! runlevels)
 				eerrorx ("%s: no runlevels found", applet);
