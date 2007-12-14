@@ -4,7 +4,6 @@
    */
 
 /* 
- * Copyright 2007 Gentoo Foundation
  * Copyright 2007 Roy Marples
  * All rights reserved
 

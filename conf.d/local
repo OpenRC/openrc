@@ -1,0 +1,18 @@
+# Here is where you can put anything you need to start
+# that there is not an init script for.
+
+local_start() {
+	# This is a good place to load any misc programs
+	# on startup (use &>/dev/null to hide output)
+
+	# We should always return 0
+	return 0
+}
+
+local_stop() {
+	# This is a good place to unload any misc.
+	# programs you started above.
+	
+	# We should always return 0
+	return 0
+}

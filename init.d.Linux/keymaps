@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -74,18 +73,13 @@ start() {
 	fi
 
 	ebegin "Loading key mappings"
-	if [ -x /bin/loadkeys ]; then
-		yesno ${windowskeys} && wkeys="windowkeys"
-		loadkeys -q ${loadkeys_uni} ${wkeys} ${keymap} ${extended_keymaps} 
-		eend $? "Error loading key mappings"
+	yesno ${windowskeys} && wkeys="windowkeys"
+	loadkeys -q ${loadkeys_uni} ${wkeys} ${keymap} ${extended_keymaps} 
+	eend $? "Error loading key mappings" || return $?
 
-		if yesno ${fix_euro}; then
-			# Fix some fonts displaying the Euro, #173528.
-			echo "altgr keycode 18 = U+20AC" | loadkeys -q
-		fi
-	else
-		eend 1 "/bin/loadkeys not found"
-		return 1
+	if yesno ${fix_euro}; then
+		# Fix some fonts displaying the Euro, #173528.
+		echo "altgr keycode 18 = U+20AC" | loadkeys -q
 	fi
 
 	# Set terminal encoding to either ASCII or UNICODE.

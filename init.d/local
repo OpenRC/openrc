@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -24,8 +23,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-description="Executes user command in /etc/conf.d/local.start when starting \
-and /etc/conf.d/local.stop when stopping."
+description="Executes user commands in /etc/conf.d/local"
 
 depend() {
 	after *
@@ -35,8 +33,11 @@ depend() {
 start() {
 	ebegin "Starting local"
 
-	# Add any misc programs that should be started
-	# to /etc/conf.d/local.start
+	if type local_start >/dev/null 2>&1; then
+		local_start
+	fi
+
+	# Support old configs
 	if [ -e /etc/conf.d/local.start ]; then
 		. /etc/conf.d/local.start
 	fi
@@ -47,8 +48,11 @@ start() {
 stop() {
 	ebegin "Stopping local"
 
-	# Add any misc programs that should be stopped
-	# to /etc/conf.d/local.stop
+	if type local_start >/dev/null 2>&1; then
+		local_stop
+	fi
+
+	# Support old configs
 	if [ -e /etc/conf.d/local.stop ]; then
 		. /etc/conf.d/local.stop
 	fi

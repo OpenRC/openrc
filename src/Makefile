@@ -1,5 +1,4 @@
-# Copyright 1999-2007 Gentoo Foundation
-# Distributed under the terms of the GNU General Public License v2
+# Copyright 2007 Roy Marples 
 
 # We should strive to keep this Makefile working with the default make
 # shipped with the OS's we support. Mainly because I'm lazy and just want

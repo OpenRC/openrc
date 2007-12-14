@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -33,8 +32,8 @@ depend() {
 
 do_mtab() {
 	# Don't create mtab if /etc is readonly
-	if ! printf "" 2>/dev/null >/etc/mtab; then
-		ewarn "Skipping /etc/mtab initialization (ro root?)"
+	if ! cp /dev/null >/etc/mtab 2>/dev/null; then
+		ewarn "Skipping /etc/mtab initialization (ro root)"
 		return 0
 	fi
 	ebegin "Updating /etc/mtab"
@@ -75,23 +74,15 @@ do_fsck() {
 	root=$(fstabinfo --blockdevice /)
 	[ ! -e "${root}" -a -e /dev/root ] && root=/dev/root
 
-	if [ -e /forcefsck ] || get_bootparam "forcefsck"; then
-		ebegin "Checking root filesystem (full fsck forced)"
-		fsck ${opts} -f -n "${root}"
-		# /forcefsck isn't deleted because checkfs needs it.
-		# it'll be deleted in that script.
+	# Obey the fs_passno setting for / (see fstab(5))
+	local pass=$(fstabinfo --passno /)
+	if [ ${pass:-0} != "0" ]; then
+		ebegin "Checking root filesystem"
+		fsck ${opts} -p "${root}"
 		retval=$?
 	else
-		# Obey the fs_passno setting for / (see fstab(5))
-		local pass=$(fstabinfo --passno /)
-		if [ ${pass:-0} != "0" ]; then
-			ebegin "Checking root filesystem"
-			fsck ${opts} -p "${root}"
-			retval=$?
-		else
-			ebegin "Skipping root filesystem check" "(fstab's passno == 0)"
-			retval=0
-		fi
+		ebegin "Skipping root filesystem check (fstab's passno == 0)"
+		retval=0
 	fi
 
 	if [ ${retval} -eq 0 ]; then

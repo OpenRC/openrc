@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -37,17 +36,15 @@ do_checkfs() {
 	local retval=0 mode="-p" opts= parts=
 
 	ebegin "Checking all filesystems"
-	
-	if  [ -e /forcefsck ] || get_bootparam "forcefsck"; then
-		ewarn "A full fsck has been forced"
-		mode="-f -n"
-	fi
 
 	if [ "${RC_UNAME}" = "Linux" ]; then
 		opts="-A -C0 -R -T"
 	else
 		parts="$(fstabinfo --passno ">1")"
-		[ -z "${parts}" ] && return 0
+		if [ -z "${parts}" ]; then
+			eend 0
+			return 0
+		fi
 	fi
 
 	fsck ${opts} ${mode} ${parts}
@@ -77,8 +74,6 @@ do_checkfs() {
 		fi
 	fi
 
-	[ ${retval} = 0 -a -e /forcefsck ] && rm /forcefsck
-
 	return ${retval}
 }
 
@@ -89,7 +84,7 @@ start() {
 stop() {
 	# fsck on shutdown if we need to
 	if yesno "${fsck_shutdown:-${FSCK_SHUTDOWN}}"; then
-		[ ! -f /forcefsck ] && do_checkfs
+		do_checkfs
 	fi
 	return 0
 }

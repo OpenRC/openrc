@@ -1,4 +1,3 @@
-# Copyright 2005-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -88,9 +87,6 @@ _system_ntp() {
 		buffer="${buffer}restrict ${x} nomodify notrap noquery\n"
 		buffer="${buffer}server ${x}\n"
 	done
-
-	buffer="${buffer}driftfile /var/lib/ntp/ntp.drift\n"
-	buffer="${buffer}logfile /var/log/ntp.log\n"
 
 	printf "${buffer}" > /etc/ntp.conf
 	chmod 644 /etc/ntp.conf

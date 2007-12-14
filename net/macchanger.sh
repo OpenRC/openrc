@@ -1,4 +1,3 @@
-# Copyright 2004-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -46,9 +45,10 @@ macchanger_pre_start() {
 	_down
 	
 	mac=$(echo "${mac}" | tr '[:upper:]' '[:lower:]')
+	local hex="[0-9a-f][0-9a-f]"
 	case "${mac}" in
-		# specific mac-addr, i wish there were a shorter way to specify this 
-		[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f])
+		# specific mac-addr
+		${hex}:${hex}:${hex}:${hex}:${hex}:${hex})
 			# We don't need macchanger to change to a specific mac address
 			_set_mac_address "${mac}"
 			if eend "$?"; then

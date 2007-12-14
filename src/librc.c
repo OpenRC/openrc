@@ -4,7 +4,6 @@
    */
 
 /* 
- * Copyright 2007 Gentoo Foundation
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -30,8 +29,7 @@
  * SUCH DAMAGE.
  */
 
-const char copyright[] = "Copyright (c) 2007 Gentoo Foundation\n"
-						 "Copyright (c) 2007 Roy Marples";
+const char copyright[] = "Copyright (c) 2007 Roy Marples";
 
 #include "librc.h"
 

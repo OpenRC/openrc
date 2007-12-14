@@ -1,7 +1,6 @@
 #!/bin/sh
 # Shell wrapper to list our dependencies
 
-# Copyright 2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 

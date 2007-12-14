@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -27,11 +26,12 @@
 description="Mounts network shares according to /etc/fstab."
 
 need_portmap() {
-	local mnt opts ret IFS="
+	local opts=
+	local IFS="
 "
-	set -- $(fstabinfo --fstype nfs,nfs4)
-	for mnt; do
-		case ,$(fstabinfo --options "${mnt}"), in
+	set -- $(fstabinfo --options --fstype nfs,nfs4)
+	for opts; do
+		case ,${opts}, in
 			*,noauto,*|*,nolock,*);;
 			*) return 0;;
 		esac
@@ -79,7 +79,7 @@ start() {
 
 	ebegin "Mounting network filesystems"
 	mount -at ${fs}
-	ewend $? "Could not mount all network filesystems!"
+	ewend $? "Could not mount all network filesystems"
 	return 0
 }
 

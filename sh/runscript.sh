@@ -1,7 +1,6 @@
 #!/bin/sh
 # Shell wrapper for runscript
 
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 

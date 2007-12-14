@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -52,12 +51,12 @@ start() {
 	fi
 
 	if [ "${ttyn}" = 0 ]; then
-		ebegin "Skipping font setup (rc_tty_number == 0); you should disable this init.d"
+		ebegin "Skipping font setup (rc_tty_number == 0)"
 		eend 0
 		return 0
 	fi
 
-	local x= param= sf_param= retval=1
+	local x= param= sf_param= retval=1 ttydev=
 
 	# Get additional parameters
 	if [ -n "${consoletranslation}" ]; then
@@ -68,40 +67,18 @@ start() {
 	fi
 
 	# Set the console font
-	local errmsg=
 	ebegin "Setting user font"
-	if [ -x /bin/setfont ]; then
-		# We patched setfont to have --tty support ...
-		if [ -n "$(setfont --help 2>&1 | grep -e '--tty')" ] || \
-			[ -n "$(setfont --help 2>&1 | grep -e '-C')" ]
-		then
-			if [ -n "$(setfont --help 2>&1 | grep -e '--tty')" ]; then
-				sf_param="--tty="
-			else
-				sf_param="-C "
-			fi
-			local ttydev=
-			[ -d /dev/vc ] \
-				&& ttydev=/dev/vc/ \
-				|| ttydev=/dev/tty
+	[ -d /dev/vc ] \
+		&& ttydev=/dev/vc/ \
+		|| ttydev=/dev/tty
 
-			x=1
-			while [ ${x} -le ${ttyn} ]; do
-				/bin/setfont ${consolefont} ${param} \
-					${sf_param}/${ttydev}${x} > /dev/null
-				retval=$?
-				x=$((${x} + 1))
-			done
-		else
-			/bin/setfont ${consolefont} ${param} > /dev/null
-			retval=$?
-		fi
-		errmsg="Failed to set user font"
-	else
-		retval=1
-		errmsg="/bin/setfont not found"
-	fi
-	eend ${retval} "${errmsg}"
+	x=1
+	while [ ${x} -le ${ttyn} ]; do
+		setfont ${consolefont} ${param}-C ${ttydev}${x} >/dev/null 
+		retval=$((${retval} + $?))
+		x=$((${x} + 1))
+	done
+	eend ${retval}
 
 	# Store the last font so we can use it ASAP on boot
 	if [ ${retval} -eq 0 -a -w "${RC_LIBDIR}" ]; then
@@ -111,7 +88,7 @@ start() {
 		cp "${font}" "${RC_LIBDIR}"/console
 		echo "$(basename "${font}")" > "${RC_LIBDIR}"/console/font
 		if yesno ${unicode:-${UNICODE}}; then
-			printf "" > "${RC_LIBDIR}"/console/unicode
+			cp /dev/null "${RC_LIBDIR}"/console/unicode
 		else
 			rm -f "${RC_LIBDIR}"/console/unicode
 		fi

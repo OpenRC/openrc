@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -70,13 +69,6 @@ cleanup_tmp_dir() {
 }
 
 start() {
-	# Put a nologin file in /etc to prevent people from logging
-	# in before system startup is complete.
-	if yesno ${delay_login:-${DELAYLOGIN}}; then
-		echo "System bootup in progress - please wait" > /etc/nologin
-		cp /etc/nologin /etc/nologin.boot
-	fi
-
 	if ! mkdir /.test.$$ 2>/dev/null; then
 		ewarn "Skipping /var and /tmp initialization (ro root?)"
 		return 0
@@ -94,8 +86,8 @@ start() {
 	done
 
 	ebegin "Creating user login records"
-	printf "" >/var/run/utmp
-	[ -e /var/log/wtmp ] || printf "" >/var/log/wtmp
+	cp /dev/null /var/run/utmp
+	[ -e /var/log/wtmp ] || cp /dev/null /var/log/wtmp
 	chmod 0644 /var/run/utmp /var/log/wtmp
 	eend 0
 
@@ -134,9 +126,6 @@ start() {
 		dmesg > /var/log/dmesg
 		chmod 640 /var/log/dmesg
 	fi
-
-	# Check for /etc/resolv.conf, and create if missing
-	[ -e /etc/resolv.conf ] || printf "" >/etc/resolv.conf
 }
 
 stop() {

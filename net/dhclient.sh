@@ -1,4 +1,3 @@
-# Copyright 2004-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -36,10 +35,10 @@ dhclient_start() {
 	local sendhost=true dconf=
 
 	# Get our options
+	# These options only work in Gentoo, and maybe RedHat
 	eval opts=\$dhcp_${IFVAR}
 	[ -z "${opts}" ] && opts=${dhcp}
 
-	# Map some generic options to dhcpcd
 	for opt in ${opts}; do
 		case "${opt}" in
 			nodns) args="${args} -e PEER_DNS=no";;

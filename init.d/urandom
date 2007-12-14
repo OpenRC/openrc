@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -58,8 +57,6 @@ start() {
 
 stop() {
 	ebegin "Saving random seed"
-	# Carry a random seed from shut-down to start-up;
-	# see documentation in linux/drivers/char/random.c
 	save_seed
 	eend $? "Failed to save random seed"
 }

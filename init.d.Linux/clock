@@ -1,5 +1,4 @@
 #!/sbin/runscript
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -34,6 +33,15 @@ clock_adjfile=${clock_adjfile:-${CLOCK_ADJFILE}}
 clock_args=${clock_args:-${CLOCK_OPTS}}
 clock_systohc=${clock_systohc:-${CLOCK_SYSTOHC}}
 
+clock=${clock:-${CLOCK:-UTC}}
+if [ "${clock}" = "UTC" ]; then
+	utc="UTC"
+	utc_cmd="--utc"
+else
+	utc="Local Time"
+	utc_cmd="--localtime"
+fi
+
 depend() {
 	if yesno ${clock_adjfile}; then
 		use checkroot
@@ -46,49 +54,46 @@ setupopts() {
 	utc=
 	case "${RC_SYS}" in
 		UML|VPS|XEN)
-			TBLURB="${RC_SYS}"
+			utc="${RC_SYS}"
 			;;
 		*)
 			case "$(uname -m)" in
 				s390*)
-					TBLURB="s390"
+					utc="s390"
 					;;
 				*)
 					if [ -e /proc/devices ] && grep -q " cobd$" /proc/devices; then
-						TBLURB="coLinux"
-					elif [ "${CLOCK}" = "UTC" ]; then
-						utc="--utc"
-						TBLURB="UTC"
-					else
-						utc="--localtime"
-						TBLURB="Local Time"
+						utc="coLinux"
 					fi
 					;;
 			esac
 			;;
 	esac
-	[ -n "${utc}" ] || return 0
+
+	case "${utc}" in
+		UTC|Local" "Time);;
+		*) unset utc_cmd;;
+	esac
 }
 
 start() {
-	local utc= TBLURB= errstr="" retval=0
-	
+	local retval=0 errstr=""
 	setupopts
 
-	ebegin "Setting system clock using the hardware clock [${TBLURB}]"
-	if [ -n "${utc}" ]; then
+	ebegin "Setting system clock using the hardware clock [${utc}]"
+	if [ -n "${utc_cmd}" ]; then
 		if [ -e /proc/modules -a ! -e /dev/rtc ]; then
 			modprobe -q rtc || modprobe -q genrtc
 		fi
 
 		# Since hwclock always exit's with a 0, need to check its output.
 		if [ -e /etc/adjtime ] && yesno ${clock_adjfile}; then
-			errstr="$(hwclock --adjust ${utc} 2>&1 >/dev/null)"
+			errstr="$(hwclock --adjust ${utc_cmd} 2>&1 >/dev/null)"
 		fi
 		# If setting UTC, don't bother to run hwclock when first booting
 		# as that's the default
-		if [ "${PREVLEVEL}" != "N" -o "${utc}" != "--utc" -o -n "${clock_args}" ]; then
-			errstr="${errstr}$(hwclock --hctosys ${utc} ${clock_args} 2>&1 >/dev/null)"
+		if [ "${PREVLEVEL}" != "N" -o "${utc_cmd}" != "--utc" -o -n "${clock_args}" ]; then
+			errstr="${errstr}$(hwclock --hctosys ${utc_cmd} ${clock_args} 2>&1 >/dev/null)"
 		fi
 	fi
 	if [ -n "${errstr}" ]; then
@@ -106,19 +111,18 @@ stop() {
 	[ -n "${CDBOOT}" ] && return 0
 	yesno ${clock_systohc} || return 0
 
-	local utc= TBLURB= errstr="" retval=0
-
+	local retval=0 errstr=""
 	setupopts
 
-	ebegin "Setting hardware clock using the system clock" "[${TBLURB}]"
-	if [ -n "${utc}" ]; then
+	ebegin "Setting hardware clock using the system clock" "[${utc}]"
+	if [ -n "${utc_cmd}" ]; then
 		if ! yesno "${clock_adjfile}"; then
 			# Some implementations don't handle adjustments
 			if LC_ALL=C hwclock --help | grep -q "\-\-noadjfile"; then
-				utc="${utc} --noadjfile"
+				utc_cmd="${utc_cmd} --noadjfile"
 			fi
 		fi
-		errstr="$(LC_ALL=C hwclock --systohc ${utc} ${clock_args} 2>&1 >/dev/null)"
+		errstr="$(LC_ALL=C hwclock --systohc ${utc_cmd} ${clock_args} 2>&1 >/dev/null)"
 	fi
 	if [ -n "${errstr}" ]; then
 		ewarn "${errstr}"
@@ -134,9 +138,8 @@ save() {
 }
 
 show() {
-	local utc= TBLURB=
 	setupopts
-	/sbin/hwclock --show "${utc}" ${clock_args} 
+	hwclock --show "${utc_cmd}" ${clock_args} 
 }
 
 # vim: set ts=4 :

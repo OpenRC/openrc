@@ -1,5 +1,5 @@
-# Open Run Control Makefile
-# Copyright 2006-2007 Gentoo Foundation
+# OpenRC Makefile
+# Copyright 2007 Roy Marples 
 # Distributed under the terms of the GNU General Public License v2
 
 NAME = openrc

@@ -1,8 +1,0 @@
-# /etc/conf.d/local.stop
-
-# This is a good place to unload any misc.
-# programs you started above.
-# For example, if you are using OSS and have
-# "/usr/local/bin/soundon" above, put
-# "/usr/local/bin/soundoff" here.
-

@@ -1,5 +1,4 @@
 #!/bin/sh
-# Copyright 1999-2007 Gentoo Foundation
 # Copyright 2007 Roy Marples
 # All rights reserved
 
@@ -107,22 +106,6 @@ if [ "${RC_UNAME}" = "Linux" ]; then
 	eoutdent
 	eend $?
 	unmounted=$?
-fi
-
-# This UPS code should be moved to out of here and to an addon
-if [ -f /etc/killpower ]; then
-	UPS_CTL=/sbin/upsdrvctl
-	UPS_POWERDOWN="${UPS_CTL} shutdown"
-elif [ -f /etc/apcupsd/powerfail ]; then
-	UPS_CTL=/etc/apcupsd/apccontrol
-	UPS_POWERDOWN="${UPS_CTL} killpower"
-fi
-if [ -x "${UPS_CTL}" ]; then
-	ewarn "Signalling ups driver(s) to kill the load!"
-	${UPS_POWERDOWN}
-	ewarn "Halt system and wait for the UPS to kill our power"
-	halt -id
-	sleep 60
 fi
 
 if [ ${unmounted} -ne 0 ]; then
