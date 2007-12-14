@@ -28,10 +28,10 @@
 # the old service state data
 if [ "${RC_SVCDIR}" != "/" ] &&  mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null; then
 	rmdir "${RC_SVCDIR}/.test.$$"
-	for x in ${RC_SVCDIR:-/lib/rcscripts/init.d}/*; do
+	for x in ${RC_SVCDIR:-/lib/rc/init.d}/*; do
 		[ -e "${x}" ] || continue
 		case ${x##*/} in
-			deptree|ksoftlevel|rc.log);;
+			depconfig|deptree|ksoftlevel|rc.log);;
 			*) rm -rf "${x}";;
 		esac
 	done
