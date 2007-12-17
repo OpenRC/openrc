@@ -1,39 +1,80 @@
-.TH "OPENRC" "8" "Nov 2007" "openrc" "openrc"
-.SH NAME
-rc-update \- add and remove init scripts to a runlevel
-.SH SYNOPSIS
-\fBrc-update\fR \fIadd\fR \fIscript\fR \fI<runlevels>\fR
-.br
-\fBrc-update\fR \fIdel\fR \fIscript\fR \fI[runlevels]\fR
-.br
-\fBrc-update\fR \fIshow\fR \fI[\-\-verbose]\fR \fI[runlevels]\fR
-.SH DESCRIPTION
+.\" Copyright 2007 Roy Marples
+.\" All rights reserved
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd Dec 15, 2007
+.Dt RC-UPDATE 8 SMM
+.Os OpenRC
+.Sh NAME
+.Nm rc-update
+.Nd add and remove services to and from a runlevel 
+.Sh SYNOPSIS
+.Nm
+.Fl a , -add
+.Ar service
+.Op Ar runlevel ...
+.Nm
+.Fl d , -delete
+.Ar service
+.Op Ar runlevel ...
+.Nm
+.Fl s , -show
+.Op Fl v , -verbose
+.Op Ar runlevel ...
+.Sh DESCRIPTION
 OpenRC uses named runlevels.  Rather than editing some obscure 
-file or managing a directory of symlinks, \fBrc-update\fR exists to quickly 
-add or delete init scripts from different runlevels.
-
-All scripts specified with this utility must reside in the \fI/etc/init.d\fR 
-directory.  They must also conform to the OpenRC runscript standard.
-.SH OPTIONS
-.TP
-\fBadd (\-a)\fR \fIscript\fR \fI<runlevels>\fR
-Add the specified \fIinit script\fR to the specified \fIrunlevels\fR.  You 
-must specify at least one runlevel.
-
-Example: rc-update add net.eth0 default
-.TP
-\fBdel (\-d)\fR \fIscript\fR \fI[runlevels]\fR
-Delete the specified \fIinit script\fR from the specified \fIrunlevels\fR.  
-If you do not specify the \fIrunlevels\fR from which to delete, the script 
-will be removed from all exists runlevels.
-
-Example: rc-update del sysklogd
-.TP
-\fBshow (\-s)\fR \fI[\-v|\-\-verbose]\fR \fI[runlevels]\fR
-Show all enabled scripts and the runlevels they belong to.  If you specify 
-\fIrunlevels\fR to show, then only those will be included in the output.  To 
-view all init scripts, run with the \fI\-\-verbose\fR option.
-
-Example: rc-update show
-.SH "SEE ALSO"
-.BR rc-status (8)
+file or managing a directory of symlinks,
+.Nm
+exists to quickly add or delete services to and from from different runlevels.
+All services must reside in the
+.Pa /etc/init.d
+or
+.Pa /usr/local/etc/init.d
+directories. They must also conform to the OpenRC runscript standard.
+.Pp
+.Bl -tag -width "Fl a , -delete service"
+.It Fl a , -add Ar service
+Add the
+.Ar service
+to the
+.Ar runlevel
+or the current one if none given.
+Services added to the boot runlevel must exist in
+.Pa /etc/init.d .
+.It Fl d , -delete Ar service
+Delete the
+.Ar service
+from the
+.Ar runlevel
+or the current one if none given.
+.It Fl s , -show
+Show all enabled services and the runlevels they belong to.  If you specify
+runlevels to show, then only those will be included in the output.
+.It Fl v , -verbose
+Show all services.
+.El
+.Sh SEE ALSO
+.Xr rc 8 ,
+.Xr rc-status 8
+.Sh AUTHORS
+.An "Roy Marples" Aq roy@marples.name

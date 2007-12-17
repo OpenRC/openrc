@@ -1,33 +1,61 @@
-.TH "OPENRC" "8" "Nov 2007" "openrc" "openrc"
-.SH NAME
-rc-status \- show status info about runlevels
-.SH SYNOPSIS
-\fBrc-status\fR \fI[command [runlevel]]\fR
-.SH DESCRIPTION
-\fBrc-status\fR gathers and displays information about the status of init 
-scripts in different runlevels.  The default behavior is to show information 
+.\" Copyright 2007 Roy Marples
+.\" All rights reserved
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd Dec 15, 2007
+.Dt RC-STATUS 8 SMM
+.Os OpenRC
+.Sh NAME
+.Nm rc-status
+.Nd show status info about runlevels
+.Sh SYNOPSIS
+.Nm
+.Op Fl alsuC
+.Op Ar runlevel
+.Sh DESCRIPTION
+.Nm
+gathers and displays information about the status of services 
+in different runlevels.  The default behavior is to show information 
 about the current runlevel, but any runlevel can be quickly examined.
-directory.  They must also conform to the OpenRC runscript standard.
-.SH OPTIONS
-.TP
-\fB\-\-all (\-a)\fR
-Show all runlevels and their services
-.TP
-\fB\-\-list (\-l)\fR
-List all defined runlevels
-.TP
-\fB\-\-nocolor (\-nc)\fR
-Disable color output
-.TP
-\fB\-\-servicelist (\-s)\fR
-Show all services
-.TP
-\fB\-\-unused (\-u)\fR
-Show services not assigned to any runlevel
-.TP
-\fB[runlevel]\fR
-Show information only for the named \fBrunlevel\fR
-.SH "SEE ALSO"
-.BR rc-update (8)
-.SH AUTHORS
-Mike Frysinger <vapier@gentoo.org>
+.Pp
+The options are as follows:
+.Bl -tag -width ".Fl test , test string"
+.It Fl a , -all
+Show all runlevels and their services.
+.It Fl l , -list
+List all defined runlevels.
+.It Fl s , -servicelist
+Show all services.
+.It Fl u , -unused
+Show services not assigned to any runlevel.
+.It Fl C , -nocolor
+Disable color output.
+.It Ar runlevel
+Show information only for the named
+.Ar runlevel .
+.El
+.Sh SEE ALSO
+.Xr rc 8 ,
+.Xr rc-update 8
+.Sh AUTHORS
+.An "Roy Marples" Aq roy@marples.name
