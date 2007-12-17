@@ -48,7 +48,7 @@ describe() {
 	fi
 
 	local svc= desc=
-	for svc in ${extra_commands:-${opts}}; do
+	for svc in ${extra_commands:-${opts}} ${extra_started_commands}; do
 		eval desc=\$description_${svc}
 		if [ -n "${desc}" ]; then
 			einfo "${HILITE}${svc}${NORMAL}: ${desc}"
