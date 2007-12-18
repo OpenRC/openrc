@@ -311,19 +311,19 @@ static int do_service (int argc, char **argv)
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "service_started") == 0)
-		ok = (rc_service_state (argv[0]) & RC_SERVICE_STARTED);
+		ok = (rc_service_state (service) & RC_SERVICE_STARTED);
 	else if (strcmp (applet, "service_stopped") == 0)
-		ok = (rc_service_state (argv[0]) & RC_SERVICE_STOPPED);
+		ok = (rc_service_state (service) & RC_SERVICE_STOPPED);
 	else if (strcmp (applet, "service_inactive") == 0)
-		ok = (rc_service_state (argv[0]) & RC_SERVICE_INACTIVE);
+		ok = (rc_service_state (service) & RC_SERVICE_INACTIVE);
 	else if (strcmp (applet, "service_starting") == 0)
-		ok = (rc_service_state (argv[0]) & RC_SERVICE_STARTING);
+		ok = (rc_service_state (service) & RC_SERVICE_STARTING);
 	else if (strcmp (applet, "service_stopping") == 0)
-		ok = (rc_service_state (argv[0]) & RC_SERVICE_STOPPING);
+		ok = (rc_service_state (service) & RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "service_coldplugged") == 0)
-		ok = (rc_service_state (argv[0]) & RC_SERVICE_COLDPLUGGED);
+		ok = (rc_service_state (service) & RC_SERVICE_COLDPLUGGED);
 	else if (strcmp (applet, "service_wasinactive") == 0)
-		ok = (rc_service_state (argv[0]) & RC_SERVICE_WASINACTIVE);
+		ok = (rc_service_state (service) & RC_SERVICE_WASINACTIVE);
 	else if (strcmp (applet, "service_started_daemon") == 0) {
 		int idx = 0;
 		if (argc > 2)
@@ -340,30 +340,36 @@ static int do_mark_service (int argc, char **argv)
 {
 	bool ok = false;
 	char *svcname = getenv ("SVCNAME");
+	char *service = NULL;
 
-	if (argc < 1 || ! argv[0] || strlen (argv[0]) == 0)
+	if (argc > 0)
+		service = argv[0];
+	else
+		service = getenv ("SVCNAME");
+
+	if (! service || strlen (service) == 0)
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "mark_service_started") == 0)
-		ok = rc_service_mark (argv[0], RC_SERVICE_STARTED);
+		ok = rc_service_mark (service, RC_SERVICE_STARTED);
 	else if (strcmp (applet, "mark_service_stopped") == 0)
-		ok = rc_service_mark (argv[0], RC_SERVICE_STOPPED);
+		ok = rc_service_mark (service, RC_SERVICE_STOPPED);
 	else if (strcmp (applet, "mark_service_inactive") == 0)
-		ok = rc_service_mark (argv[0], RC_SERVICE_INACTIVE);
+		ok = rc_service_mark (service, RC_SERVICE_INACTIVE);
 	else if (strcmp (applet, "mark_service_starting") == 0)
-		ok = rc_service_mark (argv[0], RC_SERVICE_STARTING);
+		ok = rc_service_mark (service, RC_SERVICE_STARTING);
 	else if (strcmp (applet, "mark_service_stopping") == 0)
-		ok = rc_service_mark (argv[0], RC_SERVICE_STOPPING);
+		ok = rc_service_mark (service, RC_SERVICE_STOPPING);
 	else if (strcmp (applet, "mark_service_coldplugged") == 0)
-		ok = rc_service_mark (argv[0], RC_SERVICE_COLDPLUGGED);
+		ok = rc_service_mark (service, RC_SERVICE_COLDPLUGGED);
 	else if (strcmp (applet, "mark_service_failed") == 0)
-		ok = rc_service_mark (argv[0], RC_SERVICE_FAILED);
+		ok = rc_service_mark (service, RC_SERVICE_FAILED);
 	else
 		eerrorx ("%s: unknown applet", applet);
 
 	/* If we're marking ourselves then we need to inform our parent runscript
 	   process so they do not mark us based on our exit code */
-	if (ok && svcname && strcmp (svcname, argv[0]) == 0) {
+	if (ok && svcname && strcmp (svcname, service) == 0) {
 		char *runscript_pid = getenv ("RC_RUNSCRIPT_PID");
 		char *mtime;
 		pid_t pid = 0;
