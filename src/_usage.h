@@ -34,7 +34,7 @@
 	{ NULL,             0, NULL,  0 }
 
 #define longopts_help_COMMON \
-	"Display this help output (duh)", \
+	"Display this help output", \
 	"Disable color output", \
 	"Run verbosely", \
 	"Run quietly"

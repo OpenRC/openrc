@@ -41,7 +41,7 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
-#define APPLET "rc-status"
+static const char *applet;
 
 static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
 

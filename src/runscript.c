@@ -1024,6 +1024,7 @@ static void svc_restart (bool deps)
 
 #include "_usage.h"
 #define getoptstring "dDsv" getoptstring_COMMON
+#define extraopts "stop | start | restart | describe | zap"
 static struct option longopts[] = {
 	{ "debug",      0, NULL, 'd'},
 	{ "ifstarted",  0, NULL, 's'},
@@ -1031,15 +1032,11 @@ static struct option longopts[] = {
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
-	"",
-	"",
-	"",
+	"set xtrace when running the script",
+	"only run commands when started",
+	"ignore dependencies",
 	longopts_help_COMMON
 };
-#undef case_RC_COMMON_getopt_case_h
-#define case_RC_COMMON_getopt_case_h \
-	execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL); \
-eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s", applet, strerror (errno));
 #include "_usage.c"
 
 int runscript (int argc, char **argv)
@@ -1053,13 +1050,15 @@ int runscript (int argc, char **argv)
 	char *svc;
 
 	/* Show help if insufficient args */
-	if (argc < 2) {
-		execl (RCSCRIPT_HELP, RCSCRIPT_HELP, (char *) NULL);
-		eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s", argv[0],
-				 strerror (errno));
+	if (argc < 2 || ! exists (argv[1])) {
+		fprintf (stderr, "runscript is not meant to be to run directly\n");
+		exit (EXIT_FAILURE);
 	}
 
 	applet = xstrdup (basename (argv[1]));
+	if (argc < 3)
+		usage (EXIT_FAILURE);
+
 	if (*argv[1] == '/')
 		service = xstrdup (argv[1]);
 	else {
@@ -1074,14 +1073,6 @@ int runscript (int argc, char **argv)
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
 	chdir ("/");
-
-	/* Show help if insufficient args */
-	if (argc < 3) {
-		setenv ("SVCNAME", applet, 1);
-		execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
-		eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-				 applet, strerror (errno));
-	}
 
 #ifdef __linux__
 	/* coldplug events can trigger init scripts, but we don't want to run them
@@ -1240,7 +1231,12 @@ int runscript (int argc, char **argv)
 		doneone = true;
 
 		if (strcmp (optarg, "describe") == 0) {
+			char *save = prefix;
+
+			eprefix (NULL);
+			prefix = NULL;
 			svc_exec (optarg, NULL);
+			eprefix (save);
 		} else if (strcmp (optarg, "help") == 0) {
 			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
 			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",

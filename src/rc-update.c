@@ -146,9 +146,9 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-#define DOADD    (1 << 0)
-#define DODELETE (1 << 1)
-#define DOSHOW   (1 << 2)
+#define DOADD    (1 << 1)
+#define DODELETE (1 << 2)
+#define DOSHOW   (1 << 3)
 
 int rc_update (int argc, char **argv)
 {
@@ -180,6 +180,9 @@ int rc_update (int argc, char **argv)
 			case_RC_COMMON_GETOPT
 		}
 	}
+
+	if (! action)
+		usage (EXIT_FAILURE);
 
 	verbose = rc_yesno (getenv ("EINFO_VERBOSE"));
 

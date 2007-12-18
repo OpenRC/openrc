@@ -29,8 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#define APPLET "fstabinfo"
-
 #include <errno.h>
 #include <getopt.h>
 #include <libgen.h>
@@ -89,6 +87,8 @@ static struct mntent *getmntfile (const char *file)
 }
 #endif
 
+static const char *applet;
+
 #include "_usage.h"
 #define getoptstring "bmop:t:" getoptstring_COMMON
 static struct option longopts[] = {
@@ -128,6 +128,8 @@ int fstabinfo (int argc, char **argv)
 	char **files = NULL;
 	char *file;
 	bool filtered = false;
+
+	applet = basename (argv[0]);
 
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv ("EINFO_QUIET");

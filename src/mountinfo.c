@@ -29,8 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#define APPLET "mountinfo"
-
 #include <sys/types.h>
 
 #if defined(__DragonFly__) || defined(__FreeBSD__) || \
@@ -45,6 +43,7 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <libgen.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,6 +55,8 @@
 #include "rc.h"
 #include "rc-misc.h"
 #include "strlist.h"
+
+static const char *applet;
 
 typedef enum {
 	mount_from,
@@ -311,7 +312,7 @@ static regex_t *get_regex (const char *string)
 	if ((result = regcomp (reg, string, REG_EXTENDED | REG_NOSUB)) != 0)
 	{
 		regerror (result, reg, buffer, sizeof (buffer));
-		eerrorx ("%s: invalid regex `%s'", APPLET, buffer);
+		eerrorx ("%s: invalid regex `%s'", applet, buffer);
 	}
 
 	return (reg);
@@ -365,6 +366,8 @@ int mountinfo (int argc, char **argv)
 	int opt;
 	int result;
 	bool quiet;
+
+	applet = basename (argv[0]);
 
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv ("EINFO_QUIET");

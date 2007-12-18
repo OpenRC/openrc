@@ -29,7 +29,7 @@ static void usage (int exit_status)
 {
 	const char * const has_arg[] = { "", "<arg>", "[arg]" };
 	int i;
-	printf ("Usage: " APPLET " [options] ");
+	printf ("Usage: %s [options] ", applet);
 #ifdef extraopts
 	printf (extraopts);
 #endif
@@ -52,4 +52,3 @@ static void usage (int exit_status)
 	}
 	exit (exit_status);
 }
-
