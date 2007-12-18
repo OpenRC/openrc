@@ -300,8 +300,14 @@ static int do_e (int argc, char **argv)
 static int do_service (int argc, char **argv)
 {
 	bool ok = false;
+	char *service = NULL;
 
-	if (argc < 1 || ! argv[0] || strlen (argv[0]) == 0)
+	if (argc > 0)
+		service = argv[0];
+	else
+		service = getenv ("SVCNAME");
+
+	if (! service || strlen (service) == 0)
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "service_started") == 0)
