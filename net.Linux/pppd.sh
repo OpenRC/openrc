@@ -213,7 +213,7 @@ pppd_pre_start() {
 	[ "${insert_link_in_opts}" = "0" ] || opts="${link} ${opts}"
 
 	ebegin "Starting pppd in ${IFACE}"
-	mark_service_inactive "${SVCNAME}"
+	mark_service_inactive
 	if [ -n "${username}" ] \
 	&& [ -n "${password}" -o -z "${passwordset}" ]; then
 		printf "%s" "${password}" | \
@@ -225,7 +225,7 @@ pppd_pre_start() {
 	fi
 
 	if ! eend $? "Failed to start PPP"; then
-		mark_service_stopped "net.${IFACE}"
+		mark_service_stopped
 		return 1
 	fi
 

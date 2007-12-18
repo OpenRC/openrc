@@ -142,7 +142,7 @@ wpa_supplicant_pre_start() {
 		opts="${opts} -W"
 	else
 		sleep 2 # FBSD 7.0 beta2 bug
-		mark_service_inactive "${SVCNAME}"
+		mark_service_inactive
 	fi
 	start-stop-daemon --start --exec "${wpas}" \
 		--pidfile "/var/run/wpa_supplicant-${IFACE}.pid" \
@@ -157,8 +157,8 @@ wpa_supplicant_pre_start() {
 	# Starting wpa_supplication-0.4.0, we can get wpa_cli to
 	# start/stop our scripts from wpa_supplicant messages
 	local inact=false
-	service_inactive "${SVCNAME}" && inact=true
-	mark_service_inactive "${SVCNAME}"
+	service_inactive && inact=true
+	mark_service_inactive
 
 	ebegin "Starting wpa_cli on" "${IFACE}"
 	start-stop-daemon --start --exec "${wpac}" \
@@ -173,7 +173,7 @@ wpa_supplicant_pre_start() {
 	# wpa_cli failed to start? OK, error here
 	start-stop-daemon --quiet --stop --exec "${wpas}" \
 		--pidfile "/var/run/wpa_supplicant-${IFACE}.pid"
-	${inact} ||	mark_service_stopped "${SVCNAME}"
+	${inact} ||	mark_service_stopped
 	return 1
 }
 

@@ -61,7 +61,7 @@ ifplugd_pre_start() {
 	eval args=\$ifplugd_${IFVAR}
 
 	# Mark the us as inactive so netplug can restart us
-	mark_service_inactive "${SVCNAME}"
+	mark_service_inactive
 
 	# Start ifplugd
 	eval start-stop-daemon --start --exec /usr/sbin/ifplugd \
@@ -83,7 +83,7 @@ ifplugd_pre_start() {
 
 	local i=0
 	while true; do
-		if service_started "${SVCNAME}"; then
+		if service_started; then
 			_show_address
 			exit 0
 		fi
