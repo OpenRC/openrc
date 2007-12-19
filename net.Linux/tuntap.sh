@@ -29,7 +29,7 @@ tuntap_depend() {
 _config_vars="$_config_vars tunctl"
 
 _is_tuntap() {
-	[ -n "$(get_options tuntap "${SVCNAME}")" ]
+	[ -n "$(export SVCNAME="net.${IFACE}"; service_get_value tuntap)" ]
 }
 
 tuntap_pre_start() {
@@ -58,7 +58,7 @@ tuntap_pre_start() {
 	else
 		openvpn --mktun --dev-type "${tuntap}" --dev "${IFACE}" >/dev/null
 	fi
-	eend $? && _up && save_options tuntap "${tuntap}"
+	eend $? && _up && service_set_value tuntap "${tuntap}"
 }
 
 tuntap_post_stop() {
@@ -69,7 +69,7 @@ tuntap_post_stop() {
 		tunctl -d "${IFACE}" >/dev/null
 	else
 		openvpn --rmtun \
-			--dev-type "$(get_options tuntap)" \
+			--dev-type "$(service_get_value tuntap)" \
 			--dev "${IFACE}" >/dev/null
 	fi
 	eend $?

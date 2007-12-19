@@ -686,7 +686,7 @@ iwconfig_pre_start() {
 	# the background
 	yesno ${IN_BACKGROUND} && return 0
 
-	save_options "SSID" ""
+	service_set_value "SSID" ""
 	_exists || return 0
 
 	if ! _is_wireless; then
@@ -736,7 +736,7 @@ iwconfig_pre_start() {
 	fi
 
 	if iwconfig_configure; then
-		save_options "SSID" "${SSID}"
+		service_set_value "SSID" "${SSID}"
 		return 0
 	fi
 

@@ -59,7 +59,7 @@ ccwgroup_pre_start() {
 
 ccwgroup_pre_stop() {
 	# Erase any existing ccwgroup to be safe
-	save_options ccwgroup_device ""
+	service_set_value ccwgroup_device ""
 	
 	[ ! -L /sys/class/net/"${FACE}"/driver ] && return 0
 	local driver="$(readlink /sys/class/net/"${IFACE}"/driver)"
@@ -70,11 +70,11 @@ ccwgroup_pre_stop() {
 
 	local device="$(readlink /sys/class/net/"${IFACE}"/device)"
 	device=${device##*/}
-	save_options ccwgroup_device "${device}"
+	service_set_value ccwgroup_device "${device}"
 }
 
 ccwgroup_post_stop() {
-	local device="$(get_options ccwgroup_device)"
+	local device="$(service_get_value ccwgroup_device)"
 	[ -z "${device}" ] && return 0
 	
 	einfo "Disabling ccwgroup on ${iface}"

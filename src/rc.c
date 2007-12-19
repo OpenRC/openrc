@@ -391,7 +391,7 @@ static int do_mark_service (int argc, char **argv)
 	return (ok ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
-static int do_options (int argc, char **argv)
+static int do_value (int argc, char **argv)
 {
 	bool ok = false;
 	char *service = getenv ("SVCNAME");
@@ -402,14 +402,17 @@ static int do_options (int argc, char **argv)
 	if (argc < 1 || ! argv[0] || strlen (argv[0]) == 0)
 		eerrorx ("%s: no option specified", applet);
 
-	if (strcmp (applet, "get_options") == 0) {
+	if (strcmp (applet, "service_get_value") == 0 ||
+		strcmp (applet, "get_options") == 0)
+	{
 		char *option = rc_service_value_get (service, argv[0]);
 		if (option) {
 			printf ("%s", option);
 			free (option);
 			ok = true;
 		}
-	} else if (strcmp (applet, "save_options") == 0)
+	} else if (strcmp (applet, "service_set_value") == 0 ||
+			   strcmp (applet, "save_options") == 0)
 		ok = rc_service_value_set (service, argv[0], argv[1]);
 	else
 		eerrorx ("%s: unknown applet", applet);
@@ -846,12 +849,14 @@ int main (int argc, char **argv)
 	if (applet[0] == 'e' || (applet[0] == 'v' && applet[1] == 'e'))
 		exit (do_e (argc, argv));
 
+	if (strcmp (applet, "get_value") == 0 ||
+		strcmp (applet, "set_value") == 0 ||
+		strcmp (applet, "get_options") == 0 ||
+		strcmp (applet, "save_options") == 0)
+		exit (do_value (argc, argv));
+
 	if (strncmp (applet, "service_", strlen ("service_")) == 0)
 		exit (do_service (argc, argv));
-
-	if (strcmp (applet, "get_options") == 0 ||
-		strcmp (applet, "save_options") == 0)
-		exit (do_options (argc, argv));
 
 	if (strncmp (applet, "mark_service_", strlen ("mark_service_")) == 0)
 		exit (do_mark_service (argc, argv));

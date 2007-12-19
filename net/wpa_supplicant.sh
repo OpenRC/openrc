@@ -83,13 +83,13 @@ wpa_supplicant_pre_start() {
 		if ${wireless} && service_started_daemon "${SVCNAME}" "${wpas}"; then
 			SSID=$(_get_ssid "${IFACE}")
 			SSIDVAR=$(_shell_var "${SSID}")
-			save_options "SSID" "${SSID}"
+			service_set_value "SSID" "${SSID}"
 			metric=2000
 		fi
 		return 0
 	fi
 
-	save_options "SSID" ""
+	service_set_value "SSID" ""
 	ebegin "Starting wpa_supplicant on ${IFVAR}"
 
 	if [ -x /sbin/iwconfig ]; then
@@ -134,7 +134,7 @@ wpa_supplicant_pre_start() {
 			opts="${opts} -C ${ctrl_dir}"
 		fi
 	fi
-	save_options ctrl_dir "${ctrl_dir}"
+	service_set_value ctrl_dir "${ctrl_dir}"
 
 	actfile="/etc/wpa_supplicant/wpa_cli.sh"
 
