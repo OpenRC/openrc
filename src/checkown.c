@@ -127,52 +127,54 @@ static int parse_mode (mode_t *mode, char *text)
 	return (-1);
 }
 
-static struct passwd *get_user (char **name)
+static int parse_owner (struct passwd **user, struct group **group,
+						const char *owner)
 {
-	struct passwd *pw;
-	char *p = *name;
-	char *token;
-	int tid;
+	char *u = xstrdup (owner);
+	char *g = strchr (u, ':');
+	int id = 0;
+	int retval = 0;
 
-	token = strsep (&p, ":");
-	if (sscanf (token, "%d", &tid) != 1)
-		pw = getpwnam (token);
-	else
-		pw = getpwuid (tid);
+	if (g)
+		*g++ = '\0';
 
-	if (pw)
-		*name = p;
+	if (user && *u) {
+		if (sscanf (u, "%d", &id) == 1)
+			*user = getpwuid (id);
+		else	
+			*user = getpwnam (u);
+		if (! *user)
+			retval = -1;
+	}
 
-	return (pw);
-}
+	if (group && g && *g) {
+		if (sscanf (g, "%d", &id) == 1)
+			*group = getgrgid (id);
+		else
+			*group = getgrnam (g);
+		if (! *group)
+			retval = -1;
+	}
 
-static struct group *get_group (const char *name)
-{
-	int tid;
-
-	if (sscanf (name, "%d", &tid) != 1)
-		return (getgrnam (name));
-	else
-		return (getgrgid (tid));
+	free (u);
+	return (retval);
 }
 
 #include "_usage.h"
 #define extraopts "dir1 dir2 ..."
-#define getoptstring "fm:g:u:" getoptstring_COMMON
+#define getoptstring "fm:o:" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "directory",      0, NULL, 'd'},
 	{ "file",           0, NULL, 'f'},
 	{ "mode",			1, NULL, 'm'},
-	{ "user",           1, NULL, 'u'},
-	{ "group",          1, NULL, 'g'},
+	{ "owner",          1, NULL, 'o'},
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
 	"Check if a directory",
 	"Check if a file",
 	"Mode to check",
-	"User to check",
-	"Group to check",
+	"Owner to check (user:group)",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -187,7 +189,6 @@ int checkown (int argc, char **argv)
 	struct group *gr = NULL;
 	bool file = 0;
 
-	char *p;
 	int retval = EXIT_SUCCESS;
 
 	applet = argv[0];
@@ -203,20 +204,12 @@ int checkown (int argc, char **argv)
 				file = 1;
 				break;
 			case 'm':
-				if (parse_mode (&mode, optarg))
+				if (parse_mode (&mode, optarg) != 0)
 					eerrorx ("%s: invalid mode `%s'", applet, optarg);
 				break;
-			case 'u':
-				p = optarg;
-				if (! (pw = get_user (&p)))
-					eerrorx ("%s: user `%s' not found", applet, optarg);
-				if (p && *p)
-					optarg = p;
-				else
-					break;
-			case 'g':
-				if (! (gr = get_group (optarg)))
-					eerrorx ("%s: group `%s' not found", applet, optarg);
+			case 'o':
+				if (parse_owner (&pw, &gr, optarg) != 0)
+					eerrorx ("%s: owner `%s' not found", applet, optarg);
 				break;
 
 				case_RC_COMMON_GETOPT
