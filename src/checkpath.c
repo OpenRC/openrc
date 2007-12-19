@@ -1,5 +1,5 @@
 /*
-   checkown.c
+   checkpath.c
    Checks for the existance of a file or directory and creates it
    if necessary. It can also correct its ownership.
    */
@@ -177,7 +177,7 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int checkown (int argc, char **argv)
+int checkpath (int argc, char **argv)
 {
 	int opt;
 	uid_t uid = geteuid();

@@ -839,8 +839,8 @@ int main (int argc, char **argv)
 		exit (runscript (argc, argv));
 	else if (strcmp (applet, "start-stop-daemon") == 0)
 		exit (start_stop_daemon (argc, argv));
-	else if (strcmp (applet, "checkown") == 0)
-		exit (checkown (argc, argv));
+	else if (strcmp (applet, "checkpath") == 0)
+		exit (checkpath (argc, argv));
 
 	argc--;
 	argv++;
