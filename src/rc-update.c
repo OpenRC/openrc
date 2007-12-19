@@ -29,8 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#define APPLET "rc-update"
-
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>
@@ -46,7 +44,7 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
-static char *applet = NULL;
+static const char *applet = NULL;
 
 /* Return the number of changes made:
  *  -1 = no changes (error)
@@ -161,7 +159,7 @@ int rc_update (int argc, char **argv)
 	int opt;
 	int retval = EXIT_FAILURE;
 
-	applet = argv[0];
+	applet = cbasename (argv[0]); 
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 							   longopts, (int *) 0)) != -1)

@@ -29,8 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#define APPLET "runscript"
-
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -40,7 +38,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
-#include <libgen.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
@@ -76,7 +73,7 @@
 
 #define ONE_SECOND      1000000000
 
-static char *applet = NULL;
+static const char *applet = NULL;
 static char *service = NULL;
 static char *exclusive = NULL;
 static char *mtime_test = NULL;
@@ -353,7 +350,6 @@ static void cleanup (void)
 	}
 	free (exclusive);
 	free (service);
-	free (applet);
 	free (prefix);
 	free (softlevel);
 }
@@ -502,7 +498,6 @@ static bool svc_exec (const char *arg1, const char *arg2)
 static bool svc_wait (rc_depinfo_t *depinfo, const char *svc)
 {
 	char *s;
-	char *base;
 	char *fifo;
 	struct timespec ts;
 	int nloops = WAIT_MAX * (ONE_SECOND / WAIT_INTERVAL);
@@ -524,11 +519,7 @@ static bool svc_wait (rc_depinfo_t *depinfo, const char *svc)
 	}
 	rc_strlist_free (keywords);
 
-	s = xstrdup (svc);
-	base = basename (s);
-	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", base, (char *) NULL);
-	free (s);
-
+	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", cbasename (svc), (char *) NULL);
 	ts.tv_sec = 0;
 	ts.tv_nsec = WAIT_INTERVAL;
 
@@ -1055,7 +1046,7 @@ int runscript (int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
-	applet = xstrdup (basename (argv[1]));
+	applet = cbasename (argv[1]);
 	if (argc < 3)
 		usage (EXIT_FAILURE);
 

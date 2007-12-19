@@ -43,7 +43,6 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <libgen.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -366,8 +365,6 @@ int mountinfo (int argc, char **argv)
 	int opt;
 	int result;
 	bool quiet;
-
-	applet = basename (argv[0]);
 
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv ("EINFO_QUIET");

@@ -29,8 +29,6 @@
  * SUCH DAMAGE.
  */
 
-#define APPLET "rc-depend"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -47,6 +45,8 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
+static const char *applet;
+
 rc_depinfo_t *_rc_deptree_load (int *regen) {
 	if (rc_deptree_update_needed ()) {
 		int retval;
@@ -61,8 +61,6 @@ rc_depinfo_t *_rc_deptree_load (int *regen) {
 
 	return (rc_deptree_load ());
 }
-
-static char *applet = NULL;
 
 #include "_usage.h"
 #define getoptstring "t:suT" getoptstring_COMMON
@@ -98,7 +96,7 @@ int rc_depend (int argc, char **argv)
 	int opt;
 	char *token;
 
-	applet = argv[0];
+	applet = cbasename (argv[0]); 
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 							   longopts, (int *) 0)) != -1)

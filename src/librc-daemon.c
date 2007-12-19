@@ -313,7 +313,6 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 							const char *name, const char *pidfile,
 							bool started)
 {
-	char *svc;
 	char *dirpath;
 	char *file = NULL;
 	int i;
@@ -330,10 +329,9 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 		errno = EINVAL;
 		return (false);
 	}
-	svc = xstrdup (service);
+
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons",
-							  basename (svc), (char *) NULL);
-	free (svc);
+							  cbasename (service), (char *) NULL);
 
 	if (exec) {
 		i = strlen (exec) + 6;
@@ -417,17 +415,14 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	int i;
 	char *mexec;
 	bool retval = false;
-	char *svc;
 	DIR *dp;
 	struct dirent *d;
 
 	if (! service || ! exec)
 		return (false);
 
-	svc = xstrdup (service);
-	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
+	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", cbasename (service),
 							  (char *) NULL);
-	free (svc);
 	
 	i = strlen (exec) + 6;
 	mexec = xmalloc (sizeof (char) * i);
@@ -474,15 +469,12 @@ bool rc_service_daemons_crashed (const char *service)
 	char *p;
 	char *token;
 	bool retval = false;
-	char *svc;
 
 	if (! service)
 		return (false);
 
-	svc = xstrdup (service);
-	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename (svc),
+	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", cbasename (service),
 							  (char *) NULL);
-	free (svc);
 
 	if (! (dp = opendir (dirpath))) {
 		free (dirpath);

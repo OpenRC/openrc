@@ -150,7 +150,7 @@ char **rc_service_extra_commands (const char *service);
 /*! Check if the service is allowed to be hot/cold plugged
  * @param service to check
  * @return true if allowed, otherwise false */
-bool rc_service_plugable (char *service);
+bool rc_service_plugable (const char *service);
 
 /*! Resolves a service name to its full path.
  * @param service to check

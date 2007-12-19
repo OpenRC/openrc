@@ -378,15 +378,12 @@ bool rc_service_in_runlevel (const char *service, const char *runlevel)
 {
 	char *file;
 	bool retval;
-	char *svc;
 
 	if (! runlevel || ! service)
 		return (false);
 
-	svc = xstrdup (service);
-	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, basename (svc),
+	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, cbasename (service),
 						   (char *) NULL);
-	free (svc);
 	retval = exists (file);
 	free (file);
 
@@ -399,21 +396,18 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 	char *file;
 	int i = 0;
 	int skip_state = -1;
-	char *base;
-	char *svc;
+	const char *base;
 	char *init = rc_service_resolve (service);
 	bool skip_wasinactive = false;
 
-	if (! service)
+	if (! init)
 		return (false);
 
-	svc = xstrdup (service);
-	base = basename (svc);
+	base = cbasename (service);
 
 	if (state != RC_SERVICE_STOPPED) {
 		if (! exists (init)) {
 			free (init);
-			free (svc);
 			return (false);
 		}
 
@@ -425,7 +419,6 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 		if (i != 0)	{
 			free (file);
 			free (init);
-			free (svc);
 			return (false);
 		}
 
@@ -435,7 +428,6 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 
 	if (state == RC_SERVICE_COLDPLUGGED || state == RC_SERVICE_FAILED) {
 		free (init);
-		free (svc);
 		return (true);
 	}
 
@@ -449,7 +441,7 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 			 s != RC_SERVICE_SCHEDULED) &&
 			(! skip_wasinactive || s != RC_SERVICE_WASINACTIVE))
 		{
-			file = rc_strcatpaths (RC_SVCDIR, rc_parse_service_state(s), base,
+			file = rc_strcatpaths (RC_SVCDIR, rc_parse_service_state (s), base,
 								   (char *) NULL);
 			if (exists (file)) {
 				if ((state == RC_SERVICE_STARTING ||
@@ -516,7 +508,6 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 		free (sdir);
 	}
 
-	free (svc);
 	free (init);
 	return (true);
 }
@@ -526,11 +517,10 @@ rc_service_state_t rc_service_state (const char *service)
 {
 	int i;
 	int state = RC_SERVICE_STOPPED;
-	char *svc = xstrdup (service);
 
 	for (i = 0; rc_service_state_names[i].name; i++) {
 		char *file = rc_strcatpaths (RC_SVCDIR, rc_service_state_names[i].name,
-									 basename (svc), (char*) NULL);
+									 cbasename (service), (char*) NULL);
 		if (exists (file)) {
 			if (rc_service_state_names[i].state <= 0x10)
 				state = rc_service_state_names[i].state;
@@ -539,7 +529,6 @@ rc_service_state_t rc_service_state (const char *service)
 		}
 		free (file);
 	}
-	free (svc);
 
 	if (state & RC_SERVICE_STOPPED) {
 		char **services = rc_services_scheduled_by (service);
@@ -603,7 +592,6 @@ static pid_t _exec_service (const char *service, const char *arg)
 	char *file;
 	char *fifo;
 	pid_t pid = -1;
-	char *svc;
 
 	file = rc_service_resolve (service);
 	if (! exists (file)) {
@@ -613,10 +601,8 @@ static pid_t _exec_service (const char *service, const char *arg)
 	}
 
 	/* We create a fifo so that other services can wait until we complete */
-	svc = xstrdup (service);
-	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", basename (svc),
+	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", cbasename (service),
 						   (char *) NULL);
-	free (svc);
 
 	if (mkfifo (fifo, 0600) != 0 && errno != EEXIST) {
 		free (fifo);
@@ -674,26 +660,21 @@ bool rc_service_schedule_start (const char *service,
 	char *dir;
 	char *init;
 	char *file;
-	char *svc;
 	bool retval;
 
 	/* service may be a provided service, like net */
 	if (! service || ! rc_service_exists (service_to_start))
 		return (false);
 
-	svc = xstrdup (service);
-	dir = rc_strcatpaths (RC_SVCDIR, "scheduled", basename (svc),
+	dir = rc_strcatpaths (RC_SVCDIR, "scheduled", cbasename (service),
 						  (char *) NULL);
-	free (svc);
 	if (mkdir (dir, 0755) != 0 && errno != EEXIST) {
 		free (dir);
 		return (false);
 	}
 
 	init = rc_service_resolve (service_to_start);
-	svc = xstrdup (service_to_start);
-	file = rc_strcatpaths (dir, basename (svc), (char *) NULL);
-	free (svc);
+	file = rc_strcatpaths (dir, cbasename (service_to_start), (char *) NULL);
 	retval = (exists (file) || symlink (init, file) == 0);
 	free (init);
 	free (file);
@@ -705,12 +686,10 @@ librc_hidden_def(rc_service_schedule_start)
 
 bool rc_service_schedule_clear (const char *service)
 {
-	char *svc  = xstrdup (service);
-	char *dir = rc_strcatpaths (RC_SVCDIR, "scheduled", basename (svc),
+	char *dir = rc_strcatpaths (RC_SVCDIR, "scheduled", cbasename (service),
 								(char *) NULL);
 	bool retval;
 
-	free (svc);
 	if (! (retval = rm_dir (dir, true)) && errno == ENOENT)
 		retval = true;
 	free (dir);
@@ -787,7 +766,6 @@ bool rc_service_add (const char *runlevel, const char *service)
 	bool retval;
 	char *init;
 	char *file;
-	char *svc;
 
 	if (! rc_runlevel_exists (runlevel)) {
 		errno = ENOENT;
@@ -814,10 +792,8 @@ bool rc_service_add (const char *runlevel, const char *service)
 		}
 	}
 
-	svc = xstrdup (service);
-	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, basename (svc),
+	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, cbasename (service),
 						   (char *) NULL);
-	free (svc);
 	retval = (symlink (init, file) == 0);
 	free (init);
 	free (file);
@@ -828,16 +804,13 @@ librc_hidden_def(rc_service_add)
 bool rc_service_delete (const char *runlevel, const char *service)
 {
 	char *file;
-	char *svc;
 	bool retval = false;
 
 	if (! runlevel || ! service)
 		return (false);
 
-	svc = xstrdup (service);
-	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, basename (svc),
+	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, cbasename (service),
 						   (char *) NULL);
-	free (svc);
 	if (unlink (file) == 0)
 		retval = true;
 
@@ -868,19 +841,17 @@ librc_hidden_def(rc_services_scheduled_by)
 
 char **rc_services_scheduled (const char *service)
 {
-	char *svc = xstrdup (service);
-	char *dir = rc_strcatpaths (RC_SVCDIR, "scheduled", basename (svc),
+	char *dir = rc_strcatpaths (RC_SVCDIR, "scheduled", cbasename (service),
 								(char *) NULL);
 	char **list = NULL;
 
-	free (svc);
 	list = ls_dir (dir, LS_INITD);
 	free (dir);
 	return (list);
 }
 librc_hidden_def(rc_services_scheduled)
 
-bool rc_service_plugable (char *service)
+bool rc_service_plugable (const char *service)
 {
 	char *list;
 	char *p;

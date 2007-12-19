@@ -36,8 +36,6 @@
 
 const char copyright[] = "Copyright (c) 2007 Roy Marples";
 
-#define APPLET "rc"
-
 #define SYSLOG_NAMES
 
 #include <sys/types.h>
@@ -49,7 +47,6 @@ const char copyright[] = "Copyright (c) 2007 Roy Marples";
 #include <dirent.h>
 #include <ctype.h>
 #include <getopt.h>
-#include <libgen.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -93,7 +90,7 @@ extern char **environ;
 static char *RUNLEVEL = NULL;
 static char *PREVLEVEL = NULL;
 
-static char *applet = NULL;
+static const char *applet = NULL;
 static char *runlevel = NULL;
 static char **env = NULL;
 static char **newenv = NULL;
@@ -150,9 +147,6 @@ static void cleanup (void)
 
 		free (runlevel);
 	}
-
-	free (applet);
-	applet = NULL;
 }
 
 static int syslog_decode (char *name, CODE *codetab)
@@ -815,10 +809,8 @@ int main (int argc, char **argv)
 	bool parallel;
 	int regen = 0;
 
+	applet = cbasename (argv[0]);
 	atexit (cleanup);
-	if (argv[0])
-		applet = xstrdup (basename (argv[0]));
-
 	if (! applet)
 		eerrorx ("arguments required");
 

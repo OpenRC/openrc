@@ -33,8 +33,6 @@
  * SUCH DAMAGE.
  */
 
-#define APPLET "start-stop-daemon"
-
 /* nano seconds */
 #define POLL_INTERVAL   20000000
 #define WAIT_PIDFILE   500000000
@@ -90,7 +88,7 @@ typedef struct schedulelist
 } schedulelist_t;
 static schedulelist_t *schedule;
 
-static char *applet;
+static const char *applet;
 static char *changeuser;
 static char **newenv;
 
@@ -574,7 +572,7 @@ int start_stop_daemon (int argc, char **argv)
 	char *svcname = getenv ("SVCNAME");
 	char *env;
 
-	applet = argv[0];
+	applet = cbasename (argv[0]);
 	atexit (cleanup);
 
 	signal (SIGINT, handle_signal);

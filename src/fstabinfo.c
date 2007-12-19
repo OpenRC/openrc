@@ -31,7 +31,6 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -87,7 +86,7 @@ static struct mntent *getmntfile (const char *file)
 }
 #endif
 
-static const char *applet;
+static const char *applet = NULL;
 
 #include "_usage.h"
 #define getoptstring "bmop:t:" getoptstring_COMMON
@@ -129,7 +128,7 @@ int fstabinfo (int argc, char **argv)
 	char *file;
 	bool filtered = false;
 
-	applet = basename (argv[0]);
+	applet = cbasename (argv[0]); 
 
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv ("EINFO_QUIET");

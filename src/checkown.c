@@ -30,8 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#define APPLET "checkown"
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -48,7 +46,7 @@
 #include "einfo.h"
 #include "rc-misc.h"
 
-static char *applet = NULL;
+static const char *applet;
 
 static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 {
@@ -189,9 +187,8 @@ int checkown (int argc, char **argv)
 	struct group *gr = NULL;
 	bool file = 0;
 
+	applet = cbasename (argv[0]);
 	int retval = EXIT_SUCCESS;
-
-	applet = argv[0];
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 							   longopts, (int *) 0)) != -1)

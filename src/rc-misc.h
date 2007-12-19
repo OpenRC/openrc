@@ -35,6 +35,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <string.h>
 
 #ifndef LIB
 #  define LIB "lib"
@@ -117,5 +118,15 @@ char *rc_conf_value (const char *var);
 bool rc_conf_yesno (const char *var);
 char **env_filter (void);
 char **env_config (void);
+
+/* cbasename never modifies the argument. As such, if there is a trailing
+ * slash then an empty string is returned. */
+static inline const char *cbasename (const char *argv0) {
+	char *l = strrchr (argv0, '/');
+
+	if (l)
+		return (++l);
+	return (argv0);
+}
 
 #endif
