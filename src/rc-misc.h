@@ -35,7 +35,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <string.h>
 
 #ifndef LIB
 #  define LIB "lib"
