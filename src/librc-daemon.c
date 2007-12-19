@@ -331,7 +331,7 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 	}
 
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons",
-							  cbasename (service), (char *) NULL);
+							  basename_c (service), (char *) NULL);
 
 	if (exec) {
 		i = strlen (exec) + 6;
@@ -421,7 +421,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	if (! service || ! exec)
 		return (false);
 
-	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", cbasename (service),
+	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename_c (service),
 							  (char *) NULL);
 	
 	i = strlen (exec) + 6;
@@ -473,7 +473,7 @@ bool rc_service_daemons_crashed (const char *service)
 	if (! service)
 		return (false);
 
-	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", cbasename (service),
+	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename_c (service),
 							  (char *) NULL);
 
 	if (! (dp = opendir (dirpath))) {

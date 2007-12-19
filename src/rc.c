@@ -809,7 +809,7 @@ int main (int argc, char **argv)
 	bool parallel;
 	int regen = 0;
 
-	applet = cbasename (argv[0]);
+	applet = basename_c (argv[0]);
 	atexit (cleanup);
 	if (! applet)
 		eerrorx ("arguments required");

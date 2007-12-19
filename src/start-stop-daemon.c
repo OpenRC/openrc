@@ -572,7 +572,7 @@ int start_stop_daemon (int argc, char **argv)
 	char *svcname = getenv ("SVCNAME");
 	char *env;
 
-	applet = cbasename (argv[0]);
+	applet = basename_c (argv[0]);
 	atexit (cleanup);
 
 	signal (SIGINT, handle_signal);

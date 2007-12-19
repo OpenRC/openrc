@@ -159,7 +159,7 @@ int rc_update (int argc, char **argv)
 	int opt;
 	int retval = EXIT_FAILURE;
 
-	applet = cbasename (argv[0]); 
+	applet = basename_c (argv[0]); 
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 							   longopts, (int *) 0)) != -1)

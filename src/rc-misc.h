@@ -119,14 +119,14 @@ bool rc_conf_yesno (const char *var);
 char **env_filter (void);
 char **env_config (void);
 
-/* cbasename never modifies the argument. As such, if there is a trailing
+/* basename_c never modifies the argument. As such, if there is a trailing
  * slash then an empty string is returned. */
-static inline const char *cbasename (const char *argv0) {
-	char *l = strrchr (argv0, '/');
+static inline const char *basename_c (const char *path) {
+	const char *slash = strrchr (path, '/');
 
-	if (l)
-		return (++l);
-	return (argv0);
+	if (slash)
+		return (++slash);
+	return (path);
 }
 
 #endif

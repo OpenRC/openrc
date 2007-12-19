@@ -519,7 +519,7 @@ static bool svc_wait (rc_depinfo_t *depinfo, const char *svc)
 	}
 	rc_strlist_free (keywords);
 
-	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", cbasename (svc), (char *) NULL);
+	fifo = rc_strcatpaths (RC_SVCDIR, "exclusive", basename_c (svc), (char *) NULL);
 	ts.tv_sec = 0;
 	ts.tv_nsec = WAIT_INTERVAL;
 
@@ -1046,7 +1046,7 @@ int runscript (int argc, char **argv)
 		exit (EXIT_FAILURE);
 	}
 
-	applet = cbasename (argv[1]);
+	applet = basename_c (argv[1]);
 	if (argc < 3)
 		usage (EXIT_FAILURE);
 

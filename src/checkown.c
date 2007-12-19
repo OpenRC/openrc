@@ -187,7 +187,7 @@ int checkown (int argc, char **argv)
 	struct group *gr = NULL;
 	bool file = 0;
 
-	applet = cbasename (argv[0]);
+	applet = basename_c (argv[0]);
 	int retval = EXIT_SUCCESS;
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
