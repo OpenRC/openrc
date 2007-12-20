@@ -73,22 +73,22 @@ void elog (int __level, const char *__fmt, ...) __EEND_PRINTF;
  * The v suffix means only print if EINFO_VERBOSE is yes.
  */
 /*@{*/
-int einfon (const char *__fmt, ...) __EINFO_PRINTF;
-int ewarnn (const char *__fmt, ...) __EINFO_PRINTF;
-int eerrorn (const char *__fmt, ...) __EINFO_PRINTF;
-int einfo (const char *__fmt, ...) __EINFO_PRINTF;
-int ewarn (const char *__fmt, ...) __EINFO_PRINTF;
-void ewarnx (const char *__fmt, ...) __EINFO_XPRINTF;
-int eerror (const char *__fmt, ...) __EINFO_PRINTF;
-void eerrorx (const char *__fmt, ...) __EINFO_XPRINTF;
+int einfon (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int ewarnn (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int eerrorn (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int einfo (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int ewarn (const char * restrict __fmt, ...) __EINFO_PRINTF;
+void ewarnx (const char * restrict __fmt, ...) __EINFO_XPRINTF;
+int eerror (const char * restrict __fmt, ...) __EINFO_PRINTF;
+void eerrorx (const char * restrict __fmt, ...) __EINFO_XPRINTF;
 
-int einfovn (const char *__fmt, ...) __EINFO_PRINTF;
-int ewarnvn (const char *__fmt, ...) __EINFO_PRINTF;
-int ebeginvn (const char *__fmt, ...) __EINFO_PRINTF;
-int eendvn (int __retval, const char *__fmt, ...) __EEND_PRINTF;
-int ewendvn (int __retval, const char *__fmt, ...) __EEND_PRINTF;
-int einfov (const char *__fmt, ...) __EINFO_PRINTF;
-int ewarnv (const char *__fmt, ...) __EINFO_PRINTF;
+int einfovn (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int ewarnvn (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int ebeginvn (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int eendvn (int __retval, const char * restrict __fmt, ...) __EEND_PRINTF;
+int ewendvn (int __retval, const char * restrict __fmt, ...) __EEND_PRINTF;
+int einfov (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int ewarnv (const char * restrict __fmt, ...) __EINFO_PRINTF;
 /*@}*/
 
 /*! @ingroup ebegin
@@ -96,8 +96,8 @@ int ewarnv (const char *__fmt, ...) __EINFO_PRINTF;
  *
  * Similar to einfo, but we add ... to the end of the message */
 /*@{*/
-int ebeginv (const char *__fmt, ...) __EINFO_PRINTF;
-int ebegin (const char *__fmt, ...) __EINFO_PRINTF;
+int ebeginv (const char * restrict __fmt, ...) __EINFO_PRINTF;
+int ebegin (const char * restrict __fmt, ...) __EINFO_PRINTF;
 /*@}*/
 
 /*! @ingroup eend
@@ -109,12 +109,12 @@ int ebegin (const char *__fmt, ...) __EINFO_PRINTF;
  *
  * ebracket allows you to specifiy the position, color and message */
 /*@{*/
-int eend (int __retval, const char *__fmt, ...) __EEND_PRINTF;
-int ewend (int __retval, const char *__fmt, ...) __EEND_PRINTF;
-void ebracket (int __col, einfo_color_t __color, const char *__msg);
+int eend (int __retval, const char * restrict __fmt, ...) __EEND_PRINTF;
+int ewend (int __retval, const char * restrict __fmt, ...) __EEND_PRINTF;
+void ebracket (int __col, einfo_color_t __color, const char * restrict __msg);
 
-int eendv (int __retval, const char *__fmt, ...) __EEND_PRINTF;
-int ewendv (int __retval, const char *__fmt, ...) __EEND_PRINTF;
+int eendv (int __retval, const char * restrict __fmt, ...) __EEND_PRINTF;
+int ewendv (int __retval, const char * restrict __fmt, ...) __EEND_PRINTF;
 /*@}*/
 
 /*! @ingroup eindent
@@ -128,6 +128,6 @@ void eindentv (void);
 void eoutdentv (void);
 
 /*! @brief Prefix each einfo line with something */
-void eprefix (const char *__prefix);
+void eprefix (const char * restrict __prefix);
 
 #endif

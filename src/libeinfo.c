@@ -145,7 +145,7 @@ static char termcapbuf[2048];
 static char tcapbuf[512];
 #else
 /* No curses support, so we hardcode a list of colour capable terms */
-static const char *color_terms[] = {
+static const char *const color_terms[] = {
 	"Eterm",
 	"ansi",
 	"color-xterm",
@@ -300,7 +300,7 @@ static char *tgoto (const char *cap, int a, int b)
 }
 #endif
 
-static bool colour_terminal (FILE *f)
+static bool colour_terminal (FILE * restrict f)
 {
 	static int in_colour = -1;
 	char *e;
@@ -452,7 +452,7 @@ static bool colour_terminal (FILE *f)
 	return (true);
 }
 
-static int get_term_columns (FILE *stream)
+static int get_term_columns (FILE * restrict stream)
 {
 	struct winsize ws;
 	char *env = getenv ("COLUMNS");
@@ -471,13 +471,13 @@ static int get_term_columns (FILE *stream)
 	return (DEFAULT_COLS);
 }
 
-void eprefix (const char *prefix)
+void eprefix (const char *restrict prefix)
 {
 	_eprefix = prefix;
 }
 hidden_def(eprefix)
 
-static void elogv (int level, const char *fmt, va_list ap)
+static void elogv (int level, const char *restrict fmt, va_list ap)
 {
 	char *e = getenv ("EINFO_LOG");
 	va_list apc;
@@ -492,7 +492,7 @@ static void elogv (int level, const char *fmt, va_list ap)
 	}
 }
 
-void elog (int level, const char *fmt, ...)
+void elog (int level, const char *restrict fmt, ...)
 {
 	va_list ap;
 
@@ -502,7 +502,7 @@ void elog (int level, const char *fmt, ...)
 }
 hidden_def(elog)
 
-static int _eindent (FILE *stream)
+static int _eindent (FILE * restrict stream)
 {
 	char *env = getenv ("EINFO_INDENT");
 	int amount = 0;
@@ -525,7 +525,7 @@ static int _eindent (FILE *stream)
 	return (fprintf (stream, "%s", indent));
 }
 
-static const char *_ecolor (FILE *f, einfo_color_t color)
+static const char *_ecolor (FILE * restrict f, einfo_color_t color)
 {
 	unsigned int i;
 
@@ -582,7 +582,7 @@ const char *ecolor (einfo_color_t color)
 	fprintf (_file, "%s", flush); \
 }
 
-static int _einfovn (const char *fmt, va_list ap)
+static int _einfovn (const char *restrict fmt, va_list ap)
 {
 	int retval = 0;
 
@@ -590,7 +590,7 @@ static int _einfovn (const char *fmt, va_list ap)
 	return (retval);
 }
 
-static int _ewarnvn (const char *fmt, va_list ap)
+static int _ewarnvn (const char *restrict fmt, va_list ap)
 {
 	int retval = 0;
 
@@ -598,7 +598,7 @@ static int _ewarnvn (const char *fmt, va_list ap)
 	return (retval);
 }
 
-static int _eerrorvn (const char *fmt, va_list ap)
+static int _eerrorvn (const char *restrict fmt, va_list ap)
 {
 	int retval = 0;
 
@@ -606,7 +606,7 @@ static int _eerrorvn (const char *fmt, va_list ap)
 	return (retval);
 }
 
-int einfon (const char *fmt, ...)
+int einfon (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -624,7 +624,7 @@ int einfon (const char *fmt, ...)
 }
 hidden_def(einfon)
 
-int ewarnn (const char *fmt, ...)
+int ewarnn (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -642,7 +642,7 @@ int ewarnn (const char *fmt, ...)
 }
 hidden_def(ewarnn)
 
-int eerrorn (const char *fmt, ...)
+int eerrorn (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -657,7 +657,7 @@ int eerrorn (const char *fmt, ...)
 }
 hidden_def(eerrorn)
 
-int einfo (const char *fmt, ...)
+int einfo (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -676,7 +676,7 @@ int einfo (const char *fmt, ...)
 }
 hidden_def(einfo)
 
-int ewarn (const char *fmt, ...)
+int ewarn (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -696,7 +696,7 @@ int ewarn (const char *fmt, ...)
 }
 hidden_def(ewarn)
 
-void ewarnx (const char *fmt, ...)
+void ewarnx (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -712,7 +712,7 @@ void ewarnx (const char *fmt, ...)
 }
 hidden_def(ewarnx)
 
-int eerror (const char *fmt, ...)
+int eerror (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -732,7 +732,7 @@ int eerror (const char *fmt, ...)
 }
 hidden_def(eerror)
 
-void eerrorx (const char *fmt, ...)
+void eerrorx (const char *restrict fmt, ...)
 {
 	va_list ap;
 
@@ -748,7 +748,7 @@ void eerrorx (const char *fmt, ...)
 }
 hidden_def(eerrorx)
 
-int ebegin (const char *fmt, ...)
+int ebegin (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -769,7 +769,8 @@ int ebegin (const char *fmt, ...)
 }
 hidden_def(ebegin)
 
-static void _eend (FILE *fp, int col, einfo_color_t color, const char *msg)
+static void _eend (FILE * restrict fp, int col, einfo_color_t color,
+				   const char *msg)
 {
 	int i;
 	int cols;
@@ -803,7 +804,7 @@ static void _eend (FILE *fp, int col, einfo_color_t color, const char *msg)
 	}
 }
 
-static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
+static int _do_eend (const char *cmd, int retval, const char *restrict fmt, va_list ap)
 {
 	int col = 0;
 	FILE *fp = stdout;
@@ -828,7 +829,7 @@ static int _do_eend (const char *cmd, int retval, const char *fmt, va_list ap)
 	return (retval);
 }
 
-int eend (int retval, const char *fmt, ...)
+int eend (int retval, const char *restrict fmt, ...)
 {
 	va_list ap;
 
@@ -845,7 +846,7 @@ int eend (int retval, const char *fmt, ...)
 }
 hidden_def(eend)
 
-int ewend (int retval, const char *fmt, ...)
+int ewend (int retval, const char *restrict fmt, ...)
 {
 	va_list ap;
 
@@ -915,7 +916,7 @@ void eoutdent (void)
 }
 hidden_def(eoutdent)
 
-int einfovn (const char *fmt, ...)
+int einfovn (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -933,7 +934,7 @@ int einfovn (const char *fmt, ...)
 }
 hidden_def(einfovn)
 
-int ewarnvn (const char *fmt, ...)
+int ewarnvn (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -951,7 +952,7 @@ int ewarnvn (const char *fmt, ...)
 }
 hidden_def(ewarnvn)
 
-int einfov (const char *fmt, ...)
+int einfov (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -970,7 +971,7 @@ int einfov (const char *fmt, ...)
 }
 hidden_def(einfov)
 
-int ewarnv (const char *fmt, ...)
+int ewarnv (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -989,7 +990,7 @@ int ewarnv (const char *fmt, ...)
 }
 hidden_def(ewarnv)
 
-int ebeginv (const char *fmt, ...)
+int ebeginv (const char *restrict fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -1010,7 +1011,7 @@ int ebeginv (const char *fmt, ...)
 }
 hidden_def(ebeginv)
 
-int eendv (int retval, const char *fmt, ...)
+int eendv (int retval, const char *restrict fmt, ...)
 {
 	va_list ap;
 	
@@ -1027,7 +1028,7 @@ int eendv (int retval, const char *fmt, ...)
 }
 hidden_def(eendv)
 
-int ewendv (int retval, const char *fmt, ...)
+int ewendv (int retval, const char *restrict fmt, ...)
 {
 	va_list ap;
 
