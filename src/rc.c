@@ -849,8 +849,8 @@ int main (int argc, char **argv)
 	if (applet[0] == 'e' || (applet[0] == 'v' && applet[1] == 'e'))
 		exit (do_e (argc, argv));
 
-	if (strcmp (applet, "get_value") == 0 ||
-		strcmp (applet, "set_value") == 0 ||
+	if (strcmp (applet, "service_get_value") == 0 ||
+		strcmp (applet, "service_set_value") == 0 ||
 		strcmp (applet, "get_options") == 0 ||
 		strcmp (applet, "save_options") == 0)
 		exit (do_value (argc, argv));
