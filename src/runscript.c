@@ -60,7 +60,6 @@
 #include "rc-plugin.h"
 #include "strlist.h"
 
-#define RCSCRIPT_HELP   RC_LIBDIR "/sh/rc-help.sh"
 #define SELINUX_LIB     RC_LIBDIR "/runscript_selinux.so"
 
 #define PREFIX_LOCK		RC_SVCDIR "/prefix.lock"
@@ -1221,17 +1220,15 @@ int runscript (int argc, char **argv)
 
 		doneone = true;
 
-		if (strcmp (optarg, "describe") == 0) {
+		if (strcmp (optarg, "describe") == 0 ||
+			strcmp (optarg, "help") == 0)
+		{
 			char *save = prefix;
 
 			eprefix (NULL);
 			prefix = NULL;
 			svc_exec (optarg, NULL);
 			eprefix (save);
-		} else if (strcmp (optarg, "help") == 0) {
-			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
-			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-					 applet, strerror (errno));
 		} else if (strcmp (optarg, "ineed") == 0 ||
 				   strcmp (optarg, "iuse") == 0 ||
 				   strcmp (optarg, "needsme") == 0 ||
@@ -1260,10 +1257,6 @@ int runscript (int argc, char **argv)
 			retval = (int) r;
 			if (retval & RC_SERVICE_STARTED)
 				retval = 0;
-		} else if (strcmp (optarg, "help") == 0) {
-			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, "help", (char *) NULL);
-			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-					 applet, strerror (errno));
 		} else {
 			if (geteuid () != 0)
 				eerrorx ("%s: root access required", applet);
@@ -1310,11 +1303,8 @@ int runscript (int argc, char **argv)
 			restart_services = NULL;
 		}
 
-		if (! doneone) {
-			execl (RCSCRIPT_HELP, RCSCRIPT_HELP, service, (char *) NULL);
-			eerrorx ("%s: failed to exec `" RCSCRIPT_HELP "': %s",
-					 applet, strerror (errno));
-		}
+		if (! doneone)
+			usage (EXIT_FAILURE);
 	}
 
 	return (retval);

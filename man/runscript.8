@@ -1,0 +1,373 @@
+.\" Copyright 2007 Roy Marples
+.\" All rights reserved
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd Dec 20, 2007
+.Dt RUNSCRIPT 8 SMM
+.Os OpenRC
+.Sh NAME
+.Nm runscript 
+.Nd a means of hooking shell commands into a service
+.Sh SYNOPSIS
+.Nm
+.Op Fl D , -nodeps
+.Op Fl d , -debug
+.Op Fl s , -ifstarted
+.Op Ar command ...
+.Sh DESCRIPTION
+.Nm
+is basically an interpreter for shell scripts which provide an easy interface
+to the often complex system commands and daemons.
+When a service runs a command it first loads it's mulitplexed configuration
+file, then it's master configuration file, then
+.Pa /etc/rc.conf
+and finally the script itself. At this point
+.Nm
+then runs the command given.
+.Pp
+Commands are defined as shell functions within the script. Here is a list of
+some functions that all runscripts have by default:
+.Bl -tag -width "RC_DEFAULTLEVEL"
+.It Ar describe
+Describes what the service does and each command the service defines.
+.It Ar start
+First we ensure that any services we depend on are started. If any needed
+services fail to start then we exit with a suitable error, otherwise call the
+supplied start function if it exists.
+.It Ar stop
+First we ensure that any services that depend on us are stopped. If any
+services that need us fail to stop then we exit with a suitable error,
+otherwise call the supplied stop function if it exists.
+.It Ar restart
+Stop and start the service, including dependencies.
+.It Ar status
+Show the status of the service. The return code matches the status, with the
+exception of "started" returning 0 to match standard command behaviour.
+.It Ar zap
+Resets the service state to stopped and removes all saved data about the
+service.
+.El
+.Pp
+The following options affect how the service is run:
+.Bl -tag -width "RC_DEFAULTLEVEL"
+.It Fl d , -debug
+Set xtrace on in the shell to assist in debugging.
+.It Fl D , -nodeps
+Ignore all dependency information the service supplies.
+.It Fl s , -ifstarted
+Only run the command if the service has been started.
+.It Fl q , -quiet
+Turns off all informational output the service generates.
+Output from any non OpenRC comands is not affected.
+.It Fl v , -verbose
+Turns on any extra informational output the service generates.
+.El
+.Pp
+The following variables affect the service script:
+.Bl -tag -width "RC_DEFAULTLEVEL"
+.It Ar extra_commands
+Space seperated list of extra commands the service defines.
+.It Ar extra_started_commands
+Space seperated list of extra commands the service defines. These only work if
+the service has already been started.
+.It Ar description
+String describing the service.
+.It Ar description_$command
+String describing the extra command the.
+.It Ar command
+Daemon to start or stop via
+.Nm start-stop-daemon
+if no start or stop function is defined by the service.
+.It Ar command_args
+List of arguments to pass to the daemon when starting.
+.It Ar pidfile
+Pidfile to use for the above defined command.
+.It Ar name
+Display name used for the above defined command.
+.El
+.Sh DEPENDENCIES
+You should define a
+.Ic depend
+function for the service so that
+.Nm
+will start and stop it in the right order in relation to other services.
+As it's a function it can be very flexable, see the example below.
+Here is a list of the functions you can use in a
+.Ic depend
+function. You simply pass the names of the services to it.
+.Bl -tag -width "RC_DEFAULTLEVEL" 
+.It Ic need
+The service will refuse to start until needed services have started and it
+will refuse to stop until any services that need it have stopped.
+.It Ic use
+The service will attempt to start any services we use that have been added
+to the runlevel.
+.It Ic after
+The service will start after thse services and stop before these services.
+.It Ic before
+The service will start before these services and stop after these services.
+.It Ic provide
+We provide this virtual service. For example, named provides dns.
+.It Ic config
+We should recalculate our dependencies if the listed files have changed.
+.It Ic keywords
+Tags a service with a keyword. Currently the only keyword is notimeout
+which means that services do not time out waiting for that service, which only
+applies when services are enabled to start and stop in parallel.
+.El
+.Sh BUILTINS
+.Nm
+defines some builtin functions that you can use inside your service scripts:
+.Bl -tag -width indent
+.It Ic einfo Op Ar string
+Output a green asterisk followed by the string.
+.It Ic ewarn Op Ar string
+Output a yellow asterisk followed by the string.
+.It Ic eerror Op Ar string
+Output a red asterisk followed by the string to stderr.
+.It Ic ebegin Op Ar string
+Same as einfo, but append 3 dots to the end.
+.It Ic eend Ar retval Op Ar string
+If
+.Ar retval
+does not equal 0 then output the string using
+.Ic eerror
+and !! in square brackets
+at the end of the line. Otherwise output ok in square brackets at the end of
+the line. The value of
+.Ar retval
+is returned.
+.It Ic ewend Ar retval Op Ar string
+Same as
+.Ic eend ,
+but use
+.Ic ewarn
+instead of
+.Ic eerror .
+.El
+.Pp
+You can prefix the above commands with the letter
+.Ic v ,
+which means they only
+output when the environment variable
+.Va EINFO_VERBOSE
+is true.
+.Bl -tag -width indent
+.It Ic service_set_value Ar name Ar value
+Saves the
+.Ar name
+.Ar value
+for later retrieval. Saved values are lost when the service stops.
+.It Ic service_get_value Ar name
+Returns the saved value called
+.Ar name .
+.It Ic service_started Op Ar service
+If the service is started, return 0 otherwise 1.
+.It Ic service_starting Op Ar service
+If the service is starting, return 0 otherwise 1.
+.It Ic service_inactive Op Ar service
+If the service is inactive, return 0 otherwise 1.
+.It Ic service_stopping Op Ar service
+If the service is stopping, return 0 otherwise 1.
+.It Ic service_stopped Op Ar service
+If the service is stopped, return 0 otherwise 1.
+.It Ic service_coldplugged Op Ar service
+If the service is coldplugged, return 0 otherwise 1.
+.It Ic service_wasinactive Op Ar service
+If the service was inactive, return 0 otherwise 1.
+.It Xo
+.Ic service_started_daemon
+.Op Ar service
+.Ar daemon
+.Op Ar index
+.Xc
+If the service has started the daemon using
+.Nm start-stop-daemon ,
+return 0 otherwise 1.
+If an index is specified, it has to be the nth daemon started by the service.
+.It Ic mark_service_started Op Ar service
+Mark the service as started.
+.It Ic mark_service_starting Op Ar service
+Mark the service as starting.
+.It Ic mark_service_inactive Op Ar service
+Mark the service as inactive.
+.It Ic mark_service_stopping Op Ar service
+Mark the service as stopping.
+.It Ic mark_service_stopped Op Ar service
+Mark the service as stopped.
+.It Ic mark_service_coldplugged Op Ar service
+Mark the service as coldplugged.
+.It Ic mark_service_wasinactive Op Ar service
+Mark the service as inactive.
+.It Xo
+.Ic checkpath
+.Op Fl d , -directory
+.Op Fl f , -file
+.Op Fl m , -mode Ar mode
+.Op Fl o , owner Ar owner
+.Ar path ...
+.Xc
+Checks to see if the path exists, is of the right type, owned by the right
+people and has the correct access modes. If not, then it corrects the path.
+.El
+.Sh ENVIRONMENT
+.Nm
+sets the following environment variables for use in the service scripts:
+.Bl -tag -width "RC_DEFAULTLEVEL" 
+.It Va SVCNAME
+Name of the service.
+.It Va RC_SOFTLEVEL
+Current runlevel that rc is in.
+.It Va RC_BOOTLEVEL
+Boot runlevel chosen. Default is boot.
+.It Va RC_DEFAULTLEVEL
+Default runlevel chosen. Default is default.
+.It Va RC_SYS
+A special variable to describe the system more.
+Possible values are XENU, XEN0, UML and VPS.
+.It Va RC_UNAME
+The result of `uname -s`.
+.El
+.Sh FILES
+.Pp
+Configuration files, relative to the location of the service.
+If a file ending with .${RC_SOFTLEVEL} exists then we use that instead.
+.Bl -ohang
+.It Pa ../conf.d/${SVCNAME%%.*}
+mulitplexed configuration file.
+Example: if ${SVCNAME} is net.eth1 then look for
+.Pa ../conf.d/net .
+.It Pa ../conf.d/${SVCNAME}
+service configuration file.
+.It Pa /etc/rc.conf
+host configuration file.
+.El
+.Pp
+With the exception of
+.Pa /etc/rc.conf ,
+the configuration files can also influence the dependencies of the service
+through variables. Simply prefix the name of the dependency with rc_.
+Example:
+.Bd -literal -offset indent
+# Whilst most services don't bind to a specific interface, our
+# openvpn configuration requires a specific interface, namely bge0.
+rc_need="net.bge0"
+.Ed
+.Sh EXAMPLES
+.Pp
+An example service script for foo.
+.Bd -literal -offset indent
+#!/sbin/runscript
+command=/usr/bin/foo
+command_args="${foo_args} --bar"
+pidfile=/var/run/foo.pid
+name="FooBar Daemon"
+
+description="FooBar is a daemon that eats and drinks"
+extra_commands="show"
+extra_started_commands="drink eat"
+description_drink="Opens mouth and reflexively swallows"
+description_eat="Chews food in mouth"
+description_show="Shows what's in the tummy"
+
+_need_dbus() {
+    grep -q dbus /etc/foo/plugins
+}
+
+depend() {
+    # We write a pidfile and to /var/cache, so we need localmount.
+    need localmount
+    # We can optionally use the network, but it's not essential.
+    use net
+    # We should be after bootmisc so that /var/run is cleaned before
+    # we put our pidfile there.
+    after bootmisc
+
+    # Foo may use a dbus plugin.
+    # However, if we add the dbus plugin whilst foo is running and
+    # stop dbus, we don't need to stop foo as foo didn't use dbus.
+    config /etc/foo/plugins
+    local _need=
+    if service_started; then
+	_need=`service_get_value need`
+    else
+	if _need_dbus; then
+	   _need="${_need} dbus" 
+	fi
+    fi
+    need ${_need}
+}
+
+start_pre() {
+    # Ensure that our dirs are correct
+    checkpath --dir --owner foo:foo --mode 0664 \\
+	/var/run/foo /var/cache/foo
+}
+
+start_post() {
+    # Save our need
+    if _need_dbus; then
+	service_set_value need dbus
+    fi
+}
+
+stop_post() {
+    # Clean any spills
+    rm -rf /var/cache/foo/*
+}
+
+drink() {
+    ebegin "Starting to drink"
+    ${command} --drink beer
+    eend $? "Failed to drink any beer :("
+}
+
+eat() {
+    local result=0 retval= ate= food=
+    ebegin "Starting to eat"
+    for food in /usr/share/food/*; do
+	veinfo "Eating `basename ${food}`"
+	${command} --eat ${food}
+	retval=$?
+	: $((${result} += ${retval}))
+	[ ${retval} = 0 ] && ate="${ate} `basename ${food}`"
+    done
+    if eend ${result} "Failed to eat all the food"; then
+	service_set_value ate "${ate}"
+    fi
+}
+
+show() {
+    einfo "Foo has eaten: `service_get_value ate`"
+}
+
+.Ed
+.Sh SEE ALSO
+.Xr rc 8 ,
+.Xr rc-status 8 ,
+.Xr rc-update 8 ,
+.Xr sh 1p ,
+.Xr start-stop-daemon 8 ,
+.Xr uname 1
+.Sh AUTHORS
+.An "Roy Marples" Aq roy@marples.name
