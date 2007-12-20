@@ -67,9 +67,9 @@ RC_BINLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 			  service_starting service_started \
 			  service_stopping service_stopped \
 			  service_inactive service_wasinactive \
-			  service_coldplugged \
+			  service_coldplugged service_started_daemon \
 			  checkpath fstabinfo mountinfo rc-depend \
-			  service_get_value service_set_value get_options save_options
+			  service_get_value service_set_value get_options save_options 
 RC_SBINLINKS =  mark_service_starting mark_service_started \
 				mark_service_stopping mark_service_stopped \
 				mark_service_inactive mark_service_wasinactive \
