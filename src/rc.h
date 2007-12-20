@@ -274,7 +274,7 @@ rc_depinfo_t *rc_deptree_load (void);
  * @param type to use (keywords, etc)
  * @param service to check
  * @return NULL terminated list of services in order */
-char **rc_deptree_depend (rc_depinfo_t *deptree,
+char **rc_deptree_depend (const rc_depinfo_t *deptree,
 						  const char *type, const char *service);
 
 /*! List all the services in order that the given services have
@@ -284,8 +284,9 @@ char **rc_deptree_depend (rc_depinfo_t *deptree,
  * @param services to check
  * @param options to pass
  * @return NULL terminated list of services in order */
-char **rc_deptree_depends (rc_depinfo_t *deptree, const char **types,
-						   const char **services, const char *runlevel,
+char **rc_deptree_depends (const rc_depinfo_t *deptree,
+						   const char *const *types,
+						   const char *const *services, const char *runlevel,
 						   int options);
 
 /*! List all the services that should be stoppned and then started, in order,
@@ -295,7 +296,7 @@ char **rc_deptree_depends (rc_depinfo_t *deptree, const char **types,
  * @param runlevel to change into
  * @param options to pass
  * @return NULL terminated list of services in order */
-char **rc_deptree_order (rc_depinfo_t *deptree, const char *runlevel,
+char **rc_deptree_order (const rc_depinfo_t *deptree, const char *runlevel,
 						 int options);
 
 /*! Free a deptree and its information

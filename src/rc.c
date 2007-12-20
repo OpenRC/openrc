@@ -109,8 +109,8 @@ typedef struct pidlist
 } pidlist_t;
 static pidlist_t *service_pids = NULL;
 
-static const char *types_n[] = { "needsme", NULL };
-static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
+static const char *const types_n[] = { "needsme", NULL };
+static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
 static void cleanup (void)
 {

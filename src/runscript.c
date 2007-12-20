@@ -99,13 +99,13 @@ static int master_tty = -1;
 
 extern char **environ;
 
-static const char *types_b[] = { "broken", NULL };
-static const char *types_n[] = { "ineed", NULL };
-static const char *types_nu[] = { "ineed", "iuse", NULL };
-static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
+static const char *const types_b[] = { "broken", NULL };
+static const char *const types_n[] = { "ineed", NULL };
+static const char *const types_nu[] = { "ineed", "iuse", NULL };
+static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
-static const char *types_m[] = { "needsme", NULL };
-static const char *types_mua[] = { "needsme", "usesme", "beforeme", NULL };
+static const char *const types_m[] = { "needsme", NULL };
+static const char *const types_mua[] = { "needsme", "usesme", "beforeme", NULL };
 
 #ifdef __linux__
 static void (*selinux_run_init_old) (void);
@@ -637,7 +637,7 @@ static void svc_start (bool deps)
 	int i;
 	int j;
 	int depoptions = RC_DEP_TRACE;
-	const char *svcl[] = { applet, NULL };
+	const char *const svcl[] = { applet, NULL };
 	rc_service_state_t state;
 
 	state = rc_service_state (service);
@@ -846,7 +846,7 @@ static void svc_start (bool deps)
 static void svc_stop (bool deps)
 {
 	bool stopped;
-	const char *svcl[] = { applet, NULL };
+	const char *const svcl[] = { applet, NULL };
 
 	rc_service_state_t state = rc_service_state (service);
 

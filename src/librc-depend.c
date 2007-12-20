@@ -88,21 +88,23 @@ void rc_deptree_free (rc_depinfo_t *deptree)
 }
 librc_hidden_def(rc_deptree_free)
 
-static rc_depinfo_t *get_depinfo (rc_depinfo_t *deptree, const char *service)
+static rc_depinfo_t *get_depinfo (const rc_depinfo_t *deptree,
+								  const char *service)
 {
-	rc_depinfo_t *di;
+	const rc_depinfo_t *di;
 
 	if (! deptree || ! service)
 		return (NULL);
 
 	for (di = deptree; di; di = di->next)
 		if (strcmp (di->service, service) == 0)
-			return (di);
+			return ((rc_depinfo_t *)di);
 
 	return (NULL);
 }
 
-static rc_deptype_t *get_deptype (rc_depinfo_t *depinfo, const char *type)
+static rc_deptype_t *get_deptype (const rc_depinfo_t *depinfo,
+								  const char *type)
 {
 	rc_deptype_t *dt;
 
@@ -270,7 +272,8 @@ static bool get_provided1 (const char *runlevel, struct lhead *providers,
    If there are any bugs in rc-depend, they will probably be here as
    provided dependancy can change depending on runlevel state.
    */
-static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
+static char **get_provided (const rc_depinfo_t *deptree,
+							const rc_depinfo_t *depinfo,
 							const char *runlevel, int options)
 {
 	rc_deptype_t *dt;
@@ -376,9 +379,10 @@ static char **get_provided (rc_depinfo_t *deptree, rc_depinfo_t *depinfo,
 	return (providers.list);
 }
 
-static void visit_service (rc_depinfo_t *deptree, const char * const *types,
+static void visit_service (const rc_depinfo_t *deptree,
+						   const char * const *types,
 						   struct lhead *sorted, struct lhead *visited,
-						   rc_depinfo_t *depinfo,
+						   const rc_depinfo_t *depinfo,
 						   const char *runlevel, int options)
 {
 	int i, j, k;
@@ -466,7 +470,7 @@ static void visit_service (rc_depinfo_t *deptree, const char * const *types,
 			rc_strlist_add (&sorted->list, depinfo->service);
 }
 
-char **rc_deptree_depend (rc_depinfo_t *deptree,
+char **rc_deptree_depend (const rc_depinfo_t *deptree,
 						  const char *service, const char *type)
 {
 	rc_depinfo_t *di;
@@ -490,8 +494,9 @@ char **rc_deptree_depend (rc_depinfo_t *deptree,
 }
 librc_hidden_def(rc_deptree_depend)
 
-char **rc_deptree_depends (rc_depinfo_t *deptree,
-						   const char **types, const char **services,
+char **rc_deptree_depends (const rc_depinfo_t *deptree,
+						   const char *const *types,
+						   const char *const *services,
 						   const char *runlevel, int options)
 {
 	struct lhead sorted;
@@ -526,8 +531,8 @@ char **rc_deptree_depends (rc_depinfo_t *deptree,
 }
 librc_hidden_def(rc_deptree_depends)
 
-static const const char *order_types[] = { "ineed", "iuse", "iafter", NULL };
-char **rc_deptree_order (rc_depinfo_t *deptree, const char *runlevel,
+static const char * const order_types[] = { "ineed", "iuse", "iafter", NULL };
+char **rc_deptree_order (const rc_depinfo_t *deptree, const char *runlevel,
 						 int options)
 {
 	char **list = NULL;
