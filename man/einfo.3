@@ -33,6 +33,7 @@
 .Nm ewarnx , eerrorx ,
 .Nm eend , ewend ,
 .Nm eendv , ewendv ,
+.Nm ebracket ,
 .Nm eindent , eoutdent ,
 .Nm eindentv , eoutdentv ,
 .Nm eprefix
@@ -61,6 +62,7 @@ Enhanced Informatation output library (libeinfo, -leinfo)
 .Ft int Fn ewend "int retval" "const char * restrict format" ...
 .Ft int Fn eendv "int retval" "const char * restrict format" ...
 .Ft int Fn ewendv "int retval" "const char * restrict format" ...
+.Ft void Fn ebracket "int col" "einfo_color_t color" "const char * restrict msg"
 .Ft void Fn eindent void
 .Ft void Fn eoutdent void
 .Ft void Fn eindentv void
@@ -141,6 +143,16 @@ is called) is printed in a bracket at the end of the line.
 The value of
 .Fa retval
 is returned.
+.Pp
+.Fn ebracket
+does the same as
+.Fn eend
+but prints
+.Fa msg
+instead of OK or !! in the color 
+.Fa color
+at the column
+.Fa col .
 .Pp
 .Fn eindent
 indents subsequent calls to the above functions by 3 characters.
