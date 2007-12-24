@@ -1,6 +1,10 @@
 DIR = /usr/share/man
-MAN3 = einfo.3
-MAN8 = start-stop-daemon.8 rc.8 rc-update.8 runscript.8 
+_MAN3_SH = ls -1 *.3
+_MAN3 != $(_MAN3_SH)
+MAN3 = $(_MAN3)$(shell $(_MAN3_SH))
+_MAN8_SH = ls -1 *.8
+_MAN8 != $(_MAN8_SH)
+MAN8 = $(_MAN8)$(shell $(_MAN8_SH))
 
 TOPDIR = ..
 include $(TOPDIR)/default.mk
