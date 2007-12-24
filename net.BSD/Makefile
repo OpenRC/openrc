@@ -1,4 +1,4 @@
-DIR  = $(RC_LIB)/net 
+DIR  = $(RC_LIB)/net
 CONF = $(CONTENTS)
 
 TOPDIR = ..
