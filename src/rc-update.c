@@ -179,9 +179,6 @@ int rc_update (int argc, char **argv)
 		}
 	}
 
-	if (! action)
-		usage (EXIT_FAILURE);
-
 	verbose = rc_yesno (getenv ("EINFO_VERBOSE"));
 
 	if ((action & DOSHOW   && action != DOSHOW) ||
@@ -204,8 +201,8 @@ int rc_update (int argc, char **argv)
 			else
 				eerrorx ("%s: invalid command `%s'", applet, argv[optind]);
 		}
-		if (! action && opt)
-			action = DOSHOW;
+		if (! action)
+			usage (EXIT_FAILURE);
 	}
 
 	if (optind >= argc) {
