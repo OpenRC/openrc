@@ -4,6 +4,8 @@ LEVELDIR = $(DESTDIR)/etc/runlevels
 BOOTDIR = $(LEVELDIR)/boot
 DEFAULTDIR = $(LEVELDIR)/default
 
+INSTALL ?= install
+
 install:
 	if ! test -d "$(BOOTDIR)"; then \
 		$(INSTALL) -d $(BOOTDIR) || exit $$?; \
