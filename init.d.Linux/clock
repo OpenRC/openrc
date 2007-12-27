@@ -51,7 +51,6 @@ depend() {
 }
 
 setupopts() {
-	utc=
 	case "${RC_SYS}" in
 		UML|VPS|XEN)
 			utc="${RC_SYS}"
