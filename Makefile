@@ -27,6 +27,8 @@ dist:
 	(cd /tmp/$(PKG); git clean; $(MAKE) clean)
 	rm -rf /tmp/$(PKG)/*.bz2 /tmp/$(PKG)/.git /tmp/$(PKG)/test
 	rm -rf /tmp/$(PKG)/.gitignore /tmp/$(PKG)/src/.gitignore
+	sed -i.bak -e '/LDFLAGS += -Wl,-rpath ./ s/^/#/' /tmp/$(PKG)/src/Makefile
+	rm -f /tmp/$(PKG)/src/Makefile.bak
 	tar cvjpf $(PKG).tar.bz2 -C /tmp $(PKG) 
 	rm -rf /tmp/$(PKG) 
 	ls -l $(PKG).tar.bz2
