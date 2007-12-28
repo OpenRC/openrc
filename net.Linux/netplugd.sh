@@ -30,8 +30,8 @@ netplugd_depend() {
 	before interface
 	provide plug
 
-	# Prefer us to ifplugd
-	after ifplugd
+	# Prefer ifplugd
+	before ifplugd
 }
 
 netplugd_pre_start() {
