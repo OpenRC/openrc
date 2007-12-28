@@ -1,0 +1,12 @@
+# You can define a list modules for a specific kernel version,
+# a released kernel version, a main kernel version or just a list.
+#modules_2_6_23_gentoo_r5="ieee1394 ohci1394"
+#modules_2_6_23="tun ieee1394"
+#modules_2_6="tun"
+#modules="ohci1394"
+
+# Give the modules some options if needed.
+# module_ieee1394_opts="debug"
+
+# You should consult your kernel documentation and configuration
+# for a list of modules and their options.

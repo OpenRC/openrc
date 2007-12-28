@@ -30,30 +30,19 @@ depend() {
 	use isapnp
 }
 
-load_modules() {
-	local modules=""
-	local config="$1"
-
-	[ -r "${config}" ] || return 0
-
-	eval set -- $(sed -e 's:#.*::' -e '/^[[:space:]]*$/d' \
-	-e "s/'/'\\\\''/g" -e "s/^/'/g" -e "s/$/'/g" "${config}")
-	[ $# = 0 ] && return 0
-
-	einfo "Using ${config} as config:"
-	eindent
-
-	local x= cnt=0
-	for x; do
-		set -- ${x}
-		ebegin "Loading module $1"
-		eval modprobe -q "$@"
-		eend $? "Failed to load $1" && cnt=$((${cnt} + 1))
+_shell_var() {
+	local rem=$1 c= r= var=
+	while [ -n "${rem}" ]; do
+		r=${rem#?}
+		c=${rem%${r}}
+		case "${c}" in
+			[a-zA-Z0-9]);;
+			*) c=_;;
+		esac
+		var=${var}${c}
+		rem=${r}
 	done
-
-	einfo "Autoloaded ${cnt} module(s)"
-
-	return 0
+	echo ${var}
 }
 
 start() {
@@ -68,29 +57,20 @@ start() {
 	x=${KV#*.*.}
 	local KV_MICRO=${x%%-*}
 
-	[ -z "${CDBOOT}" ] && update-modules
+	local list= x= opts= cnt=0
+	for x in "${KV}" ${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} ${KV_MAJOR}.${KV_MINOR}; do
+		eval list=\$modules_$(_shell_var "${x}")
+		[ -n "${list}" ] && break
+	done
+	[ -z "${list}" ] && list=${modules}
 
-	local auto=""
-	if [ -f /etc/modules.autoload -a ! -L /etc/modules.autoload ]; then
-		auto=/etc/modules.autoload
-	else
-		local x= f="/etc/modules.autoload.d/kernel"
-		for x in "${KV}" ${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} ${KV_MAJOR}.${KV_MINOR}; do
-			if [ -f "${f}-${x}.${RC_SOFTLEVEL}" ]; then
-				auto="${f}-${x}.${RC_SOFTLEVEL}"
-				break
-			fi
-			if [ "${RC_SOFTLEVEL}" = "${RC_BOOTLEVEL}" -a -f "${f}-${x}.${RC_DEFAULTLEVEL}" ]; then
-				auto="${f}-${x}.${RC_DEFAULTLEVEL}"
-				break
-			fi
-			if [ -f "${f}-${x}" ]; then
-				auto="${f}-${x}"
-				break
-			fi
-		done
-	fi
-	[ -n "${auto}" ] && load_modules "${auto}"
+	for x in ${list}; do
+		ebegin "Loading module ${x}"
+		eval opts=\$module_$(_shell_var "${x}")_opts
+		eval modprobe -q "${x}" "${opts}"
+		eend $? "Failed to load ${x}" && cnt=$((${cnt} + 1))
+	done
+	einfo "Autoloaded ${cnt} module(s)"
 
 	# Just in case a sysadmin prefers generic symbolic links in
 	# /lib/modules/boot for boot time modules we will load these modules
