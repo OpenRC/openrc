@@ -40,6 +40,15 @@
 #include <sys/types.h>
 #include <stdbool.h>
 
+/* Although OpenRC requires C99, linking to us should not. */
+#ifndef restrict
+# ifdef __restrict
+#  define restrict __restrict
+#else
+#  define restrict
+# endif
+#endif
+
 /*! @brief Color types to use */
 typedef enum
 {
@@ -55,7 +64,7 @@ typedef enum
 const char *ecolor (einfo_color_t);
 
 /*! @brief Writes to syslog. */
-void elog (int __level, const char *__fmt, ...) __EEND_PRINTF;
+void elog (int __level, const char * restrict __fmt, ...) __EEND_PRINTF;
 
 /*!
  * @brief Display informational messages.
