@@ -13,8 +13,8 @@ include $(TOPDIR)/default.mk
 include $(TOPDIR)/Makefile.$(OS)
 
 install::
-	ln -snf ../../$(RC_LIB)/sh/net.sh $(DESTDIR)/etc/init.d/$(NET_LO) || exit $$?
-	ln -snf ../../$(RC_LIB)/sh/functions.sh $(DESTDIR)/etc/init.d || exit $$?
+	ln -snf /$(RC_LIB)/sh/net.sh $(DESTDIR)/etc/init.d/$(NET_LO) || exit $$?
+	ln -snf /$(RC_LIB)/sh/functions.sh $(DESTDIR)/etc/init.d || exit $$?
 	$(INSTALL) -d $(DESTDIR)$(RC_LIB)/init.d
 	$(INSTALL) -d $(DESTDIR)$(RC_LIB)/tmp
 
