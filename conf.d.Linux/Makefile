@@ -1,5 +1,5 @@
 DIR         = /etc/conf.d
-CONF        = consolefont keymaps net.example
+CONF        = consolefont keymaps modules net.example
 CONF_APPEND = clock
 
 TOPDIR = ..
