@@ -1,3 +1,4 @@
+
 # Set clock_adjtime if you wish hwclock to try and handle clock drift.
 # Don't set this if you run a ntp service or anything else that handles
 # clock drift.
