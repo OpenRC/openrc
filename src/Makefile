@@ -147,10 +147,10 @@ install:: $(TARGET)
 	install -m 0444 $(SYS_WHITELIST) $(DESTDIR)/$(RC_LIB)/conf.d
 	install -d $(DESTDIR)/$(RC_LIB)/bin
 	install -d $(DESTDIR)/$(RC_LIB)/sbin
-	for x in $(BINLINKS); do ln -sf ../sbin/rc $(DESTDIR)/bin/$$x; done
+	for x in $(BINLINKS); do ln -sf /sbin/rc $(DESTDIR)/bin/$$x; done
 	for x in $(SBINLINKS); do ln -sf rc $(DESTDIR)/sbin/$$x; done
-	for x in $(RC_BINLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/bin/$$x; done
-	for x in $(RC_SBINLINKS); do ln -sf ../../../sbin/rc $(DESTDIR)/$(RC_LIB)/sbin/$$x; done
+	for x in $(RC_BINLINKS); do ln -sf /sbin/rc $(DESTDIR)/$(RC_LIB)/bin/$$x; done
+	for x in $(RC_SBINLINKS); do ln -sf /sbin/rc $(DESTDIR)/$(RC_LIB)/sbin/$$x; done
 	if test "$(PAM)" = "pam"; then \
 		install -d $(DESTDIR)/etc/pam.d; \
 		install -m 0644 start-stop-daemon.pam $(DESTDIR)/etc/pam.d/start-stop-daemon; \
