@@ -6,7 +6,7 @@ NAME = openrc
 VERSION = 0.1
 PKG = $(NAME)-$(VERSION)
 
-SUBDIR = conf.d etc init.d man net runlevels sh src
+SUBDIR = conf.d doc etc init.d man net runlevels sh src
 
 TOPDIR = .
 include $(TOPDIR)/default.mk
