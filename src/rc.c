@@ -112,6 +112,35 @@ static pidlist_t *service_pids = NULL;
 static const char *const types_n[] = { "needsme", NULL };
 static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
+static void clean_failed (void)
+{
+	DIR *dp;
+	struct dirent *d;
+	int i;
+	char *path;
+
+	/* Clean the failed services state dir now */
+	if ((dp = opendir (RC_SVCDIR "/failed"))) {
+		while ((d = readdir (dp))) {
+			if (d->d_name[0] == '.' &&
+				(d->d_name[1] == '\0' ||
+				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
+				continue;
+
+			i = strlen (RC_SVCDIR "/failed/") + strlen (d->d_name) + 1;
+			path = xmalloc (sizeof (char) * i);
+			snprintf (path, i, RC_SVCDIR "/failed/%s", d->d_name);
+			if (path) {
+				if (unlink (path))
+					eerror ("%s: unlink `%s': %s", applet, path,
+							strerror (errno));
+				free (path);
+			}
+		}
+		closedir (dp);
+	}
+}
+
 static void cleanup (void)
 {
 	if (applet && strcmp (applet, "rc") == 0) {
@@ -141,6 +170,7 @@ static void cleanup (void)
 		if (! rc_in_plugin && ! rc_in_logger) {
 			rmdir (RC_STARTING);
 			rmdir (RC_STOPPING);
+			clean_failed ();
 
 			rc_logger_close ();
 		}
@@ -1124,25 +1154,7 @@ int main (int argc, char **argv)
 		eerrorx ("failed to load deptree");
 
 	/* Clean the failed services state dir now */
-	if ((dp = opendir (RC_SVCDIR "/failed"))) {
-		while ((d = readdir (dp))) {
-			if (d->d_name[0] == '.' &&
-				(d->d_name[1] == '\0' ||
-				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
-				continue;
-
-			i = strlen (RC_SVCDIR "/failed/") + strlen (d->d_name) + 1;
-			tmp = xmalloc (sizeof (char) * i);
-			snprintf (tmp, i, RC_SVCDIR "/failed/%s", d->d_name);
-			if (tmp) {
-				if (unlink (tmp))
-					eerror ("%s: unlink `%s': %s", applet, tmp,
-							strerror (errno));
-				free (tmp);
-			}
-		}
-		closedir (dp);
-	}
+	clean_failed ();
 
 	mkdir (RC_STOPPING, 0755);
 
