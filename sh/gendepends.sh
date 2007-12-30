@@ -63,7 +63,7 @@ for _dir in /etc/init.d /usr/local/etc/init.d; do
 		[ "${one}" = "#!/sbin/runscript" ] || continue
 		unset one two
 
-		SVCNAME=${SVCNAME##*/}
+		export SVCNAME=${SVCNAME##*/}
 		(
 		# Save stdout in fd3, then remap it to stderr
 		exec 3>&1 1>&2
