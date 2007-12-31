@@ -588,10 +588,10 @@ ${routes}"
 		# Work out if we're a host or a net if not told
 		case ${cmd} in
 			-net" "*|-host" "*);;
-			*" "netmask" "*)             cmd="-net ${cmd}";;
-			*.*.*.*/32)                cmd="-host ${cmd}";;
-			*.*.*.*/*|0.0.0.0|default) cmd="-net ${cmd}";;
-			*)                         cmd="-host ${cmd}";;
+			*" "netmask" "*)                   cmd="-net ${cmd}";;
+			*.*.*.*/32)                        cmd="-host ${cmd}";;
+			*.*.*.*/*|0.0.0.0" "*|default" "*) cmd="-net ${cmd}";;
+			*)                                 cmd="-host ${cmd}";;
 		esac
 		if ${hidefirstroute}; then
 			_add_route ${cmd} >/dev/null 2>&1
