@@ -144,7 +144,7 @@ _add_route() {
 	elif [ "$3" = "gw" ]; then
 		local one=$1 two=$2
 		shift; shift; shift
-		set -- "${one}" "${two}" gw "$@"
+		set -- "${one}" "${two}" via "$@"
 	fi
 
 	local cmd= have_metric=false 
