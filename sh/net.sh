@@ -454,7 +454,8 @@ _load_config() {
 
 start() {
 	local IFACE=${SVCNAME#*.} oneworked=false module=
-	local IFVAR=$(_shell_var "${IFACE}") cmd= metric=0 our_metric=$metric
+	local IFVAR=$(_shell_var "${IFACE}") cmd= our_metric=
+	local metric=0
 
 	einfo "Bringing up interface ${IFACE}"
 	eindent
@@ -506,6 +507,7 @@ start() {
 	_load_config
 	config_index=0
 
+	eval our_metric=\$metric_${IFVAR} 
 	if [ -n "${our_metric}" ]; then
 		metric=${our_metric}
 	elif [ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ]; then
