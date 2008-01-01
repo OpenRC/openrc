@@ -44,6 +44,7 @@ depend() {
 	# is set to mount at boot
 	local pmap=""
 	if need_portmap; then
+		pmap="${pmap} rpc.statd"
 		[ -x /etc/init.d/rpcbind ] \
 			&& pmap="rpcbind" \
 			|| pmap="portmap"
@@ -51,7 +52,7 @@ depend() {
 
 	config /etc/fstab
 	need net ${pmap}
-	use afc-client amd autofs dns nfs nfsmount portmap rpcbind
+	use afc-client amd autofs dns nfs nfsmount portmap rpcbind rpc.statd
 }
 
 start() {
