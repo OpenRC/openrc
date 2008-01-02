@@ -76,18 +76,18 @@ for _dir in /etc/init.d /usr/local/etc/init.d; do
 
 		[ -e "${_dir}/../conf.d/${SVCNAME}" ] && . "${_dir}/../conf.d/${SVCNAME}"
 
+		[ -e /etc/rc.conf ] && . /etc/rc.conf
+
 		if . "${_dir}/${SVCNAME}"; then
 			echo "${SVCNAME}" >&3
 			depend
 
 			# Add any user defined depends
-			config ${rc_config} ${RC_CONFIG}
-			need ${rc_need} ${RC_NEED}
-			use ${rc_use} ${RC_USE}
-			before ${rc_before} ${RC_BEFORE}
-			after ${rc_after} ${RC_AFTER}
-			provide ${rc_provide} ${RC_PROVIDE}
-			keywords ${rc_keywords} ${RC_KEYWORDS}
+			for _deptype in config need use after before provide keywords; do
+				eval _depends=\$rc_$(shell_var "${SVCNAME}")_${_deptype}
+				[ -z "${_depends}" ] && eval _depends=\$rc_${_deptype}
+				${_deptype} ${_depends}
+			done
 		fi
 		)
 	done
