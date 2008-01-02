@@ -18,5 +18,6 @@ install:
 
 all:
 clean:
+depend:
 
 # vim: set ts=4 :
