@@ -20,9 +20,9 @@ CONTENTS = $(_CONTENTS)$(shell $(_CONTENTS_SH))
 
 # Recursive rules
 # Adapted from FreeBSDs bsd.subdir.mk
+_+_ ?= +
 ECHODIR ?= true
-_SUBDIR = \
-	@for x in $(SUBDIR); do \
+_SUBDIR = @${_+_}for x in ${SUBDIR}; do \
 		if test -d $$x; then \
 			${ECHODIR} "===> ${DIRPRFX}$$x ($@)"; \
 			${MAKE} -C $$x $@ DIRPRFX=${DIRPRFX}$$x/; \
@@ -36,6 +36,8 @@ _SUBDIR = \
 all:
 	$(_SUBDIR)
 clean::
+	$(_SUBDIR)
+depend::
 	$(_SUBDIR)
 install::
 	$(_SUBDIR)
