@@ -5,8 +5,8 @@
 #modules_2_6="tun"
 #modules="ohci1394"
 
-# Give the modules some options if needed.
-# module_ieee1394_opts="debug"
+# Give the modules some arguments if needed.
+# module_ieee1394_args="debug"
 
 # You should consult your kernel documentation and configuration
 # for a list of modules and their options.

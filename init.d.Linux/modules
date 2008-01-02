@@ -57,7 +57,7 @@ start() {
 	x=${KV#*.*.}
 	local KV_MICRO=${x%%-*}
 
-	local list= x= opts= cnt=0
+	local list= x= args= cnt=0
 	for x in "${KV}" ${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} ${KV_MAJOR}.${KV_MINOR}; do
 		eval list=\$modules_$(_shell_var "${x}")
 		[ -n "${list}" ] && break
@@ -66,8 +66,8 @@ start() {
 
 	for x in ${list}; do
 		ebegin "Loading module ${x}"
-		eval opts=\$module_$(_shell_var "${x}")_opts
-		eval modprobe -q "${x}" "${opts}"
+		eval args=\$module_$(_shell_var "${x}")_args
+		eval modprobe -q "${x}" "${args}"
 		eend $? "Failed to load ${x}" && cnt=$((${cnt} + 1))
 	done
 	einfo "Autoloaded ${cnt} module(s)"
