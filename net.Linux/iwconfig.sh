@@ -165,7 +165,7 @@ iwconfig_setup_specific() {
 		eerror "adjust the ssid_${IFVAR} setting in /etc/conf.d/net"
 		return 1
 	fi
-	SSIDVAR=$(_shell_var "${SSID}")
+	SSIDVAR=$(shell_var "${SSID}")
 	local key=$(iwconfig_get_wep_key)
 
 	iwconfig_set_mode "${mode}"
@@ -246,7 +246,7 @@ iwconfig_associate() {
 		iwconfig "${IFACE}" ap any 2>/dev/null
 		unset SSIDVAR
 	else
-		SSIDVAR=$(_shell_var "${SSID}")
+		SSIDVAR=$(shell_var "${SSID}")
 		key="$(iwconfig_get_wep_key "${mac}")"
 		if [ "${wep_required}" = "on" -a "${key}" = "off" ]; then
 			ewarn "WEP key is not set for \"${SSID}\" - not connecting"

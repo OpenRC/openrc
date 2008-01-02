@@ -119,7 +119,7 @@ iwconfig_setup_specific() {
 
 	iwconfig_set_mode "${mode}" || return 1
 
-	SSIDVAR=$(_shell_var "${SSID}")
+	SSIDVAR=$(shell_var "${SSID}")
 	local key=$(iwconfig_get_wep_key)
 
 	# Now set the key
@@ -140,7 +140,7 @@ iwconfig_associate() {
 	local mac="$1" channel="$2" caps="$3"
 	local mode= w="(WEP Disabled)" key=
 
-	SSIDVAR=$(_shell_var "${SSID}")
+	SSIDVAR=$(shell_var "${SSID}")
 	key=$(iwconfig_get_wep_key "${mac}")
 	case "${caps}" in
 		[EI]P*)

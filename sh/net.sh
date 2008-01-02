@@ -34,24 +34,9 @@ description="Configures network interfaces."
 # Handy var so we don't have to embed new lines everywhere for array splitting
 __IFS="
 "
-_shell_var() {
-	local rem=$1 c= r= var=
-	while [ -n "${rem}" ]; do
-		r=${rem#?}
-		c=${rem%${r}}
-		case "${c}" in
-			[a-zA-Z0-9]);;
-			*) c=_;;
-		esac
-		var=${var}${c}
-		rem=${r}
-	done
-	echo ${var}
-}
-
 depend() {
 	local IFACE=${SVCNAME#*.}
-	local IFVAR=$(_shell_var "${IFACE}")
+	local IFVAR=$(shell_var "${IFACE}")
 
 	need localmount
 	after bootmisc
@@ -454,7 +439,7 @@ _load_config() {
 
 start() {
 	local IFACE=${SVCNAME#*.} oneworked=false module=
-	local IFVAR=$(_shell_var "${IFACE}") cmd= our_metric=
+	local IFVAR=$(shell_var "${IFACE}") cmd= our_metric=
 	local metric=0
 
 	einfo "Bringing up interface ${IFACE}"
@@ -629,7 +614,7 @@ ${routes}"
 
 stop() {
 	local IFACE=${SVCNAME#*.} module=
-	local IFVAR=$(_shell_var "${IFACE}") opts=
+	local IFVAR=$(shell_var "${IFACE}") opts=
 
 	einfo "Bringing down interface ${IFACE}"
 	eindent

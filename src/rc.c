@@ -457,6 +457,28 @@ static int do_value (int argc, char **argv)
 	return (ok ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
+static int do_shell_var (int argc, char **argv)
+{
+	int i;
+
+	for (i = 0; i < argc; i++) {
+		char *p = argv[i];
+
+		if (i != 0)
+			putchar (' ');
+
+		while (*p) {
+			char c = *p++;
+			if (! isalnum (c))
+				c = '_';
+			putchar (c);
+		}
+	}
+	putchar ('\n');
+
+	return (EXIT_SUCCESS);
+}
+
 #ifdef __linux__
 static char *proc_getent (const char *ent)
 {
@@ -902,6 +924,9 @@ int main (int argc, char **argv)
 		exit (rc_runlevel_starting () ? 0 : 1);
 	else if (strcmp (applet, "is_runlevel_stop") == 0)
 		exit (rc_runlevel_stopping () ? 0 : 1);
+
+	if (strcmp (applet, "shell_var") == 0)
+		exit (do_shell_var (argc, argv));
 
 	if (strcmp (applet, "rc-abort") == 0) {
 		char *p = getenv ("RC_PID");

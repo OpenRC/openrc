@@ -30,21 +30,6 @@ depend() {
 	use isapnp
 }
 
-_shell_var() {
-	local rem=$1 c= r= var=
-	while [ -n "${rem}" ]; do
-		r=${rem#?}
-		c=${rem%${r}}
-		case "${c}" in
-			[a-zA-Z0-9]);;
-			*) c=_;;
-		esac
-		var=${var}${c}
-		rem=${r}
-	done
-	echo ${var}
-}
-
 start() {
 	# Should not fail if kernel do not have module
 	# support compiled in ...
@@ -59,14 +44,14 @@ start() {
 
 	local list= x= args= cnt=0
 	for x in "${KV}" ${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} ${KV_MAJOR}.${KV_MINOR}; do
-		eval list=\$modules_$(_shell_var "${x}")
+		eval list=\$modules_$(shell_var "${x}")
 		[ -n "${list}" ] && break
 	done
 	[ -z "${list}" ] && list=${modules}
 
 	for x in ${list}; do
 		ebegin "Loading module ${x}"
-		eval args=\$module_$(_shell_var "${x}")_args
+		eval args=\$module_$(shell_var "${x}")_args
 		eval modprobe -q "${x}" "${args}"
 		eend $? "Failed to load ${x}" && cnt=$((${cnt} + 1))
 	done
