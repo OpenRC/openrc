@@ -172,3 +172,5 @@ include .depend
 _DEPS != ls *.c *.h
 .depend: version.h $(_DEPS)$(wildcard *.c *.h)
 	$(CC) $(CPPFLAGS) -MM *.c > .depend
+
+depend: .depend
