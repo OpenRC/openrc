@@ -1,7 +1,6 @@
 # Common makefile settings
 # We shouldn't use PREFIX as we need to install into /
 
-DESTDIR =
 _LIB_SH = l=`readlink /lib`; case "$$l" in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
 _LIB != $(_LIB_SH)
 LIB = $(_LIB)$(shell $(_LIB_SH))
@@ -60,4 +59,3 @@ install:: $(BIN) $(CONF) $(CONF_APPEND)
 	done
 
 # vim: set ts=4 :
-
