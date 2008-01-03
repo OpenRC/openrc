@@ -22,9 +22,17 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
+_br2684ctl() {
+	if [ -x /usr/sbin/br2684ctl ]; then
+		echo /usr/sbin/br2684ctl
+	else
+		echo /sbin/br2684ctl
+	fi
+}
+
 br2684ctl_depend() {
 	before ppp
-	program start /sbin/br2684ctl
+	program start $(_br2684ctl)
 }
 
 _config_vars="$_config_vars bridge bridge_add brctl"
@@ -52,7 +60,7 @@ br2684ctl_pre_start() {
 	esac
 	
 	einfo "Starting RFC 2684 Bridge control on ${IFACE}"
-	start-stop-daemon --start --exec /sbin/br2684ctl --background \
+	start-stop-daemon --start --exec $(_br2684ctl) --background \
 		--make-pidfile --pidfile "/var/run/br2684ctl-${IFACE}.pid" \
 		-- -c "${IFACE#nas*}" ${opts}
 	eend $?
@@ -63,8 +71,7 @@ br2684ctl_post_stop() {
 	[ -e "${pidfile}" ] || return 0
 	
 	einfo "Stopping RFC 2684 Bridge control on ${IFACE}"
-	start-stop-daemon --stop --quiet \
-		--exec /sbin/br2684ctl --pidfile "${pidfile}"
+	start-stop-daemon --stop --quiet --pidfile "${pidfile}"
 	eend $?
 }
 
