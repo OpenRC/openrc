@@ -100,6 +100,7 @@ all: .depend $(TARGET)
 
 version.h:
 	sed -n -e 's/^VERSION =[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1\"/p' ../Makefile > version.h
+	test -n "${BRANDING}" && echo "#define BRANDING \"${BRANDING}\"" >> version.h
 
 $(LIBEINFOOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_LIBEINFO) $(CFLAGS) -fPIC -c $<
