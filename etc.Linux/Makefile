@@ -1,5 +1,4 @@
 DIR         = /etc
-CONF        = inittab
 CONF_APPEND = rc.conf
 
 TOPDIR = ..
