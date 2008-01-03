@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-const char copyright[] = "Copyright (c) 2007 Roy Marples";
+const char librc_copyright[] = "Copyright (c) 2007 Roy Marples";
 
 #include "librc.h"
 

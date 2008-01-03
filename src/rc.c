@@ -34,7 +34,7 @@
  * SUCH DAMAGE.
  */
 
-const char copyright[] = "Copyright (c) 2007 Roy Marples";
+const char rc_copyright[] = "Copyright (c) 2007 Roy Marples";
 
 #define SYSLOG_NAMES
 
