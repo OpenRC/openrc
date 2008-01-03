@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright 1999-2007 Gentoo Foundation
-# Copyright 2007 Roy Marples
+# Copyright 2007-2008 Roy Marples
 # All rights reserved
 
 # Redistribution and use in source and binary forms, with or without
@@ -24,9 +24,37 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-# udev needs this still
+# udev needs these functions still :/
 try() {
 	"$@"
+}
+
+_rc_get_kv_cache=
+get_KV() {
+	[ -z "${_rc_get_kv_cache}" ] \
+		&& _rc_get_kv_cache="$(uname -r)"
+
+	echo "$(KV_to_int "${_rc_get_kv_cache}")"
+
+	return $?
+}
+
+KV_to_int() {
+	[ -z $1 ] && return 1
+
+	local x=${1%%-*}
+	local KV_MAJOR=${x%%.*}
+	x=${x#*.}
+	local KV_MINOR=${x%%.*}
+	x=${x#*.}
+	local KV_MICRO=${x%%.*}
+	local KV_int=$((${KV_MAJOR} * 65536 + ${KV_MINOR} * 256 + ${KV_MICRO} ))
+
+	# We make version 2.2.0 the minimum version we will handle as
+	# a sanity check ... if its less, we fail ...
+	[ "${KV_int}" -lt 131584 ] && return 1
+	
+	echo "${KV_int}"
 }
 
 single_user() {
@@ -100,34 +128,6 @@ mount_svcdir() {
 	fi
 }
 
-_rc_get_kv_cache=
-get_KV() {
-	[ -z "${_rc_get_kv_cache}" ] \
-		&& _rc_get_kv_cache="$(uname -r)"
-
-	echo "$(KV_to_int "${_rc_get_kv_cache}")"
-
-	return $?
-}
-
-KV_to_int() {
-	[ -z $1 ] && return 1
-
-	local x=${1%%-*}
-	local KV_MAJOR=${x%%.*}
-	x=${x#*.}
-	local KV_MINOR=${x%%.*}
-	x=${x#*.}
-	local KV_MICRO=${x%%.*}
-	local KV_int=$((${KV_MAJOR} * 65536 + ${KV_MINOR} * 256 + ${KV_MICRO} ))
-
-	# We make version 2.2.0 the minimum version we will handle as
-	# a sanity check ... if its less, we fail ...
-	[ "${KV_int}" -lt 131584 ] && return 1
-	
-	echo "${KV_int}"
-}
-
 . /etc/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
 [ -r /etc/conf.d/rc ] && . /etc/conf.d/rc
@@ -187,29 +187,22 @@ if [ -r /sbin/livecd-functions.sh ]; then
 	livecd_read_commandline
 fi
 
-[ "$(KV_to_int "$(uname -r)")" -ge "$(KV_to_int "2.6.0")" ]
-K26=$?
-
-if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" -a "${K26}" = "0" ]; then
-	if [ -d /sys ]; then
-		if ! mountinfo --quiet /sys; then
-			ebegin "Mounting sysfs at /sys"
-			if fstabinfo --quiet /sys; then
-				mount -n /sys
-			else
-				mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
+if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" ]; then
+	if grep -Eq "[[:space:]]+sysfs$" /proc/filesystems; then
+		if [ -d /sys ]; then
+			if ! mountinfo --quiet /sys; then
+				ebegin "Mounting sysfs at /sys"
+				if fstabinfo --quiet /sys; then
+					mount -n /sys
+				else
+					mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
+				fi
+				eend $?
 			fi
-			eend $?
+		else
+			ewarn "No /sys to mount sysfs needed in 2.6 and later kernels!"
 		fi
-	else
-		ewarn "No /sys to mount sysfs needed in 2.6 and later kernels!"
 	fi
-fi
-
-devfs_mounted=
-if [ -e /dev/.devfsd ]; then
-	# make sure devfs is actually mounted and it isnt a bogus file
-	devfs_mounted=$(mountinfo --fstype-regex devfs)
 fi
 
 # Try to figure out how the user wants /dev handled
@@ -238,13 +231,13 @@ else
 		fi
 		# Check specific manager prerequisites
 		case ${m} in
-			udev|mdev)
-				if [ -n "${devfs_mounted}" -o "${K26}" != 0 ]; then
-					continue
-				fi
-				;;
 			devfs)
 				grep -Eqs "[[:space:]]+devfs$" /proc/filesystems || continue
+				;;
+			*)
+				if [ -e /dev/.devfsd ]; then
+					mountinfo --quiet --fstype-regex devfs && continue
+				fi
 				;;
 		esac
 
