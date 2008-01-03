@@ -877,7 +877,11 @@ int main (int argc, char **argv)
 		eerrorx ("arguments required");
 
 	if (argc > 1 && (strcmp (argv[1], "--version") == 0)) {
-		printf ("%s (OpenRC) version " VERSION "\n", applet);
+		printf ("%s (OpenRC"
+#ifdef BRANDING
+				" " BRANDING
+#endif
+				") version " VERSION "\n", applet);
 		exit (EXIT_SUCCESS);
 	}
 
@@ -1059,7 +1063,13 @@ int main (int argc, char **argv)
 				run_script (INITEARLYSH);
 
 			uname (&uts);
-			printf ("\n   %sOpenRC %s" VERSION "%s is starting up\n\n",
+			printf ("\n   %sOpenRC %s" VERSION "%s is starting up %s",
+#ifdef BRANDING
+					BRANDING
+#else
+					""
+#endif
+					"\n\n",
 					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_HILITE),
 					ecolor (ECOLOR_NORMAL));
 

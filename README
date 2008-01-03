@@ -14,6 +14,9 @@ PAM=pam
 TERMCAP=ncurses
 TERMCAP=termcap
 
+You can also brand OpenRC if you so wish like so
+BRANDING=\"Gentoo/$(uname -s)\"
+
 If any of the following files exist then we do not overwrite them
 /etc/devd.conf
 /etc/rc
