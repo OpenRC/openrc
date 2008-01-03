@@ -10,7 +10,6 @@ SUBDIR = conf.d doc etc init.d man net runlevels sh src
 
 TOPDIR = .
 include $(TOPDIR)/default.mk
-include $(TOPDIR)/Makefile.$(OS)
 
 install::
 	$(INSTALL) -d $(DESTDIR)$(RC_LIB)/init.d
