@@ -24,11 +24,11 @@ ECHODIR ?= true
 _SUBDIR = @${_+_}for x in ${SUBDIR}; do \
 		if test -d $$x; then \
 			${ECHODIR} "===> ${DIRPRFX}$$x ($@)"; \
-			${MAKE} -C $$x $@ DIRPRFX=${DIRPRFX}$$x/; \
+			${MAKE} -C $$x $@ DIRPRFX=${DIRPRFX}$$x/ || exit $?; \
 		fi; \
 		if test -d $$x.${OS}; then \
 			${ECHODIR} "===> ${DIRPRFX}$$x.${OS} ($@)"; \
-			${MAKE} -C $$x.${OS} $@ DIRPRFX=${DIRPRFX}$$x/; \
+			${MAKE} -C $$x.${OS} $@ DIRPRFX=${DIRPRFX}$$x/ || exit $?; \
 		fi; \
 	done
 
