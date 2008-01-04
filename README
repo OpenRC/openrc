@@ -8,6 +8,7 @@ Yup, that simple. Works with GNU make, FreeBSD make and pmake. Should work
 with every other make too.
 
 You may wish to tweak the installation with the below arguments
+BIN_LDFLAGS=-static
 LIB=lib64
 DESTDIR=/tmp/openrc-image
 PAM=pam

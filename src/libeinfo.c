@@ -4,7 +4,7 @@
    */
 
 /* 
- * Copyright 2007 Roy Marples
+ * Copyright 2007-2008 Roy Marples
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-const char libeinfo_copyright[] = "Copyright (c) 2007 Roy Marples";
+const char libeinfo_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include <sys/types.h>
 #include <sys/ioctl.h>

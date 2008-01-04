@@ -1,4 +1,4 @@
-# Copyright 2007 Roy Marples 
+# Copyright 2007-2008 Roy Marples 
 
 # We should strive to keep this Makefile working with the default make
 # shipped with the OS's we support. Mainly because I'm lazy and just want
@@ -129,7 +129,8 @@ $(LIBRCSO): rc.map $(LIBRCOBJS)
 $(RCOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
 rc: version.h $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
-	$(CC) $(LDFLAGS) -o rc $(RCOBJS) $(LDLIBS) $(LDLIBS_RC) $(LDLIBS_LIBEINFO) $(LDLIBS_LIBRC)
+	$(CC) $(LDFLAGS) $(BIN_LDFLAGS) -o rc \
+		$(RCOBJS) $(LDLIBS) $(LDLIBS_RC) $(LDLIBS_LIBEINFO) $(LDLIBS_LIBRC)
 
 $(ALL_LINKS): rc
 	ln -sf rc $@
