@@ -6,6 +6,8 @@
 # it up and not rely on GNU Make.
 
 CC ?= gcc
+AR ?= ar
+RANLIB ?= ranlib
 CFLAGS += -O2 -pipe
 LDFLAGS += -L.
 
@@ -110,8 +112,8 @@ $(LIBEINFOSO): einfo.map $(LIBEINFOOBJS)
 		-Wl,-version-script einfo.map \
 		-o $(LIBEINFOSO) $(LIBEINFOOBJS) $(LDLIBS_LIBEINFO)
 	ln -sf $(LIBEINFOSO) libeinfo.so
-	ar rc libeinfo.a $(LIBEINFOOBJS)
-	ranlib libeinfo.a
+	$(AR) rc libeinfo.a $(LIBEINFOOBJS)
+	$(RANLIB) libeinfo.a
 
 $(LIBRCOBJS):
 	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
@@ -121,8 +123,8 @@ $(LIBRCSO): rc.map $(LIBRCOBJS)
 		-Wl,-version-script rc.map \
 		-o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS_LIBRC)
 	ln -sf $(LIBRCSO) librc.so
-	ar rc librc.a $(LIBRCOBJS)
-	ranlib librc.a
+	$(AR) rc librc.a $(LIBRCOBJS)
+	$(RANLIB) librc.a
 
 $(RCOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
