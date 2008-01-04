@@ -52,7 +52,7 @@ depend() {
 
 setupopts() {
 	case "${RC_SYS}" in
-		UML|VPS|XEN)
+		UML|VPS|XENU)
 			utc="${RC_SYS}"
 			;;
 		*)
