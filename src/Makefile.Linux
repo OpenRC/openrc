@@ -1,2 +1,2 @@
-LDLIBS_RC += -ldl
+LDLIBS_RC += -Wl,-Bdynamic -ldl
 CPPFLAGS += -D_BSD_SOURCE -D_XOPEN_SOURCE=500

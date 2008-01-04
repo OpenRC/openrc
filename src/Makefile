@@ -91,8 +91,8 @@ LDFLAGS += -Wl,-rpath .
 TOPDIR = ..
 include $(TOPDIR)/default.mk
 include Makefile.$(TERMCAP)
-include Makefile.$(PAM)
 include Makefile.$(OS)
+include Makefile.$(PAM)
 
 all: .depend $(TARGET)
 
@@ -127,8 +127,7 @@ $(LIBRCSO): rc.map $(LIBRCOBJS)
 $(RCOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
 rc: version.h $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
-	$(CC) $(LDFLAGS) $(BIN_LDFLAGS) -o rc \
-		$(RCOBJS) $(LDLIBS_LIBRC) $(LDLIBS_RC)
+	$(CC) $(LDFLAGS) $(BIN_LDFLAGS) -o rc $(RCOBJS) $(LDLIBS_RC)
 
 $(ALL_LINKS): rc
 	ln -sf rc $@

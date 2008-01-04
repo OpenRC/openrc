@@ -12,12 +12,11 @@ BIN_LDFLAGS=-static
 LIB=lib64
 DESTDIR=/tmp/openrc-image
 PAM=pam
-PAM=pam-dynamic
 TERMCAP=ncurses
 TERMCAP=termcap
 
-If you want to build static binaries and use PAM and your PAM implementation
-does not have a static pam library and you should use PAM=pam-dynamic.
+We don't support building a static OpenRC with PAM.
+You may need to use BIN_LDFLAGS=-Wl,-Bstatic on glibc instead of just -static.
 
 You can also brand OpenRC if you so wish like so
 BRANDING=\"Gentoo/$(uname -s)\"
