@@ -79,22 +79,26 @@ start() {
 	local retval=0 errstr=""
 	setupopts
 
-	ebegin "Setting system clock using the hardware clock [${utc}]"
-	if [ -n "${utc_cmd}" ]; then
-		if [ -e /proc/modules -a ! -e /dev/rtc ]; then
-			modprobe -q rtc || modprobe -q genrtc
-		fi
-
-		# Since hwclock always exit's with a 0, need to check its output.
-		if [ -e /etc/adjtime ] && yesno ${clock_adjfile}; then
-			errstr="$(hwclock --adjust ${utc_cmd} 2>&1 >/dev/null)"
-		fi
-		# If setting UTC, don't bother to run hwclock when first booting
-		# as that's the default
-		if [ "${PREVLEVEL}" != "N" -o "${utc_cmd}" != "--utc" -o -n "${clock_args}" ]; then
-			errstr="${errstr}$(hwclock --hctosys ${utc_cmd} ${clock_args} 2>&1 >/dev/null)"
-		fi
+	if [ -z "${utc_cmd}" ]; then
+		ewarn "Not setting clock for ${utc} system"
+		return 0
 	fi
+
+	ebegin "Setting system clock using the hardware clock [${utc}]"
+	if [ -e /proc/modules -a ! -e /dev/rtc ]; then
+		modprobe -q rtc || modprobe -q genrtc
+	fi
+
+	# Since hwclock always exit's with a 0, need to check its output.
+	if [ -e /etc/adjtime ] && yesno ${clock_adjfile}; then
+		errstr="$(hwclock --adjust ${utc_cmd} 2>&1 >/dev/null)"
+	fi
+	# If setting UTC, don't bother to run hwclock when first booting
+	# as that's the default
+	if [ "${PREVLEVEL}" != "N" -o "${utc_cmd}" != "--utc" -o -n "${clock_args}" ]; then
+		errstr="${errstr}$(hwclock --hctosys ${utc_cmd} ${clock_args} 2>&1 >/dev/null)"
+	fi
+	
 	if [ -n "${errstr}" ]; then
 		ewarn "${errstr}"
 		retval=1
@@ -113,16 +117,16 @@ stop() {
 	local retval=0 errstr=""
 	setupopts
 
+	[ -z "${utc_cmd}" ] && return 0
+
 	ebegin "Setting hardware clock using the system clock" "[${utc}]"
-	if [ -n "${utc_cmd}" ]; then
-		if ! yesno "${clock_adjfile}"; then
-			# Some implementations don't handle adjustments
-			if LC_ALL=C hwclock --help | grep -q "\-\-noadjfile"; then
-				utc_cmd="${utc_cmd} --noadjfile"
-			fi
+	if ! yesno "${clock_adjfile}"; then
+		# Some implementations don't handle adjustments
+		if LC_ALL=C hwclock --help | grep -q "\-\-noadjfile"; then
+			utc_cmd="${utc_cmd} --noadjfile"
 		fi
-		errstr="$(LC_ALL=C hwclock --systohc ${utc_cmd} ${clock_args} 2>&1 >/dev/null)"
 	fi
+	errstr="$(LC_ALL=C hwclock --systohc ${utc_cmd} ${clock_args} 2>&1 >/dev/null)"
 	if [ -n "${errstr}" ]; then
 		ewarn "${errstr}"
 		retval=1

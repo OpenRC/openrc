@@ -36,7 +36,10 @@ start() {
 	rm -rf "${RC_LIBDIR}"/console
 
 	case "${RC_SYS}" in
-		UML|VPS|XENU) return 0;;
+		UML|VPS|XENU)
+			ewarn "Not loading consolefont for ${RC_SYS} systems"
+			return 0
+			;;
 	esac
 
 	ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}

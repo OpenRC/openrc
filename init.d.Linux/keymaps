@@ -40,8 +40,7 @@ depend() {
 start() {
 	case "${RC_SYS}" in
 		UML|VPS|XENU)
-			ebegin "Loading key mappings"
-			eend 0
+			ewarn "Not loading keymaps for ${RC_SYS} systems"
 			return 0
 			;;
 	esac
