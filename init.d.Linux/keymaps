@@ -39,7 +39,7 @@ depend() {
 
 start() {
 	case "${RC_SYS}" in
-		UML|VPS|XEN)
+		UML|VPS|XENU)
 			ebegin "Loading key mappings"
 			eend 0
 			return 0

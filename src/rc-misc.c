@@ -295,10 +295,10 @@ char **env_config (void)
 		if ((fp = fopen ("/proc/xen/capabilities", "r"))) {
 			fclose (fp);
 			if (file_regex ("/proc/xen/capabilities", "control_d"))
-				snprintf (sys, sizeof (sys), "XENU");
+				snprintf (sys, sizeof (sys), "XEN0");
 		}
 		if (! sys[0])
-			snprintf (sys, sizeof (sys), "XEN0");
+			snprintf (sys, sizeof (sys), "XENU");
 	} else if (file_regex ("/proc/cpuinfo", "UML")) {
 		snprintf (sys, sizeof (sys), "UML");
 	} else if (file_regex ("/proc/self/status",
