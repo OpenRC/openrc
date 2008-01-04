@@ -110,7 +110,7 @@ $(LIBEINFOSO): einfo.map $(LIBEINFOOBJS)
 	$(CC) $(LDFLAGS) -fPIC -shared \
 		-Wl,-soname,$(LIBEINFOSO) \
 		-Wl,-version-script einfo.map \
-		-o $(LIBEINFOSO) $(LIBEINFOOBJS) $(LDLIBS) $(LDLIBS_LIBEINFO)
+		-o $(LIBEINFOSO) $(LIBEINFOOBJS) $(LDLIBS_LIBEINFO)
 	ln -sf $(LIBEINFOSO) libeinfo.so
 	ar rc libeinfo.a $(LIBEINFOOBJS)
 	ranlib libeinfo.a
@@ -121,7 +121,7 @@ $(LIBRCSO): rc.map $(LIBRCOBJS)
 	$(CC) $(LDFLAGS) -fPIC -shared \
 		-Wl,-soname,$(LIBRCSO) \
 		-Wl,-version-script rc.map \
-		-o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS) $(LDLIBS_LIBRC)
+		-o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS_LIBRC)
 	ln -sf $(LIBRCSO) librc.so
 	ar rc librc.a $(LIBRCOBJS)
 	ranlib librc.a
@@ -130,7 +130,7 @@ $(RCOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
 rc: version.h $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
 	$(CC) $(LDFLAGS) $(BIN_LDFLAGS) -o rc \
-		$(RCOBJS) $(LDLIBS) $(LDLIBS_RC) $(LDLIBS_LIBEINFO) $(LDLIBS_LIBRC)
+		$(RCOBJS) $(LDLIBS_LIBEINFO) $(LDLIBS_LIBRC) $(LDLIBS_RC)
 
 $(ALL_LINKS): rc
 	ln -sf rc $@
