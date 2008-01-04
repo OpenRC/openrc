@@ -17,7 +17,7 @@ check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
 
 # pmake check for extra cflags 
 WEXTRA != for x in -Wdeclaration-after-statement -Wsequence-point -Wextra; do \
-	if $(CC) -W$$x -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+	if $(CC) $$x -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
 	then echo -n "$$x "; fi \
 	done
 
