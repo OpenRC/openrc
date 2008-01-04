@@ -1,6 +1,7 @@
 .depend
 rc
 *.[oa]
+*.lo
 *.so
 *.so.*
 version.h

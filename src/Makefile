@@ -10,6 +10,7 @@ AR ?= ar
 RANLIB ?= ranlib
 CFLAGS += -O2 -pipe
 LDFLAGS += -L.
+PICFLAG = -fPIC
 
 # GNU Make way of detecting gcc flags we can use
 check_gcc=$(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
@@ -61,7 +62,7 @@ ULIB_TARGETS = libeinfo.a librc.a
 SBIN_TARGETS = rc
 SYS_WHITELIST = env_whitelist
 
-TARGET = $(LIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS)
+TARGET = $(LIB_TARGETS) $(ULIB_TARGETS) $(BIN_TARGETS) $(SBIN_TARGETS)
 
 RC_BINLINKS = einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 			  eindent eoutdent esyslog eval_ecolors \
@@ -104,32 +105,39 @@ version.h:
 		echo "#define BRANDING \"${BRANDING}\"" >> version.h; \
 	fi
 
-$(LIBEINFOOBJS):
-	$(CC) $(CPPFLAGS) $(CPPFLAGS_LIBEINFO) $(CFLAGS) -fPIC -c $<
-$(LIBEINFOSO): einfo.map $(LIBEINFOOBJS) 
-	$(CC) $(LDFLAGS) -fPIC -shared \
+.SUFFIXES: .lo
+.c.lo:
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(PICFLAG) -c $< -o $@
+.o.a:
+	$(AR) rc $@.tmp $^
+	$(RANLIB) $@.tmp
+	mv $@.tmp $@
+
+LIBEINFOOBJS_SO = $(LIBEINFOOBJS:.o=.lo)
+$(LIBEINFOOBJS): CPPFLAGS += $(CPPFLAGS_LIBEINFO)
+$(LIBEINFOOBJS_SO): CPPFLAGS += $(CPPFLAGS_LIBEINFO)
+$(LIBEINFOSO): einfo.map $(LIBEINFOOBJS_SO)
+	$(CC) $(LDFLAGS) $(PICFLAG) -shared \
 		-Wl,-soname,$(LIBEINFOSO) \
 		-Wl,-version-script einfo.map \
-		-o $(LIBEINFOSO) $(LIBEINFOOBJS) $(LDLIBS_LIBEINFO)
+		-o $(LIBEINFOSO) $(LIBEINFOOBJS_SO) $(LDLIBS_LIBEINFO)
 	ln -sf $(LIBEINFOSO) libeinfo.so
-	$(AR) rc libeinfo.a $(LIBEINFOOBJS)
-	$(RANLIB) libeinfo.a
+libeinfo.a: $(LIBEINFOOBJS)
 
-$(LIBRCOBJS):
-	$(CC) $(CPPFLAGS) $(CFLAGS) -fPIC -c $<
-$(LIBRCSO): rc.map $(LIBRCOBJS)
-	$(CC) $(LDFLAGS) -fPIC -shared \
+LIBRCOBJS_SO = $(LIBRCOBJS:.o=.lo)
+$(LIBRCSO): rc.map $(LIBRCOBJS_SO)
+	$(CC) $(LDFLAGS) $(PICFLAG) -shared \
 		-Wl,-soname,$(LIBRCSO) \
 		-Wl,-version-script rc.map \
-		-o $(LIBRCSO) $(LIBRCOBJS) $(LDLIBS_LIBRC)
+		-o $(LIBRCSO) $(LIBRCOBJS_SO) $(LDLIBS_LIBRC)
 	ln -sf $(LIBRCSO) librc.so
-	$(AR) rc librc.a $(LIBRCOBJS)
-	$(RANLIB) librc.a
+librc.a: $(LIBRCOBJS)
 
-$(RCOBJS):
-	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
-rc: version.h $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
-	$(CC) $(LDFLAGS) $(BIN_LDFLAGS) -o rc $(RCOBJS) $(LDLIBS_RC)
+$(RCOBJS): version.h
+$(RCOBJS): CPPFLAGS += $(CPPFLAGS_SSD)
+rc: $(RCOBJS)
+rc: LDLIBS += $(LDLIBS_RC) $(LIBEINFOSO) $(LIBRCSO)
+rc: LDFLAGS += $(BIN_LDFLAGS)
 
 $(ALL_LINKS): rc
 	ln -sf rc $@
@@ -166,7 +174,7 @@ clean:: clean-links
 	echo > .depend
 	touch -r Makefile .depend
 	rm -f $(TARGET) version.h
-	rm -f *.o *~ *.core *.so *.a
+	rm -f *.lo *.o *~ *.core *.so *.a
 
 check:
 	$(MAKE) -C test $@
