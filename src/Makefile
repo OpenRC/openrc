@@ -80,8 +80,6 @@ BINLINKS = rc-status
 SBINLINKS = rc-update runscript start-stop-daemon
 ALL_LINKS = $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS)
 
-# We also define _BSD_SOURCE so both Linux and the BSDs get a few
-# handy functions which makes our lives a lot easier
 CPPFLAGS += -DLIB=\"$(LIB)\"
 
 # IMPORTANT!!!
@@ -89,12 +87,12 @@ CPPFLAGS += -DLIB=\"$(LIB)\"
 # issues. However, this does ease development a little
 LDFLAGS += -Wl,-rpath .
 
-# Load an optional OS Makefile
+# Load an optional Makefiles - the order is important
 TOPDIR = ..
 include $(TOPDIR)/default.mk
-include Makefile.$(OS)
 include Makefile.$(TERMCAP)
 include Makefile.$(PAM)
+include Makefile.$(OS)
 
 all: .depend $(TARGET)
 
@@ -130,7 +128,7 @@ $(RCOBJS):
 	$(CC) $(CPPFLAGS) $(CPPFLAGS_SSD) $(CFLAGS) -c $<
 rc: version.h $(LIBEINFOSO) $(LIBRCSO) $(RCOBJS)
 	$(CC) $(LDFLAGS) $(BIN_LDFLAGS) -o rc \
-		$(RCOBJS) $(LDLIBS_LIBEINFO) $(LDLIBS_LIBRC) $(LDLIBS_RC)
+		$(RCOBJS) $(LDLIBS_LIBRC) $(LDLIBS_RC)
 
 $(ALL_LINKS): rc
 	ln -sf rc $@
