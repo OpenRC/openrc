@@ -50,6 +50,7 @@ version.h:
 install:
 	${INSTALL} -d ${DESTDIR}${BINDIR}
 	${INSTALL} ${PROG} ${DESTDIR}${BINDIR}
+	${INSTALL} -d ${DESTDIR}/bin
 	for x in $(BINLINKS); do ln -fs ${BINDIR}/${PROG} $(DESTDIR)/bin/$$x; done
 	${INSTALL} -d ${DESTDIR}/bin
 	for x in $(SBINLINKS); do ln -fs ${BINDIR}/${PROG} $(DESTDIR)${BINDIR}/$$x; done
