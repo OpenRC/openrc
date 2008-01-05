@@ -22,19 +22,19 @@ CONTENTS = $(_CONTENTS)$(shell $(_CONTENTS_SH))
 _+_ ?= +
 ECHODIR ?= true
 _SUBDIR = @${_+_}for x in ${SUBDIR}; do \
-		if test -d $$x; then \
-			${ECHODIR} "===> ${DIRPRFX}$$x ($@)"; \
-			cd $$x; \
-			${MAKE} $@ DIRPRFX=${DIRPRFX}$$x/ || exit $$?; \
-			cd ..; \
-		fi; \
-		if test -d $$x.${OS}; then \
-			${ECHODIR} "===> ${DIRPRFX}$$x.${OS} ($@)"; \
-			cd $$x.${OS}; \
-			${MAKE} $@ DIRPRFX=${DIRPRFX}$$x/ || exit $$?; \
-			cd ..; \
-		fi; \
-	done
+	if test -d $$x; then \
+		${ECHODIR} "===> ${DIRPRFX}$$x ($@)"; \
+		cd $$x; \
+		${MAKE} $@ DIRPRFX=${DIRPRFX}$$x/ || exit $$?; \
+		cd ..; \
+	fi; \
+	if test -d $$x.${OS}; then \
+		${ECHODIR} "===> ${DIRPRFX}$$x.${OS} ($@)"; \
+		cd $$x.${OS}; \
+		${MAKE} $@ DIRPRFX=${DIRPRFX}$$x/ || exit $$?; \
+		cd ..; \
+	fi; \
+done
 
 all:
 	$(_SUBDIR)

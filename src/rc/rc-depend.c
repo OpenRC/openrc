@@ -40,10 +40,10 @@
 #include <string.h>
 
 #include "builtins.h"
-#include "einfo.h"
+#include "../libeinfo/einfo.h"
 #include "rc.h"
-#include "rc-misc.h"
-#include "strlist.h"
+#include "../rc-misc.h"
+#include "../strlist.h"
 
 static const char *applet;
 

@@ -50,10 +50,7 @@ const char libeinfo_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <unistd.h>
 
 #include "einfo.h"
-#include "rc.h"
-#include "rc-misc.h"
-
-#include "hidden-visibility.h"
+#include "../hidden-visibility.h"
 hidden_proto(ecolor)
 hidden_proto(ebegin)
 hidden_proto(ebeginv)
@@ -415,19 +412,20 @@ static bool colour_terminal (FILE * __EINFO_RESTRICT f)
 					ee += strlen (ecolors[i].name);
 
 				if (ee && *ee == '=') {
+					char *d = strdup (ee + 1);
+					if (d) {
+						char *end = strchr (d, ':');
+						if (end)
+							*end = '\0';
 
-					char *d = xstrdup (ee + 1);
-					char *end = strchr (d, ':');
-					if (end)
-						*end = '\0';
+						c = atoi(d);
 
-					c = atoi(d);
-			
-					end = strchr (d, ';');
-					if (end && *++end == '0')
-						bold = _me;
+						end = strchr (d, ';');
+						if (end && *++end == '0')
+							bold = _me;
 
-					free (d);
+						free (d);
+					}
 				}
 			}
 			strlcpy (tmp, tgoto (bold, 0, 0), sizeof (tmp));

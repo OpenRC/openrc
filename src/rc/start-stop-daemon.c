@@ -68,10 +68,10 @@ static struct pam_conv conv = { NULL, NULL};
 #endif
 
 #include "builtins.h"
-#include "einfo.h"
+#include "../libeinfo/einfo.h"
 #include "rc.h"
-#include "rc-misc.h"
-#include "strlist.h"
+#include "../rc-misc.h"
+#include "../strlist.h"
 
 typedef struct schedulelist
 {

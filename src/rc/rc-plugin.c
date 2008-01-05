@@ -41,11 +41,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "einfo.h"
+#include "../libeinfo/einfo.h"
 #include "rc.h"
-#include "rc-misc.h"
+#include "../rc-misc.h"
 #include "rc-plugin.h"
-#include "strlist.h"
+#include "../strlist.h"
 
 #define RC_PLUGIN_HOOK "rc_plugin_hook"
 

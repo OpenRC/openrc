@@ -54,11 +54,11 @@
 #endif
 
 #include "builtins.h"
-#include "einfo.h"
+#include "../libeinfo/einfo.h"
 #include "rc.h"
-#include "rc-misc.h"
+#include "../rc-misc.h"
 #include "rc-plugin.h"
-#include "strlist.h"
+#include "../strlist.h"
 
 #define SELINUX_LIB     RC_LIBDIR "/runscript_selinux.so"
 
@@ -1080,14 +1080,10 @@ int runscript (int argc, char **argv)
 	if ((softlevel = xstrdup (getenv ("RC_SOFTLEVEL"))) == NULL) {
 		/* Ensure our environment is pure
 		   Also, add our configuration to it */
+		char *p;
 		env = env_filter ();
-		tmplist = env_config ();
-		rc_strlist_join (&env, tmplist);
-		rc_strlist_free (tmplist);
-		tmplist = NULL;
 
 		if (env) {
-			char *p;
 
 #ifdef __linux__
 			/* clearenv isn't portable, but there's no harm in using it
@@ -1108,11 +1104,15 @@ int runscript (int argc, char **argv)
 			}
 			tmp = NULL;
 #endif
-
-			STRLIST_FOREACH (env, p, i)
-				putenv (p);
-			/* We don't free our list as that would be null in environ */
 		}
+
+		tmplist = env_config ();
+		rc_strlist_join (&env, tmplist);
+		rc_strlist_free (tmplist);
+		tmplist = NULL;
+		STRLIST_FOREACH (env, p, i)
+			putenv (p);
+		/* We don't free our list as that would be null in environ */
 
 		softlevel = rc_runlevel_get ();
 	}

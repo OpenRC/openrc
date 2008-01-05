@@ -8,7 +8,7 @@ Yup, that simple. Works with GNU make, FreeBSD make and pmake. Should work
 with every other make too.
 
 You may wish to tweak the installation with the below arguments
-BIN_LDFLAGS=-static
+PROGLDFLAGS=-static
 LIB=lib64
 DESTDIR=/tmp/openrc-image
 PAM=pam
@@ -16,7 +16,7 @@ TERMCAP=ncurses
 TERMCAP=termcap
 
 We don't support building a static OpenRC with PAM.
-You may need to use BIN_LDFLAGS=-Wl,-Bstatic on glibc instead of just -static.
+You may need to use PROGLDFLAGS=-Wl,-Bstatic on glibc instead of just -static.
 
 You can also brand OpenRC if you so wish like so
 BRANDING=\"Gentoo/$(uname -s)\"
@@ -26,12 +26,12 @@ If any of the following files exist then we do not overwrite them
 /etc/rc
 /etc/rc.shutdown
 /etc/conf.d/*
-/etc/inittab
 
 rc and rc.shutdown are the hooks from the BSD init into OpenRC.
 devd.conf is modified from FreeBSD to call /etc/rc.devd which is a generic
 hook into OpenRC.
 inittab is the same, but for SysVInit as used by most Linux distrubtions.
+This can be found in the support folder.
 Obviously, if you're installing this onto a system that does not use OpenRC
 by default then you may wish to backup the above listed files, remove them
 and then install so that the OS hooks into OpenRC.
