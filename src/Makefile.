@@ -1,4 +1,0 @@
-# Empty Makefile so that we can do this
-#include Makefile.$(FOO)
-# where FOO is unset.
-# This is needed as not all make implementations can optionally include a Makefile

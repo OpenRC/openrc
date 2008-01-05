@@ -1,2 +1,0 @@
-LDLIBS_LIBRC += -lkvm
-LDLIBS_RC += -lkvm

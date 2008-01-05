@@ -1,2 +1,0 @@
-CPPFLAGS_SSD = -DHAVE_PAM
-LDLIBS_RC += -lpam

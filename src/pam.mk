@@ -1,0 +1,6 @@
+LIBPAM?=		-lpam
+CPPFLAGS+=		-DHAVE_PAM
+LDADD+=			${LIBPAM}
+
+PAMDIR?=		/etc/pam.d
+PAMMODE?=		0644
