@@ -44,8 +44,8 @@
 #include <string.h>
 
 #include "rc.h"
-#include "rc-misc.h"
-#include "strlist.h"
+#include "../rc-misc.h"
+#include "../strlist.h"
 
 #define PROFILE_ENV     "/etc/profile.env"
 #define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
@@ -113,17 +113,54 @@ char **env_filter (void)
 	char *p;
 	int pplen = strlen (PATH_PREFIX);
 
-	whitelist = rc_config_list (SYS_WHITELIST);
-	if (! whitelist)
-		fprintf (stderr, "system environment whitelist (" SYS_WHITELIST ") missing\n");
+	/* Init a system whitelist, start with shell vars we need */
+	rc_strlist_add (&whitelist, "PATH");
+	rc_strlist_add (&whitelist, "SHELL");
+	rc_strlist_add (&whitelist, "USER");
+	rc_strlist_add (&whitelist, "HOME");
+	rc_strlist_add (&whitelist, "TERM");
 
-	env = rc_config_list (USR_WHITELIST);
-	rc_strlist_join (&whitelist, env);
-	rc_strlist_free (env);
-	env = NULL;
+	/* Add Language vars */
+	rc_strlist_add (&whitelist, "LANG");
+	rc_strlist_add (&whitelist, "LC_CTYPE");
+	rc_strlist_add (&whitelist, "LC_NUMERIC");
+	rc_strlist_add (&whitelist, "LC_TIME");
+	rc_strlist_add (&whitelist, "LC_COLLATE");
+	rc_strlist_add (&whitelist, "LC_MONETARY");
+	rc_strlist_add (&whitelist, "LC_MESSAGES");
+	rc_strlist_add (&whitelist, "LC_PAPER");
+	rc_strlist_add (&whitelist, "LC_NAME");
+	rc_strlist_add (&whitelist, "LC_ADDRESS");
+	rc_strlist_add (&whitelist, "LC_TELEPHONE");
+	rc_strlist_add (&whitelist, "LC_MEASUREMENT");
+	rc_strlist_add (&whitelist, "LC_IDENTIFICATION");
+	rc_strlist_add (&whitelist, "LC_ALL");
 
-	if (! whitelist)
-		return (NULL);
+	/* Allow rc to override library path */
+	rc_strlist_add (&whitelist, "LD_LIBRARY_PATH");
+
+	/* We need to know sysvinit stuff - we emulate this for BSD too */
+	rc_strlist_add (&whitelist, "INIT_HALT");
+	rc_strlist_add (&whitelist, "INIT_VERSION");
+	rc_strlist_add (&whitelist, "RUNLEVEL");
+	rc_strlist_add (&whitelist, "PREVLEVEL");
+	rc_strlist_add (&whitelist, "CONSOLE");
+
+	/* Hotplug and daemon vars */
+	rc_strlist_add (&whitelist, "IN_HOTPLUG");
+	rc_strlist_add (&whitelist, "IN_BACKGROUND");
+	rc_strlist_add (&whitelist, "RC_INTERFACE_KEEP_CONFIG");
+
+	/* Add the user defined list of vars */
+	e = env_name = xstrdup (rc_conf_value ("rc_env_allow"));
+	while ((token = strsep (&e, " "))) {
+		if (token[0] == '*') {
+			free (env_name);
+			return (NULL);
+		}
+		rc_strlist_add (&whitelist, token);
+	}
+	free (env_name);
 
 	if (exists (PROFILE_ENV))
 		profile = rc_config_load (PROFILE_ENV);
