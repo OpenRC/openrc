@@ -9,7 +9,7 @@ with every other make too.
 
 You may wish to tweak the installation with the below arguments
 PROGLDFLAGS=-static
-LIB=lib64
+LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
 PAM=pam
 TERMCAP=ncurses

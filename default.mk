@@ -1,10 +1,10 @@
 # Common makefile settings
 # We shouldn't use PREFIX as we need to install into /
 
-_LIB_SH = l=`readlink /lib`; case "$$l" in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
-_LIB != $(_LIB_SH)
-LIB = $(_LIB)$(shell $(_LIB_SH))
-RC_LIB = /$(LIB)/rc
+_LIBNAME_SH = l=`readlink /lib`; case "$$l" in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
+_LIBNAME != $(_LIB_SH)
+LIBNAME = $(_LIBNAME)$(shell $(_LIBNAME_SH))
+RC_LIB = /$(LIBNAME)/rc
 
 INSTALL ?= install
 
