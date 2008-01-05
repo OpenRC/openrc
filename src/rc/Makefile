@@ -59,6 +59,6 @@ install:
 	$(INSTALL) -d $(DESTDIR)/$(LIBNAME)/$(PROG)/sbin
 	for x in $(RC_SBINLINKS); do ln -fs ${BINDIR}/${PROG} $(DESTDIR)/$(LIBNAME)/$(PROG)/sbin/$$x; done
 	if test "$(PAM)" = pam; then \
-		${INSTALL} -d ${PAMDIR}; \
+		${INSTALL} -d ${DESTDIR}${PAMDIR}; \
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam $(DESTDIR)${PAMDIR}/start-stop-daemon; \
 	fi
