@@ -89,7 +89,7 @@ start() {
 
 		for font in /usr/share/consolefonts/"${consolefont}".*; do :; done
 		cp "${font}" "${RC_LIBDIR}"/console
-		echo "$(basename "${font}")" > "${RC_LIBDIR}"/console/font
+		echo "${font##*/}" > "${RC_LIBDIR}"/console/font
 		if yesno ${unicode:-${UNICODE}}; then
 			cp /dev/null "${RC_LIBDIR}"/console/unicode
 		else
