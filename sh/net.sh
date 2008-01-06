@@ -45,6 +45,9 @@ depend() {
 		lo|lo0);;
 		*)
 			after net.lo net.lo0
+			if type depend_${IFVAR} >/dev/null 2>&1; then
+				depend_${IFVAR}
+			fi
 			local prov=
 			eval prov=\$RC_NEED_${IFVAR}
 			[ -n "${prov}" ] && need ${prov}
