@@ -32,7 +32,7 @@ depend() {
 
 do_mtab() {
 	# Don't create mtab if /etc is readonly
-	if ! cp /dev/null /etc/mtab 2>/dev/null; then
+	if ! echo 2>/dev/null >/etc/mtab; then
 		ewarn "Skipping /etc/mtab initialization (ro root)"
 		return 0
 	fi
