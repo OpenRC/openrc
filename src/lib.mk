@@ -3,9 +3,11 @@
 
 # Copyright 2008 Roy Marples
 
+LIBNAME?=		lib
+
 SHLIB_NAME=		lib${LIB}.so.${SHLIB_MAJOR}
 SHLIB_LINK=		lib${LIB}.so
-SHLIBDIR?=		/lib
+SHLIBDIR?=		/${LIBNAME}
 SONAME?=		${SHLIB_NAME}
 
 OBJS+=			${SRCS:.c=.o}
@@ -16,12 +18,14 @@ ECHO?=			echo
 AR?=			ar
 RANLIB?=		ranlib
 INSTALL?=		install
-LIBMODE?=		0444
 
 PICFLAG?=		-fPIC
 
 INCDIR?=		/usr/include
 INCMODE?=		0444
+
+LIBDIR?=		/usr/${LIBNAME}
+LIBMODE?=		0444
 
 .SUFFIXES:		.So
 
@@ -29,8 +33,6 @@ INCMODE?=		0444
 	${CC} ${PICFLAG} -DPIC ${CFLAGS} ${CPPFLAGS} -c $< -o $@
 
 all: ${_LIBS}
-
-
 
 lib${LIB}.a:	${OBJS} ${STATICOBJS}
 	@${ECHO} building static library $@
@@ -49,9 +51,11 @@ ${SHLIB_NAME}:	${SOBJS}
 	${SOBJS} ${LDADD}
 
 install: all
+	${INSTALL} -d ${DESTDIR}${LIBDIR}
+	${INSTALL} -m ${LIBMODE} lib${LIB}.a ${DESTDIR}${LIBDIR}
 	${INSTALL} -d ${DESTDIR}${SHLIBDIR}
 	${INSTALL} -m ${LIBMODE} ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}
-	ln -fs ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}/${SHLIB_LINK}
+	ln -fs ${SHLIBDIR}/${SHLIB_NAME} ${DESTDIR}${LIBDIR}/${SHLIB_LINK}
 	${INSTALL} -d ${DESTDIR}${INCDIR}
 	for x in ${INCS}; do ${INSTALL} -m ${INCMODE} $$x ${DESTDIR}${INCDIR}; done
 
