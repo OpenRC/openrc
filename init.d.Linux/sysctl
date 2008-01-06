@@ -29,7 +29,7 @@ depend() {
 }
 
 start() {
-	[ "${RC_SYS}" != "VPS" ] && return 0
+	[ "${RC_SYS}" = "VPS" ] && return 0
 	[ -e /etc/sysctl.conf ] || return 0
 	ebegin "Configuring kernel parameters"
 	sysctl -p /etc/sysctl.conf >/dev/null
