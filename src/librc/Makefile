@@ -5,6 +5,7 @@ LIB=			rc
 SHLIB_MAJOR=		1
 SRCS=			librc.c librc-daemon.c librc-depend.c librc-misc.c librc-strlist.c
 INCS=			rc.h
+VERSION_MAP=	rc.map
 
 CPPFLAGS+=		-DLIB=\"${LIBNAME}\"
 LDADD+=			${LIBKVM}

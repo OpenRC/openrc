@@ -3,6 +3,7 @@ rc
 *.[oa]
 *.lo
 *.so
+*.So
 *.so.*
 version.h
 

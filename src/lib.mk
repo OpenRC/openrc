@@ -30,11 +30,15 @@ INCMODE?=		0444
 
 all: ${_LIBS}
 
+
+
 lib${LIB}.a:	${OBJS} ${STATICOBJS}
 	@${ECHO} building static library $@
 	${AR} rc $@ $^
 	${RANLIB} $@
 
+${SHLIB_NAME}: ${VERSION_MAP}
+LDFLAGS+=	-Wl,--version-script=${VERSION_MAP}
 
 ${SHLIB_NAME}:	${SOBJS}
 	@${ECHO} building shared library $@
