@@ -48,9 +48,9 @@
 # include <libutil.h>
 #endif
 
-#include "../libeinfo/einfo.h"
+#include "einfo.h"
 #include "rc-logger.h"
-#include "../rc-misc.h"
+#include "rc-misc.h"
 #include "rc.h"
 
 #define LOGFILE RC_SVCDIR "/rc.log"

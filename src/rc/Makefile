@@ -10,6 +10,7 @@ TOPDIR=			..
 
 LDFLAGS+=		-L$(TOPDIR)/librc -L$(TOPDIR)/libeinfo
 LDADD+=			-lutil -lrc -leinfo
+CPPFLAGS+=		-I$(TOPDIR) -I$(TOPDIR)/librc -I$(TOPDIR)/libeinfo
 
 BINDIR?=		/sbin
 

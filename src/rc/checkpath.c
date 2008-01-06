@@ -43,8 +43,8 @@
 #include <unistd.h>
 
 #include "builtins.h"
-#include "../libeinfo/einfo.h"
-#include "../rc-misc.h"
+#include "einfo.h"
+#include "rc-misc.h"
 
 static const char *applet;
 

@@ -65,10 +65,10 @@
 #endif
 
 #include "builtins.h"
-#include "../libeinfo/einfo.h"
+#include "einfo.h"
 #include "rc.h"
-#include "../rc-misc.h"
-#include "../strlist.h"
+#include "rc-misc.h"
+#include "strlist.h"
 
 #ifdef HAVE_GETMNTENT
 static struct mntent *getmntfile (const char *file)

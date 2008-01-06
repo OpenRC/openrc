@@ -54,11 +54,11 @@
 #endif
 
 #include "builtins.h"
-#include "../libeinfo/einfo.h"
+#include "einfo.h"
 #include "rc.h"
-#include "../rc-misc.h"
+#include "rc-misc.h"
 #include "rc-plugin.h"
-#include "../strlist.h"
+#include "strlist.h"
 
 #define SELINUX_LIB     RC_LIBDIR "/runscript_selinux.so"
 

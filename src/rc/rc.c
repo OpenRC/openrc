@@ -59,12 +59,12 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <unistd.h>
 
 #include "builtins.h"
-#include "../libeinfo/einfo.h"
+#include "einfo.h"
 #include "rc.h"
 #include "rc-logger.h"
-#include "../rc-misc.h"
+#include "rc-misc.h"
 #include "rc-plugin.h"
-#include "../strlist.h"
+#include "strlist.h"
 
 #include "version.h"
 

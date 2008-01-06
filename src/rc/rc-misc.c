@@ -44,8 +44,8 @@
 #include <string.h>
 
 #include "rc.h"
-#include "../rc-misc.h"
-#include "../strlist.h"
+#include "rc-misc.h"
+#include "strlist.h"
 
 #define PROFILE_ENV     "/etc/profile.env"
 #define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
