@@ -36,8 +36,8 @@ getmedia() {
 }
 
 # Try and create an init script for network interfaces
-if [ ! -e /etc/init.d/"$1" ]; then
-	base=$(basename ${1%%.*})
+if [ ! -e /etc/init.d/"$1" -a ! -e /usr/local/init.d/"$1" ]; then
+	base=${1%%.*}
 	if [ "${base}" = "net" ]; then
 		# We only create links for pyhsical interfaces
 		[ -n "$(getmedia ${1#*.})" ] || exit 1

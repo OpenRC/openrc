@@ -34,7 +34,7 @@ start() {
 	local svc= enabled= retval=0 service=
 	for svc in $(rcorder /etc/rc.d/* /usr/local/etc/rc.d/* 2>/dev/null); do
 		[ -x "$svc" ] || continue
-		service=$(basename ${svc})
+		service=${svc##*/}
 
 		# Skip these services
 		for s in cleartmp moused; do
@@ -46,7 +46,7 @@ start() {
 		[ -x /usr/local/etc/init.d/"${service}" ] && continue
 
 		# Ensure that the users rc.conf will start us - ignore the defaults
-		eval enabled=\$$(basename "${svc}")_enable
+		eval enabled=\$${svc##*/}_enable
 		yesno ${enabled} || continue
 
 		# Good to go!
