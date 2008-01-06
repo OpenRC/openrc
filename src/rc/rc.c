@@ -200,7 +200,6 @@ static int do_e (int argc, char **argv)
 	int l = 0;
 	char *message = NULL;
 	char *p;
-	char *fmt = NULL;
 	int level = 0;
 
 	if (strcmp (applet, "eval_ecolors") == 0) {
@@ -262,45 +261,45 @@ static int do_e (int argc, char **argv)
 		*p = 0;
 	}
 
-	if (message)
-		fmt = xstrdup ("%s");
+	if (! message)
+		message = xstrdup ("");
 
 	if (strcmp (applet, "einfo") == 0) 
-		einfo (fmt, message);
+		einfo ("%s", message);
 	else if (strcmp (applet, "einfon") == 0)
-		einfon (fmt, message);
+		einfon ("%s", message);
 	else if (strcmp (applet, "ewarn") == 0) 
-		ewarn (fmt, message);
+		ewarn ("%s", message);
 	else if (strcmp (applet, "ewarnn") == 0)
-		ewarnn (fmt, message);
+		ewarnn ("%s", message);
 	else if (strcmp (applet, "eerror") == 0) {
-		eerror (fmt, message);
+		eerror ("%s", message);
 		retval = 1;
 	} else if (strcmp (applet, "eerrorn") == 0) {
-		eerrorn (fmt, message);
+		eerrorn ("%s", message);
 		retval = 1;
 	} else if (strcmp (applet, "ebegin") == 0)
-		ebegin (fmt, message);
+		ebegin ("%s", message);
 	else if (strcmp (applet, "eend") == 0)
-		eend (retval, fmt, message);
+		eend (retval, "%s", message);
 	else if (strcmp (applet, "ewend") == 0)
-		ewend (retval, fmt, message);
+		ewend (retval, "%s", message);
 	else if (strcmp (applet, "esyslog") == 0)
-		elog (level, fmt, message);
+		elog (level, "%s", message);
 	else if (strcmp (applet, "veinfo") == 0) 
-		einfov (fmt, message);
+		einfov ("%s", message);
 	else if (strcmp (applet, "veinfon") == 0)
-		einfovn (fmt, message);
+		einfovn ("%s", message);
 	else if (strcmp (applet, "vewarn") == 0) 
-		ewarnv (fmt, message);
+		ewarnv ("%s", message);
 	else if (strcmp (applet, "vewarnn") == 0)
-		ewarnvn (fmt, message);
+		ewarnvn ("%s", message);
 	else if (strcmp (applet, "vebegin") == 0)
-		ebeginv (fmt, message);
+		ebeginv ("%s", message);
 	else if (strcmp (applet, "veend") == 0)
-		eendv (retval, fmt, message);
+		eendv (retval, "%s", message);
 	else if (strcmp (applet, "vewend") == 0)
-		ewendv (retval, fmt, message);
+		ewendv (retval, "%s", message);
 	else if (strcmp (applet, "eindent") == 0)
 		eindent ();
 	else if (strcmp (applet, "eoutdent") == 0)
@@ -314,10 +313,7 @@ static int do_e (int argc, char **argv)
 		retval = EXIT_FAILURE;
 	}
 
-	if (fmt)
-		free (fmt);
-	if (message)
-		free (message);
+	free (message);
 	return (retval);
 }
 
