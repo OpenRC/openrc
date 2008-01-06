@@ -289,7 +289,9 @@ bool rc_service_exists (const char *service)
 		service[len - 1] == 'h')
 		return (false);
 
-	file = rc_service_resolve (service);
+	if (! (file = rc_service_resolve (service)))
+		return (false);
+
 	if (stat (file, &buf) == 0 && buf.st_mode & S_IXUGO)
 		retval = true;
 	free (file);

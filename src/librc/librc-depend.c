@@ -283,6 +283,7 @@ static char **get_provided (const rc_depinfo_t *deptree,
 
 	if (! deptree || ! depinfo)
 		return (NULL);
+	
 	if (rc_service_exists (depinfo->service))
 		return (NULL);
 
