@@ -1063,14 +1063,15 @@ int main (int argc, char **argv)
 				run_script (INITEARLYSH);
 
 			uname (&uts);
-			printf ("\n   %sOpenRC %s" VERSION "%s is starting up %s\n\n",
+			printf ("\n   %sOpenRC %s" VERSION "%s is starting up %s%s%s\n\n",
+					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_HILITE),
+					ecolor (ECOLOR_NORMAL), ecolor (ECOLOR_BRACKET),
 #ifdef BRANDING
 					BRANDING
 #else
 					""
 #endif
-					, ecolor (ECOLOR_GOOD), ecolor (ECOLOR_HILITE),
-					ecolor (ECOLOR_NORMAL));
+					, ecolor (ECOLOR_NORMAL));
 
 			if (! rc_yesno (getenv ("EINFO_QUIET")) &&
 				rc_conf_yesno ("rc_interactive"))
