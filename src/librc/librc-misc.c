@@ -105,109 +105,6 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 }
 librc_hidden_def(rc_strcatpaths)
 
-
-char **rc_config_load (const char *file)
-{
-	char **list = NULL;
-	FILE *fp;
-	char *buffer;
-	char *p;
-	char *token;
-	char *line;
-	char *linep;
-	char *linetok;
-	int i = 0;
-	bool replaced;
-	char *entry;
-	char *newline;
-
-	if (! (fp = fopen (file, "r"))) 
-		return (NULL);
-
-	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-	while (fgets (buffer, RC_LINEBUFFER, fp)) {
-		p = buffer;
-
-		/* Strip leading spaces/tabs */
-		while ((*p == ' ') || (*p == '\t'))
-			p++;
-
-		if (! p || strlen (p) < 3 || p[0] == '#')
-			continue;
-
-		/* Get entry */
-		token = strsep (&p, "=");
-
-		if (! token)
-			continue;
-
-		entry = xstrdup (token);
-
-		/* Preserve shell coloring */
-		if (*p == '$')
-			token = p;
-		else
-			do {
-				/* Bash variables are usually quoted */
-				token = strsep (&p, "\"\'");
-			} while ((token) && (strlen (token) == 0));
-
-		/* Drop a newline if that's all we have */
-		i = strlen (token) - 1;
-		if (token[i] == 10)
-			token[i] = 0;
-
-		i = strlen (entry) + strlen (token) + 2;
-		newline = xmalloc (i);
-		snprintf (newline, i, "%s=%s", entry, token);
-
-		replaced = false;
-		/* In shells the last item takes precedence, so we need to remove
-		   any prior values we may already have */
-		STRLIST_FOREACH (list, line, i) {
-			char *tmp = xstrdup (line);
-			linep = tmp; 
-			linetok = strsep (&linep, "=");
-			if (strcmp (linetok, entry) == 0) {
-				/* We have a match now - to save time we directly replace it */
-				free (list[i - 1]);
-				list[i - 1] = newline;
-				replaced = true;
-				free (tmp);
-				break;
-			}
-			free (tmp);
-		}
-
-		if (! replaced) {
-			rc_strlist_addsort (&list, newline);
-			free (newline);
-		}
-		free (entry);
-	}
-	free (buffer);
-	fclose (fp);
-
-	return (list);
-}
-librc_hidden_def(rc_config_load)
-
-char *rc_config_value (char **list, const char *entry)
-{
-	char *line;
-	int i;
-	char *p;
-
-	STRLIST_FOREACH (list, line, i) {
-		p = strchr (line, '=');
-		if (p && strncmp (entry, line, p - line) == 0)
-			return (p += 1);
-	}
-
-	return (NULL);
-}
-librc_hidden_def(rc_config_value)
-
 char **rc_config_list (const char *file)
 {
 	FILE *fp;
@@ -215,15 +112,26 @@ char **rc_config_list (const char *file)
 	char *p;
 	char *token;
 	char **list = NULL;
+	size_t buflen = BUFSIZ;
+	size_t last;
 
 	if (! (fp = fopen (file, "r")))
 		return (NULL);
 
-	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-	while (fgets (buffer, RC_LINEBUFFER, fp)) {
-		p = buffer;
+	buffer = xmalloc (sizeof (char) * buflen);
+	buffer[buflen - 1] = '\0';
+	while (fgets (buffer, buflen, fp)) {
+		/* Increase the buffer to read the rest of the line if needed */
+		last = strlen (buffer) - 1;
+		while (! feof (fp) && buffer[last] != '\n') {
+			buflen += BUFSIZ;
+			buffer = xrealloc (buffer, sizeof (char *) * buflen);
+			fgets (buffer + last, BUFSIZ, fp);
+			last = strlen (buffer) - 1;
+		}
 
 		/* Strip leading spaces/tabs */
+		p = buffer;
 		while ((*p == ' ') || (*p == '\t'))
 			p++;
 
@@ -243,3 +151,95 @@ char **rc_config_list (const char *file)
 	return (list);
 }
 librc_hidden_def(rc_config_list)
+
+char **rc_config_load (const char *file)
+{
+	char **list = NULL;
+	char **config = NULL;
+	char *token;
+	char *line;
+	char *linep;
+	char *linetok;
+	int i = 0;
+	int j;
+	bool replaced;
+	char *entry;
+	char *newline;
+
+	list = rc_config_list (file);
+	STRLIST_FOREACH (list, line, j) {
+		/* Get entry */
+		if (! (token = strsep (&line, "=")))
+			continue;
+
+		entry = xstrdup (token);
+		/* Preserve shell coloring */
+		if (*line == '$')
+			token = line;
+		else
+			do {
+				/* Bash variables are usually quoted */
+				token = strsep (&line, "\"\'");
+			} while ((token) && (strlen (token) == 0));
+
+		/* Drop a newline if that's all we have */
+		if (token) {
+			i = strlen (token) - 1;
+			if (token[i] == '\n')
+				token[i] = 0;
+
+			i = strlen (entry) + strlen (token) + 2;
+			newline = xmalloc (sizeof (char) * i);
+			snprintf (newline, i, "%s=%s", entry, token);
+		} else {
+			i = strlen (entry) + 2;
+			newline = xmalloc (sizeof (char) * i);
+			snprintf (newline, i, "%s=", entry);
+		}
+
+		replaced = false;
+		/* In shells the last item takes precedence, so we need to remove
+		   any prior values we may already have */
+		STRLIST_FOREACH (config, line, i) {
+			char *tmp = xstrdup (line);
+			linep = tmp; 
+			linetok = strsep (&linep, "=");
+			if (strcmp (linetok, entry) == 0) {
+				/* We have a match now - to save time we directly replace it */
+				free (config[i - 1]);
+				config[i - 1] = newline;
+				replaced = true;
+				free (tmp);
+				break;
+			}
+			free (tmp);
+		}
+
+		if (! replaced) {
+			rc_strlist_addsort (&config, newline);
+			free (newline);
+		}
+		free (entry);
+	}
+	rc_strlist_free (list);
+
+	return (config);
+}
+librc_hidden_def(rc_config_load)
+
+char *rc_config_value (char **list, const char *entry)
+{
+	char *line;
+	int i;
+	char *p;
+
+	STRLIST_FOREACH (list, line, i) {
+		p = strchr (line, '=');
+		if (p && strncmp (entry, line, p - line) == 0)
+			return (p += 1);
+	}
+
+	return (NULL);
+}
+librc_hidden_def(rc_config_value)
+

@@ -48,7 +48,7 @@ version.h:
 		echo "#define BRANDING \"${BRANDING}\"" >> version.h; \
 	fi
 
-install:
+install: all
 	${INSTALL} -d ${DESTDIR}${BINDIR}
 	${INSTALL} ${PROG} ${DESTDIR}${BINDIR}
 	${INSTALL} -d ${DESTDIR}/bin

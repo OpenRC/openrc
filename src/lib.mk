@@ -48,7 +48,7 @@ ${SHLIB_NAME}:	${SOBJS}
 	-o $@ -Wl,-soname,${SONAME} \
 	${SOBJS} ${LDADD}
 
-install:
+install: all
 	${INSTALL} -d ${DESTDIR}${SHLIBDIR}
 	${INSTALL} -m ${LIBMODE} ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}
 	ln -fs ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}/${SHLIB_LINK}
