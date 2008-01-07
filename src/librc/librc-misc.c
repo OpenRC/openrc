@@ -108,6 +108,7 @@ librc_hidden_def(rc_strcatpaths)
 char *rc_getline (FILE *fp)
 {
 	char *line = NULL;
+	char *p;
 	size_t len = 0;
 	size_t last = 0;
 
@@ -117,8 +118,9 @@ char *rc_getline (FILE *fp)
 	do {
 		len += BUFSIZ;
 		line = xrealloc (line, sizeof (char) * len);
-		fgets (line + last, BUFSIZ, fp);
-		last = strlen (line + last) - 1;
+		p = line + last;
+		fgets (p, BUFSIZ, fp);
+		last += strlen (p);
 	} while (! feof (fp) && line[last] != '\n');
 
 	/* Trim the trailing newline */
