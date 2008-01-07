@@ -30,7 +30,7 @@ LIBMODE?=		0444
 .SUFFIXES:		.So
 
 .c.So:
-	${CC} ${PICFLAG} -DPIC ${CFLAGS} ${CPPFLAGS} -c $< -o $@
+	${CC} ${PICFLAG} -DPIC ${CFLAGS} -c $< -o $@
 
 all: ${_LIBS}
 

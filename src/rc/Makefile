@@ -1,45 +1,45 @@
-PROG=			rc
-SRCS=			checkpath.c fstabinfo.c mountinfo.c rc.c rc-depend.c \
-				rc-logger.c rc-misc.c rc-plugin.c rc-status.c rc-update.c \
-				runscript.c start-stop-daemon.c
+PROG=		rc
+SRCS=		checkpath.c fstabinfo.c mountinfo.c rc.c rc-depend.c \
+		rc-logger.c rc-misc.c rc-plugin.c rc-status.c rc-update.c \
+		runscript.c start-stop-daemon.c
 
-SCRIPTS=		version.h
-CLEANFILES=		version.h
+SCRIPTS=	version.h
+CLEANFILES=	version.h
 
-TOPDIR=			..
+TOPDIR=		..
 
-LDFLAGS+=		-L$(TOPDIR)/librc -L$(TOPDIR)/libeinfo
-LDADD+=			-lutil -lrc -leinfo
-CPPFLAGS+=		-I$(TOPDIR) -I$(TOPDIR)/librc -I$(TOPDIR)/libeinfo
+LDFLAGS+=	-L$(TOPDIR)/librc -L$(TOPDIR)/libeinfo
+LDADD+=		-lutil -lrc -leinfo
+CFLAGS+=	-I$(TOPDIR) -I$(TOPDIR)/librc -I$(TOPDIR)/libeinfo
 
-BINDIR?=		/sbin
+BINDIR?=	/sbin
 
-LINKDIR=		$(LIBNAME)/$(PROG)
-BINLINKS=		rc-status
-SBINLINKS=		rc-update runscript start-stop-daemon
+LINKDIR=	$(LIBNAME)/$(PROG)
+BINLINKS=	rc-status
+SBINLINKS=	rc-update runscript start-stop-daemon
 RC_BINLINKS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
-				eindent eoutdent esyslog eval_ecolors \
-				veinfo vewarn vebegin veend vewend veindent veoutdent \
-				service_starting service_started \
-				service_stopping service_stopped \
-				service_inactive service_wasinactive \
-				service_coldplugged service_started_daemon \
-				checkpath fstabinfo mountinfo rc-depend \
-				service_get_value service_set_value get_options save_options \
-				shell_var
+		eindent eoutdent esyslog eval_ecolors \
+		veinfo vewarn vebegin veend vewend veindent veoutdent \
+		service_starting service_started \
+		service_stopping service_stopped \
+		service_inactive service_wasinactive \
+		service_coldplugged service_started_daemon \
+		checkpath fstabinfo mountinfo rc-depend \
+		service_get_value service_set_value get_options save_options \
+		shell_var
 RC_SBINLINKS=	mark_service_starting mark_service_started \
-				mark_service_stopping mark_service_stopped \
-				mark_service_inactive mark_service_wasinactive \
-				mark_service_coldplugged mark_service_failed \
-				rc-abort
+		mark_service_stopping mark_service_stopped \
+		mark_service_inactive mark_service_wasinactive \
+		mark_service_coldplugged mark_service_failed \
+		rc-abort
 
 include $(TOPDIR)/os.mk
-CPPFLAGS+=		-DLIB=\"$(LIBNAME)\"
+CFLAGS+=	-DLIB=\"$(LIBNAME)\"
 include $(TOPDIR)/cc.mk
 include $(TOPDIR)/prog.mk
 
 include $(TOPDIR)/$(TERMCAP).mk
-LDADD+=			${LIBDL} ${LIBKVM}
+LDADD+=		${LIBDL} ${LIBKVM}
 include $(TOPDIR)/$(PAM).mk
 
 version.h:

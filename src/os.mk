@@ -13,7 +13,7 @@ RC_LIB=			/$(LIB)/rc
 
 _DEF_SH=	case `uname -s` in Linux) echo "-D_XOPEN_SOURCE=600 -D_BSD_SOURCE";; *) echo;; esac
 _DEF!=		$(_DEF_SH)
-CPPFLAGS+=	$(_DEF)$(shell $(_DEF_SH))
+CFLAGS+=	$(_DEF)$(shell $(_DEF_SH))
 
 _LIBDL_SH=	case `uname -s` in Linux) echo "-Wl,-Bdynamic -ldl";; *) echo;; esac
 _LIBDL!=	$(_LIBDL_SH)
