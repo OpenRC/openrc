@@ -121,10 +121,10 @@ char *rc_getline (FILE *fp)
 		p = line + last;
 		fgets (p, BUFSIZ, fp);
 		last += strlen (p);
-	} while (! feof (fp) && line[last] != '\n');
+	} while (! feof (fp) && line[last - 1] != '\n');
 
 	/* Trim the trailing newline */
-	if (line[last] == '\n')
+	if (line[--last] == '\n')
 		line[last] = '\0';
 
 	return (line);
