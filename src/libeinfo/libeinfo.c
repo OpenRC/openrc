@@ -50,7 +50,7 @@ const char libeinfo_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <unistd.h>
 
 #include "einfo.h"
-#include "../hidden-visibility.h"
+#include "hidden-visibility.h"
 hidden_proto(ecolor)
 hidden_proto(ebegin)
 hidden_proto(ebeginv)

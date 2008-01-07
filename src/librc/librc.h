@@ -65,10 +65,10 @@
 
 #include "librc-depend.h"
 #include "rc.h"
-#include "../rc-misc.h"
-#include "../strlist.h"
+#include "rc-misc.h"
+#include "strlist.h"
 
-#include "../hidden-visibility.h"
+#include "hidden-visibility.h"
 #define librc_hidden_proto(x) hidden_proto(x)
 #define librc_hidden_def(x) hidden_def(x)
 

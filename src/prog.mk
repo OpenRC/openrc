@@ -8,10 +8,12 @@ OBJS+=			${SRCS:.c=.o}
 
 INSTALL?=		install
 
-all: ${PROG}
+all: depend ${PROG}
 
 ${PROG}: ${SCRIPTS} ${OBJS}
 	${CC} ${CFLAGS} ${LDFLAGS} ${PROGLDFLAGS} -o $@ ${OBJS} ${LDADD}
 
-clean:
+clean: clean-depend
 	rm -f ${OBJS} ${PROG} ${CLEANFILES}
+
+include $(TOPDIR)/depend.mk

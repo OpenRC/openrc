@@ -23,3 +23,4 @@ CFLAGS += -pedantic -std=c99 \
 		  $(call check_gcc, -Wdeclaration-after-statement) \
 		  $(call check_gcc, -Wsequence-point) \
 		  $(call check_gcc, -Wextra) $(WEXTRA)
+

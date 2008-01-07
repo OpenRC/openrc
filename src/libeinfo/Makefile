@@ -9,6 +9,8 @@ VERSION_MAP=	einfo.map
 
 SHLIBDIR=		/${LIBNAME}
 
+CFLAGS+=		-I$(TOPDIR)
+
 include $(TOPDIR)/cc.mk
 include $(TOPDIR)/lib.mk
 include $(TOPDIR)/$(TERMCAP).mk

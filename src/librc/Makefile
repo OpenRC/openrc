@@ -11,6 +11,8 @@ VERSION_MAP=	rc.map
 CFLAGS+=	-DLIB=\"${LIBNAME}\"
 LDADD+=		${LIBKVM}
 
+CFLAGS+=	-I$(TOPDIR)
+
 SHLIBDIR=	/${LIBNAME}
 
 include $(TOPDIR)/cc.mk

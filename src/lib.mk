@@ -32,7 +32,7 @@ LIBMODE?=		0444
 .c.So:
 	${CC} ${PICFLAG} -DPIC ${CFLAGS} -c $< -o $@
 
-all: ${_LIBS}
+all: depend ${_LIBS}
 
 lib${LIB}.a:	${OBJS} ${STATICOBJS}
 	@${ECHO} building static library $@
@@ -59,5 +59,7 @@ install: all
 	${INSTALL} -d ${DESTDIR}${INCDIR}
 	for x in ${INCS}; do ${INSTALL} -m ${INCMODE} $$x ${DESTDIR}${INCDIR}; done
 
-clean:
+clean: clean-depend
 	rm -f ${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK}
+
+include $(TOPDIR)/depend.mk

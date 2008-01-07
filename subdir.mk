@@ -23,3 +23,5 @@ clean:
 	$(_SUBDIR)
 install:
 	$(_SUBDIR)
+depend:
+	$(_SUBDIR)
