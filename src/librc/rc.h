@@ -39,6 +39,7 @@
 
 #include <sys/types.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 /*! @name Reserved runlevel names */
 #define RC_LEVEL_SYSINIT    "sysinit"
@@ -347,6 +348,9 @@ extern FILE *rc_environ_fd;
 
 /*! @name Configuration
  * These functions help to deal with shell based configuration files */
+/*! Return a line from a file, stripping the trailing newline. */
+char *rc_getline (FILE *fp);
+
 /*! Return a NULL terminated list of non comment lines from a file. */
 char **rc_config_list (const char *file);
 

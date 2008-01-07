@@ -265,7 +265,7 @@ static bool _match_daemon (const char *path, const char *file,
 						   const char *mexec, const char *mname,
 						   const char *mpidfile)
 {
-	char *buffer;
+	char *line;
 	char *ffile = rc_strcatpaths (path, file, (char *) NULL);
 	FILE *fp;
 	int lc = 0;
@@ -281,19 +281,14 @@ static bool _match_daemon (const char *path, const char *file,
 	if (! mpidfile)
 		m += 100;
 
-	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-	memset (buffer, 0, RC_LINEBUFFER);
-	while ((fgets (buffer, RC_LINEBUFFER, fp))) {
-		int lb = strlen (buffer) - 1;
-		if (buffer[lb] == '\n')
-			buffer[lb] = 0;
-
-		if (strcmp (buffer, mexec) == 0)
+	while ((line = rc_getline (fp))) {
+		if (strcmp (line, mexec) == 0)
 			m += 1;
-		else if (mname && strcmp (buffer, mname) == 0)
+		else if (mname && strcmp (line, mname) == 0)
 			m += 10;
-		else if (mpidfile && strcmp (buffer, mpidfile) == 0)
+		else if (mpidfile && strcmp (line, mpidfile) == 0)
 			m += 100;
+		free (line);
 
 		if (m == 111)
 			break;
@@ -302,7 +297,6 @@ static bool _match_daemon (const char *path, const char *file,
 		if (lc > 5)
 			break;
 	}
-	free (buffer);
 	fclose (fp);
 	free (ffile);
 
@@ -460,7 +454,7 @@ bool rc_service_daemons_crashed (const char *service)
 	struct dirent *d;
 	char *path;
 	FILE *fp;
-	char *buffer = NULL;
+	char *line;
 	char *exec = NULL;
 	char *name = NULL;
 	char *pidfile = NULL;
@@ -481,9 +475,6 @@ bool rc_service_daemons_crashed (const char *service)
 		return (false);
 	}
 
-	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-	memset (buffer, 0, RC_LINEBUFFER);
-
 	while ((d = readdir (dp))) {
 		if (d->d_name[0] == '.')
 			continue;
@@ -494,17 +485,17 @@ bool rc_service_daemons_crashed (const char *service)
 		if (! fp)
 			break;
 
-		while ((fgets (buffer, RC_LINEBUFFER, fp))) {
-			int lb = strlen (buffer) - 1;
-			if (buffer[lb] == '\n')
-				buffer[lb] = 0;
-
-			p = buffer;
-			if ((token = strsep (&p, "=")) == NULL || ! p)
+		while ((line = rc_getline (fp))) {
+			p = line;
+			if ((token = strsep (&p, "=")) == NULL || ! p) {
+				free (line);
 				continue;
+			}
 
-			if (strlen (p) == 0)
+			if (strlen (p) == 0) {
+				free (line);
 				continue;
+			}
 
 			if (strcmp (token, "exec") == 0) {
 				if (exec)
@@ -519,6 +510,7 @@ bool rc_service_daemons_crashed (const char *service)
 					free (pidfile);
 				pidfile = xstrdup (p);
 			}
+			free (line);
 		}
 		fclose (fp);
 
@@ -563,7 +555,6 @@ bool rc_service_daemons_crashed (const char *service)
 		name = NULL;
 	}
 
-	free (buffer);
 	free (exec);
 	free (name);
 	free (dirpath);

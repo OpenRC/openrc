@@ -105,6 +105,30 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 }
 librc_hidden_def(rc_strcatpaths)
 
+char *rc_getline (FILE *fp)
+{
+	char *line = NULL;
+	size_t len = 0;
+	size_t last = 0;
+
+	if (feof (fp))
+		return (NULL);
+
+	do {
+		len += BUFSIZ;
+		line = xrealloc (line, sizeof (char) * len);
+		fgets (line + last, BUFSIZ, fp);
+		last = strlen (line + last) - 1;
+	} while (! feof (fp) && line[last] != '\n');
+
+	/* Trim the trailing newline */
+	if (line[last] == '\n')
+		line[last] = '\0';
+
+	return (line);
+}
+librc_hidden_def(rc_getline)
+
 char **rc_config_list (const char *file)
 {
 	FILE *fp;
@@ -112,26 +136,12 @@ char **rc_config_list (const char *file)
 	char *p;
 	char *token;
 	char **list = NULL;
-	size_t buflen = BUFSIZ;
-	size_t last;
 
 	if (! (fp = fopen (file, "r")))
 		return (NULL);
 
-	buffer = xmalloc (sizeof (char) * buflen);
-	buffer[buflen - 1] = '\0';
-	while (fgets (buffer, buflen, fp)) {
-		/* Increase the buffer to read the rest of the line if needed */
-		last = strlen (buffer) - 1;
-		while (! feof (fp) && buffer[last] != '\n') {
-			buflen += BUFSIZ;
-			buffer = xrealloc (buffer, sizeof (char *) * buflen);
-			fgets (buffer + last, BUFSIZ, fp);
-			last = strlen (buffer) - 1;
-		}
-
+	while ((p = buffer = rc_getline (fp))) {
 		/* Strip leading spaces/tabs */
-		p = buffer;
 		while ((*p == ' ') || (*p == '\t'))
 			p++;
 
@@ -144,8 +154,8 @@ char **rc_config_list (const char *file)
 
 			rc_strlist_add (&list, token);
 		}
+		free (buffer);
 	}
-	free (buffer);
 	fclose (fp);
 
 	return (list);

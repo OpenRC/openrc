@@ -181,12 +181,12 @@ void rc_logger_open (const char *level)
 				write_time (log, "started");
 			else {
 				free (logbuf);
-				logbuf_size = RC_LINEBUFFER * 10;
+				logbuf_size = BUFSIZ * 10;
 				logbuf = xmalloc (sizeof (char) * logbuf_size);
 				logbuf_len = 0;
 			}
 
-			buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
+			buffer = xmalloc (sizeof (char) * BUFSIZ);
 			selfd = rc_logger_tty > signal_pipe[0] ? rc_logger_tty : signal_pipe[0];
 			while (1) {
 				FD_ZERO (&rset);
@@ -200,15 +200,15 @@ void rc_logger_open (const char *level)
 
 				if (s > 0) {
 					if (FD_ISSET (rc_logger_tty, &rset)) {
-						memset (buffer, 0, RC_LINEBUFFER);
-						bytes = read (rc_logger_tty, buffer, RC_LINEBUFFER);
+						memset (buffer, 0, BUFSIZ);
+						bytes = read (rc_logger_tty, buffer, BUFSIZ);
 						write (STDOUT_FILENO, buffer, bytes);
 
 						if (log)
 							write_log (fileno (log), buffer, bytes);
 						else {
 							if (logbuf_size - logbuf_len < bytes) {
-								logbuf_size += RC_LINEBUFFER * 10;
+								logbuf_size += BUFSIZ * 10;
 								logbuf = xrealloc (logbuf, sizeof (char ) *
 												   logbuf_size);
 							}

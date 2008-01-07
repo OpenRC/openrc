@@ -479,7 +479,7 @@ static int do_shell_var (int argc, char **argv)
 static char *proc_getent (const char *ent)
 {
 	FILE *fp;
-	char *buffer;
+	char *proc;
 	char *p;
 	char *value = NULL;
 	int i;
@@ -492,18 +492,11 @@ static char *proc_getent (const char *ent)
 		return (NULL);
 	}
 
-	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-	memset (buffer, 0, RC_LINEBUFFER);
-	if (fgets (buffer, RC_LINEBUFFER, fp) &&
-		(p = strstr (buffer, ent)))
+	if ((proc = rc_getline (fp)) &&
+		(p = strstr (proc, ent)))
 	{ 
-		i = p - buffer;
-		if (i == '\0' || buffer[i - 1] == ' ') {
-			/* Trim the trailing carriage return if present */
-			i = strlen (buffer) - 1;
-			if (buffer[i] == '\n')
-				buffer[i] = 0;
-
+		i = p - proc;
+		if (i == '\0' || proc[i - 1] == ' ') {
 			p += strlen (ent);
 			if (*p == '=')
 				p++;
@@ -511,7 +504,7 @@ static char *proc_getent (const char *ent)
 		}
 	} else
 		errno = ENOENT;
-	free (buffer);
+	free (proc);
 	fclose (fp);
 
 	return (value);

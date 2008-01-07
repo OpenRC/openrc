@@ -12,6 +12,7 @@ global:
 	rc_deptree_update_needed;
 	rc_environ_fd;
 	rc_find_pids;
+	rc_getline;
 	rc_runlevel_exists;
 	rc_runlevel_get;
 	rc_runlevel_list;

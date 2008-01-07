@@ -197,10 +197,10 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 				ssize_t nr;
 
 				close (pfd[1]);
-				buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-				memset (buffer, 0, RC_LINEBUFFER);
+				buffer = xmalloc (sizeof (char) * BUFSIZ);
+				memset (buffer, 0, BUFSIZ);
 
-				while ((nr = read (pfd[0], buffer, RC_LINEBUFFER)) > 0) {
+				while ((nr = read (pfd[0], buffer, BUFSIZ)) > 0) {
 					p = buffer;
 					while (*p && p - buffer < nr) {
 						token = strsep (&p, "=");

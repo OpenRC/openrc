@@ -307,7 +307,7 @@ char **rc_service_extra_commands (const char *service)
 	char *buffer = NULL;
 	char **commands = NULL;
 	char *token;
-	char *p = buffer;
+	char *p;
 	FILE *fp;
 	int l;
 
@@ -319,13 +319,9 @@ char **rc_service_extra_commands (const char *service)
 	snprintf (cmd, l, OPTSTR, svc);
 	free (svc);
 	if ((fp = popen (cmd, "r"))) {
-		buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-		if (fgets (buffer, RC_LINEBUFFER, fp)) {
-			if (buffer[strlen (buffer) - 1] == '\n')
-				buffer[strlen (buffer) - 1] = '\0';
-			while ((token = strsep (&p, " ")))
-				rc_strlist_addsort (&commands, token);
-		}
+		p = buffer = rc_getline (fp);
+		while ((token = strsep (&p, " ")))
+			rc_strlist_addsort (&commands, token);
 		pclose (fp);
 		free (buffer);
 	}
@@ -338,12 +334,10 @@ librc_hidden_def(rc_service_extra_commands)
 char *rc_service_description (const char *service, const char *option)
 {
 	char *svc;
-	char *cmd = NULL;
-	char *buffer;
+	char *cmd;
 	char *desc = NULL;
 	FILE *fp;
 	int i;
-	int l;
 
 	if (! (svc = rc_service_resolve (service)))
 		return (NULL);
@@ -351,24 +345,12 @@ char *rc_service_description (const char *service, const char *option)
 	if (! option)
 		option = "";
 
-	l = strlen (DESCSTR) + strlen (svc) + strlen (option) + 2;
-	cmd = xmalloc (sizeof (char) * l);
-	snprintf (cmd, l, DESCSTR, svc, option ? "_" : "", option);
+	i = strlen (DESCSTR) + strlen (svc) + strlen (option) + 2;
+	cmd = xmalloc (sizeof (char) * i);
+	snprintf (cmd, i, DESCSTR, svc, option ? "_" : "", option);
 	free (svc);
 	if ((fp = popen (cmd, "r"))) {
-		buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-		while (fgets (buffer, RC_LINEBUFFER, fp)) {
-			if (! desc) {
-				desc = xmalloc (strlen (buffer) + 1);
-				*desc = '\0';
-			} else {
-				desc = xrealloc (desc, strlen (desc) + strlen (buffer) + 1);
-			}
-			i = strlen (desc);
-			memcpy (desc + i, buffer, strlen (buffer));
-			memset (desc + i + strlen (buffer), 0, 1);
-		}
-		free (buffer);
+		desc = rc_getline (fp);
 		pclose (fp);
 	}
 	free (cmd);
@@ -547,18 +529,17 @@ librc_hidden_def(rc_service_state)
 char *rc_service_value_get (const char *service, const char *option)
 {
 	FILE *fp;
-	char *buffer = NULL;
+	char *line = NULL;
 	char *file = rc_strcatpaths (RC_SVCDIR, "options", service, option,
 								 (char *) NULL);
 
 	if ((fp = fopen (file, "r"))) {
-		buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-		fgets (buffer, RC_LINEBUFFER, fp);
+		line = rc_getline (fp);
 		fclose (fp);
 	}
 	free (file);
 
-	return (buffer);
+	return (line);
 }
 librc_hidden_def(rc_service_value_get)
 

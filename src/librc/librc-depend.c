@@ -124,7 +124,7 @@ rc_depinfo_t *rc_deptree_load (void)
 	rc_depinfo_t *deptree = NULL;
 	rc_depinfo_t *depinfo = NULL;
 	rc_deptype_t *deptype = NULL;
-	char buffer [RC_LINEBUFFER];
+	char *line;
 	char *type;
 	char *p;
 	char *e;
@@ -133,26 +133,26 @@ rc_depinfo_t *rc_deptree_load (void)
 	if (! (fp = fopen (RC_DEPTREE, "r")))
 		return (NULL);
 
-	while (fgets (buffer, RC_LINEBUFFER, fp))
+	while ((line = rc_getline (fp)))
 	{
-		p = buffer;
+		p = line;
 		e = strsep (&p, "_");
 		if (! e || strcmp (e, "depinfo") != 0)
-			continue;
+			goto next;
 
 		e = strsep (&p, "_");
 		if (! e || sscanf (e, "%d", &i) != 1)
-			continue;
+			goto next;
 
 		if (! (type = strsep (&p, "_=")))
-			continue;
+			goto next;
 
 		if (strcmp (type, "service") == 0)
 		{
 			/* Sanity */
 			e = get_shell_value (p);
 			if (! e || strlen (e) == 0)
-				continue;
+				goto next;
 
 			if (! deptree)
 			{
@@ -167,17 +167,17 @@ rc_depinfo_t *rc_deptree_load (void)
 			memset (depinfo, 0, sizeof (rc_depinfo_t));
 			depinfo->service = xstrdup (e);
 			deptype = NULL;
-			continue;
+			goto next;
 		}
 
 		e = strsep (&p, "=");
 		if (! e || sscanf (e, "%d", &i) != 1)
-			continue;
+			goto next;
 
 		/* Sanity */
 		e = get_shell_value (p);
 		if (! e || strlen (e) == 0)
-			continue;
+			goto next;
 
 		if (! deptype)
 		{
@@ -197,6 +197,9 @@ rc_depinfo_t *rc_deptree_load (void)
 			deptype->type = xstrdup (type);
 
 		rc_strlist_addsort (&deptype->services, e);
+
+next:
+		free (line);
 	}
 	fclose (fp);
 
@@ -722,7 +725,7 @@ bool rc_deptree_update (void)
 	rc_deptype_t *deptype = NULL;
 	rc_deptype_t *dt;
 	rc_deptype_t *last_deptype = NULL;
-	char *buffer = NULL;
+	char *line;
 	int len;
 	int i;
 	int j;
@@ -740,20 +743,14 @@ bool rc_deptree_update (void)
 
 	deptree = xmalloc (sizeof (rc_depinfo_t));
 	memset (deptree, 0, sizeof (rc_depinfo_t));
-	buffer = xmalloc (sizeof (char) * RC_LINEBUFFER);
-	memset (buffer, 0, RC_LINEBUFFER);
 
 	/* Phase 2 */
-	while (fgets (buffer, RC_LINEBUFFER, fp))
+	while ((line = rc_getline (fp)))
 	{
-		/* Trim the newline */
-		if (buffer[strlen (buffer) - 1] == '\n')
-			buffer[strlen(buffer) -1] = 0;
-
-		depends = buffer;
+		depends = line;
 		service = strsep (&depends, " ");
 		if (! service)
-			continue;
+			goto next;	
 		type = strsep (&depends, " ");
 
 		for (depinfo = deptree; depinfo; depinfo = depinfo->next)
@@ -778,7 +775,7 @@ bool rc_deptree_update (void)
 
 		/* We may not have any depends */
 		if (! type || ! depends)
-			continue;
+			goto next;	
 
 		/* Get the type */
 		if (strcmp (type, "config") != 0) {
@@ -844,9 +841,11 @@ bool rc_deptree_update (void)
 					rc_strlist_delete (&dt->services, depend);
 			}
 		}
+
+next:
+		free (line);
 	}
 	pclose (fp);
-	free (buffer);
 
 	/* Phase 3 - add our providors to the tree */
 	for (depinfo = deptree; depinfo; depinfo = depinfo->next)

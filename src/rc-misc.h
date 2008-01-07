@@ -65,9 +65,6 @@
 
 #define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
-/* Max buffer to read a line from a file */
-#define RC_LINEBUFFER           4096 
-
 #define ERRX					fprintf (stderr, "out of memory\n"); exit (1)
 
 static inline void *xmalloc (size_t size)
