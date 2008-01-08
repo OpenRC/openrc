@@ -75,6 +75,15 @@ setupopts() {
 	esac
 }
 
+# hwclock doesn't always return non zero on error
+_hwclock() {
+	local err="$(hwclock "$@" 2>&1 >/dev/null)"
+
+	[ -z "${err}" ] && return 0
+	echo "${err}" >&2
+	return 1
+}
+
 start() {
 	local retval=0 errstr=""
 	setupopts
@@ -89,22 +98,22 @@ start() {
 		modprobe -q rtc || modprobe -q genrtc
 	fi
 
-	# Since hwclock always exit's with a 0, need to check its output.
 	if [ -e /etc/adjtime ] && yesno ${clock_adjfile}; then
-		errstr="$(hwclock --adjust ${utc_cmd} 2>&1 >/dev/null)"
-	fi
-	# If setting UTC, don't bother to run hwclock when first booting
-	# as that's the default
-	if [ "${PREVLEVEL}" != "N" -o "${utc_cmd}" != "--utc" -o -n "${clock_args}" ]; then
-		errstr="${errstr}$(hwclock --hctosys ${utc_cmd} ${clock_args} 2>&1 >/dev/null)"
+		_hwclock --adjust ${utc_cmd}
+		retval=$((${retval} + $?))
 	fi
 	
-	if [ -n "${errstr}" ]; then
-		ewarn "${errstr}"
-		retval=1
+	# If setting UTC, don't bother to run hwclock when first booting
+	# as that's the default
+	if [ "${PREVLEVEL}" != "N" -o \
+		"${utc_cmd}" != "--utc" -o \
+		-n "${clock_args}" ];
+	then
+		_hwclock --hctosys ${utc_cmd} ${clock_args}
+		retval=$((${retval} + $?))
 	fi
-	errstr="Failed to set clock"
-	eend ${retval} "${errstr}" "You will need to set the clock yourself"
+	
+	eend ${retval} "Failed to set the system clock"
 
 	return 0
 }
@@ -120,19 +129,18 @@ stop() {
 	[ -z "${utc_cmd}" ] && return 0
 
 	ebegin "Setting hardware clock using the system clock" "[${utc}]"
+
 	if ! yesno "${clock_adjfile}"; then
 		# Some implementations don't handle adjustments
 		if LC_ALL=C hwclock --help | grep -q "\-\-noadjfile"; then
 			utc_cmd="${utc_cmd} --noadjfile"
 		fi
 	fi
-	errstr="$(LC_ALL=C hwclock --systohc ${utc_cmd} ${clock_args} 2>&1 >/dev/null)"
-	if [ -n "${errstr}" ]; then
-		ewarn "${errstr}"
-		retval=1
-	fi
-	errstr="Failed to sync clocks"
-	eend ${retval} "${errstr}"
+
+	_hwclock --systohc ${utc_cmd} ${clock_args}
+	retval=$?
+
+	eend ${retval} "Failed to sync clocks" 
 }
 
 save() {
