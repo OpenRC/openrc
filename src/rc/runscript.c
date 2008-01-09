@@ -49,6 +49,8 @@
 
 #ifdef __linux__
 # include <pty.h>
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
+# include <util.h>
 #else
 # include <libutil.h>
 #endif

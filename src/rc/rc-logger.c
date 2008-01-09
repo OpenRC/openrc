@@ -31,6 +31,7 @@
  */
 
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -44,6 +45,8 @@
 
 #ifdef __linux__
 # include <pty.h>
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
+# include <util.h>
 #else
 # include <libutil.h>
 #endif
@@ -99,7 +102,7 @@ static void write_log (int logfd, const char *buffer, size_t bytes)
 			continue;
 		}
 
-		if (! in_term || isalpha (*p))
+		if (! in_term || isalpha ((int) *p))
 			in_escape = in_term = false;
 cont:
 		p++;

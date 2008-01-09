@@ -82,8 +82,8 @@ char *rc_conf_value (const char *setting)
 		STRLIST_FOREACH (rc_conf, line, i) {
 			char *p = line;
 			while (p && *p && *p != '=') {
-				if (isupper (*p))
-					*p = tolower (*p);
+				if (isupper ((int) *p))
+					*p = tolower ((int) *p);
 				p++;
 			}
 		}

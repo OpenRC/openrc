@@ -183,7 +183,7 @@ static int syslog_decode (char *name, CODE *codetab)
 {
 	CODE *c;
 
-	if (isdigit (*name))
+	if (isdigit ((int) *name))
 		return (atoi (name));
 
 	for (c = codetab; c->c_name; c++)
@@ -465,7 +465,7 @@ static int do_shell_var (int argc, char **argv)
 
 		while (*p) {
 			char c = *p++;
-			if (! isalnum (c))
+			if (! isalnum ((int) c))
 				c = '_';
 			putchar (c);
 		}
@@ -1239,13 +1239,13 @@ int main (int argc, char **argv)
 
 		/* The mice are a little more tricky.
 		   If we coldplug anything else, we'll probably do it here. */
-		if ((dp == opendir ("/dev"))) {
+		if ((dp = opendir ("/dev"))) {
 			while ((d = readdir (dp))) {
 				if (strncmp (d->d_name, "psm", 3) == 0 ||
 					strncmp (d->d_name, "ums", 3) == 0)
 				{
 					char *p = d->d_name + 3;
-					if (p && isdigit (*p)) {
+					if (p && isdigit ((int) *p)) {
 						i = (strlen ("moused.") + strlen (d->d_name) + 1);
 						tmp = xmalloc (sizeof (char) * i);
 						snprintf (tmp, i, "moused.%s", d->d_name);

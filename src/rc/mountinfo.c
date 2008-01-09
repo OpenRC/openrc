@@ -30,13 +30,16 @@
  */
 
 #include <sys/types.h>
-
-#if defined(__DragonFly__) || defined(__FreeBSD__) || \
-	defined(__NetBSD__) || defined(__OpenBSD__)
-#define BSD
 #include <sys/param.h>
-#include <sys/ucred.h>
-#include <sys/mount.h>
+
+#if defined(__DragonFly__) || defined(__FreeBSD__)
+# include <sys/ucred.h>
+# include <sys/mount.h>
+# define F_FLAGS f_flags 
+#elif defined(BSD)
+# include <sys/statvfs.h>
+# define statfs statvfs
+# define F_FLAGS f_flag
 #elif defined (__linux__)
 #include <mntent.h>
 #endif
@@ -180,17 +183,29 @@ static struct opt {
 	{ MNT_NOATIME,      "noatime" },
 	{ MNT_NOEXEC,       "noexec" },
 	{ MNT_NOSUID,       "nosuid" },
+#ifdef MNT_NOSYMFOLLOW
 	{ MNT_NOSYMFOLLOW,  "nosymfollow" },
+#endif
 	{ MNT_QUOTA,        "with quotas" },
 	{ MNT_RDONLY,       "read-only" },
 	{ MNT_SYNCHRONOUS,  "synchronous" },
 	{ MNT_UNION,        "union" },
+#ifdef MNT_NOCLUSTERR
 	{ MNT_NOCLUSTERR,   "noclusterr" },
+#endif
+#ifdef MNT_NOCLUSTERW
 	{ MNT_NOCLUSTERW,   "noclusterw" },
+#endif	
+#ifdef MNT_SUIDDIR
 	{ MNT_SUIDDIR,      "suiddir" },
+#endif
 	{ MNT_SOFTDEP,      "soft-updates" },
+#ifdef MNT_MULTILABEL
 	{ MNT_MULTILABEL,   "multilabel" },
+#endif
+#ifdef MNT_ACLS
 	{ MNT_ACLS,         "acls" },
+#endif
 #ifdef MNT_GJOURNAL
 	{ MNT_GJOURNAL,     "gjournal" },
 #endif
@@ -212,7 +227,7 @@ static char **find_mounts (struct args *args)
 
 	for (i = 0; i < nmnts; i++) {
 		int netdev = 0;
-		flags = mnts[i].f_flags & MNT_VISFLAGMASK;
+		flags = mnts[i].F_FLAGS & MNT_VISFLAGMASK;
 		for (o = optnames; flags && o->o_opt; o++) {
 			if (flags & o->o_opt) {
 				if (o->o_opt == MNT_LOCAL)

@@ -181,7 +181,7 @@ static void parse_schedule_item (schedulelist_t *item, const char *string)
 
 	if (strcmp (string,"forever") == 0)
 		item->type = schedule_forever;
-	else if (isdigit (string[0])) {
+	else if (isdigit ((int) string[0])) {
 		item->type = schedule_timeout;
 		errno = 0;
 		if (sscanf (string, "%d", &item->value) != 1)
