@@ -1,7 +1,7 @@
 # Recursive rules
 # Adapted from FreeBSDs bsd.subdir.mk
 _+_ ?= +
-ECHODIR ?= true
+ECHODIR ?= echo 
 _SUBDIR = @${_+_}for x in ${SUBDIR}; do \
 	if test -d $$x; then \
 		${ECHODIR} "===> ${DIRPRFX}$$x ($@)"; \
@@ -18,10 +18,10 @@ _SUBDIR = @${_+_}for x in ${SUBDIR}; do \
 done
 
 all:
-	$(_SUBDIR)
+	${_SUBDIR}
 clean:
-	$(_SUBDIR)
+	${_SUBDIR}
 install:
-	$(_SUBDIR)
+	${_SUBDIR}
 depend:
-	$(_SUBDIR)
+	${_SUBDIR}
