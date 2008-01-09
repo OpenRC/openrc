@@ -3,22 +3,22 @@
 # Generic definitions
 
 _OS_SH=		u=`uname -s`; case "$${u}" in *BSD|DragonFly) echo "BSD";; *) echo "$${u}";; esac
-_OS!=		$(_OS_SH)
-OS?=		$(_OS)$(shell $(_OS_SH))
+_OS!=		${_OS_SH}
+OS?=		${_OS}$(shell ${_OS_SH})
 
 _LIBNAME_SH=	l=`readlink /lib`; case "$$l" in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
-_LIBNAME!=		$(_LIBNAME_SH)
-LIBNAME?=		$(_LIBNAME)$(shell $(_LIBNAME_SH))
+_LIBNAME!=		${_LIBNAME_SH}
+LIBNAME?=		${_LIBNAME}$(shell ${_LIBNAME_SH})
 RC_LIB=			/$(LIB)/rc
 
 _DEF_SH=	case `uname -s` in Linux) echo "-D_XOPEN_SOURCE=600 -D_BSD_SOURCE";; *) echo;; esac
-_DEF!=		$(_DEF_SH)
-CFLAGS+=	$(_DEF)$(shell $(_DEF_SH))
+_DEF!=		${_DEF_SH}
+CFLAGS+=	${_DEF}$(shell ${_DEF_SH})
 
 _LIBDL_SH=	case `uname -s` in Linux) echo "-Wl,-Bdynamic -ldl";; *) echo;; esac
-_LIBDL!=	$(_LIBDL_SH)
-LIBDL?=		$(_LIBDL)$(shell $(_LIBDL_SH))
+_LIBDL!=	${_LIBDL_SH}
+LIBDL?=		${_LIBDL}$(shell ${_LIBDL_SH})
 
 _LIBKVM_SH=	case `uname -s` in *BSD) echo "-lkvm";; *) echo;; esac
-_LIBKVM!=	$(_LIBKVM_SH)
-LIBKVM?=	$(_LIBKVM)$(shell $(_LIBKVM_SH))
+_LIBKVM!=	${_LIBKVM_SH}
+LIBKVM?=	${_LIBKVM}$(shell ${_LIBKVM_SH})

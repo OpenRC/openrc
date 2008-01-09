@@ -1,5 +1,5 @@
 TOPDIR=		..
-include $(TOPDIR)/os.mk
+include ${TOPDIR}/os.mk
 
 LIB=		rc
 SHLIB_MAJOR=	1
@@ -11,9 +11,9 @@ VERSION_MAP=	rc.map
 CFLAGS+=	-DLIB=\"${LIBNAME}\"
 LDADD+=		${LIBKVM}
 
-CFLAGS+=	-I$(TOPDIR)
+CFLAGS+=	-I${TOPDIR}
 
 SHLIBDIR=	/${LIBNAME}
 
-include $(TOPDIR)/cc.mk
-include $(TOPDIR)/lib.mk
+include ${TOPDIR}/cc.mk
+include ${TOPDIR}/lib.mk

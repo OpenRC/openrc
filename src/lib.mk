@@ -59,7 +59,7 @@ install: all
 	${INSTALL} -d ${DESTDIR}${INCDIR}
 	for x in ${INCS}; do ${INSTALL} -m ${INCMODE} $$x ${DESTDIR}${INCDIR}; done
 
-clean: clean-depend
-	rm -f ${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK}
+clean:
+	rm -f ${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK} ${CLEANFILES}
 
-include $(TOPDIR)/depend.mk
+include ${TOPDIR}/depend.mk

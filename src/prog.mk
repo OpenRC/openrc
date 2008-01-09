@@ -13,7 +13,7 @@ all: depend ${PROG}
 ${PROG}: ${SCRIPTS} ${OBJS}
 	${CC} ${CFLAGS} ${LDFLAGS} ${PROGLDFLAGS} -o $@ ${OBJS} ${LDADD}
 
-clean: clean-depend
+clean:
 	rm -f ${OBJS} ${PROG} ${CLEANFILES}
 
-include $(TOPDIR)/depend.mk
+include ${TOPDIR}/depend.mk

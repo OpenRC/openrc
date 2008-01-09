@@ -1,5 +1,5 @@
 TOPDIR=			..
-include $(TOPDIR)/os.mk
+include ${TOPDIR}/os.mk
 
 LIB=			einfo
 SHLIB_MAJOR=	1
@@ -9,8 +9,8 @@ VERSION_MAP=	einfo.map
 
 SHLIBDIR=		/${LIBNAME}
 
-CFLAGS+=		-I$(TOPDIR)
+CFLAGS+=		-I${TOPDIR}
 
-include $(TOPDIR)/cc.mk
-include $(TOPDIR)/lib.mk
-include $(TOPDIR)/$(TERMCAP).mk
+include ${TOPDIR}/cc.mk
+include ${TOPDIR}/lib.mk
+include ${TOPDIR}/${TERMCAP}.mk

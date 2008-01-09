@@ -3,4 +3,4 @@
 SUBDIR=		libeinfo librc rc
 
 TOPDIR=		..
-include		$(TOPDIR)/subdir.mk
+include		${TOPDIR}/subdir.mk
