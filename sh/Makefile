@@ -4,11 +4,14 @@ BIN=	gendepends.sh net.sh runscript.sh
 
 MK=	../mk
 
+INSTALLAFTER=	_installafter
+
 # To get NET_LO
 include ${MK}/os.mk
 include Makefile.${SUBOS}
 
-INSTALLAFTER=	_installafter
+include ${MK}/scripts.mk
+
 _installafter:
 	@# Handle lib correctly
 	if test ${LIBNAME} != "lib"; then \
@@ -17,10 +20,10 @@ _installafter:
 		sed -i'.bak' -e 's,/lib/,/${LIBNAME}/,g' ${DESTDIR}/${RC_LIB}/sh/rc-functions.sh || exit $$?; \
 		rm -f ${DESTDIR}/${RC_LIB}/sh/rc-functions.sh.bak; \
 	fi
+	${INSTALL} -d ${DESTDIR}/etc/init.d
 	@# Provide an init script for the loopback interface
 	ln -snf ${RC_LIB}/sh/net.sh ${DESTDIR}/etc/init.d/${NET_LO} || exit $$?
 	@# Put functions.sh into the init.d dir so 3rd party apps don't have to
 	@# be multilib aware
 	ln -snf ${RC_LIB}/sh/functions.sh ${DESTDIR}/etc/init.d || exit $$?
 
-include ${MK}/scripts.mk

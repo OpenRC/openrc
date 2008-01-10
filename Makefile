@@ -11,11 +11,12 @@ SUBDIR=		conf.d doc etc init.d man net runlevels sh src
 INSTALL?=	install
 
 INSTALLAFTER=	_installafter
-_installafter:
-	${INSTALL} -d ${DESTDIR}${RC_LIB}/init.d
-	${INSTALL} -d ${DESTDIR}${RC_LIB}/tmp
 
 MK= 		mk
 include ${MK}/os.mk
 include ${MK}/subdir.mk
 include ${MK}/dist.mk
+
+_installafter:
+	${INSTALL} -d ${DESTDIR}${RC_LIB}/init.d
+	${INSTALL} -d ${DESTDIR}${RC_LIB}/tmp
