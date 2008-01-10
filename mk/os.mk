@@ -8,7 +8,7 @@ OS?= ${_OS}$(shell ${_OS_SH})
 
 _SUBOS_SH=		case `uname -s` in \
 			*BSD|DragonFly) echo "BSD";; \
-			*) `uname -s`;; \
+			*) uname -s;; \
 			esac
 _SUBOS!=		${_SUBOS_SH}
 SUBOS?=		${_SUBOS}$(shell ${_SUBOS_SH})
