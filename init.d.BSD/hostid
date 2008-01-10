@@ -34,18 +34,21 @@ depend() {
 _set() {
 	local id=0
 
-	[ -n "$1" ] && id=$1
-	ebegin "Setting Host UUID: ${id}"
-	sysctl kern.hostuuid="${id}" >/dev/null
-	eend $? || return 1
-
 	if [ -n "$1" ]; then
 		id=$(echo "$1" | md5)
 		id="0x${id%????????????????????????}"
 	fi
 	ebegin "Setting Host ID: ${id}"
-	sysctl kern.hostid="${id}" >/dev/null
-	eend $?
+	sysctl -w kern.hostid="${id}" >/dev/null
+	eend $? || return 1
+
+	if sysctl -n kern.hostuuid >/dev/null 2>&1; then
+		[ -n "$1" ] && id=$1
+		ebegin "Setting Host UUID: ${id}"
+		sysctl kern.hostuuid="${id}" >/dev/null
+		eend $? || return 1
+	fi
+
 }
 
 # First we check to see if there is a system UUID

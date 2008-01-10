@@ -1,4 +1,4 @@
-BOOT=	clock dumpon syscons
+BOOT=	ttys
 
 MK=	../mk
 include ${MK}/runlevels.mk

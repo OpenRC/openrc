@@ -37,7 +37,7 @@ start() {
 		case "${var}" in
 			""|"#"*) continue;;
 		esac
-		sysctl "${var}" >/dev/null || retval=1
+		sysctl -w "${var}" >/dev/null || retval=1
 	done < /etc/sysctl.conf
 	eend ${retval} "Some errors were encountered"
 	eend $?
