@@ -134,8 +134,22 @@ _wait_for_carrier() {
 }
 
 _netmask2cidr() {
-	local i= len=0
+	# Some shells cannot handle hex arithmetic, so we massage it slightly
+	# Buggy shells include FreeBSD sh, dash and busybox.
+	# bash and NetBSD sh don't need this.
+	case $1 in
+		0x*)
+		local hex=${1#0x*} quad=
+		while [ -n "${hex}" ]; do
+			local lastbut2=${hex#??*}
+			quad=${quad}${quad:+.}0x${hex%${lastbut2}*}
+			hex=${lastbut2}
+		done
+		set -- ${quad}
+		;;
+	esac
 
+	local i= len=
 	local IFS=.
 	for i in $1; do
 		while [ ${i} != "0" ]; do
