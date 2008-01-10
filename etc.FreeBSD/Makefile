@@ -1,5 +1,6 @@
 DIR=	/etc
-CONF=	$(CONTENTS)
+CONF=	devd.conf
+BIN=	rc.devd
 
 MK=	../mk
 include ${MK}/scripts.mk
