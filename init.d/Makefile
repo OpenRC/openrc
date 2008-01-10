@@ -1,5 +1,5 @@
-DIR	= /etc/init.d
-BIN = $(CONTENTS)
+DIR=	/etc/init.d
+BIN=	${CONTENTS}
 
-TOPDIR = ..
-include $(TOPDIR)/default.mk
+MK=	../mk
+include ${MK}/scripts.mk

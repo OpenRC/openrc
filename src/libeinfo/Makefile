@@ -1,16 +1,16 @@
-TOPDIR=			..
-include ${TOPDIR}/os.mk
+MK=			../../mk
+include ${MK}/os.mk
 
 LIB=			einfo
-SHLIB_MAJOR=	1
+SHLIB_MAJOR=		1
 SRCS=			libeinfo.c
 INCS=			einfo.h
-VERSION_MAP=	einfo.map
+VERSION_MAP=		einfo.map
 
 SHLIBDIR=		/${LIBNAME}
 
-CFLAGS+=		-I${TOPDIR}
+CFLAGS+=		-I../includes
 
-include ${TOPDIR}/cc.mk
-include ${TOPDIR}/lib.mk
-include ${TOPDIR}/${TERMCAP}.mk
+include ${MK}/cc.mk
+include ${MK}/lib.mk
+include ${MK}/${TERMCAP}.mk

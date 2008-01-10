@@ -62,4 +62,4 @@ install: all
 clean:
 	rm -f ${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK} ${CLEANFILES}
 
-include ${TOPDIR}/depend.mk
+include ${MK}/depend.mk

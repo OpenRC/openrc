@@ -16,4 +16,4 @@ ${PROG}: ${SCRIPTS} ${OBJS}
 clean:
 	rm -f ${OBJS} ${PROG} ${CLEANFILES}
 
-include ${TOPDIR}/depend.mk
+include ${MK}/depend.mk

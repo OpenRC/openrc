@@ -1,5 +1,5 @@
-DIR = /usr/share/doc/openrc
-INC = $(CONTENTS)
+DIR=	/usr/share/doc/openrc
+INC=	${CONTENTS}
 
-TOPDIR = ..
-include $(TOPDIR)/default.mk
+MK=	../mk
+include ${MK}/scripts.mk

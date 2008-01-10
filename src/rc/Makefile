@@ -5,11 +5,9 @@ SRCS=		checkpath.c fstabinfo.c mountinfo.c rc.c rc-depend.c \
 
 CLEANFILES=	version.h
 
-TOPDIR=		..
-
-LDFLAGS+=	-L${TOPDIR}/librc -L${TOPDIR}/libeinfo
+LDFLAGS+=	-L../librc -L../libeinfo
 LDADD+=		-lutil -lrc -leinfo
-CFLAGS+=	-I${TOPDIR} -I${TOPDIR}/librc -I${TOPDIR}/libeinfo
+CFLAGS+=	-I../includes -I../librc -I../libeinfo
 
 BINDIR?=	/sbin
 
@@ -32,18 +30,19 @@ RC_SBINLINKS=	mark_service_starting mark_service_started \
 		mark_service_coldplugged mark_service_failed \
 		rc-abort
 
-include ${TOPDIR}/os.mk
+MK=		../../mk
+include ${MK}/os.mk
 CFLAGS+=	-DLIB=\"${LIBNAME}\"
-include ${TOPDIR}/cc.mk
-include ${TOPDIR}/prog.mk
+include ${MK}/cc.mk
+include ${MK}/prog.mk
 
-include ${TOPDIR}/${TERMCAP}.mk
+include ${MK}/${TERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
-include ${TOPDIR}/${PAM}.mk
+include ${MK}/${PAM}.mk
 
 ${SRCS}: version.h
 version.h:
-	sed -n -e 's/^VERSION =[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1\"/p' ../../Makefile > version.h
+	sed -n -e 's/^VERSION=[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1\"/p' ../../Makefile > version.h
 	if test -n "${BRANDING}"; then \
 		echo "#define BRANDING \"${BRANDING}\"" >> version.h; \
 	fi
@@ -54,7 +53,7 @@ install: all
 	${INSTALL} -d ${DESTDIR}/bin
 	for x in ${BINLINKS}; do ln -fs ${BINDIR}/${PROG} ${DESTDIR}/bin/$$x; done
 	${INSTALL} -d ${DESTDIR}/bin
-	for x in ${SBINLINKS}; do ln -fs ${BINDIR}/${PROG} ${DESTDIR}${BINDIR}/$$x; done
+	for x in ${SBINLINKS}; do ln -fs ${PROG} ${DESTDIR}${BINDIR}/$$x; done
 	${INSTALL} -d ${DESTDIR}/${LIBNAME}/${PROG}/bin
 	for x in $(RC_BINLINKS); do ln -fs ${BINDIR}/${PROG} $(DESTDIR)/${LIBNAME}/${PROG}/bin/$$x; done
 	${INSTALL} -d ${DESTDIR}/${LIBNAME}/${PROG}/sbin

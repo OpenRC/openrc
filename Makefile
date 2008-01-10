@@ -1,33 +1,19 @@
 # OpenRC Makefile
-# Copyright 2007 Roy Marples 
+# Copyright 2007-2008 Roy Marples 
 # Distributed under the terms of the GNU General Public License v2
 
-NAME = openrc
-VERSION = 0.1
-PKG = $(NAME)-$(VERSION)
+NAME=		openrc
+VERSION=	0.1
+PKG=		${NAME}-${VERSION}
 
-SUBDIR = conf.d doc etc init.d man net runlevels sh src
+SUBDIR=		conf.d doc etc init.d man net runlevels sh src
 
-TOPDIR = .
-include $(TOPDIR)/default.mk
+MK= 		mk
+include ${MK}/os.mk
+include ${MK}/subdir.mk
+include ${MK}/dist.mk
 
-install::
-	$(INSTALL) -d $(DESTDIR)$(RC_LIB)/init.d
-	$(INSTALL) -d $(DESTDIR)$(RC_LIB)/tmp
-
-clean::
-	rm -f *.bz2
-
-dist:
-	$(INSTALL) -d /tmp/$(PKG)
-	cp -RPp . /tmp/$(PKG)
-	(cd /tmp/$(PKG); git clean; $(MAKE) clean)
-	rm -rf /tmp/$(PKG)/*.bz2 /tmp/$(PKG)/.git /tmp/$(PKG)/test
-	rm -rf /tmp/$(PKG)/.gitignore /tmp/$(PKG)/src/.gitignore
-	sed -i.bak -e '/LDFLAGS += -Wl,-rpath ./ s/^/#/' /tmp/$(PKG)/src/Makefile
-	rm -f /tmp/$(PKG)/src/Makefile.bak
-	tar cvjpf $(PKG).tar.bz2 -C /tmp $(PKG) 
-	rm -rf /tmp/$(PKG) 
-	ls -l $(PKG).tar.bz2
-
-# vim: set ts=4 :
+INSTALLAFTER=	_installafter
+_installafter:
+	${INSTALL} -d ${DESTDIR}${RC_LIB}/init.d
+	${INSTALL} -d ${DESTDIR}${RC_LIB}/tmp

@@ -1,5 +1,5 @@
-DIR = $(RC_LIB)/sh
-BIN = $(CONTENTS) 
+DIR=	${RC_LIB}/sh
+BIN=	${CONTENTS}
 
-TOPDIR = ..
-include $(TOPDIR)/default.mk
+MK=	../mk
+include ${MK}/scripts.mk

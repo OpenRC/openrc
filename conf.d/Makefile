@@ -1,5 +1,5 @@
-DIR  = /etc/conf.d
-CONF = $(CONTENTS)
+DIR=	/etc/conf.d
+CONF=	${CONTENTS}
 
-TOPDIR = ..
-include $(TOPDIR)/default.mk
+MK=	../mk
+include ${MK}/scripts.mk

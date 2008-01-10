@@ -1,5 +1,5 @@
-DIR         = /etc
-CONF_APPEND = rc.conf
+DIR=		/etc
+CONF_APPEND=	rc.conf
 
-TOPDIR = ..
-include $(TOPDIR)/default.mk
+MK=		../mk
+include ${MK}/scripts.mk

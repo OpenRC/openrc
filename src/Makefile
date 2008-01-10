@@ -2,5 +2,5 @@
 
 SUBDIR=		libeinfo librc rc
 
-TOPDIR=		..
-include		${TOPDIR}/subdir.mk
+MK=		../mk
+include		${MK}/subdir.mk

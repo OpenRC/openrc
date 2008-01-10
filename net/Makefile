@@ -1,5 +1,5 @@
-DIR = $(RC_LIB)/net
-INC = $(CONTENTS)
+DIR=	${RC_LIB}/net
+INC=	${CONTENTS}
 
-TOPDIR = ..
-include $(TOPDIR)/default.mk
+MK=	../mk
+include ${MK}/scripts.mk
