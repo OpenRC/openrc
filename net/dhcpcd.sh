@@ -24,7 +24,7 @@
 
 dhcpcd_depend() {
 	after interface
-	program start /sbin/dhcpcd /usr/local/sbin/dhcpcd
+	program start dhcpcd
 	provide dhcp
 
 	# We prefer dhcpcd over the others

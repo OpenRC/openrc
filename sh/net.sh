@@ -329,9 +329,13 @@ _load_modules() {
 		if [ -n "$1" ]; then
 			x=
 			for x; do
-				[ -x "${x}" ] && break
+				case "${x}" in
+					/*) [ -x "${x}" ] && break;;
+					*) type "${x}" >/dev/null 2>&1 && break;;
+				esac
+				unset x
 			done
-			[ -x "${x}" ] || continue
+			[ -n "${x}" ] || continue
 		fi
 
 		eval provides=\$module_${i}_provide
