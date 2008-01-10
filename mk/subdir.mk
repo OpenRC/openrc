@@ -19,7 +19,7 @@ _SUBDIR = @${_+_}for x in ${SUBDIR}; do \
 		DIRPRFX=${DIRPRFX}$$x.${OS}/ || exit $$?; \
 		cd ..; \
 	fi; \
-	if test -d $$x.${SUBOS}; then \
+	if test "${SUBOS}" != "${OS}" && test -d $$x.${SUBOS}; then \
 	${ECHODIR} "===> ${DIRPRFX}$$x.${SUBOS} (${@:realinstall=install})"; \
 		cd $$x.${SUBOS}; \
 		${MAKE} ${@:realinstall=install} \

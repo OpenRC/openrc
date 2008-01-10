@@ -8,12 +8,13 @@ PKG=		${NAME}-${VERSION}
 
 SUBDIR=		conf.d doc etc init.d man net runlevels sh src
 
-MK= 		mk
-include ${MK}/os.mk
-include ${MK}/subdir.mk
-include ${MK}/dist.mk
 
 INSTALLAFTER=	_installafter
 _installafter:
 	${INSTALL} -d ${DESTDIR}${RC_LIB}/init.d
 	${INSTALL} -d ${DESTDIR}${RC_LIB}/tmp
+
+MK= 		mk
+include ${MK}/os.mk
+include ${MK}/subdir.mk
+include ${MK}/dist.mk
