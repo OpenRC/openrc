@@ -1,4 +1,4 @@
-BOOT=		consolefont keymaps modules net.lo procfs
+BOOT=		clock consolefont keymaps modules net.lo procfs
 DEFAULT=	hdparm
 
 MK=			../mk

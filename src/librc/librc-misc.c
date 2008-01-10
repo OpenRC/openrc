@@ -151,11 +151,14 @@ char **rc_config_list (const char *file)
 		/* Get entry - we do not want comments */
 		token = strsep (&p, "#");
 		if (token && (strlen (token) > 1)) {
-			/* Stip the newline if present */
-			if (token[strlen (token) - 1] == '\n')
-				token[strlen (token) - 1] = 0;
+			/* If not variable assignment then skip */
+			if (strchr (token, '=')) {
+				/* Stip the newline if present */
+				if (token[strlen (token) - 1] == '\n')
+					token[strlen (token) - 1] = 0;
 
-			rc_strlist_add (&list, token);
+				rc_strlist_add (&list, token);
+			}
 		}
 		free (buffer);
 	}

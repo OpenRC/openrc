@@ -1,4 +1,4 @@
-BOOT=		bootmisc checkroot checkfs clock hostname localmount \
+BOOT=		bootmisc checkroot checkfs hostname localmount \
 		swap sysctl urandom
 DEFAULT=	local netmount
 

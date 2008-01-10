@@ -56,7 +56,8 @@ cleanup_tmp_dir() {
 			! -path "./aquota.group/*" \
 			! -path ./journal \
 			! -path "./journal/*" \
-			-delete
+			-exec rm -rf -- {} \; \
+			-type d -prune
 		eend 0
 	else
 		ebegin "Cleaning ${dir} directory"
@@ -126,6 +127,8 @@ start() {
 		dmesg > /var/log/dmesg
 		chmod 640 /var/log/dmesg
 	fi
+
+	rm -f /etc/nologin
 }
 
 stop() {

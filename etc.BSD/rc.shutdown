@@ -23,9 +23,6 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-# Ensure we are called by init
-[ "$PPID" = "1" ] || exit 0
-
 # Handle interrupts 
 trap : SIGINT SIGQUIT
 
@@ -41,8 +38,8 @@ export LD_LIBRARY_PATH="/lib${LD_LIBRARY_PATH:+:}${LDLIBRARY_PATH}"
 # This block should 'translate' from the way init calls it to the way it would
 # be called by sysvinit on linux.
 case "$1" in
-    reboot) 	export RUNLEVEL=6;;
-    shutdown)	export RUNLEVEL=0;;
-    single)		export RUNLEVEL=S;;
+	reboot) 	export RUNLEVEL=6;;
+	shutdown)	export RUNLEVEL=0;;
+	single)		export RUNLEVEL=S;;
 esac
 exec /sbin/rc "$1"

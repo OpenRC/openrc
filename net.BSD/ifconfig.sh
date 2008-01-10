@@ -128,7 +128,7 @@ _add_address() {
 
 	# ifconfig doesn't like CIDR addresses
 	case "${RC_UNAME}" in
-		NetBSD|OpenBSD)
+		OpenBSD)
 			local ip="${1%%/*}" cidr="${1##*/}" netmask=
 			if [ -n "${cidr}" -a "${cidr}" != "${ip}" ]; then
 				netmask="$(_cidr2netmask "${cidr}")"

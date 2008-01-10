@@ -177,6 +177,7 @@ static const char *const color_terms[] = {
 	"screen-w",
 	"screen.linux",
 	"vt100",
+	"vt220",
 	"xterm",
 	"xterm-256color",
 	"xterm-color",
