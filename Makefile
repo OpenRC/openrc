@@ -8,6 +8,7 @@ PKG=		${NAME}-${VERSION}
 
 SUBDIR=		conf.d doc etc init.d man net runlevels sh src
 
+INSTALL?=	install
 
 INSTALLAFTER=	_installafter
 _installafter:
