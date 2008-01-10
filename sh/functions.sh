@@ -61,7 +61,7 @@ _sanitize_path() {
 	local IFS=":" p= path=
 	for p in ${PATH}; do
 		case "${p}" in
-			/lib/rc/sbin|/bin|/sbin|/usr/bin|/usr/sbin|/usr/local/bin|/usr/local/sbin);;
+			/lib/rc/sbin|/bin|/sbin|/usr/bin|/usr/sbin|/usr/pkg/bin|/usr/pkg/sbin|/usr/local/bin|/usr/local/sbin);;
 			*) path="${path}:${p}";;
 		esac
 	done
@@ -78,7 +78,7 @@ if [ -n "${ZSH_VERSION}" ]; then
 fi
 
 # Add our bin to $PATH
-export PATH="/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin$(_sanitize_path "${PATH}")"
+export PATH="/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/pkg/bin:/usr/pkg/sbin:/usr/local/bin:/usr/local/sbin$(_sanitize_path "${PATH}")"
 unset _sanitize_path
 
 for arg; do
