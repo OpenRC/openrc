@@ -29,6 +29,3 @@ LIBDL?=		${_LIBDL}$(shell ${_LIBDL_SH})
 _LIBKVM_SH=	case `uname -s` in *BSD) echo "-lkvm";; *) echo;; esac
 _LIBKVM!=	${_LIBKVM_SH}
 LIBKVM?=	${_LIBKVM}$(shell ${_LIBKVM_SH})
-
-# Maye as well define INSTALL here as everything uses us
-INSTALL?=	install

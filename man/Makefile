@@ -1,4 +1,3 @@
-DIR=		/usr/share/man
 _MAN3_SH=	ls -1 *.3
 _MAN3!=		${_MAN3_SH}
 MAN3=		${_MAN3}$(shell ${_MAN3_SH})
@@ -14,23 +13,24 @@ MAKE_LINKS=	suffix=$${man\#*.}; \
 		-n -e '/^\.Sh NAME$$/,/\.Sh/ s/\.Nm //p' $${man}`; do \
 		if test "$${link}" != "$${prefix}" ; then \
 		ln -sf $${man} \
-		${DESTDIR}/${DIR}/man$${suffix}/$${link}.$${suffix} ; \
+		${DESTDIR}/${MANDIR}$${suffix}/$${link}.$${suffix} ; \
 		fi; \
 		done;
 
-INSTALL?=	install
+MK=		../mk
+include ${MK}/sys.mk
 
 all:
 
 install:
-	${INSTALL} -d ${DESTDIR}/${DIR}/man3
+	${INSTALL} -d ${DESTDIR}/${MANDIR}3
 	for man in ${MAN3}; do \
-		${INSTALL} -m 0644 "$$man" ${DESTDIR}/${DIR}/man3 || exit $$?; \
+		${INSTALL} -m ${MANMODE} "$$man" ${DESTDIR}/${MANDIR}3 || exit $$?; \
 		${MAKE_LINKS} \
 	done	
-	${INSTALL} -d ${DESTDIR}/${DIR}/man8
+	${INSTALL} -d ${DESTDIR}/${MANDIR}8
 	for man in ${MAN8}; do \
-		${INSTALL} -m 0644 "$$man" ${DESTDIR}/${DIR}/man8 || exit $$?; \
+		${INSTALL} -m ${MANMODE} "$$man" ${DESTDIR}/${MANDIR}8 || exit $$?; \
 		${MAKE_LINKS} \
 	done
 

@@ -3,29 +3,13 @@
 
 # Copyright 2008 Roy Marples
 
-LIBNAME?=		lib
-
 SHLIB_NAME=		lib${LIB}.so.${SHLIB_MAJOR}
 SHLIB_LINK=		lib${LIB}.so
-SHLIBDIR?=		/${LIBNAME}
 SONAME?=		${SHLIB_NAME}
 
 OBJS+=			${SRCS:.c=.o}
 SOBJS+=			${OBJS:.o=.So}
 _LIBS=			lib${LIB}.a ${SHLIB_NAME}
-
-ECHO?=			echo
-AR?=			ar
-RANLIB?=		ranlib
-INSTALL?=		install
-
-PICFLAG?=		-fPIC
-
-INCDIR?=		/usr/include
-INCMODE?=		0444
-
-LIBDIR?=		/usr/${LIBNAME}
-LIBMODE?=		0444
 
 .SUFFIXES:		.So
 
@@ -62,4 +46,5 @@ install: all
 clean:
 	rm -f ${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK} ${CLEANFILES}
 
+include ${MK}/sys.mk
 include ${MK}/depend.mk

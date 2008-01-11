@@ -7,6 +7,7 @@ BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 
 MK=		../mk
+include ${MK}/sys.mk
 include ${MK}/os.mk
 include Makefile.${OS}
 include Makefile.${SUBOS}

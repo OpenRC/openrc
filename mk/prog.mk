@@ -3,10 +3,7 @@
 
 # Copyright 2008 Roy Marples
 
-BINDIR?=		/sbin
 OBJS+=			${SRCS:.c=.o}
-
-INSTALL?=		install
 
 all: depend ${PROG}
 
@@ -16,4 +13,5 @@ ${PROG}: ${SCRIPTS} ${OBJS}
 clean:
 	rm -f ${OBJS} ${PROG} ${CLEANFILES}
 
+include ${MK}/sys.mk
 include ${MK}/depend.mk
