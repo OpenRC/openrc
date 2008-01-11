@@ -14,12 +14,11 @@ VARBASE?=	/var
 all: ${OBJS} 
 
 .in:
-	sed -e s':@PREFIX@:${PREFIX}:' -e 's:@VARBASE@:${VARBASE}:' $< > $@
+	sed -e 's:@PREFIX@:${PREFIX}:' -e 's:@VARBASE@:${VARBASE}:' $< > $@
 
-install: all 
-	for x in ${OBJS}; do \
-		${INSTALL} work/$$x ${DESTDIR}${DIR}; \
-	done
+install: all
+	${INSTALL} -d ${DESTDIR}${DIR} 
+	${INSTALL} ${OBJS} ${DESTDIR}${DIR}
 
 clean:
 	rm -f ${OBJS}

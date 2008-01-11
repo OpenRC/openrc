@@ -5,7 +5,7 @@
 vpn=${SVCNAME#*.}
 name="OpenVPN"
 [ "${vpn}" != "openvpn" ] && name="${name} (${vpn})"
-command=@PREFIX/sbin/openvpn
+command=@PREFIX@/sbin/openvpn
 
 pidfile=@VARBASE@/run/"${SVCNAME}".pid
 openvpn_dir=${openvpn_dir:-@PREFIX@/etc/openvpn}
