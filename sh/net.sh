@@ -476,10 +476,7 @@ start()
 	
 	for module in ${MODULES}; do
 		if type "${module}_pre_start" >/dev/null 2>&1; then
-			if ! ${module}_pre_start; then
-				eend 1
-				exit 1
-			fi
+			${module}_pre_start || exit $?
 		fi
 	done
 
@@ -606,10 +603,7 @@ ${routes}"
 
 	for module in ${MODULES}; do
 		if type "${module}_post_start" >/dev/null 2>&1; then
-			if ! ${module}_post_start; then
-				eend 1
-				exit 1
-			fi
+			${module}_post_start || exit $?
 		fi
 	done
 
@@ -650,10 +644,7 @@ stop()
 
 	for module in ${MODULES}; do
 		if type "${module}_pre_stop" >/dev/null 2>&1; then
-			if ! ${module}_pre_stop; then
-				eend 1
-				exit 1
-			fi
+			${module}_pre_stop || exit $?
 		fi
 	done
 
