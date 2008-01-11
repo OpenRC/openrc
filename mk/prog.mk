@@ -9,7 +9,7 @@ include ${MK}/sys.mk
 # Some systems don't include /lib in their standard link path
 # so we should embed it if different
 _RPATH_SH=		if test "${SHLIBDIR}" != "/usr/${LIBNAME}"; then \
-				echo "-Wl,-rpath-link,${DESTDIR}${SHLIBDIR}:${DESTDIR}/usr/lib -R${SHLIBDIR}"; \
+				echo "-Wl,-rpath-link,${DESTDIR}${SHLIBDIR}:${DESTDIR}/usr/lib"; \
 			fi
 _RPATH!=		${_RPATH_SH}
 LDFLAGS+=		${_RPATH}$(shell ${_RPATH_SH})
