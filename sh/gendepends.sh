@@ -49,11 +49,15 @@ for _dir in /etc/init.d /usr/local/etc/init.d; do
 
 		_rc_c=${SVCNAME%%.*}
 		if [ -n "${_rc_c}" -a "${_rc_c}" != "${SVCNAME}" ]; then
-			[ -e "${_dir}/../conf.d/${_rc_c}" ] && . "${_dir}/../conf.d/${_rc_c}"
+			if [ -e "${_dir}/../conf.d/${_rc_c}" ]; then
+				. "${_dir}/../conf.d/${_rc_c}"
+			fi
 		fi
 		unset _rc_c
 
-		[ -e "${_dir}/../conf.d/${SVCNAME}" ] && . "${_dir}/../conf.d/${SVCNAME}"
+		if [ -e "${_dir}/../conf.d/${SVCNAME}" ]; then
+			. "${_dir}/../conf.d/${SVCNAME}"
+		fi
 
 		[ -e /etc/rc.conf ] && . /etc/rc.conf
 
@@ -71,5 +75,3 @@ for _dir in /etc/init.d /usr/local/etc/init.d; do
 		)
 	done
 done
-
-# vim: set ts=4 :

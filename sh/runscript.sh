@@ -19,7 +19,8 @@ if [ -z "$1" -o -z "$2" ]; then
 fi
 
 # Descript the init script to the user
-describe() {
+describe()
+{
 	if [ -n "${description}" ]; then
 		einfo "${description}"
 	else
@@ -135,10 +136,11 @@ while [ -n "$1" ]; do
 		${extra_started_commands}; do
 		if [ "${_cmd}" = "$1" ]; then
 			if type "$1" >/dev/null 2>&1; then
-				# If we're in the background, we may wish to fake some
-				# commands. We do this so we can "start" ourselves from
-				# inactive which then triggers other services to start
-				# which depend on us. A good example of this is openvpn.
+				# If we're in the background, we may wish to
+				# fake some commands. We do this so we can
+				# "start" ourselves from inactive which then
+				# triggers other services to start which depend
+				# on us. A good example of this is openvpn.
 				if yesno ${IN_BACKGROUND}; then
 					for _cmd in ${in_background_fake}; do
 						if [ "${_cmd}" = "$1" ]; then
@@ -147,8 +149,8 @@ while [ -n "$1" ]; do
 						fi
 					done
 				fi
-				# Check to see if we need to be started before we can run
-				# this command
+				# Check to see if we need to be started before
+				# we can run this command
 				for _cmd in ${extra_started_commands}; do
 					if [ "${_cmd}" = "$1" ]; then
 						if ! service_started "${SVCNAME}"; then
@@ -180,5 +182,3 @@ while [ -n "$1" ]; do
 	eerror "${SVCNAME}: unknown function \`$1'"
 	exit 1
 done
-
-# vim: set ts=4 :

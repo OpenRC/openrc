@@ -13,7 +13,8 @@ description="Configures network interfaces."
 # Handy var so we don't have to embed new lines everywhere for array splitting
 __IFS="
 "
-depend() {
+depend()
+{
 	local IFACE=${SVCNAME#*.}
 	local IFVAR=$(shell_var "${IFACE}")
 
@@ -43,7 +44,8 @@ depend() {
 }
 
 # Support bash arrays - sigh
-_get_array() {
+_get_array()
+{
 	local _a=
 	if [ -n "${BASH}" ]; then
 		case "$(declare -p "$1" 2>/dev/null)" in
@@ -64,7 +66,8 @@ _get_array() {
 }
 
 # Flatten bash arrays to simple strings
-_flatten_array() {
+_flatten_array()
+{
 	if [ -n "${BASH}" ]; then
 		case "$(declare -p "$1" 2>/dev/null)" in
 			"declare -a "*)
@@ -83,7 +86,8 @@ _flatten_array() {
 	[ -n "${_a}" ]
 }
 
-_wait_for_carrier() {
+_wait_for_carrier()
+{
 	local timeout= efunc=einfon
 
 	_has_carrier  && return 0
@@ -112,7 +116,8 @@ _wait_for_carrier() {
 	return 1
 }
 
-_netmask2cidr() {
+_netmask2cidr()
+{
 	# Some shells cannot handle hex arithmetic, so we massage it slightly
 	# Buggy shells include FreeBSD sh, dash and busybox.
 	# bash and NetBSD sh don't need this.
@@ -140,7 +145,8 @@ _netmask2cidr() {
 	echo "${len}"
 }
 
-_configure_variables() {
+_configure_variables()
+{
 	local var= v= t=
 
 	for var in ${_config_vars}; do
@@ -155,12 +161,14 @@ _configure_variables() {
 	done
 }
 
-_show_address() {
+_show_address()
+{
 	einfo "received address $(_get_inet_address "${IFACE}")"
 }
 
 # Basically sorts our modules into order and saves the list
-_gen_module_list() {
+_gen_module_list()
+{
 	local x= f= force=$1
 	if ! ${force} && [ -s "${MODULESLIST}" -a "${MODULESLIST}" -nt "${MODULESDIR}" ]; then
 		local update=false
@@ -269,7 +277,8 @@ _gen_module_list() {
 	return 0
 }
 
-_load_modules() {
+_load_modules()
+{
 	local starting=$1 mymods=
 
 	# Ensure our list is up to date
@@ -380,7 +389,8 @@ _load_modules() {
 	veinfo "Loaded modules: ${MODULES}"
 }
 
-_load_config() {
+_load_config()
+{
 	local config="$(_get_array "config_${IFVAR}")"
 	local fallback="$(_get_array fallback_${IFVAR})"
 
@@ -437,7 +447,8 @@ _load_config() {
 	config_index=-1
 }
 
-start() {
+start()
+{
 	local IFACE=${SVCNAME#*.} oneworked=false module=
 	local IFVAR=$(shell_var "${IFACE}") cmd= our_metric=
 	local metric=0
@@ -612,7 +623,8 @@ ${routes}"
 	return 0
 }
 
-stop() {
+stop()
+{
 	local IFACE=${SVCNAME#*.} module=
 	local IFVAR=$(shell_var "${IFACE}") opts=
 
@@ -677,5 +689,3 @@ stop() {
 
 	return 0
 }
-
-# vim: set ts=4 sw=4 :

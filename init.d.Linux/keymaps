@@ -12,11 +12,13 @@ windowskeys=${windowskeys:-${SET_WINDOWSKEYS}}
 fix_euro=${fix_euro:-${FIX_EURO}}
 dumpkeys_charset=${dumpkeys_charset:-${DUMPKEYS_CHARSET}}
 
-depend() {
+depend()
+{
 	need localmount
 }
 
-start() {
+start()
+{
 	case "${RC_SYS}" in
 		UML|VPS|XENU)
 			ewarn "Not loading keymaps for ${RC_SYS} systems"
@@ -64,7 +66,8 @@ start() {
 	# See utf-8(7) for more information.
 	local termencoding= termmsg=
 	if yesno ${unicode}; then
-		dumpkeys ${dumpkeys_charset:+-c} ${dumpkeys_charset} | loadkeys --unicode
+		dumpkeys ${dumpkeys_charset:+-c} \
+			${dumpkeys_charset} | loadkeys --unicode
 		termencoding="%G"
 		termmsg="UTF-8"
 	else
@@ -80,5 +83,3 @@ start() {
 	done
 	eend 0
 }
-
-# vim: set ts=4 :

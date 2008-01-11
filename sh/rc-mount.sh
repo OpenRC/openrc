@@ -5,7 +5,8 @@
 # mountinfo is a C program to actually find our mounts on our supported OS's
 # We rely on fuser being preset, so if it's not then we don't unmount anything.
 # This isn't a real issue for the BSD's, but it is for Linux.
-do_unmount() {
+do_unmount()
+{
 	type fuser >/dev/null 2>&1 || return 0
 
 	local cmd="$1" retval=0 retry=
@@ -73,5 +74,3 @@ do_unmount() {
 	done
 	return ${retval}
 }
-
-# vim: set ts=4 :

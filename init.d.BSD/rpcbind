@@ -6,14 +6,16 @@ command=/usr/sbin/rpcbind
 command_args=${rpcbind_args}
 name="RPC program number mapper"
 
-depend() {
+depend()
+{
 	provide rpc
 	need localmount
 	use net logger dns
 	before inetd xinetd ntpd ntp-client
 }
 
-stop_post() {
+stop_post()
+{
 	# rpcbind returns too fast, so sleep for a second
 	sleep 1
 }

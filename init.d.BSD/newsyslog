@@ -4,11 +4,13 @@
 
 required_files="/etc/newsyslog.conf"
 
-depend() {
+depend()
+{
 	need localmount
 }
 
-start() {
+start()
+{
 	ebegin "Creating and/or trimming log files"
 	newsyslog ${newsyslog_args}
 	eend $?

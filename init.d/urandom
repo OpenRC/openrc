@@ -6,24 +6,27 @@ urandom_seed=${urandom_seed:-${URANDOM_SEED:-/var/run/random-seed}}
 
 description="Initializes the random number generator."
 
-depend() {
+depend()
+{
 	need localmount
 }
 
-save_seed() {
-	local poolsize=1
+save_seed()
+{
+	local psz=1
 
 	if [ -e /proc/sys/kernel/random/poolsize ]; then
-		poolsize=$(($(cat /proc/sys/kernel/random/poolsize) / 4096))
+		psz=$(($(cat /proc/sys/kernel/random/poolsize) / 4096))
 	fi
 
 	(	# sub shell to prevent umask pollution
 		umask 077
-		dd if=/dev/urandom of="${urandom_seed}" count=${poolsize} 2>/dev/null
+		dd if=/dev/urandom of="${urandom_seed}" count=${psz} 2>/dev/null
 	)
 }
 
-start() {
+start()
+{
 	[ -c /dev/urandom ] || return
 	if [ -f "${urandom_seed}" ]; then
 		ebegin "Initializing random number generator"
@@ -34,10 +37,9 @@ start() {
 	return 0
 }
 
-stop() {
+stop()
+{
 	ebegin "Saving random seed"
 	save_seed
 	eend $? "Failed to save random seed"
 }
-
-# vim: set ts=4 :

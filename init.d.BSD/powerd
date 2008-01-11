@@ -7,13 +7,15 @@ command_args=${powerd_args}
 pidfile=/var/run/powerd.pid
 name="Power Control Daemon"
 
-depend() {
+depend()
+{
 	need localmount
 	use logger
 	after bootmisc
 }
 
-start_pre() {
+start_pre()
+{
 	if [ -n "${powerd_battery_mode}" ]; then
 		command_args="${command_args} -b ${powerd_battery_mode}"
 	fi

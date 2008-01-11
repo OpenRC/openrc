@@ -6,13 +6,15 @@
 
 RC_GOT_FUNCTIONS="yes"
 
-eindent() {
+eindent()
+{
 	EINFO_INDENT=$((${EINFO_INDENT:-0} + 2))
 	[ "${EINFO_INDENT}" -gt 40 ] && EINFO_INDENT=40
 	export EINFO_INDENT
 }
 
-eoutdent() {
+eoutdent()
+{
 	EINFO_INDENT=$((${EINFO_INDENT:-0} - 2))
 	[ "${EINFO_INDENT}" -lt 0 ] && EINFO_INDENT=0
 	return 0
@@ -36,7 +38,8 @@ yesno()
 	esac
 }
 
-_sanitize_path() {
+_sanitize_path()
+{
 	local IFS=":" p= path=
 	for p in ${PATH}; do
 		case "${p}" in
@@ -81,5 +84,3 @@ else
 		export EINFO_LASTCMD=${_e}; return \$_r; }"
 	done
 fi
-
-# vim: set ts=4 :

@@ -2,17 +2,20 @@
 # Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-depend() {
+depend()
+{
 	need localmount
 }
 
-start() {
+start()
+{
 	ebegin "Activating swap"
 	swapon -a >/dev/null
 	eend 0 # If swapon has nothing todo it errors, so always return 0
 }	
 
-stop() {
+stop()
+{
 	ebegin "Deactivating swap"
 	swapoff -a >/dev/null
 	eend 0 

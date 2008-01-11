@@ -2,11 +2,13 @@
 # Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-has_addon() {
+has_addon()
+{
 	[ -e "${RC_LIBDIR}/addons/$1.sh" ] || [ -e /lib/rcscripts/addons/"$1".sh ]
 }
 
-import_addon() {
+import_addon()
+{
 	if [ -e "${RC_LIBDIR}/addons/$1.sh" ]; then
 		. "${RC_LIBDIR}/addons/$1.sh"
 	elif [ -e /lib/rcscripts/addons/"$1".sh ]; then
@@ -16,16 +18,19 @@ import_addon() {
 	fi
 }
 
-start_addon() {
+start_addon()
+{
 	( import_addon "$1-start" )
 }
 
-stop_addon() {
+stop_addon()
+{
 	( import_addon "$1-stop" )
 }
 
 net_fs_list="afs cifs coda davfs fuse gfs ncpfs nfs nfs4 ocfs2 shfs smbfs"
-is_net_fs() {
+is_net_fs()
+{
 	[ -z "$1" ] && return 1
 
 	# Check OS specific flags to see if we're local or net mounted
@@ -40,12 +45,14 @@ is_net_fs() {
 	return 1
 }
 
-is_union_fs() {
+is_union_fs()
+{
 	[ ! -x /sbin/unionctl ] && return 1
 	unionctl "$1" --list >/dev/null 2>&1
 }
 
-get_bootparam() {
+get_bootparam()
+{
 	local match="$1"
 	[ -z "${match}" -o ! -r /proc/cmdline ] && return 1
 
@@ -71,5 +78,3 @@ case "${PATH}" in
 	/lib/rc/sbin|/lib/rc/sbin:*);;
 	*) export PATH="/lib/rc/sbin:${PATH}";;
 esac
-
-# vim: set ts=4 :

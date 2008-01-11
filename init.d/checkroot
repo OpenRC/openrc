@@ -5,11 +5,13 @@
 description="Check the root filesystem according to /etc/fstab for errors \
 and optionally repair them."
 
-depend() {
+depend()
+{
 	keywords notimeout
 }
 
-do_mtab() {
+do_mtab()
+{
 	# Don't create mtab if /etc is readonly
 	if ! echo 2>/dev/null >/etc/mtab; then
 		ewarn "Skipping /etc/mtab initialization (ro root)"
@@ -28,12 +30,14 @@ do_mtab() {
 	eend 0
 }
 
-root_rw() {
+root_rw()
+{
 	echo 2>/dev/null >/.test.$$ || return 1
 	rm -f /.test.$$
 }
 
-do_fsck() {
+do_fsck()
+{
 	local retval=0 opts= root=
 	case "${RC_UNAME}" in
 		FreeBSD) opts="-F";;
@@ -104,7 +108,8 @@ do_fsck() {
 	fi
 }
 
-start() {
+start()
+{
 	do_fsck || return 1
 
 	if ! root_rw; then
@@ -123,5 +128,3 @@ start() {
 	# We got here, so return 0
 	return 0
 }
-
-# vim: set ts=4 :

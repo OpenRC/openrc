@@ -4,12 +4,14 @@
 
 description="Executes user commands in /etc/conf.d/local"
 
-depend() {
+depend()
+{
 	after *
 	keywords notimeout
 }
 
-start() {
+start()
+{
 	ebegin "Starting local"
 
 	if type local_start >/dev/null 2>&1; then
@@ -24,7 +26,8 @@ start() {
 	eend $? "Failed to start local"
 }
 
-stop() {
+stop()
+{
 	ebegin "Stopping local"
 
 	if type local_start >/dev/null 2>&1; then
@@ -38,5 +41,3 @@ stop() {
 
 	eend $? $"Failed to stop local"
 }
-
-# vim: set ts=4 :

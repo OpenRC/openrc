@@ -4,29 +4,34 @@
 
 extra_commands="restore"
 
-depend() {
+depend()
+{
 	need localmount 
 }
 
-restore() {
+restore()
+{
 	local mixer= retval=0
 	ebegin "Restoring mixer settings"
 	eindent
 	for mixer in /dev/mixer*; do
 		if [ -r "/var/db/${mixer#/dev/}-state" ]; then
 			vebegin "${mixer}"
-			mixer -f "${mixer}" $(cat "/var/db/${mixer#/dev/}-state") >/dev/null
+			mixer -f "${mixer}" \
+			$(cat "/var/db/${mixer#/dev/}-state") >/dev/null
 			veend $?
 			: $((retval += $?))
 		fi
 	done
 }
 
-start() {
+start()
+{
 	restore
 }
 
-stop() {
+stop()
+{
 	local mixer= retval=0
 	ebegin "Saving mixer settings"
 	eindent

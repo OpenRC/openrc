@@ -2,13 +2,15 @@
 # Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-depend() {
+depend()
+{
 	need localmount net
 	after *
 	before local
 }
 
-start() {
+start()
+{
 	ebegin "Starting local rc services"
 	local svc= enabled= retval=0 service=
 	for svc in $(rcorder /etc/rc.d/* /usr/local/etc/rc.d/* 2>/dev/null); do
@@ -37,7 +39,8 @@ start() {
 	return 0
 }
 
-stop() {
+stop()
+{
 	ebegin "Stopping local rc services"
 	local svc= retval=0
 	for svc in $(rcorder $(service_get_value started) 2>/dev/null | sort -r); do

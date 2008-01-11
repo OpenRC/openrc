@@ -21,7 +21,8 @@ else
 	utc_cmd="--localtime"
 fi
 
-depend() {
+depend()
+{
 	if yesno ${clock_adjfile}; then
 		use checkroot
 	else
@@ -29,7 +30,8 @@ depend() {
 	fi
 }
 
-setupopts() {
+setupopts()
+{
 	case "${RC_SYS}" in
 		UML|VPS|XENU)
 			utc="${RC_SYS}"
@@ -55,7 +57,8 @@ setupopts() {
 }
 
 # hwclock doesn't always return non zero on error
-_hwclock() {
+_hwclock()
+{
 	local err="$(hwclock "$@" 2>&1 >/dev/null)"
 
 	[ -z "${err}" ] && return 0
@@ -63,7 +66,8 @@ _hwclock() {
 	return 1
 }
 
-start() {
+start()
+{
 	local retval=0 errstr=""
 	setupopts
 
@@ -97,7 +101,8 @@ start() {
 	return 0
 }
 
-stop() {
+stop()
+{
 	# Don't tweak the hardware clock on LiveCD halt.
 	[ -n "${CDBOOT}" ] && return 0
 	yesno ${clock_systohc} || return 0
@@ -122,14 +127,14 @@ stop() {
 	eend ${retval} "Failed to sync clocks" 
 }
 
-save() {
+save()
+{
 	clock_systohc="yes"
 	stop
 }
 
-show() {
+show()
+{
 	setupopts
 	hwclock --show "${utc_cmd}" ${clock_args} 
 }
-
-# vim: set ts=4 :

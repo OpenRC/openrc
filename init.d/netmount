@@ -4,7 +4,8 @@
 
 description="Mounts network shares according to /etc/fstab."
 
-need_portmap() {
+need_portmap()
+{
 	local opts=
 	local IFS="
 "
@@ -18,9 +19,10 @@ need_portmap() {
 	return 1
 }
 
-depend() {
-	# Only have portmap as a dependency if there is a nfs mount in fstab that
-	# is set to mount at boot
+depend()
+{
+	# Only have portmap as a dependency if there is a nfs mount in fstab
+	# that is set to mount at boot
 	local pmap=""
 	if need_portmap; then
 		pmap="${pmap} rpc.statd"
@@ -34,7 +36,8 @@ depend() {
 	use afc-client amd autofs dns nfs nfsmount portmap rpcbind rpc.statd
 }
 
-start() {
+start()
+{	
 	local myneed= myuse= pmap="portmap" nfsmounts=
 	[ -x /etc/init.d/rpcbind ] && pmap="rpcbind"
 
@@ -42,17 +45,18 @@ start() {
 	for x in ${net_fs_list}; do
 		case "${x}" in
 			nfs|nfs4)
-    			# If the nfsmount script took care of the nfs filesystems,
-	    		# then there's no point in trying them twice
-				service_started nfsmount && continue
+    			# If the nfsmount script took care of the nfs
+			# filesystems, then there's no point in trying
+			# them twice
+			service_started nfsmount && continue
 
-        		# Only try to mount NFS filesystems if portmap was started.
-		        # This is to fix "hang" problems for new users who do not
-				# add portmap to the default runlevel.
-				if need_portmap && ! service_started "${pmap}"; then
-					continue
-				fi
-				;;
+        		# Only try to mount NFS filesystems if portmap was
+			# started. This is to fix "hang" problems for new
+		        # users who do not add portmap to the default runlevel.
+			if need_portmap && ! service_started "${pmap}"; then
+				continue
+			fi
+			;;
 		esac
 		fs="${fs}${fs:+,}${x}"
 	done
@@ -63,7 +67,8 @@ start() {
 	return 0
 }
 
-stop() {
+stop()
+{
 	local x= fs=
 
 	ebegin "Unmounting network filesystems"
@@ -73,7 +78,7 @@ stop() {
 		fs="${fs}${fs:+,}${x}"
 	done
 	if [ -n "${fs}" ]; then
-		umount -at ${fs} ||	eerror "Failed to simply unmount filesystems"
+		umount -at ${fs} || eerror "Failed to simply unmount filesystems"
 	fi
 
 	eindent
@@ -88,5 +93,3 @@ stop() {
 	eoutdent
 	eend ${retval} "Failed to unmount network filesystems"
 }
-
-# vim: set ts=4 :

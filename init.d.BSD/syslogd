@@ -7,7 +7,8 @@ command_args=${syslogd_args}
 pidfile=/var/run/syslog.pid
 name="System Logger Daemon"
 
-depend() {
+depend()
+{
 	provide logger
 	use net
 	need localmount

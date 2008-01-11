@@ -4,12 +4,14 @@
 # All rights reserved
 
 # udev needs these functions still :/
-try() {
+try()
+{
 	"$@"
 }
 
 _rc_get_kv_cache=
-get_KV() {
+get_KV()
+{
 	[ -z "${_rc_get_kv_cache}" ] \
 		&& _rc_get_kv_cache="$(uname -r)"
 
@@ -18,7 +20,8 @@ get_KV() {
 	return $?
 }
 
-KV_to_int() {
+KV_to_int()
+{
 	[ -z $1 ] && return 1
 
 	local x=${1%%-*}
@@ -36,7 +39,8 @@ KV_to_int() {
 	echo "${KV_int}"
 }
 
-single_user() {
+single_user()
+{
 	if [ "${RC_SYS}" = "VPS" ]; then
 		einfo "Halting"
 		halt -f
@@ -58,7 +62,8 @@ single_user() {
 # which allows us to run depscan.sh
 # The tricky part is finding something our kernel supports
 # tmpfs and ramfs are easy, so force one or the other
-mount_svcdir() {
+mount_svcdir()
+{
 	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="none" devtmp="none" x=
 	local svcsize=${svcsize:-1024}
 
@@ -257,5 +262,3 @@ if [ -f /sbin/livecd-functions.sh -a -n "${CDBOOT}" ]; then
 fi
 
 . "${RC_LIBDIR}"/sh/init-common-post.sh
-
-# vim: set ts=4 :

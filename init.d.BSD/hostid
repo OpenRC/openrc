@@ -5,12 +5,14 @@
 extra_commands="reset"
 hostid_file=${hostid_file:-/etc/hostid}
 
-depend() {
+depend()
+{
 	need checkroot
 	before devd net
 }
 
-_set() {
+_set()
+{
 	local id=0
 
 	if [ -n "$1" ]; then
@@ -33,7 +35,8 @@ _set() {
 # First we check to see if there is a system UUID
 # If so then we use that and erase the hostid file,
 # otherwise we generate a random UUID.
-reset() {
+reset()
+{
 	local uuid=$(kenv smbios.system.uuid 2>/dev/null)
 	local x="[0-9a-f]"
 	local y="${x}${x}${x}${x}"
@@ -68,6 +71,7 @@ start()
 	fi
 }
 
-stop() {
+stop()
+{
 	_set
 }

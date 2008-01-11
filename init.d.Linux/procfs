@@ -4,11 +4,13 @@
 
 description="Mounts misc filesystems in /proc."
 
-depend() {
+depend()
+{
 	need checkfs
 }
 
-start() {
+start()
+{
 	# Make sure we insert usbcore if its a module
 	if [ -f /proc/modules -a ! -d /proc/bus/usb ]; then
 		modprobe -q usbcore
@@ -84,5 +86,3 @@ start() {
 
 	return 0
 }
-
-# vim: set ts=4 :

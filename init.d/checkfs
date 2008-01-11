@@ -5,13 +5,15 @@
 description="Check filesystems according to /etc/fstab for errors and \
 optionally repair them."
 
-depend() {
+depend()
+{
 	need checkroot
 	after modules
 	keywords notimeout
 }
 
-do_checkfs() {
+do_checkfs()
+{
 	local retval=0 mode="-p" opts= parts=
 
 	ebegin "Checking all filesystems"
@@ -56,16 +58,16 @@ do_checkfs() {
 	return ${retval}
 }
 
-start() {
+start()
+{
 	do_checkfs
 }
 
-stop() {
+stop()
+{
 	# fsck on shutdown if we need to
 	if yesno "${fsck_shutdown:-${FSCK_SHUTDOWN}}"; then
 		do_checkfs
 	fi
 	return 0
 }
-
-# vim: set ts=4 :

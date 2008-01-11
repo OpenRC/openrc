@@ -12,12 +12,14 @@ fi
 name="Console Mouse Daemon"
 [ -n "${moused_device}" ] && name="${name} (${moused_device})"
 
-depend() {
+depend()
+{
 	need localmount
 	after bootmisc
 }
 
-start() {
+start()
+{
 	ebegin "Starting ${name}" 
 
 	if [ -z "${moused_device}" ]; then
@@ -57,5 +59,3 @@ start() {
 	
 	eend ${retval} "Failed to start moused"
 }
-
-# vim: set ts=4 :

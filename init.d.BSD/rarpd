@@ -15,7 +15,8 @@ else
 fi
 command_background="YES"
 
-depend() {
+depend()
+{
 	need localmount
 	after bootmisc
 

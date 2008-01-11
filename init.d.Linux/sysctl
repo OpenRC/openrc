@@ -2,17 +2,17 @@
 # Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-depend() {
+depend()
+{
 	use hostname
 	before bootmisc logger
 }
 
-start() {
+start()
+{
 	[ "${RC_SYS}" = "VPS" ] && return 0
 	[ -e /etc/sysctl.conf ] || return 0
 	ebegin "Configuring kernel parameters"
 	sysctl -p /etc/sysctl.conf >/dev/null
 	eend $?
 }
-
-# vim: set ts=4 :

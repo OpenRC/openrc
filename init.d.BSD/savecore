@@ -4,12 +4,14 @@
 
 description="Saves a kernel dump."
 
-depend() {
+depend()
+{
 	need checkfs
 	before swap
 }
 
-start() {
+start()
+{
 	local dump_dir=${dump_dir:-/var/crash}
 	if ! [ -d "${dump_dir}" ]; then
 		mkdir -p "${dump_dir}"

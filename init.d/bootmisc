@@ -2,14 +2,16 @@
 # Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-depend() {
+depend()
+{
 	use hostname
 	need localmount
 	before logger
 	after clock sysctl
 }
 
-cleanup_tmp_dir() {
+cleanup_tmp_dir()
+{
 	local dir=$1
 
 	mkdir -p "${dir}"
@@ -48,7 +50,8 @@ cleanup_tmp_dir() {
 	fi
 }
 
-start() {
+start()
+{
 	if ! mkdir /.test.$$ 2>/dev/null; then
 		ewarn "Skipping /var and /tmp initialization (ro root?)"
 		return 0
@@ -73,12 +76,14 @@ start() {
 
 	ebegin "Cleaning /var/run"
 	for x in $(find /var/run ! -type d ! -name utmp ! -name innd.pid \
-		! -name random-seed ! -name ld-elf.so.hints ! -name ld.so.hints); do
+		   ! -name random-seed ! -name ld-elf.so.hints \
+		   ! -name ld.so.hints); do
 		[ ! -f "${x}" ] && continue
 		# Do not remove pidfiles of already running daemons
 		case "${x}" in
 			*.pid)
-				start-stop-daemon --test --quiet --stop --pidfile "${x}"
+				start-stop-daemon --test --quiet --stop \
+				--pidfile "${x}"
 				[ $? -eq 0 ] && continue
 				;;
 		esac
@@ -110,7 +115,8 @@ start() {
 	rm -f /etc/nologin
 }
 
-stop() {
+stop()
+{
 	# Write a halt record if we're shutting down
 	case "${RC_SOFTLEVEL}" in
 		reboot|shutdown) [ "${RC_UNAME}" = "Linux" ] && halt -w;;
@@ -118,5 +124,3 @@ stop() {
 
 	return 0
 }
-
-# vim: set ts=4 :

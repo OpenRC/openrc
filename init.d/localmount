@@ -4,11 +4,13 @@
 
 description="Mounts disks and swap according to /etc/fstab."
 
-depend() {
+depend()
+{
 	need checkfs
 }
 
-start() {
+start()
+{
 	# Mount local filesystems in /etc/fstab.
 	local types="noproc" x=
 	for x in ${net_fs_list}; do
@@ -23,7 +25,8 @@ start() {
 	return 0
 }
 
-stop() {
+stop()
+{
 	# Don't unmount anything for VPS systems
 	[ "${RC_SYS}" = "VPS" ] && return 0
 
@@ -80,5 +83,3 @@ stop() {
 
 	return 0
 }
-
-# vim: set ts=4 :

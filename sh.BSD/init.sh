@@ -4,7 +4,8 @@
 
 # void single_user()
 #  Drop to a shell, remount / ro, and then reboot
-single_user() {
+single_user()
+{
 	exit 1
 }
 
@@ -14,7 +15,8 @@ single_user() {
 # be fairly small and we unmount them after the boot level is done anyway
 # NOTE we don't set a size for Linux either
 # FreeBSD-7 supports tmpfs now :)
-mount_svcdir() {
+mount_svcdir()
+{
 	local dotmp=false release=false
 	if [ -e "${RC_SVCDIR}"/deptree ]; then
 		dotmp=true
@@ -47,5 +49,3 @@ mount_svcdir() {
 [ "${RC_UNAME}" = "FreeBSD" ] && sysctl hw.bus.devctl_disable=1 >/dev/null
 
 . "${RC_LIBDIR}"/sh/init-common-post.sh
-
-# vim: set ts=4 :

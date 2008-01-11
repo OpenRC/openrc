@@ -97,5 +97,3 @@ fi
 
 # Always exit 0 here
 exit 0
-
-# vim: set ts=4 :

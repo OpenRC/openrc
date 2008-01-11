@@ -23,5 +23,3 @@ echo "sysinit" > "${RC_SVCDIR}/softlevel"
 [ -e /dev/.rcsysinit ] && rm -f /dev/.rcsysinit
 
 exit 0
-
-# vim: set ts=4 :

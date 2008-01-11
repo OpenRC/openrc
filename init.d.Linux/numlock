@@ -6,11 +6,13 @@ description="Turns numlock on for the consoles."
 
 ttyn=${rc_tty_number:-${RC_TTY_NUMBER}:-12}
 
-depend() {
+depend()
+{
 	need localmount
 }
 
-_setleds() {
+_setleds()
+{
 	[ -z "$1" ] && return 1
 
 	local dev=/dev/tty t= i=1 retval=0
@@ -24,16 +26,16 @@ _setleds() {
 	return ${retval}
 }
 
-start() {
+start()
+{
 	ebegin "Enabling numlock on ttys"
 	_setleds +
 	eend $? "Failed to enable numlock"
 }
 
-stop() {
+stop()
+{
 	ebegin "Disabling numlock on ttys"
 	_setleds -
 	eend $? "Failed to disable numlock"
 }
-
-# vim: set ts=4 :

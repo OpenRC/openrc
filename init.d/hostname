@@ -4,15 +4,15 @@
 
 description="Sets the hostname of the machine."
 
-depend() {
+depend()
+{
 	need checkroot
 }
 
-start() {
+start()
+{
 	hostname=${hostname-${HOSTNAME-localhost}}
 	ebegin "Setting hostname to ${hostname}"
 	hostname "${hostname}"
 	eend $? "Failed to set the hostname"
 }
-
-# vim: set ts=4 :

@@ -4,12 +4,14 @@
 
 description="Loads a user defined list of kernel modules."
 
-depend() {
+depend()
+{
 	need checkroot
 	use isapnp
 }
 
-start() {
+start()
+{
 	# Should not fail if kernel do not have module
 	# support compiled in ...
 	[ ! -f /proc/modules -o "${RC_SYS}" = "VPS" ] && return 0
@@ -22,7 +24,10 @@ start() {
 	local KV_MICRO=${x%%-*}
 
 	local list= x= args= cnt=0
-	for x in "${KV}" ${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} ${KV_MAJOR}.${KV_MINOR}; do
+	for x in "${KV}" \
+		${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} \
+		${KV_MAJOR}.${KV_MINOR} \
+	; do
 		eval list=\$modules_$(shell_var "${x}")
 		[ -n "${list}" ] && break
 	done
@@ -43,5 +48,3 @@ start() {
 	# Above test clobbers the return
 	return 0
 }
-
-# vim: set ts=4 :
