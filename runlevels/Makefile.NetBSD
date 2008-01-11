@@ -1,1 +1,1 @@
-BOOT+=	ttys
+BOOT+=	ttys wscons
