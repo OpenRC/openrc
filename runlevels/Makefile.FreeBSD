@@ -1,1 +1,2 @@
-BOOT+=	clock dumpon syscons
+BOOT+=		clock dumpon syscons
+DEFAULT+=	mixer powerd

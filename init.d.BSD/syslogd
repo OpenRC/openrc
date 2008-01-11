@@ -4,7 +4,7 @@
 
 command=/usr/sbin/syslogd
 command_args=${syslogd_args}
-pidfile=/var/run/syslogd.pid
+pidfile=$(strings ${command} | grep /var/run/syslog)
 name="System Logger Daemon"
 
 depend()
