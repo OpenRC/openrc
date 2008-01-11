@@ -28,12 +28,14 @@ if yesno "${openvpn_client}"; then
 	start_inactive="YES"
 fi
 
-depend() {
+depend()
+{
 	need net
 	use dns
 }
 
-start_pre() {
+start_pre()
+{
 	# Linux has good dynamic tun/tap creation
 	if [ "${RC_UNAME}" = "Linux" ]; then
 		if [ ! -e /dev/net/tun ]; then
@@ -62,5 +64,3 @@ start_pre() {
 		command_args="${command_args} --cd ${openvpn_dir}"
 	fi
 }
-
-# vim: set ts=4 :

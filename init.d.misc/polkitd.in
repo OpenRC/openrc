@@ -7,8 +7,7 @@ pidfile=@VARBASE@/run/polkitd/polkitd.pid
 command_args="${polkitd_args}"
 name="PolicyKit Daemon"
 
-depend() {
+depend()
+{
 	need dbus
 }
-
-# vim: set ts=4 :

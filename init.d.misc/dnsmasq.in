@@ -9,16 +9,16 @@ required_files=/etc/dnsmasq.conf
 
 extra_started_commands="reload"
 
-depend() {
+depend()
+{	
 	provide dns
 	need localmount net
 	after bootmisc
 }
 
-reload() {
+reload()
+{
 	ebegin "Reloading ${SVCNAME}"
 	start-stop-daemon --signal SIGHUP --pidfile "${pidfile}"
 	eend $?
 }
-
-# vim: set ts=4 :

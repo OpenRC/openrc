@@ -14,7 +14,8 @@ else
 	utc="Local Time"
 fi
 
-depend() {
+depend()
+{
 	# BSD adjkerntz needs to be able to write to /etc
 	if [ "${clock}" = "UTC" -a -e /etc/wall_cmos_clock ] ||
 	   [ "${clock}" != "UTC" -a ! -e /etc/wall_cmos_clock ]; then
@@ -22,7 +23,8 @@ depend() {
 	fi
 }
 
-start() {
+start()
+{	
 	ebegin "Starting the System Clock Adjuster [${utc}]"
 	if [ "${clock}" != "UTC" ]; then
 		echo >/etc/wall_cmos_clock
@@ -34,13 +36,15 @@ start() {
 	eend $?
 }
 
-save() {
+save()
+{
 	ebegin "Setting hardware clock using the system clock [${utc}]"
 	adjkerntz -a
 	eend $?
 }
 
-stop() {
+stop()
+{
     # Don't tweak the hardware clock on LiveCD halt.
 	if yesno "${clock_systohc:-${CLOCK_SYSTOHC}}"; then
 	   [ -z "${CDBOOT}" ] && save
@@ -54,5 +58,3 @@ stop() {
 		eend 0
 	fi
 }
-
-# vim: set ts=4 :

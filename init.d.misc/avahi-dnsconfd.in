@@ -7,7 +7,8 @@ command_args="${avahi_dnsconfd_args} -D"
 pidfile=@VARBASE@/run/avahi-dnsconfd.pid
 name="Avahi DNS Configuration Daemon"
 
-depend() {
+depend()
+{
 	use dns
 	need localmount dbus
 	after bootmisc

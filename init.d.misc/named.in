@@ -11,13 +11,15 @@ extra_started_commands="reload"
 namedb=/etc/namedb
 named_uid=${named_uid:-bind}
 
-depend() {
+depend()
+{
 	provide dns
 	need localmount
 	after bootmisc
 }
 
-start_pre() {
+start_pre()
+{
 	if [ -n "${named_chroot}" ]; then
 		# Create (or update) the chroot directory structure
 		if [ -r /etc/mtree/BIND.chroot.dist ]; then
@@ -84,14 +86,14 @@ start_pre() {
 	fi
 }
 
-reload() {
+reload()
+{
 	rndc reload
 }
 
-stop_post() {
+stop_post()
+{
 	if [ -n "${named_chroot}" -a -c "${named_chroot}"/dev/null ]; then
 		umount "${named_chroot}"/dev 2>/dev/null || true
 	fi
 }
-
-# vim: set ts=4 :

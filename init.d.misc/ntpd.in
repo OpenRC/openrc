@@ -10,13 +10,15 @@ pidfile=/var/run/ntpd.pid
 command_args="${ntpd_args} -c ${ntpd_config} -f ${ntpd_drift} -p ${pidfile}"
 name="Network Time Protocol Daemon"
 
-depend() {
+depend()
+{
 	use dns
 	need localmount
 	after bootmisc ntp-client
 }
 
-start_pre() {
+start_pre()
+{
 	if [ ! -r "${ntpd_config}" ]; then
 		eerror "${ntpd_config} is not readable"
 		return 1
@@ -36,5 +38,3 @@ start_pre() {
 		command_args="${command_args} -u ntpd:ntpd -i ${ntpd_chroot}"
 	fi
 }
-
-# vim: set ts=4 :

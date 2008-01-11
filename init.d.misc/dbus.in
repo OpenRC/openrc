@@ -7,13 +7,13 @@ pidfile=@VARBASE@/run/dbus/dbus.pid
 command_args="${dbusd_args---system}"
 name="Message Bus Daemon"
 
-depend() {
+depend()
+{
 	need localmount net
 	after bootmisc
 }
 
-start_pre() {
+start_pre()
+{
     mkdir -p $(dirname $pidfile)
 }
-
-# vim: set ts=4 :
