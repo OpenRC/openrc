@@ -1,5 +1,5 @@
-# Copyright 2007-2008 Roy Marples
-# All rights reserved
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
 
 # Handy function to handle all our unmounting needs
 # mountinfo is a C program to actually find our mounts on our supported OS's

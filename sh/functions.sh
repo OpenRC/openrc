@@ -1,5 +1,5 @@
-# Copyright 2007-2008 Roy Marples
-# All rights reserved
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
 
 # Allow any sh script to work with einfo functions and friends
 # We also provide a few helpful functions for other programs to use

@@ -1,6 +1,6 @@
 # Copyright 2005-2007 Gentoo Foundation
-# Copyright 2007-2008 Roy Marples
-# All rights reserved
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
 
 pppd_depend()
 {

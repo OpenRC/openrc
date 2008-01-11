@@ -1,5 +1,5 @@
-# Copyright 2007-2008 Roy Marples
-# All rights reserved
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
 
 # mount $svcdir as something we can write to if it's not rw
 # On vservers, / is always rw at this point, so we need to clean out
