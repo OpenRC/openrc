@@ -23,23 +23,13 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-command=/usr/local/sbin/dnsmasq
-command_args=${dnsmasq_args}
-pidfile=/var/run/dnsmasq.pid
-required_files=/usr/local/etc/dnsmasq.conf
-
-extra_started_commands="reload"
+command=@PREFIX@%%/sbin/avahi-daemon
+command_args="${avahid_args} -D"
+pidfile=@VARBASE@/run/avahi-daemon/pid
+name="Avahi Service Advertisement Daemon"
 
 depend() {
-	provide dns
-	need localmount net
+	use dns
+	need localmount dbus
 	after bootmisc
 }
-
-reload() {
-	ebegin "Reloading ${SVCNAME}"
-	start-stop-daemon --signal SIGHUP --pidfile "${pidfile}"
-	eend $?
-}
-
-# vim: set ts=4 :

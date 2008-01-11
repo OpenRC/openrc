@@ -25,7 +25,7 @@
 
 command=/usr/sbin/named
 command_args=${named_args}
-pidfile=/var/run/named/pid
+pidfile=@VARBASE@/run/named/pid
 name="Domain Name server"
 extra_started_commands="reload"
 

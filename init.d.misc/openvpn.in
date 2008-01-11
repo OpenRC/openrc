@@ -23,21 +23,13 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-if [ -z "${openvpn_dir}" ]; then
-	if [ -d /usr/local/etc/openvpn ]; then
-		openvpn_dir=/usr/local/etc/openvpn
-	else
-		openvpn_dir=/etc/openvpn
-	fi
-fi
-
 vpn=${SVCNAME#*.}
 name="OpenVPN"
 [ "${vpn}" != "openvpn" ] && name="${name} (${vpn})"
-command=/usr/sbin/openvpn
-[ -x ${command} ] || command=/usr/local/sbin/openvpn
+command=@PREFIX/sbin/openvpn
 
-pidfile="/var/run/${SVCNAME}.pid"
+pidfile=@VARBASE@/run/"${SVCNAME}".pid
+openvpn_dir=${openvpn_dir:-@PREFIX@/etc/openvpn}
 openvpn_config=${openvpn_config:-${openvpn_dir}/${vpn}.conf}
 command_args="${openvpn_args} --daemon --config ${openvpn_config} --writepid ${pidfile}"
 required_dirs="${openvpn_dir}"
@@ -78,9 +70,11 @@ start_pre() {
 			eend $?
 		fi
 	else
-		# Hammer the modules home by default
-		sysctl -a | grep -q '\.tun\.' || kldload if_tun
-		sysctl -a | grep -q '\.tap\.' || kldload if_tap
+		if type kldload >/dev/null 2>&1; then
+			# Hammer the modules home by default
+			sysctl -a | grep -q '\.tun\.' || kldload if_tun
+			sysctl -a | grep -q '\.tap\.' || kldload if_tap
+		fi
 	fi
 	
 	# If the config file does not specify the cd option, we do

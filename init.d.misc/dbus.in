@@ -23,13 +23,18 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-command=/usr/local/sbin/avahi-daemon
-command_args="${avahid_args} -D"
-pidfile=/var/run/avahi-daemon/pid
-name="Avahi Service Advertisement Daemon"
+command=@PREFIX@%%/bin/dbus-daemon
+pidfile=@VARBASE@/run/dbus/dbus.pid
+command_args="${dbusd_args---system}"
+name="Message Bus Daemon"
 
 depend() {
-	use dns
-	need localmount dbus
+	need localmount net
 	after bootmisc
 }
+
+start_pre() {
+    mkdir -p $(dirname $pidfile)
+}
+
+# vim: set ts=4 :

@@ -23,18 +23,35 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-command=/usr/local/bin/dbus-daemon
-pidfile=/var/run/dbus/dbus.pid
-command_args="${dbusd_args---system}"
-name="Message Bus Daemon"
+command=/usr/sbin/sshd
+command_args=${sshd_args}
+pidfile=@VARBASE@/run/sshd.pid
+required_files=/etc/ssh/sshd_config
+required_dirs=@VARBASE@/empty
 
 depend() {
-	need localmount net
-	after bootmisc
+	use logger dns
+	need net
 }
 
 start_pre() {
-    mkdir -p $(dirname $pidfile)
+	if [ ! -e /etc/ssh/ssh_host_key ]; then
+		ebegin "Generating Hostkey"
+		ssh-keygen -t rsa1 -b 1024 -f /etc/ssh/ssh_host_key -N ''
+		eend $? || return 1
+	fi
+	if [ ! -e /etc/ssh/ssh_host_dsa_key ]; then
+		ebegin "Generating DSA Hostkey"
+		ssh-keygen -d -f /etc/ssh/ssh_host_dsa_key -N ''
+		eend $? || return 1
+	fi
+	if [ ! -e /etc/ssh/ssh_host_rsa_key ]; then
+		ebegin "Generating RSA Hostkey"
+		ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
+		eend $? || return 1
+	fi
+
+	${command} -t	
 }
 
 # vim: set ts=4 :

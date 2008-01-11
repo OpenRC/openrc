@@ -6,8 +6,6 @@ _CONTENTS_SH=	ls -1 | grep -v Makefile | xargs
 _CONTENTS!=	${_CONTENTS_SH}
 CONTENTS=	${_CONTENTS}$(shell ${_CONTENTS_SH})
 
-INSTALL?=	install
-
 include ${MK}/os.mk
 
 all:

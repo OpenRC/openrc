@@ -11,8 +11,6 @@ include ${MK}/os.mk
 include Makefile.${OS}
 include Makefile.${SUBOS}
 
-INSTALL?=	install
-
 all:
 
 install:
