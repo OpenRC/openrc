@@ -11,6 +11,7 @@ SUBDIR=		conf.d doc etc init.d man net runlevels sh src
 INSTALLAFTER=	_installafter
 
 MK= 		mk
+include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/subdir.mk
 include ${MK}/dist.mk
