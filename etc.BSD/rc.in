@@ -2,7 +2,7 @@
 # Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-# If $TERM is not set then assume default of cons25
+# If $TERM is not set then assume default of @TERM@
 # This gives us a nice colour boot :)
 [ -z "$TERM" -o "$TERM" = "dumb" ] && export TERM="@TERM@"
 

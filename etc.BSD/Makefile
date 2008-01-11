@@ -1,7 +1,7 @@
 DIR=		/etc
-SRCS=		rc.in
+SRCS=		rc.in rc.shutdown.in
 OBJS=		${SRCS:.in=}
-CONF=		rc.shutdown ${OBJS}
+CONF=		${OBJS}
 
 
 MK=		../mk
