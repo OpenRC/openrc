@@ -8,11 +8,14 @@ OBJS+=			${SRCS:.c=.o}
 include ${MK}/sys.mk
 # Some systems don't include /lib in their standard link path
 # so we should embed it if different
-_RPATH_SH=		if test "${SHLIBDIR}" != "/usr/${LIBNAME}"; then \
-				echo "-Wl,-rpath=/${LIBNAME}"; \
+# This is currently hardcoded for NetBSD which has two dynamic linkers
+# and we need to use the one in /libexec instead of /usr/libexec
+_DYNLINK_SH=		if test -e /libexec/ld.elf_so; then \
+				echo "-Wl,-dynamic-linker=/libexec/ld.elf_so"; \
 			fi
-_RPATH!=		${_RPATH_SH}
-LDFLAGS+=		${_RPATH}$(shell ${_RPATH_SH})
+_DYNLINK!=		${_DYNLINK_SH}
+LDFLAGS+=		${_DYNLINK}$(shell ${_DYNLINK_SH})
+LDFLAGS+=		-Wl,-rpath=/${LIBNAME} -L/${LIBNAME}
 LDFLAGS+=		${PROGLDFLAGS}
 
 all: depend ${PROG}
