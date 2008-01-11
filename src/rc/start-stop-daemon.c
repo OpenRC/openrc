@@ -168,7 +168,7 @@ static int parse_signal (const char *sig)
 
 	for (i = 0; i < sizeof (signallist) / sizeof (signallist[0]); i++)
 		if (strcmp (sig, signallist[i].name) == 0 ||
-			(s && strcmp (s, signallist[i].name) == 0))
+		    (s && strcmp (s, signallist[i].name) == 0))
 			return (signallist[i].signal);
 
 	eerrorx ("%s: `%s' is not a valid signal", applet, sig);
@@ -186,9 +186,9 @@ static void parse_schedule_item (schedulelist_t *item, const char *string)
 		errno = 0;
 		if (sscanf (string, "%d", &item->value) != 1)
 			eerrorx ("%s: invalid timeout value in schedule `%s'", applet,
-					 string);
+				 string);
 	} else if ((after_hyph = string + (string[0] == '-')) &&
-			 ((sig = parse_signal (after_hyph)) != -1))
+		   ((sig = parse_signal (after_hyph)) != -1))
 	{
 		item->type = schedule_signal;
 		item->value = (int) sig;
@@ -253,7 +253,7 @@ static void parse_schedule (const char *string, int default_signal)
 		if (next->type == schedule_forever) {
 			if (repeatat)
 				eerrorx ("%s: invalid schedule, `forever' appears more than once",
-						 applet);
+					 applet);
 
 			repeatat = next;
 			continue;
@@ -305,8 +305,8 @@ static pid_t get_pid (const char *pidfile, bool quiet)
 
 /* return number of processed killed, -1 on error */
 static int do_stop (const char *exec, const char *cmd,
-					const char *pidfile, uid_t uid,int sig,
-					bool quiet, bool verbose, bool test)
+		    const char *pidfile, uid_t uid,int sig,
+		    bool quiet, bool verbose, bool test)
 {
 	pid_t *pids; 
 	bool killed;
@@ -338,7 +338,7 @@ static int do_stop (const char *exec, const char *cmd,
 		killed = (kill (pids[i], sig) == 0 || errno == ESRCH ? true : false);
 		if (verbose)
 			eend (killed ? 0 : 1, "%s: failed to send signal %d to PID %d: %s",
-				  applet, sig, pids[i], strerror (errno));
+			      applet, sig, pids[i], strerror (errno));
 		if (! killed) {
 			nkilled = -1;
 		} else {
@@ -352,8 +352,8 @@ static int do_stop (const char *exec, const char *cmd,
 }
 
 static int run_stop_schedule (const char *exec, const char *cmd,
-							  const char *pidfile, uid_t uid,
-							  bool quiet, bool verbose, bool test)
+			      const char *pidfile, uid_t uid,
+			      bool quiet, bool verbose, bool test)
 {
 	schedulelist_t *item = schedule;
 	int nkilled = 0;
@@ -382,7 +382,7 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 			case schedule_signal:
 				nrunning = 0;
 				nkilled = do_stop (exec, cmd, pidfile, uid, item->value,
-								   quiet, verbose, test);
+						   quiet, verbose, test);
 				if (nkilled == 0) {
 					if (tkilled == 0) {
 						if (! quiet)
@@ -407,7 +407,7 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 
 				while (nloops) {
 					if ((nrunning = do_stop (exec, cmd, pidfile,
-											 uid, 0, true, false, true)) == 0)
+								 uid, 0, true, false, true)) == 0)
 						return (true);
 
 					if (nanosleep (&ts, NULL) == -1) {
@@ -584,7 +584,7 @@ int start_stop_daemon (int argc, char **argv)
 			eerror ("%s: invalid nice level `%s' (SSD_NICELEVEL)", applet, env);
 
 	while ((opt = getopt_long (argc, argv, getoptstring, longopts,
-							   (int *) 0)) != -1)
+				   (int *) 0)) != -1)
 		switch (opt) {
 			case 'K':  /* --stop */
 				stop = true;
@@ -702,7 +702,7 @@ int start_stop_daemon (int argc, char **argv)
 				redirect_stderr = optarg;
 				break;
 
-			case_RC_COMMON_GETOPT
+				case_RC_COMMON_GETOPT
 		}
 
 	quiet = rc_yesno (getenv ("EINFO_QUIET"));
@@ -712,9 +712,9 @@ int start_stop_daemon (int argc, char **argv)
 	 * instead of forcing --stop --oknodo as well */
 	if (! start && ! stop)
 		if (sig != SIGINT &&
-			sig != SIGTERM &&
-			sig != SIGQUIT &&
-			sig != SIGKILL)
+		    sig != SIGTERM &&
+		    sig != SIGQUIT &&
+		    sig != SIGKILL)
 		{
 			oknodo = true;
 			stop = true;
@@ -737,7 +737,7 @@ int start_stop_daemon (int argc, char **argv)
 
 	if ((redirect_stdout || redirect_stderr) && ! background)
 		eerrorx ("%s: --stdout and --stderr are only relevant with --background",
-				 applet);
+			 applet);
 
 	argc -= optind;
 	argv += optind;
@@ -839,7 +839,7 @@ int start_stop_daemon (int argc, char **argv)
 		if (nicelevel) {
 			if (setpriority (PRIO_PROCESS, mypid, nicelevel) == -1)
 				eerrorx ("%s: setpritory %d: %s", applet, nicelevel,
-						 strerror(errno));
+					 strerror(errno));
 		}
 
 		if (ch_root && chroot (ch_root) < 0)
@@ -852,7 +852,7 @@ int start_stop_daemon (int argc, char **argv)
 			FILE *fp = fopen (pidfile, "w");
 			if (! fp)
 				eerrorx ("%s: fopen `%s': %s", applet, pidfile, strerror
-						 (errno));
+					 (errno));
 			fprintf (fp, "%d\n", mypid);
 			fclose (fp);
 		}
@@ -902,7 +902,7 @@ int start_stop_daemon (int argc, char **argv)
 		/* Clean the environment of any RC_ variables */
 		STRLIST_FOREACH (environ, env, i) {
 			if (strncmp (env, "RC_", 3) == 0 ||
-				strncmp (env, "SSD_NICELEVEL=", strlen ("SSD_NICELEVEL=")) == 0)
+			    strncmp (env, "SSD_NICELEVEL=", strlen ("SSD_NICELEVEL=")) == 0)
 				continue;
 
 			/* For the path, remove the rcscript bin dir from it */
@@ -918,9 +918,9 @@ int start_stop_daemon (int argc, char **argv)
 				p += 5;
 				while ((token = strsep (&p, ":"))) {
 					if (strcmp (token, RC_LIBDIR "/bin") == 0 ||
-						strcmp (token, RC_LIBDIR "/sbin") == 0)
+					    strcmp (token, RC_LIBDIR "/sbin") == 0)
 						continue;
-					
+
 					t = strlen (token);
 					if (newpath) {
 						l = strlen (newpath);
@@ -949,15 +949,15 @@ int start_stop_daemon (int argc, char **argv)
 		stderr_fd = devnull_fd;
 		if (redirect_stdout) {
 			if ((stdout_fd = open (redirect_stdout, O_WRONLY | O_CREAT | O_APPEND,
-								   S_IRUSR | S_IWUSR)) == -1)
+					       S_IRUSR | S_IWUSR)) == -1)
 				eerrorx ("%s: unable to open the logfile for stdout `%s': %s",
-						 applet, redirect_stdout, strerror (errno));
+					 applet, redirect_stdout, strerror (errno));
 		}
 		if (redirect_stderr) {
 			if ((stderr_fd = open (redirect_stderr, O_WRONLY | O_CREAT | O_APPEND,
-								   S_IRUSR | S_IWUSR)) == -1)
+					       S_IRUSR | S_IWUSR)) == -1)
 				eerrorx ("%s: unable to open the logfile for stderr `%s': %s",
-						 applet, redirect_stderr, strerror (errno));
+					 applet, redirect_stderr, strerror (errno));
 		}
 
 		if (background) {
@@ -1011,7 +1011,7 @@ int start_stop_daemon (int argc, char **argv)
 		int nloops = START_WAIT / POLL_INTERVAL;
 		int nloopsp = WAIT_PIDFILE / POLL_INTERVAL;
 		bool alive = false;
-		
+
 		ts.tv_sec = 0;
 		ts.tv_nsec = POLL_INTERVAL;
 
@@ -1049,7 +1049,7 @@ int start_stop_daemon (int argc, char **argv)
 					if (get_pid (pidfile, true) == -1) {
 						if (! nloopsp)
 							eerrorx ("%s: did not create a valid pid in `%s'",
-									 applet, pidfile);
+								 applet, pidfile);
 						alive = true;
 					} else
 						nloopsp = 0;

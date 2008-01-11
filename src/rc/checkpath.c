@@ -75,7 +75,7 @@ static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 		}
 	} else {
 		if ((file && S_ISDIR (st.st_mode)) ||
-			(! file && ! S_ISDIR (st.st_mode)))
+		    (! file && ! S_ISDIR (st.st_mode)))
 		{
 			if (file)
 				eerror ("%s: is a directory", path);
@@ -84,7 +84,7 @@ static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 			return (-1);
 		}
 	}
-	
+
 	if (mode && (st.st_mode & 0777) != mode) {
 		einfo ("%s: correcting mode", applet);
 		if (chmod (path, mode)) {
@@ -126,7 +126,7 @@ static int parse_mode (mode_t *mode, char *text)
 }
 
 static int parse_owner (struct passwd **user, struct group **group,
-						const char *owner)
+			const char *owner)
 {
 	char *u = xstrdup (owner);
 	char *g = strchr (u, ':');
@@ -164,7 +164,7 @@ static int parse_owner (struct passwd **user, struct group **group,
 static struct option longopts[] = {
 	{ "directory",      0, NULL, 'd'},
 	{ "file",           0, NULL, 'f'},
-	{ "mode",			1, NULL, 'm'},
+	{ "mode",           1, NULL, 'm'},
 	{ "owner",          1, NULL, 'o'},
 	longopts_COMMON
 };
@@ -191,7 +191,7 @@ int checkpath (int argc, char **argv)
 	applet = basename_c (argv[0]);
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
-							   longopts, (int *) 0)) != -1)
+				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 			case 'd':
@@ -202,11 +202,13 @@ int checkpath (int argc, char **argv)
 				break;
 			case 'm':
 				if (parse_mode (&mode, optarg) != 0)
-					eerrorx ("%s: invalid mode `%s'", applet, optarg);
+					eerrorx ("%s: invalid mode `%s'",
+						 applet, optarg);
 				break;
 			case 'o':
 				if (parse_owner (&pw, &gr, optarg) != 0)
-					eerrorx ("%s: owner `%s' not found", applet, optarg);
+					eerrorx ("%s: owner `%s' not found",
+						 applet, optarg);
 				break;
 
 				case_RC_COMMON_GETOPT

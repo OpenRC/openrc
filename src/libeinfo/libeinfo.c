@@ -45,7 +45,7 @@ const char libeinfo_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <strings.h>
 #include <syslog.h>
 #ifdef HAVE_TERMCAP
-#include <termcap.h>
+# include <termcap.h>
 #endif
 #include <unistd.h>
 
@@ -78,24 +78,24 @@ hidden_proto(ewarnx)
 hidden_proto(ewend)
 hidden_proto(ewendv)
 
-    /* Incase we cannot work out how many columns from ioctl, supply a default */
+/* Incase we cannot work out how many columns from ioctl, supply a default */
 #define DEFAULT_COLS		 80
 
-#define OK					"ok"
-#define NOT_OK				"!!"
+#define OK			"ok"
+#define NOT_OK			"!!"
 
 /* Number of spaces for an indent */
 #define INDENT_WIDTH		2
 
 /* How wide can the indent go? */
-#define INDENT_MAX			40
+#define INDENT_MAX		40
 
 /* Default colours */
-#define GOOD    2 
-#define WARN    3
-#define BAD     1
-#define HILITE  6
-#define BRACKET 4
+#define GOOD                    2 
+#define WARN                    3
+#define BAD                     1
+#define HILITE                  6
+#define BRACKET                 4
 
 /* We fallback to these escape codes if termcap isn't available
  * like say /usr isn't mounted */
@@ -105,6 +105,12 @@ hidden_proto(ewendv)
 #define MD "\033[1m"
 #define ME "\033[m"
 #define UP "\033[A"
+
+#define _GET_CAP(_d, _c) strlcpy (_d, tgoto (_c, 0, 0), sizeof (_d));
+#define _ASSIGN_CAP(_v) { \
+	_v = p; \
+	p += strlcpy (p, tmp, sizeof (ebuffer) - (p - ebuffer)) + 1; \
+}
 
 /* A pointer to a string to prefix to einfo/ewarn/eerror messages */
 static const char *_eprefix = NULL;
@@ -246,17 +252,17 @@ static bool yesno (const char *value)
 	}
 
 	if (strcasecmp (value, "yes") == 0 ||
-		strcasecmp (value, "y") == 0 ||
-		strcasecmp (value, "true") == 0 ||
-		strcasecmp (value, "on") == 0 ||
-		strcasecmp (value, "1") == 0)
+	    strcasecmp (value, "y") == 0 ||
+	    strcasecmp (value, "true") == 0 ||
+	    strcasecmp (value, "on") == 0 ||
+	    strcasecmp (value, "1") == 0)
 		return (true);
 
 	if (strcasecmp (value, "no") != 0 &&
-		strcasecmp (value, "n") != 0 &&
-		strcasecmp (value, "false") != 0 &&
-		strcasecmp (value, "off") != 0 &&
-		strcasecmp (value, "0") != 0)
+	    strcasecmp (value, "n") != 0 &&
+	    strcasecmp (value, "false") != 0 &&
+	    strcasecmp (value, "off") != 0 &&
+	    strcasecmp (value, "0") != 0)
 		errno = EINVAL;
 
 	return (false);
@@ -388,12 +394,6 @@ static bool colour_terminal (FILE * __EINFO_RESTRICT f)
 	}
 #endif
 
-#define _GET_CAP(_d, _c) strlcpy (_d, tgoto (_c, 0, 0), sizeof (_d));
-#define _ASSIGN_CAP(_v) { \
-	_v = p; \
-	p += strlcpy (p, tmp, sizeof (ebuffer) - (p - ebuffer)) + 1; \
-}
-
 	/* Now setup our colours */
 	p = ebuffer;
 	for (i = 0; i < sizeof (ecolors) / sizeof (ecolors[0]); i++) {
@@ -402,7 +402,7 @@ static bool colour_terminal (FILE * __EINFO_RESTRICT f)
 		if (ecolors[i].name) {
 			const char *bold = _md;
 			c = ecolors[i].def;
-			
+
 			/* See if the user wants to override the colour
 			 * We use a :col;bold: format like 2;1: for bold green
 			 * and 1;0: for a normal red */
@@ -441,8 +441,8 @@ static bool colour_terminal (FILE * __EINFO_RESTRICT f)
 	}
 
 	_GET_CAP (tmp, _ce)
-	_ASSIGN_CAP (flush)
-	_GET_CAP (tmp, _up);
+		_ASSIGN_CAP (flush)
+		_GET_CAP (tmp, _up);
 	_ASSIGN_CAP (up);
 	strlcpy (tmp, _ch, sizeof (tmp));
 	_ASSIGN_CAP (goto_column);
@@ -557,26 +557,27 @@ const char *ecolor (einfo_color_t color)
 	return (_ecolor (f, color));
 }
 
-#define LASTCMD(_cmd) \
+#define LASTCMD(_cmd) { \
 	unsetenv ("EINFO_LASTCMD"); \
-	setenv ("EINFO_LASTCMD", _cmd, 1);
+	setenv ("EINFO_LASTCMD", _cmd, 1); \
+}
 
 #define EINFOVN(_file, _color) \
 { \
 	char *_e = getenv ("EINFO_LASTCMD"); \
 	if (_e && ! colour_terminal (_file) && strcmp (_e, "ewarn") != 0 && \
-		_e[strlen (_e) - 1] == 'n') \
-		fprintf (_file, "\n"); \
+	    _e[strlen (_e) - 1] == 'n') \
+	fprintf (_file, "\n"); \
 	if (_eprefix) \
 	fprintf (_file, "%s%s%s|", _ecolor (_file, _color), _eprefix, _ecolor (_file, ECOLOR_NORMAL)); \
 	fprintf (_file, " %s*%s ", _ecolor (_file, _color), _ecolor (_file, ECOLOR_NORMAL)); \
 	retval += _eindent (_file); \
-{ \
-	va_list _ap; \
-	va_copy (_ap, ap); \
-	retval += vfprintf (_file, fmt, _ap) + 3; \
-	va_end (_ap); \
-} \
+	{ \
+		va_list _ap; \
+		va_copy (_ap, ap); \
+		retval += vfprintf (_file, fmt, _ap) + 3; \
+		va_end (_ap); \
+	} \
 	if (colour_terminal (_file)) \
 	fprintf (_file, "%s", flush); \
 }
@@ -769,7 +770,7 @@ int ebegin (const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(ebegin)
 
 static void _eend (FILE * __EINFO_RESTRICT fp, int col, einfo_color_t color,
-				   const char *msg)
+		   const char *msg)
 {
 	int i;
 	int cols;
@@ -793,8 +794,8 @@ static void _eend (FILE * __EINFO_RESTRICT fp, int col, einfo_color_t color,
 
 	if (cols > 0 && colour_terminal (fp)) {
 		fprintf (fp, "%s%s %s[%s%s%s]%s\n", up, tgoto (goto_column, 0, cols),
-				 ecolor (ECOLOR_BRACKET), ecolor (color), msg,
-				 ecolor (ECOLOR_BRACKET), ecolor (ECOLOR_NORMAL));
+			 ecolor (ECOLOR_BRACKET), ecolor (color), msg,
+			 ecolor (ECOLOR_BRACKET), ecolor (ECOLOR_NORMAL));
 	} else {
 		if (col > 0)
 			for (i = 0; i < cols - col; i++)
@@ -823,8 +824,8 @@ static int _do_eend (const char *cmd, int retval, const char *__EINFO_RESTRICT f
 	}
 
 	_eend (fp, col,
-		   retval == 0 ? ECOLOR_GOOD : ECOLOR_BAD,
-		   retval == 0 ? OK : NOT_OK);
+	       retval == 0 ? ECOLOR_GOOD : ECOLOR_BAD,
+	       retval == 0 ? OK : NOT_OK);
 	return (retval);
 }
 
@@ -1013,7 +1014,7 @@ hidden_def(ebeginv)
 int eendv (int retval, const char *__EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
-	
+
 	if (! is_verbose ())
 		return (0);
 

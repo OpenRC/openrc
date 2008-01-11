@@ -81,7 +81,7 @@ static struct mntent *getmntfile (const char *file)
 		if (strcmp (file, ent->mnt_dir) == 0)
 			break;
 	END_ENT;
-	
+
 	return (ent);
 }
 #endif
@@ -134,7 +134,7 @@ int fstabinfo (int argc, char **argv)
 	unsetenv ("EINFO_QUIET");
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
-							   longopts, (int *) 0)) != -1)
+				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 			case 'b':
@@ -156,9 +156,9 @@ int fstabinfo (int argc, char **argv)
 						START_ENT;
 						while ((ent = GET_ENT)) {
 							if (((optarg[0] == '=' && i == ENT_PASS (ent)) ||
-								 (optarg[0] == '<' && i > ENT_PASS (ent)) ||
-								 (optarg[0] == '>' && i < ENT_PASS (ent))) &&
-								strcmp (ENT_FILE (ent), "none") != 0)
+							     (optarg[0] == '<' && i > ENT_PASS (ent)) ||
+							     (optarg[0] == '>' && i < ENT_PASS (ent))) &&
+							    strcmp (ENT_FILE (ent), "none") != 0)
 								rc_strlist_add (&files, ENT_FILE (ent));
 						}
 						END_ENT;
@@ -182,7 +182,7 @@ int fstabinfo (int argc, char **argv)
 				}
 				break;
 
-			case_RC_COMMON_GETOPT
+				case_RC_COMMON_GETOPT
 		}
 	}
 

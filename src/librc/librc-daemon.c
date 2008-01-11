@@ -98,7 +98,7 @@ static bool pid_is_exec (pid_t pid, const char *exec)
 }
 
 pid_t *rc_find_pids (const char *exec, const char *cmd,
-					 uid_t uid, pid_t pid)
+		     uid_t uid, pid_t pid)
 {
 	DIR *procdir;
 	struct dirent *entry;
@@ -192,7 +192,7 @@ librc_hidden_def(rc_find_pids)
 # endif
 
 pid_t *rc_find_pids (const char *exec, const char *cmd,
-					 uid_t uid, pid_t pid)
+		     uid_t uid, pid_t pid)
 {
 	static kvm_t *kd = NULL;
 	char errbuf[_POSIX2_LINE_MAX];
@@ -212,7 +212,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 
 #ifdef _KVM_GETPROC2
 	kp = kvm_getproc2 (kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
-					   &processes);
+			   &processes);
 #else
 	kp = kvm_getprocs (kd, KERN_PROC_PROC, 0, &processes);
 #endif
@@ -226,7 +226,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 
 		if (cmd) {
 			if (! _GET_KINFO_COMM (kp[i]) ||
-				strcmp (cmd, _GET_KINFO_COMM (kp[i])) != 0)
+			    strcmp (cmd, _GET_KINFO_COMM (kp[i])) != 0)
 				continue;
 		}
 
@@ -262,8 +262,8 @@ librc_hidden_def(rc_find_pids)
 #endif
 
 static bool _match_daemon (const char *path, const char *file,
-						   const char *mexec, const char *mname,
-						   const char *mpidfile)
+			   const char *mexec, const char *mname,
+			   const char *mpidfile)
 {
 	char *line;
 	char *ffile = rc_strcatpaths (path, file, (char *) NULL);
@@ -304,8 +304,8 @@ static bool _match_daemon (const char *path, const char *file,
 }
 
 bool rc_service_daemon_set (const char *service, const char *exec,
-							const char *name, const char *pidfile,
-							bool started)
+			    const char *name, const char *pidfile,
+			    bool started)
 {
 	char *dirpath;
 	char *file = NULL;
@@ -325,7 +325,7 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 	}
 
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons",
-							  basename_c (service), (char *) NULL);
+				  basename_c (service), (char *) NULL);
 
 	if (exec) {
 		i = strlen (exec) + 6;
@@ -358,7 +358,7 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 
 			if (! oldfile) {
 				if (_match_daemon (dirpath, d->d_name,
-								   mexec, mname, mpidfile))
+						   mexec, mname, mpidfile))
 				{
 					unlink (file);
 					oldfile = file;
@@ -402,7 +402,7 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 librc_hidden_def(rc_service_daemon_set)
 
 bool rc_service_started_daemon (const char *service, const char *exec,
-								int indx)
+				int indx)
 {
 	char *dirpath;
 	char *file;
@@ -416,8 +416,8 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 		return (false);
 
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename_c (service),
-							  (char *) NULL);
-	
+				  (char *) NULL);
+
 	i = strlen (exec) + 6;
 	mexec = xmalloc (sizeof (char) * i);
 	snprintf (mexec, i, "exec=%s", exec);
@@ -468,7 +468,7 @@ bool rc_service_daemons_crashed (const char *service)
 		return (false);
 
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename_c (service),
-							  (char *) NULL);
+				  (char *) NULL);
 
 	if (! (dp = opendir (dirpath))) {
 		free (dirpath);

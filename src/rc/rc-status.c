@@ -48,9 +48,9 @@ static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
 static void print_level (char *level)
 {
 	printf ("Runlevel: %s%s%s\n",
-			ecolor (ECOLOR_HILITE),
-			level,
-			ecolor (ECOLOR_NORMAL));
+		ecolor (ECOLOR_HILITE),
+		level,
+		ecolor (ECOLOR_NORMAL));
 }
 
 static void print_service (char *service)
@@ -121,7 +121,7 @@ int rc_status (int argc, char **argv)
 	int depopts = RC_DEP_STRICT | RC_DEP_START | RC_DEP_TRACE;
 
 	while ((opt = getopt_long (argc, argv, getoptstring, longopts,
-							   (int *) 0)) != -1)
+				   (int *) 0)) != -1)
 		switch (opt) {
 			case 'a':
 				levels = rc_runlevel_list ();
@@ -155,7 +155,7 @@ int rc_status (int argc, char **argv)
 				rc_strlist_free (services);
 				exit (EXIT_SUCCESS);
 
-			case_RC_COMMON_GETOPT
+				case_RC_COMMON_GETOPT
 		}
 
 	while (optind < argc)
@@ -178,8 +178,8 @@ int rc_status (int argc, char **argv)
 		services = rc_services_in_runlevel (level);
 		if (deptree) {
 			ordered = rc_deptree_depends (deptree, types_nua,
-										  (const char **) services,
-										  level, depopts);
+						      (const char **) services,
+						      level, depopts);
 			rc_strlist_free (services);
 			services = ordered;
 			ordered = NULL;

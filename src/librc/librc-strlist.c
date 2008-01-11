@@ -71,9 +71,9 @@ char *rc_strlist_addu (char ***list, const char *item)
 librc_hidden_def(rc_strlist_addu)
 
 static char *_rc_strlist_addsort (char ***list, const char *item,
-								  int (*sortfunc) (const char *s1,
-												   const char *s2),
-								  bool uniq)
+				  int (*sortfunc) (const char *s1,
+						   const char *s2),
+				  bool uniq)
 {
 	char **newlist;
 	char **lst = *list;

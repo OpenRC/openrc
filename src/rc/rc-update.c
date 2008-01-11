@@ -59,14 +59,14 @@ static int add (const char *runlevel, const char *service)
 		eerror ("%s: service `%s' does not exist", applet, service);
 	else if (rc_service_in_runlevel (service, runlevel)) {
 		ewarn ("%s: %s already installed in runlevel `%s'; skipping",
-			   applet, service, runlevel);
+		       applet, service, runlevel);
 		retval = 0;
 	} else if (rc_service_add (runlevel, service)) {
 		einfo ("%s added to runlevel %s", service, runlevel);
 		retval = 1;
 	} else
 		eerror ("%s: failed to add service `%s' to runlevel `%s': %s",
-				applet, service, runlevel, strerror (errno));
+			applet, service, runlevel, strerror (errno));
 
 	return (retval);
 }
@@ -83,10 +83,10 @@ static int delete (const char *runlevel, const char *service)
 
 	if (errno == ENOENT)
 		eerror ("%s: service `%s' is not in the runlevel `%s'",
-				applet, service, runlevel);
+			applet, service, runlevel);
 	else 
 		eerror ("%s: failed to remove service `%s' from runlevel `%s': %s",
-				applet, service, runlevel, strerror (errno));
+			applet, service, runlevel, strerror (errno));
 
 	return (retval);
 }
@@ -162,7 +162,7 @@ int rc_update (int argc, char **argv)
 	applet = basename_c (argv[0]); 
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
-							   longopts, (int *) 0)) != -1)
+				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 			case 'a':
@@ -175,15 +175,15 @@ int rc_update (int argc, char **argv)
 				action |= DOSHOW;
 				break;
 
-			case_RC_COMMON_GETOPT
+				case_RC_COMMON_GETOPT
 		}
 	}
 
 	verbose = rc_yesno (getenv ("EINFO_VERBOSE"));
 
 	if ((action & DOSHOW   && action != DOSHOW) ||
-		(action & DOADD    && action != DOADD) ||
-		(action & DODELETE && action != DODELETE))
+	    (action & DOADD    && action != DOADD) ||
+	    (action & DODELETE && action != DODELETE))
 		eerrorx ("%s: cannot mix commands", applet);
 
 	/* We need to be backwards compatible */
@@ -192,7 +192,7 @@ int rc_update (int argc, char **argv)
 			if (strcmp (argv[optind], "add") == 0)
 				action = DOADD;
 			else if (strcmp (argv[optind], "delete") == 0 ||
-					 strcmp (argv[optind], "del") == 0)
+				 strcmp (argv[optind], "del") == 0)
 				action = DODELETE;
 			else if (strcmp (argv[optind], "show") == 0)
 				action = DOSHOW;

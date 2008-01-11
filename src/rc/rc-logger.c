@@ -96,7 +96,7 @@ static void write_log (int logfd, const char *buffer, size_t bytes)
 					in_term = true;
 				break;
 		}
-		
+
 		if (! in_escape) {
 			write (logfd, p++, 1);
 			continue;
@@ -159,7 +159,7 @@ void rc_logger_open (const char *level)
 		eerrorx ("pipe: %s", strerror (errno));
 	for (i = 0; i < 2; i++)
 		if ((s = fcntl (signal_pipe[i], F_GETFD, 0) == -1 ||
-			 fcntl (signal_pipe[i], F_SETFD, s | FD_CLOEXEC) == -1))
+		     fcntl (signal_pipe[i], F_SETFD, s | FD_CLOEXEC) == -1))
 			eerrorx ("fcntl: %s", strerror (errno));
 
 	tcgetattr (STDOUT_FILENO, &tt);
@@ -213,7 +213,7 @@ void rc_logger_open (const char *level)
 							if (logbuf_size - logbuf_len < bytes) {
 								logbuf_size += BUFSIZ * 10;
 								logbuf = xrealloc (logbuf, sizeof (char ) *
-												   logbuf_size);
+										   logbuf_size);
 							}
 
 							memcpy (logbuf + logbuf_len, buffer, bytes);
@@ -242,7 +242,7 @@ void rc_logger_open (const char *level)
 			/* Try and cat our new logfile to a more permament location and then
 			 * punt it */
 			system (MOVELOG);
-			
+
 			exit (0);
 		default:
 			setpgid (rc_logger_pid, 0);
@@ -251,8 +251,8 @@ void rc_logger_open (const char *level)
 			dup2 (slave_tty, STDOUT_FILENO);
 			dup2 (slave_tty, STDERR_FILENO);
 			if (slave_tty != STDIN_FILENO &&
-				slave_tty != STDOUT_FILENO &&
-				slave_tty != STDERR_FILENO)
+			    slave_tty != STDOUT_FILENO &&
+			    slave_tty != STDERR_FILENO)
 				close (slave_tty);
 			close (signal_pipe[0]);
 			signal_pipe[0] = -1;

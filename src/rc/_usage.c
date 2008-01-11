@@ -37,7 +37,7 @@ static void usage (int exit_status)
 	printf ("\n\nOptions: [" getoptstring "]\n");
 	for (i = 0; longopts[i].name; ++i) {
 		int len = printf ("  -%c, --%s %s", longopts[i].val, longopts[i].name,
-		                  has_arg[longopts[i].has_arg]);
+				  has_arg[longopts[i].has_arg]);
 
 		char *lo = xstrdup (longopts_help[i]);
 		char *p = lo;

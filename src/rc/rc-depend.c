@@ -99,7 +99,7 @@ int rc_depend (int argc, char **argv)
 	applet = basename_c (argv[0]); 
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
-							   longopts, (int *) 0)) != -1)
+				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 			case 's':
@@ -116,7 +116,7 @@ int rc_depend (int argc, char **argv)
 				options &= RC_DEP_TRACE;
 				break;
 
-			case_RC_COMMON_GETOPT
+				case_RC_COMMON_GETOPT
 		}
 	}
 
@@ -140,7 +140,7 @@ int rc_depend (int argc, char **argv)
 		rc_strlist_add (&list, argv[optind]);
 		errno = 0;
 		depends = rc_deptree_depends (deptree, NULL, (const char **) list,
-									  runlevel, 0);
+					      runlevel, 0);
 		if (! depends && errno == ENOENT)
 			eerror ("no dependency info for service `%s'", argv[optind]);
 		else
@@ -167,7 +167,7 @@ int rc_depend (int argc, char **argv)
 	}
 
 	depends = rc_deptree_depends (deptree, (const char **) types,
-								  (const char **) services, runlevel, options);
+				      (const char **) services, runlevel, options);
 
 	if (depends) {
 		STRLIST_FOREACH (depends, service, i) {

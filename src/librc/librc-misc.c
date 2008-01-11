@@ -39,15 +39,15 @@ bool rc_yesno (const char *value)
 	}
 
 	if (strcasecmp (value, "yes") == 0 ||
-		strcasecmp (value, "y") == 0 ||
-		strcasecmp (value, "true") == 0 ||
-		strcasecmp (value, "1") == 0)
+	    strcasecmp (value, "y") == 0 ||
+	    strcasecmp (value, "true") == 0 ||
+	    strcasecmp (value, "1") == 0)
 		return (true);
 
 	if (strcasecmp (value, "no") != 0 &&
-		strcasecmp (value, "n") != 0 &&
-		strcasecmp (value, "false") != 0 &&
-		strcasecmp (value, "0") != 0)
+	    strcasecmp (value, "n") != 0 &&
+	    strcasecmp (value, "false") != 0 &&
+	    strcasecmp (value, "0") != 0)
 		errno = EINVAL;
 
 	return (false);

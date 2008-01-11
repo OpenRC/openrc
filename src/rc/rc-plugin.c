@@ -167,7 +167,7 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 			 * plugin will probably hang when running in silent mode. */
 			for (i = 0; i < 2; i++)
 				if ((flags = fcntl (pfd[i], F_GETFD, 0)) < 0 ||
-					fcntl (pfd[i], F_SETFD, flags | FD_CLOEXEC) < 0)
+				    fcntl (pfd[i], F_SETFD, flags | FD_CLOEXEC) < 0)
 					eerror ("fcntl: %s", strerror (errno));
 
 			/* We run the plugin in a new process so we never crash
@@ -214,7 +214,7 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 						}
 					}
 				}
-				
+
 				free (buffer);
 				close (pfd[0]);
 

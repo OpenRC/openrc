@@ -123,8 +123,8 @@ static void clean_failed (void)
 	if ((dp = opendir (RC_SVCDIR "/failed"))) {
 		while ((d = readdir (dp))) {
 			if (d->d_name[0] == '.' &&
-				(d->d_name[1] == '\0' ||
-				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
+			    (d->d_name[1] == '\0' ||
+			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
 			i = strlen (RC_SVCDIR "/failed/") + strlen (d->d_name) + 1;
@@ -133,7 +133,7 @@ static void clean_failed (void)
 			if (path) {
 				if (unlink (path))
 					eerror ("%s: unlink `%s': %s", applet, path,
-							strerror (errno));
+						strerror (errno));
 				free (path);
 			}
 		}
@@ -147,7 +147,7 @@ static void cleanup (void)
 		pidlist_t *pl = service_pids;
 
 		rc_plugin_unload ();
-		
+
 		if (! rc_in_plugin && termios_orig) {
 			tcsetattr (fileno (stdin), TCSANOW, termios_orig);
 			free (termios_orig);
@@ -204,21 +204,21 @@ static int do_e (int argc, char **argv)
 
 	if (strcmp (applet, "eval_ecolors") == 0) {
 		printf ("GOOD='%s'\nWARN='%s'\nBAD='%s'\nHILITE='%s'\nBRACKET='%s'\nNORMAL='%s'\n",
-				ecolor (ECOLOR_GOOD),
-				ecolor (ECOLOR_WARN),
-				ecolor (ECOLOR_BAD),
-				ecolor (ECOLOR_HILITE),
-				ecolor (ECOLOR_BRACKET),
-				ecolor (ECOLOR_NORMAL));
+			ecolor (ECOLOR_GOOD),
+			ecolor (ECOLOR_WARN),
+			ecolor (ECOLOR_BAD),
+			ecolor (ECOLOR_HILITE),
+			ecolor (ECOLOR_BRACKET),
+			ecolor (ECOLOR_NORMAL));
 		exit (EXIT_SUCCESS);
 	}
 
 	if (argc > 0) {
 
 		if (strcmp (applet, "eend") == 0 ||
-			strcmp (applet, "ewend") == 0 ||
-			strcmp (applet, "veend") == 0 ||
-			strcmp (applet, "vweend") == 0)
+		    strcmp (applet, "ewend") == 0 ||
+		    strcmp (applet, "veend") == 0 ||
+		    strcmp (applet, "vweend") == 0)
 		{
 			errno = 0;
 			retval = strtol (argv[0], NULL, 0);
@@ -229,7 +229,7 @@ static int do_e (int argc, char **argv)
 				argv++;
 			}
 		} else if (strcmp (applet, "esyslog") == 0 ||
-				   strcmp (applet, "elog") == 0) {
+			   strcmp (applet, "elog") == 0) {
 			char *dot = strchr (argv[0], '.');
 			if ((level = syslog_decode (dot + 1, prioritynames)) == -1)
 				eerrorx ("%s: invalid log level `%s'", applet, argv[0]);
@@ -405,7 +405,7 @@ static int do_mark_service (int argc, char **argv)
 		if (runscript_pid && sscanf (runscript_pid, "%d", &pid) == 1)
 			if (kill (pid, SIGHUP) != 0)
 				eerror ("%s: failed to signal parent %d: %s",
-						applet, pid, strerror (errno));
+					applet, pid, strerror (errno));
 
 		/* Remove the exclusive time test. This ensures that it's not
 		   in control as well */
@@ -415,7 +415,7 @@ static int do_mark_service (int argc, char **argv)
 			4;
 		mtime = xmalloc (l);
 		snprintf (mtime, l, RC_SVCDIR "exclusive/%s.%s",
-				  svcname, runscript_pid);
+			  svcname, runscript_pid);
 		if (exists (mtime) && unlink (mtime) != 0)
 			eerror ("%s: unlink: %s", applet, strerror (errno));
 		free (mtime);
@@ -436,7 +436,7 @@ static int do_value (int argc, char **argv)
 		eerrorx ("%s: no option specified", applet);
 
 	if (strcmp (applet, "service_get_value") == 0 ||
-		strcmp (applet, "get_options") == 0)
+	    strcmp (applet, "get_options") == 0)
 	{
 		char *option = rc_service_value_get (service, argv[0]);
 		if (option) {
@@ -445,7 +445,7 @@ static int do_value (int argc, char **argv)
 			ok = true;
 		}
 	} else if (strcmp (applet, "service_set_value") == 0 ||
-			   strcmp (applet, "save_options") == 0)
+		   strcmp (applet, "save_options") == 0)
 		ok = rc_service_value_set (service, argv[0], argv[1]);
 	else
 		eerrorx ("%s: unknown applet", applet);
@@ -493,7 +493,7 @@ static char *proc_getent (const char *ent)
 	}
 
 	if ((proc = rc_getline (fp)) &&
-		(p = strstr (proc, ent)))
+	    (p = strstr (proc, ent)))
 	{ 
 		i = p - proc;
 		if (i == '\0' || proc[i - 1] == ' ') {
@@ -554,9 +554,9 @@ static bool want_interactive (void)
 		return (false);
 
 	if (PREVLEVEL &&
-		strcmp (PREVLEVEL, "N") != 0 &&
-		strcmp (PREVLEVEL, "S") != 0 &&
-		strcmp (PREVLEVEL, "1") != 0)
+	    strcmp (PREVLEVEL, "N") != 0 &&
+	    strcmp (PREVLEVEL, "S") != 0 &&
+	    strcmp (PREVLEVEL, "1") != 0)
 		return (false);
 
 	if (! gotinteractive) {
@@ -609,11 +609,11 @@ static void sulogin (bool cont)
 				execle (SULOGIN, SULOGIN, (char *) NULL, newenv);
 
 			eerror ("%s: unable to exec `%s': %s", applet, SULOGIN,
-					strerror (errno));
+				strerror (errno));
 #else
 			execle ("/bin/sh", "/bin/sh", (char *) NULL, newenv);
 			eerror ("%s: unable to exec `/bin/sh': %s", applet,
-					strerror (errno));
+				strerror (errno));
 #endif
 			_exit (EXIT_FAILURE);
 		}
@@ -637,11 +637,11 @@ static void single_user (void)
 #ifdef __linux__
 	execl ("/sbin/telinit", "/sbin/telinit", "S", (char *) NULL);
 	eerrorx ("%s: unable to exec `/sbin/telinit': %s",
-			 applet, strerror (errno));
+		 applet, strerror (errno));
 #else
 	if (kill (1, SIGTERM) != 0)
 		eerrorx ("%s: unable to send SIGTERM to init (pid 1): %s",
-				 applet, strerror (errno));
+			 applet, strerror (errno));
 	exit (EXIT_SUCCESS);
 #endif
 }
@@ -651,12 +651,12 @@ static bool set_ksoftlevel (const char *level)
 	FILE *fp;
 
 	if (! level ||
-		strcmp (level, getenv ("RC_BOOTLEVEL")) == 0 ||
-		strcmp (level, RC_LEVEL_SINGLE) == 0 ||
-		strcmp (level, RC_LEVEL_SYSINIT) == 0)
+	    strcmp (level, getenv ("RC_BOOTLEVEL")) == 0 ||
+	    strcmp (level, RC_LEVEL_SINGLE) == 0 ||
+	    strcmp (level, RC_LEVEL_SYSINIT) == 0)
 	{
 		if (exists (RC_KSOFTLEVEL) &&
-			unlink (RC_KSOFTLEVEL) != 0)
+		    unlink (RC_KSOFTLEVEL) != 0)
 			eerror ("unlink `%s': %s", RC_KSOFTLEVEL, strerror (errno));
 		return (false);
 	}
@@ -786,11 +786,11 @@ static void handle_signal (int sig)
 
 			/* Only drop into single user mode if we're booting */
 			if ((PREVLEVEL &&
-				 (strcmp (PREVLEVEL, "S") == 0 ||
-				  strcmp (PREVLEVEL, "1") == 0)) ||
-				(RUNLEVEL &&
-				 (strcmp (RUNLEVEL, "S") == 0 ||
-				  strcmp (RUNLEVEL, "1") == 0)))
+			     (strcmp (PREVLEVEL, "S") == 0 ||
+			      strcmp (PREVLEVEL, "1") == 0)) ||
+			    (RUNLEVEL &&
+			     (strcmp (RUNLEVEL, "S") == 0 ||
+			      strcmp (RUNLEVEL, "1") == 0)))
 				single_user ();
 
 			exit (EXIT_FAILURE);
@@ -814,7 +814,7 @@ static void run_script (const char *script)
 	else if (pid == 0) {
 		execl (script, script, (char *) NULL);
 		eerror ("%s: unable to exec `%s': %s",
-				script, applet, strerror (errno));
+			script, applet, strerror (errno));
 		_exit (EXIT_FAILURE);
 	}
 
@@ -868,9 +868,9 @@ int main (int argc, char **argv)
 	if (argc > 1 && (strcmp (argv[1], "--version") == 0)) {
 		printf ("%s (OpenRC"
 #ifdef BRANDING
-				" " BRANDING
+			" " BRANDING
 #endif
-				") version " VERSION "\n", applet);
+			") version " VERSION "\n", applet);
 		exit (EXIT_SUCCESS);
 	}
 
@@ -885,7 +885,7 @@ int main (int argc, char **argv)
 	else if (strcmp (applet, "rc-status") == 0)
 		exit (rc_status (argc, argv));
 	else if (strcmp (applet, "rc-update") == 0 ||
-			 strcmp (applet, "update-rc") == 0)
+		 strcmp (applet, "update-rc") == 0)
 		exit (rc_update (argc, argv));
 	else if (strcmp (applet, "runscript") == 0)
 		exit (runscript (argc, argv));
@@ -902,9 +902,9 @@ int main (int argc, char **argv)
 		exit (do_e (argc, argv));
 
 	if (strcmp (applet, "service_get_value") == 0 ||
-		strcmp (applet, "service_set_value") == 0 ||
-		strcmp (applet, "get_options") == 0 ||
-		strcmp (applet, "save_options") == 0)
+	    strcmp (applet, "service_set_value") == 0 ||
+	    strcmp (applet, "get_options") == 0 ||
+	    strcmp (applet, "save_options") == 0)
 		exit (do_value (argc, argv));
 
 	if (strncmp (applet, "service_", strlen ("service_")) == 0)
@@ -928,7 +928,7 @@ int main (int argc, char **argv)
 		if (p && sscanf (p, "%d", &pid) == 1) {
 			if (kill (pid, SIGUSR1) != 0)
 				eerrorx ("rc-abort: failed to signal parent %d: %s",
-						 pid, strerror (errno));
+					 pid, strerror (errno));
 			exit (EXIT_SUCCESS);
 		}
 		exit (EXIT_FAILURE);
@@ -986,14 +986,14 @@ int main (int argc, char **argv)
 	argc++;
 	argv--;
 	while ((opt = getopt_long (argc, argv, getoptstring,
-							   longopts, (int *) 0)) != -1)
+				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 			case 'o':
 				if (strlen (optarg) == 0)
 					optarg = NULL;
 				exit (set_ksoftlevel (optarg) ? EXIT_SUCCESS : EXIT_FAILURE);
-			case_RC_COMMON_GETOPT
+				case_RC_COMMON_GETOPT
 		}
 	}
 
@@ -1035,9 +1035,9 @@ int main (int argc, char **argv)
 	   */
 	if (newlevel) {
 		if (strcmp (newlevel, RC_LEVEL_SYSINIT) == 0 &&
-			RUNLEVEL &&
-			(strcmp (RUNLEVEL, "S") == 0 ||
-			 strcmp (RUNLEVEL, "1") == 0))
+		    RUNLEVEL &&
+		    (strcmp (RUNLEVEL, "S") == 0 ||
+		     strcmp (RUNLEVEL, "1") == 0))
 		{
 			/* OK, we're either in runlevel 1 or single user mode */
 			struct utsname uts;
@@ -1053,19 +1053,19 @@ int main (int argc, char **argv)
 
 			uname (&uts);
 			printf ("\n   %sOpenRC %s" VERSION "%s is starting up %s%s%s\n\n",
-					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_HILITE),
-					ecolor (ECOLOR_NORMAL), ecolor (ECOLOR_BRACKET),
+				ecolor (ECOLOR_GOOD), ecolor (ECOLOR_HILITE),
+				ecolor (ECOLOR_NORMAL), ecolor (ECOLOR_BRACKET),
 #ifdef BRANDING
-					BRANDING
+				BRANDING
 #else
-					""
+				""
 #endif
-					, ecolor (ECOLOR_NORMAL));
+				, ecolor (ECOLOR_NORMAL));
 
 			if (! rc_yesno (getenv ("EINFO_QUIET")) &&
-				rc_conf_yesno ("rc_interactive"))
+			    rc_conf_yesno ("rc_interactive"))
 				printf ("Press %sI%s to enter interactive boot mode\n\n",
-						ecolor (ECOLOR_GOOD), ecolor (ECOLOR_NORMAL));
+					ecolor (ECOLOR_GOOD), ecolor (ECOLOR_NORMAL));
 
 			setenv ("RC_SOFTLEVEL", newlevel, 1);
 			rc_plugin_run (RC_HOOK_RUNLEVEL_START_IN, newlevel);
@@ -1088,8 +1088,8 @@ int main (int argc, char **argv)
 			exit (EXIT_SUCCESS);
 		} else if (strcmp (newlevel, RC_LEVEL_SINGLE) == 0) {
 			if (! RUNLEVEL ||
-				(strcmp (RUNLEVEL, "S") != 0 &&
-				 strcmp (RUNLEVEL, "1") != 0))
+			    (strcmp (RUNLEVEL, "S") != 0 &&
+			     strcmp (RUNLEVEL, "1") != 0))
 			{
 				/* Remember the current runlevel for when we come back */
 				set_ksoftlevel (runlevel);
@@ -1097,27 +1097,27 @@ int main (int argc, char **argv)
 			}
 		} else if (strcmp (newlevel, RC_LEVEL_REBOOT) == 0) {
 			if (! RUNLEVEL ||
-				strcmp (RUNLEVEL, "6") != 0)
+			    strcmp (RUNLEVEL, "6") != 0)
 			{
 				rc_logger_close ();
 				execl (SHUTDOWN, SHUTDOWN, "-r", "now", (char *) NULL);
 				eerrorx ("%s: unable to exec `" SHUTDOWN "': %s",
-						 applet, strerror (errno));
+					 applet, strerror (errno));
 			}
 		} else if (strcmp (newlevel, RC_LEVEL_SHUTDOWN) == 0) {
 			if (! RUNLEVEL ||
-				strcmp (RUNLEVEL, "0") != 0)
+			    strcmp (RUNLEVEL, "0") != 0)
 			{
 				rc_logger_close ();
 				execl (SHUTDOWN, SHUTDOWN,
 #ifdef __linux__
-					   "-h",
+				       "-h",
 #else
-					   "-p",
+				       "-p",
 #endif
-					   "now", (char *) NULL);
+				       "now", (char *) NULL);
 				eerrorx ("%s: unable to exec `" SHUTDOWN "': %s",
-						 applet, strerror (errno));
+					 applet, strerror (errno));
 			}
 		}
 	}
@@ -1128,27 +1128,27 @@ int main (int argc, char **argv)
 	/* We should only use ksoftlevel if we were in single user mode
 	   If not, we need to erase ksoftlevel now. */
 	if (PREVLEVEL &&
-		(strcmp (PREVLEVEL, "1") == 0 ||
-		 strcmp (PREVLEVEL, "S") == 0 ||
-		 strcmp (PREVLEVEL, "N") == 0))
+	    (strcmp (PREVLEVEL, "1") == 0 ||
+	     strcmp (PREVLEVEL, "S") == 0 ||
+	     strcmp (PREVLEVEL, "N") == 0))
 	{
 		/* Try not to join boot and ksoftlevels together */
 		if (! newlevel ||
-			strcmp (newlevel, getenv ("RC_BOOTLEVEL")) != 0)
+		    strcmp (newlevel, getenv ("RC_BOOTLEVEL")) != 0)
 			if (get_ksoftlevel (ksoftbuffer, sizeof (ksoftbuffer)))
 				newlevel = ksoftbuffer;
 	} else if (! RUNLEVEL ||
-			   (strcmp (RUNLEVEL, "1") != 0 &&
-				strcmp (RUNLEVEL, "S") != 0 &&
-				strcmp (RUNLEVEL, "N") != 0))
+		   (strcmp (RUNLEVEL, "1") != 0 &&
+		    strcmp (RUNLEVEL, "S") != 0 &&
+		    strcmp (RUNLEVEL, "N") != 0))
 	{
 		set_ksoftlevel (NULL);
 	}
 
 	if (newlevel &&
-		(strcmp (newlevel, RC_LEVEL_REBOOT) == 0 ||
-		 strcmp (newlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-		 strcmp (newlevel, RC_LEVEL_SINGLE) == 0))
+	    (strcmp (newlevel, RC_LEVEL_REBOOT) == 0 ||
+	     strcmp (newlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+	     strcmp (newlevel, RC_LEVEL_SINGLE) == 0))
 	{
 		going_down = true;
 		rc_runlevel_set (newlevel);
@@ -1190,12 +1190,12 @@ int main (int argc, char **argv)
 	if ((dp = opendir (DEVBOOT))) {
 		while ((d = readdir (dp))) {
 			if (d->d_name[0] == '.' &&
-				(d->d_name[1] == '\0' ||
-				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
+			    (d->d_name[1] == '\0' ||
+			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
 			if (rc_service_exists (d->d_name) &&
-				rc_service_plugable (d->d_name))
+			    rc_service_plugable (d->d_name))
 				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
 
 			i = strlen (DEVBOOT "/") + strlen (d->d_name) + 1;
@@ -1204,7 +1204,7 @@ int main (int argc, char **argv)
 			if (tmp) {
 				if (unlink (tmp))
 					eerror ("%s: unlink `%s': %s", applet, tmp,
-							strerror (errno));
+						strerror (errno));
 				free (tmp);
 			}
 		}
@@ -1217,9 +1217,9 @@ int main (int argc, char **argv)
 	   the device node to the init script to simulate the coldplug into
 	   runlevel for our dependency tree to work. */
 	if (newlevel && strcmp (newlevel, bootlevel) == 0 &&
-		(strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
-		 strcmp (runlevel, RC_LEVEL_SYSINIT) == 0) &&
-		rc_conf_yesno ("rc_coldplug"))
+	    (strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
+	     strcmp (runlevel, RC_LEVEL_SYSINIT) == 0) &&
+	    rc_conf_yesno ("rc_coldplug"))
 	{
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 		/* The net interfaces are easy - they're all in net /dev/net :) */
@@ -1229,7 +1229,7 @@ int main (int argc, char **argv)
 				tmp = xmalloc (sizeof (char) * i);
 				snprintf (tmp, i, "net.%s", d->d_name);
 				if (rc_service_exists (tmp) &&
-					rc_service_plugable (tmp))
+				    rc_service_plugable (tmp))
 					rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 				CHAR_FREE (tmp);
 			}
@@ -1242,7 +1242,7 @@ int main (int argc, char **argv)
 		if ((dp = opendir ("/dev"))) {
 			while ((d = readdir (dp))) {
 				if (strncmp (d->d_name, "psm", 3) == 0 ||
-					strncmp (d->d_name, "ums", 3) == 0)
+				    strncmp (d->d_name, "ums", 3) == 0)
 				{
 					char *p = d->d_name + 3;
 					if (p && isdigit ((int) *p)) {
@@ -1250,7 +1250,7 @@ int main (int argc, char **argv)
 						tmp = xmalloc (sizeof (char) * i);
 						snprintf (tmp, i, "moused.%s", d->d_name);
 						if (rc_service_exists (tmp) &&
-							rc_service_plugable (tmp))
+						    rc_service_plugable (tmp))
 							rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 						CHAR_FREE (tmp);
 					}
@@ -1274,8 +1274,8 @@ int main (int argc, char **argv)
 	rc_strlist_free (tmplist);
 
 	deporder = rc_deptree_depends (deptree, types_nua,
-								   (const char **) stop_services,
-								   runlevel, depoptions | RC_DEP_STOP);
+				       (const char **) stop_services,
+				       runlevel, depoptions | RC_DEP_STOP);
 
 	rc_strlist_free (stop_services);
 	stop_services = deporder;
@@ -1310,8 +1310,8 @@ int main (int argc, char **argv)
 		rc_strlist_join (&coldplugged_services, tmplist);
 		rc_strlist_free (tmplist);
 		if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
-			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
-			strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
+		    strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
+		    strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
 		{
 			/* We need to include the boot runlevel services if we're not in it */
 			tmplist = rc_services_in_runlevel (bootlevel);
@@ -1394,8 +1394,8 @@ int main (int argc, char **argv)
 		   going to be started depends on us */
 		rc_strlist_add (&stopdeps, service);
 		deporder = rc_deptree_depends (deptree, types_n,
-									   (const char **) stopdeps,
-									   runlevel, RC_DEP_STRICT);
+					       (const char **) stopdeps,
+					       runlevel, RC_DEP_STRICT);
 		rc_strlist_free (stopdeps);
 		stopdeps = NULL;
 		found = false;
@@ -1444,12 +1444,12 @@ int main (int argc, char **argv)
 
 	/* Run the halt script if needed */
 	if (strcmp (runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-		strcmp (runlevel, RC_LEVEL_REBOOT) == 0)
+	    strcmp (runlevel, RC_LEVEL_REBOOT) == 0)
 	{
 		rc_logger_close ();
 		execl (HALTSH, HALTSH, runlevel, (char *) NULL);
 		eerrorx ("%s: unable to exec `%s': %s",
-				 applet, HALTSH, strerror (errno));
+			 applet, HALTSH, strerror (errno));
 	}
 
 	/* Single user is done now */
@@ -1468,8 +1468,8 @@ int main (int argc, char **argv)
 
 	/* Order the services to start */
 	deporder = rc_deptree_depends (deptree, types_nua,
-								   (const char **) start_services,
-								   runlevel, depoptions | RC_DEP_START);
+				       (const char **) start_services,
+				       runlevel, depoptions | RC_DEP_START);
 	rc_strlist_free (start_services);
 	start_services = deporder;
 	deporder = NULL;

@@ -186,7 +186,7 @@ char **env_filter (void)
 		/* Ensure our PATH is prefixed with the system locations first
 		   for a little extra security */
 		if (strcmp (env_name, "PATH") == 0 &&
-			strncmp (PATH_PREFIX, env_var, pplen) != 0)
+		    strncmp (PATH_PREFIX, env_var, pplen) != 0)
 		{
 			got_path = true;
 			env_len = strlen (env_name) + strlen (env_var) + pplen + 2;
@@ -233,7 +233,7 @@ char **env_filter (void)
 	return (env);
 }
 
-	/* Other systems may need this at some point, but for now it's Linux only */
+/* Other systems may need this at some point, but for now it's Linux only */
 #ifdef __linux__
 static bool file_regex (const char *file, const char *regex)
 {
@@ -338,7 +338,7 @@ char **env_config (void)
 	} else if (file_regex ("/proc/cpuinfo", "UML")) {
 		snprintf (sys, sizeof (sys), "UML");
 	} else if (file_regex ("/proc/self/status",
-						   "(s_context|VxID|envID):[[:space:]]*[1-9]"))
+			       "(s_context|VxID|envID):[[:space:]]*[1-9]"))
 	{
 		snprintf (sys, sizeof (sys), "VPS");
 	}
@@ -381,7 +381,7 @@ char **env_config (void)
 
 	errno = 0;
 	if ((! rc_conf_yesno ("rc_color") && errno == 0) ||
-		rc_conf_yesno ("rc_nocolor"))
+	    rc_conf_yesno ("rc_nocolor"))
 		rc_strlist_add (&env, "EINFO_COLOR=no");
 
 	free (runlevel);

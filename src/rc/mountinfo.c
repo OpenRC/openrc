@@ -86,8 +86,8 @@ struct args {
 };
 
 static int process_mount (char ***list, struct args *args,
-						  char *from, char *to, char *fstype, char *options,
-						  int netdev)
+			  char *from, char *to, char *fstype, char *options,
+			  int netdev)
 {
 	char *p;
 
@@ -107,24 +107,24 @@ static int process_mount (char ***list, struct args *args,
 			return (1);
 	} else {
 		if (args->node_regex &&
-			regexec (args->node_regex, from, 0, NULL, 0) != 0)
+		    regexec (args->node_regex, from, 0, NULL, 0) != 0)
 			return (1);
 		if (args->skip_node_regex &&
-			regexec (args->skip_node_regex, from, 0, NULL, 0) == 0)
+		    regexec (args->skip_node_regex, from, 0, NULL, 0) == 0)
 			return (1);
 
 		if (args->fstype_regex &&
-			regexec (args->fstype_regex, fstype, 0, NULL, 0) != 0)
+		    regexec (args->fstype_regex, fstype, 0, NULL, 0) != 0)
 			return (-1);
 		if (args->skip_fstype_regex &&
-			regexec (args->skip_fstype_regex, fstype, 0, NULL, 0) == 0)
+		    regexec (args->skip_fstype_regex, fstype, 0, NULL, 0) == 0)
 			return (-1);
 
 		if (args->options_regex &&
-			regexec (args->options_regex, options, 0, NULL, 0) != 0)
+		    regexec (args->options_regex, options, 0, NULL, 0) != 0)
 			return (-1);
 		if (args->skip_options_regex &&
-			regexec (args->skip_options_regex, options, 0, NULL, 0) == 0)
+		    regexec (args->skip_options_regex, options, 0, NULL, 0) == 0)
 			return (-1);
 	}
 
@@ -247,11 +247,11 @@ static char **find_mounts (struct args *args)
 		}
 
 		process_mount (&list, args,
-					   mnts[i].f_mntfromname,
-					   mnts[i].f_mntonname,
-					   mnts[i].f_fstypename,
-					   options,
-					   netdev);
+			       mnts[i].f_mntfromname,
+			       mnts[i].f_mntonname,
+			       mnts[i].f_fstypename,
+			       options,
+			       netdev);
 
 		free (options);
 		options = NULL;
@@ -271,7 +271,7 @@ static struct mntent *getmntfile (const char *file)
 		if (strcmp (file, ent->mnt_dir) == 0)
 			break;
 	endmntent (fp);
-	
+
 	return (ent);
 }
 
@@ -395,7 +395,7 @@ int mountinfo (int argc, char **argv)
 	args.netdev = net_ignore;
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
-							   longopts, (int *) 0)) != -1)
+				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 			case 'e':
@@ -456,7 +456,7 @@ int mountinfo (int argc, char **argv)
 	REG_FREE (args.skip_node_regex);
 	REG_FREE (args.options_regex);
 	REG_FREE (args.skip_options_regex);
-	
+
 	rc_strlist_reverse (nodes);
 
 	result = EXIT_FAILURE;
