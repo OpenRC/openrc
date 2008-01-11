@@ -8,7 +8,7 @@ CONTENTS=	${_CONTENTS}$(shell ${_CONTENTS_SH})
 
 include ${MK}/os.mk
 
-all:
+all: ${OBJS}
 
 realinstall: ${BIN} ${CONF} ${CONF_APPEND}
 	if test -n "${DIR}"; then ${INSTALL} -d ${DESTDIR}${DIR} || exit $$?; fi
@@ -30,3 +30,4 @@ realinstall: ${BIN} ${CONF} ${CONF_APPEND}
 install: realinstall ${INSTALLAFTER}
 
 clean:
+	rm -f ${OBJS} ${CLEANFILES}
