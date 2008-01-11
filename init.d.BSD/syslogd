@@ -4,7 +4,10 @@
 
 command=/usr/sbin/syslogd
 command_args=${syslogd_args}
-pidfile=$(strings ${command} | grep /var/run/syslog)
+case "${RC_UNAME}" in
+	FreeBSD|DragonFly)	pidfile=/var/run/syslog.pid;;
+	*)			pidfile=/var/run/syslogd.pid;;
+esac
 name="System Logger Daemon"
 
 depend()
