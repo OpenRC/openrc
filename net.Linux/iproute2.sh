@@ -1,46 +1,30 @@
-# Copyright 2007 Roy Marples
+# Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-
-iproute2_depend() {
+iproute2_depend()
+{
 	program /sbin/ip
 	provide interface
 	after ifconfig
 }
 
-_up() {
+_up()
+{
 	ip link set up dev "${IFACE}"
 }
 
-_down() {
+_down()
+{
 	ip link set down dev "${IFACE}"
 }
 
-_exists() {
+_exists()
+{
 	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/dev
 }
 
-_ifindex() {
+_ifindex()
+{
 	local line= i=-2
 	while read line; do
 		i=$((${i} + 1))
@@ -56,7 +40,8 @@ _ifindex() {
 	return 1
 }
 
-_is_wireless() {
+_is_wireless()
+{
 	# Support new sysfs layout
 	[ -d /sys/class/net/"${IFACE}"/wireless ] && return 0
 
@@ -64,7 +49,8 @@ _is_wireless() {
 	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/wireless
 }
 
-_set_flag() {
+_set_flag()
+{
 	local flag=$1 opt="on"
 	if [ "${flag#-}" != "${flag}" ]; then
 		flag=${flag#-}
@@ -73,7 +59,8 @@ _set_flag() {
 	ip link set "${IFACE}" "${flag}" "${opt}"
 }
 
-_get_mac_address() {
+_get_mac_address()
+{
 	local mac=$(LC_ALL=C ip link show "${IFACE}" | sed -n \
 		-e 'y/abcdef/ABCDEF/' \
 		-e '/link\// s/^.*\<\(..:..:..:..:..:..\)\>.*/\1/p')
@@ -89,22 +76,26 @@ _get_mac_address() {
 	return 1
 }
 
-_set_mac_address() {
+_set_mac_address()
+{
 	ip link set address "$1" dev "${IFACE}"
 }
 
-_get_inet_addresses() {
+_get_inet_addresses()
+{
 	LC_ALL=C ip -family inet addr show "${IFACE}" | \
 	sed -n -e 's/.*inet \([^ ]*\).*/\1/p'
 }
 
-_get_inet_address() {
+_get_inet_address()
+{
 	set -- $(_get_inet_addresses)
 	[ $# = "0" ] && return 1
 	echo "$1"
 }
 
-_add_address() {
+_add_address()
+{
 	if [ "$1" = "127.0.0.1/8" -a "${IFACE}" = "lo" ]; then
 		ip addr add "$@" dev "${IFACE}" 2>/dev/null
 		return 0
@@ -138,7 +129,8 @@ _add_address() {
 	ip addr add dev "${IFACE}" "$@"
 }
 
-_add_route() {
+_add_route()
+{
 	if [ $# -eq 3 ]; then
 		set -- "$1" "$2" via "$3"
 	elif [ "$3" = "gw" ]; then
@@ -167,7 +159,8 @@ _add_route() {
 	eend $?
 }
 
-_delete_addresses() {
+_delete_addresses()
+{
 	ip addr flush dev "${IFACE}" scope global 2>/dev/null
 	ip addr flush dev "${IFACE}" scope site 2>/dev/null
 	if [ "${IFACE}" != "lo" ]; then
@@ -176,15 +169,18 @@ _delete_addresses() {
 	return 0
 }
 
-_has_carrier() {
+_has_carrier()
+{
 	return 0
 }
 
-_tunnel() {
+_tunnel()
+{
 	ip tunnel "$@"
 }
 
-iproute2_pre_start() {
+iproute2_pre_start()
+{
 	# MTU support
 	local mtu=
 	eval mtu=\$mtu_${IFVAR}
@@ -210,12 +206,14 @@ iproute2_pre_start() {
 	return 0
 }
 
-_iproute2_ipv6_tentative() {
-		LC_ALL=C ip addr show dev "${IFACE}" | \
+_iproute2_ipv6_tentative()
+{
+	LC_ALL=C ip addr show dev "${IFACE}" | \
 		grep -q "^[[:space:]]*inet6 .* tentative"
 }
 
-iproute2_post_start() {
+iproute2_post_start()
+{
 	# Kernel may not have IP built in
 	if [ -e /proc/net/route ]; then
 		ip route flush table cache dev "${IFACE}"
@@ -230,7 +228,8 @@ iproute2_post_start() {
 	fi
 }
 
-iproute2_post_stop() {
+iproute2_post_stop()
+{
 	# Don't delete sit0 as it's a special tunnel
 	if [ "${IFACE}" != "sit0" ]; then
 		if [ -n "$(ip tunnel show "${IFACE}" 2>/dev/null)" ]; then
@@ -240,5 +239,3 @@ iproute2_post_stop() {
 		fi
 	fi
 }
-
-# vim: set ts=4 :

@@ -1,50 +1,35 @@
-# Copyright 2007 Roy Marples
+# Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
+_config_vars="$_config_vars ssid mode associate_timeout sleep_scan"
+_config_vars="$_config_vars preferred_aps blacklist_aps"
 
-_config_vars="$_config_vars ssid mode associate_timeout sleep_scan preferred_aps blacklist_aps"
-
-iwconfig_depend() {
+iwconfig_depend()
+{
 	program /sbin/iwconfig
 	after plug
 	before interface
 	provide wireless
 }
 
-iwconfig_get_wep_status() {
+iwconfig_get_wep_status()
+{
 	local mode= status="disabled"
 
 	# No easy way of doing this grep in bash regex :/
-	if LC_ALL=C iwconfig "${IFACE}" | grep -qE "^ +Encryption key:[*0-9,A-F]"; then
+	if LC_ALL=C iwconfig "${IFACE}" | \
+	grep -qE "^ +Encryption key:[*0-9,A-F]"; then
 		status="enabled"
-		mode=$(LC_ALL=C iwconfig "${IFACE}" | sed -n -e 's/^.*Security mode:\(.*[^ ]\).*/\1/p')
+		mode=$(LC_ALL=C iwconfig "${IFACE}" | \
+		sed -n -e 's/^.*Security mode:\(.*[^ ]\).*/\1/p')
 		[ -n "${mode}" ] && mode=" - ${mode}"
 	fi
 
 	echo "(WEP ${status}${mode})"
 }
 
-_get_ssid() {
+_get_ssid()
+{
 	local i=5 ssid=
 
 	while [ ${i} -gt 0 ]; do
@@ -60,7 +45,8 @@ _get_ssid() {
 	return 1
 }
 
-_get_ap_mac_address() {
+_get_ap_mac_address()
+{
 	local mac="$(iwgetid --raw --ap "${IFACE}")" 
 	case "${mac}" in
 		"00:00:00:00:00:00") return 1;;
@@ -71,13 +57,15 @@ _get_ap_mac_address() {
 	esac
 }
 
-iwconfig_get_mode() {
+iwconfig_get_mode()
+{
 	LC_ALL=C iwgetid --mode "${IFACE}" | \
 	sed -n -e 's/^.*Mode:\(.*\)/\1/p' | \
 	tr '[:upper:]' '[:lower:]'
 }
 
-iwconfig_set_mode() {
+iwconfig_set_mode()
+{
 	local mode="$1"
 	[ "${mode}" = "$(iwconfig_get_mode)" ] && return 0
 
@@ -87,11 +75,14 @@ iwconfig_set_mode() {
 	_up
 }
 
-iwconfig_get_type() {
-	LC_ALL=C iwconfig "${IFACE}" | sed -n -e 's/^'"$1"' *\([^ ]* [^ ]*\).*/\1/p'
+iwconfig_get_type()
+{
+	LC_ALL=C iwconfig "${IFACE}" | \
+	sed -n -e 's/^'"$1"' *\([^ ]* [^ ]*\).*/\1/p'
 }
 
-iwconfig_report() {
+iwconfig_report()
+{
 	local mac= m="connected to"
 	local ssid="$(_get_ssid)"
 	local wep_status="$(iwconfig_get_wep_status)"
@@ -111,7 +102,8 @@ iwconfig_report() {
 	eoutdent
 }
 
-iwconfig_get_wep_key() {
+iwconfig_get_wep_key()
+{
 	local mac="$1" key=
 	[ -n "${mac}" ] && mac="$(echo "${mac}" | sed -e 's/://g')"
 	eval key=\$mac_key_${mac}
@@ -132,7 +124,8 @@ iwconfig_get_wep_key() {
 	fi
 }
 
-iwconfig_user_config() {
+iwconfig_user_config()
+{
 	local conf= var=${SSIDVAR} config=
 	[ -z "${var}" ] && var=${IFVAR}
 
@@ -158,7 +151,8 @@ iwconfig_user_config() {
 	done
 }
 
-iwconfig_setup_specific() {
+iwconfig_setup_specific()
+{
 	local mode="$1" channel=
 	if [ -z "${SSID}" ]; then
 		eerror "${IFACE} requires an SSID to be set to operate in ${mode} mode"
@@ -199,7 +193,8 @@ iwconfig_setup_specific() {
 	return 0
 }
 
-iwconfig_wait_for_association() {
+iwconfig_wait_for_association()
+{
 	local timeout= i=0
 	eval timeout=\$associate_timeout_${IFVAR}
 	timeout=${timeout:-10}
@@ -236,8 +231,10 @@ iwconfig_wait_for_association() {
 	return 1
 }
 
-iwconfig_associate() {
-	local mode="${1:-managed}" mac="$2" wep_required="$3" freq="$4" chan="$5"
+iwconfig_associate()
+{
+	local mode="${1:-managed}" mac="$2" wep_required="$3"
+	local freq="$4" chan="$5"
 	local w="(WEP Disabled)" key=
 
 	iwconfig_set_mode "${mode}"
@@ -322,7 +319,8 @@ iwconfig_associate() {
 	return 0
 }
 
-iwconfig_scan() {
+iwconfig_scan()
+{
 	local x= i=0 scan=
 	einfo "Scanning for access points"
 	eindent
@@ -333,9 +331,9 @@ iwconfig_scan() {
 
 	while [ ${i} -lt 3 ]; do
 	    local scan="${scan}${scan:+ }$(LC_ALL=C iwlist "${IFACE}" scan 2>/dev/null | sed -e "s/'/'\\\\''/g" -e "s/$/'/g" -e "s/^/'/g")"
-		# If this is the first pass and txpower as off and we have no results
-		# then we need to wait for at least 2 seconds whilst the interface
-		# does an initial scan.
+		# If this is the first pass and txpower as off and we have no
+		# results then we need to wait for at least 2 seconds whilst
+		# the interface does an initial scan.
 		if [ "${i}" = "0" -a "${txpowerwasoff}" = "0" ]; then
 			case "${scan}" in
 				"'${IFACE} "*"No scan results"*)
@@ -509,7 +507,8 @@ iwconfig_scan() {
 	eoutdent
 }
 
-iwconfig_force_preferred() {
+iwconfig_force_preferred()
+{
 	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
 	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
 	[ $# = 0 ] && return 1
@@ -535,7 +534,8 @@ iwconfig_force_preferred() {
 	return 1
 }
 
-iwconfig_connect_preferred() {
+iwconfig_connect_preferred()
+{
 	local ssid= i= mode= mac= enc= freq= chan=
 	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
 	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
@@ -562,7 +562,8 @@ iwconfig_connect_preferred() {
 	return 1
 }
 
-iwconfig_connect_not_preferred() {
+iwconfig_connect_not_preferred()
+{
 	local ssid= i=0 mode= mac= enc= freq= chan= pref=false
 
 	while [ ${i} -le ${APS} ]; do
@@ -594,7 +595,8 @@ iwconfig_connect_not_preferred() {
 	return 1
 }
 
-iwconfig_defaults() {
+iwconfig_defaults()
+{
 	local x=
 	for x in txpower rate rts frag; do
 	    iwconfig "${IFACE}" "${x}" auto 2>/dev/null
@@ -606,7 +608,8 @@ iwconfig_defaults() {
 	iwconfig "${IFACE}" essid off 2>/dev/null
 }
 
-iwconfig_configure() {
+iwconfig_configure()
+{
 	local x= APS=
 	eval SSID=\$ssid_${IFVAR}
 
@@ -681,7 +684,8 @@ iwconfig_configure() {
 	return 1
 }
 
-iwconfig_pre_start() {
+iwconfig_pre_start()
+{
 	# We don't configure wireless if we're being called from
 	# the background
 	yesno ${IN_BACKGROUND} && return 0
@@ -748,11 +752,10 @@ iwconfig_pre_start() {
 	return 1
 }
 
-iwconfig_post_stop() {
+iwconfig_post_stop()
+{
 	yesno ${IN_BACKGROUND} && return 0
 	_exists || return 0
 	iwconfig_defaults
 	iwconfig "${IFACE}" txpower off 2>/dev/null
 }
-
-# vim: set ts=4 

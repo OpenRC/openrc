@@ -1,37 +1,19 @@
-# Copyright 2007 Roy Marples
+# Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
+_config_vars="$_config_vars ssid mode associate_timeout preferred_aps"
+_config_vars="$_config_vars blacklist_aps"
 
-_config_vars="$_config_vars ssid mode associate_timeout preferred_aps blacklist_aps"
-
-iwconfig_depend() {
+iwconfig_depend()
+{
 	program /sbin/ifconfig
 	after plug
 	before interface
 	provide wireless
 }
 
-iwconfig_get_wep_status() {
+iwconfig_get_wep_status()
+{
 	local status="disabled"
 	local mode=$(LC_ALL=C ifconfig "${IFACE}" \
 	| sed -n -e 's/^[[:space:]]*authmode \([^ ]*\) privacy ON .*/\1/p')
@@ -42,29 +24,34 @@ iwconfig_get_wep_status() {
 	echo "(WEP ${status})"
 }
 
-_iwconfig_get() {
+_iwconfig_get()
+{
 	LC_ALL=C ifconfig "${IFACE}" | \
 	sed -n -e "s/^[[:space:]]*ssid \(.*\) channel \([0-9]*\).* bssid \(..:..:..:..:..:..\)\$/\\$1/p"
 }
 
-_get_ssid() {
+_get_ssid()
+{
 	local ssid="$(_iwconfig_get 1)"
-	# If the ssid has a space then it's wrapped in quotes.
-	# This is a problem if the real ssid has a quote at the start or the end :/
+	# If the ssid has a space then it's wrapped in quotes. This is a
+	# problem if the real ssid has a quote at the start or the end :/
 	ssid=${ssid#\"}
 	ssid=${ssid%\"}
 	echo "${ssid}"
 }
 
-_get_ap_mac_address() {
+_get_ap_mac_address()
+{
 	_iwconfig_get 3
 }
 
-_get_channel() {
+_get_channel()
+{
 	_iwconfig_get 2
 }
 
-iwconfig_report() {
+iwconfig_report()
+{
 	local m="connected to"
 	local ssid="$(_get_ssid)"
 	local mac="$(_get_ap_mac_address "${iface}")"
@@ -79,7 +66,8 @@ iwconfig_report() {
 	eoutdent
 }
 
-iwconfig_get_wep_key() {
+iwconfig_get_wep_key()
+{
 	local mac="$1" key=
 	[ -n "${mac}" ] && mac="$(echo "${mac}" | sed -e 's/://g')"
 	eval key=\$mac_key_${mac}
@@ -87,7 +75,8 @@ iwconfig_get_wep_key() {
 	echo "${key:--}"
 }
 
-iwconfig_user_config() {
+iwconfig_user_config()
+{
 	local conf=
 	eval set -- \$ifconfig_${SSIDVAR}
 	for conf in "$@" ; do
@@ -95,7 +84,8 @@ iwconfig_user_config() {
 	done
 }
 
-iwconfig_set_mode() {
+iwconfig_set_mode()
+{
 	local x= opt= unopt="hostap adhoc"
 	case "$1" in
 		master|hostap) unopt="adhoc" opt="hostap" ;;
@@ -109,7 +99,8 @@ iwconfig_set_mode() {
 	done
 }
 
-iwconfig_setup_specific() {
+iwconfig_setup_specific()
+{
 	local mode="${1:-master}" channel=
 	if [ -z "${SSID}" ]; then
 		eerror "${IFACE} requires an SSID to be set to operate in ${mode} mode"
@@ -136,7 +127,8 @@ iwconfig_setup_specific() {
 	return 0
 }
 
-iwconfig_associate() {
+iwconfig_associate()
+{
 	local mac="$1" channel="$2" caps="$3"
 	local mode= w="(WEP Disabled)" key=
 
@@ -251,7 +243,8 @@ iwconfig_associate() {
 	return 0
 }
 
-iwconfig_scan() {
+iwconfig_scan()
+{
 	local x= i=0 scan= quality=
 	einfo "Scanning for access points"
 	eindent
@@ -387,7 +380,8 @@ iwconfig_scan() {
 	return 0
 }
 
-iwconfig_force_preferred() {
+iwconfig_force_preferred()
+{
 	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
 	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
 	[ $# = 0 ] && return 1
@@ -414,7 +408,8 @@ iwconfig_force_preferred() {
 	return 1
 }
 
-iwconfig_connect_preferred() {
+iwconfig_connect_preferred()
+{
 	eval set -- $(_flatten_array "preferred_aps_${IFVAR}")
 	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
 	[ $# = 0 ] && return 1
@@ -439,7 +434,8 @@ iwconfig_connect_preferred() {
 	return 1
 }
 
-iwconfig_connect_not_preferred() {
+iwconfig_connect_not_preferred()
+{
 	local ssid= i=0 mode= mac= caps= freq= chan= pref=
 
 	while [ ${i} -le ${APS} ] ; do
@@ -474,7 +470,8 @@ iwconfig_connect_not_preferred() {
 	return 1
 }
 
-iwconfig_defaults() {
+iwconfig_defaults()
+{
 	# Set some defaults
 	#ifconfig "${iface}" txpower 100 2>/dev/null
 	ifconfig "${IFACE}" bssid -
@@ -485,7 +482,8 @@ iwconfig_defaults() {
 	ifconfig "${IFACE}" -mediaopt hostap
 }
 
-iwconfig_configure() {
+iwconfig_configure()
+{
 	local x APS
 	eval SSID=\$ssid_${IFVAR}
 
@@ -550,7 +548,8 @@ iwconfig_configure() {
 	return 1
 }
 
-iwconfig_pre_start() {
+iwconfig_pre_start()
+{
 	# We don't configure wireless if we're being called from
 	# the background
 	yesno ${IN_BACKGROUND} && return 0
@@ -584,11 +583,10 @@ iwconfig_pre_start() {
 	return 1
 }
 
-iwconfig_post_stop() {
+iwconfig_post_stop()
+{
 	yesno ${IN_BACKGROUND} && return 0
 	_is_wireless || return 0
 	iwconfig_defaults
 	#iwconfig "${IFACE}" txpower 0 2>/dev/null
 }
-
-# vim: set ts=4 :

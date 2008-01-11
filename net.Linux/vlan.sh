@@ -1,28 +1,8 @@
-# Copyright 2007 Roy Marples
+# Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-
-vlan_depend() {
+vlan_depend()
+{
 	program /sbin/vconfig
 	after interface
 	before dhcp
@@ -30,18 +10,21 @@ vlan_depend() {
 
 _config_vars="$_config_vars vlans"
 
-_is_vlan() {
+_is_vlan()
+{
 	[ ! -d /proc/net/vlan ] && return 1
 	[ -e /proc/net/vlan/"${IFACE}" ] && return 0
 	grep -Eq "^${IFACE}[[:space:]]+" /proc/net/vlan/config
 }
 
-_get_vlans() {
+_get_vlans()
+{
 	[ -e /proc/net/vlan/config ] || return 1
 	sed -n -e 's/^\(.*[0-9]\) \(.* \) .*'"${IFACE}"'$/\1/p' /proc/net/vlan/config
 }
 
-_check_vlan() {
+_check_vlan()
+{
 	if [ ! -d /proc/net/vlan ]; then
 		modprobe 8021q
 		if [ ! -d /proc/net/vlan ]; then
@@ -51,7 +34,8 @@ _check_vlan() {
 	fi
 }
 
-vlan_pre_start() {
+vlan_pre_start()
+{
 	local vc="$(_get_array "vconfig_${IFVAR}")"
 	[ -z "${vc}" ] && return 0
 
@@ -79,7 +63,8 @@ vlan_pre_start() {
 	done
 }
 
-vlan_post_start() {
+vlan_post_start()
+{
 	local vlans=
 	eval vlans=\$vlans_${IFACE}
 	[ -z "${vlans}" ] && return 0
@@ -114,7 +99,8 @@ vlan_post_start() {
 	return 0
 }
 
-vlan_post_stop() {
+vlan_post_stop()
+{
 	local vlan=
 
 	for vlan in $(_get_vlans); do
@@ -130,5 +116,3 @@ vlan_post_stop() {
 
 	return 0
 }
-
-# vim: set ts=4 :

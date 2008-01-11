@@ -1,7 +1,8 @@
 # Copyright 2005-2007 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
-clip_depend() {
+clip_depend()
+{
 	program /usr/sbin/atmsigd
     before interface
 }
@@ -15,7 +16,8 @@ _config_vars="$_config_vars clip"
 # themself from the controlling terminal when backgrounding... The only way I
 # see to overcame this is to use the --background option in start-stop-daemon,
 # which is reported as a "last resort" method, but it acts correctly about this.
-atmclip_svc_start() {
+atmclip_svc_start()
+{
     ebegin "Starting $2 Daemon ($1)"
     start-stop-daemon --start \
 		--background \
@@ -24,7 +26,8 @@ atmclip_svc_start() {
     eend $?
 }
 
-atmclip_svcs_start() {
+atmclip_svcs_start()
+{
     einfo "First CLIP instance: starting ATM CLIP daemons"
     eindent
 
@@ -42,7 +45,8 @@ atmclip_svcs_start() {
     return ${r}
 }
 
-atmclip_svc_stop() {
+atmclip_svc_stop()
+{
     ebegin "Stopping $2 Daemon ($1)"
     start-stop-daemon --stop --quiet \
 		--pidfile "/var/run/$1.pid" \
@@ -50,7 +54,8 @@ atmclip_svc_stop() {
     eend $?
 }
 
-atmclip_svcs_stop() {
+atmclip_svcs_stop()
+{
     einfo "Last CLIP instance: stopping ATM CLIP daemons"
     eindent
 
@@ -66,7 +71,8 @@ atmclip_svcs_stop() {
     eoutdent
 }
 
-are_atmclip_svcs_running() {
+are_atmclip_svcs_running()
+{
 
 	start-stop-daemon --quiet --test --stop --pidfile /var/run/atmarpd.pid || return 1
 
@@ -78,7 +84,8 @@ are_atmclip_svcs_running() {
     return 0
 }
 
-clip_pre_start() {
+clip_pre_start()
+{
 	local clip=
 	eval clip=\$clip_${IFVAR}
 	[ -z "${clip}" ] && return 0
@@ -109,7 +116,8 @@ clip_pre_start() {
     return 0
 }
 
-clip_post_start() {
+clip_post_start()
+{
 	local clip="$(_get_array "clip_${IFVAR}")"
 	[ -z "${clip}" ] && return 0
 
@@ -161,7 +169,8 @@ clip_post_start() {
     fi
 }
 
-clip_pre_stop() {
+clip_pre_stop()
+{
     are_atmclip_svcs_running || return 0
 
 	# We remove all the PVCs which may have been created by
@@ -191,7 +200,8 @@ clip_pre_stop() {
 # We can just leave the interface down. "ifconfig -a" will still list it...
 # Also, here we can stop the ATM CLIP daemons if there is no other CLIP PVC
 # outstanding. We check this condition by inspecting the /proc/net/atm/arp file.
-clip_post_stop() {
+clip_post_stop()
+{
     are_atmclip_svcs_running || return 0
 
     local itf= left= hasothers=
@@ -209,5 +219,3 @@ clip_post_stop() {
 		atmclip_svcs_stop || return 1
     fi
 }
-
-# vim: set ts=4 :

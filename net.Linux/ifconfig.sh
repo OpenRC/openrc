@@ -1,45 +1,29 @@
-# Copyright 2007 Roy Marples
+# Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-
-ifconfig_depend() {
+ifconfig_depend()
+{
 	program /sbin/ifconfig
 	provide interface
 }
 
-_up() {
+_up()
+{
 	ifconfig "${IFACE}" up
 }
 
-_down() {
+_down()
+{
 	ifconfig "${IFACE}" down
 }
 
-_exists() {
+_exists()
+{
 	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/dev
 }
 
-_ifindex() {
+_ifindex()
+{
 	local line= i=-2
 	while read line; do
 		i=$((${i} + 1))
@@ -55,7 +39,8 @@ _ifindex() {
 	return 1
 }
 
-_is_wireless() {
+_is_wireless()
+{
 	# Support new sysfs layout
 	[ -d /sys/class/net/"${IFACE}"/wireless ] && return 0
 
@@ -63,14 +48,15 @@ _is_wireless() {
 	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/wireless
 }
 
-_set_flag() {
+_set_flag()
+{
 	ifconfig "${IFACE}" "$1"
 }
 
-_get_mac_address() {
+_get_mac_address()
+{
 	local mac=$(LC_ALL=C ifconfig "${IFACE}" | \
 	sed -n -e 's/.* HWaddr \(..:..:..:..:..:..\).*/\1/p')
-
 
 	case "${mac}" in
 		00:00:00:00:00:00);;
@@ -83,11 +69,13 @@ _get_mac_address() {
 	return 1
 }
 
-_set_mac_address() {
+_set_mac_address()
+{
 	ifconfig "${IFACE}" hw ether "$1"
 }
 
-_get_inet_address() {
+_get_inet_address()
+{
 	set -- $(LC_ALL=C ifconfig "${IFACE}" |
 	sed -n -e 's/.*inet addr:\([^ ]*\).*Mask:\([^ ]*\).*/\1 \2/p')
 	[ -z "$1" ] && return 1
@@ -97,7 +85,8 @@ _get_inet_address() {
 	echo "/$(_netmask2cidr "$1")"
 }
 
-_get_inet_addresses() {
+_get_inet_addresses()
+{
 	local iface=${IFACE} i=0
 	local addrs="$(_get_inet_address)"
 
@@ -111,7 +100,8 @@ _get_inet_addresses() {
 	echo "${addrs}"
 }
 
-_cidr2netmask() {
+_cidr2netmask()
+{
 	local cidr="$1" netmask="" done=0 i=0 sum=0 cur=128
 	local octets= frac=
 
@@ -141,7 +131,8 @@ _cidr2netmask() {
 	echo "${netmask#.*}"
 }
 
-_add_address() {
+_add_address()
+{
 	if [ "$1" = "127.0.0.1/8" -a "${IFACE}" = "lo" ]; then
 		ifconfig "${IFACE}" "$@" 2>/dev/null
 		return 0
@@ -189,7 +180,8 @@ _add_address() {
 	ifconfig "${iface}" ${cmd}
 }
 
-_add_route() {
+_add_route()
+{
 	local inet6=
 
 	if [ -n "${metric}" ]; then
@@ -214,7 +206,8 @@ _add_route() {
 	route ${inet6} add "$@" dev "${IFACE}"
 }
 
-_delete_addresses() {
+_delete_addresses()
+{
 	# We don't remove addresses from aliases
 	case "${IFACE}" in
 		*:*) return 0;;
@@ -250,15 +243,18 @@ _delete_addresses() {
 	return 0
 }
 
-_has_carrier() {
+_has_carrier()
+{
 	return 0
 }
 
-_tunnel() {
+_tunnel()
+{
 	iptunnel "$@"
 }
 
-ifconfig_pre_start() {
+ifconfig_pre_start()
+{
 	# MTU support
 	local mtu=
 	eval mtu=\$mtu_${IFVAR}
@@ -282,7 +278,8 @@ ifconfig_pre_start() {
 	eend $?
 }
 
-ifconfig_post_stop() {
+ifconfig_post_stop()
+{
 	# Don't delete sit0 as it's a special tunnel
 	[ "${IFACE}" = "sit0" ] && return 0
 
@@ -292,5 +289,3 @@ ifconfig_post_stop() {
 	iptunnel del "${IFACE}"
 	eend $?
 }
-
-# vim: set ts=4 :

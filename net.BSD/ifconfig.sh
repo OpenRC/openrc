@@ -1,33 +1,14 @@
-# Copyright 2007 Roy Marples
+# Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-
-ifconfig_depend() {
+ifconfig_depend()
+{
 	program /sbin/ifconfig
 	provide interface
 }
 
-_exists() {
+_exists()
+{
 	# Only FreeBSD sees to have /dev/net .... is there something
 	# other than ifconfig we can use for the others?
 	if [ -d /dev/net ]; then
@@ -37,7 +18,8 @@ _exists() {
 	fi
 }
 
-_get_mac_address() {
+_get_mac_address()
+{
 	local proto= address= foo=
 	LC_ALL=C ifconfig "${IFACE}" | while read proto address foo; do
 		case "${proto}" in
@@ -54,15 +36,18 @@ _get_mac_address() {
 	done
 }
 
-_up () {
+_up()
+{
 	ifconfig "${IFACE}" up
 }
 
-_down () {
+_down()
+{
 	ifconfig "${IFACE}" down
 }
 
-_ifindex() {
+_ifindex()
+{
 	local x= i=1
 	case "${RC_UNAME}" in
 		FreeBSD|DragonFly)
@@ -90,7 +75,8 @@ _ifindex() {
 	return 1
 }
 
-_ifconfig_ent() {
+_ifconfig_ent()
+{
 	LC_ALL=C ifconfig "${IFACE}" 2>/dev/null | while read ent rest; do
    		case "${ent}" in
 			"$1") echo "${rest}";;
@@ -98,14 +84,16 @@ _ifconfig_ent() {
 	done
 }
 
-_is_wireless() {
+_is_wireless()
+{
 	case "$(_ifconfig_ent "media:")" in
 		"IEEE 802.11 Wireless"*) return 0;;
 		*) return 1;;
 	esac
 }
 
-_get_inet_address() {
+_get_inet_address()
+{
 	local inet= address= n= netmask= rest=
 	LC_ALL=C ifconfig "${IFACE}" | while read inet address n netmask rest; do
 		if [ "${inet}" = "inet" ]; then
@@ -115,7 +103,8 @@ _get_inet_address() {
 	done
 }
 
-_add_address() {
+_add_address()
+{
 	local inet6=
 
 	case "$@" in
@@ -141,7 +130,8 @@ _add_address() {
 	ifconfig "${IFACE}" ${inet6} "$@" alias
 }
 
-_add_route() {
+_add_route()
+{
 	if [ $# -gt 3 ]; then
 		if [ "$3" = "gw" -o "$3" = "via" ]; then
 			local one=$1 two=$2
@@ -156,7 +146,8 @@ _add_route() {
 	esac
 }
 
-_delete_addresses() {
+_delete_addresses()
+{
 	einfo "Removing addresses"
 	eindent
 	LC_ALL=C ifconfig "${IFACE}" | while read inet address rest; do
@@ -176,18 +167,21 @@ _delete_addresses() {
 	return 0
 }
 
-_show_address() {
+_show_address()
+{
 	einfo "received address $(_get_inet_address "${IFACE}")"
 }
 
-_has_carrier() {
+_has_carrier()
+{
 	case "$(_ifconfig_ent "status:")" in
 		""|active|associated) return 0;;
 		*) return 1;;
 	esac
 }
 
-ifconfig_pre_start() {
+ifconfig_pre_start()
+{
 	local config="$(_get_array "ifconfig_${IFVAR}")" conf= arg= args=
 	local IFS="$__IFS"
 
@@ -219,7 +213,8 @@ ifconfig_pre_start() {
 	return 0
 }
 
-_ifconfig_ipv6_tentative() {
+_ifconfig_ipv6_tentative()
+{
 	local inet= address= rest=
 	LC_ALL=C ifconfig "${IFACE}" | while read inet address rest; do
 	 	case "${inet}" in
@@ -233,7 +228,8 @@ _ifconfig_ipv6_tentative() {
 	[ $? = 2 ]
 }
 
-ifconfig_post_start() {
+ifconfig_post_start()
+{
 	if _ifconfig_ipv6_tentative; then
 		ebegin "Waiting for IPv6 addresses"
 		while true; do
@@ -242,5 +238,3 @@ ifconfig_post_start() {
 		eend 0
 	fi
 }
-
-# vim: set ts=4 :

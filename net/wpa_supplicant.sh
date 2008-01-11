@@ -1,28 +1,8 @@
-# Copyright 2007 Roy Marples
+# Copyright 2007-2008 Roy Marples
 # All rights reserved
 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGE.
-
-wpa_supplicant_depend() {
+wpa_supplicant_depend()
+{
 	if [ -x /usr/sbin/wpa_supplicant ]; then
 		program start /usr/sbin/wpa_supplicant
 	else
@@ -39,7 +19,8 @@ wpa_supplicant_depend() {
 # Only set these functions if not set already
 # IE, prefer to use iwconfig
 if ! type _get_ssid >/dev/null 2>&1; then
-_get_ssid() {
+_get_ssid()
+{
 	local timeout=5 ssid=
 
 	while [ ${timeout} -gt 0 ]; do
@@ -55,13 +36,15 @@ _get_ssid() {
 	return 1
 }
 
-_get_ap_mac_address() {
+_get_ap_mac_address()
+{
 	wpa_cli -i"${IFACE}" status | sed -n -e 's/^bssid=\(.*\)$/\1/p' \
 		| tr '[:lower:]' '[:upper:]'
 }
 fi
 
-wpa_supplicant_pre_start() {
+wpa_supplicant_pre_start()
+{
 	local opts= cfgfile= ctrl_dir= wireless=true
 	local wpas=/usr/sbin/wpa_supplicant wpac=/usr/bin/wpa_cli
 
@@ -80,7 +63,8 @@ wpa_supplicant_pre_start() {
 	# We don't configure wireless if we're being called from
 	# the background unless we're not currently running
 	if yesno ${IN_BACKGROUND}; then
-		if ${wireless} && service_started_daemon "${SVCNAME}" "${wpas}"; then
+		if ${wireless} && \
+		service_started_daemon "${SVCNAME}" "${wpas}"; then
 			SSID=$(_get_ssid "${IFACE}")
 			SSIDVAR=$(_shell_var "${SSID}")
 			service_set_value "SSID" "${SSID}"
@@ -163,7 +147,8 @@ wpa_supplicant_pre_start() {
 	ebegin "Starting wpa_cli on" "${IFACE}"
 	start-stop-daemon --start --exec "${wpac}" \
 		--pidfile "/var/run/wpa_cli-${IFACE}.pid" \
-		-- -a /etc/wpa_supplicant/wpa_cli.sh -p "${ctrl_dir}" -i "${IFACE}" \
+		-- -a /etc/wpa_supplicant/wpa_cli.sh \
+		-p "${ctrl_dir}" -i "${IFACE}" \
 		-P "/var/run/wpa_cli-${IFACE}.pid" -B
 	if eend $?; then
 		ebegin "Backgrounding ..."
@@ -177,7 +162,8 @@ wpa_supplicant_pre_start() {
 	return 1
 }
 
-wpa_supplicant_post_stop() {
+wpa_supplicant_post_stop()
+{
 	local wpas=/usr/sbin/wpa_supplicant wpac=/usr/bin/wpa_cli
 
 	if [ ! -x "${wpas}" ]; then
@@ -209,5 +195,3 @@ wpa_supplicant_post_stop() {
 	[ -S "/var/run/wpa_supplicant/${IFACE}" ] \
 		&& rm -f "/var/run/wpa_supplicant/${IFACE}"
 }
-
-# vim: set ts=4 :
