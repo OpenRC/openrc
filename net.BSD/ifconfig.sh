@@ -87,7 +87,7 @@ _ifconfig_ent()
 _is_wireless()
 {
 	case "$(_ifconfig_ent "media:")" in
-		"IEEE 802.11 Wireless"*) return 0;;
+		IEEE802.11*|"IEEE 802.11 Wireless"*) return 0;;
 		*) return 1;;
 	esac
 }
