@@ -36,9 +36,9 @@ CFLAGS+=	-DLIB=\"${LIBNAME}\"
 include ${MK}/cc.mk
 include ${MK}/prog.mk
 
-include ${MK}/${TERMCAP}.mk
+include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
-include ${MK}/${PAM}.mk
+include ${MK}/${MKPAM}.mk
 
 ${SRCS}: version.h
 version.h:
