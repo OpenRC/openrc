@@ -184,6 +184,7 @@ static const char *const color_terms[] = {
 	"screen.linux",
 	"vt100",
 	"vt220",
+	"wsvt25",
 	"xterm",
 	"xterm-256color",
 	"xterm-color",
@@ -359,7 +360,7 @@ static bool colour_terminal (FILE * __EINFO_RESTRICT f)
 
 	/* Cheat here as vanilla BSD has the whole termcap info in /usr
 	 * which is not available to us when we boot */
-	if (term_is_cons25) {
+	if (term_is_cons25 || strcmp (term, "wsvt25") == 0) {
 #else
 		while (color_terms[i]) {
 			if (strcmp (color_terms[i], term) == 0) {
@@ -388,10 +389,15 @@ static bool colour_terminal (FILE * __EINFO_RESTRICT f)
 #ifdef HAVE_TERMCAP
 	}
 
-	if (! _af || ! _ce || ! _ch || ! _me || !_md || ! _up) {
+	if (! _af || ! _ce || ! _me || !_md || ! _up) {
 		in_colour = 0;
 		return (false);
 	}
+
+	/* Many termcap databases don't have ch or RI even though they
+	 * do work */
+	if (! _ch)
+		_ch = CH;
 #endif
 
 	/* Now setup our colours */
