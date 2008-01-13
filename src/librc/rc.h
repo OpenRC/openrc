@@ -148,11 +148,6 @@ bool rc_service_mark (const char *service, rc_service_state_t state);
  * @return NULL terminated string list of commands */
 char **rc_service_extra_commands (const char *service);
 
-/*! Check if the service is allowed to be hot/cold plugged
- * @param service to check
- * @return true if allowed, otherwise false */
-bool rc_service_plugable (const char *service);
-
 /*! Resolves a service name to its full path.
  * @param service to check
  * @return pointer to full path of service */

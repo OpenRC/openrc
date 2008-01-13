@@ -1185,7 +1185,7 @@ int runscript (int argc, char **argv)
 	}
 
 	if (rc_yesno (getenv ("IN_HOTPLUG"))) {
-		if (! rc_conf_yesno ("rc_hotplug") || ! rc_service_plugable (applet))
+		if (! rc_conf_yesno ("rc_hotplug") || ! service_plugable (applet))
 			eerrorx ("%s: not allowed to be hotplugged", applet);
 	}
 

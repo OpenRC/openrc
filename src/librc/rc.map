@@ -28,7 +28,6 @@ global:
 	rc_service_in_runlevel;
 	rc_service_mark;
 	rc_service_options;
-	rc_service_plugable;
 	rc_service_resolve;
 	rc_service_schedule_clear;
 	rc_service_schedule_start;

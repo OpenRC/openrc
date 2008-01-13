@@ -115,6 +115,7 @@ char *rc_conf_value (const char *var);
 bool rc_conf_yesno (const char *var);
 char **env_filter (void);
 char **env_config (void);
+bool service_plugable (const char *service);
 
 /* basename_c never modifies the argument. As such, if there is a trailing
  * slash then an empty string is returned. */

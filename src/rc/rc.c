@@ -1195,7 +1195,7 @@ int main (int argc, char **argv)
 				continue;
 
 			if (rc_service_exists (d->d_name) &&
-			    rc_service_plugable (d->d_name))
+			    service_plugable (d->d_name))
 				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
 
 			i = strlen (DEVBOOT "/") + strlen (d->d_name) + 1;
@@ -1229,7 +1229,7 @@ int main (int argc, char **argv)
 				tmp = xmalloc (sizeof (char) * i);
 				snprintf (tmp, i, "net.%s", d->d_name);
 				if (rc_service_exists (tmp) &&
-				    rc_service_plugable (tmp))
+				    service_plugable (tmp))
 					rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 				CHAR_FREE (tmp);
 			}
@@ -1250,7 +1250,7 @@ int main (int argc, char **argv)
 						tmp = xmalloc (sizeof (char) * i);
 						snprintf (tmp, i, "moused.%s", d->d_name);
 						if (rc_service_exists (tmp) &&
-						    rc_service_plugable (tmp))
+						    service_plugable (tmp))
 							rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 						CHAR_FREE (tmp);
 					}

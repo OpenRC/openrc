@@ -387,3 +387,41 @@ char **env_config (void)
 	free (runlevel);
 	return (env);
 }
+
+bool service_plugable (const char *service)
+{
+	char *list;
+	char *p;
+	char *star;
+	char *token;
+	bool allow = true;
+	char *match = rc_conf_value ("rc_plug_services");
+	if (! match)
+		return true;
+
+	list = xstrdup (match);
+	p = list;
+	while ((token = strsep (&p, " "))) {
+		bool truefalse = true;
+		if (token[0] == '!') {
+			truefalse = false;
+			token++;
+		}
+
+		star = strchr (token, '*');
+		if (star) {
+			if (strncmp (service, token, star - token) == 0) {
+				allow = truefalse;
+				break;
+			}
+		} else {
+			if (strcmp (service, token) == 0) {
+				allow = truefalse;
+				break;
+			}
+		}
+	}
+
+	free (list);
+	return (allow);
+}
