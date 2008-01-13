@@ -4,6 +4,8 @@ OBJS=	${SRCS:.in=.sh}
 INC=	init-common-post.sh rc-mount.sh ${OBJS}
 BIN=	gendepends.sh net.sh runscript.sh
 
+INSTALLAFTER=	_installafter
+
 MK=	../mk
 # To get NET_LO
 include ${MK}/os.mk
@@ -15,7 +17,6 @@ include ${MK}/scripts.mk
 .in.sh:
 	sed -e 's:/lib/:/${LIBNAME}/:g' $< > $@
 
-INSTALLAFTER=	_installafter
 _installafter:
 	${INSTALL} -d ${DESTDIR}/etc/init.d
 	@# Provide an init script for the loopback interface
