@@ -58,7 +58,7 @@ install: all
 	for x in $(RC_BINLINKS); do ln -fs ${BINDIR}/${PROG} $(DESTDIR)/${LIBNAME}/${PROG}/bin/$$x; done
 	${INSTALL} -d ${DESTDIR}/${LIBNAME}/${PROG}/sbin
 	for x in ${RC_SBINLINKS}; do ln -fs ${BINDIR}/${PROG} ${DESTDIR}/${LIBNAME}/${PROG}/sbin/$$x; done
-	if test "${PAM}" = pam; then \
+	if test "${MKPAM}" = pam; then \
 		${INSTALL} -d ${DESTDIR}${PAMDIR}; \
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam ${DESTDIR}${PAMDIR}/start-stop-daemon; \
 	fi

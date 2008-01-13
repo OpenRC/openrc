@@ -10,9 +10,9 @@ You may wish to tweak the installation with the below arguments
 PROGLDFLAGS=-static
 LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
-PAM=pam
-TERMCAP=ncurses
-TERMCAP=termcap
+MKPAM=pam
+MKTERMCAP=ncurses
+MKTERMCAP=termcap
 
 We don't support building a static OpenRC with PAM.
 You may need to use PROGLDFLAGS=-Wl,-Bstatic on glibc instead of just -static.
