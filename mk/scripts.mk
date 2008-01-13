@@ -28,7 +28,7 @@ realinstall: ${BIN} ${CONF} ${CONF_APPEND}
 		fi; \
 	done
 
-install: realinstall ${INSTALLAFTER}
+install: all realinstall ${INSTALLAFTER}
 
 # A lot of scripts don't have anything to clean
 # Also, some rm implentation require a file argument regardless of error
