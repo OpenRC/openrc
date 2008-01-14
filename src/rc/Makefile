@@ -1,6 +1,7 @@
 PROG=		rc
-SRCS=		checkpath.c fstabinfo.c mountinfo.c rc.c rc-depend.c \
-		rc-logger.c rc-misc.c rc-plugin.c rc-status.c rc-update.c \
+SRCS=		checkpath.c fstabinfo.c mountinfo.c \
+		rc-applets.c rc-depend.c rc-logger.c \
+		rc-misc.c rc-plugin.c rc-status.c rc-update.c rc.c \
 		runscript.c start-stop-daemon.c
 
 CLEANFILES=	version.h

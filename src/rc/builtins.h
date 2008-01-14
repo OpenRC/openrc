@@ -35,5 +35,7 @@ int rc_update (int argc, char **argv);
 int runscript (int argc, char **argv);
 int start_stop_daemon (int argc, char **argv);
 
+void run_applets (int argc, char **argv);
+
 /* Handy function so we can wrap einfo around our deptree */
 rc_depinfo_t *_rc_deptree_load (int *regen);
