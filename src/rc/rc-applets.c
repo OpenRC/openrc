@@ -383,7 +383,7 @@ void run_applets (int argc, char **argv)
 	    strcmp (applet, "is_older_than") == 0)
 	{
 		bool match = false;
-		int i = 1;
+		int i = 2;
 
 		if (argc < 3)
 			exit (EXIT_FAILURE);
