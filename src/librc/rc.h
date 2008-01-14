@@ -61,7 +61,8 @@ bool rc_runlevel_exists (const char *runlevel);
 char **rc_runlevel_list (void);
 
 /*! Set the runlevel.
- * This just changes the stored runlevel and does not start or stop any services.
+ * This just changes the stored runlevel and does not start or stop any
+ * services.
  * @param runlevel to store */
 bool rc_runlevel_set (const char *runlevel);
 
@@ -117,8 +118,8 @@ bool rc_service_delete (const char *runlevel, const char *service);
  * @param pidfile of the process (optional)
  * @param started if true, add the arguments otherwise remove existing matching arguments */
 bool rc_service_daemon_set (const char *service, const char *exec,
-							const char *name, const char *pidfile,
-							bool started);
+                            const char *name, const char *pidfile,
+                            bool started);
 
 /*! Returns a description of what the service and/or option does.
  * @param service to check
@@ -157,7 +158,7 @@ char *rc_service_resolve (const char *service);
  * @param service that starts the scheduled service when started
  * @param service_to_start service that will be started */
 bool rc_service_schedule_start (const char *service,
-								const char *service_to_start);
+                                const char *service_to_start);
 /*! Return a NULL terminated list of services that are scheduled to start
  * when the given service has started
  * @param service to check
@@ -190,7 +191,7 @@ pid_t rc_service_stop (const char *service);
  * @param indx of the daemon (optional - 1st daemon, 2nd daemon, etc)
  * @return true if started by this service, otherwise false */
 bool rc_service_started_daemon (const char *service, const char *exec,
-								int indx);
+                                int indx);
 
 /*! Return a saved value for a service
  * @param service to check
@@ -204,7 +205,7 @@ char *rc_service_value_get (const char *service, const char *option);
  * @param value of the option
  * @return true if saved, otherwise false */
 bool rc_service_value_set (const char *service, const char *option,
-						   const char *value);
+                           const char *value);
 
 /*! List the services in a runlevel
  * @param runlevel to list
@@ -248,6 +249,11 @@ bool rc_service_daemons_crashed (const char *service);
 typedef void *rc_depinfo_t;
 #endif
 
+/*! Check to see if source is newer than target.
+ * If target is a directory then we traverse it and it's children.
+* @return true if source is newer than target, otherwise false */ 
+bool rc_newer_than (const char *source, const char *target);
+
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.
@@ -271,7 +277,7 @@ rc_depinfo_t *rc_deptree_load (void);
  * @param service to check
  * @return NULL terminated list of services in order */
 char **rc_deptree_depend (const rc_depinfo_t *deptree,
-						  const char *type, const char *service);
+                          const char *type, const char *service);
 
 /*! List all the services in order that the given services have
  * for the given types and options.
@@ -281,9 +287,9 @@ char **rc_deptree_depend (const rc_depinfo_t *deptree,
  * @param options to pass
  * @return NULL terminated list of services in order */
 char **rc_deptree_depends (const rc_depinfo_t *deptree,
-						   const char *const *types,
-						   const char *const *services, const char *runlevel,
-						   int options);
+                           const char *const *types,
+                           const char *const *services, const char *runlevel,
+                           int options);
 
 /*! List all the services that should be stoppned and then started, in order,
  * for the given runlevel, including sysinit and boot services where
@@ -293,7 +299,7 @@ char **rc_deptree_depends (const rc_depinfo_t *deptree,
  * @param options to pass
  * @return NULL terminated list of services in order */
 char **rc_deptree_order (const rc_depinfo_t *deptree, const char *runlevel,
-						 int options);
+                         int options);
 
 /*! Free a deptree and its information
  * @param deptree to free */
@@ -440,6 +446,6 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
  * @param pid to check for
  * @return NULL terminated list of pids */
 pid_t *rc_find_pids (const char *exec, const char *cmd,
-					 uid_t uid, pid_t pid);
+                     uid_t uid, pid_t pid);
 
 #endif

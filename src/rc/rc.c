@@ -913,6 +913,21 @@ int main (int argc, char **argv)
 	if (strncmp (applet, "mark_service_", strlen ("mark_service_")) == 0)
 		exit (do_mark_service (argc, argv));
 
+	if (strcmp (applet, "is_newer_than") == 0 ||
+	    strcmp (applet, "is_older_than") == 0)
+	{
+		bool match = false;
+		if (argc < 2)
+			exit (EXIT_FAILURE);
+		if (strcmp (applet, "is_newer_than") == 0)
+			match = true;
+		while (optind < argc) {
+			if (rc_newer_than (argv[0], argv[optind++]) != match)
+				exit (EXIT_FAILURE);
+		}
+		exit (EXIT_SUCCESS);
+	}; 
+
 	if (strcmp (applet, "is_runlevel_start") == 0)
 		exit (rc_runlevel_starting () ? 0 : 1);
 	else if (strcmp (applet, "is_runlevel_stop") == 0)

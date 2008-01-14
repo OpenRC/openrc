@@ -596,7 +596,7 @@ char **rc_deptree_order (const rc_depinfo_t *deptree, const char *runlevel,
 }
 librc_hidden_def(rc_deptree_order)
 
-static bool is_newer_than (const char *file, const char *target)
+bool rc_newer_than (const char *source, const char *target)
 {
 	struct stat buf;
 	time_t mtime;
@@ -604,28 +604,31 @@ static bool is_newer_than (const char *file, const char *target)
 	DIR *dp;
 	struct dirent *d;
 	char *path;
+	int serrno = errno;
 
-	if (stat (file, &buf) != 0 || buf.st_size == 0)
+	if (stat (source, &buf) != 0 || buf.st_size == 0)
 		return (false);
 	mtime = buf.st_mtime;
 
-	/* Of course we are newever than targets that don't exist
-	   Such as broken symlinks */
+	/* Of course we are newer than targets that don't exist
+	   such as broken symlinks */
 	if (stat (target, &buf) != 0)
 		return (true);
 
 	if (mtime < buf.st_mtime)
 		return (false);
 
-	if (! (dp = opendir (target)))
+	if (! (dp = opendir (target))) {
+		errno = serrno;
 		return (true);
+	}
 
 	while ((d = readdir (dp))) {
 		if (d->d_name[0] == '.')
 			continue;
 
 		path = rc_strcatpaths (target, d->d_name, (char *) NULL);
-		newer = is_newer_than (file, path);
+		newer = rc_newer_than (source, path);
 		free (path);
 		if (! newer)
 			break;
@@ -634,6 +637,7 @@ static bool is_newer_than (const char *file, const char *target)
 
 	return (newer);
 }
+librc_hidden_def(rc_newer_than)
 
 typedef struct deppair
 {
@@ -679,18 +683,18 @@ bool rc_deptree_update_needed (void)
 			fprintf (stderr, "mkdir `%s': %s\n", depdirs[i], strerror (errno));
 
 	/* Quick test to see if anything we use has changed */
-	if (! is_newer_than (RC_DEPTREE, RC_INITDIR) ||
-	    ! is_newer_than (RC_DEPTREE, RC_CONFDIR) ||
-	    ! is_newer_than (RC_DEPTREE, RC_INITDIR_LOCAL) ||
-	    ! is_newer_than (RC_DEPTREE, RC_CONFDIR_LOCAL) ||
-	    ! is_newer_than (RC_DEPTREE, "/etc/rc.conf"))
+	if (! rc_newer_than (RC_DEPTREE, RC_INITDIR) ||
+	    ! rc_newer_than (RC_DEPTREE, RC_CONFDIR) ||
+	    ! rc_newer_than (RC_DEPTREE, RC_INITDIR_LOCAL) ||
+	    ! rc_newer_than (RC_DEPTREE, RC_CONFDIR_LOCAL) ||
+	    ! rc_newer_than (RC_DEPTREE, "/etc/rc.conf"))
 		return (true);
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
 	config = rc_config_list (RC_DEPCONFIG);
 	STRLIST_FOREACH (config, service, i) {
-		if (! is_newer_than (RC_DEPTREE, service)) {
+		if (! rc_newer_than (RC_DEPTREE, service)) {
 			newer = true;
 			break;
 		}
