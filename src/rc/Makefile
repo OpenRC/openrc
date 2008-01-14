@@ -6,7 +6,7 @@ SRCS=		checkpath.c fstabinfo.c mountinfo.c rc.c rc-depend.c \
 CLEANFILES=	version.h
 
 LDFLAGS+=	-L../librc -L../libeinfo
-LDADD+=		-lutil -lrc -leinfo
+LDADD+=		-lutil -lrc -leinfo -Wl,-rpath,../librc -Wl,-rpath,../libeinfo
 CFLAGS+=	-I../includes -I../librc -I../libeinfo
 
 BINDIR?=	/sbin
@@ -62,3 +62,8 @@ install: all
 		${INSTALL} -d ${DESTDIR}${PAMDIR}; \
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam ${DESTDIR}${PAMDIR}/start-stop-daemon; \
 	fi
+
+ALL_LINKS = $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS)
+CLEANFILES += $(ALL_LINKS)
+links: rc
+	for l in $(ALL_LINKS) ; do ln -sf rc $$l || exit $$? ; done
