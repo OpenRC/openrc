@@ -75,9 +75,9 @@ start()
 	eend 0
 
 	ebegin "Cleaning /var/run"
-	for x in $(find /var/run ! -type d ! -name utmp ! -name innd.pid \
-		   ! -name random-seed ! -name ld-elf.so.hints \
-		   ! -name ld.so.hints); do
+	for x in $(find /var/run ! -type d ! -name utmp ! -name random-seed \
+		   ! -name ld-elf.so.hints ! -name ld.so.hints);
+	do	
 		[ ! -f "${x}" ] && continue
 		# Do not remove pidfiles of already running daemons
 		case "${x}" in
@@ -87,7 +87,7 @@ start()
 				[ $? -eq 0 ] && continue
 				;;
 		esac
-		rm -f "${x}"
+		rm -f -- "${x}"
 	done
 	eend 0
 
