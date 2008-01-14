@@ -338,7 +338,7 @@ static int do_shell_var (int argc, char **argv)
 	for (i = 1; i < argc; i++) {
 		char *p = argv[i];
 
-		if (i != 0)
+		if (i != 1)
 			putchar (' ');
 
 		while (*p) {
