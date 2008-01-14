@@ -3,7 +3,7 @@
  * Handle launching of init scripts.
  */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -181,7 +181,7 @@ static void handle_signal (int sig)
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGQUIT");
 			/* Send the signal to our children too */
-			if (service_pid > 0) 
+			if (service_pid > 0)
 				kill (service_pid, sig);
 			eerrorx ("%s: caught %s, aborting", applet, signame);
 
@@ -511,7 +511,7 @@ static bool svc_wait (rc_depinfo_t *depinfo, const char *svc)
 		return (false);
 
 	/* Some services don't have a timeout, like checkroot and checkfs */
-	keywords = rc_deptree_depend (depinfo, svc, "keywords"); 
+	keywords = rc_deptree_depend (depinfo, svc, "keywords");
 	STRLIST_FOREACH (keywords, s, i) {
 		if (strcmp (s, "notimeout") == 0) {
 			forever = true;
@@ -765,8 +765,8 @@ static void svc_start (bool deps)
 			STRLIST_FOREACH (tmplist, svc, i) {
 				rc_service_schedule_start (svc, service);
 				rc_strlist_free (providelist);
-				providelist = rc_deptree_depend (deptree, "iprovide", svc); 
-				STRLIST_FOREACH (providelist, svc2, j) 
+				providelist = rc_deptree_depend (deptree, "iprovide", svc);
+				STRLIST_FOREACH (providelist, svc2, j)
 					rc_service_schedule_start (svc2, service);
 
 				len += strlen (svc) + 2;
@@ -856,7 +856,7 @@ static void svc_stop (bool deps)
 		exit (EXIT_FAILURE);
 
 	if (rc_yesno (getenv ("IN_HOTPLUG")) || in_background)
-		if (! (state & RC_SERVICE_STARTED) && 
+		if (! (state & RC_SERVICE_STARTED) &&
 		    ! (state & RC_SERVICE_INACTIVE))
 			exit (EXIT_FAILURE);
 
@@ -900,12 +900,12 @@ static void svc_stop (bool deps)
 		rc_strlist_reverse (services);
 		STRLIST_FOREACH (services, svc, i) {
 			rc_service_state_t svcs = rc_service_state (svc);
-			if (svcs & RC_SERVICE_STARTED || 
+			if (svcs & RC_SERVICE_STARTED ||
 			    svcs & RC_SERVICE_INACTIVE)
 			{
 				svc_wait (deptree, svc);
 				svcs = rc_service_state (svc);
-				if (svcs & RC_SERVICE_STARTED || 
+				if (svcs & RC_SERVICE_STARTED ||
 				    svcs & RC_SERVICE_INACTIVE)
 				{
 					pid_t pid = rc_service_stop (svc);

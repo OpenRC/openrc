@@ -3,7 +3,7 @@
    rc service dependency and ordering
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -96,7 +96,7 @@ int rc_depend (int argc, char **argv)
 	int opt;
 	char *token;
 
-	applet = basename_c (argv[0]); 
+	applet = basename_c (argv[0]);
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 				   longopts, (int *) 0)) != -1)

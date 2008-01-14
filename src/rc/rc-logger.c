@@ -4,7 +4,7 @@
    them to a buffer and/or files.
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -227,7 +227,7 @@ void rc_logger_open (const char *level)
 				}
 			}
 			free (buffer);
-			if (logbuf) { 
+			if (logbuf) {
 				if ((log = fopen (LOGFILE, "a"))) {
 					write_time (log, "started");
 					write_log (fileno (log), logbuf, logbuf_len);

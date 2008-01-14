@@ -4,7 +4,7 @@
    if necessary. It can also correct its ownership.
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -62,7 +62,7 @@ static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 				eerror ("%s: open: %s", applet, strerror (errno));
 				return (-1);
 			}
-			close (fd);	
+			close (fd);
 		} else {
 			einfo ("%s: creating directory", path);
 			if (! mode)
@@ -139,7 +139,7 @@ static int parse_owner (struct passwd **user, struct group **group,
 	if (user && *u) {
 		if (sscanf (u, "%d", &id) == 1)
 			*user = getpwuid (id);
-		else	
+		else
 			*user = getpwnam (u);
 		if (! *user)
 			retval = -1;

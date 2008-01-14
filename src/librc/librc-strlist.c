@@ -5,7 +5,7 @@
    Based on a previous implementation by Martin Schlemmer
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 

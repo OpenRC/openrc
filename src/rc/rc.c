@@ -8,7 +8,7 @@
    einfo family of informational functions.
    */
 
-/* 
+/*
  * Copyright 2007-2008 Roy Marples
  * All rights reserved
 
@@ -252,7 +252,7 @@ static int do_e (int argc, char **argv)
 		message = xmalloc (l);
 		p = message;
 
-		for (i = 0; i < argc; i++) {	
+		for (i = 0; i < argc; i++) {
 			if (i > 0)
 				*p++ = ' ';
 			memcpy (p, argv[i], strlen (argv[i]));
@@ -264,11 +264,11 @@ static int do_e (int argc, char **argv)
 	if (! message)
 		message = xstrdup ("");
 
-	if (strcmp (applet, "einfo") == 0) 
+	if (strcmp (applet, "einfo") == 0)
 		einfo ("%s", message);
 	else if (strcmp (applet, "einfon") == 0)
 		einfon ("%s", message);
-	else if (strcmp (applet, "ewarn") == 0) 
+	else if (strcmp (applet, "ewarn") == 0)
 		ewarn ("%s", message);
 	else if (strcmp (applet, "ewarnn") == 0)
 		ewarnn ("%s", message);
@@ -286,11 +286,11 @@ static int do_e (int argc, char **argv)
 		ewend (retval, "%s", message);
 	else if (strcmp (applet, "esyslog") == 0)
 		elog (level, "%s", message);
-	else if (strcmp (applet, "veinfo") == 0) 
+	else if (strcmp (applet, "veinfo") == 0)
 		einfov ("%s", message);
 	else if (strcmp (applet, "veinfon") == 0)
 		einfovn ("%s", message);
-	else if (strcmp (applet, "vewarn") == 0) 
+	else if (strcmp (applet, "vewarn") == 0)
 		ewarnv ("%s", message);
 	else if (strcmp (applet, "vewarnn") == 0)
 		ewarnvn ("%s", message);
@@ -494,7 +494,7 @@ static char *proc_getent (const char *ent)
 
 	if ((proc = rc_getline (fp)) &&
 	    (p = strstr (proc, ent)))
-	{ 
+	{
 		i = p - proc;
 		if (i == '\0' || proc[i - 1] == ' ') {
 			p += strlen (ent);

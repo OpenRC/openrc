@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -166,7 +166,7 @@ char **rc_services_scheduled_by (const char *service);
 
 /*! Clear the list of services scheduled to be started by this service
  * @param service to clear
- * @return true if no errors, otherwise false */ 
+ * @return true if no errors, otherwise false */
 bool rc_service_schedule_clear (const char *service);
 
 /*! Checks if a service in in a state
@@ -241,7 +241,7 @@ bool rc_service_daemons_crashed (const char *service);
 
 /*! @name Dependencies
  * We analyse each init script and cache the resultant dependency tree.
- * This tree can be accessed using the below functions. */ 
+ * This tree can be accessed using the below functions. */
 
 #ifndef _IN_LIBRC
 /* Handles to internal structures */
@@ -276,7 +276,7 @@ char **rc_deptree_depend (const rc_depinfo_t *deptree,
 /*! List all the services in order that the given services have
  * for the given types and options.
  * @param deptree to search
- * @param types to use (ineed, iuse, etc) 
+ * @param types to use (ineed, iuse, etc)
  * @param services to check
  * @param options to pass
  * @return NULL terminated list of services in order */

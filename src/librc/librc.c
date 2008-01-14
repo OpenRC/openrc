@@ -1,9 +1,9 @@
 /*
-   librc 
+   librc
    core RC functions
    */
 
-/* 
+/*
  * Copyright 2007-2008 Roy Marples
  * All rights reserved
 
@@ -71,7 +71,7 @@ static char **ls_dir (const char *dir, int options)
 	char **list = NULL;
 	struct stat buf;
 
-	if ((dp = opendir (dir)) == NULL) 
+	if ((dp = opendir (dir)) == NULL)
 		return (NULL);
 
 	while (((d = readdir (dp)) != NULL)) {
@@ -452,7 +452,7 @@ bool rc_service_mark (const char *service, const rc_service_state_t state)
 	    state == RC_SERVICE_INACTIVE)
 	{
 		file = rc_strcatpaths (RC_SVCDIR, "exclusive", base, (char *) NULL);
-		unlink (file); 
+		unlink (file);
 		free (file);
 	}
 

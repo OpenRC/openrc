@@ -1,9 +1,9 @@
 /*
-   librc-plugin.c 
+   librc-plugin.c
    Simple plugin handler
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 

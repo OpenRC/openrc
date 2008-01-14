@@ -3,7 +3,7 @@
    This is private to us and not for user consumption
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 

@@ -3,7 +3,7 @@
    rc service dependency and ordering
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -77,7 +77,7 @@ void rc_deptree_free (rc_depinfo_t *deptree)
 		while (dt)
 		{
 			rc_deptype_t *dtp = dt->next;
-			free (dt->type);  
+			free (dt->type);
 			rc_strlist_free (dt->services);
 			free (dt);
 			dt = dtp;
@@ -280,7 +280,7 @@ static char **get_provided (const rc_depinfo_t *deptree,
 			    const char *runlevel, int options)
 {
 	rc_deptype_t *dt;
-	struct lhead providers; 
+	struct lhead providers;
 	char *service;
 	int i;
 
@@ -424,7 +424,7 @@ static void visit_service (const rc_depinfo_t *deptree,
 				di = get_depinfo (deptree, service);
 				if ((provides = get_provided (deptree, di, runlevel, options)))
 				{
-					STRLIST_FOREACH (provides, lp, k) 
+					STRLIST_FOREACH (provides, lp, k)
 					{
 						di = get_depinfo (deptree, lp);
 						if (di && (strcmp (item, "ineed") == 0 ||
@@ -750,7 +750,7 @@ bool rc_deptree_update (void)
 		depends = line;
 		service = strsep (&depends, " ");
 		if (! service)
-			goto next;	
+			goto next;
 		type = strsep (&depends, " ");
 
 		for (depinfo = deptree; depinfo; depinfo = depinfo->next)
@@ -775,7 +775,7 @@ bool rc_deptree_update (void)
 
 		/* We may not have any depends */
 		if (! type || ! depends)
-			goto next;	
+			goto next;
 
 		/* Get the type */
 		if (strcmp (type, "config") != 0) {
@@ -888,7 +888,7 @@ next:
 						fprintf (stderr,
 							 "Service `%s' needs non existant service `%s'\n",
 							 depinfo->service, service);
-					} 
+					}
 					continue;
 				}
 

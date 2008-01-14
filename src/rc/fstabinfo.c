@@ -3,7 +3,7 @@
    Gets information about /etc/fstab.
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -128,7 +128,7 @@ int fstabinfo (int argc, char **argv)
 	char *file;
 	bool filtered = false;
 
-	applet = basename_c (argv[0]); 
+	applet = basename_c (argv[0]);
 
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv ("EINFO_QUIET");

@@ -1,9 +1,9 @@
 /*
-   librc-plugin.h 
+   librc-plugin.h
    Private instructions to use plugins
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 

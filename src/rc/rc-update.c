@@ -3,7 +3,7 @@
    Manage init scripts and runlevels
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -84,7 +84,7 @@ static int delete (const char *runlevel, const char *service)
 	if (errno == ENOENT)
 		eerror ("%s: service `%s' is not in the runlevel `%s'",
 			applet, service, runlevel);
-	else 
+	else
 		eerror ("%s: failed to remove service `%s' from runlevel `%s': %s",
 			applet, service, runlevel, strerror (errno));
 
@@ -159,7 +159,7 @@ int rc_update (int argc, char **argv)
 	int opt;
 	int retval = EXIT_FAILURE;
 
-	applet = basename_c (argv[0]); 
+	applet = basename_c (argv[0]);
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 				   longopts, (int *) 0)) != -1)

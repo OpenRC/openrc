@@ -7,7 +7,7 @@
    system so we can monitor daemons a little.
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -308,7 +308,7 @@ static int do_stop (const char *exec, const char *cmd,
 		    const char *pidfile, uid_t uid,int sig,
 		    bool quiet, bool verbose, bool test)
 {
-	pid_t *pids; 
+	pid_t *pids;
 	bool killed;
 	int nkilled = 0;
 	pid_t pid = 0;
@@ -929,7 +929,7 @@ int start_stop_daemon (int argc, char **argv)
 						*np++ = ':';
 						memcpy (np, token, sizeof (char) * strlen (token));
 						np += t;
-						*np = '\0';	
+						*np = '\0';
 					} else {
 						l = strlen ("PATH=") + t + 1;
 						newpath = xmalloc (sizeof (char) * l);

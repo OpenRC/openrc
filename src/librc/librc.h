@@ -3,7 +3,7 @@
  * Internal header file to setup build env for files in librc.so
  */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 

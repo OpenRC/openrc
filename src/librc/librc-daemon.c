@@ -3,7 +3,7 @@
    Finds PID for given daemon criteria
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -234,7 +234,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 			if ((argv = _KVM_GETARGV (kd, &kp[i], argc)) == NULL || ! *argv)
 				continue;
 
-			if (strcmp (*argv, exec) != 0) 
+			if (strcmp (*argv, exec) != 0)
 				continue;
 		}
 

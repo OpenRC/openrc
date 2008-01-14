@@ -1,10 +1,10 @@
 /*
-   strlist.h 
+   strlist.h
    String list macros for making char ** arrays
    Based on a previous implementation by Martin Schlemmer
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 

@@ -3,7 +3,7 @@
    rc misc functions
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -218,7 +218,7 @@ char **rc_config_load (const char *file)
 		   any prior values we may already have */
 		STRLIST_FOREACH (config, line, i) {
 			char *tmp = xstrdup (line);
-			linep = tmp; 
+			linep = tmp;
 			linetok = strsep (&linep, "=");
 			if (strcmp (linetok, entry) == 0) {
 				/* We have a match now - to save time we directly replace it */

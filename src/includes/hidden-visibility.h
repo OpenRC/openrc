@@ -1,6 +1,6 @@
-/* 
+/*
  * Written by Mike Frysinger
- * Placed in the Public Domain 
+ * Placed in the Public Domain
  */
 
 #ifndef _HIDDEN_VISIBILITY_H_

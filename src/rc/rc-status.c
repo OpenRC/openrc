@@ -3,7 +3,7 @@
    Display the status of the services in runlevels
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 

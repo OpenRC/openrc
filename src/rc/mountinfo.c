@@ -3,7 +3,7 @@
    Obtains information about mounted filesystems.
    */
 
-/* 
+/*
  * Copyright 2007 Roy Marples
  * All rights reserved
 
@@ -35,7 +35,7 @@
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 # include <sys/ucred.h>
 # include <sys/mount.h>
-# define F_FLAGS f_flags 
+# define F_FLAGS f_flags
 #elif defined(BSD)
 # include <sys/statvfs.h>
 # define statfs statvfs
@@ -169,7 +169,7 @@ static int process_mount (char ***list, struct args *args,
 	return (-1);
 }
 
-#ifdef BSD 
+#ifdef BSD
 
 /* Translate the mounted options to english
  * This is taken directly from FreeBSD mount.c */
@@ -195,7 +195,7 @@ static struct opt {
 #endif
 #ifdef MNT_NOCLUSTERW
 	{ MNT_NOCLUSTERW,   "noclusterw" },
-#endif	
+#endif
 #ifdef MNT_SUIDDIR
 	{ MNT_SUIDDIR,      "suiddir" },
 #endif

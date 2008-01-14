@@ -3,7 +3,7 @@
    Informational functions
    */
 
-/* 
+/*
  * Copyright 2007-2008 Roy Marples
  * All rights reserved
 
@@ -91,7 +91,7 @@ hidden_proto(ewendv)
 #define INDENT_MAX		40
 
 /* Default colours */
-#define GOOD                    2 
+#define GOOD                    2
 #define WARN                    3
 #define BAD                     1
 #define HILITE                  6
@@ -141,7 +141,7 @@ static char *goto_column = NULL;
 static const char *term = NULL;
 static bool term_is_cons25 = false;
 
-/* Termcap buffers and pointers 
+/* Termcap buffers and pointers
  * Static buffers suck hard, but some termcap implementations require them */
 #ifdef HAVE_TERMCAP
 static char termcapbuf[2048];
