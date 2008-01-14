@@ -109,7 +109,7 @@ static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 static int parse_mode (mode_t *mode, char *text)
 {
 	/* Check for a numeric mode */
-	if ((*mode - '0') < 8) {
+	if ((*text - '0') < 8) {
 		char *p;
 		unsigned long l = strtoul (text, &p, 8);
 		if (*p || l > 07777U) {
