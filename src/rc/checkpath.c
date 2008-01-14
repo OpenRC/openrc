@@ -160,7 +160,7 @@ static int parse_owner (struct passwd **user, struct group **group,
 
 #include "_usage.h"
 #define extraopts "dir1 dir2 ..."
-#define getoptstring "fm:o:" getoptstring_COMMON
+#define getoptstring "dfm:o:" getoptstring_COMMON
 static struct option longopts[] = {
 	{ "directory",      0, NULL, 'd'},
 	{ "file",           0, NULL, 'f'},
