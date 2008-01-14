@@ -40,6 +40,17 @@ tweaking on a per distro basis. They are also non essential to the operation
 of the system.
 
 
+
+Reporting Bugs
+-------------
+If you installed OpenRC from your chosen distribution, you should report
+bugs directly to them. For example, if you use Gentoo and emerged OpenRC
+then you should reports bugs to http://bugs.gentoo.org.
+
+Otherwise, you can report them directly to me at http://bugs.marples.name
+
+
+
 History - by Roy Marples
 ------------------------
 I became a Gentoo/Linux developer in 2004 and wrote the modular network
