@@ -578,6 +578,9 @@ int main (int argc, char **argv)
 	/* Run our built in applets. If we ran one, we don't return. */
 	run_applets (argc, argv);
 
+	argc--;
+	argv++;
+
 	/* Change dir to / to ensure all scripts don't use stuff in pwd */
 	chdir ("/");
 
