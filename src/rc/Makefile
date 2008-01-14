@@ -6,7 +6,7 @@ SRCS=		checkpath.c fstabinfo.c mountinfo.c rc.c rc-depend.c \
 CLEANFILES=	version.h
 
 LDFLAGS+=	-L../librc -L../libeinfo
-LDADD+=		-lutil -lrc -leinfo -Wl,-rpath,../librc -Wl,-rpath,../libeinfo
+LDADD+=		-lutil -lrc -leinfo
 CFLAGS+=	-I../includes -I../librc -I../libeinfo
 
 BINDIR?=	/sbin
