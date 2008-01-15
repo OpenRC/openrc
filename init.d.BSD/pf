@@ -1,0 +1,58 @@
+#!/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+name="Packet Filter"
+pf_conf=${pf_conf:-${pf_rules:-/etc/pf.conf}}
+required_files=${pf_conf}
+
+extra_commands="checkconfig showstatus"
+extra_started_commands="reload"
+
+depend() {
+	need localmount
+}
+
+start()
+{
+	ebegin "Starting ${name}"
+	if type kldload >/dev/null 2>&1; then
+		kldload pf 2>/dev/null
+	fi
+	pfctl -q -F all
+	pfctl -q -f "${pf_conf}" ${pf_args}
+	pfctl -q -e
+	eend $?
+}
+
+stop()
+{
+	ebegin "Stopping ${name}"
+	pfctl -q -d
+	eend $?
+}
+
+checkconfig()
+{
+	ebegin "Checking ${name} configuration"
+	pfctl -n -f "${pf_conf}"
+	eend $?
+}
+
+reload()
+{
+	ebegin "Reloading ${name} rules."
+	pfctl -q -n -f "${pf_conf}" && \
+	{ 
+		# Flush everything but existing state entries that way when
+		# rules are read in, it doesn't break established connections.
+		pfctl -q -Fnat -Fqueue -Frules -FSources -Finfo -FTables -Fosfp
+		pfctl -q -f "${pf_conf}" ${pf_args}
+	}
+	eend $?
+}
+
+showstatus()
+{
+	pfctl -s info
+}
