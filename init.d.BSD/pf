@@ -18,6 +18,10 @@ start()
 	ebegin "Starting ${name}"
 	if type kldload >/dev/null 2>&1; then
 		kldload pf 2>/dev/null
+	elif type modload >/dev/null 2>&1; then
+		if ! modstat -n pf >/dev/null; then
+			modload /usr/lkm/pf.o >/dev/null
+		fi
 	fi
 	pfctl -q -F all
 	pfctl -q -f "${pf_conf}" ${pf_args}
