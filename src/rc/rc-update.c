@@ -4,7 +4,7 @@
    */
 
 /*
- * Copyright 2007 Roy Marples
+ * Copyright 2007-2008 Roy Marples
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -129,17 +129,15 @@ static void show (char **runlevels, bool verbose)
 }
 
 #include "_usage.h"
-#define getoptstring "ads" getoptstring_COMMON
+#define usagestring "" \
+	"Usage: rc-update [options] service <runlevel>\n" \
+	"       rc-update [options] del service <runlevel>\n" \
+	"       rc-update [options] show"
+#define getoptstring getoptstring_COMMON
 static struct option longopts[] = {
-	{ "add",      0, NULL, 'a'},
-	{ "delete",   0, NULL, 'd'},
-	{ "show",     0, NULL, 's'},
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
-	"Add the init.d to runlevels",
-	"Delete init.d from runlevels",
-	"Show init.d's in runlevels",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -165,17 +163,7 @@ int rc_update (int argc, char **argv)
 				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-			case 'a':
-				action |= DOADD;
-				break;
-			case 'd':
-				action |= DODELETE;
-				break;
-			case 's':
-				action |= DOSHOW;
-				break;
-
-				case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 	}
 
@@ -187,23 +175,21 @@ int rc_update (int argc, char **argv)
 		eerrorx ("%s: cannot mix commands", applet);
 
 	/* We need to be backwards compatible */
-	if (! action) {
-		if (optind < argc) {
-			if (strcmp (argv[optind], "add") == 0)
-				action = DOADD;
-			else if (strcmp (argv[optind], "delete") == 0 ||
-				 strcmp (argv[optind], "del") == 0)
-				action = DODELETE;
-			else if (strcmp (argv[optind], "show") == 0)
-				action = DOSHOW;
-			if (action)
-				optind++;
-			else
-				eerrorx ("%s: invalid command `%s'", applet, argv[optind]);
-		}
-		if (! action)
-			usage (EXIT_FAILURE);
+	if (optind < argc) {
+		if (strcmp (argv[optind], "add") == 0)
+			action = DOADD;
+		else if (strcmp (argv[optind], "delete") == 0 ||
+			 strcmp (argv[optind], "del") == 0)
+			action = DODELETE;
+		else if (strcmp (argv[optind], "show") == 0)
+			action = DOSHOW;
+		if (action)
+			optind++;
+		else
+			eerrorx ("%s: invalid command `%s'", applet, argv[optind]);
 	}
+	if (! action)
+		action = DOSHOW;
 
 	if (optind >= argc) {
 		if (! action & DOSHOW)
