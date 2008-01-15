@@ -582,7 +582,7 @@ ${routes}"
 		case ${cmd} in
 			-net" "*|-host" "*);;
 			*" "netmask" "*)                   cmd="-net ${cmd}";;
-			*.*.*.*/32)                        cmd="-host ${cmd}";;
+			*.*.*.*/32*)                       cmd="-host ${cmd}";;
 			*.*.*.*/*|0.0.0.0" "*|default" "*) cmd="-net ${cmd}";;
 			*)                                 cmd="-host ${cmd}";;
 		esac
