@@ -606,7 +606,8 @@ bool rc_newer_than (const char *source, const char *target)
 	char *path;
 	int serrno = errno;
 
-	if (stat (source, &buf) != 0 || buf.st_size == 0)
+	/* We have to exist */
+	if (stat (source, &buf) != 0)
 		return (false);
 	mtime = buf.st_mtime;
 
@@ -618,11 +619,13 @@ bool rc_newer_than (const char *source, const char *target)
 	if (mtime < buf.st_mtime)
 		return (false);
 
+	/* If not a dir then reset errno */
 	if (! (dp = opendir (target))) {
 		errno = serrno;
 		return (true);
 	}
 
+	/* Check if we're newer than all the entries in the dir */
 	while ((d = readdir (dp))) {
 		if (d->d_name[0] == '.')
 			continue;
@@ -682,8 +685,10 @@ bool rc_deptree_update_needed (void)
 		if (mkdir (depdirs[i], 0755) != 0 && errno != EEXIST)
 			fprintf (stderr, "mkdir `%s': %s\n", depdirs[i], strerror (errno));
 
-	/* Quick test to see if anything we use has changed */
-	if (! rc_newer_than (RC_DEPTREE, RC_INITDIR) ||
+	/* Quick test to see if anything we use has changed and we have
+	 * data in our deptree */
+	if (! existss (RC_DEPTREE) ||
+	    ! rc_newer_than (RC_DEPTREE, RC_INITDIR) ||
 	    ! rc_newer_than (RC_DEPTREE, RC_CONFDIR) ||
 	    ! rc_newer_than (RC_DEPTREE, RC_INITDIR_LOCAL) ||
 	    ! rc_newer_than (RC_DEPTREE, RC_CONFDIR_LOCAL) ||
