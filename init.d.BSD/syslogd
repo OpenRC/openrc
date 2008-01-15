@@ -13,7 +13,7 @@ name="System Logger Daemon"
 depend()
 {
 	provide logger
-	use net
+	use net newsyslog
 	need localmount
-	after bootmisc newsyslog
+	after bootmisc
 }

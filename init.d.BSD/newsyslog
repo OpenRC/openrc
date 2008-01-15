@@ -12,6 +12,6 @@ depend()
 start()
 {
 	ebegin "Creating and/or trimming log files"
-	newsyslog ${newsyslog_args}
+	newsyslog -s ${newsyslog_args}
 	eend $?
 }
