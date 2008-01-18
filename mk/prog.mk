@@ -12,6 +12,8 @@ include ${MK}/sys.mk
 # and we need to use the one in /libexec instead of /usr/libexec
 _DYNLINK_SH=		if test -e /libexec/ld.elf_so; then \
 				echo "-Wl,-dynamic-linker=/libexec/ld.elf_so"; \
+			else \
+				echo ""; \
 			fi
 _DYNLINK!=		${_DYNLINK_SH}
 LDFLAGS+=		${_DYNLINK}$(shell ${_DYNLINK_SH})
