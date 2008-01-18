@@ -839,6 +839,7 @@ int main (int argc, char **argv)
 				continue;
 
 			if (rc_service_exists (d->d_name) &&
+			    rc_conf_yesno ("rc_coldplug") &&
 			    service_plugable (d->d_name))
 				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
 
