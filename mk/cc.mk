@@ -3,7 +3,6 @@
 # Setup some good default CFLAGS
 
 CFLAGS?=	-O2 -pipe
-CSTD?=		c99
 
 # GNU Make way of detecting gcc flags we can use
 check_gcc=$(shell if ${CC} $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
@@ -16,7 +15,7 @@ WEXTRA!= for x in -Wdeclaration-after-statement -Wsequence-point -Wextra; do \
 	done
 
 # Loads of nice flags to ensure our code is good
-CFLAGS+=	-pedantic -std=${CSTD} \
+CFLAGS+=	-pedantic \
 		-Wall -Wunused -Wimplicit -Wshadow -Wformat=2 \
 		-Wmissing-declarations -Wno-missing-prototypes -Wwrite-strings \
 		-Wbad-function-cast -Wnested-externs -Wcomment -Winline \
