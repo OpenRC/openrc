@@ -173,6 +173,24 @@ output when the environment variable
 .Va EINFO_VERBOSE
 is true.
 .Bl -tag -width indent
+.It Ic is_newer_than Ar file1 Ar file2 ...
+If
+.Ar file1
+is newer than
+.Ar file2
+return 0, otherwise 1.
+If
+.Ar file2
+is a directory, then check all it's contents too.
+.It Ic is_older_than Ar file1 Ar file2 ...
+If
+.Ar file1
+is older than
+.Ar file2
+return 0, otherwise 1.
+If
+.Ar file2
+is a directory, then check all it's contents too.
 .It Ic service_set_value Ar name Ar value
 Saves the
 .Ar name
@@ -229,6 +247,10 @@ Mark the service as inactive.
 .Xc
 Checks to see if the path exists, is of the right type, owned by the right
 people and has the correct access modes. If not, then it corrects the path.
+.It Ic yesno Ar value
+If
+.Ar value
+matches YES, TRUE, ON or 1 regardless of case then we return 0, otherwise 1.
 .El
 .Sh ENVIRONMENT
 .Nm
@@ -290,11 +312,13 @@ description_drink="Opens mouth and reflexively swallows"
 description_eat="Chews food in mouth"
 description_show="Shows what's in the tummy"
 
-_need_dbus() {
+_need_dbus()
+{
     grep -q dbus /etc/foo/plugins
 }
 
-depend() {
+depend()
+{
     # We write a pidfile and to /var/cache, so we need localmount.
     need localmount
     # We can optionally use the network, but it's not essential.
@@ -318,13 +342,15 @@ depend() {
     need ${_need}
 }
 
-start_pre() {
+start_pre()
+{
     # Ensure that our dirs are correct
     checkpath --dir --owner foo:foo --mode 0664 \\
 	/var/run/foo /var/cache/foo
 }
 
-start_post() {
+start_post()
+{
     # Save our need
     if _need_dbus; then
 	service_set_value need dbus
@@ -336,15 +362,23 @@ stop_post() {
     rm -rf /var/cache/foo/*
 }
 
-drink() {
+drink()
+{
     ebegin "Starting to drink"
     ${command} --drink beer
     eend $? "Failed to drink any beer :("
 }
 
-eat() {
+eat()
+{
     local result=0 retval= ate= food=
     ebegin "Starting to eat"
+
+    if yesno "${foo_diet}"; then
+    	eend 1 "We are on a diet!"
+	return 1
+    fi
+
     for food in /usr/share/food/*; do
 	veinfo "Eating `basename ${food}`"
 	${command} --eat ${food}
@@ -352,12 +386,14 @@ eat() {
 	: $((${result} += ${retval}))
 	[ ${retval} = 0 ] && ate="${ate} `basename ${food}`"
     done
+
     if eend ${result} "Failed to eat all the food"; then
 	service_set_value ate "${ate}"
     fi
 }
 
-show() {
+show()
+{
     einfo "Foo has eaten: `service_get_value ate`"
 }
 
