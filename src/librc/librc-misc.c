@@ -243,9 +243,9 @@ char **rc_config_load (const char *file)
 }
 librc_hidden_def(rc_config_load)
 
-char *rc_config_value (char **list, const char *entry)
+char *rc_config_value (const char *const *list, const char *entry)
 {
-	char *line;
+	const char *line;
 	int i;
 	char *p;
 

@@ -359,7 +359,7 @@ char **rc_config_list (const char *file);
 char **rc_config_load (const char *file);
 
 /*! Return the value of the entry from a key=value list. */
-char *rc_config_value (char **list, const char *entry);
+char *rc_config_value (const char *const *list, const char *entry);
 
 /*! Check if a variable is a boolean and return it's value.
  * If variable is not a boolean then we set errno to be ENOENT when it does

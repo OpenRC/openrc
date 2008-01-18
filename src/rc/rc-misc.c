@@ -89,7 +89,7 @@ char *rc_conf_value (const char *setting)
 		}
 	}
 
-	return (rc_config_value (rc_conf, setting));
+	return (rc_config_value ((const char *const *)rc_conf, setting));
 }
 
 bool rc_conf_yesno (const char *setting)
@@ -176,7 +176,7 @@ char **env_filter (void)
 			env_len = strlen (env_name) + strlen ("export ") + 1;
 			p = xmalloc (sizeof (char) * env_len);
 			snprintf (p, env_len, "export %s", env_name);
-			env_var = rc_config_value (profile, p);
+			env_var = rc_config_value ((const char *const *) profile, p);
 			free (p);
 		}
 
