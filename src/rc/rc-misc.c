@@ -396,13 +396,15 @@ bool service_plugable (const char *service)
 	char *token;
 	bool allow = true;
 	char *match = rc_conf_value ("rc_plug_services");
+
 	if (! match)
-		return true;
+		return (true);
 
 	list = xstrdup (match);
 	p = list;
 	while ((token = strsep (&p, " "))) {
 		bool truefalse = true;
+
 		if (token[0] == '!') {
 			truefalse = false;
 			token++;
