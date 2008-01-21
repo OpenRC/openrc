@@ -456,7 +456,7 @@ static bool svc_exec (const char *arg1, const char *arg2)
 
 	selfd = MAX (master_tty, signal_pipe[0]) + 1;
 	buffer = xmalloc (sizeof (char) * BUFSIZ);
-	while (1) {
+	for (;;) {
 		FD_ZERO (&rset);
 		FD_SET (signal_pipe[0], &rset);
 		if (master_tty >= 0)
