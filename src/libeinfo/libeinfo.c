@@ -816,7 +816,7 @@ static int _do_eend (const char *cmd, int retval, const char *__EINFO_RESTRICT f
 	FILE *fp = stdout;
 	va_list apc;
 
-	if (fmt && strlen (fmt) > 0 && retval != 0) {
+	if (fmt && *fmt != '\0' && retval != 0) {
 		va_copy (apc, ap);
 		if (strcmp (cmd, "ewend") == 0) {
 			col = _ewarnvn (fmt, apc);
