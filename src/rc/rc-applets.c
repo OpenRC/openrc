@@ -205,7 +205,7 @@ static int do_service (int argc, char **argv)
 	else
 		service = getenv ("SVCNAME");
 
-	if (! service || strlen (service) == 0)
+	if (! service || *service == '\0')
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "service_started") == 0)
@@ -252,7 +252,7 @@ static int do_mark_service (int argc, char **argv)
 	else
 		service = getenv ("SVCNAME");
 
-	if (! service || strlen (service) == 0)
+	if (! service || *service == '\0')
 		eerrorx ("%s: no service specified", applet);
 
 	if (strcmp (applet, "mark_service_started") == 0)
@@ -310,7 +310,7 @@ static int do_value (int argc, char **argv)
 	if (! service)
 		eerrorx ("%s: no service specified", applet);
 
-	if (argc < 2 || ! argv[1] || strlen (argv[1]) == 0)
+	if (argc < 2 || ! argv[1] || *argv[1] == '\0')
 		eerrorx ("%s: no option specified", applet);
 
 	if (strcmp (applet, "service_get_value") == 0 ||

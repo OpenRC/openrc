@@ -196,7 +196,7 @@ char **rc_config_load (const char *file)
 			do {
 				/* Bash variables are usually quoted */
 				token = strsep (&line, "\"\'");
-			} while ((token) && (strlen (token) == 0));
+			} while (token && *token == '\0');
 
 		/* Drop a newline if that's all we have */
 		if (token) {

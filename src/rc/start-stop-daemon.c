@@ -152,7 +152,7 @@ static int parse_signal (const char *sig)
 	unsigned int i = 0;
 	char *s;
 
-	if (! sig || strlen (sig) == 0)
+	if (! sig || *sig == '\0')
 		return (-1);
 
 	if (sscanf (sig, "%u", &i) == 1) {

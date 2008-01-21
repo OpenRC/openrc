@@ -634,7 +634,7 @@ int main (int argc, char **argv)
 	{
 		switch (opt) {
 			case 'o':
-				if (strlen (optarg) == 0)
+				if (*optarg == '\0')
 					optarg = NULL;
 				exit (set_ksoftlevel (optarg) ? EXIT_SUCCESS : EXIT_FAILURE);
 				case_RC_COMMON_GETOPT

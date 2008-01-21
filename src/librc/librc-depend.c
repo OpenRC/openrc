@@ -151,7 +151,7 @@ rc_depinfo_t *rc_deptree_load (void)
 		{
 			/* Sanity */
 			e = get_shell_value (p);
-			if (! e || strlen (e) == 0)
+			if (! e || *e == '\0')
 				goto next;
 
 			if (! deptree)
@@ -176,7 +176,7 @@ rc_depinfo_t *rc_deptree_load (void)
 
 		/* Sanity */
 		e = get_shell_value (p);
-		if (! e || strlen (e) == 0)
+		if (! e || *e == '\0')
 			goto next;
 
 		if (! deptype)
