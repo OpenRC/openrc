@@ -75,6 +75,7 @@ static int do_e (int argc, char **argv)
 	char *message = NULL;
 	char *p;
 	int level = 0;
+	const char *fmt = "%s";
 
 	/* Punt applet */
 	argc--;
@@ -92,7 +93,6 @@ static int do_e (int argc, char **argv)
 	}
 
 	if (argc > 0) {
-
 		if (strcmp (applet, "eend") == 0 ||
 		    strcmp (applet, "ewend") == 0 ||
 		    strcmp (applet, "veend") == 0 ||
@@ -140,44 +140,44 @@ static int do_e (int argc, char **argv)
 	}
 
 	if (! message)
-		message = xstrdup ("");
+		fmt = "";
 
 	if (strcmp (applet, "einfo") == 0)
-		einfo ("%s", message);
+		einfo (fmt, message);
 	else if (strcmp (applet, "einfon") == 0)
-		einfon ("%s", message);
+		einfon (fmt, message);
 	else if (strcmp (applet, "ewarn") == 0)
-		ewarn ("%s", message);
+		ewarn (fmt, message);
 	else if (strcmp (applet, "ewarnn") == 0)
-		ewarnn ("%s", message);
+		ewarnn (fmt, message);
 	else if (strcmp (applet, "eerror") == 0) {
-		eerror ("%s", message);
+		eerror (fmt, message);
 		retval = 1;
 	} else if (strcmp (applet, "eerrorn") == 0) {
-		eerrorn ("%s", message);
+		eerrorn (fmt, message);
 		retval = 1;
 	} else if (strcmp (applet, "ebegin") == 0)
-		ebegin ("%s", message);
+		ebegin (fmt, message);
 	else if (strcmp (applet, "eend") == 0)
-		eend (retval, "%s", message);
+		eend (retval, fmt, message);
 	else if (strcmp (applet, "ewend") == 0)
-		ewend (retval, "%s", message);
+		ewend (retval, fmt, message);
 	else if (strcmp (applet, "esyslog") == 0)
-		elog (level, "%s", message);
+		elog (level, fmt, message);
 	else if (strcmp (applet, "veinfo") == 0)
-		einfov ("%s", message);
+		einfov (fmt, message);
 	else if (strcmp (applet, "veinfon") == 0)
-		einfovn ("%s", message);
+		einfovn (fmt, message);
 	else if (strcmp (applet, "vewarn") == 0)
-		ewarnv ("%s", message);
+		ewarnv (fmt, message);
 	else if (strcmp (applet, "vewarnn") == 0)
-		ewarnvn ("%s", message);
+		ewarnvn (fmt, message);
 	else if (strcmp (applet, "vebegin") == 0)
-		ebeginv ("%s", message);
+		ebeginv (fmt, message);
 	else if (strcmp (applet, "veend") == 0)
-		eendv (retval, "%s", message);
+		eendv (retval, fmt, message);
 	else if (strcmp (applet, "vewend") == 0)
-		ewendv (retval, "%s", message);
+		ewendv (retval, fmt, message);
 	else if (strcmp (applet, "eindent") == 0)
 		eindent ();
 	else if (strcmp (applet, "eoutdent") == 0)
