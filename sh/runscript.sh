@@ -171,7 +171,7 @@ while [ -n "$1" ]; do
 				continue 2
 			else
 				if [ "${_cmd}" = "start" -o "${_cmd}" = "stop" ]; then
-					exit 0
+					continue 2
 				else
 					eerror "${SVCNAME}: function \`$1' defined but does not exist"
 					exit 1
