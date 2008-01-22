@@ -309,7 +309,7 @@ char **rc_service_extra_commands (const char *service)
 	char *token;
 	char *p;
 	FILE *fp;
-	int l;
+	size_t l;
 
 	if (! (svc = rc_service_resolve (service)))
 		return (NULL);
@@ -337,7 +337,7 @@ char *rc_service_description (const char *service, const char *option)
 	char *cmd;
 	char *desc = NULL;
 	FILE *fp;
-	int i;
+	size_t l;
 
 	if (! (svc = rc_service_resolve (service)))
 		return (NULL);
@@ -345,9 +345,9 @@ char *rc_service_description (const char *service, const char *option)
 	if (! option)
 		option = "";
 
-	i = strlen (DESCSTR) + strlen (svc) + strlen (option) + 2;
-	cmd = xmalloc (sizeof (char) * i);
-	snprintf (cmd, i, DESCSTR, svc, option ? "_" : "", option);
+	l = strlen (DESCSTR) + strlen (svc) + strlen (option) + 2;
+	cmd = xmalloc (sizeof (char) * l);
+	snprintf (cmd, l, DESCSTR, svc, option ? "_" : "", option);
 	free (svc);
 	if ((fp = popen (cmd, "r"))) {
 		desc = rc_getline (fp);

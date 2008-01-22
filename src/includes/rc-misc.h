@@ -65,8 +65,11 @@
 
 #define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
-#define ERRX					fprintf (stderr, "out of memory\n"); exit (1)
+#define ERRX fprintf (stderr, "out of memory\n"); exit (1)
 
+#ifdef lint
+# define _unused
+#endif
 #if __GNUC__ > 2 || defined(__INTEL_COMPILER)
 # define _unused __attribute__((__unused__))
 #endif
@@ -79,6 +82,7 @@ _unused static void *xmalloc (size_t size)
 		return (value);
 
 	ERRX;
+	/* NOTREACHED */
 }
 
 _unused static void *xrealloc (void *ptr, size_t size)
@@ -89,6 +93,7 @@ _unused static void *xrealloc (void *ptr, size_t size)
 		return (value);
 
 	ERRX;
+	/* NOTREACHED */
 }
 
 _unused static char *xstrdup (const char *str)
@@ -104,6 +109,7 @@ _unused static char *xstrdup (const char *str)
 		return (value);
 
 	ERRX;
+	/* NOTREACHED */
 }
 
 #undef ERRX

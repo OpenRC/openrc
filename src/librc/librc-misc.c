@@ -57,8 +57,8 @@ librc_hidden_def(rc_yesno)
 char *rc_strcatpaths (const char *path1, const char *paths, ...)
 {
 	va_list ap;
-	int length;
-	int i;
+	size_t length;
+	size_t i;
 	char *p;
 	char *path;
 	char *pathp;
@@ -176,7 +176,7 @@ char **rc_config_load (const char *file)
 	char *line;
 	char *linep;
 	char *linetok;
-	int i = 0;
+	size_t i = 0;
 	int j;
 	bool replaced;
 	char *entry;
@@ -251,7 +251,7 @@ char *rc_config_value (const char *const *list, const char *entry)
 
 	STRLIST_FOREACH (list, line, i) {
 		p = strchr (line, '=');
-		if (p && strncmp (entry, line, p - line) == 0)
+		if (p && strncmp (entry, line, (size_t) (p - line)) == 0)
 			return (p += 1);
 	}
 

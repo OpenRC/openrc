@@ -309,7 +309,7 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 {
 	char *dirpath;
 	char *file = NULL;
-	int i;
+	size_t l;
 	char *mexec;
 	char *mname;
 	char *mpidfile;
@@ -328,23 +328,23 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 				  basename_c (service), (char *) NULL);
 
 	if (exec) {
-		i = strlen (exec) + 6;
-		mexec = xmalloc (sizeof (char) * i);
-		snprintf (mexec, i, "exec=%s", exec);
+		l = strlen (exec) + 6;
+		mexec = xmalloc (sizeof (char) * l);
+		snprintf (mexec, l, "exec=%s", exec);
 	} else
 		mexec = xstrdup ("exec=");
 
 	if (name) {
-		i = strlen (name) + 6;
-		mname = xmalloc (sizeof (char) * i);
-		snprintf (mname, i, "name=%s", name);
+		l = strlen (name) + 6;
+		mname = xmalloc (sizeof (char) * l);
+		snprintf (mname, l, "name=%s", name);
 	} else
 		mname = xstrdup ("name=");
 
 	if (pidfile) {
-		i = strlen (pidfile) + 9;
-		mpidfile = xmalloc (sizeof (char) * i);
-		snprintf (mpidfile, i, "pidfile=%s", pidfile);
+		l = strlen (pidfile) + 9;
+		mpidfile = xmalloc (sizeof (char) * l);
+		snprintf (mpidfile, l, "pidfile=%s", pidfile);
 	} else
 		mpidfile = xstrdup ("pidfile=");
 
@@ -406,7 +406,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 {
 	char *dirpath;
 	char *file;
-	int i;
+	size_t l;
 	char *mexec;
 	bool retval = false;
 	DIR *dp;
@@ -418,14 +418,14 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename_c (service),
 				  (char *) NULL);
 
-	i = strlen (exec) + 6;
-	mexec = xmalloc (sizeof (char) * i);
-	snprintf (mexec, i, "exec=%s", exec);
+	l = strlen (exec) + 6;
+	mexec = xmalloc (sizeof (char) * l);
+	snprintf (mexec, l, "exec=%s", exec);
 
 	if (indx > 0) {
-		int len = sizeof (char) * 10;
-		file = xmalloc (len);
-		snprintf (file, len, "%03d", indx);
+		l = sizeof (char) * 10;
+		file = xmalloc (l);
+		snprintf (file, l, "%03d", indx);
 		retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
 		free (file);
 	} else {
