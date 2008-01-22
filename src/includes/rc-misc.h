@@ -67,7 +67,11 @@
 
 #define ERRX					fprintf (stderr, "out of memory\n"); exit (1)
 
-static inline void *xmalloc (size_t size)
+#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
+# define _unused __attribute__((__unused__))
+#endif
+
+_unused static void *xmalloc (size_t size)
 {
 	void *value = malloc (size);
 
@@ -77,7 +81,7 @@ static inline void *xmalloc (size_t size)
 	ERRX;
 }
 
-static inline void *xrealloc (void *ptr, size_t size)
+_unused static void *xrealloc (void *ptr, size_t size)
 {
 	void *value = realloc (ptr, size);
 
@@ -87,7 +91,7 @@ static inline void *xrealloc (void *ptr, size_t size)
 	ERRX;
 }
 
-static inline char *xstrdup (const char *str)
+_unused static char *xstrdup (const char *str)
 {
 	char *value;
 
@@ -104,19 +108,20 @@ static inline char *xstrdup (const char *str)
 
 #undef ERRX
 
-static inline bool exists (const char *pathname)
+_unused static bool exists (const char *pathname)
 {
 	struct stat buf;
 
 	return (stat (pathname, &buf) == 0);
 }
 
-static inline bool existss (const char *pathname)
+_unused static bool existss (const char *pathname)
 {
 	struct stat buf;
 
 	return (stat (pathname, &buf) == 0 && buf.st_size != 0);
 }
+
 char *rc_conf_value (const char *var);
 bool rc_conf_yesno (const char *var);
 char **env_filter (void);
@@ -125,7 +130,8 @@ bool service_plugable (const char *service);
 
 /* basename_c never modifies the argument. As such, if there is a trailing
  * slash then an empty string is returned. */
-static inline const char *basename_c (const char *path) {
+_unused static const char *basename_c (const char *path)
+{
 	const char *slash = strrchr (path, '/');
 
 	if (slash)
