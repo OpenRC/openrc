@@ -36,6 +36,7 @@ const char libeinfo_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <sys/stat.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -465,7 +466,7 @@ static int get_term_columns (FILE * __EINFO_RESTRICT stream)
 	int i;
 
 	if (env) {
-		i = strtol (env, &p, 10);
+		i = strtoimax (env, &p, 10);
 		if (! *p)
 			return (i);
 	}
@@ -515,14 +516,14 @@ static int _eindent (FILE * __EINFO_RESTRICT stream)
 
 	if (env) {
 		errno = 0;
-		amount = strtol (env, NULL, 0);
+		amount = strtoimax (env, NULL, 0);
 		if (errno != 0 || amount < 0)
 			amount = 0;
 		else if (amount > INDENT_MAX)
 			amount = INDENT_MAX;
 
 		if (amount > 0)
-			memset (indent, ' ', amount);
+			memset (indent, ' ', (size_t) amount);
 	}
 
 	/* Terminate it */
@@ -883,7 +884,7 @@ void eindent (void)
 
 	if (env) {
 		errno = 0;
-		amount = strtol (env, NULL, 0);
+		amount = strtoimax (env, NULL, 0);
 		if (errno != 0)
 			amount = 0;
 	}
@@ -907,7 +908,7 @@ void eoutdent (void)
 		return;
 
 	errno = 0;
-	amount = strtol (env, NULL, 0);
+	amount = strtoimax (env, NULL, 0);
 	if (errno != 0)
 		amount = 0;
 	else
