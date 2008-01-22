@@ -106,12 +106,12 @@ char **env_filter (void)
 	int count = 0;
 	bool got_path = false;
 	char *env_var;
-	int env_len;
+	size_t env_len;
 	char *token;
 	char *sep;
 	char *e;
 	char *p;
-	int pplen = strlen (PATH_PREFIX);
+	size_t pplen = strlen (PATH_PREFIX);
 
 	/* Init a system whitelist, start with shell vars we need */
 	rc_strlist_add (&whitelist, "PATH");
@@ -273,7 +273,7 @@ char **env_config (void)
 {
 	char **env = NULL;
 	char *line;
-	int i;
+	size_t l;
 #ifdef __linux__
 	char sys[6];
 #endif
@@ -284,36 +284,36 @@ char **env_config (void)
 	char *p;
 
 	/* One char less to drop the trailing / */
-	i = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
-	line = xmalloc (sizeof (char) * i);
-	snprintf (line, i, "RC_LIBDIR=" RC_LIBDIR);
+	l = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
+	line = xmalloc (sizeof (char) * l);
+	snprintf (line, l, "RC_LIBDIR=" RC_LIBDIR);
 	rc_strlist_add (&env, line);
 	free (line);
 
 	/* One char less to drop the trailing / */
-	i = strlen ("RC_SVCDIR=") + strlen (RC_SVCDIR) + 1;
-	line = xmalloc (sizeof (char) * i);
-	snprintf (line, i, "RC_SVCDIR=" RC_SVCDIR);
+	l = strlen ("RC_SVCDIR=") + strlen (RC_SVCDIR) + 1;
+	line = xmalloc (sizeof (char) * l);
+	snprintf (line, l, "RC_SVCDIR=" RC_SVCDIR);
 	rc_strlist_add (&env, line);
 	free (line);
 
 	rc_strlist_add (&env, "RC_BOOTLEVEL=" RC_LEVEL_BOOT);
 
-	i = strlen ("RC_SOFTLEVEL=") + strlen (runlevel) + 1;
-	line = xmalloc (sizeof (char) * i);
-	snprintf (line, i, "RC_SOFTLEVEL=%s", runlevel);
+	l = strlen ("RC_SOFTLEVEL=") + strlen (runlevel) + 1;
+	line = xmalloc (sizeof (char) * l);
+	snprintf (line, l, "RC_SOFTLEVEL=%s", runlevel);
 	rc_strlist_add (&env, line);
 	free (line);
 
 	if ((fp = fopen (RC_KSOFTLEVEL, "r"))) {
 		memset (buffer, 0, sizeof (buffer));
 		if (fgets (buffer, sizeof (buffer), fp)) {
-			i = strlen (buffer) - 1;
-			if (buffer[i] == '\n')
-				buffer[i] = 0;
-			i += strlen ("RC_DEFAULTLEVEL=") + 2;
-			line = xmalloc (sizeof (char) * i);
-			snprintf (line, i, "RC_DEFAULTLEVEL=%s", buffer);
+			l = strlen (buffer) - 1;
+			if (buffer[l] == '\n')
+				buffer[l] = 0;
+			l += strlen ("RC_DEFAULTLEVEL=") + 2;
+			line = xmalloc (sizeof (char) * l);
+			snprintf (line, l, "RC_DEFAULTLEVEL=%s", buffer);
 			rc_strlist_add (&env, line);
 			free (line);
 		}
@@ -344,9 +344,9 @@ char **env_config (void)
 	}
 
 	if (sys[0]) {
-		i = strlen ("RC_SYS=") + strlen (sys) + 2;
-		line = xmalloc (sizeof (char) * i);
-		snprintf (line, i, "RC_SYS=%s", sys);
+		l = strlen ("RC_SYS=") + strlen (sys) + 2;
+		line = xmalloc (sizeof (char) * l);
+		snprintf (line, l, "RC_SYS=%s", sys);
 		rc_strlist_add (&env, line);
 		free (line);
 	}
@@ -356,25 +356,25 @@ char **env_config (void)
 	/* Some scripts may need to take a different code path if Linux/FreeBSD, etc
 	   To save on calling uname, we store it in an environment variable */
 	if (uname (&uts) == 0) {
-		i = strlen ("RC_UNAME=") + strlen (uts.sysname) + 2;
-		line = xmalloc (sizeof (char) * i);
-		snprintf (line, i, "RC_UNAME=%s", uts.sysname);
+		l = strlen ("RC_UNAME=") + strlen (uts.sysname) + 2;
+		line = xmalloc (sizeof (char) * l);
+		snprintf (line, l, "RC_UNAME=%s", uts.sysname);
 		rc_strlist_add (&env, line);
 		free (line);
 	}
 
 	/* Be quiet or verbose as necessary */
 	if ((p = rc_conf_value ("rc_quiet"))) {
-		i = strlen ("EINFO_QUIET=") + strlen (p) + 1;
-		line = xmalloc (sizeof (char) * i);
-		snprintf (line, i, "EINFO_QUIET=%s", p);
+		l = strlen ("EINFO_QUIET=") + strlen (p) + 1;
+		line = xmalloc (sizeof (char) * l);
+		snprintf (line, l, "EINFO_QUIET=%s", p);
 		rc_strlist_add (&env, line);
 		free (line);
 	}
 	if ((p = rc_conf_value ("rc_verbose"))) {
-		i = strlen ("EINFO_VERBOSE=") + strlen (p) + 1;
-		line = xmalloc (sizeof (char) * i);
-		snprintf (line, i, "EINFO_VERBOSE=%s", p);
+		l = strlen ("EINFO_VERBOSE=") + strlen (p) + 1;
+		line = xmalloc (sizeof (char) * l);
+		snprintf (line, l, "EINFO_VERBOSE=%s", p);
 		rc_strlist_add (&env, line);
 		free (line);
 	}
@@ -412,7 +412,9 @@ bool service_plugable (const char *service)
 
 		star = strchr (token, '*');
 		if (star) {
-			if (strncmp (service, token, star - token) == 0) {
+			if (strncmp (service, token, (size_t) (star - token))
+			    == 0)
+			{
 				allow = truefalse;
 				break;
 			}

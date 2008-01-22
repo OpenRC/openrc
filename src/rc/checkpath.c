@@ -116,7 +116,7 @@ static int parse_mode (mode_t *mode, char *text)
 			errno = EINVAL;
 			return (-1);
 		}
-		*mode = l;
+		*mode = (mode_t) l;
 		return (0);
 	}
 
@@ -138,7 +138,7 @@ static int parse_owner (struct passwd **user, struct group **group,
 
 	if (user && *u) {
 		if (sscanf (u, "%d", &id) == 1)
-			*user = getpwuid (id);
+			*user = getpwuid ((uid_t) id);
 		else
 			*user = getpwnam (u);
 		if (! *user)
@@ -147,7 +147,7 @@ static int parse_owner (struct passwd **user, struct group **group,
 
 	if (group && g && *g) {
 		if (sscanf (g, "%d", &id) == 1)
-			*group = getgrgid (id);
+			*group = getgrgid ((gid_t) id);
 		else
 			*group = getgrnam (g);
 		if (! *group)
@@ -232,4 +232,5 @@ int checkpath (int argc, char **argv)
 	}
 
 	exit (retval);
+	/* NOTREACHED */
 }

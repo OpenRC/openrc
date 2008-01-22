@@ -150,7 +150,7 @@ static int parse_signal (const char *sig)
 	};
 
 	unsigned int i = 0;
-	char *s;
+	const char *s;
 
 	if (! sig || *sig == '\0')
 		return (-1);
@@ -162,7 +162,7 @@ static int parse_signal (const char *sig)
 	}
 
 	if (strncmp (sig, "SIG", 3) == 0)
-		s = (char *) sig + 3;
+		s = sig + 3;
 	else
 		s = NULL;
 
@@ -172,6 +172,7 @@ static int parse_signal (const char *sig)
 			return (signallist[i].signal);
 
 	eerrorx ("%s: `%s' is not a valid signal", applet, sig);
+	/* NOTREACHED */
 }
 
 static void parse_schedule_item (schedulelist_t *item, const char *string)
@@ -203,7 +204,7 @@ static void parse_schedule (const char *string, int default_signal)
 	const char *slash;
 	int count = 0;
 	schedulelist_t *repeatat = NULL;
-	ptrdiff_t len;
+	size_t len;
 	schedulelist_t *next;
 
 	if (string)
@@ -446,7 +447,6 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 
 static void handle_signal (int sig)
 {
-	int pid;
 	int status;
 	int serrno = errno;
 	char signame[10] = { '\0' };
@@ -455,17 +455,20 @@ static void handle_signal (int sig)
 		case SIGINT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGINT");
+			/* FALLTHROUGH */
 		case SIGTERM:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGTERM");
+			/* FALLTHROUGH */
 		case SIGQUIT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGQUIT");
 			eerrorx ("%s: caught %s, aborting", applet, signame);
+			/* NOTREACHED */
 
 		case SIGCHLD:
-			while (1) {
-				if ((pid = waitpid (-1, &status, WNOHANG)) < 0) {
+			for (;;) {
+				if (waitpid (-1, &status, WNOHANG) < 0) {
 					if (errno != ECHILD)
 						eerror ("%s: waitpid: %s", applet, strerror (errno));
 					break;
@@ -618,7 +621,7 @@ int start_stop_daemon (int argc, char **argv)
 					if (sscanf (cu, "%d", &tid) != 1)
 						pw = getpwnam (cu);
 					else
-						pw = getpwuid (tid);
+						pw = getpwuid ((uid_t) tid);
 
 					if (! pw)
 						eerrorx ("%s: user `%s' not found", applet, cu);
@@ -633,7 +636,7 @@ int start_stop_daemon (int argc, char **argv)
 						if (sscanf (cg, "%d", &tid) != 1)
 							gr = getgrnam (cg);
 						else
-							gr = getgrgid (tid);
+							gr = getgrgid ((gid_t) tid);
 
 						if (! gr)
 							eerrorx ("%s: group `%s' not found", applet, cg);
@@ -653,7 +656,7 @@ int start_stop_daemon (int argc, char **argv)
 					if (sscanf (optarg, "%d", &tid) != 1)
 						gr = getgrnam (optarg);
 					else
-						gr = getgrgid (tid);
+						gr = getgrgid ((gid_t) tid);
 
 					if (! gr)
 						eerrorx ("%s: group `%s' not found", applet, optarg);
@@ -912,7 +915,7 @@ int start_stop_daemon (int argc, char **argv)
 				char *p = path;
 				char *token;
 				char *np;
-				int l;
+				size_t l;
 				int t;
 
 				p += 5;
@@ -1067,4 +1070,5 @@ int start_stop_daemon (int argc, char **argv)
 		rc_service_daemon_set (svcname, exec, cmd, pidfile, true);
 
 	exit (EXIT_SUCCESS);
+	/* NOTREACHED */
 }

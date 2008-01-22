@@ -175,9 +175,11 @@ static void handle_signal (int sig)
 		case SIGINT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGINT");
+			/* FALLTHROUGH */
 		case SIGTERM:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGTERM");
+			/* FALLTHROUGH */
 		case SIGQUIT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGQUIT");
@@ -185,6 +187,7 @@ static void handle_signal (int sig)
 			if (service_pid > 0)
 				kill (service_pid, sig);
 			eerrorx ("%s: caught %s, aborting", applet, signame);
+			/* NOTREACHED */
 
 		default:
 			eerror ("%s: caught unknown signal %d", applet, sig);
@@ -579,7 +582,7 @@ static rc_service_state_t svc_status ()
 static void make_exclusive ()
 {
 	char *path;
-	int i;
+	size_t l;
 
 	/* We create a fifo so that other services can wait until we complete */
 	if (! exclusive)
@@ -591,9 +594,9 @@ static void make_exclusive ()
 			 applet, exclusive, strerror (errno));
 
 	path = rc_strcatpaths (RC_SVCDIR, "exclusive", applet, (char *) NULL);
-	i = strlen (path) + 16;
-	mtime_test = xmalloc (sizeof (char) * i);
-	snprintf (mtime_test, i, "%s.%d", path, getpid ());
+	l = strlen (path) + 16;
+	mtime_test = xmalloc (sizeof (char) * l);
+	snprintf (mtime_test, l, "%s.%d", path, getpid ());
 	free (path);
 
 	if (exists (mtime_test) && unlink (mtime_test) != 0) {
@@ -760,7 +763,7 @@ static void svc_start (bool deps)
 
 		if (tmplist) {
 			int n = 0;
-			int len = 0;
+			size_t len = 0;
 			char *p;
 
 			/* Set the state now, then unlink our exclusive so that
@@ -1039,7 +1042,7 @@ static const char * const longopts_help[] = {
 
 int runscript (int argc, char **argv)
 {
-	int i;
+	size_t i;
 	bool deps = true;
 	bool doneone = false;
 	char pid[16];
@@ -1136,8 +1139,8 @@ int runscript (int argc, char **argv)
 
 	/* eprefix is kinda klunky, but it works for our purposes */
 	if (rc_conf_yesno ("rc_parallel")) {
-		int l = 0;
-		int ll;
+		size_t l = 0;
+		size_t ll;
 
 		/* Get the longest service name */
 		services = rc_services_in_runlevel (NULL);

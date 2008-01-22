@@ -113,7 +113,7 @@ static void clean_failed (void)
 {
 	DIR *dp;
 	struct dirent *d;
-	int i;
+	size_t l;
 	char *path;
 
 	/* Clean the failed services state dir now */
@@ -124,9 +124,9 @@ static void clean_failed (void)
 			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
-			i = strlen (RC_SVCDIR "/failed/") + strlen (d->d_name) + 1;
-			path = xmalloc (sizeof (char) * i);
-			snprintf (path, i, RC_SVCDIR "/failed/%s", d->d_name);
+			l = strlen (RC_SVCDIR "/failed/") + strlen (d->d_name) + 1;
+			path = xmalloc (sizeof (char) * l);
+			snprintf (path, l, RC_SVCDIR "/failed/%s", d->d_name);
 			if (path) {
 				if (unlink (path))
 					eerror ("%s: unlink `%s': %s", applet, path,
@@ -467,13 +467,16 @@ static void handle_signal (int sig)
 		case SIGINT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGINT");
+			/* FALLTHROUGH */
 		case SIGTERM:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGTERM");
+			/* FALLTHROUGH */
 		case SIGQUIT:
 			if (! signame[0])
 				snprintf (signame, sizeof (signame), "SIGQUIT");
 			eerrorx ("%s: caught %s, aborting", applet, signame);
+			/* NOTREACHED */
 		case SIGUSR1:
 			eerror ("rc: Aborting!");
 			/* Kill any running services we have started */
@@ -495,7 +498,7 @@ static void handle_signal (int sig)
 				single_user ();
 
 			exit (EXIT_FAILURE);
-			break;
+			/* NOTREACHED */
 
 		default:
 			eerror ("%s: caught unknown signal %d", applet, sig);
@@ -637,6 +640,7 @@ int main (int argc, char **argv)
 				if (*optarg == '\0')
 					optarg = NULL;
 				exit (set_ksoftlevel (optarg) ? EXIT_SUCCESS : EXIT_FAILURE);
+				/* NOTREACHED */
 				case_RC_COMMON_GETOPT
 		}
 	}
@@ -891,9 +895,10 @@ int main (int argc, char **argv)
 				{
 					char *p = d->d_name + 3;
 					if (p && isdigit ((int) *p)) {
-						i = (strlen ("moused.") + strlen (d->d_name) + 1);
-						tmp = xmalloc (sizeof (char) * i);
-						snprintf (tmp, i, "moused.%s", d->d_name);
+						size_t len;
+						len = (strlen ("moused.") + strlen (d->d_name) + 1);
+						tmp = xmalloc (sizeof (char) * len);
+						snprintf (tmp, len, "moused.%s", d->d_name);
 						if (rc_service_exists (tmp) &&
 						    service_plugable (tmp))
 							rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
@@ -1007,7 +1012,7 @@ int main (int argc, char **argv)
 
 		/* Unless we would use a different config file */
 		if (found) {
-			int len;
+			size_t len;
 			if (! newlevel)
 				continue;
 

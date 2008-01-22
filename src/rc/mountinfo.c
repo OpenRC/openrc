@@ -219,7 +219,7 @@ static char **find_mounts (struct args *args)
 	int i;
 	char **list = NULL;
 	char *options = NULL;
-	int flags;
+	uint64_t flags;
 	struct opt *o;
 
 	if ((nmnts = getmntinfo (&mnts, MNT_NOWAIT)) == 0)
@@ -236,7 +236,7 @@ static char **find_mounts (struct args *args)
 					options = xstrdup (o->o_name);
 				else {
 					char *tmp = NULL;
-					int l = strlen (options) + strlen (o->o_name) + 2;
+					size_t l = strlen (options) + strlen (o->o_name) + 2;
 					tmp = xmalloc (sizeof (char) * l);
 					snprintf (tmp, l, "%s,%s", options, o->o_name);
 					free (options);
@@ -476,4 +476,5 @@ int mountinfo (int argc, char **argv)
 	REG_FREE (skip_point_regex);
 
 	exit (result);
+	/* NOTREACHED */
 }

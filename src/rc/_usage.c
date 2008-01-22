@@ -24,8 +24,14 @@
  * SUCH DAMAGE.
  */
 
-__attribute__ ((__noreturn__))
-static void usage (int exit_status)
+#if lint
+# define _noreturn
+#endif
+#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
+# define _noreturn __attribute__ ((__noreturn__))
+#endif
+
+_noreturn static void usage (int exit_status)
 {
 	const char * const has_arg[] = { "", "<arg>", "[arg]" };
 	int i;

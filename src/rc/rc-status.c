@@ -132,12 +132,14 @@ int rc_status (int argc, char **argv)
 					printf ("%s\n", level);
 				rc_strlist_free (levels);
 				exit (EXIT_SUCCESS);
+				/* NOTREACHED */
 			case 's':
 				services = rc_services_in_runlevel (NULL);
 				STRLIST_FOREACH (services, service, i)
 					print_service (service);
 				rc_strlist_free (services);
 				exit (EXIT_SUCCESS);
+				/* NOTREACHED */
 			case 'u':
 				services = rc_services_in_runlevel (NULL);
 				levels = rc_runlevel_list ();
@@ -154,6 +156,7 @@ int rc_status (int argc, char **argv)
 				rc_strlist_free (levels);
 				rc_strlist_free (services);
 				exit (EXIT_SUCCESS);
+				/* NOTREACHED */
 
 				case_RC_COMMON_GETOPT
 		}
@@ -193,5 +196,6 @@ int rc_status (int argc, char **argv)
 	rc_strlist_free (levels);
 	rc_deptree_free (deptree);
 
-	return (EXIT_SUCCESS);
+	exit (EXIT_SUCCESS);
+	/* NOTREACHED */
 }

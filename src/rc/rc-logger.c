@@ -191,7 +191,7 @@ void rc_logger_open (const char *level)
 
 			buffer = xmalloc (sizeof (char) * BUFSIZ);
 			selfd = rc_logger_tty > signal_pipe[0] ? rc_logger_tty : signal_pipe[0];
-			while (1) {
+			for (;;) {
 				FD_ZERO (&rset);
 				FD_SET (rc_logger_tty, &rset);
 				FD_SET (signal_pipe[0], &rset);
@@ -244,6 +244,7 @@ void rc_logger_open (const char *level)
 			system (MOVELOG);
 
 			exit (0);
+			/* NOTREACHED */
 		default:
 			setpgid (rc_logger_pid, 0);
 			fd_stdout = dup (STDOUT_FILENO);

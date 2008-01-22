@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <ctype.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,7 +72,7 @@ static int do_e (int argc, char **argv)
 {
 	int retval = EXIT_SUCCESS;
 	int i;
-	int l = 0;
+	size_t l = 0;
 	char *message = NULL;
 	char *p;
 	int level = 0;
@@ -99,7 +100,7 @@ static int do_e (int argc, char **argv)
 		    strcmp (applet, "vweend") == 0)
 		{
 			errno = 0;
-			retval = strtol (argv[0], NULL, 0);
+			retval = (int) strtoimax (argv[0], NULL, 0);
 			if (errno != 0)
 				retval = EXIT_FAILURE;
 			else {
@@ -278,7 +279,7 @@ static int do_mark_service (int argc, char **argv)
 		char *runscript_pid = getenv ("RC_RUNSCRIPT_PID");
 		char *mtime;
 		pid_t pid = 0;
-		int l;
+		size_t l;
 
 		if (runscript_pid && sscanf (runscript_pid, "%d", &pid) == 1)
 			if (kill (pid, SIGHUP) != 0)

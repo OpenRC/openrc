@@ -232,4 +232,5 @@ int fstabinfo (int argc, char **argv)
 
 	rc_strlist_free (files);
 	exit (result);
+	/* NOTREACHED */
 }
