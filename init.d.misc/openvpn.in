@@ -30,8 +30,9 @@ fi
 
 depend()
 {
-	need net
+	need localmount net
 	use dns
+	after bootmisc
 }
 
 start_pre()
