@@ -95,8 +95,8 @@ if [ -n "${command}" ]; then
 			fi
 			if yesno "${start_inactive}"; then
 				local _inactive=false
-				service_inactive "${SVCNAME}" && _inactive=true
-				mark_service_inactive "${SVCNAME}"
+				service_inactive && _inactive=true
+				mark_service_inactive
 			fi
 			start-stop-daemon --start \
 				--exec ${command} \
@@ -107,7 +107,7 @@ if [ -n "${command}" ]; then
 			eend $? "Failed to start ${SVCNAME}" && return 0
 			if yesno "${start_inactive}"; then
 				if ! ${_inactive}; then
-			   		mark_service_stopped "${SVCNAME}"
+			   		mark_service_stopped
 				fi
 			fi
 			return 1
@@ -153,7 +153,7 @@ while [ -n "$1" ]; do
 				# we can run this command
 				for _cmd in ${extra_started_commands}; do
 					if [ "${_cmd}" = "$1" ]; then
-						if ! service_started "${SVCNAME}"; then
+						if ! service_started; then
 							eerror "${SVCNAME}: cannot \`$1' as it has not been started"
 							exit 1
 						fi
@@ -171,8 +171,7 @@ while [ -n "$1" ]; do
 				continue 2
 			else
 				if [ "${_cmd}" = "start" -o "${_cmd}" = "stop" ]; then
-					shift
-					continue 2
+					exit 0
 				else
 					eerror "${SVCNAME}: function \`$1' defined but does not exist"
 					exit 1
