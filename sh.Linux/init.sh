@@ -120,9 +120,9 @@ mount_svcdir()
 # Compat shim for udev
 rc_coldplug=${rc_coldplug:-${RC_COLDPLUG:-yes}}
 if yesno "${rc_coldplug}"; then
-	RC_COLDPLUG=YES
+	RC_COLDPLUG=yes
 else
-	RC_COLDPLUG=NO
+	RC_COLDPLUG=no
 fi
 
 # Set the console loglevel to 1 for a cleaner boot
