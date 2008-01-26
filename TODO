@@ -1,0 +1,3 @@
+- stop using signal() and convert everything to sigaction()
+
+- add support somehow for optional translations
