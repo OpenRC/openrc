@@ -431,7 +431,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	} else {
 		if ((dp = opendir (dirpath))) {
 			while ((d = readdir (dp))) {
-				if (d->d_name[0] == ',')
+				if (d->d_name[0] == '.')
 					continue;
 				retval = _match_daemon (dirpath, d->d_name, mexec, NULL, NULL);
 				if (retval)

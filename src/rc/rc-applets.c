@@ -229,11 +229,14 @@ static int do_service (int argc, char **argv)
 
 		service = getenv ("SVCNAME");
 		if (argc > 3) {
-			service = argv[0];
+			service = argv[1];
 			d = argv[2];
 			sscanf (argv[3], "%d", &idx);
 		} else if (argc == 3) {
-			sscanf (argv[2], "%d", &idx);
+			if (sscanf (argv[2], "%d", &idx) != 1) {
+				service = argv[1];
+				d = argv[2];
+			}
 		}
 		exit (rc_service_started_daemon (service, d, idx) ? 0 : 1);
 	} else
