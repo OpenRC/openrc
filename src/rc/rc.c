@@ -1,12 +1,12 @@
 /*
-   rc.c
-   rc - manager for init scripts which control the startup, shutdown
-   and the running of daemons.
-
-   Also a multicall binary for various commands that can be used in shell
-   scripts to query service state, mark service state and provide the
-   einfo family of informational functions.
-   */
+ * rc.c
+ * rc - manager for init scripts which control the startup, shutdown
+ * and the running of daemons.
+ *
+ * Also a multicall binary for various commands that can be used in shell
+ * scripts to query service state, mark service state and provide the
+ * einfo family of informational functions.
+ */
 
 /*
  * Copyright 2007-2008 Roy Marples
@@ -222,7 +222,7 @@ static char read_key (bool block)
 		return (false);
 
 	/* Now save our terminal settings. We need to restore them at exit as we
-	   will be changing it for non-blocking reads for Interactive */
+	 * will be changing it for non-blocking reads for Interactive */
 	if (! termios_orig) {
 		termios_orig = xmalloc (sizeof (struct termios));
 		tcgetattr (fd, termios_orig);
@@ -532,6 +532,102 @@ static void run_script (const char *script)
 		eerrorx ("%s: failed to exec `%s'", applet, script);
 }
 
+static void do_coldplug (void)
+{
+	int i;
+	DIR *dp;
+	struct dirent *d;
+	char *service;
+
+	if (! rc_conf_yesno ("rc_coldplug") && errno != ENOENT)
+		return;
+
+	/* We need to ensure our state dirs exist.
+	 * We should have a better call than this, but oh well. */
+	rc_deptree_update_needed ();
+
+#ifdef BSD
+#if defined(__DragonFly__) || defined(__FreeBSD__)
+	/* The net interfaces are easy - they're all in net /dev/net :) */
+	if ((dp = opendir ("/dev/net"))) {
+		while ((d = readdir (dp))) {
+			i = (strlen ("net.") + strlen (d->d_name) + 1);
+			tmp = xmalloc (sizeof (char) * i);
+			snprintf (tmp, i, "net.%s", d->d_name);
+			if (rc_service_exists (tmp) &&
+			    service_plugable (tmp))
+				rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
+			CHAR_FREE (tmp);
+		}
+		closedir (dp);
+	}
+#endif
+
+	/* The mice are a little more tricky.
+	 * If we coldplug anything else, we'll probably do it here. */
+	if ((dp = opendir ("/dev"))) {
+		while ((d = readdir (dp))) {
+			if (strncmp (d->d_name, "psm", 3) == 0 ||
+			    strncmp (d->d_name, "ums", 3) == 0)
+			{
+				char *p = d->d_name + 3;
+				if (p && isdigit ((int) *p)) {
+					size_t len;
+					len = (strlen ("moused.") + strlen (d->d_name) + 1);
+					tmp = xmalloc (sizeof (char) * len);
+					snprintf (tmp, len, "moused.%s", d->d_name);
+					if (rc_service_exists (tmp) &&
+					    service_plugable (tmp))
+						rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
+					CHAR_FREE (tmp);
+				}
+			}
+		}
+		closedir (dp);
+	}
+
+#elif __linux__
+	/* udev likes to start services before we're ready when it does
+	 * its coldplugging thing. runscript knows when we're not ready so it
+	 * stores a list of coldplugged services in DEVBOOT for us to pick up
+	 * here when we are ready for them */
+	if ((dp = opendir (DEVBOOT))) {
+		while ((d = readdir (dp))) {
+			if (d->d_name[0] == '.' &&
+			    (d->d_name[1] == '\0' ||
+			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
+				continue;
+
+			if (rc_service_exists (d->d_name) &&
+			    service_plugable (d->d_name))
+				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
+
+			i = strlen (DEVBOOT "/") + strlen (d->d_name) + 1;
+			tmp = xmalloc (sizeof (char) * i);
+			snprintf (tmp, i, DEVBOOT "/%s", d->d_name);
+			if (tmp) {
+				if (unlink (tmp))
+					eerror ("%s: unlink `%s': %s", applet, tmp,
+						strerror (errno));
+				free (tmp);
+			}
+		}
+		closedir (dp);
+		rmdir (DEVBOOT);
+	}
+#endif
+
+	if (rc_yesno (getenv ("EINFO_QUIET")))
+		return;
+
+	/* Load our list of coldplugged services and display them */
+	einfon ("Device initiated services:%s", ecolor (ECOLOR_HILITE));
+	coldplugged_services = rc_services_in_state (RC_SERVICE_COLDPLUGGED);
+	STRLIST_FOREACH (coldplugged_services, service, i)
+		printf (" %s", service);
+	printf ("%s\n", ecolor (ECOLOR_NORMAL));
+}
+
 #include "_usage.h"
 #define getoptstring "o:" getoptstring_COMMON
 static struct option longopts[] = {
@@ -559,8 +655,6 @@ int main (int argc, char **argv)
 	char ksoftbuffer [PATH_MAX];
 	char pidstr[6];
 	int opt;
-	DIR *dp;
-	struct dirent *d;
 	bool parallel;
 	int regen = 0;
 
@@ -588,13 +682,13 @@ int main (int argc, char **argv)
 	chdir ("/");
 
 	/* RUNLEVEL is set by sysvinit as is a magic number
-	   RC_SOFTLEVEL is set by us and is the name for this magic number
-	   even though all our userland documentation refers to runlevel */
+	 * RC_SOFTLEVEL is set by us and is the name for this magic number
+	 * even though all our userland documentation refers to runlevel */
 	RUNLEVEL = getenv ("RUNLEVEL");
 	PREVLEVEL = getenv ("PREVLEVEL");
 
 	/* Ensure our environment is pure
-	   Also, add our configuration to it */
+	 * Also, add our configuration to it */
 	env = env_filter ();
 	tmplist = env_config ();
 	rc_strlist_join (&env, tmplist);
@@ -605,14 +699,14 @@ int main (int argc, char **argv)
 
 #ifdef __linux__
 		/* clearenv isn't portable, but there's no harm in using it
-		   if we have it */
+		 * if we have it */
 		clearenv ();
 #else
 		char *var;
 		/* No clearenv present here then.
-		   We could manipulate environ directly ourselves, but it seems that
-		   some kernels bitch about this according to the environ man pages
-		   so we walk though environ and call unsetenv for each value. */
+		 * We could manipulate environ directly ourselves, but it seems that
+		 * some kernels bitch about this according to the environ man pages
+		 * so we walk though environ and call unsetenv for each value. */
 		while (environ[0]) {
 			tmp = xstrdup (environ[0]);
 			p = tmp;
@@ -648,7 +742,7 @@ int main (int argc, char **argv)
 	newlevel = argv[optind++];
 
 	/* OK, so we really are the main RC process
-	   Only root should be able to run us */
+	 * Only root should be able to run us */
 	if (geteuid () != 0)
 		eerrorx ("%s: root access required", applet);
 
@@ -677,10 +771,10 @@ int main (int argc, char **argv)
 	rc_plugin_load ();
 
 	/* Check we're in the runlevel requested, ie from
-	   rc single
-	   rc shutdown
-	   rc reboot
-	   */
+	 * rc single
+	 * rc shutdown
+	 * rc reboot
+	 */
 	if (newlevel) {
 		if (strcmp (newlevel, RC_LEVEL_SYSINIT) == 0 &&
 		    RUNLEVEL &&
@@ -732,6 +826,7 @@ int main (int argc, char **argv)
 			}
 #endif
 
+			do_coldplug ();
 			rc_plugin_run (RC_HOOK_RUNLEVEL_START_OUT, newlevel);
 
 			if (want_interactive ())
@@ -778,7 +873,7 @@ int main (int argc, char **argv)
 	signal (SIGCHLD, handle_signal);
 
 	/* We should only use ksoftlevel if we were in single user mode
-	   If not, we need to erase ksoftlevel now. */
+	 * If not, we need to erase ksoftlevel now. */
 	if (PREVLEVEL &&
 	    (strcmp (PREVLEVEL, "1") == 0 ||
 	     strcmp (PREVLEVEL, "S") == 0 ||
@@ -825,98 +920,17 @@ int main (int argc, char **argv)
 			eerrorx ("%s: is not a valid runlevel", newlevel);
 	}
 
-	/* Load our deptree now */
+	/* Load our deptree */
 	if ((deptree = _rc_deptree_load (&regen)) == NULL)
 		eerrorx ("failed to load deptree");
 
-	/* Clean the failed services state dir now */
+	/* Clean the failed services state dir */
 	clean_failed ();
 
 	mkdir (RC_STOPPING, 0755);
 
-#ifdef __linux__
-	/* udev likes to start services before we're ready when it does
-	   its coldplugging thing. runscript knows when we're not ready so it
-	   stores a list of coldplugged services in DEVBOOT for us to pick up
-	   here when we are ready for them */
-	if ((dp = opendir (DEVBOOT))) {
-		while ((d = readdir (dp))) {
-			if (d->d_name[0] == '.' &&
-			    (d->d_name[1] == '\0' ||
-			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
-				continue;
-
-			if (rc_service_exists (d->d_name) &&
-			    rc_conf_yesno ("rc_coldplug") &&
-			    service_plugable (d->d_name))
-				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
-
-			i = strlen (DEVBOOT "/") + strlen (d->d_name) + 1;
-			tmp = xmalloc (sizeof (char) * i);
-			snprintf (tmp, i, DEVBOOT "/%s", d->d_name);
-			if (tmp) {
-				if (unlink (tmp))
-					eerror ("%s: unlink `%s': %s", applet, tmp,
-						strerror (errno));
-				free (tmp);
-			}
-		}
-		closedir (dp);
-		rmdir (DEVBOOT);
-	}
-#else
-	/* BSD's on the other hand populate /dev automagically and use devd.
-	   The only downside of this approach and ours is that we have to hard code
-	   the device node to the init script to simulate the coldplug into
-	   runlevel for our dependency tree to work. */
-	if (newlevel && strcmp (newlevel, bootlevel) == 0 &&
-	    (strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
-	     strcmp (runlevel, RC_LEVEL_SYSINIT) == 0) &&
-	    rc_conf_yesno ("rc_coldplug"))
-	{
-#if defined(__DragonFly__) || defined(__FreeBSD__)
-		/* The net interfaces are easy - they're all in net /dev/net :) */
-		if ((dp = opendir ("/dev/net"))) {
-			while ((d = readdir (dp))) {
-				i = (strlen ("net.") + strlen (d->d_name) + 1);
-				tmp = xmalloc (sizeof (char) * i);
-				snprintf (tmp, i, "net.%s", d->d_name);
-				if (rc_service_exists (tmp) &&
-				    service_plugable (tmp))
-					rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
-				CHAR_FREE (tmp);
-			}
-			closedir (dp);
-		}
-#endif
-
-		/* The mice are a little more tricky.
-		   If we coldplug anything else, we'll probably do it here. */
-		if ((dp = opendir ("/dev"))) {
-			while ((d = readdir (dp))) {
-				if (strncmp (d->d_name, "psm", 3) == 0 ||
-				    strncmp (d->d_name, "ums", 3) == 0)
-				{
-					char *p = d->d_name + 3;
-					if (p && isdigit ((int) *p)) {
-						size_t len;
-						len = (strlen ("moused.") + strlen (d->d_name) + 1);
-						tmp = xmalloc (sizeof (char) * len);
-						snprintf (tmp, len, "moused.%s", d->d_name);
-						if (rc_service_exists (tmp) &&
-						    service_plugable (tmp))
-							rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
-						CHAR_FREE (tmp);
-					}
-				}
-			}
-			closedir (dp);
-		}
-	}
-#endif
-
 	/* Build a list of all services to stop and then work out the
-	   correct order for stopping them */
+	 * correct order for stopping them */
 	stop_services = rc_services_in_state (RC_SERVICE_STARTING);
 
 	tmplist = rc_services_in_state (RC_SERVICE_INACTIVE);
@@ -938,50 +952,23 @@ int main (int argc, char **argv)
 
 	/* Load our list of coldplugged services */
 	coldplugged_services = rc_services_in_state (RC_SERVICE_COLDPLUGGED);
-
-	/* Load our start services now.
-	   We have different rules dependent on runlevel. */
-	if (newlevel && strcmp (newlevel, bootlevel) == 0) {
-		if (coldplugged_services) {
-			bool quiet = rc_yesno (getenv ("EINFO_QUIET"));
-
-			if (! quiet)
-				einfon ("Device initiated services:");
-			STRLIST_FOREACH (coldplugged_services, service, i) {
-				if (! quiet)
-					printf (" %s", service);
-				rc_strlist_add (&start_services, service);
-			}
-			if (! quiet)
-				printf ("\n");
-		}
-		tmplist = rc_services_in_runlevel (newlevel ? newlevel : runlevel);
-		rc_strlist_join (&start_services, tmplist);
-		rc_strlist_free (tmplist);
-	} else {
-		/* Store our list of coldplugged services */
-		tmplist = rc_services_in_state (RC_SERVICE_COLDPLUGGED);
-		rc_strlist_join (&coldplugged_services, tmplist);
-		rc_strlist_free (tmplist);
-		if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
-		    strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
-		    strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
-		{
-			/* We need to include the boot runlevel services if we're not in it */
-			tmplist = rc_services_in_runlevel (bootlevel);
-			rc_strlist_join (&start_services, tmplist);
-			rc_strlist_free (tmplist);
+	if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
+	    strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
+	    strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
+	{
+		/* We need to include the boot runlevel services if we're not in it */
+		start_services = rc_services_in_runlevel (bootlevel);
+		if (strcmp (newlevel ? newlevel : runlevel, bootlevel) != 0) {
 			tmplist = rc_services_in_runlevel (newlevel ? newlevel : runlevel);
 			rc_strlist_join (&start_services, tmplist);
 			rc_strlist_free (tmplist);
-
-			STRLIST_FOREACH (coldplugged_services, service, i)
-				rc_strlist_add (&start_services, service);
-
 		}
+
+		STRLIST_FOREACH (coldplugged_services, service, i)
+			rc_strlist_add (&start_services, service);
 	}
 
-	/* Save out softlevel now */
+	/* Save our softlevel now */
 	if (going_down)
 		rc_runlevel_set (newlevel);
 
@@ -1045,7 +1032,7 @@ int main (int argc, char **argv)
 		}
 
 		/* We got this far! Or last check is to see if any any service that
-		   going to be started depends on us */
+		 * going to be started depends on us */
 		rc_strlist_add (&stopdeps, service);
 		deporder = rc_deptree_depends (deptree, types_n,
 					       (const char **) stopdeps,
