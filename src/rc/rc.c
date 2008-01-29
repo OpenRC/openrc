@@ -687,8 +687,9 @@ int main (int argc, char **argv)
 		    (strcmp (RUNLEVEL, "S") == 0 ||
 		     strcmp (RUNLEVEL, "1") == 0))
 		{
-			/* OK, we're either in runlevel 1 or single user mode */
+
 			struct utsname uts;
+			/* OK, we're either in runlevel 1 or single user mode */
 #ifdef __linux__
 			char *cmd;
 #endif
@@ -700,15 +701,18 @@ int main (int argc, char **argv)
 				run_script (INITEARLYSH);
 
 			uname (&uts);
-			printf ("\n   %sOpenRC %s" VERSION "%s is starting up %s%s%s\n\n",
+			printf ("\n   %sOpenRC %s" VERSION "%s is starting up %s",
 				ecolor (ECOLOR_GOOD), ecolor (ECOLOR_HILITE),
-				ecolor (ECOLOR_NORMAL), ecolor (ECOLOR_BRACKET),
+				ecolor (ECOLOR_NORMAL), ecolor (ECOLOR_BRACKET));
 #ifdef BRANDING
-				BRANDING
+			printf (BRANDING " (%s)", uts.arch);
 #else
-				""
-#endif
-				, ecolor (ECOLOR_NORMAL));
+			printf ("%s %s (%s)",
+				uts.sysname,
+				uts.release,
+				uts.machine);
+#endif	
+			printf ("%s\n\n", ecolor (ECOLOR_NORMAL));
 
 			if (! rc_yesno (getenv ("EINFO_QUIET")) &&
 			    rc_conf_yesno ("rc_interactive"))
