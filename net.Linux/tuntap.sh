@@ -21,8 +21,7 @@ tuntap_pre_start()
 	[ -z "${tuntap}" ] && return 0
 
 	if [ ! -e /dev/net/tun ]; then
-		modprobe tun && sleep 1
-		if [ ! -e /dev/net/tun ]; then
+		if ! modprobe tun; then
 			eerror "TUN/TAP support is not present in this kernel"
 			return 1
 		fi
