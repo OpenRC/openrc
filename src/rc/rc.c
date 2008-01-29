@@ -799,7 +799,7 @@ int main (int argc, char **argv)
 				ecolor (ECOLOR_GOOD), ecolor (ECOLOR_HILITE),
 				ecolor (ECOLOR_NORMAL), ecolor (ECOLOR_BRACKET));
 #ifdef BRANDING
-			printf (BRANDING " (%s)", uts.arch);
+			printf (BRANDING " (%s)", uts.machine);
 #else
 			printf ("%s %s (%s)",
 				uts.sysname,
