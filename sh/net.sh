@@ -172,7 +172,7 @@ _gen_module_list()
 	local x= f= force=$1
 	if ! ${force} && [ -s "${MODULESLIST}" -a "${MODULESLIST}" -nt "${MODULESDIR}" ]; then
 		local update=false
-		for x in "${MODULESDIR}"/*; do
+		for x in "${MODULESDIR}"/*.sh; do
 			[ -e "${x}" ] || continue
 			if [ "${x}" -nt "${MODULESLIST}" ]; then
 				update=true
@@ -215,7 +215,7 @@ _gen_module_list()
 		done
 	}
 
-	for MODULE in "${MODULESDIR}"/*; do
+	for MODULE in "${MODULESDIR}"/*.sh; do
 		sh -n "${MODULE}" || continue
 		. "${MODULE}" || continue 
 		MODULE=${MODULE#${MODULESDIR}/}
