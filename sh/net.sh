@@ -21,26 +21,23 @@ depend()
 	need localmount
 	after bootmisc
 	provide net
+
 	case "${IFACE}" in
 		lo|lo0);;
-		*)
-			after net.lo net.lo0
-			if type depend_${IFVAR} >/dev/null 2>&1; then
-				depend_${IFVAR}
-			fi
-			local prov=
-			eval prov=\$RC_NEED_${IFVAR}
-			[ -n "${prov}" ] && need ${prov}
-			eval prov=\$RC_USE_${IFVAR}
-			[ -n "${prov}" ] && use ${prov}
-			eval prov=\$RC_BEFORE_${IFVAR}
-			[ -n "${prov}" ] && before ${prov}
-			eval prov=\$RC_AFTER_${IFVAR}
-			[ -n "${prov}" ] && after ${prov}
-			eval prov=\$RC_PROVIDE_${IFVAR}
-			[ -n "${prov}" ] && provide ${prov}
-			;;
+		*) after net.lo net.lo0;;
 	esac
+
+	if type depend_${IFVAR} >/dev/null 2>&1; then
+		depend_${IFVAR}
+	fi
+
+	local dep= prov=
+	for dep in need use before after provide keywords; do
+		eval prov=\$rc_${dep}_${IFVAR}
+		if [ -n "${prov}" ]; then
+			${dep} ${prov}
+		fi
+	done
 }
 
 # Support bash arrays - sigh
