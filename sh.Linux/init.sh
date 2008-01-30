@@ -209,24 +209,15 @@ else
 	esac
 
 	for m in ${managers}; do
-		# Check common manager prerequisites and kernel params
+		# Check kernel params
 		if get_bootparam "no${m}" || ! has_addon ${m}-start; then
 			continue
 		fi
-		# Check specific manager prerequisites
-		case ${m} in
-			devfs)
-				grep -Eqs "[[:space:]]+devfs$" /proc/filesystems || continue
-				;;
-			*)
-				if [ -e /dev/.devfsd ]; then
-					mountinfo --quiet --fstype-regex devfs && continue
-				fi
-				;;
-		esac
-
 		# Let's see if we can get this puppy rolling
 		start_addon ${m} && break
+
+		# Clean up
+		mountinfo -q /dev && umount -n /dev
 	done
 fi
 
