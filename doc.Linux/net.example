@@ -768,7 +768,9 @@
 # For passing custom options to tunctl use something like the following.  This
 # example sets the owner to adm
 #tunctl_tun1="-u adm"
-# When using openvpn, there are no options
+# OpenVPN-2.1_rc6 and newer allow --user and --group to set owner and group
+# of the node as well
+#openvpn_tun1="--user foo --group bar"
 
 #-----------------------------------------------------------------------------
 # Bridging (802.1d)
