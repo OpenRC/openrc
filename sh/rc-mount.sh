@@ -18,16 +18,12 @@ do_unmount()
 
 	shift
 	mountinfo "$@" | while read mnt; do
+		# Unmounting a shared mount can unmount other mounts, so
+		# we need to check the mount is still valid
+		mountinfo --quiet "${mnt}" || continue
+
 		case "${cmd}" in
 			umount*)
-				# If we're using the mount (probably /usr) then don't unmount us
-				local pids="$(fuser ${f_opts} "${mnt}" 2>/dev/null)"
-				case " ${pids} " in
-					*" $$ "*)
-						ewarn "We are using ${mnt}, not unmounting"
-						continue
-						;;
-				esac
 				ebegin "Unmounting ${mnt}"
 				;;
 			*)
@@ -40,13 +36,18 @@ do_unmount()
 			# Don't kill if it's us (/ and possibly /usr)
 			local pids="$(fuser ${f_opts} "${mnt}" 2>/dev/null)"
 			case " ${pids} " in
-				*" $$ "*) retry=0;;
-				"  ") eend 1 "in use but fuser finds nothing"; retry=0;;
+				*" $$ "*)
+					eend 1 "failed because we are using" \
+					"${mnt}"
+					retry=0;;
+				"  ")
+					eend 1 "in use but fuser finds nothing"
+					retry=0;;
 				*)
 					local sig="KILL"
 					[ ${retry} -gt 0 ] && sig="TERM"
-					fuser ${f_kill}${sig} -k ${f_opts} "${mnt}" \
-						>/dev/null 2>&1
+					fuser ${f_kill}${sig} -k ${f_opts} \
+						"${mnt}" >/dev/null 2>&1
 					sleep 1
 					retry=$((${retry} - 1))
 					;;
@@ -56,7 +57,8 @@ do_unmount()
 			if [ ${retry} -le 0 ]; then
 				case "${cmd}" in
 					umount*)
-						LC_ALL=C ${cmd} -f "${mnt}" || retry=-999
+						LC_ALL=C ${cmd} -f "${mnt}" \
+						|| retry=-999
 						;;
 					*)
 						retry=-999
