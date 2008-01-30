@@ -25,6 +25,18 @@ tuntap_pre_start()
 			eerror "TUN/TAP support is not present in this kernel"
 			return 1
 		fi
+		vebegin "Waiting for /dev/net/tun"
+		# /dev/net/tun can take it's time to appear
+		local timeout=10
+		while [ ! -e /dev/net/tun -a ${timeout} -gt 0 ]; do
+			sleep 1
+			timeout=$((${timeout} - 1))
+		done
+		if [ ! -e /dev/net/tun ]; then
+			eerror "TUN/TAP support present but /dev/net/tun is not"
+			return 1
+		fi
+		veend 0
 	fi
 
 	ebegin "Creating Tun/Tap interface ${IFACE}"
