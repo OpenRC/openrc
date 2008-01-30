@@ -163,12 +163,12 @@ rc_depinfo_t *rc_deptree_load (void)
 
 			if (! deptree)
 			{
-				deptree = xzalloc (sizeof (rc_depinfo_t));
+				deptree = xzalloc (sizeof (*deptree));
 				depinfo = deptree;
 			}
 			else
 			{
-				depinfo->next = xzalloc (sizeof (rc_depinfo_t));
+				depinfo->next = xzalloc (sizeof (*depinfo->next));
 				depinfo = depinfo->next;
 			}
 			depinfo->service = xstrdup (e);
@@ -187,13 +187,13 @@ rc_depinfo_t *rc_deptree_load (void)
 
 		if (! deptype)
 		{
-			depinfo->depends = xzalloc (sizeof (rc_deptype_t));
+			depinfo->depends = xzalloc (sizeof (*depinfo->depends));
 			deptype = depinfo->depends;
 		}
 		else
 			if (strcmp (deptype->type, type) != 0)
 			{
-				deptype->next = xzalloc (sizeof (rc_deptype_t));
+				deptype->next = xzalloc (sizeof (*deptype->next));
 				deptype = deptype->next;
 			}
 
@@ -298,7 +298,7 @@ static char **get_provided (const rc_depinfo_t *deptree,
 	if (! dt)
 		return (NULL);
 
-	memset (&providers, 0, sizeof (struct lhead));
+	memset (&providers, 0, sizeof (providers));
 	/* If we are stopping then all depends are true, regardless of state.
 	   This is especially true for net services as they could force a restart
 	   of the local dns resolver which may depend on net. */
@@ -516,8 +516,8 @@ char **rc_deptree_depends (const rc_depinfo_t *deptree,
 	if (! deptree || ! services)
 		return (NULL);
 
-	memset (&sorted, 0, sizeof (struct lhead));
-	memset (&visited, 0, sizeof (struct lhead));
+	memset (&sorted, 0, sizeof (sorted));
+	memset (&visited, 0, sizeof (visited));
 
 	bootlevel = getenv ("RC_BOOTLEVEL");
 	if (! bootlevel)
@@ -778,7 +778,7 @@ bool rc_deptree_update (void)
 				depinfo = last_depinfo;
 			else
 			{
-				last_depinfo->next = xzalloc (sizeof (rc_depinfo_t));
+				last_depinfo->next = xzalloc (sizeof (*last_depinfo->next));
 				depinfo = last_depinfo->next;
 			}
 			depinfo->service = xstrdup (service);
@@ -802,12 +802,12 @@ bool rc_deptree_update (void)
 			{
 				if (! last_deptype)
 				{
-					depinfo->depends = xzalloc (sizeof (rc_deptype_t));
+					depinfo->depends = xzalloc (sizeof (*depinfo->depends));
 					deptype = depinfo->depends;
 				}
 				else
 				{
-					last_deptype->next = xzalloc (sizeof (rc_deptype_t));
+					last_deptype->next = xzalloc (sizeof (*last_deptype->next));
 					deptype = last_deptype->next;
 				}
 				deptype->type = xstrdup (type);
@@ -877,7 +877,7 @@ next:
 				}
 				if (! di)
 				{
-					last_depinfo->next = xzalloc (sizeof (rc_depinfo_t));
+					last_depinfo->next = xzalloc (sizeof (*last_depinfo->next));
 					di = last_depinfo->next;
 					di->service = xstrdup (service);
 				}
@@ -919,12 +919,12 @@ next:
 				{
 					if (! last_deptype)
 					{
-						di->depends = xzalloc (sizeof (rc_deptype_t));
+						di->depends = xzalloc (sizeof (*di->depends));
 						dt = di->depends;
 					}
 					else
 					{
-						last_deptype->next = xzalloc (sizeof (rc_deptype_t));
+						last_deptype->next = xzalloc (sizeof (*last_deptype->next));
 						dt = last_deptype->next;
 					}
 					dt->type = xstrdup (deppairs[i].addto);
