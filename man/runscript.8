@@ -136,6 +136,10 @@ Tags a service with a keyword. Currently the only keyword is notimeout
 which means that services do not time out waiting for that service, which only
 applies when services are enabled to start and stop in parallel.
 .El
+.Pp
+To see how to influence dependencies in configuration files, see the
+.Sx FILES
+section below.
 .Sh BUILTINS
 .Nm
 defines some builtin functions that you can use inside your service scripts:
@@ -290,11 +294,21 @@ With the exception of
 .Pa /etc/rc.conf ,
 the configuration files can also influence the dependencies of the service
 through variables. Simply prefix the name of the dependency with rc_.
-Example:
+Examples:
 .Bd -literal -offset indent
 # Whilst most services don't bind to a specific interface, our
 # openvpn configuration requires a specific interface, namely bge0.
 rc_need="net.bge0"
+# To put it in /etc/rc.conf you would do it like this
+rc_openvpn_need="net.bge0"
+
+# Services should not depend on the tap1 interface for network,
+# but we need to add net.tap1 to the default runlevel to start it.
+rc_provide="!net"
+# To put it in /etc/conf.d/net you would do it like this
+rc_provide_tap1="!net"
+# To put in in /etc/rc.conf you would do it like this
+rc_net_tap1_provide="!net"
 .Ed
 .Sh EXAMPLES
 .Pp
