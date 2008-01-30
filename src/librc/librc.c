@@ -765,18 +765,20 @@ bool rc_service_add (const char *runlevel, const char *service)
 	/* We need to ensure that only things in /etc/init.d are added
 	 * to the boot runlevel */
 	if (strcmp (runlevel, RC_LEVEL_BOOT) == 0) {
-		char tmp[MAXPATHLEN];
+		char tmp[MAXPATHLEN] = { '\0' };
+		char *p;
 		
-		if (! realpath (init, tmp))
+		p = realpath (dirname (init), tmp);
+		free (init);
+		if (! *p)
 			return (false);
-		retval = (strcmp (dirname (tmp), RC_INITDIR) == 0);
+
+		retval = (strcmp (tmp, RC_INITDIR) == 0);
 		if (! retval) {
-			free (init);
 			errno = EPERM;
 			return (false);
 		}
-		free (init);
-		init = xstrdup (tmp);
+		init = rc_strcatpaths (RC_INITDIR, service, (char *) NULL); 
 	}
 
 	file = rc_strcatpaths (RC_RUNLEVELDIR, runlevel, basename_c (service),
