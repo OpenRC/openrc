@@ -43,6 +43,13 @@ struct lhead
 	char **list;
 };
 
+static void *xzalloc (size_t size)
+{
+	void *value = xmalloc (size);
+	memset (value, 0, size);
+	return (value);
+}
+
 static char *get_shell_value (char *string)
 {
 	char *p = string;
@@ -156,15 +163,14 @@ rc_depinfo_t *rc_deptree_load (void)
 
 			if (! deptree)
 			{
-				deptree = xmalloc (sizeof (rc_depinfo_t));
+				deptree = xzalloc (sizeof (rc_depinfo_t));
 				depinfo = deptree;
 			}
 			else
 			{
-				depinfo->next = xmalloc (sizeof (rc_depinfo_t));
+				depinfo->next = xzalloc (sizeof (rc_depinfo_t));
 				depinfo = depinfo->next;
 			}
-			memset (depinfo, 0, sizeof (rc_depinfo_t));
 			depinfo->service = xstrdup (e);
 			deptype = NULL;
 			goto next;
@@ -181,16 +187,14 @@ rc_depinfo_t *rc_deptree_load (void)
 
 		if (! deptype)
 		{
-			depinfo->depends = xmalloc (sizeof (rc_deptype_t));
+			depinfo->depends = xzalloc (sizeof (rc_deptype_t));
 			deptype = depinfo->depends;
-			memset (deptype, 0, sizeof (rc_deptype_t));
 		}
 		else
 			if (strcmp (deptype->type, type) != 0)
 			{
-				deptype->next = xmalloc (sizeof (rc_deptype_t));
+				deptype->next = xzalloc (sizeof (rc_deptype_t));
 				deptype = deptype->next;
-				memset (deptype, 0, sizeof (rc_deptype_t));
 			}
 
 		if (! deptype->type)
@@ -750,8 +754,7 @@ bool rc_deptree_update (void)
 	if (! (fp = popen (GENDEP, "r")))
 		return (false);
 
-	deptree = xmalloc (sizeof (rc_depinfo_t));
-	memset (deptree, 0, sizeof (rc_depinfo_t));
+	deptree = xzalloc (sizeof (*deptree));
 
 	/* Phase 2 */
 	while ((line = rc_getline (fp)))
@@ -775,10 +778,9 @@ bool rc_deptree_update (void)
 				depinfo = last_depinfo;
 			else
 			{
-				last_depinfo->next = xmalloc (sizeof (rc_depinfo_t));
+				last_depinfo->next = xzalloc (sizeof (rc_depinfo_t));
 				depinfo = last_depinfo->next;
 			}
-			memset (depinfo, 0, sizeof (rc_depinfo_t));
 			depinfo->service = xstrdup (service);
 		}
 
@@ -800,15 +802,14 @@ bool rc_deptree_update (void)
 			{
 				if (! last_deptype)
 				{
-					depinfo->depends = xmalloc (sizeof (rc_deptype_t));
+					depinfo->depends = xzalloc (sizeof (rc_deptype_t));
 					deptype = depinfo->depends;
 				}
 				else
 				{
-					last_deptype->next = xmalloc (sizeof (rc_deptype_t));
+					last_deptype->next = xzalloc (sizeof (rc_deptype_t));
 					deptype = last_deptype->next;
 				}
-				memset (deptype, 0, sizeof (rc_deptype_t));
 				deptype->type = xstrdup (type);
 			}
 		}
@@ -876,9 +877,8 @@ next:
 				}
 				if (! di)
 				{
-					last_depinfo->next = xmalloc (sizeof (rc_depinfo_t));
+					last_depinfo->next = xzalloc (sizeof (rc_depinfo_t));
 					di = last_depinfo->next;
-					memset (di, 0, sizeof (rc_depinfo_t));
 					di->service = xstrdup (service);
 				}
 			}
@@ -919,15 +919,14 @@ next:
 				{
 					if (! last_deptype)
 					{
-						di->depends = xmalloc (sizeof (rc_deptype_t));
+						di->depends = xzalloc (sizeof (rc_deptype_t));
 						dt = di->depends;
 					}
 					else
 					{
-						last_deptype->next = xmalloc (sizeof (rc_deptype_t));
+						last_deptype->next = xzalloc (sizeof (rc_deptype_t));
 						dt = last_deptype->next;
 					}
-					memset (dt, 0, sizeof (rc_deptype_t));
 					dt->type = xstrdup (deppairs[i].addto);
 				}
 

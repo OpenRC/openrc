@@ -211,8 +211,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 	}
 
 #ifdef _KVM_GETPROC2
-	kp = kvm_getproc2 (kd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2),
-			   &processes);
+	kp = kvm_getproc2 (kd, KERN_PROC_ALL, 0, sizeof(*kp), &processes);
 #else
 	kp = kvm_getprocs (kd, KERN_PROC_PROC, 0, &processes);
 #endif
