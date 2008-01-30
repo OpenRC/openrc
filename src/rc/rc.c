@@ -224,7 +224,7 @@ static char read_key (bool block)
 	/* Now save our terminal settings. We need to restore them at exit as we
 	 * will be changing it for non-blocking reads for Interactive */
 	if (! termios_orig) {
-		termios_orig = xmalloc (sizeof (struct termios));
+		termios_orig = xmalloc (sizeof (*termios_orig));
 		tcgetattr (fd, termios_orig);
 	}
 
@@ -401,11 +401,11 @@ static void add_pid (pid_t pid)
 	if (sp) {
 		while (sp->next)
 			sp = sp->next;
-		sp->next = xmalloc (sizeof (pidlist_t));
+		sp->next = xmalloc (sizeof (*sp->next));
 		sp = sp->next;
 	} else
-		sp = service_pids = xmalloc (sizeof (pidlist_t));
-	memset (sp, 0, sizeof (pidlist_t));
+		sp = service_pids = xmalloc (sizeof (*sp));
+	memset (sp, 0, sizeof (*sp));
 	sp->pid = pid;
 }
 

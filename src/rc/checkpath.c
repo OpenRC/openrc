@@ -52,7 +52,7 @@ static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 {
 	struct stat st;
 
-	memset (&st, 0, sizeof (struct stat));
+	memset (&st, 0, sizeof (st));
 
 	if (stat (path, &st)) {
 		if (file) {

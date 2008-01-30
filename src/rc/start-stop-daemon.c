@@ -215,13 +215,13 @@ static void parse_schedule (const char *string, int default_signal)
 	if (schedule)
 		free_schedulelist (&schedule);
 
-	schedule = xmalloc (sizeof (schedulelist_t));
+	schedule = xmalloc (sizeof (*schedule));
 	schedule->gotolist = NULL;
 
 	if (count == 0) {
 		schedule->type = schedule_signal;
 		schedule->value = default_signal;
-		schedule->next = xmalloc (sizeof (schedulelist_t));
+		schedule->next = xmalloc (sizeof (*schedule->next));
 		next = schedule->next;
 		next->type = schedule_timeout;
 		next->gotolist = NULL;
@@ -261,14 +261,14 @@ static void parse_schedule (const char *string, int default_signal)
 		}
 
 		if (string) {
-			next->next = xmalloc (sizeof (schedulelist_t));
+			next->next = xmalloc (sizeof (*next->next));
 			next = next->next;
 			next->gotolist = NULL;
 		}
 	}
 
 	if (repeatat) {
-		next->next = xmalloc (sizeof (schedulelist_t));
+		next->next = xmalloc (sizeof (*next->next));
 		next = next->next;
 		next->type = schedule_goto;
 		next->value = 0;

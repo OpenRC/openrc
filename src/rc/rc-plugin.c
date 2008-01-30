@@ -111,15 +111,15 @@ void rc_plugin_load (void)
 			dlclose (h);
 		} else {
 			if (plugin) {
-				plugin->next = xmalloc (sizeof (plugin_t));
+				plugin->next = xmalloc (sizeof (*plugin->next));
 				plugin = plugin->next;
 			} else
-				plugin = plugins = xmalloc (sizeof (plugin_t));
+				plugin = plugins = xmalloc (sizeof (*plugin));
 
-			memset (plugin, 0, sizeof (plugin_t));
 			plugin->name = xstrdup (d->d_name);
 			plugin->handle = h;
 			plugin->hook = fptr;
+			plugin->next = NULL;
 		}
 	}
 	closedir (dp);

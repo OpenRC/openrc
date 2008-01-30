@@ -319,7 +319,7 @@ static char **find_mounts (struct args *args)
 
 static regex_t *get_regex (const char *string)
 {
-	regex_t *reg = xmalloc (sizeof (regex_t));
+	regex_t *reg = xmalloc (sizeof (*reg));
 	int result;
 	char buffer[256];
 
@@ -390,7 +390,7 @@ int mountinfo (int argc, char **argv)
 #define REG_FREE(_var) \
 	if (_var) { regfree (_var); free (_var); }
 
-	memset (&args, 0, sizeof (struct args));
+	memset (&args, 0, sizeof (args));
 	args.mount_type = mount_to;
 	args.netdev = net_ignore;
 
