@@ -9,6 +9,7 @@ RANLIB?=		ranlib
 PICFLAG?=		-fPIC
 
 BINDIR?=		/sbin
+BINMODE?=		0755
 
 INCDIR?=		/usr/include
 INCMODE?=		0444
@@ -20,3 +21,5 @@ SHLIBDIR?=		/${LIBNAME}
 
 MANDIR?=		/usr/share/man/man
 MANMODE?=		0444
+
+CONFMODE=?		0644
