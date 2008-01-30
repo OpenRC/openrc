@@ -44,12 +44,12 @@ tuntap_pre_start()
 	# Set the base metric to 1000
 	metric=1000
 
-	local o_opts= t_opts= do_open=false do_tunctl=false
+	local o_opts= t_opts= do_openvpn=false do_tunctl=false
 	eval o_opts=\$openvpn_${IFVAR}
 	eval t_opts=\$tunctl_${IFVAR}
 
 	if [ -n "${o_opts}" ] && type openvpn >/dev/null 2>&1; then
-		do_open=true
+		do_openvpn=true
 	elif [ -n "${t_opts}" ] && type tunctl >/dev/null 2>&1; then
 		do_tunctl=true
 	elif type openvpn >/dev/null 2>&1; then
