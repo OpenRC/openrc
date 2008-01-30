@@ -832,6 +832,12 @@ bool rc_deptree_update (void)
 			    depend[len - 2] == 's' &&
 			    depend[len - 1] == 'h')
 				continue;
+			
+			/* Remove our dependency if instructed */
+			if (depend[0] == '!') {
+				rc_strlist_delete (&deptype->services, depend + 1);
+				continue;
+			}
 
 			rc_strlist_addsort (&deptype->services, depend);
 
