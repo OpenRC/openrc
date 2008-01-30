@@ -6,10 +6,6 @@ SRCS=		checkpath.c fstabinfo.c mountinfo.c \
 
 CLEANFILES=	version.h
 
-LDFLAGS+=	-L../librc -L../libeinfo
-LDADD+=		-lutil -lrc -leinfo
-CFLAGS+=	-I../includes -I../librc -I../libeinfo
-
 BINDIR?=	/sbin
 
 LINKDIR=	${LIBNAME}/${PROG}
@@ -32,10 +28,14 @@ RC_SBINLINKS=	mark_service_starting mark_service_started \
 		rc-abort
 
 MK=		../../mk
-include ${MK}/os.mk
-CFLAGS+=	-DLIB=\"${LIBNAME}\"
 include ${MK}/cc.mk
+include ${MK}/os.mk
 include ${MK}/prog.mk
+
+LDFLAGS+=	-L../librc -L../libeinfo
+LDADD+=		-lutil -lrc -leinfo
+CFLAGS+=	-I../includes -I../librc -I../libeinfo
+CFLAGS+=	-DLIB=\"${LIBNAME}\"
 
 include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
