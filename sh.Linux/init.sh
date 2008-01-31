@@ -39,25 +39,6 @@ KV_to_int()
 	echo "${KV_int}"
 }
 
-single_user()
-{
-	if [ "${RC_SYS}" = "VPS" ]; then
-		einfo "Halting"
-		halt -f
-		return
-	fi
-
-	sulogin ${CONSOLE}
-	einfo "Unmounting filesystems"
-	if [ -c /dev/null ]; then
-		mount -a -o remount,ro 2>/dev/null
-	else
-		mount -a -o remount,ro
-	fi
-	einfo "Rebooting"
-	reboot -f
-}
-
 # This basically mounts $svcdir as a ramdisk, but preserving its content
 # which allows us to run depscan.sh
 # The tricky part is finding something our kernel supports
@@ -65,7 +46,7 @@ single_user()
 mount_svcdir()
 {
 	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="none" devtmp="none" x=
-	local svcsize=${svcsize:-1024}
+	local svcsize=${rc_svcsize:-1024}
 
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems; then
 		fs="tmpfs"
@@ -79,15 +60,15 @@ mount_svcdir()
 		devtmp="/dev/ram1"
 		fs="ext2"
 		for x in ${devdir} ${devtmp}; do
-			dd if=/dev/zero of="${x}" bs=1k count="${rc_svcsize:-1024}"
-			mkfs -t "${fs}" -i 1024 -vm0 "${x}" "${rc_svcsize:-1024}"
+			dd if=/dev/zero of="${x}" bs=1k count="${svcsize}"
+			mkfs -t "${fs}" -i 1024 -vm0 "${x}" "${svcsize}"
 		done
 	else
 		echo
 		eerror "OpenRC requires tmpfs, ramfs or 2 ramdisks + ext2"
 		eerror "compiled into the kernel"
 		echo
-		single_user
+		return 1
 	fi
 
 	local dotmp=false
@@ -98,7 +79,7 @@ mount_svcdir()
 			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
 	fi
 
-	# If we have no entry in fstab for $svcdir, provide our own
+	# If we have no entry in fstab for $RC_SVCDIR, provide our own
 	if fstabinfo --quiet "${RC_SVCDIR}"; then
 		mount -n "${RC_SVCDIR}"
 	else
@@ -190,22 +171,18 @@ if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" ]; then
 fi
 
 # Try to figure out how the user wants /dev handled
-#  - check $RC_DEVICES from /etc/conf.d/rc
-#  - check boot parameters
-#  - make sure the required binaries exist
-#  - make sure the kernel has support
-if [ "${rc_devices}" = "static" -o "${RC_SYS}" = "VPS" ]; then
+if [ "${rc_devices}" = "static" \
+	-o "${RC_SYS}" = "VPS" \
+	-o "${RC_UNAME}" = "GNU/kFreeBSD" ]
+then
 	ebegin "Using existing device nodes in /dev"
-	eend 0
-elif [ "${RC_UNAME}" = "GNU/kFreeBSD" ]; then
-	ebegin "Using kFreeBSD devfs in /dev"
 	eend 0
 else
 	case ${rc_devices} in
 		devfs)  managers="devfs udev mdev";;
 		udev)   managers="udev devfs mdev";;
 		mdev)   managers="mdev udev devfs";;
-		auto|*) managers="udev devfs mdev";;
+		*)      managers="udev devfs mdev";;
 	esac
 
 	for m in ${managers}; do
@@ -222,7 +199,8 @@ else
 fi
 
 # Mount required stuff as user may not have then in /etc/fstab
-for x in "devpts /dev/pts 0755 ,gid=5,mode=0620" "tmpfs /dev/shm 1777 ,nodev"; do
+for x in "devpts /dev/pts 0755 ,gid=5,mode=0620" "tmpfs /dev/shm 1777 ,nodev"
+do
 	set -- ${x}
 	grep -Eq "[[:space:]]+$1$" /proc/filesystems || continue
 	mountinfo -q "$2" && continue

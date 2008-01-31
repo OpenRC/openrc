@@ -2,13 +2,6 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-# void single_user()
-#  Drop to a shell, remount / ro, and then reboot
-single_user()
-{
-	exit 1
-}
-
 # This basically mounts $svcdir as a ramdisk, but preserving its content
 # which allows us to run depscan.sh
 # FreeBSD has a nice ramdisk - we don't set a size as we should always
@@ -17,7 +10,7 @@ single_user()
 # FreeBSD-7 supports tmpfs now :)
 mount_svcdir()
 {
-	local dotmp=false release=false
+	local dotmp=false release=false retval=0
 	if [ -e "${RC_SVCDIR}"/deptree ]; then
 		dotmp=true
 		if ! mount -t tmpfs none "${RC_LIBDIR}"/tmp 2>/dev/null; then
@@ -34,12 +27,15 @@ mount_svcdir()
 		newfs -b 4096 -i 1024 -n /dev/md0
 		mount -o rw,noexec,nosuid /dev/md0 "${RC_SVCDIR}"
 	fi
+	retval=$?
 	if ${dotmp}; then
 		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/depconfig \
 			"${RC_LIBDIR}"/tmp/nettree "${RC_SVCDIR}" 2>/dev/null
 		umount "${RC_LIBDIR}"/tmp
 		${release} && mdconfig -d -u 1
 	fi
+
+	return ${retval}
 }
 
 . "${RC_LIBDIR}"/sh/functions.sh

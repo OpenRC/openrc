@@ -1,10 +1,12 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
+retval=0
+
 # mount $svcdir as something we can write to if it's not rw
 # On vservers, / is always rw at this point, so we need to clean out
 # the old service state data
-if [ "${RC_SVCDIR}" != "/" ] &&  mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null; then
+if [ "${RC_SVCDIR}" != "/" ] && mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null; then
 	rmdir "${RC_SVCDIR}/.test.$$"
 	for x in ${RC_SVCDIR:-/lib/rc/init.d}/*; do
 		[ -e "${x}" ] || continue
@@ -15,6 +17,7 @@ if [ "${RC_SVCDIR}" != "/" ] &&  mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null; then
 	done
 else
 	mount_svcdir
+	retval=$?
 fi
 
 echo "sysinit" > "${RC_SVCDIR}/softlevel"
@@ -22,4 +25,4 @@ echo "sysinit" > "${RC_SVCDIR}/softlevel"
 # sysinit is now done, so allow init scripts to run normally
 [ -e /dev/.rcsysinit ] && rm -f /dev/.rcsysinit
 
-exit 0
+exit ${retval}
