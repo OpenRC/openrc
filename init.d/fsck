@@ -35,3 +35,9 @@ start()
 		       exec rc-abort; return 1;;
 	esac
 }
+
+stop()
+{
+	yesno "${fsck_shutdown}" && start
+	return 0
+}

@@ -1,4 +1,4 @@
-# fsck_shutdown causes checkfs to trigger during shutdown as well as startup.
+# fsck_shutdown causes fsck to trigger during shutdown as well as startup.
 # The end result of this is that if any periodic non-root filesystem checks are
 # scheduled, under normal circumstances the actual check will happen during
 # shutdown rather than at next boot.
