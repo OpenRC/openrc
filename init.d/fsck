@@ -22,7 +22,7 @@ start()
 	fi
 
 	ebegin "Checking local filesystems"
-	fsck ${fsck_args-p} ${opts}
+	fsck ${fsck_args--p} ${opts}
 	case $? in
 		0)     eend 0; return 0;;
 		1)     ewend 1 "Filesystems repaired"; return 0;;
