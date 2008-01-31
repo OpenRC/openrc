@@ -5,6 +5,10 @@
 description="Check filesystems according to /etc/fstab for errors and \
 optionally repair them."
 
+# Hard return to parse fstabinfo output
+_IFS="
+"
+
 depend()
 {
 	need checkroot
@@ -14,23 +18,23 @@ depend()
 
 do_checkfs()
 {
-	local retval=0 mode="-p" opts= parts=
-
+	local retval=0 opts=
+	[ "${RC_UNAME}" = "Linux" ] && opts="-C0 -T"
+	
 	ebegin "Checking all filesystems"
 
-	if [ "${RC_UNAME}" = "Linux" ]; then
-		opts="-A -C0 -R -T"
-	else
-		parts="$(fstabinfo --passno ">1")"
-		if [ -z "${parts}" ]; then
-			eend 0
-			return 0
-		fi
+	# Load our partitions into $@
+	local IFS="$_IFS"
+	set -- $(fstabinfo --passno ">1")
+	unset IFS
+	if [ $# = 0 ]; then
+		eend 0
+		return 0
 	fi
 
-	fsck ${opts} ${mode} ${parts}
+	fsck -p ${opts} "$@"
 	retval=$?
-	
+
 	if [ ${retval} -eq 0 ]; then
 		eend 0
 	elif [ ${retval} -eq 1 ]; then
@@ -44,7 +48,7 @@ do_checkfs()
 	else
 		if yesno ${rc_force_auto:-${RC_FORCE_AUTO}}; then
 			eend 2 "Fsck could not correct all errors, rerunning"
-			fsck ${opts} -y ${parts}
+			fsck -y ${opts} "$@"
 			retval=$?
 			eend ${retval}
 		fi
