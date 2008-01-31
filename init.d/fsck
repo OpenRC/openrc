@@ -1,0 +1,37 @@
+#!/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Check and repair filesystems according to /etc/fstab"
+
+depend()
+{
+	need swap
+	after clock modules
+	keywords notimeout
+}
+
+start()
+{
+	local retval=0 opts= root=
+	if [ "${RC_UNAME}" = "Linux" ]; then
+		opts="${opts} -A -C0 -T"
+		if echo 2>/dev/null >/.test.$$; then
+			rm -f /.test.$$
+			opts="${opts} -R"
+		fi
+	fi
+
+	ebegin "Checking local filesystems"
+	fsck -p ${opts}
+	case $? in
+		0)     eend 0; return 0;;
+		1)     ewend 1 "Filesystems repaired"; return 0;;
+		2|4)   ewend 1 "Filesystems repaired, but reboot needed"
+		       reboot; exec rc-abort; return 1;;
+		8)     ewend 1 "Operational error"; return 0;;
+		12)    ewend 1 "fsck interupted"; return 1;;
+		*)     eend 2 "Filesystems couldn't be fixed"
+		       exec rc-abort; return 1;;
+	esac
+}

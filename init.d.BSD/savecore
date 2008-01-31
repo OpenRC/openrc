@@ -6,8 +6,7 @@ description="Saves a kernel dump."
 
 depend()
 {
-	need checkfs
-	before swap
+	need localmount 
 }
 
 start()

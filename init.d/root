@@ -1,0 +1,25 @@
+#!/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Mount the root fs read/write"
+
+depend()
+{
+	need fsck
+}
+
+start()
+{
+	if echo 2>/dev/null >/.test.$$; then
+		rm -f /.test.$$
+		return 0
+	fi
+
+	ebegin "Remounting root filesystem read/write"
+	case "${RC_UNAME}" in
+		Linux)	mount -n -o remount,rw /;;
+		*)	mount -u -o rw /;;
+	esac
+	eend $? "Root filesystem could not be mounted read/write"
+}

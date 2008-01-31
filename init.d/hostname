@@ -4,11 +4,6 @@
 
 description="Sets the hostname of the machine."
 
-depend()
-{
-	need checkroot
-}
-
 start()
 {
 	hostname=${hostname-${HOSTNAME-localhost}}

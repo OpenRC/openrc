@@ -1,5 +1,5 @@
-BOOT=		bootmisc checkroot checkfs hostname localmount \
-		swap sysctl urandom
+BOOT=		bootmisc fsck hostname localmount \
+		root swap sysctl urandom
 DEFAULT=	local netmount
 
 LEVELDIR=	${DESTDIR}/etc/runlevels

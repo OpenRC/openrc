@@ -7,7 +7,7 @@ hostid_file=${hostid_file:-/etc/hostid}
 
 depend()
 {
-	need checkroot
+	need root
 	before devd net
 }
 

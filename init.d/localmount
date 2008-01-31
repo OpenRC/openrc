@@ -6,7 +6,8 @@ description="Mounts disks and swap according to /etc/fstab."
 
 depend()
 {
-	need checkfs
+	need fsck
+	use modules mtab
 }
 
 start()
