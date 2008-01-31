@@ -24,7 +24,7 @@ fi
 depend()
 {
 	if yesno ${clock_adjfile}; then
-		use checkroot
+		use root
 	else
 		before *
 	fi

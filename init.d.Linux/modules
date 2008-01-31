@@ -6,7 +6,6 @@ description="Loads a user defined list of kernel modules."
 
 depend()
 {
-	need checkroot
 	use isapnp
 }
 

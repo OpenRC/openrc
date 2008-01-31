@@ -19,7 +19,7 @@ depend()
 	# BSD adjkerntz needs to be able to write to /etc
 	if [ "${clock}" = "UTC" -a -e /etc/wall_cmos_clock ] ||
 	   [ "${clock}" != "UTC" -a ! -e /etc/wall_cmos_clock ]; then
-		need checkroot
+		need root
 	fi
 }
 

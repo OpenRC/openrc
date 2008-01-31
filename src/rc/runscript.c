@@ -515,7 +515,7 @@ static bool svc_wait (rc_depinfo_t *depinfo, const char *svc)
 	if (! service)
 		return (false);
 
-	/* Some services don't have a timeout, like checkroot and checkfs */
+	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend (depinfo, svc, "keywords");
 	STRLIST_FOREACH (keywords, s, i) {
 		if (strcmp (s, "notimeout") == 0) {
