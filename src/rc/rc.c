@@ -38,6 +38,7 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
