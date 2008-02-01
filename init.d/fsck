@@ -6,7 +6,6 @@ description="Check and repair filesystems according to /etc/fstab"
 
 depend()
 {
-	need swap
 	after clock modules
 	keywords notimeout
 }
