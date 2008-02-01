@@ -122,18 +122,18 @@ struct ecolor {
 	einfo_color_t color;
 	int def;
 	const char *name;
-	char *str;
 };
 static char nullstr = '\0';
 
-static struct ecolor ecolors[] = {
-	{ ECOLOR_GOOD,    GOOD,    "good",    NULL },
-	{ ECOLOR_WARN,    WARN,    "warn",    NULL },
-	{ ECOLOR_BAD,     BAD,     "bad",     NULL },
-	{ ECOLOR_HILITE,  HILITE,  "hilite",  NULL },
-	{ ECOLOR_BRACKET, BRACKET, "bracket", NULL },
-	{ ECOLOR_NORMAL,  0,       NULL,      NULL },
+static const struct ecolor ecolors[] = {
+	{ ECOLOR_GOOD,    GOOD,    "good"    },
+	{ ECOLOR_WARN,    WARN,    "warn"    },
+	{ ECOLOR_BAD,     BAD,     "bad"     },
+	{ ECOLOR_HILITE,  HILITE,  "hilite"  },
+	{ ECOLOR_BRACKET, BRACKET, "bracket" },
+	{ ECOLOR_NORMAL,  0,       NULL      },
 };
+static const char *ecolors_str[sizeof(ecolors)/sizeof(ecolors[0])];
 
 static char *flush = NULL;
 static char *up = NULL;
@@ -442,9 +442,9 @@ static bool colour_terminal (FILE * __EINFO_RESTRICT f)
 			_GET_CAP (tmp, _me);
 
 		if (tmp[0])
-			_ASSIGN_CAP (ecolors[i].str)
+			_ASSIGN_CAP (ecolors_str[i])
 		else
-			ecolors[i].str = &nullstr;
+			ecolors_str[i] = &nullstr;
 	}
 
 	_GET_CAP (tmp, _ce)
@@ -540,7 +540,7 @@ static const char *_ecolor (FILE * __EINFO_RESTRICT f, einfo_color_t color)
 
 	for (i = 0; i < sizeof (ecolors) / sizeof (ecolors[0]); i++) {
 		if (ecolors[i].color == color)
-			return (ecolors[i].str);
+			return (ecolors_str[i]);
 	}
 
 	return ("");
