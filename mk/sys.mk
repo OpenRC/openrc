@@ -22,4 +22,7 @@ SHLIBDIR?=		/${LIBNAME}
 MANDIR?=		/usr/share/man/man
 MANMODE?=		0444
 
+DOCDIR?=		/usr/share/doc
+DOCMODE?=		0644	
+
 CONFMODE?=		0644

@@ -1,4 +1,4 @@
-DIR=	/usr/share/doc/openrc
+DIR=	${DOCDIR}/openrc
 INC=	${CONTENTS}
 
 MK=	../mk
