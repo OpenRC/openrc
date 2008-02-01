@@ -12,25 +12,29 @@ depend()
 
 start()
 {
+	local reboot_opts= fsck_opts=
+
 	if [ "${RC_UNAME}" = "Linux" ]; then
-		opts="${opts} -A -C0 -T"
+		fsck_opts="-A -C0 -T"
 		if echo 2>/dev/null >/.test.$$; then
 			rm -f /.test.$$
-			opts="${opts} -R"
+			fsck_opts="${fsck_opts} -R"
 		fi
+		reboot_opts="-f"
 	fi
 
 	ebegin "Checking local filesystems"
-	fsck ${fsck_args--p} ${opts}
+	trap : QUIT
+	fsck ${fsck_args--p} ${fsck_opts}
 	case $? in
-		0)     eend 0; return 0;;
-		1)     ewend 1 "Filesystems repaired"; return 0;;
-		2|4)   ewend 1 "Filesystems repaired, but reboot needed"
-		       reboot; exec rc-abort; return 1;;
-		8)     ewend 1 "Operational error"; return 0;;
-		12)    ewend 1 "fsck interupted"; return 1;;
-		*)     eend 2 "Filesystems couldn't be fixed"
-		       exec rc-abort; return 1;;
+		0)       eend 0; return 0;;
+		1)       ewend 1 "Filesystems repaired"; return 0;;
+		2|3|4)   ewend 1 "Filesystems repaired, but reboot needed"
+		         reboot ${reboot_opts}; exec rc-abort; return 1;;
+		8)       ewend 1 "Operational error"; return 0;;
+		12)      ewend 1 "fsck interupted"; return 1;;
+		*)       eend 2 "Filesystems couldn't be fixed"
+		         exec rc-abort; return 1;;
 	esac
 }
 
