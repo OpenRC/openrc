@@ -1027,7 +1027,7 @@ static void svc_restart (bool deps)
 #include "_usage.h"
 #define getoptstring "dDsv" getoptstring_COMMON
 #define extraopts "stop | start | restart | describe | zap"
-static struct option longopts[] = {
+static const struct option longopts[] = {
 	{ "debug",      0, NULL, 'd'},
 	{ "ifstarted",  0, NULL, 's'},
 	{ "nodeps",     0, NULL, 'D'},

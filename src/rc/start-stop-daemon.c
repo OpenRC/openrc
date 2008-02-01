@@ -487,7 +487,7 @@ static void handle_signal (int sig)
 
 #include "_usage.h"
 #define getoptstring "KN:R:Sbc:d:g:mn:op:s:tu:r:x:1:2:" getoptstring_COMMON
-static struct option longopts[] = {
+static const struct option longopts[] = {
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
 	{ "retry",        1, NULL, 'R'},

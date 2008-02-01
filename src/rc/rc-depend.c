@@ -64,7 +64,7 @@ rc_depinfo_t *_rc_deptree_load (int *regen) {
 
 #include "_usage.h"
 #define getoptstring "t:suT" getoptstring_COMMON
-static struct option longopts[] = {
+static const struct option longopts[] = {
 	{ "type",     1, NULL, 't'},
 	{ "notrace",  0, NULL, 'T'},
 	{ "strict",   0, NULL, 's'},

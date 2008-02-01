@@ -134,7 +134,7 @@ static void show (char **runlevels, bool verbose)
 	"       rc-update [options] del service <runlevel>\n" \
 	"       rc-update [options] show"
 #define getoptstring getoptstring_COMMON
-static struct option longopts[] = {
+static const struct option longopts[] = {
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {

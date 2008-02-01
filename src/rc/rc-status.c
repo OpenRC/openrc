@@ -43,7 +43,7 @@
 
 static const char *applet;
 
-static const char *types_nua[] = { "ineed", "iuse", "iafter", NULL };
+static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
 static void print_level (char *level)
 {

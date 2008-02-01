@@ -90,7 +90,7 @@ static const char *applet = NULL;
 
 #include "_usage.h"
 #define getoptstring "bmop:t:" getoptstring_COMMON
-static struct option longopts[] = {
+static const struct option longopts[] = {
 	{ "blockdevice",    0, NULL, 'b' },
 	{ "options",        0, NULL, 'o' },
 	{ "passno",         1, NULL, 'p' },

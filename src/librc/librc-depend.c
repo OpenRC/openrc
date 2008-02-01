@@ -661,7 +661,7 @@ static const deppair_t deppairs[] = {
 	{ NULL, NULL }
 };
 
-static const char *depdirs[] =
+static const char *const depdirs[] =
 {
 	RC_SVCDIR "/starting",
 	RC_SVCDIR "/started",

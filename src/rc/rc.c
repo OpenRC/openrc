@@ -636,7 +636,7 @@ static void do_coldplug (void)
 
 #include "_usage.h"
 #define getoptstring "o:" getoptstring_COMMON
-static struct option longopts[] = {
+static const struct option longopts[] = {
 	{ "override", 1, NULL, 'o' },
 	longopts_COMMON
 };
