@@ -441,6 +441,7 @@ static void handle_signal (int sig)
 	pid_t pid;
 	int status = 0;
 	struct winsize ws;
+	sigset_t sset;
 
 	switch (sig) {
 		case SIGCHLD:
@@ -480,9 +481,13 @@ static void handle_signal (int sig)
 			/* NOTREACHED */
 		case SIGUSR1:
 			eerror ("rc: Aborting!");
-			/* Kill any running services we have started */
 
-			signal (SIGCHLD, SIG_IGN);
+			/* Block child signals */
+			sigemptyset (&sset);
+			sigaddset (&sset, SIGCHLD);
+			sigprocmask (SIG_BLOCK, &sset, NULL);
+
+			/* Kill any running services we have started */
 			for (pl = service_pids; pl; pl = pl->next)
 				kill (pl->pid, SIGTERM);
 
@@ -761,12 +766,12 @@ int main (int argc, char **argv)
 	rc_logger_open (newlevel ? newlevel : runlevel);
 
 	/* Setup a signal handler */
-	signal (SIGINT, handle_signal);
-	signal (SIGQUIT, handle_signal);
-	signal (SIGTERM, handle_signal);
-	signal (SIGUSR1, handle_signal);
-	signal (SIGWINCH, handle_signal);
-
+	signal_setup (SIGINT, handle_signal);
+	signal_setup (SIGQUIT, handle_signal);
+	signal_setup (SIGTERM, handle_signal);
+	signal_setup (SIGUSR1, handle_signal);
+	signal_setup (SIGWINCH, handle_signal);
+	
 	if (! rc_yesno (getenv ("EINFO_QUIET")))
 		interactive = exists (INTERACTIVE);
 	rc_plugin_load ();
@@ -871,7 +876,7 @@ int main (int argc, char **argv)
 	}
 
 	/* Now we start handling our children */
-	signal (SIGCHLD, handle_signal);
+	signal_setup (SIGCHLD, handle_signal);
 
 	/* We should only use ksoftlevel if we were in single user mode
 	 * If not, we need to erase ksoftlevel now. */

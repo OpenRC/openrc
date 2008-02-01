@@ -578,9 +578,9 @@ int start_stop_daemon (int argc, char **argv)
 	applet = basename_c (argv[0]);
 	atexit (cleanup);
 
-	signal (SIGINT, handle_signal);
-	signal (SIGQUIT, handle_signal);
-	signal (SIGTERM, handle_signal);
+	signal_setup (SIGINT, handle_signal);
+	signal_setup (SIGQUIT, handle_signal);
+	signal_setup (SIGTERM, handle_signal);
 
 	if ((env = getenv ("SSD_NICELEVEL")))
 		if (sscanf (env, "%d", &nicelevel) != 1)
@@ -823,7 +823,7 @@ int start_stop_daemon (int argc, char **argv)
 	}
 
 	if (background)
-		signal (SIGCHLD, handle_signal);
+		signal_setup (SIGCHLD, handle_signal);
 
 	*--argv = exec;
 	if ((pid = fork ()) == -1)

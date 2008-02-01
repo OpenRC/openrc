@@ -34,6 +34,7 @@
 
 #include <sys/stat.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -133,6 +134,7 @@ bool rc_conf_yesno (const char *var);
 char **env_filter (void);
 char **env_config (void);
 bool service_plugable (const char *service);
+void signal_setup (int sig, void (*handler)(int));
 
 /* basename_c never modifies the argument. As such, if there is a trailing
  * slash then an empty string is returned. */

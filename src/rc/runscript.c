@@ -490,7 +490,8 @@ static bool svc_exec (const char *arg1, const char *arg2)
 	signal_pipe[0] = signal_pipe[1] = -1;
 
 	if (master_tty >= 0) {
-		signal (SIGWINCH, SIG_IGN);
+		/* Why did we do this? */
+		/* signal (SIGWINCH, SIG_IGN); */
 		close (master_tty);
 		master_tty = -1;
 	}
@@ -1199,11 +1200,11 @@ int runscript (int argc, char **argv)
 	}
 
 	/* Setup a signal handler */
-	signal (SIGHUP, handle_signal);
-	signal (SIGINT, handle_signal);
-	signal (SIGQUIT, handle_signal);
-	signal (SIGTERM, handle_signal);
-	signal (SIGCHLD, handle_signal);
+	signal_setup (SIGHUP, handle_signal);
+	signal_setup (SIGINT, handle_signal);
+	signal_setup (SIGQUIT, handle_signal);
+	signal_setup (SIGTERM, handle_signal);
+	signal_setup (SIGCHLD, handle_signal);
 
 	/* Load our plugins */
 	rc_plugin_load ();
