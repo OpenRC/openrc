@@ -32,30 +32,12 @@
 const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "librc.h"
-#include <sys/syscall.h>
 #include <signal.h>
 
 #define SOFTLEVEL	RC_SVCDIR "/softlevel"
 
 #ifndef S_IXUGO
 # define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
-#endif
-
-/* Some platforms don't expose SYS_sigaction and friends.
- * So we hope that their libc does the Right Thing. */
-#ifdef SYS_sigaction
-# define do_sigaction(_sig, _new, _old) \
-	syscall (SYS_sigaction, _sig, _new, _old);
-#else
-#define do_sigaction(_sig, _new, _old) \
-	sigaction (_sig, _new, _old)
-#endif
-#ifdef SYS_sigprocmask
-# define do_sigprocmask(_sig, _new, _old) \
-	syscall (SYS_sigprocmask, _sig, _new, _old);
-#else
-#define do_sigprocmask(_sig, _new, _old) \
-	sigprocmask (_sig, _new, _old)
 #endif
 
 /* File stream used for plugins to write environ vars to */
@@ -623,18 +605,19 @@ static pid_t _exec_service (const char *service, const char *arg)
 	sigemptyset (&empty);
 	sigfillset (&full);
 	sigprocmask (SIG_SETMASK, &full, &old);
-	if ((pid = vfork ()) == 0) {
+
+	if ((pid = fork ()) == 0) {
 		/* Restore default handlers */
-		do_sigaction (SIGCHLD, &sa, NULL);
-		do_sigaction (SIGHUP, &sa, NULL);
-		do_sigaction (SIGINT, &sa, NULL);
-		do_sigaction (SIGQUIT, &sa, NULL);
-		do_sigaction (SIGTERM, &sa, NULL);
-		do_sigaction (SIGUSR1, &sa, NULL);
-		do_sigaction (SIGWINCH, &sa, NULL);
+		sigaction (SIGCHLD, &sa, NULL);
+		sigaction (SIGHUP, &sa, NULL);
+		sigaction (SIGINT, &sa, NULL);
+		sigaction (SIGQUIT, &sa, NULL);
+		sigaction (SIGTERM, &sa, NULL);
+		sigaction (SIGUSR1, &sa, NULL);
+		sigaction (SIGWINCH, &sa, NULL);
 
 		/* Unmask signals */
-		do_sigprocmask (SIG_SETMASK, &empty, NULL);
+		sigprocmask (SIG_SETMASK, &empty, NULL);
 
 		/* Safe to run now */
 		execl (file, file, arg, (char *) NULL);
