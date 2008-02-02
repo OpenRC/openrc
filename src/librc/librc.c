@@ -32,6 +32,7 @@
 const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "librc.h"
+#include <sys/syscall.h>
 #include <signal.h>
 
 #define SOFTLEVEL	RC_SVCDIR "/softlevel"
@@ -606,18 +607,18 @@ static pid_t _exec_service (const char *service, const char *arg)
 	sigfillset (&full);
 	sigprocmask (SIG_SETMASK, &full, &old);
 
-	if ((pid = fork ()) == 0) {
+	if ((pid = vfork ()) == 0) {
 		/* Restore default handlers */
-		sigaction (SIGCHLD, &sa, NULL);
-		sigaction (SIGHUP,  &sa, NULL);
-		sigaction (SIGINT,  &sa, NULL);
-		sigaction (SIGQUIT, &sa, NULL);
-		sigaction (SIGTERM, &sa, NULL);
-		sigaction (SIGUSR1, &sa, NULL);
-		sigaction (SIGWINCH, &sa, NULL);
+		syscall (SYS_sigaction, SIGCHLD, &sa, NULL);
+		syscall (SYS_sigaction, SIGHUP, &sa, NULL);
+		syscall (SYS_sigaction, SIGINT, &sa, NULL);
+		syscall (SYS_sigaction, SIGQUIT, &sa, NULL);
+		syscall (SYS_sigaction, SIGTERM, &sa, NULL);
+		syscall (SYS_sigaction, SIGUSR1, &sa, NULL);
+		syscall (SYS_sigaction, SIGWINCH, &sa, NULL);
 
 		/* Unmask signals */
-		sigprocmask (SIG_SETMASK, &empty, NULL);
+		syscall (SYS_sigprocmask, SIG_SETMASK, &empty, NULL);
 
 		/* Safe to run now */
 		execl (file, file, arg, (char *) NULL);
