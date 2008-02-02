@@ -1,3 +1,3 @@
-- stop using signal() and convert everything to sigaction()
+- ensure all forks block, restore and unblock signals. needs review 
 
 - add support somehow for optional translations

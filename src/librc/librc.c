@@ -32,6 +32,7 @@
 const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "librc.h"
+#include <signal.h>
 
 #define SOFTLEVEL	RC_SVCDIR "/softlevel"
 
@@ -575,6 +576,10 @@ static pid_t _exec_service (const char *service, const char *arg)
 	char *file;
 	char *fifo;
 	pid_t pid = -1;
+	sigset_t empty;
+	sigset_t full;
+	sigset_t old;
+	struct sigaction sa;
 
 	file = rc_service_resolve (service);
 	if (! exists (file)) {
@@ -593,12 +598,36 @@ static pid_t _exec_service (const char *service, const char *arg)
 		return (-1);
 	}
 
-	if ((pid = vfork ()) == 0) {
+	/* We need to block signals until we have forked */
+	memset (&sa, 0, sizeof (sa));
+	sa.sa_handler = SIG_DFL;
+	sigemptyset (&sa.sa_mask);
+	sigemptyset (&empty);
+	sigfillset (&full);
+	sigprocmask (SIG_SETMASK, &full, &old);
+
+	if ((pid = fork ()) == 0) {
+		/* Restore default handlers */
+		sigaction (SIGCHLD, &sa, NULL);
+		sigaction (SIGHUP,  &sa, NULL);
+		sigaction (SIGINT,  &sa, NULL);
+		sigaction (SIGQUIT, &sa, NULL);
+		sigaction (SIGTERM, &sa, NULL);
+		sigaction (SIGUSR1, &sa, NULL);
+		sigaction (SIGWINCH, &sa, NULL);
+
+		/* Unmask signals */
+		sigprocmask (SIG_SETMASK, &empty, NULL);
+
+		/* Safe to run now */
 		execl (file, file, arg, (char *) NULL);
-		fprintf (stderr, "unable to exec `%s': %s\n", file, strerror (errno));
+		fprintf (stderr, "unable to exec `%s': %s\n",
+			 file, strerror (errno));
 		unlink (fifo);
 		_exit (EXIT_FAILURE);
 	}
+
+	sigprocmask (SIG_SETMASK, &old, NULL);
 
 	free (fifo);
 	free (file);

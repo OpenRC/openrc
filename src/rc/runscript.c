@@ -432,8 +432,6 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		eerrorx ("%s: vfork: %s", service, strerror (errno));
 	if (service_pid == 0) {
 		if (slave_tty >= 0) {
-			/* Hmmm, this shouldn't work in a vfork, but it does which is
-			 * good for us */
 			close (master_tty);
 
 			dup2 (slave_tty, 1);

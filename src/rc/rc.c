@@ -663,6 +663,7 @@ int main (int argc, char **argv)
 	int opt;
 	bool parallel;
 	int regen = 0;
+	pid_t pid;
 
 	applet = basename_c (argv[0]);
 	atexit (cleanup);
@@ -994,7 +995,7 @@ int main (int argc, char **argv)
 
 		/* We always stop the service when in these runlevels */
 		if (going_down) {
-			pid_t pid = rc_service_stop (service);
+			pid = rc_service_stop (service);
 			if (pid > 0 && ! parallel)
 				rc_waitpid (pid);
 			continue;
@@ -1060,11 +1061,10 @@ int main (int argc, char **argv)
 
 		/* After all that we can finally stop the blighter! */
 		if (! found) {
-			pid_t pid;
+			pid = rc_service_stop (service);
 
-			if ((pid = rc_service_stop (service)) > 0) {
+			if (pid > 0) {
 				add_pid (pid);
-
 				if (! parallel) {
 					rc_waitpid (pid);
 					remove_pid (pid);
@@ -1136,9 +1136,7 @@ int main (int argc, char **argv)
 #endif
 
 	STRLIST_FOREACH (start_services, service, i) {
-		if (rc_service_state (service) & RC_SERVICE_STOPPED)	{
-			pid_t pid;
-
+		if (rc_service_state (service) & RC_SERVICE_STOPPED) {
 			if (! interactive)
 				interactive = want_interactive ();
 
@@ -1160,8 +1158,10 @@ interactive_option:
 				}
 			}
 
+			pid = rc_service_start (service);
+			
 			/* Remember the pid if we're running in parallel */
-			if ((pid = rc_service_start (service)) > 0) {
+			if (pid > 0) {
 				add_pid (pid);
 
 				if (! parallel) {

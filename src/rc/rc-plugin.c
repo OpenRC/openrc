@@ -143,84 +143,110 @@ int rc_waitpid (pid_t pid)
 void rc_plugin_run (rc_hook_t hook, const char *value)
 {
 	plugin_t *plugin = plugins;
+	struct sigaction sa;
+	sigset_t empty;
+	sigset_t full;
+	sigset_t old;
 
 	/* Don't run plugins if we're in one */
 	if (rc_in_plugin)
 		return;
 
+	/* We need to block signals until we have forked */
+	memset (&sa, 0, sizeof (sa));
+	sa.sa_handler = SIG_DFL;
+	sigemptyset (&sa.sa_mask);
+	sigemptyset (&empty);
+	sigfillset (&full);
+
 	while (plugin) {
-		if (plugin->hook) {
-			int i;
-			int flags;
-			int pfd[2];
-			pid_t pid;
+		int i;
+		int flags;
+		int pfd[2];
+		pid_t pid;
+		char *buffer;
+		char *token;
+		char *p;
+		ssize_t nr;
 
-			/* We create a pipe so that plugins can affect our environment
-			 * vars, which in turn influence our scripts. */
-			if (pipe (pfd) == -1) {
-				eerror ("pipe: %s", strerror (errno));
-				return;
-			}
+		if (! plugin->hook) {
+			plugin = plugin->next;
+			continue;
+		}
 
-			/* Stop any scripts from inheriting us.
-			 * This is actually quite important as without this, the splash
-			 * plugin will probably hang when running in silent mode. */
-			for (i = 0; i < 2; i++)
-				if ((flags = fcntl (pfd[i], F_GETFD, 0)) < 0 ||
-				    fcntl (pfd[i], F_SETFD, flags | FD_CLOEXEC) < 0)
-					eerror ("fcntl: %s", strerror (errno));
+		/* We create a pipe so that plugins can affect our environment
+		 * vars, which in turn influence our scripts. */
+		if (pipe (pfd) == -1) {
+			eerror ("pipe: %s", strerror (errno));
+			return;
+		}
 
-			/* We run the plugin in a new process so we never crash
-			 * or otherwise affected by it */
-			if ((pid = fork ()) == -1) {
-				eerror ("fork: %s", strerror (errno));
-				return;
-			}
+		/* Stop any scripts from inheriting us.
+		 * This is actually quite important as without this, the splash
+		 * plugin will probably hang when running in silent mode. */
+		for (i = 0; i < 2; i++)
+			if ((flags = fcntl (pfd[i], F_GETFD, 0)) < 0 ||
+			    fcntl (pfd[i], F_SETFD, flags | FD_CLOEXEC) < 0)
+				eerror ("fcntl: %s", strerror (errno));
 
-			if (pid == 0) {
-				int retval;
+		sigprocmask (SIG_SETMASK, &full, &old);
 
-				rc_in_plugin = true;
-				close (pfd[0]);
-				rc_environ_fd = fdopen (pfd[1], "w");
-				retval = plugin->hook (hook, value);
-				fclose (rc_environ_fd);
-				rc_environ_fd = NULL;
+		/* We run the plugin in a new process so we never crash
+		 * or otherwise affected by it */
+		if ((pid = fork ()) == -1) {
+			eerror ("fork: %s", strerror (errno));
+			break;
+		}
 
-				/* Just in case the plugin sets this to false */
-				rc_in_plugin = true;
-				exit (retval);
-			} else {
-				char *buffer;
-				char *token;
-				char *p;
-				ssize_t nr;
+		if (pid == 0) {
+			int retval;
 
-				close (pfd[1]);
-				buffer = xmalloc (sizeof (char) * BUFSIZ);
-				memset (buffer, 0, BUFSIZ);
+			/* Restore default handlers */
+			sigaction (SIGCHLD, &sa, NULL);
+			sigaction (SIGHUP,  &sa, NULL);
+			sigaction (SIGINT,  &sa, NULL);
+			sigaction (SIGQUIT, &sa, NULL);
+			sigaction (SIGTERM, &sa, NULL);
+			sigaction (SIGUSR1, &sa, NULL);
+			sigaction (SIGWINCH, &sa, NULL);
+			sigprocmask (SIG_SETMASK, &old, NULL);
+			
+			rc_in_plugin = true;
+			close (pfd[0]);
+			rc_environ_fd = fdopen (pfd[1], "w");
+			retval = plugin->hook (hook, value);
+			fclose (rc_environ_fd);
+			rc_environ_fd = NULL;
 
-				while ((nr = read (pfd[0], buffer, BUFSIZ)) > 0) {
-					p = buffer;
-					while (*p && p - buffer < nr) {
-						token = strsep (&p, "=");
-						if (token) {
-							unsetenv (token);
-							if (*p) {
-								setenv (token, p, 1);
-								p += strlen (p) + 1;
-							} else
-								p++;
-						}
-					}
+			/* Just in case the plugin sets this to false */
+			rc_in_plugin = true;
+			exit (retval);
+		}
+
+		sigprocmask (SIG_SETMASK, &old, NULL);
+		close (pfd[1]);
+		buffer = xmalloc (sizeof (char) * BUFSIZ);
+		memset (buffer, 0, BUFSIZ);
+
+		while ((nr = read (pfd[0], buffer, BUFSIZ)) > 0) {
+			p = buffer;
+			while (*p && p - buffer < nr) {
+				token = strsep (&p, "=");
+				if (token) {
+					unsetenv (token);
+					if (*p) {
+						setenv (token, p, 1);
+						p += strlen (p) + 1;
+					} else
+						p++;
 				}
-
-				free (buffer);
-				close (pfd[0]);
-
-				rc_waitpid (pid);
 			}
 		}
+
+		free (buffer);
+		close (pfd[0]);
+
+		rc_waitpid (pid);
 		plugin = plugin->next;
 	}
 }

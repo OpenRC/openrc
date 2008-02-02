@@ -432,13 +432,12 @@ bool service_plugable (const char *service)
 	return (allow);
 }
 
-void signal_setup (int sig, void (*handler)(int))
+int signal_setup (int sig, void (*handler)(int))
 {
 	struct sigaction sa;
 
 	memset (&sa, 0, sizeof (sa));
-	sa.sa_handler = handler;
 	sigemptyset (&sa.sa_mask);
-	if (sigaction (sig, &sa, NULL) == -1)
-		eerrorx ("sigaction: %s", strerror (errno));
+	sa.sa_handler = handler;
+	return (sigaction (sig, &sa, NULL));
 }
