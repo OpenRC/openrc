@@ -627,13 +627,13 @@ static pid_t _exec_service (const char *service, const char *arg)
 		_exit (EXIT_FAILURE);
 	}
 
+	if (pid == -1)
+		fprintf (stderr, "fork: %s\n", strerror (errno));
+
 	sigprocmask (SIG_SETMASK, &old, NULL);
 
 	free (fifo);
 	free (file);
-
-	if (pid == -1)
-		fprintf (stderr, "vfork: %s\n", strerror (errno));
 
 	return (pid);
 }
