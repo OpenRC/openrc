@@ -41,6 +41,23 @@ const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 # define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
 #endif
 
+/* Some platforms don't expose SYS_sigaction and friends.
+ * So we hope that their libc does the Right Thing. */
+#ifdef SYS_sigaction
+# define do_sigaction(_sig, _new, _old) \
+	syscall (SYS_sigaction, _sig, _new, _old);
+#else
+#define do_sigaction(_sig, _new, _old) \
+	sigaction (_sig, _new, _old)
+#endif
+#ifdef SYS_sigprocmask
+# define do_sigprocmask(_sig, _new, _old) \
+	syscall (SYS_sigprocmask, _sig, _new, _old);
+#else
+#define do_sigprocmask(_sig, _new, _old) \
+	sigprocmask (_sig, _new, _old)
+#endif
+
 /* File stream used for plugins to write environ vars to */
 FILE *rc_environ_fd = NULL;
 
@@ -606,19 +623,18 @@ static pid_t _exec_service (const char *service, const char *arg)
 	sigemptyset (&empty);
 	sigfillset (&full);
 	sigprocmask (SIG_SETMASK, &full, &old);
-
 	if ((pid = vfork ()) == 0) {
 		/* Restore default handlers */
-		syscall (SYS_sigaction, SIGCHLD, &sa, NULL);
-		syscall (SYS_sigaction, SIGHUP, &sa, NULL);
-		syscall (SYS_sigaction, SIGINT, &sa, NULL);
-		syscall (SYS_sigaction, SIGQUIT, &sa, NULL);
-		syscall (SYS_sigaction, SIGTERM, &sa, NULL);
-		syscall (SYS_sigaction, SIGUSR1, &sa, NULL);
-		syscall (SYS_sigaction, SIGWINCH, &sa, NULL);
+		do_sigaction (SIGCHLD, &sa, NULL);
+		do_sigaction (SIGHUP, &sa, NULL);
+		do_sigaction (SIGINT, &sa, NULL);
+		do_sigaction (SIGQUIT, &sa, NULL);
+		do_sigaction (SIGTERM, &sa, NULL);
+		do_sigaction (SIGUSR1, &sa, NULL);
+		do_sigaction (SIGWINCH, &sa, NULL);
 
 		/* Unmask signals */
-		syscall (SYS_sigprocmask, SIG_SETMASK, &empty, NULL);
+		do_sigprocmask (SIG_SETMASK, &empty, NULL);
 
 		/* Safe to run now */
 		execl (file, file, arg, (char *) NULL);
