@@ -27,13 +27,14 @@ RC_SBINLINKS=	mark_service_starting mark_service_started \
 		mark_service_coldplugged mark_service_failed \
 		rc-abort
 
+LDFLAGS+=	-L../librc -L../libeinfo
+LDADD+=		-lutil -lrc -leinfo
+
 MK=		../../mk
 include ${MK}/cc.mk
 include ${MK}/os.mk
 include ${MK}/prog.mk
 
-LDFLAGS+=	-L../librc -L../libeinfo
-LDADD+=		-lutil -lrc -leinfo
 CFLAGS+=	-I../includes -I../librc -I../libeinfo
 CFLAGS+=	-DLIB=\"${LIBNAME}\"
 
