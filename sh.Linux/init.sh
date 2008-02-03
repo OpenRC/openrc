@@ -3,46 +3,10 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-# udev needs these functions still :/
-try()
-{
-	"$@"
-}
-
-_rc_get_kv_cache=
-get_KV()
-{
-	[ -z "${_rc_get_kv_cache}" ] \
-		&& _rc_get_kv_cache="$(uname -r)"
-
-	echo "$(KV_to_int "${_rc_get_kv_cache}")"
-
-	return $?
-}
-
-KV_to_int()
-{
-	[ -z $1 ] && return 1
-
-	local x=${1%%-*}
-	local KV_MAJOR=${x%%.*}
-	x=${x#*.}
-	local KV_MINOR=${x%%.*}
-	x=${x#*.}
-	local KV_MICRO=${x%%.*}
-	local KV_int=$((${KV_MAJOR} * 65536 + ${KV_MINOR} * 256 + ${KV_MICRO} ))
-
-	# We make version 2.2.0 the minimum version we will handle as
-	# a sanity check ... if its less, we fail ...
-	[ "${KV_int}" -lt 131584 ] && return 1
-	
-	echo "${KV_int}"
-}
-
-# This basically mounts $svcdir as a ramdisk, but preserving its content
-# which allows us to run depscan.sh
+# This basically mounts $RC_SVCDIR as a ramdisk, but preserving its content
+# which allows us to store service state and generate dependencies if needed.
 # The tricky part is finding something our kernel supports
-# tmpfs and ramfs are easy, so force one or the other
+# tmpfs and ramfs are easy, so force one or the other.
 mount_svcdir()
 {
 	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="none" devtmp="none" x=
@@ -97,14 +61,6 @@ mount_svcdir()
 . "${RC_LIBDIR}"/sh/rc-functions.sh
 [ -r /etc/conf.d/rc ] && . /etc/conf.d/rc
 [ -r /etc/rc.conf ] && . /etc/rc.conf
-
-# Compat shim for udev
-rc_coldplug=${rc_coldplug:-${RC_COLDPLUG:-yes}}
-if yesno "${rc_coldplug}"; then
-	RC_COLDPLUG=yes
-else
-	RC_COLDPLUG=no
-fi
 
 # Set the console loglevel to 1 for a cleaner boot
 # the logger should anyhow dump the ring-0 buffer at start to the
