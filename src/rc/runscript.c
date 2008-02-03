@@ -674,9 +674,6 @@ static void svc_start (bool deps)
 	if (rc_conf_yesno ("rc_depend_strict"))
 		depoptions |= RC_DEP_STRICT;
 
-	if (rc_runlevel_starting ())
-		depoptions |= RC_DEP_START;
-
 	if (deps) {
 		if (! deptree && ((deptree = _rc_deptree_load (NULL)) == NULL))
 			eerrorx ("failed to load deptree");
@@ -891,9 +888,6 @@ static void svc_stop (bool deps)
 
 		if (rc_conf_yesno ("rc_depend_strict"))
 			depoptions |= RC_DEP_STRICT;
-
-		if (rc_runlevel_stopping ())
-			depoptions |= RC_DEP_STOP;
 
 		if (! deptree && ((deptree = _rc_deptree_load (NULL)) == NULL))
 			eerrorx ("failed to load deptree");

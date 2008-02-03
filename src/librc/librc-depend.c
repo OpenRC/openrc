@@ -310,13 +310,15 @@ static char **get_provided (const rc_depinfo_t *deptree,
 		return (providers.list);
 	}
 
-	/* If we're strict, then only use what we have in our runlevel
-	 * and bootlevel */
-	if (options & RC_DEP_STRICT)
+	/* If we're strict or startng, then only use what we have in our
+	 * runlevel and bootlevel. If we starting then check cold-plugged too. */
+	if (options & RC_DEP_STRICT || options & RC_DEP_START)
 	{
 		STRLIST_FOREACH (dt->services, service, i)
 			if (rc_service_in_runlevel (service, runlevel) ||
-			    rc_service_in_runlevel (service, bootlevel))
+			    rc_service_in_runlevel (service, bootlevel) ||
+			    (options & RC_DEP_START &&
+			     rc_service_state (service) & RC_SERVICE_COLDPLUGGED)) 
 				rc_strlist_add (&providers.list, service);
 
 		if (providers.list)
