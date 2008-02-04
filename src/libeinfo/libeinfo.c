@@ -903,6 +903,7 @@ void eoutdent (void)
 	char *env = getenv ("EINFO_INDENT");
 	int amount = 0;
 	char num[10];
+	int serrno = errno;
 
 	if (! env)
 		return;
@@ -915,11 +916,12 @@ void eoutdent (void)
 		amount -= INDENT_WIDTH;
 
 	if (amount <= 0)
-		unsetenv ("EINFO_EINDENT");
+		unsetenv ("EINFO_INDENT");
 	else {
 		snprintf (num, 10, "%08d", amount);
-		setenv ("EINFO_EINDENT", num, 1);
+		setenv ("EINFO_INDENT", num, 1);
 	}
+	errno = serrno;
 }
 hidden_def(eoutdent)
 
