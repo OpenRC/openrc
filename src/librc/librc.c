@@ -602,7 +602,6 @@ static pid_t _exec_service (const char *service, const char *arg)
 	memset (&sa, 0, sizeof (sa));
 	sa.sa_handler = SIG_DFL;
 	sigemptyset (&sa.sa_mask);
-	sigemptyset (&empty);
 	sigfillset (&full);
 	sigprocmask (SIG_SETMASK, &full, &old);
 
@@ -617,7 +616,7 @@ static pid_t _exec_service (const char *service, const char *arg)
 		sigaction (SIGWINCH, &sa, NULL);
 
 		/* Unmask signals */
-		sigprocmask (SIG_SETMASK, &empty, NULL);
+		sigprocmask (SIG_SETMASK, &old, NULL);
 
 		/* Safe to run now */
 		execl (file, file, arg, (char *) NULL);
