@@ -281,6 +281,11 @@ static void mark_interactive (void)
 
 static void sulogin (bool cont)
 {
+	int status = 0;
+	struct sigaction sa;
+	sigset_t full;
+	sigset_t old;
+	pid_t pid;
 #ifdef __linux__
 	char *e = getenv ("RC_SYS");
 
@@ -293,36 +298,8 @@ static void sulogin (bool cont)
 
 	newenv = env_filter ();
 
-	if (cont) {
-		int status = 0;
-#ifdef __linux__
-		char *tty = ttyname (STDOUT_FILENO);
-#endif
-
-		pid_t pid = vfork ();
-
-		if (pid == -1)
-			eerrorx ("%s: vfork: %s", applet, strerror (errno));
-		if (pid == 0) {
-#ifdef __linux__
-			if (tty)
-				execle (SULOGIN, SULOGIN, tty, (char *) NULL, newenv);
-			else
-				execle (SULOGIN, SULOGIN, (char *) NULL, newenv);
-
-			eerror ("%s: unable to exec `%s': %s", applet, SULOGIN,
-				strerror (errno));
-#else
-			execle ("/bin/sh", "/bin/sh", (char *) NULL, newenv);
-			eerror ("%s: unable to exec `/bin/sh': %s", applet,
-				strerror (errno));
-#endif
-			_exit (EXIT_FAILURE);
-		}
-		waitpid (pid, &status, 0);
-	} else {
+	if (! cont) {
 		rc_logger_close ();
-
 #ifdef __linux__
 		execle ("/sbin/sulogin", "/sbin/sulogin", (char *) NULL, newenv);
 		eerrorx ("%s: unable to exec `/sbin/sulogin': %s", applet, strerror (errno));
@@ -330,6 +307,48 @@ static void sulogin (bool cont)
 		exit (EXIT_SUCCESS);
 #endif
 	}
+
+	/* We need to block signals until we have forked */
+	memset (&sa, 0, sizeof (sa));
+	sa.sa_handler = SIG_DFL;
+	sigemptyset (&sa.sa_mask);
+	sigfillset (&full);
+	sigprocmask (SIG_SETMASK, &full, &old);
+	pid = vfork ();
+
+	if (pid == -1)
+		eerrorx ("%s: fork: %s", applet, strerror (errno));
+	if (pid == 0) {
+		/* Restore default handlers */
+		sigaction (SIGCHLD, &sa, NULL);
+		sigaction (SIGHUP, &sa, NULL);
+		sigaction (SIGINT, &sa, NULL);
+		sigaction (SIGQUIT, &sa, NULL);
+		sigaction (SIGTERM, &sa, NULL);
+		sigaction (SIGUSR1, &sa, NULL);
+		sigaction (SIGWINCH, &sa, NULL);
+
+		/* Unmask signals */
+		sigprocmask (SIG_SETMASK, &old, NULL);
+
+		if (termios_orig)
+			tcsetattr (fileno (stdin), TCSANOW, termios_orig);
+
+#ifdef __linux__
+		execle (SULOGIN, SULOGIN, (char *) NULL, newenv);
+		eerror ("%s: unable to exec `%s': %s", applet, SULOGIN,
+			strerror (errno));
+#else
+		execle ("/bin/sh", "/bin/sh", (char *) NULL, newenv);
+		eerror ("%s: unable to exec `/bin/sh': %s", applet,
+			strerror (errno));
+#endif
+		_exit (EXIT_FAILURE);
+	}
+
+	/* Unmask signals and wait for child */
+	sigprocmask (SIG_SETMASK, &old, NULL);
+	waitpid (pid, &status, 0);
 }
 
 static void single_user (void)
