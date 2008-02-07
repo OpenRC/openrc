@@ -47,10 +47,14 @@ static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
 static void print_level (char *level)
 {
-	printf ("Runlevel: %s%s%s\n",
-		ecolor (ECOLOR_HILITE),
-		level,
-		ecolor (ECOLOR_NORMAL));
+	printf ("Runlevel: ");
+	if (isatty (fileno (stdout)))
+		printf ("%s%s%s\n",
+			ecolor (ECOLOR_HILITE),
+			level,
+			ecolor (ECOLOR_NORMAL));
+	else
+		printf ("%s\n", level);
 }
 
 static void print_service (char *service)
