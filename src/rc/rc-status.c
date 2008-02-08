@@ -94,10 +94,11 @@ static void print_service (char *service)
 
 #include "_usage.h"
 #define extraopts "[runlevel1] [runlevel2] ..."
-#define getoptstring "alsu" getoptstring_COMMON
+#define getoptstring "alrsu" getoptstring_COMMON
 static const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
 	{"list",        0, NULL, 'l'},
+	{"runlevel",    0, NULL, 'r'},
 	{"servicelist", 0, NULL, 's'},
 	{"unused",      0, NULL, 'u'},
 	longopts_COMMON
@@ -105,6 +106,7 @@ static const struct option longopts[] = {
 static const char * const longopts_help[] = {
 	"Show services from all run levels",
 	"Show list of run levels",
+	"Show the name of the current runlevel",
 	"Show service list",
 	"Show services not assigned to any runlevel",
 	longopts_help_COMMON
@@ -135,6 +137,12 @@ int rc_status (int argc, char **argv)
 				STRLIST_FOREACH (levels, level, i)
 					printf ("%s\n", level);
 				rc_strlist_free (levels);
+				exit (EXIT_SUCCESS);
+				/* NOTREACHED */
+			case 'r':
+				level = rc_runlevel_get ();
+				printf ("%s\n", level);
+				free (level);
 				exit (EXIT_SUCCESS);
 				/* NOTREACHED */
 			case 's':
