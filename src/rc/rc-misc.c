@@ -191,7 +191,7 @@ char **env_filter (void)
 		    strncmp (PATH_PREFIX, env_var, pplen) != 0)
 		{
 			got_path = true;
-			env_len = strlen (env_name) + strlen (env_var) + pplen + 2;
+			env_len = strlen (env_name) + strlen (env_var) + pplen + 3;
 			e = p = xmalloc (sizeof (char) * env_len);
 			p += snprintf (e, env_len, "%s=%s", env_name, PATH_PREFIX);
 
@@ -222,7 +222,7 @@ char **env_filter (void)
 	/* We filtered the env but didn't get a PATH? Very odd.
 	   However, we do need a path, so use a default. */
 	if (! got_path) {
-		env_len = strlen ("PATH=") + strlen (PATH_PREFIX) + 2;
+		env_len = strlen ("PATH=") + strlen (PATH_PREFIX) + 1;
 		e = xmalloc (sizeof (char) * env_len);
 		snprintf (e, env_len, "PATH=%s", PATH_PREFIX);
 		rc_strlist_add (&env, e);
