@@ -576,7 +576,6 @@ static pid_t _exec_service (const char *service, const char *arg)
 	char *file;
 	char *fifo;
 	pid_t pid = -1;
-	sigset_t empty;
 	sigset_t full;
 	sigset_t old;
 	struct sigaction sa;
