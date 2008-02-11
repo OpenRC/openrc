@@ -58,7 +58,7 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
-static const char *applet;
+extern const char *applet;
 
 typedef enum {
 	mount_from,

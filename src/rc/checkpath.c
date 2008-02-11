@@ -46,7 +46,7 @@
 #include "einfo.h"
 #include "rc-misc.h"
 
-static const char *applet;
+extern const char *applet;
 
 static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 {
@@ -187,8 +187,6 @@ int checkpath (int argc, char **argv)
 	struct group *gr = NULL;
 	bool file = 0;
 	int retval = EXIT_SUCCESS;
-
-	applet = basename_c (argv[0]);
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 				   longopts, (int *) 0)) != -1)

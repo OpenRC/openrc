@@ -45,7 +45,7 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
-static const char *applet;
+extern const char *applet;
 
 rc_depinfo_t *_rc_deptree_load (int *regen) {
 	if (rc_deptree_update_needed ()) {
@@ -95,8 +95,6 @@ int rc_depend (int argc, char **argv)
 	char *runlevel = xstrdup( getenv ("RC_SOFTLEVEL"));
 	int opt;
 	char *token;
-
-	applet = basename_c (argv[0]);
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 				   longopts, (int *) 0)) != -1)

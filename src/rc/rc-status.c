@@ -41,7 +41,7 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
-static const char *applet;
+extern const char *applet;
 
 static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
 

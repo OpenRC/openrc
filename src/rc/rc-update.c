@@ -44,7 +44,7 @@
 #include "rc-misc.h"
 #include "strlist.h"
 
-static const char *applet = NULL;
+extern const char *applet;
 
 /* Return the number of changes made:
  *  -1 = no changes (error)
@@ -156,8 +156,6 @@ int rc_update (int argc, char **argv)
 	bool verbose = false;
 	int opt;
 	int retval = EXIT_FAILURE;
-
-	applet = basename_c (argv[0]);
 
 	while ((opt = getopt_long (argc, argv, getoptstring,
 				   longopts, (int *) 0)) != -1)

@@ -88,7 +88,7 @@ typedef struct schedulelist
 } schedulelist_t;
 static schedulelist_t *schedule;
 
-static const char *applet;
+extern const char *applet;
 static char *changeuser;
 static char **newenv;
 
@@ -575,7 +575,6 @@ int start_stop_daemon (int argc, char **argv)
 	char *svcname = getenv ("SVCNAME");
 	char *env;
 
-	applet = basename_c (argv[0]);
 	atexit (cleanup);
 
 	signal_setup (SIGINT, handle_signal);
