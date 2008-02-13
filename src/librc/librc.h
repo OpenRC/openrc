@@ -45,6 +45,7 @@
 #include <fcntl.h>
 #include <libgen.h>
 #include <limits.h>
+#include <paths.h>
 #include <regex.h>
 #include <stdarg.h>
 #include <stdbool.h>

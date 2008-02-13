@@ -182,6 +182,7 @@ librc_hidden_def(rc_find_pids)
 #  define _GET_KINFO_UID(kp) (kp.ki_ruid)
 #  define _GET_KINFO_COMM(kp) (kp.ki_comm)
 #  define _GET_KINFO_PID(kp) (kp.ki_pid)
+#  define _KVM_PATH _PATH_DEVNULL
 # else
 #  define _KVM_GETPROC2
 #  define _KINFO_PROC kinfo_proc2
@@ -189,6 +190,7 @@ librc_hidden_def(rc_find_pids)
 #  define _GET_KINFO_UID(kp) (kp.p_ruid)
 #  define _GET_KINFO_COMM(kp) (kp.p_comm)
 #  define _GET_KINFO_PID(kp) (kp.p_pid)
+#  define _KVM_PATH NULL
 # endif
 
 pid_t *rc_find_pids (const char *exec, const char *cmd,
@@ -205,8 +207,10 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 	pid_t *tmp;
 	int npids = 0;
 
-	if ((kd = kvm_openfiles (NULL, NULL, NULL, O_RDONLY, errbuf)) == NULL) {
-		fprintf (stderr, "kvm_open: %s", errbuf);
+	if ((kd = kvm_openfiles (_KVM_PATH, _KVM_PATH,
+				 NULL, O_RDONLY, errbuf)) == NULL)
+	{
+		fprintf (stderr, "kvm_open: %s\n", errbuf);
 		return (NULL);
 	}
 
@@ -215,6 +219,12 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 #else
 	kp = kvm_getprocs (kd, KERN_PROC_PROC, 0, &processes);
 #endif
+	if ((kp == NULL && processes > 0) || (kp != NULL && processes < 0)) {
+		fprintf (stderr, "kvm_getprocs: %s\n", kvm_geterr (kd));
+		kvm_close (kd);
+		return (NULL);
+	}
+
 	for (i = 0; i < processes; i++) {
 		pid_t p = _GET_KINFO_PID (kp[i]);
 		if (pid != 0 && pid != p)
