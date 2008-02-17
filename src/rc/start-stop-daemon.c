@@ -305,7 +305,7 @@ static pid_t get_pid (const char *pidfile, bool quiet)
 }
 
 /* return number of processed killed, -1 on error */
-static int do_stop (const char *exec, const char *cmd,
+static int do_stop (const char *const *argv, const char *cmd,
 		    const char *pidfile, uid_t uid,int sig,
 		    bool quiet, bool verbose, bool test)
 {
@@ -320,7 +320,7 @@ static int do_stop (const char *exec, const char *cmd,
 			return (quiet ? 0 : -1);
 		pids = rc_find_pids (NULL, NULL, 0, pid);
 	} else
-		pids = rc_find_pids (exec, cmd, uid, pid);
+		pids = rc_find_pids (argv, cmd, uid, pid);
 
 	if (! pids)
 		return (0);
@@ -352,7 +352,7 @@ static int do_stop (const char *exec, const char *cmd,
 	return (nkilled);
 }
 
-static int run_stop_schedule (const char *exec, const char *cmd,
+static int run_stop_schedule (const char *const *argv, const char *cmd,
 			      const char *pidfile, uid_t uid,
 			      bool quiet, bool verbose, bool test)
 {
@@ -368,8 +368,8 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 			einfo ("Will stop PID in pidfile `%s'", pidfile);
 		if (uid)
 			einfo ("Will stop processes owned by UID %d", uid);
-		if (exec)
-			einfo ("Will stop processes of `%s'", exec);
+		if (argv)
+			einfo ("Will stop processes of `%s'", *argv);
 		if (cmd)
 			einfo ("Will stop processes called `%s'", cmd);
 	}
@@ -382,7 +382,7 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 
 			case schedule_signal:
 				nrunning = 0;
-				nkilled = do_stop (exec, cmd, pidfile, uid, item->value,
+				nkilled = do_stop (argv, cmd, pidfile, uid, item->value,
 						   quiet, verbose, test);
 				if (nkilled == 0) {
 					if (tkilled == 0) {
@@ -407,7 +407,7 @@ static int run_stop_schedule (const char *exec, const char *cmd,
 				ts.tv_nsec = POLL_INTERVAL;
 
 				while (nloops) {
-					if ((nrunning = do_stop (exec, cmd, pidfile,
+					if ((nrunning = do_stop (argv, cmd, pidfile,
 								 uid, 0, true, false, true)) == 0)
 						return (true);
 
@@ -496,6 +496,7 @@ static const struct option longopts[] = {
 	{ "background",   0, NULL, 'b'},
 	{ "chuid",        1, NULL, 'c'},
 	{ "chdir",        1, NULL, 'd'},
+	{ "env",          1, NULL, 'e'},
 	{ "group",        1, NULL, 'g'},
 	{ "make-pidfile", 0, NULL, 'm'},
 	{ "name",         1, NULL, 'n'},
@@ -519,6 +520,7 @@ static const char * const longopts_help[] = {
 	"Force daemon to background",
 	"deprecated, use --user",
 	"Change the PWD",
+	"Set an environment string",
 	"Change the process group",
 	"Create a pidfile",
 	"Match process name",
@@ -574,6 +576,8 @@ int start_stop_daemon (int argc, char **argv)
 	int i;
 	char *svcname = getenv ("SVCNAME");
 	char *env;
+	bool sethome = false;
+	bool setuser = false;
 
 	atexit (cleanup);
 
@@ -585,7 +589,7 @@ int start_stop_daemon (int argc, char **argv)
 		if (sscanf (env, "%d", &nicelevel) != 1)
 			eerror ("%s: invalid nice level `%s' (SSD_NICELEVEL)", applet, env);
 
-	while ((opt = getopt_long (argc, argv, getoptstring, longopts,
+	while ((opt = getopt_long (argc, argv, "e:" getoptstring, longopts,
 				   (int *) 0)) != -1)
 		switch (opt) {
 			case 'K':  /* --stop */
@@ -646,6 +650,15 @@ int start_stop_daemon (int argc, char **argv)
 
 			case 'd':  /* --chdir /new/dir */
 				ch_dir = optarg;
+				break;
+
+			case 'e': /* --env */
+				if (putenv (optarg) == 0) {
+					if (strncmp ("HOME=", optarg, 5) == 0)
+						sethome = true;
+					else if (strncmp ("USER=", optarg, 5) == 0)
+						setuser = true;
+				}
 				break;
 
 			case 'g':  /* --group <group>|<gid> */
@@ -761,6 +774,9 @@ int start_stop_daemon (int argc, char **argv)
 			free (tmp);
 	}
 
+	/* Add exec to our arguments */
+	*--argv = exec;
+
 	if (stop) {
 		int result;
 
@@ -771,7 +787,8 @@ int start_stop_daemon (int argc, char **argv)
 				parse_schedule (NULL, sig);
 		}
 
-		result = run_stop_schedule (exec, cmd, pidfile, uid, quiet, verbose, test);
+		result = run_stop_schedule ((const char *const *)argv, cmd,
+					    pidfile, uid, quiet, verbose, test);
 		if (test || oknodo)
 			return (result > 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 		if (result < 1)
@@ -781,21 +798,24 @@ int start_stop_daemon (int argc, char **argv)
 			unlink (pidfile);
 
 		if (svcname)
-			rc_service_daemon_set (svcname, exec, cmd, pidfile, false);
+			rc_service_daemon_set (svcname,
+					       (const char *const *)argv,
+					       cmd, pidfile, false);
 
 		exit (EXIT_SUCCESS);
 	}
 
-	if (do_stop (exec, cmd, pidfile, uid, 0, true, false, true) > 0)
+	if (do_stop ((const char * const *)argv, cmd, pidfile, uid,
+		     0, true, false, true) > 0)
 		eerrorx ("%s: %s is already running", applet, exec);
 
 	if (test) {
 		if (quiet)
 			exit (EXIT_SUCCESS);
 
-		einfon ("Would start %s", exec);
-		while (argc-- > 0)
-			printf("%s ", *argv++);
+		einfon ("Would start");
+		while (argc-- >= 0)
+			printf(" %s", *argv++);
 		printf ("\n");
 		eindent ();
 		if (uid != 0)
@@ -824,7 +844,6 @@ int start_stop_daemon (int argc, char **argv)
 	if (background)
 		signal_setup (SIGCHLD, handle_signal);
 
-	*--argv = exec;
 	if ((pid = fork ()) == -1)
 		eerrorx ("%s: fork: %s", applet, strerror (errno));
 
@@ -884,12 +903,16 @@ int start_stop_daemon (int argc, char **argv)
 		else {
 			struct passwd *passwd = getpwuid (uid);
 			if (passwd) {
-				unsetenv ("HOME");
-				if (passwd->pw_dir)
-					setenv ("HOME", passwd->pw_dir, 1);
-				unsetenv ("USER");
-				if (passwd->pw_name)
-					setenv ("USER", passwd->pw_name, 1);
+				if (! sethome) {
+					unsetenv ("HOME");
+					if (passwd->pw_dir)
+						setenv ("HOME", passwd->pw_dir, 1);
+				}
+				if (! setuser) {
+					unsetenv ("USER");
+					if (passwd->pw_name)
+						setenv ("USER", passwd->pw_name, 1);
+				}
 			}
 		}
 
@@ -1056,7 +1079,8 @@ int start_stop_daemon (int argc, char **argv)
 					} else
 						nloopsp = 0;
 				}
-				if (do_stop (exec, cmd, pidfile, uid, 0, true, false, true) > 0)
+				if (do_stop ((const char *const *)argv, cmd,
+					     pidfile, uid, 0, true, false, true) > 0)
 					alive = true;
 			}
 
@@ -1066,7 +1090,7 @@ int start_stop_daemon (int argc, char **argv)
 	}
 
 	if (svcname)
-		rc_service_daemon_set (svcname, exec, cmd, pidfile, true);
+		rc_service_daemon_set (svcname, (const char *const *)argv, cmd, pidfile, true);
 
 	exit (EXIT_SUCCESS);
 	/* NOTREACHED */

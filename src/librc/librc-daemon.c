@@ -58,7 +58,7 @@ static bool pid_is_cmd (pid_t pid, const char *cmd)
 	return ((c == ')' && *cmd == '\0') ? true : false);
 }
 
-static bool pid_is_exec (pid_t pid, const char *exec)
+static bool pid_is_exec (pid_t pid, const char *const *argv)
 {
 	char cmdline[32];
 	char buffer[PATH_MAX];
@@ -68,6 +68,7 @@ static bool pid_is_exec (pid_t pid, const char *exec)
 
 	snprintf (cmdline, sizeof (cmdline), "/proc/%u/exe", pid);
 	memset (buffer, 0, sizeof (buffer));
+#if 0
 	if (readlink (cmdline, buffer, sizeof (buffer)) != -1) {
 		if (strcmp (exec, buffer) == 0)
 			return (true);
@@ -82,22 +83,32 @@ static bool pid_is_exec (pid_t pid, const char *exec)
 			}
 		}
 	}
+#endif
 
 	snprintf (cmdline, sizeof (cmdline), "/proc/%u/cmdline", pid);
 	if ((fd = open (cmdline, O_RDONLY)) < 0)
 		return (false);
 
-	r = read(fd, buffer, sizeof (buffer));
+	r = read (fd, buffer, sizeof (buffer));
 	close (fd);
 
 	if (r == -1)
 		return 0;
 
 	buffer[r] = 0;
-	return (strcmp (exec, buffer) == 0 ? true : false);
+	p = buffer;
+	while (*argv) {
+		if (strcmp (*argv, p) != 0)
+			return (false);
+		argv++;
+		p += strlen (p) + 1;
+		if (p - buffer > (unsigned) sizeof (buffer))
+			return (false);
+	}
+	return (true);
 }
 
-pid_t *rc_find_pids (const char *exec, const char *cmd,
+pid_t *rc_find_pids (const char *const *argv, const char *cmd,
 		     uid_t uid, pid_t pid)
 {
 	DIR *procdir;
@@ -149,7 +160,7 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 		if (cmd && ! pid_is_cmd (p, cmd))
 			continue;
 
-		if (exec && ! cmd && ! pid_is_exec (p, exec))
+		if (argv && ! cmd && ! pid_is_exec (p, (const char *const *)argv))
 			continue;
 
 		tmp = realloc (pids, sizeof (pid_t) * (npids + 2));
@@ -193,7 +204,7 @@ librc_hidden_def(rc_find_pids)
 #  define _KVM_PATH NULL
 # endif
 
-pid_t *rc_find_pids (const char *exec, const char *cmd,
+pid_t *rc_find_pids (const char *const *argv, const char *cmd,
 		     uid_t uid, pid_t pid)
 {
 	static kvm_t *kd = NULL;
@@ -201,11 +212,13 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 	struct _KINFO_PROC *kp;
 	int i;
 	int processes = 0;
-	int argc = 0;
-	char **argv;
+	int pargc = 0;
+	char **pargv;
 	pid_t *pids = NULL;
 	pid_t *tmp;
+	char *arg;
 	int npids = 0;
+	int match;
 
 	if ((kd = kvm_openfiles (_KVM_PATH, _KVM_PATH,
 				 NULL, O_RDONLY, errbuf)) == NULL)
@@ -239,11 +252,21 @@ pid_t *rc_find_pids (const char *exec, const char *cmd,
 				continue;
 		}
 
-		if (exec && ! cmd) {
-			if ((argv = _KVM_GETARGV (kd, &kp[i], argc)) == NULL || ! *argv)
+		if (argv && ! cmd) {
+			pargv = _KVM_GETARGV (kd, &kp[i], pargc);
+			if (! pargv || ! *pargv)
 				continue;
 
-			if (strcmp (*argv, exec) != 0)
+			arg = argv;
+			match = 1;
+
+			while (arg && *pargv)
+				if (strcmp (arg++, *pargv++) != 0) {
+					match = 0;
+					break;
+				}
+
+			if (! match)
 				continue;
 		}
 
@@ -312,7 +335,7 @@ static bool _match_daemon (const char *path, const char *file,
 	return (m == 111 ? true : false);
 }
 
-bool rc_service_daemon_set (const char *service, const char *exec,
+bool rc_service_daemon_set (const char *service, const char *const *argv,
 			    const char *name, const char *pidfile,
 			    bool started)
 {
@@ -328,7 +351,7 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 	DIR *dp;
 	struct dirent *d;
 
-	if (! exec && ! name && ! pidfile) {
+	if (! argv && ! name && ! pidfile) {
 		errno = EINVAL;
 		return (false);
 	}
@@ -336,10 +359,10 @@ bool rc_service_daemon_set (const char *service, const char *exec,
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons",
 				  basename_c (service), (char *) NULL);
 
-	if (exec) {
-		l = strlen (exec) + 6;
+	if (argv) {
+		l = strlen (*argv) + 6;
 		mexec = xmalloc (sizeof (char) * l);
-		snprintf (mexec, l, "exec=%s", exec);
+		snprintf (mexec, l, "exec=%s", *argv);
 	} else
 		mexec = xstrdup ("exec=");
 
@@ -464,6 +487,7 @@ bool rc_service_daemons_crashed (const char *service)
 	char *path;
 	FILE *fp;
 	char *line;
+	char **argv = NULL;
 	char *exec = NULL;
 	char *name = NULL;
 	char *pidfile = NULL;
@@ -506,7 +530,9 @@ bool rc_service_daemons_crashed (const char *service)
 				continue;
 			}
 
-			if (strcmp (token, "exec") == 0) {
+			if (strcmp (token, "argv") == 0) {
+				rc_strlist_add (&argv, p);
+			} else if (strcmp (token, "exec") == 0) {
 				if (exec)
 					free (exec);
 				exec = xstrdup (p);
@@ -546,24 +572,35 @@ bool rc_service_daemons_crashed (const char *service)
 			pidfile = NULL;
 
 			/* We have the pid, so no need to match on name */
+			rc_strlist_free (argv);
+			argv = NULL;
 			free (exec);
 			exec = NULL;
 			free (name);
 			name = NULL;
 		}
 
-		if ((pids = rc_find_pids (exec, name, 0, pid)) == NULL) {
+		if (exec && ! argv) {
+			rc_strlist_add (&argv, exec);
+			free (exec);
+			exec = NULL;
+		}
+
+		if ((pids = rc_find_pids ((const char *const *)argv, name, 0, pid)) == NULL) {
 			retval = true;
 			break;
 		}
 		free (pids);
 
+		rc_strlist_free (argv);
+		argv = NULL;
 		free (exec);
 		exec = NULL;
 		free (name);
 		name = NULL;
 	}
 
+	rc_strlist_free (argv);
 	free (exec);
 	free (name);
 	free (dirpath);

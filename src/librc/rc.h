@@ -117,7 +117,7 @@ bool rc_service_delete (const char *runlevel, const char *service);
  * @param name of the process (optional)
  * @param pidfile of the process (optional)
  * @param started if true, add the arguments otherwise remove existing matching arguments */
-bool rc_service_daemon_set (const char *service, const char *exec,
+bool rc_service_daemon_set (const char *service, const char *const *argv,
                             const char *name, const char *pidfile,
                             bool started);
 
@@ -445,7 +445,7 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...) SENTINEL;
  * @param uid to check for
  * @param pid to check for
  * @return NULL terminated list of pids */
-pid_t *rc_find_pids (const char *exec, const char *cmd,
+pid_t *rc_find_pids (const char *const *argv, const char *cmd,
                      uid_t uid, pid_t pid);
 
 #endif
