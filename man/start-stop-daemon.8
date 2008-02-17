@@ -95,6 +95,8 @@ chdir to this directory before starting the daemon.
 .It Fl r , -chroot Ar path
 chroot to this directory before starting the daemon. All other paths, such
 as the path to the daemon, chdir and pidfile, should be relative to the chroot.
+.It Fl e , -env Ar VAR=VALUE
+Set the environment variable VAR to VALUE.
 .It Fl g , -group Ar group
 Start the daemon as in the group.
 .It Fl m , -make-pidfile
