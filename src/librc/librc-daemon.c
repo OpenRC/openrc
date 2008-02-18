@@ -102,7 +102,7 @@ static bool pid_is_exec (pid_t pid, const char *const *argv)
 			return (false);
 		argv++;
 		p += strlen (p) + 1;
-		if (p - buffer > (unsigned) sizeof (buffer))
+		if ((unsigned) (p - buffer) > sizeof (buffer))
 			return (false);
 	}
 	return (true);
