@@ -351,7 +351,7 @@ bool rc_service_daemon_set (const char *service, const char *const *argv,
 	DIR *dp;
 	struct dirent *d;
 
-	if (! argv && ! name && ! pidfile) {
+	if (! (argv && *argv) && ! name && ! pidfile) {
 		errno = EINVAL;
 		return (false);
 	}
@@ -359,7 +359,7 @@ bool rc_service_daemon_set (const char *service, const char *const *argv,
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons",
 				  basename_c (service), (char *) NULL);
 
-	if (argv) {
+	if (argv && *argv) {
 		l = strlen (*argv) + 6;
 		mexec = xmalloc (sizeof (char) * l);
 		snprintf (mexec, l, "exec=%s", *argv);
