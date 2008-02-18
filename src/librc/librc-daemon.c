@@ -216,7 +216,7 @@ pid_t *rc_find_pids (const char *const *argv, const char *cmd,
 	char **pargv;
 	pid_t *pids = NULL;
 	pid_t *tmp;
-	char *arg;
+	const char *const *arg;
 	int npids = 0;
 	int match;
 
@@ -252,7 +252,7 @@ pid_t *rc_find_pids (const char *const *argv, const char *cmd,
 				continue;
 		}
 
-		if (argv && ! cmd) {
+		if (argv && *argv && ! cmd) {
 			pargv = _KVM_GETARGV (kd, &kp[i], pargc);
 			if (! pargv || ! *pargv)
 				continue;
@@ -260,8 +260,8 @@ pid_t *rc_find_pids (const char *const *argv, const char *cmd,
 			arg = argv;
 			match = 1;
 
-			while (arg && *pargv)
-				if (strcmp (arg++, *pargv++) != 0) {
+			while (*arg && *pargv)
+				if (strcmp (*arg++, *pargv++) != 0) {
 					match = 0;
 					break;
 				}
