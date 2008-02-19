@@ -995,17 +995,18 @@ next:
 		i = 0;
 		for (depinfo = deptree; depinfo; depinfo = depinfo->next)
 		{
-			fprintf (fp, "depinfo_%lu_service='%s'\n",
-				 (unsigned long) i, depinfo->service);
+			fprintf (fp, "depinfo_%zu_service='%s'\n",
+				 i, depinfo->service);
 			for (deptype = depinfo->depends; deptype; deptype = deptype->next)
 			{
 				k = 0;
 				STRLIST_FOREACH (deptype->services, service, j)
 				{
-					fprintf (fp, "depinfo_%lu_%s_%lu='%s'\n",
-						 (unsigned long) i,
+					fprintf (fp,
+						 "depinfo_%zu_%s_%zu='%s'\n",
+						 i,
 						 deptype->type,
-						 (unsigned long) k, service);
+						 k, service);
 					k++;
 				}
 			}
