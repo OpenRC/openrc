@@ -368,7 +368,7 @@ static int run_stop_schedule (const char *const *argv, const char *cmd,
 			einfo ("Will stop PID in pidfile `%s'", pidfile);
 		if (uid)
 			einfo ("Will stop processes owned by UID %d", uid);
-		if (argv)
+		if (argv && *argv)
 			einfo ("Will stop processes of `%s'", *argv);
 		if (cmd)
 			einfo ("Will stop processes called `%s'", cmd);
