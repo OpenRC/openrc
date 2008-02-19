@@ -8,7 +8,7 @@ depend()
 {
 	need fsck
 	use modules mtab
-	keywords nojail
+	keyword nojail
 }
 
 start()

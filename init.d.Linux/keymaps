@@ -15,7 +15,7 @@ dumpkeys_charset=${dumpkeys_charset:-${DUMPKEYS_CHARSET}}
 depend()
 {
 	need localmount
-	keywords nouml novps noxenu
+	keyword nouml novps noxenu
 }
 
 start()

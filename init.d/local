@@ -7,7 +7,7 @@ description="Executes user commands in /etc/conf.d/local"
 depend()
 {
 	after *
-	keywords notimeout
+	keyword notimeout
 }
 
 start()

@@ -7,7 +7,7 @@ extra_commands="restore"
 depend()
 {
 	need localmount
-	keywords nojail
+	keyword nojail
 }
 
 restore()

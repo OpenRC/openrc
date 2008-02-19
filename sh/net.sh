@@ -21,7 +21,7 @@ depend()
 	need localmount
 	after bootmisc
 	provide net
-	keywords nojail
+	keyword nojail
 
 	case "${IFACE}" in
 		lo|lo0);;
@@ -33,7 +33,7 @@ depend()
 	fi
 
 	local dep= prov=
-	for dep in need use before after provide keywords; do
+	for dep in need use before after provide keyword; do
 		eval prov=\$rc_${dep}_${IFVAR}
 		if [ -n "${prov}" ]; then
 			${dep} ${prov}

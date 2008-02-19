@@ -6,7 +6,7 @@ depend()
 {
 	use hostname
 	before bootmisc logger
-	keywords novps
+	keyword novps
 }
 
 start()

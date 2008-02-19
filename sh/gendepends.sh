@@ -24,8 +24,8 @@ after() {
 provide() {
 	[ -n "$*" ] && echo "${SVCNAME} iprovide $*" >&3
 }
-keywords() {
-	[ -n "$*" ] && echo "${SVCNAME} keywords $*" >&3
+keyword() {
+	[ -n "$*" ] && echo "${SVCNAME} keyword $*" >&3
 }
 depend() {
 	:
@@ -66,7 +66,7 @@ for _dir in /etc/init.d /usr/local/etc/init.d; do
 			depend
 
 			# Add any user defined depends
-			for _deptype in config need use after before provide keywords; do
+			for _deptype in config need use after before provide keyword; do
 				eval _depends=\$rc_$(shell_var "${SVCNAME}")_${_deptype}
 				[ -z "${_depends}" ] && eval _depends=\$rc_${_deptype}
 				${_deptype} ${_depends}

@@ -5,7 +5,7 @@
 depend()
 {
 	need localmount
-	keywords nojail
+	keyword nojail
 }
 
 start()

@@ -515,7 +515,7 @@ static bool svc_wait (rc_depinfo_t *depinfo, const char *svc)
 		return (false);
 
 	/* Some services don't have a timeout, like fsck */
-	keywords = rc_deptree_depend (depinfo, svc, "keywords");
+	keywords = rc_deptree_depend (depinfo, svc, "keyword");
 	STRLIST_FOREACH (keywords, s, i) {
 		if (strcmp (s, "notimeout") == 0) {
 			forever = true;

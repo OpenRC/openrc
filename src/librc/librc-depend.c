@@ -881,7 +881,7 @@ next:
 		for (depinfo = deptree; depinfo; depinfo = depinfo->next)
 		{
 			bool removed = false;
-			if ((deptype = get_deptype (depinfo, "keywords"))) {
+			if ((deptype = get_deptype (depinfo, "keyword"))) {
 				STRLIST_FOREACH (deptype->services, service, i)
 					if (strcmp (service, nosys) == 0) {
 						if (last_depinfo)
