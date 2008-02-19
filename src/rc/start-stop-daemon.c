@@ -789,11 +789,18 @@ int start_stop_daemon (int argc, char **argv)
 
 		result = run_stop_schedule ((const char *const *)argv, cmd,
 					    pidfile, uid, quiet, verbose, test);
+
+		if (result < 0)
+			/* We failed to stop something */
+			exit (EXIT_FAILURE);
+
 		if (test || oknodo)
 			return (result > 0 ? EXIT_SUCCESS : EXIT_FAILURE);
-		if (result < 1)
-			exit (result == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 
+		/* Even if we have not actually killed anything, we should
+		 * remove information about it as it may have unexpectedly
+		 * crashed out. We should also return success as the end
+		 * result would be the same. */
 		if (pidfile && exists (pidfile))
 			unlink (pidfile);
 
