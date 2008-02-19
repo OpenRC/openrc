@@ -874,7 +874,7 @@ next:
 		nosys[0] = 'n';
 		nosys[1] = 'o';
 		for (i = 0; i < len; i++)
-			nosys[i + 2] = tolower (sys[i]);
+			nosys[i + 2] = (char) tolower ((int) sys[i]);
 		nosys[i + 2] = '\0';
 
 		last_depinfo = NULL;
@@ -897,6 +897,8 @@ next:
 					for (dt = di->depends; dt; dt = dt->next)
 						rc_strlist_delete (&dt->services, depinfo->service);
 				}
+				depinfo->next = NULL;
+				rc_deptree_free (depinfo);
 			} else
 				last_depinfo = depinfo;
 		}
