@@ -740,6 +740,7 @@ bool rc_deptree_update (void)
 	rc_deptype_t *deptype = NULL;
 	rc_deptype_t *dt;
 	rc_deptype_t *last_deptype = NULL;
+	char **removedp = NULL;
 	char *line;
 	size_t len;
 	size_t i;
@@ -878,8 +879,8 @@ next:
 		nosys[i + 2] = '\0';
 
 		last_depinfo = NULL;
-		for (depinfo = deptree; depinfo; depinfo = depinfo->next)
-		{
+		depinfo = deptree;
+		while (depinfo) {
 			bool removed = false;
 			if ((deptype = get_deptype (depinfo, "keyword"))) {
 				STRLIST_FOREACH (deptype->services, service, i)
@@ -893,14 +894,22 @@ next:
 					}
 			}
 			if (removed) {
+				dt = get_deptype (depinfo, "iprovide");
+				if (dt)
+					STRLIST_FOREACH (dt->services, service, i)
+						rc_strlist_addu (&removedp, service);
 				for (di = deptree; di; di = di->next) {
 					for (dt = di->depends; dt; dt = dt->next)
 						rc_strlist_delete (&dt->services, depinfo->service);
 				}
+				di = depinfo->next;
 				depinfo->next = NULL;
 				rc_deptree_free (depinfo);
-			} else
+				depinfo = di;
+			} else {
 				last_depinfo = depinfo;
+				depinfo = depinfo->next;
+			}
 		}
 
 		free (nosys);
@@ -943,9 +952,17 @@ next:
 				{
 					if (strcmp (deptype->type, "ineed") == 0)
 					{
-						fprintf (stderr,
-							 "Service `%s' needs non existant service `%s'\n",
-							 depinfo->service, service);
+						bool removed = false;
+						STRLIST_FOREACH (removedp, line, k) {
+							if (strcmp (line, service) == 0) {
+								removed = true;
+								break;
+							}
+						}
+						if (! removed)
+							fprintf (stderr,
+								 "Service `%s' needs non existant service `%s'\n",
+								 depinfo->service, service);
 					}
 					continue;
 				}
@@ -1033,6 +1050,7 @@ next:
 		rc_strlist_free (config);
 	}
 
+	rc_strlist_free (removedp);
 	rc_deptree_free (deptree);
 
 	return (retval);
