@@ -7,7 +7,7 @@ CFLAGS?=	-O2 -pipe
 CSTD?=		c99
 _CSTD_SH=	if test -n "${CSTD}"; then echo "-std=${CSTD}"; else echo ""; fi
 _CSTD!=		${_CSTD_SH}
-CFLAGS+=	${_CSTD}$(shell _CSTD_SH)
+CFLAGS+=	${_CSTD}$(shell ${_CSTD_SH})
 
 # GNU Make way of detecting gcc flags we can use
 check_gcc=$(shell if ${CC} $(1) -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
