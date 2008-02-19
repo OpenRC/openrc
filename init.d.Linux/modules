@@ -7,13 +7,14 @@ description="Loads a user defined list of kernel modules."
 depend()
 {
 	use isapnp
+	keywords novps
 }
 
 start()
 {
 	# Should not fail if kernel do not have module
 	# support compiled in ...
-	[ ! -f /proc/modules -o "${RC_SYS}" = "VPS" ] && return 0
+	[ ! -f /proc/modules ] && return 0
 
 	local KV=$(uname -r)
 	local KV_MAJOR=${KV%%.*}

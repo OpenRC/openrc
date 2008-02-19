@@ -15,17 +15,11 @@ dumpkeys_charset=${dumpkeys_charset:-${DUMPKEYS_CHARSET}}
 depend()
 {
 	need localmount
+	keywords nouml novps noxenu
 }
 
 start()
 {
-	case "${RC_SYS}" in
-		UML|VPS|XENU)
-			ewarn "Not loading keymaps for ${RC_SYS} systems"
-			return 0
-			;;
-	esac
-
 	if [ -z "${keymap}" ]; then
 		eerror "You need to setup keymap in /etc/conf.d/keymaps first"
 		return 1

@@ -9,19 +9,13 @@ depend()
 	need localmount
 	need keymaps    # sets up terminal encoding scheme
 	after hotplug
+	keywords nouml novps noxenu
 }
 
 start()
 {
 	# Forget about any font until we are successful
 	rm -rf "${RC_LIBDIR}"/console
-
-	case "${RC_SYS}" in
-		UML|VPS|XENU)
-			ewarn "Not loading consolefont for ${RC_SYS} systems"
-			return 0
-			;;
-	esac
 
 	ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 	consolefont=${consolefont:-${CONSOLEFONT}}

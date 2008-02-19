@@ -28,25 +28,21 @@ depend()
 	else
 		before *
 	fi
+	keywords nouml novps noxenu
 }
 
 setupopts()
 {
-	case "${RC_SYS}" in
-		UML|VPS|XENU)
-			utc="${RC_SYS}"
+	case "$(uname -m)" in
+		s390*)
+			utc="s390"
 			;;
 		*)
-			case "$(uname -m)" in
-				s390*)
-					utc="s390"
-					;;
-				*)
-					if [ -e /proc/devices ] && grep -q " cobd$" /proc/devices; then
-						utc="coLinux"
-					fi
-					;;
-			esac
+			if [ -e /proc/devices ] && \
+				grep -q " cobd$" /proc/devices
+			then
+				utc="coLinux"
+			fi
 			;;
 	esac
 
