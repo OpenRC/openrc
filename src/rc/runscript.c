@@ -427,9 +427,9 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		openpty (&master_tty, &slave_tty, NULL, &tt, &ws);
 	}
 
-	service_pid = vfork();
+	service_pid = fork();
 	if (service_pid == -1)
-		eerrorx ("%s: vfork: %s", service, strerror (errno));
+		eerrorx ("%s: fork: %s", service, strerror (errno));
 	if (service_pid == 0) {
 		if (slave_tty >= 0) {
 			close (master_tty);
@@ -1144,7 +1144,7 @@ int runscript (int argc, char **argv)
 		}
 
 		/* Make our prefix string */
-		prefix = xmalloc (sizeof (char) * l);
+		prefix = xmalloc (sizeof (char) * l + 1);
 		ll = strlen (applet);
 		memcpy (prefix, applet, ll);
 		memset (prefix + ll, ' ', l - ll);
