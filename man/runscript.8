@@ -132,9 +132,14 @@ We provide this virtual service. For example, named provides dns.
 .It Ic config
 We should recalculate our dependencies if the listed files have changed.
 .It Ic keywords
-Tags a service with a keyword. Currently the only keyword is notimeout
-which means that services do not time out waiting for that service, which only
-applies when services are enabled to start and stop in parallel.
+Tags a service with a keyword. Here's the keywords we currently understand:-
+.Bl -tag -width indent
+.It Dv nojail
+When in a jail, exclude this service from any dependencies. The service can
+still be run directly.
+.It Dv notimeout
+do not time out waiting for that service.
+.El
 .El
 .Pp
 To see how to influence dependencies in configuration files, see the

@@ -4,6 +4,7 @@
 
 depend() {
 	need localmount
+	keywords nojail
 }
 
 start() {

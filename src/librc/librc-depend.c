@@ -741,24 +741,23 @@ bool rc_deptree_update (void)
 	rc_deptype_t *dt;
 	rc_deptype_t *last_deptype = NULL;
 	char *line;
-	int len;
-	int i;
-	int j;
-	int k;
+	size_t len;
+	size_t i;
+	size_t j;
+	size_t k;
 	bool already_added;
+	const char *sys = rc_sys ();
 
 	/* Some init scripts need RC_LIBDIR to source stuff
 	   Ideally we should be setting our full env instead */
 	if (! getenv ("RC_LIBDIR"))
 		setenv ("RC_LIBDIR", RC_LIBDIR, 0);
 
-	/* Phase 1 */
+	/* Phase 1 - source all init scripts and print dependencies */
 	if (! (fp = popen (GENDEP, "r")))
 		return (false);
 
 	deptree = xzalloc (sizeof (*deptree));
-
-	/* Phase 2 */
 	while ((line = rc_getline (fp)))
 	{
 		depends = line;
@@ -864,6 +863,46 @@ next:
 		free (line);
 	}
 	pclose (fp);
+
+	/* Phase 2 - if we're a special system, remove services that don't
+	 * work for them. This doesn't stop them from being run directly. */
+	if (sys) {
+		char *nosys;
+
+		len = strlen (sys);
+		nosys = xmalloc (len + 3);
+		nosys[0] = 'n';
+		nosys[1] = 'o';
+		for (i = 0; i < len; i++)
+			nosys[i + 2] = tolower (sys[i]);
+		nosys[i + 2] = '\0';
+
+		last_depinfo = NULL;
+		for (depinfo = deptree; depinfo; depinfo = depinfo->next)
+		{
+			bool removed = false;
+			if ((deptype = get_deptype (depinfo, "keywords"))) {
+				STRLIST_FOREACH (deptype->services, service, i)
+					if (strcmp (service, nosys) == 0) {
+						if (last_depinfo)
+							last_depinfo->next = depinfo->next;
+						else
+							deptree = depinfo->next;
+						removed = true;
+						break;
+					}
+			}
+			if (removed) {
+				for (di = deptree; di; di = di->next) {
+					for (dt = di->depends; dt; dt = dt->next)
+						rc_strlist_delete (&dt->services, depinfo->service);
+				}
+			} else
+				last_depinfo = depinfo;
+		}
+
+		free (nosys);
+	}
 
 	/* Phase 3 - add our providors to the tree */
 	for (depinfo = deptree; depinfo; depinfo = depinfo->next)

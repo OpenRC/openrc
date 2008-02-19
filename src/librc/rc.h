@@ -228,6 +228,16 @@ char **rc_services_scheduled (const char *service);
  * @return true if all daemons started are still running, otherwise false */
 bool rc_service_daemons_crashed (const char *service);
 
+/*! @name System types
+ * OpenRC can support some special sub system types, normally virtualization.
+ * Some services cannot work in these systems, or we do something else. */
+#define RC_SYS_JAIL    "JAIL"
+#define RC_SYS_UML     "UML"
+#define RC_SYS_VPS     "VPS"
+#define RC_SYS_XEN0    "XEN0"
+#define RC_SYS_XENU    "XENU"
+const char *rc_sys (void);
+
 /*! @name Dependency options
  * These options can change the services found by the rc_get_depinfo and
  * rc_get_depends functions. */

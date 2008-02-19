@@ -9,6 +9,7 @@ depend()
 {
 	need root
 	before devd net
+	keywords nojail
 }
 
 _set()

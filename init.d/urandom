@@ -9,6 +9,7 @@ description="Initializes the random number generator."
 depend()
 {
 	need localmount
+	keywords nojail
 }
 
 save_seed()

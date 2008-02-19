@@ -13,6 +13,7 @@ opts="panic showstatus"
 depend() {
 	before net
 	provide firewall
+	keywords nojail
 }
 
 ipfw() {

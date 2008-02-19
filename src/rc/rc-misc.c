@@ -276,9 +276,7 @@ char **env_config (void)
 	char **env = NULL;
 	char *line;
 	size_t l;
-#ifdef __linux__
-	char sys[6];
-#endif
+	const char *sys = rc_sys ();
 	struct utsname uts;
 	FILE *fp;
 	char buffer[PATH_MAX];
@@ -323,37 +321,13 @@ char **env_config (void)
 	} else
 		rc_strlist_add (&env, "RC_DEFAULTLEVEL=" RC_LEVEL_DEFAULT);
 
-
-#ifdef __linux__
-	/* Linux can run some funky stuff like Xen, VServer, UML, etc
-	   We store this special system in RC_SYS so our scripts run fast */
-	memset (sys, 0, sizeof (sys));
-
-	if (exists ("/proc/xen")) {
-		if ((fp = fopen ("/proc/xen/capabilities", "r"))) {
-			fclose (fp);
-			if (file_regex ("/proc/xen/capabilities", "control_d"))
-				snprintf (sys, sizeof (sys), "XEN0");
-		}
-		if (! sys[0])
-			snprintf (sys, sizeof (sys), "XENU");
-	} else if (file_regex ("/proc/cpuinfo", "UML")) {
-		snprintf (sys, sizeof (sys), "UML");
-	} else if (file_regex ("/proc/self/status",
-			       "(s_context|VxID|envID):[[:space:]]*[1-9]"))
-	{
-		snprintf (sys, sizeof (sys), "VPS");
-	}
-
-	if (sys[0]) {
+	if (sys) {
 		l = strlen ("RC_SYS=") + strlen (sys) + 2;
 		line = xmalloc (sizeof (char) * l);
 		snprintf (line, l, "RC_SYS=%s", sys);
 		rc_strlist_add (&env, line);
 		free (line);
 	}
-
-#endif
 
 	/* Some scripts may need to take a different code path if Linux/FreeBSD, etc
 	   To save on calling uname, we store it in an environment variable */

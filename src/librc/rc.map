@@ -52,6 +52,7 @@ global:
 	rc_strlist_free;
 	rc_strlist_join;
 	rc_strlist_reverse;
+	rc_sys;
 	rc_yesno;
 
 local:

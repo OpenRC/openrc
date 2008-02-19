@@ -7,6 +7,7 @@ description="Mount the root fs read/write"
 depend()
 {
 	need fsck
+	keywords nojail
 }
 
 start()

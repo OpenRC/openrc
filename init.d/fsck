@@ -7,7 +7,7 @@ description="Check and repair filesystems according to /etc/fstab"
 depend()
 {
 	after clock modules
-	keywords notimeout
+	keywords nojail notimeout
 }
 
 start()

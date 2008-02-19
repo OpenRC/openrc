@@ -32,6 +32,9 @@
 const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "librc.h"
+#ifdef __FreeBSD__
+#include <sys/sysctl.h>
+#endif
 #include <signal.h>
 
 #define SOFTLEVEL	RC_SVCDIR "/softlevel"
@@ -142,6 +145,36 @@ static bool rm_dir (const char *pathname, bool top)
 		return (false);
 
 	return (true);
+}
+
+const char *rc_sys (void)
+{
+#ifdef __FreeBSD__
+	int jailed = 0;
+	size_t len = sizeof (jailed);
+
+	if (sysctlbyname ("security.jail.jailed", &jailed, &len, NULL, 0) == 0)
+		if (jailed == 1)
+			return (RC_SYS_JAIL);
+#endif
+
+#ifdef __linux__
+	if (exists ("/proc/xen")) {
+		if ((fp = fopen ("/proc/xen/capabilities", "r"))) {
+			fclose (fp);
+			if (file_regex ("/proc/xen/capabilities", "control_d"))
+				return (RC_SYS_XEN0);
+		}
+		if (! sys[0])
+			return (RC_SYS_XENU);
+	} else if (file_regex ("/proc/cpuinfo", "UML"))
+		return (RC_SYS_UML);
+	else if (file_regex ("/proc/self/status",
+			       "(s_context|VxID|envID):[[:space:]]*[1-9]"))
+		return (RC_SYS_VPS);
+#endif
+
+	return (NULL);
 }
 
 static const char *rc_parse_service_state (rc_service_state_t state)
