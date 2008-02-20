@@ -27,7 +27,7 @@
 #if lint
 # define _noreturn
 #endif
-#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
+#if __GNUC__ > 2 || defined(__INTEL_COMPILER) || defined(__PCC__)
 # define _noreturn __attribute__ ((__noreturn__))
 #endif
 

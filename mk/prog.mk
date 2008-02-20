@@ -23,7 +23,7 @@ LDFLAGS+=		${PROGLDFLAGS}
 all: depend ${PROG}
 
 ${PROG}: ${SCRIPTS} ${OBJS}
-	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} ${LDADD}
+	${CC} ${LDFLAGS} -o $@ ${OBJS} ${LDADD}
 
 clean:
 	rm -f ${OBJS} ${PROG} ${CLEANFILES}

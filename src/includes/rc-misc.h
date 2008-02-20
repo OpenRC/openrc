@@ -70,7 +70,7 @@
 #ifdef lint
 # define _unused
 #endif
-#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
+#if __GNUC__ > 2 || defined(__INTEL_COMPILER) || defined(__PCC__)
 # define _unused __attribute__((__unused__))
 #endif
 
