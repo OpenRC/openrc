@@ -58,8 +58,8 @@
 
 #define LOGFILE RC_SVCDIR "/rc.log"
 #define PERMLOG "/var/log/rc.log"
-#define MOVELOG "mv " LOGFILE " " PERMLOG ".$$.tmp && cat " PERMLOG \
-	".$$.tmp >>" PERMLOG " 2>/dev/null && rm -f " PERMLOG ".$$.tmp"
+#define MOVELOG	"cat " LOGFILE " 2>/dev/null >>" PERMLOG " && " \
+	"rm -f " LOGFILE
 
 static int signal_pipe[2] = { -1, -1 };
 static int fd_stdout = -1;
