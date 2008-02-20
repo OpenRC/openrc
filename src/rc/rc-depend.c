@@ -34,10 +34,12 @@
 
 #include <getopt.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "builtins.h"
 #include "einfo.h"
@@ -49,7 +51,18 @@ extern const char *applet;
 
 rc_depinfo_t *_rc_deptree_load (int *regen) {
 	if (rc_deptree_update_needed ()) {
+		int fd;
 		int retval;
+		int serrno = errno;
+		int merrno;
+
+		/* Test if we have permission to update the deptree */
+		fd = open (RC_DEPTREE, O_WRONLY);
+		merrno = errno;
+		errno = serrno;
+		if (fd == -1 && merrno == EACCES)
+			return (rc_deptree_load ());
+		close (fd);
 
 		if (regen)
 			*regen = 1;
@@ -63,8 +76,10 @@ rc_depinfo_t *_rc_deptree_load (int *regen) {
 }
 
 #include "_usage.h"
-#define getoptstring "t:suT" getoptstring_COMMON
+#define getoptstring "aot:suT" getoptstring_COMMON
 static const struct option longopts[] = {
+	{ "starting", 0, NULL, 'a'},
+	{ "stopping", 0, NULL, 'o'},
 	{ "type",     1, NULL, 't'},
 	{ "notrace",  0, NULL, 'T'},
 	{ "strict",   0, NULL, 's'},
@@ -72,6 +87,8 @@ static const struct option longopts[] = {
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
+	"Order services as if runlevel is starting",
+	"Order services as if runlevel is stopping",
 	"Type(s) of dependency to list",
 	"Don't trace service dependencies",
 	"Only use what is in the runlevels",
@@ -100,6 +117,12 @@ int rc_depend (int argc, char **argv)
 				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+			case 'a':
+				options |= RC_DEP_START;
+				break;
+			case 'b':
+				options |= RC_DEP_STOP;
+				break;
 			case 's':
 				options |= RC_DEP_STRICT;
 				break;
