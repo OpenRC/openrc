@@ -245,7 +245,6 @@ char **env_config (void)
 	FILE *fp;
 	char buffer[PATH_MAX];
 	char *runlevel = rc_runlevel_get ();
-	char *p;
 
 	/* One char less to drop the trailing / */
 	l = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
@@ -304,25 +303,15 @@ char **env_config (void)
 	}
 
 	/* Be quiet or verbose as necessary */
-	if ((p = rc_conf_value ("rc_quiet"))) {
-		l = strlen ("EINFO_QUIET=") + strlen (p) + 1;
-		line = xmalloc (sizeof (char) * l);
-		snprintf (line, l, "EINFO_QUIET=%s", p);
-		rc_strlist_add (&env, line);
-		free (line);
-	}
-	if ((p = rc_conf_value ("rc_verbose"))) {
-		l = strlen ("EINFO_VERBOSE=") + strlen (p) + 1;
-		line = xmalloc (sizeof (char) * l);
-		snprintf (line, l, "EINFO_VERBOSE=%s", p);
-		rc_strlist_add (&env, line);
-		free (line);
-	}
+	if (rc_conf_yesno ("rc_quiet"))
+		rc_strlist_add (&env, "EINFO_QUIET=YES");
+	if (rc_conf_yesno ("rc_verbose"))
+		rc_strlist_add (&env, "EINFO_VERBOSE=YES");
 
 	errno = 0;
 	if ((! rc_conf_yesno ("rc_color") && errno == 0) ||
 	    rc_conf_yesno ("rc_nocolor"))
-		rc_strlist_add (&env, "EINFO_COLOR=no");
+		rc_strlist_add (&env, "EINFO_COLOR=NO");
 
 	free (runlevel);
 	return (env);
