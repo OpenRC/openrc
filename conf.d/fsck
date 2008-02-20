@@ -1,6 +1,17 @@
 # Pass any arguments to fsck.
 # By default we preen.
-fsck="-p"
+# Linux systems also force -C0 and -T.
+# If fsck_args is not specified then Linux systems also use -A
+# (and -R if / is rw)
+#fsck_args="-p"
+
+# We can also specify the passno in /etc/fstab to check
+# If you multiplex fsck (ie ln -s fsck /etc/init.d/fsck.late) then you can
+# do an fsck outside of the normal scope, say for /home.
+# Here are some exampes:-
+#fsck_passno="=1 =2"
+#fsck_passno=">1"
+#fsck_passno="<2"
 
 # fsck_shutdown causes fsck to trigger during shutdown as well as startup.
 # The end result of this is that if any periodic non-root filesystem checks are

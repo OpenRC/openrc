@@ -3,6 +3,8 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Check and repair filesystems according to /etc/fstab"
+_ISF="
+"
 
 depend()
 {
@@ -12,20 +14,32 @@ depend()
 
 start()
 {
-	local reboot_opts= fsck_opts=
+	local reboot_opts= fsck_opts= p=
+
+	ebegin "Checking local filesystems"
+	for p in ${fsck_passno}; do
+		local IFS="${_IFS}"
+		case "${p}" in
+			[0-9]*) p="=${p}";;
+		esac
+		set -- "$@" "$(fstabinfo --passno "${p}")"
+		unset IFS
+	done
 
 	if [ "${RC_UNAME}" = "Linux" ]; then
-		fsck_opts="-A -C0 -T"
-		if echo 2>/dev/null >/.test.$$; then
-			rm -f /.test.$$
-			fsck_opts="${fsck_opts} -R"
+		fsck_opts="-C0 -T"
+		if [ -z "${fsck_passno}" ]; then
+			fsck_args=${fsck_args--A -p}
+			if echo 2>/dev/null >/.test.$$; then
+				rm -f /.test.$$
+				fsck_opts="-R"
+			fi
 		fi
 		reboot_opts="-f"
 	fi
 
-	ebegin "Checking local filesystems"
 	trap : QUIT
-	fsck ${fsck_args--p} ${fsck_opts}
+	fsck ${fsck_args--p} ${fsck_opts} "$@"
 	case $? in
 		0)       eend 0; return 0;;
 		1)       ewend 1 "Filesystems repaired"; return 0;;
