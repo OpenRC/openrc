@@ -120,7 +120,7 @@ int rc_depend (int argc, char **argv)
 			case 'a':
 				options |= RC_DEP_START;
 				break;
-			case 'b':
+			case 'o':
 				options |= RC_DEP_STOP;
 				break;
 			case 's':
