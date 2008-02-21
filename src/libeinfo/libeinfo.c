@@ -601,7 +601,7 @@ static int _ewarnvn (const char *__EINFO_RESTRICT fmt, va_list ap)
 {
 	int retval = 0;
 
-	EINFOVN (stdout, ECOLOR_WARN);
+	EINFOVN (stderr, ECOLOR_WARN);
 	return (retval);
 }
 
@@ -694,7 +694,7 @@ int ewarn (const char *__EINFO_RESTRICT fmt, ...)
 	va_start (ap, fmt);
 	elogv (LOG_WARNING, fmt, ap);
 	retval = _ewarnvn (fmt, ap);
-	retval += printf ("\n");
+	retval += fprintf (stderr, "\n");
 	va_end (ap);
 
 	LASTCMD ("ewarn");
@@ -713,7 +713,7 @@ void ewarnx (const char *__EINFO_RESTRICT fmt, ...)
 		elogv (LOG_WARNING, fmt, ap);
 		retval = _ewarnvn (fmt, ap);
 		va_end (ap);
-		retval += printf ("\n");
+		retval += fprintf (stderr, "\n");
 	}
 	exit (EXIT_FAILURE);
 }
@@ -818,14 +818,12 @@ static int _do_eend (const char *cmd, int retval, const char *__EINFO_RESTRICT f
 	va_list apc;
 
 	if (fmt && *fmt != '\0' && retval != 0) {
+		fp = stderr;
 		va_copy (apc, ap);
-		if (strcmp (cmd, "ewend") == 0) {
+		if (strcmp (cmd, "ewend") == 0)
 			col = _ewarnvn (fmt, apc);
-			fp = stdout;
-		} else {
+		else
 			col = _eerrorvn (fmt, apc);
-			fp = stderr;
-		}
 		col += fprintf (fp, "\n");
 		va_end (apc);
 	}
