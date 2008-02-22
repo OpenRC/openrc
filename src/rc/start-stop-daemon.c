@@ -8,7 +8,7 @@
    */
 
 /*
- * Copyright 2007 Roy Marples
+ * Copyright 2007-2008 Roy Marples
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
