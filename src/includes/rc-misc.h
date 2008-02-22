@@ -70,8 +70,10 @@
 #ifdef lint
 # define _unused
 #endif
-#if __GNUC__ > 2 || defined(__INTEL_COMPILER) || defined(__PCC__)
+#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
 # define _unused __attribute__((__unused__))
+#else
+# define _unused
 #endif
 
 _unused static void *xmalloc (size_t size)

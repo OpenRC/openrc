@@ -27,8 +27,10 @@
 #if lint
 # define _noreturn
 #endif
-#if __GNUC__ > 2 || defined(__INTEL_COMPILER) || defined(__PCC__)
+#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
 # define _noreturn __attribute__ ((__noreturn__))
+#else
+# define _noreturn
 #endif
 
 _noreturn static void usage (int exit_status)

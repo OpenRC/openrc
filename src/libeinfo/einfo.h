@@ -27,7 +27,7 @@
 #ifndef __EINFO_H__
 #define __EINFO_H__
 
-#if defined(__GNUC__) || defined(__PCC__)
+#if defined(__GNUC__)
 # define __EINFO_PRINTF  __attribute__ ((__format__ (__printf__, 1, 2)))
 # define __EINFO_XPRINTF __attribute__ ((__noreturn__, __format__ (__printf__, 1, 2)))
 # define __EEND_PRINTF   __attribute__ ((__format__ (__printf__, 2, 3)))
