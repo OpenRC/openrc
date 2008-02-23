@@ -293,46 +293,62 @@ librc_hidden_def(rc_find_pids)
 #  error "Platform not supported!"
 #endif
 
-static bool _match_daemon (const char *path, const char *file,
-			   const char *mexec, const char *mname,
-			   const char *mpidfile)
+static bool _match_daemon (const char *path, const char *file, char **match)
 {
 	char *line;
 	char *ffile = rc_strcatpaths (path, file, (char *) NULL);
 	FILE *fp;
-	int lc = 0;
-	int m = 0;
 
-	if ((fp = fopen (ffile, "r")) == NULL) {
-		free (ffile);
+	fp = fopen (ffile, "r");
+	free (ffile);
+
+	if (! fp)
 		return (false);
-	}
-
-	if (! mname)
-		m += 10;
-	if (! mpidfile)
-		m += 100;
 
 	while ((line = rc_getline (fp))) {
-		if (strcmp (line, mexec) == 0)
-			m += 1;
-		else if (mname && strcmp (line, mname) == 0)
-			m += 10;
-		else if (mpidfile && strcmp (line, mpidfile) == 0)
-			m += 100;
-		free (line);
-
-		if (m == 111)
-			break;
-
-		lc++;
-		if (lc > 5)
+		rc_strlist_delete (&match, line);
+		if (! match || !*match)
 			break;
 	}
 	fclose (fp);
-	free (ffile);
+	if (match && *match)
+		return (false);
+	return (true);
+}
 
-	return (m == 111 ? true : false);
+static char **_match_list (const char* const* argv,
+			   const char *name, const char *pidfile)
+{
+	char **match = NULL;
+	int i = 0;
+	size_t l;
+	char *m;
+
+	while (argv && argv[i]) {
+		l = strlen (*argv) + strlen ("argv_=") + 16;
+		m = xmalloc (sizeof (char) * l);
+		snprintf (m, l, "argv_0=%s", argv[i++]);
+		rc_strlist_add (&match, m);
+		free (m);
+	}
+
+	if (name) {
+		l = strlen (name) + 6;
+		m = xmalloc (sizeof (char) * l);
+		snprintf (m, l, "name=%s", name);
+		rc_strlist_add (&match, m);
+		free (m);
+	}
+
+	if (pidfile) {
+		l = strlen (pidfile) + 9;
+		m = xmalloc (sizeof (char) * l);
+		snprintf (m, l, "pidfile=%s", pidfile);
+		rc_strlist_add (&match, m);
+		free (m);
+	}
+
+	return (match);
 }
 
 bool rc_service_daemon_set (const char *service, const char *const *argv,
@@ -341,15 +357,13 @@ bool rc_service_daemon_set (const char *service, const char *const *argv,
 {
 	char *dirpath;
 	char *file = NULL;
-	size_t l;
-	char *mexec;
-	char *mname;
-	char *mpidfile;
 	int nfiles = 0;
 	char *oldfile = NULL;
 	bool retval = false;
 	DIR *dp;
 	struct dirent *d;
+	char **match = NULL;
+	int i = 0;
 
 	if (! (argv && *argv) && ! name && ! pidfile) {
 		errno = EINVAL;
@@ -359,26 +373,7 @@ bool rc_service_daemon_set (const char *service, const char *const *argv,
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons",
 				  basename_c (service), (char *) NULL);
 
-	if (argv && *argv) {
-		l = strlen (*argv) + 6;
-		mexec = xmalloc (sizeof (char) * l);
-		snprintf (mexec, l, "exec=%s", *argv);
-	} else
-		mexec = xstrdup ("exec=");
-
-	if (name) {
-		l = strlen (name) + 6;
-		mname = xmalloc (sizeof (char) * l);
-		snprintf (mname, l, "name=%s", name);
-	} else
-		mname = xstrdup ("name=");
-
-	if (pidfile) {
-		l = strlen (pidfile) + 9;
-		mpidfile = xmalloc (sizeof (char) * l);
-		snprintf (mpidfile, l, "pidfile=%s", pidfile);
-	} else
-		mpidfile = xstrdup ("pidfile=");
+	match = _match_list (argv, name, pidfile);
 
 	/* Regardless, erase any existing daemon info */
 	if ((dp = opendir (dirpath))) {
@@ -389,9 +384,7 @@ bool rc_service_daemon_set (const char *service, const char *const *argv,
 			nfiles++;
 
 			if (! oldfile) {
-				if (_match_daemon (dirpath, d->d_name,
-						   mexec, mname, mpidfile))
-				{
+				if (_match_daemon (dirpath, d->d_name, match)) {
 					unlink (file);
 					oldfile = file;
 					nfiles--;
@@ -415,7 +408,17 @@ bool rc_service_daemon_set (const char *service, const char *const *argv,
 			snprintf (buffer, sizeof (buffer), "%03d", nfiles + 1);
 			file = rc_strcatpaths (dirpath, buffer, (char *) NULL);
 			if ((fp = fopen (file, "w"))) {
-				fprintf (fp, "%s\n%s\n%s\n", mexec, mname, mpidfile);
+				while (argv && argv[i]) {
+					fprintf (fp, "argv_%d=%s\n", i, argv[i]);
+					i++;
+				}
+				fprintf (fp, "name=");
+				if (name)
+					fprintf (fp, "%s", name);
+				fprintf (fp, "\npidfile=");
+				if (pidfile)
+					fprintf (fp, "%s", pidfile);
+				fprintf (fp, "\n");
 				fclose (fp);
 				retval = true;
 			}
@@ -424,48 +427,44 @@ bool rc_service_daemon_set (const char *service, const char *const *argv,
 	} else
 		retval = true;
 
-	free (mexec);
-	free (mname);
-	free (mpidfile);
+	rc_strlist_free (match);
 	free (dirpath);
 
 	return (retval);
 }
 librc_hidden_def(rc_service_daemon_set)
 
-bool rc_service_started_daemon (const char *service, const char *exec,
+bool rc_service_started_daemon (const char *service, const char *const *argv,
 				int indx)
 {
 	char *dirpath;
 	char *file;
 	size_t l;
-	char *mexec;
+	char **match;
 	bool retval = false;
 	DIR *dp;
 	struct dirent *d;
 
-	if (! service || ! exec)
+	if (! service || ! (argv && *argv))
 		return (false);
 
 	dirpath = rc_strcatpaths (RC_SVCDIR, "daemons", basename_c (service),
 				  (char *) NULL);
 
-	l = strlen (exec) + 6;
-	mexec = xmalloc (sizeof (char) * l);
-	snprintf (mexec, l, "exec=%s", exec);
+	match = _match_list (argv, NULL, NULL);
 
 	if (indx > 0) {
 		l = sizeof (char) * 10;
 		file = xmalloc (l);
 		snprintf (file, l, "%03d", indx);
-		retval = _match_daemon (dirpath, file, mexec, NULL, NULL);
+		retval = _match_daemon (dirpath, file, match);
 		free (file);
 	} else {
 		if ((dp = opendir (dirpath))) {
 			while ((d = readdir (dp))) {
 				if (d->d_name[0] == '.')
 					continue;
-				retval = _match_daemon (dirpath, d->d_name, mexec, NULL, NULL);
+				retval = _match_daemon (dirpath, d->d_name, match);
 				if (retval)
 					break;
 			}
@@ -474,7 +473,7 @@ bool rc_service_started_daemon (const char *service, const char *exec,
 	}
 
 	free (dirpath);
-	free (mexec);
+	rc_strlist_free (match);
 	return (retval);
 }
 librc_hidden_def(rc_service_started_daemon)
@@ -530,7 +529,7 @@ bool rc_service_daemons_crashed (const char *service)
 				continue;
 			}
 
-			if (strcmp (token, "argv") == 0) {
+			if (strncmp (token, "argv_", 5) == 0) {
 				rc_strlist_add (&argv, p);
 			} else if (strcmp (token, "exec") == 0) {
 				if (exec)

@@ -190,7 +190,7 @@ pid_t rc_service_stop (const char *service);
  * @param exec to check
  * @param indx of the daemon (optional - 1st daemon, 2nd daemon, etc)
  * @return true if started by this service, otherwise false */
-bool rc_service_started_daemon (const char *service, const char *exec,
+bool rc_service_started_daemon (const char *service, const char *const *argv,
                                 int indx);
 
 /*! Return a saved value for a service

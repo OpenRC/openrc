@@ -225,20 +225,22 @@ static int do_service (int argc, char **argv)
 		ok = (rc_service_state (service) & RC_SERVICE_WASINACTIVE);
 	else if (strcmp (applet, "service_started_daemon") == 0) {
 		int idx = 0;
-		char *d = argv[1];
+		char *d[] = { argv[1], NULL };
 
 		service = getenv ("SVCNAME");
 		if (argc > 3) {
 			service = argv[1];
-			d = argv[2];
+			d[0] = argv[2];
 			sscanf (argv[3], "%d", &idx);
 		} else if (argc == 3) {
 			if (sscanf (argv[2], "%d", &idx) != 1) {
 				service = argv[1];
-				d = argv[2];
+				*d = argv[2];
 			}
 		}
-		exit (rc_service_started_daemon (service, d, idx) ? 0 : 1);
+		ok = rc_service_started_daemon (service,
+						(const char * const *)d, idx);
+			
 	} else
 		eerrorx ("%s: unknown applet", applet);
 
