@@ -758,18 +758,51 @@ int start_stop_daemon (int argc, char **argv)
 	argv += optind;
 
 	/* Validate that the binary exists if we are starting */
-	if (exec && start) {
+	if (exec) {
 		char *tmp;
 		if (ch_root)
 			tmp = rc_strcatpaths (ch_root, exec, (char *) NULL);
 		else
 			tmp = exec;
-		if (! exists (tmp)) {
+		if (start && ! exists (tmp)) {
 			eerror ("%s: %s does not exist", applet, tmp);
 			if (ch_root)
 				free (tmp);
 			exit (EXIT_FAILURE);
 		}
+
+		/* If we don't have a pidfile or name, check it's not
+		 * interpreted, otherwise we should fail */
+		if (! pidfile && ! cmd) {
+			char line[130];
+			FILE *fp = fopen (tmp, "r");
+			
+			if (fp) {
+				fgets (line, sizeof (line), fp);
+				fclose (fp);
+
+				if (line[0] == '#' && line[1] == '!') {
+					size_t len = strlen (line) - 1;
+
+					/* Remove the trailing newline */
+					if (line[len] == '\n')
+						line[len] = '\0';
+
+					eerror ("%s: %s is a script",
+						applet, exec);
+					eerror ("%s: and should be started, stopped or signalled with ",
+						applet);
+					eerror ("%s: --exec %s %s",
+						applet, line + 2, exec);
+					eerror ("%s: or you should specify a pidfile or process name",
+						applet);
+					if (ch_root)
+						free (tmp);
+					exit (EXIT_FAILURE);
+				}
+			}
+		}
+
 		if (ch_root)
 			free (tmp);
 	}

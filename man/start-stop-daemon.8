@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Feb 22, 2008
+.Dd Feb 24, 2008
 .Dt START-STOP-DAEMON 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -64,19 +64,36 @@ daemon is still running. If not, then the service is marked as crashed.
 Here are the options to specify the daemon and how it should start or stop:
 .Bl -tag -width indent 
 .It Fl x , -exec Ar daemon
-The daemon we start or stop.
+The
+.Ar daemon
+we start or stop.
+If the
+.Ar daemon
+is a script and you are not using the pidfile or process name options,
+then you should replace
+.Ar daemon
+with the interpreter and pass
+.Ar daemon
+as an argument. Below is an example:
+.Pp
+start-stop-daemon -Sx /usr/bin/perl -- /usr/bin/daemon.pl
 .It Fl p , -pidfile Ar pidfile
-When starting, we expect the daemon to create a valid pidfile within a
-reasonable amount of time. When stopping we only stop the pid(s) listed in
-the pidfile.
+When starting, we expect the daemon to create a valid
+.Ar pidfile
+within a reasonable amount of time. When stopping we only stop the pid(s)
+listed in the
+.Ar pidfile .
 .It Fl n , -name Ar name
-For whatever reason, some daemons don't create pidfiles or change their
-process name. You can specify name here to be the process name to stop.
-You may need to use this for interpreted daemons using languages such as
-perl, ruby, shell, etc.
+Match the process
+.Ar name
+instead of a pidfile or executable.
 .It Fl u , -user Ar user Ns Op : Ns Ar group
-Start the daemon as the user and update $HOME accordingly or stop daemons
-owned by the user. You can optionally append a groupname here also.
+Start the daemon as the
+.Ar user
+and update $HOME accordingly or stop daemons
+owned by the user. You can optionally append a
+.Ar group
+name here also.
 .It Fl t , -test
 Print the action(s) that would be taken, but don't actually do anything.
 The return value is set as if the command was taken and worked.
@@ -128,9 +145,25 @@ stopping schedule.
 If not specified then a default value of SIGTERM/5 is
 assumed.
 .El
+.Sh NOTE
+.Nm
+uses
+.Xr getopt 3
+to parse its options, which allows it to accept the `--' option which will
+cause it to stop processing options at that point. Any subsequent arguments
+are passed as arguments to the daemon to start and used when finding a daemon
+to stop or signal.
 .Sh SEE ALSO
 .Xr chdir 2 ,
 .Xr chroot 2 ,
-.Xr nice 2
+.Xr getopt 3 ,
+.Xr nice 2 ,
+.Xr rc_find_pids 3
+.Sh HISTORY
+.Nm
+first appeared in Debian.
+.Pp
+This is a complete re-implementation with the process finding code in the
+OpenRC library (librc, -lrc) so other programs can make use of it.
 .Sh AUTHORS
 .An "Roy Marples" Aq roy@marples.name
