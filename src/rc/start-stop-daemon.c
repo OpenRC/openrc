@@ -1025,12 +1025,11 @@ int start_stop_daemon (int argc, char **argv)
 					 applet, redirect_stderr, strerror (errno));
 		}
 
-		if (background) {
-			/* Hmmm, some daemons may need stdin? */
-			dup2 (devnull_fd, STDIN_FILENO);
+		/* We don't redirect stdin as some daemons may need it */
+		if (background || quiet || redirect_stdout)
 			dup2 (stdout_fd, STDOUT_FILENO);
+		if (background || quiet || redirect_stderr)
 			dup2 (stderr_fd, STDERR_FILENO);
-		}
 
 		for (i = getdtablesize () - 1; i >= 3; --i)
 			close(i);
