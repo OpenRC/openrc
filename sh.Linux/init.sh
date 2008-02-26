@@ -9,7 +9,7 @@
 # tmpfs and ramfs are easy, so force one or the other.
 mount_svcdir()
 {
-	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="none" devtmp="none" x=
+	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="rc-svcdir" devtmp="none" x=
 	local svcsize=${rc_svcsize:-1024}
 
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems; then
@@ -155,7 +155,7 @@ else
 fi
 
 # Mount required stuff as user may not have then in /etc/fstab
-for x in "devpts /dev/pts 0755 ,gid=5,mode=0620" "tmpfs /dev/shm 1777 ,nodev"
+for x in "devpts /dev/pts 0755 ,gid=5,mode=0620 devpts" "tmpfs /dev/shm 1777 ,nodev shm"
 do
 	set -- ${x}
 	grep -Eq "[[:space:]]+$1$" /proc/filesystems || continue
@@ -172,7 +172,7 @@ do
 		if fstabinfo --quiet "$2"; then
 			mount -n "$2"
 		else
-			mount -n -t "$1" -o noexec,nosuid"$4" none "$2"
+			mount -n -t "$1" -o noexec,nosuid"$4" "$5" "$2"
 		fi
 		eend $?
 	fi
