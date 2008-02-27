@@ -130,7 +130,7 @@ static void show (char **runlevels, bool verbose)
 
 #include "_usage.h"
 #define usagestring "" \
-	"Usage: rc-update [options] service <runlevel>\n" \
+	"Usage: rc-update [options] add service <runlevel>\n" \
 	"       rc-update [options] del service <runlevel>\n" \
 	"       rc-update [options] show"
 #define getoptstring getoptstring_COMMON
