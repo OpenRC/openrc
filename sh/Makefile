@@ -1,7 +1,5 @@
 DIR=	${RC_LIB}/sh
-SRCS=	functions.in rc-functions.in
-OBJS=	${SRCS:.in=.sh}
-INC=	init-common-post.sh rc-mount.sh ${OBJS}
+INC=	init-common-post.sh rc-mount.sh functions.sh rc-functions.sh
 BIN=	gendepends.sh net.sh runscript.sh
 
 INSTALLAFTER=	_installafter
@@ -11,11 +9,6 @@ MK=	../mk
 include ${MK}/os.mk
 include Makefile.${SUBOS}
 include ${MK}/scripts.mk
-
-# Ensure that the lib name is correct
-.SUFFIXES: .in .sh
-.in.sh:
-	sed -e 's:/lib/:/${LIBNAME}/:g' $< > $@
 
 _installafter:
 	${INSTALL} -d ${DESTDIR}/etc/init.d

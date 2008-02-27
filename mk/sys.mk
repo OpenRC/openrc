@@ -5,6 +5,7 @@ AR?=			ar
 ECHO?=			echo
 INSTALL?=		install
 RANLIB?=		ranlib
+SH=			/bin/sh
 
 PICFLAG?=		-fPIC
 
