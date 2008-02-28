@@ -169,6 +169,12 @@ void rc_logger_open (const char *level)
 	if (openpty (&rc_logger_tty, &slave_tty, NULL, &tt, &ws))
 		return;
 
+	if ((s = fcntl (rc_logger_tty, F_GETFD, 0)) == 0)
+		fcntl (rc_logger_tty, F_SETFD, s | FD_CLOEXEC);
+
+	if ((s = fcntl (slave_tty, F_GETFD, 0)) == 0)
+		fcntl (slave_tty, F_SETFD, s | FD_CLOEXEC);
+
 	rc_logger_pid = fork ();
 	switch (rc_logger_pid) {
 		case -1:
@@ -249,6 +255,11 @@ void rc_logger_open (const char *level)
 			setpgid (rc_logger_pid, 0);
 			fd_stdout = dup (STDOUT_FILENO);
 			fd_stderr = dup (STDERR_FILENO);
+			if ((s = fcntl (fd_stdout, F_GETFD, 0)) == 0)
+				fcntl (fd_stdout, F_SETFD, s | FD_CLOEXEC);
+
+			if ((s = fcntl (fd_stderr, F_GETFD, 0)) == 0)
+				fcntl (fd_stderr, F_SETFD, s | FD_CLOEXEC);
 			dup2 (slave_tty, STDOUT_FILENO);
 			dup2 (slave_tty, STDERR_FILENO);
 			if (slave_tty != STDIN_FILENO &&
