@@ -425,6 +425,14 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		/* If the below call fails due to not enough ptys then we don't
 		 * prefix the output, but we still work */
 		openpty (&master_tty, &slave_tty, NULL, &tt, &ws);
+
+		if (master_tty >= 0 &&
+		    (flags = fcntl (master_tty, F_GETFD, 0)) == 0)
+		     fcntl (master_tty, F_SETFD, flags | FD_CLOEXEC);
+
+		if (slave_tty >=0 &&
+		    (flags = fcntl (slave_tty, F_GETFD, 0)) == 0)
+		     fcntl (slave_tty, F_SETFD, flags | FD_CLOEXEC);
 	}
 
 	service_pid = fork();
@@ -432,12 +440,8 @@ static bool svc_exec (const char *arg1, const char *arg2)
 		eerrorx ("%s: fork: %s", service, strerror (errno));
 	if (service_pid == 0) {
 		if (slave_tty >= 0) {
-			close (master_tty);
-
 			dup2 (slave_tty, 1);
 			dup2 (slave_tty, 2);
-			if (slave_tty > 2)
-				close (slave_tty);
 		}
 
 		if (exists (RC_SVCDIR "/runscript.sh")) {
