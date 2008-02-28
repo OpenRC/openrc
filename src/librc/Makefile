@@ -13,7 +13,5 @@ LDADD+=		${LIBKVM}
 
 CFLAGS+=	-I../includes
 
-SHLIBDIR=	/${LIBNAME}
-
 include ${MK}/cc.mk
 include ${MK}/lib.mk

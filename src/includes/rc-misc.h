@@ -38,21 +38,30 @@
 #include <string.h>
 
 #ifndef LIB
-#  define LIB "lib"
+#  define LIB			"lib"
+#endif
+
+#ifndef PREFIX
+#  define PREFIX		""
 #endif
 
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
 
-#define RC_LIBDIR               "/" LIB "/rc"
+#define RC_LIBDIR               PREFIX "/" LIB "/rc"
 #define RC_SVCDIR               RC_LIBDIR "/init.d"
 #define RC_DEPTREE              RC_SVCDIR "/deptree"
-#define RC_RUNLEVELDIR          "/etc/runlevels"
-#define RC_INITDIR              "/etc/init.d"
-#define RC_CONFDIR              "/etc/conf.d"
+#define RC_RUNLEVELDIR          PREFIX "/etc/runlevels"
+#define RC_INITDIR              PREFIX "/etc/init.d"
+#define RC_CONFDIR              PREFIX "/etc/conf.d"
 
-#define RC_INITDIR_LOCAL        "/usr/local/etc/init.d"
-#define RC_CONFDIR_LOCAL        "/usr/local/etc/conf.d"
+/* PKG_PREFIX is where packages are installed if different from the base OS
+ * On Gentoo this is normally unset, on FreeBSD /usr/local and on NetBSD
+ * /usr/pkg. */
+#ifdef PKG_PREFIX
+#  define RC_PKG_INITDIR        PKG_PREFIX "/etc/init.d"
+#  define RC_PKG_CONFDIR        PKG_PREFIX "/usr/local/etc/conf.d"
+#endif
 
 #define RC_KSOFTLEVEL           RC_SVCDIR "/ksoftlevel"
 #define RC_STARTING             RC_SVCDIR "/rc.starting"

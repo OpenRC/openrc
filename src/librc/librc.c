@@ -328,11 +328,13 @@ char *rc_service_resolve (const char *service)
 	snprintf (buffer, sizeof (buffer), RC_INITDIR "/%s", service);
 
 	/* So we don't exist in /etc/init.d - check /usr/local/etc/init.d */
+#ifdef RC_PKG_INITDIR
 	if (stat (buffer, &buf) != 0) {
-		snprintf (buffer, sizeof (buffer), RC_INITDIR_LOCAL "/%s", service);
+		snprintf (buffer, sizeof (buffer), RC_PKG_INITDIR "/%s", service);
 		if (stat (buffer, &buf) != 0)
 			return (NULL);
 	}
+#endif
 
 	return (xstrdup (buffer));
 }
@@ -781,12 +783,18 @@ char **rc_services_in_runlevel (const char *runlevel)
 
 	if (! runlevel) {
 		int i;
-		char **local = ls_dir (RC_INITDIR_LOCAL, LS_INITD);
+#ifdef RC_PKG_INITDIR
+		char **local = ls_dir (RC_PKG_INITDIR, LS_INITD);
+#endif
 
 		list = ls_dir (RC_INITDIR, LS_INITD);
+
+#ifdef RC_PKG_INITDIR
 		STRLIST_FOREACH (local, dir, i)
 			rc_strlist_addsortu (&list, dir);
 		rc_strlist_free (local);
+#endif
+
 		return (list);
 	}
 

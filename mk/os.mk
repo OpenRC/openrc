@@ -29,3 +29,11 @@ LIBDL?=		${_LIBDL}$(shell ${_LIBDL_SH})
 _LIBKVM_SH=	case `uname -s` in *BSD) echo "-lkvm";; *) echo;; esac
 _LIBKVM!=	${_LIBKVM_SH}
 LIBKVM?=	${_LIBKVM}$(shell ${_LIBKVM_SH})
+
+_PREFIX_SH=	if test -n "${PREFIX}" && test "${PREFIX}" != "/"; then echo "-DPREFIX=\\\"${PREFIX}\\\""; else echo ""; fi
+_PREFIX!=	${_PREFIX_SH}
+CFLAGS+=	${_PREFIX}$(shell ${_PREFIX_SH})
+
+_PKG_PREFIX_SH=	if test -n "${PKG_PREFIX}" && test "${PKG_PREFIX}" != "/"; then echo "-DPKG_PREFIX=\\\"${PKG_PREFIX}\\\""; else echo ""; fi
+_PKG_PREFIX!=	${_PKG_PREFIX_SH}
+CFLAGS+=	${_PKG_PREFIX}$(shell ${_PKG_PREFIX_SH})

@@ -696,8 +696,12 @@ bool rc_deptree_update_needed (void)
 	if (! existss (RC_DEPTREE) ||
 	    ! rc_newer_than (RC_DEPTREE, RC_INITDIR) ||
 	    ! rc_newer_than (RC_DEPTREE, RC_CONFDIR) ||
-	    ! rc_newer_than (RC_DEPTREE, RC_INITDIR_LOCAL) ||
-	    ! rc_newer_than (RC_DEPTREE, RC_CONFDIR_LOCAL) ||
+#ifdef RC_PKG_INITDIR
+	    ! rc_newer_than (RC_DEPTREE, RC_PKG_INITDIR) ||
+#endif
+#ifdef RC_PKG_CONFDIR
+	    ! rc_newer_than (RC_DEPTREE, RC_PKG_CONFDIR) ||
+#endif
 	    ! rc_newer_than (RC_DEPTREE, "/etc/rc.conf"))
 		return (true);
 

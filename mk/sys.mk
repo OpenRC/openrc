@@ -7,23 +7,26 @@ INSTALL?=		install
 RANLIB?=		ranlib
 SH=			/bin/sh
 
+PREFIX=			
+PKG_PREFIX=		/usr/local
+
 PICFLAG?=		-fPIC
 
-BINDIR?=		/sbin
+BINDIR?=		${PREFIX}/sbin
 BINMODE?=		0755
 
-INCDIR?=		/usr/include
+INCDIR?=		${PREFIX}/usr/include
 INCMODE?=		0444
 
 LIBNAME?=		lib
-LIBDIR?=		/usr/${LIBNAME}
+LIBDIR?=		${PREFIX}/usr/${LIBNAME}
 LIBMODE?=		0444
-SHLIBDIR?=		/${LIBNAME}
+SHLIBDIR?=		${PREFIX}/${LIBNAME}
 
-MANDIR?=		/usr/share/man/man
+MANDIR?=		${PREFIX}/usr/share/man/man
 MANMODE?=		0444
 
-DOCDIR?=		/usr/share/doc
+DOCDIR?=		${PREFIX}/usr/share/doc
 DOCMODE?=		0644	
 
 CONFMODE?=		0644

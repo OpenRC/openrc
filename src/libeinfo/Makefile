@@ -7,8 +7,6 @@ SRCS=			libeinfo.c
 INCS=			einfo.h
 VERSION_MAP=		einfo.map
 
-SHLIBDIR=		/${LIBNAME}
-
 CFLAGS+=		-I../includes
 
 include ${MK}/cc.mk

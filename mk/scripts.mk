@@ -16,24 +16,24 @@ include ${MK}/os.mk
 # Tweak our shell scripts
 .SUFFIXES:	.sh.in
 .sh.in.sh:
-	sed -e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' $< > $@
+	sed -e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@PREFIX@:${PREFIX}:g' -e 's:@PKG_PREFIX@:${PKG_PREFIX}:g' $< > $@
 
 all: ${OBJS}
 
 realinstall: ${BIN} ${CONF} ${CONF_APPEND}
-	if test -n "${DIR}"; then ${INSTALL} -d ${DESTDIR}${DIR} || exit $$?; fi
-	if test -n "${BIN}"; then ${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}${DIR} || exit $$?; fi
-	if test -n "${INC}"; then ${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}${DIR} || exit $$?; fi
+	if test -n "${DIR}"; then ${INSTALL} -d ${DESTDIR}/${PREFIX}${DIR} || exit $$?; fi
+	if test -n "${BIN}"; then ${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}/${PREFIX}${DIR} || exit $$?; fi
+	if test -n "${INC}"; then ${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}/${PREFIX}${DIR} || exit $$?; fi
 	for x in ${CONF}; do \
-	 	if ! test -e ${DESTDIR}${DIR}/$$x; then \
-			${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}${DIR} || exit $$?; \
+	 	if ! test -e ${DESTDIR}/${PREFIX}${DIR}/$$x; then \
+			${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
 		fi; \
 	done
 	for x in ${CONF_APPEND}; do \
-		if test -e ${DESTDIR}${DIR}/$$x; then \
-			cat $$x >> ${DESTDIR}${DIR}/$$x || exit $$?; \
+		if test -e ${DESTDIR}/${PREFIX}${DIR}/$$x; then \
+			cat $$x >> ${DESTDIR}/${PREFIX}${DIR}/$$x || exit $$?; \
 		else \
-	   		${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}${DIR} || exit $$?; \
+	   		${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
 		fi; \
 	done
 

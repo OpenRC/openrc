@@ -6,9 +6,10 @@ SRCS=		checkpath.c fstabinfo.c mountinfo.c \
 
 CLEANFILES=	version.h
 
-BINDIR?=	/sbin
+BINDIR=		${PREFIX}/bin
+SBINDIR=	${PREFIX}/sbin
+LINKDIR=	${PREFIX}/${LIBNAME}/${PROG}
 
-LINKDIR=	${LIBNAME}/${PROG}
 BINLINKS=	rc-status
 SBINLINKS=	rc-update runscript start-stop-daemon
 RC_BINLINKS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
@@ -50,16 +51,16 @@ version.h:
 	fi
 
 install: all
+	${INSTALL} -d ${DESTDIR}${SBINDIR}
+	${INSTALL} -m ${BINMODE} ${PROG} ${DESTDIR}${SBINDIR}
 	${INSTALL} -d ${DESTDIR}${BINDIR}
-	${INSTALL} -m ${BINMODE} ${PROG} ${DESTDIR}${BINDIR}
-	${INSTALL} -d ${DESTDIR}/bin
-	for x in ${BINLINKS}; do ln -fs ${BINDIR}/${PROG} ${DESTDIR}/bin/$$x; done
-	${INSTALL} -d ${DESTDIR}/bin
-	for x in ${SBINLINKS}; do ln -fs ${PROG} ${DESTDIR}${BINDIR}/$$x; done
-	${INSTALL} -d ${DESTDIR}/${LIBNAME}/${PROG}/bin
-	for x in $(RC_BINLINKS); do ln -fs ${BINDIR}/${PROG} $(DESTDIR)/${LIBNAME}/${PROG}/bin/$$x; done
-	${INSTALL} -d ${DESTDIR}/${LIBNAME}/${PROG}/sbin
-	for x in ${RC_SBINLINKS}; do ln -fs ${BINDIR}/${PROG} ${DESTDIR}/${LIBNAME}/${PROG}/sbin/$$x; done
+	for x in ${BINLINKS}; do ln -fs ${DESTDIR}${SBINDIR}/${PROG} ${DESTDIR}${BINDIR}/$$x; done
+	${INSTALL} -d ${DESTDIR}${SBINDIR}
+	for x in ${SBINLINKS}; do ln -fs ${PROG} ${DESTDIR}${SBINDIR}/$$x; done
+	${INSTALL} -d ${DESTDIR}${LINKDIR}/bin
+	for x in $(RC_BINLINKS); do ln -fs ${DESTDIR}${SBINDIR}/${PROG} ${DESTDIR}${LINKDIR}/bin/$$x; done
+	${INSTALL} -d ${DESTDIR}${LINKDIR}/sbin
+	for x in ${RC_SBINLINKS}; do ln -fs ${DESTDIR}${SBINDIR}/${PROG} ${DESTDIR}${LINKDIR}/sbin/$$x; done
 	if test "${MKPAM}" = pam; then \
 		${INSTALL} -d ${DESTDIR}${PAMDIR}; \
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam ${DESTDIR}${PAMDIR}/start-stop-daemon; \

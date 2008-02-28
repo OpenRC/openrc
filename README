@@ -13,12 +13,17 @@ DESTDIR=/tmp/openrc-image
 MKPAM=pam
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
+PKG_PREFIX=/usr/pkg
+PREFIX=/usr/local
 
 We don't support building a static OpenRC with PAM.
 You may need to use PROGLDFLAGS=-Wl,-Bstatic on glibc instead of just -static.
 
 You can also brand OpenRC if you so wish like so
 BRANDING=\"Gentoo/$(uname -s)\"
+
+PKG_PREFIX should be set to where packages install to by default.
+PREFIX should be set when OpenRC is not installed to /.
 
 If any of the following files exist then we do not overwrite them
 /etc/devd.conf
@@ -40,7 +45,6 @@ tweaking on a per distro basis. They are also non essential to the operation
 of the system.
 
 
-
 Reporting Bugs
 -------------
 If you installed OpenRC from your chosen distribution, you should report
@@ -48,7 +52,6 @@ bugs directly to them. For example, if you use Gentoo and emerged OpenRC
 then you should reports bugs to http://bugs.gentoo.org.
 
 Otherwise, you can report them directly to me at http://bugs.marples.name
-
 
 
 History - by Roy Marples
