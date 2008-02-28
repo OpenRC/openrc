@@ -13,8 +13,16 @@ depend()
 }
 
 _abort() {
-	exec rc-abort;
+	rc-abort;
 	return 1;
+}
+
+# We should only reboot when first booting
+_reboot() {
+	if [ "${RC_SOFTLEVEL}" = "${RC_BOOTLEVEL}" ]; then
+		reboot "$@";
+		_abort || return 1;;
+	fi
 }
 
 start()
@@ -49,7 +57,7 @@ start()
 		0)       eend 0; return 0;;
 		1)       ewend 1 "Filesystems repaired"; return 0;;
 		2|3|4)   ewend 1 "Filesystems repaired, but reboot needed"
-		         reboot ${reboot_opts}; _abort || return 1;;
+		         _reboot ${reboot_opts} || return 1;;
 		8)       ewend 1 "Operational error"; return 0;;
 		12)      ewend 1 "fsck interupted"; return 1;;
 		*)       eend 2 "Filesystems couldn't be fixed"
@@ -59,7 +67,9 @@ start()
 
 stop()
 {
-	_abort() { return 0; } # Fake function so we always shutdown correctly.
+	# Fake function so we always shutdown correctly.
+	_abort() { return 0; }
+	_reboot() { return 0; }
 
 	yesno "${fsck_shutdown}" && start
 	return 0
