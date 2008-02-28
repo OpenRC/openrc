@@ -12,6 +12,11 @@ depend()
 	keyword nojail notimeout
 }
 
+_abort() {
+	exec rc-abort;
+	return 1;
+}
+
 start()
 {
 	local reboot_opts= fsck_opts= p=
@@ -44,16 +49,18 @@ start()
 		0)       eend 0; return 0;;
 		1)       ewend 1 "Filesystems repaired"; return 0;;
 		2|3|4)   ewend 1 "Filesystems repaired, but reboot needed"
-		         reboot ${reboot_opts}; exec rc-abort; return 1;;
+		         reboot ${reboot_opts}; _abort || return 1;;
 		8)       ewend 1 "Operational error"; return 0;;
 		12)      ewend 1 "fsck interupted"; return 1;;
 		*)       eend 2 "Filesystems couldn't be fixed"
-		         exec rc-abort; return 1;;
+		         _abort || return 1;;
 	esac
 }
 
 stop()
 {
+	_abort() { return 0; } # Fake function so we always shutdown correctly.
+
 	yesno "${fsck_shutdown}" && start
 	return 0
 }
