@@ -1,2 +1,4 @@
 functions.sh
 rc-functions.sh
+gendepends.sh
+runscript.sh
