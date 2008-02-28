@@ -13,15 +13,15 @@ depend()
 }
 
 _abort() {
-	rc-abort;
-	return 1;
+	rc-abort
+	return 1
 }
 
 # We should only reboot when first booting
 _reboot() {
 	if [ "${RC_SOFTLEVEL}" = "${RC_BOOTLEVEL}" ]; then
-		reboot "$@";
-		_abort || return 1;;
+		reboot "$@"
+		_abort || return 1
 	fi
 }
 
