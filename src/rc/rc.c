@@ -355,16 +355,9 @@ static void single_user (void)
 {
 	rc_logger_close ();
 
-#ifdef __linux__
-	execl ("/sbin/telinit", "/sbin/telinit", "S", (char *) NULL);
-	eerrorx ("%s: unable to exec `/sbin/telinit': %s",
+	execl (SHUTDOWN, SHUTDOWN, "now", (char *) NULL);
+	eerrorx ("%s: unable to exec `" SHUTDOWN "': %s",
 		 applet, strerror (errno));
-#else
-	if (kill (1, SIGTERM) != 0)
-		eerrorx ("%s: unable to send SIGTERM to init (pid 1): %s",
-			 applet, strerror (errno));
-	exit (EXIT_SUCCESS);
-#endif
 }
 
 static bool set_ksoftlevel (const char *level)
