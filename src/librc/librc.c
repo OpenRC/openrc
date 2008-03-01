@@ -782,8 +782,8 @@ char **rc_services_in_runlevel (const char *runlevel)
 	char **list = NULL;
 
 	if (! runlevel) {
-		int i;
 #ifdef RC_PKG_INITDIR
+		int i;
 		char **local = ls_dir (RC_PKG_INITDIR, LS_INITD);
 #endif
 
