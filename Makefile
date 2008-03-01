@@ -17,5 +17,5 @@ include ${MK}/subdir.mk
 include ${MK}/dist.mk
 
 _installafter:
-	${INSTALL} -d ${DESTDIR}${RC_LIB}/init.d
-	${INSTALL} -d ${DESTDIR}${RC_LIB}/tmp
+	${INSTALL} -d ${DESTDIR}/${PREFIX}/${RC_LIB}/init.d
+	${INSTALL} -d ${DESTDIR}/${PREFIX}/${RC_LIB}/tmp

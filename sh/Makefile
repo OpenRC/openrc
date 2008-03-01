@@ -11,7 +11,7 @@ include Makefile.${SUBOS}
 include ${MK}/scripts.mk
 
 _installafter:
-	${INSTALL} -d ${DESTDIR}/etc/init.d
+	${INSTALL} -d ${DESTDIR}/${PREFIX}/etc/init.d
 	@# Provide an init script for the loopback interface
 	ln -snf ${RC_LIB}/sh/net.sh ${DESTDIR}/${PREFIX}/etc/init.d/${NET_LO} || exit $$?
 	@# Put functions.sh into the init.d dir so 3rd party apps don't have to
