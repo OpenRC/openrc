@@ -1,0 +1,23 @@
+#!/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+depend()
+{
+	before fsck
+	keyword nojail
+}
+
+start()
+{
+	ebegin "Activating block swap devices"
+	swapctl -A -t blk >/dev/null
+	eend 0 # If swapon has nothing todo it errors, so always return 0
+}	
+
+stop()
+{
+	ebegin "Deactivating block swap devices"
+	swapctl -U -t blk >/dev/null
+	eend 0 
+}
