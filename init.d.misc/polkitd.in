@@ -1,8 +1,8 @@
-#!/sbin/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-command=@PREFIX@/sbin/polkitd
+command=@PKG_PREFIX@/sbin/polkitd
 pidfile=@VARBASE@/run/polkitd/polkitd.pid
 command_args="${polkitd_args}"
 name="PolicyKit Daemon"

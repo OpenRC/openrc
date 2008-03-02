@@ -1,8 +1,8 @@
-#!/sbin/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-command=@PREFIX@/sbin/dnsmasq
+command=@PKG_PREFIX@/sbin/dnsmasq
 command_args=${dnsmasq_args}
 pidfile=@VARBASE@/run/dnsmasq.pid
 required_files=/etc/dnsmasq.conf

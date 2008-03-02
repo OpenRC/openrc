@@ -6,7 +6,9 @@ NAME=		openrc
 VERSION=	0.1
 PKG=		${NAME}-${VERSION}
 
-SUBDIR=		conf.d doc etc init.d man net runlevels sh src
+SUBDIR=		conf.d doc etc init.d man net sh src
+# We need to ensure that runlevels is done last
+SUBDIR+=	runlevels
 
 INSTALLAFTER=	_installafter
 

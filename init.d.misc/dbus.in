@@ -1,8 +1,8 @@
-#!/sbin/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-command=@PREFIX@%%/bin/dbus-daemon
+command=@PKG_PREFIX@/bin/dbus-daemon
 pidfile=@VARBASE@/run/dbus/dbus.pid
 command_args="${dbusd_args---system}"
 name="Message Bus Daemon"

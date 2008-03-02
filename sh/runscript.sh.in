@@ -4,7 +4,7 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-. /etc/init.d/functions.sh
+. @PREFIX@/etc/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
 
 # Support LiveCD foo
@@ -59,7 +59,7 @@ elif [ -e "/etc/conf.d/${SVCNAME}" ]; then
 fi
 
 # Load any system overrides
-[ -e /etc/rc.conf ] && . /etc/rc.conf
+[ -e @PREFIX@/etc/rc.conf ] && . @PREFIX@/etc/rc.conf
 
 # Apply any ulimit defined
 [ -n "${rc_ulimit:-${RC_ULIMIT}}" ] && ulimit ${rc_ulimit:-${RC_ULIMIT}}

@@ -1,8 +1,8 @@
-#!/sbin/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-command=@PREFIX@/sbin/hald
+command=@PKG_PREFIX@/sbin/hald
 pidfile=@VARBASE@/run/hald/hald.pid
 command_args="${hald_args}"
 name="Hardware Abstraction Layer Daemon"

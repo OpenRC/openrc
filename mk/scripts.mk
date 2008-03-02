@@ -1,12 +1,12 @@
 # Install rules for our scripts
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 
-_IN_SH=	ls -1 | sed -n -e 's:\.in$$::p' | xargs
+_IN_SH=	ls -1 | sed -n -e 's:\.in$$::p' | xargs; echo
 _IN!=		${_IN_SH}
 OBJS+=		${_IN}$(shell ${_IN_SH})
 
 # We store the contents of the directory for ease of use in Makefiles
-_CONTENTS_SH=	ls -1 | grep -v "\(Makefile\|.in$$\)" | sed -e 's:\.in$$::g' | xargs
+_CONTENTS_SH=	ls -1 | grep -v Makefile | sed -e 's:\.in$$::g' | sort -u | xargs
 _CONTENTS!=	${_CONTENTS_SH}
 CONTENTS=	${_CONTENTS}$(shell ${_CONTENTS_SH})
 
@@ -14,9 +14,12 @@ include ${MK}/sys.mk
 include ${MK}/os.mk
 
 # Tweak our shell scripts
-.SUFFIXES:	.sh.in
+.SUFFIXES:	.sh.in .in
 .sh.in.sh:
 	sed -e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@PREFIX@:${PREFIX}:g' -e 's:@PKG_PREFIX@:${PKG_PREFIX}:g' $< > $@
+
+.in:
+	sed -e 's:@PREFIX@:${PREFIX}:g' -e 's:@PKG_PREFIX@:${PKG_PREFIX}:g' $< > $@
 
 all: ${OBJS}
 

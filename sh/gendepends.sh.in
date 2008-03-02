@@ -4,7 +4,7 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-. /etc/init.d/functions.sh
+. @PREFIX@/etc/init.d/functions.sh
 
 config() {
 	[ -n "$*" ] && echo "${SVCNAME} config $*" >&3
@@ -31,7 +31,7 @@ depend() {
 	:
 }
 
-for _dir in /etc/init.d /usr/local/etc/init.d; do
+for _dir in @PREFIX@/etc/init.d @PKG_PREFIX@/etc/init.d; do
 	[ -d "${_dir}" ] || continue
 	cd "${_dir}"
 	for SVCNAME in *; do
@@ -39,7 +39,7 @@ for _dir in /etc/init.d /usr/local/etc/init.d; do
 
 		# Only generate dependencies for runscripts
 		read one two < "${SVCNAME}"
-		[ "${one}" = "#!/sbin/runscript" ] || continue
+		[ "${one}" = "#!@PREFIX@/sbin/runscript" ] || continue
 		unset one two
 
 		export SVCNAME=${SVCNAME##*/}
@@ -59,7 +59,7 @@ for _dir in /etc/init.d /usr/local/etc/init.d; do
 			. "${_dir}/../conf.d/${SVCNAME}"
 		fi
 
-		[ -e /etc/rc.conf ] && . /etc/rc.conf
+		[ -e @PREFIX@/etc/rc.conf ] && . @PREFIX@/etc/rc.conf
 
 		if . "${_dir}/${SVCNAME}"; then
 			echo "${SVCNAME}" >&3

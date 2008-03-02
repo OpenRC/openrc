@@ -1,4 +1,4 @@
-#!/sbin/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
@@ -21,7 +21,7 @@ depend()
 	need localmount
 	after bootmisc
 	provide net
-	keyword nojail
+	keyword nojail noprefix
 
 	case "${IFACE}" in
 		lo|lo0);;
