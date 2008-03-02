@@ -28,7 +28,7 @@ depend()
 	else
 		before *
 	fi
-	keyword nouml novps noxenu
+	keyword noprefix nouml novps noxenu
 }
 
 setupopts()

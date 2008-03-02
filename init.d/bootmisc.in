@@ -8,6 +8,7 @@ depend()
 	need localmount
 	before logger
 	after clock sysctl
+	keyword noprefix
 }
 
 cleanup_tmp_dir()

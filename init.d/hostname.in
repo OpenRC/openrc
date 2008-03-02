@@ -4,6 +4,10 @@
 
 description="Sets the hostname of the machine."
 
+depend() {
+	keyword noprefix
+}
+
 start()
 {
 	hostname=${hostname-${HOSTNAME-localhost}}

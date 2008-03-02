@@ -34,7 +34,7 @@ depend()
 	config /etc/fstab
 	need net ${pmap}
 	use afc-client amd autofs dns nfs nfsmount portmap rpcbind rpc.statd
-	keyword nojail
+	keyword nojail noprefix
 }
 
 start()

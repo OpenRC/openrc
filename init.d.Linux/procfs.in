@@ -6,7 +6,8 @@ description="Mounts misc filesystems in /proc."
 
 depend()
 {
-	need localmount 
+	need localmount
+	keyword noprefix
 }
 
 start()

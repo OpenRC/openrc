@@ -7,7 +7,7 @@ description="Saves a kernel dump."
 depend()
 {
 	need localmount
-	keyword nojail
+	keyword nojail noprefix
 }
 
 start()

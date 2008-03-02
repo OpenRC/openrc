@@ -10,7 +10,7 @@ depend() {
 	need localmount
 	after bootmisc
 	before net.lo0
-	keyword nojail
+	keyword nojail noprefix
 }
 
 start_pre() {

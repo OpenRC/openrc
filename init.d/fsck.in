@@ -9,7 +9,7 @@ _ISF="
 depend()
 {
 	after clock modules
-	keyword nojail notimeout
+	keyword nojail noprefix notimeout
 }
 
 _abort() {

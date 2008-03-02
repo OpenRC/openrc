@@ -1271,8 +1271,10 @@ int runscript (int argc, char **argv)
 			if (retval & RC_SERVICE_STARTED)
 				retval = 0;
 		} else {
+#ifndef PREFIX
 			if (geteuid () != 0)
 				eerrorx ("%s: root access required", applet);
+#endif
 
 			if (strcmp (optarg, "conditionalrestart") == 0 ||
 			    strcmp (optarg, "condrestart") == 0)

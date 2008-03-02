@@ -6,13 +6,21 @@ depend()
 {
 	use hostname
 	before bootmisc logger
-	keyword novps
+	keyword noprefix
 }
 
 start()
 {
 	[ -e /etc/sysctl.conf ] || return 0
+	
 	ebegin "Configuring kernel parameters"
-	sysctl -p /etc/sysctl.conf >/dev/null
+	local retval=0 var= comments=
+	while read var comments; do
+		case "${var}" in
+			""|"#"*) continue;;
+		esac
+		sysctl -w "${var}" >/dev/null || retval=1
+	done < /etc/sysctl.conf
+	eend ${retval} "Some errors were encountered"
 	eend $?
 }

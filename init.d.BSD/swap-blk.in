@@ -5,7 +5,7 @@
 depend()
 {
 	before fsck
-	keyword nojail
+	keyword nojail noprefix
 }
 
 start()

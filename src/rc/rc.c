@@ -760,10 +760,12 @@ int main (int argc, char **argv)
 
 	newlevel = argv[optind++];
 
+#ifndef PREFIX
 	/* OK, so we really are the main RC process
 	 * Only root should be able to run us */
 	if (geteuid () != 0)
 		eerrorx ("%s: root access required", applet);
+#endif
 
 	/* Enable logging */
 	setenv ("EINFO_LOG", "rc", 1);
