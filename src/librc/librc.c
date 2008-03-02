@@ -186,6 +186,10 @@ static bool file_regex (const char *file, const char *regex)
 
 const char *rc_sys (void)
 {
+#ifdef PREFIX
+	return (RC_SYS_PREFIX);
+#else	
+
 #ifdef __FreeBSD__
 	int jailed = 0;
 	size_t len = sizeof (jailed);
@@ -208,6 +212,7 @@ const char *rc_sys (void)
 #endif
 
 	return (NULL);
+#endif /* PREFIX */
 }
 
 static const char *rc_parse_service_state (rc_service_state_t state)

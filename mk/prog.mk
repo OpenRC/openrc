@@ -10,14 +10,14 @@ include ${MK}/sys.mk
 # so we should embed it if different
 # This is currently hardcoded for NetBSD which has two dynamic linkers
 # and we need to use the one in /libexec instead of /usr/libexec
-_DYNLINK_SH=		if test -e /libexec/ld.elf_so; then \
+_DYNLINK_SH=		if test "${PREFIX}" = "" && test -e /libexec/ld.elf_so; then \
 				echo "-Wl,-dynamic-linker=/libexec/ld.elf_so"; \
 			else \
 				echo ""; \
 			fi
 _DYNLINK!=		${_DYNLINK_SH}
 LDFLAGS+=		${_DYNLINK}$(shell ${_DYNLINK_SH})
-LDFLAGS+=		-Wl,-rpath=/${LIBNAME} -L/${LIBNAME}
+LDFLAGS+=		-Wl,-rpath=${PREFIX}/${LIBNAME} -L${PREFIX}/${LIBNAME}
 LDFLAGS+=		${PROGLDFLAGS}
 
 all: depend ${PROG}
