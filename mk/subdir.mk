@@ -31,6 +31,7 @@ done
 all:
 	${_SUBDIR}
 clean:
+	@if test -n "${CLEANFILES}"; then echo "rm -f ${CLEANFILES}"; rm -f ${CLEANFILES}; fi
 	${_SUBDIR}
 realinstall:
 	${_SUBDIR}

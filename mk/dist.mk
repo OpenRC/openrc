@@ -2,7 +2,7 @@
 # Copyright 2008 Roy Marples <roy@marples.name>
 
 GITREF?=	HEAD
-DISTPREFIX?=	${PROG}-${VERSION}
+DISTPREFIX?=	${NAME}-${VERSION}
 DISTFILE?=	${DISTPREFIX}.tar.bz2
 
 CLEANFILES+=	${DISTFILE}

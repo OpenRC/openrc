@@ -3,8 +3,11 @@
 
 IGNOREFILES+=	${CLEANFILES}
 
+.PHONY:		.gitignore
+
 .gitignore:
-	for obj in ${IGNOREFILES}; do \
+	@if test -n "${IGNOREFILES}"; then echo "Ignoring ${IGNOREFILES}"; fi
+	@for obj in ${IGNOREFILES}; do \
 		if ! test -r .gitignore; then \
 			echo "$${obj}" > .gitignore || exit $$?; \
 		elif ! grep -q "^$${obj}$$" .gitignore; then \
