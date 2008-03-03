@@ -12,7 +12,7 @@ depend()
 	need localmount
 	use logger
 	after bootmisc
-	keyword nojail
+	keyword nojail noprefix
 }
 
 start_pre()
