@@ -41,21 +41,21 @@
 #  define LIB			"lib"
 #endif
 
-#ifndef PREFIX
-#  define PREFIX		""
+#ifdef PREFIX
+#  define RC_PREFIX		PREFIX
 #else
-#  define HAVE_PREFIX
+#  define RC_PREFIX
 #endif
 
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
 
-#define RC_LIBDIR               PREFIX "/" LIB "/rc"
+#define RC_LIBDIR               RC_PREFIX "/" LIB "/rc"
 #define RC_SVCDIR               RC_LIBDIR "/init.d"
 #define RC_DEPTREE              RC_SVCDIR "/deptree"
-#define RC_RUNLEVELDIR          PREFIX "/etc/runlevels"
-#define RC_INITDIR              PREFIX "/etc/init.d"
-#define RC_CONFDIR              PREFIX "/etc/conf.d"
+#define RC_RUNLEVELDIR          RC_PREFIX "/etc/runlevels"
+#define RC_INITDIR              RC_PREFIX "/etc/init.d"
+#define RC_CONFDIR              RC_PREFIX "/etc/conf.d"
 
 /* PKG_PREFIX is where packages are installed if different from the base OS
  * On Gentoo this is normally unset, on FreeBSD /usr/local and on NetBSD

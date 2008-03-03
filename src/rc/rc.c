@@ -550,6 +550,7 @@ static void run_script (const char *script)
 		eerrorx ("%s: failed to exec `%s'", applet, script);
 }
 
+#ifndef PREFIX
 static void do_coldplug (void)
 {
 	int i;
@@ -645,6 +646,7 @@ static void do_coldplug (void)
 		printf (" %s", service);
 	printf ("%s\n", ecolor (ECOLOR_NORMAL));
 }
+#endif
 
 #include "_usage.h"
 #define getoptstring "o:" getoptstring_COMMON
@@ -661,6 +663,7 @@ static const char * const longopts_help[] = {
 int main (int argc, char **argv)
 {
 	const char *bootlevel = NULL;
+	const char *sys = rc_sys ();
 	char *newlevel = NULL;
 	char *service = NULL;
 	char **deporder = NULL;
@@ -687,7 +690,10 @@ int main (int argc, char **argv)
 #ifdef BRANDING
 			" " BRANDING
 #endif
-			") version " VERSION "\n", applet);
+			")", applet);
+		if (sys)
+			printf (" [%s]", sys);
+		printf (" version " VERSION "\n");
 		exit (EXIT_SUCCESS);
 	}
 
@@ -797,10 +803,13 @@ int main (int argc, char **argv)
 	 * rc reboot
 	 */
 	if (newlevel) {
-		if (strcmp (newlevel, RC_LEVEL_SYSINIT) == 0 &&
-		    RUNLEVEL &&
+		if (strcmp (newlevel, RC_LEVEL_SYSINIT) == 0
+#ifndef PREFIX
+		    && RUNLEVEL &&
 		    (strcmp (RUNLEVEL, "S") == 0 ||
-		     strcmp (RUNLEVEL, "1") == 0))
+		     strcmp (RUNLEVEL, "1") == 0)
+#endif
+		)
 		{
 
 			struct utsname uts;
@@ -826,7 +835,11 @@ int main (int argc, char **argv)
 				uts.sysname,
 				uts.release,
 				uts.machine);
-#endif	
+#endif
+
+			if (sys)
+				printf (" [%s]", sys);
+
 			printf ("%s\n\n", ecolor (ECOLOR_NORMAL));
 
 			if (! rc_yesno (getenv ("EINFO_QUIET")) &&
@@ -847,7 +860,9 @@ int main (int argc, char **argv)
 			}
 #endif
 
+#ifndef PREFIX
 			do_coldplug ();
+#endif
 			rc_plugin_run (RC_HOOK_RUNLEVEL_START_OUT, newlevel);
 
 			if (want_interactive ())
@@ -855,6 +870,7 @@ int main (int argc, char **argv)
 
 			exit (EXIT_SUCCESS);
 		} else if (strcmp (newlevel, RC_LEVEL_SINGLE) == 0) {
+#ifndef PREFIX
 			if (! RUNLEVEL ||
 			    (strcmp (RUNLEVEL, "S") != 0 &&
 			     strcmp (RUNLEVEL, "1") != 0))
@@ -863,6 +879,7 @@ int main (int argc, char **argv)
 				set_ksoftlevel (runlevel);
 				single_user ();
 			}
+#endif
 		} else if (strcmp (newlevel, RC_LEVEL_REBOOT) == 0) {
 			if (! RUNLEVEL ||
 			    strcmp (RUNLEVEL, "6") != 0)
