@@ -62,7 +62,14 @@
  * /usr/pkg. */
 #ifdef PKG_PREFIX
 #  define RC_PKG_INITDIR        PKG_PREFIX "/etc/init.d"
-#  define RC_PKG_CONFDIR        PKG_PREFIX "/usr/local/etc/conf.d"
+#  define RC_PKG_CONFDIR        PKG_PREFIX "/etc/conf.d"
+#endif
+
+/* LOCAL_PREFIX is for user written stuff, which the base OS and package
+ * manger don't touch. */
+#ifdef LOCAL_PREFIX
+#  define RC_LOCAL_INITDIR      LOCAL_PREFIX "/etc/init.d"
+#  define RC_LOCAL_CONFDIR      LOCAL_PREFIX "/etc/conf.d"
 #endif
 
 #define RC_KSOFTLEVEL           RC_SVCDIR "/ksoftlevel"

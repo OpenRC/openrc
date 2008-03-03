@@ -31,8 +31,21 @@ depend() {
 	:
 }
 
-for _dir in @PREFIX@/etc/init.d @PKG_PREFIX@/etc/init.d; do
+_done_dirs=
+for _dir in \
+@PREFIX@/etc/init.d \
+@PKG_PREFIX@/etc/init.d \
+@LOCAL_PREFIX@/etc/init.d
+do
 	[ -d "${_dir}" ] || continue
+
+	# Don't do the same dir twice
+	for _d in ${_done_dirs}; do
+		[ "${_d}" = "${_dir}" ] && continue 2
+	done
+	unset _d
+	_done_dirs="${_done_dirs} ${_dir}"
+
 	cd "${_dir}"
 	for SVCNAME in *; do
 		[ -x "${SVCNAME}" ] || continue

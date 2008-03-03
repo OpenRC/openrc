@@ -14,6 +14,7 @@ MKPAM=pam
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
 PKG_PREFIX=/usr/pkg
+LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local
 
 We don't support building a static OpenRC with PAM.
@@ -23,6 +24,8 @@ You can also brand OpenRC if you so wish like so
 BRANDING=\"Gentoo/$(uname -s)\"
 
 PKG_PREFIX should be set to where packages install to by default.
+LOCAL_PREFIX should be set when to where user maintained packages are.
+Only set LOCAL_PREFIX if different from PKG_PREFIX.
 PREFIX should be set when OpenRC is not installed to /.
 
 If any of the following files exist then we do not overwrite them

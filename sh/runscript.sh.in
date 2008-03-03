@@ -40,23 +40,25 @@ describe()
 
 yesno ${RC_DEBUG} && set -x
 
+_conf_d=${1%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${SVCNAME%%.*}
 if [ -n "${_c}" -a "${_c}" != "${SVCNAME}" ]; then
-	if [ -e "/etc/conf.d/${_c}.${RC_SOFTLEVEL}" ]; then
-		. "/etc/conf.d/${_c}.${RC_SOFTLEVEL}"
-	elif [ -e "/etc/conf.d/${_c}" ]; then
-		. "/etc/conf.d/${_c}"
+	if [ -e "${_conf_d}/${_c}.${RC_SOFTLEVEL}" ]; then
+		. "${_conf_d}/${_c}.${RC_SOFTLEVEL}"
+	elif [ -e "${_conf_d}/${_c}" ]; then
+		. "${_conf_d}//${_c}"
 	fi
 fi
 unset _c
 
 # Overlay with our specific config
-if [ -e "/etc/conf.d/${SVCNAME}.${RC_SOFTLEVEL}" ]; then
-	. "/etc/conf.d/${SVCNAME}.${RC_SOFTLEVEL}"
-elif [ -e "/etc/conf.d/${SVCNAME}" ]; then
-	. "/etc/conf.d/${SVCNAME}"
+if [ -e "${_conf_d}/${SVCNAME}.${RC_SOFTLEVEL}" ]; then
+	. "${_conf_d}/${SVCNAME}.${RC_SOFTLEVEL}"
+elif [ -e "${_conf_d}/${SVCNAME}" ]; then
+	. "${_conf_d}/${SVCNAME}"
 fi
+unset _conf_d
 
 # Load any system overrides
 [ -e @PREFIX@/etc/rc.conf ] && . @PREFIX@/etc/rc.conf

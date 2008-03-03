@@ -16,10 +16,10 @@ include ${MK}/os.mk
 # Tweak our shell scripts
 .SUFFIXES:	.sh.in .in
 .sh.in.sh:
-	sed -e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@PREFIX@:${PREFIX}:g' -e 's:@PKG_PREFIX@:${PKG_PREFIX}:g' $< > $@
+	sed -e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@PREFIX@:${PREFIX}:g' -e 's:@PKG_PREFIX@:${PKG_PREFIX}:g' -e 's:@LOCAL_PREFIX@:${LOCAL_PREFIX}:g' $< > $@
 
 .in:
-	sed -e 's:@PREFIX@:${PREFIX}:g' -e 's:@PKG_PREFIX@:${PKG_PREFIX}:g' $< > $@
+	sed -e 's:@PREFIX@:${PREFIX}:g' -e 's:@PKG_PREFIX@:${PKG_PREFIX}:g' -e 's:@LOCAL_PREFIX@:${LOCAL_PREFIX}:g' $< > $@
 
 all: ${OBJS}
 

@@ -313,6 +313,7 @@ char *rc_service_resolve (const char *service)
 	if (service[0] == '/')
 		return (xstrdup (service));
 
+	/* First check started services */
 	file = rc_strcatpaths (RC_SVCDIR, "started", service, (char *) NULL);
 	if (lstat (file, &buf) || ! S_ISLNK (buf.st_mode)) {
 		free (file);
@@ -324,6 +325,14 @@ char *rc_service_resolve (const char *service)
 	}
 
 	memset (buffer, 0, sizeof (buffer));
+
+	/* Nope, so lets see if the user has written it */
+#ifdef RC_LOCAL_INITDIR
+	snprintf (buffer, sizeof (buffer), RC_LOCAL_INITDIR "/%s", service);
+	if (stat (buffer, &buf) == 0)
+		return (xstrdup (buffer));
+#endif
+
 	if (file) {
 		r = readlink (file, buffer, sizeof (buffer));
 		free (file);
@@ -332,7 +341,7 @@ char *rc_service_resolve (const char *service)
 	}
 	snprintf (buffer, sizeof (buffer), RC_INITDIR "/%s", service);
 
-	/* So we don't exist in /etc/init.d - check /usr/local/etc/init.d */
+	/* So we don't exist in /etc/init.d - check RC_PKG_INITDIR */
 #ifdef RC_PKG_INITDIR
 	if (stat (buffer, &buf) != 0) {
 		snprintf (buffer, sizeof (buffer), RC_PKG_INITDIR "/%s", service);
@@ -787,19 +796,28 @@ char **rc_services_in_runlevel (const char *runlevel)
 	char **list = NULL;
 
 	if (! runlevel) {
-#ifdef RC_PKG_INITDIR
+#if defined(RC_PKG_INITDIR) || defined(RC_LOCAL_INITDIR)
 		int i;
-		char **local = ls_dir (RC_PKG_INITDIR, LS_INITD);
+#endif
+#ifdef RC_PKG_INITDIR
+		char **pkg = ls_dir (RC_PKG_INITDIR, LS_INITD);
+#endif
+#ifdef RC_LOCAL_INITDIR
+		char **local = ls_dir (RC_LOCAL_INITDIR, LS_INITD);
 #endif
 
 		list = ls_dir (RC_INITDIR, LS_INITD);
 
 #ifdef RC_PKG_INITDIR
+		STRLIST_FOREACH (pkg, dir, i)
+			rc_strlist_addsortu (&list, dir);
+		rc_strlist_free (pkg);
+#endif
+#ifdef RC_LOCAL_DIR
 		STRLIST_FOREACH (local, dir, i)
 			rc_strlist_addsortu (&list, dir);
 		rc_strlist_free (local);
 #endif
-
 		return (list);
 	}
 
