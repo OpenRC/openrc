@@ -42,6 +42,8 @@ mount_svcdir()
 [ -r /etc/rc.conf ] && . /etc/rc.conf
 
 # Disable devd until we need it
-[ "${RC_UNAME}" = "FreeBSD" ] && sysctl hw.bus.devctl_disable=1 >/dev/null
+if [ -z "${RC_SYS}" -a "${RC_UNAME}" = "FreeBSD" ]; then
+	sysctl hw.bus.devctl_disable=1 >/dev/null
+fi
 
 . "${RC_LIBDIR}"/sh/init-common-post.sh
