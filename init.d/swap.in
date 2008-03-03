@@ -10,14 +10,22 @@ depend()
 
 start()
 {
-	ebegin "Activating swap"
-	swapon -a >/dev/null
+	ebegin "Activating swap devices"
+	if type swapctl >/dev/null 2>&1; then
+		swapctl -A -t noblk >/dev/null
+	else
+		swapon -a >/dev/null
+	fi
 	eend 0 # If swapon has nothing todo it errors, so always return 0
 }	
 
 stop()
 {
-	ebegin "Deactivating swap"
-	swapoff -a >/dev/null
+	ebegin "Deactivating swap devices"
+	if type swapctl >/dev/null 2>&1; then
+		swapctl -U -t noblk >/dev/null
+	else
+		swapoff -a >/dev/null
+	fi
 	eend 0 
 }
