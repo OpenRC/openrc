@@ -113,7 +113,7 @@ start()
 	[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
 
 	# Create an 'after-boot' dmesg log
-	if [ "${RC_SYS}" != "VPS" ]; then
+	if [ "${RC_SYS}" != "VSERVER" -a "${RC_SYS}" != "OPENVZ" ]; then
 		dmesg > /var/log/dmesg
 		chmod 640 /var/log/dmesg
 	fi

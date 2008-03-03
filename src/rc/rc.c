@@ -289,8 +289,8 @@ static void sulogin (bool cont)
 #ifdef __linux__
 	char *e = getenv ("RC_SYS");
 
-	/* VPS systems cannot do a sulogin */
-	if (e && strcmp (e, "VPS") == 0) {
+	/* VSERVER and OPENVZ systems cannot do a sulogin */
+	if (e && (strcmp (e, "VSERVER") == 0 || strcmp (e, "OPENVZ") == 0) {
 		execl ("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
 		eerrorx ("%s: unable to exec `/sbin/halt': %s", applet, strerror (errno));
 	}

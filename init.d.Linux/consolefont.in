@@ -9,7 +9,7 @@ depend()
 	need localmount
 	need keymaps    # sets up terminal encoding scheme
 	after hotplug
-	keyword noprefix nouml novps noxenu
+	keyword noopenvz noprefix nouml novserver noxenu
 }
 
 start()

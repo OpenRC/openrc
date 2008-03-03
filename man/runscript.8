@@ -137,12 +137,14 @@ Tags a service with a keyword. Here's the keywords we currently understand:-
 .It Dv nojail
 When in a jail, exclude this service from any dependencies. The service can
 still be run directly.
+.It Dv noopenvz
+Same as nojail, but for OpenVZ systems.
 .It Dv notimeout
 Do not time out waiting for that service.
 .It Dv nouml
 Same as nojail, but for UML systems.
-.It Dv novps
-Same as nojail, but for VServer and OpenVZ systems.
+.It Dv novserver
+Same as nojail, but for VServer systems.
 .It Dv noxen0
 Same as nojail, but for Xen DOM0 systems.
 .It Dv noxenu
@@ -284,7 +286,7 @@ Boot runlevel chosen. Default is boot.
 Default runlevel chosen. Default is default.
 .It Va RC_SYS
 A special variable to describe the system more.
-Possible values are XENU, XEN0, UML and VPS.
+Possible values are OPENVZ, XENU, XEN0, UML and VSERVER.
 .It Va RC_UNAME
 The result of `uname -s`.
 .El

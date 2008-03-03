@@ -8,7 +8,7 @@ depend()
 {
 	need fsck
 	use modules mtab
-	keyword nojail noprefix
+	keyword nojail noopenvz noprefix novserver
 }
 
 start()
@@ -29,9 +29,6 @@ start()
 
 stop()
 {
-	# Don't unmount anything for VPS systems
-	[ "${RC_SYS}" = "VPS" ] && return 0
-
 	# We never unmount / or /dev or $RC_SVCDIR
 	local x= no_umounts="/|/dev|/dev/.*|${RC_SVCDIR}"
 

@@ -7,7 +7,7 @@ description="Mounts misc filesystems in /proc."
 depend()
 {
 	need localmount
-	keyword noprefix
+	keyword noopenvz noprefix novserver
 }
 
 start()

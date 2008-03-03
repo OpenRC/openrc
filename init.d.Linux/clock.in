@@ -28,7 +28,7 @@ depend()
 	else
 		before *
 	fi
-	keyword noprefix nouml novps noxenu
+	keyword noopenvz noprefix nouml novserver noxenu
 }
 
 setupopts()

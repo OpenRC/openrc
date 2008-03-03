@@ -207,8 +207,11 @@ const char *rc_sys (void)
 	} else if (file_regex ("/proc/cpuinfo", "UML"))
 		return (RC_SYS_UML);
 	else if (file_regex ("/proc/self/status",
-			       "(s_context|VxID|envID):[[:space:]]*[1-9]"))
-		return (RC_SYS_VPS);
+			       "(s_context|VxID):[[:space:]]*[1-9]"))
+		return (RC_SYS_VSERVER);
+	else if (file_regex ("/proc/self/status",
+			       "envID:[[:space:]]*[1-9]"))
+		return (RC_SYS_OPENVZ);
 #endif
 
 	return (NULL);

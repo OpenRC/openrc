@@ -21,7 +21,7 @@ depend()
 	need localmount
 	after bootmisc
 	provide net
-	keyword nojail noprefix
+	keyword nojail noprefix novserver
 
 	case "${IFACE}" in
 		lo|lo0);;

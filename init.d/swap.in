@@ -5,7 +5,7 @@
 depend()
 {
 	need localmount
-	keyword nojail noprefix
+	keyword nojail noopenvz noprefix novserver
 }
 
 start()

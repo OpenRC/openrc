@@ -65,7 +65,7 @@ mount_svcdir()
 # Set the console loglevel to 1 for a cleaner boot
 # the logger should anyhow dump the ring-0 buffer at start to the
 # logs, and that with dmesg can be used to check for problems
-if [ -n "${dmesg_level}" -a "${RC_SYS}" != "VPS" ]; then
+if [ -n "${dmesg_level}" -a "${RC_SYS}" != "VSERVER" ]; then
 	dmesg -n "${dmesg_level}"
 fi
 
@@ -108,7 +108,10 @@ if [ -r /sbin/livecd-functions.sh ]; then
 	livecd_read_commandline
 fi
 
-if [ "${RC_UNAME}" != "GNU/kFreeBSD" -a "${RC_SYS}" != "VPS" ]; then
+if [ "${RC_UNAME}" != "GNU/kFreeBSD" \
+	-a "${RC_SYS}" != "VSERVER" \
+	-a "${RC_SYS}" != "OPENVZ" ]
+then
 	if grep -Eq "[[:space:]]+sysfs$" /proc/filesystems; then
 		if [ -d /sys ]; then
 			if ! mountinfo --quiet /sys; then
@@ -128,7 +131,8 @@ fi
 
 # Try to figure out how the user wants /dev handled
 if [ "${rc_devices}" = "static" \
-	-o "${RC_SYS}" = "VPS" \
+	-o "${RC_SYS}" = "VSERVER" \
+	-o "${RC_SYS}" = "OPENVZ" \
 	-o "${RC_UNAME}" = "GNU/kFreeBSD" ]
 then
 	ebegin "Using existing device nodes in /dev"
