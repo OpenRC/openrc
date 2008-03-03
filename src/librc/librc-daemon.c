@@ -194,6 +194,7 @@ librc_hidden_def(rc_find_pids)
 #  define _GET_KINFO_COMM(kp) (kp.ki_comm)
 #  define _GET_KINFO_PID(kp) (kp.ki_pid)
 #  define _KVM_PATH _PATH_DEVNULL
+#  define _KVM_FLAGS O_RDONLY
 # else
 #  define _KVM_GETPROC2
 #  define _KINFO_PROC kinfo_proc2
@@ -202,6 +203,7 @@ librc_hidden_def(rc_find_pids)
 #  define _GET_KINFO_COMM(kp) (kp.p_comm)
 #  define _GET_KINFO_PID(kp) (kp.p_pid)
 #  define _KVM_PATH NULL
+#  define _KVM_FLAGS KVM_NO_FILES
 # endif
 
 pid_t *rc_find_pids (const char *const *argv, const char *cmd,
@@ -221,7 +223,7 @@ pid_t *rc_find_pids (const char *const *argv, const char *cmd,
 	int match;
 
 	if ((kd = kvm_openfiles (_KVM_PATH, _KVM_PATH,
-				 NULL, O_RDONLY, errbuf)) == NULL)
+				 NULL, _KVM_FLAGS, errbuf)) == NULL)
 	{
 		fprintf (stderr, "kvm_open: %s\n", errbuf);
 		return (NULL);
