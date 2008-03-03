@@ -57,8 +57,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#if defined(__DragonFly__) || defined(__FreeBSD__) || \
-	defined(__NetBSD__) || defined (__OpenBSD__)
+#ifdef BSD
 #include <sys/param.h>
 #include <sys/user.h>
 #include <sys/sysctl.h>

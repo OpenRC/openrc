@@ -184,7 +184,16 @@ librc_hidden_def(rc_find_pids)
 
 #elif BSD
 
-# if defined(__DragonFly__) || defined(__FreeBSD__)
+# if defined(__NetBSD__) || defined(__OpenBSD__)
+#  define _KVM_GETPROC2
+#  define _KINFO_PROC kinfo_proc2
+#  define _KVM_GETARGV kvm_getargv2
+#  define _GET_KINFO_UID(kp) (kp.p_ruid)
+#  define _GET_KINFO_COMM(kp) (kp.p_comm)
+#  define _GET_KINFO_PID(kp) (kp.p_pid)
+#  define _KVM_PATH NULL
+#  define _KVM_FLAGS KVM_NO_FILES
+# else
 #  ifndef KERN_PROC_PROC
 #    define KERN_PROC_PROC KERN_PROC_ALL
 #  endif
@@ -195,15 +204,6 @@ librc_hidden_def(rc_find_pids)
 #  define _GET_KINFO_PID(kp) (kp.ki_pid)
 #  define _KVM_PATH _PATH_DEVNULL
 #  define _KVM_FLAGS O_RDONLY
-# else
-#  define _KVM_GETPROC2
-#  define _KINFO_PROC kinfo_proc2
-#  define _KVM_GETARGV kvm_getargv2
-#  define _GET_KINFO_UID(kp) (kp.p_ruid)
-#  define _GET_KINFO_COMM(kp) (kp.p_comm)
-#  define _GET_KINFO_PID(kp) (kp.p_pid)
-#  define _KVM_PATH NULL
-#  define _KVM_FLAGS KVM_NO_FILES
 # endif
 
 pid_t *rc_find_pids (const char *const *argv, const char *cmd,
