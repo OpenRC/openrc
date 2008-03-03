@@ -12,3 +12,4 @@ librc-strlist.So
 librc.a
 librc.so.1
 librc.so
+.depend

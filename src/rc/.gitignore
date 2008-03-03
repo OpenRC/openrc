@@ -66,3 +66,4 @@ rc.o
 runscript.o
 start-stop-daemon.o
 rc
+.depend
