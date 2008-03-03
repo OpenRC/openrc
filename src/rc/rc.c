@@ -287,10 +287,10 @@ static void sulogin (bool cont)
 	sigset_t old;
 	pid_t pid;
 #ifdef __linux__
-	char *e = getenv ("RC_SYS");
+	const char *sys = rc_sys ();
 
 	/* VSERVER and OPENVZ systems cannot do a sulogin */
-	if (e && (strcmp (e, "VSERVER") == 0 || strcmp (e, "OPENVZ") == 0) {
+	if (sys && (strcmp (sys, "VSERVER") == 0 || strcmp (sys, "OPENVZ") == 0)) {
 		execl ("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
 		eerrorx ("%s: unable to exec `/sbin/halt': %s", applet, strerror (errno));
 	}
