@@ -43,6 +43,8 @@
 
 #ifndef PREFIX
 #  define PREFIX		""
+#else
+#  define HAVE_PREFIX
 #endif
 
 #define RC_LEVEL_BOOT           "boot"

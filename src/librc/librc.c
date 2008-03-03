@@ -186,7 +186,7 @@ static bool file_regex (const char *file, const char *regex)
 
 const char *rc_sys (void)
 {
-#ifdef PREFIX
+#ifdef HAVE_PREFIX
 	return (RC_SYS_PREFIX);
 #else	
 
