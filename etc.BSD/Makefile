@@ -1,5 +1,5 @@
 DIR=		/etc
-CONF=		${CONTENTS}
+CONF=		rc rc.shutdown
 
 MK=		../mk
 include ${MK}/scripts.mk

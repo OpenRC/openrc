@@ -1,9 +1,7 @@
-_MAN3_SH=	ls -1 *.3
-_MAN3!=		${_MAN3_SH}
-MAN3=		${_MAN3}$(shell ${_MAN3_SH})
-_MAN8_SH=	ls -1 *.8
-_MAN8!=		${_MAN8_SH}
-MAN8=		${_MAN8}$(shell ${_MAN8_SH})
+MAN3=		einfo.3 \
+		rc_config.3 rc_deptree.3 rc_find_pids.3 rc_plugin_hook.3 \
+		rc_runlevel.3 rc_service.3 rc_strcatpaths.3 rc_strlist.3
+MAN8=		rc-status.8 rc-update.8 rc.8 runscript.8 start-stop-daemon.8
 
 # Handy macro to create symlinks
 # This does rely on correctly formatting our manpages!

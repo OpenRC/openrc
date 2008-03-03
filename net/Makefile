@@ -1,5 +1,6 @@
 DIR=	${RC_LIB}/net
-INC=	${CONTENTS}
+INC=	dhclient.sh dhcpcd.sh macchanger.sh macnet.sh \
+	ssidnet.sh system.sh wpa_supplicant.sh
 
 MK=	../mk
 include ${MK}/scripts.mk

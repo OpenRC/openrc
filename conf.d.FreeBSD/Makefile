@@ -1,5 +1,5 @@
 DIR=	/etc/conf.d
-CONF=	${CONTENTS} 
+CONF=	syscons
 
 MK=	../mk
 include ${MK}/scripts.mk

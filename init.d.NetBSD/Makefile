@@ -1,5 +1,6 @@
 DIR=	/etc/init.d
-BIN=	${CONTENTS} 
+SRCS=	ttys.in wscons.in
+BIN=	${OBJS}
 
 MK=	../mk
 include ${MK}/scripts.mk

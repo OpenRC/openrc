@@ -1,5 +1,6 @@
 DIR=	${RC_LIB}/sh
-BIN=	${CONTENTS}
+SRCS=	init.sh.in
+BIN=	${OBJS}
 
 MK=	../mk
 include ${MK}/scripts.mk

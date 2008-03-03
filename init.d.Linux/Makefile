@@ -1,5 +1,7 @@
 DIR=	/etc/init.d
-BIN=	${CONTENTS} 
+SRCS=	clock.in consolefont.in keymaps.in modules.in mtab.in numlock.in \
+	procfs.in sysctl.in
+BIN=${OBJS}
 
 MK=	../mk
 include ${MK}/scripts.mk

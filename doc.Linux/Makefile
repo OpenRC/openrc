@@ -1,5 +1,5 @@
 DIR=	${DOCDIR}/openrc
-INC=	${CONTENTS}
+INC=	net.example
 
 MK=	../mk
 include ${MK}/scripts.mk
