@@ -1,1 +1,10 @@
+bootmisc
+fsck
 halt.sh
+hostname
+local
+localmount
+netmount
+root
+swap
+urandom

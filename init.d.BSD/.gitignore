@@ -1,0 +1,11 @@
+hostid
+moused
+newsyslog
+pf
+rarpd
+rc-enabled
+rpcbind
+savecore
+swap-blk
+sysctl
+syslogd

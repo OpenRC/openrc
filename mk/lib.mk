@@ -11,6 +11,8 @@ OBJS+=			${SRCS:.c=.o}
 SOBJS+=			${OBJS:.o=.So}
 _LIBS=			lib${LIB}.a ${SHLIB_NAME}
 
+CLEANFILES+=		${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK}
+
 .SUFFIXES:		.So
 
 .c.So:
@@ -50,3 +52,4 @@ clean:
 
 include ${MK}/sys.mk
 include ${MK}/depend.mk
+include ${MK}/gitignore.mk

@@ -41,3 +41,5 @@ install: all realinstall ${INSTALLAFTER}
 CLEANFILES+=	${OBJS}
 clean:
 	if test -n "${CLEANFILES}"; then rm -f ${CLEANFILES}; fi 
+
+include ${MK}/gitignore.mk

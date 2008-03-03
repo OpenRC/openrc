@@ -27,6 +27,8 @@ RC_SBINLINKS=	mark_service_starting mark_service_started \
 		mark_service_inactive mark_service_wasinactive \
 		mark_service_coldplugged mark_service_failed \
 		rc-abort
+ALL_LINKS=	${BINLINKS} ${SBINLINKS} ${RC_BINLINKS} ${RC_SBINLINKS}
+CLEANFILES+=	${ALL_LINKS}
 
 LDFLAGS+=	-L../librc -L../libeinfo
 LDADD+=		-lutil -lrc -leinfo
@@ -66,7 +68,5 @@ install: all
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam ${DESTDIR}${PAMDIR}/start-stop-daemon; \
 	fi
 
-ALL_LINKS = $(BINLINKS) $(SBINLINKS) $(RC_BINLINKS) $(RC_SBINLINKS)
-CLEANFILES += $(ALL_LINKS)
 links: rc
-	for l in $(ALL_LINKS) ; do ln -sf rc $$l || exit $$? ; done
+	for l in ${ALL_LINKS}; do ln -sf rc $$l || exit $$? ; done

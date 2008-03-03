@@ -37,3 +37,5 @@ realinstall:
 install: realinstall ${INSTALLAFTER}
 depend:
 	${_SUBDIR}
+gitignore:
+	${_SUBDIR}

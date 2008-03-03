@@ -20,12 +20,15 @@ LDFLAGS+=		${_DYNLINK}$(shell ${_DYNLINK_SH})
 LDFLAGS+=		-Wl,-rpath=${PREFIX}/${LIBNAME} -L${PREFIX}/${LIBNAME}
 LDFLAGS+=		${PROGLDFLAGS}
 
+CLEANFILES+=		${OBJS} ${PROG}
+
 all: depend ${PROG}
 
 ${PROG}: ${SCRIPTS} ${OBJS}
 	${CC} ${LDFLAGS} -o $@ ${OBJS} ${LDADD}
 
 clean:
-	rm -f ${OBJS} ${PROG} ${CLEANFILES}
+	rm -f ${CLEANFILES}
 
 include ${MK}/depend.mk
+include ${MK}/gitignore.mk

@@ -1,0 +1,14 @@
+.depend
+librc.o
+librc-daemon.o
+librc-depend.o
+librc-misc.o
+librc-strlist.o
+librc.So
+librc-daemon.So
+librc-depend.So
+librc-misc.So
+librc-strlist.So
+librc.a
+librc.so.1
+librc.so

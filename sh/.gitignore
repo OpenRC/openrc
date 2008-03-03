@@ -1,4 +1,5 @@
 functions.sh
-rc-functions.sh
 gendepends.sh
+net.sh
+rc-functions.sh
 runscript.sh

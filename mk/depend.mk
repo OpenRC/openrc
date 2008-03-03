@@ -4,6 +4,7 @@
 # Copyright 2008 Roy Marples <roy@marples.name>
 
 CLEANFILES+=	.depend
+IGNOREFILES+=	.depend
 
 .depend: ${SRCS}
 	${CC} ${CFLAGS} -MM ${SRCS} > .depend
