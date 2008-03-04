@@ -96,6 +96,7 @@ static char **coldplugged_services = NULL;
 static char **stop_services = NULL;
 static char **start_services = NULL;
 static rc_depinfo_t *deptree = NULL;
+static rc_hook_t hook_out = 0;
 static char *tmp = NULL;
 
 struct termios *termios_orig = NULL;
@@ -143,6 +144,9 @@ static void cleanup (void)
 {
 	if (applet && strcmp (applet, "rc") == 0) {
 		pidlist_t *pl = service_pids;
+
+		if (hook_out)
+			rc_plugin_run (hook_out, runlevel);
 
 		rc_plugin_unload ();
 
@@ -849,6 +853,7 @@ int main (int argc, char **argv)
 
 			setenv ("RC_SOFTLEVEL", newlevel, 1);
 			rc_plugin_run (RC_HOOK_RUNLEVEL_START_IN, newlevel);
+			hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 			run_script (INITSH);
 
 #ifdef __linux__
@@ -864,6 +869,7 @@ int main (int argc, char **argv)
 			do_coldplug ();
 #endif
 			rc_plugin_run (RC_HOOK_RUNLEVEL_START_OUT, newlevel);
+			hook_out = 0;
 
 			if (want_interactive ())
 				mark_interactive ();
@@ -951,6 +957,7 @@ int main (int argc, char **argv)
 	} else {
 		rc_plugin_run (RC_HOOK_RUNLEVEL_STOP_IN, runlevel);
 	}
+	hook_out = RC_HOOK_RUNLEVEL_STOP_OUT;
 
 	/* Check if runlevel is valid if we're changing */
 	if (newlevel && strcmp (runlevel, newlevel) != 0 && ! going_down) {
@@ -1109,6 +1116,7 @@ int main (int argc, char **argv)
 
 	/* Notify the plugins we have finished */
 	rc_plugin_run (RC_HOOK_RUNLEVEL_STOP_OUT, runlevel);
+	hook_out = 0;
 
 	rmdir (RC_STOPPING);
 
@@ -1139,6 +1147,7 @@ int main (int argc, char **argv)
 
 	mkdir (RC_STARTING, 0755);
 	rc_plugin_run (RC_HOOK_RUNLEVEL_START_IN, runlevel);
+	hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 
 	/* Re-add our coldplugged services if they stopped */
 	STRLIST_FOREACH (coldplugged_services, service, i)
@@ -1207,6 +1216,7 @@ interactive_option:
 	wait_for_services ();
 
 	rc_plugin_run (RC_HOOK_RUNLEVEL_START_OUT, runlevel);
+	hook_out = 0;
 
 #ifdef __linux__
 	/* mark any services skipped as stopped */
