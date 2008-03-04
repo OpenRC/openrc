@@ -324,6 +324,10 @@ rc_provide="!net"
 rc_provide_tap1="!net"
 # To put in in /etc/rc.conf you would do it like this
 rc_net_tap1_provide="!net"
+
+# It's also possible to negate keywords. This is mainly useful for prefix
+# users testing OpenRC.
+rc_keyword="!noprefix"
 .Ed
 .Sh EXAMPLES
 .Pp
