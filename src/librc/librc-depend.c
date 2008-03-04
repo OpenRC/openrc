@@ -743,7 +743,7 @@ bool rc_deptree_update (void)
 	char **config = NULL;
 	int retval = true;
 	FILE *fp;
-	rc_depinfo_t *deptree;
+	rc_depinfo_t *deptree = NULL;
 	rc_depinfo_t *depinfo;
 	rc_depinfo_t *di;
 	rc_depinfo_t *last_depinfo = NULL;
@@ -768,12 +768,11 @@ bool rc_deptree_update (void)
 	if (! (fp = popen (GENDEP, "r")))
 		return (false);
 
-	deptree = xzalloc (sizeof (*deptree));
 	while ((line = rc_getline (fp)))
 	{
 		depends = line;
 		service = strsep (&depends, " ");
-		if (! service)
+		if (! service || ! *service)
 			goto next;
 		type = strsep (&depends, " ");
 
@@ -786,7 +785,9 @@ bool rc_deptree_update (void)
 
 		if (! depinfo)
 		{
-			if (! last_depinfo->service)
+			if (! last_depinfo)
+				deptree = depinfo = xzalloc (sizeof (*depinfo));
+			else if (! last_depinfo->service)
 				depinfo = last_depinfo;
 			else
 			{
