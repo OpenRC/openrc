@@ -45,7 +45,7 @@ start()
 			fsck_args=${fsck_args--A -p}
 			if echo 2>/dev/null >/.test.$$; then
 				rm -f /.test.$$
-				fsck_opts="${fsck_args} -R"
+				fsck_opts="${fsck_opts} -R"
 			fi
 		fi
 		reboot_opts="-f"
