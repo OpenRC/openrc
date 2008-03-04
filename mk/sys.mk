@@ -21,7 +21,9 @@ BINMODE?=		0755
 INCDIR?=		${UPREFIX}/include
 INCMODE?=		0444
 
-LIBNAME?=		lib
+_LIBNAME_SH=		case `readlink /lib` in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
+_LIBNAME!=		${_LIBNAME_SH}
+LIBNAME?=		${_LIBNAME}$(shell ${_LIBNAME_SH})
 LIBDIR?=		${UPREFIX}/${LIBNAME}
 LIBMODE?=		0444
 SHLIBDIR?=		${PREFIX}/${LIBNAME}

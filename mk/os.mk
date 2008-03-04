@@ -13,9 +13,6 @@ _SUBOS_SH=	case `uname -s` in \
 _SUBOS!=	${_SUBOS_SH}
 SUBOS?=		${_SUBOS}$(shell ${_SUBOS_SH})
 
-_LIBNAME_SH=	l=`readlink /lib`; case "$$l" in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
-_LIBNAME!=	${_LIBNAME_SH}
-LIBNAME?=	${_LIBNAME}$(shell ${_LIBNAME_SH})
 RC_LIB=		/$(LIBNAME)/rc
 
 _DEF_SH=	case `uname -s` in Linux) echo "-D_BSD_SOURCE -D_XOPEN_SOURCE=600";; *) echo;; esac
