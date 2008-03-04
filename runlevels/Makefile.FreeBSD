@@ -1,2 +1,1 @@
 BOOT+=		clock dumpon syscons
-DEFAULT+=	mixer
