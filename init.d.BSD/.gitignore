@@ -6,6 +6,5 @@ rarpd
 rc-enabled
 rpcbind
 savecore
-swap-blk
 sysctl
 syslogd
