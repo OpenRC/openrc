@@ -11,21 +11,19 @@ depend()
 start()
 {
 	ebegin "Activating swap devices"
-	if type swapctl >/dev/null 2>&1; then
-		swapctl -A -t noblk >/dev/null
-	else
-		swapon -a >/dev/null
-	fi
+	case "${RC_UNAME}" in
+		NetBSD|OpenBSD) swapctl -A -t noblk >/dev/null;;
+		*)		swapon -a >/dev/null;;
+	esac
 	eend 0 # If swapon has nothing todo it errors, so always return 0
 }	
 
 stop()
 {
 	ebegin "Deactivating swap devices"
-	if type swapctl >/dev/null 2>&1; then
-		swapctl -U -t noblk >/dev/null
-	else
-		swapoff -a >/dev/null
-	fi
+	case "${RC_UNAME}" in
+		NetBSD|OpenBSD)	swapctl -U -t noblk >/dev/null;;
+		*)		swapoff -a >/dev/null;;
+	esac
 	eend 0 
 }

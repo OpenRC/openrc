@@ -1,5 +1,5 @@
 DIR=	/etc/init.d
-SRCS=	ttys.in wscons.in
+SRCS=	swap-blk.in ttys.in wscons.in
 BIN=	${OBJS}
 
 MK=	../mk
