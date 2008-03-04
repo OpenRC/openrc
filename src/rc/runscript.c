@@ -962,6 +962,11 @@ static void svc_stop (bool deps)
 		services = NULL;
 	}
 
+	/* If we're stopping localmount, set LC_ALL=C so that
+	 * bash doesn't load anything blocking the unmounting of /usr */
+	if (strcmp (applet, "localmount") == 0)
+		setenv ("LC_ALL", "C", 1);
+
 	if (ibsave)
 		setenv ("IN_BACKGROUND", ibsave, 1);
 	hook_out = RC_HOOK_SERVICE_STOP_DONE;
