@@ -690,14 +690,14 @@ int main (int argc, char **argv)
 		eerrorx ("arguments required");
 
 	if (argc > 1 && (strcmp (argv[1], "--version") == 0)) {
-		printf ("%s (OpenRC"
-#ifdef BRANDING
-			" - " BRANDING
-#endif
-			")", applet);
+		printf ("%s (OpenRC", applet);
 		if (sys)
 			printf (" [%s]", sys);
-		printf (" version " VERSION "\n");
+		printf (") " VERSION
+#ifdef BRANDING
+			" (" BRANDING ")"
+#endif
+			"\n");
 		exit (EXIT_SUCCESS);
 	}
 
