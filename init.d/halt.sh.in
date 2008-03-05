@@ -2,7 +2,7 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-. /@SYSCONFDIR@/init.d/functions.sh
+. @SYSCONFDIR@/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
 [ -r @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
 
