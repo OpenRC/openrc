@@ -7,7 +7,7 @@ description="Mounts disks and swap according to /etc/fstab."
 depend()
 {
 	need fsck
-	use modules mtab
+	use lvm modules mtab
 	keyword nojail noopenvz noprefix novserver
 }
 
