@@ -2,7 +2,7 @@ BOOT=		bootmisc fsck hostname localmount \
 		root swap sysctl urandom
 DEFAULT=	local netmount
 
-LEVELDIR=	${DESTDIR}/${PREFIX}/etc/runlevels
+LEVELDIR=	${DESTDIR}/${PREFIX}/${SYSCONFDIR}/runlevels
 BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 

@@ -19,8 +19,8 @@ start()
 	fi
 
 	# Support old configs
-	if [ -e /etc/conf.d/local.start ]; then
-		. /etc/conf.d/local.start
+	if [ -e @SYSCONFDIR@/conf.d/local.start ]; then
+		. @SYSCONFDIR@/conf.d/local.start
 	fi
 
 	eend $? "Failed to start local"
@@ -35,8 +35,8 @@ stop()
 	fi
 
 	# Support old configs
-	if [ -e /etc/conf.d/local.stop ]; then
-		. /etc/conf.d/local.stop
+	if [ -e @SYSCONFDIR@/conf.d/local.stop ]; then
+		. @SYSCONFDIR@/conf.d/local.stop
 	fi
 
 	eend $? $"Failed to stop local"

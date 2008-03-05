@@ -1,4 +1,4 @@
-DIR=	/etc/init.d
+DIR=	${INITDIR}
 SRCS=	avahi-dnsconfd.in avahid.in dbus.in hald.in named.in ntpd.in \
 	openvpn.in polkitd.in sshd.in
 

@@ -9,6 +9,7 @@ INCS=		rc.h
 VERSION_MAP=	rc.map
 
 CFLAGS+=	-DLIB=\"${LIBNAME}\"
+CFLAGS+=	-DSYSCONFDIR=\"${SYSCONFDIR}\"
 LDADD+=		${LIBKVM}
 
 CFLAGS+=	-I../includes

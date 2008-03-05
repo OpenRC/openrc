@@ -1,4 +1,4 @@
-DIR=	/etc/init.d
+DIR=	${INITDIR}
 SRCS=	clock.in consolefont.in keymaps.in modules.in mtab.in numlock.in \
 	procfs.in sysctl.in
 BIN=${OBJS}

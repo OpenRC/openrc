@@ -1,5 +1,3 @@
-# /etc/conf.d/urandom
-
 # Sometimes you want to have urandom start before "localmount"
 # (say for crypt swap), so you will need to customize this
 # behavior.  If you have /var on a separate partition, then

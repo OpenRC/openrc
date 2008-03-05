@@ -41,6 +41,10 @@
 #  define LIB			"lib"
 #endif
 
+#ifndef SYSCONFDIR
+#  define SYSCONFDIR		"/etc"
+#endif
+
 #ifdef PREFIX
 #  define RC_PREFIX		PREFIX
 #else
@@ -53,23 +57,23 @@
 #define RC_LIBDIR               RC_PREFIX "/" LIB "/rc"
 #define RC_SVCDIR               RC_LIBDIR "/init.d"
 #define RC_DEPTREE              RC_SVCDIR "/deptree"
-#define RC_RUNLEVELDIR          RC_PREFIX "/etc/runlevels"
-#define RC_INITDIR              RC_PREFIX "/etc/init.d"
-#define RC_CONFDIR              RC_PREFIX "/etc/conf.d"
+#define RC_RUNLEVELDIR          RC_PREFIX SYSCONFDIR "/runlevels"
+#define RC_INITDIR              RC_PREFIX SYSCONFDIR "/init.d"
+#define RC_CONFDIR              RC_PREFIX SYSCONFDIR "/conf.d"
 
 /* PKG_PREFIX is where packages are installed if different from the base OS
  * On Gentoo this is normally unset, on FreeBSD /usr/local and on NetBSD
  * /usr/pkg. */
 #ifdef PKG_PREFIX
-#  define RC_PKG_INITDIR        PKG_PREFIX "/etc/init.d"
-#  define RC_PKG_CONFDIR        PKG_PREFIX "/etc/conf.d"
+#  define RC_PKG_INITDIR        PKG_PREFIX SYSCONFDIR "/init.d"
+#  define RC_PKG_CONFDIR        PKG_PREFIX SYSCONFDIR "/conf.d"
 #endif
 
 /* LOCAL_PREFIX is for user written stuff, which the base OS and package
  * manger don't touch. */
 #ifdef LOCAL_PREFIX
-#  define RC_LOCAL_INITDIR      LOCAL_PREFIX "/etc/init.d"
-#  define RC_LOCAL_CONFDIR      LOCAL_PREFIX "/etc/conf.d"
+#  define RC_LOCAL_INITDIR      LOCAL_PREFIX SYSCONFDIR "/init.d"
+#  define RC_LOCAL_CONFDIR      LOCAL_PREFIX SYSCONFDIR "/conf.d"
 #endif
 
 #define RC_KSOFTLEVEL           RC_SVCDIR "/ksoftlevel"

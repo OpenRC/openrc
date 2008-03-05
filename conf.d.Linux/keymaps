@@ -1,5 +1,3 @@
-# /etc/conf.d/keymaps
-
 # Use KEYMAP to specify the default console keymap.  There is a complete tree
 # of keymaps in /usr/share/keymaps to choose from.
 keymap="us"

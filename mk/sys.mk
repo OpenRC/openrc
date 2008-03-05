@@ -15,6 +15,10 @@ PKG_PREFIX=		/usr/local
 
 PICFLAG?=		-fPIC
 
+SYSCONFDIR?=		/etc
+INITDIR?=		${SYSCONFDIR}/init.d
+CONFDIR?=		${SYSCONFDIR}/conf.d
+
 BINDIR?=		${PREFIX}/sbin
 BINMODE?=		0755
 

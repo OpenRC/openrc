@@ -26,7 +26,7 @@ depend()
 	local pmap=""
 	if need_portmap; then
 		pmap="${pmap} rpc.statd"
-		[ -x /etc/init.d/rpcbind ] \
+		[ -x @SYSCONFDIR@/init.d/rpcbind ] \
 			&& pmap="rpcbind" \
 			|| pmap="portmap"
 	fi
@@ -40,7 +40,7 @@ depend()
 start()
 {	
 	local myneed= myuse= pmap="portmap" nfsmounts=
-	[ -x /etc/init.d/rpcbind ] && pmap="rpcbind"
+	[ -x @SYSCONFDIR@/init.d/rpcbind ] && pmap="rpcbind"
 
 	local x= fs=
 	for x in ${net_fs_list}; do

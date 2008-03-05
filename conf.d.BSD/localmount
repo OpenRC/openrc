@@ -1,5 +1,3 @@
-# /etc/conf.d/localmount
-
 # Kernel core dump options for FreeBSD kernel.
 # Unless you're a FreeBSD kernel developer or driver writer then this won't
 # be of any interest to you at all.

@@ -1,4 +1,4 @@
-DIR=	/etc/conf.d
+DIR=	${CONFDIR}
 CONF=	localmount moused powerd rarpd
 
 MK=	../mk

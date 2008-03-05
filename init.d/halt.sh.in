@@ -2,9 +2,9 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-. /etc/init.d/functions.sh
+. /@SYSCONFDIR@/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
-[ -r /etc/rc.conf ] && . /etc/rc.conf
+[ -r @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
 
 # Support LiveCD foo
 if [ -r /sbin/livecd-functions.sh ]; then
@@ -28,8 +28,8 @@ sync; sync
 #   1) we don't need (and by default can't) umount anything (VServer) or
 #   2) the host utils take care of all umounting stuff (OpenVZ)
 if [ "${RC_SYS}" = "VSERVER" -o "${RC_SYS}" = "OPENVZ" ]; then
-	if [ -e /etc/init.d/"$1".sh ]; then
-		. /etc/init.d/"$1".sh
+	if [ -e @SYSCONFDIR@/init.d/"$1".sh ]; then
+		. @SYSCONFDIR@/init.d/"$1".sh
 	else
 		exit 0
 	fi
@@ -93,7 +93,7 @@ if [ ${unmounted} -ne 0 ]; then
 fi
 
 # Load the final script - not needed on BSD so they should not exist
-[ -e /etc/init.d/"$1".sh ] && . /etc/init.d/"$1".sh
+[ -e @SYSCONFDIR@/init.d/"$1".sh ] && . @SYSCONFDIR@/init.d/"$1".sh
 
 # Always exit 0 here
 exit 0

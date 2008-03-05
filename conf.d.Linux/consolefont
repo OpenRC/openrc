@@ -1,5 +1,3 @@
-# /etc/conf.d/consolefont
-
 # consolefont specifies the default font that you'd like Linux to use on the
 # console.  You can find a good selection of fonts in /usr/share/consolefonts;
 # you shouldn't specify the trailing ".psf.gz", just the font name below.

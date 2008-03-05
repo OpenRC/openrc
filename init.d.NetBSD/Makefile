@@ -1,4 +1,4 @@
-DIR=	/etc/init.d
+DIR=	${INITDIR}	
 SRCS=	swap-blk.in ttys.in wscons.in
 BIN=	${OBJS}
 

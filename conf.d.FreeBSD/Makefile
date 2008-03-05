@@ -1,4 +1,4 @@
-DIR=	/etc/conf.d
+DIR=	${CONFDIR}
 CONF=	syscons
 
 MK=	../mk

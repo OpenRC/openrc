@@ -1,5 +1,3 @@
-# /etc/conf.d/bootmisc
-
 # Put a nologin file in /etc to prevent people from logging in before
 # system startup is complete
 delay_login="NO"

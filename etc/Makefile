@@ -1,4 +1,4 @@
-DIR=	/etc
+DIR=	${SYSCONFDIR}
 CONF=	rc.conf
 
 MK=	../mk
