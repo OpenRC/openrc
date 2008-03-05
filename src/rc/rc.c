@@ -692,7 +692,7 @@ int main (int argc, char **argv)
 	if (argc > 1 && (strcmp (argv[1], "--version") == 0)) {
 		printf ("%s (OpenRC"
 #ifdef BRANDING
-			" " BRANDING
+			" - " BRANDING
 #endif
 			")", applet);
 		if (sys)
