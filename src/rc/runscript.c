@@ -667,8 +667,11 @@ static void svc_start (bool deps)
 	else if (state & RC_SERVICE_INACTIVE && ! background)
 		ewarnx ("WARNING: %s has already started, but is inactive", applet);
 
-	if (! rc_service_mark (service, RC_SERVICE_STARTING))
+	if (! rc_service_mark (service, RC_SERVICE_STARTING)) {
+		if (errno == EACCES)
+			eerrorx ("%s: superuser access required", applet);
 		eerrorx ("ERROR: %s has been started by something else", applet);
+	}
 
 	make_exclusive (service);
 
@@ -873,8 +876,11 @@ static void svc_stop (bool deps)
 	} else if (state & RC_SERVICE_STOPPING)
 		ewarnx ("WARNING: %s is already stopping", applet);
 
-	if (! rc_service_mark (service, RC_SERVICE_STOPPING))
+	if (! rc_service_mark (service, RC_SERVICE_STOPPING)) {
+		if (errno == EACCES)
+			eerrorx ("%s: superuser access required", applet);
 		eerrorx ("ERROR: %s has been stopped by something else", applet);
+	}
 
 	make_exclusive (service);
 
@@ -1219,11 +1225,6 @@ int runscript (int argc, char **argv)
 		if (sighup)
 			exit (EXIT_FAILURE);
 
-		if (strcmp (optarg, "status") != 0 &&
-		    strcmp (optarg, "help") != 0) {
-			/* Only root should be able to run us */
-		}
-
 		/* Export the command we're running.
 		   This is important as we stamp on the restart function now but
 		   some start/stop routines still need to behave differently if
@@ -1276,11 +1277,6 @@ int runscript (int argc, char **argv)
 			if (retval & RC_SERVICE_STARTED)
 				retval = 0;
 		} else {
-#ifndef PREFIX
-			if (geteuid () != 0)
-				eerrorx ("%s: root access required", applet);
-#endif
-
 			if (strcmp (optarg, "conditionalrestart") == 0 ||
 			    strcmp (optarg, "condrestart") == 0)
 			{
