@@ -770,13 +770,6 @@ int main (int argc, char **argv)
 
 	newlevel = argv[optind++];
 
-#ifndef PREFIX
-	/* OK, so we really are the main RC process
-	 * Only root should be able to run us */
-	if (geteuid () != 0)
-		eerrorx ("%s: root access required", applet);
-#endif
-
 	/* Enable logging */
 	setenv ("EINFO_LOG", "rc", 1);
 
@@ -972,7 +965,12 @@ int main (int argc, char **argv)
 	/* Clean the failed services state dir */
 	clean_failed ();
 
-	mkdir (RC_STOPPING, 0755);
+	if (mkdir (RC_STOPPING, 0755) != 0) {
+		if (errno == EACCES)
+			eerrorx ("%s: superuser access required", applet);
+		eerrorx ("%s: failed to create stopping dir: %s",
+			 applet, strerror (errno));
+	}
 
 	/* Build a list of all services to stop and then work out the
 	 * correct order for stopping them */
