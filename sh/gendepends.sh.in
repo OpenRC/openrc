@@ -84,6 +84,13 @@ do
 				[ -z "${_depends}" ] && eval _depends=\$rc_${_deptype}
 				${_deptype} ${_depends}
 			done
+
+			for _deptype in CONFIG NEED USE AFTER BEFORE PROVIDE KEYWORD; do
+				eval _depends=\$rc_$(shell_var "${SVCNAME}")_${_deptype}
+				[ -z "${_depends}" ] && eval _depends=\$RC_${_deptype}
+				${_deptype} ${_depends}
+			done
+	
 		fi
 		)
 	done
