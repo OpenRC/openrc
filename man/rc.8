@@ -50,7 +50,7 @@ and optionally
 .Pa /sys
 for Linux based systems. It also mounts
 .Pa /lib/rc/init.d
-as a ramdisk using tmpfs where available.
+as a ramdisk using tmpfs where available unless / is mounted rw at boot.
 .Nm
 uses
 .Pa /lib/rc/init.d
