@@ -114,6 +114,9 @@ static bool rm_dir (const char *pathname, bool top)
 {
 	DIR *dp;
 	struct dirent *d;
+	char *tmp = NULL;
+	struct stat s;
+	bool retval = true;
 
 	if ((dp = opendir (pathname)) == NULL)
 		return (false);
@@ -121,25 +124,33 @@ static bool rm_dir (const char *pathname, bool top)
 	errno = 0;
 	while (((d = readdir (dp)) != NULL) && errno == 0) {
 		if (strcmp (d->d_name, ".") != 0 && strcmp (d->d_name, "..") != 0) {
-			char *tmp = rc_strcatpaths (pathname, d->d_name, (char *) NULL);
-			if (d->d_type == DT_DIR) {
+			free (tmp);
+			tmp = rc_strcatpaths (pathname, d->d_name, (char *) NULL);
+			
+			if (stat (tmp, &s) != 0) {
+				retval = false;
+				break;
+			}
+
+			if (S_ISDIR (s.st_mode)) {
 				if (! rm_dir (tmp, true))
 				{
-					free (tmp);
-					closedir (dp);
-					return (false);
+					retval = false;
+					break;
 				}
 			} else {
 				if (unlink (tmp)) {
-					free (tmp);
-					closedir (dp);
-					return (false);
+					retval = false;
+					break;
 				}
 			}
-			free (tmp);
 		}
 	}
 	closedir (dp);
+	free (tmp);
+
+	if (! retval)
+		return (false);
 
 	if (top && rmdir (pathname) != 0)
 		return (false);
