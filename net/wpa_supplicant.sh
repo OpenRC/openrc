@@ -66,7 +66,7 @@ wpa_supplicant_pre_start()
 		if ${wireless} && \
 		service_started_daemon "${SVCNAME}" "${wpas}"; then
 			SSID=$(_get_ssid "${IFACE}")
-			SSIDVAR=$(_shell_var "${SSID}")
+			SSIDVAR=$(shell_var "${SSID}")
 			service_set_value "SSID" "${SSID}"
 			metric=2000
 		fi
