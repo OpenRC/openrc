@@ -79,18 +79,19 @@ do
 			depend
 
 			# Add any user defined depends
-			for _deptype in config need use after before provide keyword; do
-				eval _depends=\$rc_$(shell_var "${SVCNAME}")_${_deptype}
-				[ -z "${_depends}" ] && eval _depends=\$rc_${_deptype}
-				${_deptype} ${_depends}
-			done
+			for _deptype in config:CONFIG need:NEED use:USE \
+			after:AFTER before:BEFORE \
+			provide:PROVIDE keyword:KEYWORD; do
+				IFS=:
+				set -- ${_deptype}
+				unset IFS
+				eval _depends=\$rc_$(shell_var "${SVCNAME}")_$1
+				[ -z "${_depends}" ] && eval _depends=\$rc_$1
+				[ -z "${_depends}" ] && eval _depends=\$RC_$(shell_var "${SVCNAME}")_$2
+				[ -z "${_depends}" ] && eval _depends=\$RC_$2
 
-			for _deptype in CONFIG NEED USE AFTER BEFORE PROVIDE KEYWORD; do
-				eval _depends=\$rc_$(shell_var "${SVCNAME}")_${_deptype}
-				[ -z "${_depends}" ] && eval _depends=\$RC_${_deptype}
-				${_deptype} ${_depends}
+				$1 ${_depends}
 			done
-	
 		fi
 		)
 	done
