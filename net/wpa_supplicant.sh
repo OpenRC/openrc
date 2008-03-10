@@ -47,12 +47,14 @@ wpa_supplicant_pre_start()
 {
 	local opts= cfgfile= ctrl_dir= wireless=true
 	local wpas=/usr/sbin/wpa_supplicant wpac=/usr/bin/wpa_cli
+	local actfile=/etc/wpa_supplicant/wpa_cli.sh
 
 	if [ ! -x "${wpas}" ]; then
 		wpas=/sbin/wpa_supplicant
 		wpac=/bin/wpa_cli
 	fi
 	[ "${RC_UNAME}" = "Linux" ] || unset wpac
+	[ -e "${actfile}" ] || unset wpac
 
 	eval opts=\$wpa_supplicant_${IFVAR}
 	case " ${opts} " in
@@ -120,12 +122,10 @@ wpa_supplicant_pre_start()
 	fi
 	service_set_value ctrl_dir "${ctrl_dir}"
 
-	actfile="/etc/wpa_supplicant/wpa_cli.sh"
 
 	if [ -n "${wpac}" ]; then
 		opts="${opts} -W"
-	else
-		sleep 2 # FBSD 7.0 beta2 bug
+	elif service_started devd; then
 		mark_service_inactive
 	fi
 	start-stop-daemon --start --exec "${wpas}" \
@@ -133,9 +133,14 @@ wpa_supplicant_pre_start()
 		-- ${opts} -B -i "${IFACE}" \
 		-P "/var/run/wpa_supplicant-${IFACE}.pid"
 	eend $? || return 1
+
+	# If we don't have a working wpa_cli and action file continue
 	if [ -z "${wpac}" ]; then
-		ebegin "Backgrounding ..."
-		exit 1 
+		if service_started devd; then
+			ebegin "Backgrounding ..."
+			exit 1 
+		fi
+		return 0
 	fi
 
 	# Starting wpa_supplication-0.4.0, we can get wpa_cli to
@@ -147,8 +152,7 @@ wpa_supplicant_pre_start()
 	ebegin "Starting wpa_cli on" "${IFACE}"
 	start-stop-daemon --start --exec "${wpac}" \
 		--pidfile "/var/run/wpa_cli-${IFACE}.pid" \
-		-- -a /etc/wpa_supplicant/wpa_cli.sh \
-		-p "${ctrl_dir}" -i "${IFACE}" \
+		-- -a "${actfile}" -p "${ctrl_dir}" -i "${IFACE}" \
 		-P "/var/run/wpa_cli-${IFACE}.pid" -B
 	if eend $?; then
 		ebegin "Backgrounding ..."
