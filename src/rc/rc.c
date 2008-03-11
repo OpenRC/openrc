@@ -56,6 +56,12 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <termios.h>
 #include <unistd.h>
 
+/* So we can coldplug net devices */
+#ifdef BSD
+# include <sys/socket.h>
+# include <ifaddrs.h>
+#endif
+
 #include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
@@ -557,10 +563,15 @@ static void run_script (const char *script)
 #ifndef PREFIX
 static void do_coldplug (void)
 {
+	size_t s;
 	int i;
 	DIR *dp;
 	struct dirent *d;
 	char *service;
+#ifdef BSD
+	struct ifaddrs *ifap;
+	struct ifaddrs *ifa;
+#endif
 
 	if (! rc_conf_yesno ("rc_coldplug") && errno != ENOENT)
 		return;
@@ -570,21 +581,21 @@ static void do_coldplug (void)
 	rc_deptree_update_needed ();
 
 #ifdef BSD
-#if defined(__DragonFly__) || defined(__FreeBSD__)
-	/* The net interfaces are easy - they're all in net /dev/net :) */
-	if ((dp = opendir ("/dev/net"))) {
-		while ((d = readdir (dp))) {
-			i = (strlen ("net.") + strlen (d->d_name) + 1);
-			tmp = xmalloc (sizeof (char) * i);
-			snprintf (tmp, i, "net.%s", d->d_name);
+	if (getifaddrs(&ifap) == 0) {
+		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+			if (ifa->ifa_addr->sa_family != AF_LINK)
+				continue;
+
+			s = strlen ("net.") + strlen (ifa->ifa_name) + 1;
+			tmp = xmalloc (sizeof (char) * s);
+			snprintf (tmp, s, "net.%s", ifa->ifa_name);
 			if (rc_service_exists (tmp) &&
 			    service_plugable (tmp))
 				rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
 			CHAR_FREE (tmp);
 		}
-		closedir (dp);
+		freeifaddrs (ifap);
 	}
-#endif
 
 	/* The mice are a little more tricky.
 	 * If we coldplug anything else, we'll probably do it here. */
@@ -595,10 +606,9 @@ static void do_coldplug (void)
 			{
 				char *p = d->d_name + 3;
 				if (p && isdigit ((int) *p)) {
-					size_t len;
-					len = (strlen ("moused.") + strlen (d->d_name) + 1);
-					tmp = xmalloc (sizeof (char) * len);
-					snprintf (tmp, len, "moused.%s", d->d_name);
+					s = strlen ("moused.") + strlen (d->d_name) + 1;
+					tmp = xmalloc (sizeof (char) * s);
+					snprintf (tmp, s, "moused.%s", d->d_name);
 					if (rc_service_exists (tmp) &&
 					    service_plugable (tmp))
 						rc_service_mark (tmp, RC_SERVICE_COLDPLUGGED);
@@ -609,7 +619,8 @@ static void do_coldplug (void)
 		closedir (dp);
 	}
 
-#elif __linux__
+#else
+
 	/* udev likes to start services before we're ready when it does
 	 * its coldplugging thing. runscript knows when we're not ready so it
 	 * stores a list of coldplugged services in DEVBOOT for us to pick up
@@ -625,9 +636,9 @@ static void do_coldplug (void)
 			    service_plugable (d->d_name))
 				rc_service_mark (d->d_name, RC_SERVICE_COLDPLUGGED);
 
-			i = strlen (DEVBOOT "/") + strlen (d->d_name) + 1;
-			tmp = xmalloc (sizeof (char) * i);
-			snprintf (tmp, i, DEVBOOT "/%s", d->d_name);
+			s = strlen (DEVBOOT "/") + strlen (d->d_name) + 1;
+			tmp = xmalloc (sizeof (char) * s);
+			snprintf (tmp, s, DEVBOOT "/%s", d->d_name);
 			if (tmp) {
 				if (unlink (tmp))
 					eerror ("%s: unlink `%s': %s", applet, tmp,
