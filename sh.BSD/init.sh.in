@@ -22,10 +22,12 @@ mount_svcdir()
 		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
 			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
 	fi
-	if ! mount -t tmpfs -o rw,noexec,nosuid none "${RC_SVCDIR}" 2>/dev/null; then
-		mdconfig -a -t malloc -s "${rc_svcsize:-1024}"k -u 0
-		newfs -b 4096 -i 1024 -n /dev/md0
-		mount -o rw,noexec,nosuid /dev/md0 "${RC_SVCDIR}"
+	if ! fstabinfo --mount "${RC_SVCDIR}"; then
+		if ! mount -t tmpfs -o rw,noexec,nosuid none "${RC_SVCDIR}" 2>/dev/null; then
+			mdconfig -a -t malloc -s "${rc_svcsize:-1024}"k -u 0
+			newfs -b 4096 -i 1024 -n /dev/md0
+			mount -o rw,noexec,nosuid /dev/md0 "${RC_SVCDIR}"
+		fi
 	fi
 	retval=$?
 	if ${dotmp}; then

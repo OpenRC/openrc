@@ -31,6 +31,7 @@ ALL_LINKS=	${BINLINKS} ${SBINLINKS} ${RC_BINLINKS} ${RC_SBINLINKS}
 CLEANFILES+=	${ALL_LINKS}
 
 LDFLAGS+=	-L../librc -L../libeinfo
+LDFLAGS+=	-Wl,--rpath=../librc -Wl,--rpath=../libeinfo
 LDADD+=		-lutil -lrc -leinfo
 
 MK=		../../mk

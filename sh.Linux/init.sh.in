@@ -44,9 +44,7 @@ mount_svcdir()
 	fi
 
 	# If we have no entry in fstab for $RC_SVCDIR, provide our own
-	if fstabinfo --quiet "${RC_SVCDIR}"; then
-		mount -n "${RC_SVCDIR}"
-	else
+	if ! fstabinfo --mount "${RC_SVCDIR}"; then
 		mount -n -t "${fs}" ${fsopts} "${devdir}" "${RC_SVCDIR}"
 	fi
 
@@ -91,9 +89,7 @@ if ${mountproc}; then
 	procfs="proc"
 	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
 	ebegin "Mounting ${procfs} at /proc"
-	if fstabinfo --quiet /proc; then
-		mount -n /proc
-	else
+	if ! fstabinfo --mount /proc; then
 		mount -n -t "${procfs}" -o noexec,nosuid,nodev proc /proc
 	fi
 	eend $?
@@ -116,9 +112,7 @@ then
 		if [ -d /sys ]; then
 			if ! mountinfo --quiet /sys; then
 				ebegin "Mounting sysfs at /sys"
-				if fstabinfo --quiet /sys; then
-					mount -n /sys
-				else
+				if ! fstabinfo --mount /sys; then
 					mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
 				fi
 				eend $?
@@ -173,9 +167,7 @@ do
 
 	if [ -d "$2" ]; then
 		ebegin "Mounting $1 at $2"
-		if fstabinfo --quiet "$2"; then
-			mount -n "$2"
-		else
+		if ! fstabinfo --mount "$2"; then
 			mount -n -t "$1" -o noexec,nosuid"$4" "$5" "$2"
 		fi
 		eend $?

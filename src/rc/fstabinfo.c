@@ -29,11 +29,13 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/wait.h>
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 /* Yay for linux and it's non liking of POSIX functions.
    Okay, we could use getfsent but the man page says use getmntent instead
@@ -41,6 +43,7 @@
 #ifdef __linux__
 #define HAVE_GETMNTENT
 #include <mntent.h>
+#define ENT mntent
 #define START_ENT fp = setmntent ("/etc/fstab", "r");
 #define GET_ENT getmntent (fp)
 #define GET_ENT_FILE(_name) getmntfile (_name)
@@ -53,6 +56,7 @@
 #else
 #define HAVE_GETFSENT
 #include <fstab.h>
+#define ENT fstab
 #define START_ENT
 #define GET_ENT getfsent ()
 #define GET_ENT_FILE(_name) getfsfile (_name)
@@ -88,10 +92,47 @@ static struct mntent *getmntfile (const char *file)
 
 extern const char *applet;
 
+static int do_mount (struct ENT *ent)
+{
+	char *argv[8];
+	pid_t pid;
+	int status;
+
+	argv[0] = (char *) "/sbin/mount";
+	argv[1] = (char *) "-o";
+	argv[2] = ENT_OPTS (*ent);
+	argv[3] = (char *) "-t";
+	argv[4] = ENT_TYPE (*ent);
+	argv[5] = ENT_BLOCKDEVICE (*ent);
+	argv[6] = ENT_FILE (*ent);
+	argv[7] = NULL;
+	switch (pid = vfork()) {
+		case -1:	
+			eerrorx ("%s: vfork: %s", applet,
+					strerror (errno));
+			/* NOTREACHED */
+		case 0:
+			execv (argv[0], argv);
+			eerror ("%s: execv: %s", applet,
+					strerror (errno));
+			_exit(EXIT_FAILURE);
+			/* NOTREACHED */
+		default:
+			waitpid (pid, &status, 0);
+			if (WIFEXITED (status))
+				return (WEXITSTATUS(status));
+			else
+				return (-1);
+			/* NOTREACHED */
+	}
+}
+
 #include "_usage.h"
-#define getoptstring "bmop:t:" getoptstring_COMMON
+#define getoptstring "Mbmop:t:" getoptstring_COMMON
 static const struct option longopts[] = {
+	{ "mount",          0, NULL, 'M' },
 	{ "blockdevice",    0, NULL, 'b' },
+	{ "mountargs",      0, NULL, 'm' },
 	{ "options",        0, NULL, 'o' },
 	{ "passno",         1, NULL, 'p' },
 	{ "fstype",         1, NULL, 't' },
@@ -99,6 +140,7 @@ static const struct option longopts[] = {
 };
 static const char * const longopts_help[] = {
 	"Extract the block device",
+	"Mounts the filesytem from the mountpoint", 
 	"Extract the options field",
 	"Extract or query the pass number field",
 	"List entries with matching file system type",
@@ -107,18 +149,15 @@ static const char * const longopts_help[] = {
 #include "_usage.c"
 
 #define OUTPUT_FILE      (1 << 1)
+#define OUTPUT_MOUNTARGS (1 << 2)
 #define OUTPUT_OPTIONS   (1 << 3)
 #define OUTPUT_PASSNO    (1 << 4)
 #define OUTPUT_BLOCKDEV  (1 << 5)
+#define OUTPUT_MOUNT     (1 << 6)
 
 int fstabinfo (int argc, char **argv)
 {
-#ifdef HAVE_GETMNTENT
-	FILE *fp;
-	struct mntent *ent;
-#else
-	struct fstab *ent;
-#endif
+	struct ENT *ent;
 	int result = EXIT_SUCCESS;
 	char *token;
 	int i;
@@ -128,6 +167,10 @@ int fstabinfo (int argc, char **argv)
 	char *file;
 	bool filtered = false;
 
+#ifdef HAVE_GETMNTENT
+	FILE *fp;
+#endif
+
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv ("EINFO_QUIET");
 
@@ -135,11 +178,17 @@ int fstabinfo (int argc, char **argv)
 				   longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+			case 'M':
+				output = OUTPUT_MOUNT;
+				break;
 			case 'b':
 				output = OUTPUT_BLOCKDEV;
 				break;
 			case 'o':
 				output = OUTPUT_OPTIONS;
+				break;
+			case 'm':
+				output = OUTPUT_MOUNTARGS;
 				break;
 
 			case 'p':
@@ -213,6 +262,19 @@ int fstabinfo (int argc, char **argv)
 			case OUTPUT_BLOCKDEV:
 				printf ("%s\n", ENT_BLOCKDEVICE (ent));
 				break;
+
+			case OUTPUT_MOUNT:
+				result += do_mount (ent);
+				break;
+
+			case OUTPUT_MOUNTARGS:
+				printf ("-o %s -t %s %s %s\n",
+					ENT_OPTS (ent),
+					ENT_TYPE (ent),
+					ENT_BLOCKDEVICE (ent),
+					file);
+				break;
+
 			case OUTPUT_OPTIONS:
 				printf ("%s\n", ENT_OPTS (ent));
 				break;
