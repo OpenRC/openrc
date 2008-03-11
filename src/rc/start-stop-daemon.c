@@ -966,7 +966,8 @@ int start_stop_daemon (int argc, char **argv)
 
 		/* Clean the environment of any RC_ variables */
 		STRLIST_FOREACH (environ, env, i) {
-			if (strncmp (env, "RC_", 3) == 0 ||
+			if ((strncmp (env, "RC_", 3) == 0 &&
+			     strncmp (env, "RC_SERVICE=", strlen ("RC_SERVICE=")) != 0) ||
 			    strncmp (env, "SSD_NICELEVEL=", strlen ("SSD_NICELEVEL=")) == 0)
 				continue;
 

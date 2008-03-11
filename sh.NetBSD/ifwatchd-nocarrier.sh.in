@@ -2,4 +2,4 @@
 # Wrapper for ifwatchd(8)
 
 export IN_BACKGROUND=yes
-@PREFIX@@SYSCONFDIR@/init.d/net.$1 --quiet stop
+${RC_SERVICE} --quiet stop

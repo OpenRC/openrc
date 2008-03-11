@@ -18,6 +18,9 @@ if [ -z "$1" -o -z "$2" ]; then
 	exit 1
 fi
 
+# So daemons know where to recall us if needed
+export RC_SERVICE="$1"
+
 # Descript the init script to the user
 describe()
 {

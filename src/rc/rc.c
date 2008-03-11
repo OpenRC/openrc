@@ -560,7 +560,6 @@ static void run_script (const char *script)
 		eerrorx ("%s: failed to exec `%s'", applet, script);
 }
 
-#ifndef PREFIX
 static void do_coldplug (void)
 {
 	size_t s;
@@ -661,7 +660,6 @@ static void do_coldplug (void)
 		printf (" %s", service);
 	printf ("%s\n", ecolor (ECOLOR_NORMAL));
 }
-#endif
 
 #include "_usage.h"
 #define getoptstring "o:" getoptstring_COMMON
@@ -869,9 +867,9 @@ int main (int argc, char **argv)
 			}
 #endif
 
-#ifndef PREFIX
+			/* Setup our coldplugged services now */
 			do_coldplug ();
-#endif
+
 			rc_plugin_run (RC_HOOK_RUNLEVEL_START_OUT, newlevel);
 			hook_out = 0;
 
