@@ -98,7 +98,7 @@ static int do_mount (struct ENT *ent)
 	pid_t pid;
 	int status;
 
-	argv[0] = (char *) "/sbin/mount";
+	argv[0] = (char *) "mount";
 	argv[1] = (char *) "-o";
 	argv[2] = ENT_OPTS (*ent);
 	argv[3] = (char *) "-t";
@@ -112,7 +112,7 @@ static int do_mount (struct ENT *ent)
 					strerror (errno));
 			/* NOTREACHED */
 		case 0:
-			execv (argv[0], argv);
+			execvp (argv[0], argv);
 			eerror ("%s: execv: %s", applet,
 					strerror (errno));
 			_exit(EXIT_FAILURE);
