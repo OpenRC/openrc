@@ -88,7 +88,7 @@ fi
 if ${mountproc}; then
 	procfs="proc"
 	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
-	ebegin "Mounting ${procfs} at /proc"
+	ebegin "Mounting /proc"
 	if ! fstabinfo --mount /proc; then
 		mount -n -t "${procfs}" -o noexec,nosuid,nodev proc /proc
 	fi
@@ -111,7 +111,7 @@ then
 	if grep -Eq "[[:space:]]+sysfs$" /proc/filesystems; then
 		if [ -d /sys ]; then
 			if ! mountinfo --quiet /sys; then
-				ebegin "Mounting sysfs at /sys"
+				ebegin "Mounting /sys"
 				if ! fstabinfo --mount /sys; then
 					mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
 				fi
@@ -166,7 +166,7 @@ do
 	fi
 
 	if [ -d "$2" ]; then
-		ebegin "Mounting $1 at $2"
+		ebegin "Mounting $2"
 		if ! fstabinfo --mount "$2"; then
 			mount -n -t "$1" -o noexec,nosuid"$4" "$5" "$2"
 		fi
