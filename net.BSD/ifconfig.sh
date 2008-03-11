@@ -18,24 +18,6 @@ _exists()
 	fi
 }
 
-_get_mac_address()
-{
-	local proto= address= foo=
-	LC_ALL=C ifconfig "${IFACE}" | while read proto address foo; do
-		case "${proto}" in
-			ether) 
-				case "${address}" in
-					00:00:00:00:00:00);;
-					44:44:44:44:44:44);;
-					FF:FF:FF:FF:FF:FF);;
-					*) echo "${address}";;
-				esac
-				return 0
-				;;
-		esac
-	done
-}
-
 _up()
 {
 	ifconfig "${IFACE}" up
@@ -79,10 +61,29 @@ _ifconfig_ent()
 {
 	LC_ALL=C ifconfig "${IFACE}" 2>/dev/null | while read ent rest; do
    		case "${ent}" in
-			"$1") echo "${rest}";;
+			$1) echo "${rest}";;
 		esac
 	done
 }
+
+_get_mac_address()
+{
+	local ent="ether"
+	case "${RC_UNAME}" in
+		NetBSD|OpenBSD) ent="address:";;
+	esac
+
+	case $(_ifconfig_ent "${ent}") in
+		00:00:00:00:00:00);;
+		44:44:44:44:44:44);;
+		FF:FF:FF:FF:FF:FF);;
+		"") return 1;;
+		*) echo "${address}";;
+	esac
+
+	return 0;
+}
+
 
 _is_wireless()
 {
