@@ -39,57 +39,56 @@
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
-#include "strlist.h"
 
 extern const char *applet;
 
 static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
-static void print_level (char *level)
+static void print_level(char *level)
 {
 	printf ("Runlevel: ");
-	if (isatty (fileno (stdout)))
-		printf ("%s%s%s\n",
-			ecolor (ECOLOR_HILITE),
-			level,
-			ecolor (ECOLOR_NORMAL));
+	if (isatty(fileno(stdout)))
+		printf("%s%s%s\n",
+		       ecolor(ECOLOR_HILITE),
+		       level,
+		       ecolor(ECOLOR_NORMAL));
 	else
-		printf ("%s\n", level);
+		printf("%s\n", level);
 }
 
-static void print_service (char *service)
+static void print_service(char *service)
 {
 	char status[10];
-	int cols =  printf (" %s", service);
-	const char *c = ecolor (ECOLOR_GOOD);
-	rc_service_state_t state = rc_service_state (service);
-	einfo_color_t color = ECOLOR_BAD;
+	int cols =  printf(" %s", service);
+	const char *c = ecolor(ECOLOR_GOOD);
+	RC_SERVICE state = rc_service_state(service);
+	ECOLOR color = ECOLOR_BAD;
 
 	if (state & RC_SERVICE_STOPPING)
-		snprintf (status, sizeof (status), "stopping ");
+		snprintf(status, sizeof(status), "stopping ");
 	else if (state & RC_SERVICE_STARTING) {
-		snprintf (status, sizeof (status), "starting ");
+		snprintf(status, sizeof(status), "starting ");
 		color = ECOLOR_WARN;
 	} else if (state & RC_SERVICE_INACTIVE) {
-		snprintf (status, sizeof (status), "inactive ");
+		snprintf(status, sizeof(status), "inactive ");
 		color = ECOLOR_WARN;
 	} else if (state & RC_SERVICE_STARTED) {
-		if (geteuid () == 0 && rc_service_daemons_crashed (service))
-			snprintf (status, sizeof (status), " crashed ");
+		if (rc_service_daemons_crashed(service))
+			snprintf(status, sizeof(status), " crashed ");
 		else {
-			snprintf (status, sizeof (status), " started ");
+			snprintf(status, sizeof(status), " started ");
 			color = ECOLOR_GOOD;
 		}
 	} else if (state & RC_SERVICE_SCHEDULED) {
-		snprintf (status, sizeof (status), "scheduled");
+		snprintf(status, sizeof(status), "scheduled");
 		color = ECOLOR_WARN;
 	} else
-		snprintf (status, sizeof (status), " stopped ");
+		snprintf(status, sizeof(status), " stopped ");
 
 	errno = 0;
-	if (c && *c && isatty (fileno (stdout)))
-		printf ("\n");
-	ebracket (cols, color, status);
+	if (c && *c && isatty(fileno(stdout)))
+		printf("\n");
+	ebracket(cols, color, status);
 }
 
 #include "_usage.h"
@@ -115,99 +114,100 @@ static const char * const longopts_help[] = {
 
 int rc_status (int argc, char **argv)
 {
-	rc_depinfo_t *deptree = NULL;
-	char **levels = NULL;
-	char **services = NULL;
-	char **ordered = NULL;
-	char *level;
-	char *service;
+	RC_DEPTREE *deptree = NULL;
+	RC_STRINGLIST *levels = NULL;
+	RC_STRINGLIST *services;
+	RC_STRINGLIST *types = NULL;
+	RC_STRINGLIST *ordered;
+	RC_STRING *s;
+	RC_STRING *l;
+	char *p;
 	int opt;
-	int i;
-	int j;
 	int depopts = RC_DEP_STRICT | RC_DEP_START | RC_DEP_TRACE;
 
-	while ((opt = getopt_long (argc, argv, getoptstring, longopts,
-				   (int *) 0)) != -1)
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *) 0)) != -1)
 		switch (opt) {
-			case 'a':
-				levels = rc_runlevel_list ();
-				break;
-			case 'l':
-				levels = rc_runlevel_list ();
-				STRLIST_FOREACH (levels, level, i)
-					printf ("%s\n", level);
-				rc_strlist_free (levels);
-				exit (EXIT_SUCCESS);
-				/* NOTREACHED */
-			case 'r':
-				level = rc_runlevel_get ();
-				printf ("%s\n", level);
-				free (level);
-				exit (EXIT_SUCCESS);
-				/* NOTREACHED */
-			case 's':
-				services = rc_services_in_runlevel (NULL);
-				STRLIST_FOREACH (services, service, i)
-					print_service (service);
-				rc_strlist_free (services);
-				exit (EXIT_SUCCESS);
-				/* NOTREACHED */
-			case 'u':
-				services = rc_services_in_runlevel (NULL);
-				levels = rc_runlevel_list ();
-				STRLIST_FOREACH (services, service, i) {
-					bool found = false;
-					STRLIST_FOREACH (levels, level, j)
-						if (rc_service_in_runlevel (service, level)) {
-							found = true;
-							break;
-						}
-					if (! found)
-						print_service (service);
-				}
-				rc_strlist_free (levels);
-				rc_strlist_free (services);
-				exit (EXIT_SUCCESS);
-				/* NOTREACHED */
+		case 'a':
+			levels = rc_runlevel_list();
+			break;
+		case 'l':
+			levels = rc_runlevel_list();
+			TAILQ_FOREACH (l, levels, entries)
+				printf("%s\n", l->value);
+			rc_stringlist_free(levels);
+			exit(EXIT_SUCCESS);
+			/* NOTREACHED */
+		case 'r':
+			p = rc_runlevel_get ();
+			printf("%s\n", p);
+			free(p);
+			exit(EXIT_SUCCESS);
+			/* NOTREACHED */
+		case 's':
+			services = rc_services_in_runlevel(NULL);
+			TAILQ_FOREACH(s, services, entries)
+				print_service(s->value);
+			rc_stringlist_free(services);
+			exit (EXIT_SUCCESS);
+			/* NOTREACHED */
+		case 'u':
+			services = rc_services_in_runlevel(NULL);
+			levels = rc_runlevel_list();
+			TAILQ_FOREACH(s, services, entries) {
+				TAILQ_FOREACH(l, levels, entries)
+					if (rc_service_in_runlevel(s->value, l->value))
+						break;
+				if (! l)
+						print_service(s->value);
+			}
+			rc_stringlist_free(levels);
+			rc_stringlist_free(services);
+			exit (EXIT_SUCCESS);
+			/* NOTREACHED */
 
-				case_RC_COMMON_GETOPT
+		case_RC_COMMON_GETOPT
 		}
 
+	if (! levels)
+		levels = rc_stringlist_new();
 	while (optind < argc)
-		rc_strlist_add (&levels, argv[optind++]);
-
-	if (! levels) {
-		level = rc_runlevel_get ();
-		rc_strlist_add (&levels, level);
-		free (level);
+		rc_stringlist_add(levels, argv[optind++]);
+	if (! TAILQ_FIRST(levels)) {
+		p = rc_runlevel_get();
+		rc_stringlist_add(levels, p);
+		free(p);
 	}
 
 	/* Output the services in the order in which they would start */
-	if (geteuid () == 0)
-		deptree = _rc_deptree_load (NULL);
-	else
-		deptree = rc_deptree_load ();
+	deptree = _rc_deptree_load(NULL);
 
-	STRLIST_FOREACH (levels, level, i) {
-		print_level (level);
-		services = rc_services_in_runlevel (level);
+	TAILQ_FOREACH(l, levels, entries) {
+		print_level(l->value);
+		services = rc_services_in_runlevel(l->value);
 		if (deptree) {
-			ordered = rc_deptree_depends (deptree, types_nua,
-						      (const char **) services,
-						      level, depopts);
-			rc_strlist_free (services);
+			if (! types) {
+				types = rc_stringlist_new();
+				rc_stringlist_add(types, "ineed");
+				rc_stringlist_add(types, "iuse");
+				rc_stringlist_add(types, "iafter");
+			}
+			ordered = rc_deptree_depends(deptree, types, services,
+						     l->value, depopts);
+			rc_stringlist_free(services);
 			services = ordered;
 			ordered = NULL;
 		}
-		STRLIST_FOREACH (services, service, j)
-			if (rc_service_in_runlevel (service, level))
-				print_service (service);
-		rc_strlist_free (services);
+		TAILQ_FOREACH(s, services, entries)
+			if (rc_service_in_runlevel(s->value, l->value))
+				print_service(s->value);
+		rc_stringlist_free(services);
 	}
 
-	rc_strlist_free (levels);
-	rc_deptree_free (deptree);
+	rc_stringlist_free(types);
+	rc_stringlist_free(levels);
+	rc_deptree_free(deptree);
 
-	exit (EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 	/* NOTREACHED */
 }

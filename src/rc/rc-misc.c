@@ -30,13 +30,13 @@
  */
 
 #include <sys/types.h>
+#include <sys/utsname.h>
 
 #ifdef __linux__
 #include <sys/sysinfo.h>
 #include <regex.h>
 #endif
 
-#include <sys/utsname.h>
 #include <ctype.h>
 #include <limits.h>
 #include <signal.h>
@@ -47,7 +47,6 @@
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
-#include "strlist.h"
 
 #define PROFILE_ENV     SYSCONFDIR "/profile.env"
 #define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
@@ -57,314 +56,253 @@
 
 #define PATH_PREFIX     RC_LIBDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 
-static char **rc_conf = NULL;
+static RC_STRINGLIST *rc_conf = NULL;
 
-static void _free_rc_conf (void)
+extern char** environ;
+
+static void _free_rc_conf(void)
 {
-	rc_strlist_free (rc_conf);
+	rc_stringlist_free(rc_conf);
 }
 
-char *rc_conf_value (const char *setting)
+char *rc_conf_value(const char *setting)
 {
-	if (! rc_conf) {
-		char *line;
-		int i;
+	RC_STRINGLIST *old;
+	RC_STRING *s;
+	char *p;
 
-		rc_conf = rc_config_load (RC_CONF);
-		atexit (_free_rc_conf);
+	if (! rc_conf) {
+		rc_conf = rc_config_load(RC_CONF);
+		atexit(_free_rc_conf);
 
 		/* Support old configs */
-		if (exists (RC_CONF_OLD)) {
-			char **old = rc_config_load (RC_CONF_OLD);
-			rc_strlist_join (&rc_conf, old);
-			rc_strlist_free (old);
+		if (exists(RC_CONF_OLD)) {
+			old = rc_config_load(RC_CONF_OLD);
+			if (old) {
+				TAILQ_CONCAT(rc_conf, old);
+				free(old);
+			}
 		}
 
 		/* Convert old uppercase to lowercase */
-		STRLIST_FOREACH (rc_conf, line, i) {
-			char *p = line;
+		TAILQ_FOREACH(s, rc_conf, entries) {
+			p = s->value;
 			while (p && *p && *p != '=') {
-				if (isupper ((int) *p))
-					*p = tolower ((int) *p);
+				if (isupper((int) *p))
+					*p = tolower((int) *p);
 				p++;
 			}
 		}
 	}
 
-	return (rc_config_value ((const char *const *)rc_conf, setting));
+	return rc_config_value(rc_conf, setting);
 }
 
-bool rc_conf_yesno (const char *setting)
+bool rc_conf_yesno(const char *setting)
 {
-	return (rc_yesno (rc_conf_value (setting)));
+	return rc_yesno(rc_conf_value (setting));
 }
 
-char **env_filter (void)
+static const char *const env_whitelist[] = {
+	"PATH", "SHELL", "USER", "HOME", "TERM",
+	"LANG", "LC_CTYPE", "LC_NUMERIC", "LC_TIME", "LC_COLLATE",
+	"LC_MONETARY", "LC_MESSAGES", "LC_PAPER", "LC_NAME", "LC_ADDRESS",
+	"LC_TELEPHONE", "LC_MEASUREMENT", "LC_IDENTIFICATION", "LC_ALL",
+	"INIT_HALT", "INIT_VERSION", "RUNLEVEL", "PREVLEVEL", "CONSOLE",
+	"IN_HOTPLUG", "IN_BACKGROUND", "RC_INTERFACE_KEEP_CONFIG",
+	NULL
+};
+
+void env_filter(void)
 {
-	char **env = NULL;
-	char **whitelist = NULL;
-	char *env_name = NULL;
-	char **profile = NULL;
-	int count = 0;
-	bool got_path = false;
-	char *env_var;
-	size_t env_len;
-	char *token;
-	char *sep;
+	RC_STRINGLIST *env_allow;
+	RC_STRINGLIST *profile = NULL;
+	RC_STRINGLIST *env_list;
+	RC_STRING *env;
+	RC_STRING *s;
+	char *env_name;
 	char *e;
-	char *p;
-	size_t pplen = strlen (PATH_PREFIX);
-
-	/* Init a system whitelist, start with shell vars we need */
-	rc_strlist_add (&whitelist, "PATH");
-	rc_strlist_add (&whitelist, "SHELL");
-	rc_strlist_add (&whitelist, "USER");
-	rc_strlist_add (&whitelist, "HOME");
-	rc_strlist_add (&whitelist, "TERM");
-
-	/* Add Language vars */
-	rc_strlist_add (&whitelist, "LANG");
-	rc_strlist_add (&whitelist, "LC_CTYPE");
-	rc_strlist_add (&whitelist, "LC_NUMERIC");
-	rc_strlist_add (&whitelist, "LC_TIME");
-	rc_strlist_add (&whitelist, "LC_COLLATE");
-	rc_strlist_add (&whitelist, "LC_MONETARY");
-	rc_strlist_add (&whitelist, "LC_MESSAGES");
-	rc_strlist_add (&whitelist, "LC_PAPER");
-	rc_strlist_add (&whitelist, "LC_NAME");
-	rc_strlist_add (&whitelist, "LC_ADDRESS");
-	rc_strlist_add (&whitelist, "LC_TELEPHONE");
-	rc_strlist_add (&whitelist, "LC_MEASUREMENT");
-	rc_strlist_add (&whitelist, "LC_IDENTIFICATION");
-	rc_strlist_add (&whitelist, "LC_ALL");
-
-	/* Allow rc to override library path */
-	rc_strlist_add (&whitelist, "LD_LIBRARY_PATH");
-
-	/* We need to know sysvinit stuff - we emulate this for BSD too */
-	rc_strlist_add (&whitelist, "INIT_HALT");
-	rc_strlist_add (&whitelist, "INIT_VERSION");
-	rc_strlist_add (&whitelist, "RUNLEVEL");
-	rc_strlist_add (&whitelist, "PREVLEVEL");
-	rc_strlist_add (&whitelist, "CONSOLE");
-
-	/* Hotplug and daemon vars */
-	rc_strlist_add (&whitelist, "IN_HOTPLUG");
-	rc_strlist_add (&whitelist, "IN_BACKGROUND");
-	rc_strlist_add (&whitelist, "RC_INTERFACE_KEEP_CONFIG");
+	char *token;
+	size_t i = 0;
 
 	/* Add the user defined list of vars */
-	e = env_name = xstrdup (rc_conf_value ("rc_env_allow"));
-	while ((token = strsep (&e, " "))) {
+	env_allow = rc_stringlist_new();
+	e = env_name = xstrdup(rc_conf_value ("rc_env_allow"));
+	while ((token = strsep(&e, " "))) {
 		if (token[0] == '*') {
-			free (env_name);
-			return (NULL);
+			free(env_name);
+			rc_stringlist_free(env_allow);
+			return;
 		}
-		rc_strlist_add (&whitelist, token);
+		rc_stringlist_add(env_allow, token);
 	}
-	free (env_name);
+	free(env_name);
 
-	if (exists (PROFILE_ENV))
-		profile = rc_config_load (PROFILE_ENV);
+	if (exists(PROFILE_ENV))
+		profile = rc_config_load(PROFILE_ENV);
 
-	STRLIST_FOREACH (whitelist, env_name, count) {
-		char *space = strchr (env_name, ' ');
-		if (space)
-			*space = 0;
+	/* Copy the env and work from this so we can remove safely */
+	env_list = rc_stringlist_new();
+	while (environ[i])
+		rc_stringlist_add(env_list, environ[i++]);
 
-		env_var = getenv (env_name);
-
-		if (! env_var && profile) {
-			env_len = strlen (env_name) + strlen ("export ") + 1;
-			p = xmalloc (sizeof (char) * env_len);
-			snprintf (p, env_len, "export %s", env_name);
-			env_var = rc_config_value ((const char *const *) profile, p);
-			free (p);
+	TAILQ_FOREACH(env, env_list, entries) {
+		/* Check the whitelist */
+		i = 0;
+		while (env_whitelist[i]) {
+			if (strcmp(env_whitelist[i++], env->value))
+				break;
 		}
-
-		if (! env_var)
+		if (env_whitelist[i])
 			continue;
 
-		/* Ensure our PATH is prefixed with the system locations first
-		   for a little extra security */
-		if (strcmp (env_name, "PATH") == 0 &&
-		    strncmp (PATH_PREFIX, env_var, pplen) != 0)
-		{
-			got_path = true;
-			env_len = strlen (env_name) + strlen (env_var) + pplen + 3;
-			e = p = xmalloc (sizeof (char) * env_len);
-			p += snprintf (e, env_len, "%s=%s", env_name, PATH_PREFIX);
+		/* Check our user defined list */
+		TAILQ_FOREACH(s, env_allow, entries)
+			if (strcmp(s->value, env->value) == 0)
+				break;
+		if (s)
+			continue;
 
-			/* Now go through the env var and only add bits not in our PREFIX */
-			sep = env_var;
-			while ((token = strsep (&sep, ":"))) {
-				char *np = xstrdup (PATH_PREFIX);
-				char *npp = np;
-				char *tok = NULL;
-				while ((tok = strsep (&npp, ":")))
-					if (strcmp (tok, token) == 0)
-						break;
-				if (! tok)
-					p += snprintf (p, env_len - (p - e), ":%s", token);
-				free (np);
-			}
-			*p++ = 0;
-		} else {
-			env_len = strlen (env_name) + strlen (env_var) + 2;
-			e = xmalloc (sizeof (char) * env_len);
-			snprintf (e, env_len, "%s=%s", env_name, env_var);
-		}
+		/* Now check our profile */
 
-		rc_strlist_add (&env, e);
-		free (e);
+		/* OK, not allowed! */
+		e = strchr(env->value, '=');
+		*e = '\0';
+		unsetenv(env->value);
 	}
-
-	/* We filtered the env but didn't get a PATH? Very odd.
-	   However, we do need a path, so use a default. */
-	if (! got_path) {
-		env_len = strlen ("PATH=") + strlen (PATH_PREFIX) + 1;
-		e = xmalloc (sizeof (char) * env_len);
-		snprintf (e, env_len, "PATH=%s", PATH_PREFIX);
-		rc_strlist_add (&env, e);
-		free (e);
-	}
-
-	rc_strlist_free (whitelist);
-	rc_strlist_free (profile);
-
-	return (env);
+	rc_stringlist_free(env_list);
+	rc_stringlist_free(env_allow);
+	rc_stringlist_free(profile);
 }
 
-char **env_config (void)
+void env_config(void)
 {
-	char **env = NULL;
-	char *line;
+	size_t pplen = strlen(PATH_PREFIX);
+	char *path;
+	char *p;
+	char *e;
 	size_t l;
-	const char *sys = rc_sys ();
 	struct utsname uts;
 	FILE *fp;
+	char *token;
+	char *np;
+	char *npp;
+	char *tok;
+	const char *sys = rc_sys();
 	char buffer[PATH_MAX];
-	char *runlevel = rc_runlevel_get ();
 
-	/* One char less to drop the trailing / */
-	l = strlen ("RC_LIBDIR=") + strlen (RC_LIBDIR) + 1;
-	line = xmalloc (sizeof (char) * l);
-	snprintf (line, l, "RC_LIBDIR=" RC_LIBDIR);
-	rc_strlist_add (&env, line);
-	free (line);
+	/* Ensure our PATH is prefixed with the system locations first
+	   for a little extra security */
+	path = getenv("PATH");
+	if (! path)
+		setenv("PATH", PATH_PREFIX, 1);
+	else if (strncmp (PATH_PREFIX, path, pplen) != 0) {
+		l = strlen(path) + pplen + 3;
+		e = p = xmalloc(sizeof(char) * l);
+		p += snprintf(p, l, "%s", PATH_PREFIX);
 
-	/* One char less to drop the trailing / */
-	l = strlen ("RC_SVCDIR=") + strlen (RC_SVCDIR) + 1;
-	line = xmalloc (sizeof (char) * l);
-	snprintf (line, l, "RC_SVCDIR=" RC_SVCDIR);
-	rc_strlist_add (&env, line);
-	free (line);
+		/* Now go through the env var and only add bits not in our PREFIX */
+		while ((token = strsep(&path, ":"))) {
+			np = npp = xstrdup(PATH_PREFIX);
+			while ((tok = strsep(&npp, ":")))
+				if (strcmp(tok, token) == 0)
+					break;
+			if (! tok)
+				p += snprintf(p, l - (p - e), ":%s", token);
+			free (np);
+		}
+		*p++ = '\0';
+		unsetenv("PATH");
+		setenv("PATH", e, 1);
+		free(e);
+	}
 
-	rc_strlist_add (&env, "RC_BOOTLEVEL=" RC_LEVEL_BOOT);
+	setenv("RC_LIBDIR", RC_LIBDIR, 1);
+	setenv("RC_SVCDIR", RC_SVCDIR, 1);
+	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);
+	e = rc_runlevel_get();
+	setenv("RC_RUNLEVEL", e, 1);
+	free(e);
 
-	l = strlen ("RC_SOFTLEVEL=") + strlen (runlevel) + 1;
-	line = xmalloc (sizeof (char) * l);
-	snprintf (line, l, "RC_SOFTLEVEL=%s", runlevel);
-	rc_strlist_add (&env, line);
-	free (line);
-
-	if ((fp = fopen (RC_KSOFTLEVEL, "r"))) {
-		memset (buffer, 0, sizeof (buffer));
-		if (fgets (buffer, sizeof (buffer), fp)) {
+	if ((fp = fopen(RC_KSOFTLEVEL, "r"))) {
+		memset(buffer, 0, sizeof (buffer));
+		if (fgets(buffer, sizeof (buffer), fp)) {
 			l = strlen (buffer) - 1;
 			if (buffer[l] == '\n')
 				buffer[l] = 0;
-			l += strlen ("RC_DEFAULTLEVEL=") + 2;
-			line = xmalloc (sizeof (char) * l);
-			snprintf (line, l, "RC_DEFAULTLEVEL=%s", buffer);
-			rc_strlist_add (&env, line);
-			free (line);
+			setenv("RC_DEFAULTLEVEL", buffer, 1);
 		}
-		fclose (fp);
+		fclose(fp);
 	} else
-		rc_strlist_add (&env, "RC_DEFAULTLEVEL=" RC_LEVEL_DEFAULT);
+		setenv("RC_DEFAULTLEVEL", RC_LEVEL_DEFAULT, 1);
 
-	if (sys) {
-		l = strlen ("RC_SYS=") + strlen (sys) + 2;
-		line = xmalloc (sizeof (char) * l);
-		snprintf (line, l, "RC_SYS=%s", sys);
-		rc_strlist_add (&env, line);
-		free (line);
-	}
+	if (sys)
+		setenv("RC_SYS", sys, 1);
 
 	/* Some scripts may need to take a different code path if Linux/FreeBSD, etc
 	   To save on calling uname, we store it in an environment variable */
-	if (uname (&uts) == 0) {
-		l = strlen ("RC_UNAME=") + strlen (uts.sysname) + 2;
-		line = xmalloc (sizeof (char) * l);
-		snprintf (line, l, "RC_UNAME=%s", uts.sysname);
-		rc_strlist_add (&env, line);
-		free (line);
-	}
+	if (uname(&uts) == 0)
+		setenv("RC_UNAME", uts.sysname, 1);
 
 	/* Be quiet or verbose as necessary */
-	if (rc_conf_yesno ("rc_quiet"))
-		rc_strlist_add (&env, "EINFO_QUIET=YES");
-	if (rc_conf_yesno ("rc_verbose"))
-		rc_strlist_add (&env, "EINFO_VERBOSE=YES");
+	if (rc_conf_yesno("rc_quiet"))
+		setenv("EINFO_QUIET", "YES", 1);
+	if (rc_conf_yesno("rc_verbose"))
+		setenv("EINFO_VERBOSE", "YES", 1);
 
 	errno = 0;
-	if ((! rc_conf_yesno ("rc_color") && errno == 0) ||
-	    rc_conf_yesno ("rc_nocolor"))
-		rc_strlist_add (&env, "EINFO_COLOR=NO");
-
-	free (runlevel);
-	return (env);
+	if ((! rc_conf_yesno("rc_color") && errno == 0) ||
+	    rc_conf_yesno("rc_nocolor"))
+		setenv("EINFO_COLOR", "NO", 1);
 }
 
-bool service_plugable (const char *service)
+bool service_plugable(const char *service)
 {
 	char *list;
 	char *p;
 	char *star;
 	char *token;
 	bool allow = true;
-	char *match = rc_conf_value ("rc_plug_services");
+	char *match = rc_conf_value("rc_plug_services");
+	bool truefalse;
 
 	if (! match)
-		return (true);
+		return true;
 
-	list = xstrdup (match);
+	list = xstrdup(match);
 	p = list;
-	while ((token = strsep (&p, " "))) {
-		bool truefalse = true;
-
+	while ((token = strsep(&p, " "))) {
 		if (token[0] == '!') {
 			truefalse = false;
 			token++;
-		}
+		} else
+			truefalse = true;
 
-		star = strchr (token, '*');
+		star = strchr(token, '*');
 		if (star) {
-			if (strncmp (service, token, (size_t) (star - token))
-			    == 0)
+			if (strncmp(service, token, (size_t)(star - token)) == 0)
 			{
 				allow = truefalse;
 				break;
 			}
 		} else {
-			if (strcmp (service, token) == 0) {
+			if (strcmp(service, token) == 0) {
 				allow = truefalse;
 				break;
 			}
 		}
 	}
 
-	free (list);
-	return (allow);
+	free(list);
+	return allow;
 }
 
-int signal_setup (int sig, void (*handler)(int))
+int signal_setup(int sig, void (*handler)(int))
 {
 	struct sigaction sa;
 
-	memset (&sa, 0, sizeof (sa));
-	sigemptyset (&sa.sa_mask);
+	memset(&sa, 0, sizeof (sa));
+	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = handler;
-	return (sigaction (sig, &sa, NULL));
+	return sigaction(sig, &sa, NULL);
 }

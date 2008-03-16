@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Feb 22, 2008
+.Dd Mar 16, 2008
 .Dt RC_SERVICE 3 SMM
 .Os OpenRC
 .Sh NAME
@@ -55,17 +55,17 @@ Run Command library (librc, -lrc)
 .Fc
 .Ft bool Fn rc_service_exists "const char *service"
 .Ft bool Fn rc_service_in_runlevel "const char *service" "const char *runlevel"
-.Ft bool Fn rc_service_mark "const char *service" "rc_service_state_t state"
-.Ft "char **" Fn rc_service_extra_commands "const char *service"
+.Ft bool Fn rc_service_mark "const char *service" "RC_SERVICE state"
+.Ft "RC_STRINGLIST *" Fn rc_service_extra_commands "const char *service"
 .Ft bool Fn rc_service_plugable "const char *service"
 .Ft "char *" rc_service_resolve "const char *service"
 .Ft bool Fo rc_service_schedule_start
 .Fa "const char *service"
 .Fa "const char *service_to_start"
 .Fc
-.Ft "char **" Fn rc_services_scheduled_by "const char *service"
+.Ft "RC_STRINGLIST *" Fn rc_services_scheduled_by "const char *service"
 .Ft bool Fn rc_service_schedule_clear "const char *service"
-.Ft rc_service_state_t Fn rc_service_state "const char *service"
+.Ft RC_SERVICE Fn rc_service_state "const char *service"
 .Ft pid_t Fn rc_service_start "const char *service"
 .Ft pid_t Fn rc_service_stop "const char *service"
 .Ft bool Fo rc_service_started_daemon
@@ -79,9 +79,9 @@ Run Command library (librc, -lrc)
 .Fa "const char *option"
 .Fa "const char *value"
 .Fc
-.Ft "char **" Fn rc_services_in_runlevel "const char *runlevel"
-.Ft "char **" Fn rc_services_in_state "rc_service_state_t state"
-.Ft "char **" Fn rc_services_scheduled "const char *service"
+.Ft "RC_STRINGLIST *" Fn rc_services_in_runlevel "const char *runlevel"
+.Ft "RC_STRINGLIST *" Fn rc_services_in_state "RC_SERVICE state"
+.Ft "RC_STRINGLIST *" Fn rc_services_scheduled "const char *service"
 .Ft bool Fn rc_service_daemons_crashed "const char *service"
 .Sh DESCRIPTION
 These functions provide a means of querying OpenRC services to find out the
@@ -222,10 +222,9 @@ Each function that returns
 returns a malloced NULL terminated string that should be freed when done.
 .Pp
 Each function that returns
-.Fr "char **"
-returns a malloced NULL terminated array of malloced NULL terminated strings,
-all of which need to be freed using
-.Fn rc_strlist_free
+.Fr "RC_STRINGLIST *"
+should be freed using
+.Fn rc_stringlist_free
 when done.
 .Pp
 When a function fails it should either return false or NULL and set
@@ -238,7 +237,7 @@ normally holds the volatile state data for services on a RAM backed disk.
 .Xr errno 3 ,
 .Xr malloc 3 ,
 .Xr free 3
-.Xr rc_strlist_free 3 ,
+.Xr rc_stringlist_free 3 ,
 .Xr start-stop-daemon 8
 .Sh AUTHORS
 .An "Roy Marples" Aq roy@marples.name

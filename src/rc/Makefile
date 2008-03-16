@@ -1,8 +1,8 @@
 PROG=		rc
-SRCS=		checkpath.c fstabinfo.c mountinfo.c \
+SRCS=		checkpath.c fstabinfo.c mountinfo.c start-stop-daemon.c \
 		rc-applets.c rc-depend.c rc-logger.c \
-		rc-misc.c rc-plugin.c rc-status.c rc-update.c rc.c \
-		runscript.c start-stop-daemon.c
+		rc-misc.c rc-plugin.c rc-status.c rc-update.c \
+		runscript.c rc.c
 
 CLEANFILES=	version.h
 
@@ -31,8 +31,9 @@ ALL_LINKS=	${BINLINKS} ${SBINLINKS} ${RC_BINLINKS} ${RC_SBINLINKS}
 CLEANFILES+=	${ALL_LINKS}
 
 LDFLAGS+=	-L../librc -L../libeinfo
-#LDFLAGS+=	-Wl,--rpath=../librc -Wl,--rpath=../libeinfo
 LDADD+=		-lutil -lrc -leinfo
+#CFLAGS+=	-ggdb
+#LDFLAGS+=	-Wl,--rpath=../librc -Wl,--rpath=../libeinfo
 
 MK=		../../mk
 include ${MK}/cc.mk

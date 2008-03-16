@@ -64,10 +64,8 @@
 #include <kvm.h>
 #endif
 
-#include "librc-depend.h"
 #include "rc.h"
 #include "rc-misc.h"
-#include "strlist.h"
 
 #include "hidden-visibility.h"
 #define librc_hidden_proto(x) hidden_proto(x)
@@ -115,15 +113,11 @@ librc_hidden_proto(rc_service_state)
 librc_hidden_proto(rc_service_value_get)
 librc_hidden_proto(rc_service_value_set)
 librc_hidden_proto(rc_strcatpaths)
-librc_hidden_proto(rc_strlist_add)
-librc_hidden_proto(rc_strlist_addu)
-librc_hidden_proto(rc_strlist_addsort)
-librc_hidden_proto(rc_strlist_addsortc)
-librc_hidden_proto(rc_strlist_addsortu)
-librc_hidden_proto(rc_strlist_delete)
-librc_hidden_proto(rc_strlist_free)
-librc_hidden_proto(rc_strlist_join)
-librc_hidden_proto(rc_strlist_reverse)
+librc_hidden_proto(rc_stringlist_add)
+librc_hidden_proto(rc_stringlist_addu)
+librc_hidden_proto(rc_stringlist_delete)
+librc_hidden_proto(rc_stringlist_free)
+librc_hidden_proto(rc_stringlist_sort)
 librc_hidden_proto(rc_yesno)
 
 #endif

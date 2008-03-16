@@ -55,6 +55,7 @@ rc-abort
 checkpath.o
 fstabinfo.o
 mountinfo.o
+start-stop-daemon.o
 rc-applets.o
 rc-depend.o
 rc-logger.o
@@ -62,8 +63,7 @@ rc-misc.o
 rc-plugin.o
 rc-status.o
 rc-update.o
-rc.o
 runscript.o
-start-stop-daemon.o
+rc.o
 rc
 .depend

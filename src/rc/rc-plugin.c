@@ -31,6 +31,7 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
+
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
@@ -46,7 +47,6 @@
 #include "rc.h"
 #include "rc-misc.h"
 #include "rc-plugin.h"
-#include "strlist.h"
 
 #define RC_PLUGIN_HOOK "rc_plugin_hook"
 
@@ -56,129 +56,117 @@ typedef struct plugin
 {
 	char *name;
 	void *handle;
-	int (*hook) (rc_hook_t, const char *);
-	struct plugin *next;
-} plugin_t;
-
-static plugin_t *plugins = NULL;
+	int (*hook)(RC_HOOK, const char *);
+	STAILQ_ENTRY(plugin) entries;
+} PLUGIN;
+STAILQ_HEAD(, plugin) plugins;
 
 #ifndef __FreeBSD__
-dlfunc_t dlfunc (void * __restrict handle, const char * __restrict symbol)
+dlfunc_t dlfunc(void * __restrict handle, const char * __restrict symbol)
 {
 	union {
 		void *d;
 		dlfunc_t f;
 	} rv;
 
-	rv.d = dlsym (handle, symbol);
-	return (rv.f);
+	rv.d = dlsym(handle, symbol);
+	return rv.f;
 }
 #endif
 
-void rc_plugin_load (void)
+void rc_plugin_load(void)
 {
 	DIR *dp;
 	struct dirent *d;
-	plugin_t *plugin = plugins;
+	PLUGIN *plugin;
 	char *p;
 	void *h;
-	int (*fptr) (rc_hook_t, const char *);
+	int (*fptr)(RC_HOOK, const char *);
 
 	/* Don't load plugins if we're in one */
 	if (rc_in_plugin)
 		return;
 
-	/* Ensure some sanity here */
-	rc_plugin_unload ();
+	STAILQ_INIT(&plugins);
 
-	if (! (dp = opendir (RC_PLUGINDIR)))
+	if (! (dp = opendir(RC_PLUGINDIR)))
 		return;
 
-	while ((d = readdir (dp))) {
+	while ((d = readdir(dp))) {
 		if (d->d_name[0] == '.')
 			continue;
 
-		p = rc_strcatpaths (RC_PLUGINDIR, d->d_name, NULL);
-		h = dlopen (p, RTLD_LAZY);
-		free (p);
+		p = rc_strcatpaths(RC_PLUGINDIR, d->d_name, NULL);
+		h = dlopen(p, RTLD_LAZY);
+		free(p);
 		if (! h) {
-			eerror ("dlopen: %s", dlerror ());
+			eerror("dlopen: %s", dlerror());
 			continue;
 		}
 
-		fptr = (int (*)(rc_hook_t, const char*)) dlfunc (h, RC_PLUGIN_HOOK);
+		fptr = (int (*)(RC_HOOK, const char*))dlfunc(h, RC_PLUGIN_HOOK);
 		if (! fptr) {
-			eerror ("%s: cannot find symbol `%s'", d->d_name, RC_PLUGIN_HOOK);
-			dlclose (h);
+			eerror("%s: cannot find symbol `%s'", d->d_name, RC_PLUGIN_HOOK);
+			dlclose(h);
 		} else {
-			if (plugin) {
-				plugin->next = xmalloc (sizeof (*plugin->next));
-				plugin = plugin->next;
-			} else
-				plugin = plugins = xmalloc (sizeof (*plugin));
-
-			plugin->name = xstrdup (d->d_name);
+			plugin = xmalloc(sizeof(*plugin));
+			plugin->name = xstrdup(d->d_name);
 			plugin->handle = h;
 			plugin->hook = fptr;
-			plugin->next = NULL;
+			STAILQ_INSERT_TAIL(&plugins, plugin, entries);
 		}
 	}
-	closedir (dp);
+	closedir(dp);
 }
 
-int rc_waitpid (pid_t pid)
+int rc_waitpid(pid_t pid)
 {
 	int status = 0;
 	pid_t savedpid = pid;
 	int retval = -1;
 
 	errno = 0;
-	while ((pid = waitpid (savedpid, &status, 0)) > 0) {
+	while ((pid = waitpid(savedpid, &status, 0)) > 0) {
 		if (pid == savedpid)
-			retval = WIFEXITED (status) ? WEXITSTATUS (status) : EXIT_FAILURE;
+			retval = WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 	}
 
-	return (retval);
+	return retval;
 }
 
-void rc_plugin_run (rc_hook_t hook, const char *value)
+void rc_plugin_run(RC_HOOK hook, const char *value)
 {
-	plugin_t *plugin = plugins;
+	PLUGIN *plugin;
 	struct sigaction sa;
 	sigset_t empty;
 	sigset_t full;
 	sigset_t old;
+	int i;
+	int flags;
+	int pfd[2];
+	pid_t pid;
+	char *buffer;
+	char *token;
+	char *p;
+	ssize_t nr;
+	int retval;
 
 	/* Don't run plugins if we're in one */
 	if (rc_in_plugin)
 		return;
 
 	/* We need to block signals until we have forked */
-	memset (&sa, 0, sizeof (sa));
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_DFL;
-	sigemptyset (&sa.sa_mask);
-	sigemptyset (&empty);
-	sigfillset (&full);
+	sigemptyset(&sa.sa_mask);
+	sigemptyset(&empty);
+	sigfillset(&full);
 
-	while (plugin) {
-		int i;
-		int flags;
-		int pfd[2];
-		pid_t pid;
-		char *buffer;
-		char *token;
-		char *p;
-		ssize_t nr;
-
-		if (! plugin->hook) {
-			plugin = plugin->next;
-			continue;
-		}
-
+	STAILQ_FOREACH(plugin, &plugins, entries) {
 		/* We create a pipe so that plugins can affect our environment
 		 * vars, which in turn influence our scripts. */
-		if (pipe (pfd) == -1) {
-			eerror ("pipe: %s", strerror (errno));
+		if (pipe(pfd) == -1) {
+			eerror("pipe: %s", strerror(errno));
 			return;
 		}
 
@@ -188,81 +176,78 @@ void rc_plugin_run (rc_hook_t hook, const char *value)
 		for (i = 0; i < 2; i++)
 			if ((flags = fcntl (pfd[i], F_GETFD, 0)) < 0 ||
 			    fcntl (pfd[i], F_SETFD, flags | FD_CLOEXEC) < 0)
-				eerror ("fcntl: %s", strerror (errno));
+				eerror("fcntl: %s", strerror(errno));
 
-		sigprocmask (SIG_SETMASK, &full, &old);
+		sigprocmask(SIG_SETMASK, &full, &old);
 
 		/* We run the plugin in a new process so we never crash
 		 * or otherwise affected by it */
-		if ((pid = fork ()) == -1) {
-			eerror ("fork: %s", strerror (errno));
+		if ((pid = fork()) == -1) {
+			eerror("fork: %s", strerror(errno));
 			break;
 		}
 
 		if (pid == 0) {
-			int retval;
-
 			/* Restore default handlers */
-			sigaction (SIGCHLD, &sa, NULL);
-			sigaction (SIGHUP,  &sa, NULL);
-			sigaction (SIGINT,  &sa, NULL);
-			sigaction (SIGQUIT, &sa, NULL);
-			sigaction (SIGTERM, &sa, NULL);
-			sigaction (SIGUSR1, &sa, NULL);
-			sigaction (SIGWINCH, &sa, NULL);
-			sigprocmask (SIG_SETMASK, &old, NULL);
+			sigaction(SIGCHLD, &sa, NULL);
+			sigaction(SIGHUP,  &sa, NULL);
+			sigaction(SIGINT,  &sa, NULL);
+			sigaction(SIGQUIT, &sa, NULL);
+			sigaction(SIGTERM, &sa, NULL);
+			sigaction(SIGUSR1, &sa, NULL);
+			sigaction(SIGWINCH, &sa, NULL);
+			sigprocmask(SIG_SETMASK, &old, NULL);
 			
 			rc_in_plugin = true;
-			close (pfd[0]);
-			rc_environ_fd = fdopen (pfd[1], "w");
-			retval = plugin->hook (hook, value);
-			fclose (rc_environ_fd);
+			close(pfd[0]);
+			rc_environ_fd = fdopen(pfd[1], "w");
+			retval = plugin->hook(hook, value);
+			fclose(rc_environ_fd);
 			rc_environ_fd = NULL;
 
 			/* Just in case the plugin sets this to false */
 			rc_in_plugin = true;
-			exit (retval);
+			exit(retval);
 		}
 
-		sigprocmask (SIG_SETMASK, &old, NULL);
-		close (pfd[1]);
-		buffer = xmalloc (sizeof (char) * BUFSIZ);
-		memset (buffer, 0, BUFSIZ);
+		sigprocmask(SIG_SETMASK, &old, NULL);
+		close(pfd[1]);
+		buffer = xmalloc(sizeof(char) * BUFSIZ);
+		memset(buffer, 0, BUFSIZ);
 
-		while ((nr = read (pfd[0], buffer, BUFSIZ)) > 0) {
+		while ((nr = read(pfd[0], buffer, BUFSIZ)) > 0) {
 			p = buffer;
 			while (*p && p - buffer < nr) {
-				token = strsep (&p, "=");
+				token = strsep(&p, "=");
 				if (token) {
-					unsetenv (token);
+					unsetenv(token);
 					if (*p) {
-						setenv (token, p, 1);
-						p += strlen (p) + 1;
+						setenv(token, p, 1);
+						p += strlen(p) + 1;
 					} else
 						p++;
 				}
 			}
 		}
 
-		free (buffer);
-		close (pfd[0]);
+		free(buffer);
+		close(pfd[0]);
 
-		rc_waitpid (pid);
-		plugin = plugin->next;
+		rc_waitpid(pid);
 	}
 }
 
-void rc_plugin_unload (void)
+void rc_plugin_unload(void)
 {
-	plugin_t *plugin = plugins;
-	plugin_t *next;
+	PLUGIN *plugin = STAILQ_FIRST(&plugins);
+	PLUGIN *next;
 
 	while (plugin) {
-		next = plugin->next;
-		dlclose (plugin->handle);
-		free (plugin->name);
-		free (plugin);
+		next = STAILQ_NEXT(plugin, entries);
+		dlclose(plugin->handle);
+		free(plugin->name);
+		free(plugin);
 		plugin = next;
 	}
-	plugins = NULL;
+	STAILQ_INIT(&plugins);
 }

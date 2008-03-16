@@ -32,6 +32,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -48,84 +49,84 @@
 
 extern const char *applet;
 
-static int do_check (char *path, uid_t uid, gid_t gid, mode_t mode, int file)
+static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 {
 	struct stat st;
+	int fd;
 
-	memset (&st, 0, sizeof (st));
-
-	if (stat (path, &st)) {
+	if (stat(path, &st)) {
 		if (file) {
-			int fd;
-			einfo ("%s: creating file", path);
-			if ((fd = open (path, O_CREAT)) == -1) {
-				eerror ("%s: open: %s", applet, strerror (errno));
-				return (-1);
+			einfo("%s: creating file", path);
+			if ((fd = open(path, O_CREAT)) == -1) {
+				eerror("%s: open: %s", applet, strerror(errno));
+				return -1;
 			}
 			close (fd);
 		} else {
-			einfo ("%s: creating directory", path);
+			einfo("%s: creating directory", path);
 			if (! mode)
 				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-			if (mkdir (path, mode)) {
-				eerror ("%s: mkdir: %s", applet, strerror (errno));
-				return (-1);
+			if (mkdir(path, mode)) {
+				eerror("%s: mkdir: %s", applet, strerror (errno));
+				return -1;
 			}
 			mode = 0;
 		}
 	} else {
-		if ((file && S_ISDIR (st.st_mode)) ||
-		    (! file && ! S_ISDIR (st.st_mode)))
+		if ((file && S_ISDIR(st.st_mode)) ||
+		    (! file && ! S_ISDIR(st.st_mode)))
 		{
 			if (file)
-				eerror ("%s: is a directory", path);
+				eerror("%s: is a directory", path);
 			else
-				eerror ("%s: is a file", path);
-			return (-1);
+				eerror("%s: is a file", path);
+			return -1;
 		}
 	}
 
 	if (mode && (st.st_mode & 0777) != mode) {
-		einfo ("%s: correcting mode", applet);
-		if (chmod (path, mode)) {
-			eerror ("%s: chmod: %s", applet, strerror (errno));
-			return (-1);
+		einfo("%s: correcting mode", applet);
+		if (chmod(path, mode)) {
+			eerror("%s: chmod: %s", applet, strerror(errno));
+			return -1;
 		}
 	}
 
 	if (st.st_uid != uid || st.st_gid != gid) {
 		if (st.st_dev || st.st_ino)
-			einfo ("%s: correcting owner", path);
-		if (chown (path, uid, gid)) {
-			eerror ("%s: chown: %s", applet, strerror (errno));
-			return (-1);
+			einfo("%s: correcting owner", path);
+		if (chown(path, uid, gid)) {
+			eerror("%s: chown: %s", applet, strerror(errno));
+			return -1;
 		}
 	}
 
-	return (0);
+	return 0;
 }
 
 /* Based on busybox */
 static int parse_mode (mode_t *mode, char *text)
 {
+	char *p;
+	unsigned long l;
+
 	/* Check for a numeric mode */
 	if ((*text - '0') < 8) {
-		char *p;
-		unsigned long l = strtoul (text, &p, 8);
+		l = strtoul(text, &p, 8);
 		if (*p || l > 07777U) {
 			errno = EINVAL;
-			return (-1);
+			return -1;
 		}
 		*mode = (mode_t) l;
-		return (0);
+		return 0;
 	}
 
 	/* We currently don't check g+w type stuff */
 	errno = EINVAL;
-	return (-1);
+	return -1;
 }
 
-static int parse_owner (struct passwd **user, struct group **group,
+static int parse_owner(struct passwd **user, struct group **group,
 			const char *owner)
 {
 	char *u = xstrdup (owner);
@@ -137,25 +138,25 @@ static int parse_owner (struct passwd **user, struct group **group,
 		*g++ = '\0';
 
 	if (user && *u) {
-		if (sscanf (u, "%d", &id) == 1)
-			*user = getpwuid ((uid_t) id);
+		if (sscanf(u, "%d", &id) == 1)
+			*user = getpwuid((uid_t) id);
 		else
-			*user = getpwnam (u);
+			*user = getpwnam(u);
 		if (! *user)
 			retval = -1;
 	}
 
 	if (group && g && *g) {
-		if (sscanf (g, "%d", &id) == 1)
-			*group = getgrgid ((gid_t) id);
+		if (sscanf(g, "%d", &id) == 1)
+			*group = getgrgid((gid_t) id);
 		else
-			*group = getgrnam (g);
+			*group = getgrnam(g);
 		if (! *group)
 			retval = -1;
 	}
 
-	free (u);
-	return (retval);
+	free(u);
+	return retval;
 }
 
 #include "_usage.h"
@@ -177,7 +178,7 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int checkpath (int argc, char **argv)
+int checkpath(int argc, char **argv)
 {
 	int opt;
 	uid_t uid = geteuid();
@@ -188,33 +189,31 @@ int checkpath (int argc, char **argv)
 	bool file = 0;
 	int retval = EXIT_SUCCESS;
 
-	while ((opt = getopt_long (argc, argv, getoptstring,
-				   longopts, (int *) 0)) != -1)
+	while ((opt = getopt_long(argc, argv, getoptstring,
+				  longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-			case 'd':
-				file = 0;
-				break;
-			case 'f':
-				file = 1;
-				break;
-			case 'm':
-				if (parse_mode (&mode, optarg) != 0)
-					eerrorx ("%s: invalid mode `%s'",
-						 applet, optarg);
-				break;
-			case 'o':
-				if (parse_owner (&pw, &gr, optarg) != 0)
-					eerrorx ("%s: owner `%s' not found",
-						 applet, optarg);
-				break;
+		case 'd':
+			file = 0;
+			break;
+		case 'f':
+			file = 1;
+			break;
+		case 'm':
+			if (parse_mode(&mode, optarg) != 0)
+				eerrorx("%s: invalid mode `%s'", applet, optarg);
+			break;
+		case 'o':
+			if (parse_owner(&pw, &gr, optarg) != 0)
+				eerrorx("%s: owner `%s' not found", applet, optarg);
+			break;
 
-				case_RC_COMMON_GETOPT
+		case_RC_COMMON_GETOPT
 		}
 	}
 
 	if (optind >= argc)
-		usage (EXIT_FAILURE);
+		usage(EXIT_FAILURE);
 
 	if (pw) {
 		uid = pw->pw_uid;
@@ -224,11 +223,11 @@ int checkpath (int argc, char **argv)
 		gid = gr->gr_gid;
 
 	while (optind < argc) {
-		if (do_check (argv[optind], uid, gid, mode, file))
+		if (do_check(argv[optind], uid, gid, mode, file))
 			retval = EXIT_FAILURE;
 		optind++;
 	}
 
-	exit (retval);
+	exit(retval);
 	/* NOTREACHED */
 }

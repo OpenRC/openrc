@@ -47,16 +47,15 @@
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>
+#include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <regex.h>
 
 #include "builtins.h"
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
-#include "strlist.h"
 
 extern const char *applet;
 
@@ -80,93 +79,93 @@ struct args {
 	regex_t *skip_fstype_regex;
 	regex_t *options_regex;
 	regex_t *skip_options_regex;
-	char **mounts;
+	RC_STRINGLIST *mounts;
 	mount_type mount_type;
 	net_opts netdev;
 };
 
-static int process_mount (char ***list, struct args *args,
-			  char *from, char *to, char *fstype, char *options,
-			  int netdev)
+static int process_mount(RC_STRINGLIST *list, struct args *args,
+			 char *from, char *to, char *fstype, char *options,
+			 int netdev)
 {
 	char *p;
+	RC_STRING *s;
 
 	errno = ENOENT;
 
 #ifdef __linux__
 	/* Skip the really silly rootfs */
-	if (strcmp (fstype, "rootfs") == 0)
-		return (-1);
+	if (strcmp(fstype, "rootfs") == 0)
+		return -1;
 #endif
 
-	if (args->netdev == net_yes && (netdev != -1 || args->mounts)) {
+	if (args->netdev == net_yes &&
+	    (netdev != -1 || TAILQ_FIRST(args->mounts)))
+	{
 		if (netdev != 0)
-			return (1);
-	} else if (args->netdev == net_no && (netdev != -1 || args->mounts)) {
+			return 1;
+	} else if (args->netdev == net_no &&
+		  (netdev != -1 || TAILQ_FIRST(args->mounts)))
+	{
 		if (netdev != 1)
-			return (1);
+			return 1;
 	} else {
 		if (args->node_regex &&
-		    regexec (args->node_regex, from, 0, NULL, 0) != 0)
-			return (1);
+		    regexec(args->node_regex, from, 0, NULL, 0) != 0)
+			return 1;
 		if (args->skip_node_regex &&
-		    regexec (args->skip_node_regex, from, 0, NULL, 0) == 0)
-			return (1);
+		    regexec(args->skip_node_regex, from, 0, NULL, 0) == 0)
+			return 1;
 
 		if (args->fstype_regex &&
-		    regexec (args->fstype_regex, fstype, 0, NULL, 0) != 0)
-			return (-1);
+		    regexec(args->fstype_regex, fstype, 0, NULL, 0) != 0)
+			return -1;
 		if (args->skip_fstype_regex &&
-		    regexec (args->skip_fstype_regex, fstype, 0, NULL, 0) == 0)
-			return (-1);
+		    regexec(args->skip_fstype_regex, fstype, 0, NULL, 0) == 0)
+			return -1;
 
 		if (args->options_regex &&
-		    regexec (args->options_regex, options, 0, NULL, 0) != 0)
-			return (-1);
+		    regexec(args->options_regex, options, 0, NULL, 0) != 0)
+			return -1;
 		if (args->skip_options_regex &&
-		    regexec (args->skip_options_regex, options, 0, NULL, 0) == 0)
-			return (-1);
+		    regexec(args->skip_options_regex, options, 0, NULL, 0) == 0)
+			return -1;
 	}
 
-	if (args->mounts) {
-		bool found = false;
-		int j;
-		char *mnt;
-		STRLIST_FOREACH (args->mounts, mnt, j)
-			if (strcmp (mnt, to) == 0) {
-				found = true;
+	if (TAILQ_FIRST(args->mounts)) {
+		TAILQ_FOREACH(s, args->mounts, entries)
+			if (strcmp(s->value, to) == 0)
 				break;
-			}
-		if (! found)
-			return (-1);
+		if (! s)
+			return -1;
 	}
 
 	switch (args->mount_type) {
-		case mount_from:
-			p = from;
-			break;
-		case mount_to:
-			p = to;
-			break;
-		case mount_fstype:
-			p = fstype;
-			break;
-		case mount_options:
-			p = options;
-			break;
-		default:
-			p = NULL;
-			errno = EINVAL;
-			break;
+	case mount_from:
+		p = from;
+		break;
+	case mount_to:
+		p = to;
+		break;
+	case mount_fstype:
+		p = fstype;
+		break;
+	case mount_options:
+		p = options;
+		break;
+	default:
+		p = NULL;
+		errno = EINVAL;
+		break;
 	}
 
 	if (p) {
 		errno = 0;
-		rc_strlist_addsortc (list, p);
-		return (0);
+		rc_stringlist_add(list, p);
+		return 0;
 	}
 
-	return (-1);
+	return -1;
 }
 
 #ifdef BSD
@@ -212,70 +211,73 @@ static struct opt {
 	{ 0, NULL }
 };
 
-static char **find_mounts (struct args *args)
+static RC_STRINGLIST *find_mounts(struct args *args)
 {
 	struct statfs *mnts;
 	int nmnts;
 	int i;
-	char **list = NULL;
+	RC_STRINGLIST *list;
 	char *options = NULL;
 	uint64_t flags;
 	struct opt *o;
+	int netdev;
+	char *tmp;
+	size_t l;
 
-	if ((nmnts = getmntinfo (&mnts, MNT_NOWAIT)) == 0)
-		eerrorx ("getmntinfo: %s", strerror (errno));
+	if ((nmnts = getmntinfo(&mnts, MNT_NOWAIT)) == 0)
+		eerrorx("getmntinfo: %s", strerror (errno));
 
+	list = rc_stringlist_new();
 	for (i = 0; i < nmnts; i++) {
-		int netdev = 0;
+		netdev = 0;
 		flags = mnts[i].F_FLAGS & MNT_VISFLAGMASK;
 		for (o = optnames; flags && o->o_opt; o++) {
 			if (flags & o->o_opt) {
 				if (o->o_opt == MNT_LOCAL)
 					netdev = 1;
 				if (! options)
-					options = xstrdup (o->o_name);
+					options = xstrdup(o->o_name);
 				else {
-					char *tmp = NULL;
-					size_t l = strlen (options) + strlen (o->o_name) + 2;
-					tmp = xmalloc (sizeof (char) * l);
-					snprintf (tmp, l, "%s,%s", options, o->o_name);
-					free (options);
+					l = strlen(options) + strlen(o->o_name) + 2;
+					tmp = xmalloc(sizeof (char) * l);
+					snprintf(tmp, l, "%s,%s", options, o->o_name);
+					free(options);
 					options = tmp;
 				}
 			}
 			flags &= ~o->o_opt;
 		}
 
-		process_mount (&list, args,
-			       mnts[i].f_mntfromname,
-			       mnts[i].f_mntonname,
-			       mnts[i].f_fstypename,
-			       options,
-			       netdev);
+		process_mount(list, args,
+			      mnts[i].f_mntfromname,
+			      mnts[i].f_mntonname,
+			      mnts[i].f_fstypename,
+			      options,
+			      netdev);
 
-		free (options);
+		free(options);
 		options = NULL;
 	}
 
-	return (list);
+	return list;
 }
 
 #elif defined (__linux__)
-static struct mntent *getmntfile (const char *file)
+static struct mntent *getmntfile(const char *file)
 {
 	struct mntent *ent = NULL;
 	FILE *fp;
 
-	fp = setmntent ("/etc/fstab", "r");
-	while ((ent = getmntent (fp)))
-		if (strcmp (file, ent->mnt_dir) == 0)
+	fp = setmntent("/etc/fstab", "r");
+	while ((ent = getmntent(fp)))
+		if (strcmp(file, ent->mnt_dir) == 0)
 			break;
-	endmntent (fp);
+	endmntent(fp);
 
-	return (ent);
+	return ent;
 }
 
-static char **find_mounts (struct args *args)
+static RC_STRINGLIST *find_mounts(struct args *args)
 {
 	FILE *fp;
 	char *buffer;
@@ -284,52 +286,54 @@ static char **find_mounts (struct args *args)
 	char *to;
 	char *fst;
 	char *opts;
-	char **list = NULL;
 	struct mntent *ent;
 	int netdev;
+	RC_STRINGLIST *list;
 
-	if ((fp = fopen ("/proc/mounts", "r")) == NULL)
-		eerrorx ("getmntinfo: %s", strerror (errno));
+	if ((fp = fopen("/proc/mounts", "r")) == NULL)
+		eerrorx("getmntinfo: %s", strerror(errno));
 
-	buffer = xmalloc (sizeof (char) * PATH_MAX * 3);
-	while (fgets (buffer, PATH_MAX * 3, fp)) {
+	list = rc_stringlist_new();
+
+	buffer = xmalloc(sizeof(char) * PATH_MAX * 3);
+	while (fgets(buffer, PATH_MAX * 3, fp)) {
 		netdev = -1;
 		p = buffer;
-		from = strsep (&p, " ");
-		to = strsep (&p, " ");
-		fst = strsep (&p, " ");
-		opts = strsep (&p, " ");
+		from = strsep(&p, " ");
+		to = strsep(&p, " ");
+		fst = strsep(&p, " ");
+		opts = strsep(&p, " ");
 
-		if ((ent = getmntfile (to))) {
-			if (strstr (ent->mnt_opts, "_netdev"))
+		if ((ent = getmntfile(to))) {
+			if (strstr(ent->mnt_opts, "_netdev"))
 				netdev = 0;
 		}
 
-		process_mount (&list, args, from, to, fst, opts, netdev);
+		process_mount(list, args, from, to, fst, opts, netdev);
 	}
-	free (buffer);
-	fclose (fp);
+	free(buffer);
+	fclose(fp);
 
-	return (list);
+	return list;
 }
 
 #else
 #  error "Operating system not supported!"
 #endif
 
-static regex_t *get_regex (const char *string)
+static regex_t *get_regex(const char *string)
 {
-	regex_t *reg = xmalloc (sizeof (*reg));
+	regex_t *reg = xmalloc(sizeof (*reg));
 	int result;
 	char buffer[256];
 
-	if ((result = regcomp (reg, string, REG_EXTENDED | REG_NOSUB)) != 0)
+	if ((result = regcomp(reg, string, REG_EXTENDED | REG_NOSUB)) != 0)
 	{
-		regerror (result, reg, buffer, sizeof (buffer));
-		eerrorx ("%s: invalid regex `%s'", applet, buffer);
+		regerror(result, reg, buffer, sizeof(buffer));
+		eerrorx("%s: invalid regex `%s'", applet, buffer);
 	}
 
-	return (reg);
+	return reg;
 }
 
 #include "_usage.h"
@@ -347,7 +351,7 @@ static const struct option longopts[] = {
 	{ "options",             0, NULL, 'i'},
 	{ "fstype",              0, NULL, 's'},
 	{ "node",                0, NULL, 't'},
-	{ "netdev",				 0, NULL, 'e'},
+	{ "netdev",              0, NULL, 'e'},
 	{ "nonetdev",            0, NULL, 'E'},
 	longopts_COMMON
 };
@@ -369,112 +373,113 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int mountinfo (int argc, char **argv)
+int mountinfo(int argc, char **argv)
 {
-	int i;
 	struct args args;
 	regex_t *point_regex = NULL;
 	regex_t *skip_point_regex = NULL;
-	char **nodes = NULL;
-	char *n;
+	RC_STRINGLIST *nodes;
+	RC_STRING *s;
 	int opt;
 	int result;
 	bool quiet;
 
 	/* Ensure that we are only quiet when explicitly told to be */
-	unsetenv ("EINFO_QUIET");
+	unsetenv("EINFO_QUIET");
 
 #define DO_REG(_var) \
-	if (_var) free (_var); \
-	_var = get_regex (optarg);
+	if (_var) free(_var); \
+	_var = get_regex(optarg);
 #define REG_FREE(_var) \
-	if (_var) { regfree (_var); free (_var); }
+	if (_var) { regfree(_var); free(_var); }
 
-	memset (&args, 0, sizeof (args));
+	memset (&args, 0, sizeof(args));
 	args.mount_type = mount_to;
 	args.netdev = net_ignore;
+	args.mounts = rc_stringlist_new();
 
-	while ((opt = getopt_long (argc, argv, getoptstring,
-				   longopts, (int *) 0)) != -1)
+	while ((opt = getopt_long(argc, argv, getoptstring,
+				  longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-			case 'e':
-				args.netdev = net_yes;
-				break;
-			case 'E':
-				args.netdev = net_no;
-				break;
-			case 'f':
-				DO_REG (args.fstype_regex);
-				break;
-			case 'F':
-				DO_REG (args.skip_fstype_regex);
-				break;
-			case 'n':
-				DO_REG (args.node_regex);
-				break;
-			case 'N':
-				DO_REG (args.skip_node_regex);
-				break;
-			case 'o':
-				DO_REG (args.options_regex);
-				break;
-			case 'O':
-				DO_REG (args.skip_options_regex);
-				break;
-			case 'p':
-				DO_REG (point_regex);
-				break;
-			case 'P':
-				DO_REG (skip_point_regex);
-				break;
-			case 'i':
-				args.mount_type = mount_options;
-				break;
-			case 's':
-				args.mount_type = mount_fstype;
-				break;
-			case 't':
-				args.mount_type = mount_from;
-				break;
+		case 'e':
+			args.netdev = net_yes;
+			break;
+		case 'E':
+			args.netdev = net_no;
+			break;
+		case 'f':
+			DO_REG(args.fstype_regex);
+			break;
+		case 'F':
+			DO_REG(args.skip_fstype_regex);
+			break;
+		case 'n':
+			DO_REG(args.node_regex);
+			break;
+		case 'N':
+			DO_REG(args.skip_node_regex);
+			break;
+		case 'o':
+			DO_REG(args.options_regex);
+			break;
+		case 'O':
+			DO_REG(args.skip_options_regex);
+			break;
+		case 'p':
+			DO_REG(point_regex);
+			break;
+		case 'P':
+			DO_REG(skip_point_regex);
+			break;
+		case 'i':
+			args.mount_type = mount_options;
+			break;
+		case 's':
+			args.mount_type = mount_fstype;
+			break;
+		case 't':
+			args.mount_type = mount_from;
+			break;
 
-				case_RC_COMMON_GETOPT
+		case_RC_COMMON_GETOPT
 		}
 	}
 
 	while (optind < argc) {
 		if (argv[optind][0] != '/')
-			eerrorx ("%s: `%s' is not a mount point", argv[0], argv[optind]);
-		rc_strlist_add (&args.mounts, argv[optind++]);
+			eerrorx("%s: `%s' is not a mount point", argv[0], argv[optind]);
+		rc_stringlist_add(args.mounts, argv[optind++]);
 	}
+	nodes = find_mounts(&args);
+	rc_stringlist_free(args.mounts);
+	rc_stringlist_sort(&nodes);
 
-	nodes = find_mounts (&args);
-
-	REG_FREE (args.fstype_regex);
-	REG_FREE (args.skip_fstype_regex);
-	REG_FREE (args.node_regex);
-	REG_FREE (args.skip_node_regex);
-	REG_FREE (args.options_regex);
-	REG_FREE (args.skip_options_regex);
-
-	rc_strlist_reverse (nodes);
+	REG_FREE(args.fstype_regex);
+	REG_FREE(args.skip_fstype_regex);
+	REG_FREE(args.node_regex);
+	REG_FREE(args.skip_node_regex);
+	REG_FREE(args.options_regex);
+	REG_FREE(args.skip_options_regex);
 
 	result = EXIT_FAILURE;
-	quiet = rc_yesno (getenv ("EINFO_QUIET"));
-	STRLIST_FOREACH (nodes, n, i) {
-		if (point_regex && regexec (point_regex, n, 0, NULL, 0) != 0)
+	quiet = rc_yesno(getenv("EINFO_QUIET"));
+	TAILQ_FOREACH_REVERSE(s, nodes, rc_stringlist, entries) {
+		if (point_regex &&
+		    regexec(point_regex, s->value, 0, NULL, 0) != 0)
 			continue;
-		if (skip_point_regex && regexec (skip_point_regex, n, 0, NULL, 0) == 0)
+		if (skip_point_regex &&
+		    regexec(skip_point_regex, s->value, 0, NULL, 0) == 0)
 			continue;
 		if (! quiet)
-			printf ("%s\n", n);
+			printf("%s\n", s->value);
 		result = EXIT_SUCCESS;
 	}
-	rc_strlist_free (nodes);
+	rc_stringlist_free(nodes);
 
-	REG_FREE (point_regex);
-	REG_FREE (skip_point_regex);
+	REG_FREE(point_regex);
+	REG_FREE(skip_point_regex);
 
-	exit (result);
+	exit(result);
 	/* NOTREACHED */
 }

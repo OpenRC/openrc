@@ -33,35 +33,36 @@
 # define _noreturn
 #endif
 
-_noreturn static void usage (int exit_status)
+_noreturn static void usage(int exit_status)
 {
 	const char * const has_arg[] = { "", "<arg>", "[arg]" };
 	int i;
+	int len;
+	char *lo;
+	char *p;
+	char *token;
 
 #ifdef usagestring
-	printf (usagestring);
+	printf(usagestring);
 #else
-	printf ("Usage: %s [options] ", applet);
+	printf("Usage: %s [options] ", applet);
 #endif
 #ifdef extraopts
-	printf (extraopts);
+	printf(extraopts);
 #endif
-	printf ("\n\nOptions: [" getoptstring "]\n");
+	printf("\n\nOptions: [" getoptstring "]\n");
 	for (i = 0; longopts[i].name; ++i) {
-		int len = printf ("  -%c, --%s %s", longopts[i].val, longopts[i].name,
-				  has_arg[longopts[i].has_arg]);
+		len = printf("  -%c, --%s %s", longopts[i].val, longopts[i].name,
+				 has_arg[longopts[i].has_arg]);
 
-		char *lo = xstrdup (longopts_help[i]);
-		char *p = lo;
-		char *token;
-
-		while ((token = strsep (&p, "\n"))) {
+		lo = p = xstrdup(longopts_help[i]);
+		while ((token = strsep(&p, "\n"))) {
 			while (++len < 37)
-				printf (" ");
-			puts (token);
+				printf(" ");
+			puts(token);
 			len = 0;
 		}
-		free (lo);
+		free(lo);
 	}
-	exit (exit_status);
+	exit(exit_status);
 }

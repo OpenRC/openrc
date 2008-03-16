@@ -30,6 +30,7 @@
  */
 
 #include <sys/wait.h>
+
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -72,27 +73,26 @@
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
-#include "strlist.h"
 
 #ifdef HAVE_GETMNTENT
-static struct mntent *getmntfile (const char *file)
+static struct mntent *getmntfile(const char *file)
 {
-	struct mntent *ent = NULL;
+	struct mntent *ent;
 	FILE *fp;
 
 	START_ENT;
-	while ((ent = getmntent (fp)))
-		if (strcmp (file, ent->mnt_dir) == 0)
+	while ((ent = getmntent(fp)))
+		if (strcmp(file, ent->mnt_dir) == 0)
 			break;
 	END_ENT;
 
-	return (ent);
+	return ent;
 }
 #endif
 
 extern const char *applet;
 
-static int do_mount (struct ENT *ent)
+static int do_mount(struct ENT *ent)
 {
 	char *argv[8];
 	pid_t pid;
@@ -100,29 +100,27 @@ static int do_mount (struct ENT *ent)
 
 	argv[0] = (char *) "mount";
 	argv[1] = (char *) "-o";
-	argv[2] = ENT_OPTS (*ent);
+	argv[2] = ENT_OPTS(*ent);
 	argv[3] = (char *) "-t";
-	argv[4] = ENT_TYPE (*ent);
-	argv[5] = ENT_BLOCKDEVICE (*ent);
-	argv[6] = ENT_FILE (*ent);
+	argv[4] = ENT_TYPE(*ent);
+	argv[5] = ENT_BLOCKDEVICE(*ent);
+	argv[6] = ENT_FILE(*ent);
 	argv[7] = NULL;
 	switch (pid = vfork()) {
 		case -1:	
-			eerrorx ("%s: vfork: %s", applet,
-					strerror (errno));
+			eerrorx("%s: vfork: %s", applet, strerror(errno));
 			/* NOTREACHED */
 		case 0:
-			execvp (argv[0], argv);
-			eerror ("%s: execv: %s", applet,
-					strerror (errno));
+			execvp(argv[0], argv);
+			eerror("%s: execv: %s", applet, strerror(errno));
 			_exit(EXIT_FAILURE);
 			/* NOTREACHED */
 		default:
-			waitpid (pid, &status, 0);
-			if (WIFEXITED (status))
-				return (WEXITSTATUS(status));
+			waitpid(pid, &status, 0);
+			if (WIFEXITED(status))
+				return WEXITSTATUS(status);
 			else
-				return (-1);
+				return -1;
 			/* NOTREACHED */
 	}
 }
@@ -155,7 +153,7 @@ static const char * const longopts_help[] = {
 #define OUTPUT_BLOCKDEV  (1 << 5)
 #define OUTPUT_MOUNT     (1 << 6)
 
-int fstabinfo (int argc, char **argv)
+int fstabinfo(int argc, char **argv)
 {
 	struct ENT *ent;
 	int result = EXIT_SUCCESS;
@@ -163,8 +161,8 @@ int fstabinfo (int argc, char **argv)
 	int i;
 	int opt;
 	int output = OUTPUT_FILE;
-	char **files = NULL;
-	char *file;
+	RC_STRINGLIST *files = rc_stringlist_new();
+	RC_STRING *file;
 	bool filtered = false;
 
 #ifdef HAVE_GETMNTENT
@@ -172,125 +170,126 @@ int fstabinfo (int argc, char **argv)
 #endif
 
 	/* Ensure that we are only quiet when explicitly told to be */
-	unsetenv ("EINFO_QUIET");
+	unsetenv("EINFO_QUIET");
 
-	while ((opt = getopt_long (argc, argv, getoptstring,
-				   longopts, (int *) 0)) != -1)
+	while ((opt = getopt_long(argc, argv, getoptstring,
+				  longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-			case 'M':
-				output = OUTPUT_MOUNT;
-				break;
-			case 'b':
-				output = OUTPUT_BLOCKDEV;
-				break;
-			case 'o':
-				output = OUTPUT_OPTIONS;
-				break;
-			case 'm':
-				output = OUTPUT_MOUNTARGS;
-				break;
+		case 'M':
+			output = OUTPUT_MOUNT;
+			break;
+		case 'b':
+			output = OUTPUT_BLOCKDEV;
+			break;
+		case 'o':
+			output = OUTPUT_OPTIONS;
+			break;
+		case 'm':
+			output = OUTPUT_MOUNTARGS;
+			break;
 
-			case 'p':
-				switch (optarg[0]) {
-					case '=':
-					case '<':
-					case '>':
-						if (sscanf (optarg + 1, "%d", &i) != 1)
-							eerrorx ("%s: invalid passno %s", argv[0], optarg + 1);
+		case 'p':
+			switch (optarg[0]) {
+			case '=':
+			case '<':
+			case '>':
+				if (sscanf(optarg + 1, "%d", &i) != 1)
+					eerrorx("%s: invalid passno %s",
+						argv[0], optarg + 1);
 
-						filtered = true;
-						START_ENT;
-						while ((ent = GET_ENT)) {
-							if (((optarg[0] == '=' && i == ENT_PASS (ent)) ||
-							     (optarg[0] == '<' && i > ENT_PASS (ent)) ||
-							     (optarg[0] == '>' && i < ENT_PASS (ent))) &&
-							    strcmp (ENT_FILE (ent), "none") != 0)
-								rc_strlist_add (&files, ENT_FILE (ent));
-						}
-						END_ENT;
-						break;
-
-					default:
-						rc_strlist_add (&files, optarg);
-						output = OUTPUT_PASSNO;
-						break;
-				}
-				break;
-
-			case 't':
 				filtered = true;
-				while ((token = strsep (&optarg, ","))) {
-					START_ENT;
-					while ((ent = GET_ENT))
-						if (strcmp (token, ENT_TYPE (ent)) == 0)
-							rc_strlist_add (&files, ENT_FILE (ent));
-					END_ENT;
+				START_ENT;
+				while ((ent = GET_ENT)) {
+					if (((optarg[0] == '=' && i == ENT_PASS(ent)) ||
+					     (optarg[0] == '<' && i > ENT_PASS(ent)) ||
+					     (optarg[0] == '>' && i < ENT_PASS(ent))) &&
+					    strcmp(ENT_FILE(ent), "none") != 0)
+						rc_stringlist_add(files, ENT_FILE(ent));
 				}
+				END_ENT;
 				break;
 
-				case_RC_COMMON_GETOPT
+			default:
+				rc_stringlist_add(files, optarg);
+				output = OUTPUT_PASSNO;
+				break;
+			}
+		break;
+
+		case 't':
+			filtered = true;
+			while ((token = strsep(&optarg, ","))) {
+				START_ENT;
+				while ((ent = GET_ENT))
+					if (strcmp(token, ENT_TYPE(ent)) == 0)
+						rc_stringlist_add(files, ENT_FILE(ent));
+				END_ENT;
+			}
+			break;
+
+			case_RC_COMMON_GETOPT
 		}
 	}
 
-	while (optind < argc)
-		rc_strlist_add (&files, argv[optind++]);
-
-	if (! files && ! filtered) {
+	if (optind < argc) {
+		while (optind < argc)
+			rc_stringlist_add(files, argv[optind++]);
+	} else if (! filtered) {
 		START_ENT;
 		while ((ent = GET_ENT))
-			rc_strlist_add (&files, ENT_FILE (ent));
+			rc_stringlist_add(files, ENT_FILE(ent));
 		END_ENT;
 
-		if (! files)
-			eerrorx ("%s: emtpy fstab", argv[0]);
+		if (! TAILQ_FIRST(files))
+			eerrorx("%s: emtpy fstab", argv[0]);
 	}
 
 	/* Ensure we always display something */
 	START_ENT;
-	STRLIST_FOREACH (files, file, i) {
-		if (! (ent = GET_ENT_FILE (file))) {
+	TAILQ_FOREACH(file, files, entries) {
+		if (! (ent = GET_ENT_FILE(file->value))) {
 			result = EXIT_FAILURE;
 			continue;
 		}
 
 		/* No point in outputting if quiet */
-		if (rc_yesno (getenv ("EINFO_QUIET")))
+		if (rc_yesno(getenv("EINFO_QUIET")))
 			continue;
 
 		switch (output) {
-			case OUTPUT_BLOCKDEV:
-				printf ("%s\n", ENT_BLOCKDEVICE (ent));
-				break;
+		case OUTPUT_BLOCKDEV:
+			printf("%s\n", ENT_BLOCKDEVICE(ent));
+			break;
 
-			case OUTPUT_MOUNT:
-				result += do_mount (ent);
-				break;
+		case OUTPUT_MOUNT:
+			result += do_mount(ent);
+			break;
 
-			case OUTPUT_MOUNTARGS:
-				printf ("-o %s -t %s %s %s\n",
-					ENT_OPTS (ent),
-					ENT_TYPE (ent),
-					ENT_BLOCKDEVICE (ent),
-					file);
-				break;
+		case OUTPUT_MOUNTARGS:
+			printf("-o %s -t %s %s %s\n",
+				ENT_OPTS(ent),
+				ENT_TYPE(ent),
+				ENT_BLOCKDEVICE(ent),
+				file->value);
+			break;
 
-			case OUTPUT_OPTIONS:
-				printf ("%s\n", ENT_OPTS (ent));
-				break;
+		case OUTPUT_OPTIONS:
+			printf("%s\n", ENT_OPTS(ent));
+			break;
 
-			case OUTPUT_FILE:
-				printf ("%s\n", file);
-				break;
+		case OUTPUT_FILE:
+			printf("%s\n", file->value);
+			break;
 
-			case OUTPUT_PASSNO:
-				printf ("%d\n", ENT_PASS (ent));
-				break;
+		case OUTPUT_PASSNO:
+			printf("%d\n", ENT_PASS(ent));
+			break;
 		}
 	}
 	END_ENT;
 
-	rc_strlist_free (files);
-	exit (result);
+	rc_stringlist_free(files);
+	exit(result);
 	/* NOTREACHED */
 }

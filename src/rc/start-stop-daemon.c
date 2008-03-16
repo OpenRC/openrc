@@ -46,6 +46,7 @@
 #include <sys/termios.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -71,63 +72,57 @@ static struct pam_conv conv = { NULL, NULL};
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
-#include "strlist.h"
 
-typedef struct schedulelist
+typedef struct scheduleitem
 {
 	enum
 	{
-		schedule_timeout,
-		schedule_signal,
-		schedule_goto,
-		schedule_forever
+		SC_TIMEOUT,
+		SC_SIGNAL,
+		SC_GOTO,
+		SC_FOREVER
 	} type;
 	int value;
-	struct schedulelist *gotolist;
-	struct schedulelist *next;
-} schedulelist_t;
-static schedulelist_t *schedule;
+	struct scheduleitem *gotoitem;
+	STAILQ_ENTRY(scheduleitem) entries;
+} SCHEDULEITEM;
+STAILQ_HEAD(, scheduleitem) schedule;
 
 extern const char *applet;
 static char *changeuser;
-static char **newenv;
 
 extern char **environ;
 
-static void free_schedulelist (schedulelist_t **list)
+static void free_schedulelist(void)
 {
-	schedulelist_t *here;
-	schedulelist_t *next;
+	SCHEDULEITEM *s1 = STAILQ_FIRST(&schedule);
+	SCHEDULEITEM *s2;
 
-	for (here = *list; here; here = next) {
-		next = here->next;
-		free (here);
+	while (s1) {
+		s2 = STAILQ_NEXT(s1, entries);
+		free(s1);
+		s1 = s2;
 	}
-
-	*list = NULL;
+	STAILQ_INIT(&schedule);
 }
 
-static void cleanup (void)
+static void cleanup(void)
 {
 	if (changeuser)
-		free (changeuser);
+		free(changeuser);
 
-	if (schedule)
-		free_schedulelist (&schedule);
-
-	if (newenv)
-		rc_strlist_free (newenv);
+	free_schedulelist();
 }
 
-static int parse_signal (const char *sig)
+static int parse_signal(const char *sig)
 {
 	typedef struct signalpair
 	{
 		const char *name;
 		int signal;
-	} signalpair_t;
+	} SIGNALPAIR;
 
-	static const signalpair_t signallist[] = {
+	static const SIGNALPAIR signallist[] = {
 		{ "ABRT",	SIGABRT	},
 		{ "ALRM",	SIGALRM	},
 		{ "FPE",	SIGFPE	},
@@ -153,161 +148,158 @@ static int parse_signal (const char *sig)
 	const char *s;
 
 	if (! sig || *sig == '\0')
-		return (-1);
+		return -1;
 
-	if (sscanf (sig, "%u", &i) == 1) {
-		if (i > 0 && i < sizeof (signallist) / sizeof (signallist[0]))
-			return (i);
-		eerrorx ("%s: `%s' is not a valid signal", applet, sig);
+	if (sscanf(sig, "%u", &i) == 1) {
+		if (i > 0 && i < sizeof(signallist) / sizeof(signallist[0]))
+			return i;
+		eerrorx("%s: `%s' is not a valid signal", applet, sig);
 	}
 
-	if (strncmp (sig, "SIG", 3) == 0)
+	if (strncmp(sig, "SIG", 3) == 0)
 		s = sig + 3;
 	else
 		s = NULL;
 
-	for (i = 0; i < sizeof (signallist) / sizeof (signallist[0]); i++)
-		if (strcmp (sig, signallist[i].name) == 0 ||
-		    (s && strcmp (s, signallist[i].name) == 0))
-			return (signallist[i].signal);
+	for (i = 0; i < sizeof(signallist) / sizeof(signallist[0]); i++)
+		if (strcmp(sig, signallist[i].name) == 0 ||
+		    (s && strcmp(s, signallist[i].name) == 0))
+			return signallist[i].signal;
 
-	eerrorx ("%s: `%s' is not a valid signal", applet, sig);
+	eerrorx("%s: `%s' is not a valid signal", applet, sig);
 	/* NOTREACHED */
 }
 
-static void parse_schedule_item (schedulelist_t *item, const char *string)
+static SCHEDULEITEM *parse_schedule_item(const char *string)
 {
 	const char *after_hyph;
 	int sig;
+	SCHEDULEITEM *item = xmalloc(sizeof(*item));
 
-	if (strcmp (string,"forever") == 0)
-		item->type = schedule_forever;
-	else if (isdigit ((int) string[0])) {
-		item->type = schedule_timeout;
+	item->value = 0;
+	item->gotoitem = NULL;
+	if (strcmp(string,"forever") == 0)
+		item->type = SC_FOREVER;
+	else if (isdigit((int) string[0])) {
+		item->type = SC_TIMEOUT;
 		errno = 0;
-		if (sscanf (string, "%d", &item->value) != 1)
-			eerrorx ("%s: invalid timeout value in schedule `%s'", applet,
-				 string);
+		if (sscanf(string, "%d", &item->value) != 1)
+			eerrorx("%s: invalid timeout value in schedule `%s'", applet,
+				string);
 	} else if ((after_hyph = string + (string[0] == '-')) &&
-		   ((sig = parse_signal (after_hyph)) != -1))
+		   ((sig = parse_signal(after_hyph)) != -1))
 	{
-		item->type = schedule_signal;
-		item->value = (int) sig;
+		item->type = SC_SIGNAL;
+		item->value = (int)sig;
 	}
 	else
-		eerrorx ("%s: invalid schedule item `%s'", applet, string);
+		eerrorx("%s: invalid schedule item `%s'", applet, string);
+
+	return item;
 }
 
-static void parse_schedule (const char *string, int default_signal)
+static void parse_schedule(const char *string, int timeout)
 {
 	char buffer[20];
 	const char *slash;
 	int count = 0;
-	schedulelist_t *repeatat = NULL;
+	SCHEDULEITEM *repeatat = NULL;
 	size_t len;
-	schedulelist_t *next;
+	SCHEDULEITEM *item;
 
 	if (string)
 		for (slash = string; *slash; slash++)
 			if (*slash == '/')
 				count++;
 
-	if (schedule)
-		free_schedulelist (&schedule);
-
-	schedule = xmalloc (sizeof (*schedule));
-	schedule->gotolist = NULL;
+	free_schedulelist();
 
 	if (count == 0) {
-		schedule->type = schedule_signal;
-		schedule->value = default_signal;
-		schedule->next = xmalloc (sizeof (*schedule->next));
-		next = schedule->next;
-		next->type = schedule_timeout;
-		next->gotolist = NULL;
+		item = xmalloc(sizeof(*item));
+		item->type = SC_SIGNAL;
+		item->value = timeout;
+		item->gotoitem = NULL;
+		STAILQ_INSERT_TAIL(&schedule, item, entries);
+
+		item = xmalloc(sizeof(*item));
+		item->type = SC_TIMEOUT;
+		item->gotoitem = NULL;
+		STAILQ_INSERT_TAIL(&schedule, item, entries);
 		if (string) {
-			if (sscanf (string, "%d", &next->value) != 1)
-				eerrorx ("%s: invalid timeout value in schedule", applet);
-		}
-		else
-			next->value = 5;
-		next->next = NULL;
+			if (sscanf(string, "%d", &item->value) != 1)
+				eerrorx("%s: invalid timeout value in schedule", applet);
+		} else
+			item->value = 5;
 
 		return;
 	}
 
-	next = schedule;
 	while (string != NULL) {
-		if ((slash = strchr (string, '/')))
+		if ((slash = strchr(string, '/')))
 			len = slash - string;
 		else
-			len = strlen (string);
+			len = strlen(string);
 
-		if (len >= (ptrdiff_t) sizeof (buffer))
-			eerrorx ("%s: invalid schedule item, far too long", applet);
+		if (len >= (ptrdiff_t) sizeof(buffer))
+			eerrorx("%s: invalid schedule item, far too long", applet);
 
-		memcpy (buffer, string, len);
+		memcpy(buffer, string, len);
 		buffer[len] = 0;
 		string = slash ? slash + 1 : NULL;
 
-		parse_schedule_item (next, buffer);
-		if (next->type == schedule_forever) {
+		item = parse_schedule_item(buffer);
+		STAILQ_INSERT_TAIL(&schedule, item, entries);
+		if (item->type == SC_FOREVER) {
 			if (repeatat)
-				eerrorx ("%s: invalid schedule, `forever' appears more than once",
-					 applet);
+				eerrorx("%s: invalid schedule, `forever' "
+					"appears more than once", applet);
 
-			repeatat = next;
+			repeatat = item;
 			continue;
-		}
-
-		if (string) {
-			next->next = xmalloc (sizeof (*next->next));
-			next = next->next;
-			next->gotolist = NULL;
 		}
 	}
 
 	if (repeatat) {
-		next->next = xmalloc (sizeof (*next->next));
-		next = next->next;
-		next->type = schedule_goto;
-		next->value = 0;
-		next->gotolist = repeatat;
+		item = xmalloc(sizeof(*item));
+		item->type = SC_GOTO;
+		item->value = 0;
+		item->gotoitem = repeatat;
+		STAILQ_INSERT_TAIL(&schedule, item, entries);
 	}
 
-	next->next = NULL;
 	return;
 }
 
-static pid_t get_pid (const char *pidfile, bool quiet)
+static pid_t get_pid(const char *pidfile, bool quiet)
 {
 	FILE *fp;
 	pid_t pid;
 
 	if (! pidfile)
-		return (-1);
+		return -1;
 
-	if ((fp = fopen (pidfile, "r")) == NULL) {
+	if ((fp = fopen(pidfile, "r")) == NULL) {
 		if (! quiet)
-			eerror ("%s: fopen `%s': %s", applet, pidfile, strerror (errno));
-		return (-1);
+			eerror("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
+		return -1;
 	}
 
-	if (fscanf (fp, "%d", &pid) != 1) {
+	if (fscanf(fp, "%d", &pid) != 1) {
 		if (! quiet)
-			eerror ("%s: no pid found in `%s'", applet, pidfile);
-		fclose (fp);
-		return (-1);
+			eerror("%s: no pid found in `%s'", applet, pidfile);
+		fclose(fp);
+		return -1;
 	}
-	fclose (fp);
+	
+	fclose(fp);
 
-	return (pid);
+	return pid;
 }
 
 /* return number of processed killed, -1 on error */
-static int do_stop (const char *const *argv, const char *cmd,
-		    const char *pidfile, uid_t uid,int sig,
-		    bool quiet, bool verbose, bool test)
+static int do_stop(const char *const *argv, const char *cmd,
+		   const char *pidfile, uid_t uid,int sig,
+		   bool quiet, bool verbose, bool test)
 {
 	pid_t *pids;
 	bool killed;
@@ -316,30 +308,30 @@ static int do_stop (const char *const *argv, const char *cmd,
 	int i;
 
 	if (pidfile) {
-		if ((pid = get_pid (pidfile, quiet)) == -1)
-			return (quiet ? 0 : -1);
-		pids = rc_find_pids (NULL, NULL, 0, pid);
+		if ((pid = get_pid(pidfile, quiet)) == -1)
+			return quiet ? 0 : -1;
+		pids = rc_find_pids(NULL, NULL, 0, pid);
 	} else
-		pids = rc_find_pids (argv, cmd, uid, pid);
+		pids = rc_find_pids(argv, cmd, uid, pid);
 
 	if (! pids)
-		return (0);
+		return 0;
 
 	for (i = 0; pids[i]; i++) {
 		if (test) {
 			if (! quiet)
-				einfo ("Would send signal %d to PID %d", sig, pids[i]);
+				einfo("Would send signal %d to PID %d", sig, pids[i]);
 			nkilled++;
 			continue;
 		}
 
 		if (verbose)
-			ebegin ("Sending signal %d to PID %d", sig, pids[i]);
+			ebegin("Sending signal %d to PID %d", sig, pids[i]);
 		errno = 0;
-		killed = (kill (pids[i], sig) == 0 || errno == ESRCH ? true : false);
+		killed = (kill(pids[i], sig) == 0 || errno == ESRCH ? true : false);
 		if (verbose)
-			eend (killed ? 0 : 1, "%s: failed to send signal %d to PID %d: %s",
-			      applet, sig, pids[i], strerror (errno));
+			eend(killed ? 0 : 1, "%s: failed to send signal %d to PID %d: %s",
+			     applet, sig, pids[i], strerror(errno));
 		if (! killed) {
 			nkilled = -1;
 		} else {
@@ -348,15 +340,15 @@ static int do_stop (const char *const *argv, const char *cmd,
 		}
 	}
 
-	free (pids);
-	return (nkilled);
+	free(pids);
+	return nkilled;
 }
 
-static int run_stop_schedule (const char *const *argv, const char *cmd,
-			      const char *pidfile, uid_t uid,
-			      bool quiet, bool verbose, bool test)
+static int run_stop_schedule(const char *const *argv, const char *cmd,
+			     const char *pidfile, uid_t uid,
+			     bool quiet, bool verbose, bool test)
 {
-	schedulelist_t *item = schedule;
+	SCHEDULEITEM *item = STAILQ_FIRST(&schedule);
 	int nkilled = 0;
 	int tkilled = 0;
 	int nrunning = 0;
@@ -365,119 +357,121 @@ static int run_stop_schedule (const char *const *argv, const char *cmd,
 
 	if (verbose) {
 		if (pidfile)
-			einfo ("Will stop PID in pidfile `%s'", pidfile);
+			einfo("Will stop PID in pidfile `%s'", pidfile);
 		if (uid)
-			einfo ("Will stop processes owned by UID %d", uid);
+			einfo("Will stop processes owned by UID %d", uid);
 		if (argv && *argv)
-			einfo ("Will stop processes of `%s'", *argv);
+			einfo("Will stop processes of `%s'", *argv);
 		if (cmd)
-			einfo ("Will stop processes called `%s'", cmd);
+			einfo("Will stop processes called `%s'", cmd);
 	}
 
 	while (item) {
-		switch (item->type)	{
-			case schedule_goto:
-				item = item->gotolist;
-				continue;
+		switch (item->type) {
+		case SC_GOTO:
+			item = item->gotoitem;
+			continue;
 
-			case schedule_signal:
-				nrunning = 0;
-				nkilled = do_stop (argv, cmd, pidfile, uid, item->value,
-						   quiet, verbose, test);
-				if (nkilled == 0) {
-					if (tkilled == 0) {
-						if (! quiet)
-							eerror ("%s: no matching processes found", applet);
-					}
-					return (tkilled);
+		case SC_SIGNAL:
+			nrunning = 0;
+			nkilled = do_stop(argv, cmd, pidfile, uid, item->value,
+					  quiet, verbose, test);
+			if (nkilled == 0) {
+				if (tkilled == 0) {
+					if (! quiet)
+						eerror("%s: no matching "
+						       "processes found", applet);
 				}
-				else if (nkilled == -1)
-					return (0);
+				return tkilled;
+			}
+			else if (nkilled == -1)
+				return 0;
 
-				tkilled += nkilled;
+			tkilled += nkilled;
+			break;
+		case SC_TIMEOUT:
+			if (item->value < 1) {
+				item = NULL;
 				break;
-			case schedule_timeout:
-				if (item->value < 1) {
-					item = NULL;
-					break;
-				}
+			}
 
-				nloops = (ONE_SECOND / POLL_INTERVAL) * item->value;
-				ts.tv_sec = 0;
-				ts.tv_nsec = POLL_INTERVAL;
+			nloops = (ONE_SECOND / POLL_INTERVAL) * item->value;
+			ts.tv_sec = 0;
+			ts.tv_nsec = POLL_INTERVAL;
 
-				while (nloops) {
-					if ((nrunning = do_stop (argv, cmd, pidfile,
-								 uid, 0, true, false, true)) == 0)
-						return (true);
+			while (nloops) {
+				if ((nrunning = do_stop(argv, cmd, pidfile,
+							uid, 0, true, false, true)) == 0)
+					return true;
 
-					if (nanosleep (&ts, NULL) == -1) {
-						if (errno == EINTR)
-							eerror ("%s: caught an interrupt", applet);
-						else {
-							eerror ("%s: nanosleep: %s", applet, strerror (errno));
-							return (0);
-						}
+				if (nanosleep(&ts, NULL) == -1) {
+					if (errno == EINTR)
+						eerror("%s: caught an interrupt", applet);
+					else {
+						eerror("%s: nanosleep: %s",
+						       applet, strerror(errno));
+						return 0;
 					}
+				}
 					nloops --;
-				}
-				break;
+			}
+			break;
 
-			default:
-				eerror ("%s: invalid schedule item `%d'", applet, item->type);
-				return (0);
+		default:
+			eerror("%s: invalid schedule item `%d'", applet, item->type);
+			return 0;
 		}
 
 		if (item)
-			item = item->next;
+			item = STAILQ_NEXT(item, entries);
 	}
 
 	if (test || (tkilled > 0 && nrunning == 0))
-		return (nkilled);
+		return nkilled;
 
 	if (! quiet) {
 		if (nrunning == 1)
-			eerror ("%s: %d process refused to stop", applet, nrunning);
+			eerror("%s: %d process refused to stop", applet, nrunning);
 		else
-			eerror ("%s: %d process(es) refused to stop", applet, nrunning);
+			eerror("%s: %d process(es) refused to stop", applet, nrunning);
 	}
 
-	return (-nrunning);
+	return -nrunning;
 }
 
-static void handle_signal (int sig)
+static void handle_signal(int sig)
 {
 	int status;
 	int serrno = errno;
 	char signame[10] = { '\0' };
 
 	switch (sig) {
-		case SIGINT:
-			if (! signame[0])
-				snprintf (signame, sizeof (signame), "SIGINT");
-			/* FALLTHROUGH */
-		case SIGTERM:
-			if (! signame[0])
-				snprintf (signame, sizeof (signame), "SIGTERM");
-			/* FALLTHROUGH */
-		case SIGQUIT:
-			if (! signame[0])
-				snprintf (signame, sizeof (signame), "SIGQUIT");
-			eerrorx ("%s: caught %s, aborting", applet, signame);
-			/* NOTREACHED */
+	case SIGINT:
+		if (! signame[0])
+			snprintf(signame, sizeof(signame), "SIGINT");
+		/* FALLTHROUGH */
+	case SIGTERM:
+		if (! signame[0])
+			snprintf(signame, sizeof(signame), "SIGTERM");
+		/* FALLTHROUGH */
+	case SIGQUIT:
+		if (! signame[0])
+			snprintf(signame, sizeof(signame), "SIGQUIT");
+		eerrorx("%s: caught %s, aborting", applet, signame);
+		/* NOTREACHED */
 
-		case SIGCHLD:
-			for (;;) {
-				if (waitpid (-1, &status, WNOHANG) < 0) {
-					if (errno != ECHILD)
-						eerror ("%s: waitpid: %s", applet, strerror (errno));
-					break;
-				}
+	case SIGCHLD:
+		for (;;) {
+			if (waitpid(-1, &status, WNOHANG) < 0) {
+				if (errno != ECHILD)
+					eerror("%s: waitpid: %s", applet, strerror(errno));
+				break;
 			}
-			break;
+		}
+		break;
 
-		default:
-			eerror ("%s: caught unknown signal %d", applet, sig);
+	default:
+		eerror("%s: caught unknown signal %d", applet, sig);
 	}
 
 	/* Restore errno */
@@ -537,7 +531,7 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int start_stop_daemon (int argc, char **argv)
+int start_stop_daemon(int argc, char **argv)
 {
 	int devnull_fd = -1;
 #ifdef TIOCNOTTY
@@ -574,154 +568,160 @@ int start_stop_daemon (int argc, char **argv)
 	int stderr_fd;
 	pid_t pid;
 	int i;
-	char *svcname = getenv ("SVCNAME");
-	char *env;
+	char *svcname = getenv("SVCNAME");
+	RC_STRINGLIST *env_list;
+	RC_STRING *env;
+	char *path;
 	bool sethome = false;
 	bool setuser = false;
+	char *p;
+	char *tmp;
+	struct passwd *pw;
+	struct group *gr;
+	char line[130];
+	FILE *fp;
+	size_t len;
 
-	atexit (cleanup);
+	STAILQ_INIT(&schedule);
+	atexit(cleanup);
 
-	signal_setup (SIGINT, handle_signal);
-	signal_setup (SIGQUIT, handle_signal);
-	signal_setup (SIGTERM, handle_signal);
+	signal_setup(SIGINT, handle_signal);
+	signal_setup(SIGQUIT, handle_signal);
+	signal_setup(SIGTERM, handle_signal);
 
-	if ((env = getenv ("SSD_NICELEVEL")))
-		if (sscanf (env, "%d", &nicelevel) != 1)
-			eerror ("%s: invalid nice level `%s' (SSD_NICELEVEL)", applet, env);
+	if ((path = getenv("SSD_NICELEVEL")))
+		if (sscanf(path, "%d", &nicelevel) != 1)
+			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
+				applet, path);
 
-	while ((opt = getopt_long (argc, argv, "e:" getoptstring, longopts,
-				   (int *) 0)) != -1)
+	while ((opt = getopt_long(argc, argv, "e:" getoptstring, longopts,
+				  (int *) 0)) != -1)
 		switch (opt) {
-			case 'K':  /* --stop */
-				stop = true;
-				break;
+		case 'K':  /* --stop */
+			stop = true;
+			break;
 
-			case 'N':  /* --nice */
-				if (sscanf (optarg, "%d", &nicelevel) != 1)
-					eerrorx ("%s: invalid nice level `%s'", applet, optarg);
-				break;
+		case 'N':  /* --nice */
+			if (sscanf(optarg, "%d", &nicelevel) != 1)
+				eerrorx("%s: invalid nice level `%s'", applet, optarg);
+			break;
 
-			case 'R':  /* --retry <schedule>|<timeout> */
-				parse_schedule (optarg, sig);
-				break;
+		case 'R':  /* --retry <schedule>|<timeout> */
+			parse_schedule(optarg, sig);
+			break;
 
-			case 'S':  /* --start */
-				start = true;
-				break;
+		case 'S':  /* --start */
+			start = true;
+			break;
 
-			case 'b':  /* --background */
-				background = true;
-				break;
+		case 'b':  /* --background */
+			background = true;
+			break;
 
-			case 'u':  /* --user <username>|<uid> */
-			case 'c':  /* --chuid <username>|<uid> */
-				{
-					char *p = optarg;
-					char *cu = strsep (&p, ":");
-					struct passwd *pw = NULL;
+		case 'u':  /* --user <username>|<uid> */
+		case 'c':  /* --chuid <username>|<uid> */
+			{
+				p = optarg;
+				tmp = strsep(&p, ":");
+				changeuser = xstrdup(tmp);
+				if (sscanf(tmp, "%d", &tid) != 1)
+					pw = getpwnam(tmp);
+				else
+					pw = getpwuid((uid_t) tid);
 
-					changeuser = xstrdup (cu);
-					if (sscanf (cu, "%d", &tid) != 1)
-						pw = getpwnam (cu);
+				if (! pw)
+					eerrorx("%s: user `%s' not found", applet, tmp);
+				uid = pw->pw_uid;
+				if (! gid)
+					gid = pw->pw_gid;
+
+				if (p) {
+					tmp = strsep (&p, ":");
+					if (sscanf(tmp, "%d", &tid) != 1)
+						gr = getgrnam(tmp);
 					else
-						pw = getpwuid ((uid_t) tid);
-
-					if (! pw)
-						eerrorx ("%s: user `%s' not found", applet, cu);
-					uid = pw->pw_uid;
-					if (! gid)
-						gid = pw->pw_gid;
-
-					if (p) {
-						struct group *gr = NULL;
-						char *cg = strsep (&p, ":");
-
-						if (sscanf (cg, "%d", &tid) != 1)
-							gr = getgrnam (cg);
-						else
-							gr = getgrgid ((gid_t) tid);
-
-						if (! gr)
-							eerrorx ("%s: group `%s' not found", applet, cg);
-						gid = gr->gr_gid;
-					}
-				}
-				break;
-
-			case 'd':  /* --chdir /new/dir */
-				ch_dir = optarg;
-				break;
-
-			case 'e': /* --env */
-				if (putenv (optarg) == 0) {
-					if (strncmp ("HOME=", optarg, 5) == 0)
-						sethome = true;
-					else if (strncmp ("USER=", optarg, 5) == 0)
-						setuser = true;
-				}
-				break;
-
-			case 'g':  /* --group <group>|<gid> */
-				{
-					struct group *gr = getgrnam (optarg);
-
-					if (sscanf (optarg, "%d", &tid) != 1)
-						gr = getgrnam (optarg);
-					else
-						gr = getgrgid ((gid_t) tid);
+						gr = getgrgid((gid_t) tid);
 
 					if (! gr)
-						eerrorx ("%s: group `%s' not found", applet, optarg);
+						eerrorx("%s: group `%s' not found",
+							applet, tmp);
 					gid = gr->gr_gid;
 				}
-				break;
+			}
+			break;
 
-			case 'm':  /* --make-pidfile */
-				makepidfile = true;
-				break;
+		case 'd':  /* --chdir /new/dir */
+			ch_dir = optarg;
+			break;
 
-			case 'n':  /* --name <process-name> */
-				cmd = optarg;
-				break;
+		case 'e': /* --env */
+			if (putenv(optarg) == 0) {
+				if (strncmp("HOME=", optarg, 5) == 0)
+					sethome = true;
+				else if (strncmp("USER=", optarg, 5) == 0)
+					setuser = true;
+			}
+			break;
 
-			case 'o':  /* --oknodo */
-				oknodo = true;
-				break;
+		case 'g':  /* --group <group>|<gid> */
+			{
+				if (sscanf(optarg, "%d", &tid) != 1)
+					gr = getgrnam(optarg);
+				else
+					gr = getgrgid((gid_t) tid);
 
-			case 'p':  /* --pidfile <pid-file> */
-				pidfile = optarg;
-				break;
+				if (! gr)
+					eerrorx("%s: group `%s' not found", applet, optarg);
+				gid = gr->gr_gid;
+			}
+			break;
 
-			case 's':  /* --signal <signal> */
-				sig = parse_signal (optarg);
-				break;
+		case 'm':  /* --make-pidfile */
+			makepidfile = true;
+			break;
 
-			case 't':  /* --test */
-				test = true;
-				break;
+		case 'n':  /* --name <process-name> */
+			cmd = optarg;
+			break;
 
-			case 'r':  /* --chroot /new/root */
-				ch_root = optarg;
-				break;
+		case 'o':  /* --oknodo */
+			oknodo = true;
+			break;
 
-			case 'a':
-			case 'x':  /* --exec <executable> */
-				exec = optarg;
-				break;
+		case 'p':  /* --pidfile <pid-file> */
+			pidfile = optarg;
+			break;
 
-			case '1':   /* --stdout /path/to/stdout.lgfile */
-				redirect_stdout = optarg;
-				break;
+		case 's':  /* --signal <signal> */
+			sig = parse_signal(optarg);
+			break;
 
-			case '2':  /* --stderr /path/to/stderr.logfile */
-				redirect_stderr = optarg;
-				break;
+		case 't':  /* --test */
+			test = true;
+			break;
 
-				case_RC_COMMON_GETOPT
+		case 'r':  /* --chroot /new/root */
+			ch_root = optarg;
+			break;
+
+		case 'a':
+		case 'x':  /* --exec <executable> */
+			exec = optarg;
+			break;
+
+		case '1':   /* --stdout /path/to/stdout.lgfile */
+			redirect_stdout = optarg;
+			break;
+
+		case '2':  /* --stderr /path/to/stderr.logfile */
+			redirect_stderr = optarg;
+			break;
+
+			case_RC_COMMON_GETOPT
 		}
 
-	quiet = rc_yesno (getenv ("EINFO_QUIET"));
-	verbose = rc_yesno (getenv ("EINFO_VERBOSE"));
+	quiet = rc_yesno(getenv("EINFO_QUIET"));
+	verbose = rc_yesno(getenv("EINFO_VERBOSE"));
 
 	/* Allow start-stop-daemon --signal HUP --exec /usr/sbin/dnsmasq
 	 * instead of forcing --stop --oknodo as well */
@@ -736,22 +736,22 @@ int start_stop_daemon (int argc, char **argv)
 		}
 
 	if (start == stop)
-		eerrorx ("%s: need one of --start or --stop", applet);
+		eerrorx("%s: need one of --start or --stop", applet);
 
 	if (start && ! exec)
-		eerrorx ("%s: --start needs --exec", applet);
+		eerrorx("%s: --start needs --exec", applet);
 
 	if (stop && ! exec && ! pidfile && ! cmd && ! uid)
-		eerrorx ("%s: --stop needs --exec, --pidfile, --name or --user", applet);
+		eerrorx("%s: --stop needs --exec, --pidfile, --name or --user", applet);
 
 	if (makepidfile && ! pidfile)
-		eerrorx ("%s: --make-pidfile is only relevant with --pidfile", applet);
+		eerrorx("%s: --make-pidfile is only relevant with --pidfile", applet);
 
 	if (background && ! start)
-		eerrorx ("%s: --background is only relevant with --start", applet);
+		eerrorx("%s: --background is only relevant with --start", applet);
 
 	if ((redirect_stdout || redirect_stderr) && ! background)
-		eerrorx ("%s: --stdout and --stderr are only relevant with --background",
+		eerrorx("%s: --stdout and --stderr are only relevant with --background",
 			 applet);
 
 	argc -= optind;
@@ -759,52 +759,49 @@ int start_stop_daemon (int argc, char **argv)
 
 	/* Validate that the binary exists if we are starting */
 	if (exec) {
-		char *tmp;
 		if (ch_root)
-			tmp = rc_strcatpaths (ch_root, exec, (char *) NULL);
+			tmp = rc_strcatpaths(ch_root, exec, (char *) NULL);
 		else
 			tmp = exec;
-		if (start && ! exists (tmp)) {
-			eerror ("%s: %s does not exist", applet, tmp);
+		if (start && ! exists(tmp)) {
+			eerror("%s: %s does not exist", applet, tmp);
 			if (ch_root)
-				free (tmp);
-			exit (EXIT_FAILURE);
+				free(tmp);
+			exit(EXIT_FAILURE);
 		}
 
 		/* If we don't have a pidfile or name, check it's not
 		 * interpreted, otherwise we should fail */
 		if (! pidfile && ! cmd) {
-			char line[130];
-			FILE *fp = fopen (tmp, "r");
-			
+			fp = fopen (tmp, "r");
 			if (fp) {
-				fgets (line, sizeof (line), fp);
-				fclose (fp);
+				fgets(line, sizeof(line), fp);
+				fclose(fp);
 
 				if (line[0] == '#' && line[1] == '!') {
-					size_t len = strlen (line) - 1;
+					len = strlen (line) - 1;
 
 					/* Remove the trailing newline */
 					if (line[len] == '\n')
 						line[len] = '\0';
 
-					eerror ("%s: %s is a script",
+					eerror("%s: %s is a script",
 						applet, exec);
-					eerror ("%s: and should be started, stopped or signalled with ",
-						applet);
-					eerror ("%s: --exec %s %s",
+					eerror("%s: and should be started, stopped"
+					       " or signalled with ", applet);
+					eerror("%s: --exec %s %s",
 						applet, line + 2, exec);
-					eerror ("%s: or you should specify a pidfile or process name",
-						applet);
+					eerror("%s: or you should specify a pidfile"
+					       " or process name", applet);
 					if (ch_root)
-						free (tmp);
-					exit (EXIT_FAILURE);
+						free(tmp);
+					exit(EXIT_FAILURE);
 				}
 			}
 		}
 
 		if (ch_root)
-			free (tmp);
+			free(tmp);
 	}
 
 	/* Add exec to our arguments */
@@ -813,83 +810,79 @@ int start_stop_daemon (int argc, char **argv)
 	if (stop) {
 		int result;
 
-		if (! schedule) {
+		if (! STAILQ_FIRST(&schedule)) {
 			if (test || oknodo)
-				parse_schedule ("0", sig);
+				parse_schedule("0", sig);
 			else
-				parse_schedule (NULL, sig);
+				parse_schedule(NULL, sig);
 		}
 
-		result = run_stop_schedule ((const char *const *)argv, cmd,
-					    pidfile, uid, quiet, verbose, test);
+		result = run_stop_schedule((const char *const *)argv, cmd,
+					   pidfile, uid, quiet, verbose, test);
 
 		if (result < 0)
 			/* We failed to stop something */
-			exit (EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 
 		if (test || oknodo)
-			return (result > 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+			return result > 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 
 		/* Even if we have not actually killed anything, we should
 		 * remove information about it as it may have unexpectedly
 		 * crashed out. We should also return success as the end
 		 * result would be the same. */
-		if (pidfile && exists (pidfile))
-			unlink (pidfile);
+		if (pidfile && exists(pidfile))
+			unlink(pidfile);
 
 		if (svcname)
-			rc_service_daemon_set (svcname,
-					       (const char *const *)argv,
-					       cmd, pidfile, false);
+			rc_service_daemon_set(svcname,
+					      (const char *const *)argv,
+					      cmd, pidfile, false);
 
-		exit (EXIT_SUCCESS);
+		exit(EXIT_SUCCESS);
 	}
 
-	if (do_stop ((const char * const *)argv, cmd, pidfile, uid,
-		     0, true, false, true) > 0)
-		eerrorx ("%s: %s is already running", applet, exec);
+	if (do_stop((const char * const *)argv, cmd, pidfile, uid,
+		    0, true, false, true) > 0)
+		eerrorx("%s: %s is already running", applet, exec);
 
 	if (test) {
 		if (quiet)
 			exit (EXIT_SUCCESS);
 
-		einfon ("Would start");
+		einfon("Would start");
 		while (argc-- >= 0)
 			printf(" %s", *argv++);
-		printf ("\n");
-		eindent ();
+		printf("\n");
+		eindent();
 		if (uid != 0)
-			einfo ("as user id %d", uid);
+			einfo("as user id %d", uid);
 		if (gid != 0)
-			einfo ("as group id %d", gid);
+			einfo("as group id %d", gid);
 		if (ch_root)
-			einfo ("in root `%s'", ch_root);
+			einfo("in root `%s'", ch_root);
 		if (ch_dir)
-			einfo ("in dir `%s'", ch_dir);
+			einfo("in dir `%s'", ch_dir);
 		if (nicelevel != 0)
-			einfo ("with a priority of %d", nicelevel);
-		eoutdent ();
-		exit (EXIT_SUCCESS);
+			einfo("with a priority of %d", nicelevel);
+		eoutdent();
+		exit(EXIT_SUCCESS);
 	}
 
-	/* Ensure this is unset, so if the daemon does /etc/init.d/foo
-	   Then we filter the environment accordingly */
-	unsetenv ("RC_SOFTLEVEL");
-
 	if (verbose) {
-		ebegin ("Detaching to start `%s'", exec);
-		eindent ();
+		ebegin("Detaching to start `%s'", exec);
+		eindent();
 	}
 
 	if (background)
-		signal_setup (SIGCHLD, handle_signal);
+		signal_setup(SIGCHLD, handle_signal);
 
-	if ((pid = fork ()) == -1)
-		eerrorx ("%s: fork: %s", applet, strerror (errno));
+	if ((pid = fork()) == -1)
+		eerrorx("%s: fork: %s", applet, strerror(errno));
 
 	/* Child process - lets go! */
 	if (pid == 0) {
-		pid_t mypid = getpid ();
+		pid_t mypid = getpid();
 
 #ifdef TIOCNOTTY
 		tty_fd = open("/dev/tty", O_RDWR);
@@ -898,66 +891,66 @@ int start_stop_daemon (int argc, char **argv)
 		devnull_fd = open("/dev/null", O_RDWR);
 
 		if (nicelevel) {
-			if (setpriority (PRIO_PROCESS, mypid, nicelevel) == -1)
-				eerrorx ("%s: setpritory %d: %s", applet, nicelevel,
+			if (setpriority(PRIO_PROCESS, mypid, nicelevel) == -1)
+				eerrorx("%s: setpritory %d: %s", applet, nicelevel,
 					 strerror(errno));
 		}
 
-		if (ch_root && chroot (ch_root) < 0)
-			eerrorx ("%s: chroot `%s': %s", applet, ch_root, strerror (errno));
+		if (ch_root && chroot(ch_root) < 0)
+			eerrorx("%s: chroot `%s': %s", applet, ch_root, strerror(errno));
 
 		if (ch_dir && chdir (ch_dir) < 0)
-			eerrorx ("%s: chdir `%s': %s", applet, ch_dir, strerror (errno));
+			eerrorx("%s: chdir `%s': %s", applet, ch_dir, strerror(errno));
 
 		if (makepidfile && pidfile) {
-			FILE *fp = fopen (pidfile, "w");
+			fp = fopen(pidfile, "w");
 			if (! fp)
-				eerrorx ("%s: fopen `%s': %s", applet, pidfile, strerror
-					 (errno));
-			fprintf (fp, "%d\n", mypid);
-			fclose (fp);
+				eerrorx("%s: fopen `%s': %s", applet, pidfile,
+					strerror(errno));
+			fprintf(fp, "%d\n", mypid);
+			fclose(fp);
 		}
 
 #ifdef HAVE_PAM
 		if (changeuser != NULL)
-			pamr = pam_start ("start-stop-daemon", changeuser, &conv, &pamh);
+			pamr = pam_start("start-stop-daemon", changeuser, &conv, &pamh);
 		else
-			pamr = pam_start ("start-stop-daemon", "nobody", &conv, &pamh);
+			pamr = pam_start("start-stop-daemon", "nobody", &conv, &pamh);
 
 		if (pamr == PAM_SUCCESS)
-			pamr = pam_authenticate (pamh, PAM_SILENT);
+			pamr = pam_authenticate(pamh, PAM_SILENT);
 		if (pamr == PAM_SUCCESS)
-			pamr = pam_acct_mgmt (pamh, PAM_SILENT);
+			pamr = pam_acct_mgmt(pamh, PAM_SILENT);
 		if (pamr == PAM_SUCCESS)
-			pamr = pam_open_session (pamh, PAM_SILENT);
+			pamr = pam_open_session(pamh, PAM_SILENT);
 		if (pamr != PAM_SUCCESS)
-			eerrorx ("%s: pam error: %s", applet, pam_strerror(pamh, pamr));
+			eerrorx("%s: pam error: %s", applet, pam_strerror(pamh, pamr));
 #endif
 
-		if (gid && setgid (gid))
-			eerrorx ("%s: unable to set groupid to %d", applet, gid);
-		if (changeuser && initgroups (changeuser, gid))
-			eerrorx ("%s: initgroups (%s, %d)", applet, changeuser, gid);
-		if (uid && setuid (uid))
+		if (gid && setgid(gid))
+			eerrorx("%s: unable to set groupid to %d", applet, gid);
+		if (changeuser && initgroups(changeuser, gid))
+			eerrorx("%s: initgroups (%s, %d)", applet, changeuser, gid);
+		if (uid && setuid(uid))
 			eerrorx ("%s: unable to set userid to %d", applet, uid);
 		else {
-			struct passwd *passwd = getpwuid (uid);
-			if (passwd) {
+			pw = getpwuid(uid);
+			if (pw) {
 				if (! sethome) {
-					unsetenv ("HOME");
-					if (passwd->pw_dir)
-						setenv ("HOME", passwd->pw_dir, 1);
+					unsetenv("HOME");
+					if (pw->pw_dir)
+						setenv("HOME", pw->pw_dir, 1);
 				}
 				if (! setuser) {
-					unsetenv ("USER");
-					if (passwd->pw_name)
-						setenv ("USER", passwd->pw_name, 1);
+					unsetenv("USER");
+					if (pw->pw_name)
+						setenv("USER", pw->pw_name, 1);
 				}
 			}
 		}
 
 		/* Close any fd's to the passwd database */
-		endpwent ();
+		endpwent();
 
 #ifdef TIOCNOTTY
 		ioctl(tty_fd, TIOCNOTTY, 0);
@@ -965,84 +958,81 @@ int start_stop_daemon (int argc, char **argv)
 #endif
 
 		/* Clean the environment of any RC_ variables */
-		STRLIST_FOREACH (environ, env, i) {
-			if ((strncmp (env, "RC_", 3) == 0 &&
-			     strncmp (env, "RC_SERVICE=", strlen ("RC_SERVICE=")) != 0) ||
-			    strncmp (env, "SSD_NICELEVEL=", strlen ("SSD_NICELEVEL=")) == 0)
+		env_list = rc_stringlist_new();
+		i = 0;
+		while(environ[i])
+			rc_stringlist_add(env_list, environ[i++]);
+		TAILQ_FOREACH(env, env_list, entries) {
+			if ((strncmp(env->value, "RC_", 3) == 0 &&
+			     strncmp(env->value, "RC_SERVICE=", strlen("RC_SERVICE=")) != 0) ||
+			    strncmp(env->value, "SSD_NICELEVEL=", strlen("SSD_NICELEVEL=")) == 0)
+			{
+				p = strchr(env->value, '=');
+				*p = '\0';
+				unsetenv(env->value);
 				continue;
+			}
+		}
+		rc_stringlist_free(env_list);
 
-			/* For the path, remove the rcscript bin dir from it */
-			if (strncmp (env, "PATH=", 5) == 0) {
-				char *path = xstrdup (env);
-				char *newpath = NULL;
-				char *p = path;
-				char *token;
-				char *np;
-				size_t l;
-				int t;
+		/* For the path, remove the rcscript bin dir from it */
+		if ((path = getenv("PATH"))) {
+			size_t mx = strlen(path);
+			char *newpath = xmalloc(mx);
+			char *token;
+			char *np = newpath;
+			size_t l;
 
-				p += 5;
-				while ((token = strsep (&p, ":"))) {
-					if (strcmp (token, RC_LIBDIR "/bin") == 0 ||
-					    strcmp (token, RC_LIBDIR "/sbin") == 0)
-						continue;
+			p = path;
+			while ((token = strsep (&p, ":"))) {
+				if (strcmp (token, RC_LIBDIR "/bin") == 0 ||
+				    strcmp (token, RC_LIBDIR "/sbin") == 0)
+					continue;
 
-					t = strlen (token);
-					if (newpath) {
-						l = strlen (newpath);
-						newpath = xrealloc (newpath, sizeof (char) * (l + t + 2));
-						np = newpath + l;
-						*np++ = ':';
-						memcpy (np, token, sizeof (char) * strlen (token));
-						np += t;
-						*np = '\0';
-					} else {
-						l = strlen ("PATH=") + t + 1;
-						newpath = xmalloc (sizeof (char) * l);
-						snprintf (newpath, l, "PATH=%s", token);
-					}
-				}
-				rc_strlist_add (&newenv, newpath);
-				free (path);
-				free (newpath);
-			} else
-				rc_strlist_add (&newenv, env);
+				l = strlen (token);
+				if (np != newpath)
+					*np++ = ':';
+				memcpy (np, token, l);
+				np += l;
+				*np = '\0';
+			}
+			unsetenv("PATH");
+			setenv("PATH", newpath, 1);
 		}
 
-		umask (022);
+		umask(022);
 
 		stdout_fd = devnull_fd;
 		stderr_fd = devnull_fd;
 		if (redirect_stdout) {
-			if ((stdout_fd = open (redirect_stdout, O_WRONLY | O_CREAT | O_APPEND,
-					       S_IRUSR | S_IWUSR)) == -1)
-				eerrorx ("%s: unable to open the logfile for stdout `%s': %s",
-					 applet, redirect_stdout, strerror (errno));
+			if ((stdout_fd = open(redirect_stdout, O_WRONLY | O_CREAT | O_APPEND,
+					      S_IRUSR | S_IWUSR)) == -1)
+				eerrorx("%s: unable to open the logfile for stdout `%s': %s",
+					applet, redirect_stdout, strerror(errno));
 		}
 		if (redirect_stderr) {
-			if ((stderr_fd = open (redirect_stderr, O_WRONLY | O_CREAT | O_APPEND,
-					       S_IRUSR | S_IWUSR)) == -1)
-				eerrorx ("%s: unable to open the logfile for stderr `%s': %s",
-					 applet, redirect_stderr, strerror (errno));
+			if ((stderr_fd = open(redirect_stderr, O_WRONLY | O_CREAT | O_APPEND,
+					      S_IRUSR | S_IWUSR)) == -1)
+				eerrorx("%s: unable to open the logfile for stderr `%s': %s",
+					applet, redirect_stderr, strerror(errno));
 		}
 
 		/* We don't redirect stdin as some daemons may need it */
 		if (background || quiet || redirect_stdout)
-			dup2 (stdout_fd, STDOUT_FILENO);
+			dup2(stdout_fd, STDOUT_FILENO);
 		if (background || quiet || redirect_stderr)
-			dup2 (stderr_fd, STDERR_FILENO);
+			dup2(stderr_fd, STDERR_FILENO);
 
-		for (i = getdtablesize () - 1; i >= 3; --i)
+		for (i = getdtablesize() - 1; i >= 3; --i)
 			close(i);
 
-		setsid ();
-
-		execve (exec, argv, newenv);
+		setsid();
+		execv(exec, argv);
 #ifdef HAVE_PAM
 		if (pamr == PAM_SUCCESS)
-			pam_close_session (pamh, PAM_SILENT);
+			pam_close_session(pamh, PAM_SILENT);
 #endif
-		eerrorx ("%s: failed to exec `%s': %s", applet, exec, strerror (errno));
+		eerrorx("%s: failed to exec `%s': %s", applet, exec, strerror(errno));
 	}
 
 	/* Parent process */
@@ -1053,17 +1043,17 @@ int start_stop_daemon (int argc, char **argv)
 
 		errno = 0;
 		do {
-			pid = waitpid (savepid, &status, 0);
+			pid = waitpid(savepid, &status, 0);
 			if (pid < 1) {
-				eerror ("waitpid %d: %s", savepid, strerror (errno));
-				return (-1);
+				eerror("waitpid %d: %s", savepid, strerror(errno));
+				return -1;
 			}
-		} while (! WIFEXITED (status) && ! WIFSIGNALED (status));
+		} while (! WIFEXITED(status) && ! WIFSIGNALED(status));
 
-		if (! WIFEXITED (status) || WEXITSTATUS (status) != 0) {
+		if (! WIFEXITED(status) || WEXITSTATUS(status) != 0) {
 			if (! quiet)
-				eerrorx ("%s: failed to start `%s'", applet, exec);
-			exit (EXIT_FAILURE);
+				eerrorx("%s: failed to start `%s'", applet, exec);
+			exit(EXIT_FAILURE);
 		}
 
 		pid = savepid;
@@ -1081,12 +1071,12 @@ int start_stop_daemon (int argc, char **argv)
 		ts.tv_nsec = POLL_INTERVAL;
 
 		while (nloops) {
-			if (nanosleep (&ts, NULL) == -1) {
+			if (nanosleep(&ts, NULL) == -1) {
 				if (errno == EINTR)
-					eerror ("%s: caught an interrupt", applet);
+					eerror("%s: caught an interrupt", applet);
 				else {
-					eerror ("%s: nanosleep: %s", applet, strerror (errno));
-					return (0);
+					eerror("%s: nanosleep: %s", applet, strerror(errno));
+					return 0;
 				}
 			}
 
@@ -1111,27 +1101,28 @@ int start_stop_daemon (int argc, char **argv)
 			} else {
 				if (pidfile) {
 					/* The pidfile may not have been written yet - give it some time */
-					if (get_pid (pidfile, true) == -1) {
+					if (get_pid(pidfile, true) == -1) {
 						if (! nloopsp)
-							eerrorx ("%s: did not create a valid pid in `%s'",
-								 applet, pidfile);
+							eerrorx("%s: did not create a valid pid in `%s'",
+								applet, pidfile);
 						alive = true;
 					} else
 						nloopsp = 0;
 				}
-				if (do_stop ((const char *const *)argv, cmd,
-					     pidfile, uid, 0, true, false, true) > 0)
+				if (do_stop((const char *const *)argv, cmd,
+					    pidfile, uid, 0, true, false, true) > 0)
 					alive = true;
 			}
 
 			if (! alive)
-				eerrorx ("%s: %s died", applet, exec);
+				eerrorx("%s: %s died", applet, exec);
 		}
 	}
 
 	if (svcname)
-		rc_service_daemon_set (svcname, (const char *const *)argv, cmd, pidfile, true);
+		rc_service_daemon_set(svcname, (const char *const *)argv,
+				      cmd, pidfile, true);
 
-	exit (EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 	/* NOTREACHED */
 }

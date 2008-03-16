@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Jan 08, 2008
+.Dd Mar 16, 2008
 .Dt RC_CONFIG 3 SMM
 .Os OpenRC
 .Sh NAME
@@ -33,8 +33,8 @@ Run Command library (librc, -lrc)
 .Sh SYNOPSIS
 .In rc.h
 .Ft "char *" Fn rc_getline "FILE *fp"
-.Ft "char **" Fn rc_config_list "const char *file"
-.Ft "char **" Fn rc_config_load "const char *file"
+.Ft "RC_STRINGLIST *" Fn rc_config_list "const char *file"
+.Ft "RC_STRINGLIST *" Fn rc_config_load "const char *file"
 .Ft "char *" Fn rc_config_value "const char *const *list" "const char *entry"
 .Ft bool Fn rc_yesno "const char *value"
 .Sh DESCRIPTION
@@ -61,7 +61,7 @@ found in
 .Fa list .
 .Pp
 Each list should be freed using
-.Fn rc_strlist_free
+.Fn rc_stringlist_free
 when done.
 .Pp
 .Fn rc_yesno
@@ -76,7 +76,7 @@ is set to
 .Va EINVAL .
 .Sh SEE ALSO
 .Xr malloc 3 ,
-.Xr rc_strlist_free 3 ,
+.Xr rc_stringlist_free 3 ,
 .Xr sh 1
 .Sh AUTHORS
 .An "Roy Marples" Aq roy@marples.name

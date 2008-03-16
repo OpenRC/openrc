@@ -1,6 +1,6 @@
 MAN3=		einfo.3 \
 		rc_config.3 rc_deptree.3 rc_find_pids.3 rc_plugin_hook.3 \
-		rc_runlevel.3 rc_service.3 rc_strcatpaths.3 rc_strlist.3
+		rc_runlevel.3 rc_service.3 rc_strcatpaths.3 rc_stringlist.3
 MAN8=		rc-status.8 rc-update.8 rc.8 runscript.8 start-stop-daemon.8
 
 # Handy macro to create symlinks

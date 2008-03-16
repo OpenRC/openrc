@@ -35,14 +35,14 @@ bool rc_yesno (const char *value)
 {
 	if (! value) {
 		errno = ENOENT;
-		return (false);
+		return false;
 	}
 
 	if (strcasecmp (value, "yes") == 0 ||
 	    strcasecmp (value, "y") == 0 ||
 	    strcasecmp (value, "true") == 0 ||
 	    strcasecmp (value, "1") == 0)
-		return (true);
+		return true;
 
 	if (strcasecmp (value, "no") != 0 &&
 	    strcasecmp (value, "n") != 0 &&
@@ -50,7 +50,7 @@ bool rc_yesno (const char *value)
 	    strcasecmp (value, "0") != 0)
 		errno = EINVAL;
 
-	return (false);
+	return false;
 }
 librc_hidden_def(rc_yesno)
 
@@ -64,7 +64,7 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 	char *pathp;
 
 	if (! path1 || ! paths)
-		return (NULL);
+		return NULL;
 
 	length = strlen (path1) + strlen (paths) + 1;
 	if (*paths != '/')
@@ -101,7 +101,7 @@ char *rc_strcatpaths (const char *path1, const char *paths, ...)
 
 	*pathp++ = 0;
 
-	return (path);
+	return path;
 }
 librc_hidden_def(rc_strcatpaths)
 
@@ -113,7 +113,7 @@ char *rc_getline (FILE *fp)
 	size_t last = 0;
 
 	if (feof (fp))
-		return (NULL);
+		return NULL;
 
 	do {
 		len += BUFSIZ;
@@ -128,74 +128,78 @@ char *rc_getline (FILE *fp)
 	if (*line && line[--last] == '\n')
 		line[last] = '\0';
 
-	return (line);
+	return line;
 }
 librc_hidden_def(rc_getline)
 
-char **rc_config_list (const char *file)
+RC_STRINGLIST *rc_config_list(const char *file)
 {
 	FILE *fp;
 	char *buffer;
 	char *p;
 	char *token;
-	char **list = NULL;
+	RC_STRINGLIST *list;
 
-	if (! (fp = fopen (file, "r")))
-		return (NULL);
+	if (!(fp = fopen(file, "r")))
+		return NULL;
 
-	while ((p = buffer = rc_getline (fp))) {
+	list = rc_stringlist_new();
+
+	while ((p = buffer = rc_getline(fp))) {
 		/* Strip leading spaces/tabs */
 		while ((*p == ' ') || (*p == '\t'))
 			p++;
 
 		/* Get entry - we do not want comments */
-		token = strsep (&p, "#");
-		if (token && (strlen (token) > 1)) {
+		token = strsep(&p, "#");
+		if (token && (strlen(token) > 1)) {
 			/* If not variable assignment then skip */
-			if (strchr (token, '=')) {
+			if (strchr(token, '=')) {
 				/* Stip the newline if present */
-				if (token[strlen (token) - 1] == '\n')
-					token[strlen (token) - 1] = 0;
+				if (token[strlen(token) - 1] == '\n')
+					token[strlen(token) - 1] = 0;
 
-				rc_strlist_add (&list, token);
+				rc_stringlist_add(list, token);
 			}
 		}
-		free (buffer);
+		free(buffer);
 	}
-	fclose (fp);
+	fclose(fp);
 
-	return (list);
+	return list;
 }
 librc_hidden_def(rc_config_list)
 
-char **rc_config_load (const char *file)
+RC_STRINGLIST *rc_config_load(const char *file)
 {
-	char **list = NULL;
-	char **config = NULL;
+	RC_STRINGLIST *list = NULL;
+	RC_STRINGLIST *config = NULL;
 	char *token;
-	char *line;
-	char *linep;
-	char *linetok;
+	RC_STRING *line;
+	RC_STRING *cline;
 	size_t i = 0;
-	int j;
 	bool replaced;
 	char *entry;
 	char *newline;
+	char *p;
 
-	list = rc_config_list (file);
-	STRLIST_FOREACH (list, line, j) {
+	config = rc_stringlist_new();
+
+	list = rc_config_list(file);
+	TAILQ_FOREACH(line, list, entries) {
 		/* Get entry */
-		if (! (token = strsep (&line, "=")))
+		p = line->value;
+		if (! (token = strsep(&p, "=")))
 			continue;
 
 		entry = xstrdup (token);
 		/* Preserve shell coloring */
-		if (*line == '$')
-			token = line;
+		if (*p == '$')
+			token = line->value;
 		else
 			do {
 				/* Bash variables are usually quoted */
-				token = strsep (&line, "\"\'");
+				token = strsep(&p, "\"\'");
 			} while (token && *token == '\0');
 
 		/* Drop a newline if that's all we have */
@@ -205,57 +209,54 @@ char **rc_config_load (const char *file)
 				token[i] = 0;
 
 			i = strlen (entry) + strlen (token) + 2;
-			newline = xmalloc (sizeof (char) * i);
-			snprintf (newline, i, "%s=%s", entry, token);
+			newline = xmalloc(sizeof(char) * i);
+			snprintf(newline, i, "%s=%s", entry, token);
 		} else {
 			i = strlen (entry) + 2;
-			newline = xmalloc (sizeof (char) * i);
-			snprintf (newline, i, "%s=", entry);
+			newline = xmalloc(sizeof(char) * i);
+			snprintf(newline, i, "%s=", entry);
 		}
 
 		replaced = false;
 		/* In shells the last item takes precedence, so we need to remove
 		   any prior values we may already have */
-		STRLIST_FOREACH (config, line, i) {
-			char *tmp = xstrdup (line);
-			linep = tmp;
-			linetok = strsep (&linep, "=");
-			if (strcmp (linetok, entry) == 0) {
+		TAILQ_FOREACH(cline, config, entries) {
+			p = strchr(cline->value, '=');
+			if (p && strncmp(entry, cline->value,
+					  (size_t) (p - cline->value)) == 0)
+			{
 				/* We have a match now - to save time we directly replace it */
-				free (config[i - 1]);
-				config[i - 1] = newline;
+				free(cline->value);
+				cline->value = newline;
 				replaced = true;
-				free (tmp);
 				break;
 			}
-			free (tmp);
 		}
 
 		if (! replaced) {
-			rc_strlist_addsort (&config, newline);
-			free (newline);
+			rc_stringlist_add(config, newline);
+			free(newline);
 		}
-		free (entry);
+		free(entry);
 	}
-	rc_strlist_free (list);
+	rc_stringlist_free(list);
 
-	return (config);
+	return config;
 }
 librc_hidden_def(rc_config_load)
 
-char *rc_config_value (const char *const *list, const char *entry)
+char *rc_config_value(RC_STRINGLIST *list, const char *entry)
 {
-	const char *line;
-	int i;
+	RC_STRING *line;
 	char *p;
 
-	STRLIST_FOREACH (list, line, i) {
-		p = strchr (line, '=');
-		if (p && strncmp (entry, line, (size_t) (p - line)) == 0)
-			return (p += 1);
+	TAILQ_FOREACH(line, list, entries) {
+		p = strchr(line->value, '=');
+		if (p &&
+		    strncmp(entry, line->value, (size_t)(p - line->value)) == 0)
+			return p += 1;
 	}
 
-	return (NULL);
+	return NULL;
 }
 librc_hidden_def(rc_config_value)
-

@@ -56,7 +56,7 @@
 
 #define RC_LIBDIR               RC_PREFIX "/" LIB "/rc"
 #define RC_SVCDIR               RC_LIBDIR "/init.d"
-#define RC_DEPTREE              RC_SVCDIR "/deptree"
+#define RC_DEPTREE_CACHE        RC_SVCDIR "/deptree"
 #define RC_RUNLEVELDIR          RC_PREFIX SYSCONFDIR "/runlevels"
 #define RC_INITDIR              RC_PREFIX SYSCONFDIR "/init.d"
 #define RC_CONFDIR              RC_PREFIX SYSCONFDIR "/conf.d"
@@ -98,9 +98,46 @@
 # define _unused
 #endif
 
+
+/* Some libc implemntations don't have these */
+#ifndef STAILQ_CONCAT
+#define	STAILQ_CONCAT(head1, head2) do {				\
+	if (!STAILQ_EMPTY((head2))) {					\
+		*(head1)->stqh_last = (head2)->stqh_first;		\
+		(head1)->stqh_last = (head2)->stqh_last;		\
+		STAILQ_INIT((head2));					\
+	}								\
+} while (0)
+#endif
+
+#ifndef TAILQ_CONCAT
+#define TAILQ_CONCAT(head1, head2) do {                                 \
+	if (!TAILQ_EMPTY((head2))) {                                    \
+		*(head1)->tqh_last = (head2)->tqh_first;                \
+		(head1)->tqh_last = (head2)->tqh_last;                  \
+		TAILQ_INIT((head2));                                    \
+	}                                                               \
+} while (0)
+#endif
+
+#ifndef STAILQ_FOREACH_SAFE
+#define	STAILQ_FOREACH_SAFE(var, head, field, tvar)			\
+	for ((var) = STAILQ_FIRST((head));				\
+	     (var) && ((tvar) = STAILQ_NEXT((var), field), 1);		\
+	     (var) = (tvar))
+#endif
+
+#ifndef TAILQ_FOREACH_SAFE
+#define	TAILQ_FOREACH_SAFE(var, head, field, tvar)			\
+	for ((var) = TAILQ_FIRST((head));				\
+	     (var) && ((tvar) = TAILQ_NEXT((var), field), 1);		\
+	     (var) = (tvar))
+#endif
+
+
 _unused static void *xmalloc (size_t size)
 {
-	void *value = malloc (size);
+	void *value = malloc(size);
 
 	if (value)
 		return (value);
@@ -109,9 +146,9 @@ _unused static void *xmalloc (size_t size)
 	/* NOTREACHED */
 }
 
-_unused static void *xrealloc (void *ptr, size_t size)
+_unused static void *xrealloc(void *ptr, size_t size)
 {
-	void *value = realloc (ptr, size);
+	void *value = realloc(ptr, size);
 
 	if (value)
 		return (value);
@@ -120,14 +157,14 @@ _unused static void *xrealloc (void *ptr, size_t size)
 	/* NOTREACHED */
 }
 
-_unused static char *xstrdup (const char *str)
+_unused static char *xstrdup(const char *str)
 {
 	char *value;
 
 	if (! str)
 		return (NULL);
 
-	value = strdup (str);
+	value = strdup(str);
 
 	if (value)
 		return (value);
@@ -138,32 +175,32 @@ _unused static char *xstrdup (const char *str)
 
 #undef ERRX
 
-_unused static bool exists (const char *pathname)
+_unused static bool exists(const char *pathname)
 {
 	struct stat buf;
 
-	return (stat (pathname, &buf) == 0);
+	return (stat(pathname, &buf) == 0);
 }
 
-_unused static bool existss (const char *pathname)
+_unused static bool existss(const char *pathname)
 {
 	struct stat buf;
 
-	return (stat (pathname, &buf) == 0 && buf.st_size != 0);
+	return (stat(pathname, &buf) == 0 && buf.st_size != 0);
 }
 
-char *rc_conf_value (const char *var);
-bool rc_conf_yesno (const char *var);
-char **env_filter (void);
-char **env_config (void);
-bool service_plugable (const char *service);
-int signal_setup (int sig, void (*handler)(int));
+char *rc_conf_value(const char *var);
+bool rc_conf_yesno(const char *var);
+void env_filter(void);
+void env_config(void);
+bool service_plugable(const char *service);
+int signal_setup(int sig, void (*handler)(int));
 
 /* basename_c never modifies the argument. As such, if there is a trailing
  * slash then an empty string is returned. */
-_unused static const char *basename_c (const char *path)
+_unused static const char *basename_c(const char *path)
 {
-	const char *slash = strrchr (path, '/');
+	const char *slash = strrchr(path, '/');
 
 	if (slash)
 		return (++slash);

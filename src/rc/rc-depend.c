@@ -45,34 +45,33 @@
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
-#include "strlist.h"
 
 extern const char *applet;
 
-rc_depinfo_t *_rc_deptree_load (int *regen) {
-	if (rc_deptree_update_needed ()) {
-		int fd;
-		int retval;
-		int serrno = errno;
-		int merrno;
+RC_DEPTREE *_rc_deptree_load(int *regen) {
+	int fd;
+	int retval;
+	int serrno = errno;
+	int merrno;
 
+	if (rc_deptree_update_needed()) {
 		/* Test if we have permission to update the deptree */
-		fd = open (RC_DEPTREE, O_WRONLY);
+		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
 		merrno = errno;
 		errno = serrno;
 		if (fd == -1 && merrno == EACCES)
-			return (rc_deptree_load ());
-		close (fd);
+			return rc_deptree_load();
+		close(fd);
 
 		if (regen)
 			*regen = 1;
 
-		ebegin ("Caching service dependencies");
-		retval = rc_deptree_update ();
+		ebegin("Caching service dependencies");
+		retval = rc_deptree_update();
 		eend (retval ? 0 : -1, "Failed to update the dependency tree");
 	}
 
-	return (rc_deptree_load ());
+	return rc_deptree_load();
 }
 
 #include "_usage.h"
@@ -97,117 +96,114 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int rc_depend (int argc, char **argv)
+int rc_depend(int argc, char **argv)
 {
-	char **types = NULL;
-	char **services = NULL;
-	char **depends = NULL;
-	char **list;
-	rc_depinfo_t *deptree = NULL;
-	char *service;
+	RC_STRINGLIST *list;
+	RC_STRINGLIST *types;
+	RC_STRINGLIST *services;
+	RC_STRINGLIST *depends;
+	RC_STRING *s;
+	RC_DEPTREE *deptree = NULL;
 	int options = RC_DEP_TRACE;
 	bool first = true;
-	int i;
 	bool update = false;
-	char *runlevel = xstrdup( getenv ("RC_SOFTLEVEL"));
+	char *runlevel = xstrdup(getenv("RC_SOFTLEVEL"));
 	int opt;
 	char *token;
 
-	while ((opt = getopt_long (argc, argv, getoptstring,
-				   longopts, (int *) 0)) != -1)
+	types = rc_stringlist_new();
+
+	while ((opt = getopt_long(argc, argv, getoptstring,
+				  longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-			case 'a':
-				options |= RC_DEP_START;
-				break;
-			case 'o':
-				options |= RC_DEP_STOP;
-				break;
-			case 's':
-				options |= RC_DEP_STRICT;
-				break;
-			case 't':
-				while ((token = strsep (&optarg, ",")))
-					rc_strlist_addu (&types, token);
-				break;
-			case 'u':
-				update = true;
-				break;
-			case 'T':
-				options &= RC_DEP_TRACE;
-				break;
+		case 'a':
+			options |= RC_DEP_START;
+			break;
+		case 'o':
+			options |= RC_DEP_STOP;
+			break;
+		case 's':
+			options |= RC_DEP_STRICT;
+			break;
+		case 't':
+			while ((token = strsep(&optarg, ",")))
+				rc_stringlist_add(types, token);
+			break;
+		case 'u':
+			update = true;
+			break;
+		case 'T':
+			options &= RC_DEP_TRACE;
+			break;
 
-				case_RC_COMMON_GETOPT
+		case_RC_COMMON_GETOPT
 		}
 	}
 
 	if (update) {
-		bool u = false;
-		ebegin ("Caching service dependencies");
-		u = rc_deptree_update ();
-		eend (u ? 0 : -1, "%s: %s", applet, strerror (errno));
-		if (! u)
-			eerrorx ("Failed to update the dependency tree");
+		ebegin("Caching service dependencies");
+		update = rc_deptree_update();
+		eend(update ? 0 : -1, "%s: %s", applet, strerror(errno));
+		if (! update)
+			eerrorx("Failed to update the dependency tree");
 	}
 
-	if (! (deptree = _rc_deptree_load (NULL)))
-		eerrorx ("failed to load deptree");
+	if (! (deptree = _rc_deptree_load(NULL)))
+		eerrorx("failed to load deptree");
 
 	if (! runlevel)
-		runlevel = rc_runlevel_get ();
+		runlevel = rc_runlevel_get();
 
+	services = rc_stringlist_new();
 	while (optind < argc) {
-		list = NULL;
-		rc_strlist_add (&list, argv[optind]);
+		list = rc_stringlist_new();
+		rc_stringlist_add(list, argv[optind]);
 		errno = 0;
-		depends = rc_deptree_depends (deptree, NULL, (const char **) list,
-					      runlevel, 0);
+		depends = rc_deptree_depends(deptree, NULL, list, runlevel, 0);
 		if (! depends && errno == ENOENT)
-			eerror ("no dependency info for service `%s'", argv[optind]);
+			eerror("no dependency info for service `%s'", argv[optind]);
 		else
-			rc_strlist_add (&services, argv[optind]);
+			rc_stringlist_add(services, argv[optind]);
 
-		rc_strlist_free (depends);
-		rc_strlist_free (list);
+		rc_stringlist_free(depends);
+		rc_stringlist_free(list);
 		optind++;
 	}
-
-	if (! services) {
-		rc_strlist_free (types);
-		rc_deptree_free (deptree);
-		free (runlevel);
+	if (! TAILQ_FIRST(services)) {
+		rc_stringlist_free(services);
+		rc_stringlist_free(types);
+		rc_deptree_free(deptree);
+		free(runlevel);
 		if (update)
-			return (EXIT_SUCCESS);
-		eerrorx ("no services specified");
+			return EXIT_SUCCESS;
+		eerrorx("no services specified");
 	}
 
 	/* If we don't have any types, then supply some defaults */
-	if (! types) {
-		rc_strlist_add (&types, "ineed");
-		rc_strlist_add (&types, "iuse");
+	if (! TAILQ_FIRST(types)) {
+		rc_stringlist_add(types, "ineed");
+		rc_stringlist_add(types, "iuse");
 	}
 
-	depends = rc_deptree_depends (deptree, (const char **) types,
-				      (const char **) services, runlevel, options);
+	depends = rc_deptree_depends(deptree, types, services, runlevel, options);
 
-	if (depends) {
-		STRLIST_FOREACH (depends, service, i) {
+	if (TAILQ_FIRST(depends)) {
+		TAILQ_FOREACH(s, depends, entries) {
 			if (first)
 				first = false;
 			else
 				printf (" ");
-
-			if (service)
-				printf ("%s", service);
+			printf ("%s", s->value);
 
 		}
 		printf ("\n");
 	}
 
-	rc_strlist_free (types);
-	rc_strlist_free (services);
-	rc_strlist_free (depends);
-	rc_deptree_free (deptree);
-	free (runlevel);
-	return (EXIT_SUCCESS);
+	rc_stringlist_free(types);
+	rc_stringlist_free(services);
+	rc_stringlist_free(depends);
+	rc_deptree_free(deptree);
+	free(runlevel);
+	return EXIT_SUCCESS;
 }
