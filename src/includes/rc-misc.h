@@ -111,9 +111,10 @@
 #endif
 
 #ifndef TAILQ_CONCAT
-#define TAILQ_CONCAT(head1, head2) do {                                 \
-	if (!TAILQ_EMPTY((head2))) {                                    \
+#define TAILQ_CONCAT(head1, head2, field) do {                          \
+	if (!TAILQ_EMPTY(head2)) {                                      \
 		*(head1)->tqh_last = (head2)->tqh_first;                \
+		(head2)->tqh_first->field.tqe_prev = (head1)->tqh_last; \
 		(head1)->tqh_last = (head2)->tqh_last;                  \
 		TAILQ_INIT((head2));                                    \
 	}                                                               \

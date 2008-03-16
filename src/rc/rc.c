@@ -951,10 +951,10 @@ int main(int argc, char **argv)
 	 * correct order for stopping them */
 	stop_services = rc_services_in_state(RC_SERVICE_STARTED);
 	tmplist = rc_services_in_state(RC_SERVICE_INACTIVE);
-	TAILQ_CONCAT(stop_services, tmplist);
+	TAILQ_CONCAT(stop_services, tmplist, entries);
 	free(tmplist);
 	tmplist = rc_services_in_state(RC_SERVICE_STARTING);
-	TAILQ_CONCAT(stop_services, tmplist);
+	TAILQ_CONCAT(stop_services, tmplist, entries);
 	free(tmplist);
 	rc_stringlist_sort(&stop_services);
 
@@ -981,7 +981,7 @@ int main(int argc, char **argv)
 		start_services = rc_services_in_runlevel(bootlevel);
 		if (strcmp (newlevel ? newlevel : runlevel, bootlevel) != 0) {
 			tmplist = rc_services_in_runlevel(newlevel ? newlevel : runlevel);
-			TAILQ_CONCAT(start_services, tmplist);
+			TAILQ_CONCAT(start_services, tmplist, entries);
 			free(tmplist);
 		}
 

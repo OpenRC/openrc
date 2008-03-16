@@ -627,7 +627,7 @@ static void get_started_services(void)
 	RC_STRINGLIST *tmp = rc_services_in_state(RC_SERVICE_INACTIVE);
 	rc_stringlist_free(restart_services);
 	restart_services = rc_services_in_state(RC_SERVICE_STARTED);
-	TAILQ_CONCAT(restart_services, tmp);
+	TAILQ_CONCAT(restart_services, tmp, entries);
 	free(tmp);
 }
 

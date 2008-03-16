@@ -79,7 +79,7 @@ char *rc_conf_value(const char *setting)
 		if (exists(RC_CONF_OLD)) {
 			old = rc_config_load(RC_CONF_OLD);
 			if (old) {
-				TAILQ_CONCAT(rc_conf, old);
+				TAILQ_CONCAT(rc_conf, old, entries);
 				free(old);
 			}
 		}

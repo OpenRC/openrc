@@ -839,13 +839,13 @@ RC_STRINGLIST *rc_services_in_runlevel(const char *runlevel)
 
 #ifdef RC_PKG_INITDIR
 		if (pkg) {
-			TAILQ_CONCAT(list, pkg);
+			TAILQ_CONCAT(list, pkg, entries);
 			free(pkg);
 		}
 #endif
 #ifdef RC_LOCAL_DIR
 		if (local) {
-			TAILQ_CONCAT(list, local);
+			TAILQ_CONCAT(list, local, entries);
 			free(local);
 		}
 #endif
@@ -883,7 +883,7 @@ RC_STRINGLIST *rc_services_in_state(RC_SERVICE state)
 			p = rc_strcatpaths(dir, d->value, (char *) NULL);
 			services = ls_dir(p, LS_INITD);
 			free(p);
-			TAILQ_CONCAT(list, services);
+			TAILQ_CONCAT(list, services, entries);
 			free(services);
 		}
 		rc_stringlist_free(dirs);

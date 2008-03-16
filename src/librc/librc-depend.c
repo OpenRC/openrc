@@ -522,24 +522,24 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 		list = rc_services_in_state(RC_SERVICE_STARTED);
 
 		list2 = rc_services_in_state (RC_SERVICE_INACTIVE);
-		TAILQ_CONCAT(list, list2);
+		TAILQ_CONCAT(list, list2, entries);
 		free(list2);
 
 		list2 = rc_services_in_state (RC_SERVICE_STARTING);
-		TAILQ_CONCAT(list, list2);
+		TAILQ_CONCAT(list, list2, entries);
 		free(list2);
 	} else {
 		list = rc_services_in_runlevel (runlevel);
 
 		/* Add coldplugged services */
 		list2 = rc_services_in_state (RC_SERVICE_COLDPLUGGED);
-		TAILQ_CONCAT(list, list2);
+		TAILQ_CONCAT(list, list2, entries);
 		free(list2);
 
 		/* If we're not the boot runlevel then add that too */
 		if (strcmp (runlevel, bootlevel) != 0) {
 			list2 = rc_services_in_runlevel (bootlevel);
-			TAILQ_CONCAT(list, list2);
+			TAILQ_CONCAT(list, list2, entries);
 			free(list2);
 		}
 	}
