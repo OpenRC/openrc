@@ -26,6 +26,7 @@ global:
 	rc_service_delete;
 	rc_service_description;
 	rc_service_exists;
+	rc_service_extra_commands;
 	rc_service_in_runlevel;
 	rc_service_mark;
 	rc_service_options;
@@ -42,7 +43,6 @@ global:
 	rc_service_state;
 	rc_service_value_get;
 	rc_service_value_set;
-	rc_strcatpaths;
 	rc_stringlist_add;
 	rc_stringlist_addu;
 	rc_stringlist_delete;

@@ -51,6 +51,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <limits.h>
 #include <grp.h>
 #include <pwd.h>
 #include <signal.h>
@@ -590,6 +591,7 @@ int start_stop_daemon(int argc, char **argv)
 	bool setuser = false;
 	char *p;
 	char *tmp;
+	char exec_file[PATH_MAX];
 	struct passwd *pw;
 	struct group *gr;
 	char line[130];
@@ -773,14 +775,13 @@ int start_stop_daemon(int argc, char **argv)
 
 	/* Validate that the binary exists if we are starting */
 	if (exec) {
-		if (ch_root)
-			tmp = rc_strcatpaths(ch_root, exec, (char *) NULL);
-		else
+		if (ch_root) {
+			snprintf(exec_file, sizeof(exec_file), "%s/%s", ch_root, exec);
+			tmp = exec_file;
+		} else
 			tmp = exec;
 		if (start && ! exists(tmp)) {
 			eerror("%s: %s does not exist", applet, tmp);
-			if (ch_root)
-				free(tmp);
 			exit(EXIT_FAILURE);
 		}
 
@@ -807,15 +808,10 @@ int start_stop_daemon(int argc, char **argv)
 						applet, line + 2, exec);
 					eerror("%s: or you should specify a pidfile"
 					       " or process name", applet);
-					if (ch_root)
-						free(tmp);
 					exit(EXIT_FAILURE);
 				}
 			}
 		}
-
-		if (ch_root)
-			free(tmp);
 	}
 
 	/* Add exec to our arguments */

@@ -360,12 +360,12 @@ static RC_STRINGLIST *get_provided (const RC_DEPINFO *depinfo,
 	return providers;
 }
 
-static void visit_service (const RC_DEPTREE *deptree,
-			   const RC_STRINGLIST *types,
-			   RC_STRINGLIST *sorted,
-			   RC_STRINGLIST *visited,
-			   const RC_DEPINFO *depinfo,
-			   const char *runlevel, int options)
+static void visit_service(const RC_DEPTREE *deptree,
+			  const RC_STRINGLIST *types,
+			  RC_STRINGLIST **sorted,
+			  RC_STRINGLIST *visited,
+			  const RC_DEPINFO *depinfo,
+			  const char *runlevel, int options)
 {
 	RC_STRING *type;
 	RC_STRING *service;
@@ -392,7 +392,9 @@ static void visit_service (const RC_DEPTREE *deptree,
 			if (! options & RC_DEP_TRACE ||
 			    strcmp(type->value, "iprovide") == 0)
 			{
-				rc_stringlist_add(sorted, service->value);
+				if (! *sorted)
+					*sorted = rc_stringlist_new();
+				rc_stringlist_add(*sorted, service->value);
 				continue;
 			}
 
@@ -445,8 +447,11 @@ static void visit_service (const RC_DEPTREE *deptree,
 	   are also the service calling us or we are provided by something */
 	svcname = getenv("SVCNAME");
 	if (! svcname || strcmp(svcname, depinfo->service) != 0)
-		if (! get_deptype(depinfo, "providedby"))
-			rc_stringlist_add(sorted, depinfo->service);
+		if (! get_deptype(depinfo, "providedby")) {
+			if (! *sorted)
+				*sorted = rc_stringlist_new();
+			rc_stringlist_add(*sorted, depinfo->service);
+		}
 }
 
 RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *deptree,
@@ -478,7 +483,7 @@ RC_STRINGLIST *rc_deptree_depends (const RC_DEPTREE *deptree,
 				   const RC_STRINGLIST *services,
 				   const char *runlevel, int options)
 {
-	RC_STRINGLIST *sorted = rc_stringlist_new();
+	RC_STRINGLIST *sorted = NULL;
 	RC_STRINGLIST *visited = rc_stringlist_new();
 	RC_DEPINFO *di;
 	const RC_STRING *service;
@@ -493,11 +498,11 @@ RC_STRINGLIST *rc_deptree_depends (const RC_DEPTREE *deptree,
 			continue;
 		}
 		if (types)
-			visit_service (deptree, types, sorted, visited,
-				       di, runlevel, options);
+			visit_service(deptree, types, &sorted, visited,
+				      di, runlevel, options);
 	}
 
-	rc_stringlist_free (visited);
+	rc_stringlist_free(visited);
 	return sorted;
 }
 librc_hidden_def(rc_deptree_depends)
@@ -522,12 +527,23 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 		list = rc_services_in_state(RC_SERVICE_STARTED);
 
 		list2 = rc_services_in_state (RC_SERVICE_INACTIVE);
-		TAILQ_CONCAT(list, list2, entries);
-		free(list2);
+		if (list2) {
+			if (list) {
+				TAILQ_CONCAT(list, list2, entries);
+				free(list2);
+			} else
+				list = list2;
+		}
 
 		list2 = rc_services_in_state (RC_SERVICE_STARTING);
+		if (list2) {
+			if (list) {
+				TAILQ_CONCAT(list, list2, entries);
+				free(list2);
+			} else
+				list = list2;
+		}
 		TAILQ_CONCAT(list, list2, entries);
-		free(list2);
 	} else {
 		list = rc_services_in_runlevel (runlevel);
 
@@ -567,7 +583,7 @@ bool rc_newer_than(const char *source, const char *target)
 	bool newer = true;
 	DIR *dp;
 	struct dirent *d;
-	char *path;
+	char path[PATH_MAX];
 	int serrno = errno;
 
 	/* We have to exist */
@@ -594,9 +610,8 @@ bool rc_newer_than(const char *source, const char *target)
 		if (d->d_name[0] == '.')
 			continue;
 
-		path = rc_strcatpaths(target, d->d_name, (char *) NULL);
+		snprintf(path, sizeof(path), "%s/%s", target, d->d_name);
 		newer = rc_newer_than(source, path);
-		free(path);
 		if (! newer)
 			break;
 	}
@@ -671,14 +686,16 @@ bool rc_deptree_update_needed(void)
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
-	config = rc_config_list (RC_DEPCONFIG);
-	TAILQ_FOREACH(s, config, entries) {
-		if (! rc_newer_than(RC_DEPTREE_CACHE, s->value)) {
-			newer = true;
-			break;
+	config = rc_config_list(RC_DEPCONFIG);
+	if (config) {
+		TAILQ_FOREACH(s, config, entries) {
+			if (! rc_newer_than(RC_DEPTREE_CACHE, s->value)) {
+				newer = true;
+				break;
+			}
 		}
+		rc_stringlist_free(config);
 	}
-	rc_stringlist_free(config);
 
 	return newer;
 }

@@ -62,7 +62,7 @@ RC_STRING *rc_stringlist_addu (RC_STRINGLIST *list, const char *value)
 }
 librc_hidden_def(rc_stringlist_addu)
 
-bool rc_stringlist_delete (RC_STRINGLIST *list, const char *value)
+bool rc_stringlist_delete(RC_STRINGLIST *list, const char *value)
 {
 	RC_STRING *s;
 

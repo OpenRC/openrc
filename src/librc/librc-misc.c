@@ -54,57 +54,6 @@ bool rc_yesno (const char *value)
 }
 librc_hidden_def(rc_yesno)
 
-char *rc_strcatpaths (const char *path1, const char *paths, ...)
-{
-	va_list ap;
-	size_t length;
-	size_t i;
-	char *p;
-	char *path;
-	char *pathp;
-
-	if (! path1 || ! paths)
-		return NULL;
-
-	length = strlen (path1) + strlen (paths) + 1;
-	if (*paths != '/')
-		length ++;
-
-	va_start (ap, paths);
-	while ((p = va_arg (ap, char *)) != NULL) {
-		if (*p != '/')
-			length ++;
-		length += strlen (p);
-	}
-	va_end (ap);
-
-	pathp = path = xmalloc (length * sizeof (char));
-	memset (path, 0, length);
-	i = strlen (path1);
-	memcpy (path, path1, i);
-	pathp += i;
-	if (*paths != '/')
-		*pathp ++ = '/';
-	i = strlen (paths);
-	memcpy (pathp, paths, i);
-	pathp += i;
-
-	va_start (ap, paths);
-	while ((p = va_arg (ap, char *)) != NULL) {
-		if (*p != '/')
-			*pathp ++= '/';
-		i = strlen (p);
-		memcpy (pathp, p, i);
-		pathp += i;
-	}
-	va_end (ap);
-
-	*pathp++ = 0;
-
-	return path;
-}
-librc_hidden_def(rc_strcatpaths)
-
 char *rc_getline (FILE *fp)
 {
 	char *line = NULL;
@@ -138,12 +87,10 @@ RC_STRINGLIST *rc_config_list(const char *file)
 	char *buffer;
 	char *p;
 	char *token;
-	RC_STRINGLIST *list;
+	RC_STRINGLIST *list = NULL;
 
 	if (!(fp = fopen(file, "r")))
 		return NULL;
-
-	list = rc_stringlist_new();
 
 	while ((p = buffer = rc_getline(fp))) {
 		/* Strip leading spaces/tabs */
@@ -159,6 +106,8 @@ RC_STRINGLIST *rc_config_list(const char *file)
 				if (token[strlen(token) - 1] == '\n')
 					token[strlen(token) - 1] = 0;
 
+				if (! list)
+					list = rc_stringlist_new();
 				rc_stringlist_add(list, token);
 			}
 		}
@@ -172,8 +121,8 @@ librc_hidden_def(rc_config_list)
 
 RC_STRINGLIST *rc_config_load(const char *file)
 {
-	RC_STRINGLIST *list = NULL;
-	RC_STRINGLIST *config = NULL;
+	RC_STRINGLIST *list;
+	RC_STRINGLIST *config;
 	char *token;
 	RC_STRING *line;
 	RC_STRING *cline;
@@ -183,9 +132,11 @@ RC_STRINGLIST *rc_config_load(const char *file)
 	char *newline;
 	char *p;
 
-	config = rc_stringlist_new();
-
 	list = rc_config_list(file);
+	if (! list)
+		return NULL;
+
+	config = rc_stringlist_new();
 	TAILQ_FOREACH(line, list, entries) {
 		/* Get entry */
 		p = line->value;

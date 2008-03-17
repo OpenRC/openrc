@@ -27,17 +27,6 @@
 #ifndef __RC_H__
 #define __RC_H__
 
-#ifdef __GNUC__
-#  define GCC_VERSION (__GNUC__ * 1000 + __GNUC__MINOR)
-#  if (GCC_VERSION >= 3005)
-#    define SENTINEL __attribute__ ((__sentinel__))
-#  endif
-#  define DEPRECATED __attribute__ ((deprecated))
-#endif
-#ifndef SENTINEL
-#  define SENTINEL
-#endif
-
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <stdbool.h>
@@ -443,13 +432,6 @@ void rc_stringlist_sort(RC_STRINGLIST **);
 /*! Frees each item on the list and the list itself.
  * @param list to free */
 void rc_stringlist_free(RC_STRINGLIST *);
-
-/*! Concatenate paths adding '/' if needed. The resultant pointer should be
- * freed when finished with.
- * @param path1 starting path
- * @param paths NULL terminated list of paths to add
- * @return pointer to the new path */
-char *rc_strcatpaths(const char *, const char *, ...) SENTINEL;
 
 typedef struct rc_pid
 {

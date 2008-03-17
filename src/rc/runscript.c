@@ -82,8 +82,8 @@ static RC_STRINGLIST *use_services = NULL;
 static RC_STRINGLIST *services = NULL;
 static RC_STRINGLIST *tmplist = NULL;
 static char *service = NULL;
-static char *exclusive = NULL;
-static char *mtime_test = NULL;
+static char exclusive[PATH_MAX] = { '\0' };
+static char mtime_test[PATH_MAX] = { '\0' };
 static RC_DEPTREE *deptree = NULL;
 static char *runlevel = NULL;
 static bool sighup = false;
@@ -212,7 +212,7 @@ static const char *const tests[] = {
 };
 static bool in_control()
 {
-	char *path;
+	char file[PATH_MAX];
 	time_t m;
 	time_t mtime;
 	int i = 0;
@@ -230,15 +230,12 @@ static bool in_control()
 		return false;
 
 	while (tests[i]) {
-		path = rc_strcatpaths(RC_SVCDIR, tests[i], applet, (char *) NULL);
-		if (exists(path)) {
-			m = get_mtime(path, false);
-			if (mtime < m && m != 0) {
-				free(path);
+		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s", tests[i], applet);
+		if (exists(file)) {
+			m = get_mtime(file, false);
+			if (mtime < m && m != 0)
 				return false;
-			}
 		}
-		free(path);
 		i++;
 	}
 
@@ -247,10 +244,11 @@ static bool in_control()
 
 static void uncoldplug()
 {
-	char *cold = rc_strcatpaths(RC_SVCDIR, "coldplugged", applet, (char *) NULL);
-	if (exists(cold) && unlink(cold) != 0)
-		eerror("%s: unlink `%s': %s", applet, cold, strerror(errno));
-	free(cold);
+	char file[PATH_MAX];
+
+	snprintf(file, sizeof(file), RC_SVCDIR "/coldplugged/%s", applet);
+	if (exists(file) && unlink(file) != 0)
+		eerror("%s: unlink `%s': %s", applet, file, strerror(errno));
 }
 
 static void start_services(RC_STRINGLIST *list) {
@@ -305,10 +303,10 @@ static void restore_state(void)
 			rc_service_mark(applet, RC_SERVICE_FAILED);
 	}
 
-	if (exclusive)
+	if (*exclusive) {
 		unlink(exclusive);
-	free(exclusive);
-	exclusive = NULL;
+		*exclusive = '\0';
+	}
 }
 
 static void cleanup(void)
@@ -347,17 +345,12 @@ static void cleanup(void)
 	rc_stringlist_free(applet_list);
 	rc_stringlist_free(tmplist);
 	free (ibsave);
-
-	if (mtime_test)
-	{
-		if (! rc_in_plugin)
-			unlink(mtime_test);
-		free(mtime_test);
-	}
-	free(exclusive);
 	free(service);
 	free(prefix);
 	free(runlevel);
+
+	if (*mtime_test && ! rc_in_plugin)
+		unlink(mtime_test);
 }
 
 static int write_prefix(const char *buffer, size_t bytes, bool *prefixed) {
@@ -580,37 +573,29 @@ static RC_SERVICE svc_status(void)
 
 static void make_exclusive(void)
 {
-	char *path;
-	size_t l;
-
 	/* We create a fifo so that other services can wait until we complete */
-	if (! exclusive)
-		exclusive = rc_strcatpaths(RC_SVCDIR, "exclusive", applet, (char *) NULL);
+	if (! *exclusive)
+		snprintf(exclusive, sizeof(exclusive), RC_SVCDIR "/exclusive/%s",
+			 applet);
 
 	if (mkfifo(exclusive, 0600) != 0 && errno != EEXIST &&
 	    (errno != EACCES || geteuid () == 0))
 		eerrorx ("%s: unable to create fifo `%s': %s",
 			 applet, exclusive, strerror(errno));
 
-	path = rc_strcatpaths(RC_SVCDIR, "exclusive", applet, (char *) NULL);
-	l = strlen (path) + 16;
-	mtime_test = xmalloc(sizeof (char) * l);
-	snprintf(mtime_test, l, "%s.%d", path, getpid());
-	free(path);
+	snprintf(mtime_test, sizeof(mtime_test), RC_SVCDIR "/exclusive/%s.%d", applet, getpid());
 
 	if (exists(mtime_test) && unlink(mtime_test) != 0) {
 		eerror("%s: unlink `%s': %s",
 		       applet, mtime_test, strerror(errno));
-		free(mtime_test);
-		mtime_test = NULL;
+		*mtime_test = '\0';
 		return;
 	}
 
 	if (symlink(service, mtime_test) != 0) {
 		eerror("%s: symlink `%s' to `%s': %s",
 		       applet, service, mtime_test, strerror(errno));
-		free(mtime_test);
-		mtime_test = NULL;
+		*mtime_test = '\0';
 	}
 }
 
@@ -618,8 +603,7 @@ static void unlink_mtime_test(void)
 {
 	if (unlink(mtime_test) != 0)
 		eerror("%s: unlink `%s': %s", applet, mtime_test, strerror(errno));
-	free(mtime_test);
-	mtime_test = NULL;
+	*mtime_test = '\0';
 }
 
 static void get_started_services(void)
@@ -627,8 +611,13 @@ static void get_started_services(void)
 	RC_STRINGLIST *tmp = rc_services_in_state(RC_SERVICE_INACTIVE);
 	rc_stringlist_free(restart_services);
 	restart_services = rc_services_in_state(RC_SERVICE_STARTED);
-	TAILQ_CONCAT(restart_services, tmp, entries);
-	free(tmp);
+	if (tmp) {
+		if (restart_services) {
+			TAILQ_CONCAT(restart_services, tmp, entries);
+			free(tmp);
+		} else
+			restart_services = tmp;
+	}
 }
 
 static void setup_types(void)
@@ -713,8 +702,8 @@ static void svc_start(bool deps)
 
 		services = rc_deptree_depends(deptree, types_b, applet_list,
 					      runlevel, 0);
-		if (TAILQ_FIRST(services)) {
-			eerrorn ("ERROR: `%s' needs ", applet);
+		if (services && TAILQ_FIRST(services)) {
+			eerrorn("ERROR: `%s' needs ", applet);
 			first = true;
 			TAILQ_FOREACH(svc, services, entries) {
 				if (first)
@@ -733,7 +722,7 @@ static void svc_start(bool deps)
 		use_services = rc_deptree_depends(deptree, types_nu, applet_list,
 						  runlevel, depoptions);
 
-		if (! rc_runlevel_starting())
+		if (! rc_runlevel_starting() && use_services)
 			TAILQ_FOREACH(svc, use_services, entries)
 				if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
 					pid_t pid = rc_service_start(svc->value);
@@ -746,8 +735,7 @@ static void svc_start(bool deps)
 					      runlevel, depoptions);
 
 		/* We use tmplist to hold our scheduled by list */
-		tmplist = rc_stringlist_new();
-
+		tmplist = NULL;
 		TAILQ_FOREACH(svc, services, entries) {
 			RC_SERVICE svcs = rc_service_state(svc->value);
 			if (svcs & RC_SERVICE_STARTED)
@@ -768,14 +756,19 @@ static void svc_start(bool deps)
 			if (! svc_wait(svc->value))
 				eerror ("%s: timed out waiting for %s",
 					applet, svc->value);
+			if (! need_services)
+				continue;
 			if ((svcs = rc_service_state(svc->value)) & RC_SERVICE_STARTED)
 				continue;
 			TAILQ_FOREACH(svc2, need_services, entries) {
 				if (strcmp (svc->value, svc2->value) == 0) {
 					if (svcs & RC_SERVICE_INACTIVE ||
 					    svcs & RC_SERVICE_WASINACTIVE)
-						rc_stringlist_add(tmplist, svc->value);
-					else
+					{
+					    if (! tmplist)
+					    	tmplist = rc_stringlist_new();
+					    rc_stringlist_add(tmplist, svc->value);
+					} else
 						eerrorx("ERROR: cannot start %s as"
 							" %s would not start",
 							applet, svc->value);
@@ -783,7 +776,7 @@ static void svc_start(bool deps)
 			}
 		}
 
-		if (TAILQ_FIRST(tmplist)) {
+		if (tmplist && TAILQ_FIRST(tmplist)) {
 			/* Set the state now, then unlink our exclusive so that
 			   our scheduled list is preserved */
 			rc_service_mark(service, RC_SERVICE_STOPPED);
@@ -813,14 +806,14 @@ static void svc_start(bool deps)
 				p += snprintf(p, len, "%s", svc->value);
 			}
 			free(tmp);
+			rc_stringlist_free(tmplist);
+			tmplist = NULL;
 			ewarnx("WARNING: %s is scheduled to start when %s has started",
-			       applet, tmp);
+					applet, tmp);
 		}
 
 		rc_stringlist_free(services);
 		services = NULL;
-		rc_stringlist_free(tmplist);
-		tmplist = NULL;
 	}
 
 	if (ibsave)
@@ -928,65 +921,73 @@ static void svc_stop(bool deps)
 		if (! types_m)
 			setup_types();
 
-		tmplist = rc_stringlist_new();
+		tmplist = NULL;
 		services = rc_deptree_depends(deptree, types_m, applet_list,
 					      runlevel, depoptions);
-		TAILQ_FOREACH_REVERSE(svc, services, rc_stringlist, entries) {
-			RC_SERVICE svcs = rc_service_state(svc->value);
-			if (svcs & RC_SERVICE_STARTED ||
-			    svcs & RC_SERVICE_INACTIVE)
-			{
-				svc_wait(svc->value);
-				svcs = rc_service_state(svc->value);
+		if (services) {
+			TAILQ_FOREACH_REVERSE(svc, services, rc_stringlist, entries) {
+				RC_SERVICE svcs = rc_service_state(svc->value);
 				if (svcs & RC_SERVICE_STARTED ||
-				    svcs & RC_SERVICE_INACTIVE)
+						svcs & RC_SERVICE_INACTIVE)
 				{
-					pid_t pid = rc_service_stop(svc->value);
-					if (! rc_conf_yesno("rc_parallel"))
-						rc_waitpid(pid);
-					rc_stringlist_add(tmplist, svc->value);
+					svc_wait(svc->value);
+					svcs = rc_service_state(svc->value);
+					if (svcs & RC_SERVICE_STARTED ||
+							svcs & RC_SERVICE_INACTIVE)
+					{
+						pid_t pid = rc_service_stop(svc->value);
+						if (! rc_conf_yesno("rc_parallel"))
+							rc_waitpid(pid);
+						if (! tmplist)
+							tmplist = rc_stringlist_new();
+						rc_stringlist_add(tmplist, svc->value);
+					}
 				}
 			}
+			rc_stringlist_free(services);
+			services = NULL;
 		}
-		rc_stringlist_free(services);
-		services = NULL;
 
-		TAILQ_FOREACH(svc, tmplist, entries) {
-			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
-				continue;
+		if (tmplist) {
+			TAILQ_FOREACH(svc, tmplist, entries) {
+				if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+					continue;
 
-			/* We used to loop 3 times here - maybe re-do this if needed */
-			svc_wait(svc->value);
-			if (! (rc_service_state(svc->value) & RC_SERVICE_STOPPED)) {
-				if (rc_runlevel_stopping()) {
-					/* If shutting down, we should stop even
-					 * if a dependant failed */
-					if (runlevel &&
-					    (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-					     strcmp(runlevel, RC_LEVEL_REBOOT) == 0 ||
-					     strcmp(runlevel, RC_LEVEL_SINGLE) == 0))
-						continue;
-					rc_service_mark(service, RC_SERVICE_FAILED);
+				/* We used to loop 3 times here - maybe re-do this if needed */
+				svc_wait(svc->value);
+				if (! (rc_service_state(svc->value) & RC_SERVICE_STOPPED)) {
+					if (rc_runlevel_stopping()) {
+						/* If shutting down, we should stop even
+						 * if a dependant failed */
+						if (runlevel &&
+								(strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+								 strcmp(runlevel, RC_LEVEL_REBOOT) == 0 ||
+								 strcmp(runlevel, RC_LEVEL_SINGLE) == 0))
+							continue;
+						rc_service_mark(service, RC_SERVICE_FAILED);
+					}
+
+					eerrorx("ERROR: cannot stop %s as %s is still up",
+							applet, svc->value);
 				}
-
-				eerrorx("ERROR: cannot stop %s as %s is still up",
-					applet, svc->value);
 			}
+			rc_stringlist_free(tmplist);
+			tmplist = NULL;
 		}
-		rc_stringlist_free(tmplist);
-		tmplist = NULL;
 
 		/* We now wait for other services that may use us and are stopping
 		   This is important when a runlevel stops */
 		services = rc_deptree_depends(deptree, types_mua, applet_list,
 					      runlevel, depoptions);
-		TAILQ_FOREACH(svc, services, entries) {
-			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
-				continue;
-			svc_wait(svc->value);
+		if (services) {
+			TAILQ_FOREACH(svc, services, entries) {
+				if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+					continue;
+				svc_wait(svc->value);
+			}
+			rc_stringlist_free (services);
+			services = NULL;
 		}
-		rc_stringlist_free (services);
-		services = NULL;
 	}
 
 	/* If we're stopping localmount, set LC_ALL=C so that
@@ -1114,8 +1115,8 @@ int runscript(int argc, char **argv)
 		eerror("%s: cannot run until sysvinit completes", applet);
 		if (mkdir("/dev/.rcboot", 0755) != 0 && errno != EEXIST)
 			eerrorx("%s: mkdir `/dev/.rcboot': %s", applet, strerror(errno));
-		prefix = rc_strcatpaths("/dev/.rcboot", applet, (char *) NULL);
-		symlink(service, prefix);
+		snprintf(exclusive, sizeof(exclusive), "/dev/.rcboot/%s", applet);
+		symlink(service, exclusive);
 		exit (EXIT_FAILURE);
 	}
 #endif

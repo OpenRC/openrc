@@ -633,6 +633,116 @@ static void do_coldplug(void)
 	printf ("%s\n", ecolor(ECOLOR_NORMAL));
 }
 
+static void do_newlevel(const char *newlevel)
+{
+	struct utsname uts;
+	const char *sys;
+#ifdef __linux__
+	char *cmd;
+#endif
+
+	if (strcmp(newlevel, RC_LEVEL_SYSINIT) == 0
+#ifndef PREFIX
+	    && RUNLEVEL &&
+	    (strcmp(RUNLEVEL, "S") == 0 ||
+	     strcmp(RUNLEVEL, "1") == 0)
+#endif
+	   )
+	{
+		/* OK, we're either in runlevel 1 or single user mode */
+
+		/* exec init-early.sh if it exists
+		 * This should just setup the console to use the correct
+		 * font. Maybe it should setup the keyboard too? */
+		if (exists(INITEARLYSH))
+			run_script(INITEARLYSH);
+
+		uname(&uts);
+		printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
+		       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
+		       ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
+#ifdef BRANDING
+		printf(BRANDING " (%s)", uts.machine);
+#else
+		printf("%s %s (%s)",
+		       uts.sysname,
+		       uts.release,
+		       uts.machine);
+#endif
+
+		if ((sys = rc_sys()))
+			printf(" [%s]", sys);
+
+		printf("%s\n\n", ecolor(ECOLOR_NORMAL));
+
+		if (! rc_yesno(getenv ("EINFO_QUIET")) &&
+		    rc_conf_yesno("rc_interactive"))
+			printf("Press %sI%s to enter interactive boot mode\n\n",
+			       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
+
+		setenv("RC_SOFTLEVEL", newlevel, 1);
+		rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, newlevel);
+		hook_out = RC_HOOK_RUNLEVEL_START_OUT;
+		run_script(INITSH);
+
+#ifdef __linux__
+		/* If we requested a softlevel, save it now */
+		set_ksoftlevel(NULL);
+		if ((cmd = proc_getent("softlevel"))) {
+			set_ksoftlevel(cmd);
+			free(cmd);
+		}
+#endif
+
+		/* Setup our coldplugged services now */
+		do_coldplug();
+
+		rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, newlevel);
+		hook_out = 0;
+
+		if (want_interactive())
+			mark_interactive();
+
+		exit(EXIT_SUCCESS);
+	} else if (strcmp(newlevel, RC_LEVEL_SINGLE) == 0) {
+#ifndef PREFIX
+		if (! RUNLEVEL ||
+		    (strcmp(RUNLEVEL, "S") != 0 &&
+		     strcmp(RUNLEVEL, "1") != 0))
+		{
+			/* Remember the current runlevel for when we come back */
+			set_ksoftlevel(runlevel);
+			single_user();
+		}
+#endif
+	} else if (strcmp(newlevel, RC_LEVEL_REBOOT) == 0) {
+		if (! RUNLEVEL ||
+		    strcmp(RUNLEVEL, "6") != 0)
+		{
+			rc_logger_close();
+			execl(SHUTDOWN, SHUTDOWN, "-r", "now", (char *) NULL);
+			eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
+				applet, strerror(errno));
+		}
+	} else if (strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0) {
+		if (! RUNLEVEL ||
+		    strcmp(RUNLEVEL, "0") != 0)
+		{
+			rc_logger_close();
+			execl(SHUTDOWN, SHUTDOWN,
+#ifdef __linux__
+			      "-h",
+#else
+			      "-p",
+#endif
+			      "now", (char *) NULL);
+			eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
+				applet, strerror(errno));
+		}
+	}
+}
+
+
 static bool runlevel_config(const char *service, const char *level)
 {
 	char *init = rc_service_resolve(service);
@@ -651,6 +761,140 @@ static bool runlevel_config(const char *service, const char *level)
 	return retval;
 }
 
+static void do_stop_services(const char *newlevel, bool going_down, bool parallel)
+{
+	pid_t pid;
+	RC_STRING *service, *svc1, *svc2;
+	RC_STRINGLIST *deporder, *tmplist;
+
+	if (! types_n) {
+		types_n = rc_stringlist_new();
+		rc_stringlist_add(types_n, "needsme");
+	}
+
+	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries)
+	{
+		if (rc_service_state(service->value) & RC_SERVICE_STOPPED)
+			continue;
+
+		/* We always stop the service when in these runlevels */
+		if (going_down) {
+			pid = rc_service_stop(service->value);
+			if (pid > 0 && ! parallel)
+				rc_waitpid(pid);
+			continue;
+		}
+
+		/* If we're in the start list then don't bother stopping us */
+		TAILQ_FOREACH(svc1, start_services, entries)
+			if (strcmp (svc1->value, service->value) == 0)
+				break;
+
+		if (svc1) {
+			if (newlevel && strcmp(runlevel, newlevel) != 0) {
+				/* So we're in the start list. But we should
+				 * be stopped if we have a runlevel
+				 * configuration file for either the current
+				 * or next so we use the correct one. */
+				if (! runlevel_config(service->value, runlevel) &&
+				    ! runlevel_config(service->value, newlevel))
+					continue;
+			}
+			else
+				continue;
+		}
+
+		/* We got this far! Or last check is to see if any any service
+		 * that going to be started depends on us */
+		if (! svc1) {
+			tmplist = rc_stringlist_new();
+			rc_stringlist_add(tmplist, service->value);
+			deporder = rc_deptree_depends(deptree, types_n, tmplist,
+						      runlevel, RC_DEP_STRICT);
+			rc_stringlist_free(tmplist);
+			svc2 = NULL;
+			TAILQ_FOREACH (svc1, deporder, entries) {
+				TAILQ_FOREACH(svc2, start_services, entries)
+					if (strcmp (svc1->value, svc2->value) == 0)
+						break;
+				if (svc2)
+					break;
+			}
+			rc_stringlist_free(deporder);
+
+			if (svc2)
+				continue;
+		}
+
+		/* After all that we can finally stop the blighter! */
+		pid = rc_service_stop(service->value);
+		if (pid > 0) {
+			add_pid(pid);
+			if (! parallel) {
+				rc_waitpid(pid);
+				remove_pid(pid);
+			}
+		}
+	}
+}
+
+static void do_start_services(bool parallel)
+{
+	RC_STRING *service;
+	pid_t pid;
+	bool interactive = false;
+
+	if (! rc_yesno(getenv("EINFO_QUIET")))
+		interactive = exists(INTERACTIVE);
+
+	TAILQ_FOREACH(service, start_services, entries) {
+		if (rc_service_state(service->value) & RC_SERVICE_STOPPED) {
+			if (! interactive)
+				interactive = want_interactive();
+
+			if (interactive) {
+interactive_retry:
+				printf("\n");
+				einfo("About to start the service %s",
+				      service->value);
+				eindent();
+				einfo("1) Start the service\t\t2) Skip the service");
+				einfo("3) Continue boot process\t\t4) Exit to shell");
+				eoutdent();
+interactive_option:
+				switch (read_key(true)) {
+				case '1': break;
+				case '2': continue;
+				case '3': interactive = false; break;
+				case '4': sulogin(true); goto interactive_retry;
+				default: goto interactive_option;
+				}
+			}
+
+			pid = rc_service_start(service->value);
+			
+			/* Remember the pid if we're running in parallel */
+			if (pid > 0) {
+				add_pid(pid);
+
+				if (! parallel) {
+					rc_waitpid(pid);
+					remove_pid(pid);
+				}
+			}
+		}
+	}
+
+	/* Store our interactive status for boot */
+	if (interactive && strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0)
+		mark_interactive();
+	else {
+		if (exists(INTERACTIVE))
+			unlink(INTERACTIVE);
+	}
+
+}
+
 #include "_usage.h"
 #define getoptstring "o:" getoptstring_COMMON
 static const struct option longopts[] = {
@@ -666,25 +910,18 @@ static const char * const longopts_help[] = {
 int main(int argc, char **argv)
 {
 	const char *bootlevel = NULL;
-	const char *sys = rc_sys();
 	char *newlevel = NULL;
 	RC_STRINGLIST *deporder = NULL;
 	RC_STRINGLIST *tmplist;
 	RC_STRING *service;
 	bool going_down = false;
-	bool interactive = false;
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	char ksoftbuffer [PATH_MAX];
 	char pidstr[6];
 	int opt;
 	bool parallel;
 	int regen = 0;
-	pid_t pid;
-	RC_STRING *svc1;
-	RC_STRING *svc2 = NULL;
-	struct utsname uts;
 #ifdef __linux__
-	char *cmd;
 	char *proc;
 	char *p;
 	char *token;
@@ -698,8 +935,8 @@ int main(int argc, char **argv)
 
 	if (argc > 1 && (strcmp(argv[1], "--version") == 0)) {
 		printf("%s (OpenRC", applet);
-		if (sys)
-			printf(" [%s]", sys);
+		if ((bootlevel = rc_sys()))
+			printf(" [%s]", bootlevel);
 		printf(") " VERSION
 #ifdef BRANDING
 		       " (" BRANDING ")"
@@ -765,8 +1002,6 @@ int main(int argc, char **argv)
 	signal_setup(SIGUSR1, handle_signal);
 	signal_setup(SIGWINCH, handle_signal);
 
-	if (! rc_yesno(getenv("EINFO_QUIET")))
-		interactive = exists(INTERACTIVE);
 	rc_plugin_load();
 
 	/* Check we're in the runlevel requested, ie from
@@ -774,107 +1009,8 @@ int main(int argc, char **argv)
 	 * rc shutdown
 	 * rc reboot
 	 */
-	if (newlevel) {
-		if (strcmp(newlevel, RC_LEVEL_SYSINIT) == 0
-#ifndef PREFIX
-		    && RUNLEVEL &&
-		    (strcmp(RUNLEVEL, "S") == 0 ||
-		     strcmp(RUNLEVEL, "1") == 0)
-#endif
-		   )
-		{
-			/* OK, we're either in runlevel 1 or single user mode */
-
-			/* exec init-early.sh if it exists
-			 * This should just setup the console to use the correct
-			 * font. Maybe it should setup the keyboard too? */
-			if (exists(INITEARLYSH))
-				run_script(INITEARLYSH);
-
-			uname(&uts);
-			printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
-			       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
-			       ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
-#ifdef BRANDING
-			printf(BRANDING " (%s)", uts.machine);
-#else
-			printf("%s %s (%s)",
-			       uts.sysname,
-			       uts.release,
-			       uts.machine);
-#endif
-
-			if (sys)
-				printf(" [%s]", sys);
-
-			printf("%s\n\n", ecolor(ECOLOR_NORMAL));
-
-			if (! rc_yesno(getenv ("EINFO_QUIET")) &&
-			    rc_conf_yesno("rc_interactive"))
-				printf("Press %sI%s to enter interactive boot mode\n\n",
-				       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
-
-			setenv("RC_SOFTLEVEL", newlevel, 1);
-			rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, newlevel);
-			hook_out = RC_HOOK_RUNLEVEL_START_OUT;
-			run_script(INITSH);
-
-#ifdef __linux__
-			/* If we requested a softlevel, save it now */
-			set_ksoftlevel(NULL);
-			if ((cmd = proc_getent("softlevel"))) {
-				set_ksoftlevel(cmd);
-				free(cmd);
-			}
-#endif
-
-			/* Setup our coldplugged services now */
-			do_coldplug();
-
-			rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, newlevel);
-			hook_out = 0;
-
-			if (want_interactive())
-				mark_interactive();
-
-			exit(EXIT_SUCCESS);
-		} else if (strcmp(newlevel, RC_LEVEL_SINGLE) == 0) {
-#ifndef PREFIX
-			if (! RUNLEVEL ||
-			    (strcmp(RUNLEVEL, "S") != 0 &&
-			     strcmp(RUNLEVEL, "1") != 0))
-			{
-				/* Remember the current runlevel for when we come back */
-				set_ksoftlevel(runlevel);
-				single_user();
-			}
-#endif
-		} else if (strcmp(newlevel, RC_LEVEL_REBOOT) == 0) {
-			if (! RUNLEVEL ||
-			    strcmp(RUNLEVEL, "6") != 0)
-			{
-				rc_logger_close();
-				execl(SHUTDOWN, SHUTDOWN, "-r", "now", (char *) NULL);
-				eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
-					applet, strerror(errno));
-			}
-		} else if (strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0) {
-			if (! RUNLEVEL ||
-			    strcmp(RUNLEVEL, "0") != 0)
-			{
-				rc_logger_close();
-				execl(SHUTDOWN, SHUTDOWN,
-#ifdef __linux__
-				      "-h",
-#else
-				      "-p",
-#endif
-				      "now", (char *) NULL);
-				eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
-					applet, strerror(errno));
-			}
-		}
-	}
+	if (newlevel)
+		do_newlevel(newlevel);
 
 	/* Now we start handling our children */
 	signal_setup(SIGCHLD, handle_signal);
@@ -946,15 +1082,23 @@ int main(int argc, char **argv)
 	 * correct order for stopping them */
 	stop_services = rc_services_in_state(RC_SERVICE_STARTED);
 	tmplist = rc_services_in_state(RC_SERVICE_INACTIVE);
-	TAILQ_CONCAT(stop_services, tmplist, entries);
-	free(tmplist);
+	if (tmplist) {
+		if (stop_services) {
+			TAILQ_CONCAT(stop_services, tmplist, entries);
+			free(tmplist);
+		} else
+			stop_services = tmplist;
+	}
 	tmplist = rc_services_in_state(RC_SERVICE_STARTING);
-	TAILQ_CONCAT(stop_services, tmplist, entries);
-	free(tmplist);
+	if (tmplist) {
+		if (stop_services) {
+			TAILQ_CONCAT(stop_services, tmplist, entries);
+			free(tmplist);
+		} else
+			stop_services = tmplist;
+	}
 	rc_stringlist_sort(&stop_services);
 
-	types_n = rc_stringlist_new();
-	rc_stringlist_add(types_n, "needsme");
 
 	types_nua = rc_stringlist_new();
 	rc_stringlist_add(types_nua, "ineed");
@@ -976,12 +1120,18 @@ int main(int argc, char **argv)
 		start_services = rc_services_in_runlevel(bootlevel);
 		if (strcmp (newlevel ? newlevel : runlevel, bootlevel) != 0) {
 			tmplist = rc_services_in_runlevel(newlevel ? newlevel : runlevel);
-			TAILQ_CONCAT(start_services, tmplist, entries);
-			free(tmplist);
+			if (tmplist) {
+				if (start_services) {
+					TAILQ_CONCAT(start_services, tmplist, entries);
+					free(tmplist);
+				} else
+					start_services = tmplist;
+			}
 		}
 
-		TAILQ_FOREACH(service, coldplugged_services, entries)
-			rc_stringlist_addu(start_services, service->value);
+		if (coldplugged_services)
+			TAILQ_FOREACH(service, coldplugged_services, entries)
+				rc_stringlist_addu(start_services, service->value);
 	}
 
 	/* Save our softlevel now */
@@ -991,69 +1141,8 @@ int main(int argc, char **argv)
 	parallel = rc_conf_yesno("rc_parallel");
 
 	/* Now stop the services that shouldn't be running */
-	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries) {
-		if (rc_service_state(service->value) & RC_SERVICE_STOPPED)
-			continue;
-
-		/* We always stop the service when in these runlevels */
-		if (going_down) {
-			pid = rc_service_stop(service->value);
-			if (pid > 0 && ! parallel)
-				rc_waitpid(pid);
-			continue;
-		}
-
-		/* If we're in the start list then don't bother stopping us */
-		TAILQ_FOREACH(svc1, start_services, entries)
-			if (strcmp (svc1->value, service->value) == 0)
-				break;
-
-		if (svc1) {
-			if (newlevel && strcmp(runlevel, newlevel) != 0) {
-				/* So we're in the start list. But we should
-				 * be stopped if we have a runlevel
-				 * configuration file for either the current
-				 * or next so we use the correct one. */
-				if (! runlevel_config(service->value, runlevel) &&
-						! runlevel_config(service->value, newlevel))
-					continue;
-			}
-			else
-				continue;
-		}
-
-		/* We got this far! Or last check is to see if any any service
-		 * that going to be started depends on us */
-		if (! svc1) {
-			tmplist = rc_stringlist_new();
-			rc_stringlist_add(tmplist, service->value);
-			deporder = rc_deptree_depends(deptree, types_n, tmplist,
-					runlevel, RC_DEP_STRICT);
-			rc_stringlist_free(tmplist);
-			svc2 = NULL;
-			TAILQ_FOREACH (svc1, deporder, entries) {
-				TAILQ_FOREACH(svc2, start_services, entries)
-					if (strcmp (svc1->value, svc2->value) == 0)
-						break;
-				if (svc2)
-					break;
-			}
-			rc_stringlist_free(deporder);
-
-			if (svc2)
-				continue;
-		}
-
-		/* After all that we can finally stop the blighter! */
-		pid = rc_service_stop(service->value);
-		if (pid > 0) {
-			add_pid(pid);
-			if (! parallel) {
-				rc_waitpid(pid);
-				remove_pid(pid);
-			}
-		}
-	}
+	if (stop_services)
+		do_stop_services(newlevel, parallel, going_down);
 
 	/* Wait for our services to finish */
 	wait_for_services();
@@ -1094,15 +1183,18 @@ int main(int argc, char **argv)
 	hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 
 	/* Re-add our coldplugged services if they stopped */
-	TAILQ_FOREACH(service, coldplugged_services, entries)
-		rc_service_mark(service->value, RC_SERVICE_COLDPLUGGED);
+	if (coldplugged_services)
+		TAILQ_FOREACH(service, coldplugged_services, entries)
+			rc_service_mark(service->value, RC_SERVICE_COLDPLUGGED);
 
 	/* Order the services to start */
-	rc_stringlist_sort(&start_services);
-	deporder = rc_deptree_depends(deptree, types_nua, start_services,
+	if (start_services) {
+		rc_stringlist_sort(&start_services);
+		deporder = rc_deptree_depends(deptree, types_nua, start_services,
 				      runlevel, depoptions | RC_DEP_START);
-	rc_stringlist_free(start_services);
-	start_services = deporder;
+		rc_stringlist_free(start_services);
+		start_services = deporder;
+	}
 
 #ifdef __linux__
 	/* mark any services skipped as started */
@@ -1116,46 +1208,12 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	TAILQ_FOREACH(service, start_services, entries) {
-		if (rc_service_state(service->value) & RC_SERVICE_STOPPED) {
-			if (! interactive)
-				interactive = want_interactive();
+	if (start_services) {
+		do_start_services(parallel);
 
-			if (interactive) {
-interactive_retry:
-				printf("\n");
-				einfo("About to start the service %s",
-				      service->value);
-				eindent();
-				einfo("1) Start the service\t\t2) Skip the service");
-				einfo("3) Continue boot process\t\t4) Exit to shell");
-				eoutdent();
-interactive_option:
-				switch (read_key(true)) {
-				case '1': break;
-				case '2': continue;
-				case '3': interactive = false; break;
-				case '4': sulogin(true); goto interactive_retry;
-				default: goto interactive_option;
-				}
-			}
-
-			pid = rc_service_start(service->value);
-			
-			/* Remember the pid if we're running in parallel */
-			if (pid > 0) {
-				add_pid(pid);
-
-				if (! parallel) {
-					rc_waitpid(pid);
-					remove_pid(pid);
-				}
-			}
-		}
+		/* Wait for our services to finish */
+		wait_for_services();
 	}
-
-	/* Wait for our services to finish */
-	wait_for_services();
 
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, runlevel);
 	hook_out = 0;
@@ -1171,14 +1229,6 @@ interactive_option:
 		}
 	}
 #endif
-
-	/* Store our interactive status for boot */
-	if (interactive && strcmp(runlevel, bootlevel) == 0)
-		mark_interactive();
-	else {
-		if (exists(INTERACTIVE))
-			unlink(INTERACTIVE);
-	}
 
 	/* If we're in the boot runlevel and we regenerated our dependencies
 	 * we need to delete them so that they are regenerated again in the

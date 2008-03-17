@@ -31,6 +31,30 @@
 
 #include "librc.h"
 
+#ifdef __GLIBC__
+#  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
+static size_t strlcpy(char *dst, const char *src, size_t size)
+{
+	const char *s = src;
+	size_t n = size;
+
+	if (n && --n)
+		do {
+			if (! (*dst++ = *src++))
+				break;
+		} while (--n);
+
+	if (! n) {
+		if (size)
+			*dst = '\0';
+		while (*src++);
+	}
+
+	return src - s - 1;
+}
+#  endif
+#endif
+
 #if defined(__linux__)
 static bool pid_is_cmd(pid_t pid, const char *cmd)
 {
@@ -289,12 +313,12 @@ static bool _match_daemon(const char *path, const char *file,
 			  RC_STRINGLIST *match)
 {
 	char *line;
-	char *ffile = rc_strcatpaths(path, file, (char *) NULL);
+	char ffile[PATH_MAX];
 	FILE *fp;
 	RC_STRING *m;
 
+	snprintf(ffile, sizeof(ffile), "%s/%s", path, file);
 	fp = fopen(ffile, "r");
-	free(ffile);
 
 	if (! fp)
 		return false;
@@ -352,16 +376,15 @@ static RC_STRINGLIST *_match_list(const char* const* argv,
 bool rc_service_daemon_set(const char *service, const char *const *argv,
 			   const char *name, const char *pidfile, bool started)
 {
-	char *dirpath;
-	char *file = NULL;
+	char dirpath[PATH_MAX];
+	char file[PATH_MAX]; 
 	int nfiles = 0;
-	char *oldfile = NULL;
+	char oldfile[PATH_MAX] = { '\0' };
 	bool retval = false;
 	DIR *dp;
 	struct dirent *d;
 	RC_STRINGLIST *match;
 	int i = 0;
-	char buffer[10];
 	FILE *fp;
 
 	if (!(argv && *argv) && ! name && ! pidfile) {
@@ -369,40 +392,40 @@ bool rc_service_daemon_set(const char *service, const char *const *argv,
 		return false;
 	}
 
-	dirpath = rc_strcatpaths(RC_SVCDIR, "daemons",
-				 basename_c(service), (char *) NULL);
-
-	match = _match_list(argv, name, pidfile);
+	snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
+		 basename_c(service));
 
 	/* Regardless, erase any existing daemon info */
 	if ((dp = opendir(dirpath))) {
+		match = _match_list(argv, name, pidfile);
 		while ((d = readdir(dp))) {
 			if (d->d_name[0] == '.')
 				continue;
-			file = rc_strcatpaths(dirpath, d->d_name, (char *) NULL);
+
+			snprintf(file, sizeof(file), "%s/%s",
+				 dirpath, d->d_name);
 			nfiles++;
 
-			if (! oldfile) {
+			if (! *oldfile) {
 				if (_match_daemon(dirpath, d->d_name, match)) {
-					unlink (file);
-					oldfile = file;
+					unlink(file);
+					strlcpy(oldfile, file, sizeof(oldfile));
 					nfiles--;
 				}
 			} else {
 				rename(file, oldfile);
-				free(oldfile);
-				oldfile = file;
+				strlcpy(oldfile, file, sizeof(oldfile));
 			}
 		}
-		free(file);
 		closedir(dp);
+		rc_stringlist_free(match);
 	}
 
 	/* Now store our daemon info */
 	if (started) {
 		if (mkdir(dirpath, 0755) == 0 || errno == EEXIST) {
-			snprintf(buffer, sizeof(buffer), "%03d", nfiles + 1);
-			file = rc_strcatpaths(dirpath, buffer, (char *) NULL);
+			snprintf(file, sizeof(file), "%s/%03d",
+				 dirpath, nfiles + 1);
 			if ((fp = fopen(file, "w"))) {
 				while (argv && argv[i]) {
 					fprintf(fp, "argv_%d=%s\n", i, argv[i]);
@@ -418,25 +441,19 @@ bool rc_service_daemon_set(const char *service, const char *const *argv,
 				fclose(fp);
 				retval = true;
 			}
-			free(file);
 		}
 	} else
 		retval = true;
-
-	rc_stringlist_free(match);
-	free(dirpath);
 
 	return retval;
 }
 librc_hidden_def(rc_service_daemon_set)
 
-bool
-rc_service_started_daemon (const char *service, const char *const *argv,
-			   int indx)
+bool rc_service_started_daemon(const char *service, const char *const *argv,
+			       int indx)
 {
-	char *dirpath;
-	char *file;
-	size_t l;
+	char dirpath[PATH_MAX];
+	char file[16];
 	RC_STRINGLIST *match;
 	bool retval = false;
 	DIR *dp;
@@ -445,17 +462,13 @@ rc_service_started_daemon (const char *service, const char *const *argv,
 	if (!service || !(argv && *argv))
 		return false;
 
-	dirpath = rc_strcatpaths(RC_SVCDIR, "daemons", basename_c(service),
-				 (char *) NULL);
-
+	snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
+		 basename_c(service));
 	match = _match_list(argv, NULL, NULL);
 
 	if (indx > 0) {
-		l = sizeof (char) * 10;
-		file = xmalloc(l);
-		snprintf(file, l, "%03d", indx);
+		snprintf(file, sizeof(file), "%03d", indx);
 		retval = _match_daemon(dirpath, file, match);
-		free(file);
 	} else {
 		if ((dp = opendir(dirpath))) {
 			while ((d = readdir(dp))) {
@@ -469,7 +482,6 @@ rc_service_started_daemon (const char *service, const char *const *argv,
 		}
 	}
 
-	free(dirpath);
 	rc_stringlist_free(match);
 	return retval;
 }
@@ -477,10 +489,10 @@ librc_hidden_def(rc_service_started_daemon)
 
 bool rc_service_daemons_crashed(const char *service)
 {
-	char *dirpath;
+	char dirpath[PATH_MAX];
 	DIR *dp;
 	struct dirent *d;
-	char *path;
+	char *path = dirpath;
 	FILE *fp;
 	char *line;
 	char **argv = NULL;
@@ -498,21 +510,19 @@ bool rc_service_daemons_crashed(const char *service)
 	RC_STRING *s;
 	size_t i;
 
-	dirpath = rc_strcatpaths(RC_SVCDIR, "daemons", basename_c(service),
-				 (char *) NULL);
+	path += snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
+			 basename_c(service));
 
-	if (! (dp = opendir(dirpath))) {
-		free(dirpath);
+	if (! (dp = opendir(dirpath)))
 		return false;
-	}
 
 	while ((d = readdir(dp))) {
 		if (d->d_name[0] == '.')
 			continue;
 
-		path = rc_strcatpaths(dirpath, d->d_name, (char *) NULL);
-		fp = fopen(path, "r");
-		free(path);
+		snprintf(path, sizeof(dirpath) - (path - dirpath), "/%s",
+			 d->d_name);
+		fp = fopen(dirpath, "r");
 		if (! fp)
 			break;
 
