@@ -840,7 +840,7 @@ librc_hidden_def(rc_services_in_runlevel)
 RC_STRINGLIST *rc_services_in_state(RC_SERVICE state)
 {
 	RC_STRINGLIST *services;
-	RC_STRINGLIST *list;
+	RC_STRINGLIST *list = NULL;
 	RC_STRINGLIST *dirs;
 	RC_STRING *d;
 	char dir[PATH_MAX];
@@ -935,7 +935,7 @@ librc_hidden_def(rc_service_delete)
 RC_STRINGLIST *rc_services_scheduled_by(const char *service)
 {
 	RC_STRINGLIST *dirs = ls_dir(RC_SVCDIR "/scheduled", 0);
-	RC_STRINGLIST *list;
+	RC_STRINGLIST *list = NULL;
 	RC_STRING *dir;
 	char file[PATH_MAX];
 

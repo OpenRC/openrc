@@ -238,7 +238,6 @@ RC_PIDLIST *rc_find_pids(const char *const *argv, const char *cmd,
 	RC_PID *pi;
 	pid_t p;
 	const char *const *arg;
-	int npids = 0;
 	int match;
 
 	if ((kd = kvm_openfiles(_KVM_PATH, _KVM_PATH,
