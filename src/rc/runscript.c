@@ -220,7 +220,7 @@ static bool in_control()
 	if (sighup)
 		return false;
 
-	if (! mtime_test || ! exists(mtime_test))
+	if (! *mtime_test || ! exists(mtime_test))
 		return false;
 
 	if (rc_service_state(applet) & RC_SERVICE_STOPPED)
@@ -840,9 +840,7 @@ static void svc_start(bool deps)
 	unlink_mtime_test();
 	hook_out = RC_HOOK_SERVICE_START_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_START_DONE, applet);
-
-	if (exclusive)
-		unlink(exclusive);
+	unlink(exclusive);
 
 	/* Now start any scheduled services */
 	services = rc_services_scheduled(service);
@@ -1019,8 +1017,7 @@ static void svc_stop(bool deps)
 	unlink_mtime_test();
 	hook_out = RC_HOOK_SERVICE_STOP_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_DONE, applet);
-	if (exclusive)
-		unlink(exclusive);
+	unlink(exclusive);
 	hook_out = 0;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
 }
