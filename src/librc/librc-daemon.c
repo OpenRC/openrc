@@ -311,7 +311,8 @@ librc_hidden_def(rc_find_pids)
 static bool _match_daemon(const char *path, const char *file,
 			  RC_STRINGLIST *match)
 {
-	char *line;
+	char *line = NULL;
+	size_t len = 0;
 	char ffile[PATH_MAX];
 	FILE *fp;
 	RC_STRING *m;
@@ -322,7 +323,7 @@ static bool _match_daemon(const char *path, const char *file,
 	if (! fp)
 		return false;
 
-	while ((line = rc_getline(fp))) {
+	while ((rc_getline(&line, &len, fp))) {
 		TAILQ_FOREACH(m, match, entries)
 			if (strcmp(line, m->value) == 0) {
 				TAILQ_REMOVE(match, m, entries);
@@ -332,6 +333,7 @@ static bool _match_daemon(const char *path, const char *file,
 			break;
 	}
 	fclose(fp);
+	free(line);
 	if (TAILQ_FIRST(match))
 		return false;
 	return true;
@@ -493,7 +495,8 @@ bool rc_service_daemons_crashed(const char *service)
 	struct dirent *d;
 	char *path = dirpath;
 	FILE *fp;
-	char *line;
+	char *line = NULL;
+	size_t len = 0;
 	char **argv = NULL;
 	char *exec = NULL;
 	char *name = NULL;
@@ -525,17 +528,13 @@ bool rc_service_daemons_crashed(const char *service)
 		if (! fp)
 			break;
 
-		while ((line = rc_getline(fp))) {
+		while ((rc_getline(&line, &len, fp))) {
 			p = line;
-			if ((token = strsep(&p, "=")) == NULL || ! p) {
-				free(line);
+			if ((token = strsep(&p, "=")) == NULL || ! p)
 				continue;
-			}
 
-			if (! *p) {
-				free(line);
+			if (! *p)
 				continue;
-			}
 
 			if (strncmp(token, "argv_", 5) == 0) {
 				if (! list)
@@ -551,11 +550,10 @@ bool rc_service_daemons_crashed(const char *service)
 				name = xstrdup(p);
 			} else if (strcmp(token, "pidfile") == 0) {
 				pidfile = xstrdup(p);
-				free(line);
 				break;
 			}
-			free(line);
 		}
+		free(line);
 		fclose(fp);
 
 		pid = 0;

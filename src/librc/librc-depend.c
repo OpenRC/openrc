@@ -121,7 +121,8 @@ RC_DEPTREE *rc_deptree_load(void)
 	RC_DEPTREE *deptree;
 	RC_DEPINFO *depinfo = NULL;
 	RC_DEPTYPE *deptype = NULL;
-	char *line;
+	char *line = NULL;
+	size_t len = 0;
 	char *type;
 	char *p;
 	char *e;
@@ -133,43 +134,43 @@ RC_DEPTREE *rc_deptree_load(void)
 	deptree = xmalloc(sizeof(*deptree));
 	STAILQ_INIT(deptree);
 
-	while ((line = rc_getline(fp)))
+	while ((rc_getline(&line, &len, fp)))
 	{
 		p = line;
 		e = strsep(&p, "_");
 		if (! e || strcmp(e, "depinfo") != 0)
-			goto next;
+			continue;
 
 		e = strsep (&p, "_");
 		if (! e || sscanf(e, "%d", &i) != 1)
-			goto next;
+			continue;
 
 		if (! (type = strsep(&p, "_=")))
-			goto next;
+			continue;
 
 		if (strcmp(type, "service") == 0)
 		{
 			/* Sanity */
 			e = get_shell_value(p);
 			if (! e || *e == '\0')
-				goto next;
+				continue;
 
 			depinfo = xmalloc(sizeof(*depinfo));
 			STAILQ_INIT(&depinfo->depends);
 			depinfo->service = xstrdup(e);
 			STAILQ_INSERT_TAIL(deptree, depinfo, entries);
 			deptype = NULL;
-			goto next;
+			continue;
 		}
 
 		e = strsep(&p, "=");
 		if (! e || sscanf(e, "%d", &i) != 1)
-			goto next;
+			continue;
 
 		/* Sanity */
 		e = get_shell_value(p);
 		if (! e || *e == '\0')
-			goto next;
+			continue;
 
 		if (! deptype || strcmp(deptype->type, type) != 0) {
 			deptype = xmalloc(sizeof(*deptype));
@@ -179,10 +180,9 @@ RC_DEPTREE *rc_deptree_load(void)
 		}
 
 		rc_stringlist_add(deptype->services, e);
-next:
-		free(line);
 	}
 	fclose(fp);
+	free(line);
 	
 	return deptree;
 }
@@ -724,14 +724,15 @@ bool rc_deptree_update(void)
 	RC_STRING *s;
 	RC_STRING *s2;
 	RC_DEPTYPE *provide;
-	char *line;
+	char *line = NULL;
+	size_t len = 0;
 	char *depend;
 	char *depends;
 	char *service;
 	char *type;
 	size_t i;
 	size_t k;
-	size_t len;
+	size_t l;
 	int retval = true;
 	const char *sys = rc_sys();
 	char *nosys;
@@ -750,14 +751,14 @@ bool rc_deptree_update(void)
 
 	config = rc_stringlist_new();
 
-	while ((line = rc_getline(fp)))
+	while ((rc_getline(&line, &len, fp)))
 	{
 		depends = line;
 		service = strsep(&depends, " ");
 		if (! service || ! *service)
-			goto next;
-		type = strsep(&depends, " ");
+			continue;
 
+		type = strsep(&depends, " ");
 		if (! depinfo || strcmp(depinfo->service, service) != 0) {
 			deptype = NULL;
 			depinfo = get_depinfo(deptree, service);
@@ -771,7 +772,7 @@ bool rc_deptree_update(void)
 		
 		/* We may not have any depends */
 		if (! type || ! depends)
-			goto next;
+			continue;
 
 		/* Get the type */
 		if (strcmp(type, "config") != 0) {
@@ -798,11 +799,11 @@ bool rc_deptree_update(void)
 			}
 
 			/* .sh files are not init scripts */
-			len = strlen(depend);
-			if (len > 2 &&
-			    depend[len - 3] == '.' &&
-			    depend[len - 2] == 's' &&
-			    depend[len - 1] == 'h')
+			l = strlen(depend);
+			if (l > 2 &&
+			    depend[l - 3] == '.' &&
+			    depend[l - 2] == 's' &&
+			    depend[l - 1] == 'h')
 				continue;
 			
 			/* Remove our dependency if instructed */
@@ -828,10 +829,8 @@ bool rc_deptree_update(void)
 					rc_stringlist_delete(dt->services, depend);
 			}
 		}
-
-next:
-		free(line);
 	}
+	free(line);
 	pclose(fp);
 
 	/* Phase 2 - if we're a special system, remove services that don't

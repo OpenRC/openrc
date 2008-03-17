@@ -49,6 +49,10 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 # include <ifaddrs.h>
 #endif
 
+#ifdef __linux__
+# include <asm/setup.h> /* for COMMAND_LINE_SIZE */
+#endif
+
 #include <errno.h>
 #include <dirent.h>
 #include <ctype.h>
@@ -176,7 +180,7 @@ static void cleanup(void)
 static char *proc_getent(const char *ent)
 {
 	FILE *fp;
-	char *proc;
+	char proc[COMMAND_LINE_SIZE];
 	char *p;
 	char *value = NULL;
 	int i;
@@ -189,9 +193,9 @@ static char *proc_getent(const char *ent)
 		return NULL;
 	}
 
-	if ((proc = rc_getline(fp)) &&
-	    (p = strstr(proc, ent)))
-	{
+	memset(proc, 0, sizeof(proc));
+	fgets(proc, sizeof(proc), fp);
+	if (*proc && (p = strstr(proc, ent))) {
 		i = p - proc;
 		if (i == '\0' || proc[i - 1] == ' ') {
 			p += strlen(ent);
@@ -201,7 +205,6 @@ static char *proc_getent(const char *ent)
 		}
 	} else
 		errno = ENOENT;
-	free(proc);
 	fclose(fp);
 
 	return value;

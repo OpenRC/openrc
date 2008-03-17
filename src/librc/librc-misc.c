@@ -54,37 +54,38 @@ bool rc_yesno (const char *value)
 }
 librc_hidden_def(rc_yesno)
 
-char *rc_getline (FILE *fp)
+ssize_t rc_getline (char **line, size_t *len, FILE *fp)
 {
-	char *line = NULL;
 	char *p;
-	size_t len = 0;
 	size_t last = 0;
 
-	if (feof (fp))
-		return NULL;
+	if (feof(fp))
+		return 0;
 
 	do {
-		len += BUFSIZ;
-		line = xrealloc (line, sizeof (char) * len);
-		p = line + last;
-		memset (p, 0, BUFSIZ);
-		fgets (p, BUFSIZ, fp);
-		last += strlen (p);
-	} while (! feof (fp) && line[last - 1] != '\n');
+		if (*line == NULL || last != 0) {
+			*len += BUFSIZ;
+			*line = xrealloc(*line, *len);
+		}
+		p = *line + last;
+		memset(p, 0, BUFSIZ);
+		fgets(p, BUFSIZ, fp);
+		last += strlen(p);
+	} while (! feof(fp) && (*line)[last - 1] != '\n');
 
 	/* Trim the trailing newline */
-	if (*line && line[--last] == '\n')
-		line[last] = '\0';
+	if (**line && (*line)[last - 1] == '\n')
+		(*line)[last - 1] = '\0';
 
-	return line;
+	return last;
 }
 librc_hidden_def(rc_getline)
 
 RC_STRINGLIST *rc_config_list(const char *file)
 {
 	FILE *fp;
-	char *buffer;
+	char *buffer = NULL;
+	size_t len = 0;
 	char *p;
 	char *token;
 	RC_STRINGLIST *list = NULL;
@@ -92,7 +93,8 @@ RC_STRINGLIST *rc_config_list(const char *file)
 	if (!(fp = fopen(file, "r")))
 		return NULL;
 
-	while ((p = buffer = rc_getline(fp))) {
+	while ((rc_getline(&buffer, &len, fp))) {
+		p = buffer;
 		/* Strip leading spaces/tabs */
 		while ((*p == ' ') || (*p == '\t'))
 			p++;
@@ -111,9 +113,9 @@ RC_STRINGLIST *rc_config_list(const char *file)
 				rc_stringlist_add(list, token);
 			}
 		}
-		free(buffer);
 	}
 	fclose(fp);
+	free(buffer);
 
 	return list;
 }

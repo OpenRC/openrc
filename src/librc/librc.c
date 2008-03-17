@@ -166,7 +166,8 @@ static bool rm_dir(const char *pathname, bool top)
 static bool file_regex(const char *file, const char *regex)
 {
 	FILE *fp;
-	char *line;
+	char *line = NULL;
+	size_t len = 0;
 	regex_t re;
 	bool retval = false;
 	int result;
@@ -183,14 +184,14 @@ static bool file_regex(const char *file, const char *regex)
 		return false;
 	}
 
-	while ((line = rc_getline(fp))) {
+	while ((rc_getline(&line, &len, fp))) {
 		if (regexec(&re, line, 0, NULL, 0) == 0)
 			retval = true;
-		free(line);
 		if (retval)
 			break;
 	}
 	fclose(fp);
+	free(line);
 	regfree(&re);
 
 	return retval;
@@ -401,6 +402,7 @@ RC_STRINGLIST *rc_service_extra_commands(const char *service)
 	char *svc;
 	char *cmd = NULL;
 	char *buffer = NULL;
+	size_t len = 0;
 	RC_STRINGLIST *commands = NULL;
 	char *token;
 	char *p;
@@ -417,7 +419,8 @@ RC_STRINGLIST *rc_service_extra_commands(const char *service)
 	free(svc);
 
 	if ((fp = popen(cmd, "r"))) {
-		p = buffer = rc_getline(fp);
+		rc_getline(&buffer, &len, fp);
+		p = buffer;
 		while ((token = strsep(&p, " "))) {
 			if (! commands)
 				commands = rc_stringlist_new();
@@ -437,6 +440,7 @@ char *rc_service_description(const char *service, const char *option)
 	char *svc;
 	char *cmd;
 	char *desc = NULL;
+	size_t len = 0;
 	FILE *fp;
 	size_t l;
 
@@ -451,7 +455,7 @@ char *rc_service_description(const char *service, const char *option)
 	snprintf(cmd, l, DESCSTR, svc, option ? "_" : "", option);
 	free(svc);
 	if ((fp = popen(cmd, "r"))) {
-		desc = rc_getline(fp);
+		rc_getline(&desc, &len, fp);
 		pclose(fp);
 	}
 	free(cmd);
@@ -633,12 +637,13 @@ char *rc_service_value_get(const char *service, const char *option)
 {
 	FILE *fp;
 	char *line = NULL;
+	size_t len = 0;
 	char file[PATH_MAX];
 
 	snprintf(file, sizeof(file), RC_SVCDIR "/options/%s/%s",
 		 service, option);
 	if ((fp = fopen(file, "r"))) {
-		line = rc_getline(fp);
+		rc_getline(&line, &len, fp);
 		fclose(fp);
 	}
 

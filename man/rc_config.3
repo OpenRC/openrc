@@ -22,31 +22,22 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Mar 16, 2008
+.Dd Mar 17, 2008
 .Dt RC_CONFIG 3 SMM
 .Os OpenRC
 .Sh NAME
-.Nm rc_getline , rc_config_list , rc_config_load , rc_config_value , rc_yesno
+.Nm rc_config_list , rc_config_load , rc_config_value , rc_yesno
 .Nd functions to query OpenRC service configurations
 .Sh LIBRARY
 Run Command library (librc, -lrc)
 .Sh SYNOPSIS
 .In rc.h
-.Ft "char *" Fn rc_getline "FILE *fp"
 .Ft "RC_STRINGLIST *" Fn rc_config_list "const char *file"
 .Ft "RC_STRINGLIST *" Fn rc_config_load "const char *file"
 .Ft "char *" Fn rc_config_value "const char *const *list" "const char *entry"
 .Ft bool Fn rc_yesno "const char *value"
 .Sh DESCRIPTION
 These functions provide an easy means of querying OpenRC configuration files.
-.Pp
-.Fn rc_getline
-expands it's buffer using
-.Fn malloc
-until it has read a whole line from the file or EOF.
-Trailing newlines are removed and the buffer is returned. Any functions that
-read from files should use this function to avoid any potential overflows and
-to ensure that arbitary long lines are read.
 .Pp
 .Fn rc_config_list
 returns a list of non comment lines in

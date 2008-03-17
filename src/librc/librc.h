@@ -71,6 +71,8 @@
 #define librc_hidden_proto(x) hidden_proto(x)
 #define librc_hidden_def(x) hidden_def(x)
 
+ssize_t rc_getline(char **, size_t *, FILE *);
+
 librc_hidden_proto(rc_config_list)
 librc_hidden_proto(rc_config_load)
 librc_hidden_proto(rc_config_value)

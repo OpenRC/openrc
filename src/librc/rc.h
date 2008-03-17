@@ -378,10 +378,6 @@ int rc_plugin_hook(RC_HOOK, const char *);
  * variables they wish. Variables should be separated by NULLs. */
 extern FILE *rc_environ_fd;
 
-/*! @name Configuration
- * These functions help to deal with shell based configuration files */
-/*! Return a line from a file, stripping the trailing newline. */
-char *rc_getline(FILE *);
 
 /*! Return a NULL terminated list of non comment lines from a file. */
 RC_STRINGLIST *rc_config_list(const char *);
