@@ -185,6 +185,8 @@ int rc_status (int argc, char **argv)
 	TAILQ_FOREACH(l, levels, entries) {
 		print_level(l->value);
 		services = rc_services_in_runlevel(l->value);
+		if (! services)
+			continue;
 		if (deptree) {
 			if (! types) {
 				types = rc_stringlist_new();

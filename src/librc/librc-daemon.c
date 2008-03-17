@@ -506,7 +506,7 @@ bool rc_service_daemons_crashed(const char *service)
 	char *p;
 	char *token;
 	bool retval = false;
-	RC_STRINGLIST *list;
+	RC_STRINGLIST *list = NULL;
 	RC_STRING *s;
 	size_t i;
 
@@ -526,8 +526,6 @@ bool rc_service_daemons_crashed(const char *service)
 		if (! fp)
 			break;
 
-		list = rc_stringlist_new();
-
 		while ((line = rc_getline(fp))) {
 			p = line;
 			if ((token = strsep(&p, "=")) == NULL || ! p) {
@@ -541,6 +539,8 @@ bool rc_service_daemons_crashed(const char *service)
 			}
 
 			if (strncmp(token, "argv_", 5) == 0) {
+				if (! list)
+					list = rc_stringlist_new();
 				rc_stringlist_add(list, p);
 			} else if (strcmp(token, "exec") == 0) {
 				if (exec)
@@ -551,9 +551,9 @@ bool rc_service_daemons_crashed(const char *service)
 					free(name);
 				name = xstrdup(p);
 			} else if (strcmp(token, "pidfile") == 0) {
-				if (pidfile)
-					free(pidfile);
 				pidfile = xstrdup(p);
+				free(line);
+				break;
 			}
 			free(line);
 		}
@@ -561,73 +561,68 @@ bool rc_service_daemons_crashed(const char *service)
 
 		pid = 0;
 		if (pidfile) {
-			if (! exists(pidfile)) {
-				retval = true;
-				break;
-			}
-
-			if ((fp = fopen(pidfile, "r")) == NULL) {
-				retval = true;
-				break;
-			}
-
-			if (fscanf(fp, "%d", &pid) != 1) {
+			retval = true;
+			if ((fp = fopen(pidfile, "r"))) {
+				if (fscanf(fp, "%d", &pid) == 1)
+					retval = false;
+				
 				fclose (fp);
-				retval = true;
-				break;
 			}
-
-			fclose(fp);
 			free(pidfile);
 			pidfile = NULL;
 
 			/* We have the pid, so no need to match on name */
-			rc_stringlist_free(list);
-			list = NULL;
-			free (exec);
-			exec = NULL;
 			free (name);
 			name = NULL;
 		} else {
-			if (exec && ! TAILQ_FIRST(list)) {
-				rc_stringlist_add(list, exec);
-			}
-			free(exec);
-			exec = NULL;
+			if (exec) {
+				if (! list)
+					list = rc_stringlist_new();
+				if (! TAILQ_FIRST(list))
+					rc_stringlist_add(list, exec);
 
-			/* We need to flatten our linked list into an array */
-			i = 0;
-			TAILQ_FOREACH(s, list, entries)
-				i++;
-			argv = xmalloc(sizeof(char *) * (i + 1));
-			i = 0;
-			TAILQ_FOREACH(s, list, entries)
-				argv[i++] = s->value;
-			argv[i] = '\0';
+				free(exec);
+				exec = NULL;
+			}
+
+			if (list) {
+				/* We need to flatten our linked list into an array */
+				i = 0;
+				TAILQ_FOREACH(s, list, entries)
+					i++;
+				argv = xmalloc(sizeof(char *) * (i + 1));
+				i = 0;
+				TAILQ_FOREACH(s, list, entries)
+					argv[i++] = s->value;
+				argv[i] = '\0';
+			}
 		}
 
-		if ((pids = rc_find_pids((const char *const *)argv,
-					 name, 0, pid)) == NULL)
-		{
-			p1 = LIST_FIRST(pids);
-			while (p1) {
-				p2 = LIST_NEXT(p1, entries);
-				free(p1);
-				p1 = p2;
-			}
-			free(pids);
-			retval = true;
+		if (! retval) {
+			if ((pids = rc_find_pids((const char *const *)argv,
+						 name, 0, pid)))
+			{
+				p1 = LIST_FIRST(pids);
+				while (p1) {
+					p2 = LIST_NEXT(p1, entries);
+					free(p1);
+					p1 = p2;
+				}
+				free(pids);
+			} else
+				retval = true;
 		}
+		rc_stringlist_free(list);
+		list = NULL;
 		free(argv);
 		argv = NULL;
-		rc_stringlist_free(list);
+		free(exec);
+		exec = NULL;
 		free(name);
 		name = NULL;
 		if (retval)
 			break;
 	}
-
-	free(dirpath);
 	closedir(dp);
 
 	return retval;

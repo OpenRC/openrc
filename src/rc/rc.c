@@ -778,7 +778,7 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 			continue;
 
 		/* We always stop the service when in these runlevels */
-		if (going_down) {
+		if (going_down || ! start_services) {
 			pid = rc_service_stop(service->value);
 			if (pid > 0 && ! parallel)
 				rc_waitpid(pid);
@@ -1097,18 +1097,20 @@ int main(int argc, char **argv)
 		} else
 			stop_services = tmplist;
 	}
-	rc_stringlist_sort(&stop_services);
-
+	if (stop_services)
+		rc_stringlist_sort(&stop_services);
 
 	types_nua = rc_stringlist_new();
 	rc_stringlist_add(types_nua, "ineed");
 	rc_stringlist_add(types_nua, "iuse");
 	rc_stringlist_add(types_nua, "iafter");
 
-	tmplist = rc_deptree_depends(deptree, types_nua, stop_services,
-				     runlevel, depoptions | RC_DEP_STOP);
-	rc_stringlist_free(stop_services);
-	stop_services = tmplist;
+	if (stop_services) {
+		tmplist = rc_deptree_depends(deptree, types_nua, stop_services,
+				runlevel, depoptions | RC_DEP_STOP);
+		rc_stringlist_free(stop_services);
+		stop_services = tmplist;
+	}
 
 	/* Load our list of coldplugged services */
 	coldplugged_services = rc_services_in_state(RC_SERVICE_COLDPLUGGED);

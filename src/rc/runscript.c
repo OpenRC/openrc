@@ -694,14 +694,14 @@ static void svc_start(bool deps)
 		depoptions |= RC_DEP_STRICT;
 
 	if (deps) {
-		if (! deptree && ((deptree = _rc_deptree_load (NULL)) == NULL))
+		if (! deptree && ((deptree = _rc_deptree_load(NULL)) == NULL))
 			eerrorx("failed to load deptree");
 
 		if (! types_b)
 			setup_types();
 
 		services = rc_deptree_depends(deptree, types_b, applet_list,
-					      runlevel, 0);
+				runlevel, 0);
 		if (services && TAILQ_FIRST(services)) {
 			eerrorn("ERROR: `%s' needs ", applet);
 			first = true;
@@ -718,9 +718,9 @@ static void svc_start(bool deps)
 		services = NULL;
 
 		need_services = rc_deptree_depends(deptree, types_n, applet_list,
-						   runlevel, depoptions);
+				runlevel, depoptions);
 		use_services = rc_deptree_depends(deptree, types_nu, applet_list,
-						  runlevel, depoptions);
+				runlevel, depoptions);
 
 		if (! rc_runlevel_starting() && use_services)
 			TAILQ_FOREACH(svc, use_services, entries)
@@ -732,88 +732,90 @@ static void svc_start(bool deps)
 
 		/* Now wait for them to start */
 		services = rc_deptree_depends(deptree, types_nua, applet_list,
-					      runlevel, depoptions);
+				runlevel, depoptions);
 
-		/* We use tmplist to hold our scheduled by list */
-		tmplist = NULL;
-		TAILQ_FOREACH(svc, services, entries) {
-			RC_SERVICE svcs = rc_service_state(svc->value);
-			if (svcs & RC_SERVICE_STARTED)
-				continue;
-
-			/* Don't wait for services which went inactive but are now in
-			 * starting state which we are after */
-			if (svcs & RC_SERVICE_STARTING &&
-			    svcs & RC_SERVICE_WASINACTIVE) {
-				TAILQ_FOREACH(svc2, use_services, entries) {
-					if (strcmp (svc->value, svc2->value) == 0) 
-						break;
-					}
-				if (! svc2)
+		if (services) {
+			/* We use tmplist to hold our scheduled by list */
+			tmplist = NULL;
+			TAILQ_FOREACH(svc, services, entries) {
+				RC_SERVICE svcs = rc_service_state(svc->value);
+				if (svcs & RC_SERVICE_STARTED)
 					continue;
-			}
 
-			if (! svc_wait(svc->value))
-				eerror ("%s: timed out waiting for %s",
-					applet, svc->value);
-			if (! need_services)
-				continue;
-			if ((svcs = rc_service_state(svc->value)) & RC_SERVICE_STARTED)
-				continue;
-			TAILQ_FOREACH(svc2, need_services, entries) {
-				if (strcmp (svc->value, svc2->value) == 0) {
-					if (svcs & RC_SERVICE_INACTIVE ||
-					    svcs & RC_SERVICE_WASINACTIVE)
-					{
-					    if (! tmplist)
-					    	tmplist = rc_stringlist_new();
-					    rc_stringlist_add(tmplist, svc->value);
-					} else
-						eerrorx("ERROR: cannot start %s as"
-							" %s would not start",
+				/* Don't wait for services which went inactive but are now in
+				 * starting state which we are after */
+				if (svcs & RC_SERVICE_STARTING &&
+						svcs & RC_SERVICE_WASINACTIVE) {
+					TAILQ_FOREACH(svc2, use_services, entries) {
+						if (strcmp (svc->value, svc2->value) == 0) 
+							break;
+					}
+					if (! svc2)
+						continue;
+				}
+
+				if (! svc_wait(svc->value))
+					eerror ("%s: timed out waiting for %s",
 							applet, svc->value);
+				if (! need_services)
+					continue;
+				if ((svcs = rc_service_state(svc->value)) & RC_SERVICE_STARTED)
+					continue;
+				TAILQ_FOREACH(svc2, need_services, entries) {
+					if (strcmp (svc->value, svc2->value) == 0) {
+						if (svcs & RC_SERVICE_INACTIVE ||
+								svcs & RC_SERVICE_WASINACTIVE)
+						{
+							if (! tmplist)
+								tmplist = rc_stringlist_new();
+							rc_stringlist_add(tmplist, svc->value);
+						} else
+							eerrorx("ERROR: cannot start %s as"
+									" %s would not start",
+									applet, svc->value);
+					}
 				}
 			}
-		}
 
-		if (tmplist && TAILQ_FIRST(tmplist)) {
-			/* Set the state now, then unlink our exclusive so that
-			   our scheduled list is preserved */
-			rc_service_mark(service, RC_SERVICE_STOPPED);
-			unlink_mtime_test();
+			if (tmplist && TAILQ_FIRST(tmplist)) {
+				/* Set the state now, then unlink our exclusive so that
+				   our scheduled list is preserved */
+				rc_service_mark(service, RC_SERVICE_STOPPED);
+				unlink_mtime_test();
 
-			rc_stringlist_free(use_services);
-			use_services = NULL;
-			len = 0;
-			n = 0;
-			TAILQ_FOREACH(svc, tmplist, entries) {
-				rc_service_schedule_start(svc->value, service);
-				use_services = rc_deptree_depend(deptree, "iprovide",
-								 svc->value);
-				TAILQ_FOREACH (svc2, use_services, entries)
-					rc_service_schedule_start(svc2->value, service);
 				rc_stringlist_free(use_services);
 				use_services = NULL;
-				len += strlen(svc->value) + 2;
-				n++;
+				len = 0;
+				n = 0;
+				TAILQ_FOREACH(svc, tmplist, entries) {
+					rc_service_schedule_start(svc->value, service);
+					use_services = rc_deptree_depend(deptree, "iprovide",
+							svc->value);
+					TAILQ_FOREACH (svc2, use_services, entries)
+						rc_service_schedule_start(svc2->value, service);
+					rc_stringlist_free(use_services);
+					use_services = NULL;
+					len += strlen(svc->value) + 2;
+					n++;
+				}
+
+				len += 5;
+				tmp = p = xmalloc(sizeof(char) * len);
+				TAILQ_FOREACH(svc, tmplist, entries) {
+					if (p != tmp)
+						p += snprintf(p, len, ", ");
+					p += snprintf(p, len, "%s", svc->value);
+				}
+				free(tmp);
+				rc_stringlist_free(tmplist);
+				tmplist = NULL;
+				ewarnx("WARNING: %s is scheduled to start when %s has started",
+						applet, tmp);
 			}
 
-			len += 5;
-			tmp = p = xmalloc(sizeof(char) * len);
-			TAILQ_FOREACH(svc, tmplist, entries) {
-				if (p != tmp)
-					p += snprintf(p, len, ", ");
-				p += snprintf(p, len, "%s", svc->value);
-			}
-			free(tmp);
-			rc_stringlist_free(tmplist);
-			tmplist = NULL;
-			ewarnx("WARNING: %s is scheduled to start when %s has started",
-					applet, tmp);
+			rc_stringlist_free(services);
+			services = NULL;
 		}
-
-		rc_stringlist_free(services);
-		services = NULL;
 	}
 
 	if (ibsave)
