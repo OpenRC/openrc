@@ -99,12 +99,7 @@ static RC_HOOK hook_out = 0;
 
 struct termios *termios_orig = NULL;
 
-typedef struct piditem
-{
-	pid_t pid;
-	LIST_ENTRY(piditem) entries;
-} PIDITEM;
-LIST_HEAD(, piditem) service_pids;
+RC_PIDLIST service_pids;
 
 static void clean_failed(void)
 {
@@ -138,8 +133,8 @@ static void clean_failed(void)
 static void cleanup(void)
 {
 	if (applet && strcmp(applet, "rc") == 0) {
-		PIDITEM *p1 = LIST_FIRST(&service_pids);
-		PIDITEM *p2;
+		RC_PID *p1 = LIST_FIRST(&service_pids);
+		RC_PID *p2;
 
 		if (hook_out)
 			rc_plugin_run(hook_out, runlevel);
@@ -410,14 +405,14 @@ static int get_ksoftlevel(char *buffer, int buffer_len)
 
 static void add_pid(pid_t pid)
 {
-	PIDITEM *p = xmalloc(sizeof(*p));
+	RC_PID *p = xmalloc(sizeof(*p));
 	p->pid = pid;
 	LIST_INSERT_HEAD(&service_pids, p, entries);
 }
 
 static void remove_pid(pid_t pid)
 {
-	PIDITEM *p;
+	RC_PID *p;
 
 	LIST_FOREACH(p, &service_pids, entries)
 		if (p->pid == pid) {
@@ -437,7 +432,7 @@ static void handle_signal(int sig)
 	int serrno = errno;
 	char signame[10] = { '\0' };
 	pid_t pid;
-	PIDITEM *pi;
+	RC_PID *pi;
 	int status = 0;
 	struct winsize ws;
 	sigset_t sset;

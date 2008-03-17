@@ -107,19 +107,18 @@ static bool pid_is_exec(pid_t pid, const char *const *argv)
 	return true;
 }
 
-pid_t *rc_find_pids(const char *const *argv, const char *cmd,
-		    uid_t uid, pid_t pid)
+RC_PIDLIST *rc_find_pids(const char *const *argv, const char *cmd,
+			 uid_t uid, pid_t pid)
 {
 	DIR *procdir;
 	struct dirent *entry;
-	int npids = 0;
 	pid_t p;
-	pid_t *pids = NULL;
-	pid_t *tmp = NULL;
 	char buffer[PATH_MAX];
 	struct stat sb;
 	pid_t runscript_pid = 0;
 	char *pp;
+	RC_PIDLIST *pids = NULL;
+	RC_PID *pi;
 
 	if ((procdir = opendir("/proc")) == NULL)
 		return NULL;
@@ -159,21 +158,17 @@ pid_t *rc_find_pids(const char *const *argv, const char *cmd,
 		if (cmd && ! pid_is_cmd(p, cmd))
 			continue;
 
-		if (argv && ! cmd && ! pid_is_exec(p, (const char *const *)argv))
+		if (argv && ! cmd && !
+		    pid_is_exec(p, (const char *const *)argv))
 			continue;
 
-		tmp = realloc(pids, sizeof (pid_t) * (npids + 2));
-		if (! tmp) {
-			free(pids);
-			closedir(procdir);
-			errno = ENOMEM;
-			return NULL;
+		if (! pids) {
+			pids = xmalloc(sizeof(*pids));
+			LIST_INIT(pids);
 		}
-		pids = tmp;
-
-		pids[npids] = p;
-		pids[npids + 1] = 0;
-		npids++;
+		pi = xmalloc(sizeof(*pi));
+		pi->pid = p;
+		LIST_INSERT_HEAD(pids, pi, entries);
 	}
 	closedir(procdir);
 
@@ -205,8 +200,8 @@ librc_hidden_def(rc_find_pids)
 #  define _KVM_FLAGS O_RDONLY
 # endif
 
-pid_t *rc_find_pids(const char *const *argv, const char *cmd,
-		    uid_t uid, pid_t pid)
+RC_PIDLIST *rc_find_pids(const char *const *argv, const char *cmd,
+			 uid_t uid, pid_t pid)
 {
 	static kvm_t *kd = NULL;
 	char errbuf[_POSIX2_LINE_MAX];
@@ -215,8 +210,8 @@ pid_t *rc_find_pids(const char *const *argv, const char *cmd,
 	int processes = 0;
 	int pargc = 0;
 	char **pargv;
-	pid_t *pids = NULL;
-	pid_t *tmp;
+	RC_PIDLIST *pids = NULL;
+	RC_PID *pi;
 	pid_t p;
 	const char *const *arg;
 	int npids = 0;
@@ -272,18 +267,13 @@ pid_t *rc_find_pids(const char *const *argv, const char *cmd,
 				continue;
 		}
 
-		tmp = realloc(pids, sizeof(pid_t) * (npids + 2));
-		if (! tmp) {
-			free(pids);
-			kvm_close(kd);
-			errno = ENOMEM;
-			return NULL;
+		if (! pids) {
+			pids = xmalloc(sizeof(*pids));
+			LIST_INIT(pids);
 		}
-		pids = tmp;
-
-		pids[npids] = p;
-		pids[npids + 1] = 0;
-		npids++;
+		pi = xmalloc(sizeof(*pi));
+		pi->pid = p;
+		LIST_INSERT_HEAD(pids, pi, entries);
 	}
 	kvm_close(kd);
 
@@ -498,7 +488,9 @@ bool rc_service_daemons_crashed(const char *service)
 	char *name = NULL;
 	char *pidfile = NULL;
 	pid_t pid = 0;
-	pid_t *pids = NULL;
+	RC_PIDLIST *pids;
+	RC_PID *p1;
+	RC_PID *p2;
 	char *p;
 	char *token;
 	bool retval = false;
@@ -604,9 +596,18 @@ bool rc_service_daemons_crashed(const char *service)
 			argv[i] = '\0';
 		}
 
-		if ((pids = rc_find_pids((const char *const *)argv, name, 0, pid)) == NULL)
+		if ((pids = rc_find_pids((const char *const *)argv,
+					 name, 0, pid)) == NULL)
+		{
+			p1 = LIST_FIRST(pids);
+			while (p1) {
+				p2 = LIST_NEXT(p1, entries);
+				free(p1);
+				p1 = p2;
+			}
+			free(pids);
 			retval = true;
-		free(pids);
+		}
 		free(argv);
 		argv = NULL;
 		rc_stringlist_free(list);

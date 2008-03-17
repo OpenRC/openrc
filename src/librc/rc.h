@@ -451,6 +451,13 @@ void rc_stringlist_free(RC_STRINGLIST *);
  * @return pointer to the new path */
 char *rc_strcatpaths(const char *, const char *, ...) SENTINEL;
 
+typedef struct rc_pid
+{
+	pid_t pid;
+	LIST_ENTRY(rc_pid) entries;
+} RC_PID;
+typedef LIST_HEAD(rc_pidlist, rc_pid) RC_PIDLIST;
+
 /*! Find processes based on criteria.
  * All of these are optional.
  * pid overrides anything else.
@@ -460,6 +467,6 @@ char *rc_strcatpaths(const char *, const char *, ...) SENTINEL;
  * @param uid to check for
  * @param pid to check for
  * @return NULL terminated list of pids */
-pid_t *rc_find_pids(const char *const *, const char *, uid_t, pid_t);
+RC_PIDLIST *rc_find_pids(const char *const *, const char *, uid_t, pid_t);
 
 #endif

@@ -73,6 +73,15 @@ static struct pam_conv conv = { NULL, NULL};
 #include "rc.h"
 #include "rc-misc.h"
 
+/* Some libc implementations don't define this */
+#ifndef LIST_FOREACH_SAFE
+#define	LIST_FOREACH_SAFE(var, head, field, tvar)			\
+	for ((var) = LIST_FIRST((head));				\
+	     (var) && ((tvar) = LIST_NEXT((var), field), 1);		\
+	     (var) = (tvar))
+#endif
+
+
 typedef struct scheduleitem
 {
 	enum
@@ -301,11 +310,12 @@ static int do_stop(const char *const *argv, const char *cmd,
 		   const char *pidfile, uid_t uid,int sig,
 		   bool quiet, bool verbose, bool test)
 {
-	pid_t *pids;
+	RC_PIDLIST *pids;
+	RC_PID *pi;
+	RC_PID *np;
 	bool killed;
 	int nkilled = 0;
 	pid_t pid = 0;
-	int i;
 
 	if (pidfile) {
 		if ((pid = get_pid(pidfile, quiet)) == -1)
@@ -317,27 +327,31 @@ static int do_stop(const char *const *argv, const char *cmd,
 	if (! pids)
 		return 0;
 
-	for (i = 0; pids[i]; i++) {
+	LIST_FOREACH_SAFE(pi, pids, entries, np) {
 		if (test) {
 			if (! quiet)
-				einfo("Would send signal %d to PID %d", sig, pids[i]);
+				einfo("Would send signal %d to PID %d",
+				      sig, pi->pid);
 			nkilled++;
-			continue;
-		}
-
-		if (verbose)
-			ebegin("Sending signal %d to PID %d", sig, pids[i]);
-		errno = 0;
-		killed = (kill(pids[i], sig) == 0 || errno == ESRCH ? true : false);
-		if (verbose)
-			eend(killed ? 0 : 1, "%s: failed to send signal %d to PID %d: %s",
-			     applet, sig, pids[i], strerror(errno));
-		if (! killed) {
-			nkilled = -1;
 		} else {
-			if (nkilled != -1)
-				nkilled++;
+			if (verbose)
+				ebegin("Sending signal %d to PID %d",
+				sig, pi->pid);
+			errno = 0;
+			killed = (kill(pi->pid, sig) == 0 ||
+					errno == ESRCH ? true : false);
+			if (verbose)
+				eend(killed ? 0 : 1,
+				     "%s: failed to send signal %d to PID %d: %s",
+				     applet, sig, pi->pid, strerror(errno));
+			if (! killed) {
+				nkilled = -1;
+			} else {
+				if (nkilled != -1)
+					nkilled++;
+			}
 		}
+		free(pi);
 	}
 
 	free(pids);
