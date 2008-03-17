@@ -478,7 +478,7 @@ bool rc_service_mark(const char *service, const RC_SERVICE state)
 	char *init = rc_service_resolve(service);
 	bool skip_wasinactive = false;
 	int s;
-	char *was;
+	char was[PATH_MAX];
 	RC_STRINGLIST *dirs;
 	RC_STRING *dir;
 	int serrno;
@@ -495,7 +495,7 @@ bool rc_service_mark(const char *service, const RC_SERVICE state)
 		}
 
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			 rc_parse_service_state (state), base);
+			 rc_parse_service_state(state), base);
 		if (exists(file))
 			unlink(file);
 		i = symlink(init, file);
@@ -503,10 +503,9 @@ bool rc_service_mark(const char *service, const RC_SERVICE state)
 			free(init);
 			return false;
 		}
-
 		skip_state = state;
 	}
-
+	
 	if (state == RC_SERVICE_COLDPLUGGED || state == RC_SERVICE_FAILED) {
 		free(init);
 		return true;
@@ -523,7 +522,7 @@ bool rc_service_mark(const char *service, const RC_SERVICE state)
 		    (! skip_wasinactive || s != RC_SERVICE_WASINACTIVE))
 		{
 			snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-				 rc_parse_service_state(s), base);
+				 rc_service_state_names[i].name, base);
 			if (exists(file)) {
 				if ((state == RC_SERVICE_STARTING ||
 				     state == RC_SERVICE_STOPPING) &&
