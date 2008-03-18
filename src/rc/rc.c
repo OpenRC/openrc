@@ -1147,7 +1147,7 @@ int main(int argc, char **argv)
 
 	/* Now stop the services that shouldn't be running */
 	if (stop_services)
-		do_stop_services(newlevel, parallel, going_down);
+		do_stop_services(newlevel, going_down, parallel);
 
 	/* Wait for our services to finish */
 	wait_for_services();
