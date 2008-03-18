@@ -31,18 +31,20 @@ cleanup_tmp_dir()
 		rm -rf -- [b-ikm-pr-zA-Z0-9\.]*
 
 		find ${startopts} ! -name . \
-			! -path ./lost+found \
+			! -path "./lost+found" \
 			! -path "./lost+found/*" \
-			! -path ./quota.user \
+			! -path "./quota.user" \
 			! -path "./quota.user/*" \
-			! -path ./aquota.user \
+			! -path "./aquota.user" \
 			! -path "./aquota.user/*" \
-			! -path ./quota.group \
+			! -path "./quota.group" \
 			! -path "./quota.group/*" \
-			! -path ./aquota.group \
+			! -path "./aquota.group" \
 			! -path "./aquota.group/*" \
-			! -path ./journal \
+			! -path "./journal" \
 			! -path "./journal/*" \
+			! -path "./.private" \
+			! -path "./.private/*" \
 			${delete} \
 			-type d -prune
 		eend 0
