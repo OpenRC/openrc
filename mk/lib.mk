@@ -51,5 +51,6 @@ clean:
 	rm -f ${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK} ${CLEANFILES}
 
 include ${MK}/sys.mk
+include ${MK}/os.mk
 include ${MK}/depend.mk
 include ${MK}/gitignore.mk

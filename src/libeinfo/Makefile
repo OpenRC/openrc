@@ -1,6 +1,3 @@
-MK=			../../mk
-include ${MK}/os.mk
-
 LIB=			einfo
 SHLIB_MAJOR=		1
 SRCS=			libeinfo.c
@@ -9,6 +6,7 @@ VERSION_MAP=		einfo.map
 
 CFLAGS+=		-I../includes
 
-include ${MK}/cc.mk
+MK=			../../mk
 include ${MK}/lib.mk
+include ${MK}/cc.mk
 include ${MK}/${MKTERMCAP}.mk

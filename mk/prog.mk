@@ -5,7 +5,6 @@
 
 OBJS+=			${SRCS:.c=.o}
 
-include ${MK}/sys.mk
 # Some systems don't include /lib in their standard link path
 # so we should embed it if different
 # This is currently hardcoded for NetBSD which has two dynamic linkers
@@ -30,5 +29,7 @@ ${PROG}: ${SCRIPTS} ${OBJS}
 clean:
 	rm -f ${CLEANFILES}
 
+include ${MK}/sys.mk
+include ${MK}/os.mk
 include ${MK}/depend.mk
 include ${MK}/gitignore.mk

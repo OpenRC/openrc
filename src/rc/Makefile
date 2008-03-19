@@ -36,9 +36,8 @@ LDADD+=		-lutil -lrc -leinfo
 #LDFLAGS+=	-Wl,--rpath=../librc -Wl,--rpath=../libeinfo
 
 MK=		../../mk
-include ${MK}/cc.mk
-include ${MK}/os.mk
 include ${MK}/prog.mk
+include ${MK}/cc.mk
 
 CFLAGS+=	-I../includes -I../librc -I../libeinfo
 CFLAGS+=	-DLIB=\"${LIBNAME}\"

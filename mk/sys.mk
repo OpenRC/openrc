@@ -11,7 +11,7 @@ PREFIX?=
 _UPREFIX_SH=		case "${PREFIX}" in "") echo /usr;; *) echo "${PREFIX}";; esac
 _UPREFIX!=		${_UPREFIX_SH}
 UPREFIX=		${_UPREFIX}$(shell ${_UPREFIX_SH})
-PKG_PREFIX=		/usr/local
+LOCAL_PREFIX=		/usr/local
 
 PICFLAG?=		-fPIC
 
