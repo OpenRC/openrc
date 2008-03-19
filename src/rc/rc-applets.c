@@ -367,7 +367,7 @@ static int rc_service(_unused int argc, char **argv)
 	char *service = rc_service_resolve(argv[1]);
 	
 	if (!service)
-		eerrorx("%s: service `%s' does not exist", applet, optarg);
+		eerrorx("%s: service `%s' does not exist", applet, argv[1]);
 
 	*++argv = service;
 	execv(*argv, argv);
