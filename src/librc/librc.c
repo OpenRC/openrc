@@ -966,7 +966,7 @@ RC_STRINGLIST *rc_services_scheduled(const char *service)
 {
 	char dir[PATH_MAX];
 
-	snprintf(dir, sizeof(dir), "RC_SVCDIR/scheduled/%s",
+	snprintf(dir, sizeof(dir), RC_SVCDIR "/scheduled/%s",
 		 basename_c(service));
 	return ls_dir(dir, LS_INITD);
 }
