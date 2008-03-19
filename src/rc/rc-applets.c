@@ -207,7 +207,7 @@ static int do_service(int argc, char **argv)
 	if (argc > 1)
 		service = argv[1];
 	else
-		service = getenv("SVCNAME");
+		service = getenv("RC_SVCNAME");
 
 	if (! service || *service == '\0')
 		eerrorx("%s: no service specified", applet);
@@ -229,7 +229,7 @@ static int do_service(int argc, char **argv)
 	else if (strcmp(applet, "service_started_daemon") == 0) {
 		d[0] = argv[1];
 
-		service = getenv("SVCNAME");
+		service = getenv("RC_SVCNAME");
 		if (argc > 3) {
 			service = argv[1];
 			d[0] = argv[2];
@@ -252,7 +252,7 @@ static int do_service(int argc, char **argv)
 static int do_mark_service(int argc, char **argv)
 {
 	bool ok = false;
-	char *svcname = getenv("SVCNAME");
+	char *svcname = getenv("RC_SVCNAME");
 	char *service = NULL;
 	char *runscript_pid;
 	char *mtime;
@@ -262,7 +262,7 @@ static int do_mark_service(int argc, char **argv)
 	if (argc > 1)
 		service = argv[1];
 	else
-		service = getenv("SVCNAME");
+		service = getenv("RC_SVCNAME");
 
 	if (! service || *service == '\0')
 		eerrorx("%s: no service specified", applet);
@@ -311,7 +311,7 @@ static int do_mark_service(int argc, char **argv)
 static int do_value(int argc, char **argv)
 {
 	bool ok = false;
-	char *service = getenv("SVCNAME");
+	char *service = getenv("RC_SVCNAME");
 	char *option;
 
 	if (! service)

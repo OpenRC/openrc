@@ -14,12 +14,15 @@ if [ -r /sbin/livecd-functions.sh ]; then
 fi
 
 if [ -z "$1" -o -z "$2" ]; then
-	eerror "${SVCNAME}: not enough arguments"
+	eerror "${RC_SVCNAME}: not enough arguments"
 	exit 1
 fi
 
 # So daemons know where to recall us if needed
 export RC_SERVICE="$1"
+
+# Compat
+export SVCNAME=${RC_SVCNAME}
 
 # Descript the init script to the user
 describe()
@@ -27,7 +30,7 @@ describe()
 	if [ -n "${description}" ]; then
 		einfo "${description}"
 	else
-		ewarn "No description for ${SVCNAME}"
+		ewarn "No description for ${RC_SVCNAME}"
 	fi
 
 	local svc= desc=
@@ -45,8 +48,8 @@ yesno ${RC_DEBUG} && set -x
 
 _conf_d=${1%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
-_c=${SVCNAME%%.*}
-if [ -n "${_c}" -a "${_c}" != "${SVCNAME}" ]; then
+_c=${RC_SVCNAME%%.*}
+if [ -n "${_c}" -a "${_c}" != "${RC_SVCNAME}" ]; then
 	if [ -e "${_conf_d}/${_c}.${RC_RUNLEVEL}" ]; then
 		. "${_conf_d}/${_c}.${RC_RUNLEVEL}"
 	elif [ -e "${_conf_d}/${_c}" ]; then
@@ -56,10 +59,10 @@ fi
 unset _c
 
 # Overlay with our specific config
-if [ -e "${_conf_d}/${SVCNAME}.${RC_RUNLEVEL}" ]; then
-	. "${_conf_d}/${SVCNAME}.${RC_RUNLEVEL}"
-elif [ -e "${_conf_d}/${SVCNAME}" ]; then
-	. "${_conf_d}/${SVCNAME}"
+if [ -e "${_conf_d}/${RC_SVCNAME}.${RC_RUNLEVEL}" ]; then
+	. "${_conf_d}/${RC_SVCNAME}.${RC_RUNLEVEL}"
+elif [ -e "${_conf_d}/${RC_SVCNAME}" ]; then
+	. "${_conf_d}/${RC_SVCNAME}"
 fi
 unset _conf_d
 
@@ -75,7 +78,7 @@ shift
 
 for _d in ${required_dirs}; do
 	if [ ! -d ${_d} ]; then
-		eerror "${SVCNAME}: \`${_d}' is not a directory"
+		eerror "${RC_SVCNAME}: \`${_d}' is not a directory"
 		exit 1
 	fi
 done
@@ -83,7 +86,7 @@ unset _d
 
 for _f in ${required_files}; do
 	if [ ! -r ${_f} ]; then
-		eerror "${SVCNAME}: \`${_f}' is not readable"
+		eerror "${RC_SVCNAME}: \`${_f}' is not readable"
 		exit 1
 	fi
 done
@@ -94,7 +97,7 @@ if [ -n "${command}" ]; then
 	if ! type start >/dev/null 2>&1; then
 		start() {
 			local _background=
-			ebegin "Starting ${name:-${SVCNAME}}"
+			ebegin "Starting ${name:-${RC_SVCNAME}}"
 			if yesno "${command_background}"; then 
 				_background="--background --pidfile"
 			fi
@@ -109,7 +112,7 @@ if [ -n "${command}" ]; then
 				${pidfile:+--pidfile} ${pidfile} \
 				${_background} ${start_stop_daemon_args} \
 				-- ${command_args}
-			eend $? "Failed to start ${SVCNAME}" && return 0
+			eend $? "Failed to start ${RC_SVCNAME}" && return 0
 			if yesno "${start_inactive}"; then
 				if ! ${_inactive}; then
 			   		mark_service_stopped
@@ -125,12 +128,12 @@ fi
 if [ -n "${command}" -o -n "${procname}" -o -n "${pidfile}" ]; then
 	if ! type stop >/dev/null 2>&1; then
 		stop() {
-			ebegin "Stopping ${name:-${SVCNAME}}"
+			ebegin "Stopping ${name:-${RC_SVCNAME}}"
 			start-stop-daemon --stop \
 				${command:+--exec} ${command} \
 				${procname:+--name} ${procname} \
 				${pidfile:+--pidfile} ${pidfile}
-			eend $? "Failed to stop ${SVCNAME}"
+			eend $? "Failed to stop ${RC_SVCNAME}"
 		}
 	fi
 fi
@@ -159,7 +162,7 @@ while [ -n "$1" ]; do
 				for _cmd in ${extra_started_commands}; do
 					if [ "${_cmd}" = "$1" ]; then
 						if ! service_started; then
-							eerror "${SVCNAME}: cannot \`$1' as it has not been started"
+							eerror "${RC_SVCNAME}: cannot \`$1' as it has not been started"
 							exit 1
 						fi
 					fi
@@ -179,12 +182,12 @@ while [ -n "$1" ]; do
 					shift
 					continue 2
 				else
-					eerror "${SVCNAME}: function \`$1' defined but does not exist"
+					eerror "${RC_SVCNAME}: function \`$1' defined but does not exist"
 					exit 1
 				fi
 			fi	
 		fi
 	done
-	eerror "${SVCNAME}: unknown function \`$1'"
+	eerror "${RC_SVCNAME}: unknown function \`$1'"
 	exit 1
 done

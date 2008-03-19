@@ -7,25 +7,25 @@
 . @PREFIX@/@SYSCONFDIR@/init.d/functions.sh
 
 config() {
-	[ -n "$*" ] && echo "${SVCNAME} config $*" >&3
+	[ -n "$*" ] && echo "${RC_SVCNAME} config $*" >&3
 }
 need() {
-	[ -n "$*" ] && echo "${SVCNAME} ineed $*" >&3
+	[ -n "$*" ] && echo "${RC_SVCNAME} ineed $*" >&3
 }
 use() {
-	[ -n "$*" ] && echo "${SVCNAME} iuse $*" >&3
+	[ -n "$*" ] && echo "${RC_SVCNAME} iuse $*" >&3
 }
 before() {
-	[ -n "$*" ] && echo "${SVCNAME} ibefore $*" >&3
+	[ -n "$*" ] && echo "${RC_SVCNAME} ibefore $*" >&3
 }
 after() {
-	[ -n "$*" ] && echo "${SVCNAME} iafter $*" >&3
+	[ -n "$*" ] && echo "${RC_SVCNAME} iafter $*" >&3
 }
 provide() {
-	[ -n "$*" ] && echo "${SVCNAME} iprovide $*" >&3
+	[ -n "$*" ] && echo "${RC_SVCNAME} iprovide $*" >&3
 }
 keyword() {
-	[ -n "$*" ] && echo "${SVCNAME} keyword $*" >&3
+	[ -n "$*" ] && echo "${RC_SVCNAME} keyword $*" >&3
 }
 depend() {
 	:
@@ -47,35 +47,39 @@ do
 	_done_dirs="${_done_dirs} ${_dir}"
 
 	cd "${_dir}"
-	for SVCNAME in *; do
-		[ -x "${SVCNAME}" ] || continue
+	for RC_SERVICE in *; do
+		[ -x "${RC_SERVICE}" ] || continue
 
 		# Only generate dependencies for runscripts
-		read one two < "${SVCNAME}"
+		read one two < "${RC_SERVICE}"
 		[ "${one}" = "#!@PREFIX@/sbin/runscript" ] || continue
 		unset one two
 
-		export SVCNAME=${SVCNAME##*/}
+		export RC_SVCNAME=${RC_SERVICE##*/}
+
+		# Compat
+		export SVCNAME=${RC_SVCNAME}
+
 		(
 		# Save stdout in fd3, then remap it to stderr
 		exec 3>&1 1>&2
 
-		_rc_c=${SVCNAME%%.*}
-		if [ -n "${_rc_c}" -a "${_rc_c}" != "${SVCNAME}" ]; then
+		_rc_c=${RC_SVCNAME%%.*}
+		if [ -n "${_rc_c}" -a "${_rc_c}" != "${RC_SVCNAME}" ]; then
 			if [ -e "${_dir}/../conf.d/${_rc_c}" ]; then
 				. "${_dir}/../conf.d/${_rc_c}"
 			fi
 		fi
 		unset _rc_c
 
-		if [ -e "${_dir}/../conf.d/${SVCNAME}" ]; then
-			. "${_dir}/../conf.d/${SVCNAME}"
+		if [ -e "${_dir}/../conf.d/${RC_SVCNAME}" ]; then
+			. "${_dir}/../conf.d/${RC_SVCNAME}"
 		fi
 
 		[ -e @PREFIX@/@SYSCONFDIR@/rc.conf ] && . @PREFIX@/@SYSCONFDIR@/rc.conf
 
-		if . "${_dir}/${SVCNAME}"; then
-			echo "${SVCNAME}" >&3
+		if . "${_dir}/${RC_SVCNAME}"; then
+			echo "${RC_SVCNAME}" >&3
 			depend
 
 			# Add any user defined depends
@@ -85,9 +89,9 @@ do
 				IFS=:
 				set -- ${_deptype}
 				unset IFS
-				eval _depends=\$rc_$(shell_var "${SVCNAME}")_$1
+				eval _depends=\$rc_$(shell_var "${RC_SVCNAME}")_$1
 				[ -z "${_depends}" ] && eval _depends=\$rc_$1
-				[ -z "${_depends}" ] && eval _depends=\$RC_$(shell_var "${SVCNAME}")_$2
+				[ -z "${_depends}" ] && eval _depends=\$RC_$(shell_var "${RC_SVCNAME}")_$2
 				[ -z "${_depends}" ] && eval _depends=\$RC_$2
 
 				$1 ${_depends}

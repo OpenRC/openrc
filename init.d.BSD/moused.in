@@ -2,7 +2,7 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-mouse=${SVCNAME##*.}
+mouse=${RC_SVCNAME##*.}
 if [ -n "${name}" -a "${mouse}" != "moused" ]; then
 	moused_device=/dev/"${mouse}"
 	pidfile=/var/run/moused-"${mouse}".pid

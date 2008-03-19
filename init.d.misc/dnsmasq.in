@@ -18,7 +18,7 @@ depend()
 
 reload()
 {
-	ebegin "Reloading ${SVCNAME}"
+	ebegin "Reloading ${RC_SVCNAME}"
 	start-stop-daemon --signal SIGHUP --pidfile "${pidfile}"
 	eend $?
 }

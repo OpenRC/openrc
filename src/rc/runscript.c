@@ -1129,7 +1129,7 @@ int runscript(int argc, char **argv)
 	}
 
 	setenv("EINFO_LOG", service, 1);
-	setenv("SVCNAME", applet, 1);
+	setenv("RC_SVCNAME", applet, 1);
 
 	/* Set an env var so that we always know our pid regardless of any
 	   subshells the init script may create so that our mark_service_*

@@ -10,7 +10,7 @@ _config_vars="$_config_vars tunctl"
 
 _is_tuntap()
 {
-	[ -n "$(export SVCNAME="net.${IFACE}"; service_get_value tuntap)" ]
+	[ -n "$(export RC_SVCNAME="net.${IFACE}"; service_get_value tuntap)" ]
 }
 
 tuntap_pre_start()

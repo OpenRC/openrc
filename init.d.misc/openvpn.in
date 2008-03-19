@@ -2,12 +2,12 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-vpn=${SVCNAME#*.}
+vpn=${RC_SVCNAME#*.}
 name="OpenVPN"
 [ "${vpn}" != "openvpn" ] && name="${name} (${vpn})"
 command=@PKG_PREFIX@/sbin/openvpn
 
-pidfile=@VARBASE@/run/"${SVCNAME}".pid
+pidfile=@VARBASE@/run/"${RC_SVCNAME}".pid
 openvpn_dir=${openvpn_dir:-@PKG_PREFIX@/etc/openvpn}
 openvpn_config=${openvpn_config:-${openvpn_dir}/${vpn}.conf}
 command_args="${openvpn_args} --daemon --config ${openvpn_config} --writepid ${pidfile}"

@@ -66,7 +66,7 @@ wpa_supplicant_pre_start()
 	# the background unless we're not currently running
 	if yesno ${IN_BACKGROUND}; then
 		if ${wireless} && \
-		service_started_daemon "${SVCNAME}" "${wpas}"; then
+		service_started_daemon "${RC_SVCNAME}" "${wpas}"; then
 			SSID=$(_get_ssid "${IFACE}")
 			SSIDVAR=$(shell_var "${SSID}")
 			service_set_value "SSID" "${SSID}"
@@ -177,7 +177,7 @@ wpa_supplicant_post_stop()
 
 	if yesno "${IN_BACKGROUND}"; then
 		# Only stop wpa_supplicant if it's not the controlling daemon
-		! service_started_daemon "${SVCNAME}" "${wpas}" 1
+		! service_started_daemon "${RC_SVCNAME}" "${wpas}" 1
 	fi
 	[ $? != 0 ] && return 0
 

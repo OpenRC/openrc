@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Feb 22, 2008
+.Dd Mar 19, 2008
 .Dt RUNSCRIPT 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -276,7 +276,7 @@ matches YES, TRUE, ON or 1 regardless of case then we return 0, otherwise 1.
 .Nm
 sets the following environment variables for use in the service scripts:
 .Bl -tag -width "RC_DEFAULTLEVEL" 
-.It Va SVCNAME
+.It Va RC_SVCNAME
 Name of the service.
 .It Va RC_RUNLEVEL
 Current runlevel that rc is in.
@@ -295,11 +295,11 @@ The result of `uname -s`.
 Configuration files, relative to the location of the service.
 If a file ending with .${RC_RUNLEVEL} exists then we use that instead.
 .Bl -ohang
-.It Pa ../conf.d/${SVCNAME%%.*}
+.It Pa ../conf.d/${RC_SVCNAME%%.*}
 mulitplexed configuration file.
-Example: if ${SVCNAME} is net.eth1 then look for
+Example: if ${RC_SVCNAME} is net.eth1 then look for
 .Pa ../conf.d/net .
-.It Pa ../conf.d/${SVCNAME}
+.It Pa ../conf.d/${RC_SVCNAME}
 service configuration file.
 .It Pa /etc/rc.conf
 host configuration file.

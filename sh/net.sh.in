@@ -15,7 +15,7 @@ __IFS="
 "
 depend()
 {
-	local IFACE=${SVCNAME#*.}
+	local IFACE=${RC_SVCNAME#*.}
 	local IFVAR=$(shell_var "${IFACE}")
 
 	need localmount
@@ -335,7 +335,7 @@ _load_modules()
 
 		# Now load and wrap our functions
 		if ! . "${MODULESDIR}/${mod}.sh"; then
-			eend 1 "${SVCNAME}: error loading module \`${mod}'"
+			eend 1 "${RC_SVCNAME}: error loading module \`${mod}'"
 			exit 1
 		fi
 
@@ -447,7 +447,7 @@ _load_config()
 
 start()
 {
-	local IFACE=${SVCNAME#*.} oneworked=false module=
+	local IFACE=${RC_SVCNAME#*.} oneworked=false module=
 	local IFVAR=$(shell_var "${IFACE}") cmd= our_metric=
 	local metric=0
 
@@ -487,7 +487,7 @@ start()
 	if ! _wait_for_carrier; then
 		if service_started devd; then
 			ewarn "no carrier, but devd will start us when we have one"
-			mark_service_inactive "${SVCNAME}"
+			mark_service_inactive "${RC_SVCNAME}"
 		else
 			eerror "no carrier"
 		fi
@@ -617,7 +617,7 @@ ${routes}"
 
 stop()
 {
-	local IFACE=${SVCNAME#*.} module=
+	local IFACE=${RC_SVCNAME#*.} module=
 	local IFVAR=$(shell_var "${IFACE}") opts=
 
 	einfo "Bringing down interface ${IFACE}"

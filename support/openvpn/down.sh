@@ -3,7 +3,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 # If we have a service specific script, run this now
-[ -x "${SVCNAME}"-down.sh ] && "${SVCNAME}"-down.sh
+[ -x "${RC_SVCNAME}"-down.sh ] && "${RC_SVCNAME}"-down.sh
 
 # Restore resolv.conf to how it was
 if type resolvconf >/dev/null 2>&1; then
@@ -16,12 +16,10 @@ elif [ -e /etc/resolv.conf-"${dev}".sv ]; then
 fi
 
 # Re-enter the init script to stop any dependant services
-service=/etc/init.d/"${SVCNAME}"
-[ ! -x "${service}" ] && service=/usr/local/etc/init.d/"${SVCNAME}"
-if [ -x "${service}" ]; then
-	if "${service}" --quiet status; then
+if [ -x "${RC_SERVICE}" ]; then
+	if "${RC_SERVICE}" --quiet status; then
 		export IN_BACKGROUND=YES
-		"${service}" --quiet stop
+		"${RC_SERVICE}" --quiet stop
 	fi
 fi
 

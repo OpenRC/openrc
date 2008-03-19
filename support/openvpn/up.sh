@@ -18,8 +18,6 @@
 # A possible workaround would be to just list multiple domain lines
 # and try and let resolvconf handle it
 
-PATH=$PATH:/usr/local/sbin
-
 NS=
 DOMAIN=
 SEARCH=
@@ -59,19 +57,15 @@ if [ -n "${NS}" ]; then
 fi
 
 # Below section is OpenRC specific
-# Quick summary - our init scripts are re-entrant and set the SVCNAME env var
-# as we could have >1 openvpn service
 
 # If we have a service specific script, run this now
-[ -x "${SVCNAME}"-up.sh ] && "${SVCNAME}"-up.sh
+[ -x "${RC_SVCNAME}"-up.sh ] && "${RC_SVCNAME}"-up.sh
 
 # Re-enter the init script to start any dependant services
-service=/etc/init.d/"${SVCNAME}"
-[ ! -x "${service}" ] && service=/usr/local/etc/init.d/"${SVCNAME}"
-if [ -x "${service}" ]; then
-	if ! "${service}" --quiet status; then
+if [ -x "${RC_SERVICE}" ]; then
+	if ! "${RC_SERVICE}" --quiet status; then
 		export IN_BACKGROUND=true
-		"${service}" --quiet start
+		"${RC_SERVICE}" --quiet start
 	fi
 fi
 

@@ -583,7 +583,7 @@ int start_stop_daemon(int argc, char **argv)
 	int stderr_fd;
 	pid_t pid;
 	int i;
-	char *svcname = getenv("SVCNAME");
+	char *svcname = getenv("RC_SVCNAME");
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
 	char *path;
@@ -974,8 +974,9 @@ int start_stop_daemon(int argc, char **argv)
 			rc_stringlist_add(env_list, environ[i++]);
 		TAILQ_FOREACH(env, env_list, entries) {
 			if ((strncmp(env->value, "RC_", 3) == 0 &&
-			     strncmp(env->value, "RC_SERVICE=", strlen("RC_SERVICE=")) != 0) ||
-			    strncmp(env->value, "SSD_NICELEVEL=", strlen("SSD_NICELEVEL=")) == 0)
+			     strncmp(env->value, "RC_SERVICE=", 10) != 0 &&
+			     strncmp(env->value, "RC_SVCNAME=", 10) != 0) ||
+			    strncmp(env->value, "SSD_NICELEVEL=", 14)) == 0)
 			{
 				p = strchr(env->value, '=');
 				*p = '\0';
