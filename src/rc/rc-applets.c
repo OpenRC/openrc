@@ -366,8 +366,8 @@ static int rc_service(_unused int argc, char **argv)
 {
 	char *service;
 
-	if (argc < 3)
-		eerrorx("%s: you need to specify a service and command(s)",
+	if (argc < 2)
+		eerrorx("%s: you need to specify a service",
 			applet);
 
 	if (!(service = rc_service_resolve(argv[1])))
