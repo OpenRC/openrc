@@ -19,7 +19,7 @@ _abort() {
 
 # We should only reboot when first booting
 _reboot() {
-	if [ "${RC_SOFTLEVEL}" = "${RC_BOOTLEVEL}" ]; then
+	if [ "${RC_RUNLEVEL}" = "${RC_BOOTLEVEL}" ]; then
 		reboot "$@"
 		_abort || return 1
 	fi

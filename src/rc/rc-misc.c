@@ -224,7 +224,7 @@ void env_config(void)
 	setenv("RC_RUNLEVEL", e, 1);
 	free(e);
 
-	if ((fp = fopen(RC_KSOFTLEVEL, "r"))) {
+	if ((fp = fopen(RC_KRUNLEVEL, "r"))) {
 		memset(buffer, 0, sizeof (buffer));
 		if (fgets(buffer, sizeof (buffer), fp)) {
 			l = strlen (buffer) - 1;

@@ -367,14 +367,14 @@ static bool set_ksoftlevel(const char *level)
 	    strcmp(level, RC_LEVEL_SINGLE) == 0 ||
 	    strcmp(level, RC_LEVEL_SYSINIT) == 0)
 	{
-		if (exists(RC_KSOFTLEVEL) &&
-		    unlink(RC_KSOFTLEVEL) != 0)
-			eerror("unlink `%s': %s", RC_KSOFTLEVEL, strerror(errno));
+		if (exists(RC_KRUNLEVEL) &&
+		    unlink(RC_KRUNLEVEL) != 0)
+			eerror("unlink `%s': %s", RC_KRUNLEVEL, strerror(errno));
 		return false;
 	}
 
-	if (! (fp = fopen(RC_KSOFTLEVEL, "w"))) {
-		eerror("fopen `%s': %s", RC_KSOFTLEVEL, strerror(errno));
+	if (! (fp = fopen(RC_KRUNLEVEL, "w"))) {
+		eerror("fopen `%s': %s", RC_KRUNLEVEL, strerror(errno));
 		return false;
 	}
 
@@ -388,11 +388,11 @@ static int get_ksoftlevel(char *buffer, int buffer_len)
 	FILE *fp;
 	int i = 0;
 
-	if (! exists(RC_KSOFTLEVEL))
+	if (! exists(RC_KRUNLEVEL))
 		return 0;
 
-	if (! (fp = fopen(RC_KSOFTLEVEL, "r"))) {
-		eerror("fopen `%s': %s", RC_KSOFTLEVEL, strerror(errno));
+	if (! (fp = fopen(RC_KRUNLEVEL, "r"))) {
+		eerror("fopen `%s': %s", RC_KRUNLEVEL, strerror(errno));
 		return -1;
 	}
 
@@ -683,7 +683,7 @@ static void do_newlevel(const char *newlevel)
 			printf("Press %sI%s to enter interactive boot mode\n\n",
 			       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
 
-		setenv("RC_SOFTLEVEL", newlevel, 1);
+		setenv("RC_RUNLEVEL", newlevel, 1);
 		rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, newlevel);
 		hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 		run_script(INITSH);
@@ -902,10 +902,12 @@ interactive_option:
 #define getoptstring "o:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "override", 1, NULL, 'o' },
+	{ "service",  1, NULL, 's' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
 	"override the next runlevel to change into\nwhen leaving single user or boot runlevels",
+	"runs the service specified with the rest\nof the arguments",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -958,8 +960,7 @@ int main(int argc, char **argv)
 	chdir("/");
 
 	/* RUNLEVEL is set by sysvinit as is a magic number
-	 * RC_SOFTLEVEL is set by us and is the name for this magic number
-	 * even though all our userland documentation refers to runlevel */
+	 * RC_RUNLEVEL is set by us and is the name for this magic number */
 	RUNLEVEL = getenv("RUNLEVEL");
 	PREVLEVEL = getenv("PREVLEVEL");
 
@@ -978,6 +979,16 @@ int main(int argc, char **argv)
 			if (*optarg == '\0')
 				optarg = NULL;
 			exit(set_ksoftlevel(optarg) ? EXIT_SUCCESS : EXIT_FAILURE);
+			/* NOTREACHED */
+		case 's':
+			newlevel = rc_service_resolve(optarg);
+			if (!newlevel)
+				eerrorx("%s: service `%s' does not exist",
+					applet, optarg);
+			argv += optind - 1;
+			*argv = newlevel;
+			execv(*argv, argv);
+			eerrorx("%s: %s", applet, strerror(errno));
 			/* NOTREACHED */
 		case_RC_COMMON_GETOPT
 		}

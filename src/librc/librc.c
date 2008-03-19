@@ -37,7 +37,7 @@ const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #endif
 #include <signal.h>
 
-#define SOFTLEVEL	RC_SVCDIR "/softlevel"
+#define RC_RUNLEVEL	RC_SVCDIR "/softlevel"
 
 #ifndef S_IXUGO
 # define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
@@ -268,7 +268,7 @@ char *rc_runlevel_get(void)
 	FILE *fp;
 	char *runlevel = NULL;
 
-	if ((fp = fopen(SOFTLEVEL, "r"))) {
+	if ((fp = fopen(RC_RUNLEVEL, "r"))) {
 		runlevel = xmalloc(sizeof(char) * PATH_MAX);
 		if (fgets(runlevel, PATH_MAX, fp)) {
 			int i = strlen(runlevel) - 1;
@@ -290,7 +290,7 @@ librc_hidden_def(rc_runlevel_get)
 
 bool rc_runlevel_set(const char *runlevel)
 {
-	FILE *fp = fopen(SOFTLEVEL, "w");
+	FILE *fp = fopen(RC_RUNLEVEL, "w");
 
 	if (! fp)
 		return false;

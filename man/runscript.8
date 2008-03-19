@@ -278,7 +278,7 @@ sets the following environment variables for use in the service scripts:
 .Bl -tag -width "RC_DEFAULTLEVEL" 
 .It Va SVCNAME
 Name of the service.
-.It Va RC_SOFTLEVEL
+.It Va RC_RUNLEVEL
 Current runlevel that rc is in.
 .It Va RC_BOOTLEVEL
 Boot runlevel chosen. Default is boot.
@@ -293,7 +293,7 @@ The result of `uname -s`.
 .Sh FILES
 .Pp
 Configuration files, relative to the location of the service.
-If a file ending with .${RC_SOFTLEVEL} exists then we use that instead.
+If a file ending with .${RC_RUNLEVEL} exists then we use that instead.
 .Bl -ohang
 .It Pa ../conf.d/${SVCNAME%%.*}
 mulitplexed configuration file.

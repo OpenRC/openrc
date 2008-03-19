@@ -107,7 +107,7 @@ int rc_depend(int argc, char **argv)
 	int options = RC_DEP_TRACE;
 	bool first = true;
 	bool update = false;
-	char *runlevel = xstrdup(getenv("RC_SOFTLEVEL"));
+	char *runlevel = xstrdup(getenv("RC_RUNLEVEL"));
 	int opt;
 	char *token;
 

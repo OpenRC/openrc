@@ -11,7 +11,7 @@ SBINDIR=	${PREFIX}/sbin
 LINKDIR=	${PREFIX}/${LIBNAME}/${PROG}
 
 BINLINKS=	rc-status
-SBINLINKS=	rc-update runscript start-stop-daemon
+SBINLINKS=	rc-service rc-update runscript start-stop-daemon
 RC_BINLINKS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 		eindent eoutdent esyslog eval_ecolors \
 		veinfo vewarn vebegin veend vewend veindent veoutdent \

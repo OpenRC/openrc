@@ -76,7 +76,7 @@
 #  define RC_LOCAL_CONFDIR      LOCAL_PREFIX SYSCONFDIR "/conf.d"
 #endif
 
-#define RC_KSOFTLEVEL           RC_SVCDIR "/ksoftlevel"
+#define RC_KRUNLEVEL            RC_SVCDIR "/krunlevel"
 #define RC_STARTING             RC_SVCDIR "/rc.starting"
 #define RC_STOPPING             RC_SVCDIR "/rc.stopping"
 

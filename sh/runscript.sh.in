@@ -47,8 +47,8 @@ _conf_d=${1%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${SVCNAME%%.*}
 if [ -n "${_c}" -a "${_c}" != "${SVCNAME}" ]; then
-	if [ -e "${_conf_d}/${_c}.${RC_SOFTLEVEL}" ]; then
-		. "${_conf_d}/${_c}.${RC_SOFTLEVEL}"
+	if [ -e "${_conf_d}/${_c}.${RC_RUNLEVEL}" ]; then
+		. "${_conf_d}/${_c}.${RC_RUNLEVEL}"
 	elif [ -e "${_conf_d}/${_c}" ]; then
 		. "${_conf_d}//${_c}"
 	fi
@@ -56,8 +56,8 @@ fi
 unset _c
 
 # Overlay with our specific config
-if [ -e "${_conf_d}/${SVCNAME}.${RC_SOFTLEVEL}" ]; then
-	. "${_conf_d}/${SVCNAME}.${RC_SOFTLEVEL}"
+if [ -e "${_conf_d}/${SVCNAME}.${RC_RUNLEVEL}" ]; then
+	. "${_conf_d}/${SVCNAME}.${RC_RUNLEVEL}"
 elif [ -e "${_conf_d}/${SVCNAME}" ]; then
 	. "${_conf_d}/${SVCNAME}"
 fi

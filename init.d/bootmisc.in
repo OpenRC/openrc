@@ -126,7 +126,7 @@ start()
 stop()
 {
 	# Write a halt record if we're shutting down
-	case "${RC_SOFTLEVEL}" in
+	case "${RC_RUNLEVEL}" in
 		reboot|shutdown) [ "${RC_UNAME}" = "Linux" ] && halt -w;;
 	esac
 
