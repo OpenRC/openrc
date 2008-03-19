@@ -8,9 +8,8 @@ INSTALLAFTER=	_installafter
 
 MK=	../mk
 # To get NET_LO
-include ${MK}/os.mk
-include Makefile.${SUBOS}
 include ${MK}/scripts.mk
+include Makefile.${SUBOS}
 
 _installafter:
 	${INSTALL} -d ${DESTDIR}/${PREFIX}/${INITDIR}
