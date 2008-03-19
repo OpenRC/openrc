@@ -43,7 +43,9 @@ _sanitize_path()
 	local IFS=":" p= path=
 	for p in ${PATH}; do
 		case "${p}" in
-			@PREFIX@/lib/rc/sbin|@PREFIX@/bin|@PREFIX@/sbin|/usr/bin|/usr/sbin|@PKG_PREFIX@/bin|@PKG_PREFIX@/sbin);;
+			@PREFIX@/lib/rc/sbin|@PREFIX@/bin|@PREFIX@/sbin|/usr/bin|/usr/sbin);;
+			@PKG_PREFIX@/bin|@PKG_PREFIX@/sbin);;
+			@LOCAL_PREFIX@/bin|@LOCAL_PREFIX@/sbin);;
 			*) path="${path}${path:+:}${p}";;
 		esac
 	done
@@ -59,9 +61,23 @@ if [ -n "${ZSH_VERSION}" ]; then
 	setopt NO_GLOB_SUBST
 fi
 
-# Add our bin to $PATH
-export PATH="@PREFIX@/lib/rc/bin:@PREFIX@/bin:@PREFIX@/sbin:/usr/bin:/usr/sbin:@PKG_PREFIX@/bin:@PKG_PREFIX@/sbin:$(_sanitize_path "${PATH}")"
-unset _sanitize_path
+# Make a sane PATH
+_PKG_PREFIX=@PKG_PREFIX@
+_LOCAL_PREFIX=@LOCAL_PREFIX@
+_PATH=@PREFIX@/lib/rc/bin:@PREFIX@/bin:@PREFIX@/sbin
+case "${_PREFIX}" in
+	""|/) _PATH="${_PATH}:/usr/bin:/usr/sbin";;
+	/usr) _PATH="${_PATH}:/bin:/sbin";;
+	*)    _PATH="${_PATH}:/bin:/sbin:/usr/bin:/usr/sbin";;
+esac
+if [ -n "${_PKG_PREFIX}" ]; then
+	_PATH="${_PATH}:${_PKG_PREFIX}/bin:${_PKG_PREFIX}/sbin"
+fi
+if [ -n "${_LOCAL_PREFIX}" ]; then
+	_PATH="${_PATH}:${_LOCAL_PREFIX}/bin:${_LOCAL_PREFIX}/sbin"
+fi
+export PATH="${_PATH}$(_sanitize_path "${PATH}")"
+unset _sanitize_path _PKG_PREFIX _LOCAL_PREFIX _PATH
 
 for arg; do
 	case "${arg}" in
