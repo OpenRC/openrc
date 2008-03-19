@@ -364,9 +364,13 @@ static int do_shell_var(int argc, char **argv)
 
 static int rc_service(_unused int argc, char **argv)
 {
-	char *service = rc_service_resolve(argv[1]);
-	
-	if (!service)
+	char *service;
+
+	if (argc < 3)
+		eerrorx("%s: you need to specify a service and command(s)",
+			applet);
+
+	if (!(service = rc_service_resolve(argv[1])))
 		eerrorx("%s: service `%s' does not exist", applet, argv[1]);
 
 	*++argv = service;
