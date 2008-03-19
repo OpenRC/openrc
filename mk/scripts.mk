@@ -6,15 +6,17 @@ include ${MK}/os.mk
 
 OBJS+=	${SRCS:.in=}
 
-_SED_REPLACE=	-e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR@:${SYSCONFDIR}:g' -e 's:@PREFIX@:${PREFIX}:g' -e 's:@PKG_PREFIX@:${PKG_PREFIX}:g' -e 's:@LOCAL_PREFIX@:${LOCAL_PREFIX}:g'
+_SED_PREFIX_SH=		if test "${PREFIX}" = "${PKG_PREFIX}"; then echo "-e 's:@PKG_PREFIX@::g'"; else echo "-e 's:@PKG_PREFIX@:${PKG_PREFIX}:g'"; fi
+_SED_PREFIX!=		${_SED_PREFIX_SH}
+SED_REPLACE=		-e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR@:${SYSCONFDIR}:g' -e 's:@PREFIX@:${PREFIX}:g' ${_SED_PREFIX}$(shell ${_SED_PREFIX_SH})  -e 's:@LOCAL_PREFIX@:${LOCAL_PREFIX}:g'	
 
 # Tweak our shell scripts
 .SUFFIXES:	.sh.in .in
 .sh.in.sh:
-	sed ${_SED_REPLACE} $< > $@
+	sed ${SED_REPLACE} $< > $@
 
 .in:
-	sed ${_SED_REPLACE} $< > $@
+	sed ${SED_REPLACE} $< > $@
 
 all: ${OBJS}
 
