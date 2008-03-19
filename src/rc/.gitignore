@@ -1,6 +1,7 @@
 .depend
 version.h
 rc-status
+rc-service
 rc-update
 runscript
 start-stop-daemon
