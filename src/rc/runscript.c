@@ -791,10 +791,12 @@ static void svc_start(bool deps)
 					rc_service_schedule_start(svc->value, service);
 					use_services = rc_deptree_depend(deptree, "iprovide",
 							svc->value);
-					TAILQ_FOREACH (svc2, use_services, entries)
-						rc_service_schedule_start(svc2->value, service);
-					rc_stringlist_free(use_services);
-					use_services = NULL;
+					if (use_services) {
+						TAILQ_FOREACH (svc2, use_services, entries)
+							rc_service_schedule_start(svc2->value, service);
+						rc_stringlist_free(use_services);
+						use_services = NULL;
+					}
 					len += strlen(svc->value) + 2;
 					n++;
 				}
@@ -804,13 +806,13 @@ static void svc_start(bool deps)
 				TAILQ_FOREACH(svc, tmplist, entries) {
 					if (p != tmp)
 						p += snprintf(p, len, ", ");
-					p += snprintf(p, len, "%s", svc->value);
+					p += snprintf(p, len - (p - tmp), "%s", svc->value);
 				}
-				free(tmp);
 				rc_stringlist_free(tmplist);
 				tmplist = NULL;
 				ewarnx("WARNING: %s is scheduled to start when %s has started",
 						applet, tmp);
+				free(tmp);
 			}
 
 			rc_stringlist_free(services);
