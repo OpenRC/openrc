@@ -821,7 +821,7 @@ RC_STRINGLIST *rc_services_in_runlevel(const char *runlevel)
 			free(pkg);
 		}
 #endif
-#ifdef RC_LOCAL_DIR
+#ifdef RC_LOCAL_INITDIR
 		if (local) {
 			TAILQ_CONCAT(list, local, entries);
 			free(local);
