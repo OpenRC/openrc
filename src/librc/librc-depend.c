@@ -445,7 +445,7 @@ static void visit_service(const RC_DEPTREE *deptree,
 
 	/* We've visited everything we need, so add ourselves unless we
 	   are also the service calling us or we are provided by something */
-	svcname = getenv("SVCNAME");
+	svcname = getenv("RC_SVCNAME");
 	if (! svcname || strcmp(svcname, depinfo->service) != 0)
 		if (! get_deptype(depinfo, "providedby")) {
 			if (! *sorted)
