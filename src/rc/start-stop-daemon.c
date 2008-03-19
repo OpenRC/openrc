@@ -976,7 +976,7 @@ int start_stop_daemon(int argc, char **argv)
 			if ((strncmp(env->value, "RC_", 3) == 0 &&
 			     strncmp(env->value, "RC_SERVICE=", 10) != 0 &&
 			     strncmp(env->value, "RC_SVCNAME=", 10) != 0) ||
-			    strncmp(env->value, "SSD_NICELEVEL=", 14)) == 0)
+			    strncmp(env->value, "SSD_NICELEVEL=", 14) == 0)
 			{
 				p = strchr(env->value, '=');
 				*p = '\0';
