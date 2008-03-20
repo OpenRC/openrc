@@ -17,6 +17,6 @@ _PKG_PREFIX_SH=	if test -n "${PKG_PREFIX}" && test "${PKG_PREFIX}" != "/" && tes
 _PKG_PREFIX!=	${_PKG_PREFIX_SH}
 CFLAGS+=	${_PKG_PREFIX}$(shell ${_PKG_PREFIX_SH})
 
-_LCL_PREFIX_SH=	if test -n "${LOCAL_PREFIX}" && test "${LOCAL_PREFIX}" != "/"; then echo "-DLOCAL_PREFIX=\\\"${LOCAL_PREFIX}\\\""; else echo ""; fi
+_LCL_PREFIX_SH=	if test -n "${LOCAL_PREFIX}" && test "${LOCAL_PREFIX}" != "/" && test "${LOCAL_PREFIX}" != "${PREFIX}"; then echo "-DLOCAL_PREFIX=\\\"${LOCAL_PREFIX}\\\""; else echo ""; fi
 _LCL_PREFIX!=	${_LCL_PREFIX_SH}
 CFLAGS+=	${_LCL_PREFIX}$(shell ${_LCL_PREFIX_SH})
