@@ -62,22 +62,19 @@ if [ -n "${ZSH_VERSION}" ]; then
 fi
 
 # Make a sane PATH
+_PREFIX=@PREFIX@
 _PKG_PREFIX=@PKG_PREFIX@
 _LOCAL_PREFIX=@LOCAL_PREFIX@
-_PATH=@PREFIX@/lib/rc/bin:@PREFIX@/bin:@PREFIX@/sbin
-case "${_PREFIX}" in
-	""|/) _PATH="${_PATH}:/usr/bin:/usr/sbin";;
-	/usr) _PATH="${_PATH}:/bin:/sbin";;
-	*)    _PATH="${_PATH}:/bin:/sbin:/usr/bin:/usr/sbin";;
-esac
+_LOCAL_PREFIX=${_LOCAL_PREFIX:-/usr/local}
+_PATH=@PREFIX@/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin
 if [ -n "${_PKG_PREFIX}" ]; then
 	_PATH="${_PATH}:${_PKG_PREFIX}/bin:${_PKG_PREFIX}/sbin"
 fi
 if [ -n "${_LOCAL_PREFIX}" ]; then
 	_PATH="${_PATH}:${_LOCAL_PREFIX}/bin:${_LOCAL_PREFIX}/sbin"
 fi
-export PATH="${_PATH}$(_sanitize_path "${PATH}")"
-unset _sanitize_path _PKG_PREFIX _LOCAL_PREFIX _PATH
+export PATH="${_PATH}:$(_sanitize_path "${PATH}")"
+unset _sanitize_path _PREFIX _PKG_PREFIX _LOCAL_PREFIX _PATH
 
 for arg; do
 	case "${arg}" in
