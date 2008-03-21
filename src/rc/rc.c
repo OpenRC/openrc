@@ -358,7 +358,7 @@ static void single_user(void)
 		 applet, strerror(errno));
 }
 
-static bool set_ksoftlevel(const char *level)
+static bool set_krunlevel(const char *level)
 {
 	FILE *fp;
 
@@ -383,7 +383,7 @@ static bool set_ksoftlevel(const char *level)
 	return true;
 }
 
-static int get_ksoftlevel(char *buffer, int buffer_len)
+static int get_krunlevel(char *buffer, int buffer_len)
 {
 	FILE *fp;
 	int i = 0;
@@ -690,9 +690,9 @@ static void do_newlevel(const char *newlevel)
 
 #ifdef __linux__
 		/* If we requested a softlevel, save it now */
-		set_ksoftlevel(NULL);
+		set_krunlevel(NULL);
 		if ((cmd = proc_getent("softlevel"))) {
-			set_ksoftlevel(cmd);
+			set_krunlevel(cmd);
 			free(cmd);
 		}
 #endif
@@ -714,7 +714,7 @@ static void do_newlevel(const char *newlevel)
 		     strcmp(RUNLEVEL, "1") != 0))
 		{
 			/* Remember the current runlevel for when we come back */
-			set_ksoftlevel(runlevel);
+			set_krunlevel(runlevel);
 			single_user();
 		}
 #endif
@@ -921,7 +921,7 @@ int main(int argc, char **argv)
 	RC_STRING *service;
 	bool going_down = false;
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
-	char ksoftbuffer [PATH_MAX];
+	char krunlevel [PATH_MAX];
 	char pidstr[6];
 	int opt;
 	bool parallel;
@@ -978,7 +978,7 @@ int main(int argc, char **argv)
 		case 'o':
 			if (*optarg == '\0')
 				optarg = NULL;
-			exit(set_ksoftlevel(optarg) ? EXIT_SUCCESS : EXIT_FAILURE);
+			exit(set_krunlevel(optarg) ? EXIT_SUCCESS : EXIT_FAILURE);
 			/* NOTREACHED */
 		case 's':
 			newlevel = rc_service_resolve(optarg);
@@ -1029,24 +1029,24 @@ int main(int argc, char **argv)
 	/* Now we start handling our children */
 	signal_setup(SIGCHLD, handle_signal);
 
-	/* We should only use ksoftlevel if we were in single user mode
-	 * If not, we need to erase ksoftlevel now. */
+	/* We should only use krunlevel if we were in single user mode
+	 * If not, we need to erase krunlevel now. */
 	if (PREVLEVEL &&
 	    (strcmp(PREVLEVEL, "1") == 0 ||
 	     strcmp(PREVLEVEL, "S") == 0 ||
 	     strcmp(PREVLEVEL, "N") == 0))
 	{
-		/* Try not to join boot and ksoftlevels together */
+		/* Try not to join boot and krunlevels together */
 		if (! newlevel ||
 		    strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0)
-			if (get_ksoftlevel(ksoftbuffer, sizeof(ksoftbuffer)))
-				newlevel = ksoftbuffer;
+			if (get_krunlevel(krunlevel, sizeof(krunlevel)))
+				newlevel = krunlevel;
 	} else if (! RUNLEVEL ||
 		   (strcmp(RUNLEVEL, "1") != 0 &&
 		    strcmp(RUNLEVEL, "S") != 0 &&
 		    strcmp(RUNLEVEL, "N") != 0))
 	{
-		set_ksoftlevel(NULL);
+		set_krunlevel(NULL);
 	}
 
 	if (newlevel &&
