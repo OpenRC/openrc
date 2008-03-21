@@ -42,4 +42,4 @@ void run_applets(int, char **);
 RC_DEPTREE *_rc_deptree_load (int *);
 
 /* Test to see if we can see pid 1 or not */
-bool _rc_findpid1(void);
+bool _rc_can_find_pids(void);

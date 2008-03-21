@@ -44,12 +44,15 @@ extern const char *applet;
 static bool test_crashed = false;
 static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
 
-bool _rc_findpid1(void)
+bool _rc_can_find_pids(void)
 {
 	RC_PIDLIST *pids;
 	RC_PID *pid;
 	RC_PID *pid2;
 	bool retval = false;
+
+	if (geteuid() == 0)
+		return true;
 
 	/* If we cannot see process 1, then we don't test to see if
 	 * services crashed or not */
@@ -151,7 +154,7 @@ int rc_status(int argc, char **argv)
 	int opt;
 	int depopts = RC_DEP_STRICT | RC_DEP_START | RC_DEP_TRACE;
 
-	test_crashed = _rc_findpid1();
+	test_crashed = _rc_can_find_pids();
 
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 				  (int *) 0)) != -1)
