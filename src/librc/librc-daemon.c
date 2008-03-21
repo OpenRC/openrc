@@ -553,7 +553,6 @@ bool rc_service_daemons_crashed(const char *service)
 				break;
 			}
 		}
-		free(line);
 		fclose(fp);
 
 		pid = 0;
@@ -621,6 +620,7 @@ bool rc_service_daemons_crashed(const char *service)
 			break;
 	}
 	closedir(dp);
+	free(line);
 
 	return retval;
 }
