@@ -66,7 +66,13 @@ _PREFIX=@PREFIX@
 _PKG_PREFIX=@PKG_PREFIX@
 _LOCAL_PREFIX=@LOCAL_PREFIX@
 _LOCAL_PREFIX=${_LOCAL_PREFIX:-/usr/local}
-_PATH=@PREFIX@/lib/rc/bin:/bin:/sbin:/usr/bin:/usr/sbin
+_PATH=@PREFIX@/lib/rc/bin
+case "${_PREFIX}" in
+	"${_PKG_PREFIX}"|"${_LOCAL_PREFIX}") ;;
+	*) _PATH="${_PATH}:${_PREFIX}/bin:${_PREFIX}/sbin";;
+esac
+_PATH="${_PATH}":/bin:/sbin:/usr/bin:/usr/sbin
+
 if [ -n "${_PKG_PREFIX}" ]; then
 	_PATH="${_PATH}:${_PKG_PREFIX}/bin:${_PKG_PREFIX}/sbin"
 fi
@@ -93,7 +99,7 @@ else
 	# the last ecmd
 	for _e in ebegin eend error errorn einfo einfon ewarn ewarnn ewend \
 		vebegin veend veinfo vewarn vewend; do
-		eval "${_e}() { local _r; /lib/rc/bin/${_e} \"\$@\"; _r=$?; \
+		eval "${_e}() { local _r; @PREFIX@/lib/rc/bin/${_e} \"\$@\"; _r=$?; \
 		export EINFO_LASTCMD=${_e}; return \$_r; }"
 	done
 fi
