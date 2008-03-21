@@ -54,22 +54,9 @@ do_unmount()
 					retry=$((${retry} - 1))
 					;;
 			esac
-
-			# OK, try forcing things
-			if [ ${retry} -le 0 ]; then
-				case "${cmd}" in
-					umount*)
-						LC_ALL=C ${cmd} -f "${mnt}" \
-						|| retry=-999
-						;;
-					*)
-						retry=-999
-						;;
-				esac
-				break
-			fi
+			[ ${retry} -le 0 ] && break
 		done
-		if [ ${retry} -eq -999 ]; then
+		if [ ${retry} -le 0 ]; then
 			eend 1
 			retval=1
 		else
