@@ -62,6 +62,7 @@ rc-depend.o
 rc-logger.o
 rc-misc.o
 rc-plugin.o
+rc-service.o
 rc-status.o
 rc-update.o
 runscript.o

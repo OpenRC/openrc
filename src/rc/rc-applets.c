@@ -362,23 +362,6 @@ static int do_shell_var(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-static int rc_service(_unused int argc, char **argv)
-{
-	char *service;
-
-	if (argc < 2)
-		eerrorx("%s: you need to specify a service",
-			applet);
-
-	if (!(service = rc_service_resolve(argv[1])))
-		eerrorx("%s: service `%s' does not exist", applet, argv[1]);
-
-	*++argv = service;
-	execv(*argv, argv);
-	eerrorx("%s: %s", applet, strerror(errno));
-	/* NOTREACHED */
-}
-
 void run_applets(int argc, char **argv)
 {
 	int i = 2;

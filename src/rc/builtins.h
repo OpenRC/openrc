@@ -26,16 +26,17 @@
 
 #include "rc.h"
 
-int checkpath (int argc, char **argv);
-int fstabinfo (int argc, char **argv);
-int mountinfo (int argc, char **argv);
-int rc_depend (int argc, char **argv);
-int rc_status (int argc, char **argv);
-int rc_update (int argc, char **argv);
-int runscript (int argc, char **argv);
-int start_stop_daemon (int argc, char **argv);
+int checkpath(int, char **);
+int fstabinfo(int, char **);
+int mountinfo(int, char **);
+int rc_depend(int, char **);
+int rc_service(int, char **);
+int rc_status(int, char **);
+int rc_update(int, char **);
+int runscript(int, char **);
+int start_stop_daemon(int, char **);
 
-void run_applets (int argc, char **argv);
+void run_applets(int, char **);
 
 /* Handy function so we can wrap einfo around our deptree */
-RC_DEPTREE *_rc_deptree_load (int *regen);
+RC_DEPTREE *_rc_deptree_load (int *);
