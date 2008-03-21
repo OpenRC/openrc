@@ -1255,12 +1255,13 @@ int runscript(int argc, char **argv)
 						      runlevel, depoptions);
 			rc_stringlist_free(tmplist);
 			tmplist = NULL;
-			TAILQ_FOREACH(svc, services, entries)
-				printf("%s ", svc->value);
-			if (TAILQ_FIRST(services))
+			if (services) {
+				TAILQ_FOREACH(svc, services, entries)
+					printf("%s ", svc->value);
 				printf ("\n");
-			rc_stringlist_free(services);
-			services = NULL;
+				rc_stringlist_free(services);
+				services = NULL;
+			}
 		} else if (strcmp (optarg, "status") == 0) {
 			RC_SERVICE r = svc_status();
 			retval = (int) r;

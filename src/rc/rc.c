@@ -1145,9 +1145,13 @@ int main(int argc, char **argv)
 			}
 		}
 
-		if (coldplugged_services)
-			TAILQ_FOREACH(service, coldplugged_services, entries)
-				rc_stringlist_addu(start_services, service->value);
+		if (coldplugged_services) {
+			if (start_services) {
+				TAILQ_FOREACH(service, coldplugged_services, entries)
+					rc_stringlist_addu(start_services, service->value);
+			} else
+				start_services = coldplugged_services;
+		}
 	}
 
 	/* Save our softlevel now */
