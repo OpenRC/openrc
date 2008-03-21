@@ -52,12 +52,12 @@ do_unmount()
 						"${mnt}" >/dev/null 2>&1
 					sleep 1
 					retry=$((${retry} - 1))
+					[ ${retry} -le 0 ] && eend 1
 					;;
 			esac
 			[ ${retry} -le 0 ] && break
 		done
 		if [ ${retry} -le 0 ]; then
-			eend 1
 			retval=1
 		else
 			eend 0
