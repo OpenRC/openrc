@@ -41,8 +41,34 @@
 #include "rc-misc.h"
 
 extern const char *applet;
-
+static bool test_crashed = false;
 static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
+
+bool _rc_findpid1(void)
+{
+	RC_PIDLIST *pids;
+	RC_PID *pid;
+	RC_PID *pid2;
+	bool retval = false;
+
+	/* If we cannot see process 1, then we don't test to see if
+	 * services crashed or not */
+	pids = rc_find_pids(NULL, NULL, 0, 1);
+	if (pids) {
+		pid = LIST_FIRST(pids);
+		if (pid) {
+			retval = true;
+			while (pid) {
+				pid2 = LIST_NEXT(pid, entries);
+				free(pid);
+				pid = pid2;
+			}
+		}
+		free(pids);
+	}
+
+	return retval;
+}
 
 static void print_level(char *level)
 {
@@ -73,7 +99,7 @@ static void print_service(char *service)
 		snprintf(status, sizeof(status), "inactive ");
 		color = ECOLOR_WARN;
 	} else if (state & RC_SERVICE_STARTED) {
-		if (rc_service_daemons_crashed(service))
+		if (test_crashed && rc_service_daemons_crashed(service))
 			snprintf(status, sizeof(status), " crashed ");
 		else {
 			snprintf(status, sizeof(status), " started ");
@@ -112,7 +138,7 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int rc_status (int argc, char **argv)
+int rc_status(int argc, char **argv)
 {
 	RC_DEPTREE *deptree = NULL;
 	RC_STRINGLIST *levels = NULL;
@@ -124,6 +150,8 @@ int rc_status (int argc, char **argv)
 	char *p;
 	int opt;
 	int depopts = RC_DEP_STRICT | RC_DEP_START | RC_DEP_TRACE;
+
+	test_crashed = _rc_findpid1();
 
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 				  (int *) 0)) != -1)

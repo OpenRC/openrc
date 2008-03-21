@@ -40,3 +40,6 @@ void run_applets(int, char **);
 
 /* Handy function so we can wrap einfo around our deptree */
 RC_DEPTREE *_rc_deptree_load (int *);
+
+/* Test to see if we can see pid 1 or not */
+bool _rc_findpid1(void);
