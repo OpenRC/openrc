@@ -33,7 +33,7 @@ CLEANFILES+=	${ALL_LINKS}
 LDFLAGS+=	-L../librc -L../libeinfo
 LDADD+=		-lutil -lrc -leinfo
 #CFLAGS+=	-ggdb
-#LDFLAGS+=	-Wl,--rpath=../librc -Wl,--rpath=../libeinfo
+LDFLAGS+=	$(shell test -d ../../.git && echo -Wl,--rpath=../librc -Wl,--rpath=../libeinfo)
 
 MK=		../../mk
 include ${MK}/prog.mk
