@@ -898,6 +898,44 @@ interactive_option:
 
 }
 
+static void catch_a_baddie(int sig)
+{
+	pid_t crashed_pid = getpid();
+
+	switch (fork()) {
+		case -1: _exit(sig);
+		case 0: {
+			char pid[10];
+			sprintf(pid, "%i", crashed_pid);
+			printf("\nAuto launching gdb!\n\n");
+			_exit(execlp("gdb", "gdb", "--quiet", "--pid", pid, "-ex", "bt full", NULL));
+		}
+		default: {
+			int status;
+			wait(&status);
+		}
+	}
+
+	_exit(1);
+}
+static void init_bad_signals(void)
+{
+	struct sigaction sa;
+	sigset_t full;
+
+	if (!RC_DEBUG)
+		return;
+
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = catch_a_baddie;
+	sigfillset(&full);
+	sa.sa_mask = full;
+
+	sigaction(SIGBUS, &sa, NULL);
+	sigaction(SIGILL, &sa, NULL);
+	sigaction(SIGSEGV, &sa, NULL);
+}
+
 #include "_usage.h"
 #define getoptstring "o:" getoptstring_COMMON
 static const struct option longopts[] = {
@@ -931,6 +969,8 @@ int main(int argc, char **argv)
 	char *p;
 	char *token;
 #endif
+
+	init_bad_signals();
 
 	applet = basename_c(argv[0]);
 	LIST_INIT(&service_pids);
