@@ -453,7 +453,6 @@ int mountinfo(int argc, char **argv)
 	}
 	nodes = find_mounts(&args);
 	rc_stringlist_free(args.mounts);
-	rc_stringlist_sort(&nodes);
 
 	REG_FREE(args.fstype_regex);
 	REG_FREE(args.skip_fstype_regex);
@@ -464,6 +463,8 @@ int mountinfo(int argc, char **argv)
 
 	result = EXIT_FAILURE;
 	quiet = rc_yesno(getenv("EINFO_QUIET"));
+
+	/* We should report the mounts in reverse order to ease unmounting */
 	TAILQ_FOREACH_REVERSE(s, nodes, rc_stringlist, entries) {
 		if (point_regex &&
 		    regexec(point_regex, s->value, 0, NULL, 0) != 0)
