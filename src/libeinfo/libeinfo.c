@@ -787,7 +787,7 @@ static void _eend(FILE * __EINFO_RESTRICT fp, int col, ECOLOR color,
 	if (! msg)
 		return;
 
-	cols = get_term_columns(fp) - (strlen(msg) + 5);
+	cols = get_term_columns(fp) - (strlen(msg) + 3);
 
 	/* cons25 is special - we need to remove one char, otherwise things
 	 * do not align properly at all. */
@@ -801,15 +801,18 @@ static void _eend(FILE * __EINFO_RESTRICT fp, int col, ECOLOR color,
 	if (term_is_cons25)
 		cols--;
 
+	/* If extra spacing is required around msg, then please change
+	 * via a runtime knob and leave this default as is as it saves 2 
+	 * valuable columns when running on 80 column screens. */
 	if (cols > 0 && colour_terminal(fp)) {
-		fprintf(fp, "%s%s %s[%s %s %s]%s\n", up, tgoto(goto_column, 0, cols),
+		fprintf(fp, "%s%s %s[%s%s%s]%s\n", up, tgoto(goto_column, 0, cols),
 			ecolor(ECOLOR_BRACKET), ecolor(color), msg,
 			ecolor(ECOLOR_BRACKET), ecolor(ECOLOR_NORMAL));
 	} else {
 		if (col > 0)
 			for (i = 0; i < cols - col; i++)
 				fprintf(fp, " ");
-		fprintf(fp, " [ %s ]\n", msg);
+		fprintf(fp, " [%s]\n", msg);
 	}
 }
 
