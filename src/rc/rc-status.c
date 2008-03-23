@@ -85,7 +85,7 @@ static void print_level(char *level)
 		printf("%s\n", level);
 }
 
-static void print_service(char *service)
+static void print_service(const char *service)
 {
 	char status[10];
 	int cols =  printf(" %s", service);
