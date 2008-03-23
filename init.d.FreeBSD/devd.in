@@ -14,9 +14,9 @@ depend() {
 }
 
 start_pre() {
-    sysctl hw.bus.devctl_disable=0 >/dev/null
+	sysctl hw.bus.devctl_disable=0 >/dev/null
 }
 
 stop_post() {
-    sysctl hw.bus.devctl_disable=1 >/dev/null
+	sysctl hw.bus.devctl_disable=1 >/dev/null
 }

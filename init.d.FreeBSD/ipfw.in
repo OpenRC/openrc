@@ -87,7 +87,7 @@ start() {
 	# Only IPs and nets in firewall_allowservices is allowed in.
 	for i in ${ipfw_ip_in}; do
 		for p in ${ipfw_ports_in}; do
-	    	ipfw add pass tcp from ${i} to me ${p}
+			ipfw add pass tcp from ${i} to me ${p}
 		done
 	done
 

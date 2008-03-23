@@ -46,7 +46,7 @@ save()
 
 stop()
 {
-    # Don't tweak the hardware clock on LiveCD halt.
+	# Don't tweak the hardware clock on LiveCD halt.
 	if yesno "${clock_systohc:-${CLOCK_SYSTOHC}}"; then
 	   [ -z "${CDBOOT}" ] && save
 	fi

@@ -46,14 +46,14 @@ start()
 	for x in ${net_fs_list}; do
 		case "${x}" in
 			nfs|nfs4)
-    			# If the nfsmount script took care of the nfs
+			# If the nfsmount script took care of the nfs
 			# filesystems, then there's no point in trying
 			# them twice
 			service_started nfsmount && continue
 
-        		# Only try to mount NFS filesystems if portmap was
+			# Only try to mount NFS filesystems if portmap was
 			# started. This is to fix "hang" problems for new
-		        # users who do not add portmap to the default runlevel.
+			# users who do not add portmap to the default runlevel.
 			if need_portmap && ! service_started "${pmap}"; then
 				continue
 			fi

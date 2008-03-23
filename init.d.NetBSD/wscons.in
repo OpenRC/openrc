@@ -61,15 +61,15 @@ start()
 			mapfile)
 				local entry=
 				while read entry; do
-				    case "${entry}" in
+					case "${entry}" in
 					\#*|"")
-					    continue
-					    ;;
+						continue
+						;;
 					*)
-					    cmd="${wsctl} -w \"map+=${entry}\""
-					    eval "${cmd} >/dev/null"
-					    ;;
-				    esac
+						cmd="${wsctl} -w \"map+=${entry}\""
+						eval "${cmd} >/dev/null"
+						;;
+					esac
 				done < "${arg1}"
 				;;
 

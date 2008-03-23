@@ -62,7 +62,7 @@ start_pre()
 		# Copy local timezone information if it is not up to date.
 		if [ -r /etc/localtime ]; then
 			cmp -s /etc/localtime "${named_chroot}/etc/localtime" ||
-		    	cp -p /etc/localtime "${named_chroot}/etc/localtime"
+			cp -p /etc/localtime "${named_chroot}/etc/localtime"
 		fi
 
 		command_args="${command_args} -t ${named_chroot}"
@@ -72,7 +72,7 @@ start_pre()
 
 	if [ ! -s "${named_chroot}${namedb}/rndc.conf" ]; then
 		local confgen="${command%/named}/rndc-confgen -a -b256 -u ${named_uid} \
-	    	-c ${named_chrootdir}/etc/namedb/rndc.key"
+			-c ${named_chrootdir}/etc/namedb/rndc.key"
 		if [ -s "${named_chroot}${namedb}/rndc.key" ]; then
 			local getuser="stat -f%Su"
 			[ "${RC_UNAME}" = "Linux" ] && getuser="stat -c%U"
