@@ -447,12 +447,12 @@ char *rc_service_description(const char *service, const char *option)
 	if (! (svc = rc_service_resolve(service)))
 		return NULL;
 
-	if (! option)
+	if (!option)
 		option = "";
 
 	l = strlen(DESCSTR) + strlen(svc) + strlen(option) + 2;
 	cmd = xmalloc(sizeof(char) * l);
-	snprintf(cmd, l, DESCSTR, svc, option ? "_" : "", option);
+	snprintf(cmd, l, DESCSTR, svc, *option ? "_" : "", option);
 	free(svc);
 	if ((fp = popen(cmd, "r"))) {
 		rc_getline(&desc, &len, fp);
