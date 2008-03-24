@@ -549,7 +549,8 @@ static void do_coldplug(void)
 	char *p;
 #endif
 
-	if (! rc_conf_yesno("rc_coldplug") && errno != ENOENT)
+	errno = 0;
+	if (!rc_conf_yesno("rc_coldplug") && errno != ENOENT)
 		return;
 
 	/* We need to ensure our state dirs exist.
