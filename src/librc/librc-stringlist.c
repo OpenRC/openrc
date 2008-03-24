@@ -37,6 +37,7 @@ RC_STRINGLIST *rc_stringlist_new(void)
 	TAILQ_INIT(l);
 	return l;
 }
+librc_hidden_def(rc_stringlist_new)
 
 RC_STRING *rc_stringlist_add (RC_STRINGLIST *list, const char *value)
 {

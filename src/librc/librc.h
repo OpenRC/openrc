@@ -118,7 +118,9 @@ librc_hidden_proto(rc_stringlist_add)
 librc_hidden_proto(rc_stringlist_addu)
 librc_hidden_proto(rc_stringlist_delete)
 librc_hidden_proto(rc_stringlist_free)
+librc_hidden_proto(rc_stringlist_new)
 librc_hidden_proto(rc_stringlist_sort)
+librc_hidden_proto(rc_sys)
 librc_hidden_proto(rc_yesno)
 
 #endif

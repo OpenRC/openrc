@@ -232,6 +232,7 @@ const char *rc_sys(void)
 	return NULL;
 #endif /* PREFIX */
 }
+librc_hidden_def(rc_sys)
 
 static const char *rc_parse_service_state(RC_SERVICE state)
 {
