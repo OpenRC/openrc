@@ -906,13 +906,14 @@ bool rc_service_add(const char *runlevel, const char *service)
 	/* We need to ensure that only things in /etc/init.d are added
 	 * to the boot runlevel */
 	if (strcmp (runlevel, RC_LEVEL_BOOT) == 0) {
-		free(init);
-		p = realpath(dirname (init), path);
-		if (! *p)
+		p = realpath(dirname(init), path);
+		if (! *p) {
+			free(init);
 			return false;
 
-		retval = (strcmp(path, RC_INITDIR) == 0);
-		if (! retval) {
+		}
+		if (strcmp(path, RC_INITDIR) != 0) {
+			free(init);
 			errno = EPERM;
 			return false;
 		}
