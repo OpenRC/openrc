@@ -898,43 +898,30 @@ interactive_option:
 
 }
 
-static void catch_a_baddie(int sig)
+#ifdef RC_DEBUG
+static void handle_bad_signal(int sig)
 {
+	char pid[10];
+	int status;
 	pid_t crashed_pid = getpid();
 
 	switch (fork()) {
-		case -1: _exit(sig);
-		case 0: {
-			char pid[10];
+		case -1:
+			_exit(sig);
+			/* NOTREACHED */
+		case 0:
 			sprintf(pid, "%i", crashed_pid);
 			printf("\nAuto launching gdb!\n\n");
 			_exit(execlp("gdb", "gdb", "--quiet", "--pid", pid, "-ex", "bt full", NULL));
-		}
-		default: {
-			int status;
+			/* NOTREACHED */
+		default:
 			wait(&status);
-		}
 	}
 
 	_exit(1);
+	/* NOTREACHED */
 }
-static void init_bad_signals(void)
-{
-	struct sigaction sa;
-	sigset_t full;
-
-	if (!RC_DEBUG)
-		return;
-
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = catch_a_baddie;
-	sigfillset(&full);
-	sa.sa_mask = full;
-
-	sigaction(SIGBUS, &sa, NULL);
-	sigaction(SIGILL, &sa, NULL);
-	sigaction(SIGSEGV, &sa, NULL);
-}
+#endif
 
 #include "_usage.h"
 #define getoptstring "o:" getoptstring_COMMON
@@ -970,7 +957,11 @@ int main(int argc, char **argv)
 	char *token;
 #endif
 
-	init_bad_signals();
+#ifdef RC_DEBUG
+	signal_setup(SIGBUS, handle_bad_signal);
+	signal_setup(SIGILL, handle_bad_signal);
+	signal_setup(SIGSEGV, handle_bad_signal);
+#endif
 
 	applet = basename_c(argv[0]);
 	LIST_INIT(&service_pids);

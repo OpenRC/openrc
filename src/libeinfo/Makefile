@@ -9,4 +9,5 @@ CFLAGS+=		-I../includes
 MK=			../../mk
 include ${MK}/lib.mk
 include ${MK}/cc.mk
+include ${MK}/debug.mk
 include ${MK}/${MKTERMCAP}.mk

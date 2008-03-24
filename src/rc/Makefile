@@ -32,13 +32,11 @@ CLEANFILES+=	${ALL_LINKS}
 
 LDFLAGS+=	-L../librc -L../libeinfo
 LDADD+=		-lutil -lrc -leinfo
-#CFLAGS+=	-ggdb
-CPPFLAGS+=	$(shell test "x$(DEBUG)" = x && echo -DRC_DEBUG=0 || echo -DRC_DEBUG=1)
-LDFLAGS+=	$(shell test -d ../../.git && echo -Wl,--rpath=../librc -Wl,--rpath=../libeinfo)
 
 MK=		../../mk
 include ${MK}/prog.mk
 include ${MK}/cc.mk
+include ${MK}/debug.mk
 
 CFLAGS+=	-I../includes -I../librc -I../libeinfo
 CFLAGS+=	-DLIB=\"${LIBNAME}\"
