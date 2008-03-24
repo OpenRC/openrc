@@ -632,8 +632,9 @@ static void do_coldplug(void)
 	/* Load our list of coldplugged services and display them */
 	einfon("Device initiated services:%s", ecolor(ECOLOR_HILITE));
 	coldplugged_services = rc_services_in_state(RC_SERVICE_COLDPLUGGED);
-	TAILQ_FOREACH(s, coldplugged_services, entries)
-		printf(" %s", s->value);
+	if (coldplugged_services)
+		TAILQ_FOREACH(s, coldplugged_services, entries)
+			printf(" %s", s->value);
 	printf ("%s\n", ecolor(ECOLOR_NORMAL));
 }
 
