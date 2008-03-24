@@ -102,4 +102,5 @@ else
 		eval "${_e}() { local _r; @PREFIX@/lib/rc/bin/${_e} \"\$@\"; _r=$?; \
 		export EINFO_LASTCMD=${_e}; return \$_r; }"
 	done
+	unset _e
 fi
