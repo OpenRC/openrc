@@ -1,11 +1,7 @@
 #!/bin/sh
 
 top_srcdir=${top_srcdir:-../..}
-srcdir=${builddir:-.}
-top_builddir=${top_srcdir:-../..}
-builddir=${builddir:-.}
-
-. ${top_srcdir}/sh/functions.sh
+. ${top_srcdir}/test/setup_env.sh
 
 libeinfo_srcdir="${srcdir}/../libeinfo"
 libeinfo_builddir="${builddir}/../libeinfo"
@@ -13,11 +9,6 @@ librc_srcdir="${srcdir}/../librc"
 librc_builddir="${builddir}/../librc"
 rc_srcdir="${srcdir}/../rc"
 rc_builddir="${builddir}/../rc"
-
-make -s -C ${rc_builddir} links
-
-export LD_LIBRARY_PATH=${libeinfo_builddir}:${librc_builddir}:${LD_LIBRARY_PATH}
-export PATH=${rc_builddir}:${PATH}
 
 checkit() {
 	local base=$1; shift

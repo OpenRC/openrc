@@ -3,7 +3,7 @@ all:
 install:
 
 check test::
-	./symbols.sh
+	./runtests.sh
 
 clean:
 	rm -f *.out

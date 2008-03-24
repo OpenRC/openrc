@@ -18,3 +18,6 @@ _installafter:
 	@# Put functions.sh into the init.d dir so 3rd party apps don't have to
 	@# be multilib aware
 	ln -snf ${PREFIX}/${RC_LIB}/sh/functions.sh ${DESTDIR}/${PREFIX}/${INITDIR} || exit $$?
+
+check test::
+	./runtests.sh
