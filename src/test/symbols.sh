@@ -1,13 +1,23 @@
 #!/bin/sh
 
 top_srcdir=${top_srcdir:-../..}
-srcdir=${builddir:-..}
+srcdir=${builddir:-.}
 top_builddir=${top_srcdir:-../..}
-builddir=${builddir:-..}
+builddir=${builddir:-.}
 
-export LD_LIBRARY_PATH=${builddir}:${LD_LIBRARY_PATH}
 . ${top_srcdir}/sh/functions.sh
-export PATH=${builddir}:${PATH}
+
+libeinfo_srcdir="${srcdir}/../libeinfo"
+libeinfo_builddir="${builddir}/../libeinfo"
+librc_srcdir="${srcdir}/../librc"
+librc_builddir="${builddir}/../librc"
+rc_srcdir="${srcdir}/../rc"
+rc_builddir="${builddir}/../rc"
+
+make -s -C ${rc_builddir} links
+
+export LD_LIBRARY_PATH=${libeinfo_builddir}:${librc_builddir}:${LD_LIBRARY_PATH}
+export PATH=${rc_builddir}:${PATH}
 
 checkit() {
 	local base=$1; shift
@@ -21,14 +31,14 @@ ret=0
 
 ebegin "Checking exported symbols in libeinfo.so (data)"
 checkit einfo.data $(
-readelf -Ws ${builddir}/libeinfo.so \
+readelf -Ws ${libeinfo_builddir}/libeinfo.so \
 	| awk '$4 == "OBJECT" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
 	| sort -u
 )
 
 ebegin "Checking exported symbols in libeinfo.so (functions)"
 checkit einfo.funcs $(
-readelf -Ws ${builddir}/libeinfo.so \
+readelf -Ws ${libeinfo_builddir}/libeinfo.so \
 	| awk '$4 == "FUNC" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
 	| sort -u \
 	| egrep -v \
@@ -37,14 +47,14 @@ readelf -Ws ${builddir}/libeinfo.so \
 
 ebegin "Checking exported symbols in librc.so (data)"
 checkit rc.data $(
-readelf -Ws ${builddir}/librc.so \
+readelf -Ws ${librc_builddir}/librc.so \
 	| awk '$4 == "OBJECT" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
 	| sort -u
 )
 
 ebegin "Checking exported symbols in librc.so (functions)"
 checkit rc.funcs $(
-readelf -Ws ${builddir}/librc.so \
+readelf -Ws ${librc_builddir}/librc.so \
 	| awk '$4 == "FUNC" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
 	| sort -u \
 	| egrep -v \
@@ -52,10 +62,10 @@ readelf -Ws ${builddir}/librc.so \
 )
 
 ebegin "Checking hidden functions in librc.so"
-sed -n '/^librc_hidden_proto/s:.*(\(.*\))$:\1:p' ../librc.h \
+sed -n '/^librc_hidden_proto/s:.*(\(.*\))$:\1:p' ${librc_srcdir}/librc.h \
 	| sort -u \
 	> librc.funcs.hidden.list
-readelf -Wr $(grep -l '#include[[:space:]]"librc\.h"' ${builddir}/*.c | sed 's:\.c$:.o:') \
+readelf -Wr $(grep -l '#include[[:space:]]"librc\.h"' ${librc_srcdir}/*.c | sed 's:\.c$:.o:') \
 	| awk '$5 ~ /^rc_/ {print $5}' \
 	| sort -u \
 	| egrep -v '^rc_environ_fd$' \
