@@ -71,5 +71,7 @@ install: all
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam ${DESTDIR}${PAMDIR}/start-stop-daemon; \
 	fi
 
+check test::
+
 links: rc
 	for l in ${ALL_LINKS}; do ln -sf rc $$l || exit $$? ; done

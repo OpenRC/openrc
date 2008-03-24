@@ -36,6 +36,8 @@ clean:
 realinstall:
 	${_SUBDIR}
 install: realinstall ${INSTALLAFTER}
+check test::
+	${_SUBDIR}
 depend:
 	${_SUBDIR}
 gitignore:

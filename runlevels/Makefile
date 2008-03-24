@@ -34,4 +34,6 @@ install:
 			ln -snf ${PREFIX}/etc/init.d/"$$x" ${DEFAULTDIR}/"$$x" || exit $$?; done \
 	fi
 
+check test::
+
 clean:

@@ -47,6 +47,8 @@ install: all
 	${INSTALL} -d ${DESTDIR}${INCDIR}
 	for x in ${INCS}; do ${INSTALL} -m ${INCMODE} $$x ${DESTDIR}${INCDIR}; done
 
+check test::
+
 clean:
 	rm -f ${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK} ${CLEANFILES}
 

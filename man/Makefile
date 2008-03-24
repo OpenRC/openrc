@@ -34,4 +34,6 @@ install:
 		${MAKE_LINKS} \
 	done
 
+check test::
+
 clean:

@@ -42,6 +42,8 @@ realinstall: ${BIN} ${CONF} ${CONF_APPEND}
 
 install: all realinstall ${INSTALLAFTER}
 
+check test::
+
 # A lot of scripts don't have anything to clean
 # Also, some rm implentation require a file argument regardless of error
 # so we ensure that it has a bogus argument
