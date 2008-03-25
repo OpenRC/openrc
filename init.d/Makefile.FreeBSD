@@ -1,1 +1,7 @@
-SRCS+=	adjkerntz.in devd.in dumpon.in ipfw.in mixer.in nscd.in powerd.in syscons.in
+# Generic BSD scripts
+SRCS+=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
+	rpcbind.in savecore.in sysctl.in syslogd.in
+
+# These are FreeBSD specific
+SRCS+=	adjkerntz.in devd.in dumpon.in ipfw.in mixer.in nscd.in \
+	powerd.in syscons.in
