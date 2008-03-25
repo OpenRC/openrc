@@ -1,4 +1,4 @@
-DIR=	${RC_LIB}/sh
+DIR=	${PREFIX}/${RC_LIB}/sh
 SRCS=	functions.sh.in gendepends.sh.in net.sh.in \
 	rc-functions.sh.in runscript.sh.in
 INC=	init-common-post.sh rc-mount.sh functions.sh rc-functions.sh
