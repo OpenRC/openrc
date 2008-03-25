@@ -42,7 +42,6 @@ start()
 		; do
 			eval args=\$module_${xx}_args_$(shell_var "${y}")
 			[ -n "${args}" ] && break
-			done
 		done
 		[ -z "${args}" ] && eval args=\$module_${xx}_args
 		eval modprobe -q "${x}" "${args}"
