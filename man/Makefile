@@ -12,7 +12,7 @@ MAKE_LINKS=	suffix=$${man\#*.}; \
 		-n -e '/^\.Sh NAME$$/,/\.Sh/ s/\.Nm //p' $${man}`; do \
 		if test "$${link}" != "$${prefix}" ; then \
 		ln -sf $${man} \
-		${DESTDIR}/${MANDIR}$/man${suffix}/$${link}.$${suffix} ; \
+		${DESTDIR}/${MANDIR}/man$${suffix}/$${link}.$${suffix} ; \
 		fi; \
 		done;
 
