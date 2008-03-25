@@ -4,7 +4,7 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-. @PREFIX@/@SYSCONFDIR@/init.d/functions.sh
+. @SYSCONFDIR@/init.d/functions.sh
 
 config() {
 	[ -n "$*" ] && echo "${RC_SVCNAME} config $*" >&3
@@ -33,9 +33,9 @@ depend() {
 
 _done_dirs=
 for _dir in \
-@PREFIX@/@SYSCONFDIR@/init.d \
-@PKG_PREFIX@/@SYSCONFDIR@/init.d \
-@LOCAL_PREFIX@/@SYSCONFDIR@/init.d
+@SYSCONFDIR@/init.d \
+@PKG_PREFIX@/etc/init.d \
+@LOCAL_PREFIX@/etc/init.d
 do
 	[ -d "${_dir}" ] || continue
 
@@ -76,7 +76,7 @@ do
 			. "${_dir}/../conf.d/${RC_SVCNAME}"
 		fi
 
-		[ -e @PREFIX@/@SYSCONFDIR@/rc.conf ] && . @PREFIX@/@SYSCONFDIR@/rc.conf
+		[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
 
 		if . "${_dir}/${RC_SVCNAME}"; then
 			echo "${RC_SVCNAME}" >&3

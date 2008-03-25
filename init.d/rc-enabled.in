@@ -24,9 +24,7 @@ start()
 		done
 
 		# If we have an init script for this service, continue
-		[ -x @SYSCONFDIR@/init.d/"${service}" ] && continue
-		[ -x @PKG_PREFIX@/@SYSCONFDIR@/init.d/"${service}" ] && continue
-		[ -x @LOCAL_PREFIX@/@SYSCONFDIR@/init.d/"${service}" ] && continue
+		rc-service --list | grep -q "${service}" && continue
 
 		# Ensure that the users rc.conf will start us - ignore the defaults
 		eval enabled=\$${svc##*/}_enable
