@@ -25,21 +25,21 @@ all: ${OBJS}
 
 realinstall: ${BIN} ${CONF} ${CONF_APPEND}
 	@if test -n "${DIR}"; then \
-		${ECHO} ${INSTALL} -d ${DESTDIR}/${PREFIX}${DIR}; \
-		${INSTALL} -d ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
+		${ECHO} ${INSTALL} -d ${DESTDIR}/${DIR}; \
+		${INSTALL} -d ${DESTDIR}/${DIR} || exit $$?; \
 	fi
 	@if test -n "${BIN}"; then \
-		${ECHO} ${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}/${PREFIX}${DIR}; \
-		${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
+		${ECHO} ${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}/${DIR}; \
+		${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}/${DIR} || exit $$?; \
 	fi
 	@if test -n "${INC}"; then \
-		${ECHO} ${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}/${PREFIX}${DIR}; \
-		${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
+		${ECHO} ${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}/${DIR}; \
+		${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}/${DIR} || exit $$?; \
 	fi
 	@for x in ${CONF}; do \
 		if ! test -e ${DESTDIR}/${PREFIX}${DIR}/$$x; then \
-			${ECHO} ${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${PREFIX}${DIR}; \
-			${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
+			${ECHO} ${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${DIR}; \
+			${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${DIR} || exit $$?; \
 		fi; \
 	done
 
