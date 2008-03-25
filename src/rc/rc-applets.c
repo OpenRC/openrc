@@ -295,10 +295,10 @@ static int do_mark_service(int argc, char **argv)
 
 		/* Remove the exclusive time test. This ensures that it's not
 		   in control as well */
-		l = strlen(RC_SVCDIR "exclusive") + strlen(svcname) +
+		l = strlen(RC_SVCDIR "/exclusive") + strlen(svcname) +
 			strlen(runscript_pid) + 4;
 		mtime = xmalloc(l);
-		snprintf(mtime, l, RC_SVCDIR "exclusive/%s.%s",
+		snprintf(mtime, l, RC_SVCDIR "/exclusive/%s.%s",
 			 svcname, runscript_pid);
 		if (exists(mtime) && unlink(mtime) != 0)
 			eerror("%s: unlink: %s", applet, strerror(errno));
