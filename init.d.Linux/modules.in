@@ -23,7 +23,7 @@ start()
 	x=${KV#*.*.}
 	local KV_MICRO=${x%%-*}
 
-	local list= x= args= cnt=0
+	local list= x= xx= y= args= cnt=0
 	for x in "${KV}" \
 		${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} \
 		${KV_MAJOR}.${KV_MINOR} \
@@ -35,7 +35,16 @@ start()
 
 	for x in ${list}; do
 		ebegin "Loading module ${x}"
-		eval args=\$module_$(shell_var "${x}")_args
+		xx=$(shell_var "${x}")
+		for y in "${KV}" \
+			${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} \
+			${KV_MAJOR}.${KV_MINOR} \
+		; do
+			eval args=\$module_${xx}_args_$(shell_var "${y}")
+			[ -n "${args}" ] && break
+			done
+		done
+		[ -z "${args}" ] && eval args=\$module_${xx}_args
 		eval modprobe -q "${x}" "${args}"
 		eend $? "Failed to load ${x}" && cnt=$((${cnt} + 1))
 	done
