@@ -12,7 +12,7 @@ include Makefile.${OS}
 include ${MK}/scripts.mk
 
 _installafter:
-	${INSTALL} -d ${DESTDIR}/${PREFIX}/${INITDIR}
+	${INSTALL} -d ${DESTDIR}/${INITDIR}
 	@# Provide an init script for the loopback interface
 	ln -snf ${PREFIX}/${RC_LIB}/sh/net.sh ${DESTDIR}/${INITDIR}/${NET_LO} || exit $$?
 	@# Put functions.sh into the init.d dir so 3rd party apps don't have to
