@@ -11,7 +11,6 @@ include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/gitignore.mk
 include Makefile.${OS}
-include Makefile.${SUBOS}
 
 all:
 

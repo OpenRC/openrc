@@ -23,6 +23,7 @@ fi
 
 depend()
 {
+	provide clock
 	if yesno ${clock_adjfile}; then
 		use root
 	else

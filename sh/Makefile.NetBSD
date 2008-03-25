@@ -1,0 +1,10 @@
+SRCS+=		init.sh.in
+
+NET_LO=		net.lo0
+SRCS+=		ifwatchd-carrier.sh.in ifwatchd-nocarrier.sh.in
+BIN+=		ifwatchd-carrier.sh ifwatchd-nocarrier.sh
+
+.SUFFIXES:	.BSD.sh.in
+.BSD.sh.in.sh:
+	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
+

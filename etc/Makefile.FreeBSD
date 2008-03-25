@@ -1,0 +1,4 @@
+SED_EXTRA=	-e 's:@TERM@:cons25:g'
+SRCS+=		rc.conf.in rc.in rc.shutdown.in
+CONF+=		devd.conf
+BIN+=		rc.devd

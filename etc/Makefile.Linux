@@ -1,0 +1,6 @@
+SED_EXTRA=	-e 's:@TERM@:wsvt25:g'
+SRCS+=		rc.in rc.shutdown.in
+
+rc.conf:
+	cp rc.conf.in rc.conf
+	cat rc.conf.Linux >> rc.conf

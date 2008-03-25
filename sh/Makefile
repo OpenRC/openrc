@@ -2,14 +2,14 @@ DIR=	${RC_LIB}/sh
 SRCS=	functions.sh.in gendepends.sh.in net.sh.in \
 	rc-functions.sh.in runscript.sh.in
 INC=	init-common-post.sh rc-mount.sh functions.sh rc-functions.sh
-BIN=	gendepends.sh net.sh runscript.sh
+BIN=	gendepends.sh init.sh net.sh runscript.sh
 
 INSTALLAFTER=	_installafter
 
 MK=	../mk
-# To get NET_LO
+include ${MK}/os.mk
+include Makefile.${OS}
 include ${MK}/scripts.mk
-include Makefile.${SUBOS}
 
 _installafter:
 	${INSTALL} -d ${DESTDIR}/${PREFIX}/${INITDIR}

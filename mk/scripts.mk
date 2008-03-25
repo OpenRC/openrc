@@ -16,27 +16,30 @@ SED_REPLACE=		-e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR
 # Tweak our shell scripts
 .SUFFIXES:	.sh.in .in
 .sh.in.sh:
-	sed ${SED_REPLACE} $< > $@
+	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
 .in:
-	sed ${SED_REPLACE} $< > $@
+	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
 all: ${OBJS}
 
 realinstall: ${BIN} ${CONF} ${CONF_APPEND}
-	if test -n "${DIR}"; then ${INSTALL} -d ${DESTDIR}/${PREFIX}${DIR} || exit $$?; fi
-	if test -n "${BIN}"; then ${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}/${PREFIX}${DIR} || exit $$?; fi
-	if test -n "${INC}"; then ${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}/${PREFIX}${DIR} || exit $$?; fi
-	for x in ${CONF}; do \
-	 	if ! test -e ${DESTDIR}/${PREFIX}${DIR}/$$x; then \
+	@if test -n "${DIR}"; then \
+		${ECHO} ${INSTALL} -d ${DESTDIR}/${PREFIX}${DIR}; \
+		${INSTALL} -d ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
+	fi
+	@if test -n "${BIN}"; then \
+		${ECHO} ${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}/${PREFIX}${DIR}; \
+		${INSTALL} -m ${BINMODE} ${BIN} ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
+	fi
+	@if test -n "${INC}"; then \
+		${ECHO} ${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}/${PREFIX}${DIR}; \
+		${INSTALL} -m ${INCMODE} ${INC} ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
+	fi
+	@for x in ${CONF}; do \
+		if ! test -e ${DESTDIR}/${PREFIX}${DIR}/$$x; then \
+			${ECHO} ${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${PREFIX}${DIR}; \
 			${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
-		fi; \
-	done
-	for x in ${CONF_APPEND}; do \
-		if test -e ${DESTDIR}/${PREFIX}${DIR}/$$x; then \
-			cat $$x >> ${DESTDIR}/${PREFIX}${DIR}/$$x || exit $$?; \
-		else \
-	   		${INSTALL} -m ${CONFMODE} $$x ${DESTDIR}/${PREFIX}${DIR} || exit $$?; \
 		fi; \
 	done
 
