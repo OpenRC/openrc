@@ -12,7 +12,7 @@ MAKE_LINKS=	suffix=$${man\#*.}; \
 		-n -e '/^\.Sh NAME$$/,/\.Sh/ s/\.Nm //p' $${man}`; do \
 		if test "$${link}" != "$${prefix}" ; then \
 		ln -sf $${man} \
-		${DESTDIR}/${MANDIR}$${suffix}/$${link}.$${suffix} ; \
+		${DESTDIR}/${MANDIR}$/man${suffix}/$${link}.$${suffix} ; \
 		fi; \
 		done;
 
@@ -23,14 +23,14 @@ include ${MK}/gitignore.mk
 all:
 
 install:
-	${INSTALL} -d ${DESTDIR}/${MANDIR}3
+	${INSTALL} -d ${DESTDIR}/${MANDIR}/man3
 	for man in ${MAN3}; do \
-		${INSTALL} -m ${MANMODE} "$$man" ${DESTDIR}/${MANDIR}3 || exit $$?; \
+		${INSTALL} -m ${MANMODE} "$$man" ${DESTDIR}/${MANDIR}/man3 || exit $$?; \
 		${MAKE_LINKS} \
 	done	
-	${INSTALL} -d ${DESTDIR}/${MANDIR}8
+	${INSTALL} -d ${DESTDIR}/${MANDIR}/man8
 	for man in ${MAN8}; do \
-		${INSTALL} -m ${MANMODE} "$$man" ${DESTDIR}/${MANDIR}8 || exit $$?; \
+		${INSTALL} -m ${MANMODE} "$$man" ${DESTDIR}/${MANDIR}/man8 || exit $$?; \
 		${MAKE_LINKS} \
 	done
 
