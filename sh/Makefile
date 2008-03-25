@@ -14,10 +14,10 @@ include ${MK}/scripts.mk
 _installafter:
 	${INSTALL} -d ${DESTDIR}/${PREFIX}/${INITDIR}
 	@# Provide an init script for the loopback interface
-	ln -snf ${PREFIX}/${RC_LIB}/sh/net.sh ${DESTDIR}/${PREFIX}/${INITDIR}/${NET_LO} || exit $$?
+	ln -snf ${PREFIX}/${RC_LIB}/sh/net.sh ${DESTDIR}/${INITDIR}/${NET_LO} || exit $$?
 	@# Put functions.sh into the init.d dir so 3rd party apps don't have to
 	@# be multilib aware
-	ln -snf ${PREFIX}/${RC_LIB}/sh/functions.sh ${DESTDIR}/${PREFIX}/${INITDIR} || exit $$?
+	ln -snf ${PREFIX}/${RC_LIB}/sh/functions.sh ${DESTDIR}/${INITDIR} || exit $$?
 
 check test::
 	./runtests.sh
