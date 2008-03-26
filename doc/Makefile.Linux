@@ -1,0 +1,5 @@
+SRCS+=		net.example.in
+
+.SUFFIXES:	.Linux.in
+.Linux.in:
+	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@

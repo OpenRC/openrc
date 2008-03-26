@@ -1,0 +1,5 @@
+SRCS+=		net.example.in
+
+.SUFFIXES:	.BSD.in
+.BSD.in:
+	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
