@@ -5,4 +5,4 @@ INC+=		adsl.sh apipa.sh arping.sh bonding.sh br2684ctl.sh bridge.sh \
 
 .SUFFIXES:	.sh.Linux.in
 .sh.Linux.in.sh:
-	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
+	${CP} $< $@

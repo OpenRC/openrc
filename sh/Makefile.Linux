@@ -4,5 +4,5 @@ BIN+=		init-early.sh
 
 .SUFFIXES:	.sh.Linux.in
 .sh.Linux.in.sh:
-	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
+	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 

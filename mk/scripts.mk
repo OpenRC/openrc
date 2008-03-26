@@ -16,10 +16,10 @@ SED_REPLACE=		-e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR
 # Tweak our shell scripts
 .SUFFIXES:	.sh.in .in
 .sh.in.sh:
-	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
+	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
 .in:
-	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
+	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
 all: ${OBJS}
 

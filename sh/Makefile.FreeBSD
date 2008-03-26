@@ -4,5 +4,5 @@ NET_LO=		net.lo0
 
 .SUFFIXES:	.sh.BSD.in
 .sh.BSD.in.sh:
-	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
+	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 

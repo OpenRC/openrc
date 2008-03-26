@@ -2,9 +2,11 @@
 # Copyright 2008 Roy Marples
 
 AR?=			ar
+CP?=			cp
 ECHO?=			echo
 INSTALL?=		install
 RANLIB?=		ranlib
+SED?=			sed
 SH=			/bin/sh
 
 PREFIX?=	

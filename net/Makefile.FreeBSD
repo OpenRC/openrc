@@ -3,4 +3,4 @@ INC+=		iwconfig.sh
 
 .SUFFIXES:	.sh.BSD.in
 .sh.BSD.in.sh:
-	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
+	${CP} $< $@
