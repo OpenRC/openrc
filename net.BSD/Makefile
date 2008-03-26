@@ -1,4 +1,4 @@
-DIR=	${RC_LIB}/net
+DIR=	${PREFIX}/${RC_LIB}/net
 INC=	ifconfig.sh
 
 MK=	../mk

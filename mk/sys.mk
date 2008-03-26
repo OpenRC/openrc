@@ -15,7 +15,7 @@ LOCAL_PREFIX=		/usr/local
 
 PICFLAG?=		-fPIC
 
-SYSCONFDIR?=		/etc
+SYSCONFDIR?=		${PREFIX}/etc
 INITDIR?=		${SYSCONFDIR}/init.d
 CONFDIR?=		${SYSCONFDIR}/conf.d
 
