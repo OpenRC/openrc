@@ -2,7 +2,7 @@ NET_LO=		net.lo
 SRCS+=		init.sh.in init-early.sh.in
 BIN+=		init-early.sh
 
-.SUFFIXES:	.Linux.sh.in
-.Linux.sh.in.sh:
+.SUFFIXES:	.sh.Linux.in
+.sh.Linux.in.sh:
 	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
