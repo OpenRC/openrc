@@ -3,3 +3,4 @@ gendepends.sh
 net.sh
 rc-functions.sh
 runscript.sh
+init.sh
