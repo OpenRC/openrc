@@ -1179,11 +1179,10 @@ int main(int argc, char **argv)
 		}
 
 		if (coldplugged_services) {
-			if (start_services) {
-				TAILQ_FOREACH(service, coldplugged_services, entries)
-					rc_stringlist_addu(start_services, service->value);
-			} else
-				start_services = coldplugged_services;
+			if (!start_services)
+				start_services = rc_stringlist_new();
+			TAILQ_FOREACH(service, coldplugged_services, entries)
+				rc_stringlist_addu(start_services, service->value);
 		}
 	}
 
