@@ -1,4 +1,5 @@
 # Copyright 2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
 
 # Setup some good default CFLAGS
 CFLAGS?=	-O2

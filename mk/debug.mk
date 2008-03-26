@@ -1,5 +1,6 @@
 # rules to enable debugging support
 # Copyright 2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
 
 _RC_DEBUG_SH=	case "${DEBUG}" in "") echo "";; *) echo "-DRC_DEBUG";; esac
 _RC_DEBUG!=	${_RC_DEBUG_SH}

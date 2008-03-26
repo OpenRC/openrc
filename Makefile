@@ -1,6 +1,6 @@
 # OpenRC Makefile
-# Copyright 2007-2008 Roy Marples 
-# Distributed under the terms of the GNU General Public License v2
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
 
 NAME=		openrc
 VERSION=	0.1
