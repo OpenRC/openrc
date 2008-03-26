@@ -203,6 +203,9 @@ char *rc_config_value(RC_STRINGLIST *list, const char *entry)
 	RC_STRING *line;
 	char *p;
 
+	if (!list)
+		return NULL;
+
 	TAILQ_FOREACH(line, list, entries) {
 		p = strchr(line->value, '=');
 		if (p &&

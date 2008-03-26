@@ -79,20 +79,24 @@ char *rc_conf_value(const char *setting)
 		if (exists(RC_CONF_OLD)) {
 			old = rc_config_load(RC_CONF_OLD);
 			if (old) {
-				TAILQ_CONCAT(rc_conf, old, entries);
-				free(old);
+				if (rc_conf) {
+					TAILQ_CONCAT(rc_conf, old, entries);
+					free(old);
+				} else
+					rc_conf = old;
 			}
 		}
 
 		/* Convert old uppercase to lowercase */
-		TAILQ_FOREACH(s, rc_conf, entries) {
-			p = s->value;
-			while (p && *p && *p != '=') {
-				if (isupper((int) *p))
-					*p = tolower((int) *p);
-				p++;
+		if (rc_conf)
+			TAILQ_FOREACH(s, rc_conf, entries) {
+				p = s->value;
+				while (p && *p && *p != '=') {
+					if (isupper((int) *p))
+						*p = tolower((int) *p);
+					p++;
+				}
 			}
-		}
 	}
 
 	return rc_config_value(rc_conf, setting);
