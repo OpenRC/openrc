@@ -2,5 +2,4 @@
 
 # Generic definitions
 
-SUBOS=		BSD
 LIBKVM?=	-lkvm
