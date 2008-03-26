@@ -1,5 +1,6 @@
 DIR=	${PREFIX}/${RC_LIB}/net
-INC=	dhclient.sh dhcpcd.sh macchanger.sh macnet.sh \
+SRCS=	ifconfig.sh.in
+INC=	dhclient.sh dhcpcd.sh ifconfig.sh macchanger.sh macnet.sh \
 	ssidnet.sh system.sh wpa_supplicant.sh
 
 MK=	../mk
