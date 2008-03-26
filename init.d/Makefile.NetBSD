@@ -1,6 +1,10 @@
 # Generic BSD scripts
 SRCS+=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
-	rpcbind.in savecore.in sysctl.in syslogd.in
+	rpcbind.in savecore.in syslogd.in
 
 # These are NetBSD specific
 SRCS+=	swap-blk.in ttys.in wscons.in
+
+.SUFFIXES:	.BSD.in
+.BSD.in:
+	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@

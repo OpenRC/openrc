@@ -9,29 +9,10 @@ depend()
 	keyword noprefix
 }
 
-sysctl_BSD() {
-	local retval=0 var= comments=
-	while read var comments; do
-		case "${var}" in
-			""|"#"*) continue;;
-		esac
-		sysctl -w "${var}" >/dev/null || retval=1
-	done < /etc/sysctl.conf
-	return ${retval}
-}
-
-sysctl_Linux() {
-	sysctl -p >/dev/null
-}
-
 start()
 {
 	[ -e /etc/sysctl.conf ] || return 0
-	
 	ebegin "Configuring kernel parameters"
-	case "${RC_UNAME}" in
-		Linux)	sysctl_Linux;;
-		*)	sysctl_BSD;;
-	esac
+	sysctl -p >/dev/null
 	eend $? "Some errors were encountered"
 }

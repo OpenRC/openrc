@@ -7,4 +7,3 @@ BIN+=		ifwatchd-carrier.sh ifwatchd-nocarrier.sh
 .SUFFIXES:	.BSD.sh.in
 .BSD.sh.in.sh:
 	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
-

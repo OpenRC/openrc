@@ -1,2 +1,6 @@
 SRCS+=	hwclock.in consolefont.in keymaps.in modules.in mtab.in numlock.in \
 	procfs.in
+
+.SUFFIXES:	.Linux.in
+.Linux.in:
+	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
