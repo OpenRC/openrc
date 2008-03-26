@@ -24,7 +24,7 @@ start()
 		done
 
 		# If we have an init script for this service, continue
-		rc-service --list | grep -q "${service}" && continue
+		rc-service --exists "${service}" && continue
 
 		# Ensure that the users rc.conf will start us - ignore the defaults
 		eval enabled=\$${svc##*/}_enable

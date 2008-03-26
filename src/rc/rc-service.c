@@ -43,9 +43,11 @@
 extern char *applet;
 
 #include "_usage.h"
-#define getoptstring "l" getoptstring_COMMON
+#define getoptstring "e:lr:" getoptstring_COMMON
 static const struct option longopts[] = {
-	{ "list",   0, NULL, 'l' },
+	{ "exists",  1, NULL, 'e' },
+	{ "list",    0, NULL, 'l' },
+	{ "resolve", 1, NULL, 'r' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
@@ -68,6 +70,12 @@ int rc_service(int argc, char **argv)
 				  longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+		case 'e':
+			service = rc_service_resolve(optarg);
+			opt = service ? EXIT_SUCCESS : EXIT_FAILURE;
+			free(service);
+			return opt;
+			/* NOTREACHED */
 		case 'l':
 			list = rc_services_in_runlevel(NULL);
 			if (! list)
@@ -76,6 +84,14 @@ int rc_service(int argc, char **argv)
 			TAILQ_FOREACH(s, list, entries)
 				printf("%s\n", s->value);
 			rc_stringlist_free(list);
+			return EXIT_SUCCESS;
+			/* NOTREACHED */
+		case 'r':
+			service = rc_service_resolve(optarg);
+			if (!service)
+				return EXIT_FAILURE;
+			printf("%s\n", service);
+			free(service);
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
 
