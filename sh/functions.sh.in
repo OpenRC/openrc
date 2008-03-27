@@ -43,7 +43,7 @@ _sanitize_path()
 	local IFS=":" p= path=
 	for p in ${PATH}; do
 		case "${p}" in
-			@PREFIX@/@LIB@/rc/sbin|@PREFIX@/bin|@PREFIX@/sbin|/usr/bin|/usr/sbin);;
+			@PREFIX@/@LIB@/rc/bin|@PREFIX@/bin|@PREFIX@/sbin|/usr/bin|/usr/sbin);;
 			@PKG_PREFIX@/bin|@PKG_PREFIX@/sbin);;
 			@LOCAL_PREFIX@/bin|@LOCAL_PREFIX@/sbin);;
 			*) path="${path}${path:+:}${p}";;
