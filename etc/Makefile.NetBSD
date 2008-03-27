@@ -1,2 +1,3 @@
 SED_EXTRA=	-e 's:@TERM@:wsvt25:g'
 SRCS+=		rc.conf.in rc.in rc.shutdown.in
+BIN+=		rc rc.shutdown
