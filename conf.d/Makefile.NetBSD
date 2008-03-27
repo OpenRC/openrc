@@ -1,1 +1,1 @@
-CONF+=	moused powerd rarpd savecore
+CONF+=	moused rarpd savecore
