@@ -75,6 +75,6 @@ get_bootparam()
 
 # Add our sbin to $PATH
 case "${PATH}" in
-	"${RC_LIBDIR}"/rc/sbin|"${RC_LIBDIR}"/rc/sbin:*);;
-	*) export PATH="${RC_LIBDIR}/rc/sbin:${PATH}";;
+	"${RC_LIBDIR}"/sbin|"${RC_LIBDIR}"/sbin:*);;
+	*) export PATH="${RC_LIBDIR}/sbin:${PATH}";;
 esac
