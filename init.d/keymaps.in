@@ -33,7 +33,7 @@ start()
 		echo 1 > /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
 	fi
 
-	ebegin "Loading key mappings (${keymap})"
+	ebegin "Loading key mappings [${keymap}]"
 	local loadkeys_uni= wkeys= kmode="-a" msg="ASCII"
 	if yesno ${unicode}; then
 		loadkeys_uni="--unicode"
@@ -53,7 +53,7 @@ start()
 
 	# Set terminal encoding to either ASCII or UNICODE.
 	# See utf-8(7) for more information.
-	ebegin "Setting keyboard mode to ${msg}"
+	ebegin "Setting keyboard mode [${msg}]"
 	if yesno ${unicode}; then
 		dumpkeys ${dumpkeys_charset:+-c} \
 			${dumpkeys_charset} | loadkeys --unicode

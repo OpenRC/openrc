@@ -25,7 +25,7 @@ start()
 		termmsg="UTF-8"
 	fi
 
-	ebegin "Setting terminal encoding to ${termmsg}"
+	ebegin "Setting terminal encoding [${termmsg}]"
 	n=1
 	while [ ${n} -le "${ttyn}" ]; do
 		printf "\033%s" "${termencoding}" >"${ttydev}${n}"
