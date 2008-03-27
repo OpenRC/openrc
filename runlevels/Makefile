@@ -6,6 +6,8 @@ LEVELDIR=	${DESTDIR}/${SYSCONFDIR}/runlevels
 BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 
+INITDIR=	../init.d
+
 MK=		../mk
 include ${MK}/sys.mk
 include ${MK}/os.mk
@@ -19,7 +21,8 @@ install:
 		${INSTALL} -d ${BOOTDIR} || exit $$?; \
 		for x in ${BOOT}; do \
 			if test -n "${PREFIX}"; then \
-				grep -q "keyword .*noprefix" ${SYSCONFDIR}/init.d/"$$x" && continue; \
+				test "$$x" = "net.lo" -o "$$x" = "net.lo0" && continue; \
+				grep -q "keyword .*noprefix" ${INITDIR}/"$$x" && continue; \
 			fi; \
 			ln -snf ${PREFIX}/etc/init.d/"$$x" ${BOOTDIR}/"$$x" || exit $$?; \
 		done \
@@ -28,7 +31,7 @@ install:
 		${INSTALL} -d ${DEFAULTDIR} || exit $$?; \
 		for x in ${DEFAULT}; do \
 			if test -n "${PREFIX}"; then \
-				grep -q "keyword .*noprefix" ${SYSCONFDIR}/init.d/"$$x" && continue; \
+				grep -q "keyword .*noprefix" ${INITDIR}/"$$x" && continue; \
 			fi; \
 			ln -snf ${PREFIX}/etc/init.d/"$$x" ${DEFAULTDIR}/"$$x" || exit $$?; done \
 	fi
