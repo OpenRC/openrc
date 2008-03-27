@@ -8,7 +8,7 @@ retval=0
 # the old service state data
 if [ "${RC_SVCDIR}" != "/" ] && mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null; then
 	rmdir "${RC_SVCDIR}/.test.$$"
-	for x in ${RC_SVCDIR:-/lib/rc/init.d}/*; do
+	for x in ${RC_SVCDIR:-/@LIB@/rc/init.d}/*; do
 		[ -e "${x}" ] || continue
 		case ${x##*/} in
 			depconfig|deptree|ksoftlevel|rc.log);;

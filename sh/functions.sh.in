@@ -43,7 +43,7 @@ _sanitize_path()
 	local IFS=":" p= path=
 	for p in ${PATH}; do
 		case "${p}" in
-			@PREFIX@/lib/rc/sbin|@PREFIX@/bin|@PREFIX@/sbin|/usr/bin|/usr/sbin);;
+			@PREFIX@/@LIB@/rc/sbin|@PREFIX@/bin|@PREFIX@/sbin|/usr/bin|/usr/sbin);;
 			@PKG_PREFIX@/bin|@PKG_PREFIX@/sbin);;
 			@LOCAL_PREFIX@/bin|@LOCAL_PREFIX@/sbin);;
 			*) path="${path}${path:+:}${p}";;
@@ -66,7 +66,7 @@ _PREFIX=@PREFIX@
 _PKG_PREFIX=@PKG_PREFIX@
 _LOCAL_PREFIX=@LOCAL_PREFIX@
 _LOCAL_PREFIX=${_LOCAL_PREFIX:-/usr/local}
-_PATH=@PREFIX@/lib/rc/bin
+_PATH=@PREFIX@/@LIB@/rc/bin
 case "${_PREFIX}" in
 	"${_PKG_PREFIX}"|"${_LOCAL_PREFIX}") ;;
 	*) _PATH="${_PATH}:${_PREFIX}/bin:${_PREFIX}/sbin";;
@@ -99,7 +99,7 @@ else
 	# the last ecmd
 	for _e in ebegin eend error errorn einfo einfon ewarn ewarnn ewend \
 		vebegin veend veinfo vewarn vewend; do
-		eval "${_e}() { local _r; @PREFIX@/lib/rc/bin/${_e} \"\$@\"; _r=$?; \
+		eval "${_e}() { local _r; @PREFIX@/@LIB@/rc/bin/${_e} \"\$@\"; _r=$?; \
 		export EINFO_LASTCMD=${_e}; return \$_r; }"
 	done
 	unset _e
