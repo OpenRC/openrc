@@ -6,8 +6,7 @@ description="Sets a font for the consoles."
 
 depend()
 {
-	need localmount
-	need keymaps    # sets up terminal encoding scheme
+	need localmount termencoding
 	after hotplug
 	keyword noopenvz noprefix nouml novserver noxenu
 }
@@ -34,7 +33,7 @@ start()
 		return 0
 	fi
 
-	local x= param= sf_param= retval=0 ttydev=
+	local x= param= sf_param= retval=0 ttydev=/dev/tty
 
 	# Get additional parameters
 	if [ -n "${consoletranslation}" ]; then
@@ -46,10 +45,7 @@ start()
 
 	# Set the console font
 	ebegin "Setting user font"
-	[ -d /dev/vc ] \
-		&& ttydev=/dev/vc/ \
-		|| ttydev=/dev/tty
-
+	[ -d /dev/vc ] && ttydev=/dev/vc/
 	x=1
 	while [ ${x} -le ${ttyn} ]; do
 		setfont ${consolefont} ${param} -C ${ttydev}${x} >/dev/null 
@@ -61,17 +57,17 @@ start()
 	# Store the last font so we can use it ASAP on boot
 	if [ ${retval} -eq 0 -a -w "${RC_LIBDIR}" ]; then
 		mkdir -p "${RC_LIBDIR}"/console
-
 		for font in /usr/share/consolefonts/"${consolefont}".*; do
 			:
 		done
 		cp "${font}" "${RC_LIBDIR}"/console
 		echo "${font##*/}" > "${RC_LIBDIR}"/console/font
 		if yesno ${unicode:-${UNICODE}}; then
-			cp /dev/null "${RC_LIBDIR}"/console/unicode
+			echo "" > "${RC_LIBDIR}"/console/unicode
 		else
 			rm -f "${RC_LIBDIR}"/console/unicode
 		fi
+
 	fi
 
 	return ${retval}

@@ -1,0 +1,35 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Configures terminal encoding."
+
+ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
+unicode=${unicode:-${UNICODE}}
+
+depend()
+{
+	keyword noopenvz noprefix nouml novserver noxenu
+}
+
+start()
+{
+	local ttydev=/dev/tty n=
+	[ -d /dev/vc ] && ttydev=/dev/vc/
+
+	# Set terminal encoding to either ASCII or UNICODE.
+	# See utf-8(7) for more information.
+	local termencoding="%@" termmsg="ASCII"
+	if yesno ${unicode}; then
+		termencoding="%G"
+		termmsg="UTF-8"
+	fi
+
+	ebegin "Setting terminal encoding to ${termmsg}"
+	n=1
+	while [ ${n} -le "${ttyn}" ]; do
+		printf "\033%s" "${termencoding}" >"${ttydev}${n}"
+		n=$((${n} + 1))
+	done
+	eend 0
+}

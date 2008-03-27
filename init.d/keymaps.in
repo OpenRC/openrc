@@ -14,7 +14,7 @@ dumpkeys_charset=${dumpkeys_charset:-${DUMPKEYS_CHARSET}}
 
 depend()
 {
-	need localmount
+	need localmount termencoding
 	keyword noopenvz noprefix nouml novserver noxenu
 }
 
@@ -25,43 +25,41 @@ start()
 		return 1
 	fi
 
-	local ttydev= n=
-	[ -d /dev/vc ] \
-		&& ttydev=/dev/vc/ \
-		|| ttydev=/dev/tty
+	local ttydev=/dev/tty n=
+	[ -d /dev/vc ] && ttydev=/dev/vc/
 
 	# Force linux keycodes for PPC.
 	if [ -f /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes ]; then
 		echo 1 > /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
 	fi
 
-	ebegin "Loading key mappings"
-	local loadkeys_uni= wkeys= 
-	yesno ${unicode} && loadkeys_uni="--unicode"
+	ebegin "Loading key mappings (${keymap})"
+	local loadkeys_uni= wkeys= kmode="-a" msg="ASCII"
+	if yesno ${unicode}; then
+		loadkeys_uni="--unicode"
+		kmode="-u"
+		msg="UTF-8"
+	fi
 	yesno ${windowskeys} && wkeys="windowkeys"
 	loadkeys -q ${loadkeys_uni} ${wkeys} ${keymap} ${extended_keymaps} 
 	eend $? "Error loading key mappings" || return $?
 
 	if yesno ${fix_euro}; then
+		ebegin "Fixing font for euro symbol"
 		# Fix some fonts displaying the Euro, #173528.
 		echo "altgr keycode 18 = U+20AC" | loadkeys -q
+		eend $?
 	fi
 
 	# Set terminal encoding to either ASCII or UNICODE.
 	# See utf-8(7) for more information.
-	local termencoding="%@" termmsg="ASCII" kmode="-a"
+	ebegin "Setting keyboard mode to ${msg}"
 	if yesno ${unicode}; then
 		dumpkeys ${dumpkeys_charset:+-c} \
 			${dumpkeys_charset} | loadkeys --unicode
-		termencoding="%G"
-		termmsg="UTF-8"
-		kmode="-u"
 	fi
-
-	ebegin "Setting terminal encoding to" ${termmsg}
 	n=1
 	while [ ${n} -le "${ttyn}" ]; do
-		printf "\033%s" "${termencoding}" >"${ttydev}${n}"
 		kbd_mode "${kmode}" -C "${ttydev}${n}"
 		n=$((${n} + 1))
 	done

@@ -1,5 +1,5 @@
 SRCS+=	hwclock.in consolefont.in keymaps.in modules.in mtab.in numlock.in \
-	procfs.in
+	procfs.in termencoding.in
 
 .SUFFIXES:	.Linux.in
 .Linux.in:

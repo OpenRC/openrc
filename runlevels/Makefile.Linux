@@ -1,2 +1,3 @@
-BOOT+=		hwclock consolefont keymaps modules mtab net.lo procfs
+BOOT+=		hwclock consolefont keymaps modules mtab net.lo procfs \
+		termencoding
 DEFAULT+=	hdparm
