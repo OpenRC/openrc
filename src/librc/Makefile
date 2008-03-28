@@ -34,7 +34,7 @@ _LCL_PREFIX_SH=	if test -n "${LOCAL_PREFIX}" && test "${LOCAL_PREFIX}" != "/" &&
 _LCL_PREFIX!=	${_LCL_PREFIX_SH}
 SED_CMD+=	${_LCL_PREFIX}$(shell ${_LCL_PREFIX_SH})
 
-.SUFFIXES:	.h.in
+.SUFFIXES:	.h.in .h
 .h.in.h:
 	${SED} ${SED_CMD} $< > $@
 ${SRCS}:	rc.h
