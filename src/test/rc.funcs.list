@@ -58,14 +58,10 @@ rc_service_schedule_clear
 rc_service_schedule_clear@@RC_1.0
 rc_service_schedule_start
 rc_service_schedule_start@@RC_1.0
-rc_service_start
-rc_service_start@@RC_1.0
 rc_service_started_daemon
 rc_service_started_daemon@@RC_1.0
 rc_service_state
 rc_service_state@@RC_1.0
-rc_service_stop
-rc_service_stop@@RC_1.0
 rc_service_value_get
 rc_service_value_get@@RC_1.0
 rc_service_value_set

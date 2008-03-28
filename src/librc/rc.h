@@ -172,16 +172,6 @@ bool rc_service_schedule_clear(const char *);
  * @return state of the service */
 RC_SERVICE rc_service_state(const char *);
 
-/*! Start a service
- * @param service to start
- * @return pid of the service starting process */
-pid_t rc_service_start(const char *);
-
-/*! Stop a service
- * @param service to stop
- * @return pid of service stopping process */
-pid_t rc_service_stop(const char *);
-
 /*! Check if the service started the daemon
  * @param service to check
  * @param exec to check

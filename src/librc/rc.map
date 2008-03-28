@@ -32,8 +32,6 @@ global:
 	rc_service_resolve;
 	rc_service_schedule_clear;
 	rc_service_schedule_start;
-	rc_service_start;
-	rc_service_stop;
 	rc_services_in_runlevel;
 	rc_services_in_state;
 	rc_services_scheduled;

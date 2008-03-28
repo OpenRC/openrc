@@ -273,7 +273,7 @@ static void start_services(RC_STRINGLIST *list) {
 					      " when %s has started",
 					       svc->value, applet);
 				} else
-					rc_service_start(svc->value);
+					service_start(svc->value);
 			}
 		}
 	}
@@ -727,7 +727,7 @@ static void svc_start(bool deps)
 		if (! rc_runlevel_starting() && use_services)
 			TAILQ_FOREACH(svc, use_services, entries)
 				if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
-					pid_t pid = rc_service_start(svc->value);
+					pid_t pid = service_start(svc->value);
 					if (! rc_conf_yesno("rc_parallel"))
 						rc_waitpid(pid);
 				}
@@ -851,7 +851,7 @@ static void svc_start(bool deps)
 	if (services) {
 		TAILQ_FOREACH(svc, services, entries)
 			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
-				rc_service_start(svc->value);
+				service_start(svc->value);
 		rc_stringlist_free(services);
 		services = NULL;
 	}
@@ -864,7 +864,7 @@ static void svc_start(bool deps)
 			if (services) {
 				TAILQ_FOREACH(svc2, services, entries)
 					if (rc_service_state(svc2->value) & RC_SERVICE_STOPPED)
-						rc_service_start(svc2->value);
+						service_start(svc2->value);
 				rc_stringlist_free(services);
 				services = NULL;
 			}
@@ -939,7 +939,7 @@ static void svc_stop(bool deps)
 					if (svcs & RC_SERVICE_STARTED ||
 							svcs & RC_SERVICE_INACTIVE)
 					{
-						pid_t pid = rc_service_stop(svc->value);
+						pid_t pid = service_stop(svc->value);
 						if (! rc_conf_yesno("rc_parallel"))
 							rc_waitpid(pid);
 						if (! tmplist)

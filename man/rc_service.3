@@ -31,11 +31,10 @@
 .Nm rc_service_mark , rc_service_extra_commands , rc_service_plugable ,
 .Nm rc_service_resolve , rc_service_schedule_start , rc_services_scheduled_by ,
 .Nm rc_service_schedule_clear , rc_service_state ,
-.Nm rc_service_start , rc_service_stop ,
 .Nm rc_service_started_daemon , rc_service_value_get , rc_service_value_set ,
 .Nm rc_services_in_runlevel , rc_services_in_state , rc_services_scheduled ,
 .Nm rc_service_daemons_crashed
-.Nd functions to start, stop and query OpenRC services
+.Nd functions to query OpenRC services
 .Sh LIBRARY
 Run Command library (librc, -lrc)
 .Sh SYNOPSIS
@@ -66,8 +65,6 @@ Run Command library (librc, -lrc)
 .Ft "RC_STRINGLIST *" Fn rc_services_scheduled_by "const char *service"
 .Ft bool Fn rc_service_schedule_clear "const char *service"
 .Ft RC_SERVICE Fn rc_service_state "const char *service"
-.Ft pid_t Fn rc_service_start "const char *service"
-.Ft pid_t Fn rc_service_stop "const char *service"
 .Ft bool Fo rc_service_started_daemon
 .Fa "const char *service"
 .Fa "const char *exec"
@@ -175,16 +172,6 @@ clears these scheduled services for
 .Fn rc_service_state returns the state of
 .Fa service .
 The return value is a bitmask, where more than one state can apply.
-.Pp
-.Fn rc_service_start
-starts
-.Fa service ,
-returning the pid of new process.
-.Pp
-.Fn rc_service_stop
-stops
-.Fa service ,
-returning the pid of new process.
 .Pp
 .Fn rc_service_started_daemon
 checks to see if

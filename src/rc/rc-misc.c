@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "einfo.h"
 #include "rc.h"
@@ -309,4 +310,66 @@ int signal_setup(int sig, void (*handler)(int))
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = handler;
 	return sigaction(sig, &sa, NULL);
+}
+
+pid_t exec_service(const char *service, const char *arg)
+{
+	char *file;
+	char fifo[PATH_MAX];
+	pid_t pid = -1;
+	sigset_t full;
+	sigset_t old;
+	struct sigaction sa;
+
+	file = rc_service_resolve(service);
+	if (! exists(file)) {
+		rc_service_mark(service, RC_SERVICE_STOPPED);
+		free(file);
+		return 0;
+	}
+
+	/* We create a fifo so that other services can wait until we complete */
+	snprintf(fifo, sizeof(fifo), RC_SVCDIR "/exclusive/%s",
+		 basename_c(service));
+	if (mkfifo(fifo, 0600) != 0 && errno != EEXIST) {
+		free(file);
+		return -1;
+	}
+
+	/* We need to block signals until we have forked */
+	memset(&sa, 0, sizeof (sa));
+	sa.sa_handler = SIG_DFL;
+	sigemptyset(&sa.sa_mask);
+	sigfillset(&full);
+	sigprocmask(SIG_SETMASK, &full, &old);
+
+	if ((pid = fork()) == 0) {
+		/* Restore default handlers */
+		sigaction(SIGCHLD, &sa, NULL);
+		sigaction(SIGHUP, &sa, NULL);
+		sigaction(SIGINT, &sa, NULL);
+		sigaction(SIGQUIT, &sa, NULL);
+		sigaction(SIGTERM, &sa, NULL);
+		sigaction(SIGUSR1, &sa, NULL);
+		sigaction(SIGWINCH, &sa, NULL);
+
+		/* Unmask signals */
+		sigprocmask(SIG_SETMASK, &old, NULL);
+
+		/* Safe to run now */
+		execl(file, file, arg, (char *) NULL);
+		fprintf(stderr, "unable to exec `%s': %s\n",
+			file, strerror(errno));
+		unlink(fifo);
+		_exit(EXIT_FAILURE);
+	}
+
+	if (pid == -1)
+		fprintf(stderr, "fork: %s\n",strerror (errno));
+
+	sigprocmask(SIG_SETMASK, &old, NULL);
+
+	free(file);
+
+	return pid;
 }

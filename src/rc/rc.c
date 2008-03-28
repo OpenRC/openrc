@@ -771,6 +771,7 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
 	RC_STRINGLIST *deporder, *tmplist;
+	RC_SERVICE state;
 
 	if (! types_n) {
 		types_n = rc_stringlist_new();
@@ -779,12 +780,13 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 
 	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries)
 	{
-		if (rc_service_state(service->value) & RC_SERVICE_STOPPED)
+		state = rc_service_state(service->value);
+		if (state & RC_SERVICE_STOPPED || state & RC_SERVICE_FAILED)
 			continue;
 
 		/* We always stop the service when in these runlevels */
 		if (going_down || ! start_services) {
-			pid = rc_service_stop(service->value);
+			pid = service_stop(service->value);
 			if (pid > 0 && ! parallel)
 				rc_waitpid(pid);
 			continue;
@@ -832,7 +834,7 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 		}
 
 		/* After all that we can finally stop the blighter! */
-		pid = rc_service_stop(service->value);
+		pid = service_stop(service->value);
 		if (pid > 0) {
 			add_pid(pid);
 			if (! parallel) {
@@ -848,44 +850,47 @@ static void do_start_services(bool parallel)
 	RC_STRING *service;
 	pid_t pid;
 	bool interactive = false;
+	RC_SERVICE state;
 
 	if (! rc_yesno(getenv("EINFO_QUIET")))
 		interactive = exists(INTERACTIVE);
 
 	TAILQ_FOREACH(service, start_services, entries) {
-		if (rc_service_state(service->value) & RC_SERVICE_STOPPED) {
-			if (! interactive)
-				interactive = want_interactive();
+		state = rc_service_state(service->value);
+		if (!(state & RC_SERVICE_STOPPED) || state & RC_SERVICE_FAILED)
+			continue;
 
-			if (interactive) {
+		if (! interactive)
+			interactive = want_interactive();
+
+		if (interactive) {
 interactive_retry:
-				printf("\n");
-				einfo("About to start the service %s",
-				      service->value);
-				eindent();
-				einfo("1) Start the service\t\t2) Skip the service");
-				einfo("3) Continue boot process\t\t4) Exit to shell");
-				eoutdent();
+			printf("\n");
+			einfo("About to start the service %s",
+			      service->value);
+			eindent();
+			einfo("1) Start the service\t\t2) Skip the service");
+			einfo("3) Continue boot process\t\t4) Exit to shell");
+			eoutdent();
 interactive_option:
-				switch (read_key(true)) {
+			switch (read_key(true)) {
 				case '1': break;
 				case '2': continue;
 				case '3': interactive = false; break;
 				case '4': sulogin(true); goto interactive_retry;
 				default: goto interactive_option;
-				}
 			}
+		}
 
-			pid = rc_service_start(service->value);
-			
-			/* Remember the pid if we're running in parallel */
-			if (pid > 0) {
-				add_pid(pid);
+		pid = service_start(service->value);
 
-				if (! parallel) {
-					rc_waitpid(pid);
-					remove_pid(pid);
-				}
+		/* Remember the pid if we're running in parallel */
+		if (pid > 0) {
+			add_pid(pid);
+
+			if (! parallel) {
+				rc_waitpid(pid);
+				remove_pid(pid);
 			}
 		}
 	}

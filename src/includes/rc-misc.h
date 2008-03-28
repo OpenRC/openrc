@@ -196,6 +196,10 @@ void env_filter(void);
 void env_config(void);
 bool service_plugable(const char *service);
 int signal_setup(int sig, void (*handler)(int));
+pid_t exec_service(const char *, const char *);
+
+#define service_start(service) exec_service(service, "start");
+#define service_stop(service)  exec_service(service, "stop");
 
 /* basename_c never modifies the argument. As such, if there is a trailing
  * slash then an empty string is returned. */
