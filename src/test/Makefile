@@ -2,6 +2,8 @@ all:
 
 install:
 
+gitignore:
+
 check test::
 	./runtests.sh
 

@@ -39,8 +39,6 @@ include ${MK}/cc.mk
 include ${MK}/debug.mk
 
 CFLAGS+=	-I../includes -I../librc -I../libeinfo
-CFLAGS+=	-DLIB=\"${LIBNAME}\"
-CFLAGS+=	-DSYSCONFDIR=\"${SYSCONFDIR}\"
 
 include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}

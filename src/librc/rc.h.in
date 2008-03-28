@@ -32,6 +32,31 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define RC_SYSCONFDIR		"@SYSCONFDIR@"
+#define RC_LIBDIR               "@PREFIX@/@LIB@/rc"
+#define RC_SVCDIR               RC_LIBDIR "/init.d"
+#define RC_PLUGINDIR            RC_LIBDIR "/plugins"
+#define RC_RUNLEVELDIR          RC_SYSCONFDIR "/runlevels"
+#define RC_INITDIR              RC_SYSCONFDIR "/init.d"
+#define RC_CONFDIR              RC_SYSCONFDIR "/conf.d"
+
+/* PKG_PREFIX is where packages are installed if different from the base OS
+ * On Gentoo this is normally unset, on FreeBSD /usr/local and on NetBSD
+ * /usr/pkg. */
+#define RC_PKG_PREFIX		"@PKG_PREFIX@"
+#ifdef RC_PKG_PREFIX
+#  define RC_PKG_INITDIR        RC_PKG_PREFIX "/etc/init.d"
+#  define RC_PKG_CONFDIR        RC_PKG_PREFIX "/etc/conf.d"
+#endif
+
+/* LOCAL_PREFIX is for user written stuff, which the base OS and package
+ * manger don't touch. */
+#define RC_LOCAL_PREFIX		"@LOCAL_PREFIX@"
+#ifdef RC_LOCAL_PREFIX
+#  define RC_LOCAL_INITDIR      RC_LOCAL_PREFIX "/etc/init.d"
+#  define RC_LOCAL_CONFDIR      RC_LOCAL_PREFIX "/etc/conf.d"
+#endif
+
 /* A doubly linked list using queue(3) for ease of use */
 typedef struct rc_string {
 	char *value;

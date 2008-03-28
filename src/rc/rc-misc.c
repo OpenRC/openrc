@@ -49,11 +49,11 @@
 #include "rc.h"
 #include "rc-misc.h"
 
-#define PROFILE_ENV     SYSCONFDIR "/profile.env"
+#define PROFILE_ENV     RC_SYSCONFDIR "/profile.env"
 #define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
-#define USR_WHITELIST   SYSCONFDIR "/conf.d/env_whitelist"
-#define RC_CONF         SYSCONFDIR "/rc.conf"
-#define RC_CONF_OLD     SYSCONFDIR "/conf.d/rc"
+#define USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"
+#define RC_CONF         RC_SYSCONFDIR "/rc.conf"
+#define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
 
 #define PATH_PREFIX     RC_LIBDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 

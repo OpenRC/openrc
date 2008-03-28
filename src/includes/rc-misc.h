@@ -37,45 +37,10 @@
 #include <stdbool.h>
 #include <string.h>
 
-#ifndef LIB
-#  define LIB			"lib"
-#endif
-
-#ifdef PREFIX
-#  define RC_PREFIX		PREFIX
-#else
-#  define RC_PREFIX
-#endif
-
-#ifndef SYSCONFDIR
-#  define SYSCONFDIR		RC_PREFIX "/etc"
-#endif
-
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
 
-#define RC_LIBDIR               RC_PREFIX "/" LIB "/rc"
-#define RC_SVCDIR               RC_LIBDIR "/init.d"
 #define RC_DEPTREE_CACHE        RC_SVCDIR "/deptree"
-#define RC_RUNLEVELDIR          SYSCONFDIR "/runlevels"
-#define RC_INITDIR              SYSCONFDIR "/init.d"
-#define RC_CONFDIR              SYSCONFDIR "/conf.d"
-
-/* PKG_PREFIX is where packages are installed if different from the base OS
- * On Gentoo this is normally unset, on FreeBSD /usr/local and on NetBSD
- * /usr/pkg. */
-#ifdef PKG_PREFIX
-#  define RC_PKG_INITDIR        PKG_PREFIX "/etc/init.d"
-#  define RC_PKG_CONFDIR        PKG_PREFIX "/etc/conf.d"
-#endif
-
-/* LOCAL_PREFIX is for user written stuff, which the base OS and package
- * manger don't touch. */
-#ifdef LOCAL_PREFIX
-#  define RC_LOCAL_INITDIR      LOCAL_PREFIX "/etc/init.d"
-#  define RC_LOCAL_CONFDIR      LOCAL_PREFIX "/etc/conf.d"
-#endif
-
 #define RC_KRUNLEVEL            RC_SVCDIR "/krunlevel"
 #define RC_STARTING             RC_SVCDIR "/rc.starting"
 #define RC_STOPPING             RC_SVCDIR "/rc.stopping"
@@ -84,8 +49,6 @@
 #define RC_SVCDIR_INACTIVE      RC_SVCDIR "/inactive"
 #define RC_SVCDIR_STARTED       RC_SVCDIR "/started"
 #define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "/coldplugged"
-
-#define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
 #define ERRX fprintf (stderr, "out of memory\n"); exit (1)
 
@@ -97,7 +60,6 @@
 #else
 # define _unused
 #endif
-
 
 /* Some libc implemntations don't have these */
 #ifndef STAILQ_CONCAT
