@@ -32,6 +32,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+__BEGIN_DECLS
+
 #define RC_SYSCONFDIR		"@SYSCONFDIR@"
 #define RC_LIBDIR               "@PREFIX@/@LIB@/rc"
 #define RC_SVCDIR               RC_LIBDIR "/init.d"
@@ -462,4 +464,5 @@ typedef LIST_HEAD(rc_pidlist, rc_pid) RC_PIDLIST;
  * @return NULL terminated list of pids */
 RC_PIDLIST *rc_find_pids(const char *const *, const char *, uid_t, pid_t);
 
+__END_DECLS
 #endif
