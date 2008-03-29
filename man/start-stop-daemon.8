@@ -145,6 +145,10 @@ stopping schedule.
 If not specified then a default value of SIGTERM/5 is
 assumed.
 .El
+.Sh ENVIRONMENT
+.Va SSD_NICELEVEL
+can also set the scheduling priority of the daemon, but the command line
+option takes precedence.
 .Sh NOTE
 .Nm
 uses
