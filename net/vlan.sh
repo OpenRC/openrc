@@ -66,7 +66,7 @@ vlan_pre_start()
 vlan_post_start()
 {
 	local vlans=
-	eval vlans=\$vlans_${IFACE}
+	eval vlans=\$vlans_${IFVAR}
 	[ -z "${vlans}" ] && return 0
 	
 	_check_vlan || return 1
@@ -86,13 +86,13 @@ vlan_post_start()
 		yesno ${s:-yes} || continue
 
 		# We need to work out the interface name of our new vlan id
-		local ifname="$( \
-			sed -n -e 's/^\([^[:space:]]*\) *| '"${vlan}"' *| .*'"${iface}"'$/\1/p' \
+		local ifname="$(sed -n -e \
+			's/^\([^[:space:]]*\) *| '"${vlan}"' *| .*'"${iface}"'$/\1/p' \
 			/proc/net/vlan/config )"
 		mark_service_started "net.${ifname}"
 		(
 			export RC_SVCNAME="net.${ifname}"
-			start	
+			start
 		) || mark_service_stopped "net.${ifname}"
 	done
 	
