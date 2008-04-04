@@ -648,6 +648,19 @@ static void setup_types(void)
 	rc_stringlist_add(types_mua, "beforeme");
 }
 
+static bool in_list(RC_STRINGLIST *list, char *string)
+{
+	RC_STRING *s;
+
+	if (! list)
+		return false;
+	TAILQ_FOREACH(s, list, entries)
+		if (strcmp(s->value, string) == 0)
+			return true;
+	return false;
+}
+
+
 static void svc_start(bool deps)
 {
 	bool started;
@@ -747,35 +760,29 @@ static void svc_start(bool deps)
 				/* Don't wait for services which went inactive but are now in
 				 * starting state which we are after */
 				if (svcs & RC_SERVICE_STARTING &&
-						svcs & RC_SERVICE_WASINACTIVE) {
-					TAILQ_FOREACH(svc2, use_services, entries) {
-						if (strcmp (svc->value, svc2->value) == 0) 
-							break;
-					}
-					if (! svc2)
+				    svcs & RC_SERVICE_WASINACTIVE)
+				{
+					if (!in_list(need_services, svc->value) &&
+					    !in_list(use_services, svc->value))
 						continue;
 				}
 
 				if (! svc_wait(svc->value))
 					eerror ("%s: timed out waiting for %s",
 							applet, svc->value);
-				if (! need_services)
-					continue;
 				if ((svcs = rc_service_state(svc->value)) & RC_SERVICE_STARTED)
 					continue;
-				TAILQ_FOREACH(svc2, need_services, entries) {
-					if (strcmp (svc->value, svc2->value) == 0) {
-						if (svcs & RC_SERVICE_INACTIVE ||
-								svcs & RC_SERVICE_WASINACTIVE)
-						{
-							if (! tmplist)
-								tmplist = rc_stringlist_new();
-							rc_stringlist_add(tmplist, svc->value);
-						} else
-							eerrorx("ERROR: cannot start %s as"
-									" %s would not start",
-									applet, svc->value);
-					}
+				if (in_list(need_services, svc->value)) {
+					if (svcs & RC_SERVICE_INACTIVE ||
+					    svcs & RC_SERVICE_WASINACTIVE)
+					{
+						if (! tmplist)
+							tmplist = rc_stringlist_new();
+						rc_stringlist_add(tmplist, svc->value);
+					} else
+						eerrorx("ERROR: cannot start %s as"
+							" %s would not start",
+							applet, svc->value);
 				}
 			}
 
@@ -932,12 +939,12 @@ static void svc_stop(bool deps)
 			TAILQ_FOREACH_REVERSE(svc, services, rc_stringlist, entries) {
 				RC_SERVICE svcs = rc_service_state(svc->value);
 				if (svcs & RC_SERVICE_STARTED ||
-						svcs & RC_SERVICE_INACTIVE)
+				    svcs & RC_SERVICE_INACTIVE)
 				{
 					svc_wait(svc->value);
 					svcs = rc_service_state(svc->value);
 					if (svcs & RC_SERVICE_STARTED ||
-							svcs & RC_SERVICE_INACTIVE)
+					    svcs & RC_SERVICE_INACTIVE)
 					{
 						pid_t pid = service_stop(svc->value);
 						if (! rc_conf_yesno("rc_parallel"))
@@ -964,9 +971,9 @@ static void svc_stop(bool deps)
 						/* If shutting down, we should stop even
 						 * if a dependant failed */
 						if (runlevel &&
-								(strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-								 strcmp(runlevel, RC_LEVEL_REBOOT) == 0 ||
-								 strcmp(runlevel, RC_LEVEL_SINGLE) == 0))
+						    (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+						     strcmp(runlevel, RC_LEVEL_REBOOT) == 0 ||
+						     strcmp(runlevel, RC_LEVEL_SINGLE) == 0))
 							continue;
 						rc_service_mark(service, RC_SERVICE_FAILED);
 					}
