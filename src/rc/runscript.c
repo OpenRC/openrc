@@ -1084,7 +1084,7 @@ int runscript(int argc, char **argv)
 {
 	bool deps = true;
 	bool doneone = false;
-	char pid[16];
+	char pidstr[10];
 	int retval;
 	int opt;
 	RC_STRING *svc;
@@ -1143,8 +1143,8 @@ int runscript(int argc, char **argv)
 	/* Set an env var so that we always know our pid regardless of any
 	   subshells the init script may create so that our mark_service_*
 	   functions can always instruct us of this change */
-	snprintf(pid, sizeof(pid), "%d", (int) getpid());
-	setenv("RC_RUNSCRIPT_PID", pid, 1);
+	snprintf(pidstr, sizeof(pidstr), "%d", (int) getpid());
+	setenv("RC_RUNSCRIPT_PID", pidstr, 1);
 
 	/* eprefix is kinda klunky, but it works for our purposes */
 	if (rc_conf_yesno("rc_parallel")) {

@@ -954,7 +954,7 @@ int main(int argc, char **argv)
 	bool going_down = false;
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	char krunlevel [PATH_MAX];
-	char pidstr[6];
+	char pidstr[10];
 	int opt;
 	bool parallel;
 	int regen = 0;
