@@ -96,6 +96,9 @@ if ${mountproc}; then
 fi
 unset mountproc
 
+# Re-load RC_SYS if empty now we have /proc mounted
+[ -z "${RC_SYS}" ] && export RC_SYS="$(rc --sys)"
+
 # Read off the kernel commandline to see if there's any special settings
 # especially check to see if we need to set the  CDBOOT environment variable
 # Note: /proc MUST be mounted

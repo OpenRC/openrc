@@ -935,11 +935,13 @@ static void handle_bad_signal(int sig)
 static const struct option longopts[] = {
 	{ "override", 1, NULL, 'o' },
 	{ "service",  1, NULL, 's' },
+	{ "sys",      0, NULL, 'S' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
 	"override the next runlevel to change into\nwhen leaving single user or boot runlevels",
 	"runs the service specified with the rest\nof the arguments",
+	"output the RC system type, if any",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -1027,6 +1029,12 @@ int main(int argc, char **argv)
 			*argv = newlevel;
 			execv(*argv, argv);
 			eerrorx("%s: %s", applet, strerror(errno));
+			/* NOTREACHED */
+		case 'S':
+			bootlevel = rc_sys();
+			if (bootlevel)
+				printf("%s\n", bootlevel);
+			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
 		case_RC_COMMON_GETOPT
 		}
