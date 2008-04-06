@@ -110,7 +110,7 @@ static int do_e(int argc, char **argv)
 		} else if (strcmp(applet, "esyslog") == 0 ||
 			   strcmp(applet, "elog") == 0) {
 			p = strchr(argv[0], '.');
-			if ((level = syslog_decode(p + 1, prioritynames)) == -1)
+			if (!p || (level = syslog_decode(p + 1, prioritynames)) == -1)
 				eerrorx("%s: invalid log level `%s'", applet, argv[0]);
 
 			if (argc < 3)
