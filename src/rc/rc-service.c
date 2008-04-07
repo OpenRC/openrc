@@ -51,6 +51,7 @@ static const struct option longopts[] = {
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
+	"tests if the service exists or not",
 	"list all available services",
 	longopts_help_COMMON
 };
