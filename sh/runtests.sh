@@ -9,17 +9,17 @@ tret=0
 ebegin "Testing yesno()"
 for f in yes YES Yes true TRUE True 1 ; do
 	if ! yesno ${f} ; then
-		((tret+=1))
+		tret=$((${tret} + 1))
 		echo "!${f}!"
 	fi
 done
 for f in no NO No false FALSE False 0 ; do
 	if yesno ${f} ; then
-		((tret+=1))
+		tret=$(({$tret} + 1))
 		echo "!${f}!"
 	fi
 done
 eend ${tret}
-((ret+=tret))
+ret=$((${ret} + ${tret}))
 
 exit ${ret}

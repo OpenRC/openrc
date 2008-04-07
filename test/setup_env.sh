@@ -12,7 +12,9 @@ builddir=${builddir:-${srcdir}}
 export LD_LIBRARY_PATH=${top_builddir}/src/libeinfo:${top_builddir}/src/librc:${LD_LIBRARY_PATH}
 export PATH=${top_builddir}/src/rc:${PATH}
 
-${MAKE:-make} -s -C ${top_srcdir}/src/rc links
+cd ${top_srcdir}/src/rc
+${MAKE:-make} links >/dev/null
+cd -
 
 . ${top_srcdir}/sh/functions.sh
 
