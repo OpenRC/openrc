@@ -38,6 +38,10 @@ yesno()
 	esac
 }
 
+rc_runlevel() {
+    rc-status --runlevel
+}
+
 _sanitize_path()
 {
 	local IFS=":" p= path=
