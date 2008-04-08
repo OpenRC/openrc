@@ -501,7 +501,7 @@ bool rc_service_mark(const char *service, const RC_SERVICE state)
 	base = basename_c(service);
 
 	if (state != RC_SERVICE_STOPPED) {
-		if (! exists(init)) {
+		if (!exists(init)) {
 			free(init);
 			return false;
 		}
@@ -547,7 +547,10 @@ bool rc_service_mark(const char *service, const RC_SERVICE state)
 					symlink(init, was);
 					skip_wasinactive = true;
 				}
-				unlink(file);
+				if (unlink(file) == -1) {
+					free(init);
+					return false;
+				}
 			}
 		}
 	}

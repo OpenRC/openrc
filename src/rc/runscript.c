@@ -1306,7 +1306,8 @@ int runscript(int argc, char **argv)
 				}
 			} else if (strcmp(optarg, "zap") == 0) {
 				einfo("Manually resetting %s to stopped state", applet);
-				rc_service_mark(applet, RC_SERVICE_STOPPED);
+				if (!rc_service_mark(applet, RC_SERVICE_STOPPED))
+					eerrorx("rc_service_mark: %s", strerror(errno));
 				uncoldplug();
 			} else
 				svc_exec(optarg, NULL);
