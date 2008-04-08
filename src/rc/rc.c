@@ -691,12 +691,15 @@ static void do_newlevel(const char *newlevel)
 		run_script(INITSH);
 
 #ifdef __linux__
-		/* If we requested a softlevel, save it now */
-		set_krunlevel(NULL);
-		if ((cmd = proc_getent("softlevel"))) {
+		/* If we requested a runlevel, save it now */
+		if ((cmd = proc_getent("rc_runlevel"))) {
 			set_krunlevel(cmd);
 			free(cmd);
-		}
+		} else if ((cmd = proc_getent("softlevel"))) {
+			set_krunlevel(cmd);
+			free(cmd);
+		} else
+		    set_krunlevel(NULL);
 #endif
 
 		/* Setup our coldplugged services now */
@@ -1049,7 +1052,7 @@ int main(int argc, char **argv)
 	snprintf(pidstr, sizeof(pidstr), "%d", getpid());
 	setenv("RC_PID", pidstr, 1);
 
-	/* Load current softlevel */
+	/* Load current runlevel */
 	bootlevel = getenv("RC_BOOTLEVEL");
 	runlevel = rc_runlevel_get();
 
@@ -1199,7 +1202,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* Save our softlevel now */
+	/* Save our runlevel now */
 	if (going_down)
 		rc_runlevel_set(newlevel);
 
