@@ -23,12 +23,12 @@ depend()
 {
 	# Only have portmap as a dependency if there is a nfs mount in fstab
 	# that is set to mount at boot
-	local pmap=""
+	local pmap=
 	if need_portmap; then
-		pmap="${pmap} rpc.statd"
+		pmap="rpc.statd"
 		[ -x @SYSCONFDIR@/init.d/rpcbind ] \
-			&& pmap="rpcbind" \
-			|| pmap="portmap"
+			&& pmap="${pmap} rpcbind" \
+			|| pmap="${pmap} portmap"
 	fi
 
 	config /etc/fstab

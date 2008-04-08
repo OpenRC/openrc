@@ -11,11 +11,19 @@ depend()
 	keyword noprefix
 }
 
+dir_writeable()
+{
+	mkdir "$1"/.test.$$ 2>/dev/null && rmdir "$1"/.test.$$
+}
+
 cleanup_tmp_dir()
 {
 	local dir=$1
 
-	mkdir -p "${dir}"
+	if ! [ -d "${dir}" ]; then
+		mkdir -p "${dir}" || return $?
+	fi
+	dir_writeable "${dir}" || return 1
 	cd "${dir}"
 	if yesno ${wipe_tmp:-${WIPE_TMP:-yes}}; then
 		ebegin "Wiping ${dir} directory"
@@ -60,12 +68,7 @@ cleanup_tmp_dir()
 
 start()
 {
-	if ! mkdir /.test.$$ 2>/dev/null; then
-		ewarn "Skipping /var and /tmp initialization (ro root?)"
-		return 0
-	fi
-	rmdir /.test.$$
-
+	local logw=false
 	# Ensure that our basic dirs exist
 	for x in /var/log /var/run /tmp; do
 		if ! [ -d "${x}" ]; then
@@ -76,28 +79,33 @@ start()
 		fi 
 	done
 
-	ebegin "Creating user login records"
-	cp /dev/null /var/run/utmp
-	[ -e /var/log/wtmp ] || cp /dev/null /var/log/wtmp
-	chmod 0644 /var/run/utmp /var/log/wtmp
-	eend 0
+	if dir_writeable /var/run; then
+		ebegin "Creating user login records"
+		cp /dev/null /var/run/utmp
+		if dir_writeable /var/log; then
+			logw=true
+			[ -e /var/log/wtmp ] || cp /dev/null /var/log/wtmp
+			chmod 0644 /var/run/utmp /var/log/wtmp
+		fi
+		eend 0
 
-	ebegin "Cleaning /var/run"
-	for x in $(find /var/run ! -type d ! -name utmp ! -name random-seed \
-		   ! -name ld-elf.so.hints ! -name ld.so.hints);
-	do	
-		[ ! -f "${x}" ] && continue
-		# Do not remove pidfiles of already running daemons
-		case "${x}" in
-			*.pid)
-				start-stop-daemon --test --quiet --stop \
-				--pidfile "${x}"
-				[ $? -eq 0 ] && continue
+		ebegin "Cleaning /var/run"
+		for x in $(find /var/run ! -type d ! -name utmp \
+			! -name random-seed \
+			! -name ld-elf.so.hints ! -name ld.so.hints);
+		do	
+			[ ! -f "${x}" ] && continue
+			# Do not remove pidfiles of already running daemons
+			case "${x}" in
+				*.pid)
+					start-stop-daemon --test --quiet \
+					--stop --pidfile "${x}" && continue
 				;;
-		esac
-		rm -f -- "${x}"
-	done
-	eend 0
+			esac
+			rm -f -- "${x}"
+		done
+		eend 0
+	fi
 
 	# Clean up /tmp directories
 	local tmp=
@@ -106,18 +114,22 @@ start()
 	done
 	chmod +t /tmp /var/tmp
 
-	# Make sure our X11 stuff have the correct permissions
-	# Omit the chown as bootmisc is run before network is up
-	# and users may be using lame LDAP auth #139411
-	rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
-	mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
-	chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
-	[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
+	if dir_writeable /tmp; then
+		# Make sure our X11 stuff have the correct permissions
+		# Omit the chown as bootmisc is run before network is up
+		# and users may be using lame LDAP auth #139411
+		rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
+		mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
+		chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
+		[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
+	fi
 
-	# Create an 'after-boot' dmesg log
-	if [ "${RC_SYS}" != "VSERVER" -a "${RC_SYS}" != "OPENVZ" ]; then
-		dmesg > /var/log/dmesg
-		chmod 640 /var/log/dmesg
+	if ${logw} || dir_writeable /var/log; then
+		# Create an 'after-boot' dmesg log
+		if [ "${RC_SYS}" != "VSERVER" -a "${RC_SYS}" != "OPENVZ" ]; then
+			dmesg > /var/log/dmesg
+			chmod 640 /var/log/dmesg
+		fi
 	fi
 
 	rm -f /etc/nologin
