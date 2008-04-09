@@ -29,6 +29,11 @@ start()
 {
 	local reboot_opts= fsck_opts= p=
 
+	if [ -e /fastboot ]; then
+		ewarn "Skipping fsck due to /fastboot"
+		return 0
+	fi
+
 	ebegin "Checking local filesystems"
 	for p in ${fsck_passno}; do
 		local IFS="${_IFS}"

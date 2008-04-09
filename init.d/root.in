@@ -13,7 +13,7 @@ depend()
 start()
 {
 	if echo 2>/dev/null >/.test.$$; then
-		rm -f /.test.$$
+		rm -f /.test.$$ /fastboot
 		return 0
 	fi
 
@@ -23,4 +23,5 @@ start()
 		*)	mount -u -o rw /;;
 	esac
 	eend $? "Root filesystem could not be mounted read/write"
+	rm -f /fastboot
 }
