@@ -18,12 +18,13 @@ dir_writeable()
 
 cleanup_tmp_dir()
 {
-	local dir=$1
+	local dir="$1"
 
 	if ! [ -d "${dir}" ]; then
 		mkdir -p "${dir}" || return $?
 	fi
 	dir_writeable "${dir}" || return 1
+	chmod +t "${dir}"
 	cd "${dir}"
 	if yesno ${wipe_tmp:-${WIPE_TMP:-yes}}; then
 		ebegin "Wiping ${dir} directory"
@@ -112,7 +113,6 @@ start()
 	for tmp in ${wipe_tmp_dirs-/tmp}; do
 		cleanup_tmp_dir "${tmp}"
 	done
-	chmod +t /tmp /var/tmp
 
 	if dir_writeable /tmp; then
 		# Make sure our X11 stuff have the correct permissions
@@ -133,6 +133,7 @@ start()
 	fi
 
 	rm -f /etc/nologin
+	return 0
 }
 
 stop()
