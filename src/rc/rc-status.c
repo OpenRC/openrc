@@ -42,7 +42,8 @@
 
 extern const char *applet;
 static bool test_crashed = false;
-static const char *const types_nua[] = { "ineed", "iuse", "iafter", NULL };
+static RC_DEPTREE *deptree = NULL;
+static RC_STRINGLIST *types = NULL;
 
 bool _rc_can_find_pids(void)
 {
@@ -73,7 +74,7 @@ bool _rc_can_find_pids(void)
 	return retval;
 }
 
-static void print_level(char *level)
+static void print_level(const char *level)
 {
 	printf ("Runlevel: ");
 	if (isatty(fileno(stdout)))
@@ -120,6 +121,46 @@ static void print_service(const char *service)
 	ebracket(cols, color, status);
 }
 
+static void print_services(const char *runlevel, RC_STRINGLIST *services)
+{
+	RC_STRINGLIST *l = NULL;
+	RC_STRING *s, *t;
+	char *r = NULL;
+
+	if (! services)
+		return;
+	if (! deptree)
+		deptree = _rc_deptree_load(NULL);
+	if (! deptree) {
+		TAILQ_FOREACH(s, services, entries)
+			if (!runlevel ||
+			    rc_service_in_runlevel(s->value, runlevel))
+				print_service(s->value);
+		return;
+	}
+	if (! types) {
+		types = rc_stringlist_new();
+		rc_stringlist_add(types, "ineed");
+		rc_stringlist_add(types, "iuse");
+		rc_stringlist_add(types, "iafter");
+	}
+	if (!runlevel)
+		r = rc_runlevel_get();
+	l = rc_deptree_depends(deptree, types, services, r ? r : runlevel,
+			       RC_DEP_STRICT | RC_DEP_TRACE | RC_DEP_START);
+	free(r);
+	TAILQ_FOREACH(s, l, entries) {
+		TAILQ_FOREACH(t, services, entries)
+			if (strcmp(t->value, s->value) == 0)
+				break;
+		if (!t)
+			continue;
+		if (!runlevel || rc_service_in_runlevel(s->value, runlevel))
+			print_service(s->value);
+	}
+	rc_stringlist_free(l);
+}
+
 #include "_usage.h"
 #define extraopts "[runlevel1] [runlevel2] ..."
 #define getoptstring "alrsu" getoptstring_COMMON
@@ -143,16 +184,11 @@ static const char * const longopts_help[] = {
 
 int rc_status(int argc, char **argv)
 {
-	RC_DEPTREE *deptree = NULL;
 	RC_STRINGLIST *levels = NULL;
 	RC_STRINGLIST *services;
-	RC_STRINGLIST *types = NULL;
-	RC_STRINGLIST *ordered;
-	RC_STRING *s;
-	RC_STRING *l;
+	RC_STRING *s, *l, *t;
 	char *p;
 	int opt;
-	int depopts = RC_DEP_STRICT | RC_DEP_START | RC_DEP_TRACE;
 
 	test_crashed = _rc_can_find_pids();
 
@@ -166,35 +202,33 @@ int rc_status(int argc, char **argv)
 			levels = rc_runlevel_list();
 			TAILQ_FOREACH (l, levels, entries)
 				printf("%s\n", l->value);
-			rc_stringlist_free(levels);
-			exit(EXIT_SUCCESS);
+			goto exit;
 			/* NOTREACHED */
 		case 'r':
-			p = rc_runlevel_get ();
+			p = rc_runlevel_get();
 			printf("%s\n", p);
 			free(p);
-			exit(EXIT_SUCCESS);
+			goto exit;
 			/* NOTREACHED */
 		case 's':
 			services = rc_services_in_runlevel(NULL);
-			TAILQ_FOREACH(s, services, entries)
-				print_service(s->value);
-			rc_stringlist_free(services);
-			exit (EXIT_SUCCESS);
+			print_services(NULL, services);
+			goto exit;
 			/* NOTREACHED */
 		case 'u':
 			services = rc_services_in_runlevel(NULL);
 			levels = rc_runlevel_list();
-			TAILQ_FOREACH(s, services, entries) {
+			TAILQ_FOREACH_SAFE(s, services, entries, t) {
 				TAILQ_FOREACH(l, levels, entries)
-					if (rc_service_in_runlevel(s->value, l->value))
+					if (rc_service_in_runlevel(s->value, l->value)) {
+						TAILQ_REMOVE(services, s, entries);
+						free(s->value);
+						free(s);
 						break;
-				if (! l)
-						print_service(s->value);
+					}
 			}
-			rc_stringlist_free(levels);
-			rc_stringlist_free(services);
-			exit (EXIT_SUCCESS);
+			print_services(NULL, services);
+			goto exit;
 			/* NOTREACHED */
 
 		case_RC_COMMON_GETOPT
@@ -216,27 +250,34 @@ int rc_status(int argc, char **argv)
 	TAILQ_FOREACH(l, levels, entries) {
 		print_level(l->value);
 		services = rc_services_in_runlevel(l->value);
-		if (! services)
-			continue;
-		if (deptree) {
-			if (! types) {
-				types = rc_stringlist_new();
-				rc_stringlist_add(types, "ineed");
-				rc_stringlist_add(types, "iuse");
-				rc_stringlist_add(types, "iafter");
-			}
-			ordered = rc_deptree_depends(deptree, types, services,
-						     l->value, depopts);
-			rc_stringlist_free(services);
-			services = ordered;
-			ordered = NULL;
-		}
-		TAILQ_FOREACH(s, services, entries)
-			if (rc_service_in_runlevel(s->value, l->value))
-				print_service(s->value);
+		print_services(l->value, services);
 		rc_stringlist_free(services);
+		services = NULL;
 	}
 
+	/* Show unassigned running too */
+	if (argc < 2) {
+		print_level("UNASSIGNED");
+		services = rc_services_in_runlevel(NULL);
+		rc_stringlist_free(levels);
+		levels = rc_runlevel_list();
+		TAILQ_FOREACH_SAFE(s, services, entries, t) {
+			TAILQ_FOREACH(l, levels, entries) {
+				if (rc_service_in_runlevel(s->value, l->value) ||
+				    rc_service_state(s->value) & RC_SERVICE_STOPPED)
+				{
+					TAILQ_REMOVE(services, s, entries);
+					free(s->value);
+					free(s);
+					break;
+				}
+			}
+		}
+		print_services(NULL, services);
+	}
+
+exit:
+	rc_stringlist_free(services);
 	rc_stringlist_free(types);
 	rc_stringlist_free(levels);
 	rc_deptree_free(deptree);
