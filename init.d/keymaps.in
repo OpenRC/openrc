@@ -8,7 +8,7 @@ ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 unicode=${unicode:-${UNICODE}}
 keymap=${keymap:-${KEYMAP}}
 extended_keymaps=${extended_keymaps:-${EXTENDED_KEYMAPS}}
-windowskeys=${windowskeys:-${SET_WINDOWSKEYS}} 
+windowkeys=${windowkeys:-${SET_WINDOWSKEYS}} 
 fix_euro=${fix_euro:-${FIX_EURO}}
 dumpkeys_charset=${dumpkeys_charset:-${DUMPKEYS_CHARSET}}
 
@@ -40,7 +40,7 @@ start()
 		kmode="-u"
 		msg="UTF-8"
 	fi
-	yesno ${windowskeys} && wkeys="windowkeys"
+	yesno ${windowkeys} && wkeys="windowkeys"
 	loadkeys -q ${loadkeys_uni} ${wkeys} ${keymap} ${extended_keymaps} 
 	eend $? "Error loading key mappings" || return $?
 
