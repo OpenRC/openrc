@@ -478,17 +478,17 @@ RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *deptree,
 }
 librc_hidden_def(rc_deptree_depend)
 
-RC_STRINGLIST *rc_deptree_depends (const RC_DEPTREE *deptree,
-				   const RC_STRINGLIST *types,
-				   const RC_STRINGLIST *services,
-				   const char *runlevel, int options)
+RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *deptree,
+				  const RC_STRINGLIST *types,
+				  const RC_STRINGLIST *services,
+				  const char *runlevel, int options)
 {
 	RC_STRINGLIST *sorted = NULL;
 	RC_STRINGLIST *visited = rc_stringlist_new();
 	RC_DEPINFO *di;
 	const RC_STRING *service;
 
-	bootlevel = getenv ("RC_BOOTLEVEL");
+	bootlevel = getenv("RC_BOOTLEVEL");
 	if (! bootlevel)
 		bootlevel = RC_LEVEL_BOOT;
 
@@ -515,7 +515,7 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 	RC_STRINGLIST *types;
 	RC_STRINGLIST *services;
 
-	bootlevel = getenv ("RC_BOOTLEVEL");
+	bootlevel = getenv("RC_BOOTLEVEL");
 	if (! bootlevel)
 		bootlevel = RC_LEVEL_BOOT;
 
@@ -525,8 +525,7 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 	    strcmp (runlevel, RC_LEVEL_REBOOT) == 0)
 	{
 		list = rc_services_in_state(RC_SERVICE_STARTED);
-
-		list2 = rc_services_in_state (RC_SERVICE_INACTIVE);
+		list2 = rc_services_in_state(RC_SERVICE_INACTIVE);
 		if (list2) {
 			if (list) {
 				TAILQ_CONCAT(list, list2, entries);
@@ -534,8 +533,7 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 			} else
 				list = list2;
 		}
-
-		list2 = rc_services_in_state (RC_SERVICE_STARTING);
+		list2 = rc_services_in_state(RC_SERVICE_STARTING);
 		if (list2) {
 			if (list) {
 				TAILQ_CONCAT(list, list2, entries);
@@ -543,20 +541,28 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 			} else
 				list = list2;
 		}
-		TAILQ_CONCAT(list, list2, entries);
 	} else {
-		list = rc_services_in_runlevel (runlevel);
-
+		list = rc_services_in_runlevel(runlevel);
 		/* Add coldplugged services */
-		list2 = rc_services_in_state (RC_SERVICE_COLDPLUGGED);
-		TAILQ_CONCAT(list, list2, entries);
-		free(list2);
+		list2 = rc_services_in_state(RC_SERVICE_COLDPLUGGED);
+		if (list2) {
+			if (list) {
+				TAILQ_CONCAT(list, list2, entries);
+				free(list2);
+			} else
+				list = list2;
+		}
 
 		/* If we're not the boot runlevel then add that too */
 		if (strcmp (runlevel, bootlevel) != 0) {
 			list2 = rc_services_in_runlevel (bootlevel);
-			TAILQ_CONCAT(list, list2, entries);
-			free(list2);
+			if (list2) {
+				if (list) {
+					TAILQ_CONCAT(list, list2, entries);
+					free(list2);
+				} else
+					list = list2;
+			}
 		}
 	}
 
@@ -569,8 +575,8 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 
 	services = rc_deptree_depends(deptree, types, list, runlevel,
 				      RC_DEP_STRICT | RC_DEP_TRACE | options);
-	rc_stringlist_free (list);
-	rc_stringlist_free (types);
+	rc_stringlist_free(list);
+	rc_stringlist_free(types);
 
 	return services;
 }
