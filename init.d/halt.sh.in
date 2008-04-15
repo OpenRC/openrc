@@ -28,6 +28,7 @@ sync; sync
 #   1) we don't need (and by default can't) umount anything (VServer) or
 #   2) the host utils take care of all umounting stuff (OpenVZ)
 if [ "${RC_SYS}" = "VSERVER" -o "${RC_SYS}" = "OPENVZ" ]; then
+	[ "${RC_SYS}" = "OPENVZ" -a "$1" = "reboot" ] && echo "" > /reboot
 	if [ -e @SYSCONFDIR@/init.d/"$1".sh ]; then
 		. @SYSCONFDIR@/init.d/"$1".sh
 	else
