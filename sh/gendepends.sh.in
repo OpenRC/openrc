@@ -48,7 +48,7 @@ do
 
 	cd "${_dir}"
 	for RC_SERVICE in *; do
-		[ -x "${RC_SERVICE}" ] || continue
+		[ -x "${RC_SERVICE}" -a -f "${RC_SERVICE}" ] || continue
 
 		# Only generate dependencies for runscripts
 		read one two < "${RC_SERVICE}"
