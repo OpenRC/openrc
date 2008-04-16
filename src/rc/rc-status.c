@@ -185,7 +185,7 @@ static const char * const longopts_help[] = {
 int rc_status(int argc, char **argv)
 {
 	RC_STRINGLIST *levels = NULL;
-	RC_STRINGLIST *services;
+	RC_STRINGLIST *services = NULL;
 	RC_STRING *s, *l, *t;
 	char *p;
 	int opt;
@@ -256,9 +256,10 @@ int rc_status(int argc, char **argv)
 	}
 
 	/* Show unassigned running too */
-	if (argc < 2) {
+	if (argc < 2 &&
+	    (services = rc_services_in_runlevel(NULL)))
+	{
 		print_level("UNASSIGNED");
-		services = rc_services_in_runlevel(NULL);
 		rc_stringlist_free(levels);
 		levels = rc_runlevel_list();
 		TAILQ_FOREACH_SAFE(s, services, entries, t) {
