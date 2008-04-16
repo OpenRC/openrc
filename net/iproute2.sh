@@ -189,7 +189,7 @@ iproute2_pre_start()
 	# TX Queue Length support
 	local len=
 	eval len=\$txqueuelen_${IFVAR}
-	[ -n "${len}" ] && ip link set txqueuelen "${len}" dev "${IFACE}"
+	[ -n "${len}" ] && ip link set qlen "${len}" dev "${IFACE}"
 
 	local tunnel=
 	eval tunnel=\$iptunnel_${IFVAR}
