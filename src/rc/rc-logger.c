@@ -103,7 +103,7 @@ static void write_log(int logfd, const char *buffer, size_t bytes)
 			continue;
 		}
 
-		if (! in_term || isalpha((int) *p))
+		if (! in_term || isalpha((unsigned char)*p))
 			in_escape = in_term = false;
 cont:
 		p++;

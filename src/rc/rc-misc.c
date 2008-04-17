@@ -93,8 +93,8 @@ char *rc_conf_value(const char *setting)
 			TAILQ_FOREACH(s, rc_conf, entries) {
 				p = s->value;
 				while (p && *p && *p != '=') {
-					if (isupper((int) *p))
-						*p = tolower((int) *p);
+					if (isupper((unsigned char)*p))
+						*p = tolower((unsigned char)*p);
 					p++;
 				}
 			}

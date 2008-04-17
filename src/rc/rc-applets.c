@@ -58,7 +58,7 @@ static int syslog_decode(char *name, CODE *codetab)
 {
 	CODE *c;
 
-	if (isdigit((int) *name))
+	if (isdigit((unsigned char)*name))
 		return atoi(name);
 
 	for (c = codetab; c->c_name; c++)
@@ -351,7 +351,7 @@ static int do_shell_var(int argc, char **argv)
 			putchar(' ');
 
 		while (*p) {
-			c = *p++;
+			c = (unsigned char)*p++;
 			if (! isalnum(c))
 				c = '_';
 			putchar(c);

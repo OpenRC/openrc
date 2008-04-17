@@ -190,7 +190,7 @@ static SCHEDULEITEM *parse_schedule_item(const char *string)
 	item->gotoitem = NULL;
 	if (strcmp(string,"forever") == 0)
 		item->type = SC_FOREVER;
-	else if (isdigit((int) string[0])) {
+	else if (isdigit((unsigned char)string[0])) {
 		item->type = SC_TIMEOUT;
 		errno = 0;
 		if (sscanf(string, "%d", &item->value) != 1)

@@ -847,7 +847,7 @@ bool rc_deptree_update(void)
 		nosys[0] = 'n';
 		nosys[1] = 'o';
 		for (i = 0; i < len; i++)
-			nosys[i + 2] = (char) tolower((int) sys[i]);
+			nosys[i + 2] = (char)tolower((unsigned char)sys[i]);
 		nosys[i + 2] = '\0';
 
 		STAILQ_FOREACH_SAFE(depinfo, deptree, entries, depinfo_np)

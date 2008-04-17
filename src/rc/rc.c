@@ -582,7 +582,7 @@ static void do_coldplug(void)
 			    strncmp(d->d_name, "ums", 3) == 0)
 			{
 				p = d->d_name + 3;
-				if (p && isdigit((int) *p)) {
+				if (p && isdigit((unsigned char)*p)) {
 					l = strlen("moused.") + strlen(d->d_name) + 1;
 					service = xmalloc(sizeof(char) * l);
 					snprintf (service, l, "moused.%s", d->d_name);
