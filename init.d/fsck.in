@@ -27,14 +27,18 @@ _reboot() {
 
 start()
 {
-	local reboot_opts= fsck_opts= p=
+	local reboot_opts= fsck_opts= p= check_extra=
 
 	if [ -e /fastboot ]; then
 		ewarn "Skipping fsck due to /fastboot"
 		return 0
 	fi
+	if [ -e /forcefsck ]; then
+		fsck_opts="${fsck_opts} -f"
+		check_extra="(check forced)"
+	fi
 
-	ebegin "Checking local filesystems"
+	ebegin "Checking local filesystems ${check_extra}"
 	for p in ${fsck_passno}; do
 		local IFS="${_IFS}"
 		case "${p}" in
@@ -45,7 +49,7 @@ start()
 	done
 
 	if [ "${RC_UNAME}" = "Linux" ]; then
-		fsck_opts="-C0 -T"
+		fsck_opts="${fsck_opts} -C0 -T"
 		if [ -z "${fsck_passno}" ]; then
 			fsck_args=${fsck_args--A -p}
 			if echo 2>/dev/null >/.test.$$; then
