@@ -149,6 +149,8 @@ static void print_services(const char *runlevel, RC_STRINGLIST *services)
 	l = rc_deptree_depends(deptree, types, services, r ? r : runlevel,
 			       RC_DEP_STRICT | RC_DEP_TRACE | RC_DEP_START);
 	free(r);
+	if (!l)
+		return;
 	TAILQ_FOREACH(s, l, entries) {
 		TAILQ_FOREACH(t, services, entries)
 			if (strcmp(t->value, s->value) == 0)
