@@ -28,7 +28,7 @@ depend()
 		*) after net.lo net.lo0;;
 	esac
 
-	if type depend_${IFVAR} >/dev/null 2>&1; then
+	if is_function depend_${IFVAR}; then
 		depend_${IFVAR}
 	fi
 
@@ -344,7 +344,7 @@ _load_modules()
 		# Wrap our provides
 		local f=
 		for f in pre_start start post_start; do 
-			eval "${provides}_${f}() { type ${mod}_${f} >/dev/null 2>&1 || return 0; ${mod}_${f} \"\$@\"; }"
+			eval "${provides}_${f}() { is_function ${mod}_${f} || return 0; ${mod}_${f} \"\$@\"; }"
 		done
 
 		eval module_${mod}_provides="${provides}"
@@ -358,7 +358,7 @@ _load_modules()
 			eval x=\$module_${mod}_provides
 			[ -z "${x}" ] && continue
 			for f in pre_start start post_start; do 
-				eval "${x}_${f}() { type ${mod}_${f} >/dev/null 2>&1 || return 0; ${mod}_${f} \"\$@\"; }"
+				eval "${x}_${f}() { is_function ${mod}_${f} || return 0; ${mod}_${f} \"\$@\"; }"
 			done
 			eval module_${x}_providedby="${mod}"
 			;;
@@ -462,7 +462,7 @@ start()
 	# We up the iface twice if we have a preup to ensure it's up if
 	# available in preup and afterwards incase the user inadvertently
 	# brings it down
-	if type preup >/dev/null 2>&1; then
+	if is_function preup; then
 		_up 2>/dev/null
 		ebegin "Running preup"
 		eindent
@@ -473,7 +473,7 @@ start()
 	_up 2>/dev/null
 	
 	for module in ${MODULES}; do
-		if type "${module}_pre_start" >/dev/null 2>&1; then
+		if is_function "${module}_pre_start"; then
 			${module}_pre_start || exit $?
 		fi
 	done
@@ -522,7 +522,7 @@ start()
 			null) :;;
 			[0-9]*|*:*) _add_address ${config};;
 			*)
-				if type "${config}_start" >/dev/null 2>&1; then
+				if is_function "${config}_start"; then
 					"${config}"_start
 				else
 					eerror "nothing provides \`${config}'"
@@ -547,7 +547,7 @@ start()
 	done
 
 	if ! ${oneworked}; then
-		if type failup >/dev/null 2>&1; then
+		if is_function failup; then
 			ebegin "Running failup"
 			eindent
 			failup
@@ -600,12 +600,12 @@ ${routes}"
 	fi
 
 	for module in ${MODULES}; do
-		if type "${module}_post_start" >/dev/null 2>&1; then
+		if is_function "${module}_post_start"; then
 			${module}_post_start || exit $?
 		fi
 	done
 
-	if type postup >/dev/null 2>&1; then
+	if is_function postup; then
 		ebegin "Running postup"
 		eindent
 		postup 
@@ -628,7 +628,7 @@ stop()
 		_load_modules false
 	fi
 
-	if type predown >/dev/null 2>&1; then
+	if is_function predown; then
 		ebegin "Running predown"
 		eindent
 		predown || return 1
@@ -641,24 +641,24 @@ stop()
 	fi
 
 	for module in ${MODULES}; do
-		if type "${module}_pre_stop" >/dev/null 2>&1; then
+		if is_function "${module}_pre_stop"; then
 			${module}_pre_stop || exit $?
 		fi
 	done
 
 	for module in ${MODULES}; do
-		if type "${module}_stop" >/dev/null 2>&1; then
+		if is_function "${module}_stop"; then
 			${module}_stop
 		fi
 	done
 
 	# Only delete addresses for non PPP interfaces
-	if ! type is_ppp >/dev/null 2>&1 || ! is_ppp; then
+	if ! is_function is_ppp || ! is_ppp; then
 		_delete_addresses "${IFACE}"
 	fi
 
 	for module in ${MODULES}; do
-		if type "${module}_post_stop" >/dev/null 2>&1; then
+		if is_function "${module}_post_stop"; then
 			${module}_post_stop
 		fi
 	done
@@ -669,7 +669,7 @@ stop()
 
 	type resolvconf >/dev/null 2>&1 && resolvconf -d "${IFACE}" 2>/dev/null
 
-	if type postdown >/dev/null 2>&1; then
+	if is_function postdown; then
 		ebegin "Running postdown"
 		eindent
 		postdown
