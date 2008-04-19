@@ -138,7 +138,8 @@ static const struct option longopts[] = {
 };
 static const char * const longopts_help[] = {
 	"Extract the block device",
-	"Mounts the filesytem from the mountpoint", 
+	"Mounts the filesytem from the mountpoint",
+	"Show arguments needed to mount the entry",
 	"Extract the options field",
 	"Extract or query the pass number field",
 	"List entries with matching file system type",
