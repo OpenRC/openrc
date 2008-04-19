@@ -56,7 +56,7 @@ _set_flag()
 _get_mac_address()
 {
 	local mac=$(LC_ALL=C ifconfig "${IFACE}" | \
-	sed -n -e 's/.* HWaddr \(..:..:..:..:..:..\).*/\1/p')
+	sed -n -e 's/.* \(HWaddr\|ether\) \(..:..:..:..:..:..\).*/\2/p')
 
 	case "${mac}" in
 		00:00:00:00:00:00);;
@@ -77,7 +77,7 @@ _set_mac_address()
 _get_inet_address()
 {
 	set -- $(LC_ALL=C ifconfig "${IFACE}" |
-	sed -n -e 's/.*inet addr:\([^ ]*\).*Mask:\([^ ]*\).*/\1 \2/p')
+	sed -n -e 's/.*\(inet addr:\|inet \)\([^ ]*\).*\(Mask:\|netmask \)\([^ ]*\).*/\2 \4/p')
 	[ -z "$1" ] && return 1
 
 	echo -n "$1"
@@ -145,7 +145,7 @@ _add_address()
 	# IPv4 is tricky - ifconfig requires an aliased device
 	# for multiple addresses
 	local iface="${IFACE}"
-	if LC_ALL=C ifconfig "${iface}" | grep -Eq "\<inet addr:.*"; then
+	if LC_ALL=C ifconfig "${iface}" | grep -Eq '\<inet (addr:)?.*'; then
 		# Get the last alias made for the interface and add 1 to it
 		i=$(ifconfig | sed '1!G;h;$!d' | grep -m 1 -o "^${iface}:[0-9]*" \
 			| sed -n -e 's/'"${iface}"'://p')
@@ -234,7 +234,7 @@ _delete_addresses()
 	# Remove IPv6 addresses
 	local addr=
 	for addr in $(LC_ALL=C ifconfig "${IFACE}" | \
-		sed -n -e 's/^.*inet6 addr: \([^ ]*\) Scope:[^L].*/\1/p'); do
+		sed -n -e 's/^.*\(inet6 addr:\|inet6\) \([^ ]*\) .*\(Scope:[^L]\|scopeid [^<]*<[^l]\).*/\2/p'); do
 		[ "${addr}" = "::1/128" -a "${IFACE}" = "lo" ] && continue
 		einfo "${addr}"
 		ifconfig "${IFACE}" inet6 del "${addr}"
