@@ -525,7 +525,7 @@ iwconfig_force_preferred()
 			i=$((${i} + 1))
 		done
 		if ! ${found_AP}; then
-			SSID=${e}
+			SSID=${ssid}
 			iwconfig_associate && return 0
 		fi
 	done
@@ -610,7 +610,7 @@ iwconfig_defaults()
 
 iwconfig_configure()
 {
-	local x= APS=
+	local x= APS=-1
 	eval SSID=\$ssid_${IFVAR}
 
 	# Support old variable

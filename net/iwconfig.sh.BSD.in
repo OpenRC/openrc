@@ -414,8 +414,9 @@ iwconfig_connect_preferred()
 	[ $# = 0 ] && eval set -- $(_flatten_array "preferred_aps")
 	[ $# = 0 ] && return 1
 
-	local ssid= i=0 mode= mac= caps= freq= chan=
+	local ssid= i= mode= mac= caps= freq= chan=
 	for ssid; do
+		i=0
 		while [ ${i} -le ${APS} ]  ; do
 			eval e=\$SSID_${i}
 			if [ "${e}" = "${ssid}" ] ; then
@@ -484,7 +485,7 @@ iwconfig_defaults()
 
 iwconfig_configure()
 {
-	local x APS
+	local x= APS=-1
 	eval SSID=\$ssid_${IFVAR}
 
 	# Setup ad-hoc mode?
