@@ -473,7 +473,7 @@ start()
 	_up 2>/dev/null
 	
 	for module in ${MODULES}; do
-		if [ "$(command -v "${module}_pre_start")" = "${module}_pre_start"]; then
+		if [ "$(command -v "${module}_pre_start")" = "${module}_pre_start" ]; then
 			${module}_pre_start || exit $?
 		fi
 	done
