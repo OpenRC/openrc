@@ -20,15 +20,6 @@ eoutdent()
 	return 0
 }
 
-is_function()
-{
-	if [ -n "${BASH_VERSION}" ]; then
-		[ "$(type -t "$1")" = "function" ]
-	else
-		[ "$(type "$1" 2>/dev/null)" = "$1 is a shell function" ]
-	fi
-}
-
 yesno()
 {
 	[ -z "$1" ] && return 1
