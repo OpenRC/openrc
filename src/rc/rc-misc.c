@@ -224,6 +224,7 @@ void env_config(void)
 
 	setenv("RC_LIBDIR", RC_LIBDIR, 1);
 	setenv("RC_SVCDIR", RC_SVCDIR, 1);
+	setenv("RC_TMPDIR", RC_SVCDIR "/tmp", 1);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);
 	e = rc_runlevel_get();
 	setenv("RC_RUNLEVEL", e, 1);
