@@ -561,14 +561,13 @@ bool rc_service_daemons_crashed(const char *service)
 			if ((fp = fopen(pidfile, "r"))) {
 				if (fscanf(fp, "%d", &pid) == 1)
 					retval = false;
-				
 				fclose (fp);
 			}
 			free(pidfile);
 			pidfile = NULL;
 
 			/* We have the pid, so no need to match on name */
-			free (name);
+			free(name);
 			name = NULL;
 		} else {
 			if (exec) {

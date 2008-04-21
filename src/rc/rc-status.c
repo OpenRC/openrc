@@ -103,9 +103,13 @@ static void print_service(const char *service)
 		snprintf(status, sizeof(status), "inactive ");
 		color = ECOLOR_WARN;
 	} else if (state & RC_SERVICE_STARTED) {
-		if (test_crashed && rc_service_daemons_crashed(service))
+		errno = 0;
+		if (test_crashed &&
+		    rc_service_daemons_crashed(service) &&
+		    errno != EACCES)
+		{
 			snprintf(status, sizeof(status), " crashed ");
-		else {
+		} else {
 			snprintf(status, sizeof(status), " started ");
 			color = ECOLOR_GOOD;
 		}

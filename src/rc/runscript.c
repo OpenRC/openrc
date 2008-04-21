@@ -559,8 +559,10 @@ static RC_SERVICE svc_status(void)
 		snprintf(status, sizeof(status), "inactive");
 		e = &ewarn;
 	} else if (state & RC_SERVICE_STARTED) {
+		errno = 0;
 		if (_rc_can_find_pids() &&
-		    rc_service_daemons_crashed(service))
+		    rc_service_daemons_crashed(service) &&
+		    errno != EACCES)
 		{
 			snprintf(status, sizeof(status), "crashed");
 			e = &eerror;
