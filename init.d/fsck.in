@@ -38,6 +38,9 @@ start()
 		check_extra="(check forced)"
 	fi
 
+	if [ -n "${fsck_passno}" ]; then
+		check_extra="[passno ${fsck_passno}] ${check_extra}"
+	fi
 	ebegin "Checking local filesystems ${check_extra}"
 	for p in ${fsck_passno}; do
 		local IFS="${_IFS}"
