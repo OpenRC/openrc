@@ -151,9 +151,12 @@ _delete_addresses()
 {
 	einfo "Removing addresses"
 	eindent
-	LC_ALL=C ifconfig "${IFACE}" | while read inet address rest; do
+	LC_ALL=C ifconfig "${IFACE}" | while read inet address ali rest; do
 		case "${inet}" in
 			inet|inet6)
+				if [ "${address}" = "alias" ]; then
+					address="${ali}"
+				fi
 				case "${address}" in
 					*"%${IFACE}"|::1) continue;;
 					127.0.0.1) [ "${IFACE}" = "lo0" ] && continue;;
