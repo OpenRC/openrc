@@ -20,6 +20,7 @@ fi
 
 # So daemons know where to recall us if needed
 export RC_SERVICE="$1"
+shift
 
 # Compat
 export SVCNAME=${RC_SVCNAME}
@@ -44,9 +45,49 @@ describe()
 	done
 }
 
+# Template start / stop functions
+start()
+{
+	[ -n "${command}" ] || return 0
+	local _background=
+	ebegin "Starting ${name:-${RC_SVCNAME}}"
+	if yesno "${command_background}"; then 
+		_background="--background --pidfile"
+	fi
+	if yesno "${start_inactive}"; then
+		local _inactive=false
+		service_inactive && _inactive=true
+		mark_service_inactive
+	fi
+	start-stop-daemon --start \
+		--exec ${command} \
+		${procname:+--name} ${procname} \
+		${pidfile:+--pidfile} ${pidfile} \
+		${_background} ${start_stop_daemon_args} \
+		-- ${command_args}
+	eend $? "Failed to start ${RC_SVCNAME}" && return 0
+	if yesno "${start_inactive}"; then
+		if ! ${_inactive}; then
+			mark_service_stopped
+		fi
+	fi
+	return 1
+}
+
+stop()
+{
+	[ -n "${command}" -o -n "${procname}" -o -n "${pidfile}" ] || return 0
+	ebegin "Stopping ${name:-${RC_SVCNAME}}"
+	start-stop-daemon --stop \
+		${command:+--exec} ${command} \
+		${procname:+--name} ${procname} \
+		${pidfile:+--pidfile} ${pidfile}
+	eend $? "Failed to stop ${RC_SVCNAME}"
+}
+
 yesno ${RC_DEBUG} && set -x
 
-_conf_d=${1%/*}/../conf.d
+_conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${RC_SVCNAME%%.*}
 if [ -n "${_c}" -a "${_c}" != "${RC_SVCNAME}" ]; then
@@ -73,8 +114,7 @@ unset _conf_d
 [ -n "${rc_ulimit:-${RC_ULIMIT}}" ] && ulimit ${rc_ulimit:-${RC_ULIMIT}}
 
 # Load our script
-. $1
-shift
+. "${RC_SERVICE}"
 
 for _d in ${required_dirs}; do
 	if [ ! -d ${_d} ]; then
@@ -91,52 +131,6 @@ for _f in ${required_files}; do
 	fi
 done
 unset _f
-
-# If we have a default command then supply a default start function
-if [ -n "${command}" ]; then
-	if [ "$(command -v start)" != "start" ]; then
-		start() {
-			local _background=
-			ebegin "Starting ${name:-${RC_SVCNAME}}"
-			if yesno "${command_background}"; then 
-				_background="--background --pidfile"
-			fi
-			if yesno "${start_inactive}"; then
-				local _inactive=false
-				service_inactive && _inactive=true
-				mark_service_inactive
-			fi
-			start-stop-daemon --start \
-				--exec ${command} \
-				${procname:+--name} ${procname} \
-				${pidfile:+--pidfile} ${pidfile} \
-				${_background} ${start_stop_daemon_args} \
-				-- ${command_args}
-			eend $? "Failed to start ${RC_SVCNAME}" && return 0
-			if yesno "${start_inactive}"; then
-				if ! ${_inactive}; then
-			   		mark_service_stopped
-				fi
-			fi
-			return 1
-		}
-	fi
-fi
-
-# If we have a default command, procname or pidfile then supply a default stop 
-# function
-if [ -n "${command}" -o -n "${procname}" -o -n "${pidfile}" ]; then
-	if [ "$(command -v stop)" != "stop" ]; then
-		stop() {
-			ebegin "Stopping ${name:-${RC_SVCNAME}}"
-			start-stop-daemon --stop \
-				${command:+--exec} ${command} \
-				${procname:+--name} ${procname} \
-				${pidfile:+--pidfile} ${pidfile}
-			eend $? "Failed to stop ${RC_SVCNAME}"
-		}
-	fi
-fi
 
 while [ -n "$1" ]; do
 	# See if we have the required function and run it
