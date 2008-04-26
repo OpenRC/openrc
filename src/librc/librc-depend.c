@@ -566,9 +566,6 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 		}
 	}
 
-	if (!list)
-		return NULL;
-
 	/* Now we have our lists, we need to pull in any dependencies
 	   and order them */
 	types = rc_stringlist_new();
