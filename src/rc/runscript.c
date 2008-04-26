@@ -156,7 +156,7 @@ static void handle_signal(int sig)
 			if (write(signal_pipe[1], &sig, sizeof(sig)) == -1)
 				eerror("%s: send: %s", service, strerror(errno));
 		} else
-			rc_waitpid (-1);
+			rc_waitpid(-1);
 		break;
 
 	case SIGWINCH:

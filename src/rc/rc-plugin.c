@@ -122,14 +122,15 @@ int rc_waitpid(pid_t pid)
 {
 	int status = 0;
 	pid_t savedpid = pid;
-	int retval = -1;
+	int retval = EXIT_FAILURE;
 
-	errno = 0;
-	while ((pid = waitpid(savedpid, &status, 0)) > 0) {
-		if (pid == savedpid)
-			retval = WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
-	}
-
+	do {
+		pid = waitpid(savedpid, &status, 0);
+		if (pid == -1 && errno != EINTR)
+			return EXIT_FAILURE;
+	} while (!WIFEXITED(status) && !WIFSIGNALED(status));
+	if (pid == savedpid)
+		retval = WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 	return retval;
 }
 

@@ -279,7 +279,6 @@ static void mark_interactive(void)
 
 static void sulogin(bool cont)
 {
-	int status = 0;
 	struct sigaction sa;
 	sigset_t full;
 	sigset_t old;
@@ -346,7 +345,7 @@ static void sulogin(bool cont)
 
 	/* Unmask signals and wait for child */
 	sigprocmask(SIG_SETMASK, &old, NULL);
-	waitpid(pid, &status, 0);
+	rc_waitpid(pid);
 }
 
 static void single_user(void)
@@ -449,7 +448,7 @@ static void handle_signal(int sig)
 					eerror("waitpid: %s", strerror(errno));
 				return;
 			}
-		} while (! WIFEXITED(status) && ! WIFSIGNALED(status));
+		} while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
 		/* Remove that pid from our list */
 		if (pid > 0)
@@ -513,9 +512,7 @@ static void handle_signal(int sig)
 
 static void run_script(const char *script)
 {
-	int status = 0;
 	pid_t pid = vfork();
-	pid_t wpid;
 
 	if (pid < 0)
 		eerrorx("%s: vfork: %s", applet, strerror(errno));
@@ -526,13 +523,7 @@ static void run_script(const char *script)
 		_exit(EXIT_FAILURE);
 	}
 
-	do {
-		wpid = waitpid(pid, &status, 0);
-		if (wpid < 1)
-			eerror("waitpid: %s", strerror(errno));
-	} while (! WIFEXITED(status) && ! WIFSIGNALED(status));
-
-	if (! WIFEXITED(status) || ! WEXITSTATUS(status) == 0)
+	if (rc_waitpid(pid) != 0)
 		eerrorx("%s: failed to exec `%s'", applet, script);
 }
 
@@ -1059,7 +1050,8 @@ int main(int argc, char **argv)
 	rc_logger_open(newlevel ? newlevel : runlevel);
 
 	/* Setup a signal handler */
-	signal_setup(SIGINT, handle_signal);
+	if (signal_setup(SIGINT, handle_signal) != 0)
+		eerror ("signal_setup: %s", strerror(errno));
 	signal_setup(SIGQUIT, handle_signal);
 	signal_setup(SIGTERM, handle_signal);
 	signal_setup(SIGUSR1, handle_signal);
