@@ -740,43 +740,52 @@ static void svc_start(bool deps)
 				runlevel, depoptions);
 
 		if (! rc_runlevel_starting() && use_services)
-			TAILQ_FOREACH(svc, use_services, entries)
-				if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
+			TAILQ_FOREACH(svc, use_services, entries) {
+				state = rc_service_state(svc->value);
+				/* Don't stop failed services again.
+				 * If you remove this check, ensure that the
+				 * exclusive file isn't created. */
+				if (state & RC_SERVICE_FAILED &&
+				    rc_runlevel_starting())
+					continue;
+				if (state & RC_SERVICE_STOPPED) {
 					pid_t pid = service_start(svc->value);
 					if (! rc_conf_yesno("rc_parallel"))
 						rc_waitpid(pid);
 				}
+			}
 
 		/* Now wait for them to start */
 		services = rc_deptree_depends(deptree, types_nua, applet_list,
-				runlevel, depoptions);
+					      runlevel, depoptions);
 
 		if (services) {
 			/* We use tmplist to hold our scheduled by list */
 			tmplist = NULL;
 			TAILQ_FOREACH(svc, services, entries) {
-				RC_SERVICE svcs = rc_service_state(svc->value);
-				if (svcs & RC_SERVICE_STARTED)
+				state = rc_service_state(svc->value);
+				if (state & RC_SERVICE_STARTED)
 					continue;
 
 				/* Don't wait for services which went inactive but are now in
 				 * starting state which we are after */
-				if (svcs & RC_SERVICE_STARTING &&
-				    svcs & RC_SERVICE_WASINACTIVE)
+				if (state & RC_SERVICE_STARTING &&
+				    state & RC_SERVICE_WASINACTIVE)
 				{
 					if (!in_list(need_services, svc->value) &&
 					    !in_list(use_services, svc->value))
 						continue;
 				}
 
-				if (! svc_wait(svc->value))
+				if (!svc_wait(svc->value))
 					eerror ("%s: timed out waiting for %s",
-							applet, svc->value);
-				if ((svcs = rc_service_state(svc->value)) & RC_SERVICE_STARTED)
+						applet, svc->value);
+				state = rc_service_state(svc->value);
+				if (state & RC_SERVICE_STARTED)
 					continue;
 				if (in_list(need_services, svc->value)) {
-					if (svcs & RC_SERVICE_INACTIVE ||
-					    svcs & RC_SERVICE_WASINACTIVE)
+					if (state & RC_SERVICE_INACTIVE ||
+					    state & RC_SERVICE_WASINACTIVE)
 					{
 						if (! tmplist)
 							tmplist = rc_stringlist_new();
@@ -939,14 +948,20 @@ static void svc_stop(bool deps)
 					      runlevel, depoptions);
 		if (services) {
 			TAILQ_FOREACH_REVERSE(svc, services, rc_stringlist, entries) {
-				RC_SERVICE svcs = rc_service_state(svc->value);
-				if (svcs & RC_SERVICE_STARTED ||
-				    svcs & RC_SERVICE_INACTIVE)
+				state = rc_service_state(svc->value);
+				/* Don't stop failed services again.
+				 * If you remove this check, ensure that the
+				 * exclusive file isn't created. */
+				if (state & RC_SERVICE_FAILED &&
+				    rc_runlevel_stopping())
+					continue;
+				if (state & RC_SERVICE_STARTED ||
+				    state & RC_SERVICE_INACTIVE)
 				{
 					svc_wait(svc->value);
-					svcs = rc_service_state(svc->value);
-					if (svcs & RC_SERVICE_STARTED ||
-					    svcs & RC_SERVICE_INACTIVE)
+					state = rc_service_state(svc->value);
+					if (state & RC_SERVICE_STARTED ||
+					    state & RC_SERVICE_INACTIVE)
 					{
 						pid_t pid = service_stop(svc->value);
 						if (! rc_conf_yesno("rc_parallel"))
@@ -965,8 +980,6 @@ static void svc_stop(bool deps)
 			TAILQ_FOREACH(svc, tmplist, entries) {
 				if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
 					continue;
-
-				/* We used to loop 3 times here - maybe re-do this if needed */
 				svc_wait(svc->value);
 				if (! (rc_service_state(svc->value) & RC_SERVICE_STOPPED)) {
 					if (rc_runlevel_stopping()) {
@@ -979,7 +992,6 @@ static void svc_stop(bool deps)
 							continue;
 						rc_service_mark(service, RC_SERVICE_FAILED);
 					}
-
 					eerrorx("ERROR: cannot stop %s as %s is still up",
 							applet, svc->value);
 				}
