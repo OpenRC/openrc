@@ -3,7 +3,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=@PKG_PREFIX@/bin/dbus-daemon
-pidfile=@VARBASE@/run/dbus/dbus.pid
+pidfile=@VARBASE@/run/dbus/pid
 command_args="${dbusd_args---system}"
 name="Message Bus Daemon"
 
