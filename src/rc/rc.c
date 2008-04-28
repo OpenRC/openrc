@@ -277,12 +277,53 @@ static void mark_interactive(void)
 		fclose(fp);
 }
 
-static void sulogin(bool cont)
+static void run_program(const char *prog)
 {
 	struct sigaction sa;
 	sigset_t full;
 	sigset_t old;
 	pid_t pid;
+
+	/* We need to block signals until we have forked */
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = SIG_DFL;
+	sigemptyset(&sa.sa_mask);
+	sigfillset(&full);
+	sigprocmask(SIG_SETMASK, &full, &old);
+	pid = fork();
+
+	if (pid == -1)
+		eerrorx("%s: fork: %s", applet, strerror(errno));
+	if (pid == 0) {
+		/* Restore default handlers */
+		sigaction(SIGCHLD, &sa, NULL);
+		sigaction(SIGHUP, &sa, NULL);
+		sigaction(SIGINT, &sa, NULL);
+		sigaction(SIGQUIT, &sa, NULL);
+		sigaction(SIGTERM, &sa, NULL);
+		sigaction(SIGUSR1, &sa, NULL);
+		sigaction(SIGWINCH, &sa, NULL);
+
+		/* Unmask signals */
+		sigprocmask(SIG_SETMASK, &old, NULL);
+
+		if (termios_orig)
+			tcsetattr(fileno(stdin), TCSANOW, termios_orig);
+
+		execl(prog, prog, (char *) NULL);
+		eerror("%s: unable to exec `%s': %s", applet, prog,
+		       strerror(errno));
+		_exit(EXIT_FAILURE);
+	}
+
+	/* Unmask signals and wait for child */
+	sigprocmask(SIG_SETMASK, &old, NULL);
+	if (rc_waitpid(pid) == -1)
+		eerrorx("%s: failed to exec `%s'", applet, prog);
+}
+
+static void sulogin(bool cont)
+{
 #ifdef __linux__
 	const char *sys = rc_sys();
 
@@ -305,47 +346,11 @@ static void sulogin(bool cont)
 #endif
 	}
 
-	/* We need to block signals until we have forked */
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = SIG_DFL;
-	sigemptyset(&sa.sa_mask);
-	sigfillset(&full);
-	sigprocmask(SIG_SETMASK, &full, &old);
-	pid = vfork();
-
-	if (pid == -1)
-		eerrorx("%s: fork: %s", applet, strerror(errno));
-	if (pid == 0) {
-		/* Restore default handlers */
-		sigaction(SIGCHLD, &sa, NULL);
-		sigaction(SIGHUP, &sa, NULL);
-		sigaction(SIGINT, &sa, NULL);
-		sigaction(SIGQUIT, &sa, NULL);
-		sigaction(SIGTERM, &sa, NULL);
-		sigaction(SIGUSR1, &sa, NULL);
-		sigaction(SIGWINCH, &sa, NULL);
-
-		/* Unmask signals */
-		sigprocmask(SIG_SETMASK, &old, NULL);
-
-		if (termios_orig)
-			tcsetattr(fileno(stdin), TCSANOW, termios_orig);
-
 #ifdef __linux__
-		execl(SULOGIN, SULOGIN, (char *) NULL);
-		eerror("%s: unable to exec `%s': %s", applet, SULOGIN,
-		       strerror(errno));
+	run_program(SULOGIN);
 #else
-		execl("/bin/sh", "/bin/sh", (char *) NULL);
-		eerror("%s: unable to exec `/bin/sh': %s", applet,
-		       strerror(errno));
+	run_program("/bin/sh");
 #endif
-		_exit(EXIT_FAILURE);
-	}
-
-	/* Unmask signals and wait for child */
-	sigprocmask(SIG_SETMASK, &old, NULL);
-	rc_waitpid(pid);
 }
 
 static void single_user(void)
@@ -510,23 +515,6 @@ static void handle_signal(int sig)
 	errno = serrno;
 }
 
-static void run_script(const char *script)
-{
-	pid_t pid = vfork();
-
-	if (pid < 0)
-		eerrorx("%s: vfork: %s", applet, strerror(errno));
-	else if (pid == 0) {
-		execl(script, script, (char *) NULL);
-		eerror("%s: unable to exec `%s': %s",
-			script, applet, strerror(errno));
-		_exit(EXIT_FAILURE);
-	}
-
-	if (rc_waitpid(pid) != 0)
-		eerrorx("%s: failed to exec `%s'", applet, script);
-}
-
 static void do_coldplug(void)
 {
 	size_t l;
@@ -651,7 +639,7 @@ static void do_newlevel(const char *newlevel)
 		 * This should just setup the console to use the correct
 		 * font. Maybe it should setup the keyboard too? */
 		if (exists(INITEARLYSH))
-			run_script(INITEARLYSH);
+			run_program(INITEARLYSH);
 
 		uname(&uts);
 		printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
@@ -679,7 +667,7 @@ static void do_newlevel(const char *newlevel)
 		setenv("RC_RUNLEVEL", newlevel, 1);
 		rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, newlevel);
 		hook_out = RC_HOOK_RUNLEVEL_START_OUT;
-		run_script(INITSH);
+		run_program(INITSH);
 
 #ifdef __linux__
 		/* If we requested a runlevel, save it now */
@@ -1050,8 +1038,7 @@ int main(int argc, char **argv)
 	rc_logger_open(newlevel ? newlevel : runlevel);
 
 	/* Setup a signal handler */
-	if (signal_setup(SIGINT, handle_signal) != 0)
-		eerror ("signal_setup: %s", strerror(errno));
+	signal_setup(SIGINT, handle_signal);
 	signal_setup(SIGQUIT, handle_signal);
 	signal_setup(SIGTERM, handle_signal);
 	signal_setup(SIGUSR1, handle_signal);
