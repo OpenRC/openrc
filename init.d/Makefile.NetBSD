@@ -1,3 +1,5 @@
+NET_LO=	net.lo0
+
 # Generic BSD scripts
 SRCS+=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
 	rpcbind.in savecore.in syslogd.in

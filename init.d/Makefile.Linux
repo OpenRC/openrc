@@ -1,3 +1,5 @@
+NET_LO=	net.lo
+
 SRCS+=	hwclock.in consolefont.in keymaps.in modules.in mtab.in numlock.in \
 	procfs.in termencoding.in
 

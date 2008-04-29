@@ -1,8 +1,8 @@
 DIR=	${PREFIX}/${RC_LIB}/sh
-SRCS=	functions.sh.in gendepends.sh.in net.sh.in \
+SRCS=	functions.sh.in gendepends.sh.in \
 	rc-functions.sh.in runscript.sh.in
 INC=	init-common-post.sh rc-mount.sh functions.sh rc-functions.sh
-BIN=	gendepends.sh init.sh net.sh runscript.sh
+BIN=	gendepends.sh init.sh runscript.sh
 
 INSTALLAFTER=	_installafter
 
@@ -13,8 +13,6 @@ include ${MK}/scripts.mk
 
 _installafter:
 	${INSTALL} -d ${DESTDIR}/${INITDIR}
-	@# Provide an init script for the loopback interface
-	ln -snf ${PREFIX}/${RC_LIB}/sh/net.sh ${DESTDIR}/${INITDIR}/${NET_LO} || exit $$?
 	@# Put functions.sh into the init.d dir so 3rd party apps don't have to
 	@# be multilib aware
 	ln -snf ${PREFIX}/${RC_LIB}/sh/functions.sh ${DESTDIR}/${INITDIR} || exit $$?

@@ -26,3 +26,7 @@ mixer
 nscd
 powerd
 syscons
+net.lo
+ttys
+swap-blk
+wscons

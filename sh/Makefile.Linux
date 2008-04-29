@@ -1,4 +1,3 @@
-NET_LO=		net.lo
 SRCS+=		init.sh.in init-early.sh.in
 BIN+=		init-early.sh
 

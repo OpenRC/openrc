@@ -39,6 +39,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <libgen.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
@@ -707,7 +708,8 @@ static void svc_start(bool deps)
 	hook_out = RC_HOOK_SERVICE_START_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_START_IN, applet);
 
-	if (rc_conf_yesno("rc_depend_strict"))
+	errno = 0;
+	if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
 		depoptions |= RC_DEP_STRICT;
 
 	if (deps) {
@@ -933,8 +935,8 @@ static void svc_stop(bool deps)
 		ewarn ("WARNING: you are stopping a boot service");
 
 	if (deps && ! (state & RC_SERVICE_WASINACTIVE)) {
-
-		if (rc_conf_yesno("rc_depend_strict"))
+		errno = 0;
+		if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
 			depoptions |= RC_DEP_STRICT;
 
 		if (! deptree && ((deptree = _rc_deptree_load(NULL)) == NULL))
@@ -1102,39 +1104,73 @@ int runscript(int argc, char **argv)
 	int retval;
 	int opt;
 	RC_STRING *svc;
-	char dir[PATH_MAX];
+	char path[PATH_MAX];
+	char lnk[PATH_MAX];
 	size_t l = 0;
 	size_t ll;
-	char *save;
+	char *dir, *save;
+	const char *file;
 	int depoptions = RC_DEP_TRACE;
+	struct stat stbuf;
 
 	/* Show help if insufficient args */
 	if (argc < 2 || ! exists(argv[1])) {
-		fprintf(stderr, "runscript is not meant to be to run directly\n");
+		fprintf(stderr, "runscript should not be run directly\n");
 		exit(EXIT_FAILURE);
 	}
 
-	applet = basename_c(argv[1]);
-	if (argc < 3)
-		usage(EXIT_FAILURE);
-
-	if (*argv[1] == '/')
-		service = xstrdup(argv[1]);
-	else {
-		getcwd(dir, sizeof(dir));
-		l = strlen(dir) + strlen(argv[1]) + 2;
-		service = xmalloc(sizeof (char) * l);
-		snprintf(service, l, "%s/%s", dir, argv[1]);
+	if (stat(argv[1], &stbuf) != 0) {
+		fprintf(stderr, "runscript `%s': %s\n",
+			argv[1], strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 
 	atexit(cleanup);
+
+	/* We need to work out the real full path to our service.
+	 * This works fine, provided that we ONLY allow mulitplexed services
+	 * to exist in the same directory as the master link.
+	 * Also, the master link as to be a real file in the init dir. */
+	if (!realpath(argv[1], path)) {
+		fprintf(stderr, "realpath: %s\n", strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	memset(lnk, 0, sizeof(lnk));
+	if (readlink(argv[1], lnk, sizeof(lnk)-1)) {
+		dir = dirname(path);
+		if (strchr(lnk, '/')) {
+			save = xstrdup(dir);
+			dir = dirname(lnk);
+			if (strcmp(dir, save) == 0)
+				file = basename_c(argv[1]);
+			else
+				file = basename_c(lnk);
+			free(save);
+			dir = dirname(path);
+		} else
+			file = basename_c(argv[1]);
+		ll = strlen(dir) + strlen(file) + 2;
+		service = xmalloc(ll);
+		snprintf(service, ll, "%s/%s", dir, file);
+		if (stat(service, &stbuf) != 0) {
+			free(service);
+			service = xstrdup(lnk);
+		}
+	}
+	if (!service)
+		service = xstrdup(path);
+	applet = basename_c(service);
+
+	if (argc < 3)
+		usage(EXIT_FAILURE);
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
 	chdir("/");
 
 #ifdef __linux__
-	/* coldplug events can trigger init scripts, but we don't want to run them
-	   until after rc sysinit has completed so we punt them to the boot runlevel */
+	/* coldplug events can trigger init scripts, but we don't want to run
+	 * them until after rc sysinit has completed so we punt them to the
+	 * boot runlevel */
 	if (exists("/dev/.rcsysinit")) {
 		eerror("%s: cannot run until sysvinit completes", applet);
 		if (mkdir("/dev/.rcboot", 0755) != 0 && errno != EEXIST)
@@ -1264,7 +1300,8 @@ int runscript(int argc, char **argv)
 			   strcmp(optarg, "ibefore") == 0 ||
 			   strcmp(optarg, "iprovide") == 0)
 		{
-			if (rc_conf_yesno("rc_depend_strict"))
+			errno = 0;
+			if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
 				depoptions |= RC_DEP_STRICT;
 
 			if (! deptree && ((deptree = _rc_deptree_load(NULL)) == NULL))

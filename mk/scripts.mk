@@ -22,9 +22,9 @@ SED_REPLACE=		-e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR
 .in:
 	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
-all: ${OBJS}
+all: ${OBJS} ${TARGETS}
 
-realinstall: ${BIN} ${CONF} ${CONF_APPEND}
+realinstall: ${BIN} ${CONF} ${INC}
 	@if test -n "${DIR}"; then \
 		${ECHO} ${INSTALL} -d ${DESTDIR}/${DIR}; \
 		${INSTALL} -d ${DESTDIR}/${DIR} || exit $$?; \

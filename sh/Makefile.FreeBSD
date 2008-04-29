@@ -1,7 +1,5 @@
 SRCS+=		init.sh.in
 
-NET_LO=		net.lo0
-
 .SUFFIXES:	.sh.BSD.in
 .sh.BSD.in.sh:
 	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
