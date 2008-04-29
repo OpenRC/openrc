@@ -49,10 +49,10 @@ start() {
 
 	local v= f=
 	for v in font8x16 font8x14 font8x8; do
-		f=$(eval \$"${v}")
+		eval f=\$${v}
 		if [ -n "${f}" ]; then
 			ebegin "Setting font ${f}"
-			vidcontrol -f ${v##FONT} ${f}
+			vidcontrol -f ${v##font} ${f}
 			eend $?
 		fi
 	done
