@@ -733,17 +733,18 @@ static void do_newlevel(const char *newlevel)
 static bool runlevel_config(const char *service, const char *level)
 {
 	char *init = rc_service_resolve(service);
-	char *conf;
+	char *conf, *dir;
 	size_t l;
 	bool retval;
 
-	init = dirname(init);
-	init = dirname(init);
-	l = strlen(init) + strlen(level) + strlen(service) + 10;
+	dir = dirname(init);
+	dir = dirname(init);
+	l = strlen(dir) + strlen(level) + strlen(service) + 10;
 	conf = xmalloc(sizeof(char) * l);
-	snprintf(conf, l, "%s/conf.d/%s.%s", init, service, level);
+	snprintf(conf, l, "%s/conf.d/%s.%s", dir, service, level);
 	retval = exists(conf);
 	free(conf);
+	free(init);
 
 	return retval;
 }
