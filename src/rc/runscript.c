@@ -1108,7 +1108,7 @@ int runscript(int argc, char **argv)
 	char lnk[PATH_MAX];
 	size_t l = 0;
 	size_t ll;
-	char *dir, *save;
+	char *dir, *save = NULL;
 	const char *file;
 	int depoptions = RC_DEP_TRACE;
 	struct stat stbuf;
@@ -1145,8 +1145,7 @@ int runscript(int argc, char **argv)
 				file = basename_c(argv[1]);
 			else
 				file = basename_c(lnk);
-			free(save);
-			dir = dirname(path);
+			dir = save; 
 		} else
 			file = basename_c(argv[1]);
 		ll = strlen(dir) + strlen(file) + 2;
@@ -1156,6 +1155,7 @@ int runscript(int argc, char **argv)
 			free(service);
 			service = xstrdup(lnk);
 		}
+		free(save);
 	}
 	if (!service)
 		service = xstrdup(path);
@@ -1200,11 +1200,15 @@ int runscript(int argc, char **argv)
 	if (rc_conf_yesno("rc_parallel")) {
 		/* Get the longest service name */
 		services = rc_services_in_runlevel(NULL);
-		TAILQ_FOREACH(svc, services, entries) {
-			ll = strlen(svc->value);
-			if (ll > l)
-				l = ll;
-		}
+		if (services) {
+			TAILQ_FOREACH(svc, services, entries) {
+				ll = strlen(svc->value);
+				if (ll > l)
+					l = ll;
+			}
+			rc_stringlist_free(services);
+			services = NULL;
+		} else l = strlen(applet);
 
 		/* Make our prefix string */
 		prefix = xmalloc(sizeof(char) * l + 1);
@@ -1292,6 +1296,7 @@ int runscript(int argc, char **argv)
 			prefix = NULL;
 			svc_exec(optarg, NULL);
 			eprefix(save);
+			prefix = save;
 		} else if (strcmp(optarg, "ineed") == 0 ||
 			   strcmp(optarg, "iuse") == 0 ||
 			   strcmp(optarg, "needsme") == 0 ||
