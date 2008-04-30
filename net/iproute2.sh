@@ -10,12 +10,12 @@ iproute2_depend()
 
 _up()
 {
-	ip link set up dev "${IFACE}"
+	ip link set "${IFACE}" up
 }
 
 _down()
 {
-	ip link set down dev "${IFACE}"
+	ip link set "${IFACE}" down
 }
 
 _exists()
@@ -78,7 +78,7 @@ _get_mac_address()
 
 _set_mac_address()
 {
-	ip link set address "$1" dev "${IFACE}"
+	ip link set "${IFACE}" address "$1"
 }
 
 _get_inet_addresses()
@@ -126,7 +126,7 @@ _add_address()
 			;;
 	esac
 
-	ip addr add dev "${IFACE}" "$@"
+	ip addr add "$@" dev "${IFACE}"
 }
 
 _add_route()
@@ -184,12 +184,12 @@ iproute2_pre_start()
 	# MTU support
 	local mtu=
 	eval mtu=\$mtu_${IFVAR}
-	[ -n "${mtu}" ] && ip link set mtu "${mtu}" dev "${IFACE}"
+	[ -n "${mtu}" ] && ip link set "${IFACE}" mtu "${mtu}"
 
 	# TX Queue Length support
 	local len=
 	eval len=\$txqueuelen_${IFVAR}
-	[ -n "${len}" ] && ip link set qlen "${len}" dev "${IFACE}"
+	[ -n "${len}" ] && ip link set "${IFACE}" txqueuelen "${len}"
 
 	local tunnel=
 	eval tunnel=\$iptunnel_${IFVAR}
@@ -198,7 +198,7 @@ iproute2_pre_start()
 		metric=1000
 
 		ebegin "Creating tunnel ${IFVAR}"
-		ip tunnel add ${tunnel} name "${IFACE}"
+		ip tunnel add ${tunnel} name dev "${IFACE}"
 		eend $? || return 1
 		_up	
 	fi
@@ -234,7 +234,7 @@ iproute2_post_stop()
 	if [ "${IFACE}" != "sit0" ]; then
 		if [ -n "$(ip tunnel show "${IFACE}" 2>/dev/null)" ]; then
 			ebegin "Destroying tunnel ${IFACE}"
-			ip tunnel del "${IFACE}"
+			ip tunnel del dev "${IFACE}"
 			eend $?
 		fi
 	fi
