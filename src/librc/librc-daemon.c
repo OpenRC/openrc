@@ -85,18 +85,20 @@ static bool pid_is_exec(pid_t pid, const char *const *argv)
 	char buffer[PATH_MAX];
 	char *p;
 	int fd;
-	int r;
+	ssize_t bytes;
 
 	/* Check it's the right binary */
 	snprintf(cmdline, sizeof(cmdline), "/proc/%u/exe", pid);
-	memset(buffer, 0, sizeof(buffer));
-	if (readlink(cmdline, buffer, sizeof(buffer)) != -1) {
+	bytes = readlink(cmdline, buffer, sizeof(buffer));
+	if (bytes > 0) {
+		buffer[bytes] = '\0';
 		if (strcmp(*argv, buffer) == 0)
 			return true;
 
 		/* We should cater for deleted binaries too */
-		if (strlen(buffer) > 10) {
-			p = buffer + (strlen(buffer) - 10);
+		bytes = strlen(buffer);
+		if (bytes) {
+			p = buffer + (bytes - 10);
 			if (strcmp(p, " (deleted)") == 0) {
 				*p = '\0';
 				if (strcmp(buffer, *argv) == 0)
@@ -109,12 +111,12 @@ static bool pid_is_exec(pid_t pid, const char *const *argv)
 	if ((fd = open(cmdline, O_RDONLY)) < 0)
 		return false;
 
-	r = read(fd, buffer, sizeof(buffer));
+	bytes = read(fd, buffer, sizeof(buffer));
 	close(fd);
-	if (r == -1)
+	if (bytes == -1)
 		return false;
 
-	buffer[r] = '\0';
+	buffer[bytes] = '\0';
 	p = buffer;
 	while (*argv) {
 		if (strcmp(*argv, p) != 0)
