@@ -30,3 +30,11 @@ net.lo
 ttys
 swap-blk
 wscons
+consolefont
+hwclock
+keymaps
+modules
+mtab
+numlock
+procfs
+termencoding
