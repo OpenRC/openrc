@@ -84,7 +84,7 @@ static bool pid_is_exec(pid_t pid, const char *const *argv)
 	char cmdline[32];
 	char buffer[PATH_MAX];
 	char *p;
-	int fd = -1;
+	int fd;
 	int r;
 
 	/* Check it's the right binary */
