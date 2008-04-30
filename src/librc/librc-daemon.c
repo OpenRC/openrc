@@ -91,8 +91,8 @@ static bool pid_is_exec(pid_t pid, const char *const *argv)
 	int r;
 
 	/* Check it's the right binary */
-	snprintf (cmdline, sizeof (cmdline), "/proc/%u/exe", pid);
-	memset (buffer, 0, sizeof (buffer));
+	snprintf(cmdline, sizeof(cmdline), "/proc/%u/exe", pid);
+	memset(buffer, 0, sizeof(buffer));
 	if (readlink(cmdline, buffer, sizeof(buffer)) != -1) {
 		if (strcmp(*argv, buffer) == 0)
 			return true;
@@ -125,7 +125,7 @@ static bool pid_is_exec(pid_t pid, const char *const *argv)
 			return false;
 		argv++;
 		p += strlen(p) + 1;
-		if ((unsigned) (p - buffer) > sizeof (buffer))
+		if ((unsigned)(p - buffer) > sizeof(buffer))
 			return false;
 	}
 	return true;
