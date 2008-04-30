@@ -56,30 +56,27 @@ static size_t strlcpy(char *dst, const char *src, size_t size)
 #endif
 
 #if defined(__linux__)
+
 static bool pid_is_cmd(pid_t pid, const char *cmd)
 {
 	char buffer[32];
 	FILE *fp;
 	int c;
+	bool retval = false;
 
 	snprintf(buffer, sizeof(buffer), "/proc/%d/stat", pid);
-	if ((fp = fopen(buffer, "r")) == NULL)
-		return false;
-
-	while ((c = getc(fp)) != EOF && c != '(')
-		;
-
-	if (c != '(') {
+	if ((fp = fopen(buffer, "r"))) {
+		while ((c = getc(fp)) != EOF && c != '(')
+			;
+		if (c == '(') {
+			while ((c = getc(fp)) != EOF && c == *cmd)
+				cmd++;
+			if (c == ')' && *cmd == '\0')
+				retval = true;
+		}
 		fclose(fp);
-		return false;
 	}
-
-	while ((c = getc(fp)) != EOF && c == *cmd)
-		cmd++;
-
-	fclose(fp);
-
-	return (c == ')' && *cmd == '\0') ? true : false;
+	return retval;
 }
 
 static bool pid_is_exec(pid_t pid, const char *const *argv)
@@ -101,7 +98,7 @@ static bool pid_is_exec(pid_t pid, const char *const *argv)
 		if (strlen(buffer) > 10) {
 			p = buffer + (strlen(buffer) - 10);
 			if (strcmp(p, " (deleted)") == 0) {
-				*p = 0;
+				*p = '\0';
 				if (strcmp(buffer, *argv) == 0)
 					return true;
 			}
@@ -114,11 +111,10 @@ static bool pid_is_exec(pid_t pid, const char *const *argv)
 
 	r = read(fd, buffer, sizeof(buffer));
 	close(fd);
-
 	if (r == -1)
-		return 0;
+		return false;
 
-	buffer[r] = 0;
+	buffer[r] = '\0';
 	p = buffer;
 	while (*argv) {
 		if (strcmp(*argv, p) != 0)
