@@ -82,8 +82,9 @@ static bool pid_is_cmd(pid_t pid, const char *cmd)
 static bool pid_is_exec(pid_t pid, const char *const *argv)
 {
 	char cmdline[32];
-	char buffer[PATH_MAX];
 	int fd;
+	char buffer[PATH_MAX];
+	char *p;
 	ssize_t bytes;
 
 	snprintf(cmdline, sizeof(cmdline), "/proc/%u/cmdline", pid);
