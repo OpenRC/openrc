@@ -51,9 +51,11 @@ do
 		[ -x "${RC_SERVICE}" -a -f "${RC_SERVICE}" ] || continue
 
 		# Only generate dependencies for runscripts
-		read one two < "${RC_SERVICE}"
-		[ "${one}" = "#!@PREFIX@/sbin/runscript" ] || continue
-		unset one two
+		read one two three < "${RC_SERVICE}"
+		[ "${one}" = "#!@PREFIX@/sbin/runscript" ] || \
+		[ "${one}" = "#!" -a "${two}" = "@PREFIX@/sbin/runscript" ] || \
+		continue
+		unset one two three
 
 		export RC_SVCNAME=${RC_SERVICE##*/}
 
