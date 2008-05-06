@@ -635,13 +635,6 @@ static void do_newlevel(const char *newlevel)
 	{
 		/* OK, we're either in runlevel 1 or single user mode */
 
-		/* We don't want to trap SIGWINCH here as when a framebuffer
-		 * driver is loaded by udev and we start using it then we
-		 * race for some reason with the below scripts.
-		 * This is fine as we only really need SIGWINCH for tidy
-		 * output when using the logger. */
-		signal_setup(SIGWINCH, SIG_DFL);
-
 		/* exec init-early.sh if it exists
 		 * This should just setup the console to use the correct
 		 * font. Maybe it should setup the keyboard too? */

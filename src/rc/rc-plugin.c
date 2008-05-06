@@ -120,18 +120,25 @@ void rc_plugin_load(void)
 
 int rc_waitpid(pid_t pid)
 {
-	int status = 0;
+	int status;
 	pid_t savedpid = pid;
-	int retval = EXIT_FAILURE;
 
-	do {
-		pid = waitpid(savedpid, &status, 0);
-		if (pid == -1 && errno != EINTR)
-			return EXIT_FAILURE;
-	} while (!WIFEXITED(status) && !WIFSIGNALED(status));
-	if (pid == savedpid)
-		retval = WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
-	return retval;
+loop:
+	pid = waitpid(savedpid, &status, 0);
+	if (pid == -1) {
+		/* Our signal hander should take appropriate action. */
+		if (errno == EINTR)
+			goto loop;
+		return EXIT_FAILURE;
+	}
+	
+	if (pid == savedpid) {
+		if (WIFEXITED(status))
+			return WEXITSTATUS(status);
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }
 
 void rc_plugin_run(RC_HOOK hook, const char *value)
