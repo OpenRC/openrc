@@ -146,7 +146,7 @@ static void cleanup(void)
 		rc_plugin_unload();
 
 		if (! rc_in_plugin && termios_orig) {
-			tcsetattr(fileno(stdin), TCSANOW, termios_orig);
+			tcsetattr(STDIN_FILENO, TCSANOW, termios_orig);
 			free(termios_orig);
 		}
 
@@ -215,7 +215,7 @@ static char read_key(bool block)
 {
 	struct termios termios;
 	char c = 0;
-	int fd = fileno(stdin);
+	int fd = STDIN_FILENO;
 
 	if (! isatty(fd))
 		return false;
@@ -308,7 +308,7 @@ static void run_program(const char *prog)
 		sigprocmask(SIG_SETMASK, &old, NULL);
 
 		if (termios_orig)
-			tcsetattr(fileno(stdin), TCSANOW, termios_orig);
+			tcsetattr(STDIN_FILENO, TCSANOW, termios_orig);
 
 		execl(prog, prog, (char *) NULL);
 		eerror("%s: unable to exec `%s': %s", applet, prog,
@@ -614,7 +614,7 @@ static void do_coldplug(void)
 	if (coldplugged_services)
 		TAILQ_FOREACH(s, coldplugged_services, entries)
 			printf(" %s", s->value);
-	printf ("%s\n", ecolor(ECOLOR_NORMAL));
+	printf("%s\n", ecolor(ECOLOR_NORMAL));
 }
 
 static void do_newlevel(const char *newlevel)
@@ -634,6 +634,13 @@ static void do_newlevel(const char *newlevel)
 	   )
 	{
 		/* OK, we're either in runlevel 1 or single user mode */
+
+		/* We don't want to trap SIGWINCH here as when a framebuffer
+		 * driver is loaded by udev and we start using it then we
+		 * race for some reason with the below scripts.
+		 * This is fine as we only really need SIGWINCH for tidy
+		 * output when using the logger. */
+		signal_setup(SIGWINCH, SIG_DFL);
 
 		/* exec init-early.sh if it exists
 		 * This should just setup the console to use the correct
