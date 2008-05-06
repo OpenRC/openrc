@@ -12,5 +12,5 @@ include ${MK}/os.mk
 include Makefile.${OS}
 include ${MK}/scripts.mk
 
-_installafter: net.lo
+_installafter: realinstall
 	${INSTALL} -m ${BINMODE} net.lo ${DESTDIR}/${INITDIR}/${NET_LO}
