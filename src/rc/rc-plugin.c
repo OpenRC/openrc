@@ -121,24 +121,14 @@ void rc_plugin_load(void)
 int rc_waitpid(pid_t pid)
 {
 	int status;
-	pid_t savedpid = pid;
 
-loop:
-	pid = waitpid(savedpid, &status, 0);
-	if (pid == -1) {
-		/* Our signal hander should take appropriate action. */
-		if (errno == EINTR)
-			goto loop;
-		return EXIT_FAILURE;
+	while (waitpid(pid, &status, 0) == -1) {
+		if (errno != EINTR) {
+			status = -1;
+			break;
+		}
 	}
-	
-	if (pid == savedpid) {
-		if (WIFEXITED(status))
-			return WEXITSTATUS(status);
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
+	return status;
 }
 
 void rc_plugin_run(RC_HOOK hook, const char *value)
