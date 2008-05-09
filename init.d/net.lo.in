@@ -663,9 +663,14 @@ stop()
 		fi
 	done
 
-	! yesno ${IN_BACKGROUND} && \
-	[ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ] && \
-	_down 2>/dev/null
+	# If not in background, and not loopback then bring the interface down
+	# unless overridden.
+	if ! yesno ${IN_BACKGROUND} && \
+	[ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ]; then
+		eval module=\$ifdown_${IFVAR}
+		module=${module:-YES}
+		yesno ${module} && _down 2>/dev/null
+	fi
 
 	type resolvconf >/dev/null 2>&1 && resolvconf -d "${IFACE}" 2>/dev/null
 

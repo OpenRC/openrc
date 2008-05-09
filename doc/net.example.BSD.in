@@ -87,6 +87,10 @@
 # is how long we wait for carrier. The current default is 3 seconds
 #carrier_timeout_eth0=-1
 
+# You may wish to disable the interface being brought down when stopping.
+# This is only of use for WakeOnLan.
+#ifdown_eth0="NO"
+
 ##############################################################################
 # OPTIONAL MODULES
 

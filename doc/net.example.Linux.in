@@ -120,6 +120,10 @@
 # tables you may have to set a global metric as the due to a simple read of
 # the routing table taking over a minute at a time.
 
+# You may wish to disable the interface being brought down when stopping.
+# This is only of use for WakeOnLan.
+#ifdown_eth0="NO"
+
 ##############################################################################
 # OPTIONAL MODULES
 
