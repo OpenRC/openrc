@@ -3,7 +3,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 NAME=		openrc
-VERSION=	0.2.3
+VERSION=	0.2.4
 PKG=		${NAME}-${VERSION}
 
 SUBDIR=		conf.d doc etc init.d man net sh src
