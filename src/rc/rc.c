@@ -338,12 +338,13 @@ static void sulogin(bool cont)
 	if (! cont) {
 		rc_logger_close();
 #ifdef __linux__
-		execl("/sbin/sulogin", "/sbin/sulogin", (char *) NULL);
-		eerrorx("%s: unable to exec `/sbin/sulogin': %s",
-			applet, strerror(errno));
-#else
-		exit(EXIT_SUCCESS);
+		if (RUNLEVEL && strcmp(RUNLEVEL, "S") == 0) {
+			execl("/sbin/sulogin", "/sbin/sulogin", (char *) NULL);
+			eerrorx("%s: unable to exec `/sbin/sulogin': %s",
+				applet, strerror(errno));
+		}
 #endif
+		exit(EXIT_SUCCESS);
 	}
 
 #ifdef __linux__
