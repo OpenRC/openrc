@@ -15,20 +15,41 @@ _config_vars="$_config_vars dhcp dhcpcd"
 
 dhcpcd_start()
 {
-	local args= opt= opts= pidfile="/var/run/dhcpcd-${IFACE}.pid"
-
+	local args= opt= opts= pidfile="/var/run/dhcpcd-${IFACE}.pid" new=true
 	eval args=\$dhcpcd_${IFVAR}
 
 	# Get our options
 	eval opts=\$dhcp_${IFVAR}
 	[ -z "${opts}" ] && opts=${dhcp}
 
+	case "$(dhcpcd --version)" in
+		"dhcpcd "[123]*) new=false;;
+	esac
+
 	# Map some generic options to dhcpcd
 	for opt in ${opts}; do
 		case "${opt}" in
-			nodns) args="${args} -R";;
-			nontp) args="${args} -N";;
-			nonis) args="${args} -Y";;
+			nodns)
+				if ${new}; then
+					args="${args} -O domain_name_servers,domain_name,domain_search"
+				else
+					args="${args} -R"
+				fi
+				;;
+			nontp)
+				if ${new}; then
+					args="${args} -O ntp_servers"
+				else
+					args="${args} -N"
+				fi
+				;;
+			nonis)
+				if ${new}; then
+					args="${args} -O nis_servers,nis_domain"
+				else
+					args="${args} -Y"
+				fi
+				;;
 			nogateway) args="${args} -G";;
 			nosendhost) args="${args} -h ''";
 		esac
