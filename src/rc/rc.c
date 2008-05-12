@@ -801,7 +801,8 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 			tmplist = rc_stringlist_new();
 			rc_stringlist_add(tmplist, service->value);
 			deporder = rc_deptree_depends(deptree, types_n, tmplist,
-						      runlevel, RC_DEP_STRICT);
+						      runlevel,
+						      RC_DEP_STRICT | RC_DEP_TRACE);
 			rc_stringlist_free(tmplist);
 			svc2 = NULL;
 			TAILQ_FOREACH (svc1, deporder, entries) {
