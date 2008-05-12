@@ -31,30 +31,30 @@
 
 #include "librc.h"
 
-bool rc_yesno (const char *value)
+bool rc_yesno(const char *value)
 {
-	if (! value) {
+	if (!value) {
 		errno = ENOENT;
 		return false;
 	}
 
-	if (strcasecmp (value, "yes") == 0 ||
-	    strcasecmp (value, "y") == 0 ||
-	    strcasecmp (value, "true") == 0 ||
-	    strcasecmp (value, "1") == 0)
+	if (strcasecmp(value, "yes") == 0 ||
+	    strcasecmp(value, "y") == 0 ||
+	    strcasecmp(value, "true") == 0 ||
+	    strcasecmp(value, "1") == 0)
 		return true;
 
-	if (strcasecmp (value, "no") != 0 &&
-	    strcasecmp (value, "n") != 0 &&
-	    strcasecmp (value, "false") != 0 &&
-	    strcasecmp (value, "0") != 0)
+	if (strcasecmp(value, "no") != 0 &&
+	    strcasecmp(value, "n") != 0 &&
+	    strcasecmp(value, "false") != 0 &&
+	    strcasecmp(value, "0") != 0)
 		errno = EINVAL;
 
 	return false;
 }
 librc_hidden_def(rc_yesno)
 
-ssize_t rc_getline (char **line, size_t *len, FILE *fp)
+ssize_t rc_getline(char **line, size_t *len, FILE *fp)
 {
 	char *p;
 	size_t last = 0;
@@ -71,7 +71,7 @@ ssize_t rc_getline (char **line, size_t *len, FILE *fp)
 		memset(p, 0, BUFSIZ);
 		fgets(p, BUFSIZ, fp);
 		last += strlen(p);
-	} while (! feof(fp) && (*line)[last - 1] != '\n');
+	} while (!feof(fp) && (*line)[last - 1] != '\n');
 
 	/* Trim the trailing newline */
 	if (**line && (*line)[last - 1] == '\n')
@@ -108,7 +108,7 @@ RC_STRINGLIST *rc_config_list(const char *file)
 				if (token[strlen(token) - 1] == '\n')
 					token[strlen(token) - 1] = 0;
 
-				if (! list)
+				if (!list)
 					list = rc_stringlist_new();
 				rc_stringlist_add(list, token);
 			}
@@ -135,7 +135,7 @@ RC_STRINGLIST *rc_config_load(const char *file)
 	char *p;
 
 	list = rc_config_list(file);
-	if (! list)
+	if (!list)
 		return NULL;
 
 	config = rc_stringlist_new();
@@ -157,15 +157,15 @@ RC_STRINGLIST *rc_config_load(const char *file)
 
 		/* Drop a newline if that's all we have */
 		if (token) {
-			i = strlen (token) - 1;
+			i = strlen(token) - 1;
 			if (token[i] == '\n')
 				token[i] = 0;
 
-			i = strlen (entry) + strlen (token) + 2;
+			i = strlen(entry) + strlen(token) + 2;
 			newline = xmalloc(sizeof(char) * i);
 			snprintf(newline, i, "%s=%s", entry, token);
 		} else {
-			i = strlen (entry) + 2;
+			i = strlen(entry) + 2;
 			newline = xmalloc(sizeof(char) * i);
 			snprintf(newline, i, "%s=", entry);
 		}
@@ -176,7 +176,7 @@ RC_STRINGLIST *rc_config_load(const char *file)
 		TAILQ_FOREACH(cline, config, entries) {
 			p = strchr(cline->value, '=');
 			if (p && strncmp(entry, cline->value,
-					  (size_t) (p - cline->value)) == 0)
+					  (size_t)(p - cline->value)) == 0)
 			{
 				/* We have a match now - to save time we directly replace it */
 				free(cline->value);
@@ -186,7 +186,7 @@ RC_STRINGLIST *rc_config_load(const char *file)
 			}
 		}
 
-		if (! replaced) {
+		if (!replaced) {
 			rc_stringlist_add(config, newline);
 			free(newline);
 		}
