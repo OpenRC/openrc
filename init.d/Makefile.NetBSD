@@ -5,7 +5,7 @@ SRCS+=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
 	rpcbind.in savecore.in syslogd.in
 
 # These are NetBSD specific
-SRCS+=	swap-blk.in ttys.in wscons.in
+SRCS+=	devdb.in swap-blk.in ttys.in wscons.in
 
 .SUFFIXES:	.BSD.in
 .BSD.in:

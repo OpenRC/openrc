@@ -1,0 +1,21 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Creates the dev database"
+
+depend()
+{
+	need localmount
+}
+
+start()
+{
+	ebegin "Bulding the dev database"
+	if [ /var/run/dev.db -nt /dev ]; then
+		:
+	else
+		dev_mkdb
+	fi
+	eend $?
+}

@@ -86,7 +86,7 @@ start()
 
 		ebegin "Cleaning /var/run"
 		for x in $(find /var/run ! -type d ! -name utmp \
-			! -name random-seed \
+			! -name random-seed ! -name dev.db \
 			! -name ld-elf.so.hints ! -name ld.so.hints);
 		do	
 			[ ! -f "${x}" ] && continue
