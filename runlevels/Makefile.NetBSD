@@ -2,4 +2,4 @@
 BOOT+=		hostid net.lo0 newsyslog savecore syslogd
 
 # NetBSD specific stuff
-BOOT+=		swap-blk ttys wscons
+BOOT+=		devdb swap-blk ttys wscons
