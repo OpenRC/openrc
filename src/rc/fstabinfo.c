@@ -159,7 +159,7 @@ int fstabinfo(int argc, char **argv)
 	struct ENT *ent;
 	int result = EXIT_SUCCESS;
 	char *token;
-	int i;
+	int i, p;
 	int opt;
 	int output = OUTPUT_FILE;
 	RC_STRINGLIST *files = rc_stringlist_new();
@@ -200,13 +200,17 @@ int fstabinfo(int argc, char **argv)
 						argv[0], optarg + 1);
 
 				filtered = true;
+				opt = optarg[0];
 				START_ENT;
 				while ((ent = GET_ENT)) {
-					if (((optarg[0] == '=' && i == ENT_PASS(ent)) ||
-					     (optarg[0] == '<' && i > ENT_PASS(ent)) ||
-					     (optarg[0] == '>' && i < ENT_PASS(ent))) &&
-					    strcmp(ENT_FILE(ent), "none") != 0)
-						rc_stringlist_add(files, ENT_FILE(ent));
+					if (strcmp(ENT_FILE(ent), "none") == 0)
+						continue;
+					p = ENT_PASS(ent);
+					if ((opt == '=' && i == p) ||
+					    (opt == '<' && i > p && p != 0) ||
+					    (opt == '>' && i < p && p != 0))
+						rc_stringlist_add(files,
+								  ENT_FILE(ent));
 				}
 				END_ENT;
 				break;
