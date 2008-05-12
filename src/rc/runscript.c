@@ -103,7 +103,6 @@ static RC_STRINGLIST *types_nu = NULL;
 static RC_STRINGLIST *types_nua = NULL;
 static RC_STRINGLIST *types_m = NULL;
 static RC_STRINGLIST *types_mua = NULL;
-static RC_STRINGLIST *types_p = NULL;
 
 #ifdef __linux__
 static void (*selinux_run_init_old)(void);
@@ -336,7 +335,6 @@ static void cleanup(void)
 	rc_stringlist_free(types_nua);
 	rc_stringlist_free(types_m);
 	rc_stringlist_free(types_mua);
-	rc_stringlist_free(types_p);
 	
 	rc_plugin_unload();
 	rc_deptree_free(deptree);
@@ -651,9 +649,6 @@ static void setup_types(void)
 	rc_stringlist_add(types_mua, "needsme");
 	rc_stringlist_add(types_mua, "usesme");
 	rc_stringlist_add(types_mua, "beforeme");
-
-	types_p = rc_stringlist_new();
-	rc_stringlist_add(types_p, "iprovide");
 }
 
 static bool in_list(RC_STRINGLIST *list, char *string)
@@ -952,15 +947,8 @@ static void svc_stop(bool deps)
 		if (! types_m)
 			setup_types();
 
-		tmplist = rc_deptree_depends(deptree, types_p, applet_list,
-					     runlevel, 0);
-		if (!tmplist)
-			tmplist = rc_stringlist_new();
-		rc_stringlist_add(tmplist, applet);
-		services = rc_deptree_depends(deptree, types_m, tmplist,
+		services = rc_deptree_depends(deptree, types_m, applet_list,
 					      runlevel, depoptions);
-		rc_stringlist_free(tmplist);
-		tmplist = NULL;
 		if (services) {
 			TAILQ_FOREACH_REVERSE(svc, services, rc_stringlist, entries) {
 				state = rc_service_state(svc->value);

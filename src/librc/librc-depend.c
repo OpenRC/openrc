@@ -431,12 +431,11 @@ static void visit_service(const RC_DEPTREE *deptree,
 		TAILQ_FOREACH(service, dt->services, entries) {
 			if (!(di = get_depinfo(deptree, service->value)))
 				continue;
-
 			provided = get_provided(di, runlevel, options);
 			TAILQ_FOREACH(p, provided, entries)
 				if (strcmp (p->value, depinfo->service) == 0) {
-					//visit_service (deptree, types, sorted, visited, di,
-					//	       runlevel, options | RC_DEP_TRACE);
+					visit_service (deptree, types, sorted, visited, di,
+						       runlevel, options | RC_DEP_TRACE);
 					break;
 				}
 			rc_stringlist_free(provided);
