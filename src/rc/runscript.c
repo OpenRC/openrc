@@ -877,11 +877,13 @@ static void svc_start(bool deps)
 	}
 
 	/* Do the same for any services we provide */
-	tmplist = rc_deptree_depend(deptree, "iprovide", applet);
-	if (tmplist) {
-		TAILQ_FOREACH(svc, tmplist, entries) {
-			services = rc_services_scheduled(svc->value);
-			if (services) {
+	if (deptree) {
+		tmplist = rc_deptree_depend(deptree, "iprovide", applet);
+		if (tmplist) {
+			TAILQ_FOREACH(svc, tmplist, entries) {
+				services = rc_services_scheduled(svc->value);
+				if (! services)
+					continue;
 				TAILQ_FOREACH(svc2, services, entries)
 					if (rc_service_state(svc2->value) & RC_SERVICE_STOPPED)
 						service_start(svc2->value);
