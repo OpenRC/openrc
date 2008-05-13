@@ -55,13 +55,13 @@ install: all
 	${INSTALL} -d ${DESTDIR}${SBINDIR}
 	${INSTALL} -m ${BINMODE} ${PROG} ${DESTDIR}${SBINDIR}
 	${INSTALL} -d ${DESTDIR}${BINDIR}
-	for x in ${BINLINKS}; do ln -fs ${DESTDIR}${SBINDIR}/${PROG} ${DESTDIR}${BINDIR}/$$x; done
+	for x in ${BINLINKS}; do ln -fs ${SBINDIR}/${PROG} ${DESTDIR}${BINDIR}/$$x; done
 	${INSTALL} -d ${DESTDIR}${SBINDIR}
 	for x in ${SBINLINKS}; do ln -fs ${PROG} ${DESTDIR}${SBINDIR}/$$x; done
 	${INSTALL} -d ${DESTDIR}${LINKDIR}/bin
-	for x in $(RC_BINLINKS); do ln -fs ${DESTDIR}${SBINDIR}/${PROG} ${DESTDIR}${LINKDIR}/bin/$$x; done
+	for x in $(RC_BINLINKS); do ln -fs ${SBINDIR}/${PROG} ${DESTDIR}${LINKDIR}/bin/$$x; done
 	${INSTALL} -d ${DESTDIR}${LINKDIR}/sbin
-	for x in ${RC_SBINLINKS}; do ln -fs ${DESTDIR}${SBINDIR}/${PROG} ${DESTDIR}${LINKDIR}/sbin/$$x; done
+	for x in ${RC_SBINLINKS}; do ln -fs ${SBINDIR}/${PROG} ${DESTDIR}${LINKDIR}/sbin/$$x; done
 	if test "${MKPAM}" = pam; then \
 		${INSTALL} -d ${DESTDIR}${PAMDIR}; \
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam ${DESTDIR}${PAMDIR}/start-stop-daemon; \
