@@ -59,24 +59,20 @@ ssize_t rc_getline(char **line, size_t *len, FILE *fp)
 	char *p;
 	size_t last = 0;
 
-	if (feof(fp))
-		return 0;
-
-	do {
+	while(!feof(fp)) {
 		if (*line == NULL || last != 0) {
 			*len += BUFSIZ;
-			*line = xrealloc(*line, *len);
+			*line = realloc(*line, *len);
 		}
 		p = *line + last;
 		memset(p, 0, BUFSIZ);
 		fgets(p, BUFSIZ, fp);
 		last += strlen(p);
-	} while (!feof(fp) && (*line)[last - 1] != '\n');
-
-	/* Trim the trailing newline */
-	if (**line && (*line)[last - 1] == '\n')
-		(*line)[last - 1] = '\0';
-
+		if (last && (*line)[last - 1] == '\n') {
+			(*line)[last - 1] = '\0';
+			break;
+		}
+	}
 	return last;
 }
 librc_hidden_def(rc_getline)
