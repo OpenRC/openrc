@@ -3,7 +3,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Check and repair filesystems according to /etc/fstab"
-_ISF="
+_IFS="
 "
 
 depend()
@@ -47,7 +47,7 @@ start()
 		case "${p}" in
 			[0-9]*) p="=${p}";;
 		esac
-		set -- "$@" "$(fstabinfo --passno "${p}")"
+		set -- "$@" $(fstabinfo --passno "${p}")
 		unset IFS
 	done
 
