@@ -31,21 +31,21 @@ dhcpcd_start()
 		case "${opt}" in
 			nodns)
 				if ${new}; then
-					args="${args} -O domain_name_servers,domain_name,domain_search"
+					args="${args} -C resolv.conf"
 				else
 					args="${args} -R"
 				fi
 				;;
 			nontp)
 				if ${new}; then
-					args="${args} -O ntp_servers"
+					args="${args} -C ntp.conf"
 				else
 					args="${args} -N"
 				fi
 				;;
 			nonis)
 				if ${new}; then
-					args="${args} -O nis_servers,nis_domain"
+					args="${args} -C yp.conf"
 				else
 					args="${args} -Y"
 				fi
