@@ -198,7 +198,7 @@ iproute2_pre_start()
 		metric=1000
 
 		ebegin "Creating tunnel ${IFVAR}"
-		ip tunnel add ${tunnel} name dev "${IFACE}"
+		ip tunnel add ${tunnel} name "${IFACE}"
 		eend $? || return 1
 		_up	
 	fi
@@ -234,7 +234,7 @@ iproute2_post_stop()
 	if [ "${IFACE}" != "sit0" ]; then
 		if [ -n "$(ip tunnel show "${IFACE}" 2>/dev/null)" ]; then
 			ebegin "Destroying tunnel ${IFACE}"
-			ip tunnel del dev "${IFACE}"
+			ip tunnel del "${IFACE}"
 			eend $?
 		fi
 	fi
