@@ -63,7 +63,7 @@ start()
 		reboot_opts="-f"
 	fi
 
-	trap : QUIT
+	trap : INT QUIT
 	fsck ${fsck_args--p} ${fsck_opts} "$@"
 	case $? in
 		0)       eend 0; return 0;;
