@@ -308,7 +308,7 @@ static pid_t get_pid(const char *pidfile, bool quiet)
 
 /* return number of processed killed, -1 on error */
 static int do_stop(const char *const *argv, const char *cmd,
-		   const char *pidfile, uid_t uid,int sig,
+		   pid_t pid, uid_t uid,int sig,
 		   bool quiet, bool verbose, bool test)
 {
 	RC_PIDLIST *pids;
@@ -316,13 +316,10 @@ static int do_stop(const char *const *argv, const char *cmd,
 	RC_PID *np;
 	bool killed;
 	int nkilled = 0;
-	pid_t pid = 0;
 
-	if (pidfile) {
-		if ((pid = get_pid(pidfile, quiet)) == -1)
-			return quiet ? 0 : -1;
+	if (pid)
 		pids = rc_find_pids(NULL, NULL, 0, pid);
-	} else
+	else
 		pids = rc_find_pids(argv, cmd, uid, pid);
 
 	if (! pids)
@@ -369,6 +366,7 @@ static int run_stop_schedule(const char *const *argv, const char *cmd,
 	int nrunning = 0;
 	long nloops;
 	struct timespec ts;
+	pid_t pid = 0;
 
 	if (verbose) {
 		if (pidfile)
@@ -381,6 +379,12 @@ static int run_stop_schedule(const char *const *argv, const char *cmd,
 			einfo("Will stop processes called `%s'", cmd);
 	}
 
+	if (pidfile) {
+		pid = get_pid(pidfile, quiet);
+		if (pid == -1)
+			return 0;
+	}
+
 	while (item) {
 		switch (item->type) {
 		case SC_GOTO:
@@ -389,7 +393,7 @@ static int run_stop_schedule(const char *const *argv, const char *cmd,
 
 		case SC_SIGNAL:
 			nrunning = 0;
-			nkilled = do_stop(argv, cmd, pidfile, uid, item->value,
+			nkilled = do_stop(argv, cmd, pid, uid, item->value,
 					  quiet, verbose, test);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
@@ -415,9 +419,9 @@ static int run_stop_schedule(const char *const *argv, const char *cmd,
 			ts.tv_nsec = POLL_INTERVAL;
 
 			while (nloops) {
-				if ((nrunning = do_stop(argv, cmd, pidfile,
+				if ((nrunning = do_stop(argv, cmd, pid,
 							uid, 0, true, false, true)) == 0)
-					return true;
+					return 0;
 
 				if (nanosleep(&ts, NULL) == -1) {
 					if (errno == EINTR)
@@ -852,7 +856,12 @@ int start_stop_daemon(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
-	if (do_stop((const char * const *)argv, cmd, pidfile, uid,
+	if (pidfile) {
+		pid = get_pid(pidfile, quiet);
+	} else
+		pid = 0;
+
+	if (do_stop((const char * const *)argv, cmd, pid, uid,
 		    0, true, false, true) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
@@ -1112,16 +1121,18 @@ int start_stop_daemon(int argc, char **argv)
 			} else {
 				if (pidfile) {
 					/* The pidfile may not have been written yet - give it some time */
-					if (get_pid(pidfile, true) == -1) {
+					if ((pid = get_pid(pidfile, true)) == -1) {
 						if (! nloopsp)
 							eerrorx("%s: did not create a valid pid in `%s'",
 								applet, pidfile);
 						alive = true;
+						pid = 0;
 					} else
 						nloopsp = 0;
-				}
+				} else
+					pid = 0;
 				if (do_stop((const char *const *)argv, cmd,
-					    pidfile, uid, 0, true, false, true) > 0)
+					    pid, uid, 0, true, false, true) > 0)
 					alive = true;
 			}
 
