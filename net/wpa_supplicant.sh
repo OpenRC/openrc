@@ -78,11 +78,9 @@ wpa_supplicant_pre_start()
 	service_set_value "SSID" ""
 	ebegin "Starting wpa_supplicant on ${IFVAR}"
 
-	if [ -x /sbin/iwconfig ]; then
-		local x=
-		for x in txpower rate rts frag; do
-			iwconfig "${IFACE}" "${x}" auto 2>/dev/null
-		done
+	if type iwconfig_defaults >/dev/null 2>&1; then
+		iwconfig_defaults
+		iwconfig_user_config
 	fi
 
 	cfgfile=${opts##* -c}
