@@ -206,9 +206,13 @@ iwconfig_wait_for_association()
 		# Use sysfs if we can
 		if [ -e /sys/class/net/"${IFACE}"/carrier ]; then
 			if [ "$(cat /sys/class/net/"${IFACE}"/carrier)" = "1" ]; then
-				# Double check we have an ssid. This is mainly for buggy
-				# prism54 drivers that always set their carrier on :/
-				[ -n "$(iwgetid --raw "${IFACE}")" ] && return 0
+				# Double check we have an ssid and a non-zero
+				# mac address.  This is mainly for buggy
+				# prism54 drivers that always set their
+				# carrier on or buggy madwifi drivers that
+				# sometimes have carrier on and ssid set
+				# without being associated.  :/
+				[ -n "$(iwgetid --raw "${IFACE}")" ] && [ "$(iwgetid --ap --raw "${IFACE}")" != "00:00:00:00:00:00" ] && return 0
 			fi
 		else
 			local atest=
