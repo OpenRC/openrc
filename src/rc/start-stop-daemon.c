@@ -857,7 +857,7 @@ int start_stop_daemon(int argc, char **argv)
 	}
 
 	if (pidfile) {
-		pid = get_pid(pidfile, quiet);
+		pid = get_pid(pidfile, true);
 	} else
 		pid = 0;
 
