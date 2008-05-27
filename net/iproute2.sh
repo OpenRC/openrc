@@ -208,6 +208,8 @@ iproute2_pre_start()
 
 _iproute2_ipv6_tentative()
 {
+	# Only check tentative when we have a carrier.
+	LC_ALL=C ip link show dev "${IFACE}" | grep -q "NO-CARRIER" && return 1
 	LC_ALL=C ip addr show dev "${IFACE}" | \
 		grep -q "^[[:space:]]*inet6 .* tentative"
 }
