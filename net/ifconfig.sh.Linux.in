@@ -235,7 +235,11 @@ _delete_addresses()
 	local addr=
 	for addr in $(LC_ALL=C ifconfig "${IFACE}" | \
 		sed -n -e 's/^.*\(inet6 addr:\|inet6\) \([^ ]*\) .*\(Scope:[^L]\|scopeid [^<]*<[^l]\).*/\2/p'); do
-		[ "${addr}" = "::1/128" -a "${IFACE}" = "lo" ] && continue
+		if [ "${IFACE}" = "lo" ]; then
+			case "${addr}" in
+				"::1/128"|"/128") continue;;
+			esac
+		fi
 		einfo "${addr}"
 		ifconfig "${IFACE}" inet6 del "${addr}"
 	done
