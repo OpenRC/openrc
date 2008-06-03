@@ -1010,7 +1010,7 @@
 
 #postdown() {
 #	# Enable Wake-On-LAN for every interface except for lo
-#	# Probably a good idea to set RC_DOWN_INTERFACE="no" in /etc/conf.d/rc
+#	# Probably a good idea to set ifdown="no" in /etc/conf.d/net
 #	# as well ;)
 #	[ "${IFACE}" != "lo" ] && ethtool -s "${IFACE}" wol g
 

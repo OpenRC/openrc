@@ -668,7 +668,7 @@ stop()
 	if ! yesno ${IN_BACKGROUND} && \
 	[ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ]; then
 		eval module=\$ifdown_${IFVAR}
-		module=${module:-YES}
+		module=${module:-${ifdown:-YES}}
 		yesno ${module} && _down 2>/dev/null
 	fi
 
