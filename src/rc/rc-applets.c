@@ -51,6 +51,10 @@
 #include "einfo.h"
 #include "rc-misc.h"
 
+/* usecs to wait while we poll the file existance  */
+#define WAIT_INTERVAL	20000000
+#define ONE_SECOND      690000000
+
 /* Applet is first parsed in rc.c - no point in doing it again */
 extern const char *applet;
 
@@ -77,6 +81,8 @@ static int do_e(int argc, char **argv)
 	char *p;
 	int level = 0;
 	const char *fmt = "%s";
+	struct timespec ts;
+	struct timeval stop, now;
 
 	/* Punt applet */
 	argc--;
@@ -97,11 +103,14 @@ static int do_e(int argc, char **argv)
 		if (strcmp(applet, "eend") == 0 ||
 		    strcmp(applet, "ewend") == 0 ||
 		    strcmp(applet, "veend") == 0 ||
-		    strcmp(applet, "vweend") == 0)
+		    strcmp(applet, "vweend") == 0 ||
+		    strcmp(applet, "ewaitfile") == 0)
 		{
 			errno = 0;
-			retval = (int) strtoimax(argv[0], NULL, 0);
-			if (errno != 0)
+			retval = (int)strtoimax(argv[0], &p, 0);
+			if (!p || *p != '\0')
+				errno = EINVAL;
+			if (errno)
 				retval = EXIT_FAILURE;
 			else {
 				argc--;
@@ -122,6 +131,38 @@ static int do_e(int argc, char **argv)
 			argc -= 2;
 			argv += 2;
 		}
+	}
+
+	if (strcmp(applet, "ewaitfile") == 0) {
+		if (errno)
+			eerrorx("%s: invalid timeout", applet);
+		if (argc == 0)
+			eerrorx("%s: not enough arguments", applet);
+
+		gettimeofday(&stop, NULL);
+		/* retval stores the timeout */
+		stop.tv_sec += retval;
+		ts.tv_sec = 0;
+		ts.tv_nsec = WAIT_INTERVAL;
+		for (i = 0; i < argc; i++) {
+			ebeginv("Waiting for %s", argv[i]);
+			for (;;){
+				if (exists(argv[i]))
+					break;
+				if (nanosleep(&ts, NULL) == -1)
+					return EXIT_FAILURE;
+				gettimeofday(&now, NULL);
+				if (retval <= 0)
+					continue;
+				if (timercmp(&now, &stop, <))
+					continue;
+				eendv(EXIT_FAILURE,
+				      "timed out waiting for %s", argv[i]);
+				return EXIT_FAILURE;
+			}
+			eendv(EXIT_SUCCESS, NULL);
+		}
+		return EXIT_SUCCESS;
 	}
 
 	if (argc > 0) {

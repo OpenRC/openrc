@@ -13,7 +13,7 @@ LINKDIR=	${PREFIX}/${LIBNAME}/${PROG}
 BINLINKS=	rc-status
 SBINLINKS=	rc-service rc-update runscript start-stop-daemon
 RC_BINLINKS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
-		eindent eoutdent esyslog eval_ecolors \
+		eindent eoutdent esyslog eval_ecolors ewaitfile \
 		veinfo vewarn vebegin veend vewend veindent veoutdent \
 		service_starting service_started \
 		service_stopping service_stopped \
