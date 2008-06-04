@@ -891,7 +891,11 @@ rc_deptree_update(void)
 					dt->services = rc_stringlist_new();
 					STAILQ_INSERT_TAIL(&di->depends, dt, entries);
 				}
-				rc_stringlist_add(dt->services, depinfo->service);
+				TAILQ_FOREACH(s2, dt->services, entries)
+					if (strcmp(s2->value, depinfo->service) == 0)
+						break;
+				if (!s2)
+					rc_stringlist_add(dt->services, depinfo->service);
 			}
 		}
 
