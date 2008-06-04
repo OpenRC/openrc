@@ -774,7 +774,7 @@ rc_deptree_update(void)
 				continue;
 
 			if (strcmp(type, "config") == 0) {
-				rc_stringlist_add(config, depend);
+				rc_stringlist_addu(config, depend);
 				continue;
 			}
 
@@ -891,11 +891,7 @@ rc_deptree_update(void)
 					dt->services = rc_stringlist_new();
 					STAILQ_INSERT_TAIL(&di->depends, dt, entries);
 				}
-				TAILQ_FOREACH(s2, dt->services, entries)
-					if (strcmp(s2->value, depinfo->service) == 0)
-						break;
-				if (!s2)
-					rc_stringlist_add(dt->services, depinfo->service);
+				rc_stringlist_addu(dt->services, depinfo->service);
 			}
 		}
 
