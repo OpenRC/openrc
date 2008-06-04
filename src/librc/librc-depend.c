@@ -37,7 +37,8 @@
 
 static const char *bootlevel = NULL;
 
-static char *get_shell_value(char *string)
+static char *
+get_shell_value(char *string)
 {
 	char *p = string;
 	char *e;
@@ -60,23 +61,22 @@ static char *get_shell_value(char *string)
 	return NULL;
 }
 
-void rc_deptree_free(RC_DEPTREE *deptree)
+void
+rc_deptree_free(RC_DEPTREE *deptree)
 {
 	RC_DEPINFO *di;
 	RC_DEPINFO *di2;
 	RC_DEPTYPE *dt;
 	RC_DEPTYPE *dt2;
 
-	if (! deptree)
+	if (!deptree)
 		return;
 
 	di = STAILQ_FIRST(deptree);
-	while (di)
-	{
+	while (di) {
 		di2 = STAILQ_NEXT(di, entries);
 		dt = STAILQ_FIRST(&di->depends);
-		while (dt)
-		{
+		while (dt) {
 			dt2 = STAILQ_NEXT(dt, entries);
 			rc_stringlist_free(dt->services);
 			free(dt->type);
@@ -91,31 +91,30 @@ void rc_deptree_free(RC_DEPTREE *deptree)
 }
 librc_hidden_def(rc_deptree_free)
 
-static RC_DEPINFO *get_depinfo(const RC_DEPTREE *deptree,
-			       const char *service)
+static RC_DEPINFO *
+get_depinfo(const RC_DEPTREE *deptree, const char *service)
 {
 	RC_DEPINFO *di;
 
 	STAILQ_FOREACH(di, deptree, entries)
 		if (strcmp(di->service, service) == 0)
 			return di;
-
 	return NULL;
 }
 
-static RC_DEPTYPE *get_deptype(const RC_DEPINFO *depinfo,
-			       const char *type)
+static RC_DEPTYPE *
+get_deptype(const RC_DEPINFO *depinfo, const char *type)
 {
 	RC_DEPTYPE *dt;
 
 	STAILQ_FOREACH(dt, &depinfo->depends, entries)
 		if (strcmp(dt->type, type) == 0)
 			return dt;
-
 	return NULL;
 }
 
-RC_DEPTREE *rc_deptree_load(void)
+RC_DEPTREE *
+rc_deptree_load(void)
 {
 	FILE *fp;
 	RC_DEPTREE *deptree;
@@ -133,28 +132,22 @@ RC_DEPTREE *rc_deptree_load(void)
 
 	deptree = xmalloc(sizeof(*deptree));
 	STAILQ_INIT(deptree);
-
 	while ((rc_getline(&line, &len, fp)))
 	{
 		p = line;
 		e = strsep(&p, "_");
-		if (! e || strcmp(e, "depinfo") != 0)
+		if (!e || strcmp(e, "depinfo") != 0)
 			continue;
-
 		e = strsep (&p, "_");
-		if (! e || sscanf(e, "%d", &i) != 1)
+		if (!e || sscanf(e, "%d", &i) != 1)
 			continue;
-
-		if (! (type = strsep(&p, "_=")))
+		if (!(type = strsep(&p, "_=")))
 			continue;
-
-		if (strcmp(type, "service") == 0)
-		{
+		if (strcmp(type, "service") == 0) {
 			/* Sanity */
 			e = get_shell_value(p);
 			if (! e || *e == '\0')
 				continue;
-
 			depinfo = xmalloc(sizeof(*depinfo));
 			STAILQ_INIT(&depinfo->depends);
 			depinfo->service = xstrdup(e);
@@ -162,23 +155,19 @@ RC_DEPTREE *rc_deptree_load(void)
 			deptype = NULL;
 			continue;
 		}
-
 		e = strsep(&p, "=");
-		if (! e || sscanf(e, "%d", &i) != 1)
+		if (!e || sscanf(e, "%d", &i) != 1)
 			continue;
-
 		/* Sanity */
 		e = get_shell_value(p);
-		if (! e || *e == '\0')
+		if (!e || *e == '\0')
 			continue;
-
-		if (! deptype || strcmp(deptype->type, type) != 0) {
+		if (!deptype || strcmp(deptype->type, type) != 0) {
 			deptype = xmalloc(sizeof(*deptype));
 			deptype->services = rc_stringlist_new();
-			deptype->type = xstrdup (type);
+			deptype->type = xstrdup(type);
 			STAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
 		}
-
 		rc_stringlist_add(deptype->services, e);
 	}
 	fclose(fp);
@@ -188,21 +177,22 @@ RC_DEPTREE *rc_deptree_load(void)
 }
 librc_hidden_def(rc_deptree_load)
 
-static bool valid_service(const char *runlevel, const char *service)
+static bool
+valid_service(const char *runlevel, const char *service)
 {
 	RC_SERVICE state = rc_service_state(service);
 
-	return ((strcmp (runlevel, bootlevel) != 0 &&
+	return ((strcmp(runlevel, bootlevel) != 0 &&
 		 rc_service_in_runlevel(service, bootlevel)) ||
 		rc_service_in_runlevel(service, runlevel) ||
 		state & RC_SERVICE_COLDPLUGGED ||
 		state & RC_SERVICE_STARTED);
 }
 
-static bool get_provided1(const char *runlevel, RC_STRINGLIST *providers,
-			  RC_DEPTYPE *deptype,
-			  const char *level, bool coldplugged,
-			  RC_SERVICE state)
+static bool
+get_provided1(const char *runlevel, RC_STRINGLIST *providers,
+	      RC_DEPTYPE *deptype, const char *level,
+	      bool coldplugged, RC_SERVICE state)
 {
 	RC_STRING *service;
 	RC_SERVICE st;
@@ -219,12 +209,10 @@ static bool get_provided1(const char *runlevel, RC_STRINGLIST *providers,
 			ok = rc_service_in_runlevel(svc, level);
 		else if (coldplugged)
 			ok = (st & RC_SERVICE_COLDPLUGGED &&
-			      ! rc_service_in_runlevel(svc, runlevel) &&
-			      ! rc_service_in_runlevel(svc, bootlevel));
-
-		if (! ok)
+			      !rc_service_in_runlevel(svc, runlevel) &&
+			      !rc_service_in_runlevel(svc, bootlevel));
+		if (!ok)
 			continue;
-
 		switch (state) {
 			case RC_SERVICE_STARTED:
 				ok = (st & RC_SERVICE_STARTED);
@@ -239,10 +227,8 @@ static bool get_provided1(const char *runlevel, RC_STRINGLIST *providers,
 			default:
 				break;
 		}
-
-		if (! ok)
+		if (!ok)
 			continue;
-
 		retval = true;
 		rc_stringlist_add(providers, svc);
 	}
@@ -259,22 +245,21 @@ static bool get_provided1(const char *runlevel, RC_STRINGLIST *providers,
    If there are any bugs in rc-depend, they will probably be here as
    provided dependancy can change depending on runlevel state.
    */
-static RC_STRINGLIST *get_provided (const RC_DEPINFO *depinfo,
-				    const char *runlevel, int options)
+static RC_STRINGLIST *
+get_provided (const RC_DEPINFO *depinfo, const char *runlevel, int options)
 {
 	RC_DEPTYPE *dt;
 	RC_STRINGLIST *providers = rc_stringlist_new();
 	RC_STRING *service;
 
 	dt = get_deptype(depinfo, "providedby");
-	if (! dt)
+	if (!dt)
 		return providers;
 
 	/* If we are stopping then all depends are true, regardless of state.
 	   This is especially true for net services as they could force a restart
 	   of the local dns resolver which may depend on net. */
-	if (options & RC_DEP_STOP)
-	{
+	if (options & RC_DEP_STOP) {
 		TAILQ_FOREACH(service, dt->services, entries)
 			rc_stringlist_add(providers, service->value);
 		return providers;
@@ -282,16 +267,13 @@ static RC_STRINGLIST *get_provided (const RC_DEPINFO *depinfo,
 
 	/* If we're strict or startng, then only use what we have in our
 	 * runlevel and bootlevel. If we starting then check cold-plugged too. */
-	if (options & RC_DEP_STRICT || options & RC_DEP_START)
-	{
-
+	if (options & RC_DEP_STRICT || options & RC_DEP_START) {
 		TAILQ_FOREACH(service, dt->services, entries)
 			if (rc_service_in_runlevel(service->value, runlevel) ||
 			    rc_service_in_runlevel(service->value, bootlevel) ||
 			    (options & RC_DEP_START &&
 			     rc_service_state(service->value) & RC_SERVICE_COLDPLUGGED))
 				rc_stringlist_add(providers, service->value);
-
 		if (TAILQ_FIRST(providers))
 			return providers;
 	}
@@ -313,44 +295,44 @@ static RC_STRINGLIST *get_provided (const RC_DEPINFO *depinfo,
 	}
 
 	/* Anything in the runlevel has to come first */
-	if (get_provided1 (runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTED))
+	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTED))
 	{ DO }
-	if (get_provided1 (runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTING))
+	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTING))
 		return providers;
-	if (get_provided1 (runlevel, providers, dt, runlevel, false, RC_SERVICE_STOPPED))
+	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STOPPED))
 		return providers;
 
 	/* Check coldplugged services */
-	if (get_provided1 (runlevel, providers, dt, NULL, true, RC_SERVICE_STARTED))
+	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STARTED))
 	{ DO }
-	if (get_provided1 (runlevel, providers, dt, NULL, true, RC_SERVICE_STARTING))
+	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STARTING))
 		return providers;
 
 	/* Check bootlevel if we're not in it */
-	if (bootlevel && strcmp (runlevel, bootlevel) != 0)
+	if (bootlevel && strcmp(runlevel, bootlevel) != 0)
 	{
-		if (get_provided1 (runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTED))
+		if (get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTED))
 		{ DO }
-		if (get_provided1 (runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTING))
+		if (get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTING))
 			return providers;
 	}
 
 	/* Check coldplugged services */
-	if (get_provided1 (runlevel, providers, dt, NULL, true, RC_SERVICE_STOPPED))
+	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STOPPED))
 	{ DO }
 
 	/* Check manually started */
-	if (get_provided1 (runlevel, providers, dt, NULL, false, RC_SERVICE_STARTED))
+	if (get_provided1(runlevel, providers, dt, NULL, false, RC_SERVICE_STARTED))
 	{ DO }
-	if (get_provided1 (runlevel, providers, dt, NULL, false, RC_SERVICE_STARTING))
+	if (get_provided1(runlevel, providers, dt, NULL, false, RC_SERVICE_STARTING))
 		return providers;
 
 	/* Nothing started then. OK, lets get the stopped services */
-	if (get_provided1 (runlevel, providers, dt, runlevel, false, RC_SERVICE_STOPPED))
+	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STOPPED))
 		return providers;
 
-	if (bootlevel && (strcmp (runlevel, bootlevel) != 0)
-	    && (get_provided1 (runlevel, providers, dt, bootlevel, false, RC_SERVICE_STOPPED)))
+	if (bootlevel && (strcmp(runlevel, bootlevel) != 0)
+	    && (get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STOPPED)))
 		return providers;
 
 	/* Still nothing? OK, list all services */
@@ -360,12 +342,13 @@ static RC_STRINGLIST *get_provided (const RC_DEPINFO *depinfo,
 	return providers;
 }
 
-static void visit_service(const RC_DEPTREE *deptree,
-			  const RC_STRINGLIST *types,
-			  RC_STRINGLIST **sorted,
-			  RC_STRINGLIST *visited,
-			  const RC_DEPINFO *depinfo,
-			  const char *runlevel, int options)
+static void
+visit_service(const RC_DEPTREE *deptree,
+	      const RC_STRINGLIST *types,
+	      RC_STRINGLIST **sorted,
+	      RC_STRINGLIST *visited,
+	      const RC_DEPINFO *depinfo,
+	      const char *runlevel, int options)
 {
 	RC_STRING *type;
 	RC_STRING *service;
@@ -379,7 +362,6 @@ static void visit_service(const RC_DEPTREE *deptree,
 	TAILQ_FOREACH(type, visited, entries)
 		if (strcmp(type->value, depinfo->service) == 0)
 			return;
-
 	/* Add ourselves as a visited service */
 	rc_stringlist_add(visited, depinfo->service);
 
@@ -389,10 +371,10 @@ static void visit_service(const RC_DEPTREE *deptree,
 			continue;
 
 		TAILQ_FOREACH(service, dt->services, entries) {
-			if (! options & RC_DEP_TRACE ||
+			if (!(options & RC_DEP_TRACE) ||
 			    strcmp(type->value, "iprovide") == 0)
 			{
-				if (! *sorted)
+				if (!*sorted)
 					*sorted = rc_stringlist_new();
 				rc_stringlist_add(*sorted, service->value);
 				continue;
@@ -445,16 +427,17 @@ static void visit_service(const RC_DEPTREE *deptree,
 	/* We've visited everything we need, so add ourselves unless we
 	   are also the service calling us or we are provided by something */
 	svcname = getenv("RC_SVCNAME");
-	if (! svcname || strcmp(svcname, depinfo->service) != 0)
-		if (! get_deptype(depinfo, "providedby")) {
-			if (! *sorted)
+	if (!svcname || strcmp(svcname, depinfo->service) != 0)
+		if (!get_deptype(depinfo, "providedby")) {
+			if (!*sorted)
 				*sorted = rc_stringlist_new();
 			rc_stringlist_add(*sorted, depinfo->service);
 		}
 }
 
-RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *deptree,
-				 const char *service, const char *type)
+RC_STRINGLIST *
+rc_deptree_depend(const RC_DEPTREE *deptree,
+		  const char *service, const char *type)
 {
 	RC_DEPINFO *di;
 	RC_DEPTYPE *dt;
@@ -462,7 +445,7 @@ RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *deptree,
 	RC_STRING *svc;
 
 	if (!(di = get_depinfo(deptree, service)) ||
-	    ! (dt = get_deptype(di, type)))
+	    !(dt = get_deptype(di, type)))
 	{
 		errno = ENOENT;
 		return NULL;
@@ -472,15 +455,15 @@ RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *deptree,
 	svcs = rc_stringlist_new();
 	TAILQ_FOREACH(svc, dt->services, entries)
 		rc_stringlist_add(svcs, svc->value);
-
 	return svcs;
 }
 librc_hidden_def(rc_deptree_depend)
 
-RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *deptree,
-				  const RC_STRINGLIST *types,
-				  const RC_STRINGLIST *services,
-				  const char *runlevel, int options)
+RC_STRINGLIST *
+rc_deptree_depends(const RC_DEPTREE *deptree,
+		   const RC_STRINGLIST *types,
+		   const RC_STRINGLIST *services,
+		   const char *runlevel, int options)
 {
 	RC_STRINGLIST *sorted = NULL;
 	RC_STRINGLIST *visited = rc_stringlist_new();
@@ -488,11 +471,10 @@ RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *deptree,
 	const RC_STRING *service;
 
 	bootlevel = getenv("RC_BOOTLEVEL");
-	if (! bootlevel)
+	if (!bootlevel)
 		bootlevel = RC_LEVEL_BOOT;
-
 	TAILQ_FOREACH(service, services, entries) {
-		if (! (di = get_depinfo(deptree, service->value))) {
+		if (!(di = get_depinfo(deptree, service->value))) {
 			errno = ENOENT;
 			continue;
 		}
@@ -500,14 +482,13 @@ RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *deptree,
 			visit_service(deptree, types, &sorted, visited,
 				      di, runlevel, options);
 	}
-
 	rc_stringlist_free(visited);
 	return sorted;
 }
 librc_hidden_def(rc_deptree_depends)
 
-RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
-				const char *runlevel, int options)
+RC_STRINGLIST *
+rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 {
 	RC_STRINGLIST *list;
 	RC_STRINGLIST *list2;
@@ -519,9 +500,9 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 		bootlevel = RC_LEVEL_BOOT;
 
 	/* When shutting down, list all running services */
-	if (strcmp (runlevel, RC_LEVEL_SINGLE) == 0 ||
-	    strcmp (runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-	    strcmp (runlevel, RC_LEVEL_REBOOT) == 0)
+	if (strcmp(runlevel, RC_LEVEL_SINGLE) == 0 ||
+	    strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+	    strcmp(runlevel, RC_LEVEL_REBOOT) == 0)
 	{
 		list = rc_services_in_state(RC_SERVICE_STARTED);
 		list2 = rc_services_in_state(RC_SERVICE_INACTIVE);
@@ -553,7 +534,7 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 		}
 
 		/* If we're not the boot runlevel then add that too */
-		if (strcmp (runlevel, bootlevel) != 0) {
+		if (strcmp(runlevel, bootlevel) != 0) {
 			list2 = rc_services_in_runlevel (bootlevel);
 			if (list2) {
 				if (list) {
@@ -571,17 +552,16 @@ RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *deptree,
 	rc_stringlist_add(types, "ineed");
 	rc_stringlist_add(types, "iuse");
 	rc_stringlist_add(types, "iafter");
-
 	services = rc_deptree_depends(deptree, types, list, runlevel,
 				      RC_DEP_STRICT | RC_DEP_TRACE | options);
 	rc_stringlist_free(list);
 	rc_stringlist_free(types);
-
 	return services;
 }
 librc_hidden_def(rc_deptree_order)
 
-bool rc_newer_than(const char *source, const char *target)
+bool
+rc_newer_than(const char *source, const char *target)
 {
 	struct stat buf;
 	time_t mtime;
@@ -600,12 +580,10 @@ bool rc_newer_than(const char *source, const char *target)
 	   such as broken symlinks */
 	if (stat(target, &buf) != 0)
 		return true;
-
 	if (mtime < buf.st_mtime)
 		return false;
-
 	/* If not a dir then reset errno */
-	if (! (dp = opendir(target))) {
+	if (!(dp = opendir(target))) {
 		errno = serrno;
 		return true;
 	}
@@ -614,14 +592,12 @@ bool rc_newer_than(const char *source, const char *target)
 	while ((d = readdir(dp))) {
 		if (d->d_name[0] == '.')
 			continue;
-
 		snprintf(path, sizeof(path), "%s/%s", target, d->d_name);
 		newer = rc_newer_than(source, path);
 		if (! newer)
 			break;
 	}
 	closedir(dp);
-
 	return newer;
 }
 librc_hidden_def(rc_newer_than)
@@ -658,7 +634,8 @@ static const char *const depdirs[] =
 	NULL
 };
 
-bool rc_deptree_update_needed(void)
+bool
+rc_deptree_update_needed(void)
 {
 	bool newer = false;
 	RC_STRINGLIST *config;
@@ -672,22 +649,22 @@ bool rc_deptree_update_needed(void)
 
 	/* Quick test to see if anything we use has changed and we have
 	 * data in our deptree */
-	if (! existss(RC_DEPTREE_CACHE) ||
-	    ! rc_newer_than(RC_DEPTREE_CACHE, RC_INITDIR) ||
-	    ! rc_newer_than(RC_DEPTREE_CACHE, RC_CONFDIR) ||
+	if (!existss(RC_DEPTREE_CACHE) ||
+	    !rc_newer_than(RC_DEPTREE_CACHE, RC_INITDIR) ||
+	    !rc_newer_than(RC_DEPTREE_CACHE, RC_CONFDIR) ||
 #ifdef RC_PKG_INITDIR
-	    ! rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_INITDIR) ||
+	    !rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_INITDIR) ||
 #endif
 #ifdef RC_PKG_CONFDIR
-	    ! rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_CONFDIR) ||
+	    !rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_CONFDIR) ||
 #endif
 #ifdef RC_LOCAL_INITDIR
-	    ! rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_INITDIR) ||
+	    !rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_INITDIR) ||
 #endif
 #ifdef RC_LOCAL_CONFDIR
-	    ! rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR) ||
+	    !rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR) ||
 #endif
-	    ! rc_newer_than(RC_DEPTREE_CACHE, "/etc/rc.conf"))
+	    !rc_newer_than(RC_DEPTREE_CACHE, "/etc/rc.conf"))
 		return true;
 
 	/* Some init scripts dependencies change depending on config files
@@ -695,14 +672,13 @@ bool rc_deptree_update_needed(void)
 	config = rc_config_list(RC_DEPCONFIG);
 	if (config) {
 		TAILQ_FOREACH(s, config, entries) {
-			if (! rc_newer_than(RC_DEPTREE_CACHE, s->value)) {
+			if (!rc_newer_than(RC_DEPTREE_CACHE, s->value)) {
 				newer = true;
 				break;
 			}
 		}
 		rc_stringlist_free(config);
 	}
-
 	return newer;
 }
 librc_hidden_def(rc_deptree_update_needed)
@@ -715,7 +691,8 @@ librc_hidden_def(rc_deptree_update_needed)
    Phase 4 scans that depinfo object and puts in backlinks
    Phase 5 saves the depinfo object to disk
    */
-bool rc_deptree_update(void)
+bool
+rc_deptree_update(void)
 {
 	FILE *fp;
 	RC_DEPTREE *deptree;
@@ -745,30 +722,28 @@ bool rc_deptree_update(void)
 
 	/* Some init scripts need RC_LIBDIR to source stuff
 	   Ideally we should be setting our full env instead */
-	if (! getenv("RC_LIBDIR"))
+	if (!getenv("RC_LIBDIR"))
 		setenv("RC_LIBDIR", RC_LIBDIR, 0);
 
 	/* Phase 1 - source all init scripts and print dependencies */
-	if (! (fp = popen(GENDEP, "r")))
+	if (!(fp = popen(GENDEP, "r")))
 		return false;
 
 	deptree = xmalloc(sizeof(*deptree));
 	STAILQ_INIT(deptree);
-
 	config = rc_stringlist_new();
-
 	while ((rc_getline(&line, &len, fp)))
 	{
 		depends = line;
 		service = strsep(&depends, " ");
-		if (! service || ! *service)
+		if (!service || !*service)
 			continue;
 
 		type = strsep(&depends, " ");
-		if (! depinfo || strcmp(depinfo->service, service) != 0) {
+		if (!depinfo || strcmp(depinfo->service, service) != 0) {
 			deptype = NULL;
 			depinfo = get_depinfo(deptree, service);
-			if (! depinfo) {	
+			if (!depinfo) {	
 				depinfo = xmalloc(sizeof(*depinfo));
 				STAILQ_INIT(&depinfo->depends);
 				depinfo->service = xstrdup(service);
@@ -777,14 +752,14 @@ bool rc_deptree_update(void)
 		}
 		
 		/* We may not have any depends */
-		if (! type || ! depends)
+		if (!type || !depends)
 			continue;
 
 		/* Get the type */
 		if (strcmp(type, "config") != 0) {
-			if (! deptype || strcmp (deptype->type, type) != 0)
+			if (!deptype || strcmp(deptype->type, type) != 0)
 				deptype = get_deptype(depinfo, type);
-			if (! deptype) {
+			if (!deptype) {
 				deptype = xmalloc(sizeof(*deptype));
 				deptype->type = xstrdup(type);
 				deptype->services = rc_stringlist_new();
@@ -828,9 +803,9 @@ bool rc_deptree_update(void)
 					rc_stringlist_delete(dt->services, depend);
 			}
 			/* If we're after something, remove us from the before list */
-			if (strcmp (type, "iafter") == 0 ||
-			    strcmp (type, "ineed") == 0 ||
-			    strcmp (type, "iuse") == 0) {
+			if (strcmp(type, "iafter") == 0 ||
+			    strcmp(type, "ineed") == 0 ||
+			    strcmp(type, "iuse") == 0) {
 				if ((dt = get_deptype(depinfo, "ibefore")))
 					rc_stringlist_delete(dt->services, depend);
 			}
@@ -853,7 +828,7 @@ bool rc_deptree_update(void)
 		STAILQ_FOREACH_SAFE(depinfo, deptree, entries, depinfo_np)
 			if ((deptype = get_deptype(depinfo, "keyword")))
 				TAILQ_FOREACH(s, deptype->services, entries)
-					if (strcmp (s->value, nosys) == 0) {
+					if (strcmp(s->value, nosys) == 0) {
 						provide = get_deptype(depinfo, "iprovide");
 						STAILQ_REMOVE(deptree, depinfo, rc_depinfo, entries);
 						STAILQ_FOREACH(di, deptree, entries) {
@@ -862,7 +837,7 @@ bool rc_deptree_update(void)
 								if (provide)
 									TAILQ_FOREACH(s2, provide->services, entries)
 										rc_stringlist_delete(dt->services, s2->value);
-								if (! TAILQ_FIRST(dt->services)) {
+								if (!TAILQ_FIRST(dt->services)) {
 									STAILQ_REMOVE(&di->depends, dt, rc_deptype, entries);
 									free(dt->type);
 									free(dt->services);
@@ -871,7 +846,7 @@ bool rc_deptree_update(void)
 							}
 						}
 					}
-		free (nosys);
+		free(nosys);
 	}
 
 	/* Phase 3 - add our providers to the tree */
@@ -883,7 +858,7 @@ bool rc_deptree_update(void)
 				STAILQ_FOREACH(di, providers, entries)
 					if (strcmp(di->service, s->value) == 0)
 						break;
-				if (! di) {
+				if (!di) {
 					di = xmalloc(sizeof(*di));
 					STAILQ_INIT(&di->depends);
 					di->service = xstrdup(s->value);
@@ -897,11 +872,11 @@ bool rc_deptree_update(void)
 	STAILQ_FOREACH(depinfo, deptree, entries)
 		for (i = 0; deppairs[i].depend; i++) {
 			deptype = get_deptype(depinfo, deppairs[i].depend);
-			if (! deptype)
+			if (!deptype)
 				continue;
 			TAILQ_FOREACH(s, deptype->services, entries) {
 				di = get_depinfo(deptree, s->value);
-				if (! di) {
+				if (!di) {
 					if (strcmp (deptype->type, "ineed") == 0)
 						fprintf (stderr,
 							 "Service `%s' needs non"
@@ -911,7 +886,7 @@ bool rc_deptree_update(void)
 				}
 
 				dt = get_deptype(di, deppairs[i].addto);
-				if (! dt) {
+				if (!dt) {
 					dt = xmalloc(sizeof(*dt));
 					dt->type = xstrdup(deppairs[i].addto);
 					dt->services = rc_stringlist_new();
@@ -967,7 +942,6 @@ bool rc_deptree_update(void)
 	}
 
 	rc_deptree_free(deptree);
-
 	return retval;
 }
 librc_hidden_def(rc_deptree_update)
