@@ -178,10 +178,15 @@ rc_deptree_load(void)
 librc_hidden_def(rc_deptree_load)
 
 static bool
-valid_service(const char *runlevel, const char *service)
+valid_service(const char *runlevel, const char *service, const char *type)
 {
-	RC_SERVICE state = rc_service_state(service);
+	RC_SERVICE state;
+	
+	if (strcmp(type, "ineed") == 0 ||
+	    strcmp(type, "needsme") == 0)
+		return true;
 
+	state = rc_service_state(service);
 	return ((strcmp(runlevel, bootlevel) != 0 &&
 		 rc_service_in_runlevel(service, bootlevel)) ||
 		rc_service_in_runlevel(service, runlevel) ||
@@ -387,18 +392,12 @@ visit_service(const RC_DEPTREE *deptree,
 			if (TAILQ_FIRST(provided)) {
 				TAILQ_FOREACH(p, provided, entries) {
 					di = get_depinfo(deptree, p->value);
-					if (di &&
-					    (strcmp(type->value, "ineed") == 0 ||
-					     strcmp(type->value, "needsme") == 0 ||
-					     valid_service(runlevel, di->service)))
+					if (di && valid_service(runlevel, di->service, type->value))
 						visit_service(deptree, types, sorted, visited, di,
 							      runlevel, options | RC_DEP_TRACE);
 				}
 			}
-			else if (di &&
-				 (strcmp(type->value, "ineed") == 0 ||
-				  strcmp(type->value, "needsme") == 0 ||
-				  valid_service(runlevel, service->value)))
+			else if (di && valid_service(runlevel, service->value, type->value))
 				visit_service(deptree, types, sorted, visited, di,
 					      runlevel, options | RC_DEP_TRACE);
 
