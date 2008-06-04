@@ -35,6 +35,7 @@
 #define SYSLOG_NAMES
 
 #include <sys/types.h>
+#include <sys/time.h>
 
 #include <errno.h>
 #include <ctype.h>
@@ -45,6 +46,7 @@
 #include <signal.h>
 #include <string.h>
 #include <syslog.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "builtins.h"
