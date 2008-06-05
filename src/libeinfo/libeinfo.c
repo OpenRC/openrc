@@ -575,26 +575,6 @@ ecolor(ECOLOR color)
 	setenv("EINFO_LASTCMD", _cmd, 1); \
 }
 
-#define EINFOVN(_file, _color) \
-{ \
-	char *_e = getenv("EINFO_LASTCMD"); \
-	if (_e && !colour_terminal(_file) && strcmp(_e, "ewarn") != 0 && \
-	    _e[strlen (_e) - 1] == 'n') \
-	fprintf(_file, "\n"); \
-	if (_eprefix) \
-	fprintf(_file, "%s%s%s|", _ecolor(_file, _color), _eprefix, _ecolor(_file, ECOLOR_NORMAL)); \
-	fprintf(_file, " %s*%s ", _ecolor(_file, _color), _ecolor(_file, ECOLOR_NORMAL)); \
-	retval += _eindent(_file); \
-	{ \
-		va_list _ap; \
-		va_copy(_ap, ap); \
-		retval += vfprintf(_file, fmt, _ap) + 3; \
-		va_end(_ap); \
-	} \
-	if (colour_terminal(_file)) \
-	fprintf(_file, "%s", flush); \
-}
-
 static int
 _einfo(FILE *f, ECOLOR color, const char *__EINFO_RESTRICT fmt, va_list va)
 
