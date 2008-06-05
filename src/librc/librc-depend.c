@@ -182,7 +182,8 @@ valid_service(const char *runlevel, const char *service, const char *type)
 {
 	RC_SERVICE state;
 	
-	if (strcmp(type, "ineed") == 0 ||
+	if (!runlevel ||
+	    strcmp(type, "ineed") == 0 ||
 	    strcmp(type, "needsme") == 0)
 		return true;
 
@@ -251,7 +252,7 @@ get_provided1(const char *runlevel, RC_STRINGLIST *providers,
    provided dependancy can change depending on runlevel state.
    */
 static RC_STRINGLIST *
-get_provided (const RC_DEPINFO *depinfo, const char *runlevel, int options)
+get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 {
 	RC_DEPTYPE *dt;
 	RC_STRINGLIST *providers = rc_stringlist_new();
@@ -682,42 +683,30 @@ rc_deptree_update_needed(void)
 }
 librc_hidden_def(rc_deptree_update_needed)
 
-/* This is a 5 phase operation
+/* This is a 6 phase operation
    Phase 1 is a shell script which loads each init script and config in turn
    and echos their dependency info to stdout
    Phase 2 takes that and populates a depinfo object with that data
    Phase 3 adds any provided services to the depinfo object
    Phase 4 scans that depinfo object and puts in backlinks
-   Phase 5 saves the depinfo object to disk
+   Phase 5 removes broken before dependencies
+   Phase 6 saves the depinfo object to disk
    */
 bool
 rc_deptree_update(void)
 {
 	FILE *fp;
-	RC_DEPTREE *deptree;
-	RC_DEPTREE *providers;
-	RC_DEPINFO *depinfo = NULL;
-	RC_DEPINFO *depinfo_np;
-	RC_DEPINFO *di;
-	RC_DEPTYPE *deptype = NULL;
-	RC_DEPTYPE *dt;
-	RC_DEPTYPE *dt_np;
-	RC_STRINGLIST *config;
-	RC_STRING *s;
-	RC_STRING *s2;
-	RC_DEPTYPE *provide;
+	RC_DEPTREE *deptree, *providers;
+	RC_DEPINFO *depinfo = NULL, *depinfo_np, *di;
+	RC_DEPTYPE *deptype = NULL, *dt_np, *dt, *provide;
+	RC_STRINGLIST *config, *types, *sorted, *visited;
+	RC_STRING *s, *s2, *s2_np, *s3, *s4;
 	char *line = NULL;
 	size_t len = 0;
-	char *depend;
-	char *depends;
-	char *service;
-	char *type;
-	size_t i;
-	size_t k;
-	size_t l;
-	int retval = true;
+	char *depend, *depends, *service, *type, *nosys;
+	size_t i, k, l;
+	bool retval = true;
 	const char *sys = rc_sys();
-	char *nosys;
 
 	/* Some init scripts need RC_LIBDIR to source stuff
 	   Ideally we should be setting our full env instead */
@@ -876,7 +865,7 @@ rc_deptree_update(void)
 			TAILQ_FOREACH(s, deptype->services, entries) {
 				di = get_depinfo(deptree, s->value);
 				if (!di) {
-					if (strcmp (deptype->type, "ineed") == 0)
+					if (strcmp(deptype->type, "ineed") == 0)
 						fprintf (stderr,
 							 "Service `%s' needs non"
 							 " existant service `%s'\n",
@@ -895,13 +884,65 @@ rc_deptree_update(void)
 			}
 		}
 
-	/* Phase 5 - save to disk
+
+	/* Phase 5 - Remove broken before directives */
+	types = rc_stringlist_new();
+	rc_stringlist_add(types, "ineed");
+	rc_stringlist_add(types, "iuse");
+	rc_stringlist_add(types, "iafter");
+	STAILQ_FOREACH(depinfo, deptree, entries) {
+		deptype = get_deptype(depinfo, "ibefore");
+		if (!deptype)
+			continue;
+		sorted = NULL;
+		visited = rc_stringlist_new();
+		visit_service(deptree, types, &sorted, visited, depinfo,
+			      NULL, 0);
+		rc_stringlist_free(visited);
+		if (!sorted)
+			continue;
+		TAILQ_FOREACH_SAFE(s2, deptype->services, entries, s2_np) {
+			TAILQ_FOREACH(s3, sorted, entries) {
+				di = get_depinfo(deptree, s3->value);
+				if (!di)
+					continue;
+				if (strcmp(s2->value, s3->value) == 0) {
+					dt = get_deptype(di, "iafter");
+					if (dt)
+						rc_stringlist_delete(dt->services, depinfo->service);
+					break;
+				}
+				dt = get_deptype(di, "iprovide");
+				if (!dt)
+					continue;
+				TAILQ_FOREACH(s4, dt->services, entries) {
+					if (strcmp(s4->value, s2->value) == 0)
+						break;
+				}
+				if (s4) {
+					di = get_depinfo(deptree, s4->value);
+					if (di) {
+						dt = get_deptype(di, "iafter");
+						if (dt)
+							rc_stringlist_delete(dt->services, depinfo->service);
+					}
+					break;
+				}
+			}
+			if (s3)
+				rc_stringlist_delete(deptype->services, s2->value);
+		}
+		rc_stringlist_free(sorted);
+	}
+	rc_stringlist_free(types);
+
+	/* Phase 6 - save to disk
 	   Now that we're purely in C, do we need to keep a shell parseable file?
 	   I think yes as then it stays human readable
 	   This works and should be entirely shell parseable provided that depend
 	   names don't have any non shell variable characters in
 	   */
-	if ((fp = fopen (RC_DEPTREE_CACHE, "w"))) {
+	if ((fp = fopen(RC_DEPTREE_CACHE, "w"))) {
 		i = 0;
 		STAILQ_FOREACH(depinfo, deptree, entries) {
 			fprintf(fp, "depinfo_%zu_service='%s'\n",
@@ -935,11 +976,11 @@ rc_deptree_update(void)
 				RC_DEPCONFIG, strerror(errno));
 			retval = false;
 		}
-		rc_stringlist_free (config);
 	} else {
 		unlink(RC_DEPCONFIG);
 	}
 
+	rc_stringlist_free(config);
 	rc_deptree_free(deptree);
 	return retval;
 }
