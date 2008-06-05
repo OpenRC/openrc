@@ -35,7 +35,6 @@ const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #ifdef __FreeBSD__
 #include <sys/sysctl.h>
 #endif
-#include <signal.h>
 
 #define RC_RUNLEVEL	RC_SVCDIR "/softlevel"
 
