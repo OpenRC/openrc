@@ -199,7 +199,8 @@ static const char *const color_terms[] = {
 /* strlcat and strlcpy are nice, shame glibc does not define them */
 #ifdef __GLIBC__
 #  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
-static size_t strlcat(char *dst, const char *src, size_t size)
+static size_t
+strlcat(char *dst, const char *src, size_t size)
 {
 	char *d = dst;
 	const char *s = src;
@@ -226,18 +227,19 @@ static size_t strlcat(char *dst, const char *src, size_t size)
 	return dst_n + (s - src);
 }
 
-static size_t strlcpy(char *dst, const char *src, size_t size)
+static size_t
+strlcpy(char *dst, const char *src, size_t size)
 {
 	const char *s = src;
 	size_t n = size;
 
 	if (n && --n)
 		do {
-			if (! (*dst++ = *src++))
+			if (!(*dst++ = *src++))
 				break;
 		} while (--n);
 
-	if (! n) {
+	if (!n) {
 		if (size)
 			*dst = '\0';
 		while (*src++);
@@ -248,9 +250,10 @@ static size_t strlcpy(char *dst, const char *src, size_t size)
 #  endif
 #endif
 
-static bool yesno(const char *value)
+static bool
+yesno(const char *value)
 {
-	if (! value) {
+	if (!value) {
 		errno = ENOENT;
 		return false;
 	}
@@ -272,7 +275,8 @@ static bool yesno(const char *value)
 	return false;
 }
 
-static bool noyes(const char *value)
+static bool
+noyes(const char *value)
 {
 	int serrno = errno;
 	bool retval;
@@ -280,26 +284,29 @@ static bool noyes(const char *value)
 	errno = 0;
 	retval = yesno(value);
 	if (errno == 0) {
-		retval = ! retval;
+		retval = !retval;
 		errno = serrno;
 	}
 
 	return retval;
 }
 
-static bool is_quiet(void)
+static bool
+is_quiet(void)
 {
 	return yesno(getenv("EINFO_QUIET"));
 }
 
-static bool is_verbose(void)
+static bool
+is_verbose(void)
 {
 	return yesno(getenv ("EINFO_VERBOSE"));
 }
 
 /* Fake tgoto call - very crapy, but works for our needs */
 #ifndef HAVE_TERMCAP
-static char *tgoto(const char *cap, int a, int b)
+static char *
+tgoto(const char *cap, int a, int b)
 {
 	static char buf[20];
 
@@ -308,22 +315,22 @@ static char *tgoto(const char *cap, int a, int b)
 }
 #endif
 
-static bool colour_terminal(FILE * __EINFO_RESTRICT f)
+static bool
+colour_terminal(FILE * __EINFO_RESTRICT f)
 {
 	static int in_colour = -1;
-	char *e;
+	char *e, *ee, *end, *d, *p;
 	int c;
-	const char *_af = NULL;
-	const char *_ce = NULL;
-	const char *_ch = NULL;
-	const char *_md = NULL;
-	const char *_me = NULL;
-	const char *_up = NULL;
+	const char *_af = NULL, *_ce = NULL, *_ch = NULL;
+	const char *_md = NULL, *_me = NULL, *_up = NULL;
+	const char *bold;
 	char tmp[100];
-	char *p;
 	unsigned int i = 0;
+#ifdef HAVE_TERMCAP
+	char *bp;
+#endif
 
-	if (f && ! isatty(fileno(f)))
+	if (f && !isatty(fileno(f)))
 		return false;
 
 	if (noyes(getenv("EINFO_COLOR")))
@@ -335,26 +342,23 @@ static bool colour_terminal(FILE * __EINFO_RESTRICT f)
 		return true;
 
 	term_is_cons25 = false;
-
-	if (! term) {
+	if (!term) {
 		term = getenv("TERM");
-		if (! term)
+		if (!term)
 			return false;
 	}
-
 	if (strcmp(term, "cons25") == 0)
 		term_is_cons25 = true;
 
 #ifdef HAVE_TERMCAP
 	/* Check termcap to see if we can do colour or not */
 	if (tgetent(termcapbuf, term) == 1) {
-		char *bp = tcapbuf;
-
+		bp = tcapbuf;
 		_af = tgetstr("AF", &bp);
 		_ce = tgetstr("ce", &bp);
 		_ch = tgetstr("ch", &bp);
 		/* Our ch use also works with RI .... for now */
-		if (! _ch)
+		if (!_ch)
 			_ch = tgetstr("RI", &bp);
 		_md = tgetstr("md", &bp);
 		_me = tgetstr("me", &bp);
@@ -377,29 +381,29 @@ static bool colour_terminal(FILE * __EINFO_RESTRICT f)
 			return false;
 		}
 #endif
-		if (! _af)
+		if (!_af)
 			_af = AF;
-		if (! _ce)
+		if (!_ce)
 			_ce = CE;
-		if (! _ch)
+		if (!_ch)
 			_ch = CH;
-		if (! _md)
+		if (!_md)
 			_md = MD;
-		if (! _me)
+		if (!_me)
 			_me = ME;
-		if (! _up)
+		if (!_up)
 			_up = UP;
 #ifdef HAVE_TERMCAP
 	}
 
-	if (! _af || ! _ce || ! _me || !_md || ! _up) {
+	if (!_af || !_ce || !_me || !_md || !_up) {
 		in_colour = 0;
 		return false;
 	}
 
 	/* Many termcap databases don't have ch or RI even though they
 	 * do work */
-	if (! _ch)
+	if (!_ch)
 		_ch = CH;
 #endif
 
@@ -407,33 +411,28 @@ static bool colour_terminal(FILE * __EINFO_RESTRICT f)
 	p = ebuffer;
 	for (i = 0; i < sizeof(ecolors) / sizeof(ecolors[0]); i++) {
 		tmp[0] = '\0';
-
 		if (ecolors[i].name) {
-			const char *bold = _md;
+			bold = _md;
 			c = ecolors[i].def;
 
 			/* See if the user wants to override the colour
 			 * We use a :col;bold: format like 2;1: for bold green
 			 * and 1;0: for a normal red */
 			if ((e = getenv("EINFO_COLOR"))) {
-				char *ee = strstr(e, ecolors[i].name);
-
+				ee = strstr(e, ecolors[i].name);
 				if (ee)
 					ee += strlen(ecolors[i].name);
 
 				if (ee && *ee == '=') {
-					char *d = strdup(ee + 1);
+					d = strdup(ee + 1);
 					if (d) {
-						char *end = strchr(d, ':');
+						end = strchr(d, ':');
 						if (end)
 							*end = '\0';
-
 						c = atoi(d);
-
 						end = strchr(d, ';');
 						if (end && *++end == '0')
 							bold = _me;
-
 						free(d);
 					}
 				}
@@ -460,7 +459,8 @@ static bool colour_terminal(FILE * __EINFO_RESTRICT f)
 	return true;
 }
 
-static int get_term_columns(FILE * __EINFO_RESTRICT stream)
+static int
+get_term_columns(FILE * __EINFO_RESTRICT stream)
 {
 	struct winsize ws;
 	char *env = getenv("COLUMNS");
@@ -469,7 +469,7 @@ static int get_term_columns(FILE * __EINFO_RESTRICT stream)
 
 	if (env) {
 		i = strtoimax(env, &p, 10);
-		if (! *p)
+		if (!*p)
 			return i;
 	}
 
@@ -479,13 +479,15 @@ static int get_term_columns(FILE * __EINFO_RESTRICT stream)
 	return DEFAULT_COLS;
 }
 
-void eprefix(const char *__EINFO_RESTRICT prefix)
+void
+eprefix(const char *__EINFO_RESTRICT prefix)
 {
 	_eprefix = prefix;
 }
 hidden_def(eprefix)
 
-static void elogv(int level, const char *__EINFO_RESTRICT fmt, va_list ap)
+static void
+elogv(int level, const char *__EINFO_RESTRICT fmt, va_list ap)
 {
 	char *e = getenv("EINFO_LOG");
 	va_list apc;
@@ -500,7 +502,8 @@ static void elogv(int level, const char *__EINFO_RESTRICT fmt, va_list ap)
 	}
 }
 
-void elog(int level, const char *__EINFO_RESTRICT fmt, ...)
+void
+elog(int level, const char *__EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
@@ -510,7 +513,8 @@ void elog(int level, const char *__EINFO_RESTRICT fmt, ...)
 }
 hidden_def(elog)
 
-static int _eindent(FILE * __EINFO_RESTRICT stream)
+static int
+_eindent(FILE * __EINFO_RESTRICT stream)
 {
 	char *env = getenv("EINFO_INDENT");
 	int amount = 0;
@@ -525,7 +529,7 @@ static int _eindent(FILE * __EINFO_RESTRICT stream)
 			amount = INDENT_MAX;
 
 		if (amount > 0)
-			memset(indent, ' ', (size_t) amount);
+			memset(indent, ' ', (size_t)amount);
 	}
 
 	/* Terminate it */
@@ -533,32 +537,32 @@ static int _eindent(FILE * __EINFO_RESTRICT stream)
 	return fprintf(stream, "%s", indent);
 }
 
-static const char *_ecolor(FILE * __EINFO_RESTRICT f, ECOLOR color)
+static const char *
+_ecolor(FILE * __EINFO_RESTRICT f, ECOLOR color)
 {
 	unsigned int i;
 
-	if (! colour_terminal(f))
+	if (!colour_terminal(f))
 		return "";
 
-	for (i = 0; i < sizeof(ecolors) / sizeof(ecolors[0]); i++) {
+	for (i = 0; i < sizeof(ecolors) / sizeof(ecolors[0]); i++)
 		if (ecolors[i].color == color)
 			return ecolors_str[i];
-	}
-
 	return "";
 }
 hidden_def(ecolor)
 
-const char *ecolor(ECOLOR color)
+const char *
+ecolor(ECOLOR color)
 {
 	FILE *f = stdout;
 
 	/* Try and guess a valid tty */
-	if (! isatty(fileno(f))) {
+	if (!isatty(fileno(f))) {
 		f = stderr;
-		if (! isatty(fileno(f))) {
+		if (!isatty(fileno(f))) {
 			f = stdin;
-			if (! isatty(fileno(f)))
+			if (!isatty(fileno(f)))
 				f = NULL;
 		}
 	}
@@ -574,7 +578,7 @@ const char *ecolor(ECOLOR color)
 #define EINFOVN(_file, _color) \
 { \
 	char *_e = getenv("EINFO_LASTCMD"); \
-	if (_e && ! colour_terminal(_file) && strcmp(_e, "ewarn") != 0 && \
+	if (_e && !colour_terminal(_file) && strcmp(_e, "ewarn") != 0 && \
 	    _e[strlen (_e) - 1] == 'n') \
 	fprintf(_file, "\n"); \
 	if (_eprefix) \
@@ -591,67 +595,69 @@ const char *ecolor(ECOLOR color)
 	fprintf(_file, "%s", flush); \
 }
 
-static int _einfovn(const char *__EINFO_RESTRICT fmt, va_list ap)
+static int
+_einfo(FILE *f, ECOLOR color, const char *__EINFO_RESTRICT fmt, va_list va)
+
 {
 	int retval = 0;
+	char *last = getenv("EINFO_LASTCMD");
+	va_list ap;
 
-	EINFOVN(stdout, ECOLOR_GOOD);
+	if (last &&
+	    !colour_terminal(f) &&
+	    strcmp(last, "ewarn") != 0 &&
+	    last[strlen(last) - 1] == 'n')
+		fprintf(f, "\n");
+	if (_eprefix)
+		fprintf(f, "%s%s%s|", _ecolor(f, color), _eprefix, _ecolor(f, ECOLOR_NORMAL));
+	fprintf(f, " %s*%s ", _ecolor(f, color), _ecolor(f, ECOLOR_NORMAL));
+	retval += _eindent(f);
+	va_copy(ap, va);
+	retval += vfprintf(f, fmt, ap) + 3;
+	va_end(ap); \
+	if (colour_terminal(f))
+		fprintf(f, "%s", flush);
 	return retval;
 }
 
-static int _ewarnvn(const char *__EINFO_RESTRICT fmt, va_list ap)
-{
-	int retval = 0;
+#define _einfovn(fmt, ap) _einfo(stdout, ECOLOR_GOOD, fmt, ap)
+#define _ewarnvn(fmt, ap) _einfo(stderr, ECOLOR_WARN, fmt, ap)
+#define _eerrorvn(fmt, ap) _einfo(stderr, ECOLOR_BAD, fmt, ap)
 
-	EINFOVN(stderr, ECOLOR_WARN);
-	return retval;
-}
-
-static int _eerrorvn(const char *__EINFO_RESTRICT fmt, va_list ap)
-{
-	int retval = 0;
-
-	EINFOVN(stderr, ECOLOR_BAD);
-	return retval;
-}
-
-int einfon(const char *__EINFO_RESTRICT fmt, ...)
+int
+einfon(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_quiet())
+	if (!fmt || is_quiet())
 		return 0;
-
 	va_start(ap, fmt);
 	retval = _einfovn(fmt, ap);
 	va_end(ap);
-
 	LASTCMD("einfon");
-
 	return retval;
 }
 hidden_def(einfon)
 
-int ewarnn(const char *__EINFO_RESTRICT fmt, ...)
+int
+ewarnn(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_quiet())
+	if (!fmt || is_quiet())
 		return 0;
-
 	va_start(ap, fmt);
 	retval = _ewarnvn(fmt, ap);
 	va_end(ap);
-
 	LASTCMD("ewarnn");
-
 	return retval;
 }
 hidden_def(ewarnn)
 
-int eerrorn(const char *__EINFO_RESTRICT fmt, ...)
+int
+eerrorn(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -659,58 +665,53 @@ int eerrorn(const char *__EINFO_RESTRICT fmt, ...)
 	va_start(ap, fmt);
 	retval = _eerrorvn(fmt, ap);
 	va_end(ap);
-
 	LASTCMD("errorn");
-
 	return retval;
 }
 hidden_def(eerrorn)
 
-int einfo(const char *__EINFO_RESTRICT fmt, ...)
+int
+einfo(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_quiet())
+	if (!fmt || is_quiet())
 		return 0;
-
 	va_start(ap, fmt);
 	retval = _einfovn(fmt, ap);
 	retval += printf("\n");
 	va_end(ap);
-
 	LASTCMD("einfo");
-
 	return retval;
 }
 hidden_def(einfo)
 
-int ewarn(const char *__EINFO_RESTRICT fmt, ...)
+int
+ewarn(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_quiet())
+	if (!fmt || is_quiet())
 		return 0;
-
 	va_start(ap, fmt);
 	elogv(LOG_WARNING, fmt, ap);
 	retval = _ewarnvn(fmt, ap);
 	retval += fprintf(stderr, "\n");
 	va_end(ap);
-
 	LASTCMD("ewarn");
-
 	return retval;
 }
 hidden_def(ewarn)
 
-void ewarnx(const char *__EINFO_RESTRICT fmt, ...)
+void
+ewarnx(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (fmt && ! is_quiet()) {
+	if (fmt && !is_quiet()) {
 		va_start(ap, fmt);
 		elogv(LOG_WARNING, fmt, ap);
 		retval = _ewarnvn(fmt, ap);
@@ -721,27 +722,26 @@ void ewarnx(const char *__EINFO_RESTRICT fmt, ...)
 }
 hidden_def(ewarnx)
 
-int eerror(const char *__EINFO_RESTRICT fmt, ...)
+int
+eerror(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt)
+	if (!fmt)
 		return 0;
-
 	va_start(ap, fmt);
 	elogv(LOG_ERR, fmt, ap);
 	retval = _eerrorvn(fmt, ap);
 	va_end(ap);
 	retval += fprintf(stderr, "\n");
-
 	LASTCMD("eerror");
-
 	return retval;
 }
 hidden_def(eerror)
 
-void eerrorx(const char *__EINFO_RESTRICT fmt, ...)
+void
+eerrorx(const char *__EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
@@ -752,46 +752,43 @@ void eerrorx(const char *__EINFO_RESTRICT fmt, ...)
 		va_end(ap);
 		fprintf(stderr, "\n");
 	}
-
 	exit(EXIT_FAILURE);
 }
 hidden_def(eerrorx)
 
-int ebegin(const char *__EINFO_RESTRICT fmt, ...)
+int
+ebegin(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || is_quiet())
+	if (!fmt || is_quiet())
 		return 0;
-
 	va_start(ap, fmt);
 	retval = _einfovn(fmt, ap);
 	va_end(ap);
 	retval += printf(" ...");
 	if (colour_terminal(stdout))
 		retval += printf("\n");
-
 	LASTCMD("ebegin");
-
 	return retval;
 }
 hidden_def(ebegin)
 
-static void _eend(FILE * __EINFO_RESTRICT fp, int col, ECOLOR color,
-		  const char *msg)
+static void
+_eend(FILE * __EINFO_RESTRICT fp, int col, ECOLOR color, const char *msg)
 {
 	int i;
 	int cols;
 
-	if (! msg)
+	if (!msg)
 		return;
 
 	cols = get_term_columns(fp) - (strlen(msg) + 3);
 
 	/* cons25 is special - we need to remove one char, otherwise things
 	 * do not align properly at all. */
-	if (! term) {
+	if (!term) {
 		term = getenv("TERM");
 		if (term && strcmp(term, "cons25") == 0)
 			term_is_cons25 = true;
@@ -816,7 +813,8 @@ static void _eend(FILE * __EINFO_RESTRICT fp, int col, ECOLOR color,
 	}
 }
 
-static int _do_eend(const char *cmd, int retval, const char *__EINFO_RESTRICT fmt, va_list ap)
+static int
+_do_eend(const char *cmd, int retval, const char *__EINFO_RESTRICT fmt, va_list ap)
 {
 	int col = 0;
 	FILE *fp = stdout;
@@ -832,54 +830,51 @@ static int _do_eend(const char *cmd, int retval, const char *__EINFO_RESTRICT fm
 		col += fprintf(fp, "\n");
 		va_end(apc);
 	}
-
 	_eend(fp, col,
 	      retval == 0 ? ECOLOR_GOOD : ECOLOR_BAD,
 	      retval == 0 ? OK : NOT_OK);
 	return retval;
 }
 
-int eend(int retval, const char *__EINFO_RESTRICT fmt, ...)
+int
+eend(int retval, const char *__EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
 	if (is_quiet())
 		return retval;
-
 	va_start(ap, fmt);
 	_do_eend("eend", retval, fmt, ap);
 	va_end(ap);
-
 	LASTCMD("eend");
-
 	return retval;
 }
 hidden_def(eend)
 
-int ewend(int retval, const char *__EINFO_RESTRICT fmt, ...)
+int
+ewend(int retval, const char *__EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
 	if (is_quiet())
 		return retval;
-
 	va_start(ap, fmt);
 	_do_eend("ewend", retval, fmt, ap);
 	va_end(ap);
-
 	LASTCMD("ewend");
-
 	return retval;
 }
 hidden_def(ewend)
 
-void ebracket(int col, ECOLOR color, const char *msg)
+void
+ebracket(int col, ECOLOR color, const char *msg)
 {
 	_eend(stdout, col, color, msg);
 }
 hidden_def(ebracket)
 
-void eindent(void)
+void
+eindent(void)
 {
 	char *env = getenv("EINFO_INDENT");
 	int amount = 0;
@@ -891,11 +886,9 @@ void eindent(void)
 		if (errno != 0)
 			amount = 0;
 	}
-
 	amount += INDENT_WIDTH;
 	if (amount > INDENT_MAX)
 		amount = INDENT_MAX;
-
 	snprintf(num, 10, "%08d", amount);
 	setenv("EINFO_INDENT", num, 1);
 }
@@ -908,16 +901,14 @@ void eoutdent(void)
 	char num[10];
 	int serrno = errno;
 
-	if (! env)
+	if (!env)
 		return;
-
 	errno = 0;
 	amount = strtoimax(env, NULL, 0);
 	if (errno != 0)
 		amount = 0;
 	else
 		amount -= INDENT_WIDTH;
-
 	if (amount <= 0)
 		unsetenv("EINFO_INDENT");
 	else {
@@ -928,86 +919,79 @@ void eoutdent(void)
 }
 hidden_def(eoutdent)
 
-int einfovn(const char *__EINFO_RESTRICT fmt, ...)
+int
+einfovn(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || ! is_verbose())
+	if (!fmt || !is_verbose())
 		return 0;
-
 	va_start(ap, fmt);
 	retval = _einfovn(fmt, ap);
 	va_end(ap);
-
 	LASTCMD("einfovn");
-
 	return retval;
 }
 hidden_def(einfovn)
 
-int ewarnvn(const char *__EINFO_RESTRICT fmt, ...)
+int
+ewarnvn(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || ! is_verbose())
+	if (!fmt || !is_verbose())
 		return 0;
-
 	va_start(ap, fmt);
 	retval = _ewarnvn(fmt, ap);
 	va_end(ap);
-
 	LASTCMD("ewarnvn");
-
 	return retval;
 }
 hidden_def(ewarnvn)
 
-int einfov(const char *__EINFO_RESTRICT fmt, ...)
+int
+einfov(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || ! is_verbose())
+	if (!fmt || !is_verbose())
 		return 0;
-
 	va_start(ap, fmt);
 	retval = _einfovn(fmt, ap);
 	retval += printf("\n");
 	va_end(ap);
-
 	LASTCMD("einfov");
-
 	return retval;
 }
 hidden_def(einfov)
 
-int ewarnv(const char *__EINFO_RESTRICT fmt, ...)
+int
+ewarnv(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || ! is_verbose())
+	if (!fmt || !is_verbose())
 		return 0;
-
 	va_start(ap, fmt);
 	retval = _ewarnvn(fmt, ap);
 	retval += printf("\n");
 	va_end(ap);
-
 	LASTCMD("ewarnv");
-
 	return retval;
 }
 hidden_def(ewarnv)
 
-int ebeginv(const char *__EINFO_RESTRICT fmt, ...)
+int
+ebeginv(const char *__EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
 
-	if (! fmt || ! is_verbose())
+	if (!fmt || !is_verbose())
 		return 0;
 
 	va_start(ap, fmt);
@@ -1016,55 +1000,51 @@ int ebeginv(const char *__EINFO_RESTRICT fmt, ...)
 	if (colour_terminal(stdout))
 		retval += printf("\n");
 	va_end(ap);
-
 	LASTCMD("ebeginv");
-
 	return retval;
 }
 hidden_def(ebeginv)
 
-int eendv(int retval, const char *__EINFO_RESTRICT fmt, ...)
+int
+eendv(int retval, const char *__EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
-	if (! is_verbose())
+	if (!is_verbose())
 		return 0;
-
 	va_start(ap, fmt);
 	_do_eend("eendv", retval, fmt, ap);
 	va_end(ap);
-
 	LASTCMD("eendv");
-
 	return retval;
 }
 hidden_def(eendv)
 
-int ewendv(int retval, const char *__EINFO_RESTRICT fmt, ...)
+int
+ewendv(int retval, const char *__EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
-	if (! is_verbose())
+	if (!is_verbose())
 		return 0;
-
 	va_start(ap, fmt);
 	_do_eend("ewendv", retval, fmt, ap);
 	va_end(ap);
-
 	LASTCMD("ewendv");
-
 	return retval;
 }
 hidden_def(ewendv)
 
-void eindentv(void)
+void
+eindentv(void)
 {
 	if (is_verbose())
-		eindent ();
+		eindent();
 }
 hidden_def(eindentv)
 
-void eoutdentv(void)
+void
+eoutdentv(void)
 {
 	if (is_verbose())
 		eoutdent();
