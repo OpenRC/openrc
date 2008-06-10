@@ -792,7 +792,7 @@ static void svc_start(bool deps)
 						if (! tmplist)
 							tmplist = rc_stringlist_new();
 						rc_stringlist_add(tmplist, svc->value);
-					} else
+					} else if (!tmplist)
 						eerrorx("ERROR: cannot start %s as"
 							" %s would not start",
 							applet, svc->value);
