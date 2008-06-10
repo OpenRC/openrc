@@ -271,7 +271,7 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 		return providers;
 	}
 
-	/* If we're strict or startng, then only use what we have in our
+	/* If we're strict or starting, then only use what we have in our
 	 * runlevel and bootlevel. If we starting then check cold-plugged too. */
 	if (options & RC_DEP_STRICT || options & RC_DEP_START) {
 		TAILQ_FOREACH(service, dt->services, entries)
@@ -285,12 +285,15 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 	}
 
 	/* OK, we're not strict or there were no services in our runlevel.
-	   This is now where the logic gets a little fuzzy :)
-	   If there is >1 running service then we return NULL.
-	   We do this so we don't hang around waiting for inactive services and
-	   our need has already been satisfied as it's not strict.
-	   We apply this to our runlevel, coldplugged services, then bootlevel
-	   and finally any running.*/
+	 * This is now where the logic gets a little fuzzy :)
+	 * If there is >1 running service then we return NULL.
+	 * We do this so we don't hang around waiting for inactive services and
+	 * our need has already been satisfied as it's not strict.
+	 * We apply this to these states in order:-
+	 *     started, starting | stopping | inactive, stopped
+	 * Our sub preference in each of these is in order:-
+	 *     runlevel, coldplugged, bootlevel, any
+	 */
 #define DO \
 	if (TAILQ_FIRST(providers)) { \
 		if (TAILQ_NEXT(TAILQ_FIRST(providers), entries)) { \
@@ -300,45 +303,35 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 		return providers; \
 	}
 
-	/* Anything in the runlevel has to come first */
+	/* Anything running has to come first */
 	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTED))
 	{ DO }
-	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTING))
-		return providers;
-	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STOPPED))
-		return providers;
-
-	/* Check coldplugged services */
 	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STARTED))
 	{ DO }
-	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STARTING))
-		return providers;
-
-	/* Check bootlevel if we're not in it */
-	if (bootlevel && strcmp(runlevel, bootlevel) != 0)
-	{
-		if (get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTED))
-		{ DO }
-		if (get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTING))
-			return providers;
-	}
-
-	/* Check coldplugged services */
-	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STOPPED))
+	if (bootlevel && strcmp(runlevel, bootlevel) != 0 &&
+	    get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTED))
 	{ DO }
-
-	/* Check manually started */
 	if (get_provided1(runlevel, providers, dt, NULL, false, RC_SERVICE_STARTED))
 	{ DO }
+
+	/* Check starting services */
+	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTING))
+		return providers;
+	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STARTING))
+		return providers;
+	if (bootlevel && strcmp(runlevel, bootlevel) != 0 &&
+	    get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTING))
+	    return providers;
 	if (get_provided1(runlevel, providers, dt, NULL, false, RC_SERVICE_STARTING))
 		return providers;
 
 	/* Nothing started then. OK, lets get the stopped services */
 	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STOPPED))
 		return providers;
-
-	if (bootlevel && (strcmp(runlevel, bootlevel) != 0)
-	    && (get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STOPPED)))
+	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STOPPED))
+	{ DO }
+	if (bootlevel && (strcmp(runlevel, bootlevel) != 0) &&
+	    get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STOPPED))
 		return providers;
 
 	/* Still nothing? OK, list all services */
