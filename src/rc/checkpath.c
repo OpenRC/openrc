@@ -57,7 +57,9 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 	if (stat(path, &st)) {
 		if (file) {
 			einfo("%s: creating file", path);
-			if ((fd = open(path, O_CREAT)) == -1) {
+			if (! mode)
+				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+			if ((fd = open(path, O_CREAT, mode)) == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
 			}
