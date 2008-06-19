@@ -38,7 +38,7 @@ include ${MK}/prog.mk
 include ${MK}/cc.mk
 include ${MK}/debug.mk
 
-CFLAGS+=	-I../includes -I../librc -I../libeinfo
+CPPFLAGS+=	-I../includes -I../librc -I../libeinfo
 
 include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}

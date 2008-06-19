@@ -24,6 +24,9 @@ CLEANFILES+=		${OBJS} ${PROG}
 
 all: depend ${PROG}
 
+.c.o:
+	${CC} ${CFLAGS} ${CPPFLAGS} -c $< -o $@
+
 ${PROG}: ${SCRIPTS} ${OBJS}
 	${CC} ${LDFLAGS} -o $@ ${OBJS} ${LDADD}
 

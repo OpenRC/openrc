@@ -8,6 +8,6 @@ CLEANFILES+=	.depend
 IGNOREFILES+=	.depend
 
 .depend: ${SRCS}
-	${CC} ${CFLAGS} -MM ${SRCS} > .depend
+	${CC} ${CPPFLAGS} -MM ${SRCS} > .depend
 
 depend: .depend

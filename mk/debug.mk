@@ -4,7 +4,7 @@
 
 _RC_DEBUG_SH=	case "${DEBUG}" in "") echo "";; *) echo "-DRC_DEBUG";; esac
 _RC_DEBUG!=	${_RC_DEBUG_SH}
-CFLAGS+=	${_RC_DEBUG}$(shell ${_RC_DEBUG_SH})
+CPPFLAGS+=	${_RC_DEBUG}$(shell ${_RC_DEBUG_SH})
 
 # Should we enable this with a different flag?
 _LD_DEBUG_SH=	case "${DEBUG}" in "") echo "";; *) echo "-Wl,--rpath=../librc -Wl,--rpath=../libeinfo";; esac

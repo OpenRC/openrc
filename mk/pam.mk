@@ -1,5 +1,5 @@
 LIBPAM?=	-lpam
-CFLAGS+=	-DHAVE_PAM
+CPPFLAGS+=	-DHAVE_PAM
 LDADD+=		${LIBPAM}
 
 PAMDIR?=	/etc/pam.d

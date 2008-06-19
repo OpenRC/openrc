@@ -7,7 +7,7 @@ VERSION_MAP=	rc.map
 
 LDADD+=		${LIBKVM}
 
-CFLAGS+=	-I../includes
+CPPFLAGS+=	-I../includes
 
 MK=		../../mk
 include ${MK}/lib.mk

@@ -17,7 +17,7 @@ CLEANFILES+=		${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK}
 .SUFFIXES:		.So
 
 .c.So:
-	${CC} ${PICFLAG} -DPIC ${CFLAGS} -c $< -o $@
+	${CC} ${PICFLAG} -DPIC ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
 all: depend ${_LIBS}
 
