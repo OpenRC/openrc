@@ -1,5 +1,5 @@
 DIR=	${PREFIX}/${RC_LIB}/sh
-SRCS=	functions.sh.in gendepends.sh.in \
+SRCS=	functions.sh.in gendepends.sh.in init-common-post.sh.in \
 	rc-functions.sh.in runscript.sh.in
 INC=	init-common-post.sh rc-mount.sh functions.sh rc-functions.sh
 BIN=	gendepends.sh init.sh runscript.sh

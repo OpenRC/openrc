@@ -3,6 +3,8 @@ gendepends.sh
 net.sh
 rc-functions.sh
 runscript.sh
+init-common-post.sh
+init-early.sh
 init.sh
 ifwatchd-carrier.sh
 ifwatchd-nocarrier.sh
