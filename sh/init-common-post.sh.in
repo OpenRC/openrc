@@ -6,9 +6,10 @@ retval=0
 # mount $svcdir as something we can write to if it's not rw
 # On vservers, / is always rw at this point, so we need to clean out
 # the old service state data
+RC_SVCDIR=${RC_SVCDIR:-/@LIB@/rc/init.d}
 if [ "${RC_SVCDIR}" != "/" ] && mkdir "${RC_SVCDIR}/.test.$$" 2>/dev/null; then
 	rmdir "${RC_SVCDIR}/.test.$$"
-	for x in ${RC_SVCDIR:-/@LIB@/rc/init.d}/*; do
+	for x in ${RC_SVCDIR}/*; do
 		[ -e "${x}" ] || continue
 		case ${x##*/} in
 			depconfig|deptree|ksoftlevel|rc.log);;
