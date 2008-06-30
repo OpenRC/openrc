@@ -13,6 +13,7 @@ eerrorn
 eerror
 ebegin
 eend
+ewaitfile
 ewend
 eindent
 eoutdent
