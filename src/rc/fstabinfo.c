@@ -163,7 +163,7 @@ int fstabinfo(int argc, char **argv)
 	int opt;
 	int output = OUTPUT_FILE;
 	RC_STRINGLIST *files = rc_stringlist_new();
-	RC_STRING *file;
+	RC_STRING *file, *file_np;
 	bool filtered = false;
 
 #ifdef HAVE_GETMNTENT
@@ -238,8 +238,18 @@ int fstabinfo(int argc, char **argv)
 	}
 
 	if (optind < argc) {
-		while (optind < argc)
-			rc_stringlist_add(files, argv[optind++]);
+		if (files) {
+			TAILQ_FOREACH_SAFE(file, files, entries, file_np) {
+				for (i = optind; i < argc; i++)
+					if (strcmp(argv[i], file->value) == 0)
+						break;
+				if (i >= argc)
+					rc_stringlist_delete(files, file->value);
+			}
+		} else {
+			while (optind < argc)
+				rc_stringlist_add(files, argv[optind++]);
+		}
 	} else if (! filtered) {
 		START_ENT;
 		while ((ent = GET_ENT))
@@ -248,6 +258,11 @@ int fstabinfo(int argc, char **argv)
 
 		if (! TAILQ_FIRST(files))
 			eerrorx("%s: emtpy fstab", argv[0]);
+	}
+
+	if (!files || !TAILQ_FIRST(files)) {
+		rc_stringlist_free(files);
+		return (EXIT_FAILURE);
 	}
 
 	/* Ensure we always display something */
