@@ -54,8 +54,8 @@
 
 #include "einfo.h"
 #include "rc-logger.h"
-#include "rc-misc.h"
 #include "rc.h"
+#include "rc-misc.h"
 
 #define LOGFILE RC_SVCDIR "/rc.log"
 #define PERMLOG "/var/log/rc.log"
