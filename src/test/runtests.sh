@@ -68,10 +68,9 @@ ret=$(($ret + $?))
 
 einfo "Running unit tests"
 eindent
-cd units
-for u in *; do
+for u in units/*; do
 	[ -x "${u}" -a -f "${u}" ] || continue
-	ebegin "${u}"
+	ebegin "$(basename "${u}")"
 	./"${u}"
 	eend $?
 	ret=$(($ret + $?))

@@ -2,8 +2,11 @@
 # unit test for is_older_than code of baselayout (2008/06/19)
 # Author: Matthias Schwarzott <zzam@gentoo.org>
 
-RCDIR=../../rc
 TMPDIR=tmp-"$(basename "$0")"
+
+# Please note that we added this unit test because the function
+# should really be called is_newer_than as it's what it's really testing.
+# Or more perversly, returning 0 on failure and 1 and success.
 
 # bool is_older_than(reference, files/dirs to check)
 #

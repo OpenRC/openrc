@@ -7,5 +7,8 @@ gitignore:
 check test::
 	./runtests.sh
 
+verbose-test:
+	VERBOSE=yes ./runtests.sh
+
 clean:
-	rm -f *.out
+	rm -rf *.out tmp-*
