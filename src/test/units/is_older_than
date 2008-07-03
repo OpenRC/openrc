@@ -11,30 +11,29 @@ TMPDIR=tmp-"$(basename "$0")"
 #   the reference file
 #
 #   EXAMPLE: if is_older_than a.out *.o ; then ...
-is_older_than() {
+ref_is_older_than() {
 	local x= ref="$1"
 	shift
 
 	for x; do
 		[ "${x}" -nt "${ref}" ] && return 0
-		[ -d "${x}" ] && is_older_than "${ref}" "${x}"/* && return 0
+		[ -d "${x}" ] && ref_is_older_than "${ref}" "${x}"/* && return 0
 	done
 	return 1
 }
 
 rm -rf "${TMPDIR}"
 mkdir "${TMPDIR}"
-ln -s ../"${RCDIR}"/rc "${TMPDIR}"/is_older_than
 
 do_test() {
 	local r1= r2=
 
-	is_older_than "$@"
+	ref_is_older_than "$@"
 	r1=$?
-	./"${TMPDIR}"/is_older_than "$@"
+	is_older_than "$@"
 	r2=$?
 
-	[ -n "${VERBOSE}" ] && echo "baselayout = $r1  |  OpenRC = $r2"
+	[ -n "${VERBOSE}" ] && echo "reference = $r1  |  OpenRC = $r2"
 	[ $r1 = $r2 ]
 }
 
