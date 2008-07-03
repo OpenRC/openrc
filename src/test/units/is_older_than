@@ -15,7 +15,7 @@ is_older_than() {
 	local x= ref="$1"
 	shift
 
-	for x in; do
+	for x; do
 		[ "${x}" -nt "${ref}" ] && return 0
 		[ -d "${x}" ] && is_older_than "${ref}" "${x}"/* && return 0
 	done
@@ -34,29 +34,35 @@ do_test() {
 	./"${TMPDIR}"/is_older_than "$@"
 	r2=$?
 
+	[ -n "${VERBOSE}" ] && echo "baselayout = $r1  |  OpenRC = $r2"
 	[ $r1 = $r2 ]
+}
+
+echo_cmd() {
+	[ -n "${VERBOSE}" ] && echo "$@"
+	"$@"
 }
 
 test_it() {
 	do_test "${TMPDIR}"/ref "${TMPDIR}"/dir1 "${TMPDIR}"/dir2 || exit 1
 }
 
-mkdir -p "${TMPDIR}"/dir1 "${TMPDIR}"/dir2
-touch "${TMPDIR}"/dir1/f1 "${TMPDIR}"/dir1/f2 "${TMPDIR}"/dir1/f3 "${TMPDIR}"/dir2/f1 "${TMPDIR}"/dir2/f2 "${TMPDIR}"/dir2/f3
-sleep 1
-touch "${TMPDIR}"/ref
+echo_cmd mkdir -p "${TMPDIR}"/dir1 "${TMPDIR}"/dir2
+echo_cmd touch "${TMPDIR}"/dir1/f1 "${TMPDIR}"/dir1/f2 "${TMPDIR}"/dir1/f3 "${TMPDIR}"/dir2/f1 "${TMPDIR}"/dir2/f2 "${TMPDIR}"/dir2/f3
+echo_cmd sleep 1
+echo_cmd touch "${TMPDIR}"/ref
 test_it
 
-sleep 1
-touch "${TMPDIR}"/dir1/f2
+echo_cmd sleep 1
+echo_cmd touch "${TMPDIR}"/dir1/f2
 test_it
 
-sleep 1
-touch "${TMPDIR}"/ref
+echo_cmd sleep 1
+echo_cmd touch "${TMPDIR}"/ref
 test_it
 
-sleep 1
-touch "${TMPDIR}"/dir2/f2
+echo_cmd sleep 1
+echo_cmd touch "${TMPDIR}"/dir2/f2
 test_it
 
 rm -rf "${TMPDIR}"
