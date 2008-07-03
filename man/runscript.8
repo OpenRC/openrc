@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Jun 03, 2008
+.Dd Jul 03, 2008
 .Dt RUNSCRIPT 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -214,7 +214,7 @@ is a directory, then check all it's contents too.
 .It Ic is_older_than Ar file1 Ar file2 ...
 If
 .Ar file1
-is older than
+is newer than
 .Ar file2
 return 0, otherwise 1.
 If
@@ -441,6 +441,10 @@ show()
 }
 
 .Ed
+.Sh BUGS
+is_older_than should return 0 on success.
+Instead we return 1 to be compliant with Gentoo baselayout.
+Users are encouraged to use the is_newer_than function which returns correctly.
 .Sh SEE ALSO
 .Xr einfo 3 ,
 .Xr rc 8 ,
