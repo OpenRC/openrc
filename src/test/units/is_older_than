@@ -1,0 +1,63 @@
+#!/bin/sh
+# unit test for is_older_than code of baselayout (2008/06/19)
+# Author: Matthias Schwarzott <zzam@gentoo.org>
+
+RCDIR=../../rc
+TMPDIR=tmp-"$(basename "$0")"
+
+# bool is_older_than(reference, files/dirs to check)
+#
+#   return 0 if any of the files/dirs are newer than
+#   the reference file
+#
+#   EXAMPLE: if is_older_than a.out *.o ; then ...
+is_older_than() {
+	local x= ref="$1"
+	shift
+
+	for x in; do
+		[ "${x}" -nt "${ref}" ] && return 0
+		[ -d "${x}" ] && is_older_than "${ref}" "${x}"/* && return 0
+	done
+	return 1
+}
+
+rm -rf "${TMPDIR}"
+mkdir "${TMPDIR}"
+ln -s ../"${RCDIR}"/rc "${TMPDIR}"/is_older_than
+
+do_test() {
+	local r1= r2=
+
+	is_older_than "$@"
+	r1=$?
+	./"${TMPDIR}"/is_older_than "$@"
+	r2=$?
+
+	[ $r1 = $r2 ]
+}
+
+test_it() {
+	do_test "${TMPDIR}"/ref "${TMPDIR}"/dir1 "${TMPDIR}"/dir2 || exit 1
+}
+
+mkdir -p "${TMPDIR}"/dir1 "${TMPDIR}"/dir2
+touch "${TMPDIR}"/dir1/f1 "${TMPDIR}"/dir1/f2 "${TMPDIR}"/dir1/f3 "${TMPDIR}"/dir2/f1 "${TMPDIR}"/dir2/f2 "${TMPDIR}"/dir2/f3
+sleep 1
+touch "${TMPDIR}"/ref
+test_it
+
+sleep 1
+touch "${TMPDIR}"/dir1/f2
+test_it
+
+sleep 1
+touch "${TMPDIR}"/ref
+test_it
+
+sleep 1
+touch "${TMPDIR}"/dir2/f2
+test_it
+
+rm -rf "${TMPDIR}"
+exit 0

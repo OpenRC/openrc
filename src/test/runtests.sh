@@ -66,4 +66,15 @@ syms=$(diff -u librc.funcs.hidden.list librc.funcs.hidden.out | sed -n '/^+[^+]/
 eend $? "Missing hidden defs:"$'\n'"${syms}"
 ret=$(($ret + $?))
 
+einfo "Running unit tests"
+eindent
+cd units
+for u in *; do
+	[ -x "${u}" -a -f "${u}" ] || continue
+	ebegin "${u}"
+	./"${u}"
+	eend $?
+	ret=$(($ret + $?))
+done
+
 exit ${ret}
