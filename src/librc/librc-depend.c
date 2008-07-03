@@ -553,12 +553,12 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 }
 librc_hidden_def(rc_deptree_order)
 
-bool
-rc_newer_than(const char *source, const char *target)
+static bool
+mtime_check(const char *source, const char *target, bool newer)
 {
 	struct stat buf;
 	time_t mtime;
-	bool newer = true;
+	bool retval = true;
 	DIR *dp;
 	struct dirent *d;
 	char path[PATH_MAX];
@@ -569,31 +569,51 @@ rc_newer_than(const char *source, const char *target)
 		return false;
 	mtime = buf.st_mtime;
 
-	/* Of course we are newer than targets that don't exist
-	   such as broken symlinks */
+	/* If target does not exist, return true to mimic shell test */
 	if (stat(target, &buf) != 0)
 		return true;
-	if (mtime < buf.st_mtime)
-		return false;
+
+	if (newer) {
+		if (mtime < buf.st_mtime)
+			return false;
+	} else {
+		if (mtime > buf.st_mtime)
+			return false;
+	}
+
 	/* If not a dir then reset errno */
 	if (!(dp = opendir(target))) {
 		errno = serrno;
 		return true;
 	}
 
-	/* Check if we're newer than all the entries in the dir */
+	/* Check all the entries in the dir */
 	while ((d = readdir(dp))) {
 		if (d->d_name[0] == '.')
 			continue;
 		snprintf(path, sizeof(path), "%s/%s", target, d->d_name);
-		newer = rc_newer_than(source, path);
-		if (! newer)
+		retval = mtime_check(source, path, newer);
+		if (!retval)
 			break;
 	}
 	closedir(dp);
-	return newer;
+	return retval;
+}
+
+bool
+rc_newer_than(const char *source, const char *target)
+{
+
+	return mtime_check(source, target, true);
 }
 librc_hidden_def(rc_newer_than)
+
+bool
+rc_older_than(const char *source, const char *target)
+{
+	return mtime_check(source, target, false);
+}
+librc_hidden_def(rc_older_than)
 
 typedef struct deppair
 {

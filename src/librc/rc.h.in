@@ -306,6 +306,11 @@ typedef void *RC_DEPTREE;
 * @return true if source is newer than target, otherwise false */ 
 bool rc_newer_than(const char *, const char *);
 
+/*! Check to see if source is newer than target.
+ * If target is a directory then we traverse it and it's children.
+* @return true if source is newer than target, otherwise false */ 
+bool rc_older_than(const char *, const char *);
+
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.

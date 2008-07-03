@@ -22,6 +22,8 @@ rc_find_pids
 rc_find_pids@@RC_1.0
 rc_newer_than
 rc_newer_than@@RC_1.0
+rc_older_than
+rc_older_than@@RC_1.0
 rc_runlevel_exists
 rc_runlevel_exists@@RC_1.0
 rc_runlevel_get

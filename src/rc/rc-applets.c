@@ -408,7 +408,7 @@ static int do_shell_var(int argc, char **argv)
 void run_applets(int argc, char **argv)
 {
 	int i = 2;
-	bool match = false;
+	bool (*is_than) (const char *, const char *);
 	char *p;
 	pid_t pid = 0;
 
@@ -437,18 +437,22 @@ void run_applets(int argc, char **argv)
 	if (strcmp(applet, "shell_var") == 0)
 		exit(do_shell_var(argc, argv));
 
+	/* This test is perverted - historically the baselayout function
+	 * returns 0 on *failure*, which is plain wrong */
 	if (strcmp(applet, "is_newer_than") == 0 ||
 	    strcmp(applet, "is_older_than") == 0)
 	{
 		if (argc < 3)
 			exit (EXIT_FAILURE);
 		if (strcmp(applet, "is_newer_than") == 0)
-			match = true;
+			is_than = &rc_older_than;
+		else
+			is_than = &rc_newer_than;
 		while (i < argc) {
-			if (rc_newer_than(argv[1], argv[i++]) != match)
-				exit (EXIT_FAILURE);
+			if (!is_than(argv[1], argv[i++]))
+				exit(EXIT_SUCCESS);
 		}
-		exit(EXIT_SUCCESS);
+		exit(EXIT_FAILURE);
 	}; 
 
 	if (applet[0] == 'e' || (applet[0] == 'v' && applet[1] == 'e'))
