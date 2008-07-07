@@ -281,7 +281,7 @@ typedef struct rc_deptype
 	/*! list of services */
 	RC_STRINGLIST *services;
 	/*! list of types */
-	STAILQ_ENTRY(rc_deptype) entries;
+	TAILQ_ENTRY(rc_deptype) entries;
 } RC_DEPTYPE;
 
 /*! Singly linked list of services and their dependencies */
@@ -290,12 +290,12 @@ typedef struct rc_depinfo
 	/*! Name of service */
 	char *service;
 	/*! Dependencies */
-	STAILQ_HEAD(, rc_deptype) depends;
+	TAILQ_HEAD(, rc_deptype) depends;
 	/*! List of entries */
-	STAILQ_ENTRY(rc_depinfo) entries;
+	TAILQ_ENTRY(rc_depinfo) entries;
 } RC_DEPINFO;
 
-typedef STAILQ_HEAD(,rc_depinfo) RC_DEPTREE;
+typedef TAILQ_HEAD(,rc_depinfo) RC_DEPTREE;
 #else
 /* Handles to internal structures */
 typedef void *RC_DEPTREE;

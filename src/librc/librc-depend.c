@@ -72,12 +72,12 @@ rc_deptree_free(RC_DEPTREE *deptree)
 	if (!deptree)
 		return;
 
-	di = STAILQ_FIRST(deptree);
+	di = TAILQ_FIRST(deptree);
 	while (di) {
-		di2 = STAILQ_NEXT(di, entries);
-		dt = STAILQ_FIRST(&di->depends);
+		di2 = TAILQ_NEXT(di, entries);
+		dt = TAILQ_FIRST(&di->depends);
 		while (dt) {
-			dt2 = STAILQ_NEXT(dt, entries);
+			dt2 = TAILQ_NEXT(dt, entries);
 			rc_stringlist_free(dt->services);
 			free(dt->type);
 			free(dt);
@@ -96,7 +96,7 @@ get_depinfo(const RC_DEPTREE *deptree, const char *service)
 {
 	RC_DEPINFO *di;
 
-	STAILQ_FOREACH(di, deptree, entries)
+	TAILQ_FOREACH(di, deptree, entries)
 		if (strcmp(di->service, service) == 0)
 			return di;
 	return NULL;
@@ -107,7 +107,7 @@ get_deptype(const RC_DEPINFO *depinfo, const char *type)
 {
 	RC_DEPTYPE *dt;
 
-	STAILQ_FOREACH(dt, &depinfo->depends, entries)
+	TAILQ_FOREACH(dt, &depinfo->depends, entries)
 		if (strcmp(dt->type, type) == 0)
 			return dt;
 	return NULL;
@@ -131,7 +131,7 @@ rc_deptree_load(void)
 		return NULL;
 
 	deptree = xmalloc(sizeof(*deptree));
-	STAILQ_INIT(deptree);
+	TAILQ_INIT(deptree);
 	while ((rc_getline(&line, &len, fp)))
 	{
 		p = line;
@@ -149,9 +149,9 @@ rc_deptree_load(void)
 			if (! e || *e == '\0')
 				continue;
 			depinfo = xmalloc(sizeof(*depinfo));
-			STAILQ_INIT(&depinfo->depends);
+			TAILQ_INIT(&depinfo->depends);
 			depinfo->service = xstrdup(e);
-			STAILQ_INSERT_TAIL(deptree, depinfo, entries);
+			TAILQ_INSERT_TAIL(deptree, depinfo, entries);
 			deptype = NULL;
 			continue;
 		}
@@ -166,7 +166,7 @@ rc_deptree_load(void)
 			deptype = xmalloc(sizeof(*deptype));
 			deptype->services = rc_stringlist_new();
 			deptype->type = xstrdup(type);
-			STAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
+			TAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
 		}
 		rc_stringlist_add(deptype->services, e);
 	}
@@ -731,7 +731,7 @@ rc_deptree_update(void)
 		return false;
 
 	deptree = xmalloc(sizeof(*deptree));
-	STAILQ_INIT(deptree);
+	TAILQ_INIT(deptree);
 	config = rc_stringlist_new();
 	while ((rc_getline(&line, &len, fp)))
 	{
@@ -746,9 +746,9 @@ rc_deptree_update(void)
 			depinfo = get_depinfo(deptree, service);
 			if (!depinfo) {	
 				depinfo = xmalloc(sizeof(*depinfo));
-				STAILQ_INIT(&depinfo->depends);
+				TAILQ_INIT(&depinfo->depends);
 				depinfo->service = xstrdup(service);
-				STAILQ_INSERT_TAIL(deptree, depinfo, entries);
+				TAILQ_INSERT_TAIL(deptree, depinfo, entries);
 			}
 		}
 		
@@ -764,7 +764,7 @@ rc_deptree_update(void)
 				deptype = xmalloc(sizeof(*deptype));
 				deptype->type = xstrdup(type);
 				deptype->services = rc_stringlist_new();
-				STAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
+				TAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
 			}
 		}
 
@@ -826,20 +826,20 @@ rc_deptree_update(void)
 			nosys[i + 2] = (char)tolower((unsigned char)sys[i]);
 		nosys[i + 2] = '\0';
 
-		STAILQ_FOREACH_SAFE(depinfo, deptree, entries, depinfo_np)
+		TAILQ_FOREACH_SAFE(depinfo, deptree, entries, depinfo_np)
 			if ((deptype = get_deptype(depinfo, "keyword")))
 				TAILQ_FOREACH(s, deptype->services, entries)
 					if (strcmp(s->value, nosys) == 0) {
 						provide = get_deptype(depinfo, "iprovide");
-						STAILQ_REMOVE(deptree, depinfo, rc_depinfo, entries);
-						STAILQ_FOREACH(di, deptree, entries) {
-							STAILQ_FOREACH_SAFE(dt, &di->depends, entries, dt_np) {
+						TAILQ_REMOVE(deptree, depinfo, entries);
+						TAILQ_FOREACH(di, deptree, entries) {
+							TAILQ_FOREACH_SAFE(dt, &di->depends, entries, dt_np) {
 								rc_stringlist_delete(dt->services, depinfo->service);
 								if (provide)
 									TAILQ_FOREACH(s2, provide->services, entries)
 										rc_stringlist_delete(dt->services, s2->value);
 								if (!TAILQ_FIRST(dt->services)) {
-									STAILQ_REMOVE(&di->depends, dt, rc_deptype, entries);
+									TAILQ_REMOVE(&di->depends, dt, entries);
 									free(dt->type);
 									free(dt->services);
 									free(dt);
@@ -852,25 +852,25 @@ rc_deptree_update(void)
 
 	/* Phase 3 - add our providers to the tree */
 	providers = xmalloc(sizeof(*providers));
-	STAILQ_INIT(providers);
-	STAILQ_FOREACH(depinfo, deptree, entries)
+	TAILQ_INIT(providers);
+	TAILQ_FOREACH(depinfo, deptree, entries)
 		if ((deptype = get_deptype(depinfo, "iprovide")))
 			TAILQ_FOREACH(s, deptype->services, entries) {
-				STAILQ_FOREACH(di, providers, entries)
+				TAILQ_FOREACH(di, providers, entries)
 					if (strcmp(di->service, s->value) == 0)
 						break;
 				if (!di) {
 					di = xmalloc(sizeof(*di));
-					STAILQ_INIT(&di->depends);
+					TAILQ_INIT(&di->depends);
 					di->service = xstrdup(s->value);
-					STAILQ_INSERT_TAIL(providers, di, entries);
+					TAILQ_INSERT_TAIL(providers, di, entries);
 				}
 			}
-	STAILQ_CONCAT(deptree, providers);
+	TAILQ_CONCAT(deptree, providers, entries);
 	free(providers);
 
 	/* Phase 4 - backreference our depends */
-	STAILQ_FOREACH(depinfo, deptree, entries)
+	TAILQ_FOREACH(depinfo, deptree, entries)
 		for (i = 0; deppairs[i].depend; i++) {
 			deptype = get_deptype(depinfo, deppairs[i].depend);
 			if (!deptype)
@@ -891,7 +891,7 @@ rc_deptree_update(void)
 					dt = xmalloc(sizeof(*dt));
 					dt->type = xstrdup(deppairs[i].addto);
 					dt->services = rc_stringlist_new();
-					STAILQ_INSERT_TAIL(&di->depends, dt, entries);
+					TAILQ_INSERT_TAIL(&di->depends, dt, entries);
 				}
 				rc_stringlist_addu(dt->services, depinfo->service);
 			}
@@ -903,7 +903,7 @@ rc_deptree_update(void)
 	rc_stringlist_add(types, "ineed");
 	rc_stringlist_add(types, "iuse");
 	rc_stringlist_add(types, "iafter");
-	STAILQ_FOREACH(depinfo, deptree, entries) {
+	TAILQ_FOREACH(depinfo, deptree, entries) {
 		deptype = get_deptype(depinfo, "ibefore");
 		if (!deptype)
 			continue;
@@ -957,10 +957,10 @@ rc_deptree_update(void)
 	   */
 	if ((fp = fopen(RC_DEPTREE_CACHE, "w"))) {
 		i = 0;
-		STAILQ_FOREACH(depinfo, deptree, entries) {
+		TAILQ_FOREACH(depinfo, deptree, entries) {
 			fprintf(fp, "depinfo_%zu_service='%s'\n",
 				i, depinfo->service);
-			STAILQ_FOREACH(deptype, &depinfo->depends, entries) {
+			TAILQ_FOREACH(deptype, &depinfo->depends, entries) {
 				k = 0;
 				TAILQ_FOREACH(s, deptype->services, entries) {
 					fprintf(fp,

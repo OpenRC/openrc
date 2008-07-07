@@ -62,16 +62,6 @@
 #endif
 
 /* Some libc implemntations don't have these */
-#ifndef STAILQ_CONCAT
-#define	STAILQ_CONCAT(head1, head2) do {				\
-	if (!STAILQ_EMPTY((head2))) {					\
-		*(head1)->stqh_last = (head2)->stqh_first;		\
-		(head1)->stqh_last = (head2)->stqh_last;		\
-		STAILQ_INIT((head2));					\
-	}								\
-} while (0)
-#endif
-
 #ifndef TAILQ_CONCAT
 #define TAILQ_CONCAT(head1, head2, field) do {                          \
 	if (!TAILQ_EMPTY(head2)) {                                      \
@@ -81,13 +71,6 @@
 		TAILQ_INIT((head2));                                    \
 	}                                                               \
 } while (0)
-#endif
-
-#ifndef STAILQ_FOREACH_SAFE
-#define	STAILQ_FOREACH_SAFE(var, head, field, tvar)			\
-	for ((var) = STAILQ_FIRST((head));				\
-	     (var) && ((tvar) = STAILQ_NEXT((var), field), 1);		\
-	     (var) = (tvar))
 #endif
 
 #ifndef TAILQ_FOREACH_SAFE
