@@ -94,9 +94,9 @@ typedef struct scheduleitem
 	} type;
 	int value;
 	struct scheduleitem *gotoitem;
-	STAILQ_ENTRY(scheduleitem) entries;
+	TAILQ_ENTRY(scheduleitem) entries;
 } SCHEDULEITEM;
-STAILQ_HEAD(, scheduleitem) schedule;
+TAILQ_HEAD(, scheduleitem) schedule;
 
 extern const char *applet;
 static char *changeuser;
@@ -105,15 +105,15 @@ extern char **environ;
 
 static void free_schedulelist(void)
 {
-	SCHEDULEITEM *s1 = STAILQ_FIRST(&schedule);
+	SCHEDULEITEM *s1 = TAILQ_FIRST(&schedule);
 	SCHEDULEITEM *s2;
 
 	while (s1) {
-		s2 = STAILQ_NEXT(s1, entries);
+		s2 = TAILQ_NEXT(s1, entries);
 		free(s1);
 		s1 = s2;
 	}
-	STAILQ_INIT(&schedule);
+	TAILQ_INIT(&schedule);
 }
 
 static void cleanup(void)
@@ -229,12 +229,12 @@ static void parse_schedule(const char *string, int timeout)
 		item->type = SC_SIGNAL;
 		item->value = timeout;
 		item->gotoitem = NULL;
-		STAILQ_INSERT_TAIL(&schedule, item, entries);
+		TAILQ_INSERT_TAIL(&schedule, item, entries);
 
 		item = xmalloc(sizeof(*item));
 		item->type = SC_TIMEOUT;
 		item->gotoitem = NULL;
-		STAILQ_INSERT_TAIL(&schedule, item, entries);
+		TAILQ_INSERT_TAIL(&schedule, item, entries);
 		if (string) {
 			if (sscanf(string, "%d", &item->value) != 1)
 				eerrorx("%s: invalid timeout value in schedule", applet);
@@ -258,7 +258,7 @@ static void parse_schedule(const char *string, int timeout)
 		string = slash ? slash + 1 : NULL;
 
 		item = parse_schedule_item(buffer);
-		STAILQ_INSERT_TAIL(&schedule, item, entries);
+		TAILQ_INSERT_TAIL(&schedule, item, entries);
 		if (item->type == SC_FOREVER) {
 			if (repeatat)
 				eerrorx("%s: invalid schedule, `forever' "
@@ -274,7 +274,7 @@ static void parse_schedule(const char *string, int timeout)
 		item->type = SC_GOTO;
 		item->value = 0;
 		item->gotoitem = repeatat;
-		STAILQ_INSERT_TAIL(&schedule, item, entries);
+		TAILQ_INSERT_TAIL(&schedule, item, entries);
 	}
 
 	return;
@@ -360,7 +360,7 @@ static int run_stop_schedule(const char *const *argv, const char *cmd,
 			     const char *pidfile, uid_t uid,
 			     bool quiet, bool verbose, bool test)
 {
-	SCHEDULEITEM *item = STAILQ_FIRST(&schedule);
+	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
 	int nkilled = 0;
 	int tkilled = 0;
 	int nrunning = 0;
@@ -442,7 +442,7 @@ static int run_stop_schedule(const char *const *argv, const char *cmd,
 		}
 
 		if (item)
-			item = STAILQ_NEXT(item, entries);
+			item = TAILQ_NEXT(item, entries);
 	}
 
 	if (test || (tkilled > 0 && nrunning == 0))
@@ -602,7 +602,7 @@ int start_stop_daemon(int argc, char **argv)
 	FILE *fp;
 	size_t len;
 
-	STAILQ_INIT(&schedule);
+	TAILQ_INIT(&schedule);
 	atexit(cleanup);
 
 	signal_setup(SIGINT, handle_signal);
@@ -824,7 +824,7 @@ int start_stop_daemon(int argc, char **argv)
 	if (stop) {
 		int result;
 
-		if (! STAILQ_FIRST(&schedule)) {
+		if (! TAILQ_FIRST(&schedule)) {
 			if (test || oknodo)
 				parse_schedule("0", sig);
 			else

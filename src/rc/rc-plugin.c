@@ -57,9 +57,9 @@ typedef struct plugin
 	char *name;
 	void *handle;
 	int (*hook)(RC_HOOK, const char *);
-	STAILQ_ENTRY(plugin) entries;
+	TAILQ_ENTRY(plugin) entries;
 } PLUGIN;
-STAILQ_HEAD(, plugin) plugins;
+TAILQ_HEAD(, plugin) plugins;
 
 #ifndef __FreeBSD__
 dlfunc_t dlfunc(void * __restrict handle, const char * __restrict symbol)
@@ -87,7 +87,7 @@ void rc_plugin_load(void)
 	if (rc_in_plugin)
 		return;
 
-	STAILQ_INIT(&plugins);
+	TAILQ_INIT(&plugins);
 
 	if (! (dp = opendir(RC_PLUGINDIR)))
 		return;
@@ -112,7 +112,7 @@ void rc_plugin_load(void)
 			plugin->name = xstrdup(d->d_name);
 			plugin->handle = h;
 			plugin->hook = fptr;
-			STAILQ_INSERT_TAIL(&plugins, plugin, entries);
+			TAILQ_INSERT_TAIL(&plugins, plugin, entries);
 		}
 	}
 	closedir(dp);
@@ -159,7 +159,7 @@ void rc_plugin_run(RC_HOOK hook, const char *value)
 	sigemptyset(&empty);
 	sigfillset(&full);
 
-	STAILQ_FOREACH(plugin, &plugins, entries) {
+	TAILQ_FOREACH(plugin, &plugins, entries) {
 		/* We create a pipe so that plugins can affect our environment
 		 * vars, which in turn influence our scripts. */
 		if (pipe(pfd) == -1) {
@@ -236,15 +236,15 @@ void rc_plugin_run(RC_HOOK hook, const char *value)
 
 void rc_plugin_unload(void)
 {
-	PLUGIN *plugin = STAILQ_FIRST(&plugins);
+	PLUGIN *plugin = TAILQ_FIRST(&plugins);
 	PLUGIN *next;
 
 	while (plugin) {
-		next = STAILQ_NEXT(plugin, entries);
+		next = TAILQ_NEXT(plugin, entries);
 		dlclose(plugin->handle);
 		free(plugin->name);
 		free(plugin);
 		plugin = next;
 	}
-	STAILQ_INIT(&plugins);
+	TAILQ_INIT(&plugins);
 }
