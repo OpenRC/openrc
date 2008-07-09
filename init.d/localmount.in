@@ -30,13 +30,13 @@ start()
 stop()
 {
 	# We never unmount / or /dev or $RC_SVCDIR
-	local x= no_umounts="/|/dev|/dev/.*|${RC_SVCDIR}"
+	local x= no_umounts_r="/|/dev|/dev/.*|${RC_SVCDIR}"
 
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
 	OIFS=${IFS} SIFS=${IFS-y}
 	IFS=$IFS:
 	for x in ${no_umounts} ${RC_NO_UMOUNTS}; do
-		no_umounts="${no_umounts}|${x}"
+		no_umounts_r="${no_umounts_r}|${x}"
 	done
 	if [ "${SIFS}" = "y" ]; then
 		IFS=$OIFS
@@ -45,9 +45,9 @@ stop()
 	fi
 
 	if [ "${RC_UNAME}" = "Linux" ]; then
-		no_umounts="${no_umounts}|/proc|/proc/.*|/sys|/sys/.*"
+		no_umounts_r="${no_umounts_r}|/proc|/proc/.*|/sys|/sys/.*"
 	fi
-	no_umounts="^(${no_umounts})$"
+	no_umounts_r="^(${no_umounts})$"
 
 	# Flush all pending disk writes now
 	sync; sync
@@ -63,7 +63,7 @@ stop()
 	# Umount loopback devices
 	einfo "Unmounting loopback devices"
 	eindent
-	do_unmount "umount -d" --skip-point-regex "${no_umounts}" \
+	do_unmount "umount -d" --skip-point-regex "${no_umounts_r}" \
 		--node-regex "^/dev/loop"
 	eoutdent
 

@@ -4,6 +4,7 @@
 
 . @SYSCONFDIR@/init.d/functions.sh
 . "${RC_LIBDIR}"/sh/rc-functions.sh
+[ -r @SYSCONFDIR@/conf.d/localmount ] && . @SYSCONFDIR@/conf.d/localmount
 [ -r @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
 
 # Support LiveCD foo
@@ -79,6 +80,20 @@ if [ "${RC_UNAME}" = "Linux" ]; then
 	# We need the do_unmount function
 	. "${RC_LIBDIR}"/sh/rc-mount.sh
 	eindent
+	no_umounts_r="/|/dev|/dev/.*|${RC_SVCDIR}"
+	# RC_NO_UMOUNTS is an env var that can be set by plugins
+	OIFS=${IFS} SIFS=${IFS-y}
+	IFS=$IFS:
+	for x in ${no_umounts} ${RC_NO_UMOUNTS}; do
+		no_umounts_r="${no_umounts_r}|${x}"
+	done
+	if [ "${SIFS}" = "y" ]; then
+		IFS=$OIFS
+	else
+		unset IFS
+	fi
+	no_umounts_r="${no_umounts_r}|/proc|/proc/.*|/sys|/sys/.*"
+	no_umounts_r="^(${no_umounts})$"
 	fs=
 	for x in ${net_fs_list}; do
 		fs="${fs}${fs:+|}${x}"
@@ -86,7 +101,6 @@ if [ "${RC_UNAME}" = "Linux" ]; then
 	[ -n "${fs}" ] && fs="^(${fs})$"
 	do_unmount "mount -n -o remount,ro" \
 		--skip-point-regex "^(/dev|/dev/.*|/proc|/proc/.*|/sys|/sys/.*)$" \
-		--skip-options-regex "^ro" \
 		${fs:+--skip-fstype-regex} ${fs} --nonetdev
 	eoutdent
 	eend $?

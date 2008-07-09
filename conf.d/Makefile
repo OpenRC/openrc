@@ -1,5 +1,5 @@
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname local net urandom
+CONF=	bootmisc fsck hostname local localmount net urandom
 
 MK=	../mk
 include ${MK}/os.mk
