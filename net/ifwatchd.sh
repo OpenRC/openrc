@@ -54,7 +54,6 @@ ifwatchd_stop()
 	ebegin "Stopping ifwatchd on" "${IFACE}"
 	start-stop-daemon --stop --exec /usr/sbin/ifwatchd \
 		-- -c "${RC_LIBDIR}/sh/ifwatchd-carrier.sh" \
-		-n "${RC_LIBDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}" \
-		&& return 0
+		-n "${RC_LIBDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}"
 	eend $?
 }
