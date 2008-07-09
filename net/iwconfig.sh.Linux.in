@@ -601,10 +601,8 @@ iwconfig_connect_not_preferred()
 
 iwconfig_defaults()
 {
-	local x=
-	for x in txpower rate rts frag; do
-	    iwconfig "${IFACE}" "${x}" auto 2>/dev/null
-	done
+	# Turn on the radio
+	iwconfig "${IFACE}" txpower on 2>/dev/null
 
 	# Release the AP forced
 	# Must do ap and then ssid otherwise scanning borks
