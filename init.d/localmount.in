@@ -47,7 +47,7 @@ stop()
 	if [ "${RC_UNAME}" = "Linux" ]; then
 		no_umounts_r="${no_umounts_r}|/proc|/proc/.*|/sys|/sys/.*"
 	fi
-	no_umounts_r="^(${no_umounts})$"
+	no_umounts_r="^(${no_umounts_r})$"
 
 	# Flush all pending disk writes now
 	sync; sync
@@ -76,7 +76,7 @@ stop()
 		fs="${fs}${fs:+|}${x}"
 	done
 	[ -n "${fs}" ] && fs="^(${fs})$"
-	do_unmount "umount" --skip-point-regex "${no_umounts}" \
+	do_unmount "umount" --skip-point-regex "${no_umounts_r}" \
 		${fs:+--skip-fstype-regex} ${fs} --nonetdev
 	eoutdent
 
