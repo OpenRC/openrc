@@ -68,5 +68,6 @@ rc-status.o
 rc-update.o
 runscript.o
 rc.o
+rc.core
 rc
 .depend
