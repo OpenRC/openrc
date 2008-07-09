@@ -93,7 +93,7 @@ if [ "${RC_UNAME}" = "Linux" ]; then
 		unset IFS
 	fi
 	no_umounts_r="${no_umounts_r}|/proc|/proc/.*|/sys|/sys/.*"
-	no_umounts_r="^(${no_umounts})$"
+	no_umounts_r="^(${no_umounts_r})$"
 	fs=
 	for x in ${net_fs_list}; do
 		fs="${fs}${fs:+|}${x}"
