@@ -80,7 +80,7 @@ if [ "${RC_UNAME}" = "Linux" ]; then
 	# We need the do_unmount function
 	. "${RC_LIBDIR}"/sh/rc-mount.sh
 	eindent
-	no_umounts_r="/|/dev|/dev/.*|${RC_SVCDIR}"
+	no_umounts_r="/dev|/dev/.*|${RC_SVCDIR}"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
 	OIFS=${IFS} SIFS=${IFS-y}
 	IFS=$IFS:
