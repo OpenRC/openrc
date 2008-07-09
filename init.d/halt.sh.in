@@ -38,7 +38,11 @@ fi
 
 # If $svcdir is still mounted, preserve it if we can
 mnt=$(mountinfo --node "${RC_SVCDIR}")
-if [ -n "${mnt}" -a -w "${RC_LIBDIR}" ]; then
+if [ -n "${mnt}" ] && \
+	rm -rf "${RC_LIBDIR}/tmp.$$" && \
+	mkdir -p "${RC_LIBDIR}/tmp.$$" \
+; then
+	rmdir "${RC_LIBDIR}/tmp.$$"
 	f_opts="-m -c"
 	[ "${RC_UNAME}" = "Linux" ] && f_opts="-c"
 	if type fuser >/dev/null 2>&1; then
