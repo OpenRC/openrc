@@ -737,7 +737,7 @@ iwconfig_pre_start()
 	# which reports NOT READY!
 	x="$(iwconfig_get_type)"
 	if [ "${x}" = "NOT READY!" ]; then
-		eerror "Looks like there was a probem loading the firmware for ${IFACE}"
+		eerror "Looks like there was a problem loading the firmware for ${IFACE}"
 		return 1
 	fi
 
