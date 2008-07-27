@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Feb 24, 2008
+.Dd Jul 08, 2008
 .Dt START-STOP-DAEMON 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -44,6 +44,11 @@
 .Sh DESCRIPTION
 .Nm
 provides a consistent method of starting, stopping and signalling daemons.
+If neither
+.Fl K , -stop
+nor
+.Fl s , -signal
+are provided, then we assume we are starting the daemon.
 If a daemon cannot background by itself, nor create a pidfile,
 .Nm
 can do it for the daemon in a secure fashion.
@@ -67,6 +72,8 @@ Here are the options to specify the daemon and how it should start or stop:
 The
 .Ar daemon
 we start or stop.
+If this option is not specified, then the first non option argument
+is used.
 If the
 .Ar daemon
 is a script and you are not using the pidfile or process name options,
@@ -76,7 +83,7 @@ with the interpreter and pass
 .Ar daemon
 as an argument. Below is an example:
 .Pp
-start-stop-daemon -Sx /usr/bin/perl -- /usr/bin/daemon.pl
+start-stop-daemon perl -- /usr/bin/daemon.pl
 .It Fl p , -pidfile Ar pidfile
 When starting, we expect the daemon to create a valid
 .Ar pidfile
@@ -101,6 +108,10 @@ The return value is set as if the command was taken and worked.
 .Pp
 These options are only used for starting daemons:
 .Bl -tag -width indent
+.It Fl a , -startas Ar name
+Change the process name of the daemon to
+.Ar name .
+This just changes the first argument passed to the daemon.
 .It Fl b , -background
 Force the daemon into the background. Some daemons don't create pidfiles, so a
 good trick is to get the daemon to run in the foreground, and use the this

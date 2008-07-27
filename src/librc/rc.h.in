@@ -142,7 +142,7 @@ bool rc_service_delete(const char *, const char *);
  * @param name of the process (optional)
  * @param pidfile of the process (optional)
  * @param started if true, add the arguments otherwise remove existing matching arguments */
-bool rc_service_daemon_set(const char *, const char *const *, const char *, const char *,
+bool rc_service_daemon_set(const char *, const char *, const char *const *, const char *,
 			   bool);
 
 /*! Returns a description of what the service and/or option does.
@@ -202,9 +202,11 @@ RC_SERVICE rc_service_state(const char *);
 /*! Check if the service started the daemon
  * @param service to check
  * @param exec to check
+ * @param argv to check
  * @param indx of the daemon (optional - 1st daemon, 2nd daemon, etc)
  * @return true if started by this service, otherwise false */
-bool rc_service_started_daemon(const char *, const char *const *, int);
+bool rc_service_started_daemon(const char *, const char *,
+			       const char *const *, int);
 
 /*! Return a saved value for a service
  * @param service to check
@@ -463,11 +465,11 @@ typedef LIST_HEAD(rc_pidlist, rc_pid) RC_PIDLIST;
  * pid overrides anything else.
  * If both exec and cmd are given then we ignore exec.
  * @param exec to check for
- * @param cmd to check for
+ * @param argv to check for
  * @param uid to check for
  * @param pid to check for
  * @return NULL terminated list of pids */
-RC_PIDLIST *rc_find_pids(const char *const *, const char *, uid_t, pid_t);
+RC_PIDLIST *rc_find_pids(const char *, const char *const *, uid_t, pid_t);
 
 __END_DECLS
 #endif

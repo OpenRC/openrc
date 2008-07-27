@@ -243,9 +243,9 @@ static int do_e(int argc, char **argv)
 static int do_service(int argc, char **argv)
 {
 	bool ok = false;
-	char *service = NULL;
+	char *service;
+	char *exec;
 	int idx = 0;
-	char *d[] = { NULL, NULL };
 
 	if (argc > 1)
 		service = argv[1];
@@ -270,21 +270,19 @@ static int do_service(int argc, char **argv)
 	else if (strcmp(applet, "service_wasinactive") == 0)
 		ok = (rc_service_state(service) & RC_SERVICE_WASINACTIVE);
 	else if (strcmp(applet, "service_started_daemon") == 0) {
-		d[0] = argv[1];
-
 		service = getenv("RC_SVCNAME");
+		exec = argv[1];
 		if (argc > 3) {
 			service = argv[1];
-			d[0] = argv[2];
+			exec = argv[2];
 			sscanf(argv[3], "%d", &idx);
 		} else if (argc == 3) {
 			if (sscanf(argv[2], "%d", &idx) != 1) {
 				service = argv[1];
-				d[0] = argv[2];
+				exec = argv[2];
 			}
 		}
-		ok = rc_service_started_daemon(service,
-					       (const char * const *)d, idx);
+		ok = rc_service_started_daemon(service, exec, NULL, idx);
 			
 	} else
 		eerrorx("%s: unknown applet", applet);

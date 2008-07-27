@@ -30,15 +30,14 @@ RC_SBINLINKS=	mark_service_starting mark_service_started \
 ALL_LINKS=	${BINLINKS} ${SBINLINKS} ${RC_BINLINKS} ${RC_SBINLINKS}
 CLEANFILES+=	${ALL_LINKS}
 
+CPPFLAGS+=	-I../includes -I../librc -I../libeinfo
 LDFLAGS+=	-L../librc -L../libeinfo
 LDADD+=		-lutil -lrc -leinfo
 
 MK=		../../mk
+include ${MK}/debug.mk
 include ${MK}/prog.mk
 include ${MK}/cc.mk
-include ${MK}/debug.mk
-
-CPPFLAGS+=	-I../includes -I../librc -I../libeinfo
 
 include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
