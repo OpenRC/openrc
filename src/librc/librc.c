@@ -230,9 +230,11 @@ const char *rc_sys(void)
 	else if (file_regex("/proc/self/status",
 			    "(s_context|VxID):[[:space:]]*[1-9]"))
 		return RC_SYS_VSERVER;
+	else if (exists("/proc/vz/veinfo") && !exists("/proc/vz/version"))
+		return RC_SYS_OPENVZ;
 	else if (file_regex("/proc/self/status",
 			    "envID:[[:space:]]*[1-9]"))
-		return RC_SYS_OPENVZ;
+		return RC_SYS_OPENVZ; /* old test */
 #endif
 
 	return NULL;
