@@ -17,6 +17,7 @@ dhcpcd_start()
 {
 	local args= opt= opts= pidfile="/var/run/dhcpcd-${IFACE}.pid" new=true
 	eval args=\$dhcpcd_${IFVAR}
+	[ -z "${args}" ] && args=${dhcpcd}
 
 	# Get our options
 	eval opts=\$dhcp_${IFVAR}
