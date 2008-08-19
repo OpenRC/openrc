@@ -108,8 +108,7 @@ if [ -r /sbin/livecd-functions.sh ]; then
 fi
 
 if [ "${RC_UNAME}" != "GNU/kFreeBSD" \
-	-a "${RC_SYS}" != "VSERVER" \
-	-a "${RC_SYS}" != "OPENVZ" ]
+	-a "${RC_SYS}" != "VSERVER" ];
 then
 	if grep -Eq "[[:space:]]+sysfs$" /proc/filesystems; then
 		if [ -d /sys ]; then
@@ -126,10 +125,14 @@ then
 	fi
 fi
 
+# Default OpenVZ to static devices
+if [ "${RC_SYS}" = "OPENVZ" ]; then
+	rc_devices=${rc_devices:-static}
+fi
+
 # Try to figure out how the user wants /dev handled
 if [ "${rc_devices}" = "static" \
 	-o "${RC_SYS}" = "VSERVER" \
-	-o "${RC_SYS}" = "OPENVZ" \
 	-o "${RC_UNAME}" = "GNU/kFreeBSD" ]
 then
 	ebegin "Using existing device nodes in /dev"
