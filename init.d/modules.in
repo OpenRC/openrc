@@ -23,7 +23,7 @@ start()
 	x=${KV#*.*.}
 	local KV_MICRO=${x%%-*}
 
-	local list= x= xx= y= args= cnt=0
+	local list= x= xx= y= args= mpargs= cnt=0 a=
 	for x in "${KV}" \
 		${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} \
 		${KV_MAJOR}.${KV_MINOR} \
@@ -34,17 +34,29 @@ start()
 	[ -z "${list}" ] && list=${modules}
 
 	for x in ${list}; do
-		ebegin "Loading module ${x}"
+		a=${x#*:}
+		if [ "${a}" = "${x}" ]; then
+			unset mpargs
+			ebegin "Loading module ${x}"
+		else
+			x=${x%%:*}
+			mpargs="-o ${a}"
+			ebegin "Loading module ${x} as ${a}"
+		fi
+		aa=$(shell_var "${a}")
 		xx=$(shell_var "${x}")
 		for y in "${KV}" \
 			${KV_MAJOR}.${KV_MINOR}.${KV_MICRO} \
 			${KV_MAJOR}.${KV_MINOR} \
 		; do
+			eval args=\$module_${aa}_args_$(shell_var "${y}")
+			[ -n "${args}" ] && break
 			eval args=\$module_${xx}_args_$(shell_var "${y}")
 			[ -n "${args}" ] && break
 		done
+		[ -z "${args}" ] && eval args=\$module_${aa}_args
 		[ -z "${args}" ] && eval args=\$module_${xx}_args
-		eval modprobe -q "${x}" "${args}"
+		eval modprobe -q "${mpargs}" "${x}" "${args}"
 		eend $? "Failed to load ${x}" && cnt=$((${cnt} + 1))
 	done
 	einfo "Autoloaded ${cnt} module(s)"

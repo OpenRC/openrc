@@ -5,6 +5,10 @@
 #modules_2_6="tun"
 #modules="ohci1394"
 
+# You can give modules a different name when they load - the new name
+# will also be used to pick arguments below.
+#modules="dummy:dummy1"
+
 # Give the modules some arguments if needed, per version if necessary.
 #module_ieee1394_args="debug"
 #module_ieee1394_args_2_6_23_gentoo_r5="ieee1394 ohci1394"
