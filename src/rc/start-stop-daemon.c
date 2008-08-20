@@ -603,6 +603,7 @@ int start_stop_daemon(int argc, char **argv)
 	char line[130];
 	FILE *fp;
 	size_t len;
+	bool setumask = false;
 	mode_t numask;
 
 	TAILQ_INIT(&schedule);
@@ -703,6 +704,7 @@ int start_stop_daemon(int argc, char **argv)
 			if (parse_mode(&numask, optarg))
 				eerrorx("%s: invalid mode `%s'",
 					applet, optarg);
+			setumask = true;
 			break;
 
 		case 'm':  /* --make-pidfile */
@@ -929,6 +931,8 @@ int start_stop_daemon(int argc, char **argv)
 	/* Child process - lets go! */
 	if (pid == 0) {
 		pid_t mypid = getpid();
+		if (setumask)
+			umask(numask);
 
 #ifdef TIOCNOTTY
 		tty_fd = open("/dev/tty", O_RDWR);
