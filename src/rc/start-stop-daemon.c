@@ -499,7 +499,7 @@ static void handle_signal(int sig)
 
 
 #include "_usage.h"
-#define getoptstring "KN:R:Sbc:d:e:g:mn:op:s:tu:r:x:1:2:" getoptstring_COMMON
+#define getoptstring "KN:R:Sbc:d:e:g:k:mn:op:s:tu:r:x:1:2:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
@@ -510,6 +510,7 @@ static const struct option longopts[] = {
 	{ "chuid",        1, NULL, 'c'},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
+	{ "umask",        1, NULL, 'k'},
 	{ "group",        1, NULL, 'g'},
 	{ "make-pidfile", 0, NULL, 'm'},
 	{ "name",         1, NULL, 'n'},
@@ -534,6 +535,7 @@ static const char * const longopts_help[] = {
 	"deprecated, use --user",
 	"Change the PWD",
 	"Set an environment string",
+	"Set the umask for the daemon",
 	"Change the process group",
 	"Create a pidfile",
 	"Match process name",
@@ -601,6 +603,7 @@ int start_stop_daemon(int argc, char **argv)
 	char line[130];
 	FILE *fp;
 	size_t len;
+	mode_t numask;
 
 	TAILQ_INIT(&schedule);
 	atexit(cleanup);
@@ -694,6 +697,12 @@ int start_stop_daemon(int argc, char **argv)
 					eerrorx("%s: group `%s' not found", applet, optarg);
 				gid = gr->gr_gid;
 			}
+			break;
+
+		case 'k':
+			if (parse_mode(&numask, optarg))
+				eerrorx("%s: invalid mode `%s'",
+					applet, optarg);
 			break;
 
 		case 'm':  /* --make-pidfile */

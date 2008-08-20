@@ -374,3 +374,25 @@ pid_t exec_service(const char *service, const char *arg)
 
 	return pid;
 }
+
+int
+parse_mode(mode_t *mode, char *text)
+{
+	char *p;
+	unsigned long l;
+
+	/* Check for a numeric mode */
+	if ((*text - '0') < 8) {
+		l = strtoul(text, &p, 8);
+		if (*p || l > 07777U) {
+			errno = EINVAL;
+			return -1;
+		}
+		*mode = (mode_t) l;
+		return 0;
+	}
+
+	/* We currently don't check g+w type stuff */
+	errno = EINVAL;
+	return -1;
+}

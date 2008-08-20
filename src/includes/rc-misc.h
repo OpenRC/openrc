@@ -157,4 +157,5 @@ _unused static const char *basename_c(const char *path)
 	return (path);
 }
 
+int parse_mode(mode_t *, char *);
 #endif

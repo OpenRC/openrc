@@ -106,28 +106,6 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 	return 0;
 }
 
-/* Based on busybox */
-static int parse_mode (mode_t *mode, char *text)
-{
-	char *p;
-	unsigned long l;
-
-	/* Check for a numeric mode */
-	if ((*text - '0') < 8) {
-		l = strtoul(text, &p, 8);
-		if (*p || l > 07777U) {
-			errno = EINVAL;
-			return -1;
-		}
-		*mode = (mode_t) l;
-		return 0;
-	}
-
-	/* We currently don't check g+w type stuff */
-	errno = EINVAL;
-	return -1;
-}
-
 static int parse_owner(struct passwd **user, struct group **group,
 			const char *owner)
 {
