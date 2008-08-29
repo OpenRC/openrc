@@ -20,6 +20,10 @@ ipfw() {
 	/sbin/ipfw -f -q "$@"
 }
 
+have_ip6() {
+	sysctl net.ipv6 2>/dev/null
+}
+
 init() {
 	# Load the kernel module
 	if ! sysctl net.inet.ip.fw.enable=1 >/dev/null 2>&1; then
@@ -36,13 +40,15 @@ init() {
 	ipfw add deny all from any to 127.0.0.0/8
 	ipfw add deny ip from 127.0.0.0/8 to any
 
-	ipfw add pass ip6 from any to any via lo0
-	ipfw add deny ip6 from any to ::1
-	ipfw add deny ip6 from ::1 to any
+	if have_ip6; then 
+		ipfw add pass ip6 from any to any via lo0
+		ipfw add deny ip6 from any to ::1
+		ipfw add deny ip6 from ::1 to any
 	
-	ipfw add pass ip6 from :: to ff02::/16 proto ipv6-icmp
-	ipfw add pass ip6 from fe80::/10 to fe80::/10 proto ipv6-icmp
-	ipfw add pass ip6 from fe80::/10 to ff02::/16 proto ipv6-icmp
+		ipfw add pass ip6 from :: to ff02::/16 proto ipv6-icmp
+		ipfw add pass ip6 from fe80::/10 to fe80::/10 proto ipv6-icmp
+		ipfw add pass ip6 from fe80::/10 to ff02::/16 proto ipv6-icmp
+	fi
 }
 
 start() {
@@ -62,9 +68,11 @@ start() {
 	ipfw add pass udp  from me  to any       keep-state
 	ipfw add pass icmp from me  to any       keep-state
 
-	ipfw add pass tcp  from me6 to any setup keep-state
-	ipfw add pass udp  from me6 to any       keep-state
-	ipfw add pass icmp from me6 to any       keep-state
+	if have_ip6; then
+		ipfw add pass tcp  from me6 to any setup keep-state
+		ipfw add pass udp  from me6 to any       keep-state
+		ipfw add pass icmp from me6 to any       keep-state
+	fi
 
 	# Allow DHCP.
 	ipfw add pass udp  from 0.0.0.0 68 to 255.255.255.255 67 out
@@ -77,11 +85,13 @@ start() {
 	# Allow "mandatory" ICMP in.
 	ipfw add pass icmp from any to any icmptype 3,4,11
 
-	# Allow ICMPv6 destination unreach
-	ipfw add pass ip6 from any to any icmp6types 1 proto ipv6-icmp
-
-	# Allow NS/NA/toobig (don't filter it out)
-	ipfw add pass ip6 from any to any icmp6types 2,135,136 proto ipv6-icmp
+	if have_ip6; then
+		# Allow ICMPv6 destination unreach
+		ipfw add pass ip6 from any to any icmp6types 1 proto ipv6-icmp
+	
+		# Allow NS/NA/toobig (don't filter it out)
+		ipfw add pass ip6 from any to any icmp6types 2,135,136 proto ipv6-icmp
+	fi
 	
 	# Add permits for this workstations published services below
 	# Only IPs and nets in firewall_allowservices is allowed in.
