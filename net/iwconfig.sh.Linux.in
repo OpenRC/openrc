@@ -433,7 +433,7 @@ iwconfig_scan()
 		[ -z "${a}" ] && break
 		eval b=\$QUALITY_${k}
 		if [ -n "${b}" -a "${a}" -lt "${b}" ]; then
-		    for x in MAC SSID CHAN QUALITY ENC; do
+		    for x in MAC SSID MODE CHAN QUALITY ENC; do
 			eval t=\$${x}_${i}
 			eval ${x}_${i}=\$${x}_${k}
 			eval ${x}_${k}=\$t
@@ -457,7 +457,7 @@ iwconfig_scan()
 				local u=${k}
 				# We need to split this into two tests, otherwise bash errors 
 				[ -n "${a}" -a -n "${b}" ] && [ "${a}" -lt "${b}" ] && u=${i}
-				unset MAC_${u} SSID_${u} CHAN_${u} QUALITY_${u} ENC_${u}
+				unset MAC_${u} SSID_${u} MODE_${u} CHAN_${u} QUALITY_${u} ENC_${u}
 			fi
 			k=$((${k} + 1))
 		done
@@ -503,7 +503,7 @@ iwconfig_scan()
 		for x; do
 			if [ "${x}" = "${s}" ]; then
 				ewarn "${s} has been blacklisted - not connecting"
-				unset SSID_${i} MAC_${i} CHAN_${i} QUALITY_${i} ENC_${i}
+				unset SSID_${i} MAC_${i} ${MODE}_${i} CHAN_${i} QUALITY_${i} ENC_${i}
 			fi
 		done
 		i=$((${i} + 1))
