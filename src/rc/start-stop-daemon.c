@@ -97,9 +97,10 @@ typedef struct scheduleitem
 	TAILQ_ENTRY(scheduleitem) entries;
 } SCHEDULEITEM;
 TAILQ_HEAD(, scheduleitem) schedule;
+static char **nav = NULL;
 
 extern const char *applet;
-static char *changeuser;
+static char *changeuser = NULL;
 
 extern char **environ;
 
@@ -118,8 +119,8 @@ static void free_schedulelist(void)
 
 static void cleanup(void)
 {
-	if (changeuser)
-		free(changeuser);
+	free(changeuser);
+	free(nav);
 
 	free_schedulelist();
 }
@@ -753,6 +754,7 @@ int start_stop_daemon(int argc, char **argv)
 			case_RC_COMMON_GETOPT
 		}
 
+	endpwent();
 	argc -= optind;
 	argv += optind;
 	quiet = rc_yesno(getenv("EINFO_QUIET"));
@@ -855,30 +857,31 @@ int start_stop_daemon(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	/* If we don't have a pidfile or name, check it's not
-	 * interpreted, otherwise we should fail */
-	if (!pidfile && !name) {
-		fp = fopen(tmp, "r");
+	/* If we don't have a pidfile we should check if it's interpreted
+	 * or not. If it we, we need to pass the interpreter through
+	 * to our daemon calls to find it correctly. */
+	if (!pidfile) {
+		fp = fopen(exec_file, "r");
 		if (fp) {
 			fgets(line, sizeof(line), fp);
 			fclose(fp);
-
 			if (line[0] == '#' && line[1] == '!') {
-				len = strlen(line) - 1;
-
 				/* Remove the trailing newline */
+				len = strlen(line) - 1;
 				if (line[len] == '\n')
 					line[len] = '\0';
-
-				eerror("%s: %s is a script",
-						applet, exec);
-				eerror("%s: and should be started, stopped"
-						" or signalled with ", applet);
-				eerror("%s: --exec %s %s",
-						applet, line + 2, exec);
-				eerror("%s: or you should specify a pidfile"
-						" or process name", applet);
-				exit(EXIT_FAILURE);
+				strncpy(exec_file, line + 2, sizeof(exec_file));
+				opt = 0;
+				for (nav = argv; *nav; nav++)
+					opt++;
+				nav = xmalloc(sizeof(char *) * (opt + 3));
+				nav[0] = exec_file;
+				nav[1] = (char *)"--";
+				for (i = 0; i < opt; i++)
+					nav[i + 2] = argv[i];
+				nav[i + 2] = '\0';
+				argv = nav;
+				exec = exec_file;
 			}
 		}
 	}
