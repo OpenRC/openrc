@@ -16,12 +16,15 @@ _is_bridge()
 
 bridge_pre_start()
 {
-	local ports= brif= iface="${IFACE}" e= x=
+	local brif= iface="${IFACE}" e= x=
 	local ports="$(_get_array "bridge_${IFVAR}")"
 	local opts="$(_get_array "brctl_${IFVAR}")"
 	
 	eval brif=\$bridge_add_${IFVAR}
-	[ -z "${ports}" -a -z "${brif}" -a -z "${opts}" ] && return 0
+	eval x=\${bridge_${IFVAR}-y\}
+	if [ -z "${brif}" -a -z "${opts}"] ; then
+		[ -n "${ports}" -o "${x}" != "y" ] || return 0
+	fi
 
 	[ -n "${ports}" ] && bridge_post_stop
 
