@@ -1,5 +1,4 @@
 # Copyright 2008 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
 
 # Setup some good default CFLAGS
 CFLAGS?=	-O2
@@ -10,15 +9,25 @@ _CSTD_SH=	if test -n "${CSTD}"; then echo "-std=${CSTD}"; else echo ""; fi
 _CSTD!=		${_CSTD_SH}
 CFLAGS+=	${_CSTD}$(shell ${_CSTD_SH})
 
-# Try and use some good cc flags
-_CC_FLAGS=	-pedantic -Wall -Wunused -Wimplicit -Wshadow -Wformat=2 \
-		-Wmissing-declarations -Wno-missing-prototypes -Wwrite-strings \
-		-Wbad-function-cast -Wnested-externs -Wcomment -Winline \
-		-Wchar-subscripts -Wcast-align -Wno-format-nonliteral \
-		-Wdeclaration-after-statement -Wsequence-point -Wextra
-_CC_FLAGS_SH=	for f in ${_CC_FLAGS}; do \
-		if ${CC} $$f -S -o /dev/null -xc /dev/null >/dev/null 2>&1; \
+# Try and use some good cc flags if we're building from git
+# We don't use -pedantic as it will warn about our perfectly valid
+# use of %m in our logger.
+_CCFLAGS=	-Wall -Wextra -Wimplicit -Wshadow -Wformat=2 \
+		-Wmissing-prototypes -Wmissing-declarations \
+		-Wmissing-noreturn -Wmissing-format-attribute \
+		-Wnested-externs \
+		-Winline -Wwrite-strings -Wcast-align -Wcast-qual \
+		-Wpointer-arith \
+		-Wdeclaration-after-statement -Wsequence-point
+
+# We should be using -Wredundant-decls, but our library hidden proto stuff
+# gives loads of warnings. I don't fully understand it (the hidden proto,
+# not the warning) so we just silence the warning.
+
+_CC_FLAGS_SH=	for f in ${_CCFLAGS}; do \
+		if echo "int main(void) { return 0;} " | \
+		${CC} $$f -S -xc -o /dev/null - ; \
 		then printf "%s" "$$f "; fi \
-		done
+		done;
 _CC_FLAGS!=	${_CC_FLAGS_SH}
-CFLAGS+=	${_CC_FLAGS}$(shell ${CC_FLAGS_SH})
+CFLAGS+=	${_CC_FLAGS}$(shell ${_CC_FLAGS_SH})
