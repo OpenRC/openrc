@@ -569,7 +569,8 @@
 
 #-----------------------------------------------------------------------------
 # Bonding
-# For link bonding/trunking emerge net-misc/ifenslave
+# For link bonding/trunking on 2.4 kernels, or kernels without sysfs
+# emerge net-misc/ifenslave
 
 # To bond interfaces together
 #slaves_bond0="eth0 eth1 eth2"

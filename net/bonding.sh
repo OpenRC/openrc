@@ -4,7 +4,6 @@
 bonding_depend()
 {
 	before interface macchanger
-	program /sbin/ifenslave
 }
 
 _config_vars="$_config_vars slaves"
@@ -53,7 +52,7 @@ bonding_pre_start()
 	# Must force the slaves to a particular state before adding them
 	for IFACE in ${slaves}; do
 		_delete_addresses
-		_up
+		_down
 	done
 	)
 
@@ -62,7 +61,13 @@ bonding_pre_start()
 
 	# finally add in slaves
 	eoutdent
-	/sbin/ifenslave "${IFACE}" ${slaves} >/dev/null
+	if [ -d /sys/class/net ]; then
+		for s in ${slaves}; do
+			echo "+${s}" >/sys/class/net/"${IFACE}"/bonding/slaves
+		done
+	else
+		/sbin/ifenslave "${IFACE}" ${slaves} >/dev/null
+	fi
 	eend $?
 
 	return 0 #important
@@ -84,7 +89,13 @@ bonding_stop()
 	eindent
 	einfo "${slaves}"
 	eoutdent
-	/sbin/ifenslave -d "${IFACE}" ${slaves}
+	if [ -d /sys/class/net ]; then
+		for s in ${slaves}; do
+			echo -"${s}" > /sys/class/net/"${IFACE}"/bonding/slaves
+		done
+	else
+		/sbin/ifenslave -d "${IFACE}" ${slaves}
+	fi
 
 	# reset all slaves
 	(
