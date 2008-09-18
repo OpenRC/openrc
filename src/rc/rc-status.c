@@ -128,7 +128,7 @@ static void print_service(const char *service)
 static void print_services(const char *runlevel, RC_STRINGLIST *services)
 {
 	RC_STRINGLIST *l = NULL;
-	RC_STRING *s, *t;
+	RC_STRING *s;
 	char *r = NULL;
 
 	if (! services)
@@ -156,10 +156,7 @@ static void print_services(const char *runlevel, RC_STRINGLIST *services)
 	if (!l)
 		return;
 	TAILQ_FOREACH(s, l, entries) {
-		TAILQ_FOREACH(t, services, entries)
-			if (strcmp(t->value, s->value) == 0)
-				break;
-		if (!t)
+		if (!rc_stringlist_find(services, s->value))
 			continue;
 		if (!runlevel || rc_service_in_runlevel(s->value, runlevel))
 			print_service(s->value);

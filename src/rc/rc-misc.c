@@ -124,7 +124,6 @@ void env_filter(void)
 	RC_STRINGLIST *profile = NULL;
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
-	RC_STRING *s;
 	char *env_name;
 	char *e;
 	char *token;
@@ -162,10 +161,7 @@ void env_filter(void)
 			continue;
 
 		/* Check our user defined list */
-		TAILQ_FOREACH(s, env_allow, entries)
-			if (strcmp(s->value, env->value) == 0)
-				break;
-		if (s)
+		if (rc_stringlist_find(env_allow, env->value))
 			continue;
 
 		/* Now check our profile */
