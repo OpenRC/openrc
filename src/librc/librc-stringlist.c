@@ -84,9 +84,11 @@ RC_STRING *rc_stringlist_find(RC_STRINGLIST *list, const char *value)
 {
 	RC_STRING *s;
 
-	TAILQ_FOREACH(s, list, entries)
-		if (strcmp(s->value, value) == 0)
-			return s;
+	if (list) {
+		TAILQ_FOREACH(s, list, entries)
+			if (strcmp(s->value, value) == 0)
+				return s;
+	}
 	return NULL;
 }
 librc_hidden_def(rc_stringlist_find)
