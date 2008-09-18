@@ -138,10 +138,14 @@ RC_STRINGLIST *rc_config_load(const char *file)
 	TAILQ_FOREACH(line, list, entries) {
 		/* Get entry */
 		p = line->value;
+		if (! p)
+			continue;
+		if (strncmp(p, "export ", 7) == 0)
+			p += 7;
 		if (! (token = strsep(&p, "=")))
 			continue;
 
-		entry = xstrdup (token);
+		entry = xstrdup(token);
 		/* Preserve shell coloring */
 		if (*p == '$')
 			token = line->value;

@@ -124,37 +124,27 @@ void env_filter(void)
 	RC_STRINGLIST *profile = NULL;
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
-	char *env_name;
 	char *e;
-	char *token;
 	size_t i = 0;
 
 	/* Add the user defined list of vars */
-	env_allow = rc_stringlist_new();
-	e = env_name = xstrdup(rc_conf_value ("rc_env_allow"));
-	while ((token = strsep(&e, " "))) {
-		if (token[0] == '*') {
-			free(env_name);
-			rc_stringlist_free(env_allow);
-			return;
-		}
-		rc_stringlist_add(env_allow, token);
-	}
-	free(env_name);
-
+	env_allow = rc_stringlist_split(rc_conf_value ("rc_env_allow"), " ");
 	if (exists(PROFILE_ENV))
 		profile = rc_config_load(PROFILE_ENV);
 
-	/* Copy the env and work from this so we can remove safely */
+	/* Copy the env and work from this so we can manipulate it safely */
 	env_list = rc_stringlist_new();
-	while (environ[i])
-		rc_stringlist_add(env_list, environ[i++]);
+	while (environ[i]) {
+		env = rc_stringlist_add(env_list, environ[i++]);
+		e = strchr(env->value, '=');
+		if (e)
+			*e = '\0';
+	}
 
 	TAILQ_FOREACH(env, env_list, entries) {
 		/* Check the whitelist */
-		i = 0;
-		while (env_whitelist[i]) {
-			if (strcmp(env_whitelist[i++], env->value))
+		for (i = 0; env_whitelist[i]; i++) {
+			if (strcmp(env_whitelist[i], env->value) == 0)
 				break;
 		}
 		if (env_whitelist[i])
@@ -164,13 +154,19 @@ void env_filter(void)
 		if (rc_stringlist_find(env_allow, env->value))
 			continue;
 
-		/* Now check our profile */
-
 		/* OK, not allowed! */
-		e = strchr(env->value, '=');
-		*e = '\0';
 		unsetenv(env->value);
 	}
+
+	/* Now add anything missing from the profile */
+	TAILQ_FOREACH(env, profile, entries) {
+		e = strchr(env->value, '=');
+		*e = '\0';
+		if (!getenv(env->value))
+			setenv(env->value, e + 1, 1);
+	}
+		
+
 	rc_stringlist_free(env_list);
 	rc_stringlist_free(env_allow);
 	rc_stringlist_free(profile);
