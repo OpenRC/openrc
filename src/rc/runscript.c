@@ -506,19 +506,12 @@ static bool svc_wait(const char *svc)
 	bool retval = false;
 	bool forever = false;
 	RC_STRINGLIST *keywords;
-	RC_STRING *s;
 
 	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend(deptree, svc, "keyword");
-	if (keywords) {
-		TAILQ_FOREACH(s, keywords, entries) {
-			if (strcmp (s->value, "notimeout") == 0) {
-				forever = true;
-				break;
-			}
-		}
-		rc_stringlist_free (keywords);
-	}
+	if (rc_stringlist_find(keywords, "notimeout"))
+		forever = true;
+	rc_stringlist_free(keywords);
 
 	snprintf(fifo, sizeof(fifo), RC_SVCDIR "/exclusive/%s", basename_c(svc));
 	ts.tv_sec = 0;
@@ -651,19 +644,6 @@ static void setup_types(void)
 	rc_stringlist_add(types_mua, "beforeme");
 }
 
-static bool in_list(RC_STRINGLIST *list, char *string)
-{
-	RC_STRING *s;
-
-	if (! list)
-		return false;
-	TAILQ_FOREACH(s, list, entries)
-		if (strcmp(s->value, string) == 0)
-			return true;
-	return false;
-}
-
-
 static void svc_start(bool deps)
 {
 	bool started;
@@ -774,8 +754,8 @@ static void svc_start(bool deps)
 				if (state & RC_SERVICE_STARTING &&
 				    state & RC_SERVICE_WASINACTIVE)
 				{
-					if (!in_list(need_services, svc->value) &&
-					    !in_list(use_services, svc->value))
+					if (!rc_stringlist_find(need_services, svc->value) &&
+					    !rc_stringlist_find(use_services, svc->value))
 						continue;
 				}
 
@@ -785,7 +765,7 @@ static void svc_start(bool deps)
 				state = rc_service_state(svc->value);
 				if (state & RC_SERVICE_STARTED)
 					continue;
-				if (in_list(need_services, svc->value)) {
+				if (rc_stringlist_find(need_services, svc->value)) {
 					if (state & RC_SERVICE_INACTIVE ||
 					    state & RC_SERVICE_WASINACTIVE)
 					{
@@ -1013,7 +993,7 @@ static void svc_stop(bool deps)
 					continue;
 				svc_wait(svc->value);
 			}
-			rc_stringlist_free (services);
+			rc_stringlist_free(services);
 			services = NULL;
 		}
 	}
