@@ -4,6 +4,9 @@
 # in parallel for a slight speed improvement. When running in parallel we
 # prefix the service output with it's name as the output will get
 # jumbled up.
+# WARNING: whilst we have improved parallel, it can still potentially lock
+# the boot process. Don't file bugs about this unless you can supply
+# patches that fix it without breaking other things!
 rc_parallel="NO"
 
 # Set rc_interactive to "YES" and you'll be able to press the I key during
