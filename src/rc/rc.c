@@ -784,10 +784,7 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 		}
 
 		/* If we're in the start list then don't bother stopping us */
-		TAILQ_FOREACH(svc1, start_services, entries)
-			if (strcmp (svc1->value, service->value) == 0)
-				break;
-
+		svc1 = rc_stringlist_find(start_services, service->value);
 		if (svc1) {
 			if (newlevel && strcmp(runlevel, newlevel) != 0) {
 				/* So we're in the start list. But we should
@@ -813,9 +810,7 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 			rc_stringlist_free(tmplist);
 			svc2 = NULL;
 			TAILQ_FOREACH (svc1, deporder, entries) {
-				TAILQ_FOREACH(svc2, start_services, entries)
-					if (strcmp (svc1->value, svc2->value) == 0)
-						break;
+				svc2 = rc_stringlist_find(start_services, svc1->value);
 				if (svc2)
 					break;
 			}
