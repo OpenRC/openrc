@@ -756,6 +756,7 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 	RC_STRING *service, *svc1, *svc2;
 	RC_STRINGLIST *deporder, *tmplist;
 	RC_SERVICE state;
+	RC_STRINGLIST *nostop = rc_stringlist_split(rc_conf_value("rc_nostop"), " ");
 
 	if (! types_n) {
 		types_n = rc_stringlist_new();
@@ -767,6 +768,12 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 		state = rc_service_state(service->value);
 		if (state & RC_SERVICE_STOPPED || state & RC_SERVICE_FAILED)
 			continue;
+
+		/* Sometimes we don't ever want to stop a service. */
+		if (rc_stringlist_find(nostop, service->value)) {
+			rc_service_mark(service->value, RC_SERVICE_FAILED);
+			continue;
+		}
 
 		/* We always stop the service when in these runlevels */
 		if (going_down || ! start_services) {
@@ -828,6 +835,8 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 			}
 		}
 	}
+
+	rc_stringlist_free(nostop);
 }
 
 static void do_start_services(bool parallel)
