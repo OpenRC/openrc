@@ -98,10 +98,10 @@ static int do_mount(struct ENT *ent)
 	pid_t pid;
 	int status;
 
-	argv[0] = (char *) "mount";
-	argv[1] = (char *) "-o";
+	argv[0] = UNCONST("mount");
+	argv[1] = UNCONST("-o");
 	argv[2] = ENT_OPTS(*ent);
-	argv[3] = (char *) "-t";
+	argv[3] = UNCONST("-t");
 	argv[4] = ENT_TYPE(*ent);
 	argv[5] = ENT_BLOCKDEVICE(*ent);
 	argv[6] = ENT_FILE(*ent);

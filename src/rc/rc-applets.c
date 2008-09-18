@@ -82,9 +82,10 @@ static int do_e(int argc, char **argv)
 	char *message = NULL;
 	char *p;
 	int level = 0;
-	const char *fmt = "%s";
 	struct timespec ts;
 	struct timeval stop, now;
+	int (*e) (const char *, ...) __EINFO_PRINTF = NULL;
+	int (*ee) (int, const char *, ...) __EEND_PRINTF = NULL;
 
 	/* Punt applet */
 	argc--;
@@ -184,45 +185,42 @@ static int do_e(int argc, char **argv)
 		*p = 0;
 	}
 
-	if (! message)
-		fmt = "";
-
 	if (strcmp(applet, "einfo") == 0)
-		einfo(fmt, message);
+		e = einfo;
 	else if (strcmp(applet, "einfon") == 0)
-		einfon(fmt, message);
+		e = einfon;
 	else if (strcmp(applet, "ewarn") == 0)
-		ewarn(fmt, message);
+		e = ewarn;
 	else if (strcmp(applet, "ewarnn") == 0)
-		ewarnn(fmt, message);
+		e = ewarnn;
 	else if (strcmp(applet, "eerror") == 0) {
-		eerror(fmt, message);
+		e = eerror;
 		retval = 1;
 	} else if (strcmp(applet, "eerrorn") == 0) {
-		eerrorn(fmt, message);
+		e = eerrorn;
 		retval = 1;
 	} else if (strcmp(applet, "ebegin") == 0)
-		ebegin(fmt, message);
+		e = ebegin;
 	else if (strcmp(applet, "eend") == 0)
-		eend(retval, fmt, message);
+		ee = eend;
 	else if (strcmp(applet, "ewend") == 0)
-		ewend(retval, fmt, message);
+		ee = ewend;
 	else if (strcmp(applet, "esyslog") == 0)
-		elog(level, fmt, message);
+		ee = elog;
 	else if (strcmp(applet, "veinfo") == 0)
-		einfov(fmt, message);
+		e = einfov;
 	else if (strcmp(applet, "veinfon") == 0)
-		einfovn(fmt, message);
+		e = einfovn;
 	else if (strcmp(applet, "vewarn") == 0)
-		ewarnv(fmt, message);
+		e = ewarnv;
 	else if (strcmp(applet, "vewarnn") == 0)
-		ewarnvn(fmt, message);
+		e = ewarnvn;
 	else if (strcmp(applet, "vebegin") == 0)
-		ebeginv(fmt, message);
+		e = ebeginv;
 	else if (strcmp(applet, "veend") == 0)
-		eendv(retval, fmt, message);
+		ee = eendv;
 	else if (strcmp(applet, "vewend") == 0)
-		ewendv(retval, fmt, message);
+		ee = ewendv;
 	else if (strcmp(applet, "eindent") == 0)
 		eindent();
 	else if (strcmp(applet, "eoutdent") == 0)
@@ -234,6 +232,18 @@ static int do_e(int argc, char **argv)
 	else {
 		eerror("%s: unknown applet", applet);
 		retval = EXIT_FAILURE;
+	}
+
+	if (message) {
+		if (e)
+			e("%s", message);
+		else if (ee)
+			ee(retval, "%s", message);
+	} else {
+		if (e)
+			e(NULL);
+		else if (ee)
+			ee(retval, NULL);
 	}
 
 	free(message);

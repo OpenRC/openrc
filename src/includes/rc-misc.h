@@ -52,12 +52,16 @@
 
 #define ERRX fprintf (stderr, "out of memory\n"); exit (1)
 
+#define UNCONST(a)		((void *)(unsigned long)(const void *)(a))
+
 #ifdef lint
 # define _unused
 #endif
 #if __GNUC__ > 2 || defined(__INTEL_COMPILER)
+# define _dead __attribute__((__noreturn__))
 # define _unused __attribute__((__unused__))
 #else
+# define _dead
 # define _unused
 #endif
 

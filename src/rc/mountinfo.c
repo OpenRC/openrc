@@ -481,6 +481,5 @@ int mountinfo(int argc, char **argv)
 	REG_FREE(point_regex);
 	REG_FREE(skip_point_regex);
 
-	exit(result);
-	/* NOTREACHED */
+	return result;
 }

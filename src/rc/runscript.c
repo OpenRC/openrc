@@ -547,18 +547,18 @@ static bool svc_wait(const char *svc)
 static RC_SERVICE svc_status(void)
 {
 	char status[10];
-	int (*e) (const char *fmt, ...) = &einfo;
+	int (*e) (const char *fmt, ...) __EINFO_PRINTF = einfo;
 	RC_SERVICE state = rc_service_state(service);
 
 	if (state & RC_SERVICE_STOPPING) {
 		snprintf(status, sizeof(status), "stopping");
-		e = &ewarn;
+		e = ewarn;
 	} else if (state & RC_SERVICE_STARTING) {
 		snprintf(status, sizeof(status), "starting");
-		e = &ewarn;
+		e = ewarn;
 	} else if (state & RC_SERVICE_INACTIVE) {
 		snprintf(status, sizeof(status), "inactive");
-		e = &ewarn;
+		e = ewarn;
 	} else if (state & RC_SERVICE_STARTED) {
 		errno = 0;
 		if (_rc_can_find_pids() &&
@@ -566,7 +566,7 @@ static RC_SERVICE svc_status(void)
 		    errno != EACCES)
 		{
 			snprintf(status, sizeof(status), "crashed");
-			e = &eerror;
+			e = eerror;
 		} else
 			snprintf(status, sizeof(status), "started");
 	} else

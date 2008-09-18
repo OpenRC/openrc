@@ -354,7 +354,7 @@ static void sulogin(bool cont)
 #endif
 }
 
-static void single_user(void)
+_dead static void single_user(void)
 {
 	rc_logger_close();
 

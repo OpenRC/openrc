@@ -289,6 +289,5 @@ exit:
 	rc_stringlist_free(levels);
 	rc_deptree_free(deptree);
 
-	exit(EXIT_SUCCESS);
-	/* NOTREACHED */
+	return(EXIT_SUCCESS);
 }

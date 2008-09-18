@@ -874,12 +874,11 @@ int start_stop_daemon(int argc, char **argv)
 				opt = 0;
 				for (nav = argv; *nav; nav++)
 					opt++;
-				nav = xmalloc(sizeof(char *) * (opt + 3));
+				nav = xmalloc(sizeof(char *) * (opt + 2));
 				nav[0] = exec_file;
-				nav[1] = (char *)"--";
 				for (i = 0; i < opt; i++)
-					nav[i + 2] = argv[i];
-				nav[i + 2] = '\0';
+					nav[i + 1] = argv[i];
+				nav[i + 1] = '\0';
 				argv = nav;
 				exec = exec_file;
 			}

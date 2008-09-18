@@ -208,6 +208,5 @@ int checkpath(int argc, char **argv)
 		optind++;
 	}
 
-	exit(retval);
-	/* NOTREACHED */
+	return retval;
 }
