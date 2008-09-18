@@ -44,6 +44,8 @@ global:
 	rc_stringlist_add;
 	rc_stringlist_addu;
 	rc_stringlist_delete;
+	rc_stringlist_find;
+	rc_stringlist_split;
 	rc_stringlist_new;
 	rc_stringlist_sort;
 	rc_stringlist_free;

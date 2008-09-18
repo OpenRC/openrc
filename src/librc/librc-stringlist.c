@@ -80,6 +80,31 @@ bool rc_stringlist_delete(RC_STRINGLIST *list, const char *value)
 }
 librc_hidden_def(rc_stringlist_delete)
 
+RC_STRING *rc_stringlist_find(RC_STRINGLIST *list, const char *value)
+{
+	RC_STRING *s;
+
+	TAILQ_FOREACH(s, list, entries)
+		if (strcmp(s->value, value) == 0)
+			return s;
+	return NULL;
+}
+librc_hidden_def(rc_stringlist_find)
+
+RC_STRINGLIST *rc_stringlist_split(const char *value, const char *sep)
+{
+	RC_STRINGLIST *list = rc_stringlist_new();
+	char *d = xstrdup(value);
+	char *p = d, *token;
+
+	while ((token = strsep(&p, sep)))
+		rc_stringlist_add(list, token);
+	free(d);
+
+	return list;
+}
+librc_hidden_def(rc_stringlist_split)
+
 void rc_stringlist_sort(RC_STRINGLIST **list)
 {
 	RC_STRINGLIST *l = *list;

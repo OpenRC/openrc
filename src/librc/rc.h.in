@@ -445,6 +445,19 @@ RC_STRING *rc_stringlist_addu(RC_STRINGLIST *, const char *);
  * @return true on success, otherwise false */
 bool rc_stringlist_delete(RC_STRINGLIST *, const char *);
 
+/*! Find the item on the list.
+ * @param list to search
+ * @param item to find.
+ * @return pointer to item */
+RC_STRING *rc_stringlist_find(RC_STRINGLIST *, const char *);
+
+/*! Split a string into a stringlist based on seperator.
+ * @param string to split
+ * @param seperator
+ * @return new list */
+RC_STRINGLIST *rc_stringlist_split(const char *, const char *);
+
+
 /*! Sort the list according to C locale 
  * @param list to sort */
 void rc_stringlist_sort(RC_STRINGLIST **);
