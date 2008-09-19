@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Jul 03, 2008
+.Dd September 19, 2008
 .Dt RUNSCRIPT 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -442,6 +442,12 @@ show()
 
 .Ed
 .Sh BUGS
+Because of the way we load our configuration files and the need to handle
+more than one service directory, you can only use symlinks in service
+directories to other services in the same directory.
+You cannot symlink to a service in a different directory even if it is
+another service directory.
+.Pp
 is_older_than should return 0 on success.
 Instead we return 1 to be compliant with Gentoo baselayout.
 Users are encouraged to use the is_newer_than function which returns correctly.
@@ -455,4 +461,4 @@ Users are encouraged to use the is_newer_than function which returns correctly.
 .Xr start-stop-daemon 8 ,
 .Xr uname 1
 .Sh AUTHORS
-.An "Roy Marples" Aq roy@marples.name
+.An "Roy Marples" <roy@marples.name>
