@@ -15,7 +15,7 @@ _is_bond()
 
 bonding_pre_start()
 {
-	local s= slaves="$(_get_array "slaves_${IFVAR}")" 
+	local x= s= slaves="$(_get_array "slaves_${IFVAR}")" 
 
 	[ -z "${slaves}" ] && return 0
 
@@ -38,6 +38,16 @@ bonding_pre_start()
 		eerror "${IFACE} is not capable of bonding"
 		return 1
 	fi
+
+	# Configure the bond.
+	# Nice and dynamic :)
+	for x in /sys/class/net/"${IFACE}"/bonding/*; do
+		[ -f "${x}" ] || continue
+		eval s=\$${x##*/}_${IFVAR}
+		if [ -n "${s}" ]; then
+			echo "${s}" >"${x}"
+		fi
+	done
 
 	ebegin "Adding slaves to ${IFACE}"
 	eindent

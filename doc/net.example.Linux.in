@@ -576,6 +576,11 @@
 #slaves_bond0="eth0 eth1 eth2"
 #config_bond0="null" # You may not want to assign an IP the the bond
 
+# You can also configure the bond here, which must be done via sysfs on 2.6
+# kernels or newer. See the kernel bonding documention for a description of
+# these options.
+#arp_ip_target_bond0="+26.0.0.0"
+
 # If any of the slaves require extra configuration - for example wireless or
 # ppp devices - we need to depend function on the bonded interfaces
 #rc_need_bond0="net.eth0 net.eth1"
