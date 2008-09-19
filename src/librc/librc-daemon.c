@@ -428,7 +428,7 @@ bool rc_service_started_daemon(const char *service,
 	DIR *dp;
 	struct dirent *d;
 
-	if (!service || !(argv && *argv))
+	if (!service || !exec)
 		return false;
 
 	snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
