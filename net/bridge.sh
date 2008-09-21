@@ -22,7 +22,7 @@ bridge_pre_start()
 	
 	eval brif=\$bridge_add_${IFVAR}
 	eval x=\${bridge_${IFVAR}-y\}
-	if [ -z "${brif}" -a -z "${opts}"] ; then
+	if [ -z "${brif}" -a -z "${opts}" ]; then
 		[ -n "${ports}" -o "${x}" != "y" ] || return 0
 	fi
 
