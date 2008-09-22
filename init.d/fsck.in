@@ -33,7 +33,7 @@ start()
 		ewarn "Skipping fsck due to /fastboot"
 		return 0
 	fi
-	if [ -e /forcefsck ]; then
+	if [ -e /forcefsck ] || get_bootparam forcefsck; then
 		fsck_opts="${fsck_opts} -f"
 		check_extra="(check forced)"
 	fi
