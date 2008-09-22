@@ -534,7 +534,9 @@ bool rc_service_daemons_crashed(const char *service)
 			free(pidfile);
 			pidfile = NULL;
 
-			/* We have the pid, so no need to match on name */
+			/* We have the pid, so no need to match on exec or name */
+			free(exec);
+			exec = NULL;
 			free(name);
 			name = NULL;
 		} else {
