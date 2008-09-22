@@ -606,6 +606,7 @@ int start_stop_daemon(int argc, char **argv)
 	size_t len;
 	bool setumask = false;
 	mode_t numask;
+	char **margv;
 
 	TAILQ_INIT(&schedule);
 	atexit(cleanup);
@@ -868,7 +869,7 @@ int start_stop_daemon(int argc, char **argv)
 			if (line[0] == '#' && line[1] == '!') {
 				p = line + 2;
 				/* Strip leading spaces */
-				while (*p == ' ')
+				while (*p == ' ' || *p == '\t')
 					p++;
 				/* Remove the trailing newline */
 				len = strlen(p) - 1;
@@ -876,29 +877,29 @@ int start_stop_daemon(int argc, char **argv)
 					p[len] = '\0';
 				token = strsep(&p, " ");
 				strncpy(exec_file, token, sizeof(exec_file));
-				token = strsep(&p, " ");
 				opt = 0;
 				for (nav = argv; *nav; nav++)
 					opt++;
-				nav = xmalloc(sizeof(char *) * (opt + token ? 3 : 2));
+				nav = xmalloc(sizeof(char *) * (opt + 3));
 				nav[0] = exec_file;
-				if (token)
-					nav[1] = token;
+				len = 1;
+				if (p)
+					nav[len++] = p;
 				for (i = 0; i < opt; i++)
-					nav[i + token ? 2 : 1] = argv[i];
-				nav[i + token ? 2 : 1] = '\0';
-				argv = nav;
-				exec = exec_file;
+					nav[i + len] = argv[i];
+				nav[i + len] = '\0';
 			}
 		}
 	}
+
+	margv = nav ? nav : argv;
 
 	if (pidfile)
 		pid = get_pid(pidfile, true);
 	else
 		pid = 0;
 
-	if (do_stop(exec, (const char * const *)argv, pid, uid,
+	if (do_stop(exec, (const char * const *)margv, pid, uid,
 		    0, true, false, true) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
@@ -1165,7 +1166,7 @@ int start_stop_daemon(int argc, char **argv)
 						nloopsp = 0;
 				} else
 					pid = 0;
-				if (do_stop(exec, (const char *const *)argv,
+				if (do_stop(exec, (const char *const *)margv,
 					    pid, uid, 0, true, false, true) > 0)
 					alive = true;
 			}
@@ -1176,7 +1177,7 @@ int start_stop_daemon(int argc, char **argv)
 	}
 
 	if (svcname)
-		rc_service_daemon_set(svcname, exec, (const char *const *)argv,
+		rc_service_daemon_set(svcname, exec, (const char *const *)margv,
 				      pidfile, true);
 
 	exit(EXIT_SUCCESS);
