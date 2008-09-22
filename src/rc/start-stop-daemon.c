@@ -866,19 +866,27 @@ int start_stop_daemon(int argc, char **argv)
 			fgets(line, sizeof(line), fp);
 			fclose(fp);
 			if (line[0] == '#' && line[1] == '!') {
+				p = line + 2;
+				/* Strip leading spaces */
+				while (*p == ' ')
+					p++;
 				/* Remove the trailing newline */
-				len = strlen(line) - 1;
-				if (line[len] == '\n')
-					line[len] = '\0';
-				strncpy(exec_file, line + 2, sizeof(exec_file));
+				len = strlen(p) - 1;
+				if (p[len] == '\n')
+					p[len] = '\0';
+				token = strsep(&p, " ");
+				strncpy(exec_file, token, sizeof(exec_file));
+				token = strsep(&p, " ");
 				opt = 0;
 				for (nav = argv; *nav; nav++)
 					opt++;
-				nav = xmalloc(sizeof(char *) * (opt + 2));
+				nav = xmalloc(sizeof(char *) * (opt + token ? 3 : 2));
 				nav[0] = exec_file;
+				if (token)
+					nav[1] = token;
 				for (i = 0; i < opt; i++)
-					nav[i + 1] = argv[i];
-				nav[i + 1] = '\0';
+					nav[i + token ? 2 : 1] = argv[i];
+				nav[i + token ? 2 : 1] = '\0';
 				argv = nav;
 				exec = exec_file;
 			}
