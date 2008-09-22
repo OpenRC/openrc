@@ -58,6 +58,7 @@ get_bootparam()
 
 	set -- $(cat /proc/cmdline)
 	while [ -n "$1" ]; do
+		[ "$1" = "${match}" ] && return 0
 		case "$1" in
 			gentoo=*)
 				local params="${1##*=}"
