@@ -52,6 +52,14 @@ rc_logger="NO"
 # variables through, add them here. Use a * to allow all variables through.
 # rc_env_allow="VAR1 VAR2"
 
+# By default we assume that all daemons will start correctly.
+# However, some do not - a classic example is that they fork and return 0 AND
+# then child barfs on a configuration error. Or the daemon has a bug and the
+# child crashes. You can set the number of milliseconds start-stop-daemon
+# waits to check that the daemon is still running after starting here.
+# The default is 0 - no checking.
+# rc_start_wait=100
+
 ##############################################################################
 # MISC CONFIGURATION VARIABLES
 # There variables are shared between many init scripts

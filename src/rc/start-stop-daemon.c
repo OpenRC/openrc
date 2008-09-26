@@ -36,7 +36,6 @@
 /* nano seconds */
 #define POLL_INTERVAL   20000000
 #define WAIT_PIDFILE   500000000
-#define START_WAIT     100000000
 #define ONE_SECOND    1000000000
 
 #include <sys/types.h>
@@ -607,6 +606,7 @@ int start_stop_daemon(int argc, char **argv)
 	bool setumask = false;
 	mode_t numask;
 	char **margv;
+	unsigned int start_wait = 0;
 
 	TAILQ_INIT(&schedule);
 	atexit(cleanup);
@@ -1090,12 +1090,14 @@ int start_stop_daemon(int argc, char **argv)
 		if (pamr == PAM_SUCCESS)
 			pam_close_session(pamh, PAM_SILENT);
 #endif
-		eerrorx("%s: failed to exec `%s': %s", applet, exec, strerror(errno));
+		eerrorx("%s: failed to exec `%s': %s",
+			applet, exec,strerror(errno));
 	}
 
 	/* Parent process */
 	if (!background) {
-		/* As we're not backgrounding the process, wait for our pid to return */
+		/* As we're not backgrounding the process, wait for our pid
+		 * to return */
 		i = 0;
 		spid = pid;
 
@@ -1116,9 +1118,18 @@ int start_stop_daemon(int argc, char **argv)
 
 	/* Wait a little bit and check that process is still running
 	   We do this as some badly written daemons fork and then barf */
-	if (START_WAIT > 0) {
+	if ((p = getenv("SSD_STARTWAIT")) ||
+	    (p = rc_conf_value("rc_start_wait")))
+	{
+		if (sscanf(p, "%u", &start_wait) == 1)
+			start_wait *= 1000000;
+		else
+			start_wait = 0;
+	}
+
+	if (start_wait > 0) {
 		struct timespec ts;
-		int nloops = START_WAIT / POLL_INTERVAL;
+		int nloops = start_wait / POLL_INTERVAL;
 		int nloopsp = WAIT_PIDFILE / POLL_INTERVAL;
 		bool alive = false;
 
@@ -1135,30 +1146,35 @@ int start_stop_daemon(int argc, char **argv)
 				}
 			}
 
-			/* We wait for a specific amount of time for a pidfile to be
-			 * created. Once everything is in place we then wait some more
-			 * to ensure that the daemon really is running and won't abort due
-			 * to a config error. */
+			/* We wait for a specific amount of time for a pidfile
+			 * to be created.
+			 * Once everything is in place we then wait some more
+			 * to ensure that the daemon really is running and won't
+			 * abort due to a config error. */
 			if (!background && pidfile && nloopsp)
 				nloopsp--;
 			else
 				nloops--;
 
 			/* This is knarly.
-			   If we backgrounded then we know the exact pid.
-			   Otherwise if we have a pidfile then it *may* know the exact pid.
-			   Failing that, we'll have to query processes.
-			   We sleep first as some programs like ntp like to fork, and write
-			   their pidfile a LONG time later. */
+			 * If we backgrounded then we know the exact pid.
+			 * Otherwise if we have a pidfile then it *may* know
+			 * the exact pid.
+			 * Failing that, we'll have to query processes.
+			 * We sleep first as some programs like ntp like to
+			 * fork, and write their pidfile a LONG time later. */
 			if (background) {
 				if (kill (pid, 0) == 0)
 					alive = true;
 			} else {
 				if (pidfile) {
-					/* The pidfile may not have been written yet - give it some time */
+					/* The pidfile may not have been
+					 * written yet - give it some time */
 					if ((pid = get_pid(pidfile, true)) == -1) {
 						if (! nloopsp)
-							eerrorx("%s: did not create a valid pid in `%s'",
+							eerrorx("%s: did not "
+								"create a valid"
+								" pid in `%s'",
 								applet, pidfile);
 						alive = true;
 						pid = 0;
