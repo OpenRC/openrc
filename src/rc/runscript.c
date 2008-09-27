@@ -503,6 +503,7 @@ static bool svc_wait(const char *svc)
 	char fifo[PATH_MAX];
 	struct timespec ts;
 	int nloops = WAIT_MAX * (ONE_SECOND / WAIT_INTERVAL);
+	int sloops = (ONE_SECOND / WAIT_INTERVAL) * 5;
 	bool retval = false;
 	bool forever = false;
 	RC_STRINGLIST *keywords;
@@ -530,6 +531,11 @@ static bool svc_wait(const char *svc)
 
 		if (! forever)
 			nloops --;
+
+		if (--sloops == 0) {
+			ewarn("%s: waiting for %s", applet, svc);
+			sloops = (ONE_SECOND / WAIT_INTERVAL) * 5;
+		}
 	}
 
 	if (! exists(fifo))
