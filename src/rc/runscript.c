@@ -32,6 +32,7 @@
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/file.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 
@@ -93,7 +94,6 @@ static bool in_background = false;
 static RC_HOOK hook_out = 0;
 static pid_t service_pid = 0;
 static char *prefix = NULL;
-static bool prefix_locked = false;
 static int signal_pipe[2] = { -1, -1 };
 static int master_tty = -1;
 
@@ -315,8 +315,6 @@ static void cleanup(void)
 	restore_state();
 
 	if (! rc_in_plugin) {
-		if (prefix_locked)
-			unlink(PREFIX_LOCK);
 		if (hook_out) {
 			rc_plugin_run(hook_out, applet);
 			if (hook_out == RC_HOOK_SERVICE_START_DONE)
@@ -359,7 +357,16 @@ static int write_prefix(const char *buffer, size_t bytes, bool *prefixed) {
 	const char *ec = ecolor(ECOLOR_HILITE);
 	const char *ec_normal = ecolor(ECOLOR_NORMAL);
 	ssize_t ret = 0;
-	int fd = fileno(stdout);
+	int fd = fileno(stdout), lock_fd = -1;
+
+	/* Spin until we lock the prefix */
+	for (;;) {
+		lock_fd = open(PREFIX_LOCK, O_WRONLY | O_CREAT, 0664);
+		if (lock_fd != -1)
+			if (flock(lock_fd, LOCK_EX) == 0)
+				break;
+		close(lock_fd);
+	}
 
 	for (i = 0; i < bytes; i++) {
 		/* We don't prefix escape codes, like eend */
@@ -378,6 +385,9 @@ static int write_prefix(const char *buffer, size_t bytes, bool *prefixed) {
 			*prefixed = false;
 		ret += write(fd, buffer + i, 1);
 	}
+
+	/* Release the lock */
+	close(lock_fd);
 
 	return ret;
 }
