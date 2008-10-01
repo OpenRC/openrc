@@ -88,7 +88,11 @@ start()
 		for x in $(find /var/run ! -type d ! -name utmp \
 			! -name random-seed ! -name dev.db \
 			! -name ld-elf.so.hints ! -name ld.so.hints);
-		do	
+		do
+			# Clean stale sockets
+			if [ -S "${x}" ] && type fuser >/dev/null 2>&1; then
+				fuser -s "${x}" || rm "${x}"
+			fi
 			[ ! -f "${x}" ] && continue
 			# Do not remove pidfiles of already running daemons
 			case "${x}" in
