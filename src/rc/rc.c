@@ -1092,6 +1092,7 @@ int main(int argc, char **argv)
 		going_down = true;
 		rc_runlevel_set(newlevel);
 		setenv("RC_RUNLEVEL", newlevel, 1);
+		setenv("RC_GOINGDOWN", "YES", 1);
 
 #ifdef __FreeBSD__
 		/* FIXME: we shouldn't have todo this */
