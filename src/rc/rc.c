@@ -1188,10 +1188,6 @@ int main(int argc, char **argv)
 		}
 	}
 
-	/* Save our runlevel now */
-	if (going_down)
-		rc_runlevel_set(newlevel);
-
 	parallel = rc_conf_yesno("rc_parallel");
 
 	/* Now stop the services that shouldn't be running */
@@ -1202,7 +1198,8 @@ int main(int argc, char **argv)
 	wait_for_services();
 
 	/* Notify the plugins we have finished */
-	rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_OUT, runlevel);
+	rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_OUT,
+		      going_down ? newlevel : runlevel);
 	hook_out = 0;
 
 	rmdir(RC_STOPPING);
