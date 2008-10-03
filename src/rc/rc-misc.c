@@ -128,13 +128,13 @@ void env_filter(void)
 	size_t i = 0;
 
 	/* Add the user defined list of vars */
-	env_allow = rc_stringlist_split(rc_conf_value ("rc_env_allow"), " ");
+	env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
 	if (exists(PROFILE_ENV))
 		profile = rc_config_load(PROFILE_ENV);
 
 	/* Copy the env and work from this so we can manipulate it safely */
 	env_list = rc_stringlist_new();
-	while (environ[i]) {
+	while (environ && environ[i]) {
 		env = rc_stringlist_add(env_list, environ[i++]);
 		e = strchr(env->value, '=');
 		if (e)
@@ -159,14 +159,15 @@ void env_filter(void)
 	}
 
 	/* Now add anything missing from the profile */
-	TAILQ_FOREACH(env, profile, entries) {
-		e = strchr(env->value, '=');
-		*e = '\0';
-		if (!getenv(env->value))
-			setenv(env->value, e + 1, 1);
+	if (profile) {
+		TAILQ_FOREACH(env, profile, entries) {
+			e = strchr(env->value, '=');
+			*e = '\0';
+			if (!getenv(env->value))
+				setenv(env->value, e + 1, 1);
+		}
 	}
 		
-
 	rc_stringlist_free(env_list);
 	rc_stringlist_free(env_allow);
 	rc_stringlist_free(profile);
