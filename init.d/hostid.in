@@ -38,9 +38,11 @@ _set()
 # otherwise we generate a random UUID.
 reset()
 {
-	local uuid=$(kenv smbios.system.uuid 2>/dev/null)
-	local x="[0-9a-f]"
-	local y="${x}${x}${x}${x}"
+	local uuid= x="[0-9a-f]" y="${x}${x}${x}${x}"
+
+	if type kenv >/dev/null 2>&1; then
+		uuid=$(kenv smbios.system.uuid 2>/dev/null)
+	fi
 	case "${uuid}" in
 		${y}${y}-${y}-${y}-${y}-${y}${y}${y});;
 		*) uuid=;;
