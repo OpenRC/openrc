@@ -116,13 +116,14 @@ static void free_schedulelist(void)
 	TAILQ_INIT(&schedule);
 }
 
+#ifdef DEBUG_MEMORY
 static void cleanup(void)
 {
 	free(changeuser);
 	free(nav);
-
 	free_schedulelist();
 }
+#endif
 
 static int parse_signal(const char *sig)
 {
@@ -609,7 +610,9 @@ int start_stop_daemon(int argc, char **argv)
 	unsigned int start_wait = 0;
 
 	TAILQ_INIT(&schedule);
+#ifdef DEBUG_MEMORY
 	atexit(cleanup);
+#endif
 
 	signal_setup(SIGINT, handle_signal);
 	signal_setup(SIGQUIT, handle_signal);

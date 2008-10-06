@@ -327,28 +327,29 @@ static void cleanup(void)
 			start_services(restart_services);
 	}
 
+	rc_plugin_unload();
+
+#ifdef DEBUG_MEMORY
 	rc_stringlist_free(types_b);
 	rc_stringlist_free(types_n);
 	rc_stringlist_free(types_nu);
 	rc_stringlist_free(types_nua);
 	rc_stringlist_free(types_m);
 	rc_stringlist_free(types_mua);
-	
-	rc_plugin_unload();
 	rc_deptree_free(deptree);
-
 	rc_stringlist_free(restart_services);
 	rc_stringlist_free(need_services);
 	rc_stringlist_free(use_services);
 	rc_stringlist_free(services);
 	rc_stringlist_free(applet_list);
 	rc_stringlist_free(tmplist);
-	free (ibsave);
+	free(ibsave);
 	free(service);
 	free(prefix);
 	free(runlevel);
+#endif
 
-	if (*mtime_test && ! rc_in_plugin)
+	if (*mtime_test && !rc_in_plugin)
 		unlink(mtime_test);
 }
 

@@ -61,10 +61,12 @@ static RC_STRINGLIST *rc_conf = NULL;
 
 extern char** environ;
 
+#ifdef DEBUG_MEMORY
 static void _free_rc_conf(void)
 {
 	rc_stringlist_free(rc_conf);
 }
+#endif
 
 char *rc_conf_value(const char *setting)
 {
@@ -74,7 +76,9 @@ char *rc_conf_value(const char *setting)
 
 	if (! rc_conf) {
 		rc_conf = rc_config_load(RC_CONF);
+#ifdef DEBUG_MEMORY
 		atexit(_free_rc_conf);
+#endif
 
 		/* Support old configs */
 		if (exists(RC_CONF_OLD)) {

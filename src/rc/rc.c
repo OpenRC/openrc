@@ -137,8 +137,10 @@ static void clean_failed(void)
 static void cleanup(void)
 {
 	if (applet && strcmp(applet, "rc") == 0) {
+#ifdef DEBUG_MEMORY
 		RC_PID *p1 = LIST_FIRST(&service_pids);
 		RC_PID *p2;
+#endif
 
 		if (hook_out)
 			rc_plugin_run(hook_out, runlevel);
@@ -150,6 +152,16 @@ static void cleanup(void)
 			free(termios_orig);
 		}
 
+		/* Clean runlevel start, stop markers */
+		if (! rc_in_plugin && ! rc_in_logger) {
+			rmdir(RC_STARTING);
+			rmdir(RC_STOPPING);
+			clean_failed();
+
+			rc_logger_close();
+		}
+
+#ifdef DEBUG_MEMORY
 		while (p1) {
 			p2 = LIST_NEXT(p1, entries); 
 			free(p1);
@@ -162,17 +174,8 @@ static void cleanup(void)
 		rc_stringlist_free(types_n);
 		rc_stringlist_free(types_nua);
 		rc_deptree_free(deptree);
-
-		/* Clean runlevel start, stop markers */
-		if (! rc_in_plugin && ! rc_in_logger) {
-			rmdir(RC_STARTING);
-			rmdir(RC_STOPPING);
-			clean_failed();
-
-			rc_logger_close();
-		}
-
 		free(runlevel);
+#endif
 	}
 }
 
