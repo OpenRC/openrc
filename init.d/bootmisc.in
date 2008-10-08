@@ -77,10 +77,13 @@ start()
 	if dir_writeable /var/run; then
 		ebegin "Creating user login records"
 		cp /dev/null /var/run/utmp
+		chgrp utmp /var/run/utmp
+		chmod 0664 /var/run/utmp
 		if dir_writeable /var/log; then
 			logw=true
 			[ -e /var/log/wtmp ] || cp /dev/null /var/log/wtmp
-			chmod 0644 /var/run/utmp /var/log/wtmp
+			chgrp utmp /var/log/wtmp
+			chmod 0664 /var/log/wtmp
 		fi
 		eend 0
 
