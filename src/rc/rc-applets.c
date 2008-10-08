@@ -84,8 +84,8 @@ static int do_e(int argc, char **argv)
 	int level = 0;
 	struct timespec ts;
 	struct timeval stop, now;
-	int (*e) (const char *, ...) __EINFO_PRINTF = NULL;
-	int (*ee) (int, const char *, ...) __EEND_PRINTF = NULL;
+	int (*e) (const char *, ...) EINFO_PRINTF(1, 2) = NULL;
+	int (*ee) (int, const char *, ...) EINFO_PRINTF(2, 3) = NULL;
 
 	/* Punt applet */
 	argc--;
@@ -205,9 +205,10 @@ static int do_e(int argc, char **argv)
 		ee = eend;
 	else if (strcmp(applet, "ewend") == 0)
 		ee = ewend;
-	else if (strcmp(applet, "esyslog") == 0)
-		ee = elog;
-	else if (strcmp(applet, "veinfo") == 0)
+	else if (strcmp(applet, "esyslog") == 0) {
+		elog(retval, "%s", message);
+		retval = 0;
+	} else if (strcmp(applet, "veinfo") == 0)
 		e = einfov;
 	else if (strcmp(applet, "veinfon") == 0)
 		e = einfovn;

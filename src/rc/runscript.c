@@ -557,7 +557,7 @@ static bool svc_wait(const char *svc)
 static RC_SERVICE svc_status(void)
 {
 	char status[10];
-	int (*e) (const char *fmt, ...) __EINFO_PRINTF = einfo;
+	int (*e) (const char *fmt, ...) EINFO_PRINTF(1, 2) = einfo;
 	RC_SERVICE state = rc_service_state(service);
 
 	if (state & RC_SERVICE_STOPPING) {

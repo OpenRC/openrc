@@ -316,7 +316,7 @@ tgoto(const char *cap, int a, int b)
 #endif
 
 static bool
-colour_terminal(FILE * __EINFO_RESTRICT f)
+colour_terminal(FILE * EINFO_RESTRICT f)
 {
 	static int in_colour = -1;
 	char *e, *ee, *end, *d, *p;
@@ -460,7 +460,7 @@ colour_terminal(FILE * __EINFO_RESTRICT f)
 }
 
 static int
-get_term_columns(FILE * __EINFO_RESTRICT stream)
+get_term_columns(FILE * EINFO_RESTRICT stream)
 {
 	struct winsize ws;
 	char *env = getenv("COLUMNS");
@@ -480,14 +480,14 @@ get_term_columns(FILE * __EINFO_RESTRICT stream)
 }
 
 void
-eprefix(const char *__EINFO_RESTRICT prefix)
+eprefix(const char *EINFO_RESTRICT prefix)
 {
 	_eprefix = prefix;
 }
 hidden_def(eprefix)
 
-static void
-elogv(int level, const char *__EINFO_RESTRICT fmt, va_list ap)
+static void EINFO_PRINTF(2, 0)
+elogv(int level, const char *EINFO_RESTRICT fmt, va_list ap)
 {
 	char *e = getenv("EINFO_LOG");
 	va_list apc;
@@ -503,7 +503,7 @@ elogv(int level, const char *__EINFO_RESTRICT fmt, va_list ap)
 }
 
 void
-elog(int level, const char *__EINFO_RESTRICT fmt, ...)
+elog(int level, const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
@@ -514,7 +514,7 @@ elog(int level, const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(elog)
 
 static int
-_eindent(FILE * __EINFO_RESTRICT stream)
+_eindent(FILE * EINFO_RESTRICT stream)
 {
 	char *env = getenv("EINFO_INDENT");
 	int amount = 0;
@@ -538,7 +538,7 @@ _eindent(FILE * __EINFO_RESTRICT stream)
 }
 
 static const char *
-_ecolor(FILE * __EINFO_RESTRICT f, ECOLOR color)
+_ecolor(FILE * EINFO_RESTRICT f, ECOLOR color)
 {
 	unsigned int i;
 
@@ -575,9 +575,8 @@ ecolor(ECOLOR color)
 	setenv("EINFO_LASTCMD", _cmd, 1); \
 }
 
-static int
-_einfo(FILE *f, ECOLOR color, const char *__EINFO_RESTRICT fmt, va_list va)
-
+static int EINFO_PRINTF(3, 0)
+_einfo(FILE *f, ECOLOR color, const char *EINFO_RESTRICT fmt, va_list va)
 {
 	int retval = 0;
 	char *last = getenv("EINFO_LASTCMD");
@@ -605,7 +604,7 @@ _einfo(FILE *f, ECOLOR color, const char *__EINFO_RESTRICT fmt, va_list va)
 #define _eerrorvn(fmt, ap) _einfo(stderr, ECOLOR_BAD, fmt, ap)
 
 int
-einfon(const char *__EINFO_RESTRICT fmt, ...)
+einfon(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -621,7 +620,7 @@ einfon(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(einfon)
 
 int
-ewarnn(const char *__EINFO_RESTRICT fmt, ...)
+ewarnn(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -637,7 +636,7 @@ ewarnn(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(ewarnn)
 
 int
-eerrorn(const char *__EINFO_RESTRICT fmt, ...)
+eerrorn(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -651,7 +650,7 @@ eerrorn(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(eerrorn)
 
 int
-einfo(const char *__EINFO_RESTRICT fmt, ...)
+einfo(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -668,7 +667,7 @@ einfo(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(einfo)
 
 int
-ewarn(const char *__EINFO_RESTRICT fmt, ...)
+ewarn(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -686,7 +685,7 @@ ewarn(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(ewarn)
 
 void
-ewarnx(const char *__EINFO_RESTRICT fmt, ...)
+ewarnx(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -703,7 +702,7 @@ ewarnx(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(ewarnx)
 
 int
-eerror(const char *__EINFO_RESTRICT fmt, ...)
+eerror(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -721,7 +720,7 @@ eerror(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(eerror)
 
 void
-eerrorx(const char *__EINFO_RESTRICT fmt, ...)
+eerrorx(const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
@@ -737,7 +736,7 @@ eerrorx(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(eerrorx)
 
 int
-ebegin(const char *__EINFO_RESTRICT fmt, ...)
+ebegin(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -756,7 +755,7 @@ ebegin(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(ebegin)
 
 static void
-_eend(FILE * __EINFO_RESTRICT fp, int col, ECOLOR color, const char *msg)
+_eend(FILE * EINFO_RESTRICT fp, int col, ECOLOR color, const char *msg)
 {
 	int i;
 	int cols;
@@ -793,8 +792,8 @@ _eend(FILE * __EINFO_RESTRICT fp, int col, ECOLOR color, const char *msg)
 	}
 }
 
-static int
-_do_eend(const char *cmd, int retval, const char *__EINFO_RESTRICT fmt, va_list ap)
+static int EINFO_PRINTF(3, 0)
+_do_eend(const char *cmd, int retval, const char *EINFO_RESTRICT fmt, va_list ap)
 {
 	int col = 0;
 	FILE *fp = stdout;
@@ -817,7 +816,7 @@ _do_eend(const char *cmd, int retval, const char *__EINFO_RESTRICT fmt, va_list 
 }
 
 int
-eend(int retval, const char *__EINFO_RESTRICT fmt, ...)
+eend(int retval, const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
@@ -832,7 +831,7 @@ eend(int retval, const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(eend)
 
 int
-ewend(int retval, const char *__EINFO_RESTRICT fmt, ...)
+ewend(int retval, const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
@@ -900,7 +899,7 @@ void eoutdent(void)
 hidden_def(eoutdent)
 
 int
-einfovn(const char *__EINFO_RESTRICT fmt, ...)
+einfovn(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -916,7 +915,7 @@ einfovn(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(einfovn)
 
 int
-ewarnvn(const char *__EINFO_RESTRICT fmt, ...)
+ewarnvn(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -932,7 +931,7 @@ ewarnvn(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(ewarnvn)
 
 int
-einfov(const char *__EINFO_RESTRICT fmt, ...)
+einfov(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -949,7 +948,7 @@ einfov(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(einfov)
 
 int
-ewarnv(const char *__EINFO_RESTRICT fmt, ...)
+ewarnv(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -966,7 +965,7 @@ ewarnv(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(ewarnv)
 
 int
-ebeginv(const char *__EINFO_RESTRICT fmt, ...)
+ebeginv(const char *EINFO_RESTRICT fmt, ...)
 {
 	int retval;
 	va_list ap;
@@ -986,7 +985,7 @@ ebeginv(const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(ebeginv)
 
 int
-eendv(int retval, const char *__EINFO_RESTRICT fmt, ...)
+eendv(int retval, const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
@@ -1001,7 +1000,7 @@ eendv(int retval, const char *__EINFO_RESTRICT fmt, ...)
 hidden_def(eendv)
 
 int
-ewendv(int retval, const char *__EINFO_RESTRICT fmt, ...)
+ewendv(int retval, const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
