@@ -306,11 +306,65 @@ is_verbose(void)
 /* Fake tgoto call - very crapy, but works for our needs */
 #ifndef HAVE_TERMCAP
 static char *
-tgoto(const char *cap, int a, int b)
+tgoto(const char *cap, int col, int line)
 {
 	static char buf[20];
+	char *p, *e, c, dbuf[6];
+	int oncol = 0, which = line, i;
 
-	snprintf(buf, sizeof(buf), cap, b, a);
+	p = buf;
+	e = p + sizeof(buf);
+	while ((c = *cap++)) {
+		if (c != '%' || ((c = *cap++) == '%')) {
+			*p++ = c;
+			if (p >= e) {
+				errno = E2BIG;
+				return NULL;
+			}
+			continue;
+		}
+		switch (c) {
+		case '3':
+		case '2':
+		case 'd':
+			i = 0;
+			do
+				dbuf[i++] = which % 10 | '0';
+			while ((which /= 10));
+			if (c != 'd') {
+				c -= '0';
+				if (i > c) {
+					errno = EINVAL;
+					return NULL;
+				}
+				while (i < c)
+					dbuf[i++] = '0';
+			}
+			if (p + i >= e) {
+				errno = E2BIG;
+				return NULL;
+			}
+			do
+				*p++ = dbuf[--i];
+			while (i);
+			break;
+		case 'r':
+			oncol = 0;
+			break;
+		case 'i':
+			col++;
+			line++;
+			which++;
+			continue;
+		default:
+			errno = EINVAL;
+			return NULL;
+		}
+
+		oncol = 1 - oncol;
+		which = oncol ? col : line;
+	}
+	*p = '\0';
 	return buf;
 }
 #endif
