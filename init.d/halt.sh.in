@@ -102,9 +102,9 @@ if [ "${RC_UNAME}" = "Linux" ]; then
 	do_unmount "mount -n -o remount,ro" \
 		--skip-point-regex "${no_umounts_r}" \
 		${fs:+--skip-fstype-regex} ${fs} --nonetdev
-	eoutdent
-	eend $?
 	unmounted=$?
+	eoutdent
+	eend ${unmounted}
 fi
 
 if [ ${unmounted} -ne 0 ]; then
