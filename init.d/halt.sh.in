@@ -102,14 +102,16 @@ if [ "${RC_UNAME}" = "Linux" ]; then
 	do_unmount "mount -n -o remount,ro" \
 		--skip-point-regex "${no_umounts_r}" \
 		${fs:+--skip-fstype-regex} ${fs} --nonetdev
-	unmounted=$?
 	eoutdent
-	eend ${unmounted}
+	eend $?
+	unmounted=$?
 fi
 
 if [ ${unmounted} -ne 0 ]; then
-	[ -x /sbin/sulogin ] && sulogin -t 10 /dev/console
-	exit 1
+	if [ -x /sbin/sulogin ]; then
+		ewarn "$1 timeout in 30 seconds"
+		sulogin -t 30 /dev/console
+	fi
 fi
 
 # Load the final script - not needed on BSD so they should not exist
