@@ -1,6 +1,10 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
+# Declare this here so that no formatting doesn't affect the embedded newline
+__IFS="
+"
+
 # Handy function to handle all our unmounting needs
 # mountinfo is a C program to actually find our mounts on our supported OS's
 # We rely on fuser being preset, so if it's not then we don't unmount anything.
@@ -15,7 +19,10 @@ do_unmount()
 	fi
 
 	shift
-	mountinfo "$@" | while read mnt; do
+	local IFS="$__IFS"
+	set -- $(mountinfo "$@")
+	unset IFS
+	for mnt; do
 		# Unmounting a shared mount can unmount other mounts, so
 		# we need to check the mount is still valid
 		mountinfo --quiet "${mnt}" || continue
