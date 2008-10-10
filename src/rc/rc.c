@@ -559,6 +559,11 @@ static void do_newlevel(const char *newlevel)
 
 		setenv("RC_RUNLEVEL", newlevel, 1);
 		run_program(INITSH);
+
+		/* init may have mounted /proc so we can now detect or real
+		 * sys */
+		if ((sys = rc_sys()))
+			setenv("RC_SYS", sys, 1);
 	} else if (strcmp(newlevel, RC_LEVEL_SINGLE) == 0) {
 #ifndef PREFIX
 		if (! RUNLEVEL ||
