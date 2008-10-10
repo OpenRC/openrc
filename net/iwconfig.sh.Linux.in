@@ -250,12 +250,12 @@ iwconfig_associate()
 		SSIDVAR=$(shell_var "${SSID}")
 		key="$(iwconfig_get_wep_key "${mac}")"
 		if [ "${wep_required}" = "on" -a "${key}" = "off" ]; then
-			ewarn "WEP key is not set for \"${SSID}\" - not connecting"
+			ewarn "WEP key is not set for \"${SSID}\""
 			return 1
 		fi
 		if [ "${wep_required}" = "off" -a "${key}" != "off" ]; then
 			key="off"
-			ewarn "\"${SSID}\" is not WEP enabled - ignoring setting"
+			ewarn "\"${SSID}\" is not WEP enabled"
 		fi
 
 		if ! eval iwconfig "${IFACE}" key "${key}"; then

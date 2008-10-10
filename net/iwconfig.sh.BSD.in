@@ -137,7 +137,7 @@ iwconfig_associate()
 	case "${caps}" in
 		[EI]P*)
 		if [ "${key}" = "-" ] ; then
-			ewarn "WEP key is not set for \"${SSID}\"; not connecting"
+			ewarn "WEP key is not set for \"${SSID}\""
 			return 1
 		fi
 		;;
@@ -145,7 +145,7 @@ iwconfig_associate()
 		*)
 		if [ "${key}" != "-" ] ; then
 			key="-"
-			ewarn "\"${SSID}\" is not WEP enabled; ignoring setting"
+			ewarn "\"${SSID}\" is not WEP enabled"
 		fi
 		;;
 	esac
