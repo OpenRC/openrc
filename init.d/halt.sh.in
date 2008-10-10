@@ -7,15 +7,6 @@
 [ -r @SYSCONFDIR@/conf.d/localmount ] && . @SYSCONFDIR@/conf.d/localmount
 [ -r @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
 
-# Support LiveCD foo
-if [ -r /sbin/livecd-functions.sh ]; then
-	. /sbin/livecd-functions.sh
-	livecd_read_commandline
-fi
-
-stop_addon devfs
-stop_addon udev
-
 # Really kill things off before unmounting
 if [ -x /sbin/killall5 ]; then
 	killall5 -15
