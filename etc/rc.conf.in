@@ -22,22 +22,20 @@ rc_interactive="YES"
 # come up.
 rc_depend_strict="YES"
 
-# Do we allow services to be hotplugged? If not, set to rc_hotplug="NO"
-# NOTE: This does not affect anything hotplug/udev/devd related, just the
-# starting/stopping of the init.d service triggered by it.
-rc_hotplug="YES"
-
-# Some people want a finer grain over hotplug. rc_plug_services is a
-# list of services that are matched in order, either allowing or not. By
-# default we allow services through as rc_hotplug has to be YES anyway.
-# Example - rc_plug_services="net.wlan !net.*"
+# rc_hotplug is a list of services that we allow to be hotplugged,
+# by default allow all.
+# A hotplugged service is one started by a dynamic dev manager when a matching
+# hardware device is found.
+# This service is intrinsically included in the boot runlevel.
+# To disable services, prefix with a !
+# Example - rc_hotplug="net.wlan !net.*"
 # This allows net.wlan and any service not matching net.* to be plugged.
-rc_plug_services=""
+rc_hotplug="*"
 
 # rc_logger launches a logging daemon to log the entire rc process to
 # /var/log/rc.log
 # NOTE: Linux systems require the devfs service to be started before
-# logging can take place.
+# logging can take place and as such cannot log the sysinit runlevel.
 rc_logger="NO"
 
 # By default we filter the environment for our running scripts. To allow other

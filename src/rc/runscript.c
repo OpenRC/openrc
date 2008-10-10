@@ -39,6 +39,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <fnmatch.h>
 #include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
@@ -246,11 +247,11 @@ in_control()
 }
 
 static void
-uncoldplug()
+unhotplug()
 {
 	char file[PATH_MAX];
 
-	snprintf(file, sizeof(file), RC_SVCDIR "/coldplugged/%s", applet);
+	snprintf(file, sizeof(file), RC_SVCDIR "/hotplugged/%s", applet);
 	if (exists(file) && unlink(file) != 0)
 		eerror("%s: unlink `%s': %s", applet, file, strerror(errno));
 }
@@ -702,7 +703,7 @@ svc_start(bool deps)
 		    ! state & RC_SERVICE_STOPPED)
 			exit(EXIT_FAILURE);
 		background = true;
-		rc_service_mark(service, RC_SERVICE_COLDPLUGGED);
+		rc_service_mark(service, RC_SERVICE_HOTPLUGGED);
 		if (rc_runlevel_starting())
 			ewarnx("WARNING: %s will be started when the runlevel"
 			       " has finished.", applet);
@@ -1103,15 +1104,13 @@ svc_restart(bool deps)
 static bool
 service_plugable(void)
 {
-	char *list;
-	char *p;
-	char *star;
-	char *token;
-	bool allow = true;
-	char *match = rc_conf_value("rc_plug_services");
-	bool truefalse;
+	char *list, *p, *token;
+	bool allow = true, truefalse;
+	char *match = rc_conf_value("rc_hotplug");
 
-	if (! match)
+	if (!match)
+		match = rc_conf_value("rc_plug_services");
+	if (!match)
 		return true;
 
 	list = xstrdup(match);
@@ -1123,22 +1122,11 @@ service_plugable(void)
 		} else
 			truefalse = true;
 
-		star = strchr(token, '*');
-		if (star) {
-			if (strncmp(applet, token,
-				    (size_t)(star - token)) == 0)
-			{
-				allow = truefalse;
-				break;
-			}
-		} else {
-			if (strcmp(applet, token) == 0) {
-				allow = truefalse;
-				break;
-			}
+		if (fnmatch(token, applet, 0) == 0) {
+			allow = truefalse;
+			break;
 		}
 	}
-
 #ifdef DEBUG_MEMORY
 	free(list);
 #endif
@@ -1308,7 +1296,7 @@ runscript(int argc, char **argv)
 	}
 
 	if (rc_yesno(getenv("IN_HOTPLUG"))) {
-		if (!rc_conf_yesno("rc_hotplug") || !service_plugable())
+		if (!service_plugable())
 			eerrorx("%s: not allowed to be hotplugged", applet);
 	}
 
@@ -1405,7 +1393,7 @@ runscript(int argc, char **argv)
 					    ! rc_runlevel_stopping() &&
 					    rc_service_state(service) &
 					    RC_SERVICE_STOPPED)
-						uncoldplug();
+						unhotplug();
 
 					if (in_background &&
 					    rc_service_state(service) &
@@ -1426,7 +1414,7 @@ runscript(int argc, char **argv)
 						     RC_SERVICE_STOPPED))
 					eerrorx("rc_service_mark: %s",
 						strerror(errno));
-				uncoldplug();
+				unhotplug();
 			} else
 				svc_exec(optarg, NULL);
 

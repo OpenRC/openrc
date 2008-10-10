@@ -87,7 +87,7 @@ static char *PREVLEVEL = NULL;
 
 const char *applet = NULL;
 static char *runlevel = NULL;
-static RC_STRINGLIST *coldplugged_services = NULL;
+static RC_STRINGLIST *hotplugged_services = NULL;
 static RC_STRINGLIST *stop_services = NULL;
 static RC_STRINGLIST *start_services = NULL;
 static RC_STRINGLIST *types_n = NULL;
@@ -162,7 +162,7 @@ static void cleanup(void)
 			p1 = p2;
 		}
 
-		rc_stringlist_free(coldplugged_services);
+		rc_stringlist_free(hotplugged_services);
 		rc_stringlist_free(stop_services);
 		rc_stringlist_free(start_services);
 		rc_stringlist_free(types_n);
@@ -738,20 +738,13 @@ interactive_option:
 		}
 
 		pid = service_start(service->value);
-
 		/* Remember the pid if we're running in parallel */
 		if (pid > 0) {
 			add_pid(pid);
-
 			if (! parallel) {
 				rc_waitpid(pid);
 				remove_pid(pid);
-				/* Attempt to open the logger as a service may 
-				 * mount the needed /dev/pts for this to work */
-				if (rc_logger_tty == -1)
-					rc_logger_open(runlevel);
 			}
-		
 		}
 	}
 
@@ -1024,8 +1017,8 @@ int main(int argc, char **argv)
 		stop_services = tmplist;
 	}
 
-	/* Load our list of coldplugged services */
-	coldplugged_services = rc_services_in_state(RC_SERVICE_COLDPLUGGED);
+	/* Load our list of hotplugged services */
+	hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
 	if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
 	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
@@ -1048,10 +1041,10 @@ int main(int argc, char **argv)
 				free(tmplist);
 			}
 
-			if (coldplugged_services) {
+			if (hotplugged_services) {
 				if (!start_services)
 					start_services = rc_stringlist_new();
-				TAILQ_FOREACH(service, coldplugged_services, entries)
+				TAILQ_FOREACH(service, hotplugged_services, entries)
 					rc_stringlist_addu(start_services, service->value);
 			}
 		}
@@ -1102,10 +1095,10 @@ int main(int argc, char **argv)
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, runlevel);
 	hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 
-	/* Re-add our coldplugged services if they stopped */
-	if (coldplugged_services)
-		TAILQ_FOREACH(service, coldplugged_services, entries)
-			rc_service_mark(service->value, RC_SERVICE_COLDPLUGGED);
+	/* Re-add our hotplugged services if they stopped */
+	if (hotplugged_services)
+		TAILQ_FOREACH(service, hotplugged_services, entries)
+			rc_service_mark(service->value, RC_SERVICE_HOTPLUGGED);
 
 	/* Order the services to start */
 	if (start_services) {
@@ -1132,7 +1125,7 @@ int main(int argc, char **argv)
 		do_start_services(parallel);
 		/* FIXME: If we skip the boot runlevel and go straight
 		 * to default from sysinit, we should now re-evaluate our
-		 * start services + coldplugged services and call
+		 * start services + hotplugged services and call
 		 * do_start_services a second time. */
 
 		/* Wait for our services to finish */

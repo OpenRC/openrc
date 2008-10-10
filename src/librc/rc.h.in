@@ -115,8 +115,8 @@ typedef enum
 	RC_SERVICE_STARTING    = 0x0008,
 	RC_SERVICE_INACTIVE    = 0x0010,
 
-	/* Service may or may not have been coldplugged */
-	RC_SERVICE_COLDPLUGGED = 0x0100,
+	/* Service may or may not have been hotplugged */
+	RC_SERVICE_HOTPLUGGED = 0x0100,
 
 	/* Optional states service could also be in */
 	RC_SERVICE_FAILED      = 0x0200,

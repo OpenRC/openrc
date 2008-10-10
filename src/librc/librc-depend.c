@@ -197,7 +197,7 @@ valid_service(const char *runlevel, const char *service, const char *type)
 	}
 
 	state = rc_service_state(service);
-	if (state & RC_SERVICE_COLDPLUGGED ||
+	if (state & RC_SERVICE_HOTPLUGGED ||
 	    state & RC_SERVICE_STARTED)
 		return true;
 
@@ -207,7 +207,7 @@ valid_service(const char *runlevel, const char *service, const char *type)
 static bool
 get_provided1(const char *runlevel, RC_STRINGLIST *providers,
 	      RC_DEPTYPE *deptype, const char *level,
-	      bool coldplugged, RC_SERVICE state)
+	      bool hotplugged, RC_SERVICE state)
 {
 	RC_STRING *service;
 	RC_SERVICE st;
@@ -222,8 +222,8 @@ get_provided1(const char *runlevel, RC_STRINGLIST *providers,
 
 		if (level)
 			ok = rc_service_in_runlevel(svc, level);
-		else if (coldplugged)
-			ok = (st & RC_SERVICE_COLDPLUGGED &&
+		else if (hotplugged)
+			ok = (st & RC_SERVICE_HOTPLUGGED &&
 			      !rc_service_in_runlevel(svc, runlevel) &&
 			      !rc_service_in_runlevel(svc, bootlevel));
 		if (!ok)
@@ -281,13 +281,13 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 	}
 
 	/* If we're strict or starting, then only use what we have in our
-	 * runlevel and bootlevel. If we starting then check cold-plugged too. */
+	 * runlevel and bootlevel. If we starting then check hotplugged too. */
 	if (options & RC_DEP_STRICT || options & RC_DEP_START) {
 		TAILQ_FOREACH(service, dt->services, entries)
 			if (rc_service_in_runlevel(service->value, runlevel) ||
 			    rc_service_in_runlevel(service->value, bootlevel) ||
 			    (options & RC_DEP_START &&
-			     rc_service_state(service->value) & RC_SERVICE_COLDPLUGGED))
+			     rc_service_state(service->value) & RC_SERVICE_HOTPLUGGED))
 				rc_stringlist_add(providers, service->value);
 		if (TAILQ_FIRST(providers))
 			return providers;
@@ -301,7 +301,7 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 	 * We apply this to these states in order:-
 	 *     started, starting | stopping | inactive, stopped
 	 * Our sub preference in each of these is in order:-
-	 *     runlevel, coldplugged, bootlevel, any
+	 *     runlevel, hotplugged, bootlevel, any
 	 */
 #define DO \
 	if (TAILQ_FIRST(providers)) { \
@@ -515,7 +515,7 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 			list2 = rc_services_in_runlevel(runlevel);
 			TAILQ_CONCAT(list, list2, entries);
 			free(list2);
-			list2 = rc_services_in_state(RC_SERVICE_COLDPLUGGED);
+			list2 = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
 			TAILQ_CONCAT(list, list2, entries);
 			free(list2);
 			/* If we're not the boot runlevel then add that too */
@@ -626,7 +626,7 @@ static const char *const depdirs[] =
 	RC_SVCDIR "/inactive",
 	RC_SVCDIR "/wasinactive",
 	RC_SVCDIR "/failed",
-	RC_SVCDIR "/coldplugged",
+	RC_SVCDIR "/hotplugged",
 	RC_SVCDIR "/daemons",
 	RC_SVCDIR "/options",
 	RC_SVCDIR "/exclusive",

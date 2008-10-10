@@ -59,7 +59,7 @@ static const rc_service_state_name_t rc_service_state_names[] = {
 	{ RC_SERVICE_STOPPING,    "stopping" },
 	{ RC_SERVICE_INACTIVE,    "inactive" },
 	{ RC_SERVICE_WASINACTIVE, "wasinactive" },
-	{ RC_SERVICE_COLDPLUGGED, "coldplugged" },
+	{ RC_SERVICE_HOTPLUGGED,  "hotplugged" },
 	{ RC_SERVICE_FAILED,      "failed" },
 	{ RC_SERVICE_SCHEDULED,   "scheduled"},
 	{ 0, NULL}
@@ -529,7 +529,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 		skip_state = state;
 	}
 	
-	if (state == RC_SERVICE_COLDPLUGGED || state == RC_SERVICE_FAILED) {
+	if (state == RC_SERVICE_HOTPLUGGED || state == RC_SERVICE_FAILED) {
 		free(init);
 		return true;
 	}
@@ -540,7 +540,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 
 		if ((s != skip_state &&
 		     s != RC_SERVICE_STOPPED &&
-		     s != RC_SERVICE_COLDPLUGGED &&
+		     s != RC_SERVICE_HOTPLUGGED &&
 		     s != RC_SERVICE_SCHEDULED) &&
 		    (! skip_wasinactive || s != RC_SERVICE_WASINACTIVE))
 		{
