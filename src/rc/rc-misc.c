@@ -62,13 +62,15 @@ static RC_STRINGLIST *rc_conf = NULL;
 extern char** environ;
 
 #ifdef DEBUG_MEMORY
-static void _free_rc_conf(void)
+static void
+_free_rc_conf(void)
 {
 	rc_stringlist_free(rc_conf);
 }
 #endif
 
-char *rc_conf_value(const char *setting)
+char *
+rc_conf_value(const char *setting)
 {
 	RC_STRINGLIST *old;
 	RC_STRING *s;
@@ -83,31 +85,28 @@ char *rc_conf_value(const char *setting)
 		/* Support old configs */
 		if (exists(RC_CONF_OLD)) {
 			old = rc_config_load(RC_CONF_OLD);
-			if (old) {
-				if (rc_conf) {
-					TAILQ_CONCAT(rc_conf, old, entries);
-					free(old);
-				} else
-					rc_conf = old;
-			}
+			TAILQ_CONCAT(rc_conf, old, entries);
+#ifdef DEBUG_MEMORY
+			free(old);
+#endif
 		}
 
 		/* Convert old uppercase to lowercase */
-		if (rc_conf)
-			TAILQ_FOREACH(s, rc_conf, entries) {
-				p = s->value;
-				while (p && *p && *p != '=') {
-					if (isupper((unsigned char)*p))
-						*p = tolower((unsigned char)*p);
-					p++;
-				}
+		TAILQ_FOREACH(s, rc_conf, entries) {
+			p = s->value;
+			while (p && *p && *p != '=') {
+				if (isupper((unsigned char)*p))
+					*p = tolower((unsigned char)*p);
+				p++;
 			}
+		}
 	}
 
 	return rc_config_value(rc_conf, setting);
 }
 
-bool rc_conf_yesno(const char *setting)
+bool
+rc_conf_yesno(const char *setting)
 {
 	return rc_yesno(rc_conf_value (setting));
 }
@@ -122,10 +121,11 @@ static const char *const env_whitelist[] = {
 	NULL
 };
 
-void env_filter(void)
+void
+env_filter(void)
 {
 	RC_STRINGLIST *env_allow;
-	RC_STRINGLIST *profile = NULL;
+	RC_STRINGLIST *profile;
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
 	char *e;
@@ -133,8 +133,7 @@ void env_filter(void)
 
 	/* Add the user defined list of vars */
 	env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
-	if (exists(PROFILE_ENV))
-		profile = rc_config_load(PROFILE_ENV);
+	profile = rc_config_load(PROFILE_ENV);
 
 	/* Copy the env and work from this so we can manipulate it safely */
 	env_list = rc_stringlist_new();
@@ -163,21 +162,22 @@ void env_filter(void)
 	}
 
 	/* Now add anything missing from the profile */
-	if (profile) {
-		TAILQ_FOREACH(env, profile, entries) {
-			e = strchr(env->value, '=');
-			*e = '\0';
-			if (!getenv(env->value))
-				setenv(env->value, e + 1, 1);
-		}
+	TAILQ_FOREACH(env, profile, entries) {
+		e = strchr(env->value, '=');
+		*e = '\0';
+		if (!getenv(env->value))
+			setenv(env->value, e + 1, 1);
 	}
-		
+
+#ifdef DEBUG_MEMORY
 	rc_stringlist_free(env_list);
 	rc_stringlist_free(env_allow);
 	rc_stringlist_free(profile);
+#endif
 }
 
-void env_config(void)
+void
+env_config(void)
 {
 	size_t pplen = strlen(PATH_PREFIX);
 	char *path;
@@ -203,7 +203,8 @@ void env_config(void)
 		e = p = xmalloc(sizeof(char) * l);
 		p += snprintf(p, l, "%s", PATH_PREFIX);
 
-		/* Now go through the env var and only add bits not in our PREFIX */
+		/* Now go through the env var and only add bits not in our
+		 * PREFIX */
 		while ((token = strsep(&path, ":"))) {
 			np = npp = xstrdup(PATH_PREFIX);
 			while ((tok = strsep(&npp, ":")))
@@ -259,48 +260,8 @@ void env_config(void)
 		setenv("EINFO_COLOR", "NO", 1);
 }
 
-bool service_plugable(const char *service)
-{
-	char *list;
-	char *p;
-	char *star;
-	char *token;
-	bool allow = true;
-	char *match = rc_conf_value("rc_plug_services");
-	bool truefalse;
-
-	if (! match)
-		return true;
-
-	list = xstrdup(match);
-	p = list;
-	while ((token = strsep(&p, " "))) {
-		if (token[0] == '!') {
-			truefalse = false;
-			token++;
-		} else
-			truefalse = true;
-
-		star = strchr(token, '*');
-		if (star) {
-			if (strncmp(service, token, (size_t)(star - token)) == 0)
-			{
-				allow = truefalse;
-				break;
-			}
-		} else {
-			if (strcmp(service, token) == 0) {
-				allow = truefalse;
-				break;
-			}
-		}
-	}
-
-	free(list);
-	return allow;
-}
-
-int signal_setup(int sig, void (*handler)(int))
+int
+signal_setup(int sig, void (*handler)(int))
 {
 	struct sigaction sa;
 
@@ -310,7 +271,8 @@ int signal_setup(int sig, void (*handler)(int))
 	return sigaction(sig, &sa, NULL);
 }
 
-pid_t exec_service(const char *service, const char *arg)
+pid_t
+exec_service(const char *service, const char *arg)
 {
 	char *file;
 	char fifo[PATH_MAX];
@@ -320,7 +282,7 @@ pid_t exec_service(const char *service, const char *arg)
 	struct sigaction sa;
 
 	file = rc_service_resolve(service);
-	if (! exists(file)) {
+	if (!exists(file)) {
 		rc_service_mark(service, RC_SERVICE_STOPPED);
 		free(file);
 		return 0;
@@ -368,7 +330,6 @@ pid_t exec_service(const char *service, const char *arg)
 	sigprocmask(SIG_SETMASK, &old, NULL);
 
 	free(file);
-
 	return pid;
 }
 

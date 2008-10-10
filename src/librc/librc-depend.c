@@ -187,12 +187,21 @@ valid_service(const char *runlevel, const char *service, const char *type)
 	    strcmp(type, "needsme") == 0)
 		return true;
 
+	if (rc_service_in_runlevel(service, runlevel))
+		return true;
+	if (strcmp(runlevel, RC_LEVEL_SYSINIT) != 0 &&
+	    strcmp(runlevel, bootlevel) != 0)
+	{
+		if (rc_service_in_runlevel(service, bootlevel))
+			return true;
+	}
+
 	state = rc_service_state(service);
-	return ((strcmp(runlevel, bootlevel) != 0 &&
-		 rc_service_in_runlevel(service, bootlevel)) ||
-		rc_service_in_runlevel(service, runlevel) ||
-		state & RC_SERVICE_COLDPLUGGED ||
-		state & RC_SERVICE_STARTED);
+	if (state & RC_SERVICE_COLDPLUGGED ||
+	    state & RC_SERVICE_STARTED)
+		return true;
+
+	return false;
 }
 
 static bool
@@ -344,7 +353,7 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 static void
 visit_service(const RC_DEPTREE *deptree,
 	      const RC_STRINGLIST *types,
-	      RC_STRINGLIST **sorted,
+	      RC_STRINGLIST *sorted,
 	      RC_STRINGLIST *visited,
 	      const RC_DEPINFO *depinfo,
 	      const char *runlevel, int options)
@@ -373,9 +382,7 @@ visit_service(const RC_DEPTREE *deptree,
 			if (!(options & RC_DEP_TRACE) ||
 			    strcmp(type->value, "iprovide") == 0)
 			{
-				if (!*sorted)
-					*sorted = rc_stringlist_new();
-				rc_stringlist_add(*sorted, service->value);
+				rc_stringlist_add(sorted, service->value);
 				continue;
 			}
 
@@ -420,12 +427,10 @@ visit_service(const RC_DEPTREE *deptree,
 	/* We've visited everything we need, so add ourselves unless we
 	   are also the service calling us or we are provided by something */
 	svcname = getenv("RC_SVCNAME");
-	if (!svcname || strcmp(svcname, depinfo->service) != 0)
-		if (!get_deptype(depinfo, "providedby")) {
-			if (!*sorted)
-				*sorted = rc_stringlist_new();
-			rc_stringlist_add(*sorted, depinfo->service);
-		}
+	if (!svcname || strcmp(svcname, depinfo->service) != 0) {
+		if (!get_deptype(depinfo, "providedby"))
+			rc_stringlist_add(sorted, depinfo->service);
+	}
 }
 
 RC_STRINGLIST *
@@ -437,15 +442,15 @@ rc_deptree_depend(const RC_DEPTREE *deptree,
 	RC_STRINGLIST *svcs;
 	RC_STRING *svc;
 
+	svcs = rc_stringlist_new();
 	if (!(di = get_depinfo(deptree, service)) ||
 	    !(dt = get_deptype(di, type)))
 	{
 		errno = ENOENT;
-		return NULL;
+		return svcs;
 	}
 
 	/* For consistency, we copy the array */
-	svcs = rc_stringlist_new();
 	TAILQ_FOREACH(svc, dt->services, entries)
 		rc_stringlist_add(svcs, svc->value);
 	return svcs;
@@ -458,7 +463,7 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 		   const RC_STRINGLIST *services,
 		   const char *runlevel, int options)
 {
-	RC_STRINGLIST *sorted = NULL;
+	RC_STRINGLIST *sorted = rc_stringlist_new();
 	RC_STRINGLIST *visited = rc_stringlist_new();
 	RC_DEPINFO *di;
 	const RC_STRING *service;
@@ -472,7 +477,7 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 			continue;
 		}
 		if (types)
-			visit_service(deptree, types, &sorted, visited,
+			visit_service(deptree, types, sorted, visited,
 				      di, runlevel, options);
 	}
 	rc_stringlist_free(visited);
@@ -499,42 +504,25 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 	{
 		list = rc_services_in_state(RC_SERVICE_STARTED);
 		list2 = rc_services_in_state(RC_SERVICE_INACTIVE);
-		if (list2) {
-			if (list) {
-				TAILQ_CONCAT(list, list2, entries);
-				free(list2);
-			} else
-				list = list2;
-		}
+		TAILQ_CONCAT(list, list2, entries);
+		free(list2);
 		list2 = rc_services_in_state(RC_SERVICE_STARTING);
-		if (list2) {
-			if (list) {
-				TAILQ_CONCAT(list, list2, entries);
-				free(list2);
-			} else
-				list = list2;
-		}
+		TAILQ_CONCAT(list, list2, entries);
+		free(list2);
 	} else {
-		list = rc_services_in_runlevel(runlevel);
-		/* Add coldplugged services */
-		list2 = rc_services_in_state(RC_SERVICE_COLDPLUGGED);
-		if (list2) {
-			if (list) {
+		list = rc_services_in_runlevel(RC_LEVEL_SYSINIT);
+		if (strcmp(runlevel, RC_LEVEL_SYSINIT) != 0) {
+			list2 = rc_services_in_runlevel(runlevel);
+			TAILQ_CONCAT(list, list2, entries);
+			free(list2);
+			list2 = rc_services_in_state(RC_SERVICE_COLDPLUGGED);
+			TAILQ_CONCAT(list, list2, entries);
+			free(list2);
+			/* If we're not the boot runlevel then add that too */
+			if (strcmp(runlevel, bootlevel) != 0) {
+				list2 = rc_services_in_runlevel(bootlevel);
 				TAILQ_CONCAT(list, list2, entries);
 				free(list2);
-			} else
-				list = list2;
-		}
-
-		/* If we're not the boot runlevel then add that too */
-		if (strcmp(runlevel, bootlevel) != 0) {
-			list2 = rc_services_in_runlevel (bootlevel);
-			if (list2) {
-				if (list) {
-					TAILQ_CONCAT(list, list2, entries);
-					free(list2);
-				} else
-					list = list2;
 			}
 		}
 	}
@@ -683,15 +671,13 @@ rc_deptree_update_needed(void)
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
 	config = rc_config_list(RC_DEPCONFIG);
-	if (config) {
-		TAILQ_FOREACH(s, config, entries) {
-			if (!rc_newer_than(RC_DEPTREE_CACHE, s->value)) {
-				newer = true;
-				break;
-			}
+	TAILQ_FOREACH(s, config, entries) {
+		if (!rc_newer_than(RC_DEPTREE_CACHE, s->value)) {
+			newer = true;
+			break;
 		}
-		rc_stringlist_free(config);
 	}
+	rc_stringlist_free(config);
 	return newer;
 }
 librc_hidden_def(rc_deptree_update_needed)
@@ -907,13 +893,11 @@ rc_deptree_update(void)
 		deptype = get_deptype(depinfo, "ibefore");
 		if (!deptype)
 			continue;
-		sorted = NULL;
+		sorted = rc_stringlist_new();
 		visited = rc_stringlist_new();
-		visit_service(deptree, types, &sorted, visited, depinfo,
+		visit_service(deptree, types, sorted, visited, depinfo,
 			      NULL, 0);
 		rc_stringlist_free(visited);
-		if (!sorted)
-			continue;
 		TAILQ_FOREACH_SAFE(s2, deptype->services, entries, s2_np) {
 			TAILQ_FOREACH(s3, sorted, entries) {
 				di = get_depinfo(deptree, s3->value);

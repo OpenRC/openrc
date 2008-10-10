@@ -1,0 +1,63 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Mount the sys filesystem."
+
+depend()
+{
+	keyword noprefix
+}
+
+mount_sys()
+{
+	grep -Eq "[[:space:]]+sysfs$" /proc/filesystems || return 1
+	mountinfo -q /sys && return 0
+
+	if [ ! -d /sys ]; then
+		if ! mkdir -m 0755 /sys; then
+			ewarn "Could not create /sys!"
+			return 1
+		fi
+	fi
+
+	ebegin "Mounting /sys"
+	if ! fstabinfo --mount /sys; then
+		mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
+	fi
+	eend $?
+}
+
+mount_misc()
+{
+	# Setup Kernel Support for securityfs
+	if [ -d /sys/kernel/security ] && ! mountinfo -q /sys/kernel/security; then
+		if grep -qs securityfs /proc/filesystems; then
+			ebegin "Mounting security filesystem"
+			mount -t securityfs -o nodev,noexec,nosuid \
+				securityfs /sys/kernel/security
+			eend $?
+		fi
+	fi
+
+	# Setup Kernel Support for debugfs
+	if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug; then
+		if grep -qs debugfs /proc/filesystems; then
+			ebegin "Mounting debug filesystem"
+			mount -t debugfs -o nodev,noexec,nosuid \
+				debugfs /sys/kernel/debug
+			eend $?
+		fi
+	fi
+}
+
+start()
+{
+	local retval
+	mount_sys
+	retval=$?
+	if [ ${retval} -eq 0 ]; then
+		mount_misc
+	fi
+	return ${retval}
+}

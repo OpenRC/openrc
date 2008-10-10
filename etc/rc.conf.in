@@ -27,25 +27,17 @@ rc_depend_strict="YES"
 # starting/stopping of the init.d service triggered by it.
 rc_hotplug="YES"
 
-# Dynamic /dev managers can trigger coldplug events which cause services to
-# start before we are ready for them. If this happens, we can defer these
-# services to start in the boot runlevel. Set rc_coldplug="NO" if you don't
-# want this.
-# NOTE: This also affects module coldplugging in udev-096 and higher
-# If you want module coldplugging but not coldplugging of services then you
-# can set rc_coldplug="YES" and rc_plug_services="!*"
-rc_coldplug="YES"
-
-# Some people want a finer grain over hotplug/coldplug. rc_plug_services is a
+# Some people want a finer grain over hotplug. rc_plug_services is a
 # list of services that are matched in order, either allowing or not. By
-# default we allow services through as rc_coldplug/rc_hotplug has to be YES
-# anyway.
+# default we allow services through as rc_hotplug has to be YES anyway.
 # Example - rc_plug_services="net.wlan !net.*"
 # This allows net.wlan and any service not matching net.* to be plugged.
 rc_plug_services=""
 
 # rc_logger launches a logging daemon to log the entire rc process to
 # /var/log/rc.log
+# NOTE: Linux systems require the devfs service to be started before
+# logging can take place.
 rc_logger="NO"
 
 # By default we filter the environment for our running scripts. To allow other

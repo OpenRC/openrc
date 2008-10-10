@@ -6,6 +6,7 @@ description="Mounts misc filesystems in /proc."
 
 depend()
 {
+	use devfs
 	need localmount
 	keyword noopenvz noprefix novserver
 }
@@ -39,7 +40,7 @@ start()
 	# Setup Kernel Support for the NFS daemon status
 	if [ -d /proc/fs/nfsd ] && ! mountinfo -q /proc/fs/nfsd; then
 		if grep -qs nfsd /proc/filesystems; then
-			ebegin "Mounting nfsd filesystem"
+			ebegin "Mounting NFS filesystem"
 			mount -t nfsd -o nodev,noexec,nosuid \
 				nfsd /proc/fs/nfsd
 			eend $?
@@ -52,26 +53,6 @@ start()
 			ebegin "Mounting misc binary format filesystem"
 			mount -t binfmt_misc -o nodev,noexec,nosuid \
 				binfmt_misc /proc/sys/fs/binfmt_misc
-			eend $?
-		fi
-	fi
-
-	# Setup Kernel Support for securityfs
-	if [ -d /sys/kernel/security ] && ! mountinfo -q /sys/kernel/security; then
-		if grep -qs securityfs /proc/filesystems; then
-			ebegin "Mounting security filesystem"
-			mount -t securityfs -o nodev,noexec,nosuid \
-				securityfs /sys/kernel/security
-			eend $?
-		fi
-	fi
-
-	# Setup Kernel Support for debugfs
-	if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug; then
-		if grep -qs debugfs /proc/filesystems; then
-			ebegin "Mounting debug filesystem"
-			mount -t debugfs -o nodev,noexec,nosuid \
-				debugfs /sys/kernel/debug
 			eend $?
 		fi
 	fi

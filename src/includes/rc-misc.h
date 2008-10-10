@@ -143,7 +143,6 @@ char *rc_conf_value(const char *var);
 bool rc_conf_yesno(const char *var);
 void env_filter(void);
 void env_config(void);
-bool service_plugable(const char *service);
 int signal_setup(int sig, void (*handler)(int));
 pid_t exec_service(const char *, const char *);
 

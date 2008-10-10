@@ -9,7 +9,8 @@
 # tmpfs and ramfs are easy, so force one or the other.
 mount_svcdir()
 {
-	local fs= fsopts="-o rw,noexec,nodev,nosuid" devdir="rc-svcdir" devtmp="none" x=
+	local fs= fsopts="-o rw,noexec,nodev,nosuid"
+	local devdir="rc-svcdir" devtmp="none" x=
 	local svcsize=${rc_svcsize:-1024}
 
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems; then
@@ -56,16 +57,7 @@ mount_svcdir()
 }
 
 . /etc/init.d/functions.sh
-. "${RC_LIBDIR}"/sh/rc-functions.sh
-[ -r /etc/conf.d/rc ] && . /etc/conf.d/rc
 [ -r /etc/rc.conf ] && . /etc/rc.conf
-
-# Set the console loglevel to 1 for a cleaner boot
-# the logger should anyhow dump the ring-0 buffer at start to the
-# logs, and that with dmesg can be used to check for problems
-if [ -n "${dmesg_level}" -a "${RC_SYS}" != "VSERVER" ]; then
-	dmesg -n "${dmesg_level}"
-fi
 
 # By default VServer already has /proc mounted, but OpenVZ does not!
 # However, some of our users have an old proc image in /proc
@@ -82,7 +74,6 @@ if [ -e /proc/uptime ]; then
 		einfo "/proc is already mounted, skipping"
 		mountproc=false
 	fi
-	unset up
 fi
 
 if ${mountproc}; then
@@ -93,99 +84,6 @@ if ${mountproc}; then
 		mount -n -t "${procfs}" -o noexec,nosuid,nodev proc /proc
 	fi
 	eend $?
-fi
-unset mountproc
-
-# Re-load RC_SYS if empty now we have /proc mounted
-[ -z "${RC_SYS}" ] && export RC_SYS="$(rc --sys)"
-
-# Read off the kernel commandline to see if there's any special settings
-# especially check to see if we need to set the  CDBOOT environment variable
-# Note: /proc MUST be mounted
-if [ -r /sbin/livecd-functions.sh ]; then
-	. /sbin/livecd-functions.sh
-	livecd_read_commandline
-fi
-
-if [ "${RC_UNAME}" != "GNU/kFreeBSD" \
-	-a "${RC_SYS}" != "VSERVER" ];
-then
-	if grep -Eq "[[:space:]]+sysfs$" /proc/filesystems; then
-		if [ -d /sys ]; then
-			if ! mountinfo --quiet /sys; then
-				ebegin "Mounting /sys"
-				if ! fstabinfo --mount /sys; then
-					mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
-				fi
-				eend $?
-			fi
-		else
-			ewarn "No /sys to mount sysfs needed in 2.6 and later kernels!"
-		fi
-	fi
-fi
-
-# Default OpenVZ to static devices
-if [ "${RC_SYS}" = "OPENVZ" ]; then
-	rc_devices=${rc_devices:-static}
-fi
-
-# Try to figure out how the user wants /dev handled
-if [ "${rc_devices}" = "static" \
-	-o "${RC_SYS}" = "VSERVER" \
-	-o "${RC_UNAME}" = "GNU/kFreeBSD" ]
-then
-	ebegin "Using existing device nodes in /dev"
-	eend 0
-else
-	case ${rc_devices} in
-		devfs)  managers="devfs udev mdev";;
-		udev)   managers="udev devfs mdev";;
-		mdev)   managers="mdev udev devfs";;
-		*)      managers="udev devfs mdev";;
-	esac
-
-	for m in ${managers}; do
-		# Check kernel params
-		if get_bootparam "no${m}" || ! has_addon ${m}-start; then
-			continue
-		fi
-		# Let's see if we can get this puppy rolling
-		start_addon ${m} && break
-
-		# Clean up
-		mountinfo -q /dev && umount -n /dev
-	done
-fi
-
-# Mount required stuff as user may not have then in /etc/fstab
-for x in "devpts /dev/pts 0755 ,gid=5,mode=0620 devpts" "tmpfs /dev/shm 1777 ,nodev shm"
-do
-	set -- ${x}
-	grep -Eq "[[:space:]]+$1$" /proc/filesystems || continue
-	mountinfo -q "$2" && continue
-
-	if [ ! -d "$2" ] && \
-	   [ "${m}" = "devfs" -o "${m}" = "udev" ]; then
-		mkdir -m "$3" -p "$2" >/dev/null 2>&1 || \
-			ewarn "Could not create $2!"
-	fi
-
-	if [ -d "$2" ]; then
-		ebegin "Mounting $2"
-		if ! fstabinfo --mount "$2"; then
-			mount -n -t "$1" -o noexec,nosuid"$4" "$5" "$2"
-		fi
-		eend $?
-	fi
-done
-
-# If booting off CD, we want to update inittab before setting the runlevel
-if [ -f /sbin/livecd-functions.sh -a -n "${CDBOOT}" ]; then
-	ebegin "Updating inittab"
-	livecd_fix_inittab
-	eend $?
-	telinit q &>/dev/null
 fi
 
 . "${RC_LIBDIR}"/sh/init-common-post.sh

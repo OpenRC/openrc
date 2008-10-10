@@ -43,12 +43,6 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <sys/utsname.h>
 #include <sys/wait.h>
 
-/* So we can coldplug net devices */
-#ifdef BSD
-# include <sys/socket.h>
-# include <ifaddrs.h>
-#endif
-
 #ifdef __linux__
 # include <asm/setup.h> /* for COMMAND_LINE_SIZE */
 #endif
@@ -519,115 +513,10 @@ static void handle_signal(int sig)
 	errno = serrno;
 }
 
-static void do_coldplug(void)
-{
-	size_t l;
-	DIR *dp;
-	struct dirent *d;
-	char *service;
-	RC_STRING *s;
-#ifdef BSD
-	struct ifaddrs *ifap;
-	struct ifaddrs *ifa;
-	char *p;
-#endif
-
-	errno = 0;
-	if (!rc_conf_yesno("rc_coldplug") && errno != ENOENT)
-		return;
-
-	/* We need to ensure our state dirs exist.
-	 * We should have a better call than this, but oh well. */
-	rc_deptree_update_needed();
-
-#ifdef BSD
-	if (getifaddrs(&ifap) == 0) {
-		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-			if (ifa->ifa_addr->sa_family != AF_LINK)
-				continue;
-
-			l = strlen("net.") + strlen(ifa->ifa_name) + 1;
-			service = xmalloc(sizeof (char) * l);
-			snprintf(service, l, "net.%s", ifa->ifa_name);
-			if (rc_service_exists(service) &&
-			    service_plugable(service))
-				rc_service_mark(service, RC_SERVICE_COLDPLUGGED);
-			free(service);
-		}
-		freeifaddrs (ifap);
-	}
-
-	/* The mice are a little more tricky.
-	 * If we coldplug anything else, we'll probably do it here. */
-	if ((dp = opendir("/dev"))) {
-		while ((d = readdir(dp))) {
-			if (strncmp(d->d_name, "psm", 3) == 0 ||
-			    strncmp(d->d_name, "ums", 3) == 0)
-			{
-				p = d->d_name + 3;
-				if (p && isdigit((unsigned char)*p)) {
-					l = strlen("moused.") + strlen(d->d_name) + 1;
-					service = xmalloc(sizeof(char) * l);
-					snprintf (service, l, "moused.%s", d->d_name);
-					if (rc_service_exists (service) &&
-					    service_plugable (service))
-						rc_service_mark (service, RC_SERVICE_COLDPLUGGED);
-					free(service);
-				}
-			}
-		}
-		closedir (dp);
-	}
-
-#else
-
-	/* udev likes to start services before we're ready when it does
-	 * its coldplugging thing. runscript knows when we're not ready so it
-	 * stores a list of coldplugged services in DEVBOOT for us to pick up
-	 * here when we are ready for them */
-	if ((dp = opendir(DEVBOOT))) {
-		while ((d = readdir(dp))) {
-			if (d->d_name[0] == '.' &&
-			    (d->d_name[1] == '\0' ||
-			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
-				continue;
-
-			if (rc_service_exists(d->d_name) &&
-			    service_plugable(d->d_name))
-				rc_service_mark(d->d_name, RC_SERVICE_COLDPLUGGED);
-
-			l = strlen(DEVBOOT "/") + strlen(d->d_name) + 1;
-			service = xmalloc(sizeof (char) * l);
-			snprintf(service, l, DEVBOOT "/%s", d->d_name);
-			if (unlink(service))
-				eerror("%s: unlink `%s': %s", applet, service,
-					strerror(errno));
-			free(service);
-		}
-		closedir(dp);
-		rmdir(DEVBOOT);
-	}
-#endif
-
-	if (rc_yesno(getenv("EINFO_QUIET")))
-		return;
-
-	/* Load our list of coldplugged services and display them */
-	einfon("Device initiated services:%s", ecolor(ECOLOR_HILITE));
-	coldplugged_services = rc_services_in_state(RC_SERVICE_COLDPLUGGED);
-	if (coldplugged_services)
-		TAILQ_FOREACH(s, coldplugged_services, entries)
-			printf(" %s", s->value);
-	printf("%s\n", ecolor(ECOLOR_NORMAL));
-}
-
 static void do_newlevel(const char *newlevel)
 {
 	struct utsname uts;
 	const char *sys;
-#ifdef __linux__
-	char *cmd;
-#endif
 
 	if (strcmp(newlevel, RC_LEVEL_SYSINIT) == 0
 #ifndef PREFIX
@@ -669,39 +558,13 @@ static void do_newlevel(const char *newlevel)
 			       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
 
 		setenv("RC_RUNLEVEL", newlevel, 1);
-		rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, newlevel);
-		hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 		run_program(INITSH);
-
-#ifdef __linux__
-		/* If we requested a runlevel, save it now */
-		if ((cmd = proc_getent("rc_runlevel"))) {
-			set_krunlevel(cmd);
-			free(cmd);
-		} else if ((cmd = proc_getent("softlevel"))) {
-			set_krunlevel(cmd);
-			free(cmd);
-		} else
-		    set_krunlevel(NULL);
-#endif
-
-		/* Setup our coldplugged services now */
-		do_coldplug();
-
-		rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, newlevel);
-		hook_out = 0;
-
-		if (want_interactive())
-			mark_interactive();
-
-		exit(EXIT_SUCCESS);
 	} else if (strcmp(newlevel, RC_LEVEL_SINGLE) == 0) {
 #ifndef PREFIX
 		if (! RUNLEVEL ||
 		    (strcmp(RUNLEVEL, "S") != 0 &&
 		     strcmp(RUNLEVEL, "1") != 0))
 		{
-			/* Remember the current runlevel for when we come back */
 			set_krunlevel(runlevel);
 			single_user();
 		}
@@ -883,7 +746,12 @@ interactive_option:
 			if (! parallel) {
 				rc_waitpid(pid);
 				remove_pid(pid);
+				/* Attempt to open the logger as a service may 
+				 * mount the needed /dev/pts for this to work */
+				if (rc_logger_tty == -1)
+					rc_logger_open(runlevel);
 			}
+		
 		}
 	}
 
@@ -1076,7 +944,8 @@ int main(int argc, char **argv)
 	{
 		/* Try not to join boot and krunlevels together */
 		if (! newlevel ||
-		    strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0)
+		    (strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0 &&
+		     strcmp(newlevel, RC_LEVEL_SYSINIT) != 0))
 			if (get_krunlevel(krunlevel, sizeof(krunlevel)))
 				newlevel = krunlevel;
 	} else if (! RUNLEVEL ||
@@ -1135,21 +1004,11 @@ int main(int argc, char **argv)
 	 * correct order for stopping them */
 	stop_services = rc_services_in_state(RC_SERVICE_STARTED);
 	tmplist = rc_services_in_state(RC_SERVICE_INACTIVE);
-	if (tmplist) {
-		if (stop_services) {
-			TAILQ_CONCAT(stop_services, tmplist, entries);
-			free(tmplist);
-		} else
-			stop_services = tmplist;
-	}
+	TAILQ_CONCAT(stop_services, tmplist, entries);
+	free(tmplist);
 	tmplist = rc_services_in_state(RC_SERVICE_STARTING);
-	if (tmplist) {
-		if (stop_services) {
-			TAILQ_CONCAT(stop_services, tmplist, entries);
-			free(tmplist);
-		} else
-			stop_services = tmplist;
-	}
+	TAILQ_CONCAT(stop_services, tmplist, entries);
+	free(tmplist);
 	if (stop_services)
 		rc_stringlist_sort(&stop_services);
 
@@ -1171,24 +1030,30 @@ int main(int argc, char **argv)
 	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
 	{
-		/* We need to include the boot runlevel services if we're not in it */
-		start_services = rc_services_in_runlevel(bootlevel);
-		if (strcmp (newlevel ? newlevel : runlevel, bootlevel) != 0) {
-			tmplist = rc_services_in_runlevel(newlevel ? newlevel : runlevel);
-			if (tmplist) {
-				if (start_services) {
-					TAILQ_CONCAT(start_services, tmplist, entries);
-					free(tmplist);
-				} else
-					start_services = tmplist;
+		start_services = rc_services_in_runlevel(RC_LEVEL_SYSINIT);
+		if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT)
+		    != 0)
+		{
+			/* We need to include the boot runlevel services */
+			tmplist = rc_services_in_runlevel(bootlevel);
+			TAILQ_CONCAT(start_services, tmplist, entries);
+			free(tmplist);
+			if (strcmp (newlevel ? newlevel : runlevel, bootlevel)
+			    != 0)
+			{
+				tmplist = rc_services_in_runlevel(newlevel ?
+								  newlevel :
+								  runlevel);
+				TAILQ_CONCAT(start_services, tmplist, entries);
+				free(tmplist);
 			}
-		}
 
-		if (coldplugged_services) {
-			if (!start_services)
-				start_services = rc_stringlist_new();
-			TAILQ_FOREACH(service, coldplugged_services, entries)
-				rc_stringlist_addu(start_services, service->value);
+			if (coldplugged_services) {
+				if (!start_services)
+					start_services = rc_stringlist_new();
+				TAILQ_FOREACH(service, coldplugged_services, entries)
+					rc_stringlist_addu(start_services, service->value);
+			}
 		}
 	}
 
@@ -1265,13 +1130,14 @@ int main(int argc, char **argv)
 
 	if (start_services) {
 		do_start_services(parallel);
+		/* FIXME: If we skip the boot runlevel and go straight
+		 * to default from sysinit, we should now re-evaluate our
+		 * start services + coldplugged services and call
+		 * do_start_services a second time. */
 
 		/* Wait for our services to finish */
 		wait_for_services();
 	}
-
-	rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, runlevel);
-	hook_out = 0;
 
 #ifdef __linux__
 	/* mark any services skipped as stopped */
@@ -1285,12 +1151,15 @@ int main(int argc, char **argv)
 	}
 #endif
 
+	rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, runlevel);
+	hook_out = 0;
+
 	/* If we're in the boot runlevel and we regenerated our dependencies
 	 * we need to delete them so that they are regenerated again in the
-	 * default runlevel as they may depend on things that are now available */
+	 * default runlevel as they may depend on things that are now
+	 * available */
 	if (regen && strcmp(runlevel, bootlevel) == 0)
 		unlink(RC_DEPTREE_CACHE);
 
 	return EXIT_SUCCESS;
 }
-

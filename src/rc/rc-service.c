@@ -58,7 +58,8 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int rc_service(int argc, char **argv)
+int
+rc_service(int argc, char **argv)
 {
 	int opt;
 	char *service;
@@ -75,17 +76,21 @@ int rc_service(int argc, char **argv)
 		case 'e':
 			service = rc_service_resolve(optarg);
 			opt = service ? EXIT_SUCCESS : EXIT_FAILURE;
+#ifdef DEBUG_MEMORY
 			free(service);
+#endif
 			return opt;
 			/* NOTREACHED */
 		case 'l':
 			list = rc_services_in_runlevel(NULL);
-			if (! list)
+			if (!TAILQ_FIRST(list))
 				return EXIT_FAILURE;
 			rc_stringlist_sort(&list);
 			TAILQ_FOREACH(s, list, entries)
 				printf("%s\n", s->value);
+#ifdef DEBUG_MEMORY
 			rc_stringlist_free(list);
+#endif
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
 		case 'r':
@@ -93,7 +98,9 @@ int rc_service(int argc, char **argv)
 			if (!service)
 				return EXIT_FAILURE;
 			printf("%s\n", service);
+#ifdef DEBUG_MEMORY
 			free(service);
+#endif
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
 
@@ -103,13 +110,10 @@ int rc_service(int argc, char **argv)
 
 	argc -= optind;
 	argv += optind;
-
 	if (!*argv)
 		eerrorx("%s: you need to specify a service", applet);
-
 	if (!(service = rc_service_resolve(*argv)))
 		eerrorx("%s: service `%s' does not exist", applet, *argv);
-
 	*argv = service;
 	execv(*argv, argv);
 	eerrorx("%s: %s", applet, strerror(errno));

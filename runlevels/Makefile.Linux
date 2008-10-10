@@ -1,2 +1,2 @@
-BOOT+=		hwclock consolefont keymaps modules mtab net.lo procfs \
-		termencoding
+SYSINIT+=	devfs dmesg
+BOOT+=		hwclock keymaps modules mtab net.lo procfs termencoding

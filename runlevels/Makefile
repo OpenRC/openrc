@@ -3,6 +3,7 @@ BOOT=		bootmisc fsck hostname localmount \
 DEFAULT=	local netmount
 
 LEVELDIR=	${DESTDIR}/${SYSCONFDIR}/runlevels
+SYSINITDIR=	${LEVELDIR}/sysinit
 BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 
@@ -17,6 +18,14 @@ include Makefile.${OS}
 all:
 
 install:
+	if ! test -d "${SYSINITDIR}"; then \
+		${INSTALL} -d ${SYSINITDIR} || exit $$?; \
+		for x in ${SYSINIT}; do \
+			if test -n "${PREFIX}"; then \
+				grep -q "keyword .*noprefix" ${INITDIR}/"$$x" && continue; \
+			fi; \
+			ln -snf ${PREFIX}/etc/init.d/"$$x" ${SYSINITDIR}/"$$x" || exit $$?; done \
+	fi
 	if ! test -d "${BOOTDIR}"; then \
 		${INSTALL} -d ${BOOTDIR} || exit $$?; \
 		for x in ${BOOT}; do \

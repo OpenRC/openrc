@@ -22,8 +22,4 @@ else
 fi
 
 echo "sysinit" > "${RC_SVCDIR}/softlevel"
-
-# sysinit is now done, so allow init scripts to run normally
-[ -e /dev/.rcsysinit ] && rm -f /dev/.rcsysinit
-
 exit ${retval}

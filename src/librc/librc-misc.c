@@ -84,10 +84,10 @@ RC_STRINGLIST *rc_config_list(const char *file)
 	size_t len = 0;
 	char *p;
 	char *token;
-	RC_STRINGLIST *list = NULL;
+	RC_STRINGLIST *list = rc_stringlist_new();
 
 	if (!(fp = fopen(file, "r")))
-		return NULL;
+		return list;
 
 	while ((rc_getline(&buffer, &len, fp))) {
 		p = buffer;
@@ -104,8 +104,6 @@ RC_STRINGLIST *rc_config_list(const char *file)
 				if (token[strlen(token) - 1] == '\n')
 					token[strlen(token) - 1] = 0;
 
-				if (!list)
-					list = rc_stringlist_new();
 				rc_stringlist_add(list, token);
 			}
 		}
@@ -131,9 +129,6 @@ RC_STRINGLIST *rc_config_load(const char *file)
 	char *p;
 
 	list = rc_config_list(file);
-	if (!list)
-		return NULL;
-
 	config = rc_stringlist_new();
 	TAILQ_FOREACH(line, list, entries) {
 		/* Get entry */
@@ -202,9 +197,6 @@ char *rc_config_value(RC_STRINGLIST *list, const char *entry)
 {
 	RC_STRING *line;
 	char *p;
-
-	if (!list)
-		return NULL;
 
 	TAILQ_FOREACH(line, list, entries) {
 		p = strchr(line->value, '=');

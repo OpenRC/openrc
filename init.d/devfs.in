@@ -1,0 +1,36 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Mount system critical filesystems in /dev."
+
+depend() {
+	use dev
+	keyword noprefix
+}
+
+start() {
+	# Mount required stuff as user may not have then in /etc/fstab
+	for x in \
+		"devpts /dev/pts 0755 ,gid=5,mode=0620 devpts" \
+		"tmpfs /dev/shm 1777 ,nodev shm" \
+	; do
+		set -- ${x}
+		grep -Eq "[[:space:]]+$1$" /proc/filesystems || continue
+		mountinfo -q "$2" && continue
+
+		if [ ! -d "$2" ]; then
+			mkdir -m "$3" -p "$2" >/dev/null 2>&1 || \
+				ewarn "Could not create $2!"
+		fi
+
+		if [ -d "$2" ]; then
+			ebegin "Mounting $2"
+			if ! fstabinfo --mount "$2"; then
+				mount -n -t "$1" -o noexec,nosuid"$4" "$5" "$2"
+			fi
+			eend $?
+		fi
+	done
+	return 0
+}
