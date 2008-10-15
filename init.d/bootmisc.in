@@ -93,8 +93,12 @@ start()
 			! -name ld-elf.so.hints ! -name ld.so.hints);
 		do
 			# Clean stale sockets
-			if [ -S "${x}" ] && type fuser >/dev/null 2>&1; then
-				fuser -s "${x}" || rm "${x}"
+			if [ -S "${x}" ]; then
+				if type fuser >/dev/null 2>&1; then
+					fuser "${x}" 2>/dev/null || rm "${x}"
+				else
+					rm "${x}"
+				fi
 			fi
 			[ ! -f "${x}" ] && continue
 			# Do not remove pidfiles of already running daemons
