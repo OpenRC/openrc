@@ -621,7 +621,7 @@ static bool runlevel_config(const char *service, const char *level)
 	return retval;
 }
 
-static void do_stop_services(const char *newlevel, bool going_down, bool parallel)
+static void do_stop_services(const char *newlevel, bool parallel)
 {
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
@@ -643,14 +643,6 @@ static void do_stop_services(const char *newlevel, bool going_down, bool paralle
 		/* Sometimes we don't ever want to stop a service. */
 		if (rc_stringlist_find(nostop, service->value)) {
 			rc_service_mark(service->value, RC_SERVICE_FAILED);
-			continue;
-		}
-
-		/* We always stop the service when in these runlevels */
-		if (going_down || ! start_services) {
-			pid = service_stop(service->value);
-			if (pid > 0 && ! parallel)
-				rc_waitpid(pid);
 			continue;
 		}
 
@@ -1024,34 +1016,28 @@ int main(int argc, char **argv)
 
 	/* Load our list of hotplugged services */
 	hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
-	if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0 &&
-	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
-	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_REBOOT) != 0)
-	{
+	if (!going_down ||
+	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) == 0)
 		start_services = rc_services_in_runlevel(RC_LEVEL_SYSINIT);
-		if (strcmp (newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT)
-		    != 0)
-		{
-			/* We need to include the boot runlevel services */
-			tmplist = rc_services_in_runlevel(bootlevel);
+	if (!going_down &&
+	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT) != 0)
+	{
+		/* We need to include the boot runlevel services */
+		tmplist = rc_services_in_runlevel(bootlevel);
+		TAILQ_CONCAT(start_services, tmplist, entries);
+		free(tmplist);
+		if (strcmp (newlevel ? newlevel : runlevel, bootlevel) != 0) {
+			tmplist = rc_services_in_runlevel(newlevel ?
+							  newlevel : runlevel);
 			TAILQ_CONCAT(start_services, tmplist, entries);
 			free(tmplist);
-			if (strcmp (newlevel ? newlevel : runlevel, bootlevel)
-			    != 0)
-			{
-				tmplist = rc_services_in_runlevel(newlevel ?
-								  newlevel :
-								  runlevel);
-				TAILQ_CONCAT(start_services, tmplist, entries);
-				free(tmplist);
-			}
+		}
 
-			if (hotplugged_services) {
-				if (!start_services)
-					start_services = rc_stringlist_new();
-				TAILQ_FOREACH(service, hotplugged_services, entries)
-					rc_stringlist_addu(start_services, service->value);
-			}
+		if (hotplugged_services) {
+			if (!start_services)
+				start_services = rc_stringlist_new();
+			TAILQ_FOREACH(service, hotplugged_services, entries)
+				rc_stringlist_addu(start_services, service->value);
 		}
 	}
 
@@ -1059,7 +1045,7 @@ int main(int argc, char **argv)
 
 	/* Now stop the services that shouldn't be running */
 	if (stop_services)
-		do_stop_services(newlevel, going_down, parallel);
+		do_stop_services(newlevel, parallel);
 
 	/* Wait for our services to finish */
 	wait_for_services();
@@ -1087,13 +1073,6 @@ int main(int argc, char **argv)
 		execl(HALTSH, HALTSH, runlevel, (char *) NULL);
 		eerrorx("%s: unable to exec `%s': %s",
 			 applet, HALTSH, strerror(errno));
-	}
-
-	/* Single user is done now */
-	if (strcmp(runlevel, RC_LEVEL_SINGLE) == 0) {
-		if (exists(INTERACTIVE))
-			unlink(INTERACTIVE);
-		sulogin(false);
 	}
 
 	mkdir(RC_STARTING, 0755);
@@ -1158,6 +1137,10 @@ int main(int argc, char **argv)
 	 * available */
 	if (regen && strcmp(runlevel, bootlevel) == 0)
 		unlink(RC_DEPTREE_CACHE);
+
+	/* Single user is done now */
+	if (strcmp(runlevel, RC_LEVEL_SINGLE) == 0)
+		sulogin(false);
 
 	return EXIT_SUCCESS;
 }
