@@ -1,4 +1,6 @@
 bootmisc
+devfs
+dmesg
 fsck
 halt.sh
 hostname
@@ -18,6 +20,7 @@ rc-enabled
 rpcbind
 savecore
 syslogd
+sysfs
 adjkerntz
 devd
 dumpon
