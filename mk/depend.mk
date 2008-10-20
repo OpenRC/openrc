@@ -9,7 +9,9 @@ IGNOREFILES+=	.depend
 
 depend: .depend extra_depend
 
-# Nasty hack for gmake which does not automatically include .depend
-# if it exists, unlike every other make implementation.
-INC_DEPEND= $(shell if test -e .depend; then echo ".depend"; else echo ""; fi)
-include ${INC_DEPEND}
+# Nasty hack. depend-.mk is a blank file, depend-gmake.mk has a gmake specific
+# command to optionally include .depend.
+# Someone should patch gmake to optionally include .depend if it exists.
+_INC_DEP=	$(shell if ${MAKE} --version | grep -q "^GNU "; then \
+		echo "gmake"; else echo ""; fi)
+include ${MK}/depend-${_INC_DEP}.mk
