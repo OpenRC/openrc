@@ -56,6 +56,11 @@ check test::
 clean:
 	rm -f ${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK} ${CLEANFILES}
 
+extra_depend:
+	@TMP=depend.$$$$; \
+	${SED} -e 's/^\([^\.]*\).o[ ]*:/\1.o \1.So:/' .depend > $${TMP}; \
+	mv $${TMP} .depend
+
 include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/depend.mk
