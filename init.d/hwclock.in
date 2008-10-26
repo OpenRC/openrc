@@ -74,12 +74,14 @@ start()
 	fi
 
 	ebegin "Setting system clock using the hardware clock [${utc}]"
-	local rtc=
-	for rtc in /dev/rtc /dev/rtc[0-9]*; do
-		[ -e "${rtc}" ] && break
-	done
-	if [ ! -e "${rtc}" -a -e /proc/modules ]; then
-		modprobe -q rtc-cmos || modprobe -q rtc || modprobe -q genrtc
+	if [ -e /proc/modules ]; then
+		local rtc=
+		for rtc in /dev/rtc /dev/rtc[0-9]*; do
+			[ -e "${rtc}" ] && break
+		done
+		if [ ! -e "${rtc}" ]; then
+			modprobe -q rtc-cmos || modprobe -q rtc || modprobe -q genrtc
+		fi
 	fi
 
 	if [ -e /etc/adjtime ] && yesno ${clock_adjfile}; then
