@@ -39,5 +39,5 @@ stop()
 		. @SYSCONFDIR@/conf.d/local.stop
 	fi
 
-	eend $? $"Failed to stop local"
+	eend $? "Failed to stop local"
 }
