@@ -278,7 +278,7 @@ ifconfig_pre_start()
 	metric=1000
 	
 	ebegin "Creating tunnel ${IFVAR}"
-	iptunnel add "${tunnel}"
+	iptunnel add ${tunnel}
 	eend $?
 }
 
