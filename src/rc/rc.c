@@ -96,7 +96,8 @@ struct termios *termios_orig = NULL;
 
 RC_PIDLIST service_pids;
 
-static void clean_failed(void)
+static void
+clean_failed(void)
 {
 	DIR *dp;
 	struct dirent *d;
@@ -111,13 +112,14 @@ static void clean_failed(void)
 			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
-			l = strlen(RC_SVCDIR "/failed/") + strlen(d->d_name) + 1;
+			l = strlen(RC_SVCDIR "/failed/") +
+				strlen(d->d_name) + 1;
 			path = xmalloc(sizeof(char) * l);
 			snprintf(path, l, RC_SVCDIR "/failed/%s", d->d_name);
 			if (path) {
 				if (unlink(path))
-					eerror("%s: unlink `%s': %s", applet, path,
-					       strerror(errno));
+					eerror("%s: unlink `%s': %s",
+					       applet, path, strerror(errno));
 				free(path);
 			}
 		}
@@ -125,7 +127,8 @@ static void clean_failed(void)
 	}
 }
 
-static void cleanup(void)
+static void
+cleanup(void)
 {
 	if (applet && strcmp(applet, "rc") == 0) {
 #ifdef DEBUG_MEMORY
@@ -171,7 +174,8 @@ static void cleanup(void)
 }
 
 #ifdef __linux__
-static char *proc_getent(const char *ent)
+static char *
+proc_getent(const char *ent)
 {
 	FILE *fp;
 	char proc[COMMAND_LINE_SIZE];
@@ -179,10 +183,10 @@ static char *proc_getent(const char *ent)
 	char *value = NULL;
 	int i;
 
-	if (! exists("/proc/cmdline"))
+	if (!exists("/proc/cmdline"))
 		return NULL;
 
-	if (! (fp = fopen("/proc/cmdline", "r"))) {
+	if (!(fp = fopen("/proc/cmdline", "r"))) {
 		eerror("failed to open `/proc/cmdline': %s", strerror(errno));
 		return NULL;
 	}
@@ -205,18 +209,19 @@ static char *proc_getent(const char *ent)
 }
 #endif
 
-static char read_key(bool block)
+static char
+read_key(bool block)
 {
 	struct termios termios;
 	char c = 0;
 	int fd = STDIN_FILENO;
 
-	if (! isatty(fd))
+	if (!isatty(fd))
 		return false;
 
 	/* Now save our terminal settings. We need to restore them at exit as we
 	 * will be changing it for non-blocking reads for Interactive */
-	if (! termios_orig) {
+	if (!termios_orig) {
 		termios_orig = xmalloc(sizeof(*termios_orig));
 		tcgetattr(fd, termios_orig);
 	}
@@ -230,15 +235,13 @@ static char read_key(bool block)
 		termios.c_cc[VTIME] = 0;
 	}
 	tcsetattr(fd, TCSANOW, &termios);
-
 	read(fd, &c, 1);
-
 	tcsetattr(fd, TCSANOW, termios_orig);
-
 	return c;
 }
 
-static bool want_interactive(void)
+static bool
+want_interactive(void)
 {
 	char c;
 	static bool gotinteractive;
@@ -246,26 +249,26 @@ static bool want_interactive(void)
 
 	if (rc_yesno(getenv("EINFO_QUIET")))
 		return false;
-
-	if (! gotinteractive) {
+	if (!gotinteractive) {
 		gotinteractive = true;
 		interactive = rc_conf_yesno("rc_interactive");
 	}
-	if (! interactive)
+	if (!interactive)
 		return false;
-
 	c = read_key(false);
 	return (c == 'I' || c == 'i') ? true : false;
 }
 
-static void mark_interactive(void)
+static void
+mark_interactive(void)
 {
 	FILE *fp = fopen(INTERACTIVE, "w");
 	if (fp)
 		fclose(fp);
 }
 
-static void run_program(const char *prog)
+static void
+run_program(const char *prog)
 {
 	struct sigaction sa;
 	sigset_t full;
@@ -310,24 +313,25 @@ static void run_program(const char *prog)
 		eerrorx("%s: failed to exec `%s'", applet, prog);
 }
 
-static void sulogin(bool cont)
+static void
+sulogin(bool cont)
 {
 #ifdef __linux__
 	const char *sys = rc_sys();
 
 	/* VSERVER and OPENVZ systems cannot do a sulogin */
-	if (sys && (strcmp(sys, "VSERVER") == 0 || strcmp(sys, "OPENVZ") == 0)) {
+	if (sys &&
+	    (strcmp(sys, "VSERVER") == 0 || strcmp(sys, "OPENVZ") == 0))
+	{
 		execl("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
 		eerrorx("%s: unable to exec `/sbin/halt': %s",
 			applet, strerror(errno));
 	}
 #endif
-
-	if (! cont) {
+	if (!cont) {
 		rc_logger_close();
 		exit(EXIT_SUCCESS);
 	}
-
 #ifdef __linux__
 	run_program(SULOGIN);
 #else
@@ -335,31 +339,33 @@ static void sulogin(bool cont)
 #endif
 }
 
-_dead static void single_user(void)
+_dead static void
+single_user(void)
 {
 	rc_logger_close();
-
 	execl(SHUTDOWN, SHUTDOWN, "now", (char *) NULL);
 	eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
 		 applet, strerror(errno));
 }
 
-static bool set_krunlevel(const char *level)
+static bool
+set_krunlevel(const char *level)
 {
 	FILE *fp;
 
-	if (! level ||
+	if (!level ||
 	    strcmp(level, getenv ("RC_BOOTLEVEL")) == 0 ||
 	    strcmp(level, RC_LEVEL_SINGLE) == 0 ||
 	    strcmp(level, RC_LEVEL_SYSINIT) == 0)
 	{
 		if (exists(RC_KRUNLEVEL) &&
 		    unlink(RC_KRUNLEVEL) != 0)
-			eerror("unlink `%s': %s", RC_KRUNLEVEL, strerror(errno));
+			eerror("unlink `%s': %s", RC_KRUNLEVEL,
+			       strerror(errno));
 		return false;
 	}
 
-	if (! (fp = fopen(RC_KRUNLEVEL, "w"))) {
+	if (!(fp = fopen(RC_KRUNLEVEL, "w"))) {
 		eerror("fopen `%s': %s", RC_KRUNLEVEL, strerror(errno));
 		return false;
 	}
@@ -369,15 +375,15 @@ static bool set_krunlevel(const char *level)
 	return true;
 }
 
-static int get_krunlevel(char *buffer, int buffer_len)
+static int
+get_krunlevel(char *buffer, int buffer_len)
 {
 	FILE *fp;
 	int i = 0;
 
-	if (! exists(RC_KRUNLEVEL))
+	if (!exists(RC_KRUNLEVEL))
 		return 0;
-
-	if (! (fp = fopen(RC_KRUNLEVEL, "r"))) {
+	if (!(fp = fopen(RC_KRUNLEVEL, "r"))) {
 		eerror("fopen `%s': %s", RC_KRUNLEVEL, strerror(errno));
 		return -1;
 	}
@@ -387,19 +393,20 @@ static int get_krunlevel(char *buffer, int buffer_len)
 		if (buffer[i] == '\n')
 			buffer[i] = 0;
 	}
-
 	fclose(fp);
 	return i;
 }
 
-static void add_pid(pid_t pid)
+static void
+add_pid(pid_t pid)
 {
 	RC_PID *p = xmalloc(sizeof(*p));
 	p->pid = pid;
 	LIST_INSERT_HEAD(&service_pids, p, entries);
 }
 
-static void remove_pid(pid_t pid)
+static void
+remove_pid(pid_t pid)
 {
 	RC_PID *p;
 
@@ -411,12 +418,14 @@ static void remove_pid(pid_t pid)
 		}
 }
 
-static void wait_for_services(void)
+static void
+wait_for_services(void)
 {
 	while (waitpid(0, 0, 0) != -1);
 }
 
-static void handle_signal(int sig)
+static void
+handle_signal(int sig)
 {
 	int serrno = errno;
 	char signame[10] = { '\0' };
@@ -532,7 +541,8 @@ do_sysinit()
 		setenv("RC_SYS", sys, 1);
 }
 
-static bool runlevel_config(const char *service, const char *level)
+static bool
+runlevel_config(const char *service, const char *level)
 {
 	char *init = rc_service_resolve(service);
 	char *conf, *dir;
@@ -547,23 +557,24 @@ static bool runlevel_config(const char *service, const char *level)
 	retval = exists(conf);
 	free(conf);
 	free(init);
-
 	return retval;
 }
 
-static void do_stop_services(const char *newlevel, bool parallel)
+static void
+do_stop_services(const char *newlevel, bool parallel)
 {
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
 	RC_STRINGLIST *deporder, *tmplist;
 	RC_SERVICE state;
-	RC_STRINGLIST *nostop = rc_stringlist_split(rc_conf_value("rc_nostop"), " ");
+	RC_STRINGLIST *nostop;
 
-	if (! types_n) {
+	if (!types_n) {
 		types_n = rc_stringlist_new();
 		rc_stringlist_add(types_n, "needsme");
 	}
 
+	nostop = rc_stringlist_split(rc_conf_value("rc_nostop"), " ");
 	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries)
 	{
 		state = rc_service_state(service->value);
@@ -584,8 +595,8 @@ static void do_stop_services(const char *newlevel, bool parallel)
 				 * be stopped if we have a runlevel
 				 * configuration file for either the current
 				 * or next so we use the correct one. */
-				if (! runlevel_config(service->value, runlevel) &&
-				    ! runlevel_config(service->value, newlevel))
+				if (!runlevel_config(service->value,runlevel) &&
+				    !runlevel_config(service->value,newlevel))
 					continue;
 			}
 			else
@@ -594,7 +605,7 @@ static void do_stop_services(const char *newlevel, bool parallel)
 
 		/* We got this far! Or last check is to see if any any service
 		 * that going to be started depends on us */
-		if (! svc1) {
+		if (!svc1) {
 			tmplist = rc_stringlist_new();
 			rc_stringlist_add(tmplist, service->value);
 			deporder = rc_deptree_depends(deptree, types_n, tmplist,
@@ -602,7 +613,7 @@ static void do_stop_services(const char *newlevel, bool parallel)
 						      RC_DEP_STRICT | RC_DEP_TRACE);
 			rc_stringlist_free(tmplist);
 			svc2 = NULL;
-			TAILQ_FOREACH (svc1, deporder, entries) {
+			TAILQ_FOREACH(svc1, deporder, entries) {
 				svc2 = rc_stringlist_find(start_services, svc1->value);
 				if (svc2)
 					break;
@@ -627,14 +638,15 @@ static void do_stop_services(const char *newlevel, bool parallel)
 	rc_stringlist_free(nostop);
 }
 
-static void do_start_services(bool parallel)
+static void
+do_start_services(bool parallel)
 {
 	RC_STRING *service;
 	pid_t pid;
 	bool interactive = false;
 	RC_SERVICE state;
 
-	if (! rc_yesno(getenv("EINFO_QUIET")))
+	if (!rc_yesno(getenv("EINFO_QUIET")))
 		interactive = exists(INTERACTIVE);
 
 	TAILQ_FOREACH(service, start_services, entries) {
@@ -642,7 +654,7 @@ static void do_start_services(bool parallel)
 		if (!(state & RC_SERVICE_STOPPED) || state & RC_SERVICE_FAILED)
 			continue;
 
-		if (! interactive)
+		if (!interactive)
 			interactive = want_interactive();
 
 		if (interactive) {
@@ -668,7 +680,7 @@ interactive_option:
 		/* Remember the pid if we're running in parallel */
 		if (pid > 0) {
 			add_pid(pid);
-			if (! parallel) {
+			if (!parallel) {
 				rc_waitpid(pid);
 				remove_pid(pid);
 			}
@@ -686,7 +698,8 @@ interactive_option:
 }
 
 #ifdef RC_DEBUG
-static void handle_bad_signal(int sig)
+static void
+handle_bad_signal(int sig)
 {
 	char pid[10];
 	int status;
@@ -699,12 +712,12 @@ static void handle_bad_signal(int sig)
 		case 0:
 			sprintf(pid, "%i", crashed_pid);
 			printf("\nAuto launching gdb!\n\n");
-			_exit(execlp("gdb", "gdb", "--quiet", "--pid", pid, "-ex", "bt full", NULL));
+			_exit(execlp("gdb", "gdb", "--quiet", "--pid", pid,
+				     "-ex", "bt full", NULL));
 			/* NOTREACHED */
 		default:
 			wait(&status);
 	}
-
 	_exit(1);
 	/* NOTREACHED */
 }
@@ -726,7 +739,8 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
 	const char *bootlevel = NULL;
 	char *newlevel = NULL;
@@ -755,7 +769,7 @@ int main(int argc, char **argv)
 	applet = basename_c(argv[0]);
 	LIST_INIT(&service_pids);
 	atexit(cleanup);
-	if (! applet)
+	if (!applet)
 		eerrorx("arguments required");
 
 	if (argc > 1 && (strcmp(argv[1], "--version") == 0)) {
@@ -793,7 +807,8 @@ int main(int argc, char **argv)
 		case 'o':
 			if (*optarg == '\0')
 				optarg = NULL;
-			exit(set_krunlevel(optarg) ? EXIT_SUCCESS : EXIT_FAILURE);
+			exit(set_krunlevel(optarg) ?
+			     EXIT_SUCCESS : EXIT_FAILURE);
 			/* NOTREACHED */
 		case 's':
 			newlevel = rc_service_resolve(optarg);
@@ -850,8 +865,9 @@ int main(int argc, char **argv)
 	 * If not, we need to erase krunlevel now. */
 	if (strcmp(runlevel, RC_LEVEL_SINGLE) == 0) {
 		/* Try not to join boot and krunlevels together */
-		if (! newlevel ||
-		    (strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0 &&
+		if (!newlevel ||
+		    (strcmp(newlevel, RC_LEVEL_SINGLE) != 0 &&
+		     strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0 &&
 		     strcmp(newlevel, RC_LEVEL_SYSINIT) != 0))
 			if (get_krunlevel(krunlevel, sizeof(krunlevel)))
 				newlevel = krunlevel;
@@ -884,9 +900,9 @@ int main(int argc, char **argv)
 	hook_out = RC_HOOK_RUNLEVEL_STOP_OUT;
 
 	/* Check if runlevel is valid if we're changing */
-	if (newlevel && strcmp(runlevel, newlevel) != 0 && ! going_down) {
-		if (! rc_runlevel_exists(newlevel))
-			eerrorx ("%s: is not a valid runlevel", newlevel);
+	if (newlevel && strcmp(runlevel, newlevel) != 0 && !going_down) {
+		if (!rc_runlevel_exists(newlevel))
+			eerrorx("%s: is not a valid runlevel", newlevel);
 	}
 
 	/* Load our deptree */
@@ -1000,8 +1016,9 @@ int main(int argc, char **argv)
 	/* Order the services to start */
 	if (start_services) {
 		rc_stringlist_sort(&start_services);
-		deporder = rc_deptree_depends(deptree, types_nua, start_services,
-				      runlevel, depoptions | RC_DEP_START);
+		deporder = rc_deptree_depends(deptree, types_nua,
+					      start_services, runlevel,
+					      depoptions | RC_DEP_START);
 		rc_stringlist_free(start_services);
 		start_services = deporder;
 	}
@@ -1046,10 +1063,6 @@ int main(int argc, char **argv)
 	 * available */
 	if (regen && strcmp(runlevel, bootlevel) == 0)
 		unlink(RC_DEPTREE_CACHE);
-
-	/* Single user is done now */
-	if (strcmp(runlevel, RC_LEVEL_SINGLE) == 0)
-		sulogin(false);
 
 	return EXIT_SUCCESS;
 }
