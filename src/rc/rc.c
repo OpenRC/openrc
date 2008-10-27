@@ -82,9 +82,6 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #define DEVBOOT			"/dev/.rcboot"
 
-static char *RUNLEVEL = NULL;
-static char *PREVLEVEL = NULL;
-
 const char *applet = NULL;
 static char *runlevel = NULL;
 static RC_STRINGLIST *hotplugged_services = NULL;
@@ -250,12 +247,6 @@ static bool want_interactive(void)
 	if (rc_yesno(getenv("EINFO_QUIET")))
 		return false;
 
-	if (PREVLEVEL &&
-	    strcmp(PREVLEVEL, "N") != 0 &&
-	    strcmp(PREVLEVEL, "S") != 0 &&
-	    strcmp(PREVLEVEL, "1") != 0)
-		return false;
-
 	if (! gotinteractive) {
 		gotinteractive = true;
 		interactive = rc_conf_yesno("rc_interactive");
@@ -334,13 +325,6 @@ static void sulogin(bool cont)
 
 	if (! cont) {
 		rc_logger_close();
-#ifdef __linux__
-		if (RUNLEVEL && strcmp(RUNLEVEL, "S") == 0) {
-			execl("/sbin/sulogin", "/sbin/sulogin", (char *) NULL);
-			eerrorx("%s: unable to exec `/sbin/sulogin': %s",
-				applet, strerror(errno));
-		}
-#endif
 		exit(EXIT_SUCCESS);
 	}
 
@@ -493,15 +477,6 @@ static void handle_signal(int sig)
 		/* Notify plugins we are aborting */
 		rc_plugin_run(RC_HOOK_ABORT, NULL);
 
-		/* Only drop into single user mode if we're booting */
-		if ((PREVLEVEL &&
-		     (strcmp(PREVLEVEL, "S") == 0 ||
-		      strcmp(PREVLEVEL, "1") == 0)) ||
-		    (RUNLEVEL &&
-		     (strcmp(RUNLEVEL, "S") == 0 ||
-		      strcmp(RUNLEVEL, "1") == 0)))
-			single_user();
-
 		exit(EXIT_FAILURE);
 		/* NOTREACHED */
 
@@ -513,94 +488,49 @@ static void handle_signal(int sig)
 	errno = serrno;
 }
 
-static void do_newlevel(const char *newlevel)
+static void
+do_sysinit()
 {
 	struct utsname uts;
 	const char *sys;
 
-	if (strcmp(newlevel, RC_LEVEL_SYSINIT) == 0
-#ifndef PREFIX
-	    && RUNLEVEL &&
-	    (strcmp(RUNLEVEL, "S") == 0 ||
-	     strcmp(RUNLEVEL, "1") == 0)
-#endif
-	   )
-	{
-		/* OK, we're either in runlevel 1 or single user mode */
+	/* exec init-early.sh if it exists
+	 * This should just setup the console to use the correct
+	 * font. Maybe it should setup the keyboard too? */
+	if (exists(INITEARLYSH))
+		run_program(INITEARLYSH);
 
-		/* exec init-early.sh if it exists
-		 * This should just setup the console to use the correct
-		 * font. Maybe it should setup the keyboard too? */
-		if (exists(INITEARLYSH))
-			run_program(INITEARLYSH);
-
-		uname(&uts);
-		printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
-		       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
-		       ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
+	uname(&uts);
+	printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
+	       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
+	       ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
 #ifdef BRANDING
-		printf(BRANDING " (%s)", uts.machine);
+	printf(BRANDING " (%s)", uts.machine);
 #else
-		printf("%s %s (%s)",
-		       uts.sysname,
-		       uts.release,
-		       uts.machine);
+	printf("%s %s (%s)",
+	       uts.sysname,
+	       uts.release,
+	       uts.machine);
 #endif
 
-		if ((sys = rc_sys()))
-			printf(" [%s]", sys);
+	if ((sys = rc_sys()))
+		printf(" [%s]", sys);
 
-		printf("%s\n\n", ecolor(ECOLOR_NORMAL));
+	printf("%s\n\n", ecolor(ECOLOR_NORMAL));
 
-		if (! rc_yesno(getenv ("EINFO_QUIET")) &&
-		    rc_conf_yesno("rc_interactive"))
-			printf("Press %sI%s to enter interactive boot mode\n\n",
-			       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
+	if (! rc_yesno(getenv ("EINFO_QUIET")) &&
+	    rc_conf_yesno("rc_interactive"))
+		printf("Press %sI%s to enter interactive boot mode\n\n",
+		       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
 
-		setenv("RC_RUNLEVEL", newlevel, 1);
-		run_program(INITSH);
+	setenv("RC_RUNLEVEL", RC_LEVEL_SYSINIT, 1);
+	run_program(INITSH);
 
-		/* init may have mounted /proc so we can now detect or real
-		 * sys */
-		if ((sys = rc_sys()))
-			setenv("RC_SYS", sys, 1);
-	} else if (strcmp(newlevel, RC_LEVEL_SINGLE) == 0) {
-#ifndef PREFIX
-		if (! RUNLEVEL ||
-		    (strcmp(RUNLEVEL, "S") != 0 &&
-		     strcmp(RUNLEVEL, "1") != 0))
-		{
-			set_krunlevel(runlevel);
-			single_user();
-		}
-#endif
-	} else if (strcmp(newlevel, RC_LEVEL_REBOOT) == 0) {
-		if (! RUNLEVEL ||
-		    strcmp(RUNLEVEL, "6") != 0)
-		{
-			rc_logger_close();
-			execl(SHUTDOWN, SHUTDOWN, "-r", "now", (char *) NULL);
-			eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
-				applet, strerror(errno));
-		}
-	} else if (strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0) {
-		if (! RUNLEVEL ||
-		    strcmp(RUNLEVEL, "0") != 0)
-		{
-			rc_logger_close();
-			execl(SHUTDOWN, SHUTDOWN,
-#ifdef __linux__
-			      "-h",
-#else
-			      "-p",
-#endif
-			      "now", (char *) NULL);
-			eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
-				applet, strerror(errno));
-		}
-	}
+	/* init may have mounted /proc so we can now detect or real
+	 * sys */
+	if ((sys = rc_sys()))
+		setenv("RC_SYS", sys, 1);
 }
-
 
 static bool runlevel_config(const char *service, const char *level)
 {
@@ -849,11 +779,6 @@ int main(int argc, char **argv)
 	/* Change dir to / to ensure all scripts don't use stuff in pwd */
 	chdir("/");
 
-	/* RUNLEVEL is set by sysvinit as is a magic number
-	 * RC_RUNLEVEL is set by us and is the name for this magic number */
-	RUNLEVEL = getenv("RUNLEVEL");
-	PREVLEVEL = getenv("PREVLEVEL");
-
 	/* Ensure our environment is pure
 	 * Also, add our configuration to it */
 	env_filter();
@@ -914,37 +839,24 @@ int main(int argc, char **argv)
 
 	rc_plugin_load();
 
-	/* Check we're in the runlevel requested, ie from
-	 * rc single
-	 * rc shutdown
-	 * rc reboot
-	 */
-	if (newlevel)
-		do_newlevel(newlevel);
+	/* Run any special sysinit foo */
+	if (newlevel && strcmp(newlevel, RC_LEVEL_SYSINIT) == 0)
+		do_sysinit();
 
 	/* Now we start handling our children */
 	signal_setup(SIGCHLD, handle_signal);
 
 	/* We should only use krunlevel if we were in single user mode
 	 * If not, we need to erase krunlevel now. */
-	if (PREVLEVEL &&
-	    (strcmp(PREVLEVEL, "1") == 0 ||
-	     strcmp(PREVLEVEL, "S") == 0 ||
-	     strcmp(PREVLEVEL, "N") == 0))
-	{
+	if (strcmp(runlevel, RC_LEVEL_SINGLE) == 0) {
 		/* Try not to join boot and krunlevels together */
 		if (! newlevel ||
 		    (strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0 &&
 		     strcmp(newlevel, RC_LEVEL_SYSINIT) != 0))
 			if (get_krunlevel(krunlevel, sizeof(krunlevel)))
 				newlevel = krunlevel;
-	} else if (! RUNLEVEL ||
-		   (strcmp(RUNLEVEL, "1") != 0 &&
-		    strcmp(RUNLEVEL, "S") != 0 &&
-		    strcmp(RUNLEVEL, "N") != 0))
-	{
+	} else
 		set_krunlevel(NULL);
-	}
 
 	if (newlevel &&
 	    (strcmp(newlevel, RC_LEVEL_REBOOT) == 0 ||
@@ -952,6 +864,7 @@ int main(int argc, char **argv)
 	     strcmp(newlevel, RC_LEVEL_SINGLE) == 0))
 	{
 		going_down = true;
+		set_krunlevel(runlevel);
 		rc_runlevel_set(newlevel);
 		setenv("RC_RUNLEVEL", newlevel, 1);
 		setenv("RC_GOINGDOWN", "YES", 1);
@@ -1095,13 +1008,11 @@ int main(int argc, char **argv)
 
 #ifdef __linux__
 	/* mark any services skipped as started */
-	if (PREVLEVEL && strcmp(PREVLEVEL, "N") == 0) {
-		proc = p = proc_getent("noinitd");
-		if (proc) {
-			while ((token = strsep(&p, ",")))
-				rc_service_mark(token, RC_SERVICE_STARTED);
-			free(proc);
-		}
+	proc = p = proc_getent("noinitd");
+	if (proc) {
+		while ((token = strsep(&p, ",")))
+			rc_service_mark(token, RC_SERVICE_STARTED);
+		free(proc);
 	}
 #endif
 
@@ -1118,13 +1029,11 @@ int main(int argc, char **argv)
 
 #ifdef __linux__
 	/* mark any services skipped as stopped */
-	if (PREVLEVEL && strcmp(PREVLEVEL, "N") == 0) {
-		proc = p = proc_getent("noinitd");
-		if (proc) {
-			while ((token = strsep(&p, ",")))
-				rc_service_mark(token, RC_SERVICE_STOPPED);
-			free(proc);
-		}
+	proc = p = proc_getent("noinitd");
+	if (proc) {
+		while ((token = strsep(&p, ",")))
+			rc_service_mark(token, RC_SERVICE_STOPPED);
+		free(proc);
 	}
 #endif
 

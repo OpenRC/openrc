@@ -10,12 +10,9 @@
 trap : SIGINT
 trap "echo 'Boot interrupted'; exit 1" SIGQUIT
 
-# BSD's init works somewhat differently to sysvinit.
-# This block should 'translate' from the way init calls it to the way it would
-# be called by sysvinit on linux.
-RUNLEVEL="1" /sbin/rc sysinit || exit 1
-RUNLEVEL="1" /sbin/rc boot || exit 1
-PREVLEVEL="1" /sbin/rc default
+/sbin/rc sysinit || exit 1
+/sbin/rc boot || exit 1
+/sbin/rc default
 
 # We don't actually care if rc default worked or not, we should exit 0
 # to allow logins

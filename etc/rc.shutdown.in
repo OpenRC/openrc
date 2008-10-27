@@ -14,13 +14,4 @@ export LD_LIBRARY_PATH="/lib${LD_LIBRARY_PATH:+:}${LDLIBRARY_PATH}"
 [ -z "$TERM" -o "$TERM" = "dumb" ] && export TERM="@TERM@"
 
 action=${1:-shutdown}
-
-# BSD's init works somewhat differently to sysvinit.
-# This block should 'translate' from the way init calls it to the way it would
-# be called by sysvinit on linux.
-case "${action}" in
-	reboot) 	export RUNLEVEL=6;;
-	single)		export RUNLEVEL=S;;
-	*)		export RUNLEVEL=0;;
-esac
 exec /sbin/rc "${action}"
