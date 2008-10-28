@@ -31,13 +31,13 @@ ifplugd_pre_start()
 	for f in bond bridge tuntap vlan wireless; do
 		if type "_is_${f}" >/dev/null 2>&1; then
 			if _is_${f}; then
-				veinfo "netplug does not work with" "${f}"
+				veinfo "ifplugd does not work with ${f}"
 				return 0
 			fi
 		fi
 	done
 
-	ebegin "Starting ifplugd on" "${IFACE}"
+	ebegin "Starting ifplugd on ${IFACE}"
 
 	eval args=\$ifplugd_${IFVAR}
 
@@ -47,7 +47,7 @@ ifplugd_pre_start()
 	# Start ifplugd
 	eval start-stop-daemon --start --exec /usr/sbin/ifplugd \
 		--pidfile "${pidfile}" -- "${args}" --iface="${IFACE}"
-	eend "$?" || return 1
+	eend $? || return 1
 
 	eindent
 
@@ -85,7 +85,7 @@ ifplugd_stop()
 	local pidfile="/var/run/ifplugd.${IFACE}.pid"
 	[ ! -e "${pidfile}" ] && return 0
 	
-	ebegin "Stopping ifplugd on" "${IFACE}"
+	ebegin "Stopping ifplugd on ${IFACE}"
 	start-stop-daemon --stop --quiet --exec /usr/sbin/ifplugd \
 		--pidfile "${pidfile}" --signal QUIT
 	eend $?
