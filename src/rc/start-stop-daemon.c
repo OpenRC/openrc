@@ -563,6 +563,7 @@ int start_stop_daemon(int argc, char **argv)
 #ifdef HAVE_PAM
 	pam_handle_t *pamh = NULL;
 	int pamr;
+	const char *const *pamenv = NULL;
 #endif
 
 	int opt;
@@ -1026,6 +1027,19 @@ int start_stop_daemon(int argc, char **argv)
 		i = 0;
 		while(environ[i])
 			rc_stringlist_add(env_list, environ[i++]);
+
+#ifdef HAVE_PAM
+		pamenv = (const char *const *)pam_getenvlist(pamh);
+		if (pamenv) {
+			while (*pamenv) {
+				/* Don't add strings unless they set a var */
+				if (strchr(*pamenv, '='))
+					putenv(xstrdup(*pamenv));
+				pamenv++;
+			}
+		}
+#endif
+
 		TAILQ_FOREACH(env, env_list, entries) {
 			if ((strncmp(env->value, "RC_", 3) == 0 &&
 			     strncmp(env->value, "RC_SERVICE=", 10) != 0 &&
