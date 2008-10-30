@@ -371,7 +371,7 @@ static int run_stop_schedule(const char *exec, const char *const *argv,
 
 	if (verbose) {
 		if (exec)
-			einfo ("Will stop %s\n", exec);
+			einfo ("Will stop %s", exec);
 		if (pidfile)
 			einfo("Will stop PID in pidfile `%s'", pidfile);
 		if (uid)
@@ -781,13 +781,14 @@ int start_stop_daemon(int argc, char **argv)
 
 	if (!exec) {
 		exec = *argv;
-		if (name)
+		if (!exec)
+			exec = name;
+		if (name && start)
 			*argv = name;
-	} else if (name)
+	} else if (name && (start || **argv))
 		*--argv = name;
 	else
 		*--argv = exec;
-
 
 	if (start && !exec)
 		eerrorx("%s: nothing to start", applet);
