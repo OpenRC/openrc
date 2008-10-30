@@ -501,40 +501,42 @@ static void handle_signal(int sig)
 static char *
 expand_home(const char *home, const char *path)
 {
-	char *pat, *p, *nh;
+	char *opath, *ppath, *p, *nh;
 	size_t len;
 	struct passwd *pw;
 
 	if (!path || *path != '~')
 		return xstrdup(path);
 
-	pat = xstrdup(path);
-	if (pat[1] != '/' && pat[1] != '\0') {
-		p = strchr(pat + 1, '/');
+	opath = ppath = xstrdup(path);
+	if (ppath[1] != '/' && ppath[1] != '\0') {
+		p = strchr(ppath + 1, '/');
 		if (p)
 			*p = '\0';
-		pw = getpwnam(pat + 1);
+		pw = getpwnam(ppath + 1);
 		if (pw) {
 			home = pw->pw_dir;
-			pat = p;
-			if (pat)
-				*pat = '/';
+			ppath = p;
+			if (ppath)
+				*ppath = '/';
 		} else
 			home = NULL;
 	} else
-		pat++;
+		ppath++;
 
 	if (!home) {
-		free(pat);
+		free(opath);
 		return xstrdup(path);
 	}
-	if (!pat)
+	if (!ppath) {
+		free(opath);
 		return xstrdup(home);
+	}
 
-	len = strlen(pat) + strlen(home) + 1;
+	len = strlen(ppath) + strlen(home) + 1;
 	nh = xmalloc(len);
-	snprintf(nh, len, "%s%s", home, pat);
-	free(pat);
+	snprintf(nh, len, "%s%s", home, ppath);
+	free(opath);
 	return nh;
 }
 
@@ -892,6 +894,8 @@ int start_stop_daemon(int argc, char **argv)
 		ch_dir = expand_home(home, ch_dir);
 	if (ch_root && *ch_root == '~')
 		ch_root = expand_home(home, ch_root);
+	if (*exec == '~')
+		exec = expand_home(home, exec);
 
 	/* Validate that the binary exists if we are starting */
 	if (*exec == '/' || *exec == '.') {
