@@ -13,12 +13,12 @@ eerrorn
 eerror
 ebegin
 eend
-ewaitfile
 ewend
 eindent
 eoutdent
 esyslog
 eval_ecolors
+ewaitfile
 veinfo
 vewarn
 vebegin
@@ -32,7 +32,7 @@ service_stopping
 service_stopped
 service_inactive
 service_wasinactive
-service_coldplugged
+service_hotplugged
 service_started_daemon
 checkpath
 fstabinfo
@@ -51,7 +51,7 @@ mark_service_stopping
 mark_service_stopped
 mark_service_inactive
 mark_service_wasinactive
-mark_service_coldplugged
+mark_service_hotplugged
 mark_service_failed
 rc-abort
 checkpath.o
@@ -68,6 +68,5 @@ rc-status.o
 rc-update.o
 runscript.o
 rc.o
-rc.core
 rc
 .depend

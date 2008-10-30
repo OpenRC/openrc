@@ -18,14 +18,14 @@ RC_BINLINKS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 		service_starting service_started \
 		service_stopping service_stopped \
 		service_inactive service_wasinactive \
-		service_coldplugged service_started_daemon \
+		service_hotplugged service_started_daemon \
 		checkpath fstabinfo mountinfo rc-depend \
 		service_get_value service_set_value get_options save_options \
 		shell_var is_newer_than is_older_than
 RC_SBINLINKS=	mark_service_starting mark_service_started \
 		mark_service_stopping mark_service_stopped \
 		mark_service_inactive mark_service_wasinactive \
-		mark_service_coldplugged mark_service_failed \
+		mark_service_hotplugged mark_service_failed \
 		rc-abort
 ALL_LINKS=	${BINLINKS} ${SBINLINKS} ${RC_BINLINKS} ${RC_SBINLINKS}
 CLEANFILES+=	${ALL_LINKS}
