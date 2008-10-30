@@ -96,10 +96,10 @@ typedef struct scheduleitem
 	TAILQ_ENTRY(scheduleitem) entries;
 } SCHEDULEITEM;
 TAILQ_HEAD(, scheduleitem) schedule;
-static char **nav = NULL;
+static char **nav;
 
 extern const char *applet;
-static char *changeuser = NULL;
+static char *changeuser, *ch_root, *ch_dir;
 
 extern char **environ;
 
@@ -498,6 +498,45 @@ static void handle_signal(int sig)
 	errno = serrno;
 }
 
+static char *
+expand_home(const char *home, const char *path)
+{
+	char *pat, *p, *nh;
+	size_t len;
+	struct passwd *pw;
+
+	if (!path || *path != '~')
+		return xstrdup(path);
+
+	pat = xstrdup(path);
+	if (pat[1] != '/' && pat[1] != '\0') {
+		p = strchr(pat + 1, '/');
+		if (p)
+			*p = '\0';
+		pw = getpwnam(pat + 1);
+		if (pw) {
+			home = pw->pw_dir;
+			pat = p;
+			if (pat)
+				*pat = '/';
+		} else
+			home = NULL;
+	} else
+		pat++;
+
+	if (!home) {
+		free(pat);
+		return xstrdup(path);
+	}
+	if (!pat)
+		return xstrdup(home);
+
+	len = strlen(pat) + strlen(home) + 1;
+	nh = xmalloc(len);
+	snprintf(nh, len, "%s%s", home, pat);
+	free(pat);
+	return nh;
+}
 
 #include "_usage.h"
 #define getoptstring "KN:R:Sbc:d:e:g:k:mn:op:s:tu:r:x:1:2:" getoptstring_COMMON
@@ -582,8 +621,7 @@ int start_stop_daemon(int argc, char **argv)
 	bool makepidfile = false;
 	uid_t uid = 0;
 	gid_t gid = 0;
-	char *ch_root = NULL;
-	char *ch_dir = NULL;
+	char *home = NULL;
 	int tid = 0;
 	char *redirect_stderr = NULL;
 	char *redirect_stdout = NULL;
@@ -624,6 +662,14 @@ int start_stop_daemon(int argc, char **argv)
 			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
 				applet, tmp);
 
+	/* Get our initial dir */
+	home = getenv("HOME");
+	if (!home) {
+		pw = getpwuid(getuid());
+		if (pw)
+			home = pw->pw_dir;
+	}
+
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 				  (int *) 0)) != -1)
 		switch (opt) {
@@ -633,7 +679,8 @@ int start_stop_daemon(int argc, char **argv)
 
 		case 'N':  /* --nice */
 			if (sscanf(optarg, "%d", &nicelevel) != 1)
-				eerrorx("%s: invalid nice level `%s'", applet, optarg);
+				eerrorx("%s: invalid nice level `%s'",
+					applet, optarg);
 			break;
 
 		case 'R':  /* --retry <schedule>|<timeout> */
@@ -659,10 +706,12 @@ int start_stop_daemon(int argc, char **argv)
 				else
 					pw = getpwuid((uid_t) tid);
 
-				if (! pw)
-					eerrorx("%s: user `%s' not found", applet, tmp);
+				if (!pw)
+					eerrorx("%s: user `%s' not found",
+						applet, tmp);
 				uid = pw->pw_uid;
-				if (! gid)
+				home = pw->pw_dir;
+				if (!gid)
 					gid = pw->pw_gid;
 
 				if (p) {
@@ -672,8 +721,9 @@ int start_stop_daemon(int argc, char **argv)
 					else
 						gr = getgrgid((gid_t) tid);
 
-					if (! gr)
-						eerrorx("%s: group `%s' not found",
+					if (!gr)
+						eerrorx("%s: group `%s'"
+							" not found",
 							applet, tmp);
 					gid = gr->gr_gid;
 				}
@@ -686,9 +736,10 @@ int start_stop_daemon(int argc, char **argv)
 
 		case 'e': /* --env */
 			if (putenv(optarg) == 0) {
-				if (strncmp("HOME=", optarg, 5) == 0)
+				if (strncmp("HOME=", optarg, 5) == 0) {
 					sethome = true;
-				else if (strncmp("USER=", optarg, 5) == 0)
+					home = strchr(optarg, '=') + 1;
+				} else if (strncmp("USER=", optarg, 5) == 0)
 					setuser = true;
 			}
 			break;
@@ -700,8 +751,9 @@ int start_stop_daemon(int argc, char **argv)
 				else
 					gr = getgrgid((gid_t) tid);
 
-				if (! gr)
-					eerrorx("%s: group `%s' not found", applet, optarg);
+				if (!gr)
+					eerrorx("%s: group `%s' not found",
+						applet, optarg);
 				gid = gr->gr_gid;
 			}
 			break;
@@ -834,6 +886,12 @@ int start_stop_daemon(int argc, char **argv)
 					      pidfile, false);
 		exit(EXIT_SUCCESS);
 	}
+
+	/* Expand ~ */
+	if (ch_dir && *ch_dir == '~')
+		ch_dir = expand_home(home, ch_dir);
+	if (ch_root && *ch_root == '~')
+		ch_root = expand_home(home, ch_root);
 
 	/* Validate that the binary exists if we are starting */
 	if (*exec == '/' || *exec == '.') {
