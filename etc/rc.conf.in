@@ -22,15 +22,17 @@ rc_interactive="YES"
 # come up.
 rc_depend_strict="YES"
 
-# rc_hotplug is a list of services that we allow to be hotplugged,
-# by default allow all.
+# rc_hotplug is a list of services that we allow to be hotplugged.
+# By default we do not allow hotplugging.
 # A hotplugged service is one started by a dynamic dev manager when a matching
 # hardware device is found.
 # This service is intrinsically included in the boot runlevel.
 # To disable services, prefix with a !
 # Example - rc_hotplug="net.wlan !net.*"
 # This allows net.wlan and any service not matching net.* to be plugged.
-rc_hotplug="*"
+# Example - rc_hotplug="*"
+# This allows all services to be hotplugged
+#rc_hotplug="*"
 
 # rc_logger launches a logging daemon to log the entire rc process to
 # /var/log/rc.log

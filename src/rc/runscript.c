@@ -1111,7 +1111,7 @@ service_plugable(void)
 	if (!match)
 		match = rc_conf_value("rc_plug_services");
 	if (!match)
-		return true;
+		return false;
 
 	list = xstrdup(match);
 	p = list;
