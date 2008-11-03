@@ -73,7 +73,6 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #define INITSH                  RC_LIBDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBDIR "/sh/init-early.sh"
-#define HALTSH                  RC_INITDIR "/halt.sh"
 
 #define SHUTDOWN                "/sbin/shutdown"
 #define SULOGIN                 "/sbin/sulogin"
@@ -1065,19 +1064,6 @@ main(int argc, char **argv)
 	 * available */
 	if (regen && strcmp(runlevel, bootlevel) == 0)
 		unlink(RC_DEPTREE_CACHE);
-
-#ifdef __linux__
-	/* Run our halt script if it exists
-	 * We only do this for compat with Gentoo sysvinit which
-	 * should run halt.sh itself. */
-	if (exists(HALTSH)) {
-		if (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0) {
-			execl(HALTSH, HALTSH, (char *) NULL);
-			eerrorx("%s: unable to exec `%s': %s",
-				applet, HALTSH, strerror(errno));
-		}
-	}
-#endif
 
 	return EXIT_SUCCESS;
 }
