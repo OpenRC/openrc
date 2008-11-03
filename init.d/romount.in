@@ -2,10 +2,12 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
+description="Re-mount filesytems read-only for a clean reboot."
+
 depend()
 {
 	need killprocs savecache
-	keywords noopenvz novserver
+	keyword noprefix noopenvz novserver
 }
 
 start()

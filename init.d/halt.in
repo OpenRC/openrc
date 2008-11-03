@@ -3,11 +3,13 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 # This script really belongs with the Linux sysvinit package
+description="Halt or reboot the host depending on sysvinit runlevel."
 
 depend()
 {
 	after *
 	use romount
+	keyword noprefix
 }
 
 start()
