@@ -82,14 +82,14 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #define DEVBOOT			"/dev/.rcboot"
 
 const char *applet = NULL;
-static char *runlevel = NULL;
-static RC_STRINGLIST *hotplugged_services = NULL;
-static RC_STRINGLIST *stop_services = NULL;
-static RC_STRINGLIST *start_services = NULL;
-static RC_STRINGLIST *types_n = NULL;
-static RC_STRINGLIST *types_nua = NULL;
-static RC_DEPTREE *deptree = NULL;
-static RC_HOOK hook_out = 0;
+static char *runlevel;
+static RC_STRINGLIST *hotplugged_services;
+static RC_STRINGLIST *stop_services;
+static RC_STRINGLIST *start_services;
+static RC_STRINGLIST *types_n;
+static RC_STRINGLIST *types_nua;
+static RC_DEPTREE *deptree;
+static RC_HOOK hook_out;
 
 struct termios *termios_orig = NULL;
 
