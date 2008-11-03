@@ -129,7 +129,7 @@ option. Only useful when used with daemons that run in the foreground and
 forced into the background with the
 .Fl -b , -background
 option.
-.It Fl n , -nice Ar level
+.It Fl N , -nice Ar level
 Modifies the scheduling priority of the daemon.
 .It Fl 1 , -stdout Ar logfile
 Redirect the standard output of the process to logfile when started with
@@ -148,7 +148,7 @@ These options are only used for stopping daemons:
 .It Fl R , -retry Ar timeout | Ar signal Ns / Ns Ar timeout
 You can either specify a timeout or a multiple signal/timeout pairs as a
 stopping schedule.
-If not specified then a default value of SIGTERM/5 is
+If not specified then a default value of SIGTERM/0 is
 assumed.
 .El
 .Sh ENVIRONMENT
