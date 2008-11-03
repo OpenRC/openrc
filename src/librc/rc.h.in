@@ -70,7 +70,6 @@ typedef TAILQ_HEAD(rc_stringlist, rc_string) RC_STRINGLIST;
 #define RC_LEVEL_SYSINIT    "sysinit"
 #define RC_LEVEL_SINGLE     "single"
 #define RC_LEVEL_SHUTDOWN   "shutdown"
-#define RC_LEVEL_REBOOT     "reboot"
 
 /*! Return the current runlevel.
  * @return the current runlevel */

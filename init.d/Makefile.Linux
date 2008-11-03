@@ -1,7 +1,11 @@
 NET_LO=	net.lo
 
-SRCS+=	devfs.in dmesg.in hwclock.in consolefont.in keymaps.in modules.in \
-	mtab.in numlock.in procfs.in sysfs.in termencoding.in
+SRCS+=	devfs.in dmesg.in hwclock.in consolefont.in keymaps.in killprocs.in \
+	modules.in mtab.in numlock.in procfs.in romount.in sysfs.in \
+	termencoding.in
+
+# This really belongs with sysvinit
+SRCS+=	halt.in
 
 .SUFFIXES:	.Linux.in
 .Linux.in:

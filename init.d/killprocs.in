@@ -1,0 +1,15 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+start()
+{
+	ebegin "Terminating remaining processes"
+	killall5 -15
+	sleep 1
+	eend 0
+	ebegin "Killing remaining processes"	
+	killall5 -9
+	sleep 1
+	eend 0
+}

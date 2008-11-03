@@ -1,0 +1,23 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+# This script really belongs with the Linux sysvinit package
+
+depend()
+{
+	after *
+	use romount
+}
+
+start()
+{
+	case "${RUNLEVEL}" in
+		0) runlevel=shutdown;;
+		6) runlevel=reboot;;
+		*) eerror "Unknown runlevel ${RUNLEVEL}"; return 1
+	esac
+
+	. /etc/init.d/"${runlevel}".sh
+	return 0
+}

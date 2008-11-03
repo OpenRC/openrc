@@ -2,12 +2,15 @@ bootmisc
 devfs
 dmesg
 fsck
-halt.sh
+halt
 hostname
+killprocs
 local
 localmount
 netmount
+romount
 root
+savecache
 swap
 sysctl
 urandom

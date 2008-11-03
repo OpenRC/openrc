@@ -831,6 +831,11 @@ main(int argc, char **argv)
 	}
 
 	newlevel = argv[optind++];
+	/* For compat with old system */
+	if (newlevel) {
+		if (strcmp(newlevel, "reboot") == 0)
+			newlevel = UNCONST(RC_LEVEL_SHUTDOWN);
+	}
 
 	/* Enable logging */
 	setenv("EINFO_LOG", "rc", 1);
@@ -875,8 +880,7 @@ main(int argc, char **argv)
 		set_krunlevel(NULL);
 
 	if (newlevel &&
-	    (strcmp(newlevel, RC_LEVEL_REBOOT) == 0 ||
-	     strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+	    (strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0 ||
 	     strcmp(newlevel, RC_LEVEL_SINGLE) == 0))
 	{
 		going_down = true;
@@ -887,9 +891,9 @@ main(int argc, char **argv)
 
 #ifdef __FreeBSD__
 		/* FIXME: we shouldn't have todo this */
-		/* For some reason, wait_for_services waits for the logger proccess
-		 * to finish as well, but only on FreeBSD. We cannot allow this so
-		 * we stop logging now. */
+		/* For some reason, wait_for_services waits for the logger
+		 * proccess to finish as well, but only on FreeBSD.
+		 * We cannot allow this so we stop logging now. */
 		rc_logger_close();
 #endif
 
@@ -944,29 +948,30 @@ main(int argc, char **argv)
 	}
 
 	/* Load our list of hotplugged services */
-	hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
-	if (!going_down ||
-	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) == 0)
-		start_services = rc_services_in_runlevel(RC_LEVEL_SYSINIT);
-	if (!going_down &&
+	start_services = rc_services_in_runlevel(newlevel ?
+						 newlevel : runlevel);
+	if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT) != 0)
 	{
-		/* We need to include the boot runlevel services */
-		tmplist = rc_services_in_runlevel(bootlevel);
+		tmplist = rc_services_in_runlevel(RC_LEVEL_SYSINIT);
 		TAILQ_CONCAT(start_services, tmplist, entries);
 		free(tmplist);
-		if (strcmp (newlevel ? newlevel : runlevel, bootlevel) != 0) {
-			tmplist = rc_services_in_runlevel(newlevel ?
-							  newlevel : runlevel);
-			TAILQ_CONCAT(start_services, tmplist, entries);
-			free(tmplist);
-		}
-
-		if (hotplugged_services) {
-			if (!start_services)
-				start_services = rc_stringlist_new();
-			TAILQ_FOREACH(service, hotplugged_services, entries)
-				rc_stringlist_addu(start_services, service->value);
+		if (strcmp(newlevel ? runlevel : runlevel,
+			   RC_LEVEL_SINGLE) != 0)
+		{
+			if (strcmp(newlevel ? newlevel : runlevel,
+				   bootlevel) != 0)
+			{
+				tmplist = rc_services_in_runlevel(bootlevel);
+				TAILQ_CONCAT(start_services, tmplist, entries);
+				free(tmplist);
+			}
+			if (hotplugged_services) {
+				TAILQ_FOREACH(service, hotplugged_services,
+					      entries)
+					rc_stringlist_addu(start_services,
+							   service->value);
+			}
 		}
 	}
 
@@ -994,15 +999,12 @@ main(int argc, char **argv)
 		setenv("RC_RUNLEVEL", runlevel, 1);
 	}
 
-	/* Run the halt script if needed */
-	if (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-	    strcmp(runlevel, RC_LEVEL_REBOOT) == 0)
-	{
+#ifdef __linux__
+	/* We can't log beyond this point as the shutdown runlevel
+	 * will mount / readonly. */
+	if (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0)
 		rc_logger_close();
-		execl(HALTSH, HALTSH, runlevel, (char *) NULL);
-		eerrorx("%s: unable to exec `%s': %s",
-			 applet, HALTSH, strerror(errno));
-	}
+#endif
 
 	mkdir(RC_STARTING, 0755);
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, runlevel);
@@ -1063,6 +1065,19 @@ main(int argc, char **argv)
 	 * available */
 	if (regen && strcmp(runlevel, bootlevel) == 0)
 		unlink(RC_DEPTREE_CACHE);
+
+#ifdef __linux__
+	/* Run our halt script if it exists
+	 * We only do this for compat with Gentoo sysvinit which
+	 * should run halt.sh itself. */
+	if (exists(HALTSH)) {
+		if (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0) {
+			execl(HALTSH, HALTSH, (char *) NULL);
+			eerrorx("%s: unable to exec `%s': %s",
+				applet, HALTSH, strerror(errno));
+		}
+	}
+#endif
 
 	return EXIT_SUCCESS;
 }

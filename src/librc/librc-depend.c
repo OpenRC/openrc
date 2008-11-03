@@ -189,7 +189,8 @@ valid_service(const char *runlevel, const char *service, const char *type)
 
 	if (rc_service_in_runlevel(service, runlevel))
 		return true;
-	if (strcmp(runlevel, RC_LEVEL_SYSINIT) != 0 &&
+	if (strcmp(runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
+	    strcmp(runlevel, RC_LEVEL_SYSINIT) != 0 &&
 	    strcmp(runlevel, bootlevel) != 0)
 	{
 		if (rc_service_in_runlevel(service, bootlevel))
@@ -499,8 +500,7 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 
 	/* When shutting down, list all running services */
 	if (strcmp(runlevel, RC_LEVEL_SINGLE) == 0 ||
-	    strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-	    strcmp(runlevel, RC_LEVEL_REBOOT) == 0)
+	    strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0)
 	{
 		list = rc_services_in_state(RC_SERVICE_STARTED);
 		list2 = rc_services_in_state(RC_SERVICE_INACTIVE);

@@ -1,11 +1,13 @@
 BOOT=		bootmisc fsck hostname localmount \
 		root swap sysctl urandom
 DEFAULT=	local netmount
+SHUTDOWN=	savecache
 
 LEVELDIR=	${DESTDIR}/${SYSCONFDIR}/runlevels
 SYSINITDIR=	${LEVELDIR}/sysinit
 BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
+SHUTDOWNDIR=	${LEVELDIR}/shutdown
 
 INITDIR=	../init.d
 
@@ -43,6 +45,14 @@ install:
 				grep -q "keyword .*noprefix" ${INITDIR}/"$$x" && continue; \
 			fi; \
 			ln -snf ${PREFIX}/etc/init.d/"$$x" ${DEFAULTDIR}/"$$x" || exit $$?; done \
+	fi
+	if ! test -d "${SHUTDOWNDIR}"; then \
+		${INSTALL} -d ${SHUTDOWNDIR} || exit $$?; \
+		for x in ${SHUTDOWN}; do \
+			if test -n "${PREFIX}"; then \
+				grep -q "keyword .*noprefix" ${INITDIR}/"$$x" && continue; \
+			fi; \
+			ln -snf ${PREFIX}/etc/init.d/"$$x" ${SHUTDOWNDIR}/"$$x" || exit $$?; done \
 	fi
 
 check test::

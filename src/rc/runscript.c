@@ -519,6 +519,9 @@ svc_exec(const char *arg1, const char *arg2)
 	}
 
 	execok = rc_waitpid(service_pid) == 0 ? true : false;
+	if (!execok && errno == ECHILD)
+		/* killall5 -9 could cause this */
+		execok = true;
 	service_pid = 0;
 
 	return execok;
@@ -1008,8 +1011,6 @@ svc_stop(bool deps)
 				if (runlevel &&
 				    (strcmp(runlevel,
 					    RC_LEVEL_SHUTDOWN) == 0 ||
-				     strcmp(runlevel,
-					    RC_LEVEL_REBOOT) == 0 ||
 				     strcmp(runlevel,
 					    RC_LEVEL_SINGLE) == 0))
 					continue;

@@ -3,14 +3,13 @@
 # Copyright 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-# This basically mounts $RC_SVCDIR as a ramdisk, but preserving its content
-# which allows us to store service state and generate dependencies if needed.
+# This basically mounts $RC_SVCDIR as a ramdisk.
 # The tricky part is finding something our kernel supports
 # tmpfs and ramfs are easy, so force one or the other.
 mount_svcdir()
 {
 	local fs= fsopts="-o rw,noexec,nodev,nosuid"
-	local devdir="rc-svcdir" devtmp="none" x=
+	local devdir="rc-svcdir" x=
 	local svcsize=${rc_svcsize:-1024}
 
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems; then
@@ -19,40 +18,23 @@ mount_svcdir()
 	elif grep -Eq "[[:space:]]+ramfs$" /proc/filesystems; then
 		fs="ramfs"
 		# ramfs has no special options
-	elif [ -e /dev/ram0 -a -e /dev/ram1 ] \
+	elif [ -e /dev/ram0 ] \
 		&& grep -Eq "[[:space:]]+ext2$" /proc/filesystems; then
 		devdir="/dev/ram0"
-		devtmp="/dev/ram1"
 		fs="ext2"
-		for x in ${devdir} ${devtmp}; do
-			dd if=/dev/zero of="${x}" bs=1k count="${svcsize}"
-			mkfs -t "${fs}" -i 1024 -vm0 "${x}" "${svcsize}"
-		done
+		dd if=/dev/zero of="${devdir}" bs=1k count="${svcsize}"
+		mkfs -t "${fs}" -i 1024 -vm0 "${devdir}" "${svcsize}"
 	else
 		echo
-		eerror "OpenRC requires tmpfs, ramfs or 2 ramdisks + ext2"
+		eerror "OpenRC requires tmpfs, ramfs or a ramdisk + ext2"
 		eerror "compiled into the kernel"
 		echo
 		return 1
 	fi
 
-	local dotmp=false
-	if [ -e "${RC_SVCDIR}"/deptree ]; then
-		dotmp=true
-		mount -n -t "${fs}" -o rw "${devtmp}" "${RC_LIBDIR}"/tmp
-		cp -p "${RC_SVCDIR}"/deptree "${RC_SVCDIR}"/depconfig \
-			"${RC_SVCDIR}"/nettree "${RC_LIBDIR}"/tmp 2>/dev/null
-	fi
-
 	# If we have no entry in fstab for $RC_SVCDIR, provide our own
 	if ! fstabinfo --mount "${RC_SVCDIR}"; then
 		mount -n -t "${fs}" ${fsopts} "${devdir}" "${RC_SVCDIR}"
-	fi
-
-	if ${dotmp}; then
-		cp -p "${RC_LIBDIR}"/tmp/deptree "${RC_LIBDIR}"/tmp/depconfig \
-			"${RC_LIBDIR}"/tmp/nettree "${RC_SVCDIR}" 2>/dev/null
-		umount -n "${RC_LIBDIR}"/tmp
 	fi
 }
 

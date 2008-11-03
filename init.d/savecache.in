@@ -1,0 +1,25 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Saves the caches OpenRC uses to non volatile storage"
+
+start()
+{
+	ebegin "Saving dependency cache"
+	if [ ! -d "${RC_LIBDIR}"/cache ]; then
+		rm -rf "${RC_LIBDIR}"/cache
+		if ! mkdir "${RC_LIBDIR}"/cache; then
+			eend $?
+			return $?
+		fi
+	fi
+	local save=
+	for x in deptree depconfig softlevel nettree rc.log; do
+		[ -e "${RC_SVCDIR}/${x}" ] && save="${save} ${RC_SVCDIR}/${x}"
+	done
+	if [ -n "${save}" ]; then
+		cp -p ${save} "${RC_LIBDIR}"/cache 2>/devnull
+	fi
+	eend $?
+}

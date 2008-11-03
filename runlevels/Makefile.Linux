@@ -1,2 +1,6 @@
 SYSINIT+=	devfs dmesg
 BOOT+=		hwclock keymaps modules mtab net.lo procfs termencoding
+SHUTDOWN+=	killprocs romount
+
+# This really belongs with sysvinit
+SHUTDOWN+=	halt
