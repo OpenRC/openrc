@@ -75,7 +75,8 @@
 #include "rc-misc.h"
 
 #ifdef HAVE_GETMNTENT
-static struct mntent *getmntfile(const char *file)
+static struct mntent *
+getmntfile(const char *file)
 {
 	struct mntent *ent;
 	FILE *fp;
@@ -107,21 +108,21 @@ static int do_mount(struct ENT *ent)
 	argv[6] = ENT_FILE(*ent);
 	argv[7] = NULL;
 	switch (pid = vfork()) {
-		case -1:	
-			eerrorx("%s: vfork: %s", applet, strerror(errno));
-			/* NOTREACHED */
-		case 0:
-			execvp(argv[0], argv);
-			eerror("%s: execv: %s", applet, strerror(errno));
-			_exit(EXIT_FAILURE);
-			/* NOTREACHED */
-		default:
-			waitpid(pid, &status, 0);
-			if (WIFEXITED(status))
-				return WEXITSTATUS(status);
-			else
-				return -1;
-			/* NOTREACHED */
+	case -1:	
+		eerrorx("%s: vfork: %s", applet, strerror(errno));
+		/* NOTREACHED */
+	case 0:
+		execvp(argv[0], argv);
+		eerror("%s: execv: %s", applet, strerror(errno));
+		_exit(EXIT_FAILURE);
+		/* NOTREACHED */
+	default:
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+			return WEXITSTATUS(status);
+		else
+			return -1;
+		/* NOTREACHED */
 	}
 }
 
@@ -154,7 +155,8 @@ static const char * const longopts_help[] = {
 #define OUTPUT_BLOCKDEV  (1 << 5)
 #define OUTPUT_MOUNT     (1 << 6)
 
-int fstabinfo(int argc, char **argv)
+int
+fstabinfo(int argc, char **argv)
 {
 	struct ENT *ent;
 	int result = EXIT_SUCCESS;
@@ -238,7 +240,7 @@ int fstabinfo(int argc, char **argv)
 	}
 
 	if (optind < argc) {
-		if (files) {
+		if (TAILQ_FIRST(files)) {
 			TAILQ_FOREACH_SAFE(file, files, entries, file_np) {
 				for (i = optind; i < argc; i++)
 					if (strcmp(argv[i], file->value) == 0)
@@ -250,17 +252,17 @@ int fstabinfo(int argc, char **argv)
 			while (optind < argc)
 				rc_stringlist_add(files, argv[optind++]);
 		}
-	} else if (! filtered) {
+	} else if (!filtered) {
 		START_ENT;
 		while ((ent = GET_ENT))
 			rc_stringlist_add(files, ENT_FILE(ent));
 		END_ENT;
 
-		if (! TAILQ_FIRST(files))
+		if (!TAILQ_FIRST(files))
 			eerrorx("%s: emtpy fstab", argv[0]);
 	}
 
-	if (!files || !TAILQ_FIRST(files)) {
+	if (!TAILQ_FIRST(files)) {
 		rc_stringlist_free(files);
 		return (EXIT_FAILURE);
 	}
@@ -268,7 +270,7 @@ int fstabinfo(int argc, char **argv)
 	/* Ensure we always display something */
 	START_ENT;
 	TAILQ_FOREACH(file, files, entries) {
-		if (! (ent = GET_ENT_FILE(file->value))) {
+		if (!(ent = GET_ENT_FILE(file->value))) {
 			result = EXIT_FAILURE;
 			continue;
 		}
