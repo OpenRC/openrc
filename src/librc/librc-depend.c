@@ -189,10 +189,10 @@ valid_service(const char *runlevel, const char *service, const char *type)
 
 	if (rc_service_in_runlevel(service, runlevel))
 		return true;
-	if (strcmp(runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
-	    strcmp(runlevel, RC_LEVEL_SYSINIT) != 0 &&
-	    strcmp(runlevel, bootlevel) != 0)
-	{
+	if (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+	    strcmp(runlevel, RC_LEVEL_SYSINIT) == 0)
+	    	return false;
+	if (strcmp(runlevel, bootlevel) != 0) {
 		if (rc_service_in_runlevel(service, bootlevel))
 			return true;
 	}
