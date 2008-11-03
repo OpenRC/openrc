@@ -608,7 +608,8 @@ int start_stop_daemon(int argc, char **argv)
 #endif
 
 	int opt;
-	bool start = true;
+	bool start = false;
+	bool stop = false;
 	bool oknodo = false;
 	bool test = false;
 	bool quiet;
@@ -617,7 +618,7 @@ int start_stop_daemon(int argc, char **argv)
 	char *startas = NULL;
 	char *name = NULL;
 	char *pidfile = NULL;
-	int sig = SIGTERM;
+	int sig = 0;
 	int nicelevel = 0;
 	bool background = false;
 	bool makepidfile = false;
@@ -676,9 +677,8 @@ int start_stop_daemon(int argc, char **argv)
 				  (int *) 0)) != -1)
 		switch (opt) {
 		case 'K':  /* --stop */
-			start = false;
+			stop = true;
 			break;
-
 		case 'N':  /* --nice */
 			if (sscanf(optarg, "%d", &nicelevel) != 1)
 				eerrorx("%s: invalid nice level `%s'",
@@ -844,23 +844,35 @@ int start_stop_daemon(int argc, char **argv)
 	else
 		*--argv = exec;
 
-	if (start && !exec)
-		eerrorx("%s: nothing to start", applet);
+	if (stop || sig) {
+		if ( !*argv && !pidfile && !name && !uid)
+			eerrorx("%s: --stop needs --exec, --pidfile,"
+				" --name or --user", applet);
+		if (background)
+			eerrorx("%s: --background is only relevant with"
+				" --start", applet);
+		if (makepidfile)
+			eerrorx("%s: --make-pidfile is only relevant with"
+				" --start", applet);
+		if (redirect_stdout || redirect_stderr)
+			eerrorx("%s: --stdout and --stderr are only relevant"
+				" with --start", applet);
+	} else {
+		if (!exec)
+			eerrorx("%s: nothing to start", applet);
+		if (makepidfile && !pidfile)
+			eerrorx("%s: --make-pidfile is only relevant with"
+				" --pidfile", applet);
+		if ((redirect_stdout || redirect_stderr) && !background)
+			eerrorx("%s: --stdout and --stderr are only relevant"
+				" with --background", applet);
+	}
 
-	if (!start && !*argv && !pidfile && !name && !uid)
-		eerrorx("%s: --stop needs --exec, --pidfile, --name or --user", applet);
-
-	if (makepidfile && !pidfile)
-		eerrorx("%s: --make-pidfile is only relevant with --pidfile", applet);
-
-	if (background && !start)
-		eerrorx("%s: --background is only relevant with --start", applet);
-
-	if ((redirect_stdout || redirect_stderr) && !background)
-		eerrorx("%s: --stdout and --stderr are only relevant with --background",
-			 applet);
-
-	if (!start) {
+	if (stop || sig) {
+		if (!sig)
+			sig = SIGTERM;
+		if (!stop)
+			oknodo = true;
 		if (!TAILQ_FIRST(&schedule)) {
 			if (test || oknodo)
 				parse_schedule("0", sig);
