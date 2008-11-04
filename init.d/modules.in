@@ -60,11 +60,4 @@ start()
 		eend $? "Failed to load ${x}" && cnt=$((${cnt} + 1))
 	done
 	einfo "Autoloaded ${cnt} module(s)"
-
-	# Just in case a sysadmin prefers generic symbolic links in
-	# /lib/modules/boot for boot time modules we will load these modules
-	[ -n "$(modprobe -l -t boot)" ] && modprobe -a -t boot \* 2>/dev/null
-	
-	# Above test clobbers the return
-	return 0
 }
