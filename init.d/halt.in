@@ -8,7 +8,7 @@ description="Halt or reboot the host depending on sysvinit runlevel."
 depend()
 {
 	after *
-	use romount
+	use mount-ro
 	keyword noprefix
 }
 
