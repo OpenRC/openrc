@@ -37,7 +37,7 @@ start()
 		fs="${fs}${fs:+|}${x}"
 	done
 	[ -n "${fs}" ] && fs="^(${fs})$"
-	do_unmount "mount -n -o remount,ro" \
+	do_unmount "umount -r" \
 		--skip-point-regex "${m}" \
 		${fs:+--skip-fstype-regex} ${fs} --nonetdev
 	eoutdent

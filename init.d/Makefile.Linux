@@ -1,7 +1,7 @@
 NET_LO=	net.lo
 
 SRCS+=	devfs.in dmesg.in hwclock.in consolefont.in keymaps.in killprocs.in \
-	modules.in mtab.in numlock.in procfs.in romount.in sysfs.in \
+	modules.in mount-ro.in mtab.in numlock.in procfs.in sysfs.in \
 	termencoding.in
 
 # This really belongs with sysvinit

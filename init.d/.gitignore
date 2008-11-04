@@ -7,8 +7,8 @@ hostname
 killprocs
 local
 localmount
+mount-ro
 netmount
-romount
 root
 savecache
 swap

@@ -28,11 +28,11 @@ do_unmount()
 		mountinfo --quiet "${mnt}" || continue
 
 		case "${cmd}" in
-			umount*)
+			umount)
 				ebegin "Unmounting ${mnt}"
 				;;
 			*)
-				ebegin "Remounting ${mnt}"
+				ebegin "Remounting ${mnt} read only"
 				;;
 		esac
 
