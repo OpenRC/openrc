@@ -111,11 +111,11 @@ You should define a
 function for the service so that
 .Nm
 will start and stop it in the right order in relation to other services.
-As it's a function it can be very flexable, see the example below.
+As it's a function it can be very flexible, see the example below.
 Here is a list of the functions you can use in a
 .Ic depend
 function. You simply pass the names of the services to it to add to that
-dpendency type, or prefix it with ! to remove it.
+dependency type, or prefix it with ! to remove it.
 .Bl -tag -width "RC_DEFAULTLEVEL" 
 .It Ic need
 The service will refuse to start until needed services have started and it
