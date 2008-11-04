@@ -27,7 +27,7 @@ _reboot() {
 
 start()
 {
-	local reboot_opts= fsck_opts= p= check_extra=
+	local fsck_opts= p= check_extra=
 
 	if [ -e /fastboot ]; then
 		ewarn "Skipping fsck due to /fastboot"
@@ -60,21 +60,31 @@ start()
 				fsck_opts="${fsck_opts} -R"
 			fi
 		fi
-		reboot_opts="-f"
 	fi
 
 	trap : INT QUIT
 	fsck ${fsck_args--p} ${fsck_opts} "$@"
 	case $? in
-		0)       eend 0; return 0;;
-		1)       ewend 1 "Filesystems repaired"; return 0;;
-		2|3|4)   ewend 1 "Filesystems repaired, but reboot needed"
-		         _reboot ${reboot_opts} || return 1;;
-		8)       ewend 1 "Operational error"; return 0;;
-		12)      ewend 1 "fsck interupted"; return 1;;
-		*)       eend 2 "Filesystems couldn't be fixed"
-		         _abort || return 1;;
+	0)	eend 0; return 0;;
+	1)	ewend 1 "Filesystems repaired"; return 0;;
+	2|3)	if [ "${RC_UNAME}" = "Linux" ]; then
+		 	ewend 1 "Filesystems repaired, but reboot needed"
+	         	_reboot -f
+		else
+			ewend 1 "Filesystems still have errors; manual fsck required"
+		fi;;
+	4)	if [ "${RC_UNAME}" = "Linux" ]; then
+			ewend 1 "Fileystem errors left uncorrected"
+			return 0
+		else
+		 	ewend 1 "Filesystems repaired, but reboot needed"
+			_reboot
+		fi;;
+	8)	ewend 1 "Operational error"; return 0;;
+	12)	ewend 1 "fsck interupted";;
+	*)	eend 2 "Filesystems couldn't be fixed";;
 	esac
+	_abort || return 1
 }
 
 stop()
