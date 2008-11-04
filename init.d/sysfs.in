@@ -34,7 +34,7 @@ mount_misc()
 	if [ -d /sys/kernel/security ] && ! mountinfo -q /sys/kernel/security; then
 		if grep -qs securityfs /proc/filesystems; then
 			ebegin "Mounting security filesystem"
-			mount -t securityfs -o nodev,noexec,nosuid \
+			mount -n -t securityfs -o nodev,noexec,nosuid \
 				securityfs /sys/kernel/security
 			eend $?
 		fi
@@ -44,7 +44,7 @@ mount_misc()
 	if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug; then
 		if grep -qs debugfs /proc/filesystems; then
 			ebegin "Mounting debug filesystem"
-			mount -t debugfs -o nodev,noexec,nosuid \
+			mount -n -t debugfs -o nodev,noexec,nosuid \
 				debugfs /sys/kernel/debug
 			eend $?
 		fi
