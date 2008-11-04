@@ -856,11 +856,14 @@ main(int argc, char **argv)
 	signal_setup(SIGUSR1, handle_signal);
 	signal_setup(SIGWINCH, handle_signal);
 
-	rc_plugin_load();
-
 	/* Run any special sysinit foo */
-	if (newlevel && strcmp(newlevel, RC_LEVEL_SYSINIT) == 0)
+	if (newlevel && strcmp(newlevel, RC_LEVEL_SYSINIT) == 0) {
 		do_sysinit();
+		free(runlevel);
+		runlevel = rc_runlevel_get();
+	}
+
+	rc_plugin_load();
 
 	/* Now we start handling our children */
 	signal_setup(SIGCHLD, handle_signal);
