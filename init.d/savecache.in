@@ -19,7 +19,7 @@ start()
 		[ -e "${RC_SVCDIR}/${x}" ] && save="${save} ${RC_SVCDIR}/${x}"
 	done
 	if [ -n "${save}" ]; then
-		cp -p ${save} "${RC_LIBDIR}"/cache 2>/devnull
+		cp -p ${save} "${RC_LIBDIR}"/cache 2>/dev/null
 	fi
 	eend $?
 }
