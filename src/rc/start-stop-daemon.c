@@ -822,6 +822,7 @@ int start_stop_daemon(int argc, char **argv)
 	/* Allow start-stop-daemon --signal HUP --exec /usr/sbin/dnsmasq
 	 * instead of forcing --stop --oknodo as well */
 	if (!start &&
+	    !stop &&
 	    sig != SIGINT &&
 	    sig != SIGTERM &&
 	    sig != SIGQUIT &&
