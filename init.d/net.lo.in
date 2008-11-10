@@ -445,6 +445,35 @@ _load_config()
 	config_index=-1
 }
 
+# Support functions
+_run_if()
+{
+	local cmd=$1 iface=$2 ifr=${IFACE} ifv=${IFVAR}
+	# Ensure that we don't stamp on real values
+	local IFACE= IFVAR=
+	shift
+	if [ -n "${iface}" ]; then
+		IFACE="${iface}"
+		[ "${iface}" != "${ifr}" ] && IFVAR=$(shell_var "${IFACE}")
+	else
+		IFACE=${ifr}
+		IFVAR=${ifv}
+	fi
+	${cmd}
+}
+interface_exists()
+{
+	_run_if _exists "$@"
+}
+interface_up()
+{
+	_run_if _up "$@"
+}
+interface_down()
+{
+	_run_if _down "$@"
+}
+
 start()
 {
 	local IFACE=${RC_SVCNAME#*.} oneworked=false module=
