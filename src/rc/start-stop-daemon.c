@@ -1072,9 +1072,9 @@ int start_stop_daemon(int argc, char **argv)
 			eerrorx("%s: unable to set groupid to %d", applet, gid);
 		if (changeuser && initgroups(changeuser, gid))
 			eerrorx("%s: initgroups (%s, %d)", applet, changeuser, gid);
-		if (uid && setuid(uid))
-			eerrorx ("%s: unable to set userid to %d", applet, uid);
-		else {
+		if (uid) {
+			if (setuid(uid))
+				eerrorx ("%s: unable to set userid to %d", applet, uid);
 			pw = getpwuid(uid);
 			if (pw) {
 				if (!sethome) {
