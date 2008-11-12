@@ -7,12 +7,22 @@ has_addon()
 	[ -e "${RC_LIBDIR}/addons/$1.sh" ] || [ -e /@LIB@/rcscripts/addons/"$1".sh ]
 }
 
+_addon_warn()
+{
+	eindent
+	ewarn "${RC_SVCNAME} uses addon code which is now deprecated in OpenRC"
+	ewarn "and is not guaranteed to be present in future versions."
+	eoutdent
+}
+
 import_addon()
 {
 	if [ -e "${RC_LIBDIR}/addons/$1.sh" ]; then
+		_addon_warn
 		. "${RC_LIBDIR}/addons/$1.sh"
-	elif [ -e /@LIB@/rcscripts/addons/"$1".sh ]; then
-		. /@LIB@/rcscripts/addons/"$1".sh
+	elif [ -e /lib64/rcscripts/addons/"$1".sh ]; then
+		_addon_warn
+		. /lib64/rcscripts/addons/"$1".sh
 	else
 		return 1
 	fi
