@@ -1131,22 +1131,28 @@ int start_stop_daemon(int argc, char **argv)
 		rc_stringlist_free(env_list);
 
 		/* For the path, remove the rcscript bin dir from it */
-		if ((tmp = xstrdup(getenv("PATH")))) {
-			len = strlen(tmp);
-			newpath = np = xmalloc(len);
-			p = tmp;
-			while ((token = strsep(&p, ":"))) {
-				if (strcmp(token, RC_LIBDIR "/bin") == 0 ||
-				    strcmp(token, RC_LIBDIR "/sbin") == 0)
-					continue;
-				len = strlen(token);
-				if (np != newpath)
-					*np++ = ':';
-				memcpy(np, token, len);
-				np += len;
-				*np = '\0';
+		if ((token = getenv("PATH"))) {
+			len = strlen(token);
+			newpath = np = xmalloc(len + 1);
+			while (token && *token) {
+				p = strchr(token, ':');
+				if (p) {
+					*p++ = '\0';
+					while (*p == ':')
+						p++;
+				}
+				if (strcmp(token, RC_LIBDIR "/bin") != 0 &&
+				    strcmp(token, RC_LIBDIR "/sbin") != 0)
+				{
+					len = strlen(token);
+					if (np != newpath)
+						*np++ = ':';
+					memcpy(np, token, len);
+					np += len;
+				}
+				token = p;
 			}
-			free(tmp);
+			*np = '\0';
 			unsetenv("PATH");
 			setenv("PATH", newpath, 1);
 		}
