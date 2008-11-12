@@ -2,7 +2,6 @@ bootmisc
 devfs
 dmesg
 fsck
-halt
 hostname
 killprocs
 local
