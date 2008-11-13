@@ -20,9 +20,9 @@ import_addon()
 	if [ -e "${RC_LIBDIR}/addons/$1.sh" ]; then
 		_addon_warn
 		. "${RC_LIBDIR}/addons/$1.sh"
-	elif [ -e /lib64/rcscripts/addons/"$1".sh ]; then
+	elif [ -e /@LIB@/rcscripts/addons/"$1".sh ]; then
 		_addon_warn
-		. /lib64/rcscripts/addons/"$1".sh
+		. /@LIB@/rcscripts/addons/"$1".sh
 	else
 		return 1
 	fi
