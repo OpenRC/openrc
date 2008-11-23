@@ -560,12 +560,13 @@ svc_wait(const char *svc)
 				break;
 		}
 
-		if (!forever)
+		if (!forever) {
 			nloops --;
 
-		if (--sloops == 0) {
-			ewarn("%s: waiting for %s", applet, svc);
-			sloops = (ONE_SECOND / WAIT_INTERVAL) * 5;
+			if (--sloops == 0) {
+				ewarn("%s: waiting for %s", applet, svc);
+				sloops = (ONE_SECOND / WAIT_INTERVAL) * 5;
+			}
 		}
 	}
 
