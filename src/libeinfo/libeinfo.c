@@ -643,7 +643,7 @@ _einfo(FILE *f, ECOLOR color, const char *EINFO_RESTRICT fmt, va_list va)
 		fprintf(f, "\n");
 	if (_eprefix)
 		fprintf(f, "%s%s%s|", _ecolor(f, color), _eprefix, _ecolor(f, ECOLOR_NORMAL));
-	fprintf(f, " %s*%s ", _ecolor(f, color), _ecolor(f, ECOLOR_NORMAL));
+	fprintf(f, "%s*%s ", _ecolor(f, color), _ecolor(f, ECOLOR_NORMAL));
 	retval += _eindent(f);
 	va_copy(ap, va);
 	retval += vfprintf(f, fmt, ap) + 3;
@@ -800,7 +800,7 @@ ebegin(const char *EINFO_RESTRICT fmt, ...)
 	va_start(ap, fmt);
 	retval = _einfovn(fmt, ap);
 	va_end(ap);
-	retval += printf(" ...");
+	retval += printf("...");
 	if (colour_terminal(stdout))
 		retval += printf("\n");
 	LASTCMD("ebegin");
@@ -1029,7 +1029,7 @@ ebeginv(const char *EINFO_RESTRICT fmt, ...)
 
 	va_start(ap, fmt);
 	retval = _einfovn(fmt, ap);
-	retval += printf(" ...");
+	retval += printf("...");
 	if (colour_terminal(stdout))
 		retval += printf("\n");
 	va_end(ap);
