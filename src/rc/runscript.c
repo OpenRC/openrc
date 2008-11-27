@@ -29,13 +29,13 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/select.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/file.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 
+#include <ctype.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -43,6 +43,7 @@
 #include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -367,7 +368,7 @@ cleanup(void)
 static int
 write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 {
-	unsigned int i;
+	size_t i, j;
 	const char *ec = ecolor(ECOLOR_HILITE);
 	const char *ec_normal = ecolor(ECOLOR_NORMAL);
 	ssize_t ret = 0;
@@ -383,9 +384,15 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	}
 
 	for (i = 0; i < bytes; i++) {
-		/* We don't prefix escape codes, like eend */
-		if (buffer[i] == '\033')
-			*prefixed = true;
+		/* We don't prefix eend calls (cursor up) */
+		if (buffer[i] == '\033' && !*prefixed) {
+			for (j = i + 1; j < bytes; j++) {
+				if (buffer[j] == 'A')
+					*prefixed = true;
+				if (isalpha((unsigned int)buffer[j]))
+					break;
+			}
+		}
 
 		if (!*prefixed) {
 			ret += write(fd, ec, strlen(ec));
@@ -414,7 +421,7 @@ svc_exec(const char *arg1, const char *arg2)
 	struct winsize ws;
 	int i;
 	int flags = 0;
-	fd_set rset;
+	struct pollfd fd[2];
 	int s;
 	char *buffer;
 	size_t bytes;
@@ -457,8 +464,8 @@ svc_exec(const char *arg1, const char *arg2)
 		eerrorx("%s: fork: %s", service, strerror(errno));
 	if (service_pid == 0) {
 		if (slave_tty >= 0) {
-			dup2(slave_tty, 1);
-			dup2(slave_tty, 2);
+			dup2(slave_tty, STDOUT_FILENO);
+			dup2(slave_tty, STDERR_FILENO);
 		}
 
 		if (exists(RC_SVCDIR "/runscript.sh")) {
@@ -480,28 +487,32 @@ svc_exec(const char *arg1, const char *arg2)
 
 	selfd = MAX(master_tty, signal_pipe[0]) + 1;
 	buffer = xmalloc(sizeof(char) * BUFSIZ);
-	for (;;) {
-		FD_ZERO(&rset);
-		FD_SET(signal_pipe[0], &rset);
-		if (master_tty >= 0)
-			FD_SET(master_tty, &rset);
+	fd[0].fd = signal_pipe[0];
+	fd[0].events = fd[1].events = POLLIN;
+	fd[0].revents = fd[1].revents = 0;
+	if (master_tty >= 0) {
+		fd[1].fd = master_tty;
+		fd[1].events = POLLIN;
+		fd[1].revents = 0;
+	}
 
-		if ((s = select(selfd, &rset, NULL, NULL, NULL)) == -1) {
+	for (;;) {
+		if ((s = poll(fd, master_tty >= 0 ? 2 : 1, -1)) == -1) {
 			if (errno != EINTR) {
-				eerror("%s: select: %s", service,
-				       strerror(errno));
+				eerror("%s: poll: %s",
+					service, strerror(errno));
 				break;
 			}
 		}
 
 		if (s > 0) {
-			if (master_tty >= 0 && FD_ISSET(master_tty, &rset)) {
+			if (fd[1].revents & (POLLIN | POLLHUP)) {
 				bytes = read(master_tty, buffer, BUFSIZ);
 				write_prefix(buffer, bytes, &prefixed);
 			}
 
 			/* Only SIGCHLD signals come down this pipe */
-			if (FD_ISSET(signal_pipe[0], &rset))
+			if (fd[0].revents & (POLLIN | POLLHUP))
 				break;
 		}
 	}
