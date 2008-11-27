@@ -426,7 +426,6 @@ svc_exec(const char *arg1, const char *arg2)
 	char *buffer;
 	size_t bytes;
 	bool prefixed = false;
-	int selfd;
 	int slave_tty;
 
 	/* Setup our signal pipe */
@@ -485,7 +484,6 @@ svc_exec(const char *arg1, const char *arg2)
 		}
 	}
 
-	selfd = MAX(master_tty, signal_pipe[0]) + 1;
 	buffer = xmalloc(sizeof(char) * BUFSIZ);
 	fd[0].fd = signal_pipe[0];
 	fd[0].events = fd[1].events = POLLIN;
