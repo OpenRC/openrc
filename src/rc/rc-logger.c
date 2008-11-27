@@ -36,6 +36,7 @@
 
 #include <ctype.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -143,10 +144,9 @@ void rc_logger_open(const char *level)
 	struct termios tt;
 	struct winsize ws;
 	char *buffer;
-	fd_set rset;
+	struct pollfd fd[2];
 	int s = 0;
 	size_t bytes;
-	int selfd;
 	int i;
 	FILE *log = NULL;
 
@@ -197,19 +197,19 @@ void rc_logger_open(const char *level)
 		}
 
 		buffer = xmalloc(sizeof (char) * BUFSIZ);
-		selfd = rc_logger_tty > signal_pipe[0] ? rc_logger_tty : signal_pipe[0];
+		fd[0].fd = signal_pipe[0];
+		fd[0].events = fd[1].events = POLLIN;
+		fd[0].revents = fd[1].revents = 0;
+		if (rc_logger_tty >= 0)
+			fd[1].fd = rc_logger_tty;
 		for (;;) {
-			FD_ZERO(&rset);
-			FD_SET(rc_logger_tty, &rset);
-			FD_SET(signal_pipe[0], &rset);
-
-			if ((s = select(selfd + 1, &rset, NULL, NULL, NULL)) == -1) {
-				eerror("select: %s", strerror(errno));
+			if ((s = poll(fd, rc_logger_tty >= 0 ? 2 : 1, -1)) == -1) {
+				eerror("poll: %s", strerror(errno));
 				break;
 			}
 
 			if (s > 0) {
-				if (FD_ISSET(rc_logger_tty, &rset)) {
+				if (fd[1].revents & (POLLIN | POLLHUP)) {
 					memset(buffer, 0, BUFSIZ);
 					bytes = read(rc_logger_tty, buffer, BUFSIZ);
 					write(STDOUT_FILENO, buffer, bytes);
@@ -230,7 +230,7 @@ void rc_logger_open(const char *level)
 				}
 
 				/* Only SIGTERMS signals come down this pipe */
-				if (FD_ISSET(signal_pipe[0], &rset))
+				if (fd[0].revents & (POLLIN | POLLHUP))
 					break;
 			}
 		}
