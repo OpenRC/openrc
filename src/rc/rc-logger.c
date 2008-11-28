@@ -150,10 +150,10 @@ void rc_logger_open(const char *level)
 	int i;
 	FILE *log = NULL;
 
-	if (! isatty(STDOUT_FILENO))
+	if (!isatty(STDOUT_FILENO))
 		return;
 
-	if (! rc_conf_yesno("rc_logger"))
+	if (!rc_conf_yesno("rc_logger"))
 		return;
 
 	if (pipe(signal_pipe) == -1)
