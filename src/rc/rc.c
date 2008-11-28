@@ -129,47 +129,46 @@ clean_failed(void)
 static void
 cleanup(void)
 {
-	if (applet && strcmp(applet, "rc") == 0) {
 #ifdef DEBUG_MEMORY
-		RC_PID *p1 = LIST_FIRST(&service_pids);
-		RC_PID *p2;
+	RC_PID *p1 = LIST_FIRST(&service_pids);
+	RC_PID *p2;
 #endif
 
+	if (!rc_in_logger && !rc_in_plugin &&
+	    applet && strcmp(applet, "rc") == 0)
+	{
 		if (hook_out)
 			rc_plugin_run(hook_out, runlevel);
 
 		rc_plugin_unload();
 
-		if (! rc_in_plugin && termios_orig) {
+		if (termios_orig) {
 			tcsetattr(STDIN_FILENO, TCSANOW, termios_orig);
 			free(termios_orig);
 		}
 
 		/* Clean runlevel start, stop markers */
-		if (! rc_in_plugin && ! rc_in_logger) {
-			rmdir(RC_STARTING);
-			rmdir(RC_STOPPING);
-			clean_failed();
-
-			rc_logger_close();
-		}
+		rmdir(RC_STARTING);
+		rmdir(RC_STOPPING);
+		clean_failed();
+		rc_logger_close();
+	}
 
 #ifdef DEBUG_MEMORY
-		while (p1) {
-			p2 = LIST_NEXT(p1, entries); 
-			free(p1);
-			p1 = p2;
-		}
-
-		rc_stringlist_free(hotplugged_services);
-		rc_stringlist_free(stop_services);
-		rc_stringlist_free(start_services);
-		rc_stringlist_free(types_n);
-		rc_stringlist_free(types_nua);
-		rc_deptree_free(deptree);
-		free(runlevel);
-#endif
+	while (p1) {
+		p2 = LIST_NEXT(p1, entries); 
+		free(p1);
+		p1 = p2;
 	}
+
+	rc_stringlist_free(hotplugged_services);
+	rc_stringlist_free(stop_services);
+	rc_stringlist_free(start_services);
+	rc_stringlist_free(types_n);
+	rc_stringlist_free(types_nua);
+	rc_deptree_free(deptree);
+	free(runlevel);
+#endif
 }
 
 #ifdef __linux__
@@ -420,7 +419,12 @@ remove_pid(pid_t pid)
 static void
 wait_for_services(void)
 {
-	while (waitpid(0, 0, 0) != -1);
+	for (;;) {
+		while (waitpid(0, 0, 0) != -1)
+			;
+		if (errno != EINTR)
+			break;
+	}
 }
 
 static void
@@ -458,15 +462,15 @@ handle_signal(int sig)
 		break;
 
 	case SIGINT:
-		if (! signame[0])
+		if (!signame[0])
 			snprintf(signame, sizeof(signame), "SIGINT");
 		/* FALLTHROUGH */
 	case SIGTERM:
-		if (! signame[0])
+		if (!signame[0])
 			snprintf(signame, sizeof(signame), "SIGTERM");
 		/* FALLTHROUGH */
 	case SIGQUIT:
-		if (! signame[0])
+		if (!signame[0])
 			snprintf(signame, sizeof(signame), "SIGQUIT");
 		eerrorx("%s: caught %s, aborting", applet, signame);
 		/* NOTREACHED */
@@ -526,7 +530,7 @@ do_sysinit()
 
 	printf("%s\n\n", ecolor(ECOLOR_NORMAL));
 
-	if (! rc_yesno(getenv ("EINFO_QUIET")) &&
+	if (!rc_yesno(getenv ("EINFO_QUIET")) &&
 	    rc_conf_yesno("rc_interactive"))
 		printf("Press %sI%s to enter interactive boot mode\n\n",
 		       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
@@ -602,7 +606,7 @@ do_stop_services(const char *newlevel, bool parallel)
 				continue;
 		}
 
-		/* We got this far! Or last check is to see if any any service
+		/* We got this far. Last check is to see if any any service
 		 * that going to be started depends on us */
 		if (!svc1) {
 			tmplist = rc_stringlist_new();
@@ -627,7 +631,7 @@ do_stop_services(const char *newlevel, bool parallel)
 		pid = service_stop(service->value);
 		if (pid > 0) {
 			add_pid(pid);
-			if (! parallel) {
+			if (!parallel) {
 				rc_waitpid(pid);
 				remove_pid(pid);
 			}
