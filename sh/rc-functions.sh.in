@@ -10,8 +10,8 @@ has_addon()
 _addon_warn()
 {
 	eindent
-	ewarn "${RC_SVCNAME} uses addon code which is now deprecated in OpenRC"
-	ewarn "and is not guaranteed to be present in future versions."
+	ewarn "${RC_SVCNAME} uses addon code which is deprecated"
+	ewarn "and may not be available in the future."
 	eoutdent
 }
 
