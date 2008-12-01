@@ -266,7 +266,7 @@ rc_status(int argc, char **argv)
 		/* Show hotplugged services */
 		print_level("hotplugged");
 		services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
-		print_services(NULL, nservices);
+		print_services(NULL, services);
 		rc_stringlist_free(services);
 		services = NULL;
 
