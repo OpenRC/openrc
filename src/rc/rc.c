@@ -953,7 +953,8 @@ main(int argc, char **argv)
 		stop_services = tmplist;
 	}
 
-	/* Load our list of hotplugged services */
+	/* Load our list of start services */
+	hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
 	start_services = rc_services_in_runlevel(newlevel ?
 						 newlevel : runlevel);
 	if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
