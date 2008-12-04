@@ -17,7 +17,6 @@ include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/subdir.mk
 include ${MK}/dist.mk
-include ${MK}/gitignore.mk
 
 _installafter:
 	${INSTALL} -d ${DESTDIR}/${PREFIX}/${RC_LIB}/init.d

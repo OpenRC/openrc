@@ -27,5 +27,5 @@ check test::
 	${_SUBDIR}
 depend:
 	${_SUBDIR}
-gitignore:
+ignore:
 	${_SUBDIR}

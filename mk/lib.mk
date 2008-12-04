@@ -64,4 +64,4 @@ extra_depend:
 include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/depend.mk
-include ${MK}/gitignore.mk
+include ${MK}/svnignore.mk

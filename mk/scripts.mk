@@ -56,4 +56,4 @@ CLEANFILES+=	${OBJS}
 clean:
 	@if test -n "${CLEANFILES}"; then echo "rm -f ${CLEANFILES}"; rm -f ${CLEANFILES}; fi 
 
-include ${MK}/gitignore.mk
+include ${MK}/svnignore.mk

@@ -2,7 +2,7 @@ all:
 
 install:
 
-gitignore:
+ignore:
 
 check test::
 	./runtests.sh

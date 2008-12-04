@@ -1,15 +1,12 @@
-# rules to make .gitignore files
+# rules to make svn ignore files 
 # Copyright 2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 IGNOREFILES+=	${CLEANFILES}
 
-.PHONY:		.gitignore
-
-.gitignore:
+ignore:
 	@if test -n "${IGNOREFILES}"; then \
 		echo "Ignoring ${IGNOREFILES}"; \
-		echo ${IGNOREFILES} | tr ' ' '\n' > .gitignore; \
+		files="$$(echo ${IGNOREFILES} | tr ' ' '\n')"; \
+		eval svn propset svn:ignore \'"$${files}"\' .; \
 	fi
-
-gitignore: .gitignore
