@@ -383,13 +383,13 @@ get_krunlevel(char *buffer, int buffer_len)
 		return 0;
 	if (!(fp = fopen(RC_KRUNLEVEL, "r"))) {
 		eerror("fopen `%s': %s", RC_KRUNLEVEL, strerror(errno));
-		return -1;
+		return 0;
 	}
 
 	if (fgets(buffer, buffer_len, fp)) {
-		i = strlen(buffer) - 1;
-		if (buffer[i] == '\n')
-			buffer[i] = 0;
+		i = strlen(buffer);
+		if (buffer[i - 1] == '\n')
+			buffer[i - 1] = 0;
 	}
 	fclose(fp);
 	return i;
@@ -810,8 +810,14 @@ main(int argc, char **argv)
 		case 'o':
 			if (*optarg == '\0')
 				optarg = NULL;
-			exit(set_krunlevel(optarg) ?
-			     EXIT_SUCCESS : EXIT_FAILURE);
+			if (!rc_runlevel_exists(optarg)) {
+				eerror("runlevel `%s' does not exist", optarg);
+				exit(EXIT_FAILURE);
+			}
+			if (!set_krunlevel(optarg))
+				exit(EXIT_FAILURE);
+			einfo("Overriding next runlevel to %s", optarg);
+			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
 		case 's':
 			newlevel = rc_service_resolve(optarg);
@@ -872,29 +878,35 @@ main(int argc, char **argv)
 	/* Now we start handling our children */
 	signal_setup(SIGCHLD, handle_signal);
 
-	/* We should only use krunlevel if we were in single user mode
-	 * If not, we need to erase krunlevel now. */
-	if (strcmp(runlevel, RC_LEVEL_SINGLE) == 0) {
-		/* Try not to join boot and krunlevels together */
-		if (!newlevel ||
-		    (strcmp(newlevel, RC_LEVEL_SINGLE) != 0 &&
-		     strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0 &&
-		     strcmp(newlevel, RC_LEVEL_SYSINIT) != 0))
-			if (get_krunlevel(krunlevel, sizeof(krunlevel)))
-				newlevel = krunlevel;
-	} else
-		set_krunlevel(NULL);
-
 	if (newlevel &&
 	    (strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0 ||
 	     strcmp(newlevel, RC_LEVEL_SINGLE) == 0))
 	{
 		going_down = true;
-		set_krunlevel(runlevel);
+		if (!exists(RC_KRUNLEVEL))
+			set_krunlevel(runlevel);
 		rc_runlevel_set(newlevel);
 		setenv("RC_RUNLEVEL", newlevel, 1);
 		setenv("RC_GOINGDOWN", "YES", 1);
+	} else {
+		/* We should not use krunevel in sysinit or the boot runlevel */
+		if (!newlevel ||
+		    strcmp(newlevel, RC_LEVEL_SYSINIT) != 0 ||
+		    strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0)
+		{
+			if (get_krunlevel(krunlevel, sizeof(krunlevel))) {
+				newlevel = krunlevel;
+				set_krunlevel(NULL);
+			}
+		}
 
+		if (newlevel &&
+		    strcmp(runlevel, newlevel) != 0 &&
+		    !rc_runlevel_exists(newlevel))
+			eerrorx("%s: is not a valid runlevel", newlevel);
+	}
+
+	if (going_down) {
 #ifdef __FreeBSD__
 		/* FIXME: we shouldn't have todo this */
 		/* For some reason, wait_for_services waits for the logger
@@ -963,7 +975,7 @@ main(int argc, char **argv)
 		tmplist = rc_services_in_runlevel(RC_LEVEL_SYSINIT);
 		TAILQ_CONCAT(start_services, tmplist, entries);
 		free(tmplist);
-		if (strcmp(newlevel ? runlevel : runlevel,
+		if (strcmp(newlevel ? newlevel : runlevel,
 			   RC_LEVEL_SINGLE) != 0)
 		{
 			if (strcmp(newlevel ? newlevel : runlevel,
