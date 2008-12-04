@@ -43,9 +43,17 @@ include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
 include ${MK}/${MKPAM}.mk
 
+_SVNVER_SH=	if type svnversion >/dev/null 2>&1; then \
+			echo "-svn-$$(svnversion)"; \
+		else \
+			echo ""; \
+		fi
+_SVNVER!=	${_SVNVER_SH}
+SVNVER=		${_SVNVER}$(shell ${_SVNVER_SH})
+
 ${SRCS}: version.h
 version.h:
-	sed -n -e 's/^VERSION=[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1\"/p' ../../Makefile > version.h
+	sed -n -e 's/^VERSION=[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1${SVNVER}\"/p' ../../Makefile > version.h
 	if test -n "${BRANDING}"; then \
 		echo "#define BRANDING \"${BRANDING}\"" >> version.h; \
 	fi
