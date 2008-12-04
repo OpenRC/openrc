@@ -6,7 +6,9 @@ IGNOREFILES+=	${CLEANFILES}
 
 ignore:
 	@if test -n "${IGNOREFILES}"; then \
-		echo "Ignoring ${IGNOREFILES}"; \
-		files="$$(echo ${IGNOREFILES} | tr ' ' '\n')"; \
-		eval svn propset svn:ignore \'"$${files}"\' .; \
+		echo "=> Ignoring ${IGNOREFILES}"; \
+		files="$$(echo "${IGNOREFILES}" | tr ' ' '\n')"; \
+		efiles="$$(svn propget svn:ignore .)"; \
+		sfiles="$$(printf "$${files}\n$${efiles}" | sort -u)"; \
+		eval svn propset svn:ignore \'"$${sfiles}"\' .; \
 	fi
