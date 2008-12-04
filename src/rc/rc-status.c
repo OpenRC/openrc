@@ -244,8 +244,16 @@ rc_status(int argc, char **argv)
 
 	if (!levels)
 		levels = rc_stringlist_new();
-	while (optind < argc)
-		rc_stringlist_add(levels, argv[optind++]);
+	opt = (optind < argc) ? 0 : 1;
+	while (optind < argc) {
+		if (rc_runlevel_exists(argv[optind])) {
+			rc_stringlist_add(levels, argv[optind++]);
+			opt++;
+		} else
+			eerror("runlevel `%s' does not exist", argv[optind++]);
+	}
+	if (opt == 0)
+		exit(EXIT_FAILURE);
 	if (!TAILQ_FIRST(levels)) {
 		runlevel = rc_runlevel_get();
 		rc_stringlist_add(levels, runlevel);
