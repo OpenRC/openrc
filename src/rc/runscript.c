@@ -965,9 +965,12 @@ svc_stop(bool deps)
 	hook_out = RC_HOOK_SERVICE_STOP_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_IN, applet);
 
-	if (!rc_runlevel_stopping() &&
-	    rc_service_in_runlevel(service, RC_LEVEL_BOOT))
-		ewarn ("WARNING: you are stopping a boot service");
+	if (!rc_runlevel_stopping()) {
+		if (rc_service_in_runlevel(service, RC_LEVEL_SYSINIT))
+			ewarn ("WARNING: you are stopping a sysinit service");
+		else if (rc_service_in_runlevel(service, RC_LEVEL_BOOT))
+			ewarn ("WARNING: you are stopping a boot service");
+	}
 
 	if (deps && !(state & RC_SERVICE_WASINACTIVE)) {
 		errno = 0;
