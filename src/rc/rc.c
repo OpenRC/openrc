@@ -691,7 +691,9 @@ interactive_option:
 	}
 
 	/* Store our interactive status for boot */
-	if (interactive && strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0)
+	if (interactive &&
+	    (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0 ||
+	     strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0))
 		mark_interactive();
 	else {
 		if (exists(INTERACTIVE))
