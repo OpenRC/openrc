@@ -893,8 +893,8 @@ main(int argc, char **argv)
 	} else {
 		/* We should not use krunevel in sysinit or the boot runlevel */
 		if (!newlevel ||
-		    strcmp(newlevel, RC_LEVEL_SYSINIT) != 0 ||
-		    strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0)
+		    (strcmp(newlevel, RC_LEVEL_SYSINIT) != 0 &&
+		     strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0))
 		{
 			if (get_krunlevel(krunlevel, sizeof(krunlevel))) {
 				newlevel = krunlevel;
@@ -902,10 +902,24 @@ main(int argc, char **argv)
 			}
 		}
 
-		if (newlevel &&
-		    strcmp(runlevel, newlevel) != 0 &&
-		    !rc_runlevel_exists(newlevel))
-			eerrorx("%s: is not a valid runlevel", newlevel);
+		if (newlevel) {
+			if (strcmp(runlevel, newlevel) != 0 &&
+			    !rc_runlevel_exists(newlevel))
+				eerrorx("%s: not a valid runlevel", newlevel);
+
+#ifdef __linux__
+			if (strcmp(newlevel, RC_LEVEL_SYSINIT) == 0) {
+				/* If we requested a runlevel, save it now */
+				p = proc_getent("rc_runlevel");
+				if (p == NULL)
+					p = proc_getent("softlevel");
+				if (p != NULL) {
+					set_krunlevel(p);
+					free(p);
+				}
+			}
+		}
+#endif
 	}
 
 	if (going_down) {
@@ -1075,6 +1089,7 @@ main(int argc, char **argv)
 			rc_service_mark(token, RC_SERVICE_STOPPED);
 		free(proc);
 	}
+
 #endif
 
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, runlevel);
