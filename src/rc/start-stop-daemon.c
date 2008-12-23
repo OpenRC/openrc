@@ -368,6 +368,7 @@ static int run_stop_schedule(const char *exec, const char *const *argv,
 	long nloops;
 	struct timespec ts;
 	pid_t pid = 0;
+	const char *const *p;
 
 	if (verbose) {
 		if (exec)
@@ -376,8 +377,15 @@ static int run_stop_schedule(const char *exec, const char *const *argv,
 			einfo("Will stop PID in pidfile `%s'", pidfile);
 		if (uid)
 			einfo("Will stop processes owned by UID %d", uid);
-		if (argv && *argv)
-			einfo("Will stop processes of `%s'", *argv);
+		if (argv && *argv) {
+			einfon("Will stop processes of `");
+			for (p = argv; p && *p; p++) {
+				if (p != argv)
+					printf(" ");
+				printf("%s", *p);
+			}
+			printf("'\n");
+		}
 	}
 
 	if (pidfile) {
@@ -840,13 +848,13 @@ int start_stop_daemon(int argc, char **argv)
 			exec = name;
 		if (name && start)
 			*argv = name;
-	} else if (name && (start || **argv))
+	} else if (name)
 		*--argv = name;
-	else
+	else if (exec)
 		*--argv = exec;
 
 	if (stop || sig) {
-		if ( !*argv && !pidfile && !name && !uid)
+		if (!*argv && !pidfile && !name && !uid)
 			eerrorx("%s: --stop needs --exec, --pidfile,"
 				" --name or --user", applet);
 		if (background)
@@ -868,71 +876,44 @@ int start_stop_daemon(int argc, char **argv)
 			eerrorx("%s: --stdout and --stderr are only relevant"
 				" with --background", applet);
 	}
-
-	if (stop || sig) {
-		if (!sig)
-			sig = SIGTERM;
-		if (!stop)
-			oknodo = true;
-		if (!TAILQ_FIRST(&schedule)) {
-			if (test || oknodo)
-				parse_schedule("0", sig);
-			else
-				parse_schedule(NULL, sig);
-		}
-		i = run_stop_schedule(exec, (const char *const *)argv,
-				      pidfile, uid, quiet, verbose, test);
-
-		if (i < 0)
-			/* We failed to stop something */
-			exit(EXIT_FAILURE);
-		if (test || oknodo)
-			return i > 0 ? EXIT_SUCCESS : EXIT_FAILURE;
-
-		/* Even if we have not actually killed anything, we should
-		 * remove information about it as it may have unexpectedly
-		 * crashed out. We should also return success as the end
-		 * result would be the same. */
-		if (pidfile && exists(pidfile))
-			unlink(pidfile);
-		if (svcname)
-			rc_service_daemon_set(svcname, exec,
-					      (const char *const *)argv,
-					      pidfile, false);
-		exit(EXIT_SUCCESS);
-	}
-
 	/* Expand ~ */
 	if (ch_dir && *ch_dir == '~')
 		ch_dir = expand_home(home, ch_dir);
 	if (ch_root && *ch_root == '~')
 		ch_root = expand_home(home, ch_root);
-	if (*exec == '~')
-		exec = expand_home(home, exec);
+	if (exec) {
+		if (*exec == '~')
+			exec = expand_home(home, exec);
 
-	/* Validate that the binary exists if we are starting */
-	if (*exec == '/' || *exec == '.') {
-		/* Full or relative path */
-		if (ch_root)
-			snprintf(exec_file, sizeof(exec_file), "%s/%s", ch_root, exec);
-		else
-			snprintf(exec_file, sizeof(exec_file), "%s", exec);
-	} else {
-		/* Something in $PATH */
-		p = tmp = xstrdup(getenv("PATH"));
-		*exec_file = '\0';
-		while ((token = strsep(&p, ":"))) {
+		/* Validate that the binary exists if we are starting */
+		if (*exec == '/' || *exec == '.') {
+			/* Full or relative path */
 			if (ch_root)
-				snprintf(exec_file, sizeof(exec_file), "%s/%s/%s", ch_root, token, exec);
+				snprintf(exec_file, sizeof(exec_file),
+					 "%s/%s", ch_root, exec);
 			else
-				snprintf(exec_file, sizeof(exec_file), "%s/%s", token, exec);
-			if (exists(exec_file))
-				break;
+				snprintf(exec_file, sizeof(exec_file),
+					 "%s", exec);
+		} else {
+			/* Something in $PATH */
+			p = tmp = xstrdup(getenv("PATH"));
 			*exec_file = '\0';
+			while ((token = strsep(&p, ":"))) {
+				if (ch_root)
+					snprintf(exec_file, sizeof(exec_file),
+						 "%s/%s/%s",
+						 ch_root, token, exec);
+				else
+					snprintf(exec_file, sizeof(exec_file),
+						 "%s/%s", token, exec);
+				if (exists(exec_file))
+					break;
+				*exec_file = '\0';
+			}
+			free(tmp);
 		}
-		free(tmp);
 	}
-	if (!exists(exec_file)) {
+	if (start && !exists(exec_file)) {
 		eerror("%s: %s does not exist", applet,
 			*exec_file ? exec_file : exec);
 		exit(EXIT_FAILURE);
@@ -971,8 +952,40 @@ int start_stop_daemon(int argc, char **argv)
 			}
 		}
 	}
-
 	margv = nav ? nav : argv;
+
+	if (stop || sig) {
+		if (!sig)
+			sig = SIGTERM;
+		if (!stop)
+			oknodo = true;
+		if (!TAILQ_FIRST(&schedule)) {
+			if (test || oknodo)
+				parse_schedule("0", sig);
+			else
+				parse_schedule(NULL, sig);
+		}
+		i = run_stop_schedule(exec, (const char *const *)margv,
+				      pidfile, uid, quiet, verbose, test);
+
+		if (i < 0)
+			/* We failed to stop something */
+			exit(EXIT_FAILURE);
+		if (test || oknodo)
+			return i > 0 ? EXIT_SUCCESS : EXIT_FAILURE;
+
+		/* Even if we have not actually killed anything, we should
+		 * remove information about it as it may have unexpectedly
+		 * crashed out. We should also return success as the end
+		 * result would be the same. */
+		if (pidfile && exists(pidfile))
+			unlink(pidfile);
+		if (svcname)
+			rc_service_daemon_set(svcname, exec,
+					      (const char *const *)argv,
+					      pidfile, false);
+		exit(EXIT_SUCCESS);
+	}
 
 	if (pidfile)
 		pid = get_pid(pidfile, true);
