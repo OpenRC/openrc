@@ -719,7 +719,7 @@ svc_start(bool deps)
 		rc_service_mark(service, RC_SERVICE_HOTPLUGGED);
 		if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0)
 			ewarnx("WARNING: %s will be started in the"
-			       " net runlevel.", applet);
+			       " next runlevel.", applet);
 	}
 
 	if (state & RC_SERVICE_STARTED) {
