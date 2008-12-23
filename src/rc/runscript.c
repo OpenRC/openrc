@@ -717,9 +717,9 @@ svc_start(bool deps)
 			exit(EXIT_FAILURE);
 		background = true;
 		rc_service_mark(service, RC_SERVICE_HOTPLUGGED);
-		if (rc_runlevel_starting())
-			ewarnx("WARNING: %s will be started when the runlevel"
-			       " has finished.", applet);
+		if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0)
+			ewarnx("WARNING: %s will be started in the"
+			       " net runlevel.", applet);
 	}
 
 	if (state & RC_SERVICE_STARTED) {
@@ -1236,7 +1236,7 @@ runscript(int argc, char **argv)
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
 	chdir("/");
 
-	if ((runlevel = xstrdup (getenv ("RC_RUNLEVEL"))) == NULL) {
+	if ((runlevel = xstrdup(getenv("RC_RUNLEVEL"))) == NULL) {
 		env_filter();
 		env_config();
 		runlevel = rc_runlevel_get();
