@@ -126,7 +126,6 @@ wpa_supplicant_pre_start()
 	fi
 	service_set_value ctrl_dir "${ctrl_dir}"
 
-
 	if [ -n "${wpac}" ]; then
 		opts="${opts} -W"
 	elif service_started devd; then
