@@ -93,6 +93,9 @@ stop()
 	_abort() { return 0; }
 	_reboot() { return 0; }
 
+	# Don't check kernel params on stop.
+	get_bootparam() { return 1; }
+
 	yesno "${fsck_shutdown}" && start
 	return 0
 }
