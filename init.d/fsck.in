@@ -25,6 +25,11 @@ _reboot() {
 	fi
 }
 
+_forcefsck()
+{
+	[ -e /forcefsck ] || get_bootparam forcefsck
+}
+
 start()
 {
 	local fsck_opts= p= check_extra=
@@ -33,7 +38,7 @@ start()
 		ewarn "Skipping fsck due to /fastboot"
 		return 0
 	fi
-	if [ -e /forcefsck ] || get_bootparam forcefsck; then
+	if _forcefsck; then
 		fsck_opts="${fsck_opts} -f"
 		check_extra="(check forced)"
 	fi
@@ -92,9 +97,7 @@ stop()
 	# Fake function so we always shutdown correctly.
 	_abort() { return 0; }
 	_reboot() { return 0; }
-
-	# Don't check kernel params on stop.
-	get_bootparam() { return 1; }
+	_forcefsck { return 1; }
 
 	yesno "${fsck_shutdown}" && start
 	return 0
