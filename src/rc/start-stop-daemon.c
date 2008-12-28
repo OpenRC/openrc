@@ -626,6 +626,7 @@ int start_stop_daemon(int argc, char **argv)
 	char *startas = NULL;
 	char *name = NULL;
 	char *pidfile = NULL;
+	char *retry = NULL;
 	int sig = 0;
 	int nicelevel = 0;
 	bool background = false;
@@ -694,7 +695,7 @@ int start_stop_daemon(int argc, char **argv)
 			break;
 
 		case 'R':  /* --retry <schedule>|<timeout> */
-			parse_schedule(optarg, sig);
+			retry = optarg;
 			break;
 
 		case 'S':  /* --start */
@@ -853,7 +854,9 @@ int start_stop_daemon(int argc, char **argv)
 	else if (exec)
 		*--argv = exec;
 
-	if (stop || sig) {
+	if (stop || sig != 0) {
+		if (sig == 0)
+			sig = SIGTERM;
 		if (!*argv && !pidfile && !name && !uid)
 			eerrorx("%s: --stop needs --exec, --pidfile,"
 				" --name or --user", applet);
@@ -876,6 +879,7 @@ int start_stop_daemon(int argc, char **argv)
 			eerrorx("%s: --stdout and --stderr are only relevant"
 				" with --background", applet);
 	}
+
 	/* Expand ~ */
 	if (ch_dir && *ch_dir == '~')
 		ch_dir = expand_home(home, ch_dir);
@@ -955,16 +959,16 @@ int start_stop_daemon(int argc, char **argv)
 	margv = nav ? nav : argv;
 
 	if (stop || sig) {
-		if (!sig)
+		if (sig == 0)
 			sig = SIGTERM;
 		if (!stop)
 			oknodo = true;
-		if (!TAILQ_FIRST(&schedule)) {
-			if (test || oknodo)
-				parse_schedule("0", sig);
-			else
-				parse_schedule(NULL, sig);
-		}
+		if (retry)
+			parse_schedule(retry, sig);
+		else if (test || oknodo)
+			parse_schedule("0", sig);
+		else
+			parse_schedule(NULL, sig);
 		i = run_stop_schedule(exec, (const char *const *)margv,
 				      pidfile, uid, quiet, verbose, test);
 
