@@ -97,7 +97,7 @@ stop()
 	# Fake function so we always shutdown correctly.
 	_abort() { return 0; }
 	_reboot() { return 0; }
-	_forcefsck { return 1; }
+	_forcefsck() { return 1; }
 
 	yesno "${fsck_shutdown}" && start
 	return 0
