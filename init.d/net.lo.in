@@ -595,7 +595,7 @@ ${routes}"
 		fi
 	fi
 
-	local OIFS="${IFS}" SIFS=${IFS-y}
+	local OIFS="${IFS}" SIFS="${IFS-y}"
 	local IFS="$__IFS"
 	for cmd in ${routes}; do
 		unset IFS
