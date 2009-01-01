@@ -1,4 +1,4 @@
-.\" Copyright 2007-2008 Roy Marples
+.\" Copyright 2007-2009 Roy Marples
 .\" All rights reserved
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd September 27, 2008
+.Dd January 1, 2009
 .Dt START-STOP-DAEMON 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -116,6 +116,10 @@ chdir to this directory before starting the daemon.
 .It Fl r , -chroot Ar path
 chroot to this directory before starting the daemon. All other paths, such
 as the path to the daemon, chdir and pidfile, should be relative to the chroot.
+.It Fl c , -chuid Ar user
+Same as the
+.Fl u , -user
+option.
 .It Fl e , -env Ar VAR=VALUE
 Set the environment variable VAR to VALUE.
 .It Fl g , -group Ar group
