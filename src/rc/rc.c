@@ -918,8 +918,8 @@ main(int argc, char **argv)
 					free(p);
 				}
 			}
-		}
 #endif
+		}
 	}
 
 	if (going_down) {
