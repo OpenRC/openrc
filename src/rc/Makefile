@@ -44,7 +44,11 @@ LDADD+=		${LIBDL} ${LIBKVM}
 include ${MK}/${MKPAM}.mk
 
 _SVNVER_SH=	if type svnversion >/dev/null 2>&1; then \
-			echo "-svn-$$(svnversion)"; \
+			svnver="$$(svnversion)"; \
+			case "$$svnver" in \
+			exported) echo "";; \
+			*) echo "-svn-$$svnver";; \
+			esac; \
 		else \
 			echo ""; \
 		fi
