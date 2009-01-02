@@ -43,15 +43,12 @@ include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
 include ${MK}/${MKPAM}.mk
 
-_SVNVER_SH=	if type svnversion >/dev/null 2>&1; then \
+_SVNVER_SH=	ret=""; \
+		if type svnversion >/dev/null 2>&1; then \
 			svnver="$$(svnversion)"; \
-			case "$$svnver" in \
-			exported) echo "";; \
-			*) echo "-svn-$$svnver";; \
-			esac; \
-		else \
-			echo ""; \
-		fi
+			[ "$${svnver}" != exported ] && ret="-svn-$${svnver}"; \
+		fi; \
+		echo "$${ret}";
 _SVNVER!=	${_SVNVER_SH}
 SVNVER=		${_SVNVER}$(shell ${_SVNVER_SH})
 
