@@ -105,12 +105,14 @@ wpa_supplicant_pre_start()
 	fi
 
 	# Work out where the ctrl_interface dir is if it's not specified
-	local ctrl_dir=$(sed -e '/^ctrl_interface=/!d' \
+	local ctrl_dir=$(sed -e 's/^ *//' \
+				-e '/^ctrl_interface=/!d' \
 				-e 's/^ctrl_interface=//' \
 				-e 's/^ *//' \
 				-e 's/^DIR=//' \
 				-e 's/^ *//' \
 				-e 's/GROUP=.*//' \
+				-e 's/ *$//' \
 				"${cfgfile}")
 	if [ -z "${ctrl_dir}" ]; then
 		ctrl_dir=${opts##* -C}
