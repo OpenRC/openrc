@@ -50,7 +50,8 @@ extern const char *applet;
  *   0 = no changes (nothing to do)
  *  1+ = number of runlevels updated
  */
-static int add (const char *runlevel, const char *service)
+static int
+add(const char *runlevel, const char *service)
 {
 	int retval = -1;
 
@@ -70,7 +71,8 @@ static int add (const char *runlevel, const char *service)
 	return retval;
 }
 
-static int delete (const char *runlevel, const char *service)
+static int
+delete(const char *runlevel, const char *service)
 {
 	int retval = -1;
 
@@ -90,7 +92,8 @@ static int delete (const char *runlevel, const char *service)
 	return retval;
 }
 
-static void show (RC_STRINGLIST *runlevels, bool verbose)
+static void
+show(RC_STRINGLIST *runlevels, bool verbose)
 {
 	RC_STRINGLIST *services = rc_services_in_runlevel(NULL);
 	RC_STRING *service;
@@ -148,7 +151,8 @@ static const char * const longopts_help[] = {
 #define DODELETE (1 << 2)
 #define DOSHOW   (1 << 3)
 
-int rc_update(int argc, char **argv)
+int
+rc_update(int argc, char **argv)
 {
 	RC_STRINGLIST *runlevels;
 	RC_STRING *runlevel;
@@ -163,7 +167,7 @@ int rc_update(int argc, char **argv)
 	int ret;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
-				   longopts, (int *) 0)) != -1)
+				  longopts, (int *) 0)) != -1)
 		switch (opt) {
 		case_RC_COMMON_GETOPT
 		}
@@ -189,7 +193,7 @@ int rc_update(int argc, char **argv)
 		else
 			eerrorx("%s: invalid command `%s'", applet, argv[optind]);
 	}
-	if (! action)
+	if (!action)
 		action = DOSHOW;
 
 	runlevels = rc_stringlist_new();
@@ -215,14 +219,14 @@ int rc_update(int argc, char **argv)
 	if (action & DOSHOW) {
 		if (service)
 			rc_stringlist_add(runlevels, service);
-		if (! TAILQ_FIRST(runlevels)) {
+		if (!TAILQ_FIRST(runlevels)) {
 			free(runlevels);
 			runlevels = rc_runlevel_list();
 		}
 
 		show (runlevels, verbose);
 	} else {
-		if (! service)
+		if (!service)
 			eerror ("%s: no service specified", applet);
 		else {
 			if (action & DOADD) {
@@ -231,22 +235,22 @@ int rc_update(int argc, char **argv)
 				actfunc = delete;
 			} else {
 				rc_stringlist_free(runlevels);
-				eerrorx ("%s: invalid action", applet);
+				eerrorx("%s: invalid action", applet);
 			}
 
-			if (! TAILQ_FIRST(runlevels)) {
+			if (!TAILQ_FIRST(runlevels)) {
 				p = rc_runlevel_get();
 				rc_stringlist_add(runlevels, p);
 				free(p);
 			}
 
-			if (! TAILQ_FIRST(runlevels)) {
+			if (!TAILQ_FIRST(runlevels)) {
 				free(runlevels);
 				eerrorx ("%s: no runlevels found", applet);
 			}
 
-			TAILQ_FOREACH (runlevel, runlevels, entries) {
-				if (! rc_runlevel_exists(runlevel->value)) {
+			TAILQ_FOREACH(runlevel, runlevels, entries) {
+				if (!rc_runlevel_exists(runlevel->value)) {
 					eerror ("%s: runlevel `%s' does not exist",
 						applet, runlevel->value);
 					continue;
