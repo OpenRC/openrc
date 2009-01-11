@@ -645,8 +645,6 @@ int start_stop_daemon(int argc, char **argv)
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
 	char *tmp, *newpath, *np;
-	bool sethome = false;
-	bool setuser = false;
 	char *p;
 	char *token;
 	char exec_file[PATH_MAX];
@@ -674,12 +672,19 @@ int start_stop_daemon(int argc, char **argv)
 			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
 				applet, tmp);
 
-	/* Get our initial dir */
+	/* Get our user name and initial dir */
+	p = getenv("USER");
 	home = getenv("HOME");
-	if (!home) {
+	if (home == NULL || p == NULL) {
 		pw = getpwuid(getuid());
-		if (pw)
-			home = pw->pw_dir;
+		if (pw != NULL) {
+			if (p == NULL)
+				setenv("USER", pw->pw_name, 1);
+			if (home == NULL) {
+				setenv("HOME", home, 1);
+				home = pw->pw_dir;
+			}
+		}
 	}
 
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
@@ -715,14 +720,20 @@ int start_stop_daemon(int argc, char **argv)
 				if (sscanf(tmp, "%d", &tid) != 1)
 					pw = getpwnam(tmp);
 				else
-					pw = getpwuid((uid_t) tid);
+					pw = getpwuid((uid_t)tid);
 
-				if (!pw)
+				if (pw == NULL)
 					eerrorx("%s: user `%s' not found",
 						applet, tmp);
 				uid = pw->pw_uid;
 				home = pw->pw_dir;
-				if (!gid)
+				unsetenv("HOME");
+				if (pw->pw_dir)
+					setenv("HOME", pw->pw_dir, 1);
+				unsetenv("USER");
+				if (pw->pw_name)
+					setenv("USER", pw->pw_name, 1);
+				if (gid == 0)
 					gid = pw->pw_gid;
 
 				if (p) {
@@ -732,7 +743,7 @@ int start_stop_daemon(int argc, char **argv)
 					else
 						gr = getgrgid((gid_t) tid);
 
-					if (!gr)
+					if (gr == NULL)
 						eerrorx("%s: group `%s'"
 							" not found",
 							applet, tmp);
@@ -746,27 +757,18 @@ int start_stop_daemon(int argc, char **argv)
 			break;
 
 		case 'e': /* --env */
-			if (putenv(optarg) == 0) {
-				if (strncmp("HOME=", optarg, 5) == 0) {
-					sethome = true;
-					home = strchr(optarg, '=') + 1;
-				} else if (strncmp("USER=", optarg, 5) == 0)
-					setuser = true;
-			}
+			putenv(optarg);
 			break;
 
 		case 'g':  /* --group <group>|<gid> */
-			{
-				if (sscanf(optarg, "%d", &tid) != 1)
-					gr = getgrnam(optarg);
-				else
-					gr = getgrgid((gid_t) tid);
-
-				if (!gr)
-					eerrorx("%s: group `%s' not found",
-						applet, optarg);
-				gid = gr->gr_gid;
-			}
+			if (sscanf(optarg, "%d", &tid) != 1)
+				gr = getgrnam(optarg);
+			else
+				gr = getgrgid((gid_t)tid);
+			if (gr == NULL)
+				eerrorx("%s: group `%s' not found",
+					applet, optarg);
+			gid = gr->gr_gid;
 			break;
 
 		case 'k':
@@ -1089,23 +1091,8 @@ int start_stop_daemon(int argc, char **argv)
 			eerrorx("%s: unable to set groupid to %d", applet, gid);
 		if (changeuser && initgroups(changeuser, gid))
 			eerrorx("%s: initgroups (%s, %d)", applet, changeuser, gid);
-		if (uid) {
-			if (setuid(uid))
-				eerrorx ("%s: unable to set userid to %d", applet, uid);
-			pw = getpwuid(uid);
-			if (pw) {
-				if (!sethome) {
-					unsetenv("HOME");
-					if (pw->pw_dir)
-						setenv("HOME", pw->pw_dir, 1);
-				}
-				if (!setuser) {
-					unsetenv("USER");
-					if (pw->pw_name)
-						setenv("USER", pw->pw_name, 1);
-				}
-			}
-		}
+		if (uid && setuid(uid))
+			eerrorx ("%s: unable to set userid to %d", applet, uid);
 
 		/* Close any fd's to the passwd database */
 		endpwent();
