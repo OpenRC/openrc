@@ -4,7 +4,7 @@
    */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,7 @@
 #define RC_LEVEL_DEFAULT        "default"
 
 #define RC_DEPTREE_CACHE        RC_SVCDIR "/deptree"
+#define RC_DEPTREE_SKEWED	RC_SVCDIR "/clock-skewed"
 #define RC_KRUNLEVEL            RC_SVCDIR "/krunlevel"
 #define RC_STARTING             RC_SVCDIR "/rc.starting"
 #define RC_STOPPING             RC_SVCDIR "/rc.stopping"
@@ -84,6 +85,11 @@
 	     (var) = (tvar))
 #endif
 
+#ifdef __GLIBC__
+#  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
+#    define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
+#  endif
+#endif
 
 _unused static void *xmalloc (size_t size)
 {

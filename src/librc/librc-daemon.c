@@ -31,29 +31,6 @@
 
 #include "librc.h"
 
-#ifdef __GLIBC__
-#  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
-static size_t strlcpy(char *dst, const char *src, size_t size)
-{
-	const char *s = src;
-	size_t n = size;
-
-	if (n && --n)
-		do {
-			if (!(*dst++ = *src++))
-				break;
-		} while (--n);
-
-	if (!n) {
-		if (size)
-			*dst = '\0';
-		while (*src++);
-	}
-
-	return src - s - 1;
-}
-#  endif
-#endif
 
 #if defined(__linux__)
 
