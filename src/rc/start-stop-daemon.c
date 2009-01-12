@@ -681,7 +681,7 @@ int start_stop_daemon(int argc, char **argv)
 			if (p == NULL)
 				setenv("USER", pw->pw_name, 1);
 			if (home == NULL) {
-				setenv("HOME", home, 1);
+				setenv("HOME", pw->pw_dir, 1);
 				home = pw->pw_dir;
 			}
 		}
