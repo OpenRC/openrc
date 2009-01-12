@@ -4,7 +4,7 @@
    */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,7 @@
 
 #include "librc.h"
 
-
 #if defined(__linux__)
-
 static bool pid_is_exec(pid_t pid, const char *exec)
 {
 	char buffer[32];
