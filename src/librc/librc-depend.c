@@ -4,7 +4,7 @@
    */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -544,7 +544,8 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 librc_hidden_def(rc_deptree_order)
 
 static bool
-mtime_check(const char *source, const char *target, bool newer)
+mtime_check(const char *source, const char *target, bool newer,
+	    char *file, time_t *rel)
 {
 	struct stat buf;
 	time_t mtime;
@@ -565,16 +566,32 @@ mtime_check(const char *source, const char *target, bool newer)
 
 	if (newer) {
 		if (mtime < buf.st_mtime)
-			return false;
+			retval = false;
+		if (rel != NULL) {
+			if (*rel < buf.st_mtime) {
+				if (file)
+					strlcpy(file, target, PATH_MAX);
+				*rel = buf.st_mtime;
+			}
+		} else
+			return retval;
 	} else {
 		if (mtime > buf.st_mtime)
-			return false;
+			retval = false;
+		if (rel != NULL) {
+			if (*rel > buf.st_mtime) {
+				if (file)
+					strlcpy(file, target, PATH_MAX);
+				*rel = buf.st_mtime;
+			}
+		} else
+			return retval;
 	}
 
 	/* If not a dir then reset errno */
 	if (!(dp = opendir(target))) {
 		errno = serrno;
-		return true;
+		return retval;
 	}
 
 	/* Check all the entries in the dir */
@@ -582,26 +599,30 @@ mtime_check(const char *source, const char *target, bool newer)
 		if (d->d_name[0] == '.')
 			continue;
 		snprintf(path, sizeof(path), "%s/%s", target, d->d_name);
-		retval = mtime_check(source, path, newer);
-		if (!retval)
-			break;
+		if (!mtime_check(source, path, newer, file, rel)) {
+			retval = false;
+			if (rel == NULL)
+				break;
+		}
 	}
 	closedir(dp);
 	return retval;
 }
 
 bool
-rc_newer_than(const char *source, const char *target)
+rc_newer_than(const char *source, const char *target,
+	      char *file, time_t *newest)
 {
 
-	return mtime_check(source, target, true);
+	return mtime_check(source, target, true, file, newest);
 }
 librc_hidden_def(rc_newer_than)
 
 bool
-rc_older_than(const char *source, const char *target)
+rc_older_than(const char *source, const char *target,
+	      char *file, time_t *oldest)
 {
-	return mtime_check(source, target, false);
+	return mtime_check(source, target, false, file, oldest);
 }
 librc_hidden_def(rc_older_than)
 
@@ -638,7 +659,7 @@ static const char *const depdirs[] =
 };
 
 bool
-rc_deptree_update_needed(void)
+rc_deptree_update_needed(char *file, time_t *newest)
 {
 	bool newer = false;
 	RC_STRINGLIST *config;
@@ -652,31 +673,39 @@ rc_deptree_update_needed(void)
 
 	/* Quick test to see if anything we use has changed and we have
 	 * data in our deptree */
-	if (!existss(RC_DEPTREE_CACHE) ||
-	    !rc_newer_than(RC_DEPTREE_CACHE, RC_INITDIR) ||
-	    !rc_newer_than(RC_DEPTREE_CACHE, RC_CONFDIR) ||
+	if (!existss(RC_DEPTREE_CACHE))
+		return true;
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_INITDIR, file, newest))
+		newer = true;
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_CONFDIR, file, newest))
+		newer = true;
 #ifdef RC_PKG_INITDIR
-	    !rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_INITDIR) ||
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_INITDIR, file, newest))
+		newer = true;
 #endif
 #ifdef RC_PKG_CONFDIR
-	    !rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_CONFDIR) ||
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_CONFDIR, file, newest))
+		newer = true;
 #endif
 #ifdef RC_LOCAL_INITDIR
-	    !rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_INITDIR) ||
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_INITDIR, file, newest))
+		newer = true;
 #endif
 #ifdef RC_LOCAL_CONFDIR
-	    !rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR) ||
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR, file, newest))
+		newer = true;
 #endif
-	    !rc_newer_than(RC_DEPTREE_CACHE, "/etc/rc.conf"))
-		return true;
+	if (!rc_newer_than(RC_DEPTREE_CACHE, "/etc/rc.conf", file, newest))
+		newer = true;
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
 	config = rc_config_list(RC_DEPCONFIG);
 	TAILQ_FOREACH(s, config, entries) {
-		if (!rc_newer_than(RC_DEPTREE_CACHE, s->value)) {
+		if (!rc_newer_than(RC_DEPTREE_CACHE, s->value, file, newest)) {
 			newer = true;
-			break;
+			if (newest == NULL)
+				break;
 		}
 	}
 	rc_stringlist_free(config);

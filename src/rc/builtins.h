@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ int start_stop_daemon(int, char **);
 void run_applets(int, char **);
 
 /* Handy function so we can wrap einfo around our deptree */
-RC_DEPTREE *_rc_deptree_load (int *);
+RC_DEPTREE *_rc_deptree_load (int, int *);
 
 /* Test to see if we can see pid 1 or not */
 bool _rc_can_find_pids(void);

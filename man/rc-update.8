@@ -1,4 +1,4 @@
-.\" Copyright 2007-2008 Roy Marples
+.\" Copyright 2007-2009 Roy Marples
 .\" All rights reserved
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd Jan 15, 2008
+.Dd Jan 10, 2009
 .Dt RC-UPDATE 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -38,6 +38,7 @@
 .Ar service
 .Op Ar runlevel ...
 .Nm
+.Op Fl u , -update
 .Op Fl v , -verbose
 .Ar show
 .Op Ar runlevel ...
@@ -53,7 +54,7 @@ or
 directories. They must also conform to the OpenRC runscript standard.
 .Pp
 .Bl -tag -width "Fl a , -delete service"
-.It Fl a , -add Ar service
+.It Ar add Ar service
 Add the
 .Ar service
 to the
@@ -72,6 +73,10 @@ Show all enabled services and the runlevels they belong to.  If you specify
 runlevels to show, then only those will be included in the output.
 .It Fl v , -verbose
 Show all services.
+.It Fl u , -update
+Forces an update of the dependency tree cache.
+This may be needed in the even of clock skew (a file in /etc is newer than the
+system clock).
 .El
 .Sh SEE ALSO
 .Xr rc 8 ,

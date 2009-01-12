@@ -7,7 +7,7 @@
    */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -451,7 +451,7 @@ void run_applets(int argc, char **argv)
 		if (argc < 3)
 			exit (EXIT_FAILURE);
 		while (i < argc) {
-			if (!rc_newer_than(argv[1], argv[i++]))
+			if (!rc_newer_than(argv[1], argv[i++], NULL, NULL))
 				exit(EXIT_SUCCESS);
 		}
 		exit(EXIT_FAILURE);
@@ -461,7 +461,7 @@ void run_applets(int argc, char **argv)
 		if (argc < 3)
 			exit (EXIT_FAILURE);
 		while (i < argc) {
-			if (!rc_newer_than(argv[1], argv[i++]))
+			if (!rc_newer_than(argv[1], argv[i++], NULL, NULL))
 				exit(EXIT_FAILURE);
 		}
 		exit(EXIT_SUCCESS);

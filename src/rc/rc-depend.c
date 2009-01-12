@@ -4,7 +4,7 @@
    */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -29,17 +29,21 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
 
-#include <getopt.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <getopt.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
+#include <utime.h>
 
 #include "builtins.h"
 #include "einfo.h"
@@ -49,13 +53,19 @@
 extern const char *applet;
 
 RC_DEPTREE *
-_rc_deptree_load(int *regen) {
+_rc_deptree_load(int force, int *regen) {
 	int fd;
 	int retval;
 	int serrno = errno;
 	int merrno;
+	time_t t;
+	char file[PATH_MAX];
+	struct stat st;
+	struct utimbuf ut;
+	FILE *fp;
 
-	if (rc_deptree_update_needed()) {
+	t = 0;
+	if (rc_deptree_update_needed(file, &t) || force != 0) {
 		/* Test if we have permission to update the deptree */
 		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
 		merrno = errno;
@@ -67,8 +77,30 @@ _rc_deptree_load(int *regen) {
 		if (regen)
 			*regen = 1;
 		ebegin("Caching service dependencies");
-		retval = rc_deptree_update();
-		eend (retval ? 0 : -1, "Failed to update the dependency tree");
+		retval = rc_deptree_update() ? 0 : -1;
+		eend (retval, "Failed to update the dependency tree");
+
+		if (retval == 0) {
+			stat(RC_DEPTREE_CACHE, &st);
+			if (st.st_mtime < t) {
+				eerror("Clock skew detected with `%s'", file);
+				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
+				       "' to %s", ctime(&t));
+				fp = fopen(RC_DEPTREE_SKEWED, "w");
+				if (fp != NULL) {
+					fprintf(fp, RC_DEPTREE_SKEWED "\n");
+					fclose(fp);
+				}
+				ut.actime = t;
+				ut.modtime = t;
+				utime(RC_DEPTREE_CACHE, &ut);
+			} else {
+				if (exists(RC_DEPTREE_SKEWED))
+					unlink(RC_DEPTREE_SKEWED);
+			}
+		}
+		if (force == -1 && regen != NULL)
+			*regen = retval;
 	}
 	return rc_deptree_load();
 }
@@ -104,9 +136,8 @@ rc_depend(int argc, char **argv)
 	RC_STRINGLIST *depends;
 	RC_STRING *s;
 	RC_DEPTREE *deptree = NULL;
-	int options = RC_DEP_TRACE;
+	int options = RC_DEP_TRACE, update = 0;
 	bool first = true;
-	bool update = false;
 	char *runlevel = xstrdup(getenv("RC_RUNLEVEL"));
 	int opt;
 	char *token;
@@ -130,7 +161,7 @@ rc_depend(int argc, char **argv)
 				rc_stringlist_add(types, token);
 			break;
 		case 'u':
-			update = true;
+			update = 1;
 			break;
 		case 'T':
 			options &= RC_DEP_TRACE;
@@ -140,15 +171,7 @@ rc_depend(int argc, char **argv)
 		}
 	}
 
-	if (update) {
-		ebegin("Caching service dependencies");
-		update = rc_deptree_update();
-		eend(update ? 0 : -1, "%s: %s", applet, strerror(errno));
-		if (!update)
-			eerrorx("Failed to update the dependency tree");
-	}
-
-	if (!(deptree = _rc_deptree_load(NULL)))
+	if (!(deptree = _rc_deptree_load(update, NULL)))
 		eerrorx("failed to load deptree");
 
 	if (!runlevel)

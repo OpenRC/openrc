@@ -9,7 +9,7 @@
  */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -944,8 +944,10 @@ main(int argc, char **argv)
 	}
 
 	/* Load our deptree */
-	if ((deptree = _rc_deptree_load(&regen)) == NULL)
+	if ((deptree = _rc_deptree_load(0, &regen)) == NULL)
 		eerrorx("failed to load deptree");
+	if (exists(RC_DEPTREE_SKEWED))
+		ewarn("WARNING: clock skew detected!");
 
 	/* Clean the failed services state dir */
 	clean_failed();

@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -748,7 +748,7 @@ svc_start(bool deps)
 		depoptions |= RC_DEP_STRICT;
 
 	if (deps) {
-		if (!deptree && ((deptree = _rc_deptree_load(NULL)) == NULL))
+		if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL))
 			eerrorx("failed to load deptree");
 		if (!types_b)
 			setup_types();
@@ -977,7 +977,7 @@ svc_stop(bool deps)
 		if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
 			depoptions |= RC_DEP_STRICT;
 
-		if (!deptree && ((deptree = _rc_deptree_load(NULL)) == NULL))
+		if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL))
 			eerrorx("failed to load deptree");
 
 		if (!types_m)
@@ -1368,7 +1368,7 @@ runscript(int argc, char **argv)
 				depoptions |= RC_DEP_STRICT;
 
 			if (!deptree &&
-			    ((deptree = _rc_deptree_load(NULL)) == NULL))
+			    ((deptree = _rc_deptree_load(0, NULL)) == NULL))
 				eerrorx("failed to load deptree");
 
 			tmplist = rc_stringlist_new();

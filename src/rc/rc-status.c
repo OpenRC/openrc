@@ -4,7 +4,7 @@
    */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -140,7 +140,7 @@ print_services(const char *runlevel, RC_STRINGLIST *svcs)
 	if (!svcs)
 		return;
 	if (!deptree)
-		deptree = _rc_deptree_load(NULL);
+		deptree = _rc_deptree_load(0, NULL);
 	if (!deptree) {
 		TAILQ_FOREACH(s, svcs, entries)
 			if (!runlevel ||
@@ -260,7 +260,7 @@ rc_status(int argc, char **argv)
 	}
 
 	/* Output the services in the order in which they would start */
-	deptree = _rc_deptree_load(NULL);
+	deptree = _rc_deptree_load(0, NULL);
 
 	TAILQ_FOREACH(l, levels, entries) {
 		print_level(l->value);

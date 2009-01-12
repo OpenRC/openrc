@@ -4,7 +4,7 @@
    */
 
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -138,11 +138,13 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 	"Usage: rc-update [options] add service <runlevel>\n" \
 	"       rc-update [options] del service <runlevel>\n" \
 	"       rc-update [options] show"
-#define getoptstring getoptstring_COMMON
+#define getoptstring "u" getoptstring_COMMON
 static const struct option longopts[] = {
+	{ "update",          0, NULL, 'u' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
+	"Force an update of the dependency tree",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -167,8 +169,11 @@ rc_update(int argc, char **argv)
 	int ret;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
-				  longopts, (int *) 0)) != -1)
+				  longopts, (int *)0)) != -1)
 		switch (opt) {
+		case 'u':
+			_rc_deptree_load(-1, &ret);
+			return ret;
 		case_RC_COMMON_GETOPT
 		}
 

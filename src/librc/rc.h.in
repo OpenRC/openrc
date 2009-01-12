@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2008 Roy Marples <roy@marples.name>
+ * Copyright 2007-2009 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
@@ -304,25 +304,31 @@ typedef void *RC_DEPTREE;
 
 /*! Check to see if source is newer than target.
  * If target is a directory then we traverse it and it's children.
+ * time_t returns the time of the newest file found if newer.
 * @return true if source is newer than target, otherwise false */ 
-bool rc_newer_than(const char *, const char *);
+bool rc_newer_than(const char *, const char *, char *, time_t *);
 
-/*! Check to see if source is newer than target.
+/*! Check to see if source is older than target.
  * If target is a directory then we traverse it and it's children.
-* @return true if source is newer than target, otherwise false */ 
-bool rc_older_than(const char *, const char *);
+ * time_t returns the time of the oldest file found if older.
+* @return true if source is older than target, otherwise false */ 
+bool rc_older_than(const char *, const char *, char *, time_t *);
 
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.
+ * time_t returns the time of the newest file that the dependency tree
+ * will be checked against.
  * @return true if successful, otherwise false */
 bool rc_deptree_update(void);
 
 /*! Check if the cached dependency tree is older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.
+ * @param buffer of PATH_MAX to store newest file
+ * @param mtime of newest file
  * @return true if it needs updating, otherwise false */
-bool rc_deptree_update_needed(void);
+bool rc_deptree_update_needed(char *, time_t *);
 
 /*! Load the cached dependency tree and return a pointer to it.
  * This pointer should be freed with rc_deptree_free when done.
