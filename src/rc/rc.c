@@ -848,7 +848,7 @@ main(int argc, char **argv)
 	if (newlevel) {
 		if (strcmp(newlevel, "reboot") == 0) {
 			newlevel = UNCONST(RC_LEVEL_SHUTDOWN);
-			setenv("RC_REBOOT", "yes", 1);
+			setenv("RC_REBOOT", "YES", 1);
 		}
 	}
 

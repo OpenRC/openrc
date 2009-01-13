@@ -1289,7 +1289,7 @@ runscript(int argc, char **argv)
 				  longopts, (int *)0)) != -1)
 		switch (opt) {
 		case 'd':
-			setenv("RC_DEBUG", "yes", 1);
+			setenv("RC_DEBUG", "YES", 1);
 			break;
 		case 's':
 			if (!(rc_service_state(service) & RC_SERVICE_STARTED))
