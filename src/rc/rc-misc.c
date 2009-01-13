@@ -112,11 +112,10 @@ rc_conf_yesno(const char *setting)
 }
 
 static const char *const env_whitelist[] = {
-	"PATH", "SHELL", "USER", "HOME", "TERM",
+	"CONSOLE", "PATH", "SHELL", "USER", "HOME", "TERM",
 	"LANG", "LC_CTYPE", "LC_NUMERIC", "LC_TIME", "LC_COLLATE",
 	"LC_MONETARY", "LC_MESSAGES", "LC_PAPER", "LC_NAME", "LC_ADDRESS",
 	"LC_TELEPHONE", "LC_MEASUREMENT", "LC_IDENTIFICATION", "LC_ALL",
-	"INIT_HALT", "INIT_VERSION", "RUNLEVEL", "PREVLEVEL", "CONSOLE",
 	"IN_HOTPLUG", "IN_BACKGROUND", "RC_INTERFACE_KEEP_CONFIG",
 	NULL
 };

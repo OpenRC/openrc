@@ -1,4 +1,4 @@
-.\" Copyright 2007-2008 Roy Marples
+.\" Copyright 2007-2009 Roy Marples
 .\" All rights reserved
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd November 03, 2008
+.Dd January 13, 2009
 .Dt RC 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -65,8 +65,10 @@ All services in the boot and sysinit runlevels are automatically included
 in all other runlevels except for those listed here.
 .It Ar single
 Stops all services except for those in the sysinit runlevel.
+.It Ar reboot
+Changes to the shutdown runlevel and then reboots the host.
 .It Ar shutdown
-Changes to the single runlevel and then halts the host.
+Changes to the shutdown runlevel and then halts the host.
 .El
 .Pp
 You should not call any of these runlevels yourself.
@@ -81,4 +83,4 @@ and let them call these special runlevels.
 .Xr init 8 ,
 .Xr shutdown 8
 .Sh AUTHORS
-.An Roy Marples <roy@marples.name>
+.An Roy Marples Aq roy@marples.name

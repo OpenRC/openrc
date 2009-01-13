@@ -842,10 +842,14 @@ main(int argc, char **argv)
 	}
 
 	newlevel = argv[optind++];
-	/* For compat with old system */
+	/* To make life easier, we only have the shutdown runlevel as
+	 * nothing really needs to know that we're rebooting.
+	 * But for those that do, you can test against RC_REBOOT. */
 	if (newlevel) {
-		if (strcmp(newlevel, "reboot") == 0)
+		if (strcmp(newlevel, "reboot") == 0) {
 			newlevel = UNCONST(RC_LEVEL_SHUTDOWN);
+			setenv("RC_REBOOT", "yes", 1);
+		}
 	}
 
 	/* Enable logging */
