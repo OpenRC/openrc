@@ -65,7 +65,7 @@ _rc_deptree_load(int force, int *regen) {
 	FILE *fp;
 
 	t = 0;
-	if (rc_deptree_update_needed(file, &t) || force != 0) {
+	if (rc_deptree_update_needed(&t, file) || force != 0) {
 		/* Test if we have permission to update the deptree */
 		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
 		merrno = errno;

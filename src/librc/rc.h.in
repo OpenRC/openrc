@@ -304,15 +304,21 @@ typedef void *RC_DEPTREE;
 
 /*! Check to see if source is newer than target.
  * If target is a directory then we traverse it and it's children.
- * time_t returns the time of the newest file found if newer.
-* @return true if source is newer than target, otherwise false */ 
-bool rc_newer_than(const char *, const char *, char *, time_t *);
+ * @param source
+ * @param target
+ * @param mtime of newest target
+ * @param filename of the newest target (needs mtime param)
+ * @return true if source is newer than target, otherwise false */ 
+bool rc_newer_than(const char *, const char *, time_t *, char *);
 
 /*! Check to see if source is older than target.
  * If target is a directory then we traverse it and it's children.
- * time_t returns the time of the oldest file found if older.
-* @return true if source is older than target, otherwise false */ 
-bool rc_older_than(const char *, const char *, char *, time_t *);
+ * @param source
+ * @param target
+ * @param mtime of oldest target
+ * @param filename of the oldest target (needs mtime param)
+ * @return true if source is older than target, otherwise false */ 
+bool rc_older_than(const char *, const char *, time_t *, char *);
 
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script
@@ -325,10 +331,10 @@ bool rc_deptree_update(void);
 /*! Check if the cached dependency tree is older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.
- * @param buffer of PATH_MAX to store newest file
  * @param mtime of newest file
+ * @param buffer of PATH_MAX to store newest file
  * @return true if it needs updating, otherwise false */
-bool rc_deptree_update_needed(char *, time_t *);
+bool rc_deptree_update_needed(time_t *, char *);
 
 /*! Load the cached dependency tree and return a pointer to it.
  * This pointer should be freed with rc_deptree_free when done.

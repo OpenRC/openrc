@@ -545,7 +545,7 @@ librc_hidden_def(rc_deptree_order)
 
 static bool
 mtime_check(const char *source, const char *target, bool newer,
-	    char *file, time_t *rel)
+	    time_t *rel, char *file)
 {
 	struct stat buf;
 	time_t mtime;
@@ -599,7 +599,7 @@ mtime_check(const char *source, const char *target, bool newer,
 		if (d->d_name[0] == '.')
 			continue;
 		snprintf(path, sizeof(path), "%s/%s", target, d->d_name);
-		if (!mtime_check(source, path, newer, file, rel)) {
+		if (!mtime_check(source, path, newer, rel, file)) {
 			retval = false;
 			if (rel == NULL)
 				break;
@@ -611,18 +611,18 @@ mtime_check(const char *source, const char *target, bool newer,
 
 bool
 rc_newer_than(const char *source, const char *target,
-	      char *file, time_t *newest)
+	      time_t *newest, char *file)
 {
 
-	return mtime_check(source, target, true, file, newest);
+	return mtime_check(source, target, true, newest, file);
 }
 librc_hidden_def(rc_newer_than)
 
 bool
 rc_older_than(const char *source, const char *target,
-	      char *file, time_t *oldest)
+	      time_t *oldest, char *file)
 {
-	return mtime_check(source, target, false, file, oldest);
+	return mtime_check(source, target, false, oldest, file);
 }
 librc_hidden_def(rc_older_than)
 
@@ -659,7 +659,7 @@ static const char *const depdirs[] =
 };
 
 bool
-rc_deptree_update_needed(char *file, time_t *newest)
+rc_deptree_update_needed(time_t *newest, char *file)
 {
 	bool newer = false;
 	RC_STRINGLIST *config;
@@ -675,34 +675,34 @@ rc_deptree_update_needed(char *file, time_t *newest)
 	 * data in our deptree */
 	if (!existss(RC_DEPTREE_CACHE))
 		return true;
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_INITDIR, file, newest))
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_INITDIR, newest, file))
 		newer = true;
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_CONFDIR, file, newest))
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_CONFDIR, newest, file))
 		newer = true;
 #ifdef RC_PKG_INITDIR
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_INITDIR, file, newest))
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_INITDIR, newest, file))
 		newer = true;
 #endif
 #ifdef RC_PKG_CONFDIR
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_CONFDIR, file, newest))
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_CONFDIR, newest, file))
 		newer = true;
 #endif
 #ifdef RC_LOCAL_INITDIR
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_INITDIR, file, newest))
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_INITDIR, newest, file))
 		newer = true;
 #endif
 #ifdef RC_LOCAL_CONFDIR
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR, file, newest))
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR, newest, file))
 		newer = true;
 #endif
-	if (!rc_newer_than(RC_DEPTREE_CACHE, "/etc/rc.conf", file, newest))
+	if (!rc_newer_than(RC_DEPTREE_CACHE, "/etc/rc.conf", newest, file))
 		newer = true;
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
 	config = rc_config_list(RC_DEPCONFIG);
 	TAILQ_FOREACH(s, config, entries) {
-		if (!rc_newer_than(RC_DEPTREE_CACHE, s->value, file, newest)) {
+		if (!rc_newer_than(RC_DEPTREE_CACHE, s->value, newest, file)) {
 			newer = true;
 			if (newest == NULL)
 				break;
