@@ -45,7 +45,7 @@ include ${MK}/${MKPAM}.mk
 
 _SVNVER_SH=	ret=""; \
 		if type svnversion >/dev/null 2>&1; then \
-			svnver="$$(svnversion)"; \
+			svnver="$$(LC_ALL=C svnversion)"; \
 			[ "$${svnver}" != exported ] && ret="-svn-$${svnver}"; \
 		fi; \
 		echo "$${ret}";
