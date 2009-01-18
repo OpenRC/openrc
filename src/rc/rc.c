@@ -1068,7 +1068,7 @@ main(int argc, char **argv)
 
 #ifdef __linux__
 	/* mark any services skipped as started */
-	proc = p = proc_getent("noinitd");
+	proc = p = proc_getent("noinit");
 	if (proc) {
 		while ((token = strsep(&p, ",")))
 			rc_service_mark(token, RC_SERVICE_STARTED);
@@ -1089,7 +1089,7 @@ main(int argc, char **argv)
 
 #ifdef __linux__
 	/* mark any services skipped as stopped */
-	proc = p = proc_getent("noinitd");
+	proc = p = proc_getent("noinit");
 	if (proc) {
 		while ((token = strsep(&p, ",")))
 			rc_service_mark(token, RC_SERVICE_STOPPED);
