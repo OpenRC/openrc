@@ -1,4 +1,4 @@
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 wpa_supplicant_depend()
@@ -45,7 +45,7 @@ fi
 
 wpa_supplicant_pre_start()
 {
-	local opts= cfgfile= ctrl_dir= wireless=true
+	local opts= cliopts= cfgfile= ctrl_dir= wireless=true
 	local wpas=/usr/sbin/wpa_supplicant wpac=/usr/bin/wpa_cli
 	local actfile=/etc/wpa_supplicant/wpa_cli.sh
 
@@ -57,6 +57,8 @@ wpa_supplicant_pre_start()
 	[ -e "${actfile}" ] || unset wpac
 
 	eval opts=\$wpa_supplicant_${IFVAR}
+	eval cliopts=\$wpa_cli_${IFVAR}
+	[ -z "${cliopts}" ] && cliopts=${wpa_cli}
 	case " ${opts} " in
 		*" -Dwired "*) wireless=false;;
 		*) _is_wireless || return 0;;
@@ -157,7 +159,7 @@ wpa_supplicant_pre_start()
 	ebegin "Starting wpa_cli on" "${IFACE}"
 	start-stop-daemon --start --exec "${wpac}" \
 		--pidfile "/var/run/wpa_cli-${IFACE}.pid" \
-		-- -a "${actfile}" -p "${ctrl_dir}" -i "${IFACE}" \
+		-- ${cliopts} -a "${actfile}" -p "${ctrl_dir}" -i "${IFACE}" \
 		-P "/var/run/wpa_cli-${IFACE}.pid" -B
 	if eend $?; then
 		ebegin "Backgrounding ..."
