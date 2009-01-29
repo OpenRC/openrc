@@ -66,7 +66,8 @@ ssize_t rc_getline(char **line, size_t *len, FILE *fp)
 		}
 		p = *line + last;
 		memset(p, 0, BUFSIZ);
-		fgets(p, BUFSIZ, fp);
+		if (fgets(p, BUFSIZ, fp) == NULL)
+			break;
 		last += strlen(p);
 		if (last && (*line)[last - 1] == '\n') {
 			(*line)[last - 1] = '\0';
