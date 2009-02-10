@@ -653,8 +653,7 @@ int start_stop_daemon(int argc, char **argv)
 	char line[130];
 	FILE *fp;
 	size_t len;
-	bool setumask = false;
-	mode_t numask;
+	mode_t numask = 022;
 	char **margv;
 	unsigned int start_wait = 0;
 
@@ -775,7 +774,6 @@ int start_stop_daemon(int argc, char **argv)
 			if (parse_mode(&numask, optarg))
 				eerrorx("%s: invalid mode `%s'",
 					applet, optarg);
-			setumask = true;
 			break;
 
 		case 'm':  /* --make-pidfile */
@@ -1041,8 +1039,7 @@ int start_stop_daemon(int argc, char **argv)
 	/* Child process - lets go! */
 	if (pid == 0) {
 		pid_t mypid = getpid();
-		if (setumask)
-			umask(numask);
+		umask(numask);
 
 #ifdef TIOCNOTTY
 		tty_fd = open("/dev/tty", O_RDWR);
@@ -1160,8 +1157,6 @@ int start_stop_daemon(int argc, char **argv)
 			unsetenv("PATH");
 			setenv("PATH", newpath, 1);
 		}
-
-		umask(022);
 
 		stdout_fd = devnull_fd;
 		stderr_fd = devnull_fd;
