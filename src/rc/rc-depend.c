@@ -88,7 +88,7 @@ _rc_deptree_load(int force, int *regen) {
 				       "' to %s", ctime(&t));
 				fp = fopen(RC_DEPTREE_SKEWED, "w");
 				if (fp != NULL) {
-					fprintf(fp, RC_DEPTREE_SKEWED "\n");
+					fprintf(fp, "%s\n", file);
 					fclose(fp);
 				}
 				ut.actime = t;
