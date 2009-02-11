@@ -1,9 +1,9 @@
 # OpenRC Makefile
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 NAME=		openrc
-VERSION=	0.4.2
+VERSION=	0.4.3
 PKG=		${NAME}-${VERSION}
 
 SUBDIR=		conf.d doc etc init.d man net sh src
