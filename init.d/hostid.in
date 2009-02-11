@@ -7,7 +7,7 @@ hostid_file=${hostid_file:-/etc/hostid}
 
 depend()
 {
-	need root
+	use root
 	before devd net
 	keyword nojail noprefix
 }
