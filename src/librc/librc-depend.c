@@ -565,27 +565,31 @@ mtime_check(const char *source, const char *target, bool newer,
 		return true;
 
 	if (newer) {
-		if (mtime < buf.st_mtime)
+		if (mtime < buf.st_mtime) {
+			if (rel == NULL)
+				return false;
 			retval = false;
+		}
 		if (rel != NULL) {
 			if (*rel < buf.st_mtime) {
 				if (file)
 					strlcpy(file, target, PATH_MAX);
 				*rel = buf.st_mtime;
 			}
-		} else
-			return retval;
+		}
 	} else {
-		if (mtime > buf.st_mtime)
+		if (mtime > buf.st_mtime) {
+			if (rel == NULL)
+				return false;
 			retval = false;
+		}
 		if (rel != NULL) {
 			if (*rel > buf.st_mtime) {
 				if (file)
 					strlcpy(file, target, PATH_MAX);
 				*rel = buf.st_mtime;
 			}
-		} else
-			return retval;
+		}
 	}
 
 	/* If not a dir then reset errno */
