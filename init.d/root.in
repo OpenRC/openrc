@@ -12,6 +12,10 @@ depend()
 
 start()
 {
+	case ",$(fstabinfo -o /)," in
+	*,ro,*) return 0;;
+	esac
+
 	if echo 2>/dev/null >/.test.$$; then
 		rm -f /.test.$$ /fastboot /forcefsck
 		return 0
