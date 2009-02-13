@@ -4,7 +4,7 @@
 
 description="Turns numlock on for the consoles."
 
-ttyn=${rc_tty_number:-${RC_TTY_NUMBER}:-12}
+ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 
 depend()
 {
