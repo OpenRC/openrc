@@ -28,9 +28,6 @@ ref_is_older_than()
 	return 1
 }
 
-rm -rf "${TMPDIR}"
-mkdir "${TMPDIR}"
-
 do_test()
 {
 	local r1= r2=
@@ -55,23 +52,32 @@ test_it()
 	do_test "${TMPDIR}"/ref "${TMPDIR}"/dir1 "${TMPDIR}"/dir2
 }
 
-echo_cmd mkdir -p "${TMPDIR}"/dir1 "${TMPDIR}"/dir2
-echo_cmd touch "${TMPDIR}"/dir1/f1 "${TMPDIR}"/dir1/f2 "${TMPDIR}"/dir1/f3 "${TMPDIR}"/dir2/f1 "${TMPDIR}"/dir2/f2 "${TMPDIR}"/dir2/f3
-echo_cmd sleep 1
-echo_cmd touch "${TMPDIR}"/ref
-test_it
+run_test()
+{
+	echo_cmd mkdir -p "${TMPDIR}"/dir1 "${TMPDIR}"/dir2
+	echo_cmd touch "${TMPDIR}"/dir1/f1 "${TMPDIR}"/dir1/f2 \
+		"${TMPDIR}"/dir1/f3 "${TMPDIR}"/dir2/f1 \
+		"${TMPDIR}"/dir2/f2 "${TMPDIR}"/dir2/f3
+	echo_cmd sleep 1
+	echo_cmd touch "${TMPDIR}"/ref
+	test_it || return 1
 
-echo_cmd sleep 1
-echo_cmd touch "${TMPDIR}"/dir1/f2
-test_it
+	echo_cmd sleep 1
+	echo_cmd touch "${TMPDIR}"/dir1/f2
+	test_it || return 1
 
-echo_cmd sleep 1
-echo_cmd touch "${TMPDIR}"/ref
-test_it
+	echo_cmd sleep 1
+	echo_cmd touch "${TMPDIR}"/ref
+	test_it || return 1
 
-echo_cmd sleep 1
-echo_cmd touch "${TMPDIR}"/dir2/f2
-test_it
+	echo_cmd sleep 1
+	echo_cmd touch "${TMPDIR}"/dir2/f2
+	test_it || return 1
+}
 
 rm -rf "${TMPDIR}"
-exit 0
+mkdir "${TMPDIR}"
+run_test
+retval=$?
+rm -rf "${TMPDIR}"
+exit ${retval}
