@@ -392,22 +392,32 @@ rc_service_exists(const char *service)
 	int len;
 	struct stat buf;
 
-	if (!service)
+	if (!service) {
+		errno = EINVAL;
 		return false;
+	}
 
 	len = strlen(service);
 
 	/* .sh files are not init scripts */
 	if (len > 2 && service[len - 3] == '.' &&
 	    service[len - 2] == 's' &&
-	    service[len - 1] == 'h')
+	    service[len - 1] == 'h') {
+		errno = EINVAL;
 		return false;
+	}
 
-	if (!(file = rc_service_resolve(service)))
+	if (!(file = rc_service_resolve(service))) {
+		errno = ENOENT;
 		return false;
+	}
 
-	if (stat(file, &buf) == 0 && buf.st_mode & S_IXUGO)
-		retval = true;
+	if (stat(file, &buf) == 0) {
+		if (buf.st_mode & S_IXUGO)
+			retval = true;
+		else
+			errno = ENOEXEC;
+	}
 	free(file);
 	return retval;
 }
