@@ -55,17 +55,20 @@ add(const char *runlevel, const char *service)
 {
 	int retval = -1;
 
-	if (! rc_service_exists (service))
-		eerror ("%s: service `%s' does not exist", applet, service);
-	else if (rc_service_in_runlevel (service, runlevel)) {
+	if (!rc_service_exists(service)) {
+		if (errno == ENOEXEC)
+			eerror("%s: service `%s' is not executeable", applet, service);
+		else
+			eerror("%s: service `%s' does not exist", applet, service);
+	} else if (rc_service_in_runlevel(service, runlevel)) {
 		ewarn ("%s: %s already installed in runlevel `%s'; skipping",
 		       applet, service, runlevel);
 		retval = 0;
-	} else if (rc_service_add (runlevel, service)) {
+	} else if (rc_service_add(runlevel, service)) {
 		einfo ("%s added to runlevel %s", service, runlevel);
 		retval = 1;
 	} else
-		eerror ("%s: failed to add service `%s' to runlevel `%s': %s",
+		eerror("%s: failed to add service `%s' to runlevel `%s': %s",
 			applet, service, runlevel, strerror (errno));
 
 	return retval;
@@ -77,8 +80,8 @@ delete(const char *runlevel, const char *service)
 	int retval = -1;
 
 	errno = 0;
-	if (rc_service_delete (runlevel, service)) {
-		einfo ("%s removed from runlevel %s", service, runlevel);
+	if (rc_service_delete(runlevel, service)) {
+		einfo("%s removed from runlevel %s", service, runlevel);
 		return 1;
 	}
 
