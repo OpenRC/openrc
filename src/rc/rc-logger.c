@@ -150,9 +150,6 @@ void rc_logger_open(const char *level)
 	int i;
 	FILE *log = NULL;
 
-	if (!isatty(STDOUT_FILENO))
-		return;
-
 	if (!rc_conf_yesno("rc_logger"))
 		return;
 
@@ -163,12 +160,14 @@ void rc_logger_open(const char *level)
 		     fcntl (signal_pipe[i], F_SETFD, s | FD_CLOEXEC) == -1))
 			eerrorx("fcntl: %s", strerror (errno));
 
-	tcgetattr(STDOUT_FILENO, &tt);
-	ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
-
-	/* /dev/pts may not be available yet */
-	if (openpty(&rc_logger_tty, &slave_tty, NULL, &tt, &ws))
-		return;
+	if (isatty(STDOUT_FILENO)) {
+		tcgetattr(STDOUT_FILENO, &tt);
+		ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
+		if (openpty(&rc_logger_tty, &slave_tty, NULL, &tt, &ws))
+			return;
+	} else 
+		if (openpty(&rc_logger_tty, &slave_tty, NULL, NULL, NULL))
+			return;
 
 	if ((s = fcntl(rc_logger_tty, F_GETFD, 0)) == 0)
 		fcntl(rc_logger_tty, F_SETFD, s | FD_CLOEXEC);
