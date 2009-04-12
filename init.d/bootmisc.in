@@ -32,7 +32,7 @@ cleanup_tmp_dir()
 		[ "${RC_UNAME}" = Linux ] && startopts=". -xdev -depth"
 
 		# Faster than find
-		rm -rf -- [b-ikm-pr-zA-Z0-9\.]*
+		rm -rf -- [^ajlq\.]*
 
 		find ${startopts} ! -name . \
 			! -path "./lost+found" \
