@@ -1,1 +1,1 @@
-BOOT+=		hostid net.lo0 newsyslog savecore syslogd swap-blk
+BOOT+=		hostid newsyslog savecore syslogd swap-blk

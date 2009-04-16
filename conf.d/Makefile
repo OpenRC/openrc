@@ -1,5 +1,7 @@
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname local localmount net urandom
+CONF=	bootmisc fsck hostname local localmount network urandom
+
+CLEANFILES+=	network
 
 MK=	../mk
 include ${MK}/os.mk

@@ -1,1 +1,4 @@
 CONF+=	ipfw moused powerd rarpd savecore syscons
+
+network:
+	cp network.in network

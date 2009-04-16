@@ -1,3 +1,3 @@
 SYSINIT+=	devfs dmesg
-BOOT+=		hwclock keymaps modules mtab net.lo procfs termencoding
+BOOT+=		hwclock keymaps modules mtab procfs termencoding
 SHUTDOWN+=	killprocs mount-ro

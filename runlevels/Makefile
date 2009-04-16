@@ -1,4 +1,4 @@
-BOOT=		bootmisc fsck hostname localmount \
+BOOT=		bootmisc fsck hostname localmount network \
 		root swap sysctl urandom
 DEFAULT=	local netmount
 SHUTDOWN=	savecache
@@ -32,7 +32,6 @@ install:
 		${INSTALL} -d ${BOOTDIR} || exit $$?; \
 		for x in ${BOOT}; do \
 			if test -n "${PREFIX}"; then \
-				test "$$x" = "net.lo" -o "$$x" = "net.lo0" && continue; \
 				grep -q "keyword .*noprefix" ${INITDIR}/"$$x" && continue; \
 			fi; \
 			ln -snf ${PREFIX}/etc/init.d/"$$x" ${BOOTDIR}/"$$x" || exit $$?; \

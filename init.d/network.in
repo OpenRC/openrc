@@ -1,0 +1,226 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 2009 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Configures network interfaces."
+__nl="
+"
+
+depend()
+{
+	need localmount
+	after bootmisc
+	provide net
+	keyword nojail noprefix novserver
+}
+
+interfaces()
+{
+	case "${RC_UNAME}" in
+	Linux)
+		local w= rest= i= cmd=$1
+		while read w rest; do
+			i=${w%%:*}
+			[ "$i" != "$w" ] || continue
+			if [ "$cmd" = u ]; then
+				ifconfig "$i" | grep -q "[ ]*UP" || continue
+			fi
+			printf "%s " "$i"
+		done </proc/net/dev
+		;;
+	*)
+		ifconfig -l$1
+		;;
+	esac
+}
+
+uniqify()
+{
+	local result=
+	while [ -n "$1" ]; do
+		case " ${result} " in
+		*" $1 "*);;
+		*) result="${result} $1";;
+		esac
+		shift
+	done
+	echo "${result# *}"
+}
+
+dumpargs()
+{
+	local f="$1"
+
+	shift
+	case "$@" in
+	'')		cat "$f";;
+	*"$__nl"*)	echo "$@";;
+	*)
+		(
+		 	set -o noglob
+			IFS=';'; set -- $@
+			IFS="$__nl"; echo "$*"
+		);;
+	esac
+}
+
+runip()
+{
+	local iface="$1" err=
+
+	shift
+	err=$(LC_ALL=C ip address add "$@" dev "$iface" 2>&1)
+	[ -z "$err" ] && return 0
+	if [ "$err" = "RTNETLINK answers: File exists" ]; then
+		ip address del "$@" dev "${iface}" 2>/dev/null
+	fi
+	# Localise the error
+	ip address add "$@" dev "$iface"
+}
+
+routeflush()
+{
+	if [ "${RC_UNAME}" = Linux ]; then
+		if [ -x /sbin/ip ]; then
+			ip route flush scope global
+		else
+			# Sadly we also delete some link routes, but
+			# this cannot be helped
+			local dest= gate= net= flags= rest=
+			route -n | while read dest gate net flags rest; do
+				[ -z "$net" ] && continue
+				case "$dest" in
+				[0-9]*)	;;
+				*)	continue;;
+				esac
+				local xtra= netmask="netmask $net"
+				case "$flags" in
+				U)	continue;;
+				*H*)	flags=-host; netmask=;;
+				*!*)	flags=-net; xtra=reject;;
+				*)	flags=-net;;
+				esac
+				route del $flags $dest $netmask $xtra
+			done
+		fi
+	else
+		route -qn flush
+	fi
+}
+
+runargs()
+{
+	dumpargs "$@" | while read -r args; do
+		case "$args" in
+		''|"#"*)	;;
+		*)
+				(
+				 	vebegin "${args#*!}"
+					eval "${args#*!}"
+					veend $?
+				);;
+		esac
+	done
+}
+
+start()
+{
+	local cr=0 r= iface= cnf= cmd= args= upcmd=
+	einfo "Starting network"
+	routeflush
+	if [ "${RC_UNAME}" = "Linux" ]; then
+		ifconfig lo 127.0.0.1 netmask 255.0.0.0 || cr=1 
+		route add -net 127.0.0.0 netmask 255.0.0.0 \
+			gw 127.0.0.1 2>/dev/null
+		route add -net 127.0.0.0 netmask 255.0.0.0 \
+			gw 127.0.0.1 reject 2>/dev/null
+	else
+		ifconfig lo0 127.0.0.1 netmask 255.0.0.0 || cr=1
+		route -q add -inet 127.0.0.0 -netmask 255.0.0.0 \
+			127.0.0.1 -reject || cr=1
+	fi
+	eindent
+	for iface in $(uniqify $(interfaces) $interfaces); do
+		local func= cf=
+		eval upcmd=\$ifup_$iface
+		for func in ip ifconfig; do
+			eval cmd=\$${func}_${iface}
+			if [ -n "$cmd" -o -f /etc/"$func.$iface" ]; then
+				cf=/etc/"$func.$iface"
+				break
+			fi
+		done
+		[ -n "$cf" -o -n "$upcmd" -o \
+			-f /etc/ifup."$iface" -o -f "$cf" ] || continue
+		vebegin "$iface"
+		case "$func" in
+		ip)	func=runip;;
+		esac
+		eindent
+		if [ -n "$upcmd" -o -f /etc/ifup."$iface" ]; then
+			runargs /etc/ifup."$iface" "$upcmd"
+		fi
+		r=0
+		dumpargs "$cf" "$cmd" | while read -r args; do
+			case "$args" in
+			''|"#"*)	;;
+			"!"*)
+					(
+					 	vebegin "${args#*!}"
+						eval "${args#*!}"
+						veend $?
+					);;
+			*)
+					(
+					 	set -o noglob
+						eval set -- "$args"
+						vebegin "$@"
+						$func "$iface" "$@"
+						veend $?
+					);;
+			esac
+		done
+		eoutdent
+		veend $? || cr=1
+	done
+	eoutdent
+	eend $cr
+
+	if [ -n "$defaultroute" ]; then
+		ebegin "Setting default route $defaultroute"
+		if [ "${RC_UNAME}" = Linux ]; then
+			route add default gw $defaultroute
+		else
+			route add default $defaultroute
+		fi
+		eend $?
+	fi
+
+	return 0
+}
+
+stop()
+{
+	local cr=0 r= iface= cnf= cmd= args= downcmd=
+	einfo "Stopping network"
+	routeflush
+	eindent
+	for iface in $(uniqify $(interfaces u) $interfaces); do
+		eval downcmd=\$ifdown_$iface
+		eval cmd=\$ip_$iface
+		[ -z "$cmd" ] && eval cmd=\$ifconfig_$iface
+		if [ -n "$cmd" -o -f /etc/ip."$iface" -o \
+			-f /etc/ifconfig."$iface" -o \
+			-n "$downcmd" -o -f /etc/ifdown."$iface" ];
+		then
+			vebegin "$iface"
+			if [ -n "$downcmd" -o -f /etc/ifdown."$iface" ]; then
+				runargs /etc/ifdown."$iface" "$downcmd"
+			fi
+			ifconfig "$iface" down 2>/dev/null
+			veend $?
+		fi
+	done
+	eoutdent
+	eend 0
+}

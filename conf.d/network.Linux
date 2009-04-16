@@ -1,0 +1,10 @@
+# ifconfig under Linux is not that powerful and doesn't easily handle
+# multiple addresses
+# On the other hand, ip (iproute2) is quite powerful and is also supported
+# ip_eth0="192.168.0.10/24; 192.168.10.10/24"
+
+# Create a bonded interface
+# interfaces="bond0"
+# ifup_bond0="modprobe bonding; ifconfig bond0 up; ifenslave bond0 bge0"
+# ifconfig_bond0="192.168.0.10/24"
+# ifdown_bond0="rmmod bonding"
