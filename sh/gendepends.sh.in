@@ -83,6 +83,7 @@ do
 		if . "${_dir}/${RC_SVCNAME}"; then
 			echo "${RC_SVCNAME}" >&3
 			depend
+			_rc_svcname=$(shell_var "${RC_SVCNAME}")
 
 			# Add any user defined depends
 			for _deptype in config:CONFIG need:NEED use:USE \
@@ -91,9 +92,9 @@ do
 				IFS=:
 				set -- ${_deptype}
 				unset IFS
-				eval _depends=\$rc_$(shell_var "${RC_SVCNAME}")_$1
+				eval _depends=\$rc_${_rc_svcname}_$1
 				[ -z "${_depends}" ] && eval _depends=\$rc_$1
-				[ -z "${_depends}" ] && eval _depends=\$RC_$(shell_var "${RC_SVCNAME}")_$2
+				[ -z "${_depends}" ] && eval _depends=\$RC_${_rc_svcname}_$2
 				[ -z "${_depends}" ] && eval _depends=\$RC_$2
 
 				$1 ${_depends}
