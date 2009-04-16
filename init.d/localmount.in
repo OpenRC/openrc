@@ -31,7 +31,7 @@ stop()
 {
 	# We never unmount / or /dev or $RC_SVCDIR
 	local x= no_umounts_r="/|/dev|/dev/.*|${RC_SVCDIR}"
-
+	no_umounts_r="${no_umounts_r}|/bin|/sbin|/lib|/libexec"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
 	OIFS=${IFS} SIFS=${IFS-y}
 	IFS=$IFS:
