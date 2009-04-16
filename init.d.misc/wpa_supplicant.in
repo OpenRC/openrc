@@ -13,7 +13,7 @@ depend()
 	need localmount
 	use logger
 	after bootmisc modules
-	before dns dhcpcd
+	before dns dhcpcd net
 }
 
 find_wireless()
