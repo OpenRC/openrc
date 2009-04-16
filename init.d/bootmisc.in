@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 depend()
@@ -61,9 +61,16 @@ cleanup_tmp_dir()
 	fi
 }
 
+mkutmp()
+{
+	: >"$1"
+	chgrp utmp "$1"
+	chmod 0664 "$1"
+}
+
 start()
 {
-	local logw=false
+	local logw=false runw=false
 	# Ensure that our basic dirs exist
 	for x in /var/log /var/run /tmp; do
 		if ! [ -d "${x}" ]; then
@@ -76,15 +83,12 @@ start()
 
 	if dir_writeable /var/run; then
 		ebegin "Creating user login records"
-		cp /dev/null /var/run/utmp
-		chgrp utmp /var/run/utmp
-		chmod 0664 /var/run/utmp
-		if dir_writeable /var/log; then
-			logw=true
-			[ -e /var/log/wtmp ] || cp /dev/null /var/log/wtmp
-			chgrp utmp /var/log/wtmp
-			chmod 0664 /var/log/wtmp
-		fi
+		local xtra=
+		[ "${RC_UNAME}" = NetBSD ] && extra=x
+		for x in "" $xtra; do
+			mkutmp /var/run/utmp${x}
+		done
+		[ -e /var/log/wtmp ] && mkutmp /var/log/wtmp
 		eend 0
 
 		ebegin "Cleaning /var/run"
