@@ -6,7 +6,17 @@ NAME=		openrc
 VERSION=	0.4.3
 PKG=		${NAME}-${VERSION}
 
-SUBDIR=		conf.d doc etc init.d man net sh src
+SUBDIR=		conf.d etc init.d man sh src
+
+# Build our old net foo or not
+MKOLDNET?=	yes
+_OLDNET_SH=	case "${MKOLDNET}" in \
+		[Yy][Ee][Ss]) echo "net doc";; \
+		*) echo "";; \
+		esac
+_OLDNET!=	${_OLDNET_SH}
+SUBDIR+=	${_OLDNET}$(shell ${_OLDNET_SH})
+
 # We need to ensure that runlevels is done last
 SUBDIR+=	runlevels
 

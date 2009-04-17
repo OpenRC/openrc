@@ -13,6 +13,7 @@ DESTDIR=/tmp/openrc-image
 MKPAM=pam
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
+MKOLDNET=no
 PKG_PREFIX=/usr/pkg
 LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local
