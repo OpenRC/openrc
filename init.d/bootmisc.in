@@ -84,7 +84,7 @@ start()
 	if dir_writeable /var/run; then
 		ebegin "Creating user login records"
 		local xtra=
-		[ "${RC_UNAME}" = NetBSD ] && extra=x
+		[ "${RC_UNAME}" = NetBSD ] && xtra=x
 		for x in "" $xtra; do
 			mkutmp /var/run/utmp${x}
 		done
