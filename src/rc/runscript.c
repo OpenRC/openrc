@@ -86,8 +86,7 @@ static RC_STRINGLIST *use_services = NULL;
 static RC_STRINGLIST *services = NULL;
 static RC_STRINGLIST *tmplist = NULL;
 static char *service = NULL;
-static char exclusive[PATH_MAX] = { '\0' };
-static char mtime_test[PATH_MAX] = { '\0' };
+static int exclusive_fd = -1;
 static RC_DEPTREE *deptree = NULL;
 static char *runlevel = NULL;
 static bool sighup = false;
@@ -195,58 +194,6 @@ handle_signal(int sig)
 	errno = serrno;
 }
 
-static time_t
-get_mtime(const char *pathname, bool follow_link)
-{
-	struct stat buf;
-	int retval;
-
-	if (!pathname)
-		return 0;
-	retval = follow_link ? stat(pathname, &buf) : lstat(pathname, &buf);
-	if (!retval)
-		return buf.st_mtime;
-	errno = 0;
-	return 0;
-}
-
-static const char *const tests[] = {
-	"starting", "started", "stopping", "inactive", "wasinactive", NULL
-};
-static bool
-in_control()
-{
-	char file[PATH_MAX];
-	time_t m;
-	time_t mtime;
-	int i = 0;
-
-	if (sighup)
-		return false;
-
-	if (!*mtime_test || !exists(mtime_test))
-		return false;
-
-	if (rc_service_state(applet) & RC_SERVICE_STOPPED)
-		return false;
-
-	if (!(mtime = get_mtime(mtime_test, false)))
-		return false;
-
-	while (tests[i]) {
-		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			 tests[i], applet);
-		if (exists(file)) {
-			m = get_mtime(file, false);
-			if (mtime < m && m != 0)
-				return false;
-		}
-		i++;
-	}
-
-	return true;
-}
-
 static void
 unhotplug()
 {
@@ -294,7 +241,7 @@ restore_state(void)
 {
 	RC_SERVICE state;
 
-	if (rc_in_plugin || !in_control())
+	if (rc_in_plugin || exclusive_fd == -1)
 		return;
 	state = rc_service_state(applet);
 	if (state & RC_SERVICE_STOPPING) {
@@ -312,11 +259,7 @@ restore_state(void)
 		if (rc_runlevel_starting())
 			rc_service_mark(applet, RC_SERVICE_FAILED);
 	}
-
-	if (*exclusive) {
-		unlink(exclusive);
-		*exclusive = '\0';
-	}
+	exclusive_fd = svc_unlock(applet, exclusive_fd);
 }
 
 static void
@@ -360,9 +303,6 @@ cleanup(void)
 	free(prefix);
 	free(runlevel);
 #endif
-
-	if (*mtime_test && !rc_in_plugin)
-		unlink(mtime_test);
 }
 
 static int
@@ -539,11 +479,11 @@ svc_exec(const char *arg1, const char *arg2)
 static bool
 svc_wait(const char *svc)
 {
-	char fifo[PATH_MAX];
+	char file[PATH_MAX];
 	struct timespec ts;
 	int nloops = WAIT_MAX * (ONE_SECOND / WAIT_INTERVAL);
 	int sloops = (ONE_SECOND / WAIT_INTERVAL) * 5;
-	bool retval = false;
+	int fd;
 	bool forever = false;
 	RC_STRINGLIST *keywords;
 
@@ -553,20 +493,28 @@ svc_wait(const char *svc)
 		forever = true;
 	rc_stringlist_free(keywords);
 
-	snprintf(fifo, sizeof(fifo), RC_SVCDIR "/exclusive/%s",
+	snprintf(file, sizeof(file), RC_SVCDIR "/exclusive/%s",
 		 basename_c(svc));
 	ts.tv_sec = 0;
 	ts.tv_nsec = WAIT_INTERVAL;
 
 	while (nloops) {
-		if (!exists(fifo)) {
-			retval = true;
-			break;
+		fd = open(file, O_RDONLY | O_NONBLOCK);
+		if (fd != -1) {
+			if (flock(fd, LOCK_SH | LOCK_NB) == 0) {
+				close(fd);
+				return true;
+			}
+			close(fd);
 		}
+		if (errno == ENOENT)
+			return true;
+		if (errno != EWOULDBLOCK)
+			eerrorx("%s: open `%s': %s", applet, file, strerror(errno));
 
 		if (nanosleep(&ts, NULL) == -1) {
 			if (errno != EINTR)
-				break;
+				return false;
 		}
 
 		if (!forever) {
@@ -579,9 +527,7 @@ svc_wait(const char *svc)
 		}
 	}
 
-	if (!exists(fifo))
-		retval = true;
-	return retval;
+	return false;
 }
 
 static RC_SERVICE
@@ -615,45 +561,6 @@ svc_status(void)
 
 	e("status: %s", status);
 	return state;
-}
-
-static void
-make_exclusive(void)
-{
-	/* We create a fifo so that other services can wait until we complete */
-	if (!*exclusive)
-		snprintf(exclusive, sizeof(exclusive),
-			 RC_SVCDIR "/exclusive/%s", applet);
-
-	if (mkfifo(exclusive, 0600) != 0 && errno != EEXIST &&
-	    (errno != EACCES || geteuid () == 0))
-		eerrorx ("%s: unable to create fifo `%s': %s",
-			 applet, exclusive, strerror(errno));
-
-	snprintf(mtime_test, sizeof(mtime_test),
-		 RC_SVCDIR "/exclusive/%s.%d", applet, getpid());
-
-	if (exists(mtime_test) && unlink(mtime_test) != 0) {
-		eerror("%s: unlink `%s': %s",
-		       applet, mtime_test, strerror(errno));
-		*mtime_test = '\0';
-		return;
-	}
-
-	if (symlink(service, mtime_test) != 0) {
-		eerror("%s: symlink `%s' to `%s': %s",
-		       applet, service, mtime_test, strerror(errno));
-		*mtime_test = '\0';
-	}
-}
-
-static void
-unlink_mtime_test(void)
-{
-	if (unlink(mtime_test) != 0)
-		eerror("%s: unlink `%s': %s",
-		       applet, mtime_test, strerror(errno));
-	*mtime_test = '\0';
 }
 
 static void
@@ -722,24 +629,25 @@ svc_start(bool deps)
 			       " next runlevel", applet);
 	}
 
+	if (exclusive_fd == -1)
+		exclusive_fd = svc_lock(applet);
+	if (exclusive_fd == -1) {
+		if (errno == EACCES)
+			eerrorx("%s: superuser access required", applet);
+		if (state & RC_SERVICE_STOPPING)
+			ewarnx("WARNING: %s is stopping", applet);
+		else
+			ewarnx("WARNING: %s is already starting", applet);
+	}
+	
 	if (state & RC_SERVICE_STARTED) {
 		ewarn("WARNING: %s has already been started", applet);
 		return;
-	} else if (state & RC_SERVICE_STARTING)
-		ewarnx("WARNING: %s is already starting", applet);
-	else if (state & RC_SERVICE_STOPPING)
-		ewarnx("WARNING: %s is stopping", applet);
-	else if (state & RC_SERVICE_INACTIVE && ! background)
+	} else if (state & RC_SERVICE_INACTIVE && ! background)
 		ewarnx("WARNING: %s has already started, but is inactive",
 		       applet);
-
-	if (!rc_service_mark(service, RC_SERVICE_STARTING)) {
-		if (errno == EACCES)
-			eerrorx("%s: superuser access required", applet);
-		eerrorx("ERROR: %s has been started by something else", applet);
-	}
-
-	make_exclusive();
+	
+	rc_service_mark(service, RC_SERVICE_STARTING);
 	hook_out = RC_HOOK_SERVICE_START_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_START_IN, applet);
 
@@ -838,7 +746,6 @@ svc_start(bool deps)
 			/* Set the state now, then unlink our exclusive so that
 			   our scheduled list is preserved */
 			rc_service_mark(service, RC_SERVICE_STOPPED);
-			unlink_mtime_test();
 
 			rc_stringlist_free(use_services);
 			use_services = NULL;
@@ -885,23 +792,18 @@ svc_start(bool deps)
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
 
-	if (in_control()) {
-		if (!started)
-			eerrorx("ERROR: %s failed to start", applet);
-	} else {
+	if (!started)
+		eerrorx("ERROR: %s failed to start", applet);
+	else {
 		if (rc_service_state(service) & RC_SERVICE_INACTIVE)
 			ewarnx("WARNING: %s has started, but is inactive",
-			       applet);
-		else
-			ewarnx("WARNING: %s not under our control, aborting",
 			       applet);
 	}
 
 	rc_service_mark(service, RC_SERVICE_STARTED);
-	unlink_mtime_test();
+	exclusive_fd = svc_unlock(applet, exclusive_fd);
 	hook_out = RC_HOOK_SERVICE_START_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_START_DONE, applet);
-	unlink(exclusive);
 
 	/* Now start any scheduled services */
 	services = rc_services_scheduled(service);
@@ -948,28 +850,29 @@ svc_stop(bool deps)
 		    !(state & RC_SERVICE_INACTIVE))
 			exit (EXIT_FAILURE);
 
+	if (exclusive_fd == -1)
+		exclusive_fd = svc_lock(applet);
+	if (exclusive_fd == -1) {
+		if (errno == EACCES)
+			eerrorx("%s: superuser access required", applet);
+		if (state & RC_SERVICE_STOPPING)
+			ewarnx("WARNING: %s is already stopping", applet);
+		eerrorx("ERROR: %d %s has been stopped by something else", exclusive_fd, applet);
+	}
 	if (state & RC_SERVICE_STOPPED) {
 		ewarn("WARNING: %s is already stopped", applet);
 		return;
-	} else if (state & RC_SERVICE_STOPPING)
-		ewarnx("WARNING: %s is already stopping", applet);
-
-	if (!rc_service_mark(service, RC_SERVICE_STOPPING)) {
-		if (errno == EACCES)
-			eerrorx("%s: superuser access required", applet);
-		eerrorx("ERROR: %s has been stopped by something else", applet);
 	}
 
-	make_exclusive();
-
+	rc_service_mark(service, RC_SERVICE_STOPPING);
 	hook_out = RC_HOOK_SERVICE_STOP_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_IN, applet);
 
 	if (!rc_runlevel_stopping()) {
 		if (rc_service_in_runlevel(service, RC_LEVEL_SYSINIT))
-			ewarn ("WARNING: you are stopping a sysinit service");
+			ewarn("WARNING: you are stopping a sysinit service");
 		else if (rc_service_in_runlevel(service, RC_LEVEL_BOOT))
-			ewarn ("WARNING: you are stopping a boot service");
+			ewarn("WARNING: you are stopping a boot service");
 	}
 
 	if (deps && !(state & RC_SERVICE_WASINACTIVE)) {
@@ -1062,9 +965,6 @@ svc_stop(bool deps)
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
 
-	if (!in_control())
-		ewarnx("WARNING: %s not under our control, aborting", applet);
-
 	if (!stopped)
 		eerrorx("ERROR: %s failed to stop", applet);
 
@@ -1073,10 +973,8 @@ svc_stop(bool deps)
 	else
 		rc_service_mark(service, RC_SERVICE_STOPPED);
 
-	unlink_mtime_test();
 	hook_out = RC_HOOK_SERVICE_STOP_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_DONE, applet);
-	unlink(exclusive);
 	hook_out = 0;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
 }
@@ -1148,18 +1046,20 @@ service_plugable(void)
 }
 
 #include "_usage.h"
-#define getoptstring "dDsv" getoptstring_COMMON
+#define getoptstring "dDsvl:" getoptstring_COMMON
 #define extraopts "stop | start | restart | describe | zap"
 static const struct option longopts[] = {
 	{ "debug",      0, NULL, 'd'},
 	{ "ifstarted",  0, NULL, 's'},
 	{ "nodeps",     0, NULL, 'D'},
+	{ "lockfd",     1, NULL, 'l'},
 	longopts_COMMON
 };
 static const char *const longopts_help[] = {
 	"set xtrace when running the script",
 	"only run commands when started",
 	"ignore dependencies",
+	"fd of the exclusive lock from rc",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -1290,6 +1190,9 @@ runscript(int argc, char **argv)
 		switch (opt) {
 		case 'd':
 			setenv("RC_DEBUG", "YES", 1);
+			break;
+		case 'l':
+			exclusive_fd = atoi(optarg);
 			break;
 		case 's':
 			if (!(rc_service_state(service) & RC_SERVICE_STARTED))

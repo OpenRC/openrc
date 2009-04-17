@@ -150,6 +150,8 @@ bool rc_conf_yesno(const char *var);
 void env_filter(void);
 void env_config(void);
 int signal_setup(int sig, void (*handler)(int));
+int svc_lock(const char *);
+int svc_unlock(const char *, int);
 pid_t exec_service(const char *, const char *);
 
 #define service_start(service) exec_service(service, "start");

@@ -29,6 +29,7 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/file.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 
@@ -38,6 +39,7 @@
 #endif
 
 #include <ctype.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdio.h>
@@ -270,30 +272,56 @@ signal_setup(int sig, void (*handler)(int))
 	return sigaction(sig, &sa, NULL);
 }
 
+int
+svc_lock(const char *applet)
+{
+	char file[PATH_MAX];
+	int fd;
+
+	snprintf(file, sizeof(file), RC_SVCDIR "/exclusive/%s", applet);
+	fd = open(file, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
+	if (fd == -1)
+		return -1;
+	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
+		close(fd);
+		return -1;
+	}
+	return fd;
+}
+
+int
+svc_unlock(const char *applet, int fd)
+{
+	char file[PATH_MAX];
+
+	snprintf(file, sizeof(file), RC_SVCDIR "/exclusive/%s", applet);
+	close(fd);
+	unlink(file);
+	return -1;
+}
+
 pid_t
 exec_service(const char *service, const char *arg)
 {
-	char *file;
-	char fifo[PATH_MAX];
+	char *file, sfd[32];
+	int fd;
 	pid_t pid = -1;
 	sigset_t full;
 	sigset_t old;
 	struct sigaction sa;
 
+	fd = svc_lock(basename_c(service));
+	if (fd == -1)
+		return -1;
+	
 	file = rc_service_resolve(service);
 	if (!exists(file)) {
 		rc_service_mark(service, RC_SERVICE_STOPPED);
+		svc_unlock(basename_c(service), fd);
 		free(file);
 		return 0;
 	}
-
-	/* We create a fifo so that other services can wait until we complete */
-	snprintf(fifo, sizeof(fifo), RC_SVCDIR "/exclusive/%s",
-		 basename_c(service));
-	if (mkfifo(fifo, 0600) != 0 && errno != EEXIST) {
-		free(file);
-		return -1;
-	}
+	snprintf(sfd, sizeof(sfd), "%d", fd);
 
 	/* We need to block signals until we have forked */
 	memset(&sa, 0, sizeof (sa));
@@ -316,10 +344,10 @@ exec_service(const char *service, const char *arg)
 		sigprocmask(SIG_SETMASK, &old, NULL);
 
 		/* Safe to run now */
-		execl(file, file, arg, (char *) NULL);
+		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
 		fprintf(stderr, "unable to exec `%s': %s\n",
 			file, strerror(errno));
-		unlink(fifo);
+		svc_unlock(basename_c(service), fd);
 		_exit(EXIT_FAILURE);
 	}
 
