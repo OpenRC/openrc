@@ -596,7 +596,7 @@ svc_start(bool deps)
 			       " next runlevel", applet);
 	}
 
-	if (exclusive_fd == -1)
+	if (exclusive_fd == -1) 
 		exclusive_fd = svc_lock(applet);
 	if (exclusive_fd == -1) {
 		if (errno == EACCES)
@@ -606,7 +606,9 @@ svc_start(bool deps)
 		else
 			ewarnx("WARNING: %s is already starting", applet);
 	}
-	
+	fcntl(exclusive_fd, F_SETFD,
+	      fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
+
 	if (state & RC_SERVICE_STARTED) {
 		ewarn("WARNING: %s has already been started", applet);
 		return;
@@ -824,8 +826,11 @@ svc_stop(bool deps)
 			eerrorx("%s: superuser access required", applet);
 		if (state & RC_SERVICE_STOPPING)
 			ewarnx("WARNING: %s is already stopping", applet);
-		eerrorx("ERROR: %d %s has been stopped by something else", exclusive_fd, applet);
+		eerrorx("ERROR: %s has been stopped by something else", applet);
 	}
+	fcntl(exclusive_fd, F_SETFD,
+	      fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
+
 	if (state & RC_SERVICE_STOPPED) {
 		ewarn("WARNING: %s is already stopped", applet);
 		return;
@@ -1160,6 +1165,8 @@ runscript(int argc, char **argv)
 			break;
 		case 'l':
 			exclusive_fd = atoi(optarg);
+			fcntl(exclusive_fd, F_SETFD,
+			    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 			break;
 		case 's':
 			if (!(rc_service_state(service) & RC_SERVICE_STARTED))
