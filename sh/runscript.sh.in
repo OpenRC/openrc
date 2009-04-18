@@ -46,7 +46,7 @@ describe()
 }
 
 # Report status
-status()
+_status()
 {
 	if service_stopping; then
 		ewarn "status: stopping"
@@ -70,7 +70,7 @@ status()
 	fi
 }
 
-# Template start / stop functions
+# Template start / stop / status functions
 start()
 {
 	[ -n "${command}" ] || return 0
@@ -108,6 +108,11 @@ stop()
 		${procname:+--name} ${procname} \
 		${pidfile:+--pidfile} ${pidfile}
 	eend $? "Failed to stop ${RC_SVCNAME}"
+}
+
+status()
+{
+	_status
 }
 
 yesno ${RC_DEBUG} && set -x
