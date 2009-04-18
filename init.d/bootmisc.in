@@ -64,7 +64,8 @@ cleanup_tmp_dir()
 mkutmp()
 {
 	: >"$1"
-	chgrp utmp "$1"
+	# Not all systems have the utmp group
+	chgrp utmp "$1" 2>/dev/null
 	chmod 0664 "$1"
 }
 
