@@ -34,6 +34,7 @@
 #include <sys/file.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #include <ctype.h>
 #include <dlfcn.h>
@@ -527,39 +528,6 @@ svc_wait(const char *svc)
 	}
 
 	return false;
-}
-
-static RC_SERVICE
-svc_status(void)
-{
-	char status[10];
-	int (*e) (const char *fmt, ...) EINFO_PRINTF(1, 2) = einfo;
-	RC_SERVICE state = rc_service_state(service);
-
-	if (state & RC_SERVICE_STOPPING) {
-		snprintf(status, sizeof(status), "stopping");
-		e = ewarn;
-	} else if (state & RC_SERVICE_STARTING) {
-		snprintf(status, sizeof(status), "starting");
-		e = ewarn;
-	} else if (state & RC_SERVICE_INACTIVE) {
-		snprintf(status, sizeof(status), "inactive");
-		e = ewarn;
-	} else if (state & RC_SERVICE_STARTED) {
-		errno = 0;
-		if (_rc_can_find_pids() &&
-		    rc_service_daemons_crashed(service) &&
-		    errno != EACCES)
-		{
-			snprintf(status, sizeof(status), "crashed");
-			e = eerror;
-		} else
-			snprintf(status, sizeof(status), "started");
-	} else
-		snprintf(status, sizeof(status), "stopped");
-
-	e("status: %s", status);
-	return state;
 }
 
 static void
