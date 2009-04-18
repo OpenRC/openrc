@@ -45,6 +45,31 @@ describe()
 	done
 }
 
+# Report status
+status()
+{
+	if service_stopping; then
+		ewarn "status: stopping"
+		return 4
+	elif service_starting; then
+		ewarn "status: starting"
+		return 8
+	elif service_inactive; then
+		ewarn "status: inactive"
+		return 16
+	elif service_started; then
+		if service_crashed; then
+			eerror "status: crashed"
+			return 32
+		fi
+		einfo "status: started"
+		return 0
+	else
+		einfo "status: stopped"
+		return 1
+	fi
+}
+
 # Template start / stop functions
 start()
 {
@@ -134,7 +159,7 @@ unset _f
 
 while [ -n "$1" ]; do
 	# See if we have the required function and run it
-	for _cmd in describe start stop ${extra_commands:-${opts}} \
+	for _cmd in describe start stop status ${extra_commands:-${opts}} \
 		${extra_started_commands}; do
 		if [ "${_cmd}" = "$1" ]; then
 			if [ "$(command -v "$1")" = "$1" ]; then

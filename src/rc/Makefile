@@ -18,7 +18,7 @@ RC_BINLINKS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 		service_starting service_started \
 		service_stopping service_stopped \
 		service_inactive service_wasinactive \
-		service_hotplugged service_started_daemon \
+		service_hotplugged service_started_daemon service_crashed \
 		checkpath fstabinfo mountinfo rc-depend \
 		service_get_value service_set_value get_options save_options \
 		shell_var is_newer_than is_older_than

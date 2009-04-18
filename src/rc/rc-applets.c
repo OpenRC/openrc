@@ -295,6 +295,10 @@ static int do_service(int argc, char **argv)
 		}
 		ok = rc_service_started_daemon(service, exec, NULL, idx);
 			
+	} else if (strcmp(applet, "service_crashed") == 0) {
+		ok = (_rc_can_find_pids() &&
+		      rc_service_daemons_crashed(service) &&
+		      errno != EACCES);
 	} else
 		eerrorx("%s: unknown applet", applet);
 

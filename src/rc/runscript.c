@@ -352,11 +352,10 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	return ret;
 }
 
-static bool
+static int
 svc_exec(const char *arg1, const char *arg2)
 {
-	bool execok;
-	int fdout = fileno(stdout);
+	int ret, fdout = fileno(stdout);
 	struct termios tt;
 	struct winsize ws;
 	int i;
@@ -467,13 +466,13 @@ svc_exec(const char *arg1, const char *arg2)
 		master_tty = -1;
 	}
 
-	execok = rc_waitpid(service_pid) == 0 ? true : false;
-	if (!execok && errno == ECHILD)
+	ret = WEXITSTATUS(rc_waitpid(service_pid));
+	if (ret != 0 && errno == ECHILD)
 		/* killall5 -9 could cause this */
-		execok = true;
+		ret = 0;
 	service_pid = 0;
 
-	return execok;
+	return ret;
 }
 
 static bool
@@ -788,7 +787,7 @@ svc_start(bool deps)
 		setenv("IN_BACKGROUND", ibsave, 1);
 	hook_out = RC_HOOK_SERVICE_START_DONE;
 	rc_plugin_run(RC_HOOK_SERVICE_START_NOW, applet);
-	started = svc_exec("start", NULL);
+	started = (svc_exec("start", NULL) == 0);
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
 
@@ -961,7 +960,7 @@ svc_stop(bool deps)
 		setenv("IN_BACKGROUND", ibsave, 1);
 	hook_out = RC_HOOK_SERVICE_STOP_DONE;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_NOW, applet);
-	stopped = svc_exec("stop", NULL);
+	stopped = (svc_exec("stop", NULL) == 0);
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
 
@@ -1286,10 +1285,10 @@ runscript(int argc, char **argv)
 			rc_stringlist_free(services);
 			services = NULL;
 		} else if (strcmp (optarg, "status") == 0) {
-			RC_SERVICE r = svc_status();
-			retval = (int) r;
-			if (retval & RC_SERVICE_STARTED)
-				retval = 0;
+			save = prefix;
+			eprefix(NULL);
+			prefix = NULL;
+			retval = svc_exec("status", NULL);
 		} else {
 			if (strcmp(optarg, "conditionalrestart") == 0 ||
 			    strcmp(optarg, "condrestart") == 0)
