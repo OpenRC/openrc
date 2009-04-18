@@ -20,12 +20,27 @@ find_wireless()
 {
 	local iface=
 
-	for iface in /sys/class/net/*; do
-		if [ -e "${iface}"/wireless ]; then
-			echo "${iface##*/}"
-			return 0
-		fi
-	done
+	case "${RC_UNAME}" in
+	Linux)
+		for iface in /sys/class/net/*; do
+			if [ -e "${iface}"/wireless ]; then
+				echo "${iface##*/}"
+				return 0
+			fi
+		done
+		;;
+	*)
+		for iface in /dev/net/* $(ifconfig -l 2>/dev/null); do
+			if ifconfig "${iface##*/}" 2>/dev/null | \
+				grep -q "[ ]*ssid "
+			then
+				echo "${iface##*/}"
+				return 0
+			fi
+		done
+		;;
+	esac
+	
 	return 1
 }
 
