@@ -20,3 +20,6 @@
 # Any files found will automatically be put into the interfaces variable.
 # You don't need to escape variables in files, so use $int instead of \$int.
 
+# If you require DHCP, you should install dhcpcd and it to the boot or
+# default runlevel.
+

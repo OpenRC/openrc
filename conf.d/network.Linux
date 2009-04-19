@@ -21,3 +21,7 @@
 # ifconfig_eth0_3="192.168.3.10 netmask 255.255.255.0"
 # ifconfig_eth0_4="192.168.4.10 netmask 255.255.255.0"
 # ifdown_eth0="vconfig rem \$int.2; vconfig rem \$int.3; vconfig rem \$int.4"
+
+# Normally you would use wpa_supplicant to configure wireless, but you can
+# use iwconfig also
+# ifup_wlan0="iwconfig \$int key s:secretkey enc open essid foobar"
