@@ -39,7 +39,7 @@ reverse()
 
 sys_interfaces()
 {
-	case "${RC_UNAME}" in
+	case "$RC_UNAME" in
 	Linux)
 		local w= rest= i= cmd=$1
 		while read w rest; do
@@ -61,7 +61,7 @@ auto_interfaces()
 {
 	local ifs= c= f=
 
-	case "${RC_UNAME}" in
+	case "$RC_UNAME" in
 	NetBSD)
 		for c in $(ifconfig -C 2>/dev/null); do
 			for f in /etc/ifconfig.${c}[0-9]*; do
@@ -111,7 +111,7 @@ runip()
 	err=$(LC_ALL=C ip address add "$@" dev "$int" 2>&1)
 	[ -z "$err" ] && return 0
 	if [ "$err" = "RTNETLINK answers: File exists" ]; then
-		ip address del "$@" dev "${int}" 2>/dev/null
+		ip address del "$@" dev "$int" 2>/dev/null
 	fi
 	# Localise the error
 	ip address add "$@" dev "$int"
@@ -119,7 +119,7 @@ runip()
 
 routeflush()
 {
-	if [ "${RC_UNAME}" = Linux ]; then
+	if [ "$RC_UNAME" = Linux ]; then
 		if [ -x /sbin/ip ]; then
 			ip route flush scope global
 		else
@@ -167,7 +167,7 @@ start()
 	local cr=0 r= int= cmd= args= upcmd=
 	einfo "Starting network"
 	routeflush
-	if [ "${RC_UNAME}" = "Linux" ]; then
+	if [ "$RC_UNAME" = "Linux" ]; then
 		ifconfig lo 127.0.0.1 netmask 255.0.0.0 || cr=1 
 		route add -net 127.0.0.0 netmask 255.0.0.0 \
 			gw 127.0.0.1 2>/dev/null
@@ -225,7 +225,7 @@ start()
 
 	if [ -n "$defaultroute" ]; then
 		ebegin "Setting default route $defaultroute"
-		if [ "${RC_UNAME}" = Linux ]; then
+		if [ "$RC_UNAME" = Linux ]; then
 			route add default gw $defaultroute
 		else
 			route add default $defaultroute
