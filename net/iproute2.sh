@@ -131,6 +131,13 @@ _add_address()
 
 _add_route()
 {
+	local family=
+
+	if [ "$1" = "-A" -o "$1" = "-f" -o "$1" = "-family" ]; then
+		family="-f $2"
+		shift; shift
+	fi
+
 	if [ $# -eq 3 ]; then
 		set -- "$1" "$2" via "$3"
 	elif [ "$3" = "gw" ]; then
@@ -145,7 +152,6 @@ _add_route()
 			metric) cmd="${cmd} $1"; have_metric=true;;
 			netmask) cmd="${cmd}/$(_netmask2cidr "$2")"; shift;;
 			-host|-net);;
-			-A)	[ "$2" = "inet6" ] && shift;;
 			*) cmd="${cmd} $1";;
 		esac
 		shift
@@ -155,7 +161,7 @@ _add_route()
 		cmd="${cmd} metric ${metric}"
 	fi
 
-	ip route append ${cmd} dev "${IFACE}"
+	ip ${family} route append ${cmd} dev "${IFACE}"
 	eend $?
 }
 

@@ -182,7 +182,12 @@ _add_address()
 
 _add_route()
 {
-	local inet6=
+	local inet6= family=
+
+	if [ "$1" = "-A" -o "$1" = "-f" -o "$1" = "-family" ]; then
+		family="-A $2"
+		shift; shift
+	fi
 
 	if [ -n "${metric}" ]; then
 		set -- "$@" metric ${metric}
@@ -197,13 +202,10 @@ _add_route()
 	fi
 
 	case "$@" in
-		*:*)
-			inet6="-A inet6"
-			[ "$1" = "-net" ] && shift
-			;;
+		*:*) [ "$1" = "-net" ] && shift;;
 	esac
 
-	route ${inet6} add "$@" dev "${IFACE}"
+	route ${family} add "$@" dev "${IFACE}"
 }
 
 _delete_addresses()
