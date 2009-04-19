@@ -549,7 +549,7 @@ expand_home(const char *home, const char *path)
 }
 
 #include "_usage.h"
-#define getoptstring "KN:R:Sbc:d:e:g:k:mn:op:s:tu:r:x:1:2:" getoptstring_COMMON
+#define getoptstring "KN:R:Sbc:d:e:g:k:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
@@ -570,6 +570,7 @@ static const struct option longopts[] = {
 	{ "test",         0, NULL, 't'},
 	{ "user",         1, NULL, 'u'},
 	{ "chroot",       1, NULL, 'r'},
+	{ "wait",         1, NULL, 'w'},
 	{ "exec",         1, NULL, 'x'},
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
@@ -595,6 +596,7 @@ static const char * const longopts_help[] = {
 	"Test actions, don't do them",
 	"Change the process user",
 	"Chroot to this directory",
+	"Seconds to wait for daemon start",
 	"Binary to start/stop",
 	"Redirect stdout to file",
 	"Redirect stderr to file",
@@ -806,6 +808,11 @@ int start_stop_daemon(int argc, char **argv)
 
 		case 'a': /* --startas <name> */
 			startas = optarg;
+			break;
+		case 'w':
+			if (sscanf(optarg, "%d", &start_wait) != 1)
+				eerrorx("%s: `%s' not a number",
+					applet, optarg);
 			break;
 		case 'x':  /* --exec <executable> */
 			exec = optarg;
@@ -1030,6 +1037,10 @@ int start_stop_daemon(int argc, char **argv)
 		eindent();
 	}
 
+	/* Remove existing pidfile */
+	if (pidfile)
+		unlink(pidfile);
+
 	if (background)
 		signal_setup(SIGCHLD, handle_signal);
 
@@ -1216,78 +1227,50 @@ int start_stop_daemon(int argc, char **argv)
 
 	/* Wait a little bit and check that process is still running
 	   We do this as some badly written daemons fork and then barf */
-	if ((p = getenv("SSD_STARTWAIT")) ||
-	    (p = rc_conf_value("rc_start_wait")))
+	if (start_wait == 0 &&
+	    ((p = getenv("SSD_STARTWAIT")) ||
+	     (p = rc_conf_value("rc_start_wait"))))
 	{
-		if (sscanf(p, "%u", &start_wait) == 1)
-			start_wait *= 1000000;
-		else
+		if (sscanf(p, "%u", &start_wait) != 1)
 			start_wait = 0;
 	}
 
 	if (start_wait > 0) {
 		struct timespec ts;
-		int nloops = start_wait / POLL_INTERVAL;
-		int nloopsp = WAIT_PIDFILE / POLL_INTERVAL;
 		bool alive = false;
-
-		ts.tv_sec = 0;
-		ts.tv_nsec = POLL_INTERVAL;
-
-		while (nloops) {
-			if (nanosleep(&ts, NULL) == -1) {
-				if (errno == EINTR)
-					eerror("%s: caught an interrupt", applet);
-				else {
-					eerror("%s: nanosleep: %s", applet, strerror(errno));
-					return 0;
-				}
+		
+		ts.tv_sec = start_wait;
+		ts.tv_nsec = 0;
+		if (nanosleep(&ts, NULL) == -1) {
+			if (errno == EINTR)
+				eerror("%s: caught an interrupt", applet);
+			else {
+				eerror("%s: nanosleep: %s",
+				       applet, strerror(errno));
+				return 0;
 			}
-
-			/* We wait for a specific amount of time for a pidfile
-			 * to be created.
-			 * Once everything is in place we then wait some more
-			 * to ensure that the daemon really is running and won't
-			 * abort due to a config error. */
-			if (!background && pidfile && nloopsp)
-				nloopsp--;
-			else
-				nloops--;
-
-			/* This is knarly.
-			 * If we backgrounded then we know the exact pid.
-			 * Otherwise if we have a pidfile then it *may* know
-			 * the exact pid.
-			 * Failing that, we'll have to query processes.
-			 * We sleep first as some programs like ntp like to
-			 * fork, and write their pidfile a LONG time later. */
-			if (background) {
-				if (kill (pid, 0) == 0)
-					alive = true;
-			} else {
-				if (pidfile) {
-					/* The pidfile may not have been
-					 * written yet - give it some time */
-					if ((pid = get_pid(pidfile, true)) == -1) {
-						if (! nloopsp)
-							eerrorx("%s: did not "
-								"create a valid"
-								" pid in `%s'",
-								applet, pidfile);
-						alive = true;
-						pid = 0;
-					} else
-						nloopsp = 0;
-				} else
-					pid = 0;
-				if (do_stop(exec, (const char *const *)margv,
-					    pid, uid, 0, true, false, true) > 0)
-					alive = true;
-			}
-
-			if (!alive)
-				eerrorx("%s: %s died", applet, exec);
 		}
+		if (background) {
+			if (kill(pid, 0) == 0)
+				alive = true;
+		} else {
+			if (pidfile) {
+				pid = get_pid(pidfile, true);
+				if (pid == -1) {
+					eerrorx("%s: did not "
+						"create a valid"
+						" pid in `%s'",
+						applet, pidfile);
+				}
+			} else
+				pid = 0;
+			if (do_stop(exec, (const char *const *)margv,
+				    pid, uid, 0, true, false, true) > 0)
+				alive = true;
+		}
+
+		if (!alive)
+			eerrorx("%s: %s died", applet, exec);
 	}
 
 	if (svcname)
