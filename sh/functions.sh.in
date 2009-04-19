@@ -59,11 +59,16 @@ _sanitize_path()
 }
 
 # Allow our scripts to support zsh
-if [ -n "${ZSH_VERSION}" ]; then
+if [ -n "$ZSH_VERSION" ]; then
 	emulate sh
 	NULLCMD=:
 	alias -g '${1+"$@"}'='"$@"'
 	setopt NO_GLOB_SUBST
+fi
+
+# Use a special shell feature to save forking
+if [ -n "$BASH_VERSION" -o "$ZSH_VERSION" ]; then
+	shell_var() { LC_ALL=C echo "${@//[![:word:]]/_}"; }
 fi
 
 # Make a sane PATH
