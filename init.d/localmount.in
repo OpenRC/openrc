@@ -52,12 +52,6 @@ stop()
 	# Flush all pending disk writes now
 	sync; sync
 
-	# Try to unmount all tmpfs filesystems not in use, else a deadlock may
-	# occure, bug #13599.
-	# As $RC_SVCDIR may also be tmpfs we cd to it to lock it
-	cd "${RC_SVCDIR}"
-	umount -a -t tmpfs 2>/dev/null
-
 	. "${RC_LIBDIR}"/sh/rc-mount.sh
 
 	# Umount loopback devices

@@ -21,6 +21,12 @@ start()
 stop()
 {
 	ebegin "Deactivating swap devices"
+
+	# Try to unmount all tmpfs filesystems not in use, else a deadlock may
+	# occure. As $RC_SVCDIR may also be tmpfs we cd to it to lock it
+	cd "${RC_SVCDIR}"
+	umount -a -t tmpfs 2>/dev/null
+
 	case "${RC_UNAME}" in
 		NetBSD|OpenBSD)	swapctl -U -t noblk >/dev/null;;
 		*)		swapoff -a >/dev/null;;
