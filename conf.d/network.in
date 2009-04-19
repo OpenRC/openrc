@@ -1,10 +1,17 @@
-# Assign static IP addresses and run custom scripts per interface
+# Assign static IP addresses and run custom scripts per interface.
 # Seperate commands with ;
-# Prefix with ! to run a shell script
+# Prefix with ! to run a shell script.
 # ifconfig_eth0="up; 192.168.0.10 netmask 255.255.255.0; ! echo up"
 
 # You also have ifup_eth0 and ifdown_eth0 to run other commands when
 # eth0 is started and stopped.
 # Lastly, the interfaces variable pulls in virtual interfaces that cannot
-# be automatically detected.
+# be automatically detected. 
+
+# You can also use files instead of variables here if you like:
+# /etc/ifconfig.eth0 is equivalent to ifconfig_eth0
+# /etc/ip.eth0 is equivalent to ifconfig_eth0
+# /etc/ifup.eth0 is equivalent to ifup_eth0
+# /etc/ifdown.eth0 is equivalent to ifdown_eth0
+# Any files found will automatically be put into the interfaces variable.
 

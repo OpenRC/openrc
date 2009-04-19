@@ -2,6 +2,8 @@
 # Copyright 2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
+# This script was inspired by the equivalent rc.d network from NetBSD.
+
 description="Configures network interfaces."
 __nl="
 "
@@ -14,7 +16,28 @@ depend()
 	keyword nojail noprefix novserver
 }
 
-interfaces()
+uniqify()
+{
+	local result= i=
+	for i; do
+		case " $result " in
+		*" $i "*);;
+		*) result="$result $i";;
+		esac
+	done
+	echo "${result# *}"
+}
+
+reverse()
+{
+	local result= i=
+	for i; do
+		result="$i $result"
+	done
+	echo "${result# *}"
+}
+
+sys_interfaces()
 {
 	case "${RC_UNAME}" in
 	Linux)
@@ -34,17 +57,33 @@ interfaces()
 	esac
 }
 
-uniqify()
+auto_interfaces()
 {
-	local result=
-	while [ -n "$1" ]; do
-		case " ${result} " in
-		*" $1 "*);;
-		*) result="${result} $1";;
-		esac
-		shift
-	done
-	echo "${result# *}"
+	local ifs= c= f=
+
+	case "${RC_UNAME}" in
+	NetBSD)
+		for c in $(ifconfig -C 2>/dev/null); do
+			for f in /etc/ifconfig.${c}[0-9]*; do
+				[ -f "$f" ] && printf "%s" "$f{##*.} "
+			done
+		done
+		;;
+	*)
+		for f in /etc/ifconfig.*; do
+			[ -f "$f" ] && printf "%s" "${f##*.} "
+		done
+		for f in /etc/ip.*; do
+			[ -f "$f" ] && printf "%s" "${f##*.} "
+		done
+		;;
+	esac
+	echo
+}
+
+interfaces()
+{
+	uniqify $(sys_interfaces "$@") $interfaces $(auto_interfaces)
 }
 
 dumpargs()
@@ -53,7 +92,7 @@ dumpargs()
 
 	shift
 	case "$@" in
-	'')		cat "$f";;
+	'')		[ -f "$f" ] && cat "$f";;
 	*"$__nl"*)	echo "$@";;
 	*)
 		(
@@ -125,7 +164,7 @@ runargs()
 
 start()
 {
-	local cr=0 r= iface= cnf= cmd= args= upcmd=
+	local cr=0 r= iface= cmd= args= upcmd=
 	einfo "Starting network"
 	routeflush
 	if [ "${RC_UNAME}" = "Linux" ]; then
@@ -140,7 +179,7 @@ start()
 			127.0.0.1 -reject || cr=1
 	fi
 	eindent
-	for iface in $(uniqify $(interfaces) $interfaces); do
+	for iface in $(interfaces); do
 		local func= cf=
 		eval upcmd=\$ifup_$iface
 		for func in ip ifconfig; do
@@ -157,9 +196,7 @@ start()
 		ip)	func=runip;;
 		esac
 		eindent
-		if [ -n "$upcmd" -o -f /etc/ifup."$iface" ]; then
-			runargs /etc/ifup."$iface" "$upcmd"
-		fi
+		runargs /etc/ifup."$iface" "$upcmd"
 		r=0
 		dumpargs "$cf" "$cmd" | while read -r args; do
 			case "$args" in
@@ -201,11 +238,11 @@ start()
 
 stop()
 {
-	local cr=0 r= iface= cnf= cmd= args= downcmd=
+	local iface= cmd= downcmd=
 	einfo "Stopping network"
 	routeflush
 	eindent
-	for iface in $(uniqify $(interfaces u) $interfaces); do
+	for iface in $(reverse $(interfaces u)); do
 		eval downcmd=\$ifdown_$iface
 		eval cmd=\$ip_$iface
 		[ -z "$cmd" ] && eval cmd=\$ifconfig_$iface
@@ -214,10 +251,9 @@ stop()
 			-n "$downcmd" -o -f /etc/ifdown."$iface" ];
 		then
 			vebegin "$iface"
-			if [ -n "$downcmd" -o -f /etc/ifdown."$iface" ]; then
-				runargs /etc/ifdown."$iface" "$downcmd"
-			fi
+			runargs /etc/ifdown."$iface" "$downcmd"
 			ifconfig "$iface" down 2>/dev/null
+			ifconfig "$iface" destroy 2>/dev/null
 			veend $?
 		fi
 	done

@@ -1,4 +1,1 @@
 CONF+=	moused rarpd savecore
-
-network:
-	cp network.in network
