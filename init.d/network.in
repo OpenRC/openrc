@@ -105,16 +105,16 @@ dumpargs()
 
 runip()
 {
-	local iface="$1" err=
+	local int="$1" err=
 
 	shift
-	err=$(LC_ALL=C ip address add "$@" dev "$iface" 2>&1)
+	err=$(LC_ALL=C ip address add "$@" dev "$int" 2>&1)
 	[ -z "$err" ] && return 0
 	if [ "$err" = "RTNETLINK answers: File exists" ]; then
-		ip address del "$@" dev "${iface}" 2>/dev/null
+		ip address del "$@" dev "${int}" 2>/dev/null
 	fi
 	# Localise the error
-	ip address add "$@" dev "$iface"
+	ip address add "$@" dev "$int"
 }
 
 routeflush()
@@ -164,7 +164,7 @@ runargs()
 
 start()
 {
-	local cr=0 r= iface= cmd= args= upcmd=
+	local cr=0 r= int= cmd= args= upcmd=
 	einfo "Starting network"
 	routeflush
 	if [ "${RC_UNAME}" = "Linux" ]; then
@@ -179,24 +179,24 @@ start()
 			127.0.0.1 -reject || cr=1
 	fi
 	eindent
-	for iface in $(interfaces); do
+	for int in $(interfaces); do
 		local func= cf=
-		eval upcmd=\$ifup_$iface
+		eval upcmd=\$ifup_$int
 		for func in ip ifconfig; do
-			eval cmd=\$${func}_${iface}
-			if [ -n "$cmd" -o -f /etc/"$func.$iface" ]; then
-				cf=/etc/"$func.$iface"
+			eval cmd=\$${func}_${int}
+			if [ -n "$cmd" -o -f /etc/"$func.$int" ]; then
+				cf=/etc/"$func.$int"
 				break
 			fi
 		done
 		[ -n "$cf" -o -n "$upcmd" -o \
-			-f /etc/ifup."$iface" -o -f "$cf" ] || continue
-		vebegin "$iface"
+			-f /etc/ifup."$int" -o -f "$cf" ] || continue
+		vebegin "$int"
 		case "$func" in
 		ip)	func=runip;;
 		esac
 		eindent
-		runargs /etc/ifup."$iface" "$upcmd"
+		runargs /etc/ifup."$int" "$upcmd"
 		r=0
 		dumpargs "$cf" "$cmd" | while read -r args; do
 			case "$args" in
@@ -212,7 +212,7 @@ start()
 					 	set -o noglob
 						eval set -- "$args"
 						vebegin "$@"
-						$func "$iface" "$@"
+						$func "$int" "$@"
 						veend $?
 					);;
 			esac
@@ -238,22 +238,22 @@ start()
 
 stop()
 {
-	local iface= cmd= downcmd=
+	local int= cmd= downcmd=
 	einfo "Stopping network"
 	routeflush
 	eindent
-	for iface in $(reverse $(interfaces u)); do
-		eval downcmd=\$ifdown_$iface
-		eval cmd=\$ip_$iface
-		[ -z "$cmd" ] && eval cmd=\$ifconfig_$iface
-		if [ -n "$cmd" -o -f /etc/ip."$iface" -o \
-			-f /etc/ifconfig."$iface" -o \
-			-n "$downcmd" -o -f /etc/ifdown."$iface" ];
+	for int in $(reverse $(interfaces u)); do
+		eval downcmd=\$ifdown_$int
+		eval cmd=\$ip_$int
+		[ -z "$cmd" ] && eval cmd=\$ifconfig_$int
+		if [ -n "$cmd" -o -f /etc/ip."$int" -o \
+			-f /etc/ifconfig."$int" -o \
+			-n "$downcmd" -o -f /etc/ifdown."$int" ];
 		then
-			vebegin "$iface"
-			runargs /etc/ifdown."$iface" "$downcmd"
-			ifconfig "$iface" down 2>/dev/null
-			ifconfig "$iface" destroy 2>/dev/null
+			vebegin "$int"
+			runargs /etc/ifdown."$int" "$downcmd"
+			ifconfig "$int" down 2>/dev/null
+			ifconfig "$int" destroy 2>/dev/null
 			veend $?
 		fi
 	done
