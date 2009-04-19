@@ -164,7 +164,7 @@ runargs()
 
 start()
 {
-	local cr=0 r= int= cmd= args= upcmd=
+	local cr=0 r= int= intv= cmd= args= upcmd=
 	einfo "Starting network"
 	routeflush
 	if [ "$RC_UNAME" = "Linux" ]; then
@@ -181,9 +181,10 @@ start()
 	eindent
 	for int in $(interfaces); do
 		local func= cf=
-		eval upcmd=\$ifup_$int
+		intv=$(shell_var "$int")
+		eval upcmd=\$ifup_$intv
 		for func in ip ifconfig; do
-			eval cmd=\$${func}_${int}
+			eval cmd=\$${func}_${intv}
 			if [ -n "$cmd" -o -f /etc/"$func.$int" ]; then
 				cf=/etc/"$func.$int"
 				break
@@ -238,14 +239,15 @@ start()
 
 stop()
 {
-	local int= cmd= downcmd=
+	local int= intv= cmd= downcmd=
 	einfo "Stopping network"
 	routeflush
 	eindent
 	for int in $(reverse $(interfaces u)); do
-		eval downcmd=\$ifdown_$int
-		eval cmd=\$ip_$int
-		[ -z "$cmd" ] && eval cmd=\$ifconfig_$int
+		intv=$(shell_var "$int")
+		eval downcmd=\$ifdown_$intv
+		eval cmd=\$ip_$intv
+		[ -z "$cmd" ] && eval cmd=\$ifconfig_$intv
 		if [ -n "$cmd" -o -f /etc/ip."$int" -o \
 			-f /etc/ifconfig."$int" -o \
 			-n "$downcmd" -o -f /etc/ifdown."$int" ];
