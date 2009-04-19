@@ -9,7 +9,6 @@ PKG=		${NAME}-${VERSION}
 SUBDIR=		conf.d etc init.d man sh src
 
 # Build our old net foo or not
-MKOLDNET?=	yes
 _OLDNET_SH=	case "${MKOLDNET}" in \
 		[Yy][Ee][Ss]) echo "net doc";; \
 		*) echo "";; \

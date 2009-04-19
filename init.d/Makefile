@@ -4,7 +4,6 @@ SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in netmount.in \
 BIN=	${OBJS}
 
 # Build our old net foo or not
-MKOLDNET?=	yes
 _OLDNET_SH=	case "${MKOLDNET}" in \
 		[Yy][Ee][Ss]) echo "net.lo";; \
 		*) echo "";; \
