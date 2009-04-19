@@ -5,6 +5,19 @@
 
 # Create a bonded interface
 # interfaces="bond0"
-# ifup_bond0="modprobe bonding; ifconfig bond0 up; ifenslave bond0 bge0"
-# ifconfig_bond0="192.168.0.10/24"
+# ifup_bond0="modprobe bonding; ifconfig \$int up; ifenslave \$int bge0"
+# ifconfig_bond0="192.168.0.10 netmask 255.255.255.0"
 # ifdown_bond0="rmmod bonding"
+
+# Create a bridged interface - let dhcpcd configure the address
+# interfaces="br0"
+# ifup_br0="brctl addbr \$int; brctl add \$int eth1; brtctl add \$int eth2"
+# ifdown_br0="ifconfig \$int down; btctl delbr \$int"
+
+# Create VLAN
+# interfaces="eth0_2 eth0_3 eth0_4"
+# ifup_eth0="vconfig add \$int 2; vconfig add \$int 3; vconfig add \$int 4"
+# ifconfig_eth0_2="192.168.2.10 netmask 255.255.255.0"
+# ifconfig_eth0_3="192.168.3.10 netmask 255.255.255.0"
+# ifconfig_eth0_4="192.168.4.10 netmask 255.255.255.0"
+# ifdown_eth0="vconfig rem \$int.2; vconfig rem \$int.3; vconfig rem \$int.4"

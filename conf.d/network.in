@@ -1,6 +1,7 @@
 # Assign static IP addresses and run custom scripts per interface.
 # Seperate commands with ;
 # Prefix with ! to run a shell script.
+# Use \$int to represent the interface
 # ifconfig_eth0="192.168.0.10 netmask 255.255.255.0"
 
 # You also have ifup_eth0 and ifdown_eth0 to run other commands when
@@ -17,4 +18,5 @@
 # /etc/ifup.eth0 is equivalent to ifup_eth0
 # /etc/ifdown.eth0 is equivalent to ifdown_eth0
 # Any files found will automatically be put into the interfaces variable.
+# You don't need to escape variables in files, so use $int instead of \$int.
 
