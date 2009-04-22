@@ -549,7 +549,7 @@ expand_home(const char *home, const char *path)
 }
 
 #include "_usage.h"
-#define getoptstring "KN:R:Sbc:d:e:g:k:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
+#define getoptstring "KN:R:Sbc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
@@ -562,6 +562,7 @@ static const struct option longopts[] = {
 	{ "env",          1, NULL, 'e'},
 	{ "umask",        1, NULL, 'k'},
 	{ "group",        1, NULL, 'g'},
+	{ "interpreted",  0, NULL, 'i'},
 	{ "make-pidfile", 0, NULL, 'm'},
 	{ "name",         1, NULL, 'n'},
 	{ "oknodo",       0, NULL, 'o'},
@@ -588,6 +589,7 @@ static const char * const longopts_help[] = {
 	"Set an environment string",
 	"Set the umask for the daemon",
 	"Change the process group",
+	"Match process name by interpreter",
 	"Create a pidfile",
 	"Match process name",
 	"deprecated",
@@ -633,6 +635,7 @@ int start_stop_daemon(int argc, char **argv)
 	int nicelevel = 0;
 	bool background = false;
 	bool makepidfile = false;
+	bool interpreted = false;
 	uid_t uid = 0;
 	gid_t gid = 0;
 	char *home = NULL;
@@ -770,6 +773,10 @@ int start_stop_daemon(int argc, char **argv)
 				eerrorx("%s: group `%s' not found",
 					applet, optarg);
 			gid = gr->gr_gid;
+			break;
+
+		case 'i': /* --interpreted */
+			interpreted = true;
 			break;
 
 		case 'k':
@@ -933,7 +940,7 @@ int start_stop_daemon(int argc, char **argv)
 	/* If we don't have a pidfile we should check if it's interpreted
 	 * or not. If it we, we need to pass the interpreter through
 	 * to our daemon calls to find it correctly. */
-	if (!pidfile) {
+	if (interpreted && !pidfile) {
 		fp = fopen(exec_file, "r");
 		if (fp) {
 			fgets(line, sizeof(line), fp);
