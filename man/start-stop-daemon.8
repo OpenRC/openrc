@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd April 19, 2009
+.Dd April 22, 2009
 .Dt START-STOP-DAEMON 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -52,14 +52,6 @@ are provided, then we assume we are starting the daemon.
 If a daemon cannot background by itself, nor create a pidfile,
 .Nm
 can do it for the daemon in a secure fashion.
-.Nm
-also ensures that a daemon really has started by checking to see if it still
-exists for a short time after it has started. This is because some badly
-written daemons like to daemonize before checking their configuration, doing
-sanity checks, etc. Likewise,
-.Nm
-ensures that a daemon really stops as well, again by using the information
-above to ensure that it's not running.
 .Pp
 If
 .Nm
@@ -84,6 +76,16 @@ listed in the
 Match the process
 .Ar name
 instead of a pidfile or executable.
+.It Fl i , -interpreted
+When matching process name, we should ensure that the correct interpreter
+is also matched.
+So if the daemon foo starts off like so
+.D1 #!/usr/bin/perl -w
+then
+.Nm
+matches the process
+.D1 /usr/bin/perl -w foo
+If an interpreted daemon changes it's process name then this won't work.
 .It Fl u , -user Ar user Ns Op : Ns Ar group
 Start the daemon as the
 .Ar user
@@ -155,10 +157,9 @@ but with the standard error output.
 These options are only used for stopping daemons:
 .Bl -tag -width indent
 .It Fl R , -retry Ar timeout | Ar signal Ns / Ns Ar timeout
-You can either specify a timeout or a multiple signal/timeout pairs as a
-stopping schedule.
-If not specified then a default value of SIGTERM/0 is
-assumed.
+You can either specify a timeout in seconds or a multiple signal/timeout
+pairs as a stopping schedule.
+If not specified then a default value of SIGTERM/5 is assumed.
 .El
 .Sh ENVIRONMENT
 .Va SSD_NICELEVEL
