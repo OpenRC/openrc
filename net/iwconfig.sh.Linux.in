@@ -39,7 +39,7 @@ _get_ssid()
 			return 0
 		fi
 		sleep 1
-		i=$((${i} + 1))
+		i=$((${i} - 1))
 	done
 
 	return 1
