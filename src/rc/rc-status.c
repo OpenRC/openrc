@@ -297,9 +297,10 @@ rc_status(int argc, char **argv)
 		}
 		TAILQ_FOREACH_SAFE(s, services, entries, t) {
 			if (rc_stringlist_find(sservices, s->value) ||
-			    rc_service_state(s->value) & RC_SERVICE_STOPPED)
-			{
-				TAILQ_REMOVE(services, s, entries);
+			    rc_service_state(s->value) &
+			    (RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED))
+		{
+			TAILQ_REMOVE(services, s, entries);
 				free(s->value);
 				free(s);
 			}
