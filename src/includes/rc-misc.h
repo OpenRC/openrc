@@ -1,7 +1,7 @@
 /*
-   rc-misc.h
-   This is private to us and not for user consumption
-   */
+  rc-misc.h
+  This is private to us and not for user consumption
+*/
 
 /*
  * Copyright 2007-2009 Roy Marples <roy@marples.name>
@@ -68,20 +68,20 @@
 
 /* Some libc implemntations don't have these */
 #ifndef TAILQ_CONCAT
-#define TAILQ_CONCAT(head1, head2, field) do {                          \
-	if (!TAILQ_EMPTY(head2)) {                                      \
-		*(head1)->tqh_last = (head2)->tqh_first;                \
-		(head2)->tqh_first->field.tqe_prev = (head1)->tqh_last; \
-		(head1)->tqh_last = (head2)->tqh_last;                  \
-		TAILQ_INIT((head2));                                    \
-	}                                                               \
-} while (0)
+#define TAILQ_CONCAT(head1, head2, field) do {				      \
+		if (!TAILQ_EMPTY(head2)) {				      \
+			*(head1)->tqh_last = (head2)->tqh_first;	      \
+			(head2)->tqh_first->field.tqe_prev = (head1)->tqh_last; \
+			(head1)->tqh_last = (head2)->tqh_last;		      \
+			TAILQ_INIT((head2));				      \
+		}							      \
+	} while (0)
 #endif
 
 #ifndef TAILQ_FOREACH_SAFE
-#define	TAILQ_FOREACH_SAFE(var, head, field, tvar)			\
-	for ((var) = TAILQ_FIRST((head));				\
-	     (var) && ((tvar) = TAILQ_NEXT((var), field), 1);		\
+#define	TAILQ_FOREACH_SAFE(var, head, field, tvar)			      \
+	for ((var) = TAILQ_FIRST((head));				      \
+	     (var) && ((tvar) = TAILQ_NEXT((var), field), 1);		      \
 	     (var) = (tvar))
 #endif
 
@@ -89,6 +89,18 @@
 #  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
 #    define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
 #  endif
+#endif
+
+#ifndef timespecsub
+#define	timespecsub(tsp, usp, vsp)					      \
+	do {								      \
+		(vsp)->tv_sec = (tsp)->tv_sec - (usp)->tv_sec;		      \
+		(vsp)->tv_nsec = (tsp)->tv_nsec - (usp)->tv_nsec;	      \
+		if ((vsp)->tv_nsec < 0) {				      \
+			(vsp)->tv_sec--;				      \
+			(vsp)->tv_nsec += 1000000000L;			      \
+		}							      \
+	} while (/* CONSTCOND */ 0)
 #endif
 
 _unused static void *xmalloc (size_t size)
