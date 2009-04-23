@@ -1,7 +1,7 @@
 /*
-   fstabinfo.c
-   Gets information about /etc/fstab.
-   */
+  fstabinfo.c
+  Gets information about /etc/fstab.
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -42,31 +42,31 @@
    Okay, we could use getfsent but the man page says use getmntent instead
    AND we don't have getfsent on uclibc or dietlibc for some odd reason. */
 #ifdef __linux__
-#define HAVE_GETMNTENT
-#include <mntent.h>
-#define ENT mntent
-#define START_ENT fp = setmntent ("/etc/fstab", "r");
-#define GET_ENT getmntent (fp)
-#define GET_ENT_FILE(_name) getmntfile (_name)
-#define END_ENT endmntent (fp)
-#define ENT_BLOCKDEVICE(_ent) ent->mnt_fsname
-#define ENT_FILE(_ent) ent->mnt_dir
-#define ENT_TYPE(_ent) ent->mnt_type
-#define ENT_OPTS(_ent) ent->mnt_opts
-#define ENT_PASS(_ent) ent->mnt_passno
+#  define HAVE_GETMNTENT
+#  include <mntent.h>
+#  define ENT mntent
+#  define START_ENT fp = setmntent ("/etc/fstab", "r");
+#  define GET_ENT getmntent (fp)
+#  define GET_ENT_FILE(_name) getmntfile (_name)
+#  define END_ENT endmntent (fp)
+#  define ENT_BLOCKDEVICE(_ent) ent->mnt_fsname
+#  define ENT_FILE(_ent) ent->mnt_dir
+#  define ENT_TYPE(_ent) ent->mnt_type
+#  define ENT_OPTS(_ent) ent->mnt_opts
+#  define ENT_PASS(_ent) ent->mnt_passno
 #else
-#define HAVE_GETFSENT
-#include <fstab.h>
-#define ENT fstab
-#define START_ENT
-#define GET_ENT getfsent ()
-#define GET_ENT_FILE(_name) getfsfile (_name)
-#define END_ENT endfsent ()
-#define ENT_BLOCKDEVICE(_ent) ent->fs_spec
-#define ENT_TYPE(_ent) ent->fs_vfstype
-#define ENT_FILE(_ent) ent->fs_file
-#define ENT_OPTS(_ent) ent->fs_mntops
-#define ENT_PASS(_ent) ent->fs_passno
+#  define HAVE_GETFSENT
+#  include <fstab.h>
+#  define ENT fstab
+#  define START_ENT
+#  define GET_ENT getfsent ()
+#  define GET_ENT_FILE(_name) getfsfile (_name)
+#  define END_ENT endfsent ()
+#  define ENT_BLOCKDEVICE(_ent) ent->fs_spec
+#  define ENT_TYPE(_ent) ent->fs_vfstype
+#  define ENT_FILE(_ent) ent->fs_file
+#  define ENT_OPTS(_ent) ent->fs_mntops
+#  define ENT_PASS(_ent) ent->fs_passno
 #endif
 
 #include "builtins.h"
@@ -93,7 +93,8 @@ getmntfile(const char *file)
 
 extern const char *applet;
 
-static int do_mount(struct ENT *ent)
+static int
+do_mount(struct ENT *ent)
 {
 	char *argv[8];
 	pid_t pid;
@@ -176,7 +177,7 @@ fstabinfo(int argc, char **argv)
 	unsetenv("EINFO_QUIET");
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
-				  longopts, (int *) 0)) != -1)
+		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 		case 'M':
@@ -199,7 +200,7 @@ fstabinfo(int argc, char **argv)
 			case '>':
 				if (sscanf(optarg + 1, "%d", &i) != 1)
 					eerrorx("%s: invalid passno %s",
-						argv[0], optarg + 1);
+					    argv[0], optarg + 1);
 
 				filtered = true;
 				opt = optarg[0];
@@ -212,7 +213,7 @@ fstabinfo(int argc, char **argv)
 					    (opt == '<' && i > p && p != 0) ||
 					    (opt == '>' && i < p && p != 0))
 						rc_stringlist_add(files,
-								  ENT_FILE(ent));
+						    ENT_FILE(ent));
 				}
 				END_ENT;
 				break;
@@ -222,7 +223,7 @@ fstabinfo(int argc, char **argv)
 				output = OUTPUT_PASSNO;
 				break;
 			}
-		break;
+			break;
 
 		case 't':
 			filtered = true;
@@ -230,13 +231,14 @@ fstabinfo(int argc, char **argv)
 				START_ENT;
 				while ((ent = GET_ENT))
 					if (strcmp(token, ENT_TYPE(ent)) == 0)
-						rc_stringlist_add(files, ENT_FILE(ent));
+						rc_stringlist_add(files,
+						    ENT_FILE(ent));
 				END_ENT;
 			}
 			break;
 
 			case_RC_COMMON_GETOPT
-		}
+			    }
 	}
 
 	if (optind < argc) {
@@ -246,7 +248,8 @@ fstabinfo(int argc, char **argv)
 					if (strcmp(argv[i], file->value) == 0)
 						break;
 				if (i >= argc)
-					rc_stringlist_delete(files, file->value);
+					rc_stringlist_delete(files,
+					    file->value);
 			}
 		} else {
 			while (optind < argc)
@@ -290,10 +293,10 @@ fstabinfo(int argc, char **argv)
 
 		case OUTPUT_MOUNTARGS:
 			printf("-o %s -t %s %s %s\n",
-				ENT_OPTS(ent),
-				ENT_TYPE(ent),
-				ENT_BLOCKDEVICE(ent),
-				file->value);
+			    ENT_OPTS(ent),
+			    ENT_TYPE(ent),
+			    ENT_BLOCKDEVICE(ent),
+			    file->value);
 			break;
 
 		case OUTPUT_OPTIONS:

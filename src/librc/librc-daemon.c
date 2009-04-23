@@ -1,7 +1,7 @@
 /*
-   librc-daemon
-   Finds PID for given daemon criteria
-   */
+  librc-daemon
+  Finds PID for given daemon criteria
+*/
 
 /*
  * Copyright 2007-2009 Roy Marples <roy@marples.name>
@@ -32,7 +32,8 @@
 #include "librc.h"
 
 #if defined(__linux__)
-static bool pid_is_exec(pid_t pid, const char *exec)
+static bool
+pid_is_exec(pid_t pid, const char *exec)
 {
 	char buffer[32];
 	FILE *fp;
@@ -55,7 +56,8 @@ static bool pid_is_exec(pid_t pid, const char *exec)
 	return retval;
 }
 
-static bool pid_is_argv(pid_t pid, const char *const *argv)
+static bool
+pid_is_argv(pid_t pid, const char *const *argv)
 {
 	char cmdline[32];
 	int fd;
@@ -84,8 +86,8 @@ static bool pid_is_argv(pid_t pid, const char *const *argv)
 	return true;
 }
 
-RC_PIDLIST *rc_find_pids(const char *exec, const char *const *argv,
-			 uid_t uid, pid_t pid)
+RC_PIDLIST *
+rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 {
 	DIR *procdir;
 	struct dirent *entry;
@@ -101,15 +103,15 @@ RC_PIDLIST *rc_find_pids(const char *exec, const char *const *argv,
 		return NULL;
 
 	/*
-	   We never match RC_RUNSCRIPT_PID if present so we avoid the below
-	   scenario
+	  We never match RC_RUNSCRIPT_PID if present so we avoid the below
+	  scenario
 
-	   /etc/init.d/ntpd stop does
-	   start-stop-daemon --stop --name ntpd
-	   catching /etc/init.d/ntpd stop
+	  /etc/init.d/ntpd stop does
+	  start-stop-daemon --stop --name ntpd
+	  catching /etc/init.d/ntpd stop
 
-	   nasty
-	   */
+	  nasty
+	*/
 
 	if ((pp = getenv("RC_RUNSCRIPT_PID"))) {
 		if (sscanf(pp, "%d", &runscript_pid) != 1)
@@ -170,8 +172,8 @@ librc_hidden_def(rc_find_pids)
 #  define _KVM_FLAGS O_RDONLY
 # endif
 
-RC_PIDLIST *rc_find_pids(const char *exec, const char *const *argv,
-			 uid_t uid, pid_t pid)
+RC_PIDLIST *
+rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 {
 	static kvm_t *kd = NULL;
 	char errbuf[_POSIX2_LINE_MAX];
@@ -187,7 +189,7 @@ RC_PIDLIST *rc_find_pids(const char *exec, const char *const *argv,
 	int match;
 
 	if ((kd = kvm_openfiles(_KVM_PATH, _KVM_PATH,
-			        NULL, _KVM_FLAGS, errbuf)) == NULL)
+		    NULL, _KVM_FLAGS, errbuf)) == NULL)
 	{
 		fprintf(stderr, "kvm_open: %s\n", errbuf);
 		return NULL;
@@ -249,8 +251,8 @@ librc_hidden_def(rc_find_pids)
 #  error "Platform not supported!"
 #endif
 
-static bool _match_daemon(const char *path, const char *file,
-			  RC_STRINGLIST *match)
+static bool
+_match_daemon(const char *path, const char *file, RC_STRINGLIST *match)
 {
 	char *line = NULL;
 	size_t len = 0;
@@ -266,10 +268,10 @@ static bool _match_daemon(const char *path, const char *file,
 
 	while ((rc_getline(&line, &len, fp))) {
 		TAILQ_FOREACH(m, match, entries)
-			if (strcmp(line, m->value) == 0) {
-				TAILQ_REMOVE(match, m, entries);
-				break;
-			}
+		    if (strcmp(line, m->value) == 0) {
+			    TAILQ_REMOVE(match, m, entries);
+			    break;
+		    }
 		if (!TAILQ_FIRST(match))
 			break;
 	}
@@ -280,8 +282,8 @@ static bool _match_daemon(const char *path, const char *file,
 	return true;
 }
 
-static RC_STRINGLIST *_match_list(const char *exec, const char* const* argv,
-				  const char *pidfile)
+static RC_STRINGLIST *
+_match_list(const char *exec, const char* const* argv, const char *pidfile)
 {
 	RC_STRINGLIST *match = rc_stringlist_new();
 	int i = 0;
@@ -315,9 +317,10 @@ static RC_STRINGLIST *_match_list(const char *exec, const char* const* argv,
 	return match;
 }
 
-bool rc_service_daemon_set(const char *service, const char *exec,
-			   const char *const *argv,
-			   const char *pidfile, bool started)
+bool
+rc_service_daemon_set(const char *service, const char *exec,
+    const char *const *argv,
+    const char *pidfile, bool started)
 {
 	char dirpath[PATH_MAX];
 	char file[PATH_MAX]; 
@@ -336,7 +339,7 @@ bool rc_service_daemon_set(const char *service, const char *exec,
 	}
 
 	snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
-		 basename_c(service));
+	    basename_c(service));
 
 	/* Regardless, erase any existing daemon info */
 	if ((dp = opendir(dirpath))) {
@@ -346,7 +349,7 @@ bool rc_service_daemon_set(const char *service, const char *exec,
 				continue;
 
 			snprintf(file, sizeof(file), "%s/%s",
-				 dirpath, d->d_name);
+			    dirpath, d->d_name);
 			nfiles++;
 
 			if (!*oldfile) {
@@ -368,7 +371,7 @@ bool rc_service_daemon_set(const char *service, const char *exec,
 	if (started) {
 		if (mkdir(dirpath, 0755) == 0 || errno == EEXIST) {
 			snprintf(file, sizeof(file), "%s/%03d",
-				 dirpath, nfiles + 1);
+			    dirpath, nfiles + 1);
 			if ((fp = fopen(file, "w"))) {
 				fprintf(fp, "exec=");
 				if (exec)
@@ -392,9 +395,9 @@ bool rc_service_daemon_set(const char *service, const char *exec,
 }
 librc_hidden_def(rc_service_daemon_set)
 
-bool rc_service_started_daemon(const char *service,
-			       const char *exec, const char *const *argv,
-			       int indx)
+bool
+rc_service_started_daemon(const char *service,
+    const char *exec, const char *const *argv, int indx)
 {
 	char dirpath[PATH_MAX];
 	char file[16];
@@ -407,7 +410,7 @@ bool rc_service_started_daemon(const char *service,
 		return false;
 
 	snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
-		 basename_c(service));
+	    basename_c(service));
 	match = _match_list(exec, argv, NULL);
 
 	if (indx > 0) {
@@ -431,7 +434,8 @@ bool rc_service_started_daemon(const char *service,
 }
 librc_hidden_def(rc_service_started_daemon)
 
-bool rc_service_daemons_crashed(const char *service)
+bool
+rc_service_daemons_crashed(const char *service)
 {
 	char dirpath[PATH_MAX];
 	DIR *dp;
@@ -456,7 +460,7 @@ bool rc_service_daemons_crashed(const char *service)
 	size_t i;
 
 	path += snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
-			 basename_c(service));
+	    basename_c(service));
 
 	if (!(dp = opendir(dirpath)))
 		return false;
@@ -466,7 +470,7 @@ bool rc_service_daemons_crashed(const char *service)
 			continue;
 
 		snprintf(path, sizeof(dirpath) - (path - dirpath), "/%s",
-			 d->d_name);
+		    d->d_name);
 		fp = fopen(dirpath, "r");
 		if (!fp)
 			break;
@@ -529,19 +533,19 @@ bool rc_service_daemons_crashed(const char *service)
 				/* We need to flatten our linked list into an array */
 				i = 0;
 				TAILQ_FOREACH(s, list, entries)
-					i++;
+				    i++;
 				argv = xmalloc(sizeof(char *) * (i + 1));
 				i = 0;
 				TAILQ_FOREACH(s, list, entries)
-					argv[i++] = s->value;
+				    argv[i++] = s->value;
 				argv[i] = '\0';
 			}
 		}
 
 		if (!retval) {
 			if ((pids = rc_find_pids(exec,
-						 (const char *const *)argv,
-						 0, pid)))
+				    (const char *const *)argv,
+				    0, pid)))
 			{
 				p1 = LIST_FIRST(pids);
 				while (p1) {

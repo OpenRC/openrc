@@ -1,7 +1,7 @@
 /*
-   einfo.c
-   Informational functions
-   */
+  einfo.c
+  Informational functions
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -110,10 +110,10 @@ hidden_proto(ewendv)
 #define UP "\033[A"
 
 #define _GET_CAP(_d, _c) strlcpy(_d, tgoto(_c, 0, 0), sizeof(_d));
-#define _ASSIGN_CAP(_v) { \
-	_v = p; \
-	p += strlcpy(p, tmp, sizeof(ebuffer) - (p - ebuffer)) + 1; \
-}
+#define _ASSIGN_CAP(_v) do {						      \
+		_v = p;							      \
+		p += strlcpy(p, tmp, sizeof(ebuffer) - (p - ebuffer)) + 1;    \
+	} while (0)
 
 /* A pointer to a string to prefix to einfo/ewarn/eerror messages */
 static const char *_eprefix = NULL;
@@ -497,7 +497,7 @@ colour_terminal(FILE * EINFO_RESTRICT f)
 			_GET_CAP(tmp, _me);
 
 		if (tmp[0])
-			_ASSIGN_CAP(ecolors_str[i])
+			_ASSIGN_CAP(ecolors_str[i]);
 		else
 			ecolors_str[i] = &nullstr;
 	}
@@ -624,13 +624,13 @@ ecolor(ECOLOR color)
 	return _ecolor(f, color);
 }
 
-#define LASTCMD(_cmd) { \
-	unsetenv("EINFO_LASTCMD"); \
-	setenv("EINFO_LASTCMD", _cmd, 1); \
-}
+#define LASTCMD(_cmd) {							      \
+		unsetenv("EINFO_LASTCMD");				      \
+		setenv("EINFO_LASTCMD", _cmd, 1);			      \
+	}
 
 static int EINFO_PRINTF(3, 0)
-_einfo(FILE *f, ECOLOR color, const char *EINFO_RESTRICT fmt, va_list va)
+	_einfo(FILE *f, ECOLOR color, const char *EINFO_RESTRICT fmt, va_list va)
 {
 	int retval = 0;
 	char *last = getenv("EINFO_LASTCMD");
@@ -836,8 +836,8 @@ _eend(FILE * EINFO_RESTRICT fp, int col, ECOLOR color, const char *msg)
 	 * valuable columns when running on 80 column screens. */
 	if (cols > 0 && colour_terminal(fp)) {
 		fprintf(fp, "%s%s %s[%s%s%s]%s\n", up, tgoto(goto_column, 0, cols),
-			ecolor(ECOLOR_BRACKET), ecolor(color), msg,
-			ecolor(ECOLOR_BRACKET), ecolor(ECOLOR_NORMAL));
+		    ecolor(ECOLOR_BRACKET), ecolor(color), msg,
+		    ecolor(ECOLOR_BRACKET), ecolor(ECOLOR_NORMAL));
 	} else {
 		if (col > 0)
 			for (i = 0; i < cols - col; i++)
@@ -847,7 +847,8 @@ _eend(FILE * EINFO_RESTRICT fp, int col, ECOLOR color, const char *msg)
 }
 
 static int EINFO_PRINTF(3, 0)
-_do_eend(const char *cmd, int retval, const char *EINFO_RESTRICT fmt, va_list ap)
+_do_eend(const char *cmd, int retval,
+    const char *EINFO_RESTRICT fmt, va_list ap)
 {
 	int col = 0;
 	FILE *fp = stdout;
@@ -864,8 +865,8 @@ _do_eend(const char *cmd, int retval, const char *EINFO_RESTRICT fmt, va_list ap
 		va_end(apc);
 	}
 	_eend(fp, col,
-	      retval == 0 ? ECOLOR_GOOD : ECOLOR_BAD,
-	      retval == 0 ? OK : NOT_OK);
+	    retval == 0 ? ECOLOR_GOOD : ECOLOR_BAD,
+	    retval == 0 ? OK : NOT_OK);
 	return retval;
 }
 

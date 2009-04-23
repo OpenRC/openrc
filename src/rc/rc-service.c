@@ -1,7 +1,7 @@
 /*
-   rc-service.c
-   Finds all OpenRC services
-   */
+  rc-service.c
+  Finds all OpenRC services
+*/
 
 /*
  * Copyright 2008 Roy Marples <roy@marples.name>
@@ -70,7 +70,7 @@ rc_service(int argc, char **argv)
 	unsetenv("EINFO_QUIET");
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
-				  longopts, (int *) 0)) != -1)
+		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 		case 'e':
@@ -87,7 +87,7 @@ rc_service(int argc, char **argv)
 				return EXIT_FAILURE;
 			rc_stringlist_sort(&list);
 			TAILQ_FOREACH(s, list, entries)
-				printf("%s\n", s->value);
+			    printf("%s\n", s->value);
 #ifdef DEBUG_MEMORY
 			rc_stringlist_free(list);
 #endif
@@ -104,8 +104,8 @@ rc_service(int argc, char **argv)
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
 
-		case_RC_COMMON_GETOPT
-		}
+			case_RC_COMMON_GETOPT
+			    }
 	}
 
 	argc -= optind;

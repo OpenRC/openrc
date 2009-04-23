@@ -1,8 +1,8 @@
 /*
-   checkpath.c
-   Checks for the existance of a file or directory and creates it
-   if necessary. It can also correct its ownership.
-   */
+  checkpath.c
+  Checks for the existance of a file or directory and creates it
+  if necessary. It can also correct its ownership.
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -49,7 +49,8 @@
 
 extern const char *applet;
 
-static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
+static int
+do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 {
 	struct stat st;
 	int fd;
@@ -57,8 +58,9 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 	if (stat(path, &st)) {
 		if (file) {
 			einfo("%s: creating file", path);
-			if (! mode)
-				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+			if (!mode)
+				mode = S_IRUSR | S_IWUSR | S_IRGRP |
+				    S_IWGRP | S_IROTH;
 			if ((fd = open(path, O_CREAT, mode)) == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
@@ -66,17 +68,18 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 			close (fd);
 		} else {
 			einfo("%s: creating directory", path);
-			if (! mode)
+			if (!mode)
 				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 			if (mkdir(path, mode)) {
-				eerror("%s: mkdir: %s", applet, strerror (errno));
+				eerror("%s: mkdir: %s", applet,
+				    strerror (errno));
 				return -1;
 			}
 			mode = 0;
 		}
 	} else {
 		if ((file && S_ISDIR(st.st_mode)) ||
-		    (! file && ! S_ISDIR(st.st_mode)))
+		    (!file && !S_ISDIR(st.st_mode)))
 		{
 			if (file)
 				eerror("%s: is a directory", path);
@@ -106,8 +109,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
 	return 0;
 }
 
-static int parse_owner(struct passwd **user, struct group **group,
-			const char *owner)
+static int
+parse_owner(struct passwd **user, struct group **group, const char *owner)
 {
 	char *u = xstrdup (owner);
 	char *g = strchr (u, ':');
@@ -122,7 +125,7 @@ static int parse_owner(struct passwd **user, struct group **group,
 			*user = getpwuid((uid_t) id);
 		else
 			*user = getpwnam(u);
-		if (! *user)
+		if (*user == NULL)
 			retval = -1;
 	}
 
@@ -131,7 +134,7 @@ static int parse_owner(struct passwd **user, struct group **group,
 			*group = getgrgid((gid_t) id);
 		else
 			*group = getgrnam(g);
-		if (! *group)
+		if (*group == NULL)
 			retval = -1;
 	}
 
@@ -158,7 +161,8 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int checkpath(int argc, char **argv)
+int
+checkpath(int argc, char **argv)
 {
 	int opt;
 	uid_t uid = geteuid();
@@ -170,7 +174,7 @@ int checkpath(int argc, char **argv)
 	int retval = EXIT_SUCCESS;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
-				  longopts, (int *) 0)) != -1)
+		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 		case 'd':
@@ -181,14 +185,16 @@ int checkpath(int argc, char **argv)
 			break;
 		case 'm':
 			if (parse_mode(&mode, optarg) != 0)
-				eerrorx("%s: invalid mode `%s'", applet, optarg);
+				eerrorx("%s: invalid mode `%s'",
+				    applet, optarg);
 			break;
 		case 'o':
 			if (parse_owner(&pw, &gr, optarg) != 0)
-				eerrorx("%s: owner `%s' not found", applet, optarg);
+				eerrorx("%s: owner `%s' not found",
+				    applet, optarg);
 			break;
 
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT;
 		}
 	}
 

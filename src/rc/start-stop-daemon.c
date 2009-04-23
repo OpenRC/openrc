@@ -1,11 +1,11 @@
 /*
-   start-stop-daemon
-   Starts, stops, tests and signals daemons
+  start-stop-daemon
+  Starts, stops, tests and signals daemons
 
-   This is essentially a ground up re-write of Debians
-   start-stop-daemon for cleaner code and to integrate into our RC
-   system so we can monitor daemons a little.
-   */
+  This is essentially a ground up re-write of Debians
+  start-stop-daemon for cleaner code and to integrate into our RC
+  system so we can monitor daemons a little.
+*/
 
 /*
  * Copyright 2007-2009 Roy Marples <roy@marples.name>
@@ -75,9 +75,9 @@ static struct pam_conv conv = { NULL, NULL};
 
 /* Some libc implementations don't define this */
 #ifndef LIST_FOREACH_SAFE
-#define	LIST_FOREACH_SAFE(var, head, field, tvar)			\
-	for ((var) = LIST_FIRST((head));				\
-	     (var) && ((tvar) = LIST_NEXT((var), field), 1);		\
+#define	LIST_FOREACH_SAFE(var, head, field, tvar)			      \
+	for ((var) = LIST_FIRST((head));				      \
+	     (var) && ((tvar) = LIST_NEXT((var), field), 1);		      \
 	     (var) = (tvar))
 #endif
 
@@ -85,12 +85,12 @@ static struct pam_conv conv = { NULL, NULL};
 typedef struct scheduleitem
 {
 	enum
-	{
-		SC_TIMEOUT,
-		SC_SIGNAL,
-		SC_GOTO,
-		SC_FOREVER
-	} type;
+		{
+			SC_TIMEOUT,
+			SC_SIGNAL,
+			SC_GOTO,
+			SC_FOREVER
+		} type;
 	int value;
 	struct scheduleitem *gotoitem;
 	TAILQ_ENTRY(scheduleitem) entries;
@@ -103,7 +103,8 @@ static char *changeuser, *ch_root, *ch_dir;
 
 extern char **environ;
 
-static void free_schedulelist(void)
+static void
+free_schedulelist(void)
 {
 	SCHEDULEITEM *s1 = TAILQ_FIRST(&schedule);
 	SCHEDULEITEM *s2;
@@ -117,7 +118,8 @@ static void free_schedulelist(void)
 }
 
 #ifdef DEBUG_MEMORY
-static void cleanup(void)
+static void
+cleanup(void)
 {
 	free(changeuser);
 	free(nav);
@@ -125,7 +127,8 @@ static void cleanup(void)
 }
 #endif
 
-static int parse_signal(const char *sig)
+static int
+parse_signal(const char *sig)
 {
 	typedef struct signalpair
 	{
@@ -181,7 +184,8 @@ static int parse_signal(const char *sig)
 	/* NOTREACHED */
 }
 
-static SCHEDULEITEM *parse_schedule_item(const char *string)
+static SCHEDULEITEM *
+parse_schedule_item(const char *string)
 {
 	const char *after_hyph;
 	int sig;
@@ -195,21 +199,21 @@ static SCHEDULEITEM *parse_schedule_item(const char *string)
 		item->type = SC_TIMEOUT;
 		errno = 0;
 		if (sscanf(string, "%d", &item->value) != 1)
-			eerrorx("%s: invalid timeout value in schedule `%s'", applet,
-				string);
+			eerrorx("%s: invalid timeout value in schedule `%s'",
+			    applet, string);
 	} else if ((after_hyph = string + (string[0] == '-')) &&
-		   ((sig = parse_signal(after_hyph)) != -1))
+	    ((sig = parse_signal(after_hyph)) != -1))
 	{
 		item->type = SC_SIGNAL;
 		item->value = (int)sig;
-	}
-	else
+	} else
 		eerrorx("%s: invalid schedule item `%s'", applet, string);
 
 	return item;
 }
 
-static void parse_schedule(const char *string, int timeout)
+static void
+parse_schedule(const char *string, int timeout)
 {
 	char buffer[20];
 	const char *slash;
@@ -238,7 +242,8 @@ static void parse_schedule(const char *string, int timeout)
 		TAILQ_INSERT_TAIL(&schedule, item, entries);
 		if (string) {
 			if (sscanf(string, "%d", &item->value) != 1)
-				eerrorx("%s: invalid timeout value in schedule", applet);
+				eerrorx("%s: invalid timeout in schedule",
+				    applet);
 		} else
 			item->value = 5;
 
@@ -251,8 +256,9 @@ static void parse_schedule(const char *string, int timeout)
 		else
 			len = strlen(string);
 
-		if (len >= (ptrdiff_t) sizeof(buffer))
-			eerrorx("%s: invalid schedule item, far too long", applet);
+		if (len >= (ptrdiff_t)sizeof(buffer))
+			eerrorx("%s: invalid schedule item, far too long",
+			    applet);
 
 		memcpy(buffer, string, len);
 		buffer[len] = 0;
@@ -263,7 +269,7 @@ static void parse_schedule(const char *string, int timeout)
 		if (item->type == SC_FOREVER) {
 			if (repeatat)
 				eerrorx("%s: invalid schedule, `forever' "
-					"appears more than once", applet);
+				    "appears more than once", applet);
 
 			repeatat = item;
 			continue;
@@ -281,7 +287,8 @@ static void parse_schedule(const char *string, int timeout)
 	return;
 }
 
-static pid_t get_pid(const char *pidfile, bool quiet)
+static pid_t
+get_pid(const char *pidfile, bool quiet)
 {
 	FILE *fp;
 	pid_t pid;
@@ -291,7 +298,8 @@ static pid_t get_pid(const char *pidfile, bool quiet)
 
 	if ((fp = fopen(pidfile, "r")) == NULL) {
 		if (!quiet)
-			eerror("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
+			eerror("%s: fopen `%s': %s",
+			    applet, pidfile, strerror(errno));
 		return -1;
 	}
 
@@ -308,9 +316,10 @@ static pid_t get_pid(const char *pidfile, bool quiet)
 }
 
 /* return number of processed killed, -1 on error */
-static int do_stop(const char *exec, const char *const *argv,
-		   pid_t pid, uid_t uid,int sig,
-		   bool quiet, bool verbose, bool test)
+static int
+do_stop(const char *exec, const char *const *argv,
+    pid_t pid, uid_t uid,int sig,
+    bool quiet, bool verbose, bool test)
 {
 	RC_PIDLIST *pids;
 	RC_PID *pi;
@@ -330,19 +339,19 @@ static int do_stop(const char *exec, const char *const *argv,
 		if (test) {
 			if (!quiet)
 				einfo("Would send signal %d to PID %d",
-				      sig, pi->pid);
+				    sig, pi->pid);
 			nkilled++;
 		} else {
 			if (verbose)
 				ebegin("Sending signal %d to PID %d",
-				sig, pi->pid);
+				    sig, pi->pid);
 			errno = 0;
 			killed = (kill(pi->pid, sig) == 0 ||
-					errno == ESRCH ? true : false);
+			    errno == ESRCH ? true : false);
 			if (verbose)
 				eend(killed ? 0 : 1,
-				     "%s: failed to send signal %d to PID %d: %s",
-				     applet, sig, pi->pid, strerror(errno));
+				    "%s: failed to send signal %d to PID %d: %s",
+				    applet, sig, pi->pid, strerror(errno));
 			if (!killed) {
 				nkilled = -1;
 			} else {
@@ -357,9 +366,10 @@ static int do_stop(const char *exec, const char *const *argv,
 	return nkilled;
 }
 
-static int run_stop_schedule(const char *exec, const char *const *argv,
-			     const char *pidfile, uid_t uid,
-			     bool quiet, bool verbose, bool test)
+static int
+run_stop_schedule(const char *exec, const char *const *argv,
+    const char *pidfile, uid_t uid,
+    bool quiet, bool verbose, bool test)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
 	int nkilled = 0;
@@ -403,12 +413,12 @@ static int run_stop_schedule(const char *exec, const char *const *argv,
 		case SC_SIGNAL:
 			nrunning = 0;
 			nkilled = do_stop(exec, argv, pid, uid, item->value,
-					  quiet, verbose, test);
+			    quiet, verbose, test);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
 					if (! quiet)
 						eerror("%s: no matching "
-						       "processes found", applet);
+						    "processes found", applet);
 				}
 				return tkilled;
 			}
@@ -429,24 +439,26 @@ static int run_stop_schedule(const char *exec, const char *const *argv,
 
 			while (nloops) {
 				if ((nrunning = do_stop(exec, argv, pid,
-							uid, 0, true, false, true)) == 0)
+					    uid, 0, true, false, true)) == 0)
 					return 0;
 
 				if (nanosleep(&ts, NULL) == -1) {
 					if (errno == EINTR)
-						eerror("%s: caught an interrupt", applet);
+						eerror("%s: caught an"
+						    " interrupt", applet);
 					else {
 						eerror("%s: nanosleep: %s",
-						       applet, strerror(errno));
+						    applet, strerror(errno));
 						return 0;
 					}
 				}
-					nloops --;
+				nloops --;
 			}
 			break;
 
 		default:
-			eerror("%s: invalid schedule item `%d'", applet, item->type);
+			eerror("%s: invalid schedule item `%d'",
+			    applet, item->type);
 			return 0;
 		}
 
@@ -459,15 +471,18 @@ static int run_stop_schedule(const char *exec, const char *const *argv,
 
 	if (! quiet) {
 		if (nrunning == 1)
-			eerror("%s: %d process refused to stop", applet, nrunning);
+			eerror("%s: %d process refused to stop",
+			    applet, nrunning);
 		else
-			eerror("%s: %d process(es) refused to stop", applet, nrunning);
+			eerror("%s: %d process(es) refused to stop",
+			    applet, nrunning);
 	}
 
 	return -nrunning;
 }
 
-static void handle_signal(int sig)
+static void
+handle_signal(int sig)
 {
 	int status;
 	int serrno = errno;
@@ -492,7 +507,8 @@ static void handle_signal(int sig)
 		for (;;) {
 			if (waitpid(-1, &status, WNOHANG) < 0) {
 				if (errno != ECHILD)
-					eerror("%s: waitpid: %s", applet, strerror(errno));
+					eerror("%s: waitpid: %s",
+					    applet, strerror(errno));
 				break;
 			}
 		}
@@ -606,7 +622,8 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int start_stop_daemon(int argc, char **argv)
+int
+start_stop_daemon(int argc, char **argv)
 {
 	int devnull_fd = -1;
 #ifdef TIOCNOTTY
@@ -674,7 +691,7 @@ int start_stop_daemon(int argc, char **argv)
 	if ((tmp = getenv("SSD_NICELEVEL")))
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
 			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
-				applet, tmp);
+			    applet, tmp);
 
 	/* Get our user name and initial dir */
 	p = getenv("USER");
@@ -692,7 +709,7 @@ int start_stop_daemon(int argc, char **argv)
 	}
 
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
-				  (int *) 0)) != -1)
+		    (int *) 0)) != -1)
 		switch (opt) {
 		case 'K':  /* --stop */
 			stop = true;
@@ -700,7 +717,7 @@ int start_stop_daemon(int argc, char **argv)
 		case 'N':  /* --nice */
 			if (sscanf(optarg, "%d", &nicelevel) != 1)
 				eerrorx("%s: invalid nice level `%s'",
-					applet, optarg);
+				    applet, optarg);
 			break;
 
 		case 'R':  /* --retry <schedule>|<timeout> */
@@ -717,44 +734,44 @@ int start_stop_daemon(int argc, char **argv)
 
 		case 'u':  /* --user <username>|<uid> */
 		case 'c':  /* --chuid <username>|<uid> */
-			{
-				p = optarg;
-				tmp = strsep(&p, ":");
-				changeuser = xstrdup(tmp);
+		{
+			p = optarg;
+			tmp = strsep(&p, ":");
+			changeuser = xstrdup(tmp);
+			if (sscanf(tmp, "%d", &tid) != 1)
+				pw = getpwnam(tmp);
+			else
+				pw = getpwuid((uid_t)tid);
+
+			if (pw == NULL)
+				eerrorx("%s: user `%s' not found",
+				    applet, tmp);
+			uid = pw->pw_uid;
+			home = pw->pw_dir;
+			unsetenv("HOME");
+			if (pw->pw_dir)
+				setenv("HOME", pw->pw_dir, 1);
+			unsetenv("USER");
+			if (pw->pw_name)
+				setenv("USER", pw->pw_name, 1);
+			if (gid == 0)
+				gid = pw->pw_gid;
+
+			if (p) {
+				tmp = strsep (&p, ":");
 				if (sscanf(tmp, "%d", &tid) != 1)
-					pw = getpwnam(tmp);
+					gr = getgrnam(tmp);
 				else
-					pw = getpwuid((uid_t)tid);
+					gr = getgrgid((gid_t) tid);
 
-				if (pw == NULL)
-					eerrorx("%s: user `%s' not found",
-						applet, tmp);
-				uid = pw->pw_uid;
-				home = pw->pw_dir;
-				unsetenv("HOME");
-				if (pw->pw_dir)
-					setenv("HOME", pw->pw_dir, 1);
-				unsetenv("USER");
-				if (pw->pw_name)
-					setenv("USER", pw->pw_name, 1);
-				if (gid == 0)
-					gid = pw->pw_gid;
-
-				if (p) {
-					tmp = strsep (&p, ":");
-					if (sscanf(tmp, "%d", &tid) != 1)
-						gr = getgrnam(tmp);
-					else
-						gr = getgrgid((gid_t) tid);
-
-					if (gr == NULL)
-						eerrorx("%s: group `%s'"
-							" not found",
-							applet, tmp);
-					gid = gr->gr_gid;
-				}
+				if (gr == NULL)
+					eerrorx("%s: group `%s'"
+					    " not found",
+					    applet, tmp);
+				gid = gr->gr_gid;
 			}
-			break;
+		}
+		break;
 
 		case 'd':  /* --chdir /new/dir */
 			ch_dir = optarg;
@@ -771,7 +788,7 @@ int start_stop_daemon(int argc, char **argv)
 				gr = getgrgid((gid_t)tid);
 			if (gr == NULL)
 				eerrorx("%s: group `%s' not found",
-					applet, optarg);
+				    applet, optarg);
 			gid = gr->gr_gid;
 			break;
 
@@ -782,7 +799,7 @@ int start_stop_daemon(int argc, char **argv)
 		case 'k':
 			if (parse_mode(&numask, optarg))
 				eerrorx("%s: invalid mode `%s'",
-					applet, optarg);
+				    applet, optarg);
 			break;
 
 		case 'm':  /* --make-pidfile */
@@ -819,7 +836,7 @@ int start_stop_daemon(int argc, char **argv)
 		case 'w':
 			if (sscanf(optarg, "%d", &start_wait) != 1)
 				eerrorx("%s: `%s' not a number",
-					applet, optarg);
+				    applet, optarg);
 			break;
 		case 'x':  /* --exec <executable> */
 			exec = optarg;
@@ -834,7 +851,7 @@ int start_stop_daemon(int argc, char **argv)
 			break;
 
 			case_RC_COMMON_GETOPT
-		}
+			    }
 
 	endpwent();
 	argc -= optind;
@@ -873,25 +890,25 @@ int start_stop_daemon(int argc, char **argv)
 			sig = SIGTERM;
 		if (!*argv && !pidfile && !name && !uid)
 			eerrorx("%s: --stop needs --exec, --pidfile,"
-				" --name or --user", applet);
+			    " --name or --user", applet);
 		if (background)
 			eerrorx("%s: --background is only relevant with"
-				" --start", applet);
+			    " --start", applet);
 		if (makepidfile)
 			eerrorx("%s: --make-pidfile is only relevant with"
-				" --start", applet);
+			    " --start", applet);
 		if (redirect_stdout || redirect_stderr)
 			eerrorx("%s: --stdout and --stderr are only relevant"
-				" with --start", applet);
+			    " with --start", applet);
 	} else {
 		if (!exec)
 			eerrorx("%s: nothing to start", applet);
 		if (makepidfile && !pidfile)
 			eerrorx("%s: --make-pidfile is only relevant with"
-				" --pidfile", applet);
+			    " --pidfile", applet);
 		if ((redirect_stdout || redirect_stderr) && !background)
 			eerrorx("%s: --stdout and --stderr are only relevant"
-				" with --background", applet);
+			    " with --background", applet);
 	}
 
 	/* Expand ~ */
@@ -908,10 +925,10 @@ int start_stop_daemon(int argc, char **argv)
 			/* Full or relative path */
 			if (ch_root)
 				snprintf(exec_file, sizeof(exec_file),
-					 "%s/%s", ch_root, exec);
+				    "%s/%s", ch_root, exec);
 			else
 				snprintf(exec_file, sizeof(exec_file),
-					 "%s", exec);
+				    "%s", exec);
 		} else {
 			/* Something in $PATH */
 			p = tmp = xstrdup(getenv("PATH"));
@@ -919,11 +936,11 @@ int start_stop_daemon(int argc, char **argv)
 			while ((token = strsep(&p, ":"))) {
 				if (ch_root)
 					snprintf(exec_file, sizeof(exec_file),
-						 "%s/%s/%s",
-						 ch_root, token, exec);
+					    "%s/%s/%s",
+					    ch_root, token, exec);
 				else
 					snprintf(exec_file, sizeof(exec_file),
-						 "%s/%s", token, exec);
+					    "%s/%s", token, exec);
 				if (exists(exec_file))
 					break;
 				*exec_file = '\0';
@@ -933,7 +950,7 @@ int start_stop_daemon(int argc, char **argv)
 	}
 	if (start && !exists(exec_file)) {
 		eerror("%s: %s does not exist", applet,
-			*exec_file ? exec_file : exec);
+		    *exec_file ? exec_file : exec);
 		exit(EXIT_FAILURE);
 	}
 
@@ -984,7 +1001,7 @@ int start_stop_daemon(int argc, char **argv)
 		else
 			parse_schedule(NULL, sig);
 		i = run_stop_schedule(exec, (const char *const *)margv,
-				      pidfile, uid, quiet, verbose, test);
+		    pidfile, uid, quiet, verbose, test);
 
 		if (i < 0)
 			/* We failed to stop something */
@@ -1000,8 +1017,8 @@ int start_stop_daemon(int argc, char **argv)
 			unlink(pidfile);
 		if (svcname)
 			rc_service_daemon_set(svcname, exec,
-					      (const char *const *)argv,
-					      pidfile, false);
+			    (const char *const *)argv,
+			    pidfile, false);
 		exit(EXIT_SUCCESS);
 	}
 
@@ -1011,7 +1028,7 @@ int start_stop_daemon(int argc, char **argv)
 		pid = 0;
 
 	if (do_stop(exec, (const char * const *)margv, pid, uid,
-		    0, true, false, true) > 0)
+		0, true, false, true) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
 	if (test) {
@@ -1067,30 +1084,35 @@ int start_stop_daemon(int argc, char **argv)
 
 		if (nicelevel) {
 			if (setpriority(PRIO_PROCESS, mypid, nicelevel) == -1)
-				eerrorx("%s: setpritory %d: %s", applet, nicelevel,
-					 strerror(errno));
+				eerrorx("%s: setpritory %d: %s",
+				    applet, nicelevel,
+				    strerror(errno));
 		}
 
 		if (ch_root && chroot(ch_root) < 0)
-			eerrorx("%s: chroot `%s': %s", applet, ch_root, strerror(errno));
+			eerrorx("%s: chroot `%s': %s",
+			    applet, ch_root, strerror(errno));
 
 		if (ch_dir && chdir(ch_dir) < 0)
-			eerrorx("%s: chdir `%s': %s", applet, ch_dir, strerror(errno));
+			eerrorx("%s: chdir `%s': %s",
+			    applet, ch_dir, strerror(errno));
 
 		if (makepidfile && pidfile) {
 			fp = fopen(pidfile, "w");
 			if (! fp)
 				eerrorx("%s: fopen `%s': %s", applet, pidfile,
-					strerror(errno));
+				    strerror(errno));
 			fprintf(fp, "%d\n", mypid);
 			fclose(fp);
 		}
 
 #ifdef HAVE_PAM
 		if (changeuser != NULL)
-			pamr = pam_start("start-stop-daemon", changeuser, &conv, &pamh);
+			pamr = pam_start("start-stop-daemon",
+			    changeuser, &conv, &pamh);
 		else
-			pamr = pam_start("start-stop-daemon", "nobody", &conv, &pamh);
+			pamr = pam_start("start-stop-daemon",
+			    "nobody", &conv, &pamh);
 
 		if (pamr == PAM_SUCCESS)
 			pamr = pam_authenticate(pamh, PAM_SILENT);
@@ -1099,15 +1121,19 @@ int start_stop_daemon(int argc, char **argv)
 		if (pamr == PAM_SUCCESS)
 			pamr = pam_open_session(pamh, PAM_SILENT);
 		if (pamr != PAM_SUCCESS)
-			eerrorx("%s: pam error: %s", applet, pam_strerror(pamh, pamr));
+			eerrorx("%s: pam error: %s",
+			    applet, pam_strerror(pamh, pamr));
 #endif
 
 		if (gid && setgid(gid))
-			eerrorx("%s: unable to set groupid to %d", applet, gid);
+			eerrorx("%s: unable to set groupid to %d",
+			    applet, gid);
 		if (changeuser && initgroups(changeuser, gid))
-			eerrorx("%s: initgroups (%s, %d)", applet, changeuser, gid);
+			eerrorx("%s: initgroups (%s, %d)",
+			    applet, changeuser, gid);
 		if (uid && setuid(uid))
-			eerrorx ("%s: unable to set userid to %d", applet, uid);
+			eerrorx ("%s: unable to set userid to %d",
+			    applet, uid);
 
 		/* Close any fd's to the passwd database */
 		endpwent();
@@ -1137,8 +1163,8 @@ int start_stop_daemon(int argc, char **argv)
 
 		TAILQ_FOREACH(env, env_list, entries) {
 			if ((strncmp(env->value, "RC_", 3) == 0 &&
-			     strncmp(env->value, "RC_SERVICE=", 10) != 0 &&
-			     strncmp(env->value, "RC_SVCNAME=", 10) != 0) ||
+				strncmp(env->value, "RC_SERVICE=", 10) != 0 &&
+				strncmp(env->value, "RC_SVCNAME=", 10) != 0) ||
 			    strncmp(env->value, "SSD_NICELEVEL=", 14) == 0)
 			{
 				p = strchr(env->value, '=');
@@ -1179,16 +1205,20 @@ int start_stop_daemon(int argc, char **argv)
 		stdout_fd = devnull_fd;
 		stderr_fd = devnull_fd;
 		if (redirect_stdout) {
-			if ((stdout_fd = open(redirect_stdout, O_WRONLY | O_CREAT | O_APPEND,
-					      S_IRUSR | S_IWUSR)) == -1)
-				eerrorx("%s: unable to open the logfile for stdout `%s': %s",
-					applet, redirect_stdout, strerror(errno));
+			if ((stdout_fd = open(redirect_stdout,
+				    O_WRONLY | O_CREAT | O_APPEND,
+				    S_IRUSR | S_IWUSR)) == -1)
+				eerrorx("%s: unable to open the logfile"
+				    " for stdout `%s': %s",
+				    applet, redirect_stdout, strerror(errno));
 		}
 		if (redirect_stderr) {
-			if ((stderr_fd = open(redirect_stderr, O_WRONLY | O_CREAT | O_APPEND,
-					      S_IRUSR | S_IWUSR)) == -1)
-				eerrorx("%s: unable to open the logfile for stderr `%s': %s",
-					applet, redirect_stderr, strerror(errno));
+			if ((stderr_fd = open(redirect_stderr,
+				    O_WRONLY | O_CREAT | O_APPEND,
+				    S_IRUSR | S_IWUSR)) == -1)
+				eerrorx("%s: unable to open the logfile"
+				    " for stderr `%s': %s",
+				    applet, redirect_stderr, strerror(errno));
 		}
 
 		/* We don't redirect stdin as some daemons may need it */
@@ -1207,7 +1237,7 @@ int start_stop_daemon(int argc, char **argv)
 			pam_close_session(pamh, PAM_SILENT);
 #endif
 		eerrorx("%s: failed to exec `%s': %s",
-			applet, exec,strerror(errno));
+		    applet, exec,strerror(errno));
 	}
 
 	/* Parent process */
@@ -1220,13 +1250,15 @@ int start_stop_daemon(int argc, char **argv)
 		do {
 			pid = waitpid(spid, &i, 0);
 			if (pid < 1) {
-				eerror("waitpid %d: %s", spid, strerror(errno));
+				eerror("waitpid %d: %s",
+				    spid, strerror(errno));
 				return -1;
 			}
 		} while (!WIFEXITED(i) && !WIFSIGNALED(i));
 		if (!WIFEXITED(i) || WEXITSTATUS(i) != 0) {
 			if (!quiet)
-				eerrorx("%s: failed to start `%s'", applet, exec);
+				eerrorx("%s: failed to start `%s'",
+				    applet, exec);
 			exit(EXIT_FAILURE);
 		}
 		pid = spid;
@@ -1236,7 +1268,7 @@ int start_stop_daemon(int argc, char **argv)
 	   We do this as some badly written daemons fork and then barf */
 	if (start_wait == 0 &&
 	    ((p = getenv("SSD_STARTWAIT")) ||
-	     (p = rc_conf_value("rc_start_wait"))))
+		(p = rc_conf_value("rc_start_wait"))))
 	{
 		if (sscanf(p, "%u", &start_wait) != 1)
 			start_wait = 0;
@@ -1253,7 +1285,7 @@ int start_stop_daemon(int argc, char **argv)
 				eerror("%s: caught an interrupt", applet);
 			else {
 				eerror("%s: nanosleep: %s",
-				       applet, strerror(errno));
+				    applet, strerror(errno));
 				return 0;
 			}
 		}
@@ -1265,14 +1297,14 @@ int start_stop_daemon(int argc, char **argv)
 				pid = get_pid(pidfile, true);
 				if (pid == -1) {
 					eerrorx("%s: did not "
-						"create a valid"
-						" pid in `%s'",
-						applet, pidfile);
+					    "create a valid"
+					    " pid in `%s'",
+					    applet, pidfile);
 				}
 			} else
 				pid = 0;
 			if (do_stop(exec, (const char *const *)margv,
-				    pid, uid, 0, true, false, true) > 0)
+				pid, uid, 0, true, false, true) > 0)
 				alive = true;
 		}
 
@@ -1281,8 +1313,8 @@ int start_stop_daemon(int argc, char **argv)
 	}
 
 	if (svcname)
-		rc_service_daemon_set(svcname, exec, (const char *const *)margv,
-				      pidfile, true);
+		rc_service_daemon_set(svcname, exec,
+		    (const char *const *)margv, pidfile, true);
 
 	exit(EXIT_SUCCESS);
 	/* NOTREACHED */

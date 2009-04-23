@@ -1,7 +1,7 @@
 /*
-   librc-plugin.c
-   Simple plugin handler
-   */
+  librc-plugin.c
+  Simple plugin handler
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -62,7 +62,8 @@ typedef struct plugin
 TAILQ_HEAD(, plugin) plugins;
 
 #ifndef __FreeBSD__
-dlfunc_t dlfunc(void * __restrict handle, const char * __restrict symbol)
+dlfunc_t
+dlfunc(void * __restrict handle, const char * __restrict symbol)
 {
 	union {
 		void *d;
@@ -74,7 +75,8 @@ dlfunc_t dlfunc(void * __restrict handle, const char * __restrict symbol)
 }
 #endif
 
-void rc_plugin_load(void)
+void
+rc_plugin_load(void)
 {
 	DIR *dp;
 	struct dirent *d;
@@ -89,7 +91,7 @@ void rc_plugin_load(void)
 
 	TAILQ_INIT(&plugins);
 
-	if (! (dp = opendir(RC_PLUGINDIR)))
+	if (!(dp = opendir(RC_PLUGINDIR)))
 		return;
 
 	while ((d = readdir(dp))) {
@@ -98,14 +100,16 @@ void rc_plugin_load(void)
 
 		snprintf(file, sizeof(file), RC_PLUGINDIR "/%s",  d->d_name);
 		h = dlopen(file, RTLD_LAZY);
-		if (! h) {
+		if (h == NULL) {
 			eerror("dlopen: %s", dlerror());
 			continue;
 		}
 
-		fptr = (int (*)(RC_HOOK, const char*))dlfunc(h, RC_PLUGIN_HOOK);
-		if (! fptr) {
-			eerror("%s: cannot find symbol `%s'", d->d_name, RC_PLUGIN_HOOK);
+		fptr = (int (*)(RC_HOOK, const char*))
+		    dlfunc(h, RC_PLUGIN_HOOK);
+		if (fptr == NULL) {
+			eerror("%s: cannot find symbol `%s'",
+			    d->d_name, RC_PLUGIN_HOOK);
 			dlclose(h);
 		} else {
 			plugin = xmalloc(sizeof(*plugin));
@@ -118,7 +122,8 @@ void rc_plugin_load(void)
 	closedir(dp);
 }
 
-int rc_waitpid(pid_t pid)
+int
+rc_waitpid(pid_t pid)
 {
 	int status;
 
@@ -131,7 +136,8 @@ int rc_waitpid(pid_t pid)
 	return status;
 }
 
-void rc_plugin_run(RC_HOOK hook, const char *value)
+void
+rc_plugin_run(RC_HOOK hook, const char *value)
 {
 	PLUGIN *plugin;
 	struct sigaction sa;
@@ -234,7 +240,8 @@ void rc_plugin_run(RC_HOOK hook, const char *value)
 	}
 }
 
-void rc_plugin_unload(void)
+void
+rc_plugin_unload(void)
 {
 	PLUGIN *plugin = TAILQ_FIRST(&plugins);
 	PLUGIN *next;

@@ -1,8 +1,8 @@
 /*
-   rc-logger.c
-   Spawns a logging daemon to capture stdout and stderr so we can log
-   them to a buffer and/or files.
-   */
+  rc-logger.c
+  Spawns a logging daemon to capture stdout and stderr so we can log
+  them to a buffer and/or files.
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -46,11 +46,11 @@
 #include <unistd.h>
 
 #ifdef __linux__
-# include <pty.h>
+#  include <pty.h>
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
-# include <util.h>
+#  include <util.h>
 #else
-# include <libutil.h>
+#  include <libutil.h>
 #endif
 
 #include "einfo.h"
@@ -60,7 +60,7 @@
 
 #define LOGFILE RC_SVCDIR "/rc.log"
 #define PERMLOG "/var/log/rc.log"
-#define MOVELOG	"cat " LOGFILE " 2>/dev/null >>" PERMLOG " && " \
+#define MOVELOG	"cat " LOGFILE " 2>/dev/null >>" PERMLOG " && "		      \
 	"rm -f " LOGFILE
 
 static int signal_pipe[2] = { -1, -1 };
@@ -78,11 +78,12 @@ pid_t rc_logger_pid = -1;
 int rc_logger_tty = -1;
 bool rc_in_logger = false;
 
-static void write_log(int logfd, const char *buffer, size_t bytes)
+static void
+write_log(int logfd, const char *buffer, size_t bytes)
 {
 	const char *p = buffer;
 
-	while ((size_t) (p - buffer) < bytes) {
+	while ((size_t)(p - buffer) < bytes) {
 		switch (*p) {
 		case '\r':
 			goto cont;
@@ -110,7 +111,9 @@ cont:
 		p++;
 	}
 }
-static void write_time(FILE *f, const char *s)
+
+static void
+write_time(FILE *f, const char *s)
 {
 	time_t now = time(NULL);
 	struct tm *tm = localtime(&now);
@@ -119,7 +122,8 @@ static void write_time(FILE *f, const char *s)
 	fflush(f);
 }
 
-void rc_logger_close(void)
+void
+rc_logger_close(void)
 {
 	int sig = SIGTERM;
 
@@ -138,7 +142,8 @@ void rc_logger_close(void)
 		dup2(fd_stderr, STDERR_FILENO);
 }
 
-void rc_logger_open(const char *level)
+void
+rc_logger_open(const char *level)
 {
 	int slave_tty;
 	struct termios tt;
@@ -157,7 +162,7 @@ void rc_logger_open(const char *level)
 		eerrorx("pipe: %s", strerror(errno));
 	for (i = 0; i < 2; i++)
 		if ((s = fcntl (signal_pipe[i], F_GETFD, 0) == -1 ||
-		     fcntl (signal_pipe[i], F_SETFD, s | FD_CLOEXEC) == -1))
+			fcntl (signal_pipe[i], F_SETFD, s | FD_CLOEXEC) == -1))
 			eerrorx("fcntl: %s", strerror (errno));
 
 	if (isatty(STDOUT_FILENO)) {
@@ -202,36 +207,38 @@ void rc_logger_open(const char *level)
 		if (rc_logger_tty >= 0)
 			fd[1].fd = rc_logger_tty;
 		for (;;) {
-			if ((s = poll(fd, rc_logger_tty >= 0 ? 2 : 1, -1)) == -1) {
+			if ((s = poll(fd,
+				    rc_logger_tty >= 0 ? 2 : 1, -1)) == -1)
+			{
 				eerror("poll: %s", strerror(errno));
 				break;
-			}
+			} else if (s == 0)
+				continue;
 
-			if (s > 0) {
-				if (fd[1].revents & (POLLIN | POLLHUP)) {
-					memset(buffer, 0, BUFSIZ);
-					bytes = read(rc_logger_tty, buffer, BUFSIZ);
-					write(STDOUT_FILENO, buffer, bytes);
+			if (fd[1].revents & (POLLIN | POLLHUP)) {
+				memset(buffer, 0, BUFSIZ);
+				bytes = read(rc_logger_tty, buffer, BUFSIZ);
+				write(STDOUT_FILENO, buffer, bytes);
 
-					if (log)
-						write_log(fileno (log), buffer, bytes);
-					else {
-						if (logbuf_size - logbuf_len < bytes) {
-							logbuf_size += BUFSIZ * 10;
-							logbuf = xrealloc(logbuf,
-									  sizeof(char ) *
-									  logbuf_size);
-						}
-
-						memcpy(logbuf + logbuf_len, buffer, bytes);
-						logbuf_len += bytes;
+				if (log)
+					write_log(fileno (log), buffer, bytes);
+				else {
+					if (logbuf_size - logbuf_len < bytes) {
+						logbuf_size += BUFSIZ * 10;
+						logbuf = xrealloc(logbuf,
+						    sizeof(char ) *
+						    logbuf_size);
 					}
-				}
 
-				/* Only SIGTERMS signals come down this pipe */
-				if (fd[0].revents & (POLLIN | POLLHUP))
-					break;
+					memcpy(logbuf + logbuf_len,
+					    buffer, bytes);
+					logbuf_len += bytes;
+				}
 			}
+
+			/* Only SIGTERMS signals come down this pipe */
+			if (fd[0].revents & (POLLIN | POLLHUP))
+				break;
 		}
 		free(buffer);
 		if (logbuf) {
@@ -246,10 +253,9 @@ void rc_logger_open(const char *level)
 			fclose(log);
 		}
 
-		/* Try and cat our new logfile to a more permament location and then
-		 * punt it */
+		/* Try and cat our new logfile to a more permament location
+		   and then punt it */
 		system(MOVELOG);
-
 		exit(0);
 		/* NOTREACHED */
 

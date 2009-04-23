@@ -1,7 +1,7 @@
 /*
-   mountinfo.c
-   Obtains information about mounted filesystems.
-   */
+  mountinfo.c
+  Obtains information about mounted filesystems.
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -33,15 +33,15 @@
 #include <sys/param.h>
 
 #if defined(__DragonFly__) || defined(__FreeBSD__)
-# include <sys/ucred.h>
-# include <sys/mount.h>
-# define F_FLAGS f_flags
+#  include <sys/ucred.h>
+#  include <sys/mount.h>
+#  define F_FLAGS f_flags
 #elif defined(BSD)
-# include <sys/statvfs.h>
-# define statfs statvfs
-# define F_FLAGS f_flag
+#  include <sys/statvfs.h>
+#  define statfs statvfs
+#  define F_FLAGS f_flag
 #elif defined (__linux__)
-#include <mntent.h>
+#  include <mntent.h>
 #endif
 
 #include <errno.h>
@@ -84,9 +84,10 @@ struct args {
 	net_opts netdev;
 };
 
-static int process_mount(RC_STRINGLIST *list, struct args *args,
-			 char *from, char *to, char *fstype, char *options,
-			 int netdev)
+static int
+process_mount(RC_STRINGLIST *list, struct args *args,
+    char *from, char *to, char *fstype, char *options,
+    int netdev)
 {
 	char *p;
 	RC_STRING *s;
@@ -105,7 +106,7 @@ static int process_mount(RC_STRINGLIST *list, struct args *args,
 		if (netdev != 0)
 			return 1;
 	} else if (args->netdev == net_no &&
-		  (netdev != -1 || TAILQ_FIRST(args->mounts)))
+	    (netdev != -1 || TAILQ_FIRST(args->mounts)))
 	{
 		if (netdev != 1)
 			return 1;
@@ -134,8 +135,8 @@ static int process_mount(RC_STRINGLIST *list, struct args *args,
 
 	if (TAILQ_FIRST(args->mounts)) {
 		TAILQ_FOREACH(s, args->mounts, entries)
-			if (strcmp(s->value, to) == 0)
-				break;
+		    if (strcmp(s->value, to) == 0)
+			    break;
 		if (! s)
 			return -1;
 	}
@@ -211,7 +212,8 @@ static struct opt {
 	{ 0, NULL }
 };
 
-static RC_STRINGLIST *find_mounts(struct args *args)
+static RC_STRINGLIST *
+find_mounts(struct args *args)
 {
 	struct statfs *mnts;
 	int nmnts;
@@ -238,9 +240,11 @@ static RC_STRINGLIST *find_mounts(struct args *args)
 				if (! options)
 					options = xstrdup(o->o_name);
 				else {
-					l = strlen(options) + strlen(o->o_name) + 2;
+					l = strlen(options) +
+					    strlen(o->o_name) + 2;
 					tmp = xmalloc(sizeof (char) * l);
-					snprintf(tmp, l, "%s,%s", options, o->o_name);
+					snprintf(tmp, l, "%s,%s", options,
+					    o->o_name);
 					free(options);
 					options = tmp;
 				}
@@ -249,11 +253,11 @@ static RC_STRINGLIST *find_mounts(struct args *args)
 		}
 
 		process_mount(list, args,
-			      mnts[i].f_mntfromname,
-			      mnts[i].f_mntonname,
-			      mnts[i].f_fstypename,
-			      options,
-			      netdev);
+		    mnts[i].f_mntfromname,
+		    mnts[i].f_mntonname,
+		    mnts[i].f_fstypename,
+		    options,
+		    netdev);
 
 		free(options);
 		options = NULL;
@@ -263,7 +267,8 @@ static RC_STRINGLIST *find_mounts(struct args *args)
 }
 
 #elif defined (__linux__)
-static struct mntent *getmntfile(const char *file)
+static struct mntent *
+getmntfile(const char *file)
 {
 	struct mntent *ent = NULL;
 	FILE *fp;
@@ -277,7 +282,8 @@ static struct mntent *getmntfile(const char *file)
 	return ent;
 }
 
-static RC_STRINGLIST *find_mounts(struct args *args)
+static RC_STRINGLIST *
+find_mounts(struct args *args)
 {
 	FILE *fp;
 	char *buffer;
@@ -321,7 +327,8 @@ static RC_STRINGLIST *find_mounts(struct args *args)
 #  error "Operating system not supported!"
 #endif
 
-static regex_t *get_regex(const char *string)
+static regex_t *
+get_regex(const char *string)
 {
 	regex_t *reg = xmalloc(sizeof (*reg));
 	int result;
@@ -373,7 +380,8 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int mountinfo(int argc, char **argv)
+int
+mountinfo(int argc, char **argv)
 {
 	struct args args;
 	regex_t *point_regex = NULL;
@@ -387,10 +395,10 @@ int mountinfo(int argc, char **argv)
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv("EINFO_QUIET");
 
-#define DO_REG(_var) \
-	if (_var) free(_var); \
+#define DO_REG(_var)							      \
+	if (_var) free(_var);						      \
 	_var = get_regex(optarg);
-#define REG_FREE(_var) \
+#define REG_FREE(_var)							      \
 	if (_var) { regfree(_var); free(_var); }
 
 	memset (&args, 0, sizeof(args));
@@ -399,7 +407,7 @@ int mountinfo(int argc, char **argv)
 	args.mounts = rc_stringlist_new();
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
-				  longopts, (int *) 0)) != -1)
+		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 		case 'e':
@@ -442,13 +450,14 @@ int mountinfo(int argc, char **argv)
 			args.mount_type = mount_from;
 			break;
 
-		case_RC_COMMON_GETOPT
-		}
+			case_RC_COMMON_GETOPT
+			    }
 	}
 
 	while (optind < argc) {
 		if (argv[optind][0] != '/')
-			eerrorx("%s: `%s' is not a mount point", argv[0], argv[optind]);
+			eerrorx("%s: `%s' is not a mount point",
+			    argv[0], argv[optind]);
 		rc_stringlist_add(args.mounts, argv[optind++]);
 	}
 	nodes = find_mounts(&args);

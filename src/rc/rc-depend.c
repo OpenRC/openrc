@@ -1,7 +1,7 @@
 /*
-   rc-depend
-   rc service dependency and ordering
-   */
+  rc-depend
+  rc service dependency and ordering
+*/
 
 /*
  * Copyright 2007-2009 Roy Marples <roy@marples.name>
@@ -85,7 +85,7 @@ _rc_deptree_load(int force, int *regen) {
 			if (st.st_mtime < t) {
 				eerror("Clock skew detected with `%s'", file);
 				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
-				       "' to %s", ctime(&t));
+				    "' to %s", ctime(&t));
 				fp = fopen(RC_DEPTREE_SKEWED, "w");
 				if (fp != NULL) {
 					fprintf(fp, "%s\n", file);
@@ -144,7 +144,7 @@ rc_depend(int argc, char **argv)
 
 	types = rc_stringlist_new();
 	while ((opt = getopt_long(argc, argv, getoptstring,
-				  longopts, (int *) 0)) != -1)
+		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 		case 'a':
@@ -167,8 +167,8 @@ rc_depend(int argc, char **argv)
 			options &= RC_DEP_TRACE;
 			break;
 
-		case_RC_COMMON_GETOPT
-		}
+			case_RC_COMMON_GETOPT
+			    }
 	}
 
 	if (!(deptree = _rc_deptree_load(update, NULL)))
@@ -185,7 +185,7 @@ rc_depend(int argc, char **argv)
 		depends = rc_deptree_depends(deptree, NULL, list, runlevel, 0);
 		if (!depends && errno == ENOENT)
 			eerror("no dependency info for service `%s'",
-			       argv[optind]);
+			    argv[optind]);
 		else
 			rc_stringlist_add(services, argv[optind]);
 
@@ -210,7 +210,7 @@ rc_depend(int argc, char **argv)
 	}
 
 	depends = rc_deptree_depends(deptree, types, services,
-				     runlevel, options);
+	    runlevel, options);
 
 	if (TAILQ_FIRST(depends)) {
 		TAILQ_FOREACH(s, depends, entries) {

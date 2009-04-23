@@ -1,7 +1,7 @@
 /*
-   rc-misc.c
-   rc misc functions
-   */
+  rc-misc.c
+  rc misc functions
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -31,7 +31,8 @@
 
 #include "librc.h"
 
-bool rc_yesno(const char *value)
+bool
+rc_yesno(const char *value)
 {
 	if (!value) {
 		errno = ENOENT;
@@ -54,7 +55,8 @@ bool rc_yesno(const char *value)
 }
 librc_hidden_def(rc_yesno)
 
-ssize_t rc_getline(char **line, size_t *len, FILE *fp)
+ssize_t
+rc_getline(char **line, size_t *len, FILE *fp)
 {
 	char *p;
 	size_t last = 0;
@@ -78,7 +80,8 @@ ssize_t rc_getline(char **line, size_t *len, FILE *fp)
 }
 librc_hidden_def(rc_getline)
 
-RC_STRINGLIST *rc_config_list(const char *file)
+RC_STRINGLIST *
+rc_config_list(const char *file)
 {
 	FILE *fp;
 	char *buffer = NULL;
@@ -116,7 +119,8 @@ RC_STRINGLIST *rc_config_list(const char *file)
 }
 librc_hidden_def(rc_config_list)
 
-RC_STRINGLIST *rc_config_load(const char *file)
+RC_STRINGLIST *
+rc_config_load(const char *file)
 {
 	RC_STRINGLIST *list;
 	RC_STRINGLIST *config;
@@ -172,7 +176,7 @@ RC_STRINGLIST *rc_config_load(const char *file)
 		TAILQ_FOREACH(cline, config, entries) {
 			p = strchr(cline->value, '=');
 			if (p && strncmp(entry, cline->value,
-					  (size_t)(p - cline->value)) == 0)
+				(size_t)(p - cline->value)) == 0)
 			{
 				/* We have a match now - to save time we directly replace it */
 				free(cline->value);
@@ -194,7 +198,8 @@ RC_STRINGLIST *rc_config_load(const char *file)
 }
 librc_hidden_def(rc_config_load)
 
-char *rc_config_value(RC_STRINGLIST *list, const char *entry)
+char *
+rc_config_value(RC_STRINGLIST *list, const char *entry)
 {
 	RC_STRING *line;
 	char *p;

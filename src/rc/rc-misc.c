@@ -1,7 +1,7 @@
 /*
-   librc-misc.c
-   rc misc functions
-   */
+  librc-misc.c
+  rc misc functions
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -34,8 +34,8 @@
 #include <sys/utsname.h>
 
 #ifdef __linux__
-#include <sys/sysinfo.h>
-#include <regex.h>
+#  include <sys/sysinfo.h>
+#  include <regex.h>
 #endif
 
 #include <ctype.h>
@@ -244,7 +244,8 @@ env_config(void)
 	if (sys)
 		setenv("RC_SYS", sys, 1);
 
-	/* Some scripts may need to take a different code path if Linux/FreeBSD, etc
+	/* Some scripts may need to take a different code path if
+	   Linux/FreeBSD, etc
 	   To save on calling uname, we store it in an environment variable */
 	if (uname(&uts) == 0)
 		setenv("RC_UNAME", uts.sysname, 1);
@@ -346,7 +347,7 @@ exec_service(const char *service, const char *arg)
 		/* Safe to run now */
 		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
 		fprintf(stderr, "unable to exec `%s': %s\n",
-			file, strerror(errno));
+		    file, strerror(errno));
 		svc_unlock(basename_c(service), fd);
 		_exit(EXIT_FAILURE);
 	}

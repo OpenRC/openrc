@@ -1,10 +1,10 @@
 /*
-   rc-applets.c
+  rc-applets.c
 
-   Handle multicall applets for use in our init scripts.
-   Basically this makes us a lot faster for the most part, and removes
-   any shell incompatabilities we might otherwise encounter.
-   */
+  Handle multicall applets for use in our init scripts.
+  Basically this makes us a lot faster for the most part, and removes
+  any shell incompatabilities we might otherwise encounter.
+*/
 
 /*
  * Copyright 2007-2009 Roy Marples <roy@marples.name>
@@ -60,7 +60,8 @@
 /* Applet is first parsed in rc.c - no point in doing it again */
 extern const char *applet;
 
-static int syslog_decode(char *name, CODE *codetab)
+static int
+syslog_decode(char *name, CODE *codetab)
 {
 	CODE *c;
 
@@ -74,7 +75,8 @@ static int syslog_decode(char *name, CODE *codetab)
 	return -1;
 }
 
-static int do_e(int argc, char **argv)
+static int
+do_e(int argc, char **argv)
 {
 	int retval = EXIT_SUCCESS;
 	int i;
@@ -93,12 +95,12 @@ static int do_e(int argc, char **argv)
 
 	if (strcmp(applet, "eval_ecolors") == 0) {
 		printf("GOOD='%s'\nWARN='%s'\nBAD='%s'\nHILITE='%s'\nBRACKET='%s'\nNORMAL='%s'\n",
-			ecolor(ECOLOR_GOOD),
-			ecolor(ECOLOR_WARN),
-			ecolor(ECOLOR_BAD),
-			ecolor(ECOLOR_HILITE),
-			ecolor(ECOLOR_BRACKET),
-			ecolor(ECOLOR_NORMAL));
+		    ecolor(ECOLOR_GOOD),
+		    ecolor(ECOLOR_WARN),
+		    ecolor(ECOLOR_BAD),
+		    ecolor(ECOLOR_HILITE),
+		    ecolor(ECOLOR_BRACKET),
+		    ecolor(ECOLOR_NORMAL));
 		exit(EXIT_SUCCESS);
 	}
 
@@ -120,9 +122,10 @@ static int do_e(int argc, char **argv)
 				argv++;
 			}
 		} else if (strcmp(applet, "esyslog") == 0 ||
-			   strcmp(applet, "elog") == 0) {
+		    strcmp(applet, "elog") == 0) {
 			p = strchr(argv[0], '.');
-			if (!p || (level = syslog_decode(p + 1, prioritynames)) == -1)
+			if (!p ||
+			    (level = syslog_decode(p + 1, prioritynames)) == -1)
 				eerrorx("%s: invalid log level `%s'", applet, argv[0]);
 
 			if (argc < 3)
@@ -160,7 +163,7 @@ static int do_e(int argc, char **argv)
 				if (timercmp(&now, &stop, <))
 					continue;
 				eendv(EXIT_FAILURE,
-				      "timed out waiting for %s", argv[i]);
+				    "timed out waiting for %s", argv[i]);
 				return EXIT_FAILURE;
 			}
 			eendv(EXIT_SUCCESS, NULL);
@@ -251,7 +254,8 @@ static int do_e(int argc, char **argv)
 	return retval;
 }
 
-static int do_service(int argc, char **argv)
+static int
+do_service(int argc, char **argv)
 {
 	bool ok = false;
 	char *service;
@@ -263,7 +267,7 @@ static int do_service(int argc, char **argv)
 	else
 		service = getenv("RC_SVCNAME");
 
-	if (! service || *service == '\0')
+	if (service == NULL || *service == '\0')
 		eerrorx("%s: no service specified", applet);
 
 	if (strcmp(applet, "service_started") == 0)
@@ -297,15 +301,16 @@ static int do_service(int argc, char **argv)
 			
 	} else if (strcmp(applet, "service_crashed") == 0) {
 		ok = (_rc_can_find_pids() &&
-		      rc_service_daemons_crashed(service) &&
-		      errno != EACCES);
+		    rc_service_daemons_crashed(service) &&
+		    errno != EACCES);
 	} else
 		eerrorx("%s: unknown applet", applet);
 
 	return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-static int do_mark_service(int argc, char **argv)
+static int
+do_mark_service(int argc, char **argv)
 {
 	bool ok = false;
 	char *svcname = getenv("RC_SVCNAME");
@@ -320,7 +325,7 @@ static int do_mark_service(int argc, char **argv)
 	else
 		service = getenv("RC_SVCNAME");
 
-	if (! service || *service == '\0')
+	if (service == NULL || *service == '\0')
 		eerrorx("%s: no service specified", applet);
 
 	if (strcmp(applet, "mark_service_started") == 0)
@@ -340,22 +345,22 @@ static int do_mark_service(int argc, char **argv)
 	else
 		eerrorx("%s: unknown applet", applet);
 
-	/* If we're marking ourselves then we need to inform our parent runscript
-	   process so they do not mark us based on our exit code */
+	/* If we're marking ourselves then we need to inform our parent
+	   runscript process so they do not mark us based on our exit code */
 	if (ok && svcname && strcmp(svcname, service) == 0) {
 		runscript_pid = getenv("RC_RUNSCRIPT_PID");
 		if (runscript_pid && sscanf(runscript_pid, "%d", &pid) == 1)
 			if (kill(pid, SIGHUP) != 0)
 				eerror("%s: failed to signal parent %d: %s",
-					applet, pid, strerror(errno));
+				    applet, pid, strerror(errno));
 
 		/* Remove the exclusive time test. This ensures that it's not
 		   in control as well */
 		l = strlen(RC_SVCDIR "/exclusive") + strlen(svcname) +
-			strlen(runscript_pid) + 4;
+		    strlen(runscript_pid) + 4;
 		mtime = xmalloc(l);
 		snprintf(mtime, l, RC_SVCDIR "/exclusive/%s.%s",
-			 svcname, runscript_pid);
+		    svcname, runscript_pid);
 		if (exists(mtime) && unlink(mtime) != 0)
 			eerror("%s: unlink: %s", applet, strerror(errno));
 		free(mtime);
@@ -364,13 +369,14 @@ static int do_mark_service(int argc, char **argv)
 	return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-static int do_value(int argc, char **argv)
+static int
+do_value(int argc, char **argv)
 {
 	bool ok = false;
 	char *service = getenv("RC_SVCNAME");
 	char *option;
 
-	if (! service)
+	if (service == NULL)
 		eerrorx("%s: no service specified", applet);
 
 	if (argc < 2 || ! argv[1] || *argv[1] == '\0')
@@ -386,7 +392,7 @@ static int do_value(int argc, char **argv)
 			ok = true;
 		}
 	} else if (strcmp(applet, "service_set_value") == 0 ||
-		   strcmp(applet, "save_options") == 0)
+	    strcmp(applet, "save_options") == 0)
 		ok = rc_service_value_set(service, argv[1], argv[2]);
 	else
 		eerrorx("%s: unknown applet", applet);
@@ -394,7 +400,8 @@ static int do_value(int argc, char **argv)
 	return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-static int do_shell_var(int argc, char **argv)
+static int
+do_shell_var(int argc, char **argv)
 {
 	int i;
 	char *p;
@@ -402,10 +409,8 @@ static int do_shell_var(int argc, char **argv)
 
 	for (i = 1; i < argc; i++) {
 		p = argv[i];
-
 		if (i != 1)
 			putchar(' ');
-
 		while (*p) {
 			c = (unsigned char)*p++;
 			if (! isalnum(c))
@@ -414,11 +419,11 @@ static int do_shell_var(int argc, char **argv)
 		}
 	}
 	putchar('\n');
-
 	return EXIT_SUCCESS;
 }
 
-void run_applets(int argc, char **argv)
+void
+run_applets(int argc, char **argv)
 {
 	int i = 2;
 	char *p;
@@ -436,7 +441,7 @@ void run_applets(int argc, char **argv)
 	else if (strcmp(applet, "rc-status") == 0)
 		exit(rc_status(argc, argv));
 	else if (strcmp(applet, "rc-update") == 0 ||
-		 strcmp(applet, "update-rc") == 0)
+	    strcmp(applet, "update-rc") == 0)
 		exit(rc_update(argc, argv));
 	else if (strcmp(applet, "runscript") == 0)
 		exit(runscript(argc, argv));
@@ -498,7 +503,7 @@ void run_applets(int argc, char **argv)
 		if (p && sscanf(p, "%d", &pid) == 1) {
 			if (kill(pid, SIGUSR1) != 0)
 				eerrorx("rc-abort: failed to signal parent %d: %s",
-					 pid, strerror(errno));
+				    pid, strerror(errno));
 			exit(EXIT_SUCCESS);
 		}
 		exit(EXIT_FAILURE);

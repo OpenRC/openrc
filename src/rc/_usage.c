@@ -25,15 +25,16 @@
  */
 
 #if lint
-# define _noreturn
+#  define _noreturn
 #endif
 #if __GNUC__ > 2 || defined(__INTEL_COMPILER)
-# define _noreturn __attribute__ ((__noreturn__))
+#  define _noreturn __attribute__ ((__noreturn__))
 #else
-# define _noreturn
+#  define _noreturn
 #endif
 
-_noreturn static void usage(int exit_status)
+_noreturn static void
+usage(int exit_status)
 {
 	const char * const has_arg[] = { "", "<arg>", "[arg]" };
 	int i;
@@ -53,7 +54,7 @@ _noreturn static void usage(int exit_status)
 	printf("\n\nOptions: [" getoptstring "]\n");
 	for (i = 0; longopts[i].name; ++i) {
 		len = printf("  -%c, --%s %s", longopts[i].val, longopts[i].name,
-				 has_arg[longopts[i].has_arg]);
+		    has_arg[longopts[i].has_arg]);
 
 		lo = p = xstrdup(longopts_help[i]);
 		while ((token = strsep(&p, "\n"))) {

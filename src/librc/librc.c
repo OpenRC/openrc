@@ -1,7 +1,7 @@
 /*
-   librc
-   core RC functions
-   */
+  librc
+  core RC functions
+*/
 
 /*
  * Copyright 2007-2008 Roy Marples <roy@marples.name>
@@ -33,13 +33,13 @@ const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "librc.h"
 #ifdef __FreeBSD__
-#include <sys/sysctl.h>
+#  include <sys/sysctl.h>
 #endif
 
 #define RC_RUNLEVEL	RC_SVCDIR "/softlevel"
 
 #ifndef S_IXUGO
-# define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
+#  define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
 #endif
 
 /* File stream used for plugins to write environ vars to */
@@ -88,7 +88,7 @@ ls_dir(const char *dir, int options)
 				 * This is important as a service maybe in a
 				 * runlevel, but could have been removed. */
 				snprintf(file, sizeof(file), "%s/%s",
-					 dir, d->d_name);
+				    dir, d->d_name);
 				r = stat(file, &buf);
 				if (r != 0)
 					continue;
@@ -130,7 +130,7 @@ rm_dir(const char *pathname, bool top)
 		    strcmp(d->d_name, "..") != 0)
 		{
 			snprintf(file, sizeof(file),
-				 "%s/%s", pathname, d->d_name);
+			    "%s/%s", pathname, d->d_name);
 			if (stat(file, &s) != 0) {
 				retval = false;
 				break;
@@ -229,12 +229,12 @@ rc_sys(void)
 	} else if (file_regex("/proc/cpuinfo", "UML"))
 		return RC_SYS_UML;
 	else if (file_regex("/proc/self/status",
-			    "(s_context|VxID):[[:space:]]*[1-9]"))
+		"(s_context|VxID):[[:space:]]*[1-9]"))
 		return RC_SYS_VSERVER;
 	else if (exists("/proc/vz/veinfo") && !exists("/proc/vz/version"))
 		return RC_SYS_OPENVZ;
 	else if (file_regex("/proc/self/status",
-			    "envID:[[:space:]]*[1-9]"))
+		"envID:[[:space:]]*[1-9]"))
 		return RC_SYS_OPENVZ; /* old test */
 #endif
 
@@ -349,7 +349,7 @@ rc_service_resolve(const char *service)
 	snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s", "started", service);
 	if (lstat(file, &buf) || ! S_ISLNK(buf.st_mode)) {
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			 "inactive", service);
+		    "inactive", service);
 		if (lstat(file, &buf) || ! S_ISLNK(buf.st_mode))
 			*file = '\0';
 	}
@@ -497,7 +497,7 @@ rc_service_in_runlevel(const char *service, const char *runlevel)
 	char file[PATH_MAX];
 
 	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s",
-		 runlevel, basename_c(service));
+	    runlevel, basename_c(service));
 	return exists(file);
 }
 librc_hidden_def(rc_service_in_runlevel)
@@ -528,7 +528,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 		}
 
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			 rc_parse_service_state(state), base);
+		    rc_parse_service_state(state), base);
 		if (exists(file))
 			unlink(file);
 		i = symlink(init, file);
@@ -549,22 +549,22 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 		s = rc_service_state_names[i].state;
 
 		if ((s != skip_state &&
-		     s != RC_SERVICE_STOPPED &&
-		     s != RC_SERVICE_HOTPLUGGED &&
-		     s != RC_SERVICE_SCHEDULED) &&
+			s != RC_SERVICE_STOPPED &&
+			s != RC_SERVICE_HOTPLUGGED &&
+			s != RC_SERVICE_SCHEDULED) &&
 		    (! skip_wasinactive || s != RC_SERVICE_WASINACTIVE))
 		{
 			snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-				 rc_service_state_names[i].name, base);
+			    rc_service_state_names[i].name, base);
 			if (exists(file)) {
 				if ((state == RC_SERVICE_STARTING ||
-				     state == RC_SERVICE_STOPPING) &&
+					state == RC_SERVICE_STOPPING) &&
 				    s == RC_SERVICE_INACTIVE)
 				{
 					snprintf(was, sizeof(was),
-						 RC_SVCDIR "/%s/%s",
-						 rc_parse_service_state(RC_SERVICE_WASINACTIVE),
-						 base);
+					    RC_SVCDIR "/%s/%s",
+					    rc_parse_service_state(RC_SERVICE_WASINACTIVE),
+					    base);
 					if (symlink(init, was) == -1)
 						return false;
 					skip_wasinactive = true;
@@ -583,18 +583,18 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 	    state == RC_SERVICE_INACTIVE)
 	{
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			 "exclusive", base);
+		    "exclusive", base);
 		unlink(file);
 	}
 
 	/* Remove any options and daemons the service may have stored */
 	if (state == RC_SERVICE_STOPPED) {
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			 "options", base);
+		    "options", base);
 		rm_dir(file, true);
 
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			 "daemons", base);
+		    "daemons", base);
 		rm_dir(file, true);
 
 		rc_service_schedule_clear(service);
@@ -606,7 +606,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 		dirs = ls_dir(file, 0);
 		TAILQ_FOREACH(dir, dirs, entries) {
 			snprintf(was, sizeof(was), "%s/%s/%s",
-				 file, dir->value, base);
+			    file, dir->value, base);
 			unlink(was);
 
 			/* Try and remove the dir; we don't care about errors */
@@ -634,7 +634,7 @@ rc_service_state(const char *service)
 
 	for (i = 0; rc_service_state_names[i].name; i++) {
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			 rc_service_state_names[i].name, base);
+		    rc_service_state_names[i].name, base);
 		if (exists(file)) {
 			if (rc_service_state_names[i].state <= 0x10)
 				state = rc_service_state_names[i].state;
@@ -647,8 +647,8 @@ rc_service_state(const char *service)
 		dirs = ls_dir(RC_SVCDIR "/scheduled", 0);
 		TAILQ_FOREACH (dir, dirs, entries) {
 			snprintf(file, sizeof(file),
-				 RC_SVCDIR "/scheduled/%s/%s",
-				 dir->value, service);
+			    RC_SVCDIR "/scheduled/%s/%s",
+			    dir->value, service);
 			if (exists(file)) {
 				state |= RC_SERVICE_SCHEDULED;
 				break;
@@ -670,7 +670,7 @@ rc_service_value_get(const char *service, const char *option)
 	char file[PATH_MAX];
 
 	snprintf(file, sizeof(file), RC_SVCDIR "/options/%s/%s",
-		 service, option);
+	    service, option);
 	if ((fp = fopen(file, "r"))) {
 		rc_getline(&line, &len, fp);
 		fclose(fp);
@@ -682,7 +682,7 @@ librc_hidden_def(rc_service_value_get)
 
 bool
 rc_service_value_set(const char *service, const char *option,
-		     const char *value)
+    const char *value)
 {
 	FILE *fp;
 	char file[PATH_MAX];
@@ -716,13 +716,13 @@ rc_service_schedule_start(const char *service, const char *service_to_start)
 		return false;
 
 	p += snprintf(file, sizeof(file), RC_SVCDIR "/scheduled/%s",
-		      basename_c(service));
+	    basename_c(service));
 	if (mkdir(file, 0755) != 0 && errno != EEXIST)
 		return false;
 
 	init = rc_service_resolve(service_to_start);
 	snprintf(p, sizeof(file) - (p - file),
-		 "/%s", basename_c(service_to_start));
+	    "/%s", basename_c(service_to_start));
 	retval = (exists(file) || symlink(init, file) == 0);
 	free(init);
 	return retval;
@@ -735,7 +735,7 @@ rc_service_schedule_clear(const char *service)
 	char dir[PATH_MAX];
 
 	snprintf(dir, sizeof(dir), RC_SVCDIR "/scheduled/%s",
-		 basename_c(service));
+	    basename_c(service));
 	if (!rm_dir(dir, true) && errno == ENOENT)
 		return true;
 	return false;
@@ -791,7 +791,7 @@ rc_services_in_state(RC_SERVICE state)
 	char *p = dir;
 
 	p += snprintf(dir, sizeof(dir), RC_SVCDIR "/%s",
-		      rc_parse_service_state(state));
+	    rc_parse_service_state(state));
 
 	if (state != RC_SERVICE_SCHEDULED)
 		return ls_dir(dir, LS_INITD);
@@ -837,7 +837,7 @@ rc_service_add(const char *runlevel, const char *service)
 
 	i = init = rc_service_resolve(service);
 	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s",
-		 runlevel, basename_c(service));
+	    runlevel, basename_c(service));
 
 	/* We need to ensure that only things in /etc/init.d are added
 	 * to the boot runlevel */
@@ -868,7 +868,7 @@ rc_service_delete(const char *runlevel, const char *service)
 	char file[PATH_MAX];
 
 	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s",
-		 runlevel, basename_c(service));
+	    runlevel, basename_c(service));
 	if (unlink(file) == 0)
 		return true;
 	return false;
@@ -885,7 +885,7 @@ rc_services_scheduled_by(const char *service)
 
 	TAILQ_FOREACH (dir, dirs, entries) {
 		snprintf(file, sizeof(file), RC_SVCDIR "/scheduled/%s/%s",
-			 dir->value, service);
+		    dir->value, service);
 		if (exists(file))
 			rc_stringlist_add(list, file);
 	}
@@ -900,7 +900,7 @@ rc_services_scheduled(const char *service)
 	char dir[PATH_MAX];
 
 	snprintf(dir, sizeof(dir), RC_SVCDIR "/scheduled/%s",
-		 basename_c(service));
+	    basename_c(service));
 	return ls_dir(dir, LS_INITD);
 }
 librc_hidden_def(rc_services_scheduled)

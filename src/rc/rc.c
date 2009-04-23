@@ -44,7 +44,7 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <sys/wait.h>
 
 #ifdef __linux__
-# include <asm/setup.h> /* for COMMAND_LINE_SIZE */
+#  include <asm/setup.h> /* for COMMAND_LINE_SIZE */
 #endif
 
 #include <errno.h>
@@ -108,17 +108,17 @@ clean_failed(void)
 		while ((d = readdir(dp))) {
 			if (d->d_name[0] == '.' &&
 			    (d->d_name[1] == '\0' ||
-			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
+				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
 			l = strlen(RC_SVCDIR "/failed/") +
-				strlen(d->d_name) + 1;
+			    strlen(d->d_name) + 1;
 			path = xmalloc(sizeof(char) * l);
 			snprintf(path, l, RC_SVCDIR "/failed/%s", d->d_name);
 			if (path) {
 				if (unlink(path))
 					eerror("%s: unlink `%s': %s",
-					       applet, path, strerror(errno));
+					    applet, path, strerror(errno));
 				free(path);
 			}
 		}
@@ -217,8 +217,8 @@ read_key(bool block)
 	if (!isatty(fd))
 		return false;
 
-	/* Now save our terminal settings. We need to restore them at exit as we
-	 * will be changing it for non-blocking reads for Interactive */
+	/* Now save our terminal settings. We need to restore them at exit as
+	   we will be changing it for non-blocking reads for Interactive */
 	if (!termios_orig) {
 		termios_orig = xmalloc(sizeof(*termios_orig));
 		tcgetattr(fd, termios_orig);
@@ -301,7 +301,7 @@ run_program(const char *prog)
 
 		execl(prog, prog, (char *) NULL);
 		eerror("%s: unable to exec `%s': %s", applet, prog,
-		       strerror(errno));
+		    strerror(errno));
 		_exit(EXIT_FAILURE);
 	}
 
@@ -323,7 +323,7 @@ sulogin(bool cont)
 	{
 		execl("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
 		eerrorx("%s: unable to exec `/sbin/halt': %s",
-			applet, strerror(errno));
+		    applet, strerror(errno));
 	}
 #endif
 	if (!cont) {
@@ -343,7 +343,7 @@ single_user(void)
 	rc_logger_close();
 	execl(SHUTDOWN, SHUTDOWN, "now", (char *) NULL);
 	eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
-		 applet, strerror(errno));
+	    applet, strerror(errno));
 }
 
 static bool
@@ -359,7 +359,7 @@ set_krunlevel(const char *level)
 		if (exists(RC_KRUNLEVEL) &&
 		    unlink(RC_KRUNLEVEL) != 0)
 			eerror("unlink `%s': %s", RC_KRUNLEVEL,
-			       strerror(errno));
+			    strerror(errno));
 		return false;
 	}
 
@@ -409,11 +409,11 @@ remove_pid(pid_t pid)
 	RC_PID *p;
 
 	LIST_FOREACH(p, &service_pids, entries)
-		if (p->pid == pid) {
-			LIST_REMOVE(p, entries);
-			free(p);
-			return;
-		}
+	    if (p->pid == pid) {
+		    LIST_REMOVE(p, entries);
+		    free(p);
+		    return;
+	    }
 }
 
 static void
@@ -484,7 +484,7 @@ handle_signal(int sig)
 
 		/* Kill any running services we have started */
 		LIST_FOREACH(pi, &service_pids, entries)
-			kill(pi->pid, SIGTERM);
+		    kill(pi->pid, SIGTERM);
 
 		/* Notify plugins we are aborting */
 		rc_plugin_run(RC_HOOK_ABORT, NULL);
@@ -514,15 +514,15 @@ do_sysinit()
 
 	uname(&uts);
 	printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
-	       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
-	       ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
+	    ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
+	    ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
 #ifdef BRANDING
 	printf(BRANDING " (%s)", uts.machine);
 #else
 	printf("%s %s (%s)",
-	       uts.sysname,
-	       uts.release,
-	       uts.machine);
+	    uts.sysname,
+	    uts.release,
+	    uts.machine);
 #endif
 
 	if ((sys = rc_sys()))
@@ -533,7 +533,7 @@ do_sysinit()
 	if (!rc_yesno(getenv ("EINFO_QUIET")) &&
 	    rc_conf_yesno("rc_interactive"))
 		printf("Press %sI%s to enter interactive boot mode\n\n",
-		       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
+		    ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
 
 	setenv("RC_RUNLEVEL", RC_LEVEL_SYSINIT, 1);
 	run_program(INITSH);
@@ -611,13 +611,14 @@ do_stop_services(const char *newlevel, bool parallel)
 		if (!svc1) {
 			tmplist = rc_stringlist_new();
 			rc_stringlist_add(tmplist, service->value);
-			deporder = rc_deptree_depends(deptree, types_n, tmplist,
-						      newlevel ? newlevel : runlevel,
-						      RC_DEP_STRICT | RC_DEP_TRACE);
+			deporder = rc_deptree_depends(deptree, types_n,
+			    tmplist, newlevel ? newlevel : runlevel,
+			    RC_DEP_STRICT | RC_DEP_TRACE);
 			rc_stringlist_free(tmplist);
 			svc2 = NULL;
 			TAILQ_FOREACH(svc1, deporder, entries) {
-				svc2 = rc_stringlist_find(start_services, svc1->value);
+				svc2 = rc_stringlist_find(start_services,
+				    svc1->value);
 				if (svc2)
 					break;
 			}
@@ -661,21 +662,21 @@ do_start_services(bool parallel)
 			interactive = want_interactive();
 
 		if (interactive) {
-interactive_retry:
+	interactive_retry:
 			printf("\n");
 			einfo("About to start the service %s",
-			      service->value);
+			    service->value);
 			eindent();
 			einfo("1) Start the service\t\t2) Skip the service");
 			einfo("3) Continue boot process\t\t4) Exit to shell");
 			eoutdent();
-interactive_option:
+	interactive_option:
 			switch (read_key(true)) {
-				case '1': break;
-				case '2': continue;
-				case '3': interactive = false; break;
-				case '4': sulogin(true); goto interactive_retry;
-				default: goto interactive_option;
+			case '1': break;
+			case '2': continue;
+			case '3': interactive = false; break;
+			case '4': sulogin(true); goto interactive_retry;
+			default: goto interactive_option;
 			}
 		}
 
@@ -693,7 +694,7 @@ interactive_option:
 	/* Store our interactive status for boot */
 	if (interactive &&
 	    (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0 ||
-	     strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0))
+		strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0))
 		mark_interactive();
 	else {
 		if (exists(INTERACTIVE))
@@ -711,17 +712,17 @@ handle_bad_signal(int sig)
 	pid_t crashed_pid = getpid();
 
 	switch (fork()) {
-		case -1:
-			_exit(sig);
-			/* NOTREACHED */
-		case 0:
-			sprintf(pid, "%i", crashed_pid);
-			printf("\nAuto launching gdb!\n\n");
-			_exit(execlp("gdb", "gdb", "--quiet", "--pid", pid,
-				     "-ex", "bt full", NULL));
-			/* NOTREACHED */
-		default:
-			wait(&status);
+	case -1:
+		_exit(sig);
+		/* NOTREACHED */
+	case 0:
+		sprintf(pid, "%i", crashed_pid);
+		printf("\nAuto launching gdb!\n\n");
+		_exit(execlp("gdb", "gdb", "--quiet", "--pid", pid,
+			"-ex", "bt full", NULL));
+		/* NOTREACHED */
+	default:
+		wait(&status);
 	}
 	_exit(1);
 	/* NOTREACHED */
@@ -737,7 +738,8 @@ static const struct option longopts[] = {
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
-	"override the next runlevel to change into\nwhen leaving single user or boot runlevels",
+	"override the next runlevel to change into\n"
+	"when leaving single user or boot runlevels",
 	"runs the service specified with the rest\nof the arguments",
 	"output the RC system type, if any",
 	longopts_help_COMMON
@@ -783,9 +785,9 @@ main(int argc, char **argv)
 			printf(" [%s]", bootlevel);
 		printf(") " VERSION
 #ifdef BRANDING
-		       " (" BRANDING ")"
+		    " (" BRANDING ")"
 #endif
-		       "\n");
+		    "\n");
 		exit(EXIT_SUCCESS);
 	}
 
@@ -806,7 +808,7 @@ main(int argc, char **argv)
 	argc++;
 	argv--;
 	while ((opt = getopt_long(argc, argv, getoptstring,
-				  longopts, (int *) 0)) != -1)
+		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 		case 'o':
@@ -825,7 +827,7 @@ main(int argc, char **argv)
 			newlevel = rc_service_resolve(optarg);
 			if (!newlevel)
 				eerrorx("%s: service `%s' does not exist",
-					applet, optarg);
+				    applet, optarg);
 			argv += optind - 1;
 			*argv = newlevel;
 			execv(*argv, argv);
@@ -837,8 +839,8 @@ main(int argc, char **argv)
 				printf("%s\n", bootlevel);
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
-		case_RC_COMMON_GETOPT
-		}
+			case_RC_COMMON_GETOPT
+			    }
 	}
 
 	newlevel = argv[optind++];
@@ -886,7 +888,7 @@ main(int argc, char **argv)
 
 	if (newlevel &&
 	    (strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-	     strcmp(newlevel, RC_LEVEL_SINGLE) == 0))
+		strcmp(newlevel, RC_LEVEL_SINGLE) == 0))
 	{
 		going_down = true;
 		if (!exists(RC_KRUNLEVEL))
@@ -895,10 +897,10 @@ main(int argc, char **argv)
 		setenv("RC_RUNLEVEL", newlevel, 1);
 		setenv("RC_GOINGDOWN", "YES", 1);
 	} else {
-		/* We should not use krunevel in sysinit or the boot runlevel */
+		/* We should not use krunevel in sysinit or boot runlevels */
 		if (!newlevel ||
 		    (strcmp(newlevel, RC_LEVEL_SYSINIT) != 0 &&
-		     strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0))
+			strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0))
 		{
 			if (get_krunlevel(krunlevel, sizeof(krunlevel))) {
 				newlevel = krunlevel;
@@ -960,7 +962,7 @@ main(int argc, char **argv)
 		if (errno == EACCES)
 			eerrorx("%s: superuser access required", applet);
 		eerrorx("%s: failed to create stopping dir `%s': %s",
-			applet, RC_STOPPING, strerror(errno));
+		    applet, RC_STOPPING, strerror(errno));
 	}
 
 	/* Build a list of all services to stop and then work out the
@@ -982,7 +984,7 @@ main(int argc, char **argv)
 
 	if (stop_services) {
 		tmplist = rc_deptree_depends(deptree, types_nua, stop_services,
-				runlevel, depoptions | RC_DEP_STOP);
+		    runlevel, depoptions | RC_DEP_STOP);
 		rc_stringlist_free(stop_services);
 		stop_services = tmplist;
 	}
@@ -990,7 +992,7 @@ main(int argc, char **argv)
 	/* Load our list of start services */
 	hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
 	start_services = rc_services_in_runlevel(newlevel ?
-						 newlevel : runlevel);
+	    newlevel : runlevel);
 	if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT) != 0)
 	{
@@ -998,10 +1000,10 @@ main(int argc, char **argv)
 		TAILQ_CONCAT(start_services, tmplist, entries);
 		free(tmplist);
 		if (strcmp(newlevel ? newlevel : runlevel,
-			   RC_LEVEL_SINGLE) != 0)
+			RC_LEVEL_SINGLE) != 0)
 		{
 			if (strcmp(newlevel ? newlevel : runlevel,
-				   bootlevel) != 0)
+				bootlevel) != 0)
 			{
 				tmplist = rc_services_in_runlevel(bootlevel);
 				TAILQ_CONCAT(start_services, tmplist, entries);
@@ -1009,9 +1011,9 @@ main(int argc, char **argv)
 			}
 			if (hotplugged_services) {
 				TAILQ_FOREACH(service, hotplugged_services,
-					      entries)
-					rc_stringlist_addu(start_services,
-							   service->value);
+				    entries)
+				    rc_stringlist_addu(start_services,
+					service->value);
 			}
 		}
 	}
@@ -1027,7 +1029,7 @@ main(int argc, char **argv)
 
 	/* Notify the plugins we have finished */
 	rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_OUT,
-		      going_down ? newlevel : runlevel);
+	    going_down ? newlevel : runlevel);
 	hook_out = 0;
 
 	rmdir(RC_STOPPING);
@@ -1054,14 +1056,14 @@ main(int argc, char **argv)
 	/* Re-add our hotplugged services if they stopped */
 	if (hotplugged_services)
 		TAILQ_FOREACH(service, hotplugged_services, entries)
-			rc_service_mark(service->value, RC_SERVICE_HOTPLUGGED);
+		    rc_service_mark(service->value, RC_SERVICE_HOTPLUGGED);
 
 	/* Order the services to start */
 	if (start_services) {
 		rc_stringlist_sort(&start_services);
 		deporder = rc_deptree_depends(deptree, types_nua,
-					      start_services, runlevel,
-					      depoptions | RC_DEP_START);
+		    start_services, runlevel,
+		    depoptions | RC_DEP_START);
 		rc_stringlist_free(start_services);
 		start_services = deporder;
 	}
