@@ -71,13 +71,9 @@
 
 #define PREFIX_LOCK	RC_SVCDIR "/prefix.lock"
 
-/* usecs to wait while we poll the fifo */
-#define WAIT_INTERVAL	20000000
-
-/* max secs to wait until a service comes up */
-#define WAIT_MAX        300
-
-#define ONE_SECOND      1000000000
+#define WAIT_INTERVAL	20000000	/* usecs to poll the lock file */
+#define WAIT_TIMEOUT	60		/* seconds until we timeout */
+#define WARN_TIMEOUT	10		/* warn about this every N seconds */
 
 static const char *applet = NULL;
 static RC_STRINGLIST *applet_list = NULL;
@@ -480,12 +476,10 @@ static bool
 svc_wait(const char *svc)
 {
 	char file[PATH_MAX];
-	struct timespec ts;
-	int nloops = WAIT_MAX * (ONE_SECOND / WAIT_INTERVAL);
-	int sloops = (ONE_SECOND / WAIT_INTERVAL) * 5;
 	int fd;
 	bool forever = false;
 	RC_STRINGLIST *keywords;
+	struct timespec interval, timeout, warn;
 
 	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend(deptree, svc, "keyword");
@@ -495,10 +489,14 @@ svc_wait(const char *svc)
 
 	snprintf(file, sizeof(file), RC_SVCDIR "/exclusive/%s",
 		 basename_c(svc));
-	ts.tv_sec = 0;
-	ts.tv_nsec = WAIT_INTERVAL;
 
-	while (nloops) {
+	interval.tv_sec = 0;
+	interval.tv_nsec = WAIT_INTERVAL;
+	timeout.tv_sec = WAIT_TIMEOUT;
+	timeout.tv_nsec = 0;
+	warn.tv_sec = WARN_TIMEOUT;
+	warn.tv_nsec = 0;
+	for (;;) {
 		fd = open(file, O_RDONLY | O_NONBLOCK);
 		if (fd != -1) {
 			if (flock(fd, LOCK_SH | LOCK_NB) == 0) {
@@ -510,23 +508,25 @@ svc_wait(const char *svc)
 		if (errno == ENOENT)
 			return true;
 		if (errno != EWOULDBLOCK)
-			eerrorx("%s: open `%s': %s", applet, file, strerror(errno));
-
-		if (nanosleep(&ts, NULL) == -1) {
+			eerrorx("%s: open `%s': %s", applet, file,
+			    strerror(errno));
+		if (nanosleep(&interval, NULL) == -1) {
 			if (errno != EINTR)
 				return false;
 		}
-
 		if (!forever) {
-			nloops --;
-
-			if (--sloops == 0) {
-				ewarn("%s: waiting for %s", applet, svc);
-				sloops = (ONE_SECOND / WAIT_INTERVAL) * 5;
+			timespecsub(&timeout, &interval, &timeout);
+			if (timeout.tv_sec <= 0)
+				return false;
+			timespecsub(&warn, &interval, &warn);
+			if (warn.tv_sec <= 0) {
+				ewarn("%s: waiting for %s (%zu)", applet, svc,
+					timeout.tv_sec);
+				warn.tv_sec = WARN_TIMEOUT;
+				warn.tv_nsec = 0;
 			}
 		}
 	}
-
 	return false;
 }
 
@@ -1178,6 +1178,12 @@ runscript(int argc, char **argv)
 		case_RC_COMMON_GETOPT
 	}
 
+	/* If we're changing runlevels and not called by rc then we cannot
+	   work with any dependencies */
+	if (deps && getenv("RC_PID") == NULL &&
+	    (rc_runlevel_starting() || rc_runlevel_stopping()))
+		deps = false;
+
 	/* Save the IN_BACKGROUND env flag so it's ONLY passed to the service
 	   that is being called and not any dependents */
 	if (getenv("IN_BACKGROUND")) {
@@ -1272,7 +1278,7 @@ runscript(int argc, char **argv)
 				    RC_SERVICE_STARTED)
 					svc_restart(deps);
 			} else if (strcmp(optarg, "restart") == 0) {
-				svc_restart (deps);
+				svc_restart(deps);
 			} else if (strcmp(optarg, "start") == 0) {
 				svc_start(deps);
 			} else if (strcmp(optarg, "stop") == 0) {
