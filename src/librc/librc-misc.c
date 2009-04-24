@@ -203,14 +203,18 @@ rc_config_value(RC_STRINGLIST *list, const char *entry)
 {
 	RC_STRING *line;
 	char *p;
+	size_t len, dif;
 
+	len = strlen(entry);
 	TAILQ_FOREACH(line, list, entries) {
 		p = strchr(line->value, '=');
-		if (p &&
-		    strncmp(entry, line->value, (size_t)(p - line->value)) == 0)
-			return p += 1;
+		if (p != NULL) {
+			dif = (p - line->value);
+			if (dif == len &&
+			    strncmp(entry, line->value, dif) == 0)
+				return ++p;
+		}
 	}
-
 	return NULL;
 }
 librc_hidden_def(rc_config_value)
