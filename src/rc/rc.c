@@ -571,12 +571,15 @@ do_stop_services(const char *newlevel, bool parallel)
 	RC_STRINGLIST *deporder, *tmplist;
 	RC_SERVICE state;
 	RC_STRINGLIST *nostop;
+	bool crashed;
 
 	if (!types_n) {
 		types_n = rc_stringlist_new();
 		rc_stringlist_add(types_n, "needsme");
 	}
 
+	crashed = rc_conf_yesno("rc_crashed_stop");
+	
 	nostop = rc_stringlist_split(rc_conf_value("rc_nostop"), " ");
 	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries)
 	{
@@ -589,6 +592,12 @@ do_stop_services(const char *newlevel, bool parallel)
 			rc_service_mark(service->value, RC_SERVICE_FAILED);
 			continue;
 		}
+
+		/* If the service has crashed, skip futher checks and just stop
+		   it */
+		if (crashed &&
+		    rc_service_daemons_crashed(service->value))
+			goto stop;
 
 		/* If we're in the start list then don't bother stopping us */
 		svc1 = rc_stringlist_find(start_services, service->value);
@@ -628,6 +637,7 @@ do_stop_services(const char *newlevel, bool parallel)
 				continue;
 		}
 
+stop:
 		/* After all that we can finally stop the blighter! */
 		pid = service_stop(service->value);
 		if (pid > 0) {
@@ -649,15 +659,25 @@ do_start_services(bool parallel)
 	pid_t pid;
 	bool interactive = false;
 	RC_SERVICE state;
+	bool crashed = false;
 
 	if (!rc_yesno(getenv("EINFO_QUIET")))
 		interactive = exists(INTERACTIVE);
+	errno = 0;
+	crashed = rc_conf_yesno("rc_crashed_start");
+	if (errno == ENOENT)
+		crashed = true;
 
 	TAILQ_FOREACH(service, start_services, entries) {
 		state = rc_service_state(service->value);
-		if (!(state & RC_SERVICE_STOPPED) || state & RC_SERVICE_FAILED)
-			continue;
-
+		if (!(state & (RC_SERVICE_STOPPED | RC_SERVICE_FAILED))) {
+			if (crashed &&
+			    rc_service_daemons_crashed(service->value))
+				rc_service_mark(service->value,
+				    RC_SERVICE_STOPPED);
+			else
+			    continue;
+		}
 		if (!interactive)
 			interactive = want_interactive();
 

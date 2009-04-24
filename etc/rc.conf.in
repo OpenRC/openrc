@@ -57,6 +57,12 @@ rc_logger="NO"
 # This still allows the service itself to be stopped when called directly.
 #rc_nostop="network"
 
+# rc will attempt to start crashed services by default.
+# However, it will not stop them by default as that could bring down other
+# critical services.
+#rc_crashed_stop=NO
+#rc_crashed_start=YES
+
 ##############################################################################
 # MISC CONFIGURATION VARIABLES
 # There variables are shared between many init scripts
