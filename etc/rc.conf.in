@@ -7,12 +7,16 @@
 # WARNING: whilst we have improved parallel, it can still potentially lock
 # the boot process. Don't file bugs about this unless you can supply
 # patches that fix it without breaking other things!
-rc_parallel="NO"
+#rc_parallel="NO"
 
 # Set rc_interactive to "YES" and you'll be able to press the I key during
 # boot so you can choose to start specific services. Set to "NO" to disable
 # this feature.
-rc_interactive="YES"
+#rc_interactive="YES"
+
+# If we need to drop to a shell, you can specify it here.
+# Linux users could specify /sbin/sulogin
+#rc_shell=/bin/sh
 
 # Do we allow any started service in the runlevel to satisfy the depedency
 # or do we want all of them regardless of state? For example, if net.eth0
@@ -20,7 +24,7 @@ rc_interactive="YES"
 # both will be started, but services that depend on 'net' will work if either
 # one comes up. With rc_depend_strict="YES" we would require them both to
 # come up.
-rc_depend_strict="YES"
+#rc_depend_strict="YES"
 
 # rc_hotplug is a list of services that we allow to be hotplugged.
 # By default we do not allow hotplugging.
@@ -38,11 +42,11 @@ rc_depend_strict="YES"
 # /var/log/rc.log
 # NOTE: Linux systems require the devfs service to be started before
 # logging can take place and as such cannot log the sysinit runlevel.
-rc_logger="NO"
+#rc_logger="YES"
 
 # By default we filter the environment for our running scripts. To allow other
 # variables through, add them here. Use a * to allow all variables through.
-# rc_env_allow="VAR1 VAR2"
+#rc_env_allow="VAR1 VAR2"
 
 # By default we assume that all daemons will start correctly.
 # However, some do not - a classic example is that they fork and return 0 AND
@@ -50,9 +54,9 @@ rc_logger="NO"
 # child crashes. You can set the number of milliseconds start-stop-daemon
 # waits to check that the daemon is still running after starting here.
 # The default is 0 - no checking.
-# rc_start_wait=100
+#rc_start_wait=100
 
-# rc_nostop is a list of services that rc will not stop when changing runlevels.
+# rc_nostop is a list of services which will not stop when changing runlevels.
 # Network clients may wish to add network to the list.
 # This still allows the service itself to be stopped when called directly.
 #rc_nostop="network"
@@ -68,7 +72,7 @@ rc_logger="NO"
 # There variables are shared between many init scripts
 
 # Set unicode to YES to turn on unicode support for keyboards and screens.
-unicode="NO"
+#unicode="NO"
 
 # Network fstypes. Below is the default.
 net_fs_list="afs cifs coda davfs fuse gfs ncpfs nfs nfs4 ocfs2 shfs smbfs"

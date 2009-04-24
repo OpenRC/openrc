@@ -299,7 +299,7 @@ run_program(const char *prog)
 		if (termios_orig)
 			tcsetattr(STDIN_FILENO, TCSANOW, termios_orig);
 
-		execl(prog, prog, (char *) NULL);
+		execl(prog, prog, (char *)NULL);
 		eerror("%s: unable to exec `%s': %s", applet, prog,
 		    strerror(errno));
 		_exit(EXIT_FAILURE);
@@ -312,12 +312,14 @@ run_program(const char *prog)
 }
 
 static void
-sulogin(bool cont)
+open_shell(void)
 {
+	const char *shell;
+	
 #ifdef __linux__
 	const char *sys = rc_sys();
 
-	/* VSERVER and OPENVZ systems cannot do a sulogin */
+	/* VSERVER and OPENVZ systems cannot really drop to shells */
 	if (sys &&
 	    (strcmp(sys, "VSERVER") == 0 || strcmp(sys, "OPENVZ") == 0))
 	{
@@ -326,15 +328,11 @@ sulogin(bool cont)
 		    applet, strerror(errno));
 	}
 #endif
-	if (!cont) {
-		rc_logger_close();
-		exit(EXIT_SUCCESS);
-	}
-#ifdef __linux__
-	run_program(SULOGIN);
-#else
-	run_program("/bin/sh");
-#endif
+
+	shell = rc_conf_value("rc_shell");
+	if (shell == NULL)
+		shell = "/bin/sh";
+	run_program(shell);
 }
 
 _dead static void
@@ -695,7 +693,7 @@ do_start_services(bool parallel)
 			case '1': break;
 			case '2': continue;
 			case '3': interactive = false; break;
-			case '4': sulogin(true); goto interactive_retry;
+			case '4': open_shell(); goto interactive_retry;
 			default: goto interactive_option;
 			}
 		}
