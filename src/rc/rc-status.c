@@ -172,9 +172,10 @@ print_services(const char *runlevel, RC_STRINGLIST *svcs)
 
 #include "_usage.h"
 #define extraopts "[runlevel1] [runlevel2] ..."
-#define getoptstring "alrsu" getoptstring_COMMON
+#define getoptstring "aclrsu" getoptstring_COMMON
 static const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
+	{"crashed",     0, NULL, 'c'},
 	{"list",        0, NULL, 'l'},
 	{"runlevel",    0, NULL, 'r'},
 	{"servicelist", 0, NULL, 's'},
@@ -183,6 +184,7 @@ static const struct option longopts[] = {
 };
 static const char * const longopts_help[] = {
 	"Show services from all run levels",
+	"Show crashed services",
 	"Show list of run levels",
 	"Show the name of the current runlevel",
 	"Show service list",
@@ -196,7 +198,7 @@ rc_status(int argc, char **argv)
 {
 	RC_STRING *s, *l, *t;
 	char *p, *runlevel = NULL;
-	int opt, aflag = 0;
+	int opt, aflag = 0, retval = 0;
 
 	test_crashed = _rc_can_find_pids();
 
@@ -207,10 +209,14 @@ rc_status(int argc, char **argv)
 			aflag++;
 			levels = rc_runlevel_list();
 			break;
-		case 'l':
-			levels = rc_runlevel_list();
-			TAILQ_FOREACH (l, levels, entries)
-				printf("%s\n", l->value);
+		case 'c':
+			services = rc_services_in_state(RC_SERVICE_STARTED);
+			retval = 1;
+			TAILQ_FOREACH(s, services, entries)
+				if (rc_service_daemons_crashed(s->value)) {
+					printf("%s\n", s->value);
+					retval = 0;
+				}
 			goto exit;
 			/* NOTREACHED */
 		case 'r':
@@ -344,5 +350,5 @@ exit:
 	rc_deptree_free(deptree);
 #endif
 
-	return(EXIT_SUCCESS);
+	return retval;
 }
