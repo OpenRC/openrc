@@ -219,6 +219,11 @@ rc_status(int argc, char **argv)
 				}
 			goto exit;
 			/* NOTREACHED */
+		case 'l':
+			levels = rc_runlevel_list();
+			TAILQ_FOREACH(l, levels, entries)
+				printf("%s\n", l->value);
+			goto exit;
 		case 'r':
 			runlevel = rc_runlevel_get();
 			printf("%s\n", runlevel);
