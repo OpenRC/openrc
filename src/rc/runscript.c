@@ -520,8 +520,8 @@ svc_wait(const char *svc)
 				return false;
 			timespecsub(&warn, &interval, &warn);
 			if (warn.tv_sec <= 0) {
-				ewarn("%s: waiting for %s (%zu)", applet, svc,
-				    timeout.tv_sec);
+				ewarn("%s: waiting for %s (%zu seconds)",
+				    applet, svc, timeout.tv_sec);
 				warn.tv_sec = WARN_TIMEOUT;
 				warn.tv_nsec = 0;
 			}
