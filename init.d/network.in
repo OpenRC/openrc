@@ -154,7 +154,7 @@ runargs()
 		''|"#"*)	;;
 		*)
 				(
-				 	vebegin "${args#*!}"
+				 	eval vebegin "${args#*!}"
 					eval "${args#*!}"
 					veend $?
 				);;
@@ -204,7 +204,7 @@ start()
 			''|"#"*)	;;
 			"!"*)
 					(
-					 	vebegin "${args#*!}"
+					 	eval vebegin "${args#*!}"
 						eval "${args#*!}"
 						veend $?
 					);;
