@@ -513,7 +513,8 @@ rc_service_daemons_crashed(const char *service)
 			free(pidfile);
 			pidfile = NULL;
 
-			/* We have the pid, so no need to match on exec or name */
+			/* We have the pid, so no need to match
+			   on exec or name */
 			free(exec);
 			exec = NULL;
 			free(name);
@@ -530,7 +531,8 @@ rc_service_daemons_crashed(const char *service)
 			}
 
 			if (list) {
-				/* We need to flatten our linked list into an array */
+				/* We need to flatten our linked list
+				   into an array */
 				i = 0;
 				TAILQ_FOREACH(s, list, entries)
 				    i++;
@@ -543,7 +545,10 @@ rc_service_daemons_crashed(const char *service)
 		}
 
 		if (!retval) {
-			if ((pids = rc_find_pids(exec,
+			if (pid != 0) {
+				if (kill(pid, 0) == -1 && errno == ESRCH)
+					retval = true;
+			} else if ((pids = rc_find_pids(exec,
 				    (const char *const *)argv,
 				    0, pid)))
 			{
