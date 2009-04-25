@@ -2,15 +2,16 @@
 # Seperate commands with ;
 # Prefix with ! to run a shell script.
 # Use \$int to represent the interface
-# ifconfig_eth0="192.168.0.10 netmask 255.255.255.0"
+#ifconfig_eth0="192.168.0.10 netmask 255.255.255.0"
 
 # You also have ifup_eth0 and ifdown_eth0 to run other commands when
 # eth0 is started and stopped.
 
 # You can assign a default route
-# defaultroute="192.168.0.1"
+#defaultroute="192.168.0.1"
 # Lastly, the interfaces variable pulls in virtual interfaces that cannot
-# be automatically detected. 
+# be automatically detected.
+#interfaces="br0 bond0 vlan0"
 
 # You can also use files instead of variables here if you like:
 # /etc/ifconfig.eth0 is equivalent to ifconfig_eth0
