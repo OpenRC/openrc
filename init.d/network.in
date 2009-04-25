@@ -192,7 +192,7 @@ start()
 		done
 		[ -n "$cf" -o -n "$upcmd" -o \
 			-f /etc/ifup."$int" -o -f "$cf" ] || continue
-		vebegin "$int"
+		veinfo "$int"
 		case "$func" in
 		ip)	func=runip;;
 		esac
@@ -219,7 +219,6 @@ start()
 			esac
 		done
 		eoutdent
-		veend $? || cr=1
 	done
 	eoutdent
 	eend $cr
@@ -239,7 +238,7 @@ start()
 
 stop()
 {
-	local int= intv= cmd= downcmd=
+	local int= intv= cmd= downcmd= r=
 	einfo "Stopping network"
 	routeflush
 	eindent
@@ -252,11 +251,10 @@ stop()
 			-f /etc/ifconfig."$int" -o \
 			-n "$downcmd" -o -f /etc/ifdown."$int" ];
 		then
-			vebegin "$int"
+			veinfo "$int"
 			runargs /etc/ifdown."$int" "$downcmd"
 			ifconfig "$int" down 2>/dev/null
 			ifconfig "$int" destroy 2>/dev/null
-			veend $?
 		fi
 	done
 	eoutdent
