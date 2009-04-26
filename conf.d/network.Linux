@@ -9,8 +9,12 @@
 #ifconfig_bond0="192.168.0.10 netmask 255.255.255.0"
 #ifdown_bond0="rmmod bonding"
 
-# Create a bridged interface - let dhcpcd configure the address
-#interfaces="br0"
+# Create tap interface and a bridge interface.
+# We add the tap to the bridge.
+# An external program, like dhcpcd, will configure the IP on the bridge
+#interfaces="tun0 br0"
+#ifup_tun0="tunctl -t \$int"
+#ifdown_tun0="tunctl -d \$int"
 #ifup_br0="brctl addbr \$int; brctl add \$int eth1; brtctl add \$int eth2"
 #ifdown_br0="ifconfig \$int down; btctl delbr \$int"
 
