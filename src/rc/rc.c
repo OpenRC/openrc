@@ -53,6 +53,7 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
+#include <pwd.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -315,6 +316,7 @@ static void
 open_shell(void)
 {
 	const char *shell;
+	struct passwd *pw;
 	
 #ifdef __linux__
 	const char *sys = rc_sys();
@@ -330,8 +332,17 @@ open_shell(void)
 #endif
 
 	shell = rc_conf_value("rc_shell");
-	if (shell == NULL)
-		shell = "/bin/sh";
+	/* No shell set, so obey env, then passwd, then default to /bin/sh */
+	if (shell == NULL) {
+		shell = getenv("SHELL");
+		if (shell == NULL) {
+			pw = getpwuid(getuid());
+			if (pw)
+				shell = pw->pw_shell;
+			if (shell == NULL)
+				shell = "/bin/sh";
+		}
+	}
 	run_program(shell);
 }
 
