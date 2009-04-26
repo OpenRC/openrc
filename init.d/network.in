@@ -13,6 +13,8 @@ depend()
 	need localmount
 	after bootmisc
 	provide net
+	# We don't want to stop network unless we really have to
+	keyword nostop
 	keyword nojail noprefix novserver
 }
 

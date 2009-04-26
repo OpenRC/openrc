@@ -1,4 +1,4 @@
-.\" Copyright 2007-2008 Roy Marples
+.\" Copyright 2007-2009 Roy Marples
 .\" All rights reserved
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd September 19, 2008
+.Dd April 26, 2009
 .Dt RUNSCRIPT 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -139,6 +139,9 @@ When in a jail, exclude this service from any dependencies. The service can
 still be run directly.
 .It Dv noopenvz
 Same as nojail, but for OpenVZ systems.
+.It Dv nostop
+Don't stop this service when changing runlevels, even if not present.
+This includes shutting the system down.
 .It Dv notimeout
 Do not time out waiting for that service.
 .It Dv nouml

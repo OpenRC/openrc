@@ -577,10 +577,10 @@ do_stop_services(const char *newlevel, bool parallel)
 {
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
-	RC_STRINGLIST *deporder, *tmplist;
+	RC_STRINGLIST *deporder, *tmplist, *kwords;
 	RC_SERVICE state;
 	RC_STRINGLIST *nostop;
-	bool crashed;
+	bool crashed, nstop;
 
 	if (!types_n) {
 		types_n = rc_stringlist_new();
@@ -601,6 +601,14 @@ do_stop_services(const char *newlevel, bool parallel)
 			rc_service_mark(service->value, RC_SERVICE_FAILED);
 			continue;
 		}
+		kwords = rc_deptree_depend(deptree, service->value, "keyword");
+		if (rc_stringlist_find(kwords, "nostop"))
+			nstop = true;
+		else
+			nstop = false;
+		rc_stringlist_free(kwords);
+		if (nstop)
+			continue;
 
 		/* If the service has crashed, skip futher checks and just stop
 		   it */
