@@ -1,6 +1,6 @@
 #!@SHELL@
 # Copyright 1999-2007 Gentoo Foundation
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 # This basically mounts $RC_SVCDIR as a ramdisk.
@@ -14,7 +14,7 @@ mount_svcdir()
 
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems; then
 		fs="tmpfs"
-		fsopts="${fsopts},mode=0755,size=${svcsize}k"
+		fsopts="$fsopts,mode=0755,size=${svcsize}k"
 	elif grep -Eq "[[:space:]]+ramfs$" /proc/filesystems; then
 		fs="ramfs"
 		# ramfs has no special options
@@ -22,8 +22,8 @@ mount_svcdir()
 		&& grep -Eq "[[:space:]]+ext2$" /proc/filesystems; then
 		devdir="/dev/ram0"
 		fs="ext2"
-		dd if=/dev/zero of="${devdir}" bs=1k count="${svcsize}"
-		mkfs -t "${fs}" -i 1024 -vm0 "${devdir}" "${svcsize}"
+		dd if=/dev/zero of="$devdir" bs=1k count="$svcsize"
+		mkfs -t "$fs" -i 1024 -vm0 "$devdir" "$svcsize"
 	else
 		echo
 		eerror "OpenRC requires tmpfs, ramfs or a ramdisk + ext2"
@@ -33,8 +33,8 @@ mount_svcdir()
 	fi
 
 	# If we have no entry in fstab for $RC_SVCDIR, provide our own
-	if ! fstabinfo --mount "${RC_SVCDIR}"; then
-		mount -n -t "${fs}" ${fsopts} "${devdir}" "${RC_SVCDIR}"
+	if ! fstabinfo --mount "$RC_SVCDIR"; then
+		mount -n -t "$fs" $fsopts "$devdir" "$RC_SVCDIR"
 	fi
 }
 
@@ -50,7 +50,7 @@ mountproc=true
 if [ -e /proc/uptime ]; then
 	up="$(cat /proc/uptime)"
 	sleep 1
-	if [ "${up}" = "$(cat /proc/uptime)" ]; then
+	if [ "$up" = "$(cat /proc/uptime)" ]; then
 		eerror "You have cruft in /proc that should be deleted"
 	else
 		einfo "/proc is already mounted, skipping"
@@ -58,14 +58,14 @@ if [ -e /proc/uptime ]; then
 	fi
 fi
 
-if ${mountproc}; then
+if $mountproc; then
 	procfs="proc"
-	[ "${RC_UNAME}" = "GNU/kFreeBSD" ] && proc="linprocfs"
+	[ "$RC_UNAME" = "GNU/kFreeBSD" ] && proc="linprocfs"
 	ebegin "Mounting /proc"
 	if ! fstabinfo --mount /proc; then
-		mount -n -t "${procfs}" -o noexec,nosuid,nodev proc /proc
+		mount -n -t "$procfs" -o noexec,nosuid,nodev proc /proc
 	fi
 	eend $?
 fi
 
-. "${RC_LIBDIR}"/sh/init-common-post.sh
+. "$RC_LIBDIR"/sh/init-common-post.sh

@@ -1,4 +1,4 @@
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 # Allow any sh script to work with einfo functions and friends
@@ -9,14 +9,14 @@ RC_GOT_FUNCTIONS="yes"
 eindent()
 {
 	EINFO_INDENT=$((${EINFO_INDENT:-0} + 2))
-	[ "${EINFO_INDENT}" -gt 40 ] && EINFO_INDENT=40
+	[ "$EINFO_INDENT" -gt 40 ] && EINFO_INDENT=40
 	export EINFO_INDENT
 }
 
 eoutdent()
 {
 	EINFO_INDENT=$((${EINFO_INDENT:-0} - 2))
-	[ "${EINFO_INDENT}" -lt 0 ] && EINFO_INDENT=0
+	[ "$EINFO_INDENT" -lt 0 ] && EINFO_INDENT=0
 	return 0
 }
 
@@ -31,10 +31,10 @@ yesno()
 
 	local value=
 	eval value=\$${1}
-	case "${value}" in
+	case "$value" in
 		[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1) return 0;;
 		[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|[Oo][Ff][Ff]|0) return 1;;
-		*) vewarn "\$${1} is not set properly"; return 1;;
+		*) vewarn "\$$1 is not set properly"; return 1;;
 	esac
 }
 
@@ -45,17 +45,16 @@ rc_runlevel() {
 _sanitize_path()
 {
 	local IFS=":" p= path=
-	for p in ${PATH}; do
-		case "${p}" in
+	for p in $PATH; do
+		case "$p" in
 			@PREFIX@/@LIB@/rc/bin|@PREFIX@/@LIB@/rc/sbin);;
 			@PREFIX@/bin|@PREFIX@/sbin|/usr/bin|/usr/sbin);;
 			@PKG_PREFIX@/bin|@PKG_PREFIX@/sbin);;
 			@LOCAL_PREFIX@/bin|@LOCAL_PREFIX@/sbin);;
-			*) path="${path}${path:+:}${p}";;
+			*) path="$path${path:+:}$p";;
 		esac
 	done
-
-	echo "${path}"
+	echo "$path"
 }
 
 # Allow our scripts to support zsh
@@ -77,24 +76,24 @@ _PKG_PREFIX=@PKG_PREFIX@
 _LOCAL_PREFIX=@LOCAL_PREFIX@
 _LOCAL_PREFIX=${_LOCAL_PREFIX:-/usr/local}
 _PATH=@PREFIX@/@LIB@/rc/bin
-case "${_PREFIX}" in
-	"${_PKG_PREFIX}"|"${_LOCAL_PREFIX}") ;;
-	*) _PATH="${_PATH}:${_PREFIX}/bin:${_PREFIX}/sbin";;
+case "$_PREFIX" in
+	"$_PKG_PREFIX"|"$_LOCAL_PREFIX") ;;
+	*) _PATH="$_PATH:$_PREFIX/bin:$_PREFIX/sbin";;
 esac
-_PATH="${_PATH}":/bin:/sbin:/usr/bin:/usr/sbin
+_PATH="$_PATH":/bin:/sbin:/usr/bin:/usr/sbin
 
-if [ -n "${_PKG_PREFIX}" ]; then
-	_PATH="${_PATH}:${_PKG_PREFIX}/bin:${_PKG_PREFIX}/sbin"
+if [ -n "$_PKG_PREFIX" ]; then
+	_PATH="$_PATH:$_PKG_PREFIX/bin:$_PKG_PREFIX/sbin"
 fi
-if [ -n "${_LOCAL_PREFIX}" ]; then
-	_PATH="${_PATH}:${_LOCAL_PREFIX}/bin:${_LOCAL_PREFIX}/sbin"
+if [ -n "$_LOCAL_PREFIX" ]; then
+	_PATH="$_PATH:$_LOCAL_PREFIX/bin:$_LOCAL_PREFIX/sbin"
 fi
-_path="$(_sanitize_path "${PATH}")"
-export PATH="${_PATH}${_path:+:}${_path}"
+_path="$(_sanitize_path "$PATH")"
+export PATH="$_PATH${_path:+:}$_path"
 unset _sanitize_path _PREFIX _PKG_PREFIX _LOCAL_PREFIX _PATH _path
 
 for arg; do
-	case "${arg}" in
+	case "$arg" in
 		--nocolor|--nocolour|-C)
 			export EINFO_COLOR="NO"
 			;;
@@ -102,7 +101,7 @@ for arg; do
 done
 
 if [ -t 1 ] && yesno "${EINFO_COLOR:-YES}"; then
-	if [ -z "${GOOD}" ]; then
+	if [ -z "$GOOD" ]; then
 		eval $(eval_ecolors)
 	fi
 else
@@ -110,8 +109,8 @@ else
 	# the last ecmd
 	for _e in ebegin eend error errorn einfo einfon ewarn ewarnn ewend \
 		vebegin veend veinfo vewarn vewend; do
-		eval "${_e}() { local _r; @PREFIX@/@LIB@/rc/bin/${_e} \"\$@\"; _r=$?; \
-		export EINFO_LASTCMD=${_e}; return \$_r; }"
+		eval "$_e() { local _r; @PREFIX@/@LIB@/rc/bin/$_e \"\$@\"; _r=$?; \
+		export EINFO_LASTCMD=$_e; return \$_r; }"
 	done
 	unset _e
 fi

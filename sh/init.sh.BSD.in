@@ -1,5 +1,5 @@
 #!@SHELL@
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 # This basically mounts $svcdir as a ramdisk, but preserving its content
@@ -10,21 +10,23 @@
 # FreeBSD-7 supports tmpfs now :)
 mount_svcdir()
 {
-	if ! fstabinfo --mount "${RC_SVCDIR}"; then
-		if ! mount -t tmpfs -o rw,noexec,nosuid none "${RC_SVCDIR}" 2>/dev/null; then
+	if ! fstabinfo --mount "$RC_SVCDIR"; then
+		if ! mount -t tmpfs -o rw,noexec,nosuid none \
+			"$RC_SVCDIR" 2>/dev/null
+		then
 			mdconfig -a -t malloc -s "${rc_svcsize:-1024}"k -u 0
 			newfs -b 4096 -i 1024 -n /dev/md0
-			mount -o rw,noexec,nosuid /dev/md0 "${RC_SVCDIR}"
+			mount -o rw,noexec,nosuid /dev/md0 "$RC_SVCDIR"
 		fi
 	fi
 }
 
-. "${RC_LIBDIR}"/sh/functions.sh
+. "$RC_LIBDIR"/sh/functions.sh
 [ -r /etc/rc.conf ] && . /etc/rc.conf
 
 # Disable devd until we need it
-if [ -z "${RC_SYS}" -a "${RC_UNAME}" = "FreeBSD" ]; then
+if [ -z "$RC_SYS" -a "$RC_UNAME" = "FreeBSD" ]; then
 	sysctl hw.bus.devctl_disable=1 >/dev/null
 fi
 
-. "${RC_LIBDIR}"/sh/init-common-post.sh
+. "$RC_LIBDIR"/sh/init-common-post.sh

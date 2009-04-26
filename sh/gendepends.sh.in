@@ -1,31 +1,31 @@
 #!@SHELL@
 # Shell wrapper to list our dependencies
 
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 . @SYSCONFDIR@/init.d/functions.sh
 
 config() {
-	[ -n "$*" ] && echo "${RC_SVCNAME} config $*" >&3
+	[ -n "$*" ] && echo "$RC_SVCNAME config $*" >&3
 }
 need() {
-	[ -n "$*" ] && echo "${RC_SVCNAME} ineed $*" >&3
+	[ -n "$*" ] && echo "$RC_SVCNAME ineed $*" >&3
 }
 use() {
-	[ -n "$*" ] && echo "${RC_SVCNAME} iuse $*" >&3
+	[ -n "$*" ] && echo "$RC_SVCNAME iuse $*" >&3
 }
 before() {
-	[ -n "$*" ] && echo "${RC_SVCNAME} ibefore $*" >&3
+	[ -n "$*" ] && echo "$RC_SVCNAME ibefore $*" >&3
 }
 after() {
-	[ -n "$*" ] && echo "${RC_SVCNAME} iafter $*" >&3
+	[ -n "$*" ] && echo "$RC_SVCNAME iafter $*" >&3
 }
 provide() {
-	[ -n "$*" ] && echo "${RC_SVCNAME} iprovide $*" >&3
+	[ -n "$*" ] && echo "$RC_SVCNAME iprovide $*" >&3
 }
 keyword() {
-	[ -n "$*" ] && echo "${RC_SVCNAME} keyword $*" >&3
+	[ -n "$*" ] && echo "$RC_SVCNAME keyword $*" >&3
 }
 depend() {
 	:
@@ -37,65 +37,66 @@ for _dir in \
 @PKG_PREFIX@/etc/init.d \
 @LOCAL_PREFIX@/etc/init.d
 do
-	[ -d "${_dir}" ] || continue
+	[ -d "$_dir" ] || continue
 
 	# Don't do the same dir twice
-	for _d in ${_done_dirs}; do
-		[ "${_d}" = "${_dir}" ] && continue 2
+	for _d in $_done_dirs; do
+		[ "$_d" = "$_dir" ] && continue 2
 	done
 	unset _d
-	_done_dirs="${_done_dirs} ${_dir}"
+	_done_dirs="$_done_dirs $_dir"
 
-	cd "${_dir}"
+	cd "$_dir"
 	for RC_SERVICE in *; do
-		[ -x "${RC_SERVICE}" -a -f "${RC_SERVICE}" ] || continue
+		[ -x "$RC_SERVICE" -a -f "$RC_SERVICE" ] || continue
 
 		# Only generate dependencies for runscripts
-		read one two three < "${RC_SERVICE}"
-		[ "${one}" = "#!@PREFIX@/sbin/runscript" ] || \
-		[ "${one}" = "#!" -a "${two}" = "@PREFIX@/sbin/runscript" ] || \
-		continue
+		read one two three <"$RC_SERVICE"
+		[ "$one" = "#!@PREFIX@/sbin/runscript" ] || \
+		[ "$one" = "#!" -a "$two" = "@PREFIX@/sbin/runscript" ] || \
+			continue
 		unset one two three
 
 		export RC_SVCNAME=${RC_SERVICE##*/}
 
 		# Compat
-		export SVCNAME=${RC_SVCNAME}
+		export SVCNAME=$RC_SVCNAME
 
 		(
 		# Save stdout in fd3, then remap it to stderr
 		exec 3>&1 1>&2
 
 		_rc_c=${RC_SVCNAME%%.*}
-		if [ -n "${_rc_c}" -a "${_rc_c}" != "${RC_SVCNAME}" ]; then
-			if [ -e "${_dir}/../conf.d/${_rc_c}" ]; then
-				. "${_dir}/../conf.d/${_rc_c}"
+		if [ -n "$_rc_c" -a "$_rc_c" != "$RC_SVCNAME" ]; then
+			if [ -e "$_dir/../conf.d/$_rc_c" ]; then
+				. "$_dir/../conf.d/$_rc_c"
 			fi
 		fi
 		unset _rc_c
 
-		if [ -e "${_dir}/../conf.d/${RC_SVCNAME}" ]; then
-			. "${_dir}/../conf.d/${RC_SVCNAME}"
+		if [ -e "$_dir/../conf.d/$RC_SVCNAME" ]; then
+			. "$_dir/../conf.d/$RC_SVCNAME"
 		fi
 
 		[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
 
-		if . "${_dir}/${RC_SVCNAME}"; then
-			echo "${RC_SVCNAME}" >&3
+		if . "$_dir/$RC_SVCNAME"; then
+			echo "$RC_SVCNAME" >&3
 			depend
-			_rc_svcname=$(shell_var "${RC_SVCNAME}")
+			_rc_svcname=$(shell_var "$RC_SVCNAME")
 
 			# Add any user defined depends
 			for _deptype in config:CONFIG need:NEED use:USE \
 			after:AFTER before:BEFORE \
 			provide:PROVIDE keyword:KEYWORD; do
 				IFS=:
-				set -- ${_deptype}
+				set -- $_deptype
 				unset IFS
-				eval _depends=\$rc_${_rc_svcname}_$1
-				[ -z "${_depends}" ] && eval _depends=\$rc_$1
-				[ -z "${_depends}" ] && eval _depends=\$RC_${_rc_svcname}_$2
-				[ -z "${_depends}" ] && eval _depends=\$RC_$2
+				eval _depends=\$rc_$_rc_svcname_$1
+				[ -z "$_depends" ] && eval _depends=\$rc_$1
+				[ -z "$_depends" ] && \
+					eval _depends=\$RC_$_rc_svcname_$2
+				[ -z "$_depends" ] && eval _depends=\$RC_$2
 
 				$1 ${_depends}
 			done

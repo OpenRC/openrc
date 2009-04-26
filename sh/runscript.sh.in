@@ -1,11 +1,11 @@
 #!@SHELL@
 # Shell wrapper for runscript
 
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 . @SYSCONFDIR@/init.d/functions.sh
-. "${RC_LIBDIR}"/sh/rc-functions.sh
+. "$RC_LIBDIR"/sh/rc-functions.sh
 
 # Support LiveCD foo
 if [ -r /sbin/livecd-functions.sh ]; then
@@ -14,7 +14,7 @@ if [ -r /sbin/livecd-functions.sh ]; then
 fi
 
 if [ -z "$1" -o -z "$2" ]; then
-	eerror "${RC_SVCNAME}: not enough arguments"
+	eerror "$RC_SVCNAME: not enough arguments"
 	exit 1
 fi
 
@@ -23,24 +23,24 @@ export RC_SERVICE="$1"
 shift
 
 # Compat
-export SVCNAME=${RC_SVCNAME}
+export SVCNAME=$RC_SVCNAME
 
 # Descript the init script to the user
 describe()
 {
-	if [ -n "${description}" ]; then
-		einfo "${description}"
+	if [ -n "$description" ]; then
+		einfo "$description"
 	else
-		ewarn "No description for ${RC_SVCNAME}"
+		ewarn "No description for $RC_SVCNAME"
 	fi
 
 	local svc= desc=
-	for svc in ${extra_commands:-${opts}} ${extra_started_commands}; do
-		eval desc=\$description_${svc}
-		if [ -n "${desc}" ]; then
-			einfo "${HILITE}${svc}${NORMAL}: ${desc}"
+	for svc in ${extra_commands:-$opts} $extra_started_commands; do
+		eval desc=\$description_$svc
+		if [ -n "$desc" ]; then
+			einfo "$HILITE$svc$NORMAL: $desc"
 		else
-			ewarn "${HILITE}${svc}${NORMAL}: no description"
+			ewarn "$HILITE$svc$NORMAL: no description"
 		fi
 	done
 }
@@ -73,26 +73,26 @@ _status()
 # Template start / stop / status functions
 start()
 {
-	[ -n "${command}" ] || return 0
+	[ -n "$command" ] || return 0
 	local _background=
-	ebegin "Starting ${name:-${RC_SVCNAME}}"
+	ebegin "Starting ${name:-$RC_SVCNAME}"
 	if yesno "${command_background}"; then 
 		_background="--background --pidfile"
 	fi
-	if yesno "${start_inactive}"; then
+	if yesno "$start_inactive"; then
 		local _inactive=false
 		service_inactive && _inactive=true
 		mark_service_inactive
 	fi
 	start-stop-daemon --start \
-		--exec ${command} \
-		${procname:+--name} ${procname} \
-		${pidfile:+--pidfile} ${pidfile} \
-		${_background} ${start_stop_daemon_args} \
-		-- ${command_args}
-	eend $? "Failed to start ${RC_SVCNAME}" && return 0
-	if yesno "${start_inactive}"; then
-		if ! ${_inactive}; then
+		--exec $command \
+		${procname:+--name} $procname \
+		${pidfile:+--pidfile} $pidfile \
+		$_background $start_stop_daemon_args \
+		-- $command_args
+	eend $? "Failed to start $RC_SVCNAME" && return 0
+	if yesno "$start_inactive"; then
+		if ! $_inactive; then
 			mark_service_stopped
 		fi
 	fi
@@ -101,13 +101,13 @@ start()
 
 stop()
 {
-	[ -n "${command}" -o -n "${procname}" -o -n "${pidfile}" ] || return 0
-	ebegin "Stopping ${name:-${RC_SVCNAME}}"
+	[ -n "$command" -o -n "$procname" -o -n "$pidfile" ] || return 0
+	ebegin "Stopping ${name:-$RC_SVCNAME}"
 	start-stop-daemon --stop \
-		${command:+--exec} ${command} \
-		${procname:+--name} ${procname} \
-		${pidfile:+--pidfile} ${pidfile}
-	eend $? "Failed to stop ${RC_SVCNAME}"
+		${command:+--exec} $command \
+		${procname:+--name} $procname \
+		${pidfile:+--pidfile} $pidfile
+	eend $? "Failed to stop $RC_SVCNAME"
 }
 
 status()
@@ -115,25 +115,25 @@ status()
 	_status
 }
 
-yesno ${RC_DEBUG} && set -x
+yesno $RC_DEBUG && set -x
 
 _conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${RC_SVCNAME%%.*}
-if [ -n "${_c}" -a "${_c}" != "${RC_SVCNAME}" ]; then
-	if [ -e "${_conf_d}/${_c}.${RC_RUNLEVEL}" ]; then
-		. "${_conf_d}/${_c}.${RC_RUNLEVEL}"
-	elif [ -e "${_conf_d}/${_c}" ]; then
-		. "${_conf_d}//${_c}"
+if [ -n "$_c" -a "$_c" != "$RC_SVCNAME" ]; then
+	if [ -e "$_conf_d/$_c.$RC_RUNLEVEL" ]; then
+		. "$_conf_d/$_c.$RC_RUNLEVEL"
+	elif [ -e "$_conf_d/$_c" ]; then
+		. "$_conf_d/$_c"
 	fi
 fi
 unset _c
 
 # Overlay with our specific config
-if [ -e "${_conf_d}/${RC_SVCNAME}.${RC_RUNLEVEL}" ]; then
-	. "${_conf_d}/${RC_SVCNAME}.${RC_RUNLEVEL}"
-elif [ -e "${_conf_d}/${RC_SVCNAME}" ]; then
-	. "${_conf_d}/${RC_SVCNAME}"
+if [ -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL" ]; then
+	. "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"
+elif [ -e "$_conf_d/$RC_SVCNAME" ]; then
+	. "$_conf_d/$RC_SVCNAME"
 fi
 unset _conf_d
 
@@ -141,22 +141,22 @@ unset _conf_d
 [ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
 
 # Apply any ulimit defined
-[ -n "${rc_ulimit:-${RC_ULIMIT}}" ] && ulimit ${rc_ulimit:-${RC_ULIMIT}}
+[ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}
 
 # Load our script
-. "${RC_SERVICE}"
+. "$RC_SERVICE"
 
-for _d in ${required_dirs}; do
-	if [ ! -d ${_d} ]; then
-		eerror "${RC_SVCNAME}: \`${_d}' is not a directory"
+for _d in $required_dirs; do
+	if [ ! -d $_d ]; then
+		eerror "$RC_SVCNAME: \`$_d' is not a directory"
 		exit 1
 	fi
 done
 unset _d
 
-for _f in ${required_files}; do
-	if [ ! -r ${_f} ]; then
-		eerror "${RC_SVCNAME}: \`${_f}' is not readable"
+for _f in $required_files; do
+	if [ ! -r $_f ]; then
+		eerror "$RC_SVCNAME: \`$_f' is not readable"
 		exit 1
 	fi
 done
@@ -164,18 +164,20 @@ unset _f
 
 while [ -n "$1" ]; do
 	# See if we have the required function and run it
-	for _cmd in describe start stop status ${extra_commands:-${opts}} \
-		${extra_started_commands}; do
-		if [ "${_cmd}" = "$1" ]; then
+	for _cmd in describe start stop status ${extra_commands:-$opts} \
+		$extra_started_commands
+	do
+		if [ "$_cmd" = "$1" ]; then
 			if [ "$(command -v "$1")" = "$1" ]; then
 				# If we're in the background, we may wish to
 				# fake some commands. We do this so we can
 				# "start" ourselves from inactive which then
-				# triggers other services to start which depend
-				# on us. A good example of this is openvpn.
-				if yesno ${IN_BACKGROUND}; then
-					for _cmd in ${in_background_fake}; do
-						if [ "${_cmd}" = "$1" ]; then
+				# triggers other services to start which
+				# depend on us.
+				# A good example of this is openvpn.
+				if yesno $IN_BACKGROUND; then
+					for _cmd in $in_background_fake; do
+						if [ "$_cmd" = "$1" ]; then
 							shift
 							continue 3
 						fi
@@ -183,35 +185,38 @@ while [ -n "$1" ]; do
 				fi
 				# Check to see if we need to be started before
 				# we can run this command
-				for _cmd in ${extra_started_commands}; do
-					if [ "${_cmd}" = "$1" ]; then
+				for _cmd in $extra_started_commands; do
+					if [ "$_cmd" = "$1" ]; then
 						if ! service_started; then
-							eerror "${RC_SVCNAME}: cannot \`$1' as it has not been started"
+							eerror "$RC_SVCNAME: cannot \`$1' as it has not been started"
 							exit 1
 						fi
 					fi
 				done
 				unset _cmd
-				if [ "$(command -v "$1_pre")" = "$1_pre" ]; then
+				if [ "$(command -v "$1_pre")" = "$1_pre" ]
+				then
 					"$1"_pre || exit $?
 				fi
 				"$1" || exit $?
-				if [ "$(command -v "$1_post")" = "$1_post" ]; then
+				if [ "$(command -v "$1_post")" = "$1_post" ]
+				then
 					"$1"_post || exit $?
 				fi
 				shift
 				continue 2
 			else
-				if [ "${_cmd}" = "start" -o "${_cmd}" = "stop" ]; then
+				if [ "$_cmd" = "start" -o "$_cmd" = "stop" ]
+				then
 					shift
 					continue 2
 				else
-					eerror "${RC_SVCNAME}: function \`$1' defined but does not exist"
+					eerror "$RC_SVCNAME: function \`$1' defined but does not exist"
 					exit 1
 				fi
 			fi	
 		fi
 	done
-	eerror "${RC_SVCNAME}: unknown function \`$1'"
+	eerror "$RC_SVCNAME: unknown function \`$1'"
 	exit 1
 done
