@@ -64,4 +64,10 @@ start()
 		n=$((${n} + 1))
 	done
 	eend 0
+
+	# Save the keymapping for use immediately at boot
+	if [ -w "${RC_LIBDIR}" ]; then
+		mkdir -p "${RC_LIBDIR}"/console
+		dumpkeys >"${RC_LIBDIR}"/console/keymap
+	fi
 }

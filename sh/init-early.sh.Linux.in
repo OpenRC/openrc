@@ -1,18 +1,34 @@
 #!@SHELL@
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-# Try and set a font and as early as we can
-if [ -e /etc/runlevels/"${RC_DEFAULTLEVEL}"/consolefont \
-	 -o -e /etc/runlevels/"${RC_BOOTLEVEL}"/consolefont ]; then
+: ${CONSOLE:=/dev/console}
+
+if [ -e "$RC_LIBDIR"/console/unicode ]; then
+	termencoding="%G"
+	kmode="-u"
+else
 	termencoding="(K"
-	[ -e "${RC_LIBDIR}"/console/unicode ] && termencoding="%G"
-	CONSOLE="${CONSOLE:-/dev/console}"
-	printf "\033%s" "${termencoding}" >"${CONSOLE}" 2>/dev/null
-	if [ -r "${RC_LIBDIR}"/console/font -a -x /bin/setfont ]; then
-		font="$(cat "${RC_LIBDIR}"/console/font)"
-		[ -c "${CONSOLE}" ] && cons="-C ${CONSOLE}"
-		setfont ${cons} "${RC_LIBDIR}"/console/"${font}" 2>/dev/null
+	kmode="-a"
+fi
+
+# Try and set a font and as early as we can
+if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/consolefont \
+	 -o -e /etc/runlevels/"$RC_BOOTLEVEL"/consolefont ]; then
+	printf "\033%s" "$termencoding" >"$CONSOLE" 2>/dev/null
+	if [ -r "$RC_LIBDIR"/console/font -a -x /bin/setfont ]; then
+		font="$(cat "$RC_LIBDIR"/console/font)"
+		[ -c "$CONSOLE" ] && cons="-C $CONSOLE"
+		setfont $cons "$RC_LIBDIR"/console/"$font" 2>/dev/null
+	fi
+fi
+
+# Try and set a keyboard map as early as possible
+if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/keymaps \
+	 -o -e /etc/runlevels/"$RC_BOOTLEVEL"/keymaps ]; then
+	kbd_mode $kmode -C "$CONSOLE" 2>/dev/null
+	if [ -r "$RC_LIBDIR"/console/keymap ]; then
+		loadkeys "$RC_LIBDIR"/console/keymap 2>/dev/null
 	fi
 fi
 
