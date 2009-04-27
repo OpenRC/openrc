@@ -573,7 +573,7 @@ runlevel_config(const char *service, const char *level)
 }
 
 static void
-do_stop_services(const char *newlevel, bool parallel)
+do_stop_services(const char *newlevel, bool parallel, bool going_down)
 {
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
@@ -602,7 +602,8 @@ do_stop_services(const char *newlevel, bool parallel)
 			continue;
 		}
 		kwords = rc_deptree_depend(deptree, service->value, "keyword");
-		if (rc_stringlist_find(kwords, "nostop"))
+		if (rc_stringlist_find(kwords, "nostop") ||
+		    (going_down && rc_stringlist_find(kwords, "noshutdown")))
 			nstop = true;
 		else
 			nstop = false;
@@ -1063,7 +1064,7 @@ main(int argc, char **argv)
 
 	/* Now stop the services that shouldn't be running */
 	if (stop_services)
-		do_stop_services(newlevel, parallel);
+		do_stop_services(newlevel, parallel, going_down);
 
 	/* Wait for our services to finish */
 	wait_for_services();

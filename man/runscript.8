@@ -139,6 +139,12 @@ When in a jail, exclude this service from any dependencies. The service can
 still be run directly.
 .It Dv noopenvz
 Same as nojail, but for OpenVZ systems.
+.It Dv noshutdown
+Don't stop this service when shutting the system down.
+This normally quite safe as remaining daemons will be sent a SIGTERM just
+before final shutdown.
+Network related services such as the network and dhcpcd init scripts normally
+have this keyword.
 .It Dv nostop
 Don't stop this service when changing runlevels, even if not present.
 This includes shutting the system down.
