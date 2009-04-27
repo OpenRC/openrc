@@ -3,7 +3,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=/usr/sbin/nscd
-command_args="${nscd_args}"
+command_args=$nscd_args
 pidfile=/var/run/nscd.pid
 name="Name Service Cache Daemon"
 
@@ -16,7 +16,7 @@ depend() {
 }
 
 flush() {
-	ebegin "Flushing ${name}"
+	ebegin "Flushing $name"
 	nscd -I all >/dev/null
 	eend $?
 }

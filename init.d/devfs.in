@@ -15,19 +15,19 @@ start() {
 		"devpts /dev/pts 0755 ,gid=5,mode=0620 devpts" \
 		"tmpfs /dev/shm 1777 ,nodev shm" \
 	; do
-		set -- ${x}
+		set -- $x
 		grep -Eq "[[:space:]]+$1$" /proc/filesystems || continue
-		mountinfo -q "$2" && continue
+		mountinfo -q $2 && continue
 
-		if [ ! -d "$2" ]; then
-			mkdir -m "$3" -p "$2" >/dev/null 2>&1 || \
+		if [ ! -d $2 ]; then
+			mkdir -m $3 -p $2 >/dev/null 2>&1 || \
 				ewarn "Could not create $2!"
 		fi
 
-		if [ -d "$2" ]; then
+		if [ -d $2 ]; then
 			ebegin "Mounting $2"
-			if ! fstabinfo --mount "$2"; then
-				mount -n -t "$1" -o noexec,nosuid"$4" "$5" "$2"
+			if ! fstabinfo --mount $2; then
+				mount -n -t $1 -o noexec,nosuid$4 $5 $2
 			fi
 			eend $?
 		fi

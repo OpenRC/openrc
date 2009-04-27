@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Saves a kernel dump."
@@ -12,25 +12,25 @@ depend()
 
 start()
 {
-	local dump_dir=${dump_dir:-/var/crash}
-	if ! [ -d "${dump_dir}" ]; then
-		mkdir -p "${dump_dir}"
-		chmod 700 "${dump_dir}"
+	: ${dump_dir:=/var/crash}
+	if ! [ -d "$dump_dir" ]; then
+		mkdir -p "$dump_dir"
+		chmod 700 "$dump_dir"
 	fi
 
-	if [ "${RC_UNAME}" = "FreeBSD" ]; then
+	if [ "$RC_UNAME" = FreeBSD ]; then
 		# Don't quote ${dump_device}, so that if it's unset,
 		# savecore will check on the partitions listed in fstab
 		# without errors in the output
-		savecore -C "${dump_dir}" ${dump_device} >/dev/null
+		savecore -C "$dump_dir" $dump_device >/dev/null
 	else
-		ls "${dump_dir}"/bsd* > /dev/null 2>&1
+		ls "$dump_dir"/bsd* > /dev/null 2>&1
 	fi
 	[ $? = 0 ] || return 0
 
-	local sopts="${dump_dir} ${dump_device}"
-	yesno ${dump_compress} && sopts="-z ${sopts}"
-	ebegin "Saving kernel core dump in ${dump_dir}"
-	savecore ${sopts} >/dev/null
+	local sopts="$dump_dir $dump_device"
+	yesno $dump_compress && sopts="-z $sopts"
+	ebegin "Saving kernel core dump in $dump_dir"
+	savecore $sopts >/dev/null
 	eend $?
 }

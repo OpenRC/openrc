@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 extra_commands="save"
@@ -7,8 +7,8 @@ extra_commands="save"
 description="Sets the local clock to UTC or Local Time." 
 description_save="Saves the current time in the BIOS."
 
-clock=${clock:-${CLOCK:-UTC}}
-if [ "${clock}" = "UTC" ]; then
+: ${clock:=${CLOCK:-UTC}}
+if [ "$clock" = "UTC" ]; then
 	utc="UTC"
 else
 	utc="Local Time"
@@ -18,8 +18,8 @@ depend()
 {
 	provide clock
 	# BSD adjkerntz needs to be able to write to /etc
-	if [ "${clock}" = "UTC" -a -e /etc/wall_cmos_clock ] ||
-	   [ "${clock}" != "UTC" -a ! -e /etc/wall_cmos_clock ]; then
+	if [ "$clock" = "UTC" -a -e /etc/wall_cmos_clock ] ||
+	   [ "$clock" != "UTC" -a ! -e /etc/wall_cmos_clock ]; then
 		need root
 	fi
 	keyword nojail noprefix
@@ -28,7 +28,7 @@ depend()
 start()
 {	
 	ebegin "Starting the System Clock Adjuster [${utc}]"
-	if [ "${clock}" != "UTC" ]; then
+	if [ "$clock" != "UTC" ]; then
 		echo >/etc/wall_cmos_clock
 		start-stop-daemon --start --exec /sbin/adjkerntz -- -i
 	else
@@ -48,8 +48,8 @@ save()
 stop()
 {
 	# Don't tweak the hardware clock on LiveCD halt.
-	if yesno "${clock_systohc:-${CLOCK_SYSTOHC}}"; then
-	   [ -z "${CDBOOT}" ] && save
+	if yesno "${clock_systohc:-$CLOCK_SYSTOHC}"; then
+	   [ -z "$CDBOOT" ] && save
 	fi
 
 	ebegin "Stopping the System Clock Adjuster"

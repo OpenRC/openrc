@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 depend()
@@ -15,10 +15,10 @@ start()
 	local retval=0 var= comments=
 	ebegin "Configuring kernel parameters"
 	while read var comments; do
-		case "${var}" in
+		case "$var" in
 			""|"#"*) continue;;
 		esac
-		sysctl -w "${var}" >/dev/null || retval=1
+		sysctl -w "$var" >/dev/null || retval=1
 	done < /etc/sysctl.conf
-	eend ${retval} "Some errors were encountered"
+	eend $retval "Some errors were encountered"
 }

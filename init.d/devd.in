@@ -3,7 +3,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=/sbin/devd
-command_args=${devd_args}
+command_args=$devd_args
 name="Device State Change Daemon"
 
 depend() {

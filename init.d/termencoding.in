@@ -1,11 +1,11 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2008 Roy Marples <roy@marples.name>
+# Copyright 2008-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Configures terminal encoding."
 
 ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
-unicode=${unicode:-${UNICODE}}
+: ${unicode:=${UNICODE}}
 
 depend()
 {
@@ -25,11 +25,11 @@ start()
 		termmsg="UTF-8"
 	fi
 
-	ebegin "Setting terminal encoding [${termmsg}]"
+	ebegin "Setting terminal encoding [$termmsg]"
 	n=1
-	while [ ${n} -le "${ttyn}" ]; do
-		printf "\033%s" "${termencoding}" >"${ttydev}${n}"
-		n=$((${n} + 1))
+	while [ ${n} -le "$ttyn" ]; do
+		printf "\033%s" "$termencoding" >$ttydev$n
+		n=$(($n + 1))
 	done
 	eend 0
 }

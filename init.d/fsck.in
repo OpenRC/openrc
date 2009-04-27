@@ -19,7 +19,7 @@ _abort() {
 
 # We should only reboot when first booting
 _reboot() {
-	if [ "${RC_RUNLEVEL}" = "${RC_BOOTLEVEL}" ]; then
+	if [ "$RC_RUNLEVEL" = "$RC_BOOTLEVEL" ]; then
 		reboot "$@"
 		_abort || return 1
 	fi
@@ -39,40 +39,40 @@ start()
 		return 0
 	fi
 	if _forcefsck; then
-		fsck_opts="${fsck_opts} -f"
+		fsck_opts="$fsck_opts -f"
 		check_extra="(check forced)"
 	fi
 
-	if [ -n "${fsck_passno}" ]; then
-		check_extra="[passno ${fsck_passno}] ${check_extra}"
+	if [ -n "$fsck_passno" ]; then
+		check_extra="[passno $fsck_passno] $check_extra"
 	fi
-	ebegin "Checking local filesystems ${check_extra}"
-	for p in ${fsck_passno}; do
-		local IFS="${_IFS}"
-		case "${p}" in
-			[0-9]*) p="=${p}";;
+	ebegin "Checking local filesystems $check_extra"
+	for p in $fsck_passno; do
+		local IFS="$_IFS"
+		case "$p" in
+			[0-9]*) p="=$p";;
 		esac
-		set -- "$@" $(fstabinfo --passno "${p}")
+		set -- "$@" $(fstabinfo --passno "$p")
 		unset IFS
 	done
 
-	if [ "${RC_UNAME}" = "Linux" ]; then
-		fsck_opts="${fsck_opts} -C0 -T"
-		if [ -z "${fsck_passno}" ]; then
+	if [ "$RC_UNAME" = Linux ]; then
+		fsck_opts="$fsck_opts -C0 -T"
+		if [ -z "$fsck_passno" ]; then
 			fsck_args=${fsck_args--A -p}
 			if echo 2>/dev/null >/.test.$$; then
 				rm -f /.test.$$
-				fsck_opts="${fsck_opts} -R"
+				fsck_opts="$fsck_opts -R"
 			fi
 		fi
 	fi
 
 	trap : INT QUIT
-	fsck ${fsck_args--p} ${fsck_opts} "$@"
+	fsck ${fsck_args--p} $fsck_opts "$@"
 	case $? in
 	0)	eend 0; return 0;;
 	1)	ewend 1 "Filesystems repaired"; return 0;;
-	2|3)	if [ "${RC_UNAME}" = "Linux" ]; then
+	2|3)	if [ "$RC_UNAME" = Linux ]; then
 		 	ewend 1 "Filesystems repaired, but reboot needed"
 	         	_reboot -f
 		else
@@ -80,7 +80,7 @@ start()
 				"manual fsck required"
 			_abort
 		fi;;
-	4)	if [ "${RC_UNAME}" = "Linux" ]; then
+	4)	if [ "$RC_UNAME" = Linux ]; then
 			ewend 1 "Fileystem errors left uncorrected, aborting"
 			_abort
 		else
@@ -101,6 +101,6 @@ stop()
 	_reboot() { return 0; }
 	_forcefsck() { return 1; }
 
-	yesno "${fsck_shutdown}" && start
+	yesno $fsck_shutdown && start
 	return 0
 }

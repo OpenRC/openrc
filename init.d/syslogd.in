@@ -1,10 +1,10 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=/usr/sbin/syslogd
-command_args=${syslogd_args}
-case "${RC_UNAME}" in
+command_args=$syslogd_args
+case "$RC_UNAME" in
 	FreeBSD|DragonFly)	pidfile=/var/run/syslog.pid;;
 	*)			pidfile=/var/run/syslogd.pid;;
 esac

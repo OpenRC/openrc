@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Sets the hostname of the machine."
@@ -11,7 +11,7 @@ depend() {
 start()
 {
 	hostname=${hostname-${HOSTNAME-localhost}}
-	ebegin "Setting hostname to ${hostname}"
-	hostname "${hostname}"
+	ebegin "Setting hostname to $hostname"
+	hostname "$hostname"
 	eend $? "Failed to set the hostname"
 }

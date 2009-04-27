@@ -1,9 +1,9 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=/usr/sbin/powerd
-command_args=${powerd_args}
+command_args=$powerd_args
 pidfile=/var/run/powerd.pid
 name="Power Control Daemon"
 
@@ -17,11 +17,11 @@ depend()
 
 start_pre()
 {
-	if [ -n "${powerd_battery_mode}" ]; then
-		command_args="${command_args} -b ${powerd_battery_mode}"
+	if [ -n "$powerd_battery_mode" ]; then
+		command_args="$command_args -b $powerd_battery_mode"
 	fi
 	if [ -n "${powerd_ac_mode}" ]; then
-		command_args="${command_args} -a ${powerd_ac_mode}"
+		command_args="$command_args -a $powerd_ac_mode"
 	fi
 }
 
@@ -29,7 +29,7 @@ stop_post()
 {
 	local level=$(sysctl -n dev.cpu.0.freq_levels |
 	    sed -e 's:/.*::')
-	if [ -n "${level}" ]; then
-		sysctl dev.cpu.0.freq="${level}" >/dev/null
+	if [ -n "$level" ]; then
+		sysctl dev.cpu.0.freq="$level" >/dev/null
 	fi
 }

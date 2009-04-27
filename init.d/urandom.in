@@ -1,9 +1,8 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-urandom_seed=${urandom_seed:-${URANDOM_SEED:-/var/run/random-seed}}
-
+: ${urandom_seed:=${URANDOM_SEED:-/var/run/random-seed}}
 description="Initializes the random number generator."
 
 depend()
@@ -22,19 +21,19 @@ save_seed()
 
 	(	# sub shell to prevent umask pollution
 		umask 077
-		dd if=/dev/urandom of="${urandom_seed}" count=${psz} 2>/dev/null
+		dd if=/dev/urandom of="$urandom_seed" count=${psz} 2>/dev/null
 	)
 }
 
 start()
 {
 	[ -c /dev/urandom ] || return
-	if [ -f "${urandom_seed}" ]; then
+	if [ -f "$urandom_seed" ]; then
 		ebegin "Initializing random number generator"
-		cat "${urandom_seed}" > /dev/urandom
+		cat "$urandom_seed" > /dev/urandom
 		eend $? "Error initializing random number generator"
 	fi
-	rm -f "${urandom_seed}" && save_seed
+	rm -f "$urandom_seed" && save_seed
 	return 0
 }
 

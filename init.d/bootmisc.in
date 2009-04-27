@@ -16,25 +16,27 @@ dir_writeable()
 	mkdir "$1"/.test.$$ 2>/dev/null && rmdir "$1"/.test.$$
 }
 
+: ${wipe_tmp:=${WIPE_TMP:-yes}}
+
 cleanup_tmp_dir()
 {
 	local dir="$1"
 
-	if ! [ -d "${dir}" ]; then
-		mkdir -p "${dir}" || return $?
+	if ! [ -d "$dir" ]; then
+		mkdir -p "$dir" || return $?
 	fi
-	dir_writeable "${dir}" || return 1
-	chmod +t "${dir}"
-	cd "${dir}"
-	if yesno ${wipe_tmp:-${WIPE_TMP:-yes}}; then
-		ebegin "Wiping ${dir} directory"
+	dir_writeable "$dir" || return 1
+	chmod +t "$dir"
+	cd "$dir"
+	if yesno $wipe_tmp; then
+		ebegin "Wiping $dir directory"
 		local startopts="-x . -depth"
-		[ "${RC_UNAME}" = Linux ] && startopts=". -xdev -depth"
+		[ "$RC_UNAME" = Linux ] && startopts=". -xdev -depth"
 
 		# Faster than find
 		rm -rf -- [^ajlq\.]*
 
-		find ${startopts} ! -name . \
+		find $startopts ! -name . \
 			! -path "./lost+found" \
 			! -path "./lost+found/*" \
 			! -path "./quota.user" \
@@ -52,11 +54,11 @@ cleanup_tmp_dir()
 			-exec rm -rf {} \;
 		eend 0
 	else
-		ebegin "Cleaning ${dir} directory"
-		rm -rf -- "${dir}"/.X*-lock "${dir}"/esrv* "${dir}"/kio* \
-			"${dir}"/jpsock.* "${dir}"/.fam* "${dir}"/.esd* \
-			"${dir}"/orbit-* "${dir}"/ssh-* "${dir}"/ksocket-* \
-			"${dir}"/.*-unix
+		ebegin "Cleaning $dir directory"
+		rm -rf -- "$dir"/.X*-lock "$dir"/esrv* "$dir"/kio* \
+			"$dir"/jpsock.* "$dir"/.fam* "$dir"/.esd* \
+			"$dir"/orbit-* "$dir"/ssh-* "$dir"/ksocket-* \
+			"$dir"/.*-unix
 		eend 0
 	fi
 }
@@ -71,12 +73,15 @@ mkutmp()
 
 start()
 {
+	# Remove any added console dirs
+	rm -rf "$RC_LIBDIR"/console
+
 	local logw=false runw=false
 	# Ensure that our basic dirs exist
 	for x in /var/log /var/run /tmp; do
-		if ! [ -d "${x}" ]; then
-			if ! mkdir -p "${x}"; then
-				eend 1 "failed to create needed directory ${x}"
+		if ! [ -d $x ]; then
+			if ! mkdir -p $x; then
+				eend 1 "failed to create needed directory $x"
 				return 1
 			fi
 		fi 
@@ -85,9 +90,9 @@ start()
 	if dir_writeable /var/run; then
 		ebegin "Creating user login records"
 		local xtra=
-		[ "${RC_UNAME}" = NetBSD ] && xtra=x
+		[ "$RC_UNAME" = NetBSD ] && xtra=x
 		for x in "" $xtra; do
-			mkutmp /var/run/utmp${x}
+			mkutmp /var/run/utmp$x
 		done
 		[ -e /var/log/wtmp ] && mkutmp /var/log/wtmp
 		eend 0
@@ -98,22 +103,22 @@ start()
 			! -name ld-elf.so.hints ! -name ld.so.hints);
 		do
 			# Clean stale sockets
-			if [ -S "${x}" ]; then
+			if [ -S "$x" ]; then
 				if type fuser >/dev/null 2>&1; then
-					fuser "${x}" 2>/dev/null || rm "${x}"
+					fuser "$x" 2>/dev/null || rm -- "$x"
 				else
-					rm "${x}"
+					rm -- "$x"
 				fi
 			fi
-			[ ! -f "${x}" ] && continue
+			[ ! -f "$x" ] && continue
 			# Do not remove pidfiles of already running daemons
-			case "${x}" in
+			case "$x" in
 				*.pid)
 					start-stop-daemon --test --quiet \
-					--stop --pidfile "${x}" && continue
+					--stop --pidfile "$x" && continue
 				;;
 			esac
-			rm -f -- "${x}"
+			rm -f -- "$x"
 		done
 		eend 0
 	fi
@@ -121,7 +126,7 @@ start()
 	# Clean up /tmp directories
 	local tmp=
 	for tmp in ${clean_tmp_dirs:-${wipe_tmp_dirs-/tmp}}; do
-		cleanup_tmp_dir "${tmp}"
+		cleanup_tmp_dir "$tmp"
 	done
 
 	if dir_writeable /tmp; then
@@ -131,12 +136,14 @@ start()
 		rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
 		mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
 		chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
-		[ -x /sbin/restorecon ] && restorecon /tmp/.ICE-unix /tmp/.X11-unix
+		if [ -x /sbin/restorecon ]; then
+			restorecon /tmp/.ICE-unix /tmp/.X11-unix
+		fi
 	fi
 
-	if ${logw} || dir_writeable /var/log; then
+	if $logw || dir_writeable /var/log; then
 		# Create an 'after-boot' dmesg log
-		if [ "${RC_SYS}" != VSERVER -a "${RC_SYS}" != OPENVZ ]; then
+		if [ "$RC_SYS" != VSERVER -a "$RC_SYS" != OPENVZ ]; then
 			dmesg > /var/log/dmesg
 			chmod 640 /var/log/dmesg
 		fi
@@ -149,10 +156,10 @@ start()
 stop()
 {
 	# Write a halt record if we're shutting down
-	if [ "${RC_RUNLEVEL}" = shutdown ]; then
-		[ "${RC_UNAME}" = Linux ] && halt -w
-		if [ "${RC_SYS}" = OPENVZ ]; then
-			yesno ${RC_REBOOT} && printf "" >/reboot
+	if [ "$RC_RUNLEVEL" = shutdown ]; then
+		[ "$RC_UNAME" = Linux ] && halt -w
+		if [ "$RC_SYS" = OPENVZ ]; then
+			yesno $RC_REBOOT && printf "" >/reboot
 		fi
 	fi
 

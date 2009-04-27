@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Mounts disks and swap according to /etc/fstab."
@@ -15,12 +15,12 @@ start()
 {
 	# Mount local filesystems in /etc/fstab.
 	local types="noproc" x=
-	for x in ${net_fs_list}; do
+	for x in $net_fs_list; do
 		types="${types},${x}"
 	done
 
 	ebegin "Mounting local filesystems"
-	mount -at "${types}"
+	mount -at "$types"
 	eend $? "Some local filesystem failed to mount"
 
 	# Always return 0 - some local mounts may not be critical for boot
@@ -33,31 +33,31 @@ stop()
 	local x= no_umounts_r="/|/dev|/dev/.*|${RC_SVCDIR}"
 	no_umounts_r="${no_umounts_r}|/bin|/sbin|/lib|/libexec"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
-	OIFS=${IFS} SIFS=${IFS-y}
+	OIFS=$IFS SIFS=${IFS-y}
 	IFS=$IFS:
-	for x in ${no_umounts} ${RC_NO_UMOUNTS}; do
-		no_umounts_r="${no_umounts_r}|${x}"
+	for x in $no_umounts $RC_NO_UMOUNTS; do
+		no_umounts_r="$no_umounts_r|$x"
 	done
-	if [ "${SIFS}" = "y" ]; then
+	if [ "$SIFS" = y ]; then
 		IFS=$OIFS
 	else
 		unset IFS
 	fi
 
-	if [ "${RC_UNAME}" = "Linux" ]; then
-		no_umounts_r="${no_umounts_r}|/proc|/proc/.*|/sys|/sys/.*"
+	if [ "$RC_UNAME" = Linux ]; then
+		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/sys|/sys/.*"
 	fi
-	no_umounts_r="^(${no_umounts_r})$"
+	no_umounts_r="^($no_umounts_r)$"
 
 	# Flush all pending disk writes now
 	sync; sync
 
-	. "${RC_LIBDIR}"/sh/rc-mount.sh
+	. "$RC_LIBDIR"/sh/rc-mount.sh
 
 	# Umount loopback devices
 	einfo "Unmounting loopback devices"
 	eindent
-	do_unmount "umount -d" --skip-point-regex "${no_umounts_r}" \
+	do_unmount "umount -d" --skip-point-regex "$no_umounts_r" \
 		--node-regex "^/dev/loop"
 	eoutdent
 
@@ -66,12 +66,12 @@ stop()
 	einfo "Unmounting filesystems"
 	eindent
 	local fs=
-	for x in ${net_fs_list}; do
-		fs="${fs}${fs:+|}${x}"
+	for x in $net_fs_list; do
+		fs="$fs${fs:+|}$x"
 	done
-	[ -n "${fs}" ] && fs="^(${fs})$"
-	do_unmount "umount" --skip-point-regex "${no_umounts_r}" \
-		${fs:+--skip-fstype-regex} ${fs} --nonetdev
+	[ -n "$fs" ] && fs="^($fs)$"
+	do_unmount umount --skip-point-regex "$no_umounts_r" \
+		${fs:+--skip-fstype-regex} $fs --nonetdev
 	eoutdent
 
 	return 0

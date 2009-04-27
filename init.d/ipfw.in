@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 # This is based on /etc/rc.firewall and /etc/rc.firewall6 from FreeBSD
@@ -95,24 +95,24 @@ start() {
 	
 	# Add permits for this workstations published services below
 	# Only IPs and nets in firewall_allowservices is allowed in.
-	for i in ${ipfw_ip_in}; do
-		for p in ${ipfw_ports_in}; do
-			ipfw add pass tcp from ${i} to me ${p}
+	for i in $ipfw_ip_in; do
+		for p in $ipfw_ports_in; do
+			ipfw add pass tcp from $i to me $p
 		done
 	done
 
 	# Allow all connections from trusted IPs.
 	# Playing with the content of firewall_trusted could seriously
 	# degrade the level of protection provided by the firewall.
-	for i in ${ipfw_ip_trust}; do
-		ipfw add pass ip from ${i} to me
+	for i in $ipfw_ip_trust; do
+		ipfw add pass ip from $i to me
 	done
 	
 	ipfw add 65000 count ip from any to any
 
 	# Drop packets to ports where we don't want logging
-	for p in ${ipfw_ports_nolog}; do
-		ipfw add deny { tcp or udp } from any to any ${p} in
+	for p in $ipfw_ports_nolog; do
+		ipfw add deny { tcp or udp } from any to any $p in
 	done
 
 	# Broadcasts and muticasts
@@ -129,10 +129,10 @@ start() {
 
 	# Deny and (if wanted) log the rest unconditionally.
 	if yesno ${ipfw_log_deny:-no}; then
-		log="log"
+		log=log
 		sysctl net.inet.ip.fw.verbose=1 >/dev/null
 	fi
-	ipfw add deny ${log} ip from any to any
+	ipfw add deny $log ip from any to any
 
 	eend 0
 }

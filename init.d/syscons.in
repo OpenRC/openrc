@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 depend() {
@@ -8,29 +8,29 @@ depend() {
 }
 
 start() {
-	if [ -n "${allscreen_flags}" ]; then
-		ebegin "Setting mode to ${allscreen_flags} for all screens"
+	if [ -n "$allscreen_flags" ]; then
+		ebegin "Setting mode to $allscreen_flags for all screens"
 		for v in /dev/ttyv*; do
-			vidcontrol ${allscreen_flags} <"${v}"
+			vidcontrol $allscreen_flags <$v
 		done
 		eend $?
 	fi
 	
-	if [ -n "${keymap}" ]; then
-		ebegin "Setting keymap to ${keymap}"
-		kbdcontrol -l ${keymap} </dev/console
+	if [ -n "$keymap" ]; then
+		ebegin "Setting keymap to $keymap"
+		kbdcontrol -l $keymap </dev/console
 		eend $?
 	fi
 	
-	if [ -n "${keyrate}" ]; then
-		ebegin "Setting keyrate to ${keyrate}"
-		kbdcontrol -r ${keyrate} </dev/console
+	if [ -n "$keyrate" ]; then
+		ebegin "Setting keyrate to $keyrate"
+		kbdcontrol -r $keyrate </dev/console
 		eend $?
 	fi
 
-	if [ -n "${keychange}" ]; then
+	if [ -n "$keychange" ]; then
 		ebegin "Changing function keys"
-		eval set -- "${keychange}"
+		eval set -- "$keychange"
 		eindent
 		while [ $# -gt 0 ]; do
 			veinfo "F$1 -> \`$2'"
@@ -41,40 +41,40 @@ start() {
 		eoutdent
 	fi
 	
-	if [ -n "${cursor}" ]; then
+	if [ -n "$cursor" ]; then
 		ebegin "Setting cursor"
-		vidcontrol -c ${cursor}
+		vidcontrol -c $cursor
 		eend $?
 	fi
 
 	local v= f=
 	for v in font8x16 font8x14 font8x8; do
-		eval f=\$${v}
-		if [ -n "${f}" ]; then
-			ebegin "Setting font ${f}"
-			vidcontrol -f ${v##font} ${f}
+		eval f=\$$v
+		if [ -n "$f" ]; then
+			ebegin "Setting font $f"
+			vidcontrol -f ${v##font} $f
 			eend $?
 		fi
 	done
 
-	if [ -n "${blanktime}" ]; then
+	if [ -n "$blanktime" ]; then
 		ebegin "Setting blanktime"
-		vidcontrol -t ${blanktime}
+		vidcontrol -t $blanktime
 		eend $?
 	fi
 
-	if [ -n "${saver}" ]; then
+	if [ -n "$saver" ]; then
 		local i=
 		for i in $(kldstat | sed -n -e 's/.* \(splash_.*\)/\1/p'); do
-			kldunload "${i}"
+			kldunload "$i"
 		done
 		kldstat -v | grep -q _saver || kldload ${saver}_saver
 	fi
 
-	if [ -n "${kbdflags}" ]; then
+	if [ -n "$kbdflags" ]; then
 		ebegin "Setting keyboard flags for all screens"
 		for v in /dev/ttyv*; do
-			kbdcontrol ${kbdflags} <${v}
+			kbdcontrol $kbdflags <$v
 		done
 		eend $?
 	fi

@@ -17,8 +17,8 @@ restore()
 	eindent
 	for mixer in /dev/mixer*; do
 		if [ -r "/var/db/${mixer#/dev/}-state" ]; then
-			vebegin "${mixer}"
-			mixer -f "${mixer}" \
+			vebegin "$mixer"
+			mixer -f "$mixer" \
 			$(cat "/var/db/${mixer#/dev/}-state") >/dev/null
 			veend $?
 			: $((retval += $?))
@@ -37,11 +37,11 @@ stop()
 	ebegin "Saving mixer settings"
 	eindent
 	for mixer in /dev/mixer*; do
-		vebegin "${mixer}"
-		mixer -f "${mixer}" -s >/var/db/"${mixer#/dev/}"-state
+		vebegin "$mixer"
+		mixer -f "$mixer" -s >/var/db/"${mixer#/dev/}"-state
 		veend $?
 		: $((retval += $?))
 	done
 	eoutdent
-	eend ${retval}
+	eend $retval
 }

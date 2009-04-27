@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 depend()
@@ -20,21 +20,21 @@ start()
 
 		# Skip these services
 		for s in cleartmp moused; do
-			[ "${s}" = "${service}" ] && continue 2
+			[ "$s" = "$service" ] && continue 2
 		done
 
 		# If we have an init script for this service, continue
-		rc-service --exists "${service}" && continue
+		rc-service --exists "$service" && continue
 
 		# Ensure that the users rc.conf will start us - ignore the defaults
 		eval enabled=\$${svc##*/}_enable
-		yesno ${enabled} || yesno ${svc##*/} || continue
+		yesno $enabled || yesno ${svc##*/} || continue
 
 		# Good to go!
-		"$svc" start && started="${started} ${svc}"
+		"$svc" start && started="$started $svc"
 		: $((retval += $?))
 	done
-	service_set_value started "${started}"
+	service_set_value started "$started"
 	eend $retval "Some local rc services failed to start"
 	return 0
 }
@@ -44,7 +44,7 @@ stop()
 	ebegin "Stopping local rc services"
 	local svc= retval=0
 	for svc in $(rcorder $(service_get_value started) 2>/dev/null | sort -r); do
-		"${svc}" stop
+		"$svc" stop
 		: $((retval += $?))
 	done
 	eend $retval "Some local rc services failed to stop"

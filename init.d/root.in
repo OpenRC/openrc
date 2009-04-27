@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Mount the root fs read/write"
@@ -22,7 +22,7 @@ start()
 	fi
 
 	ebegin "Remounting root filesystem read/write"
-	case "${RC_UNAME}" in
+	case "$RC_UNAME" in
 		Linux)	mount -n -o remount,rw /;;
 		*)	mount -u -o rw /;;
 	esac

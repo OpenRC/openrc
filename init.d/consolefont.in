@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Sets a font for the consoles."
@@ -7,27 +7,24 @@ description="Sets a font for the consoles."
 depend()
 {
 	need localmount termencoding
-	after hotplug
+	after hotplug bootmisc
 	keyword noopenvz noprefix nouml novserver noxenu
 }
 
 start()
 {
-	# Forget about any font until we are successful
-	rm -rf "${RC_LIBDIR}"/console
-
 	ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 	consolefont=${consolefont:-${CONSOLEFONT}}
 	unicodemap=${unicodemap:-${UNICODEMAP}}
 	consoletranslation=${consoletranslation:-${CONSOLETRANSLATION}}
 
-	if [ -z "${consolefont}" ]; then
+	if [ -z "$consolefont" ]; then
 		ebegin "Using the default console font"
 		eend 0
 		return 0
 	fi
 
-	if [ "${ttyn}" = 0 ]; then
+	if [ "$ttyn" = 0 ]; then
 		ebegin "Skipping font setup (rc_tty_number == 0)"
 		eend 0
 		return 0
@@ -36,39 +33,39 @@ start()
 	local x= param= sf_param= retval=0 ttydev=/dev/tty
 
 	# Get additional parameters
-	if [ -n "${consoletranslation}" ]; then
-		param="${param} -m ${consoletranslation}"
+	if [ -n "$consoletranslation" ]; then
+		param="$param -m $consoletranslation"
 	fi
 	if [ -n "${unicodemap}" ]; then
-		param="${param} -u ${unicodemap}"
+		param="$param -u $unicodemap"
 	fi
 
 	# Set the console font
-	ebegin "Setting console font [${consolefont}]"
+	ebegin "Setting console font [$consolefont]"
 	[ -d /dev/vc ] && ttydev=/dev/vc/
 	x=1
-	while [ ${x} -le ${ttyn} ]; do
-		setfont ${consolefont} ${param} -C ${ttydev}${x} >/dev/null 
-		retval=$((${retval} + $?))
-		x=$((${x} + 1))
+	while [ $x -le $ttyn ]; do
+		setfont $consolefont $param -C $ttydev$x >/dev/null 
+		retval=$(($retval + $?))
+		x=$(($x + 1))
 	done
-	eend ${retval}
+	eend $retval
 
 	# Store the last font so we can use it ASAP on boot
-	if [ ${retval} -eq 0 -a -w "${RC_LIBDIR}" ]; then
-		mkdir -p "${RC_LIBDIR}"/console
-		for font in /usr/share/consolefonts/"${consolefont}".*; do
+	if [ $retval -eq 0 -a -w "$RC_LIBDIR" ]; then
+		mkdir -p "$RC_LIBDIR"/console
+		for font in /usr/share/consolefonts/"$consolefont".*; do
 			:
 		done
-		cp "${font}" "${RC_LIBDIR}"/console
-		echo "${font##*/}" > "${RC_LIBDIR}"/console/font
+		cp "$font" "$RC_LIBDIR"/console
+		echo "${font##*/}" >"$RC_LIBDIR"/console/font
 		if yesno ${unicode:-${UNICODE}}; then
-			echo "" > "${RC_LIBDIR}"/console/unicode
+			echo "" > "$RC_LIBDIR"/console/unicode
 		else
-			rm -f "${RC_LIBDIR}"/console/unicode
+			rm -f "$RC_LIBDIR"/console/unicode
 		fi
 
 	fi
 
-	return ${retval}
+	return $retval
 }

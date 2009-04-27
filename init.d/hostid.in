@@ -1,9 +1,9 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 extra_commands="reset"
-hostid_file=${hostid_file:-/etc/hostid}
+: ${hostid_file:=/etc/hostid}
 
 depend()
 {
@@ -20,14 +20,14 @@ _set()
 		id=$(echo "$1" | md5)
 		id="0x${id%????????????????????????}"
 	fi
-	ebegin "Setting Host ID: ${id}"
-	sysctl -w kern.hostid="${id}" >/dev/null
+	ebegin "Setting Host ID: $id"
+	sysctl -w kern.hostid="$id" >/dev/null
 	eend $? || return 1
 
 	if sysctl -n kern.hostuuid >/dev/null 2>&1; then
 		[ -n "$1" ] && id=$1
-		ebegin "Setting Host UUID: ${id}"
-		sysctl kern.hostuuid="${id}" >/dev/null
+		ebegin "Setting Host UUID: $id"
+		sysctl kern.hostuuid="$id" >/dev/null
 		eend $? || return 1
 	fi
 
@@ -38,37 +38,37 @@ _set()
 # otherwise we generate a random UUID.
 reset()
 {
-	local uuid= x="[0-9a-f]" y="${x}${x}${x}${x}"
+	local uuid= x="[0-9a-f]" y="$x$x$x$x"
 
 	if type kenv >/dev/null 2>&1; then
 		uuid=$(kenv smbios.system.uuid 2>/dev/null)
 	fi
-	case "${uuid}" in
-		${y}${y}-${y}-${y}-${y}-${y}${y}${y});;
+	case "$uuid" in
+		$y$y-$y-$y-$y-$y$y$y);;
 		*) uuid=;;
 	esac
 
-	if [ -n "${uuid}" ]; then
-		rm -f "${hostid_file}"
+	if [ -n "$uuid" ]; then
+		rm -f "$hostid_file"
 	else
 		uuid=$(uuidgen)
-		if [ -z "${uuid}" ]; then
+		if [ -z "$uuid" ]; then
 			eerror "Unable to generate a UUID"
 			return 1
 		fi
-		if ! echo "${uuid}" > "${hostid_file}"; then
-			eerror "Failed to store UUID in \`${hostid_file}'"
+		if ! echo "$uuid" >"$hostid_file"; then
+			eerror "Failed to store UUID in \`$hostid_file'"
 			return 1
 		fi
 	fi
 
-	_set "${uuid}"
+	_set "$uuid"
 }
 
 start()
 {
-	if [ -r "${hostid_file}" ]; then
-		_set $(cat "${hostid_file}") 
+	if [ -r "$hostid_file" ]; then
+		_set $(cat "$hostid_file") 
 	else
 		reset
 	fi

@@ -1,16 +1,16 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 mouse=${RC_SVCNAME##*.}
-if [ -n "${name}" -a "${mouse}" != "moused" ]; then
-	moused_device=/dev/"${mouse}"
-	pidfile=/var/run/moused-"${mouse}".pid
+if [ -n "$mouse" -a "$mouse" != "moused" ]; then
+	moused_device=/dev/"$mouse"
+	pidfile=/var/run/moused-"$mouse".pid
 else
 	pidfile=/var/run/moused.pid
 fi
 name="Console Mouse Daemon"
-[ -n "${moused_device}" ] && name="${name} (${moused_device})"
+[ -n "$moused_device" ] && name="$name ($moused_device)"
 
 depend()
 {
@@ -21,42 +21,42 @@ depend()
 
 start()
 {
-	ebegin "Starting ${name}" 
+	ebegin "Starting $name" 
 
-	if [ -z "${moused_device}" ]; then
+	if [ -z "$moused_device" ]; then
 		local dev=
 		for dev in /dev/psm[0-9]* /dev/ums[0-9]*; do
-			[ -c "${dev}" ] || continue
+			[ -c "$dev" ] || continue
 			[ -e /var/run/moused-"${dev##*/}".pid ] && continue 
-			moused_device=${dev}
+			moused_device=$dev
 			eindent
-			einfo "Using mouse on ${moused_device}"
+			einfo "Using mouse on $moused_device"
 			eoutdent
 			break
 		done
 	fi
 
-	if [ -z "${moused_device}" ]; then
+	if [ -z "$moused_device" ]; then
 		eend 1 "No mouse device found" 
 		return 1
 	fi
 
 	local args=
 	eval args=\$moused_args_${moused_device##*/}
-	[ -z "${args}" ] && args=${moused_args}
+	[ -z "$args" ] && args=$moused_args
 
 	start-stop-daemon --start --exec /usr/sbin/moused \
-		--pidfile "${pidfile}" \
-		-- ${args} -p "${moused_device}" -I "${pidfile}"
+		--pidfile "$pidfile" \
+		-- $args -p "$moused_device" -I "$pidfile"
 	local retval=$?
 	
-	if [ ${retval} = 0 ]; then
+	if [ $retval = 0 ]; then
 		local ttyv=
 		for ttyv in /dev/ttyv*; do
-			vidcontrol < "${ttyv}" -m on
+			vidcontrol < "$ttyv" -m on
 			: $((retval+= $?))
 		done
 	fi
 	
-	eend ${retval} "Failed to start moused"
+	eend $retval "Failed to start moused"
 }

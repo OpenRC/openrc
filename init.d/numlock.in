@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Turns numlock on for the consoles."
@@ -19,12 +19,12 @@ _setleds()
 	local dev=/dev/tty t= i=1 retval=0
 	[ -d /dev/vc ] && dev=/dev/vc/
 
-	while [ ${i} -le ${ttyn} ]; do
-		setleds -D "$1"num < ${dev}${i} || retval=1
-		i=$((${i} + 1))
+	while [ $i -le $ttyn ]; do
+		setleds -D "$1"num < $dev$i || retval=1
+		i=$(($i + 1))
 	done
 
-	return ${retval}
+	return $retval
 }
 
 start()

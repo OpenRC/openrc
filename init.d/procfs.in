@@ -1,5 +1,5 @@
 #!@PREFIX@/sbin/runscript
-# Copyright 2007-2008 Roy Marples <roy@marples.name>
+# Copyright 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 description="Mounts misc filesystems in /proc."
@@ -25,13 +25,13 @@ start()
 	# while older kernels have 'usbdevfs'.
 	if [ -d /proc/bus/usb -a ! -e /proc/bus/usb/devices ]; then
 		local usbfs=$(grep -Fow usbfs /proc/filesystems ||
-					  grep -Fow usbdevfs /proc/filesystems)
-		if [ -n "${usbfs}" ]; then
-			ebegin "Mounting USB device filesystem [${usbfs}]"
+			grep -Fow usbdevfs /proc/filesystems)
+		if [ -n "$usbfs" ]; then
+			ebegin "Mounting USB device filesystem [$usbfs]"
 			local usbgid="$(getent group usb | \
 				sed -e 's/.*:.*:\(.*\):.*/\1/')"
-			mount -t ${usbfs} \
-				-o ${usbgid:+devmode=0664,devgid=${usbgid},}noexec,nosuid \
+			mount -t $usbfs \
+				-o ${usbgid:+devmode=0664,devgid=$usbgid,}noexec,nosuid \
 				usbfs /proc/bus/usb
 			eend $?
 		fi
@@ -48,7 +48,8 @@ start()
 	fi
 
 	# Setup Kernel Support for miscellaneous Binary Formats
-	if [ -d /proc/sys/fs/binfmt_misc ] && ! mountinfo -q /proc/sys/fs/binfmt_misc; then
+	if [ -d /proc/sys/fs/binfmt_misc ] \
+		&& ! mountinfo -q /proc/sys/fs/binfmt_misc; then
 		if grep -qs binfmt_misc /proc/filesystems; then
 			ebegin "Mounting misc binary format filesystem"
 			mount -t binfmt_misc -o nodev,noexec,nosuid \

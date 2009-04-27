@@ -186,7 +186,7 @@ start()
 		intv=$(shell_var "$int")
 		eval upcmd=\$ifup_$intv
 		for func in ip ifconfig; do
-			eval cmd=\$${func}_${intv}
+			eval cmd=\$${func}_$intv
 			if [ -n "$cmd" -o -f /etc/"$func.$int" ]; then
 				cf=/etc/"$func.$int"
 				break

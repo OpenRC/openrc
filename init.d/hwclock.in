@@ -8,12 +8,11 @@ description="Sets the local clock to UTC or Local Time."
 description_save="Saves the current time in the BIOS."
 description_show="Displays the current time in the BIOS."
 
-clock_adjfile=${clock_adjfile:-${CLOCK_ADJFILE}}
-clock_args=${clock_args:-${CLOCK_OPTS}}
-clock_systohc=${clock_systohc:-${CLOCK_SYSTOHC}}
-
-clock=${clock:-${CLOCK:-UTC}}
-if [ "${clock}" = "UTC" ]; then
+: ${clock_adjfile:=${CLOCK_ADJFILE}}
+: ${clock_args:=${CLOCK_OPTS}}
+: ${clock_systohc:=${CLOCK_SYSTOHC}}
+: ${clock:=${CLOCK:-UTC}}
+if [ "$clock" = "UTC" ]; then
 	utc="UTC"
 	utc_cmd="--utc"
 else
@@ -24,7 +23,7 @@ fi
 depend()
 {
 	provide clock
-	if yesno ${clock_adjfile}; then
+	if yesno $clock_adjfile; then
 		use root
 	else
 		before *
@@ -47,7 +46,7 @@ setupopts()
 			;;
 	esac
 
-	case "${utc}" in
+	case "$utc" in
 		UTC|Local" "Time);;
 		*) unset utc_cmd;;
 	esac
@@ -58,7 +57,7 @@ _hwclock()
 {
 	local err="$(hwclock "$@" 2>&1 >/dev/null)"
 
-	[ -z "${err}" ] && return 0
+	[ -z "$err" ] && return 0
 	echo "${err}" >&2
 	return 1
 }
@@ -68,38 +67,38 @@ start()
 	local retval=0 errstr=""
 	setupopts
 
-	if [ -z "${utc_cmd}" ]; then
-		ewarn "Not setting clock for ${utc} system"
+	if [ -z "$utc_cmd" ]; then
+		ewarn "Not setting clock for $utc system"
 		return 0
 	fi
 
-	ebegin "Setting system clock using the hardware clock [${utc}]"
+	ebegin "Setting system clock using the hardware clock [$utc]"
 	if [ -e /proc/modules ]; then
 		local rtc=
 		for rtc in /dev/rtc /dev/rtc[0-9]*; do
-			[ -e "${rtc}" ] && break
+			[ -e "$rtc" ] && break
 		done
 		if [ ! -e "${rtc}" ]; then
 			modprobe -q rtc-cmos || modprobe -q rtc || modprobe -q genrtc
 		fi
 	fi
 
-	if [ -e /etc/adjtime ] && yesno ${clock_adjfile}; then
-		_hwclock --adjust ${utc_cmd}
-		retval=$((${retval} + $?))
+	if [ -e /etc/adjtime ] && yesno $clock_adjfile; then
+		_hwclock --adjust $utc_cmd
+		retval=$(($retval + $?))
 	fi
 	
 	# If setting UTC, don't bother to run hwclock when first booting
 	# as that's the default
-	if [ "${PREVLEVEL}" != "N" -o \
-		"${utc_cmd}" != "--utc" -o \
-		-n "${clock_args}" ];
+	if [ "$PREVLEVEL" != N -o \
+		"$utc_cmd}" != --utc -o \
+		-n "$clock_args" ];
 	then
-		_hwclock --hctosys ${utc_cmd} ${clock_args}
-		retval=$((${retval} + $?))
+		_hwclock --hctosys $utc_cmd $clock_args
+		retval=$(($retval + $?))
 	fi
 	
-	eend ${retval} "Failed to set the system clock"
+	eend $retval "Failed to set the system clock"
 
 	return 0
 }
@@ -107,37 +106,37 @@ start()
 stop()
 {
 	# Don't tweak the hardware clock on LiveCD halt.
-	[ -n "${CDBOOT}" ] && return 0
-	yesno ${clock_systohc} || return 0
+	[ -n "$CDBOOT" ] && return 0
+	yesno $clock_systohc || return 0
 
 	local retval=0 errstr=""
 	setupopts
 
-	[ -z "${utc_cmd}" ] && return 0
+	[ -z "$utc_cmd" ] && return 0
 
-	ebegin "Setting hardware clock using the system clock" "[${utc}]"
+	ebegin "Setting hardware clock using the system clock" "[$utc]"
 
-	if ! yesno "${clock_adjfile}"; then
+	if ! yesno $clock_adjfile; then
 		# Some implementations don't handle adjustments
 		if LC_ALL=C hwclock --help | grep -q "\-\-noadjfile"; then
-			utc_cmd="${utc_cmd} --noadjfile"
+			utc_cmd="$utc_cmd --noadjfile"
 		fi
 	fi
 
-	_hwclock --systohc ${utc_cmd} ${clock_args}
+	_hwclock --systohc $utc_cmd $clock_args
 	retval=$?
 
-	eend ${retval} "Failed to sync clocks" 
+	eend $retval "Failed to sync clocks" 
 }
 
 save()
 {
-	clock_systohc="yes"
+	clock_systohc=yes
 	stop
 }
 
 show()
 {
 	setupopts
-	hwclock --show "${utc_cmd}" ${clock_args} 
+	hwclock --show "$utc_cmd" $clock_args
 }
