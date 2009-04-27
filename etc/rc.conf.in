@@ -59,9 +59,8 @@
 #rc_start_wait=100
 
 # rc_nostop is a list of services which will not stop when changing runlevels.
-# Network clients may wish to add network to the list.
 # This still allows the service itself to be stopped when called directly.
-#rc_nostop="network"
+#rc_nostop=""
 
 # rc will attempt to start crashed services by default.
 # However, it will not stop them by default as that could bring down other

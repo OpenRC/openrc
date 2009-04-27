@@ -607,8 +607,10 @@ do_stop_services(const char *newlevel, bool parallel)
 		else
 			nstop = false;
 		rc_stringlist_free(kwords);
-		if (nstop)
+		if (nstop) {
+			rc_service_mark(service->value, RC_SERVICE_FAILED);
 			continue;
+		}
 
 		/* If the service has crashed, skip futher checks and just stop
 		   it */
@@ -687,7 +689,9 @@ do_start_services(bool parallel)
 
 	TAILQ_FOREACH(service, start_services, entries) {
 		state = rc_service_state(service->value);
-		if (!(state & (RC_SERVICE_STOPPED | RC_SERVICE_FAILED))) {
+		if (state & RC_SERVICE_FAILED)
+			continue;
+		if (!(state & RC_SERVICE_STOPPED)) {
 			if (crashed &&
 			    rc_service_daemons_crashed(service->value))
 				rc_service_mark(service->value,
