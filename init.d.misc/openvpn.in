@@ -4,28 +4,29 @@
 
 vpn=${RC_SVCNAME#*.}
 name="OpenVPN"
-[ "${vpn}" != "openvpn" ] && name="${name} (${vpn})"
+[ "$vpn" != openvpn ] && name="$name ($vpn)"
 command=@PKG_PREFIX@/sbin/openvpn
 
-pidfile=@VARBASE@/run/"${RC_SVCNAME}".pid
-openvpn_dir=${openvpn_dir:-@PKG_PREFIX@/etc/openvpn}
-openvpn_config=${openvpn_config:-${openvpn_dir}/${vpn}.conf}
-command_args="${openvpn_args} --daemon --config ${openvpn_config} --writepid ${pidfile}"
-required_dirs="${openvpn_dir}"
-required_files="${openvpn_config}"
+pidfile=@VARBASE@/run/"$RC_SVCNAME".pid
+: ${openvpn_dir:=@PKG_PREFIX@/etc/openvpn}
+: ${openvpn_config:=$openvpn_dir/$vpn.conf}
+command_args="$openvpn_args --daemon --config $openvpn_config"
+command_args="$command_args --writepid $pidfile"
+required_dirs=$openvpn_dir
+required_files=$openvpn_config
 
 # If we're an openvpn client, then supply a nice default config
 # You can find sample up/down scripts in the OpenRC support/openvpn dir
-if yesno "${openvpn_client}"; then
-	openvpn_up=${openvpn_up:-${openvpn_dir}/up.sh}
-	openvpn_down=${openvpn_down:-${openvpn_dir}/down.sh}
-	command_args="${command_args} --nobind --up-delay --up-restart --down-pre"
-	command_args="${command_args} --up ${openvpn_up}"
-	command_args="${command_args} --down ${openvpn_down}"
-	required_files="${required_files} ${openvpn_up} ${openvpn_down}"
+if yesno $openvpn_client; then
+	: ${openvpn_up:=${openvpn_dir}/up.sh}
+	: ${openvpn_down:=${openvpn_dir}/down.sh}
+	command_args="$command_args --nobind --up-delay --up-restart --down-pre"
+	command_args="$command_args --up $openvpn_up"
+	command_args="$command_args --down $openvpn_down"
+	required_files="$required_files $openvpn_up $openvpn_down"
 	
 	in_background_fake="start stop"
-	start_inactive="YES"
+	start_inactive=YES
 fi
 
 depend()
@@ -38,7 +39,7 @@ depend()
 start_pre()
 {
 	# Linux has good dynamic tun/tap creation
-	if [ "${RC_UNAME}" = "Linux" ]; then
+	if [ "$RC_UNAME" = Linux ]; then
 		if [ ! -e /dev/net/tun ]; then
 			if ! modprobe tun; then
 				eerror "TUN/TAP support is not available in this kernel"
@@ -60,8 +61,7 @@ start_pre()
 	fi
 	
 	# If the config file does not specify the cd option, we do
-	# But if we specify it, we override the config option which we do not want
-	if ! grep -q "^[ \t]*cd[ \t].*" "${openvpn_config}"; then
-		command_args="${command_args} --cd ${openvpn_dir}"
+	if ! grep -q "^[ \t]*cd[ \t].*" "$openvpn_config"; then
+		command_args="$command_args --cd $openvpn_dir"
 	fi
 }

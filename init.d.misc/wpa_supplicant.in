@@ -4,8 +4,8 @@
 
 command=/usr/sbin/wpa_supplicant
 wpa_supplicant_conf=/etc/wpa_supplicant.conf
-wpa_supplicant_if=${wpa_supplicant_if:+-i}${wpa_supplicant_if}
-command_args="-B -c${wpa_supplicant_conf} ${wpa_supplicant_if}"
+wpa_supplicant_if=${wpa_supplicant_if:+-i}$wpa_supplicant_if
+command_args="-B -c$wpa_supplicant_conf $wpa_supplicant_if"
 name="WPA Supplicant Daemon"
 
 depend()
@@ -14,16 +14,17 @@ depend()
 	use logger
 	after bootmisc modules
 	before dns dhcpcd net
+	keyword noshutdown
 }
 
 find_wireless()
 {
 	local iface=
 
-	case "${RC_UNAME}" in
+	case "$RC_UNAME" in
 	Linux)
 		for iface in /sys/class/net/*; do
-			if [ -e "${iface}"/wireless ]; then
+			if [ -e "$iface"/wireless ]; then
 				echo "${iface##*/}"
 				return 0
 			fi
@@ -49,8 +50,8 @@ append_wireless()
 	local iface=
 
 	iface=$(find_wireless)
-	if [ -n "${iface}" ]; then
-		command_args="${command_args} -i${iface}"
+	if [ -n "$iface" ]; then
+		command_args="$command_args -i$iface"
 	else
 		eerror "Could not find a wireless interface"
 	fi
@@ -58,7 +59,7 @@ append_wireless()
 
 start_pre()
 {
-	case " ${command_args}" in
+	case " $command_args" in
 	*" -i"*) ;;
 	*) append_wireless;;
 	esac

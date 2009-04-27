@@ -3,7 +3,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=/usr/sbin/sshd
-command_args=${sshd_args}
+command_args=$sshd_args
 pidfile=@VARBASE@/run/sshd.pid
 required_files=/etc/ssh/sshd_config
 
@@ -31,5 +31,5 @@ start_pre()
 		eend $? || return 1
 	fi
 
-	${command} -t	
+	$command -t	
 }

@@ -3,14 +3,14 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=/usr/sbin/named
-command_args=${named_args}
+command_args=$named_args
 pidfile=@VARBASE@/run/named.pid
 name="Domain Name server"
 extra_started_commands="reload"
 
 namedb=/etc/namedb
 uid=named
-case "${RC_UNAME}" in
+case "$RC_UNAME" in
 	FreeBSD)
 		uid=bind
 		pidfile=@VARBASE@/run/named/pid
@@ -19,7 +19,7 @@ case "${RC_UNAME}" in
 		uid=bind
 		;;
 esac
-named_uid=${named_uid:-${uid}}
+: ${named_uid:=${uid}}
 
 depend()
 {
@@ -30,68 +30,71 @@ depend()
 
 start_pre()
 {
-	if [ -n "${named_chroot}" ]; then
+	if [ -n "$named_chroot" ]; then
 		# Create (or update) the chroot directory structure
 		if [ -r /etc/mtree/BIND.chroot.dist ]; then
-			mtree -deU -f /etc/mtree/BIND.chroot.dist -p "${named_chroot}"
+			mtree -deU -f /etc/mtree/BIND.chroot.dist -p "$named_chroot"
 		else
 			ewarn "/etc/mtree/BIND.chroot.dist missing,"
 			ewarn "chroot directory structure not updated"
 		fi
 
-		if [ ! -d "${named_chroot}"/. ]; then
-			eerror "chroot directory ${named_chroot} missing"
+		if [ ! -d "$named_chroot"/. ]; then
+			eerror "chroot directory $named_chroot missing"
 			exit 1
 		fi
 
 		# Create /etc/namedb symlink
-		if [ ! -L "${namedb}" ]; then
-			if [ -d "${namedb}" ]; then
-				ewarn "named chroot: ${namedb} is a directory!"
-			elif [ -e "${namedb}" ]; then
-				ewarn "named chroot: ${namedb} exists!"
+		if [ ! -L "$namedb" ]; then
+			if [ -d "$namedb" ]; then
+				ewarn "named chroot: $namedb is a directory!"
+			elif [ -e "$namedb" ]; then
+				ewarn "named chroot: $namedb exists!"
 			else
-				ln -s "${named_chroot}${namedb}" "${namedb}"
+				ln -s "$named_chroot$namedb" "$namedb"
 			fi
 		else
 			# Make sure it points to the right place.
-			ln -shf "${named_chroot}${namedb}" "${namedb}"
+			ln -shf "$named_chroot$namedb" "$namedb"
 		fi
 
-		case "${RC_UNAME}" in
+		case "$RC_UNAME" in
 			*BSD|DragonFly)
 				# Mount a devfs in the chroot directory if needed
-				umount "${named_chroot}"/dev 2>/dev/null
-				mount -t devfs dev "${named_chroot}"/dev
-				devfs -m "${named_chroot}"/dev ruleset devfsrules_hide_all
-				devfs -m "${named_chroot}"/dev rule apply path null unhide
-				devfs -m "${named_chroot}"/dev rule apply path random unhide
+				umount "$named_chroot"/dev 2>/dev/null
+				mount -t devfs dev "$named_chroot"/dev
+				devfs -m "$named_chroot"/dev \
+					ruleset devfsrules_hide_all
+				devfs -m "$named_chroot"/dev \
+					rule apply path null unhide
+				devfs -m "$named_chroot"/dev \
+					rule apply path random unhide
 				;;
 		esac
 
 		# Copy local timezone information if it is not up to date.
 		if [ -r /etc/localtime ]; then
-			cmp -s /etc/localtime "${named_chroot}/etc/localtime" ||
-			cp -p /etc/localtime "${named_chroot}/etc/localtime"
+			cmp -s /etc/localtime "$named_chroot/etc/localtime" ||
+			cp -p /etc/localtime "$named_chroot/etc/localtime"
 		fi
 
-		command_args="${command_args} -t ${named_chroot}"
+		command_args="$command_args -t $named_chroot"
 
-		ln -fs "${named_chroot}${pidfile}" "${pidfile}"
+		ln -fs "$named_chroot$pidfile" "$pidfile"
 	fi
 
-	if [ ! -s "${named_chroot}${namedb}/rndc.conf" ]; then
-		local confgen="${command%/named}/rndc-confgen -a -b256 -u ${named_uid} \
-			-c ${named_chrootdir}/etc/namedb/rndc.key"
-		if [ -s "${named_chroot}${namedb}/rndc.key" ]; then
+	if [ ! -s "$named_chroot$namedb/rndc.conf" ]; then
+		local confgen="${command%/named}/rndc-confgen -a -b256 -u $named_uid \
+			-c $named_chrootdir/etc/namedb/rndc.key"
+		if [ -s "$named_chroot$namedb/rndc.key" ]; then
 			local getuser="stat -f%Su"
-			[ "${RC_UNAME}" = "Linux" ] && getuser="stat -c%U"
-			case $(${getuser} "${named_chroot}${namedb}"/rndc.key) in
-				root|"${named_uid}");;
-				*) ${confgen};;
+			[ "$RC_UNAME" = Linux ] && getuser="stat -c%U"
+			case $(${getuser} "$named_chroot$namedb"/rndc.key) in
+				root|"$named_uid");;
+				*) $confgen;;
 			esac
 		else
-			${confgen}
+			$confgen
 		fi
 	fi
 }
@@ -103,7 +106,7 @@ reload()
 
 stop_post()
 {
-	if [ -n "${named_chroot}" -a -c "${named_chroot}"/dev/null ]; then
-		umount "${named_chroot}"/dev 2>/dev/null || true
+	if [ -n "$named_chroot" -a -c "$named_chroot"/dev/null ]; then
+		umount "$named_chroot"/dev 2>/dev/null || true
 	fi
 }

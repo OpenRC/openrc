@@ -3,7 +3,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=@PKG_PREFIX@/sbin/dnsmasq
-command_args=${dnsmasq_args}
+command_args=$dnsmasq_args
 pidfile=@VARBASE@/run/dnsmasq.pid
 required_files=/etc/dnsmasq.conf
 
@@ -18,7 +18,7 @@ depend()
 
 reload()
 {
-	ebegin "Reloading ${RC_SVCNAME}"
-	start-stop-daemon --signal SIGHUP --pidfile "${pidfile}"
+	ebegin "Reloading $RC_SVCNAME"
+	start-stop-daemon --signal SIGHUP --pidfile "$pidfile"
 	eend $?
 }
