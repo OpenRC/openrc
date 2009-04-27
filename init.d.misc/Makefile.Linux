@@ -1,1 +1,1 @@
-PREFIX=/usr
+PKG_PREFIX?=/usr
