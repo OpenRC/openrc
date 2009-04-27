@@ -106,7 +106,8 @@ stop()
 	start-stop-daemon --stop \
 		${command:+--exec} $command \
 		${procname:+--name} $procname \
-		${pidfile:+--pidfile} $pidfile
+		${pidfile:+--pidfile} $pidfile \
+		${stopsig:+--signal} $stopsig
 	eend $? "Failed to stop $RC_SVCNAME"
 }
 
