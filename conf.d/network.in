@@ -6,6 +6,8 @@
 
 # You also have ifup_eth0 and ifdown_eth0 to run other commands when
 # eth0 is started and stopped.
+# You should note that we don't stop the network at system shutdown by default.
+# If you really need this, then set shutdown_network=YES
 
 # You can assign a default route
 #defaultroute="192.168.0.1"

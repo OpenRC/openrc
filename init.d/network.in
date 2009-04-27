@@ -13,8 +13,6 @@ depend()
 	need localmount
 	after bootmisc
 	provide net
-	# We don't want to stop the network at shutdown
-	keyword noshutdown
 	keyword nojail noprefix novserver
 }
 
@@ -240,6 +238,11 @@ start()
 
 stop()
 {
+	# Don't stop the network at shutdown.
+ 	# We don't use the noshutdown keyword so that we are started again
+	# correctly if we go back to multiuser.
+	! yesno ${shutdown_network:-YES} && yesno $RC_GOINGDOWN && return 0
+
 	local int= intv= cmd= downcmd= r=
 	einfo "Stopping network"
 	routeflush
