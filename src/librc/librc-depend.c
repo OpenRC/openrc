@@ -899,11 +899,20 @@ rc_deptree_update(void)
 			TAILQ_FOREACH(s, deptype->services, entries) {
 				di = get_depinfo(deptree, s->value);
 				if (!di) {
-					if (strcmp(deptype->type, "ineed") == 0)
+					if (strcmp(deptype->type, "ineed") == 0) {
 						fprintf (stderr,
 							 "Service `%s' needs non"
 							 " existant service `%s'\n",
 							 depinfo->service, s->value);
+						dt = get_deptype(depinfo, "broken");
+						if (!dt) {
+							dt = xmalloc(sizeof(*dt));
+							dt->type = xstrdup("broken");
+							dt->services = rc_stringlist_new();
+							TAILQ_INSERT_TAIL(&depinfo->depends, dt, entries);
+						}
+						rc_stringlist_addu(dt->services, s->value);
+					}
 					continue;
 				}
 

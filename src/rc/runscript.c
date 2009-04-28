@@ -633,7 +633,7 @@ svc_start(bool deps)
 		services = rc_deptree_depends(deptree, types_b, applet_list,
 		    runlevel, 0);
 		if (TAILQ_FIRST(services)) {
-			eerrorn("ERROR: `%s' needs ", applet);
+			eerrorn("ERROR: %s needs service(s) ", applet);
 			first = true;
 			TAILQ_FOREACH(svc, services, entries) {
 				if (first)
@@ -642,6 +642,7 @@ svc_start(bool deps)
 					fprintf(stderr, ", ");
 				fprintf(stderr, "%s", svc->value);
 			}
+			fprintf(stderr, "\n");
 			exit(EXIT_FAILURE);
 		}
 		rc_stringlist_free(services);
