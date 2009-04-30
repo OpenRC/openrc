@@ -586,8 +586,7 @@ svc_start(bool deps)
 	state = rc_service_state(service);
 
 	if (rc_yesno(getenv("IN_HOTPLUG")) || in_background) {
-		if (! state & RC_SERVICE_INACTIVE &&
-		    ! state & RC_SERVICE_STOPPED)
+		if (!(state & (RC_SERVICE_INACTIVE | RC_SERVICE_STOPPED)))
 			exit(EXIT_FAILURE);
 		background = true;
 		rc_service_mark(service, RC_SERVICE_HOTPLUGGED);

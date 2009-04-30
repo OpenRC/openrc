@@ -210,7 +210,7 @@ rc_update(int argc, char **argv)
 	runlevels = rc_stringlist_new();
 
 	if (optind >= argc) {
-		if (! action & DOSHOW)
+		if (!(action & DOSHOW))
 			eerrorx("%s: no service specified", applet);
 	} else {
 		service = argv[optind];
