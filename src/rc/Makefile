@@ -43,18 +43,18 @@ include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
 include ${MK}/${MKPAM}.mk
 
-_SVNVER_SH=	ret=""; \
-		if type svnversion >/dev/null 2>&1; then \
-			svnver="$$(LC_ALL=C svnversion)"; \
-			[ "$${svnver}" != exported ] && ret="-svn-$${svnver}"; \
-		fi; \
-		echo "$${ret}";
-_SVNVER!=	${_SVNVER_SH}
-SVNVER=		${_SVNVER}$(shell ${_SVNVER_SH})
+_GITVER_SH=	if git rev-parse --short HEAD >/dev/null 2>&1; then \
+			printf "."; \
+			git rev-parse --short HEAD; \
+		else; \
+			echo ""; \
+		fi
+_GITVER!=	${_GITVER_SH}
+GITVER=		${_GITVER}$(shell ${_GITVER_SH})
 
 ${SRCS}: version.h
 version.h:
-	sed -n -e 's/^VERSION=[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1${SVNVER}\"/p' ../../Makefile > version.h
+	sed -n -e 's/^VERSION=[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1${GITVER}\"/p' ../../Makefile > version.h
 	if test -n "${BRANDING}"; then \
 		echo "#define BRANDING \"${BRANDING}\"" >> version.h; \
 	fi
