@@ -2,6 +2,7 @@
 # Copyright 2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
+GITREF?=	HEAD
 DISTPREFIX?=	${NAME}-${VERSION}
 DISTFILE?=	${DISTPREFIX}.tar.bz2
 
@@ -14,9 +15,7 @@ SNAPDIR=	${DISTPREFIX}-${SNAP}
 SNAPFILE=	${SNAPDIR}.tar.bz2
 
 dist:
-	svn export . ${DISTPREFIX}
-	tar cjpf ${DISTFILE} ${DISTPREFIX}
-	rm -rf ${DISTPREFIX}
+	git archive --prefix=${DISTPREFIX}/ ${GITREF} | bzip2 > ${DISTFILE}
 
 snapshot:
 	rm -rf /tmp/${SNAPDIR}

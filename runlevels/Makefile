@@ -14,7 +14,7 @@ INITDIR=	../init.d
 MK=		../mk
 include ${MK}/sys.mk
 include ${MK}/os.mk
-include ${MK}/svnignore.mk
+include ${MK}/gitignore.mk
 include Makefile.${OS}
 
 all:

@@ -18,7 +18,7 @@ MAKE_LINKS=	suffix=$${man\#*.}; \
 
 MK=		../mk
 include ${MK}/sys.mk
-include ${MK}/svnignore.mk
+include ${MK}/gitignore.mk
 
 all:
 
