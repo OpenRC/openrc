@@ -191,8 +191,10 @@ proc_getent(const char *ent)
 	}
 
 	memset(proc, 0, sizeof(proc));
-	fgets(proc, sizeof(proc), fp);
-	if (*proc && (p = strstr(proc, ent))) {
+	p = fgets(proc, sizeof(proc), fp);
+	if (p == NULL)
+		eerror("fgets: %s", strerror(errno));
+	else if (*proc && (p = strstr(proc, ent))) {
 		i = p - proc;
 		if (i == '\0' || proc[i - 1] == ' ') {
 			p += strlen(ent);
@@ -234,7 +236,8 @@ read_key(bool block)
 		termios.c_cc[VTIME] = 0;
 	}
 	tcsetattr(fd, TCSANOW, &termios);
-	read(fd, &c, 1);
+	if (read(fd, &c, 1) == -1)
+		eerror("read: %s", strerror(errno));
 	tcsetattr(fd, TCSANOW, termios_orig);
 	return c;
 }
@@ -840,7 +843,8 @@ main(int argc, char **argv)
 	argv++;
 
 	/* Change dir to / to ensure all scripts don't use stuff in pwd */
-	chdir("/");
+	if (chdir("/") == -1)
+		eerror("chdir: %s", strerror(errno));
 
 	/* Ensure our environment is pure
 	 * Also, add our configuration to it */

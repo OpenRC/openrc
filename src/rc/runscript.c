@@ -1106,7 +1106,8 @@ runscript(int argc, char **argv)
 		usage(EXIT_FAILURE);
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
-	chdir("/");
+	if (chdir("/") == -1)
+		eerror("chdir: %s", strerror(errno));
 
 	if ((runlevel = xstrdup(getenv("RC_RUNLEVEL"))) == NULL) {
 		env_filter();

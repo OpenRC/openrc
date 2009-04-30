@@ -100,8 +100,9 @@ write_log(int logfd, const char *buffer, size_t bytes)
 			break;
 		}
 
-		if (! in_escape) {
-			write(logfd, p++, 1);
+		if (!in_escape) {
+			if (write(logfd, p++, 1) == -1)
+				eerror("write: %s", strerror(errno));
 			continue;
 		}
 
@@ -128,7 +129,8 @@ rc_logger_close(void)
 	int sig = SIGTERM;
 
 	if (signal_pipe[1] > -1) {
-		write(signal_pipe[1], &sig, sizeof(sig));
+		if (write(signal_pipe[1], &sig, sizeof(sig)) == -1)
+			eerror("write: %s", strerror(errno));
 		close(signal_pipe[1]);
 		signal_pipe[1] = -1;
 	}
@@ -218,7 +220,8 @@ rc_logger_open(const char *level)
 			if (fd[1].revents & (POLLIN | POLLHUP)) {
 				memset(buffer, 0, BUFSIZ);
 				bytes = read(rc_logger_tty, buffer, BUFSIZ);
-				write(STDOUT_FILENO, buffer, bytes);
+				if (write(STDOUT_FILENO, buffer, bytes) == -1)
+					eerror("write: %s", strerror(errno));
 
 				if (log)
 					write_log(fileno (log), buffer, bytes);
@@ -255,7 +258,8 @@ rc_logger_open(const char *level)
 
 		/* Try and cat our new logfile to a more permament location
 		   and then punt it */
-		system(MOVELOG);
+		if (system(MOVELOG) == -1)
+			eerror("system: %s: %s", MOVELOG, strerror(errno));
 		exit(0);
 		/* NOTREACHED */
 

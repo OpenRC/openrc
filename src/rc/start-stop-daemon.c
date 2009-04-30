@@ -960,9 +960,9 @@ start_stop_daemon(int argc, char **argv)
 	if (interpreted && !pidfile) {
 		fp = fopen(exec_file, "r");
 		if (fp) {
-			fgets(line, sizeof(line), fp);
+			p = fgets(line, sizeof(line), fp);
 			fclose(fp);
-			if (line[0] == '#' && line[1] == '!') {
+			if (p != NULL && line[0] == '#' && line[1] == '!') {
 				p = line + 2;
 				/* Strip leading spaces */
 				while (*p == ' ' || *p == '\t')
