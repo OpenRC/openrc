@@ -43,15 +43,17 @@
 extern char *applet;
 
 #include "_usage.h"
-#define getoptstring "e:lr:" getoptstring_COMMON
+#define getoptstring "e:ilr:" getoptstring_COMMON
 static const struct option longopts[] = {
-	{ "exists",  1, NULL, 'e' },
-	{ "list",    0, NULL, 'l' },
-	{ "resolve", 1, NULL, 'r' },
+	{ "exists",   1, NULL, 'e' },
+	{ "ifexists", 0, NULL, 'i' },
+	{ "list",     0, NULL, 'l' },
+	{ "resolve",  1, NULL, 'r' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
 	"tests if the service exists or not",
+	"if the service exsits then run the command",
 	"list all available services",
 	"resolve the service name to an init script",
 	longopts_help_COMMON
@@ -65,6 +67,7 @@ rc_service(int argc, char **argv)
 	char *service;
 	RC_STRINGLIST *list;
 	RC_STRING *s;
+	bool if_exists = false;
 
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv("EINFO_QUIET");
@@ -81,9 +84,12 @@ rc_service(int argc, char **argv)
 #endif
 			return opt;
 			/* NOTREACHED */
+		case 'i':
+			if_exists = true;
+			break;
 		case 'l':
 			list = rc_services_in_runlevel(NULL);
-			if (!TAILQ_FIRST(list))
+			if (TAILQ_FIRST(list) == NULL)
 				return EXIT_FAILURE;
 			rc_stringlist_sort(&list);
 			TAILQ_FOREACH(s, list, entries)
@@ -95,7 +101,7 @@ rc_service(int argc, char **argv)
 			/* NOTREACHED */
 		case 'r':
 			service = rc_service_resolve(optarg);
-			if (!service)
+			if (service == NULL)
 				return EXIT_FAILURE;
 			printf("%s\n", service);
 #ifdef DEBUG_MEMORY
@@ -110,10 +116,13 @@ rc_service(int argc, char **argv)
 
 	argc -= optind;
 	argv += optind;
-	if (!*argv)
+	if (*argv == NULL)
 		eerrorx("%s: you need to specify a service", applet);
-	if (!(service = rc_service_resolve(*argv)))
+	if ((service = rc_service_resolve(*argv)) == NULL) {
+		if (if_exists)
+			return 0;
 		eerrorx("%s: service `%s' does not exist", applet, *argv);
+	}
 	*argv = service;
 	execv(*argv, argv);
 	eerrorx("%s: %s", applet, strerror(errno));
