@@ -13,8 +13,9 @@ depend()
 start()
 {
 	ebegin "Starting local rc services"
-	local svc= enabled= retval=0 service=
-	for svc in $(rcorder /etc/rc.d/* @PKG_PREFIX@/etc/rc.d/* 2>/dev/null); do
+	local svc= enabled= retval=0 service= pkgdir=
+	[ -n "@PKG_PREFIX@" ] && pkgdir="@PKG_PREFIX@/etc/rc.d/*"
+	for svc in $(rcorder /etc/rc.d/* $pkgdir 2>/dev/null); do
 		[ -x "$svc" ] || continue
 		service=${svc##*/}
 
@@ -26,7 +27,7 @@ start()
 		# If we have an init script for this service, continue
 		rc-service --exists "$service" && continue
 
-		# Ensure that the users rc.conf will start us - ignore the defaults
+		# Ensure that the users rc.conf will start us
 		eval enabled=\$${svc##*/}_enable
 		yesno $enabled || yesno ${svc##*/} || continue
 
