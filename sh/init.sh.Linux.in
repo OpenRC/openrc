@@ -1,6 +1,6 @@
 #!@SHELL@
-# Copyright 1999-2007 Gentoo Foundation
-# Copyright 2007-2009 Roy Marples <roy@marples.name>
+# Copyright (c) 1999-2007 Gentoo Foundation
+# Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 # This basically mounts $RC_SVCDIR as a ramdisk.

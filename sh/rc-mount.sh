@@ -1,4 +1,4 @@
-# Copyright 2007-2009 Roy Marples <roy@marples.name>
+# Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 # Declare this here so that no formatting doesn't affect the embedded newline

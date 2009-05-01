@@ -1,7 +1,7 @@
 # rules to build a library
 # based on FreeBSD's bsd.lib.mk
 
-# Copyright 2008 Roy Marples <roy@marples.name>
+# Copyright (c) 2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
 SHLIB_NAME=		lib${LIB}.so.${SHLIB_MAJOR}

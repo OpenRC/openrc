@@ -4,7 +4,7 @@
 */
 
 /*
- * Copyright 2008 Roy Marples <roy@marples.name>
+ * Copyright (c) 2008 Roy Marples <roy@marples.name>
  * All rights reserved
 
  * Redistribution and use in source and binary forms, with or without
