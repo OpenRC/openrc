@@ -17,7 +17,7 @@ _DYNLINK_SH=		if test "${PREFIX}" = "" && test -e /libexec/ld.elf_so; then \
 			fi
 _DYNLINK!=		${_DYNLINK_SH}
 LDFLAGS+=		${_DYNLINK}$(shell ${_DYNLINK_SH})
-LDFLAGS+=		-Wl,-rpath=${PREFIX}/${LIBNAME} -L${PREFIX}/${LIBNAME}
+LDFLAGS+=		-Wl,-rpath=${PREFIX}/${LIBNAME}
 LDFLAGS+=		${PROGLDFLAGS}
 
 CLEANFILES+=		${OBJS} ${PROG}
