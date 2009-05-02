@@ -1037,7 +1037,7 @@ main(int argc, char **argv)
 
 	/* Load our list of start services */
 	hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
-	start_services = rc_services_in_runlevel(newlevel ?
+	start_services = rc_services_in_runlevel_stacked(newlevel ?
 	    newlevel : runlevel);
 	if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT) != 0)

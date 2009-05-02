@@ -32,10 +32,16 @@ rc_runlevel_list
 rc_runlevel_list@@RC_1.0
 rc_runlevel_set
 rc_runlevel_set@@RC_1.0
+rc_runlevel_stack
+rc_runlevel_stack@@RC_1.0
+rc_runlevel_stacks
+rc_runlevel_stacks@@RC_1.0
 rc_runlevel_starting
 rc_runlevel_starting@@RC_1.0
 rc_runlevel_stopping
 rc_runlevel_stopping@@RC_1.0
+rc_runlevel_unstack
+rc_runlevel_unstack@@RC_1.0
 rc_service_add
 rc_service_add@@RC_1.0
 rc_service_daemon_set
@@ -70,6 +76,8 @@ rc_service_value_set
 rc_service_value_set@@RC_1.0
 rc_services_in_runlevel
 rc_services_in_runlevel@@RC_1.0
+rc_services_in_runlevel_stacked
+rc_services_in_runlevel_stacked@@RC_1.0
 rc_services_in_state
 rc_services_in_state@@RC_1.0
 rc_services_scheduled

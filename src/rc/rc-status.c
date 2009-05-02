@@ -78,8 +78,10 @@ _rc_can_find_pids(void)
 }
 
 static void
-print_level(const char *level)
+print_level(const char *prefix, const char *level)
 {
+	if (prefix)
+		printf("%s ", prefix);
 	printf ("Runlevel: ");
 	if (isatty(fileno(stdout)))
 		printf("%s%s%s\n",
@@ -274,16 +276,28 @@ rc_status(int argc, char **argv)
 	deptree = _rc_deptree_load(0, NULL);
 
 	TAILQ_FOREACH(l, levels, entries) {
-		print_level(l->value);
+		print_level(NULL, l->value);
 		services = rc_services_in_runlevel(l->value);
 		print_services(l->value, services);
+		nservices = rc_runlevel_stacks(l->value);
+		TAILQ_FOREACH(s, nservices, entries) {
+			if (rc_stringlist_find(levels, s->value) != NULL)
+				continue;
+			print_level("Stacked", s->value);
+			sservices = rc_services_in_runlevel(s->value);
+			print_services(s->value, sservices);
+			rc_stringlist_free(sservices);
+		}
+		sservices = NULL;
+		rc_stringlist_free(nservices);
+		nservices = NULL;
 		rc_stringlist_free(services);
 		services = NULL;
 	}
 
 	if (aflag || argc < 2) {
 		/* Show hotplugged services */
-		print_level("hotplugged");
+		print_level("Dynamic", "hotplugged");
 		services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
 		print_services(NULL, services);
 		rc_stringlist_free(services);
@@ -336,9 +350,9 @@ rc_status(int argc, char **argv)
 			rc_stringlist_free(tmp);
 		}
 		l->value = p;
-		print_level("needed");
+		print_level("Dynamic", "needed");
 		print_services(NULL, nservices);
-		print_level("manual");
+		print_level("Dynamic", "manual");
 		print_services(NULL, services);
 	}
 

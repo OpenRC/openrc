@@ -63,11 +63,11 @@ add(const char *runlevel, const char *service)
 			eerror("%s: service `%s' does not exist",
 			    applet, service);
 	} else if (rc_service_in_runlevel(service, runlevel)) {
-		ewarn ("%s: %s already installed in runlevel `%s'; skipping",
+		ewarn("%s: %s already installed in runlevel `%s'; skipping",
 		    applet, service, runlevel);
 		retval = 0;
 	} else if (rc_service_add(runlevel, service)) {
-		einfo ("%s added to runlevel %s", service, runlevel);
+		einfo("service %s added to runlevel %s", service, runlevel);
 		retval = 1;
 	} else
 		eerror("%s: failed to add service `%s' to runlevel `%s': %s",
@@ -83,18 +83,74 @@ delete(const char *runlevel, const char *service)
 
 	errno = 0;
 	if (rc_service_delete(runlevel, service)) {
-		einfo("%s removed from runlevel %s", service, runlevel);
+		einfo("service %s removed from runlevel %s",
+		    service, runlevel);
 		return 1;
 	}
 
 	if (errno == ENOENT)
-		eerror ("%s: service `%s' is not in the runlevel `%s'",
+		eerror("%s: service `%s' is not in the runlevel `%s'",
 		    applet, service, runlevel);
 	else
-		eerror ("%s: failed to remove service `%s' from runlevel `%s': %s",
+		eerror("%s: failed to remove service `%s' from runlevel `%s': %s",
 		    applet, service, runlevel, strerror (errno));
 
 	return retval;
+}
+
+static int
+addstack(const char *runlevel, const char *stack)
+{
+	if (!rc_runlevel_exists(runlevel)) {
+		eerror("%s: runlevel `%s' does not exist", applet, runlevel);
+		return -1;
+	}
+	if (!rc_runlevel_exists(stack)) {
+		eerror("%s: runlevel `%s' does not exist", applet, stack);
+		return -1;
+	}
+	if (strcmp(runlevel, stack) == 0) {
+		eerror("%s: cannot stack `%s' onto itself", applet, stack);
+		return -1;
+	}
+	if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0 ||
+	    strcmp(stack, RC_LEVEL_SYSINIT) == 0 ||
+	    strcmp(runlevel, RC_LEVEL_BOOT) == 0 ||
+	    strcmp(stack, RC_LEVEL_BOOT) == 0 ||
+	    strcmp(runlevel, RC_LEVEL_SINGLE) == 0 ||
+	    strcmp(stack, RC_LEVEL_SINGLE) == 0 ||
+	    strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+	    strcmp(stack, RC_LEVEL_SHUTDOWN) == 0)
+	{
+		eerror("%s: cannot stack the %s runlevel",
+		    applet, RC_LEVEL_SYSINIT);
+		return -1;
+	}
+	if (!rc_runlevel_stack(runlevel, stack)) {
+		eerror("%s: failed to stack `%s' to `%s': %s",
+		    applet, stack, runlevel, strerror(errno));
+		return -1;
+	}
+	einfo("runlevel %s added to runlevel %s", stack, runlevel);
+	return 1;
+}
+
+static int
+delstack(const char *runlevel, const char *stack)
+{
+	if (rc_runlevel_unstack(runlevel, stack)) {
+		einfo("runlevel %s removed from runlevel %s", stack, runlevel);
+		return 1;
+	}
+
+	if (errno == ENOENT)
+		eerror("%s: runlevel `%s' is not in the runlevel `%s'",
+		    applet, stack, runlevel);
+	else
+		eerror("%s: failed to remove runlevel `%s' from runlevel `%s': %s",
+		    applet, stack, runlevel, strerror (errno));
+
+	return -1;
 }
 
 static void
@@ -143,12 +199,14 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 	"Usage: rc-update [options] add service <runlevel>\n"		      \
 	"       rc-update [options] del service <runlevel>\n"		      \
 	"       rc-update [options] show"
-#define getoptstring "u" getoptstring_COMMON
+#define getoptstring "su" getoptstring_COMMON
 static const struct option longopts[] = {
+	{ "stack",           0, NULL, 's' },
 	{ "update",          0, NULL, 'u' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
+	"Stack a runlevel instead of a service",
 	"Force an update of the dependency tree",
 	longopts_help_COMMON
 };
@@ -166,7 +224,7 @@ rc_update(int argc, char **argv)
 	char *service = NULL;
 	char *p;
 	int action = 0;
-	bool verbose = false;
+	bool verbose = false, stack = false;
 	int opt;
 	int retval = EXIT_FAILURE;
 	int num_updated = 0;
@@ -176,11 +234,14 @@ rc_update(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *)0)) != -1)
 		switch (opt) {
+		case 's':
+		    stack = true;
+		break;
 		case 'u':
 			_rc_deptree_load(-1, &ret);
 			return ret;
-			case_RC_COMMON_GETOPT
-			    }
+			case_RC_COMMON_GETOPT;
+		}
 
 	verbose = rc_yesno(getenv ("EINFO_VERBOSE"));
 
@@ -241,9 +302,9 @@ rc_update(int argc, char **argv)
 			eerror ("%s: no service specified", applet);
 		else {
 			if (action & DOADD) {
-				actfunc = add;
+				actfunc = stack ? addstack : add;
 			} else if (action & DODELETE) {
-				actfunc = delete;
+				actfunc = stack ? delstack : delete;
 			} else {
 				rc_stringlist_free(runlevels);
 				eerrorx("%s: invalid action", applet);

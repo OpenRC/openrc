@@ -16,8 +16,11 @@ rc_runlevel_exists
 rc_runlevel_get
 rc_runlevel_list
 rc_runlevel_set
+rc_runlevel_stack
+rc_runlevel_stacks
 rc_runlevel_starting
 rc_runlevel_stopping
+rc_runlevel_unstack
 rc_service_add
 rc_service_daemon_set
 rc_service_daemons_crashed
@@ -35,6 +38,7 @@ rc_service_state
 rc_service_value_get
 rc_service_value_set
 rc_services_in_runlevel
+rc_services_in_runlevel_stacked
 rc_services_in_state
 rc_services_scheduled
 rc_services_scheduled_by

@@ -80,6 +80,22 @@ char *rc_runlevel_get(void);
  * @return true if the runlevel exists, otherwise false */
 bool rc_runlevel_exists(const char *);
 
+/*! Stack a runlevel onto another
+ * @param runlevel to stack onto
+ * @param runlevel being stacked
+ * @return true if successful, otherwise false */
+bool rc_runlevel_stack(const char *, const char *);
+
+/*! Unstack a runlevel from another
+ * @param runlevel to unstack from
+ * @param runlevel being unstacked
+ * @return true if successful, otherwise false */
+bool rc_runlevel_unstack(const char *, const char *);
+
+/*! Return a NULL terminated list of runlevel stacks in the runlevels
+ * @return a NULL terminated list of runlevels */
+RC_STRINGLIST *rc_runlevel_stacks(const char *);
+
 /*! Return a NULL terminated list of runlevels
  * @return a NULL terminated list of runlevels */
 RC_STRINGLIST *rc_runlevel_list(void);
@@ -224,6 +240,11 @@ bool rc_service_value_set(const char *, const char *, const char *);
  * @param runlevel to list
  * @return NULL terminated list of services */
 RC_STRINGLIST *rc_services_in_runlevel(const char *);
+
+/*! List the stacked services in a runlevel
+ * @param runlevel to list
+ * @return NULL terminated list of services */
+RC_STRINGLIST *rc_services_in_runlevel_stacked(const char *);
 
 /*! List the services in a state
  * @param state to list

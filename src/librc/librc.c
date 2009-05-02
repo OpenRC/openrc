@@ -66,7 +66,7 @@ static const rc_service_state_name_t rc_service_state_names[] = {
 };
 
 #define LS_INITD	0x01
-#define LS_DIR   0x02
+#define LS_DIR		0x02
 static RC_STRINGLIST *
 ls_dir(const char *dir, int options)
 {
@@ -102,7 +102,7 @@ ls_dir(const char *dir, int options)
 			}
 			if (options & LS_DIR) {
 				if (stat(d->d_name, &buf) == 0 &&
-				    ! S_ISDIR(buf.st_mode))
+				    !S_ISDIR(buf.st_mode))
 					continue;
 			}
 			rc_stringlist_add(list, d->d_name);
@@ -329,6 +329,51 @@ rc_runlevel_exists(const char *runlevel)
 	return false;
 }
 librc_hidden_def(rc_runlevel_exists)
+
+bool
+rc_runlevel_stack(const char *dst, const char *src)
+{
+	char d[PATH_MAX], s[PATH_MAX];
+	
+	if (!rc_runlevel_exists(dst) || !rc_runlevel_exists(src))
+		return false;
+	snprintf(s, sizeof(s), "../%s", src);
+	snprintf(d, sizeof(s), "%s/%s/%s", RC_RUNLEVELDIR, dst, src);
+	return (symlink(s, d) == 0 ? true : false);
+}
+librc_hidden_def(rc_runlevel_stack)
+
+bool
+rc_runlevel_unstack(const char *dst, const char *src)
+{
+	char path[PATH_MAX];
+	
+	snprintf(path, sizeof(path), "%s/%s/%s", RC_RUNLEVELDIR, dst, src);
+	return (unlink(path) == 0 ? true : false);
+}
+librc_hidden_def(rc_runlevel_unstack)
+
+RC_STRINGLIST *
+rc_runlevel_stacks(const char *runlevel)
+{
+	char path[PATH_MAX];
+	RC_STRINGLIST *dirs;
+	RC_STRING *d, *dn;
+
+	if (!runlevel)
+		return false;
+	snprintf(path, sizeof(path), "%s/%s", RC_RUNLEVELDIR, runlevel);
+	dirs = ls_dir(path, LS_DIR);
+	TAILQ_FOREACH_SAFE(d, dirs, entries, dn) {
+		if (!rc_runlevel_exists(d->value)) {
+			TAILQ_REMOVE(dirs, d, entries);
+			free(d->value);
+			free(d);
+		}
+	}
+	return dirs;
+}
+librc_hidden_def(rc_runlevel_stacks)
 
 /* Resolve a service name to it's full path */
 char *
@@ -779,6 +824,27 @@ rc_services_in_runlevel(const char *runlevel)
 	return list;
 }
 librc_hidden_def(rc_services_in_runlevel)
+
+RC_STRINGLIST *
+rc_services_in_runlevel_stacked(const char *runlevel)
+{
+	RC_STRINGLIST *list, *stacks, *sl;
+	RC_STRING *stack;
+
+	list = rc_services_in_runlevel(runlevel);
+	stacks = rc_runlevel_stacks(runlevel);
+	TAILQ_FOREACH (stack, stacks, entries) {
+		sl = rc_services_in_runlevel(stack->value);
+		if (list != NULL) {
+			TAILQ_CONCAT(list, sl, entries);
+			free(sl);
+		} else
+			list = sl;
+	}
+	return list;
+}
+librc_hidden_def(rc_services_in_runlevel_stacked)
+
 
 RC_STRINGLIST *
 rc_services_in_state(RC_SERVICE state)
