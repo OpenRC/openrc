@@ -65,11 +65,6 @@ if [ -n "$ZSH_VERSION" ]; then
 	setopt NO_GLOB_SUBST
 fi
 
-# Use a special shell feature to save forking
-if [ -n "$BASH_VERSION" -o "$ZSH_VERSION" ]; then
-	shell_var() { LC_ALL=C echo "${@//[![:word:]]/_}"; }
-fi
-
 # Make a sane PATH
 _PREFIX=@PREFIX@
 _PKG_PREFIX=@PKG_PREFIX@

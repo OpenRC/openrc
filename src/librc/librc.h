@@ -48,6 +48,7 @@
 #include <limits.h>
 #include <paths.h>
 #include <regex.h>
+#include <signal.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
