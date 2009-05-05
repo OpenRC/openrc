@@ -450,7 +450,8 @@ svc_exec(const char *arg1, const char *arg2)
 		master_tty = -1;
 	}
 
-	ret = WEXITSTATUS(rc_waitpid(service_pid));
+	ret = rc_waitpid(service_pid);
+	ret = WEXITSTATUS(ret);
 	if (ret != 0 && errno == ECHILD)
 		/* killall5 -9 could cause this */
 		ret = 0;

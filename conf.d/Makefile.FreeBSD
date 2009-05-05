@@ -1,1 +1,3 @@
 CONF+=	ipfw moused powerd rarpd savecore syscons
+
+network.${OS}:

@@ -11,4 +11,4 @@ include ${MK}/scripts.mk
 
 network: network.in network.${OS}
 	cp network.in network
-	[ -e network.${OS} ] && cat network.${OS} >> network
+	[ -e network.${OS} ] && cat network.${OS} >> network || true
