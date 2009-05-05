@@ -5,3 +5,5 @@ rc-functions.sh
 runscript.sh
 init.sh
 init-early.sh
+ifwatchd-carrier.sh
+ifwatchd-nocarrier.sh

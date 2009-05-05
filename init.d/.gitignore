@@ -3,6 +3,7 @@ fsck
 hostname
 local
 localmount
+moused
 netmount
 network
 root
@@ -22,4 +23,15 @@ mtab
 numlock
 procfs
 sysfs
-termencoding
+devdb
+hostid
+newsyslog
+pf
+rarpd
+rc-enabled
+rpcbind
+savecore
+swap-blk
+syslogd
+ttys
+wscons
