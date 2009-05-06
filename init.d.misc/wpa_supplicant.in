@@ -3,9 +3,9 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 command=/usr/sbin/wpa_supplicant
-wpa_supplicant_conf=/etc/wpa_supplicant.conf
+: ${wpa_supplicant_conf:=/etc/wpa_supplicant.conf}
 wpa_supplicant_if=${wpa_supplicant_if:+-i}$wpa_supplicant_if
-command_args="-B -c$wpa_supplicant_conf $wpa_supplicant_if"
+command_args="$wpa_supplicant_args -B -c$wpa_supplicant_conf $wpa_supplicant_if"
 name="WPA Supplicant Daemon"
 
 depend()
@@ -47,11 +47,13 @@ find_wireless()
 
 append_wireless()
 {
-	local iface=
+	local iface= i=
 
 	iface=$(find_wireless)
 	if [ -n "$iface" ]; then
-		command_args="$command_args -i$iface"
+		for i in $iface; do
+			command_args="$command_args -i$i"
+		done
 	else
 		eerror "Could not find a wireless interface"
 	fi
