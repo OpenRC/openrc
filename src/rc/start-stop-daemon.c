@@ -1156,6 +1156,8 @@ start_stop_daemon(int argc, char **argv)
 				/* Don't add strings unless they set a var */
 				if (strchr(*pamenv, '='))
 					putenv(xstrdup(*pamenv));
+				else
+					unsetenv(*pamenv);
 				pamenv++;
 			}
 		}
