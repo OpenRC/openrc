@@ -6,7 +6,7 @@ description="Mounts misc filesystems in /proc."
 
 depend()
 {
-	use devfs
+	use modules devfs
 	need localmount
 	keyword noopenvz noprefix novserver
 }
