@@ -586,10 +586,9 @@ svc_start_check(void)
 	fcntl(exclusive_fd, F_SETFD,
 	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 
-	if (state & RC_SERVICE_STARTED) {
-		ewarn("WARNING: %s has already been started", applet);
-		return;
-	} else if (state & RC_SERVICE_INACTIVE && !in_background)
+	if (state & RC_SERVICE_STARTED)
+		ewarnx("WARNING: %s has already been started", applet);
+	else if (state & RC_SERVICE_INACTIVE && !in_background)
 		ewarnx("WARNING: %s has already started, but is inactive",
 		    applet);
 	
@@ -837,10 +836,8 @@ svc_stop_check(RC_SERVICE *state)
 	fcntl(exclusive_fd, F_SETFD,
 	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 
-	if (*state & RC_SERVICE_STOPPED) {
-		ewarn("WARNING: %s is already stopped", applet);
-		return;
-	}
+	if (*state & RC_SERVICE_STOPPED)
+		ewarnx("WARNING: %s is already stopped", applet);
 
 	rc_service_mark(service, RC_SERVICE_STOPPING);
 	hook_out = RC_HOOK_SERVICE_STOP_OUT;
