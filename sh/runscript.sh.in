@@ -5,7 +5,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 . @SYSCONFDIR@/init.d/functions.sh
-. "$RC_LIBDIR"/sh/rc-functions.sh
+. @LIBEXECDIR@/sh/rc-functions.sh
 
 # Support LiveCD foo
 if [ -r /sbin/livecd-functions.sh ]; then

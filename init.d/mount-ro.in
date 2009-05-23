@@ -17,7 +17,7 @@ start()
 
 	ebegin "Remounting remaining filesystems read-only"
 	# We need the do_unmount function
-	. "$RC_LIBDIR"/sh/rc-mount.sh
+	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 	eindent
 	local m="/dev|/dev/.*|/proc|/proc.*|/sys|/sys/.*|${RC_SVCDIR}" x= fs=
 	m="$m|/bin|/sbin|/lib|/libexec"

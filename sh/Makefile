@@ -1,4 +1,4 @@
-DIR=	${PREFIX}/${RC_LIB}/sh
+DIR=	${LIBEXECDIR}/sh
 SRCS=	functions.sh.in gendepends.sh.in init-common-post.sh.in \
 	rc-functions.sh.in runscript.sh.in
 INC=	init-common-post.sh rc-mount.sh functions.sh rc-functions.sh
@@ -13,9 +13,8 @@ include ${MK}/scripts.mk
 
 _installafter:
 	${INSTALL} -d ${DESTDIR}/${INITDIR}
-	@# Put functions.sh into the init.d dir so 3rd party apps don't have to
-	@# be multilib aware
-	ln -snf ${PREFIX}/${RC_LIB}/sh/functions.sh ${DESTDIR}/${INITDIR} || exit $$?
+	@# Put functions.sh into init for backwards compat
+	ln -snf ${LIBEXECDIR}/sh/functions.sh ${DESTDIR}/${INITDIR} || exit $$?
 
 check test::
 	./runtests.sh

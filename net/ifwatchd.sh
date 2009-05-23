@@ -33,8 +33,8 @@ ifwatchd_pre_start()
 	# Start ifwatchd
 	export IN_BACKGROUND=yes
 	start-stop-daemon --start --exec /usr/sbin/ifwatchd \
-		-- -c "${RC_LIBDIR}/sh/ifwatchd-carrier.sh" \
-		-n "${RC_LIBDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}"
+		-- -c "${RC_LIBEXECDIR}/sh/ifwatchd-carrier.sh" \
+		-n "${RC_LIBEXECDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}"
 	unset IN_BACKGROUND
 	eend "$?" || return 1
 
@@ -47,13 +47,13 @@ ifwatchd_stop()
 	yesno ${IN_BACKGROUND} && return 0
 
 	start-stop-daemon --test --quiet --stop --exec /usr/sbin/ifwatchd \
-		-- -c "${RC_LIBDIR}/sh/ifwatchd-carrier.sh" \
-		-n "${RC_LIBDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}" \
+		-- -c "${RC_LIBEXECDIR}/sh/ifwatchd-carrier.sh" \
+		-n "${RC_LIBEXECDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}" \
 		|| return 0
 	
 	ebegin "Stopping ifwatchd on" "${IFACE}"
 	start-stop-daemon --stop --exec /usr/sbin/ifwatchd \
-		-- -c "${RC_LIBDIR}/sh/ifwatchd-carrier.sh" \
-		-n "${RC_LIBDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}"
+		-- -c "${RC_LIBEXECDIR}/sh/ifwatchd-carrier.sh" \
+		-n "${RC_LIBEXECDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}"
 	eend $?
 }

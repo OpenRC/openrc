@@ -31,7 +31,7 @@
 
 #include "librc.h"
 
-#define GENDEP          RC_LIBDIR "/sh/gendepends.sh"
+#define GENDEP          RC_LIBEXECDIR "/sh/gendepends.sh"
 
 #define RC_DEPCONFIG    RC_SVCDIR "/depconfig"
 
@@ -647,6 +647,7 @@ static const DEPPAIR deppairs[] = {
 
 static const char *const depdirs[] =
 {
+	RC_SVCDIR,
 	RC_SVCDIR "/starting",
 	RC_SVCDIR "/started",
 	RC_SVCDIR "/stopping",
@@ -742,10 +743,10 @@ rc_deptree_update(void)
 	bool retval = true;
 	const char *sys = rc_sys();
 
-	/* Some init scripts need RC_LIBDIR to source stuff
+	/* Some init scripts need RC_LIBEXECDIR to source stuff
 	   Ideally we should be setting our full env instead */
-	if (!getenv("RC_LIBDIR"))
-		setenv("RC_LIBDIR", RC_LIBDIR, 0);
+	if (!getenv("RC_LIBEXECDIR"))
+		setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 0);
 
 	/* Phase 1 - source all init scripts and print dependencies */
 	if (!(fp = popen(GENDEP, "r")))

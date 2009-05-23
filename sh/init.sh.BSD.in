@@ -21,7 +21,7 @@ mount_svcdir()
 	fi
 }
 
-. "$RC_LIBDIR"/sh/functions.sh
+. "$RC_LIBEXECDIR"/sh/functions.sh
 [ -r /etc/rc.conf ] && . /etc/rc.conf
 
 # Disable devd until we need it
@@ -29,4 +29,4 @@ if [ -z "$RC_SYS" -a "$RC_UNAME" = "FreeBSD" ]; then
 	sysctl hw.bus.devctl_disable=1 >/dev/null
 fi
 
-. "$RC_LIBDIR"/sh/init-common-post.sh
+. "$RC_LIBEXECDIR"/sh/init-common-post.sh

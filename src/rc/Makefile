@@ -8,7 +8,7 @@ CLEANFILES=	version.h
 
 BINDIR=		${PREFIX}/bin
 SBINDIR=	${PREFIX}/sbin
-LINKDIR=	${PREFIX}/${LIBNAME}/${PROG}
+LINKDIR=	${LIBEXECDIR}
 
 BINLINKS=	rc-status
 SBINLINKS=	rc-service rc-update runscript start-stop-daemon
@@ -37,20 +37,12 @@ LDADD+=		-lutil -lrc -leinfo
 MK=		../../mk
 include ${MK}/debug.mk
 include ${MK}/prog.mk
+include ${MK}/git.mk
 include ${MK}/cc.mk
 
 include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
 include ${MK}/${MKPAM}.mk
-
-_GITVER_SH=	if git rev-parse --short HEAD >/dev/null 2>&1; then \
-			printf "."; \
-			git rev-parse --short HEAD; \
-		else \
-			echo ""; \
-		fi
-_GITVER!=	${_GITVER_SH}
-GITVER=		${_GITVER}$(shell ${_GITVER_SH})
 
 ${SRCS}: version.h
 version.h:

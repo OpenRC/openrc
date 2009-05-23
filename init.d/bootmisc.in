@@ -74,7 +74,7 @@ mkutmp()
 start()
 {
 	# Remove any added console dirs
-	rm -rf "$RC_LIBDIR"/console
+	rm -rf "$RC_LIBEXECDIR"/console
 
 	local logw=false runw=false
 	# Ensure that our basic dirs exist

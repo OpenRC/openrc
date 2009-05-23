@@ -50,14 +50,15 @@
 #include "einfo.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "version.h"
 
 #define PROFILE_ENV     RC_SYSCONFDIR "/profile.env"
-#define SYS_WHITELIST   RC_LIBDIR "/conf.d/env_whitelist"
+#define SYS_WHITELIST   RC_LIBEXECDIR "/conf.d/env_whitelist"
 #define USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"
 #define RC_CONF         RC_SYSCONFDIR "/rc.conf"
 #define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
 
-#define PATH_PREFIX     RC_LIBDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
+#define PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 
 static RC_STRINGLIST *rc_conf = NULL;
 
@@ -221,7 +222,8 @@ env_config(void)
 		free(e);
 	}
 
-	setenv("RC_LIBDIR", RC_LIBDIR, 1);
+	setenv("RC_VERSION", VERSION, 1);
+	setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 1);
 	setenv("RC_SVCDIR", RC_SVCDIR, 1);
 	setenv("RC_TMPDIR", RC_SVCDIR "/tmp", 1);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);

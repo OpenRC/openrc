@@ -398,10 +398,10 @@ svc_exec(const char *arg1, const char *arg2)
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		} else {
-			execl(RC_LIBDIR "/sh/runscript.sh",
-			    RC_LIBDIR "/sh/runscript.sh",
+			execl(RC_LIBEXECDIR "/sh/runscript.sh",
+			    RC_LIBEXECDIR "/sh/runscript.sh",
 			    service, arg1, arg2, (char *) NULL);
-			eerror("%s: exec `" RC_LIBDIR "/sh/runscript.sh': %s",
+			eerror("%s: exec `" RC_LIBEXECDIR "/sh/runscript.sh': %s",
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		}

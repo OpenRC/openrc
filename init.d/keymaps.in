@@ -67,8 +67,8 @@ start()
 	eend 0
 
 	# Save the keymapping for use immediately at boot
-	if [ -w "$RC_LIBDIR" ]; then
-		mkdir -p "$RC_LIBDIR"/console
-		dumpkeys >"$RC_LIBDIR"/console/keymap
+	if [ -w "$RC_LIBEXECDIR" ]; then
+		mkdir -p "$RC_LIBEXECDIR"/console
+		dumpkeys >"$RC_LIBEXECDIR"/console/keymap
 	fi
 }

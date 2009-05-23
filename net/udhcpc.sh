@@ -68,7 +68,7 @@ udhcpc_start()
 			;;
 	esac
 
-	local script="${RC_LIBDIR}"/sh/udhcpc.sh
+	local script="${RC_LIBEXECDIR}"/sh/udhcpc.h
 	[ -x "${script}" ] || script=/lib/rcscripts/sh/udhcpc.sh
 
 	eval "${x}" "${args}" --interface="${IFACE}" --now \

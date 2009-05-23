@@ -4,7 +4,7 @@
 
 has_addon()
 {
-	[ -e "$RC_LIBDIR/addons/$1.sh" -o -e /@LIB@/rcscripts/addons/"$1".sh ]
+	[ -e /@LIB@/rc/addons/"$1".sh -o -e /@LIB@/rcscripts/addons/"$1".sh ]
 }
 
 _addon_warn()
@@ -17,9 +17,9 @@ _addon_warn()
 
 import_addon()
 {
-	if [ -e "$RC_LIBDIR/addons/$1.sh" ]; then
+	if [ -e /@LIB@/rc/addons/"$1".sh ]; then
 		_addon_warn
-		. "$RC_LIBDIR/addons/$1.sh"
+		. /@LIB@/rc/addons/"$1".sh
 	elif [ -e /@LIB@/rcscripts/addons/"$1".sh ]; then
 		_addon_warn
 		. /@LIB@/rcscripts/addons/"$1".sh
@@ -86,6 +86,6 @@ get_bootparam()
 
 # Add our sbin to $PATH
 case "$PATH" in
-	"$RC_LIBDIR"/sbin|"$RC_LIBDIR"/sbin:*);;
-	*) export PATH="$RC_LIBDIR/sbin:$PATH";;
+	"$RC_LIBEXECDIR"/sbin|"$RC_LIBEXECDIR"/sbin:*);;
+	*) export PATH="$RC_LIBEXECDIR/sbin:$PATH";;
 esac

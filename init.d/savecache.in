@@ -14,9 +14,9 @@ start()
 		fi
 	fi
 	ebegin "Saving dependency cache"
-	if [ ! -d "$RC_LIBDIR"/cache ]; then
-		rm -rf "$RC_LIBDIR"/cache
-		if ! mkdir "$RC_LIBDIR"/cache; then
+	if [ ! -d "$RC_LIBEXECDIR"/cache ]; then
+		rm -rf "$RC_LIBEXECDIR"/cache
+		if ! mkdir "$RC_LIBEXECDIR"/cache; then
 			eend $?
 			return $?
 		fi
@@ -26,7 +26,7 @@ start()
 		[ -e "$RC_SVCDIR/$x" ] && save="$save $RC_SVCDIR/$x"
 	done
 	if [ -n "$save" ]; then
-		cp -p $save "$RC_LIBDIR"/cache 2>/dev/null
+		cp -p $save "$RC_LIBEXECDIR"/cache 2>/dev/null
 	fi
 	eend $?
 }
