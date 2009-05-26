@@ -84,7 +84,7 @@ start()
 		service_inactive && _inactive=true
 		mark_service_inactive
 	fi
-	start-stop-daemon --start \
+	eval start-stop-daemon --start \
 		--exec $command \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $pidfile \
