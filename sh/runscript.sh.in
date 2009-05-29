@@ -5,7 +5,7 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 . @SYSCONFDIR@/init.d/functions.sh
-. "$RC_LIBDIR"/sh/rc-functions.sh
+. @LIBEXECDIR@/sh/rc-functions.sh
 
 # Support LiveCD foo
 if [ -r /sbin/livecd-functions.sh ]; then
@@ -84,7 +84,7 @@ start()
 		service_inactive && _inactive=true
 		mark_service_inactive
 	fi
-	start-stop-daemon --start \
+	eval start-stop-daemon --start \
 		--exec $command \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $pidfile \

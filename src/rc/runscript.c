@@ -398,10 +398,10 @@ svc_exec(const char *arg1, const char *arg2)
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		} else {
-			execl(RC_LIBDIR "/sh/runscript.sh",
-			    RC_LIBDIR "/sh/runscript.sh",
+			execl(RC_LIBEXECDIR "/sh/runscript.sh",
+			    RC_LIBEXECDIR "/sh/runscript.sh",
 			    service, arg1, arg2, (char *) NULL);
-			eerror("%s: exec `" RC_LIBDIR "/sh/runscript.sh': %s",
+			eerror("%s: exec `" RC_LIBEXECDIR "/sh/runscript.sh': %s",
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		}
@@ -586,10 +586,9 @@ svc_start_check(void)
 	fcntl(exclusive_fd, F_SETFD,
 	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 
-	if (state & RC_SERVICE_STARTED) {
-		ewarn("WARNING: %s has already been started", applet);
-		return;
-	} else if (state & RC_SERVICE_INACTIVE && !in_background)
+	if (state & RC_SERVICE_STARTED)
+		ewarnx("WARNING: %s has already been started", applet);
+	else if (state & RC_SERVICE_INACTIVE && !in_background)
 		ewarnx("WARNING: %s has already started, but is inactive",
 		    applet);
 	
@@ -837,10 +836,8 @@ svc_stop_check(RC_SERVICE *state)
 	fcntl(exclusive_fd, F_SETFD,
 	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 
-	if (*state & RC_SERVICE_STOPPED) {
-		ewarn("WARNING: %s is already stopped", applet);
-		return;
-	}
+	if (*state & RC_SERVICE_STOPPED)
+		ewarnx("WARNING: %s is already stopped", applet);
 
 	rc_service_mark(service, RC_SERVICE_STOPPING);
 	hook_out = RC_HOOK_SERVICE_STOP_OUT;

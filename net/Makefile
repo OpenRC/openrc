@@ -1,4 +1,4 @@
-DIR=	${PREFIX}/${RC_LIB}/net
+DIR=	${LIBEXECDIR}/net
 SRCS=	ifconfig.sh.in
 INC=	dhclient.sh dhcpcd.sh ifconfig.sh macchanger.sh macnet.sh \
 	ssidnet.sh system.sh wpa_supplicant.sh

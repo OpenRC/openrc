@@ -26,7 +26,9 @@ include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/subdir.mk
 include ${MK}/dist.mk
+include ${MK}/git.mk
 
 _installafter:
-	${INSTALL} -d ${DESTDIR}/${PREFIX}/${RC_LIB}/init.d
-	${INSTALL} -d ${DESTDIR}/${PREFIX}/${RC_LIB}/tmp
+	${INSTALL} -d ${DESTDIR}/${LIBEXECDIR}/init.d
+	${INSTALL} -d ${DESTDIR}/${LIBEXECDIR}/tmp
+	${ECHO} "${VERSION}${GITVER}" > ${DESTDIR}/${LIBEXECDIR}/version

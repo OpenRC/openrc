@@ -38,7 +38,7 @@ mount_svcdir()
 	fi
 }
 
-. /etc/init.d/functions.sh
+. "$RC_LIBEXECDIR"/sh/functions.sh
 [ -r /etc/rc.conf ] && . /etc/rc.conf
 
 # By default VServer already has /proc mounted, but OpenVZ does not!
@@ -68,4 +68,4 @@ if $mountproc; then
 	eend $?
 fi
 
-. "$RC_LIBDIR"/sh/init-common-post.sh
+. "$RC_LIBEXECDIR"/sh/init-common-post.sh

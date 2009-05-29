@@ -36,11 +36,12 @@ __BEGIN_DECLS
 
 #define RC_SYSCONFDIR		"@SYSCONFDIR@"
 #define RC_LIBDIR               "@PREFIX@/@LIB@/rc"
-#define RC_SVCDIR               RC_LIBDIR "/init.d"
-#define RC_PLUGINDIR            RC_LIBDIR "/plugins"
+#define RC_LIBEXECDIR           "@LIBEXECDIR@"
+#define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
 #define RC_RUNLEVELDIR          RC_SYSCONFDIR "/runlevels"
 #define RC_INITDIR              RC_SYSCONFDIR "/init.d"
 #define RC_CONFDIR              RC_SYSCONFDIR "/conf.d"
+#define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
 /* PKG_PREFIX is where packages are installed if different from the base OS
  * On Gentoo this is normally unset, on FreeBSD /usr/local and on NetBSD

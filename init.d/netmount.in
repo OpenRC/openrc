@@ -74,7 +74,7 @@ stop()
 	local x= fs=
 
 	ebegin "Unmounting network filesystems"
-	. "$RC_LIBDIR"/sh/rc-mount.sh
+	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
 	for x in $net_fs_list; do
 		fs="$fs${fs:+,}$x"

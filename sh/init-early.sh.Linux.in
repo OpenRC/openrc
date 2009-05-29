@@ -3,8 +3,9 @@
 # All rights reserved. Released under the 2-clause BSD license.
 
 : ${CONSOLE:=/dev/console}
+: ${RC_LIBEXECDIR:=@LIBEXECDIR@}
 
-if [ -e "$RC_LIBDIR"/console/unicode ]; then
+if [ -e "$RC_LIBEXECDIR"/console/unicode ]; then
 	termencoding="%G"
 	kmode="-u"
 else
@@ -16,10 +17,10 @@ fi
 if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/consolefont \
 	 -o -e /etc/runlevels/"$RC_BOOTLEVEL"/consolefont ]; then
 	printf "\033%s" "$termencoding" >"$CONSOLE" 2>/dev/null
-	if [ -r "$RC_LIBDIR"/console/font -a -x /bin/setfont ]; then
-		font="$(cat "$RC_LIBDIR"/console/font)"
+	if [ -r "$RC_LIBEXECDIR"/console/font -a -x /bin/setfont ]; then
+		font="$(cat "$RC_LIBEXECDIR"/console/font)"
 		[ -c "$CONSOLE" ] && cons="-C $CONSOLE"
-		setfont $cons "$RC_LIBDIR"/console/"$font" 2>/dev/null
+		setfont $cons "$RC_LIBEXECDIR"/console/"$font" 2>/dev/null
 	fi
 fi
 
@@ -27,8 +28,8 @@ fi
 if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/keymaps \
 	 -o -e /etc/runlevels/"$RC_BOOTLEVEL"/keymaps ]; then
 	kbd_mode $kmode -C "$CONSOLE" 2>/dev/null
-	if [ -r "$RC_LIBDIR"/console/keymap ]; then
-		loadkeys "$RC_LIBDIR"/console/keymap 2>/dev/null
+	if [ -r "$RC_LIBEXECDIR"/console/keymap ]; then
+		loadkeys "$RC_LIBEXECDIR"/console/keymap 2>/dev/null
 	fi
 fi
 

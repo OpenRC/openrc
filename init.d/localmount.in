@@ -52,7 +52,7 @@ stop()
 	# Flush all pending disk writes now
 	sync; sync
 
-	. "$RC_LIBDIR"/sh/rc-mount.sh
+	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
 	# Umount loopback devices
 	einfo "Unmounting loopback devices"

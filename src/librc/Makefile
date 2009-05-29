@@ -18,6 +18,7 @@ include ${MK}/debug.mk
 SED_CMD=	-e 's:@PREFIX@:${PREFIX}:g'
 SED_CMD+=	-e 's:@LIB@:${LIBNAME}:g'
 SED_CMD+=	-e 's:@SYSCONFDIR@:${SYSCONFDIR}:g'
+SED_CMD+=	-e 's:@LIBEXECDIR@:${LIBEXECDIR}:g'
 _PKG_PREFIX_SH=	if test -n "${PKG_PREFIX}" && test "${PKG_PREFIX}" != "/" && test "${PKG_PREFIX}" != "${PREFIX}"; then \
 		echo "-e 's:@PKG_PREFIX@:${PKG_PREFIX}:g'"; \
 		else \

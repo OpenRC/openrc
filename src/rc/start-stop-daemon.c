@@ -1188,8 +1188,8 @@ start_stop_daemon(int argc, char **argv)
 					while (*p == ':')
 						p++;
 				}
-				if (strcmp(token, RC_LIBDIR "/bin") != 0 &&
-				    strcmp(token, RC_LIBDIR "/sbin") != 0)
+				if (strcmp(token, RC_LIBEXECDIR "/bin") != 0 &&
+				    strcmp(token, RC_LIBEXECDIR "/sbin") != 0)
 				{
 					len = strlen(token);
 					if (np != newpath)

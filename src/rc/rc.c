@@ -72,8 +72,8 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "version.h"
 
-#define INITSH                  RC_LIBDIR "/sh/init.sh"
-#define INITEARLYSH             RC_LIBDIR "/sh/init-early.sh"
+#define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
+#define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"
 
 #define SHUTDOWN                "/sbin/shutdown"
 #define SULOGIN                 "/sbin/sulogin"
