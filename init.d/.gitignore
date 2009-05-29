@@ -33,5 +33,6 @@ rpcbind
 savecore
 swap-blk
 syslogd
+termencoding
 ttys
 wscons
