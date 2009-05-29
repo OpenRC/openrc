@@ -682,8 +682,8 @@ stop()
 		fi
 	done
 
-	# Only delete addresses for non PPP interfaces
-	if ! [ "$(command -v is_ppp)" = "is_ppp" ] || ! is_ppp; then
+	# Only delete addresses for interfaces that exist
+	if _exists; then
 		_delete_addresses "${IFACE}"
 	fi
 
