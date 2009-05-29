@@ -35,19 +35,26 @@ _on_ac_power()
 	if [ -f /proc/acpi/ac_adapter/AC/state ]; then
 		cat /proc/acpi/ac_adapter/AC/state | while read line; do
 			case "$line" in
-			"state:"*"on-line") return 128;;
+			"state:"*"off-line") return 128;;
 			esac
 		done
 	elif [ -f /proc/pmu/info ]; then
 		cat /proc/pmu/info | while read line; do
 			case "$line" in
-			"AC Power"*": 1") return 128;;
+			"AC Power"*": 0") return 128;;
+			esac
+		done
+	elif type envstat >/dev/null 2>&1; then
+		# NetBSD has envstat
+		envstat -d acpiacad0 2>/dev/null | while read line; do
+			case "$line" in
+			"connected:"*"OFF") return 128;;
 			esac
 		done
 	else
 		return 0
 	fi
-	[ $? = 128 ]
+	[ $? != 128 ]
 }
 
 start()
