@@ -30,6 +30,26 @@ _forcefsck()
 	[ -e /forcefsck ] || get_bootparam forcefsck
 }
 
+_on_ac_power()
+{
+	if [ -f /proc/acpi/ac_adapter/AC/state ]; then
+		cat /proc/acpi/ac_adapter/AC/state | while read line; do
+			case "$line" in
+			"state:"*"on-line") return 128;;
+			esac
+		done
+	elif [ -f /proc/pmu/info ]; then
+		cat /proc/pmu/info | while read line; do
+			case "$line" in
+			"AC Power"*": 1") return 128;;
+			esac
+		done
+	else
+		return 0
+	fi
+	[ $? = 128 ]
+}
+
 start()
 {
 	local fsck_opts= p= check_extra=
@@ -41,6 +61,9 @@ start()
 	if _forcefsck; then
 		fsck_opts="$fsck_opts -f"
 		check_extra="(check forced)"
+	elif ! _on_ac_power; then
+		ewarn "Skipping fsck due to not being on AC power"
+		return 0
 	fi
 
 	if [ -n "$fsck_passno" ]; then
