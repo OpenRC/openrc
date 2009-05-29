@@ -51,6 +51,11 @@ _on_ac_power()
 			"connected:"*"OFF") return 128;;
 			esac
 		done
+	elif sysctl -q hw.acpi.acline >/dev/null; then
+		case $(sysctl -n hw.acpi.acline) in
+		0) return 1;;
+		*) return 0;;
+		esac
 	else
 		return 0
 	fi
