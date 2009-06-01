@@ -157,7 +157,10 @@ _add_route()
 		shift
 	done
 
-	if ! ${have_metric} && [ -n "${metric}" ]; then
+	# We cannot use a metric if we're using a nexthop
+	if ! ${have_metric} && \
+		[ -n "${metric}" -a -z "${cmd##* nexthop }" ]
+	then
 		cmd="${cmd} metric ${metric}"
 	fi
 
