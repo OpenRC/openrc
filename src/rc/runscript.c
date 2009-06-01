@@ -755,13 +755,10 @@ static void svc_start_real()
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
 
-	if (!started)
+	if (rc_service_state(service) & RC_SERVICE_INACTIVE)
+		ewarnx("WARNING: %s has started, but is inactive", applet);
+	else if (!started)
 		eerrorx("ERROR: %s failed to start", applet);
-	else {
-		if (rc_service_state(service) & RC_SERVICE_INACTIVE)
-			ewarnx("WARNING: %s has started, but is inactive",
-			    applet);
-	}
 
 	rc_service_mark(service, RC_SERVICE_STARTED);
 	exclusive_fd = svc_unlock(applet, exclusive_fd);
