@@ -4,6 +4,8 @@ hostname
 local
 localmount
 moused
+net.lo
+net.lo0
 netmount
 network
 root
