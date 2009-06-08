@@ -76,9 +76,10 @@ start()
 	# Remove any added console dirs
 	rm -rf "$RC_LIBEXECDIR"/console
 
-	local logw=false runw=false
+	local logw=false runw=false extra=
 	# Ensure that our basic dirs exist
-	for x in /var/log /var/run /tmp; do
+	[ "$RC_UNAME" = Linux ] && extra=/var/lib/misc # Satisfy Linux FHS
+	for x in /var/log /var/run /tmp $extra; do
 		if ! [ -d $x ]; then
 			if ! mkdir -p $x; then
 				eend 1 "failed to create needed directory $x"
@@ -105,7 +106,7 @@ start()
 			# Clean stale sockets
 			if [ -S "$x" ]; then
 				if type fuser >/dev/null 2>&1; then
-					fuser "$x" 2>/dev/null || rm -- "$x"
+					fuser "$x" >/dev/null 2>&1 || rm -- "$x"
 				else
 					rm -- "$x"
 				fi
