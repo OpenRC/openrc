@@ -118,7 +118,7 @@ stop()
 
 	if ! yesno $clock_adjfile; then
 		# Some implementations don't handle adjustments
-		if LC_ALL=C hwclock --help | grep -q "\-\-noadjfile"; then
+		if LC_ALL=C hwclock --help 2>&1 | grep -q "\-\-noadjfile"; then
 			utc_cmd="$utc_cmd --noadjfile"
 		fi
 	fi
