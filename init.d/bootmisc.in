@@ -26,7 +26,7 @@ cleanup_tmp_dir()
 		mkdir -p "$dir" || return $?
 	fi
 	dir_writeable "$dir" || return 1
-	chmod +t "$dir"
+	chmod a+rwt "$dir"
 	cd "$dir"
 	if yesno $wipe_tmp; then
 		ebegin "Wiping $dir directory"
