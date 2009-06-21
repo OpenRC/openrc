@@ -517,5 +517,9 @@ typedef LIST_HEAD(rc_pidlist, rc_pid) RC_PIDLIST;
  * @return NULL terminated list of pids */
 RC_PIDLIST *rc_find_pids(const char *, const char *const *, uid_t, pid_t);
 
+/* getline is a handy glibc function that not all libcs have, so
+ * we have our own */
+ssize_t rc_getline(char **, size_t *, FILE *);
+
 __END_DECLS
 #endif

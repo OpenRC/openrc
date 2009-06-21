@@ -43,10 +43,6 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <sys/utsname.h>
 #include <sys/wait.h>
 
-#ifdef __linux__
-#  include <asm/setup.h> /* for COMMAND_LINE_SIZE */
-#endif
-
 #include <errno.h>
 #include <dirent.h>
 #include <ctype.h>
@@ -177,10 +173,8 @@ static char *
 proc_getent(const char *ent)
 {
 	FILE *fp;
-	char proc[COMMAND_LINE_SIZE];
-	char *p;
-	char *value = NULL;
-	int i;
+	char *proc, *p, *value = NULL;
+	size_t i;
 
 	if (!exists("/proc/cmdline"))
 		return NULL;
@@ -190,11 +184,11 @@ proc_getent(const char *ent)
 		return NULL;
 	}
 
-	memset(proc, 0, sizeof(proc));
-	p = fgets(proc, sizeof(proc), fp);
-	if (p == NULL)
-		eerror("fgets: %s", strerror(errno));
-	else if (*proc && (p = strstr(proc, ent))) {
+	proc = NULL;
+	i = 0;
+	if (rc_getline(&proc, &i, fp) == -1 || proc == NULL)
+		eerror("rc_getline: %s", strerror(errno));
+	if (*proc && (p = strstr(proc, ent))) {
 		i = p - proc;
 		if (i == '\0' || proc[i - 1] == ' ') {
 			p += strlen(ent);
@@ -205,6 +199,7 @@ proc_getent(const char *ent)
 	} else
 		errno = ENOENT;
 	fclose(fp);
+	free(proc);
 
 	return value;
 }
