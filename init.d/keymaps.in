@@ -8,7 +8,7 @@ depend()
 {
 	need localmount termencoding
 	after bootmisc
-	keyword noopenvz noprefix nouml novserver noxenu
+	keyword -openvz -prefix -uml -vserver -xenu
 }
 
 start()

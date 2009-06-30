@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd April 30, 2009
+.Dd July 1, 2009
 .Dt RUNSCRIPT 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -138,30 +138,30 @@ We should recalculate our dependencies if the listed files have changed.
 .It Ic keyword
 Tags a service with a keyword. Here's the keywords we currently understand:-
 .Bl -tag -width indent
-.It Dv nojail
+.It Dv -jail
 When in a jail, exclude this service from any dependencies. The service can
 still be run directly.
-.It Dv noopenvz
-Same as nojail, but for OpenVZ systems.
-.It Dv noshutdown
+.It Dv -openvz
+Same as -jail, but for OpenVZ systems.
+.It Dv -shutdown
 Don't stop this service when shutting the system down.
 This normally quite safe as remaining daemons will be sent a SIGTERM just
 before final shutdown.
 Network related services such as the network and dhcpcd init scripts normally
 have this keyword.
-.It Dv nostop
+.It Dv -stop
 Don't stop this service when changing runlevels, even if not present.
 This includes shutting the system down.
-.It Dv notimeout
+.It Dv -timeout
 Do not time out waiting for that service.
-.It Dv nouml
-Same as nojail, but for UML systems.
-.It Dv novserver
-Same as nojail, but for VServer systems.
-.It Dv noxen0
-Same as nojail, but for Xen DOM0 systems.
-.It Dv noxenu
-Same as nojail, but for Xen DOMU systems.
+.It Dv -uml
+Same as -jail, but for UML systems.
+.It Dv -vserver
+Same as -jail, but for VServer systems.
+.It Dv -xen0
+Same as -jail, but for Xen DOM0 systems.
+.It Dv -xenu
+Same as -jail, but for Xen DOMU systems.
 .El
 .El
 .Pp

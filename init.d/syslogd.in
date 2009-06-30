@@ -16,5 +16,5 @@ depend()
 	use net newsyslog
 	need localmount
 	after bootmisc
-	keyword noprefix
+	keyword -prefix
 }

@@ -5,7 +5,7 @@
 depend() 
 {
 	after fsck
-	keyword noprefix
+	keyword -prefix
 }
 
 start()

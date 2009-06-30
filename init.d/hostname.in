@@ -5,7 +5,7 @@
 description="Sets the hostname of the machine."
 
 depend() {
-	keyword noprefix
+	keyword -prefix
 }
 
 start()

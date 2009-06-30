@@ -28,7 +28,7 @@ depend()
 	else
 		before *
 	fi
-	keyword noopenvz noprefix nouml novserver noxenu
+	keyword -openvz -prefix -uml -vserver -xenu
 }
 
 setupopts()

@@ -9,7 +9,7 @@ ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 depend()
 {
 	need localmount
-	keyword noopenvz noprefix novserver
+	keyword -openvz -prefix -vserver
 }
 
 _setleds()

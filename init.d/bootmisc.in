@@ -8,7 +8,7 @@ depend()
 	need localmount
 	before logger
 	after clock sysctl
-	keyword noprefix
+	keyword -prefix
 }
 
 dir_writeable()

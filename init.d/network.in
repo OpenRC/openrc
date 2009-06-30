@@ -13,7 +13,7 @@ depend()
 	need localmount
 	after bootmisc
 	provide net
-	keyword nojail noprefix novserver
+	keyword -jail -prefix -vserver
 }
 
 uniqify()

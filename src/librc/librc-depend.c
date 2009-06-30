@@ -738,7 +738,7 @@ rc_deptree_update(void)
 	RC_STRING *s, *s2, *s2_np, *s3, *s4;
 	char *line = NULL;
 	size_t len = 0;
-	char *depend, *depends, *service, *type, *nosys;
+	char *depend, *depends, *service, *type, *nosys, *onosys;
 	size_t i, k, l;
 	bool retval = true;
 	const char *sys = rc_sys();
@@ -841,17 +841,25 @@ rc_deptree_update(void)
 	 * work for them. This doesn't stop them from being run directly. */
 	if (sys) {
 		len = strlen(sys);
-		nosys = xmalloc(len + 3);
-		nosys[0] = 'n';
-		nosys[1] = 'o';
+		nosys = xmalloc(len + 1);
+		nosys[0] = '-';
 		for (i = 0; i < len; i++)
-			nosys[i + 2] = (char)tolower((unsigned char)sys[i]);
-		nosys[i + 2] = '\0';
+			nosys[i + 1] = (char)tolower((unsigned char)sys[i]);
+		nosys[i + 1] = '\0';
+
+		onosys = xmalloc(len + 3);
+		onosys[0] = 'n';
+		onosys[1] = 'o';
+		for (i = 0; i < len; i++)
+			onosys[i + 2] = (char)tolower((unsigned char)sys[i]);
+		onosys[i + 2] = '\0';
 
 		TAILQ_FOREACH_SAFE(depinfo, deptree, entries, depinfo_np)
 			if ((deptype = get_deptype(depinfo, "keyword")))
 				TAILQ_FOREACH(s, deptype->services, entries)
-					if (strcmp(s->value, nosys) == 0) {
+					if (strcmp(s->value, nosys) == 0 ||
+					    strcmp(s->value, onosys) == 0)
+					{
 						provide = get_deptype(depinfo, "iprovide");
 						TAILQ_REMOVE(deptree, depinfo, entries);
 						TAILQ_FOREACH(di, deptree, entries) {
@@ -870,6 +878,7 @@ rc_deptree_update(void)
 						}
 					}
 		free(nosys);
+		free(onosys);
 	}
 
 	/* Phase 3 - add our providers to the tree */

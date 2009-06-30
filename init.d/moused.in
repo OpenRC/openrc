@@ -16,7 +16,7 @@ depend()
 {
 	need localmount
 	after bootmisc
-	keyword nojail noprefix
+	keyword -jail -prefix
 }
 
 start()

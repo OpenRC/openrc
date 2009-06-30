@@ -7,7 +7,7 @@ description="Mount the root fs read/write"
 depend()
 {
 	need fsck
-	keyword nojail noopenvz noprefix novserver
+	keyword -jail -openvz -prefix -vserver
 }
 
 start()

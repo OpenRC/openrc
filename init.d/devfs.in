@@ -6,7 +6,7 @@ description="Mount system critical filesystems in /dev."
 
 depend() {
 	use dev
-	keyword noprefix novserver
+	keyword -prefix -vserver
 }
 
 start() {

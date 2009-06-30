@@ -7,7 +7,7 @@ description="Update /etc/mtab to match what the kernel knows about"
 depend()
 {
 	need root
-	keyword noprefix
+	keyword -prefix
 }
 
 start()

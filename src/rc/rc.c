@@ -600,8 +600,11 @@ do_stop_services(const char *newlevel, bool parallel, bool going_down)
 			continue;
 		}
 		kwords = rc_deptree_depend(deptree, service->value, "keyword");
-		if (rc_stringlist_find(kwords, "nostop") ||
-		    (going_down && rc_stringlist_find(kwords, "noshutdown")))
+		if (rc_stringlist_find(kwords, "-stop") ||
+		    rc_stringlist_find(kwords, "nostop") ||
+		    (going_down &&
+			(rc_stringlist_find(kwords, "-shutdown") ||
+			    rc_stringlist_find(kwords, "noshutdown"))))
 			nstop = true;
 		else
 			nstop = false;

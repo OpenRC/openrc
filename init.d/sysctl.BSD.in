@@ -6,7 +6,7 @@ depend()
 {
 	use hostname
 	before bootmisc logger
-	keyword noprefix
+	keyword -prefix
 }
 
 start()

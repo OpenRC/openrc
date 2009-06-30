@@ -14,7 +14,7 @@ depend()
 	use logger
 	after bootmisc modules
 	before dns dhcpcd net
-	keyword noshutdown
+	keyword -shutdown
 }
 
 find_wireless()

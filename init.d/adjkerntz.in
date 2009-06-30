@@ -22,7 +22,7 @@ depend()
 	   [ "$clock" != "UTC" -a ! -e /etc/wall_cmos_clock ]; then
 		need root
 	fi
-	keyword nojail noprefix
+	keyword -jail -prefix
 }
 
 start()

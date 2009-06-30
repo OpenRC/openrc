@@ -471,7 +471,8 @@ svc_wait(const char *svc)
 
 	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend(deptree, svc, "keyword");
-	if (rc_stringlist_find(keywords, "notimeout"))
+	if (rc_stringlist_find(keywords, "-timeout") ||
+	    rc_stringlist_find(keywords, "notimeout"))
 		forever = true;
 	rc_stringlist_free(keywords);
 

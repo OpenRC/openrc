@@ -9,7 +9,7 @@ _IFS="
 depend()
 {
 	use dev clock modules
-	keyword nojail noopenvz noprefix notimeout novserver
+	keyword -jail -openvz -prefix -timeout -vserver
 }
 
 _abort() {
