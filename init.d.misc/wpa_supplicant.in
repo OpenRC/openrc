@@ -24,7 +24,9 @@ find_wireless()
 	case "$RC_UNAME" in
 	Linux)
 		for iface in /sys/class/net/*; do
-			if [ -e "$iface"/wireless ]; then
+			if [ -e "$iface"/wireless -o \
+				-e "$iface"/phy80211 ]
+			then
 				echo "${iface##*/}"
 				return 0
 			fi
