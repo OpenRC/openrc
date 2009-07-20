@@ -802,6 +802,11 @@ rc_deptree_update(void)
 				continue;
 			}
 
+			/* Don't provide ourself */
+			if (strcmp(type, "iprovide") == 0 &&
+			    strcmp(depend, service) == 0)
+				continue;
+
 			/* .sh files are not init scripts */
 			l = strlen(depend);
 			if (l > 2 &&
