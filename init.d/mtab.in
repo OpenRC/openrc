@@ -12,6 +12,12 @@ depend()
 
 start()
 {
+	# /etc/mtab could be a symlink to /proc/mounts
+	if [ ! -w /etc/mtab -a -L /etc/mtab ]; then
+		eeinfo "Skipping mtab update (non writeable symlink)"
+		return 0
+	fi
+
 	ebegin "Updating /etc/mtab"
 	if ! echo 2>/dev/null >/etc/mtab; then
 		ewend 1 "/etc/mtab is not updateable"
