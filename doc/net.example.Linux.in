@@ -992,7 +992,7 @@
 #	#	'from 24.80.102.112/32 to 192.168.1.0/24 table localnet priority 100' \
 #	#	'from 216.113.223.51/32 to 192.168.1.0/24 table localnet priority 100' \
 #	#"
-#	eval set -- $\rules_${IFVAR}
+#	eval set -- \$rules_${IFVAR}
 #	if [ $# != 0 ]; then
 #		einfo "Adding IP policy routing rules"
 #		eindent
