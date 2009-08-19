@@ -45,8 +45,10 @@ start()
 	[ -d /dev/vc ] && ttydev=/dev/vc/
 	x=1
 	while [ $x -le $ttyn ]; do
-		setfont $consolefont $param -C $ttydev$x >/dev/null 
-		retval=$(($retval + $?))
+		if ! setfont $consolefont $param -C $ttydev$x >/dev/null; then
+			retval=1
+			break
+		fi
 		x=$(($x + 1))
 	done
 	eend $retval
