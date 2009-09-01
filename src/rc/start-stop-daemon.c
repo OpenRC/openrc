@@ -155,7 +155,8 @@ parse_signal(const char *sig)
 		{ "STOP",	SIGSTOP	},
 		{ "TSTP",	SIGTSTP	},
 		{ "TTIN",	SIGTTIN	},
-		{ "TTOU",	SIGTTOU	}
+		{ "TTOU",	SIGTTOU	},
+		{ "NULL",	0 },
 	};
 
 	unsigned int i = 0;
@@ -165,7 +166,7 @@ parse_signal(const char *sig)
 		return -1;
 
 	if (sscanf(sig, "%u", &i) == 1) {
-		if (i > 0 && i < sizeof(signallist) / sizeof(signallist[0]))
+		if (i >= 0 && i < NSIG)
 			return i;
 		eerrorx("%s: `%s' is not a valid signal", applet, sig);
 	}
