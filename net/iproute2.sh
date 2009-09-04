@@ -225,6 +225,8 @@ _iproute2_ipv6_tentative()
 
 iproute2_post_start()
 {
+	local n=5
+
 	# Kernel may not have IP built in
 	if [ -e /proc/net/route ]; then
 		ip route flush table cache dev "${IFACE}"
@@ -232,11 +234,16 @@ iproute2_post_start()
 
 	if _iproute2_ipv6_tentative; then
 		ebegin "Waiting for IPv6 addresses"
-		while true; do
+		while [ $n -ge 0 ]; do
 			_iproute2_ipv6_tentative || break
+			sleep 1
+			n=$(($n - 1))
 		done
-		eend 0
+		[ $n -ge 0 ]
+		eend $?
 	fi
+
+	return 0
 }
 
 iproute2_post_stop()
