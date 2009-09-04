@@ -649,7 +649,7 @@ start_stop_daemon(int argc, char **argv)
 	char *name = NULL;
 	char *pidfile = NULL;
 	char *retry = NULL;
-	int sig = 0;
+	int sig = -1;
 	int nicelevel = 0;
 	bool background = false;
 	bool makepidfile = false;
@@ -886,8 +886,8 @@ start_stop_daemon(int argc, char **argv)
 	else if (exec)
 		*--argv = exec;
 
-	if (stop || sig != 0) {
-		if (sig == 0)
+	if (stop || sig != -1) {
+		if (sig == -1)
 			sig = SIGTERM;
 		if (!*argv && !pidfile && !name && !uid)
 			eerrorx("%s: --stop needs --exec, --pidfile,"
@@ -990,8 +990,8 @@ start_stop_daemon(int argc, char **argv)
 	}
 	margv = nav ? nav : argv;
 
-	if (stop || sig) {
-		if (sig == 0)
+	if (stop || sig != -1) {
+		if (sig == -1)
 			sig = SIGTERM;
 		if (!stop)
 			oknodo = true;
