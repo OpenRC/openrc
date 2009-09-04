@@ -166,7 +166,7 @@ parse_signal(const char *sig)
 		return -1;
 
 	if (sscanf(sig, "%u", &i) == 1) {
-		if (i >= 0 && i < NSIG)
+		if (i < NSIG)
 			return i;
 		eerrorx("%s: `%s' is not a valid signal", applet, sig);
 	}
