@@ -25,6 +25,29 @@ shift
 # Compat
 export SVCNAME=$RC_SVCNAME
 
+# Dependency function
+config() {
+	[ -n "$*" ] && echo "config $*"
+}
+need() {
+	[ -n "$*" ] && echo "need $*"
+}
+use() {
+	[ -n "$*" ] && echo "use $*"
+}
+before() {
+	[ -n "$*" ] && echo "before $*"
+}
+after() {
+	[ -n "$*" ] && echo "after $*"
+}
+provide() {
+	[ -n "$*" ] && echo "provide $*"
+}
+keyword() {
+	[ -n "$*" ] && echo "keyword $*"
+}
+
 # Descript the init script to the user
 describe()
 {
@@ -165,7 +188,7 @@ unset _f
 
 while [ -n "$1" ]; do
 	# See if we have the required function and run it
-	for _cmd in describe start stop status ${extra_commands:-$opts} \
+	for _cmd in describe start stop status depend ${extra_commands:-$opts} \
 		$extra_started_commands
 	do
 		if [ "$_cmd" = "$1" ]; then

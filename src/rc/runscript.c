@@ -1273,7 +1273,8 @@ runscript(int argc, char **argv)
 		doneone = true;
 
 		if (strcmp(optarg, "describe") == 0 ||
-		    strcmp(optarg, "help") == 0)
+		    strcmp(optarg, "help") == 0 ||
+		    strcmp(optarg, "depend") == 0)
 		{
 			save = prefix;
 			eprefix(NULL);
