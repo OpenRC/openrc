@@ -370,16 +370,17 @@ do_stop(const char *exec, const char *const *argv,
 static int
 run_stop_schedule(const char *exec, const char *const *argv,
     const char *pidfile, uid_t uid,
-    bool quiet, bool verbose, bool test)
+    bool quiet, bool verbose, bool test, bool progress)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
 	int nkilled = 0;
 	int tkilled = 0;
 	int nrunning = 0;
-	long nloops;
+	long nloops, nsecs;
 	struct timespec ts;
 	pid_t pid = 0;
 	const char *const *p;
+	bool progressed = false;
 
 	if (verbose) {
 		if (exec)
@@ -417,6 +418,8 @@ run_stop_schedule(const char *exec, const char *const *argv,
 			    quiet, verbose, test);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
+					if (progressed)
+						printf("\n");
 					if (! quiet)
 						eerror("%s: no matching "
 						    "processes found", applet);
@@ -434,30 +437,47 @@ run_stop_schedule(const char *exec, const char *const *argv,
 				break;
 			}
 
-			nloops = (ONE_SECOND / POLL_INTERVAL) * item->value;
 			ts.tv_sec = 0;
 			ts.tv_nsec = POLL_INTERVAL;
 
-			while (nloops) {
-				if ((nrunning = do_stop(exec, argv, pid,
-					    uid, 0, true, false, true)) == 0)
-					return 0;
-
-				if (nanosleep(&ts, NULL) == -1) {
-					if (errno == EINTR)
-						eerror("%s: caught an"
-						    " interrupt", applet);
-					else {
-						eerror("%s: nanosleep: %s",
-						    applet, strerror(errno));
+			for (nsecs = 0; nsecs < item->value; nsecs++) {
+				for (nloops = 0;
+				     nloops < ONE_SECOND / POLL_INTERVAL;
+				     nloops++)
+				{
+					if ((nrunning = do_stop(exec, argv,
+						    pid, uid, 0, true, false,
+						    true)) == 0)
 						return 0;
+
+
+					if (nanosleep(&ts, NULL) == -1) {
+						if (progressed) {
+							printf("\n");
+							progressed = false;
+						}
+						if (errno == EINTR)
+							eerror("%s: caught an"
+							    " interrupt", applet);
+						else {
+							eerror("%s: nanosleep: %s",
+							    applet, strerror(errno));
+							return 0;
+						}
 					}
 				}
-				nloops --;
+				if (progress) {
+					printf(".");
+					fflush(stdout);
+					progressed = true;
+				}
 			}
 			break;
-
 		default:
+			if (progressed) {
+				printf("\n");
+				progressed = false;
+			}
 			eerror("%s: invalid schedule item `%d'",
 			    applet, item->type);
 			return 0;
@@ -470,6 +490,8 @@ run_stop_schedule(const char *exec, const char *const *argv,
 	if (test || (tkilled > 0 && nrunning == 0))
 		return nkilled;
 
+	if (progressed)
+		printf("\n");
 	if (! quiet) {
 		if (nrunning == 1)
 			eerror("%s: %d process refused to stop",
@@ -550,7 +572,7 @@ expand_home(const char *home, const char *path)
 		ppath++;
 
 	if (!home) {
-		free(opath);
+	free(opath);
 		return xstrdup(path);
 	}
 	if (!ppath) {
@@ -566,7 +588,7 @@ expand_home(const char *home, const char *path)
 }
 
 #include "_usage.h"
-#define getoptstring "KN:R:Sbc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
+#define getoptstring "KN:PR:Sbc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
@@ -592,6 +614,7 @@ static const struct option longopts[] = {
 	{ "exec",         1, NULL, 'x'},
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
+	{ "progress",     0, NULL, 'P'},
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
@@ -619,6 +642,7 @@ static const char * const longopts_help[] = {
 	"Binary to start/stop",
 	"Redirect stdout to file",
 	"Redirect stderr to file",
+	"Print dots each second while waiting",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -654,6 +678,7 @@ start_stop_daemon(int argc, char **argv)
 	bool background = false;
 	bool makepidfile = false;
 	bool interpreted = false;
+	bool progress = false;
 	uid_t uid = 0;
 	gid_t gid = 0;
 	char *home = NULL;
@@ -715,10 +740,15 @@ start_stop_daemon(int argc, char **argv)
 		case 'K':  /* --stop */
 			stop = true;
 			break;
+
 		case 'N':  /* --nice */
 			if (sscanf(optarg, "%d", &nicelevel) != 1)
 				eerrorx("%s: invalid nice level `%s'",
 				    applet, optarg);
+			break;
+
+		case 'P':  /* --progress */
+			progress = true;
 			break;
 
 		case 'R':  /* --retry <schedule>|<timeout> */
@@ -1002,7 +1032,7 @@ start_stop_daemon(int argc, char **argv)
 		else
 			parse_schedule(NULL, sig);
 		i = run_stop_schedule(exec, (const char *const *)margv,
-		    pidfile, uid, quiet, verbose, test);
+		    pidfile, uid, quiet, verbose, test, progress);
 
 		if (i < 0)
 			/* We failed to stop something */
