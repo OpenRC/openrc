@@ -2,9 +2,7 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-NAME=		openrc
-VERSION=	0.5.0
-PKG=		${NAME}-${VERSION}
+include Makefile.inc
 
 SUBDIR=		conf.d etc init.d man sh src
 
@@ -15,6 +13,14 @@ _OLDNET_SH=	case "${MKOLDNET}" in \
 		esac
 _OLDNET!=	${_OLDNET_SH}
 SUBDIR+=	${_OLDNET}$(shell ${_OLDNET_SH})
+
+# Build pkgconfig or not
+_PKGCONFIG_SH=	case "${MKPKGCONFIG}" in \
+		[Yy][Ee][Ss]|"") echo "pkgconfig";; \
+		*) echo "";; \
+		esac
+_PKGCONFIG!=	${_PKGCONFIG_SH}
+SUBDIR+=	${_PKGCONFIG}$(shell ${_PKGCONFIG_SH})
 
 # We need to ensure that runlevels is done last
 SUBDIR+=	runlevels

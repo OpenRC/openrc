@@ -11,6 +11,7 @@ PROGLDFLAGS=-static
 LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
 MKPAM=pam
+MKPKGCONFIG=no
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
 MKOLDNET=yes

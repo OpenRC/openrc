@@ -34,6 +34,7 @@ CPPFLAGS+=	-I../includes -I../librc -I../libeinfo
 LDFLAGS+=	-L../librc -L../libeinfo
 LDADD+=		-lutil -lrc -leinfo
 
+include ../../Makefile.inc
 MK=		../../mk
 include ${MK}/debug.mk
 include ${MK}/prog.mk
@@ -46,7 +47,7 @@ include ${MK}/${MKPAM}.mk
 
 ${SRCS}: version.h
 version.h:
-	sed -n -e 's/^VERSION=[[:space:]]*\([^[:space:]]*\).*/#define VERSION "\1${GITVER}\"/p' ../../Makefile > version.h
+	echo "#define VERSION \"${VERSION}${GITVER}\"" >version.h
 	if test -n "${BRANDING}"; then \
 		echo "#define BRANDING \"${BRANDING}\"" >> version.h; \
 	fi
