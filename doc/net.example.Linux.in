@@ -1003,7 +1003,7 @@
 #		else
 #			for x; do
 #				ebegin "${x}"
-#				ip rule add ${x} dev "${IFACE}"
+#				ip rule add ${x}
 #				eend $?
 #			done
 #		fi
