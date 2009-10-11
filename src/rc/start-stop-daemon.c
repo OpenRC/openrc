@@ -37,6 +37,7 @@
 #define POLL_INTERVAL   20000000
 #define WAIT_PIDFILE   500000000
 #define ONE_SECOND    1000000000
+#define ONE_MS           1000000
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -638,7 +639,7 @@ static const char * const longopts_help[] = {
 	"Test actions, don't do them",
 	"Change the process user",
 	"Chroot to this directory",
-	"Seconds to wait for daemon start",
+	"Milliseconds to wait for daemon start",
 	"Binary to start/stop",
 	"Redirect stdout to file",
 	"Redirect stderr to file",
@@ -1311,8 +1312,8 @@ start_stop_daemon(int argc, char **argv)
 		struct timespec ts;
 		bool alive = false;
 		
-		ts.tv_sec = start_wait;
-		ts.tv_nsec = 0;
+		ts.tv_sec = start_wait / 1000;
+		ts.tv_nsec = (start_wait % 1000) * ONE_MS;
 		if (nanosleep(&ts, NULL) == -1) {
 			if (errno == EINTR)
 				eerror("%s: caught an interrupt", applet);
