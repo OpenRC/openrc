@@ -32,8 +32,8 @@ _forcefsck()
 
 _on_ac_power()
 {
-	if [ -f /proc/acpi/ac_adapter/AC/state ]; then
-		cat /proc/acpi/ac_adapter/AC/state | while read line; do
+	if [ -f /proc/acpi/ac_adapter/AC*/state ]; then
+		cat /proc/acpi/ac_adapter/AC*/state | while read line; do
 			case "$line" in
 			"state:"*"off-line") return 128;;
 			esac
