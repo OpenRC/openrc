@@ -2,7 +2,7 @@ PROG=		rc
 SRCS=		checkpath.c fstabinfo.c mountinfo.c start-stop-daemon.c \
 		rc-applets.c rc-depend.c rc-logger.c \
 		rc-misc.c rc-plugin.c rc-service.c rc-status.c rc-update.c \
-		runscript.c rc.c
+		runscript.c rc.c swclock.c
 
 CLEANFILES=	version.h
 
@@ -26,7 +26,7 @@ RC_SBINLINKS=	mark_service_starting mark_service_started \
 		mark_service_stopping mark_service_stopped \
 		mark_service_inactive mark_service_wasinactive \
 		mark_service_hotplugged mark_service_failed \
-		rc-abort
+		rc-abort swclock
 ALL_LINKS=	${BINLINKS} ${SBINLINKS} ${RC_BINLINKS} ${RC_SBINLINKS}
 CLEANFILES+=	${ALL_LINKS}
 

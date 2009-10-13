@@ -1,0 +1,27 @@
+#!@PREFIX@/sbin/runscript
+# Copyright (c) 2009 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+description="Sets the local clock to the mtime of a given file."
+
+depend()
+{
+	before *
+	keyword -openvz -prefix -uml -vserver -xenu
+}
+
+# swclock is an OpenRC built in
+
+start()
+{
+	ebegin "Setting the local clock based on last shutdown time"
+	swclock
+	eend $?
+}
+
+stop()
+{
+	ebegin "Saving the shutdown time"
+	swclock --save
+	eend $?
+}

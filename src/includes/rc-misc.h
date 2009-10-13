@@ -35,6 +35,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define RC_LEVEL_BOOT           "boot"

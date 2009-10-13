@@ -22,7 +22,7 @@ start()
 		fi
 	fi
 	local save=
-	for x in deptree depconfig softlevel nettree rc.log; do
+	for x in deptree depconfig shutdowntime softlevel nettree rc.log; do
 		[ -e "$RC_SVCDIR/$x" ] && save="$save $RC_SVCDIR/$x"
 	done
 	if [ -n "$save" ]; then

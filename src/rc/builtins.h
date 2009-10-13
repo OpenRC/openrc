@@ -35,6 +35,7 @@ int rc_status(int, char **);
 int rc_update(int, char **);
 int runscript(int, char **);
 int start_stop_daemon(int, char **);
+int swclock(int, char **);
 
 void run_applets(int, char **);
 

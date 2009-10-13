@@ -38,6 +38,7 @@ service_crashed
 checkpath
 fstabinfo
 mountinfo
+swclock
 rc-depend
 service_get_value
 service_set_value
@@ -59,6 +60,7 @@ checkpath.o
 fstabinfo.o
 mountinfo.o
 start-stop-daemon.o
+swclock.o
 rc-applets.o
 rc-depend.o
 rc-logger.o

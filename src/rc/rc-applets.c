@@ -449,6 +449,8 @@ run_applets(int argc, char **argv)
 		exit(start_stop_daemon(argc, argv));
 	else if (strcmp (applet, "checkpath") == 0)
 		exit(checkpath(argc, argv));
+	else if (strcmp(applet, "swclock") == 0)
+		exit(swclock(argc, argv));
 
 	/* These could also be applications in their own right */
 	if (strcmp(applet, "shell_var") == 0)
