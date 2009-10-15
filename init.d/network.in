@@ -103,13 +103,21 @@ dumpargs()
 	esac
 }
 
+intup=false
 runip()
 {
 	local int="$1" err=
 
 	shift
 	err=$(LC_ALL=C ip address add "$@" dev "$int" 2>&1)
-	[ -z "$err" ] && return 0
+	if [ -z "$err" ]; then
+		# ip does not bring up the interface when adding addresses
+		if ! intup; then
+			ip set link up dev "$int"
+			intup=true
+		fi
+		return 0
+	fi
 	if [ "$err" = "RTNETLINK answers: File exists" ]; then
 		ip address del "$@" dev "$int" 2>/dev/null
 	fi
@@ -194,7 +202,7 @@ start()
 			-f /etc/ifup."$int" -o -f "$cf" ] || continue
 		veinfo "$int"
 		case "$func" in
-		ip)	func=runip;;
+		ip)	func=runip; intup=false;;
 		esac
 		eindent
 		runargs /etc/ifup."$int" "$upcmd"
