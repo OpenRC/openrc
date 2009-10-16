@@ -26,3 +26,5 @@
 # If you require DHCP, you should install dhcpcd and it to the boot or
 # default runlevel.
 
+# NIS users can set the domain name here
+#domainname="foobar"

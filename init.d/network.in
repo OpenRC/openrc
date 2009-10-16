@@ -173,6 +173,16 @@ runargs()
 start()
 {
 	local cr=0 r= int= intv= cmd= args= upcmd=
+
+	if [ -z "$domainname" && -s /etc/defaultdomain ]; then
+		domainname=$(cat /etc/defaultdomain)
+	fi
+	if [ -n "$domainname" ]; then
+		ebegin "Setting NIS domainname: $domainname"
+		domainname "$domainname"
+		eend $?
+	fi
+
 	einfo "Starting network"
 	routeflush
 	if [ "$RC_UNAME" = "Linux" ]; then
