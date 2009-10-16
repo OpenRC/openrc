@@ -1,1 +1,2 @@
 CONF+=	consolefont dmesg hwclock keymaps modules
+SOS=	Linux

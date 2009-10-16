@@ -1,6 +1,7 @@
 DIR=	${INITDIR}
 SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in netmount.in \
-	network.in root.in savecache.in swap.in swclock.in sysctl.in urandom.in
+	network.in root.in savecache.in staticroute.in swap.in swclock.in \
+	sysctl.in urandom.in
 BIN=	${OBJS}
 
 # Build our old net foo or not

@@ -1,0 +1,73 @@
+#!@PREFIX@/sbin/runscript
+# Copyright (c) 2009 Roy Marples <roy@marples.name>
+# All rights reserved. Released under the 2-clause BSD license.
+
+# This script was inspired by the equivalent rc.d staticroute from NetBSD.
+
+description="Configures static routes."
+__nl="
+"
+
+depend()
+{
+	provide net
+	use network
+	keyword -jail -prefix -vserver
+}
+
+dump_args()
+{
+	if [ -s /etc/route.conf ]; then
+		cat /etc/route.conf
+	else
+		case "$staticroute" in
+		*"$__nl"*)
+			echo "$staticroute"
+			;;
+		*)
+			(
+		 		set -o noglob
+				IFS=';'; set -- $staticroute
+				IFS="$__nl"; echo "$*"
+			)
+			;;
+		esac
+	fi
+}
+
+do_routes()
+{
+	local xtra=
+	[ "$RC_UNAME" != Linux ] && xtra=-q
+
+	ebegin "$1 static routes"
+	dump_args | while read args; do
+		[ -z "$args" ] && continue
+		case "$args" in
+		"#"*)
+			;;
+		"+"*)
+			[ $2 = "add" ] && eval ${args#*+}
+			;;
+		"-"*)
+			[ $2 = "del" -o $2 = "delete" ] && eval ${args#*-}
+			;;
+		*)
+			route $xtra $2 -$args
+			;;
+		esac
+	done
+	eend 0
+}
+
+start()
+{
+	do_routes "Adding" "add"
+}
+
+stop()
+{
+	local cmd="delete"
+	[ "$RC_UNAME" = Linux ] && cmd="del"
+	do_routes "Deleting" "$cmd"
+}
