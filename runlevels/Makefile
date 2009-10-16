@@ -1,5 +1,5 @@
 BOOT=		bootmisc fsck hostname localmount network \
-		root swap sysctl urandom
+		root staticroute swap sysctl urandom
 DEFAULT=	local netmount
 SHUTDOWN=	savecache
 
