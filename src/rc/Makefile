@@ -46,11 +46,16 @@ LDADD+=		${LIBDL} ${LIBKVM}
 include ${MK}/${MKPAM}.mk
 
 ${SRCS}: version.h
-version.h:
-	echo "#define VERSION \"${VERSION}${GITVER}\"" >version.h
+
+.PHONY:	version.h.tmp
+version.h.tmp:
+	echo "#define VERSION \"${VERSION}${GITVER}\"" >$@
 	if test -n "${BRANDING}"; then \
-		echo "#define BRANDING \"${BRANDING}\"" >> version.h; \
+		echo "#define BRANDING \"${BRANDING}\"" >> $@; \
 	fi
+
+version.h: version.h.tmp
+	cmp -s $@.tmp $@ && rm $@.tmp || mv $@.tmp $@
 
 install: all
 	${INSTALL} -d ${DESTDIR}${SBINDIR}
