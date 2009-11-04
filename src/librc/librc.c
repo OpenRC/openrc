@@ -233,6 +233,8 @@ rc_sys(void)
 		return RC_SYS_VSERVER;
 	else if (exists("/proc/vz/veinfo") && !exists("/proc/vz/version"))
 		return RC_SYS_OPENVZ;
+	else if (file_regex("/proc/self/cgroup", ":/.+$"))
+		return RC_SYS_LXC;
 	else if (file_regex("/proc/self/status",
 		"envID:[[:space:]]*[1-9]"))
 		return RC_SYS_OPENVZ; /* old test */

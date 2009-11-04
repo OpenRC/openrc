@@ -8,7 +8,7 @@ depend()
 {
 	need fsck
 	use lvm modules mtab
-	keyword -jail -openvz -prefix -vserver
+	keyword -jail -openvz -prefix -vserver -lxc
 }
 
 start()

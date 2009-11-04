@@ -5,7 +5,7 @@
 depend()
 {
 	need localmount
-	keyword -jail -openvz -prefix -vserver
+	keyword -jail -openvz -prefix -vserver -lxc
 }
 
 start()
