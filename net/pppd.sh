@@ -90,7 +90,7 @@ pppd_pre_start()
 	eval passwordset=\$\{password_${IFVAR}-x\}
 	if [ -n "${username}" ] \
 	&& [ -n "${password}" -o -z "${passwordset}" ]; then
-		opts="${opts} plugin passwordfd.so passwordfd 0"
+		opts="plugin passwordfd.so ${opts} passwordfd 0"
 	fi
 	
 	if ! ${hasdefaultmetric}; then
@@ -155,7 +155,7 @@ pppd_pre_start()
 			opts="${opts} connect true"
 			set -- "$@" "${link}"
 		fi
-		opts="${opts} plugin $1.so"
+		opts="plugin $1.so ${opts}"
 		shift
 		opts="${opts} $@"
 	done
