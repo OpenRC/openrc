@@ -95,7 +95,7 @@ start()
 		for x in "" $xtra; do
 			mkutmp /var/run/utmp$x
 		done
-		[ -e /var/log/wtmp ] && mkutmp /var/log/wtmp
+		[ -e /var/log/wtmp ] || mkutmp /var/log/wtmp
 		eend 0
 
 		ebegin "Cleaning /var/run"
