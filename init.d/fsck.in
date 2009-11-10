@@ -73,7 +73,7 @@ start()
 	if _forcefsck; then
 		fsck_opts="$fsck_opts -f"
 		check_extra="(check forced)"
-	elif ! _on_ac_power; then
+	elif ! yesno ${fsck_on_battery:-YES} && ! _on_ac_power; then
 		ewarn "Skipping fsck due to not being on AC power"
 		return 0
 	fi

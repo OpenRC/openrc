@@ -13,6 +13,11 @@
 #fsck_passno=">1"
 #fsck_passno="<2"
 
+# Most modern fs's don't require a full fsck on boot, but for those that do
+# it may be adivisable to skip this when running on battery.
+# WARNING: Do not turn this off if you have any JFS partitions.
+fsck_on_battery="YES"
+
 # fsck_shutdown causes fsck to trigger during shutdown as well as startup.
 # The end result of this is that if any periodic non-root filesystem checks are
 # scheduled, under normal circumstances the actual check will happen during
