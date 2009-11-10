@@ -112,8 +112,8 @@ runip()
 	err=$(LC_ALL=C ip address add "$@" dev "$int" 2>&1)
 	if [ -z "$err" ]; then
 		# ip does not bring up the interface when adding addresses
-		if ! intup; then
-			ip set link up dev "$int"
+		if ! $intup; then
+			ip link set "$int" up
 			intup=true
 		fi
 		return 0
