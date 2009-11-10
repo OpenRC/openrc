@@ -11,8 +11,16 @@ depend()
 
 start()
 {
-	[ -e /etc/sysctl.conf ] || return 0
+	local conf= retval=0
 	ebegin "Configuring kernel parameters"
-	sysctl -p >/dev/null
-	eend $? "Some errors were encountered"
+	eindent
+	for conf in /etc/sysctl.d/*.conf /etc/sysctl.conf; do
+		if [ -r "$conf" ]; then
+			vebegin "applying $conf"
+			sysctl -p "$conf" >/dev/null
+			veend $? || retval=1
+		fi
+	done
+	eoutdent
+	eend $retval "Some errors were encountered"
 }
