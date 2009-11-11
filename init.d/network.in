@@ -107,8 +107,14 @@ intup=false
 runip()
 {
 	local int="$1" err=
-
 	shift
+
+	# Ensure we have a valid broadcast address
+	case "$@" in
+	*" broadcast "*|*" brd "*) ;;
+	*) set -- "$@" brd +;;
+	esac
+
 	err=$(LC_ALL=C ip address add "$@" dev "$int" 2>&1)
 	if [ -z "$err" ]; then
 		# ip does not bring up the interface when adding addresses
