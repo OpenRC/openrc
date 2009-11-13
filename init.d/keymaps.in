@@ -15,7 +15,7 @@ start()
 {
 	ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 	: ${unicode:=$UNICODE}
-	: =${keymap:=$KEYMAP}
+	: ${keymap:=$KEYMAP}
 	: ${extended_keymaps:=$EXTENDED_KEYMAPS}
 	: ${windowkeys:=$SET_WINDOWSKEYS} 
 	: ${fix_euro:=$FIX_EURO}
@@ -34,15 +34,25 @@ start()
 		echo 1 > /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
 	fi
 
-	ebegin "Loading key mappings [$keymap]"
-	local loadkeys_uni= wkeys= kmode="-a" msg="ASCII"
+	local wkeys= kmode="-a" msg="ASCII"
 	if yesno $unicode; then
-		loadkeys_uni="--unicode"
 		kmode="-u"
 		msg="UTF-8"
 	fi
 	yesno $windowkeys && wkeys="windowkeys"
-	loadkeys -q $loadkeys_uni $wkeys $keymap $extended_keymaps
+
+	# Set terminal encoding to either ASCII or UNICODE.
+	# See utf-8(7) for more information.
+	ebegin "Setting keyboard mode [$msg]"
+	n=1
+	while [ $n -le $ttyn ]; do
+		kbd_mode $kmode -C $ttydev$n
+		n=$(($n + 1))
+	done
+	eend 0
+
+	ebegin "Loading key mappings [$keymap]"
+	loadkeys -q $wkeys $keymap $extended_keymaps
 	eend $? "Error loading key mappings" || return $?
 
 	if yesno $fix_euro; then
@@ -51,20 +61,6 @@ start()
 		echo "altgr keycode 18 = U+20AC" | loadkeys -q
 		eend $?
 	fi
-
-	# Set terminal encoding to either ASCII or UNICODE.
-	# See utf-8(7) for more information.
-	ebegin "Setting keyboard mode [$msg]"
-	if yesno $unicode; then
-		dumpkeys ${dumpkeys_charset:+-c} \
-			$dumpkeys_charset | loadkeys --unicode
-	fi
-	n=1
-	while [ $n -le $ttyn ]; do
-		kbd_mode $kmode -C $ttydev$n
-		n=$(($n + 1))
-	done
-	eend 0
 
 	# Save the keymapping for use immediately at boot
 	if [ -w "$RC_LIBEXECDIR" ]; then
