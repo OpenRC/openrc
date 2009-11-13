@@ -72,7 +72,6 @@ swclock(int argc, char **argv)
 	const char *file = RC_SHUTDOWNTIME;
 	struct stat sb;
 	struct timeval tv;
-	void (*e)(const char * __EINFO_RESTRICT, ...) EINFO_XPRINTF(1, 2);
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
@@ -104,11 +103,11 @@ swclock(int argc, char **argv)
 	}
 
 	if (stat(file, &sb) == -1) {
-		if (wflag != 0 && errno == EEXIST)
-			e = ewarnx;
+		if (wflag != 0 && errno == ENOENT)
+			ewarn("swclock: `%s': %s", file, strerror(errno));
 		else
-			e = eerrorx;
-		e("swclock: `%s': %s", file, strerror(errno));
+			eerrorx("swclock: `%s': %s", file, strerror(errno));
+		return 0;
 	}
 
 	tv.tv_sec = sb.st_mtime;
