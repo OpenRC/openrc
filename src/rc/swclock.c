@@ -52,13 +52,15 @@ extern const char *applet;
 
 #include "_usage.h"
 #define extraopts "file"
-#define getoptstring "s" getoptstring_COMMON
+#define getoptstring "sw" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "save", 0, NULL, 's' },
+	{ "warn", 0, NULL, 'w' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
 	"saves the time",
+	"no error if no reference file",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -66,10 +68,11 @@ static const char * const longopts_help[] = {
 int
 swclock(int argc, char **argv)
 {
-	int opt, sflag = 0;
+	int opt, sflag = 0, wflag = 0;
 	const char *file = RC_SHUTDOWNTIME;
 	struct stat sb;
 	struct timeval tv;
+	void (*e)(const char * __EINFO_RESTRICT, ...) EINFO_XPRINTF(1, 2);
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
@@ -77,6 +80,9 @@ swclock(int argc, char **argv)
 		switch (opt) {
 		case 's':
 			sflag = 1;
+			break;
+		case 'w':
+			wflag = 1;
 			break;
 		case_RC_COMMON_GETOPT;
 		}
@@ -97,8 +103,13 @@ swclock(int argc, char **argv)
 		return 0;
 	}
 
-	if (stat(file, &sb) == -1)
-		eerrorx("swclock: `%s': %s", file, strerror(errno));
+	if (stat(file, &sb) == -1) {
+		if (wflag != 0 && errno == EEXIST)
+			e = ewarnx;
+		else
+			e = eerrorx;
+		e("swclock: `%s': %s", file, strerror(errno));
+	}
 
 	tv.tv_sec = sb.st_mtime;
 	tv.tv_usec = 0;

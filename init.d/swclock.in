@@ -16,7 +16,7 @@ depend()
 start()
 {
 	ebegin "Setting the local clock based on last shutdown time"
-	swclock
+	swclock --warn
 	eend $?
 }
 
