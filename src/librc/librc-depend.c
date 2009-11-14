@@ -346,8 +346,9 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 	    get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STOPPED))
 		return providers;
 
-	/* Still nothing? OK, list all services */
-	TAILQ_FOREACH(service, dt->services, entries)
+	/* Still nothing? OK, list our first provided service. */
+	service = TAILQ_FIRST(dt->services);
+	if (service != NULL)
 		rc_stringlist_add(providers, service->value);
 
 	return providers;
