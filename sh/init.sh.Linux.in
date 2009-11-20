@@ -8,14 +8,19 @@
 # tmpfs and ramfs are easy, so force one or the other.
 mount_svcdir()
 {
+	# mount from fstab if we can
+	fstabinfo --mount "$RC_SVCDIR" && return 0
+
 	local fs= fsopts="-o rw,noexec,nodev,nosuid"
-	local devdir="rc-svcdir" x=
 	local svcsize=${rc_svcsize:-1024}
 
+	# Some buggy kernels report tmpfs even when not present :(
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems; then
-		fs="tmpfs"
-		fsopts="$fsopts,mode=0755,size=${svcsize}k"
-	elif grep -Eq "[[:space:]]+ramfs$" /proc/filesystems; then
+		mount -n -t tmpfs $fsopts,mode=755,size=${svcsize}k \
+			rc-svcdir "$RC_SVCDIR" && return 0
+	fi
+	
+	if grep -Eq "[[:space:]]+ramfs$" /proc/filesystems; then
 		fs="ramfs"
 		# ramfs has no special options
 	elif [ -e /dev/ram0 ] \
@@ -32,10 +37,7 @@ mount_svcdir()
 		return 1
 	fi
 
-	# If we have no entry in fstab for $RC_SVCDIR, provide our own
-	if ! fstabinfo --mount "$RC_SVCDIR"; then
-		mount -n -t "$fs" $fsopts "$devdir" "$RC_SVCDIR"
-	fi
+	mount -n -t "$fs" $fsopts rc-svcdir "$RC_SVCDIR"
 }
 
 . "$RC_LIBEXECDIR"/sh/functions.sh
