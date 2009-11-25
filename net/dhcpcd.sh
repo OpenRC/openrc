@@ -56,8 +56,11 @@ dhcpcd_start()
 		esac
 	done
 
-	# Add our route metric
-	[ "${metric:-0}" != "0" ] && args="${args} -m ${metric}"
+	# Add our route metric if not given
+	case " $args " in
+	*" -m "*) ;;
+	*) [ "${metric:-0}" != 0 ] && args="$args -m $metric";;
+	esac
 
 	# Bring up DHCP for this interface
 	ebegin "Running dhcpcd"
