@@ -28,6 +28,7 @@ pre_flight_checks()
 
 dump_args()
 {
+	# Route configuration file, as used by the NetBSD RC system
 	if [ -s /etc/route.conf ]; then
 		cat /etc/route.conf
 		return $?
