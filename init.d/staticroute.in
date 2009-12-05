@@ -15,24 +15,36 @@ depend()
 	keyword -jail -prefix -vserver
 }
 
+pre_flight_checks()
+{
+	route=route
+	[ -s /etc/route.conf ] && return 0
+
+	if [ -n "$staticiproute" ]; then
+		route="ip route"
+		staticroute="$staticiproute"
+	fi
+}
+
 dump_args()
 {
 	if [ -s /etc/route.conf ]; then
 		cat /etc/route.conf
-	else
-		case "$staticroute" in
-		*"$__nl"*)
-			echo "$staticroute"
-			;;
-		*)
-			(
-		 		set -o noglob
-				IFS=';'; set -- $staticroute
-				IFS="$__nl"; echo "$*"
-			)
-			;;
-		esac
+		return $?
 	fi
+
+	case "$staticroute" in
+	*"$__nl"*)
+		echo "$staticroute"
+		;;
+	*)
+		(
+			set -o noglob
+			IFS=';'; set -- $staticroute
+			IFS="$__nl"; echo "$*"
+		)
+		;;
+	esac
 }
 
 do_routes()
@@ -41,6 +53,8 @@ do_routes()
 	[ "$RC_UNAME" != Linux ] && xtra=-q
 
 	ebegin "$1 static routes"
+	eindent
+	pre_flight_checks
 	dump_args | while read args; do
 		[ -z "$args" ] && continue
 		case "$args" in
@@ -53,10 +67,19 @@ do_routes()
 			[ $2 = "del" -o $2 = "delete" ] && eval ${args#*-}
 			;;
 		*)
-			route $xtra $2 -$args
-			;;
+			veinfo "$args"
+			case "$route" in
+			"ip route")
+				ip route $2 $args
+				;;
+			*)
+				route $xtra $2 -$args
+				;;
+			esac
+			veend $?
 		esac
 	done
+	eoutdent
 	eend 0
 }
 
