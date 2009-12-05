@@ -43,7 +43,8 @@ _ifindex()
 _is_wireless()
 {
 	# Support new sysfs layout
-	[ -d /sys/class/net/"${IFACE}"/wireless ] && return 0
+	[ -d /sys/class/net/"${IFACE}"/wireless -o \
+		-d /sys/class/net/"${IFACE}"/phy80211 ] && return 0
 
 	[ ! -e /proc/net/wireless ] && return 1
 	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/wireless
