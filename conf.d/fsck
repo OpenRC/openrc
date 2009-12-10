@@ -14,7 +14,7 @@
 #fsck_passno="<2"
 
 # Most modern fs's don't require a full fsck on boot, but for those that do
-# it may be adivisable to skip this when running on battery.
+# it may be advisable to skip this when running on battery.
 # WARNING: Do not turn this off if you have any JFS partitions.
 fsck_on_battery="YES"
 
