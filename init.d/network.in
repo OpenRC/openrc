@@ -255,6 +255,10 @@ start()
 			route add default $defaultroute
 		fi
 		eend $?
+	elif [ -n "$defaultiproute" ]; then
+		ebegin "Setting default route $defauliptroute"
+		ip route add default via $defaultiproute
+		eend $?
 	fi
 
 	return 0

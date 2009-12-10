@@ -3,6 +3,9 @@
 # On the other hand, ip (iproute2) is quite powerful and is also supported
 #ip_eth0="192.168.0.10/24; 192.168.10.10/24"
 
+# You can also use ip to add the default route.
+#defaultiproute="192.168.0.1"
+
 # ip doesn't handle MTU like ifconfig, but we can do it like so
 #ifup_eth0="ip link set \$int mtu 1500"
 
