@@ -30,38 +30,6 @@ _forcefsck()
 	[ -e /forcefsck ] || get_bootparam forcefsck
 }
 
-_on_ac_power()
-{
-	if [ -f /proc/acpi/ac_adapter/AC*/state ]; then
-		cat /proc/acpi/ac_adapter/AC*/state | while read line; do
-			case "$line" in
-			"state:"*"off-line") return 128;;
-			esac
-		done
-	elif [ -f /proc/pmu/info ]; then
-		cat /proc/pmu/info | while read line; do
-			case "$line" in
-			"AC Power"*": 0") return 128;;
-			esac
-		done
-	elif type envstat >/dev/null 2>&1; then
-		# NetBSD has envstat
-		envstat -d acpiacad0 2>/dev/null | while read line; do
-			case "$line" in
-			"connected:"*"OFF") return 128;;
-			esac
-		done
-	elif sysctl -q hw.acpi.acline >/dev/null 2>/dev/null; then
-		case $(sysctl -n hw.acpi.acline) in
-		0) return 1;;
-		*) return 0;;
-		esac
-	else
-		return 0
-	fi
-	[ $? != 128 ]
-}
-
 start()
 {
 	local fsck_opts= p= check_extra=
@@ -73,7 +41,7 @@ start()
 	if _forcefsck; then
 		fsck_opts="$fsck_opts -f"
 		check_extra="(check forced)"
-	elif ! yesno ${fsck_on_battery:-YES} && ! _on_ac_power; then
+	elif ! yesno ${fsck_on_battery:-YES} && ! on_ac_power; then
 		ewarn "Skipping fsck due to not being on AC power"
 		return 0
 	fi

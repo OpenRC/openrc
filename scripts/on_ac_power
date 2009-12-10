@@ -1,0 +1,33 @@
+#!/bin/sh
+# Detect AC power or not in a portable way
+# Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
+
+# Exit 0 if on AC power, 1 if not and 255 if we don't know how to work it out
+if [ -f /proc/acpi/ac_adapter/AC*/state ]; then
+	cat /proc/acpi/ac_adapter/AC*/state | while read line; do
+		case "$line" in
+		"state:"*"off-line") return 128;;
+		esac
+	done
+elif [ -f /proc/pmu/info ]; then
+	cat /proc/pmu/info | while read line; do
+		case "$line" in
+		"AC Power"*": 0") return 128;;
+		esac
+	done
+elif type envstat >/dev/null 2>&1; then
+	# NetBSD has envstat
+	envstat -d acpiacad0 2>/dev/null | while read line; do
+		case "$line" in
+		"connected:"*"OFF") return 128;;
+		esac
+	done
+elif sysctl -q hw.acpi.acline >/dev/null 2>/dev/null; then
+	case $(sysctl -n hw.acpi.acline) in
+	0) return 1;;
+	*) return 0;;
+	esac
+else
+	exit 255
+fi
+[ $? != 128 ]
