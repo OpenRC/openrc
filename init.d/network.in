@@ -256,7 +256,7 @@ start()
 		fi
 		eend $?
 	elif [ -n "$defaultiproute" ]; then
-		ebegin "Setting default route $defauliptroute"
+		ebegin "Setting default route $defaultiproute"
 		ip route add default via $defaultiproute
 		eend $?
 	fi
