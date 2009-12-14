@@ -22,7 +22,7 @@
 .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd October 14, 2009
+.Dd December 14, 2009
 .Dt START-STOP-DAEMON 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -136,6 +136,10 @@ option. Only useful when used with daemons that run in the foreground and
 forced into the background with the
 .Fl -b , -background
 option.
+.It Fl I , -ionice Ar class Ns Op : Ns Ar data
+Modifies the IO scheduling priority of the daemon.
+Class can be 0 for none, 1 for real time, 2 for best effort and 3 for idle.
+Data can be from 0 to 7 inclusive.
 .It Fl N , -nice Ar level
 Modifies the scheduling priority of the daemon.
 .It Fl 1 , -stdout Ar logfile

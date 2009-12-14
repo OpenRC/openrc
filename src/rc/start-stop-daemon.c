@@ -47,6 +47,10 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 
+#ifdef __linux__
+#include <sys/syscall.h> /* For io priority */
+#endif
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -103,6 +107,13 @@ extern const char *applet;
 static char *changeuser, *ch_root, *ch_dir;
 
 extern char **environ;
+
+#ifdef __linux__
+static inline int ioprio_set(int which, int who, int ioprio)
+{
+	return syscall(SYS_ioprio_set, which, who, ioprio);
+}
+#endif
 
 static void
 free_schedulelist(void)
@@ -589,8 +600,9 @@ expand_home(const char *home, const char *path)
 }
 
 #include "_usage.h"
-#define getoptstring "KN:PR:Sbc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
+#define getoptstring "I:KN:PR:Sbc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
 static const struct option longopts[] = {
+	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
 	{ "retry",        1, NULL, 'R'},
@@ -619,6 +631,7 @@ static const struct option longopts[] = {
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
+	"Set an ionice class:data when starting", 
 	"Stop daemon",
 	"Set a nicelevel when starting",
 	"Retry schedule to use when stopping",
@@ -675,7 +688,7 @@ start_stop_daemon(int argc, char **argv)
 	char *pidfile = NULL;
 	char *retry = NULL;
 	int sig = -1;
-	int nicelevel = 0;
+	int nicelevel = 0, ionicec = -1, ioniced = 0;
 	bool background = false;
 	bool makepidfile = false;
 	bool interpreted = false;
@@ -738,6 +751,17 @@ start_stop_daemon(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 		    (int *) 0)) != -1)
 		switch (opt) {
+		case 'I': /* --ionice */
+			if (sscanf(optarg, "%d:%d", &ionicec, &ioniced) == 0)
+				eerrorx("%s: invalid ionice `%s'",
+				    applet, optarg);
+			if (ionicec == 0)
+				ioniced = 0;
+			else if (ionicec == 3)
+				ioniced = 7;
+			ionicec <<= 13; /* class shift */
+			break;
+
 		case 'K':  /* --stop */
 			stop = true;
 			break;
@@ -1120,6 +1144,14 @@ start_stop_daemon(int argc, char **argv)
 				    applet, nicelevel,
 				    strerror(errno));
 		}
+
+/* Only linux suports setting an IO priority */
+#ifdef __linux__
+		if (ionicec != -1 &&
+		    ioprio_set(1, mypid, ionicec | ioniced) == -1)
+			eerrorx("%s: ioprio_set %d %d: %s", applet,
+			    ionicec, ioniced, strerror(errno));
+#endif
 
 		if (ch_root && chroot(ch_root) < 0)
 			eerrorx("%s: chroot `%s': %s",
