@@ -287,6 +287,11 @@ stop()
 		then
 			veinfo "$int"
 			runargs /etc/ifdown."$int" "$downcmd"
+			if [ -x /sbin/ip ]; then
+				# We need to do this, otherwise we may
+				# fail to add things correctly on restart
+				ip address flush dev "$int" 2>/dev/null
+			fi
 			ifconfig "$int" down 2>/dev/null
 			ifconfig "$int" destroy 2>/dev/null
 		fi
