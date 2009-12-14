@@ -112,6 +112,7 @@ runip()
 	# Ensure we have a valid broadcast address
 	case "$@" in
 	*" broadcast "*|*" brd "*) ;;
+	*:*) ;; # Ignore IPv6
 	*) set -- "$@" brd +;;
 	esac
 
