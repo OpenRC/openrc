@@ -137,6 +137,7 @@ routeflush()
 	if [ "$RC_UNAME" = Linux ]; then
 		if [ -x /sbin/ip ]; then
 			ip route flush scope global
+			ip route delete default 2>/dev/null
 		else
 			# Sadly we also delete some link routes, but
 			# this cannot be helped
@@ -156,6 +157,8 @@ routeflush()
 				esac
 				route del $flags $dest $netmask $xtra
 			done
+			# Erase any default dev eth0 routes
+			route del default 2>/dev/null
 		fi
 	else
 		route -qn flush
@@ -260,6 +263,24 @@ start()
 	elif [ -n "$defaultiproute" ]; then
 		ebegin "Setting default route $defaultiproute"
 		ip route add default via $defaultiproute
+		eend $?
+	fi
+
+	if [ -n "$defaultroute6" ]; then
+		ebegin "Setting default route $defaultroute6"
+		if [ "$RC_UNAME" = Linux ]; then
+			routecmd="route -A inet6 add"
+			if [ "${defaultroute6#dev }" = "$defaultroute6" ]; then
+				routecmd="$routecmd gw"
+			fi
+		else
+			routecmd="route -inet6 add"
+		fi
+		$routecmd default $defaultroute6
+		eend $?
+	elif [ -n "$defaultiproute6" ]; then
+		ebegin "Setting default route $defaultiproute6"
+		ip route add default via $defaultiproute6
 		eend $?
 	fi
 

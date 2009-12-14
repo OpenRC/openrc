@@ -50,7 +50,7 @@ dump_args()
 
 do_routes()
 {
-	local xtra=
+	local xtra= family=
 	[ "$RC_UNAME" != Linux ] && xtra=-q
 
 	ebegin "$1 static routes"
@@ -74,7 +74,14 @@ do_routes()
 				ip route $2 $args
 				;;
 			*)
-				route $xtra $2 -$args
+				# Linux route does cannot work it out ...
+				if [ "$RC_UNAME" = Linux ]; then
+					case "$args" in
+					*:*) family="-A inet6";;
+					*) family=;;
+					esac
+				fi
+				route $famly $xtra $2 -$args
 				;;
 			esac
 			veend $?
