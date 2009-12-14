@@ -250,7 +250,8 @@ start()
 
 	if [ -n "$defaultroute" ]; then
 		ebegin "Setting default route $defaultroute"
-		if [ "$RC_UNAME" = Linux ]; then
+		if [ "$RC_UNAME" = Linux -a \
+		    "${defaultroute#dev }" = "$defaultroute" ]; then
 			route add default gw $defaultroute
 		else
 			route add default $defaultroute
