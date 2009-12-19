@@ -5,6 +5,7 @@
 
 # You can also use ip to add the default route.
 #defaultiproute="192.168.0.1"
+#defaultiproute6="2001:a:b:c"
 
 # ip doesn't handle MTU like ifconfig, but we can do it like so
 #ifup_eth0="ip link set \$int mtu 1500"
