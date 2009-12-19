@@ -253,16 +253,11 @@ start()
 
 	if [ -n "$defaultroute" ]; then
 		ebegin "Setting default route $defaultroute"
-		if [ "$RC_UNAME" = Linux -a \
-		    "${defaultroute#dev }" = "$defaultroute" ]; then
-			route add default gw $defaultroute
-		else
-			route add default $defaultroute
-		fi
+		route add default $defaultroute
 		eend $?
 	elif [ -n "$defaultiproute" ]; then
 		ebegin "Setting default route $defaultiproute"
-		ip route add default via $defaultiproute
+		ip route add default $defaultiproute
 		eend $?
 	fi
 
@@ -270,9 +265,6 @@ start()
 		ebegin "Setting default route $defaultroute6"
 		if [ "$RC_UNAME" = Linux ]; then
 			routecmd="route -A inet6 add"
-			if [ "${defaultroute6#dev }" = "$defaultroute6" ]; then
-				routecmd="$routecmd gw"
-			fi
 		else
 			routecmd="route -inet6 add"
 		fi
@@ -280,7 +272,7 @@ start()
 		eend $?
 	elif [ -n "$defaultiproute6" ]; then
 		ebegin "Setting default route $defaultiproute6"
-		ip route add default via $defaultiproute6
+		ip -f inet6 route add default $defaultiproute6
 		eend $?
 	fi
 

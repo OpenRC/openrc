@@ -9,10 +9,6 @@
 # You should note that we don't stop the network at system shutdown by default.
 # If you really need this, then set shutdown_network=YES
 
-# You can assign a default route
-#defaultroute="192.168.0.1"
-#defaultroute6="2001:a:b:c"
-
 # Lastly, the interfaces variable pulls in virtual interfaces that cannot
 # be automatically detected.
 #interfaces="br0 bond0 vlan0"

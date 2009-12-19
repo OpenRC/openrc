@@ -13,7 +13,7 @@ SOS?=	BSD
 
 network: network.in network.${OS}
 	cp $@.in $@
-	[ -e $@.${OS} ] && cat $@.${OS} >> $@ || true
+	[ -e $@.${SOS} ] && cat $@.${SOS} >> $@ || true
 
 staticroute: staticroute.${SOS}
 	cp $@.${SOS} $@

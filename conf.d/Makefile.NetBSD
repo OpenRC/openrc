@@ -1,3 +1,1 @@
 CONF+=	moused rarpd savecore
-
-network.${OS}:
