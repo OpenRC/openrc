@@ -70,11 +70,6 @@
 #       iproute2 does not do this as there is no need to
 #config_eth0="192.168.0.2/24 192.168.0.3/24 192.168.0.4/24"
 # However, that only works with CIDR addresses, so you can't use netmask.
-# Or you can use sequence expressions
-#config_eth0="192.168.0.{2..4}/24"
-# which does the same as above. Be careful though as if you use this and
-# fallbacks, you have to ensure that both end up with the same number of
-# values otherwise your fallback won't work correctly.
 
 # You can also use IPv6 addresses
 # (you should always specify a prefix length with IPv6 here)
