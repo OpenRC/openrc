@@ -1318,6 +1318,12 @@ runscript(int argc, char **argv)
 			prefix = NULL;
 			retval = svc_exec("status", NULL);
 		} else {
+			if (strcmp(optarg, "pause") == 0) {
+				ewarn("WARNING: 'pause' is deprecated; please use '--nodeps stop'");
+				deps = false;
+				optarg = "stop";
+			}
+
 			if (strcmp(optarg, "conditionalrestart") == 0 ||
 			    strcmp(optarg, "condrestart") == 0)
 			{
