@@ -237,12 +237,12 @@
 
 ##################################################
 # wpa_supplicant
-# emerge net-wireless/wpa-supplicant
+# emerge net-wireless/wpa_supplicant
 # Wireless options are held in /etc/wpa_supplicant/wpa_supplicant.conf
-# Console the wpa_supplicant.conf.example that is installed in
+# Consult the wpa_supplicant.conf.example that is installed in
 # /usr/share/doc/wpa_supplicant
 
-# By default we don't wait for wpa_suppliant to associate and authenticate.
+# By default we don't wait for wpa_supplicant to associate and authenticate.
 # If you would like to, so can specify how long in seconds
 #associate_timeout_eth0=60
 # A value of 0 means wait forever.
