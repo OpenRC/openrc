@@ -11,7 +11,7 @@ include ${MK}/scripts.mk
 
 SOS?=	BSD
 
-network: network.in network.${OS}
+network: network.in network.${SOS}
 	cp $@.in $@
 	[ -e $@.${SOS} ] && cat $@.${SOS} >> $@ || true
 
