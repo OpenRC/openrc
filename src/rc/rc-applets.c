@@ -467,7 +467,7 @@ run_applets(int argc, char **argv)
 		}
 		exit(EXIT_FAILURE);
 	};
-	/* This tets is correct as it's not present in baselayout */
+	/* This test is correct as it's not present in baselayout */
 	if (strcmp(applet, "is_newer_than") == 0) {
 		if (argc < 3)
 			exit (EXIT_FAILURE);

@@ -117,7 +117,7 @@ bool rc_runlevel_stopping(void);
 
 /*! @name RC
  * A service can be given as a full path or just its name.
- * If its just a name then we try to resolve the service to a full path.
+ * If it's just a name then we try to resolve the service to a full path.
  * This should allow the use if local init.d directories in the future. */
 
 /*! @brief States a service can be in */
@@ -326,7 +326,7 @@ typedef void *RC_DEPTREE;
 #endif
 
 /*! Check to see if source is newer than target.
- * If target is a directory then we traverse it and it's children.
+ * If target is a directory then we traverse it and its children.
  * @param source
  * @param target
  * @param mtime of newest target
@@ -335,7 +335,7 @@ typedef void *RC_DEPTREE;
 bool rc_newer_than(const char *, const char *, time_t *, char *);
 
 /*! Check to see if source is older than target.
- * If target is a directory then we traverse it and it's children.
+ * If target is a directory then we traverse it and its children.
  * @param source
  * @param target
  * @param mtime of oldest target
@@ -446,7 +446,7 @@ RC_STRINGLIST *rc_config_load(const char *);
 /*! Return the value of the entry from a key=value list. */
 char *rc_config_value(RC_STRINGLIST *, const char *);
 
-/*! Check if a variable is a boolean and return it's value.
+/*! Check if a variable is a boolean and return its value.
  * If variable is not a boolean then we set errno to be ENOENT when it does
  * not exist or EINVAL if it's not a boolean.
  * @param variable to check
@@ -485,9 +485,9 @@ bool rc_stringlist_delete(RC_STRINGLIST *, const char *);
  * @return pointer to item */
 RC_STRING *rc_stringlist_find(RC_STRINGLIST *, const char *);
 
-/*! Split a string into a stringlist based on seperator.
+/*! Split a string into a stringlist based on separator.
  * @param string to split
- * @param seperator
+ * @param separator
  * @return new list */
 RC_STRINGLIST *rc_stringlist_split(const char *, const char *);
 

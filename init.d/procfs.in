@@ -13,7 +13,7 @@ depend()
 
 start()
 {
-	# Make sure we insert usbcore if its a module
+	# Make sure we insert usbcore if it's a module
 	if [ -f /proc/modules -a ! -d /proc/bus/usb ]; then
 		modprobe -q usbcore
 	fi

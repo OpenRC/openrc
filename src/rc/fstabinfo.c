@@ -38,7 +38,7 @@
 #include <string.h>
 #include <unistd.h>
 
-/* Yay for linux and it's non liking of POSIX functions.
+/* Yay for linux and its non liking of POSIX functions.
    Okay, we could use getfsent but the man page says use getmntent instead
    AND we don't have getfsent on uclibc or dietlibc for some odd reason. */
 #ifdef __linux__

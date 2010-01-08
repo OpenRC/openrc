@@ -12,8 +12,8 @@ In the Perfect World (TM) ifconfig should be able to configure everything
 about the interface easily * . The BSD family almost get this right and Linux
 epically fails.
 
-* Only static confguration, including link setup.
-For dynmaic, static, IPv4LL, arping and per ssid IPv4 setup dhcpcd-5.x
+* Only static configuration, including link setup.
+For dynamic, static, IPv4LL, arping and per ssid IPv4 setup dhcpcd-5.x
 provides your needs.
 
 It fails because there are many tools to do the same job and often have
@@ -31,6 +31,6 @@ currently available. It's just harder as you have to know them and their
 documentation can be lacking at times.
 The correct end goal is a BSD style ifconfig tool.
 I've started work on it, but the project has stalled somewhat.
-It's display only right now and the source is not yet publically available.
+It's display only right now and the source is not yet publicly available.
 If you have the skills and share the vision then contact me privately and
 we'll take it from there.

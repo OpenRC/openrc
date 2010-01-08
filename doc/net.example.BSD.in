@@ -12,7 +12,7 @@
 # kernel then remove the IPv6 address from your config.
 
 # If you want to use a static address or use DHCP explicitly, jump
-# down to the section labelled INTERFACE HANDLERS.
+# down to the section labeled INTERFACE HANDLERS.
 #
 # If you want to do anything more fancy, you should take the time to
 # read through the rest of this file.
@@ -22,10 +22,10 @@
 #
 # We now support modular networking scripts which means we can easily
 # add support for new interface types and modules while keeping
-# compatability with existing ones.
+# compatibility with existing ones.
 # 
 # Modules load by default if the package they need is installed.  If
-# you specify a module here that doesn't have it's package installed
+# you specify a module here that doesn't have its package installed
 # then you get an error stating which package you need to install.
 # Ideally, you only use the modules setting when you have two or more
 # packages installed that supply the same service.
@@ -96,8 +96,8 @@
 #modules="iwconfig"
 
 # ifconfig (iwconig) support is a one shot script - wpa_supplicant is daemon
-# that scans, assoicates and re-configures if assocation is lost.
-# We call it iwconfig to seperate the wireless setup from ifconfig.
+# that scans, associates and re-configures if association is lost.
+# We call it iwconfig to separate the wireless setup from ifconfig.
 ####################################
 # HINTS
 #
@@ -182,7 +182,7 @@
 #dns_servers_001122334455="192.168.0.1 192.168.0.2"
 
 # Map a MAC address to an SSID
-# This is used when the Access Point is not broadcasting it's SSID
+# This is used when the Access Point is not broadcasting its SSID
 # WARNING: This will override the SSID being broadcast due to some
 # Access Points sending an SSID even when they have been configured
 # not to!
@@ -193,7 +193,7 @@
 # This lists the preferred SSIDs to connect to in order
 # SSID's can contain any characters here as they must match the broadcast
 # SSID exactly.
-# Surround each SSID with the " character and seperate them with a space
+# Surround each SSID with the " character and separate them with a space
 # If the first SSID isn't found then it moves onto the next
 # If this isn't defined then it connects to the first one found
 #preferred_aps="SSID1 SSID2"
@@ -208,9 +208,9 @@
 # any other available AP
 # "preferredonly" means it will only connect to visible APs in the preferred
 # list
-# "forcepreferred" means it will forceably connect to APs in order if it does
+# "forcepreferred" means it will forcibly connect to APs in order if it does
 # not find them in a scan
-# "forcepreferredonly" means it forceably connects to the APs in order and
+# "forcepreferredonly" means it forcibly connects to the APs in order and
 # does not bother to scan
 # "forceany" does the same as forcepreferred + connects to any other 
 # available AP
@@ -320,7 +320,7 @@
 # Set generic DHCP options like so
 #dhcp_eth0="release nodns nontp nonis nogateway nosendhost"
 
-# This tells the dhcp client to release it's lease when it stops, not to
+# This tells the dhcp client to release its lease when it stops, not to
 # overwrite dns, ntp and nis settings, not to set a default route and not to
 # send the current hostname to the dhcp server and when it starts.
 # You can use any combination of the above options - the default is not to

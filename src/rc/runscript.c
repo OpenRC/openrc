@@ -998,7 +998,7 @@ svc_restart(void)
 	 * dns via resolvconf, so you could have openvpn trying to restart
 	 * dnsmasq which in turn is waiting on net which in turn is waiting
 	 * on dnsmasq.
-	 * The work around is for resolvconf to restart it's services with
+	 * The work around is for resolvconf to restart its services with
 	 * --nodeps which means just that.
 	 * The downside is that there is a small window when our status is
 	 * invalid.
@@ -1106,7 +1106,7 @@ runscript(int argc, char **argv)
 	atexit(cleanup);
 
 	/* We need to work out the real full path to our service.
-	 * This works fine, provided that we ONLY allow mulitplexed services
+	 * This works fine, provided that we ONLY allow multiplexed services
 	 * to exist in the same directory as the master link.
 	 * Also, the master link as to be a real file in the init dir. */
 	if (!realpath(argv[1], path)) {
@@ -1192,7 +1192,7 @@ runscript(int argc, char **argv)
 
 	deps = true;
 	
-	/* Punt the first arg as it's our service name */
+	/* Punt the first arg as its our service name */
 	argc--;
 	argv++;
 

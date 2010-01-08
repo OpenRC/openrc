@@ -12,7 +12,7 @@
 # kernel then remove the IPv6 address from your config.
 
 # If you want to use a static address or use DHCP explicitly, jump
-# down to the section labelled INTERFACE HANDLERS.
+# down to the section labeled INTERFACE HANDLERS.
 #
 # If you want to do anything more fancy, you should take the time to
 # read through the rest of this file.
@@ -23,10 +23,10 @@
 #
 # We now support modular networking scripts which means we can easily
 # add support for new interface types and modules while keeping
-# compatability with existing ones.
+# compatibility with existing ones.
 # 
 # Modules load by default if the package they need is installed.  If
-# you specify a module here that doesn't have it's package installed
+# you specify a module here that doesn't have its package installed
 # then you get an error stating which package you need to install.
 # Ideally, you only use the modules setting when you have two or more
 # packages installed that supply the same service.
@@ -106,7 +106,7 @@
 
 # Each module described below can set a default base metric, lower is
 # preferred over higher. This is so we can prefer a wired route over a
-# wireless route automaticaly. You can override this by setting
+# wireless route automatically. You can override this by setting
 #metric_eth0="100"
 # or on a global basis
 #metric="100"
@@ -253,7 +253,7 @@
 #key_SSID="s:foobar enc open"
 #key_SSID="1234-5678-9012 enc open"
 
-# You may want to set muliple keys - here's an example
+# You may want to set multiple keys - here's an example
 # It sets 4 keys on the card and instructs to use key 2 by default
 #key_SSID="[1] s:passkey1 key [2] s:passkey2 key [3] s:passkey3 key [4] s:passkey4 key [2]"
 
@@ -283,7 +283,7 @@
 #dns_servers_001122334455="192.168.0.1 192.168.0.2"
 
 # Map a MAC address to an SSID
-# This is used when the Access Point is not broadcasting it's SSID
+# This is used when the Access Point is not broadcasting its SSID
 # WARNING: This will override the SSID being broadcast due to some
 # Access Points sending an SSID even when they have been configured
 # not to!
@@ -294,7 +294,7 @@
 # This lists the preferred SSIDs to connect to in order
 # SSID's can contain any characters here as they must match the broadcast
 # SSID exactly.
-# Surround each SSID with the " character and seperate them with a space
+# Surround each SSID with the " character and separate them with a space
 # If the first SSID isn't found then it moves onto the next
 # If this isn't defined then it connects to the first one found
 #preferred_aps="SSID1 SSID2" 
@@ -307,9 +307,9 @@
 # "any" means it will connect to visible APs in the preferred list and then any
 # other available AP
 # "preferredonly" means it will only connect to visible APs in the preferred list
-# "forcepreferred" means it will forceably connect to APs in order if it does not find
+# "forcepreferred" means it will forcibly connect to APs in order if it does not find
 # them in a scan
-# "forcepreferredonly" means it forceably connects to the APs in order and does not bother
+# "forcepreferredonly" means it forcibly connects to the APs in order and does not bother
 # to scan
 # "forceany" does the same as forcepreferred + connects to any other available AP
 # Default is "any"
@@ -448,7 +448,7 @@
 # Set generic DHCP options like so
 #dhcp_eth0="release nodns nontp nonis nogateway nosendhost"
 
-# This tells the dhcp client to release it's lease when it stops, not to
+# This tells the dhcp client to release its lease when it stops, not to
 # overwrite dns, ntp and nis settings, not to set a default route and not to
 # send the current hostname to the dhcp server and when it starts.
 # You can use any combination of the above options - the default is not to
@@ -572,7 +572,7 @@
 #config_bond0="null" # You may not want to assign an IP the the bond
 
 # You can also configure the bond here, which must be done via sysfs on 2.6
-# kernels or newer. See the kernel bonding documention for a description of
+# kernels or newer. See the kernel bonding documentation for a description of
 # these options.
 #arp_ip_target_bond0="+26.0.0.0"
 
@@ -658,7 +658,7 @@
 #
 # Dead peer detection
 #	lcp-echo-interval 15	# Send a LCP echo every 15 seconds
-#	lcp-echo-failure 3	# Make peer dead after 3 consective
+#	lcp-echo-failure 3	# Make peer dead after 3 consecutive
 #				# echo-requests
 #	
 # Compression options - use these to completely disable compression
@@ -822,8 +822,8 @@
 #config_nas0="'192.168.0.1/24'"
 
 #-----------------------------------------------------------------------------
-# Tunnelling
-# WARNING: For tunnelling it is highly recommended that you
+# Tunneling
+# WARNING: For tunneling it is highly recommended that you
 # emerge sys-apps/iproute2
 #
 # For GRE tunnels
@@ -838,7 +838,7 @@
 
 # 6to4 Tunnels allow IPv6 to work over IPv4 addresses, provided you
 # have a non-private address configured on an interface.
-# link_6to4="eth0"		# Interface to base it's addresses on
+# link_6to4="eth0"		# Interface to base its addresses on
 # config_6to4="ip6to4"
 # You may want to depend on eth0 like so
 #rc_need_6to4="net.eth0"
@@ -848,7 +848,7 @@
 # sit0 - otherwise use a different name like 6to4 in the example above.
 
 # You can also specify a relay and suffix if you like.
-# The default relay is 192.88.99.1 and the defualt suffix is :1
+# The default relay is 192.88.99.1 and the default suffix is :1
 #relay_6to4="192.168.3.2"
 #suffix_6to4=":ff"
 

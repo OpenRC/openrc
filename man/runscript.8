@@ -39,8 +39,8 @@
 .Nm
 is basically an interpreter for shell scripts which provide an easy interface
 to the often complex system commands and daemons.
-When a service runs a command it first loads it's mulitplexed configuration
-file, then it's master configuration file, then
+When a service runs a command it first loads its multiplexed configuration
+file, then its master configuration file, then
 .Pa /etc/rc.conf
 and finally the script itself. At this point
 .Nm
@@ -79,7 +79,7 @@ Ignore all dependency information the service supplies.
 Only run the command if the service has been started.
 .It Fl q , -quiet
 Turns off all informational output the service generates.
-Output from any non OpenRC comands is not affected.
+Output from any non OpenRC commands is not affected.
 .It Fl v , -verbose
 Turns on any extra informational output the service generates.
 .It Fl Z , -dry-run
@@ -90,9 +90,9 @@ or stopping them.
 The following variables affect the service script:
 .Bl -tag -width "RC_DEFAULTLEVEL"
 .It Ar extra_commands
-Space seperated list of extra commands the service defines.
+Space separated list of extra commands the service defines.
 .It Ar extra_started_commands
-Space seperated list of extra commands the service defines. These only work if
+Space separated list of extra commands the service defines. These only work if
 the service has already been started.
 .It Ar description
 String describing the service.
@@ -128,7 +128,7 @@ will refuse to stop until any services that need it have stopped.
 The service will attempt to start any services we use that have been added
 to the runlevel.
 .It Ic after
-The service will start after thse services and stop before these services.
+The service will start after these services and stop before these services.
 .It Ic before
 The service will start before these services and stop after these services.
 .It Ic provide
@@ -225,7 +225,7 @@ is newer than
 return 0, otherwise 1.
 If
 .Ar file2
-is a directory, then check all it's contents too.
+is a directory, then check all its contents too.
 .It Ic is_older_than Ar file1 Ar file2 ...
 If
 .Ar file1
@@ -234,7 +234,7 @@ is newer than
 return 0, otherwise 1.
 If
 .Ar file2
-is a directory, then check all it's contents too.
+is a directory, then check all its contents too.
 .It Ic service_set_value Ar name Ar value
 Saves the
 .Ar name
@@ -320,7 +320,7 @@ Configuration files, relative to the location of the service.
 If a file ending with .${RC_RUNLEVEL} exists then we use that instead.
 .Bl -ohang
 .It Pa ../conf.d/${RC_SVCNAME%%.*}
-mulitplexed configuration file.
+multiplexed configuration file.
 Example: if ${RC_SVCNAME} is net.eth1 then look for
 .Pa ../conf.d/net .
 .It Pa ../conf.d/${RC_SVCNAME}

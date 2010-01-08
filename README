@@ -41,7 +41,7 @@ If any of the following files exist then we do not overwrite them
 rc and rc.shutdown are the hooks from the BSD init into OpenRC.
 devd.conf is modified from FreeBSD to call /etc/rc.devd which is a generic
 hook into OpenRC.
-inittab is the same, but for SysVInit as used by most Linux distrubtions.
+inittab is the same, but for SysVInit as used by most Linux distributions.
 This can be found in the support folder.
 Obviously, if you're installing this onto a system that does not use OpenRC
 by default then you may wish to backup the above listed files, remove them
@@ -66,7 +66,7 @@ History - by Roy Marples
 ------------------------
 I became a Gentoo/Linux developer in 2004 and wrote the modular network
 scripts for the Gentoo baselayout package. baselayout is a collection of
-bash scripts to bring up your computer and it's services.
+bash scripts to bring up your computer and its services.
 Then towards the end of 2005 I found myself as the primary maintainer
 for baselayout.
 

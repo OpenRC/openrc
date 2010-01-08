@@ -26,7 +26,7 @@ tuntap_pre_start()
 			return 1
 		fi
 		vebegin "Waiting for /dev/net/tun"
-		# /dev/net/tun can take it's time to appear
+		# /dev/net/tun can take its time to appear
 		local timeout=10
 		while [ ! -e /dev/net/tun -a ${timeout} -gt 0 ]; do
 			sleep 1

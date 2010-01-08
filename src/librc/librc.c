@@ -377,7 +377,7 @@ rc_runlevel_stacks(const char *runlevel)
 }
 librc_hidden_def(rc_runlevel_stacks)
 
-/* Resolve a service name to it's full path */
+/* Resolve a service name to its full path */
 char *
 rc_service_resolve(const char *service)
 {
