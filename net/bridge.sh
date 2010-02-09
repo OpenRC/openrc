@@ -11,7 +11,8 @@ _config_vars="$_config_vars bridge bridge_add brctl"
 
 _is_bridge()
 {
-	brctl show 2>/dev/null | grep -q "^${IFACE}[[:space:]]"
+	# Ignore header line so as to allow for bridges named 'bridge'
+	brctl show 2>/dev/null | sed '1,1d' | grep -q "^${IFACE}[[:space:]]"
 }
 
 bridge_pre_start()
@@ -88,14 +89,16 @@ bridge_post_stop()
 	if _is_bridge; then
 		ebegin "Destroying bridge ${IFACE}"
 		_down
+		# Ignore header line so as to allow for bridges named 'bridge'
 		ports="$(brctl show 2>/dev/null | \
-			sed -n -e '/^'"${IFACE}"'[[:space:]]/,/^\S/ { /^\('"${IFACE}"'[[:space:]]\|\t\)/s/^.*\t//p }')"
+			sed -n -e '1,1d' -e '/^'"${IFACE}"'[[:space:]]/,/^\S/ { /^\('"${IFACE}"'[[:space:]]\|\t\)/s/^.*\t//p }')"
 		delete=true
 		iface=${IFACE}
 		eindent
 	else
 		# Work out if we're added to a bridge for removal or not
-		eval set -- $(brctl show 2>/dev/null | sed -e "s/'/'\\\\''/g" -e "s/$/'/g" -e "s/^/'/g")
+		# Ignore header line so as to allow for bridges named 'bridge'
+		eval set -- $(brctl show 2>/dev/null | sed -e '1,1d' -e "s/'/'\\\\''/g" -e "s/$/'/g" -e "s/^/'/g")
 		local line=
 		for line; do
 			set -- ${line}
