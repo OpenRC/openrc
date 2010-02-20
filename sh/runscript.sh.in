@@ -187,8 +187,14 @@ done
 unset _f
 
 while [ -n "$1" ]; do
+	# Sepcial case depend
+	if [ "$1" = depend ]; then
+		shift
+		_depend
+		continue
+	fi
 	# See if we have the required function and run it
-	for _cmd in describe start stop status depend ${extra_commands:-$opts} \
+	for _cmd in describe start stop status ${extra_commands:-$opts} \
 		$extra_started_commands
 	do
 		if [ "$_cmd" = "$1" ]; then
