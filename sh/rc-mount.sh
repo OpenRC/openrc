@@ -36,7 +36,7 @@ do_unmount()
 				;;
 		esac
 
-		retry=3
+		retry=4 # Effectively TERM, sleep 1, TERM, sleep 1, KILL, sleep 1
 		while ! LC_ALL=C $cmd "$mnt" 2>/dev/null; do
 			if type fuser >/dev/null 2>&1; then
 				pids="$(fuser $f_opts "$mnt" 2>/dev/null)"
@@ -53,13 +53,16 @@ do_unmount()
 					eend 1 "in use but fuser finds nothing"
 					retry=0;;
 				*)
-					local sig="KILL"
-					[ $retry -gt 0 ] && sig="TERM"
-					fuser $f_kill$sig -k $f_opts \
-						"$mnt" >/dev/null 2>&1
-					sleep 1
-					retry=$(($retry - 1))
-					[ $retry -le 0 ] && eend 1
+					if [ $retry -le 0 ]; then
+						eend 1
+					else
+						local sig="TERM"
+						retry=$(($retry - 1))
+						[ $retry = 1 ] && sig="KILL"
+						fuser $f_kill$sig -k $f_opts \
+							"$mnt" >/dev/null 2>&1
+						sleep 1
+					fi
 					;;
 			esac
 			[ $retry -le 0 ] && break
