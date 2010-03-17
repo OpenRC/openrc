@@ -739,6 +739,8 @@ svc_start_deps(void)
 		free(tmp);
 	}
 
+	rc_stringlist_free(tmplist);
+	tmplist = NULL;
 	rc_stringlist_free(services);
 	services = NULL;
 }

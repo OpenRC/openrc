@@ -219,6 +219,7 @@ static const char * const longopts_help[] = {
 int
 rc_update(int argc, char **argv)
 {
+	RC_DEPTREE *deptree;
 	RC_STRINGLIST *runlevels;
 	RC_STRING *runlevel;
 	char *service = NULL;
@@ -238,7 +239,9 @@ rc_update(int argc, char **argv)
 		    stack = true;
 		break;
 		case 'u':
-			_rc_deptree_load(-1, &ret);
+			deptree = _rc_deptree_load(-1, &ret);
+			if (deptree)
+				rc_deptree_free(deptree);
 			return ret;
 			case_RC_COMMON_GETOPT;
 		}
