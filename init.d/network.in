@@ -57,6 +57,40 @@ sys_interfaces()
 	esac
 }
 
+tentative()
+{
+	local inet= address= rest=
+
+	case "$RC_UNAME" in
+	Linux)
+		[ -x /sbin/ip ] || return 1
+		LC_ALL=C ip addr show | while read inet address rest; do
+	 		case "${inet}" in
+			inet6)
+				case "${rest}" in
+				*" "tentative*) return 2;;
+				esac
+				;;
+			esac
+		done
+		[ $? = 2 ]
+	*)
+		local inet= address= rest=
+		LC_ALL=C ifconfig -a | while read inet address rest; do
+	 		case "${inet}" in
+			inet6)
+				case "${rest}" in
+				*" "tentative*) return 2;;
+				esac
+				;;
+			esac
+		done
+		[ $? = 2 ]
+		;;
+	esac
+}
+
+
 auto_interfaces()
 {
 	local ifs= c= f=
@@ -251,6 +285,14 @@ start()
 	eoutdent
 	eend $cr
 
+	# Wait for any inet6 tentative addresses
+	r=5
+	while [ $r -gt 0 ]; do
+		tentative || break
+		sleep 1
+		r=$(($r - 1))
+	done
+	
 	if [ -n "$defaultroute" ]; then
 		ebegin "Setting default route $defaultroute"
 		route add default $defaultroute
