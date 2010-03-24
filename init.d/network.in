@@ -64,16 +64,8 @@ tentative()
 	case "$RC_UNAME" in
 	Linux)
 		[ -x /sbin/ip ] || return 1
-		LC_ALL=C ip addr show | while read inet address rest; do
-	 		case "${inet}" in
-			inet6)
-				case "${rest}" in
-				*" "tentative*) return 2;;
-				esac
-				;;
-			esac
-		done
-		[ $? = 2 ]
+		[ -n "$(ip -f inet6 addr show tentative)" ]
+		;;
 	*)
 		local inet= address= rest=
 		LC_ALL=C ifconfig -a | while read inet address rest; do
@@ -289,9 +281,14 @@ start()
 	r=5
 	while [ $r -gt 0 ]; do
 		tentative || break
+		[ $r = 5 ] && vebegin "Waiting for tentative addresses"
 		sleep 1
 		r=$(($r - 1))
 	done
+	if [ $r != 5 ]; then
+		[ $r != 0 ]
+		veend $?
+	fi
 	
 	if [ -n "$defaultroute" ]; then
 		ebegin "Setting default route $defaultroute"
