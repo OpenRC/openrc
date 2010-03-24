@@ -15,7 +15,7 @@ _is_bond()
 
 bonding_pre_start()
 {
-	local x= s= slaves="$(_get_array "slaves_${IFVAR}")" 
+	local x= s= n= slaves="$(_get_array "slaves_${IFVAR}")"
 
 	[ -z "${slaves}" ] && return 0
 
@@ -43,9 +43,11 @@ bonding_pre_start()
 	# Nice and dynamic :)
 	for x in /sys/class/net/"${IFACE}"/bonding/*; do
 		[ -f "${x}" ] || continue
-		eval s=\$${x##*/}_${IFVAR}
+		n=${x##*/}
+		eval s=\$${n}_${IFVAR}
 		if [ -n "${s}" ]; then
-			echo "${s}" >"${x}"
+			echo "${s}" >"${x}" || \
+			eerror "Failed to configure $n (${n}_${IFVAR})"
 		fi
 	done
 
