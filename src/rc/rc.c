@@ -773,7 +773,7 @@ handle_bad_signal(int sig)
 #endif
 
 #include "_usage.h"
-#define getoptstring "o:" getoptstring_COMMON
+#define getoptstring "o:s:S" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "override", 1, NULL, 'o' },
 	{ "service",  1, NULL, 's' },
