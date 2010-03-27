@@ -9,6 +9,10 @@ if [ -f /proc/acpi/ac_adapter/AC*/state ]; then
 		"state:"*"off-line") return 128;;
 		esac
 	done
+elif [ -f /sys/class/power_supply/AC*/online ]; then
+	cat /sys/class/power_supply/AC*/online | while read line; do
+		[ "${line}" = 0 ] && return 128
+	done
 elif [ -f /proc/pmu/info ]; then
 	cat /proc/pmu/info | while read line; do
 		case "$line" in
