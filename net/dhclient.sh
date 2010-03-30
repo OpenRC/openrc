@@ -17,6 +17,7 @@ dhclient_start()
 
 	# Get our options
 	# These options only work in Gentoo, and maybe RedHat
+	eval args=\$dhclient_${IFVAR}
 	eval opts=\$dhcp_${IFVAR}
 	[ -z "${opts}" ] && opts=${dhcp}
 
