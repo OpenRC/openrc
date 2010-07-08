@@ -225,8 +225,6 @@ start()
 		ifconfig lo 127.0.0.1 netmask 255.0.0.0 || cr=1 
 		route add -net 127.0.0.0 netmask 255.0.0.0 \
 			gw 127.0.0.1 2>/dev/null
-		route add -net 127.0.0.0 netmask 255.0.0.0 \
-			gw 127.0.0.1 reject 2>/dev/null
 	else
 		ifconfig lo0 127.0.0.1 netmask 255.0.0.0 || cr=1
 		route -q add -inet 127.0.0.0 -netmask 255.0.0.0 \
