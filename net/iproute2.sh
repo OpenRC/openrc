@@ -160,7 +160,8 @@ _add_route()
 
 	# We cannot use a metric if we're using a nexthop
 	if ! ${have_metric} && \
-		[ -n "${metric}" -a -z "${cmd##* nexthop }" ]
+		[ -n "${metric}" -a \
+			"${cmd##* nexthop }" = "$cmd" ]
 	then
 		cmd="${cmd} metric ${metric}"
 	fi
