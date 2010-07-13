@@ -6,30 +6,30 @@
 if [ -f /proc/acpi/ac_adapter/AC*/state ]; then
 	cat /proc/acpi/ac_adapter/AC*/state | while read line; do
 		case "$line" in
-		"state:"*"off-line") return 128;;
+		"state:"*"off-line") exit 128;;
 		esac
 	done
 elif [ -f /sys/class/power_supply/AC*/online ]; then
 	cat /sys/class/power_supply/AC*/online | while read line; do
-		[ "${line}" = 0 ] && return 128
+		[ "${line}" = 0 ] && exit 128
 	done
 elif [ -f /proc/pmu/info ]; then
 	cat /proc/pmu/info | while read line; do
 		case "$line" in
-		"AC Power"*": 0") return 128;;
+		"AC Power"*": 0") exit 128;;
 		esac
 	done
 elif type envstat >/dev/null 2>&1; then
 	# NetBSD has envstat
 	envstat -d acpiacad0 2>/dev/null | while read line; do
 		case "$line" in
-		"connected:"*"OFF") return 128;;
+		"connected:"*"OFF") exit 128;;
 		esac
 	done
 elif sysctl -q hw.acpi.acline >/dev/null 2>/dev/null; then
 	case $(sysctl -n hw.acpi.acline) in
-	0) return 1;;
-	*) return 0;;
+	0) exit 1;;
+	*) exit 0;;
 	esac
 else
 	exit 255
