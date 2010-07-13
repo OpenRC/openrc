@@ -936,8 +936,8 @@
 
 #preup() {
 #	# Test for link on the interface prior to bringing it up.  This
-#	# only works on some network adapters and requires the mii-diag
-#	# package to be installed.
+#	# only works on some network adapters and requires the
+#	# sys-apps/net-tools package to be installed.
 #	if mii-tool "${IFACE}" 2> /dev/null | grep -q 'no link'; then
 #		ewarn "No link on ${IFACE}, aborting configuration"
 #		return 1
