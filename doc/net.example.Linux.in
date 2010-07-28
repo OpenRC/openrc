@@ -896,7 +896,7 @@
 # and you're done :)
 
 # By default we don't wait for netplug/ifplugd to configure the interface.
-# If you would like it to wait so that other services now that network is up
+# If you would like it to wait so that other services know that network is up
 # then you can specify a timeout here.
 #plug_timeout="10"
 # A value of 0 means wait forever.
