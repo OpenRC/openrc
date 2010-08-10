@@ -1,9 +1,18 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
+_ip()
+{
+	if [ -x /bin/ip ]; then
+		echo /bin/ip
+	else
+		echo /sbin/ip
+	fi
+}
+
 iproute2_depend()
 {
-	program /sbin/ip
+	program $(_ip)
 	provide interface
 	after ifconfig
 }

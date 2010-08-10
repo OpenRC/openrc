@@ -63,7 +63,7 @@ tentative()
 
 	case "$RC_UNAME" in
 	Linux)
-		[ -x /sbin/ip ] || return 1
+		[ -x /sbin/ip ] || [ -x /bin/ip ] || return 1
 		[ -n "$(ip -f inet6 addr show tentative)" ]
 		;;
 	*)
@@ -161,7 +161,7 @@ runip()
 routeflush()
 {
 	if [ "$RC_UNAME" = Linux ]; then
-		if [ -x /sbin/ip ]; then
+		if [ -x /sbin/ip ] || [ -x /bin/ip ]; then
 			ip route flush scope global
 			ip route delete default 2>/dev/null
 		else
@@ -338,7 +338,7 @@ stop()
 		then
 			veinfo "$int"
 			runargs /etc/ifdown."$int" "$downcmd"
-			if [ -x /sbin/ip ]; then
+			if [ -x /sbin/ip ] || [ -x /bin/ip ]; then
 				# We need to do this, otherwise we may
 				# fail to add things correctly on restart
 				ip address flush dev "$int" 2>/dev/null
