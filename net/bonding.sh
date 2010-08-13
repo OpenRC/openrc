@@ -15,7 +15,14 @@ _is_bond()
 
 bonding_pre_start()
 {
-	local x= s= n= slaves="$(_get_array "slaves_${IFVAR}")"
+	local x= s= n= slaves= primary=
+
+	slaves="$(_get_array "slaves_${IFVAR}")"
+	unset slaves_${IFVAR}
+
+	eval primary="\$primary_${IFVAR}"
+	unset primary_${IFVAR}
+
 
 	[ -z "${slaves}" ] && return 0
 
@@ -46,6 +53,7 @@ bonding_pre_start()
 		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
 		if [ -n "${s}" ]; then
+			einfo "Setting ${n}: ${s}"
 			echo "${s}" >"${x}" || \
 			eerror "Failed to configure $n (${n}_${IFVAR})"
 		fi
@@ -74,6 +82,11 @@ bonding_pre_start()
 	# finally add in slaves
 	eoutdent
 	if [ -d /sys/class/net ]; then
+		if [ -n "${primary}" ]; then
+			echo "+${primary}" >/sys/class/net/"${IFACE}"/bonding/slaves
+			echo "${primary}" >/sys/class/net/"${IFACE}"/bonding/primary
+			slaves="${slaves/${primary}/}"
+		fi
 		for s in ${slaves}; do
 			echo "+${s}" >/sys/class/net/"${IFACE}"/bonding/slaves
 		done
