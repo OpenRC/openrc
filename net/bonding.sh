@@ -132,6 +132,12 @@ bonding_stop()
 	done
 	)
 
+	_down
+
+	if [ -d /sys/class/net ]; then
+		echo "-${IFACE}" > /sys/class/net/bonding_masters
+	fi
+
 	eend 0
 	return 0
 }
