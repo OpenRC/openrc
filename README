@@ -1,8 +1,9 @@
 OpenRC README
-
+=============
 
 Installation
 ------------
+
 make install
 Yup, that simple. Works with GNU make and BSD make.
 
@@ -51,34 +52,56 @@ init.d.misc is not installed by default as the scripts will need
 tweaking on a per distro basis. They are also non essential to the operation
 of the system.
 
-
 Reporting Bugs
 -------------
+
 If you installed OpenRC from your chosen distribution, you should report
 bugs directly to them. For example, if you use Gentoo and emerged OpenRC
 then you should reports bugs to http://bugs.gentoo.org.
 
-Otherwise, you can report them directly to me at
-http://roy.marples.name/projects/openrc
+History - by Daniel Robbins
+---------------------------
 
+The Gentoo modular network scripts were created by Daniel Robbins for
+Gentoo Linux 1.0_rc6, in development during most of 2001 and released
+in September 2001. After their development, the dependency-based initscript
+system was maintained by a number of senior developers (add names here....
+need to look at baselayout cvs logs.)
 
-History - by Roy Marples
-------------------------
-I became a Gentoo/Linux developer in 2004 and wrote the modular network
-scripts for the Gentoo baselayout package. baselayout is a collection of
-bash scripts to bring up your computer and its services.
-Then towards the end of 2005 I found myself as the primary maintainer
-for baselayout.
+excerpt from http://www.gentoo.org/news/en/gwn/20040426-newsletter.xml
+by Grant Goodyear:
 
-At the start of 2007, baselayout-2 is announced to the world, re-writing the
-core of baselayout in C and allowing POSIX sh init scripts instead of
-forcing the use of bash. By Mid 2007 I have re-written everything, including
-init scripts, and alpha and pre baselayout-2 snapshots where put into Gentoo.
-Towards the end of 2007 I retired as a Gentoo developer for reasons I won't
-go into here. baselayout-2 was still in the pre stage, and aside from the
-fbsd users, it was masked everywhere. However, I also desired to keep the
-baselayout-2 project alive, but outside of Gentoo and into other projects
-such as FreeBSD.
+"My recollection is that one of woodchip's more impressive early feats was the
+complete replacement of all of the init scripts in Portage for Gentoo Linux
+1.0_rc6. Through 1.0_rc5 Gentoo had used fairly standard rc scripts modified
+from Stampede Linux, but for 1.0_rc6 Daniel Robbins (drobbins) and Martin
+Schlemmer (azarah) had created a new dependency-based init script system that
+is still used today. Within a span of days Donny rewrote every single init
+script in the Portage tree and committed new masked packages to await the
+release of 1.0_rc6. Thanks to woodchip (and drobbins and azarah, of course) the
+transition to the new init scripts was nearly painless."
 
-As such, the Gentoo Council have allowed the creation of OpenRC under the
-2 clause BSD license, managed by me as an external project.
+Roy Marples became a Gentoo/Linux developer in 2004 and maintained the modular
+network scripts for the Gentoo baselayout package.  Then towards the end of
+2005, he became the the primary maintainer for baselayout.
+
+At the start of 2007, Roy Marples announced the ongoing development of
+baselayout-2, containing a rewritten initscript code n C and allowing POSIX sh
+init scripts instead of forcing the use of bash. By Mid 2007 Roy Marples had
+re-implemented the Gentoo initscript design created by Daniel Robbins, using an
+entirely new code base.  Alpha and pre-release baselayout-2 snapshots were
+added to Gentoo's Portage tree as an optional component.
+
+Towards the end of 2007, Roy Marples retired as a Gentoo developer Baselayout-2
+was still in the pre stage, and aside from the fbsd users, it was masked
+everywhere. However, Roy Marples desired to keep the baselayout-2 project
+alive, but outside of Gentoo and into other projects such as FreeBSD.
+
+As such, the Gentoo Council permitted Roy Marples to release OpenRC under the 2
+clause BSD license, managed by him as an external project. Around mid-2010, Roy
+Marples decided to no longer maintain OpenRC. At this point, he transferred
+development back to Gentoo, which continues to maintain the scripts. In
+addition, Daniel Robbins continues to maintain an independent version OpenRC
+for Funtoo Linux, which includes a Funtoo-specific network configuration
+system.
+
