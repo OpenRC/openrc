@@ -183,9 +183,11 @@ wpa_supplicant_post_stop()
 	fi
 
 	if yesno "${IN_BACKGROUND}"; then
-		# Only stop wpa_supplicant if it's not the controlling daemon
-		! service_started_daemon "${RC_SVCNAME}" "${wpas}" 1
+		# Don't stop wpa_supplicant & wpa_cli if in background
+		return 0
 	fi
+	# Only stop wpa_supplicant if it's not the controlling daemon
+	! service_started_daemon "${RC_SVCNAME}" "${wpas}" 1
 	[ $? != 0 ] && return 0
 
 	local pidfile="/var/run/wpa_cli-${IFACE}.pid"
