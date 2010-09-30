@@ -17,7 +17,7 @@ fi
 if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/consolefont \
 	 -o -e /etc/runlevels/"$RC_BOOTLEVEL"/consolefont ]; then
 	printf "\033%s" "$termencoding" >"$CONSOLE" 2>/dev/null
-	if [ -r "$RC_LIBEXECDIR"/console/font -a -x /bin/setfont ]; then
+	if [ -r "$RC_LIBEXECDIR"/console/font -a -x /usr/bin/setfont ]; then
 		font="$(cat "$RC_LIBEXECDIR"/console/font)"
 		[ -c "$CONSOLE" ] && cons="-C $CONSOLE"
 		setfont $cons "$RC_LIBEXECDIR"/console/"$font" 2>/dev/null
@@ -29,7 +29,7 @@ if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/keymaps \
 	 -o -e /etc/runlevels/"$RC_BOOTLEVEL"/keymaps ]; then
 	kbd_mode $kmode -C "$CONSOLE" 2>/dev/null
 	if [ -r "$RC_LIBEXECDIR"/console/keymap ]; then
-		loadkeys "$RC_LIBEXECDIR"/console/keymap 2>/dev/null
+		loadkeys -q "$RC_LIBEXECDIR"/console/keymap 2>/dev/null
 	fi
 fi
 
