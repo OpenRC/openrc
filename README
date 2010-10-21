@@ -86,7 +86,7 @@ network scripts for the Gentoo baselayout package.  Then towards the end of
 2005, he became the the primary maintainer for baselayout.
 
 At the start of 2007, Roy Marples announced the ongoing development of
-baselayout-2, containing a rewritten initscript code n C and allowing POSIX sh
+baselayout-2, containing a rewritten initscript code in C and allowing POSIX sh
 init scripts instead of forcing the use of bash. By Mid 2007 Roy Marples had
 re-implemented the Gentoo initscript design created by Daniel Robbins, using an
 entirely new code base.  Alpha and pre-release baselayout-2 snapshots were
