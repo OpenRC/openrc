@@ -4,7 +4,6 @@
 
 depend()
 {
-	use hostname
 	before bootmisc logger
 	keyword -openvz -prefix -vserver
 }
