@@ -4,7 +4,6 @@
 
 depend()
 {
-	use hostname
 	need localmount
 	before logger
 	after clock sysctl
