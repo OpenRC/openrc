@@ -26,6 +26,7 @@ do_unmount()
 		# Unmounting a shared mount can unmount other mounts, so
 		# we need to check the mount is still valid
 		mountinfo --quiet "$mnt" || continue
+		mnt=$(printf "$mnt")
 
 		case "$cmd" in
 			umount)
