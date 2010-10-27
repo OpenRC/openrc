@@ -75,8 +75,14 @@
 # Set unicode to YES to turn on unicode support for keyboards and screens.
 #unicode="NO"
 
-# Network fstypes. Below is the default.
-net_fs_list="afs cifs coda davfs fuse fuse.sshfs gfs glusterfs lustre ncpfs nfs nfs4 ocfs2 shfs smbfs"
+# Below is the default list of network fstypes.
+#
+# afs cifs coda davfs fuse fuse.sshfs gfs glusterfs lustre ncpfs
+# nfs nfs4 ocfs2 shfs smbfs
+#
+# If you would like to add to this list, you can do so by adding your
+# own fstypes to the following variable.
+#extra_net_fs_list=""
 
 ##############################################################################
 # SERVICE CONFIGURATION VARIABLES
