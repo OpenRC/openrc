@@ -36,6 +36,12 @@ cleanup_tmp_dir()
 		# Faster than find
 		rm -rf -- [^ajlq\.]*
 
+		# pam_mktemp creates a .private directory within which
+		# each user gets a private directory with immutable
+		# bit set; remove the immutable bit before trying to
+		# remove it.
+		[ -d /tmp/.private ] && chattr -R -a /tmp/.private
+
 		find $startopts ! -name . \
 			! -path "./lost+found" \
 			! -path "./lost+found/*" \
@@ -49,8 +55,6 @@ cleanup_tmp_dir()
 			! -path "./aquota.group/*" \
 			! -path "./journal" \
 			! -path "./journal/*" \
-			! -path "./.private" \
-			! -path "./.private/*" \
 			-exec rm -rf {} \;
 		eend 0
 	else
