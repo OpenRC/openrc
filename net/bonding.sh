@@ -46,12 +46,27 @@ bonding_pre_start()
 		return 1
 	fi
 
-	# Configure the bond.
-	# Nice and dynamic :)
+	# Interface must be down in order to configure
+	_down
+
+	# Configure the bond mode, then we can reloop to ensure we configure
+	# All other options
+	for x in /sys/class/net/"${IFACE}"/bonding/mode; do
+		[ -f "${x}" ] || continue
+		n=${x##*/}
+		eval s=\$${n}_${IFVAR}
+		if [ -n "${s}" ]; then
+			einfo "Setting ${n}: ${s}"
+			echo "${s}" >"${x}" || \
+			eerror "Failed to configure $n (${n}_${IFVAR})"
+		fi
+	done
+	# Nice and dynamic for remaining options:)
 	for x in /sys/class/net/"${IFACE}"/bonding/*; do
 		[ -f "${x}" ] || continue
 		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
+		[ "${n}" != "mode" ] || continue
 		if [ -n "${s}" ]; then
 			einfo "Setting ${n}: ${s}"
 			echo "${s}" >"${x}" || \
