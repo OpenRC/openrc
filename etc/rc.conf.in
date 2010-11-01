@@ -11,7 +11,8 @@
 
 # Set rc_interactive to "YES" and you'll be able to press the I key during
 # boot so you can choose to start specific services. Set to "NO" to disable
-# this feature.
+# this feature. This feature is automatically disabled if rc_parallel is
+# set to YES.
 #rc_interactive="YES"
 
 # If we need to drop to a shell, you can specify it here.
