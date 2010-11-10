@@ -18,14 +18,6 @@ start()
 		local_start
 	fi
 
-	# Support old configs
-	if [ -e @SYSCONFDIR@/conf.d/local.start ]; then
-		ewarn @SYSCONFDIR@/conf.d/local.start is depricated. Please migrate
-		ewarn the contents of this file to the local_start
-		ewarn function in @SYSCONFDIR@/conf.d/local and remove the file.
-		. @SYSCONFDIR@/conf.d/local.start
-	fi
-
 	eend $? "Failed to start local"
 }
 
@@ -35,14 +27,6 @@ stop()
 
 	if type local_start >/dev/null 2>&1; then
 		local_stop
-	fi
-
-	# Support old configs
-	if [ -e @SYSCONFDIR@/conf.d/local.stop ]; then
-		ewarn @SYSCONFDIR@/conf.d/local.stop is depricated. Please migrate
-		ewarn the contents of this file to the local_stop
-		ewarn function in @SYSCONFDIR@/conf.d/local and remove the file.
-		. @SYSCONFDIR@/conf.d/local.stop
 	fi
 
 	eend $? "Failed to stop local"
