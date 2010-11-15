@@ -20,7 +20,7 @@ start()
 	done
 
 	ebegin "Mounting local filesystems"
-	mount -at "$types"
+	mount -at "$types" -O no_netdev
 	eend $? "Some local filesystem failed to mount"
 
 	# Always return 0 - some local mounts may not be critical for boot
