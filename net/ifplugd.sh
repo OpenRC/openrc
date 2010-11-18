@@ -27,8 +27,8 @@ ifplugd_pre_start()
 		return 0
 	fi
 
-	# We don't work on bonded, bridges, tun/tap or vlan
-	for f in bond bridge tuntap vlan; do
+	# We don't work on bonded, bridges, tun/tap, vlan or wireless
+	for f in bond bridge tuntap vlan wireless; do
 		if type "_is_${f}" >/dev/null 2>&1; then
 			if _is_${f}; then
 				veinfo "ifplugd does not work with ${f}"
