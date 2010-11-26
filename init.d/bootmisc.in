@@ -39,7 +39,7 @@ cleanup_tmp_dir()
 		# each user gets a private directory with immutable
 		# bit set; remove the immutable bit before trying to
 		# remove it.
-		[ -d /tmp/.private ] && chattr -R -a /tmp/.private
+		[ -d /tmp/.private ] && chattr -R -a /tmp/.private 2> /dev/null
 
 		find $startopts ! -name . \
 			! -path "./lost+found" \
