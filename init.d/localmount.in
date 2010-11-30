@@ -14,13 +14,16 @@ depend()
 start()
 {
 	# Mount local filesystems in /etc/fstab.
-	local types="noproc" x=
+	local types="noproc" x= no_netdev=
 	for x in $net_fs_list; do
 		types="${types},${x}"
 	done
 
+	if [ "$RC_UNAME" = Linux ]; then
+		no_netdev="-O no_netdev"
+	fi
 	ebegin "Mounting local filesystems"
-	mount -at "$types" -O no_netdev
+	mount -at "$types" $no_netdev
 	eend $? "Some local filesystem failed to mount"
 
 	# Always return 0 - some local mounts may not be critical for boot
