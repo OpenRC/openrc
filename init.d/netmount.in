@@ -43,7 +43,7 @@ start()
 	local myneed= myuse= pmap="portmap" nfsmounts=
 	[ -x @SYSCONFDIR@/init.d/rpcbind ] && pmap="rpcbind"
 
-	local x= fs=
+	local x= fs= rc=
 	for x in $net_fs_list; do
 		case "$x" in
 			nfs|nfs4)
@@ -65,7 +65,12 @@ start()
 
 	ebegin "Mounting network filesystems"
 	mount -at $fs
-	ewend $? "Could not mount all network filesystems"
+	rc=$?
+	if [ "$RC_UNAME" = Linux ]; then
+		mount -a -O _netdev
+		rc=$?
+	fi
+	ewend $rc "Could not mount all network filesystems"
 	return 0
 }
 
@@ -93,5 +98,9 @@ stop()
 	retval=$?
 
 	eoutdent
+	if [ "$RC_UNAME" = Linux ]; then
+		umount -a -O _netdev
+		retval=$?
+	fi
 	eend $retval "Failed to unmount network filesystems"
 }
