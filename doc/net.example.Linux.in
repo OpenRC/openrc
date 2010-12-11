@@ -805,6 +805,18 @@
 #sethello 0
 #stp off"
 
+# You can also configure the bridge or bridge members via sysfs on 2.6 kernels
+# or newer. See the kernel bridge documentation for a description of these
+# options.
+#stp_state_br0="0"
+#forward_delay_br0="10"
+#hairpin_mode_eth0="1"
+
+# If you want to start an empty bridge, and then dynmically add ports to it you
+# MUST set the following variables (with the correct interface name).
+# If you get the error "Misconfigured static bridge detected", this means you.
+#bridge_br0=''
+
 #-----------------------------------------------------------------------------
 # RFC 2684 Bridge Support 
 # For RFC 2684 bridge support emerge net-misc/br2684ctl
