@@ -864,6 +864,52 @@
 #relay_6to4="192.168.3.2"
 #suffix_6to4=":ff"
 
+#-----------------------------------------------------------------------------
+# Advanced Routing
+# WARNING: For advanced routing you MUST be using sys-apps/iproute2
+#
+# This provides a means to do multi-homing and more using the Routing Policy
+# Database (RPDB).
+#
+# See the following links for background and more information.
+# http://linux-ip.net/html/ch-routing.html
+# http://linux-ip.net/html/ch-advanced-routing.html
+
+# The rules listed will be added with 'ip rule add LINE' when the interface is
+# being brought up. They will also be removed with 'ip rule delete LINE'.
+# The rules added are also stored for later removal, so if you alter your rules
+# directly before stopping, you should review your rules again after stopping.
+
+# Note in earlier versions of openrc, this was provided as an example in
+# postup/postdown, however that implementation suffered some bugs in corner
+# cases, which are now fixed with this merger. If you used the previous
+# example, you should only need to drop the relevent portions of your
+# postup/postdown functions, and review the quoting in your rules_IFACE
+# variables.
+
+# Below is a trivial example for a dual-homed connection where there is an OOB
+# management network. Only packets explicitly with an address from or to the
+# OOB are sent via eth0. All others go via eth1 as the eth1 rules have a lower
+# priority.
+
+# If you want to use names for your tables, you should put lines into
+# /etc/iproute2/rt_tables, an example follows:
+# 2 oob
+# 3 external
+
+#rules_eth0="
+#from ZZZ.ZZZ.200.128/27 table oob priority 500
+#to ZZZ.ZZZ.200.128/27 table oob priority 550"
+#rules_eth1="
+#from XXX.XXX.112.0/24 table external priority 400
+#to XXX.XXX.112.0/24 table external priority 450"
+#routes_eth0="
+#ZZZ.ZZZ.200.128/27 dev eth0 table oob scope link
+#default via ZZZ.ZZZ.200.129 table oob"
+#routes_eth1="
+#XXX.XXX.112.0/24 dev eth1 table external scope link
+#default via XXX.XXX.112.1 dev eth1"
+
 
 #-----------------------------------------------------------------------------
 # System
@@ -992,33 +1038,6 @@
 #	# This function could be used, for example, to register with a
 #	# dynamic DNS service.  Another possibility would be to
 #	# send/receive mail once the interface is brought up.
-
-#	# Here is an example that allows the use of iproute rules
-#	# which have been configured using the rules_eth0 variable.
-#	#rules_eth0=" \
-#	#	'from 24.80.102.112/32 to 192.168.1.0/24 table localnet priority 100' \
-#	#	'from 216.113.223.51/32 to 192.168.1.0/24 table localnet priority 100' \
-#	#"
-#	eval set -- \$rules_${IFVAR}
-#	if [ $# != 0 ]; then
-#		einfo "Adding IP policy routing rules"
-#		eindent
-#		# Ensure that the kernel supports policy routing
-#		if ! ip rule list | grep -q "^"; then
-#			eerror "You need to enable IP Policy Routing (CONFIG_IP_MULTIPLE_TABLES)"
-#			eerror "in your kernel to use ip rules"
-#		else
-#			for x; do
-#				ebegin "${x}"
-#				ip rule add ${x}
-#				eend $?
-#			done
-#		fi
-#		eoutdent
-#		# Flush the cache
-#		ip route flush cache dev "${IFACE}"
-#	fi
-
 #}
 
 #postdown() {
@@ -1026,21 +1045,6 @@
 #	# Probably a good idea to set ifdown="no" in /etc/conf.d/net
 #	# as well ;)
 #	[ "${IFACE}" != "lo" ] && ethtool -s "${IFACE}" wol g
-
-#	Automatically erase any ip rules created in the example postup above
-#	if interface_exists "${IFACE}"; then
-#		# Remove any rules for this interface
-#		local rule
-#		ip rule list | grep " iif ${IFACE}[ ]*" | {
-#			while read rule; do
-#				rule="${rule#*:}"	
-#				ip rule del ${rule}
-#			done
-#		}
-#		# Flush the route cache
-#		ip route flush cache dev "${IFACE}"
-#	fi
-
 #	# Return 0 always
 #	return 0
 #}

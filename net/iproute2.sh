@@ -199,6 +199,32 @@ _tunnel()
 	ip tunnel "$@"
 }
 
+# This is just to trim whitespace, do not add any quoting!
+_trim() {
+	echo $*
+}
+
+# This is our interface to Routing Policy Database RPDB
+# This allows for advanced routing tricks
+_ip_rule_runner() {
+	local cmd rules OIFS="${IFS}"
+	cmd="$1"
+	rules="$2"
+	eindent
+	local IFS="$__IFS"
+	for ru in $rules ; do
+		unset IFS
+		ruN="$(trim "${ru}")"
+		[ -z "${ruN}" ] && continue
+		ebegin "${cmd} ${ruN}"
+		ip rule ${cmd} ${ru}
+		eend $?
+		local IFS="$__IFS"
+	done
+	IFS="${OIFS}"
+	eoutdent
+}
+
 iproute2_pre_start()
 {
 	local tunnel=
@@ -210,7 +236,7 @@ iproute2_pre_start()
 		ebegin "Creating tunnel ${IFVAR}"
 		ip tunnel add ${tunnel} name "${IFACE}"
 		eend $? || return 1
-		_up	
+		_up
 	fi
 
 	# MTU support
@@ -240,6 +266,15 @@ iproute2_post_start()
 
 	# Kernel may not have IP built in
 	if [ -e /proc/net/route ]; then
+		local rules="$(_get_array "rules_${IFVAR}")"
+		if [ -n "${rules}" ]; then
+			if ! ip rule list | grep -q "^"; then
+				eerror "IP Policy Routing (CONFIG_IP_MULTIPLE_TABLES) needed for ip rule"
+			else
+				service_set_value "ip_rule" "${rules}"
+				_ip_rule_runner add "${rules}"
+			fi
+		fi
 		ip route flush table cache dev "${IFACE}"
 	fi
 
@@ -259,6 +294,13 @@ iproute2_post_start()
 
 iproute2_post_stop()
 {
+	# Kernel may not have IP built in
+	if [ -e /proc/net/route ]; then
+		local rules="$(service_get_value "ip_rule")"
+		[ -n "${rules}" ] && _ip_rule_runner del "${rules}"
+		ip route flush table cache dev "${IFACE}"
+	fi
+
 	# Don't delete sit0 as it's a special tunnel
 	if [ "${IFACE}" != "sit0" ]; then
 		if [ -n "$(ip tunnel show "${IFACE}" 2>/dev/null)" ]; then
