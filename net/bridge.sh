@@ -32,16 +32,19 @@ _bridge_ports()
 bridge_pre_start()
 {
 	local brif= oiface="${IFACE}" e= x=
+	# ports is for static add
 	local ports="$(_get_array "bridge_${IFVAR}")"
+	# old config options
 	local opts="$(_get_array "brctl_${IFVAR}")"
-	
 	# brif is used for dynamic add
 	eval brif=\$bridge_add_${IFVAR}
-	# ports is for static add
+	
+	# we need a way to if the bridge exists in a variable name, not just the
+	# contents of a variable. Eg if somebody has only bridge_add_eth0='br0',
+	# with no other lines mentioning br0.
 	eval bridge_unset=\${bridge_${IFVAR}-y\}
 	eval brctl_unset=\${brctl_${IFVAR}-y\}
 	
-	# If we are not doing dynamic add on $IFACE, check for static ports.
 	if [ -z "${brif}" -a "${brctl_unset}" == 'y' ]; then
 		if [ -z "${ports}" -a "${bridge_unset}" == "y" ]; then
 			#eerror "Misconfigured static bridge detected (see net.example)"

@@ -787,11 +787,18 @@
 #bridge_add_eth0="br0"
 #bridge_add_eth1="br0"
 
+# NOTE: If you want to manually start an empty bridge, and then dynamically add
+# ports to it you must set at least one of the following variables based on the
+# interface name, so that we can pick it up from your configuration. Even an
+# empty value variable is fine, but at least one of them must be set:
+# brctl_IFVAR
+
 # You need to configure the ports to null values so dhcp does not get started 
 #config_eth0="null"
 #config_eth1="null"
 
-# Finally give the bridge an address - dhcp or a static IP
+# Finally give the bridge an address - dhcp or a static IP, this is assigned to
+# the bridge when the bridge is explicitly started.
 #config_br0="dhcp" # may not work when adding ports dynamically
 #config_br0="192.168.0.1/24"
 
@@ -811,11 +818,6 @@
 #stp_state_br0="0"
 #forward_delay_br0="10"
 #hairpin_mode_eth0="1"
-
-# If you want to start an empty bridge, and then dynmically add ports to it you
-# MUST set the following variables (with the correct interface name).
-# If you get the error "Misconfigured static bridge detected", this means you.
-#bridge_br0=''
 
 #-----------------------------------------------------------------------------
 # RFC 2684 Bridge Support 
