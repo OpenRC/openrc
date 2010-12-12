@@ -402,7 +402,7 @@ _load_config()
 		set -- ${config}
 		# Of course, we may have a single address added old style.
 		case "$2" in
-			netmask|broadcast|brd|brd+)
+			netmask|broadcast|brd|brd+|peer|pointopoint)
 				local IFS="$__IFS"
 				set -- ${config}
 				;;
