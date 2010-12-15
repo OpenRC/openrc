@@ -118,7 +118,12 @@ _add_address()
 		set -- "${one}/$(_netmask2cidr "${three}")" "$@"
 	fi
 	
-	#config=( "${config[@]//pointopoint/peer}" )
+	# tunnel keyword is 'peer' in iproute2, but 'pointopoint' in ifconfig.
+	if [ "$2" = "pointopoint" ]; then
+		local one="$1"
+		shift; shift
+		set -- "${one}" "peer" "$@"
+	fi
 	
 	# Always scope lo addresses as host unless specified otherwise
 	if [ "${IFACE}" = "lo" ]; then
