@@ -172,7 +172,7 @@ _add_address()
 					cmd="${cmd} broadcast"
 				fi
 				;;
-			peer) cmd="${cmd} pointtopoint";;
+			peer) cmd="${cmd} pointopoint";;
 			*) cmd="${cmd} $1";;
 		esac
 		shift
