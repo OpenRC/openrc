@@ -20,7 +20,7 @@ _is_vlan()
 _get_vlans()
 {
 	[ -e /proc/net/vlan/config ] || return 1
-	sed -n -e 's/^\(.*[0-9]\) \(.* \) .*'"${IFACE}"'$/\1/p' /proc/net/vlan/config
+	sed -n -e 's/^\W*\([^ ]*\) \(.* \) .*'"${IFACE}"'$/\1/p' /proc/net/vlan/config
 }
 
 _check_vlan()

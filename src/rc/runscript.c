@@ -350,6 +350,8 @@ svc_exec(const char *arg1, const char *arg2)
 	size_t bytes;
 	bool prefixed = false;
 	int slave_tty;
+	sigset_t sigchldmask;
+	sigset_t oldmask;
 
 	/* Setup our signal pipe */
 	if (pipe(signal_pipe) == -1)
@@ -439,9 +441,16 @@ svc_exec(const char *arg1, const char *arg2)
 	}
 
 	free(buffer);
+
+	sigemptyset (&sigchldmask);
+	sigaddset (&sigchldmask, SIGCHLD);
+	sigprocmask (SIG_BLOCK, &sigchldmask, &oldmask);
+
 	close(signal_pipe[0]);
 	close(signal_pipe[1]);
 	signal_pipe[0] = signal_pipe[1] = -1;
+
+	sigprocmask (SIG_SETMASK, &oldmask, NULL);
 
 	if (master_tty >= 0) {
 		/* Why did we do this? */

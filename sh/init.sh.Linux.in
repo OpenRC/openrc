@@ -6,6 +6,17 @@
 # This basically mounts $RC_SVCDIR as a ramdisk.
 # The tricky part is finding something our kernel supports
 # tmpfs and ramfs are easy, so force one or the other.
+svcdir_restorecon()
+{
+	local rc=0
+	if [ -x /usr/sbin/selinuxenabled -a -c /selinux/null ] &&
+	  selinuxenabled; then
+		restorecon $RC_SVCDIR
+		rc=$?
+	fi
+	return $rc
+}
+
 mount_svcdir()
 {
 	# mount from fstab if we can
@@ -16,8 +27,12 @@ mount_svcdir()
 
 	# Some buggy kernels report tmpfs even when not present :(
 	if grep -Eq "[[:space:]]+tmpfs$" /proc/filesystems; then
-		mount -n -t tmpfs $fsopts,mode=755,size=${svcsize}k \
-			rc-svcdir "$RC_SVCDIR" && return 0
+		local tmpfsopts="${fsopts},mode=755,size=${svcsize}k"
+		mount -n -t tmpfs $tmpfsopts rc-svcdir "$RC_SVCDIR"
+		if [ $? -eq 0 ]; then
+			svcdir_restorecon
+			[ $? -eq 0 ] && return 0
+		fi
 	fi
 	
 	if grep -Eq "[[:space:]]+ramfs$" /proc/filesystems; then
@@ -38,6 +53,10 @@ mount_svcdir()
 	fi
 
 	mount -n -t "$fs" $fsopts rc-svcdir "$RC_SVCDIR"
+	if [ $? -eq 0 ]; then
+		svcdir_restorecon
+		[ $? -eq 0 ] && return 0
+	fi
 }
 
 . "$RC_LIBEXECDIR"/sh/functions.sh
