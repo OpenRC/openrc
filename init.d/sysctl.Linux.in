@@ -5,7 +5,7 @@
 depend()
 {
 	before bootmisc logger
-	keyword -openvz -prefix -vserver
+	keyword -prefix -vserver
 }
 
 start()
