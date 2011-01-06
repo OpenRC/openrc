@@ -290,9 +290,11 @@ librc_hidden_def(rc_sys_v1)
 const char *
 rc_sys(void)
 {
-	const char *s = rc_sys_v2();
-	if(s) return s;
-	return rc_sys_v1();
+	if(rc_conf_value("rc_sys")) {
+		return rc_sys_v2();
+	} else {
+		return rc_sys_v1();
+	}
 }
 librc_hidden_def(rc_sys)
 
