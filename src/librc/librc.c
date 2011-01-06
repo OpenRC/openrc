@@ -199,7 +199,51 @@ file_regex(const char *file, const char *regex)
 #endif
 
 const char *
-rc_sys(void)
+rc_sys_v2(void)
+{
+#define __STRING_SWITCH(x) { char* __string_switch = x; if(false) {}
+#define __STRING_CASE(y) else if(strcmp(__string_switch,y) == 0)
+#define __STRING_SWITCH_END() }
+	char* systype = rc_conf_value("rc_sys");
+	/* New sys identification code */
+	if(systype) {
+		char* s = systype;
+		// Convert to uppercase
+		while(s && *s) { 
+			if(islower((unsigned char)*s))
+				*s = toupper((unsigned char)*s); 
+			s++;
+		}
+		// Now do detection
+		__STRING_SWITCH(systype)
+		__STRING_CASE(RC_SYS_PREFIX)	{ return RC_SYS_PREFIX; }
+#ifdef __FreeBSD__
+		__STRING_CASE(RC_SYS_JAIL) { return RC_SYS_JAIL; }
+#endif /* __FreeBSD__ */
+#ifdef __NetBSD__
+		__STRING_CASE(RC_SYS_XEN0) { return RC_SYS_XEN0; }
+		__STRING_CASE(RC_SYS_XENU) { return RC_SYS_XENU; }
+#endif /* __NetBSD__ */
+#ifdef __linux__
+		__STRING_CASE(RC_SYS_XEN0) { return RC_SYS_XEN0; }
+		__STRING_CASE(RC_SYS_XENU) { return RC_SYS_XENU; }
+		__STRING_CASE(RC_SYS_UML) { return RC_SYS_UML; }
+		__STRING_CASE(RC_SYS_VSERVER) { return RC_SYS_VSERVER; }
+		__STRING_CASE(RC_SYS_OPENVZ) { return RC_SYS_OPENVZ; }
+		__STRING_CASE(RC_SYS_LXC) { return RC_SYS_LXC; }
+#endif /* __linux__ */
+		__STRING_SWITCH_END()
+	}
+#undef __STRING_SWITCH
+#undef __STRING_CASE
+#undef __STRING_SWITCH_END
+	return NULL;
+}
+librc_hidden_def(rc_sys_v2)
+
+/* Old sys identification code */
+const char *
+rc_sys_v1(void)
 {
 #ifdef PREFIX
 	return RC_SYS_PREFIX;
@@ -242,6 +286,15 @@ rc_sys(void)
 
 	return NULL;
 #endif /* PREFIX */
+}
+librc_hidden_def(rc_sys_v1)
+
+const char *
+rc_sys(void)
+{
+	const char *s = rc_sys_v2();
+	if(s) return s;
+	return rc_sys_v1();
 }
 librc_hidden_def(rc_sys)
 

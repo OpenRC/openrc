@@ -1,0 +1,9 @@
+# This is the subsystem type. Valid options on NetBSD:
+# ""        - nothing special
+# "prefix"  - Prefix
+# "xen0"    - Xen0 Domain
+# "xenU"    - XenU Domain
+# If unset, the old automagic detection code will be triggered. Said old code
+# is deprecated and be removed not later than 2010/03/01.
+rc_sys=""
+

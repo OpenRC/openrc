@@ -51,4 +51,6 @@ rc_stringlist_new
 rc_stringlist_sort
 rc_stringlist_split
 rc_sys
+rc_sys_v1
+rc_sys_v2
 rc_yesno

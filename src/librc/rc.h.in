@@ -274,7 +274,18 @@ bool rc_service_daemons_crashed(const char *);
 #define RC_SYS_VSERVER "VSERVER"
 #define RC_SYS_XEN0    "XEN0"
 #define RC_SYS_XENU    "XENU"
+
+/*! Returns the type of subsystem
+ * @return string from RC_SYS_* types or NULL if none detected */
 const char *rc_sys(void);
+
+/*! Returns the type of subsystem using old automatic code
+ * @return string from RC_SYS_* types or NULL if none detected */
+const char *rc_sys_v1(void);
+
+/*! Returns the type of subsystem using new rc.conf rc_sys value
+ * @return string from RC_SYS_* types or NULL if none detected */
+const char *rc_sys_v2(void);
 
 /*! @name Dependency options
  * These options can change the services found by the rc_get_depinfo and
