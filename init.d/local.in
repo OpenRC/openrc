@@ -2,7 +2,7 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-description="Executes user commands in /etc/conf.d/local"
+description="Executes user programs in @SYSCONFDIR@/local.d"
 
 depend()
 {
@@ -12,22 +12,40 @@ depend()
 
 start()
 {
-	ebegin "Starting local"
+	einfo "Starting local"
+
+	local file
+	for file in @SYSCONFDIR@/local.d/*.start ; do
+		[ -x $file ] && $file
+	done
 
 	if type local_start >/dev/null 2>&1; then
+		ewarn "@SYSCONFDIR@/conf.d/local should be removed."
+		ewarn "Please move the code from the local_start function"
+		ewarn "to scripts with an .start extension"
+		ewarn "in @SYSCONFDIR@/local.d"
 		local_start
 	fi
 
-	eend $? "Failed to start local"
+	return 0
 }
 
 stop()
 {
-	ebegin "Stopping local"
+	einfo "Stopping local"
+
+	local file
+	for file in @SYSCONFDIR@/local.d/*.stop; do
+		[ -x $file ] && $file
+	done
 
 	if type local_start >/dev/null 2>&1; then
+		ewarn "@SYSCONFDIR@/conf.d/local should be removed."
+		ewarn "Please move the code from the local_stop function"
+		ewarn "to scripts with an .stop extension"
+		ewarn "in @SYSCONFDIR@/local.d"
 		local_stop
 	fi
 
-	eend $? "Failed to stop local"
+	return 0
 }

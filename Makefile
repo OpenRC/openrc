@@ -4,7 +4,7 @@
 
 include Makefile.inc
 
-SUBDIR=		conf.d etc init.d man scripts sh src
+SUBDIR=		conf.d etc init.d local.d man scripts sh src
 
 # Build our old net foo or not
 _OLDNET_SH=	case "${MKOLDNET}" in \
