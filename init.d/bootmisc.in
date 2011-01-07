@@ -25,7 +25,7 @@ cleanup_tmp_dir()
 		mkdir -p "$dir" || return $?
 	fi
 	dir_writeable "$dir" || return 1
-	chmod a+rwt "$dir"
+	chmod a+rwt "$dir" 2> /dev/null
 	cd "$dir"
 	if yesno $wipe_tmp; then
 		ebegin "Wiping $dir directory"
@@ -77,7 +77,7 @@ mkutmp()
 start()
 {
 	# Remove any added console dirs
-	rm -rf "$RC_LIBEXECDIR"/console
+	rm -rf "$RC_LIBEXECDIR"/console/*
 
 	local logw=false runw=false extra=
 	# Ensure that our basic dirs exist
