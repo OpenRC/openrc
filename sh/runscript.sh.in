@@ -4,12 +4,24 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-. @SYSCONFDIR@/init.d/functions.sh
-. @LIBEXECDIR@/sh/rc-functions.sh
+sourcex()
+{
+	if [ "$1" = "-e" ]; then
+		shift
+		[ -e "$1" ] || return 1
+	fi
+	if ! . "$1"; then
+		eerror "$RC_SVCNAME: error loading $1"
+		exit 1
+	fi
+}
+
+sourcex "@SYSCONFDIR@/init.d/functions.sh"
+sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
 
 # Support LiveCD foo
 if [ -r /sbin/livecd-functions.sh ]; then
-	. /sbin/livecd-functions.sh
+	sourcex "/sbin/livecd-functions.sh"
 	livecd_read_commandline
 fi
 
@@ -145,30 +157,26 @@ _conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${RC_SVCNAME%%.*}
 if [ -n "$_c" -a "$_c" != "$RC_SVCNAME" ]; then
-	if [ -e "$_conf_d/$_c.$RC_RUNLEVEL" ]; then
-		. "$_conf_d/$_c.$RC_RUNLEVEL"
-	elif [ -e "$_conf_d/$_c" ]; then
-		. "$_conf_d/$_c"
+	if ! sourcex -e "$_conf_d/$_c.$RC_RUNLEVEL"; then
+		sourcex -e "$_conf_d/$_c"
 	fi
 fi
 unset _c
 
 # Overlay with our specific config
-if [ -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL" ]; then
-	. "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"
-elif [ -e "$_conf_d/$RC_SVCNAME" ]; then
-	. "$_conf_d/$RC_SVCNAME"
+if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
+	sourcex -e "$_conf_d/$RC_SVCNAME"
 fi
 unset _conf_d
 
 # Load any system overrides
-[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
+sourcex -e "@SYSCONFDIR@/rc.conf"
 
 # Apply any ulimit defined
 [ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}
 
 # Load our script
-. "$RC_SERVICE"
+sourcex "$RC_SERVICE"
 
 for _d in $required_dirs; do
 	if [ ! -d $_d ]; then
