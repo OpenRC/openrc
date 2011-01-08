@@ -53,13 +53,10 @@ of the system.
 
 
 Reporting Bugs
--------------
-If you installed OpenRC from your chosen distribution, you should report
-bugs directly to them. For example, if you use Gentoo and emerged OpenRC
-then you should reports bugs to http://bugs.gentoo.org.
-
-Otherwise, you can report them directly to me at
-http://roy.marples.name/projects/openrc
+--------------
+Bugs should go to the Gentoo Bugzilla:
+	http://bugs.gentoo.org/
+You'll want the "Gentoo Linux" product and the "baselayout" component.
 
 
 History - by Roy Marples
