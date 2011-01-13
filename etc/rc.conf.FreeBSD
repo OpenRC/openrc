@@ -3,6 +3,6 @@
 # "jail"    - FreeBSD jails
 # "prefix"  - Prefix
 # If unset, the old automagic detection code will be triggered. Said old code
-# is deprecated and be removed not later than 2010/03/01.
+# is deprecated and will be removed not later than 2011/03/01.
 rc_sys=""
 
