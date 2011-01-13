@@ -101,7 +101,7 @@ _status()
 		return 0
 	else
 		einfo "status: stopped"
-		return 1
+		return 3
 	fi
 }
 
