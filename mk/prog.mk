@@ -28,7 +28,7 @@ all: depend ${PROG}
 	${CC} ${CFLAGS} ${CPPFLAGS} -c $< -o $@
 
 ${PROG}: ${SCRIPTS} ${OBJS}
-	${CC} ${LDFLAGS} -o $@ ${OBJS} ${LDADD}
+	${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${OBJS} ${LDADD}
 
 clean:
 	rm -f ${CLEANFILES}

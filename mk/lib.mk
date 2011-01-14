@@ -38,7 +38,7 @@ ${SHLIB_NAME}:	${SOBJS}
 	@${ECHO} building shared library $@
 	@rm -f $@ ${SHLIB_LINK}
 	@ln -fs $@ ${SHLIB_LINK}
-	${CC} ${LDFLAGS} -shared -Wl,-x \
+	${CC} ${CFLAGS} ${LDFLAGS} -shared -Wl,-x \
 	-o $@ -Wl,-soname,${SONAME} \
 	${SOBJS} ${LDADD}
 
