@@ -9,6 +9,10 @@
 # "xenU"    - XenU Domain
 # If unset, the old automagic detection code will be triggered. Said old code
 # is deprecated and will be removed not later than 2011/03/01.
+#
+# This should be set to the value representing what environment this file is
+# PRESENTLY in, not what virtualization the environment is capable of.
+# See the OpenRC migration guide for more details.
 rc_sys=""
 
 ##############################################################################
