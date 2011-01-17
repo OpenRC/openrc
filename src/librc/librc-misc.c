@@ -61,7 +61,7 @@ rc_getline(char **line, size_t *len, FILE *fp)
 	char *p;
 	size_t last = 0;
 
-	while(!feof(fp)) {
+	while (!feof(fp)) {
 		if (*line == NULL || last != 0) {
 			*len += BUFSIZ;
 			*line = xrealloc(*line, *len);

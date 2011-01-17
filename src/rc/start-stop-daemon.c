@@ -1210,7 +1210,7 @@ start_stop_daemon(int argc, char **argv)
 		/* Clean the environment of any RC_ variables */
 		env_list = rc_stringlist_new();
 		i = 0;
-		while(environ[i])
+		while (environ[i])
 			rc_stringlist_add(env_list, environ[i++]);
 
 #ifdef HAVE_PAM

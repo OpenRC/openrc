@@ -209,7 +209,7 @@ rc_sys_v2(void)
 	if (systype) {
 		char* s = systype;
 		// Convert to uppercase
-		while(s && *s) {
+		while (s && *s) {
 			if (islower((unsigned char)*s))
 				*s = toupper((unsigned char)*s);
 			s++;
