@@ -821,11 +821,13 @@ main(int argc, char **argv)
 	 * than trusting argv[0], as argv[0] is not going to be the applet value if
 	 * we are doing SELinux context switching. For this, we allow calls such as
 	 * 'rc --applet APPLET', and shift ALL of argv down by two array items. */
-	if(strcmp(basename_c(argv[0]), "rc") == 0 && strcmp(argv[1], "--applet") == 0) {
-		for(i = 2; i < argc; i++)
-			argv[i-2] = argv[i];
-		argv[argc-2] = NULL;
-		argv[argc-1] = NULL;
+	if (strcmp(basename_c(argv[0]), "rc") == 0 && argc > 1 && strcmp(argv[1], "--applet") == 0) {
+		if (argc == 2)
+			eerrorx("applet argument required");
+		for (i = 2; i < argc; i++)
+			argv[i - 2] = argv[i];
+		argv[argc - 2] = NULL;
+		argv[argc - 1] = NULL;
 		argc -= 2;
 	}
 	/* Now we can trust our applet value in argv[0] */
