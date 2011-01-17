@@ -105,7 +105,7 @@ rc_plugin_load(void)
 			continue;
 		}
 
-		fptr = (int (*)(RC_HOOK, const char*))
+		fptr = (int (*)(RC_HOOK, const char *))
 		    dlfunc(h, RC_PLUGIN_HOOK);
 		if (fptr == NULL) {
 			eerror("%s: cannot find symbol `%s'",

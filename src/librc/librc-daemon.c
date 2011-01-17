@@ -283,7 +283,7 @@ _match_daemon(const char *path, const char *file, RC_STRINGLIST *match)
 }
 
 static RC_STRINGLIST *
-_match_list(const char *exec, const char* const* argv, const char *pidfile)
+_match_list(const char *exec, const char *const *argv, const char *pidfile)
 {
 	RC_STRINGLIST *match = rc_stringlist_new();
 	int i = 0;

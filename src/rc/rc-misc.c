@@ -62,7 +62,7 @@
 
 static RC_STRINGLIST *rc_conf = NULL;
 
-extern char** environ;
+extern char **environ;
 
 #ifdef DEBUG_MEMORY
 static void
