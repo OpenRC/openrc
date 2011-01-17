@@ -804,6 +804,7 @@ main(int argc, char **argv)
 	int opt;
 	bool parallel;
 	int regen = 0;
+	int i;
 #ifdef __linux__
 	char *proc;
 	char *p;
@@ -816,6 +817,18 @@ main(int argc, char **argv)
 	signal_setup(SIGSEGV, handle_bad_signal);
 #endif
 
+	/* Bug 351712: We need an extra way to explicitly select an applet OTHER
+	 * than trusting argv[0], as argv[0] is not going to be the applet value if
+	 * we are doing SELinux context switching. For this, we allow calls such as
+	 * 'rc --applet APPLET', and shift ALL of argv down by two array items. */
+	if(strcmp(basename_c(argv[0]), "rc") == 0 && strcmp(argv[1], "--applet") == 0) { 
+		for(i = 2; i < argc; i++) 
+			argv[i-2] = argv[i]; 
+		argv[argc-2] = NULL;
+		argv[argc-1] = NULL;
+		argc -= 2;
+	}
+	/* Now we can trust our applet value in argv[0] */
 	applet = basename_c(argv[0]);
 	LIST_INIT(&service_pids);
 	atexit(cleanup);
