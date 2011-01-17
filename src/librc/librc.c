@@ -201,16 +201,16 @@ file_regex(const char *file, const char *regex)
 const char *
 rc_sys_v2(void)
 {
-#define __STRING_SWITCH(x) { char* __string_switch = x; if(false) {}
-#define __STRING_CASE(y) else if(strcmp(__string_switch,y) == 0)
+#define __STRING_SWITCH(x) { char* __string_switch = x; if (false) {}
+#define __STRING_CASE(y) else if (strcmp(__string_switch,y) == 0)
 #define __STRING_SWITCH_END() }
 	char* systype = rc_conf_value("rc_sys");
 	/* New sys identification code */
-	if(systype) {
+	if (systype) {
 		char* s = systype;
 		// Convert to uppercase
 		while(s && *s) {
-			if(islower((unsigned char)*s))
+			if (islower((unsigned char)*s))
 				*s = toupper((unsigned char)*s);
 			s++;
 		}
@@ -290,7 +290,7 @@ librc_hidden_def(rc_sys_v1)
 const char *
 rc_sys(void)
 {
-	if(rc_conf_value("rc_sys")) {
+	if (rc_conf_value("rc_sys")) {
 		return rc_sys_v2();
 	} else {
 		return rc_sys_v1();

@@ -177,8 +177,8 @@ rc_depend(int argc, char **argv)
 			    }
 	}
 
-	if(deptree_file) {
-		if(!(deptree = rc_deptree_load_file(deptree_file)))
+	if (deptree_file) {
+		if (!(deptree = rc_deptree_load_file(deptree_file)))
 			eerrorx("failed to load deptree");
 	} else {
 		if (!(deptree = _rc_deptree_load(update, NULL)))

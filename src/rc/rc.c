@@ -895,12 +895,12 @@ main(int argc, char **argv)
 		case 'S':
 			if (rc_conf_value("rc_sys")) {
 				bootlevel = rc_sys_v2();
-				if(bootlevel)
+				if (bootlevel)
 					printf("%s\n", bootlevel);
 			} else {
 				ewarn("WARNING: rc_sys not defined in rc.conf. Falling back to automatic detection");
 				bootlevel = rc_sys_v1();
-				if(bootlevel)
+				if (bootlevel)
 					printf("%s\n", bootlevel);
 			}
 			exit(EXIT_SUCCESS);
