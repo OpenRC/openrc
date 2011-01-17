@@ -1,0 +1,28 @@
+The following is a list of files and features that are going to be removed in
+the source tree.  Every entry should contain what exactly is going away, why it
+is happening, and who is going to be doing the work.  When the feature is
+removed, it should also be removed from this file.
+
+---------------------------
+
+What: rc_sys automatic detection code
+      - Functions for removal: rc_sys_v1, rc_sys_v2
+
+When: 2011/03/01
+
+Why: The original automatic sub-system detection is flawed in that it cannot
+	 safely detect some variables (Using cgroups confused it to think you were
+	 using LXC, and Prefix cannot be detect by definition). Also, almost all of
+	 the detection requires that /proc is available and readable. During early
+	 boot, /proc may not be mounted yet, leading to mis-detection. The readable
+	 condition can also fail under some hardened kernels when running as an
+	 unprivileged user.
+
+	 The new rc_sys_v2 function uses the rc_sys variable from rc.conf. After
+	 the removal, the contents of the rc_sys_v2 function will move into the
+	 rc_sys function.
+
+Who:  Robin H. Johnson <robbat2@gentoo.org>
+
+---------------------------
+
