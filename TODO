@@ -3,3 +3,5 @@
 - add support somehow for optional translations
 
 - oldnet[bridging]: Review setting of bridge configuration on dynamic interface add
+
+- Document rc-depend binary.
