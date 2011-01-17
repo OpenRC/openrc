@@ -170,7 +170,7 @@ rc_depend(int argc, char **argv)
 			options &= RC_DEP_TRACE;
 			break;
 		case 'F':
-			deptree_file = strdup(optarg);
+			deptree_file = xstrdup(optarg);
 			break;
 
 		case_RC_COMMON_GETOPT
