@@ -17,6 +17,13 @@ SNAPFILE=	${SNAPDIR}.tar.bz2
 dist:
 	git archive --prefix=${DISTPREFIX}/ ${GITREF} | bzip2 > ${DISTFILE}
 
+distcheck: dist
+	rm -rf ${DISTPREFIX}
+	tar xf ${DISTFILE}
+	MAKEFLAGS= $(MAKE) -C ${DISTPREFIX}
+	MAKEFLAGS= $(MAKE) -C ${DISTPREFIX} check
+	rm -rf ${DISTPREFIX}
+
 snapshot:
 	rm -rf /tmp/${SNAPDIR}
 	mkdir /tmp/${SNAPDIR}
