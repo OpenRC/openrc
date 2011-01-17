@@ -181,6 +181,7 @@ rc_deptree_load_file(const char *deptree_file)
 
 	return deptree;
 }
+librc_hidden_def(rc_deptree_load_file)
 
 static bool
 valid_service(const char *runlevel, const char *service, const char *type)
