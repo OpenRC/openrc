@@ -153,7 +153,7 @@ cleanup(void)
 
 #ifdef DEBUG_MEMORY
 	while (p1) {
-		p2 = LIST_NEXT(p1, entries); 
+		p2 = LIST_NEXT(p1, entries);
 		free(p1);
 		p1 = p2;
 	}
@@ -315,7 +315,7 @@ open_shell(void)
 {
 	const char *shell;
 	struct passwd *pw;
-	
+
 #ifdef __linux__
 	const char *sys = rc_sys();
 
@@ -586,7 +586,7 @@ do_stop_services(const char *newlevel, bool parallel, bool going_down)
 	}
 
 	crashed = rc_conf_yesno("rc_crashed_stop");
-	
+
 	nostop = rc_stringlist_split(rc_conf_value("rc_nostop"), " ");
 	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries)
 	{
@@ -821,9 +821,9 @@ main(int argc, char **argv)
 	 * than trusting argv[0], as argv[0] is not going to be the applet value if
 	 * we are doing SELinux context switching. For this, we allow calls such as
 	 * 'rc --applet APPLET', and shift ALL of argv down by two array items. */
-	if(strcmp(basename_c(argv[0]), "rc") == 0 && strcmp(argv[1], "--applet") == 0) { 
-		for(i = 2; i < argc; i++) 
-			argv[i-2] = argv[i]; 
+	if(strcmp(basename_c(argv[0]), "rc") == 0 && strcmp(argv[1], "--applet") == 0) {
+		for(i = 2; i < argc; i++)
+			argv[i-2] = argv[i];
 		argv[argc-2] = NULL;
 		argv[argc-1] = NULL;
 		argc -= 2;

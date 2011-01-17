@@ -109,7 +109,7 @@ do_mount(struct ENT *ent)
 	argv[6] = ENT_FILE(*ent);
 	argv[7] = NULL;
 	switch (pid = vfork()) {
-	case -1:	
+	case -1:
 		eerrorx("%s: vfork: %s", applet, strerror(errno));
 		/* NOTREACHED */
 	case 0:

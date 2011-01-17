@@ -322,7 +322,7 @@ get_pid(const char *pidfile, bool quiet)
 		fclose(fp);
 		return -1;
 	}
-	
+
 	fclose(fp);
 
 	return pid;
@@ -631,7 +631,7 @@ static const struct option longopts[] = {
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
-	"Set an ionice class:data when starting", 
+	"Set an ionice class:data when starting",
 	"Stop daemon",
 	"Set a nicelevel when starting",
 	"Retry schedule to use when stopping",
@@ -1343,7 +1343,7 @@ start_stop_daemon(int argc, char **argv)
 	if (start_wait > 0) {
 		struct timespec ts;
 		bool alive = false;
-		
+
 		ts.tv_sec = start_wait / 1000;
 		ts.tv_nsec = (start_wait % 1000) * ONE_MS;
 		if (nanosleep(&ts, NULL) == -1) {

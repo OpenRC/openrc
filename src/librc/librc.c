@@ -72,7 +72,7 @@ ls_dir(const char *dir, int options)
 {
 	DIR *dp;
 	struct dirent *d;
-	RC_STRINGLIST *list = NULL; 
+	RC_STRINGLIST *list = NULL;
 	struct stat buf;
 	size_t l;
 	char file[PATH_MAX];
@@ -209,9 +209,9 @@ rc_sys_v2(void)
 	if(systype) {
 		char* s = systype;
 		// Convert to uppercase
-		while(s && *s) { 
+		while(s && *s) {
 			if(islower((unsigned char)*s))
-				*s = toupper((unsigned char)*s); 
+				*s = toupper((unsigned char)*s);
 			s++;
 		}
 		// Now do detection
@@ -247,7 +247,7 @@ rc_sys_v1(void)
 {
 #ifdef PREFIX
 	return RC_SYS_PREFIX;
-#else	
+#else
 
 #ifdef __FreeBSD__
 	int jailed = 0;
@@ -389,7 +389,7 @@ bool
 rc_runlevel_stack(const char *dst, const char *src)
 {
 	char d[PATH_MAX], s[PATH_MAX];
-	
+
 	if (!rc_runlevel_exists(dst) || !rc_runlevel_exists(src))
 		return false;
 	snprintf(s, sizeof(s), "../%s", src);
@@ -402,7 +402,7 @@ bool
 rc_runlevel_unstack(const char *dst, const char *src)
 {
 	char path[PATH_MAX];
-	
+
 	snprintf(path, sizeof(path), "%s/%s/%s", RC_RUNLEVELDIR, dst, src);
 	return (unlink(path) == 0 ? true : false);
 }
@@ -638,7 +638,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 		}
 		skip_state = state;
 	}
-	
+
 	if (state == RC_SERVICE_HOTPLUGGED || state == RC_SERVICE_FAILED) {
 		free(init);
 		return true;
@@ -786,7 +786,7 @@ rc_service_value_set(const char *service, const char *option,
 {
 	FILE *fp;
 	char file[PATH_MAX];
-	char *p = file; 
+	char *p = file;
 
 	p += snprintf(file, sizeof(file), RC_SVCDIR "/options/%s", service);
 	if (mkdir(file, 0755) != 0 && errno != EEXIST)

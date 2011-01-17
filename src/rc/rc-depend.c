@@ -176,7 +176,7 @@ rc_depend(int argc, char **argv)
 		case_RC_COMMON_GETOPT
 			    }
 	}
-	
+
 	if(deptree_file) {
 		if(!(deptree = rc_deptree_load_file(deptree_file)))
 			eerrorx("failed to load deptree");

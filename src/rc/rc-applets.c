@@ -298,7 +298,7 @@ do_service(int argc, char **argv)
 			}
 		}
 		ok = rc_service_started_daemon(service, exec, NULL, idx);
-			
+
 	} else if (strcmp(applet, "service_crashed") == 0) {
 		ok = (_rc_can_find_pids() &&
 		    rc_service_daemons_crashed(service) &&
@@ -476,7 +476,7 @@ run_applets(int argc, char **argv)
 				exit(EXIT_FAILURE);
 		}
 		exit(EXIT_SUCCESS);
-	}; 
+	};
 
 	if (applet[0] == 'e' || (applet[0] == 'v' && applet[1] == 'e'))
 		exit(do_e(argc, argv));

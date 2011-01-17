@@ -200,7 +200,7 @@ rc_plugin_run(RC_HOOK hook, const char *value)
 			sigaction(SIGUSR1, &sa, NULL);
 			sigaction(SIGWINCH, &sa, NULL);
 			sigprocmask(SIG_SETMASK, &old, NULL);
-			
+
 			rc_in_plugin = true;
 			close(pfd[0]);
 			rc_environ_fd = fdopen(pfd[1], "w");

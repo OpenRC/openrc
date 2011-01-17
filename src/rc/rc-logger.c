@@ -172,7 +172,7 @@ rc_logger_open(const char *level)
 		ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
 		if (openpty(&rc_logger_tty, &slave_tty, NULL, &tt, &ws))
 			return;
-	} else 
+	} else
 		if (openpty(&rc_logger_tty, &slave_tty, NULL, NULL, NULL))
 			return;
 

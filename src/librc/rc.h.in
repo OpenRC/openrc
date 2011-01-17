@@ -342,7 +342,7 @@ typedef void *RC_DEPTREE;
  * @param target
  * @param mtime of newest target
  * @param filename of the newest target (needs mtime param)
- * @return true if source is newer than target, otherwise false */ 
+ * @return true if source is newer than target, otherwise false */
 bool rc_newer_than(const char *, const char *, time_t *, char *);
 
 /*! Check to see if source is older than target.
@@ -351,7 +351,7 @@ bool rc_newer_than(const char *, const char *, time_t *, char *);
  * @param target
  * @param mtime of oldest target
  * @param filename of the oldest target (needs mtime param)
- * @return true if source is older than target, otherwise false */ 
+ * @return true if source is older than target, otherwise false */
 bool rc_older_than(const char *, const char *, time_t *, char *);
 
 /*! Update the cached dependency tree if it's older than any init script,
@@ -508,7 +508,7 @@ RC_STRING *rc_stringlist_find(RC_STRINGLIST *, const char *);
 RC_STRINGLIST *rc_stringlist_split(const char *, const char *);
 
 
-/*! Sort the list according to C locale 
+/*! Sort the list according to C locale
  * @param list to sort */
 void rc_stringlist_sort(RC_STRINGLIST **);
 

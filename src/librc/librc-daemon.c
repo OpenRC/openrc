@@ -40,7 +40,7 @@ pid_is_exec(pid_t pid, const char *exec)
 	int c;
 	bool retval = false;
 
-	exec = basename_c(exec); 
+	exec = basename_c(exec);
 	snprintf(buffer, sizeof(buffer), "/proc/%d/stat", pid);
 	if ((fp = fopen(buffer, "r"))) {
 		while ((c = getc(fp)) != EOF && c != '(')
@@ -297,7 +297,7 @@ _match_list(const char *exec, const char* const* argv, const char *pidfile)
 		rc_stringlist_add(match, m);
 		free(m);
 	}
-	
+
 	while (argv && argv[i]) {
 		l = strlen(*argv) + strlen("argv_=") + 16;
 		m = xmalloc(sizeof(char) * l);
@@ -323,7 +323,7 @@ rc_service_daemon_set(const char *service, const char *exec,
     const char *pidfile, bool started)
 {
 	char dirpath[PATH_MAX];
-	char file[PATH_MAX]; 
+	char file[PATH_MAX];
 	int nfiles = 0;
 	char oldfile[PATH_MAX] = { '\0' };
 	bool retval = false;

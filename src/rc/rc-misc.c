@@ -316,7 +316,7 @@ exec_service(const char *service, const char *arg)
 	fd = svc_lock(basename_c(service));
 	if (fd == -1)
 		return -1;
-	
+
 	file = rc_service_resolve(service);
 	if (!exists(file)) {
 		rc_service_mark(service, RC_SERVICE_STOPPED);

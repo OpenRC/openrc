@@ -451,7 +451,7 @@ svc_exec(const char *arg1, const char *arg2)
 	signal_pipe[0] = signal_pipe[1] = -1;
 
 	sigprocmask (SIG_SETMASK, &oldmask, NULL);
-	
+
 	if (master_tty >= 0) {
 		/* Why did we do this? */
 		/* signal (SIGWINCH, SIG_IGN); */
@@ -572,7 +572,7 @@ svc_start_check(void)
 	RC_SERVICE state;
 
 	state = rc_service_state(service);
-	
+
 	if (in_background) {
 		if (!(state & (RC_SERVICE_INACTIVE | RC_SERVICE_STOPPED)))
 			exit(EXIT_FAILURE);
@@ -583,7 +583,7 @@ svc_start_check(void)
 			    " next runlevel", applet);
 	}
 
-	if (exclusive_fd == -1) 
+	if (exclusive_fd == -1)
 		exclusive_fd = svc_lock(applet);
 	if (exclusive_fd == -1) {
 		if (errno == EACCES)
@@ -603,7 +603,7 @@ svc_start_check(void)
 	else if (state & RC_SERVICE_INACTIVE && !in_background)
 		ewarnx("WARNING: %s has already started, but is inactive",
 		    applet);
-	
+
 	rc_service_mark(service, RC_SERVICE_STARTING);
 	hook_out = RC_HOOK_SERVICE_START_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_START_IN, applet);
@@ -619,7 +619,7 @@ svc_start_deps(void)
 	size_t len;
 	char *p, *tmp;
 	pid_t pid;
-	
+
 	errno = 0;
 	if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
 		depoptions |= RC_DEP_STRICT;
@@ -725,7 +725,7 @@ svc_start_deps(void)
 		n = 0;
 		TAILQ_FOREACH(svc, tmplist, entries) {
 			rc_service_schedule_start(svc->value, service);
-			use_services = rc_deptree_depend(deptree, 
+			use_services = rc_deptree_depend(deptree,
 			    "iprovide", svc->value);
 			TAILQ_FOREACH(svc2, use_services, entries)
 			    rc_service_schedule_start(svc2->value, service);
@@ -760,7 +760,7 @@ static void svc_start_real()
 {
 	bool started;
 	RC_STRING *svc, *svc2;
-	
+
 	if (ibsave)
 		setenv("IN_BACKGROUND", ibsave, 1);
 	hook_out = RC_HOOK_SERVICE_START_DONE;
@@ -873,7 +873,7 @@ svc_stop_deps(RC_SERVICE state)
 
 	if (state & RC_SERVICE_WASINACTIVE)
 		return;
-	
+
 	errno = 0;
 	if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
 		depoptions |= RC_DEP_STRICT;
@@ -941,7 +941,7 @@ svc_stop_deps(RC_SERVICE state)
 	}
 	rc_stringlist_free(tmplist);
 	tmplist = NULL;
-	
+
 	/* We now wait for other services that may use us and are
 	 * stopping. This is important when a runlevel stops */
 	services = rc_deptree_depends(deptree, types_mua, applet_list,
@@ -959,7 +959,7 @@ static void
 svc_stop_real(void)
 {
 	bool stopped;
-	
+
 	/* If we're stopping localmount, set LC_ALL=C so that
 	 * bash doesn't load anything blocking the unmounting of /usr */
 	if (strcmp(applet, "localmount") == 0)
@@ -1138,7 +1138,7 @@ runscript(int argc, char **argv)
 				file = basename_c(argv[1]);
 			else
 				file = basename_c(lnk);
-			dir = save; 
+			dir = save;
 		} else
 			file = basename_c(argv[1]);
 		ll = strlen(dir) + strlen(file) + 2;
@@ -1206,7 +1206,7 @@ runscript(int argc, char **argv)
 #endif
 
 	deps = true;
-	
+
 	/* Punt the first arg as its our service name */
 	argc--;
 	argv++;
@@ -1363,7 +1363,7 @@ runscript(int argc, char **argv)
 					    RC_SERVICE_INACTIVE)
 					{
 						TAILQ_FOREACH(svc,
-						    restart_services, 
+						    restart_services,
 						    entries)
 						    if (rc_service_state(svc->value) &
 							RC_SERVICE_STOPPED)
