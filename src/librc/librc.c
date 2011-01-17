@@ -198,6 +198,8 @@ file_regex(const char *file, const char *regex)
 }
 #endif
 
+/* New sys identification code
+ * Not to be used for any binaries outside of openrc. */
 const char *
 rc_sys_v2(void)
 {
@@ -205,7 +207,6 @@ rc_sys_v2(void)
 #define __STRING_CASE(y) else if (strcmp(__string_switch,y) == 0)
 #define __STRING_SWITCH_END() }
 	char *systype = rc_conf_value("rc_sys");
-	/* New sys identification code */
 	if (systype) {
 		char *s = systype;
 		/* Convert to uppercase */
@@ -241,7 +242,8 @@ rc_sys_v2(void)
 }
 librc_hidden_def(rc_sys_v2)
 
-/* Old sys identification code */
+/* Old sys identification code.
+ * Not to be used for any binaries outside of openrc. */
 const char *
 rc_sys_v1(void)
 {
