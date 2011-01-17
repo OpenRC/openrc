@@ -106,7 +106,7 @@ _rc_deptree_load(int force, int *regen) {
 }
 
 #include "_usage.h"
-#define getoptstring "aot:suT" getoptstring_COMMON
+#define getoptstring "aot:suTF:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "starting", 0, NULL, 'a'},
 	{ "stopping", 0, NULL, 'o'},
@@ -114,6 +114,7 @@ static const struct option longopts[] = {
 	{ "notrace",  0, NULL, 'T'},
 	{ "strict",   0, NULL, 's'},
 	{ "update",   0, NULL, 'u'},
+	{ "deptree-file", 1, NULL, 'F'},
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
@@ -123,6 +124,7 @@ static const char * const longopts_help[] = {
 	"Don't trace service dependencies",
 	"Only use what is in the runlevels",
 	"Force an update of the dependency tree",
+	"File to load cached deptree from",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -141,6 +143,7 @@ rc_depend(int argc, char **argv)
 	char *runlevel = xstrdup(getenv("RC_RUNLEVEL"));
 	int opt;
 	char *token;
+	char *deptree_file = NULL;
 
 	types = rc_stringlist_new();
 	while ((opt = getopt_long(argc, argv, getoptstring,
@@ -166,13 +169,21 @@ rc_depend(int argc, char **argv)
 		case 'T':
 			options &= RC_DEP_TRACE;
 			break;
+		case 'F':
+			deptree_file = strdup(optarg);
+			break;
 
-			case_RC_COMMON_GETOPT
+		case_RC_COMMON_GETOPT
 			    }
 	}
-
-	if (!(deptree = _rc_deptree_load(update, NULL)))
-		eerrorx("failed to load deptree");
+	
+	if(deptree_file) {
+		if(!(deptree = rc_deptree_load_file(deptree_file)))
+			eerrorx("failed to load deptree");
+	} else {
+		if (!(deptree = _rc_deptree_load(update, NULL)))
+			eerrorx("failed to load deptree");
+	}
 
 	if (!runlevel)
 		runlevel = rc_runlevel_get();
