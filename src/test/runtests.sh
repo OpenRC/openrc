@@ -66,6 +66,42 @@ syms=$(diff -u librc.funcs.hidden.list librc.funcs.hidden.out | sed -n '/^+[^+]/
 eend $? "Missing hidden defs:"$'\n'"${syms}"
 ret=$(($ret + $?))
 
+ebegin "Checking trailing whitespace in code"
+# XXX: Should we check man pages too ?
+out=$(cd ${top_srcdir}; find */ \
+	'(' -name '*.[ch]' -o -name '*.in' -o -name '*.sh' ')' \
+	-exec grep -n -E '[[:space:]]+$' {} +)
+[ -z "${out}" ]
+eend $? "Trailing whitespace needs to be deleted:"$'\n'"${out}"
+
+ebegin "Checking for obsolete functions"
+out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
+	-exec grep -n -E '\<(malloc|memory|sys/(errno|fcntl|signal|stropts|termios|unistd))\.h\>' {} +)
+[ -z "${out}" ]
+eend $? "Avoid these obsolete functions:"$'\n'"${out}"
+
+ebegin "Checking for x* func usage"
+out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
+	-exec grep -n -E '\<(malloc|strdup)[[:space:]]*\(' {} + \
+	| grep -v \
+		-e src/includes/rc-misc.h \
+		-e src/libeinfo/libeinfo.c)
+[ -z "${out}" ]
+eend $? "These need to be using the x* variant:"$'\n'"${out}"
+
+ebegin "Checking spacing style"
+out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
+	-exec grep -n -E \
+		-e '\<(for|if|switch|while)\(' \
+		-e '\<(for|if|switch|while) \( ' \
+		-e ' ;' \
+		-e '[[:space:]]$' \
+		-e '\){' \
+		-e '(^|[^:])//' \
+	{} +)
+[ -z "${out}" ]
+eend $? "These lines violate style rules:"$'\n'"${out}"
+
 einfo "Running unit tests"
 eindent
 for u in units/*; do
