@@ -152,7 +152,7 @@ do_e(int argc, char **argv)
 		ts.tv_nsec = WAIT_INTERVAL;
 		for (i = 0; i < argc; i++) {
 			ebeginv("Waiting for %s", argv[i]);
-			for (;;){
+			for (;;) {
 				if (exists(argv[i]))
 					break;
 				if (nanosleep(&ts, NULL) == -1)

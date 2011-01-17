@@ -97,7 +97,7 @@ clip_pre_start()
 	    	return 1
 		fi
     fi
-	
+
     local started_here=
     if ! are_atmclip_svcs_running; then
 		atmclip_svcs_start || return 1

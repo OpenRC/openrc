@@ -38,13 +38,13 @@ bridge_pre_start()
 	local opts="$(_get_array "brctl_${IFVAR}")"
 	# brif is used for dynamic add
 	eval brif=\$bridge_add_${IFVAR}
-	
+
 	# we need a way to if the bridge exists in a variable name, not just the
 	# contents of a variable. Eg if somebody has only bridge_add_eth0='br0',
 	# with no other lines mentioning br0.
 	eval bridge_unset=\${bridge_${IFVAR}-y\}
 	eval brctl_unset=\${brctl_${IFVAR}-y\}
-	
+
 	if [ -z "${brif}" -a "${brctl_unset}" == 'y' ]; then
 		if [ -z "${ports}" -a "${bridge_unset}" == "y" ]; then
 			#eerror "Misconfigured static bridge detected (see net.example)"
@@ -186,6 +186,6 @@ bridge_post_stop()
 		brctl delbr "${iface}"
 		eend $?
 	fi
-	
+
 	return 0
 }

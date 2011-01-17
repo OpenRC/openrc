@@ -21,7 +21,7 @@ apipa_start()
 	local iface="$1" i1= i2= addr= i=0
 
 	_exists true || return 1
-	
+
 	einfo "Searching for free addresses in 169.254.0.0/16"
 	eindent
 

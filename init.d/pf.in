@@ -44,7 +44,7 @@ reload()
 {
 	ebegin "Reloading $name rules."
 	pfctl -q -n -f "$pf_conf" && \
-	{ 
+	{
 		# Flush everything but existing state entries that way when
 		# rules are read in, it doesn't break established connections.
 		pfctl -q -Fnat -Fqueue -Frules -FSources -Finfo -FTables -Fosfp

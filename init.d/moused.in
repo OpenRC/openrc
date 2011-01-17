@@ -21,13 +21,13 @@ depend()
 
 start()
 {
-	ebegin "Starting $name" 
+	ebegin "Starting $name"
 
 	if [ -z "$moused_device" ]; then
 		local dev=
 		for dev in /dev/psm[0-9]* /dev/ums[0-9]*; do
 			[ -c "$dev" ] || continue
-			[ -e /var/run/moused-"${dev##*/}".pid ] && continue 
+			[ -e /var/run/moused-"${dev##*/}".pid ] && continue
 			moused_device=$dev
 			eindent
 			einfo "Using mouse on $moused_device"
@@ -37,7 +37,7 @@ start()
 	fi
 
 	if [ -z "$moused_device" ]; then
-		eend 1 "No mouse device found" 
+		eend 1 "No mouse device found"
 		return 1
 	fi
 
@@ -49,7 +49,7 @@ start()
 		--pidfile "$pidfile" \
 		-- $args -p "$moused_device" -I "$pidfile"
 	local retval=$?
-	
+
 	if [ $retval = 0 ]; then
 		local ttyv=
 		for ttyv in /dev/ttyv*; do
@@ -57,6 +57,6 @@ start()
 			: $((retval+= $?))
 		done
 	fi
-	
+
 	eend $retval "Failed to start moused"
 }

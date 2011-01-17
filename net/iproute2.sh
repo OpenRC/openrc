@@ -117,14 +117,14 @@ _add_address()
 		shift; shift; shift
 		set -- "${one}/$(_netmask2cidr "${three}")" "$@"
 	fi
-	
+
 	# tunnel keyword is 'peer' in iproute2, but 'pointopoint' in ifconfig.
 	if [ "$2" = "pointopoint" ]; then
 		local one="$1"
 		shift; shift
 		set -- "${one}" "peer" "$@"
 	fi
-	
+
 	# Always scope lo addresses as host unless specified otherwise
 	if [ "${IFACE}" = "lo" ]; then
 		set -- "$@" "scope" "host"
@@ -162,7 +162,7 @@ _add_route()
 		set -- "${one}" "${two}" via "$@"
 	fi
 
-	local cmd= have_metric=false 
+	local cmd= have_metric=false
 	while [ -n "$1" ]; do
 		case "$1" in
 			metric) cmd="${cmd} $1"; have_metric=true;;

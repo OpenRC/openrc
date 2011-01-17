@@ -149,7 +149,7 @@ wpa_supplicant_pre_start()
 	if [ -z "${wpac}" ]; then
 		if service_started devd; then
 			ebegin "Backgrounding ..."
-			exit 1 
+			exit 1
 		fi
 		return 0
 	fi
@@ -167,7 +167,7 @@ wpa_supplicant_pre_start()
 		-P "/var/run/wpa_cli-${IFACE}.pid" -B
 	if eend $?; then
 		ebegin "Backgrounding ..."
-		exit 1 
+		exit 1
 	fi
 
 	# wpa_cli failed to start? OK, error here

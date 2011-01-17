@@ -43,7 +43,7 @@ find_wireless()
 		done
 		;;
 	esac
-	
+
 	return 1
 }
 

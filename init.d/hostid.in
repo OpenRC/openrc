@@ -68,7 +68,7 @@ reset()
 start()
 {
 	if [ -r "$hostid_file" ]; then
-		_set $(cat "$hostid_file") 
+		_set $(cat "$hostid_file")
 	else
 		reset
 	fi

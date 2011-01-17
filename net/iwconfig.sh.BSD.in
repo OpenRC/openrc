@@ -477,7 +477,7 @@ iwconfig_defaults()
 	#ifconfig "${iface}" txpower 100 2>/dev/null
 	ifconfig "${IFACE}" bssid -
 	ifconfig "${IFACE}" ssid -
-	ifconfig "${IFACE}" wepkey 1:- wepkey 2:- wepkey 3:- wepkey 4:- 
+	ifconfig "${IFACE}" wepkey 1:- wepkey 2:- wepkey 3:- wepkey 4:-
 	ifconfig "${IFACE}" authmode open
 	ifconfig "${IFACE}" -mediaopt adhoc
 	ifconfig "${IFACE}" -mediaopt hostap
@@ -563,8 +563,8 @@ iwconfig_pre_start()
 		return 0
 	fi
 
-	iwconfig_defaults 
-	iwconfig_user_config 
+	iwconfig_defaults
+	iwconfig_user_config
 
 	# Set the base metric to be 2000
 	metric=2000

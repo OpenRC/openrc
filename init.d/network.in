@@ -222,7 +222,7 @@ start()
 	einfo "Starting network"
 	routeflush
 	if [ "$RC_UNAME" = "Linux" ]; then
-		ifconfig lo 127.0.0.1 netmask 255.0.0.0 || cr=1 
+		ifconfig lo 127.0.0.1 netmask 255.0.0.0 || cr=1
 		route add -net 127.0.0.0 netmask 255.0.0.0 \
 			gw 127.0.0.1 reject 2>/dev/null
 	else
@@ -287,7 +287,7 @@ start()
 		[ $r != 0 ]
 		veend $?
 	fi
-	
+
 	if [ -n "$defaultroute" ]; then
 		ebegin "Setting default route $defaultroute"
 		route add default $defaultroute

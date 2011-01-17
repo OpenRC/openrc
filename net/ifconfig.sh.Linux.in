@@ -139,7 +139,7 @@ _add_address()
 		return 0
 	fi
 
-	case "$1" in 
+	case "$1" in
 		*:*) ifconfig "${IFACE}" inet6 add "$@"; return $?;;
 	esac
 
@@ -225,7 +225,7 @@ _delete_addresses()
 	while true; do
 		local addr=$(_get_inet_address)
 		[ -z "${addr}" ] && break
-		
+
 		if [ "${addr}" = "127.0.0.1/8" ]; then
 			# Don't delete the loopback address
 			[ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ] && break
@@ -246,7 +246,7 @@ _delete_addresses()
 		einfo "${addr}"
 		ifconfig "${IFACE}" inet6 del "${addr}"
 	done
-	
+
 	return 0
 }
 

@@ -13,11 +13,11 @@ start()
 	ebegin "Activating block swap devices"
 	swapctl -A -t blk >/dev/null
 	eend 0 # If swapon has nothing todo it errors, so always return 0
-}	
+}
 
 stop()
 {
 	ebegin "Deactivating block swap devices"
 	swapctl -U -t blk >/dev/null
-	eend 0 
+	eend 0
 }

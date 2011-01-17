@@ -59,7 +59,7 @@ netplugd_pre_start()
 		ewarn "WARNING: infinite timeout set for ${IFACE} to come up"
 	elif [ ${timeout} -lt 0 ]; then
 		einfo "Backgrounding ..."
-		exit 1 
+		exit 1
 	fi
 
 	veinfo "Waiting for ${IFACE} to be marked as started"
@@ -86,7 +86,7 @@ netplugd_stop()
 
 	local pidfile="/var/run/netplugd-${IFACE}.pid"
 	[ ! -e "${pidfile}" ] && return 0
-	
+
 	ebegin "Stopping netplug on" "${IFACE}"
 	start-stop-daemon --stop --quiet --exec /sbin/netplugd \
 		--pidfile "${pidfile}"

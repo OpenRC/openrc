@@ -16,7 +16,7 @@ start()
 		*)		swapon -a >/dev/null;;
 	esac
 	eend 0 # If swapon has nothing todo it errors, so always return 0
-}	
+}
 
 stop()
 {
@@ -31,5 +31,5 @@ stop()
 		NetBSD|OpenBSD)	swapctl -U -t noblk >/dev/null;;
 		*)		swapoff -a >/dev/null;;
 	esac
-	eend 0 
+	eend 0
 }

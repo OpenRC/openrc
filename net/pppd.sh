@@ -31,7 +31,7 @@ pppd_pre_start()
 	if yesno ${IN_BACKGROUND}; then
 		local config=
 		eval config=\$config_${IFVAR}
-		# If no config for ppp then don't default to DHCP 
+		# If no config for ppp then don't default to DHCP
 		if [ -z "${config}" ]; then
 			eval config_${IFVAR}=null
 		fi
@@ -39,7 +39,7 @@ pppd_pre_start()
 	fi
 
 	local link= i= unit="${IFACE#ppp}" opts=
-	
+
 	# PPP requires a link to communicate over - normally a serial port
 	# PPPoE communicates over Ethernet
 	# PPPoA communicates over ATM
@@ -92,7 +92,7 @@ pppd_pre_start()
 	&& [ -n "${password}" -o -z "${passwordset}" ]; then
 		opts="plugin passwordfd.so ${opts} passwordfd 0"
 	fi
-	
+
 	if ! ${hasdefaultmetric}; then
 		local m=
 		eval m=\$metric_${IFVAR}
@@ -122,7 +122,7 @@ pppd_pre_start()
 
 	# Set unit
 	opts="unit ${unit} ${opts}"
-	
+
 	# Setup connect script
 	local chatprog="/usr/sbin/chat -e -E -v" phone=
 	eval phone=\$phone_number_${IFVAR}

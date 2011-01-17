@@ -24,7 +24,7 @@
 # We now support modular networking scripts which means we can easily
 # add support for new interface types and modules while keeping
 # compatibility with existing ones.
-# 
+#
 # Modules load by default if the package they need is installed.  If
 # you specify a module here that doesn't have its package installed
 # then you get an error stating which package you need to install.
@@ -49,7 +49,7 @@
 
 ##############################################################################
 # INTERFACE HANDLERS
-# 
+#
 # We provide two interface handlers presently: ifconfig and iproute2.
 # You need one of these to do any kind of network configuration.
 # For ifconfig support, emerge sys-apps/net-tools
@@ -297,7 +297,7 @@
 # Surround each SSID with the " character and separate them with a space
 # If the first SSID isn't found then it moves onto the next
 # If this isn't defined then it connects to the first one found
-#preferred_aps="SSID1 SSID2" 
+#preferred_aps="SSID1 SSID2"
 
 # You can also define a preferred_aps list per interface
 #preferred_aps_eth0="SSID3 SSID4"
@@ -371,13 +371,13 @@
 # won't have associated then)
 
 # If you're using anything else to configure wireless on your interface AND
-# you have installed wpa_supplicant, you need to disable wpa_supplicant 
+# you have installed wpa_supplicant, you need to disable wpa_supplicant
 #modules="!iwconfig !wpa_supplicant"
 #or
 #modules="!wireless"
 
 ##############################################################################
-# WIRELESS SSID IN VARIABLES 
+# WIRELESS SSID IN VARIABLES
 ##############################################################################
 # Remember to change SSID to your SSID.
 # Say that your SSID is My NET - the line
@@ -421,7 +421,7 @@
 # Notes:
 # - All clients send the current hostname to the DHCP server by default
 # - dhcpcd does not daemonize when the lease time is infinite
-# - udhcp-0.9.3-r3 and earlier do not support getting NTP servers 
+# - udhcp-0.9.3-r3 and earlier do not support getting NTP servers
 # - pump does not support getting NIS servers
 # - DHCP tends to erase any existing device information - so add
 #   static addresses after dhcp if you need them
@@ -467,7 +467,7 @@
 #fallback_eth0="apipa"
 
 #-----------------------------------------------------------------------------
-# ARPING Gateway configuration 
+# ARPING Gateway configuration
 # and
 # Automatic Private IP Addressing (APIPA)
 # For arpingnet / apipa support, emerge net-misc/iputils or net-analyzer/arping
@@ -582,7 +582,7 @@
 
 
 #-----------------------------------------------------------------------------
-# Classical IP over ATM 
+# Classical IP over ATM
 # For CLIP support emerge net-dialup/linux-atm
 
 # Ensure that you have /etc/atmsigd.conf setup correctly
@@ -620,7 +620,7 @@
 #
 # Here you should specify what pppd plugins you want to use
 # Available plugins are: pppoe, pppoa, capi, dhcpc, minconn, radius,
-#			 radattr, radrealms and winbind 
+#			 radattr, radrealms and winbind
 #plugins_ppp0="pppoe"			# Required plugin for PPPoE
 #plugins_ppp0="pppoa vc-encaps"		# Required plugin for PPPoA with an option
 #plugins_ppp0="capi"			# Required plugin for ISDN
@@ -660,7 +660,7 @@
 #	lcp-echo-interval 15	# Send a LCP echo every 15 seconds
 #	lcp-echo-failure 3	# Make peer dead after 3 consecutive
 #				# echo-requests
-#	
+#
 # Compression options - use these to completely disable compression
 #	noaccomp noccp nobsdcomp nodeflate nopcomp novj novjccomp
 #
@@ -793,7 +793,7 @@
 # empty value variable is fine, but at least one of them must be set:
 # brctl_IFVAR
 
-# You need to configure the ports to null values so dhcp does not get started 
+# You need to configure the ports to null values so dhcp does not get started
 #config_eth0="null"
 #config_eth1="null"
 
@@ -820,7 +820,7 @@
 #hairpin_mode_eth0="1"
 
 #-----------------------------------------------------------------------------
-# RFC 2684 Bridge Support 
+# RFC 2684 Bridge Support
 # For RFC 2684 bridge support emerge net-misc/br2684ctl
 
 # Interface names have to be of the form nas0, nas1, nas2, etc.
@@ -975,7 +975,7 @@
 
 ##############################################################################
 # ADVANCED CONFIGURATION
-# 
+#
 # Four functions can be defined which will be called surrounding the
 # start/stop operations.  The functions are called with the interface
 # name first so that one function can control multiple adapters. An extra two
@@ -1001,7 +1001,7 @@
 #	if mii-tool "${IFACE}" 2> /dev/null | grep -q 'no link'; then
 #		ewarn "No link on ${IFACE}, aborting configuration"
 #		return 1
-#	fi 
+#	fi
 #
 #	# Test for link on the interface prior to bringing it up.  This
 #	# only works on some network adapters and requires the ethtool

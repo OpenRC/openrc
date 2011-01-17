@@ -88,7 +88,7 @@ start()
 				eend 1 "failed to create needed directory $x"
 				return 1
 			fi
-		fi 
+		fi
 	done
 
 	if dir_writeable /var/run; then
@@ -137,7 +137,7 @@ start()
 		# Make sure our X11 stuff have the correct permissions
 		# Omit the chown as bootmisc is run before network is up
 		# and users may be using lame LDAP auth #139411
-		rm -rf /tmp/.ICE-unix /tmp/.X11-unix 
+		rm -rf /tmp/.ICE-unix /tmp/.X11-unix
 		mkdir -p /tmp/.ICE-unix /tmp/.X11-unix
 		chmod 1777 /tmp/.ICE-unix /tmp/.X11-unix
 		if [ -x /sbin/restorecon ]; then

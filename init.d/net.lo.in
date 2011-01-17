@@ -180,7 +180,7 @@ _gen_module_list()
 		${update} || return 0
 	fi
 
-	einfo "Caching network module dependencies" 
+	einfo "Caching network module dependencies"
 	# Run in a subshell to protect the main script
 	(
 	after() {
@@ -215,7 +215,7 @@ _gen_module_list()
 
 	for MODULE in "${MODULESDIR}"/*.sh; do
 		sh -n "${MODULE}" || continue
-		. "${MODULE}" || continue 
+		. "${MODULE}" || continue
 		MODULE=${MODULE#${MODULESDIR}/}
 		MODULE=${MODULE%.sh}
 		eval ${MODULE}_depend
@@ -343,7 +343,7 @@ _load_modules()
 
 		# Wrap our provides
 		local f=
-		for f in pre_start start post_start; do 
+		for f in pre_start start post_start; do
 			eval "${provides}_${f}() { [ "$(command -v "${mod}_${f}")" = "${mod}_${f}" ] || return 0; ${mod}_${f} \"\$@\"; }"
 		done
 
@@ -357,7 +357,7 @@ _load_modules()
 			*" ${mod} "*)
 			eval x=\$module_${mod}_provides
 			[ -z "${x}" ] && continue
-			for f in pre_start start post_start; do 
+			for f in pre_start start post_start; do
 				eval "${x}_${f}() { [ "$(command -v "${mod}_${f}")" = "${mod}_${f}" ] || return 0; ${mod}_${f} \"\$@\"; }"
 			done
 			eval module_${x}_providedby="${mod}"
@@ -379,7 +379,7 @@ _load_modules()
 			MODULES="${MODULES}${MODULES:+ }${mod}"
 		done
 	else
-		for mod in ${LIST}; do 
+		for mod in ${LIST}; do
 			MODULES="${mod}${MODULES:+ }${MODULES}"
 		done
 	fi
@@ -395,7 +395,7 @@ _load_config()
 	config_index=0
 	local IFS="$__IFS"
 	set -- ${config}
-	
+
 	# We should support a space separated array for cidr configs
 	if [ $# = 1 ]; then
 		unset IFS
@@ -415,7 +415,7 @@ _load_config()
 		   	config_0="127.0.0.1/8"
 			config_index=1
 		fi
-	else	
+	else
 		if [ -z "$1" ]; then
 			ewarn "No configuration specified; defaulting to DHCP"
 			config_0="dhcp"
@@ -500,7 +500,7 @@ start()
 	fi
 
 	_up 2>/dev/null
-	
+
 	for module in ${MODULES}; do
 		if [ "$(command -v "${module}_pre_start")" = "${module}_pre_start" ]; then
 			${module}_pre_start || exit $?
@@ -527,7 +527,7 @@ start()
 	_load_config
 	config_index=0
 
-	eval our_metric=\$metric_${IFVAR} 
+	eval our_metric=\$metric_${IFVAR}
 	if [ -n "${our_metric}" ]; then
 		metric=${our_metric}
 	elif [ "${IFACE}" != "lo" -a "${IFACE}" != "lo0" ]; then
@@ -536,7 +536,7 @@ start()
 
 	while true; do
 		eval config=\$config_${config_index}
-		[ -z "${config}" ] && break 
+		[ -z "${config}" ] && break
 
 		set -- ${config}
 		ebegin "$1"
@@ -638,7 +638,7 @@ ${routes}"
 	if [ "$(command -v postup)" = "postup" ]; then
 		ebegin "Running postup"
 		eindent
-		postup 
+		postup
 		eoutdent
 	fi
 

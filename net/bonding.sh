@@ -115,7 +115,7 @@ bonding_pre_start()
 
 bonding_stop()
 {
-	_is_bond || return 0	
+	_is_bond || return 0
 
 	local slaves= s=
 	slaves=$( \

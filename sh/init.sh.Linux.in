@@ -34,7 +34,7 @@ mount_svcdir()
 			[ $? -eq 0 ] && return 0
 		fi
 	fi
-	
+
 	if grep -Eq "[[:space:]]+ramfs$" /proc/filesystems; then
 		fs="ramfs"
 		# ramfs has no special options

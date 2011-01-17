@@ -10,7 +10,7 @@ required_files=/etc/dnsmasq.conf
 extra_started_commands="reload"
 
 depend()
-{	
+{
 	provide dns
 	need localmount net
 	after bootmisc

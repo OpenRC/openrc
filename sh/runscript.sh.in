@@ -111,7 +111,7 @@ start()
 	[ -n "$command" ] || return 0
 	local _background=
 	ebegin "Starting ${name:-$RC_SVCNAME}"
-	if yesno "${command_background}"; then 
+	if yesno "${command_background}"; then
 		_background="--background --pidfile"
 	fi
 	if yesno "$start_inactive"; then
@@ -252,7 +252,7 @@ while [ -n "$1" ]; do
 					eerror "$RC_SVCNAME: function \`$1' defined but does not exist"
 					exit 1
 				fi
-			fi	
+			fi
 		fi
 	done
 	eerror "$RC_SVCNAME: unknown function \`$1'"
