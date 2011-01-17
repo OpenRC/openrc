@@ -208,13 +208,13 @@ rc_sys_v2(void)
 	/* New sys identification code */
 	if (systype) {
 		char* s = systype;
-		// Convert to uppercase
+		/* Convert to uppercase */
 		while (s && *s) {
 			if (islower((unsigned char)*s))
 				*s = toupper((unsigned char)*s);
 			s++;
 		}
-		// Now do detection
+		/* Now do detection */
 		__STRING_SWITCH(systype)
 		__STRING_CASE(RC_SYS_PREFIX)	{ return RC_SYS_PREFIX; }
 #ifdef __FreeBSD__
