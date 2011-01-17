@@ -114,7 +114,13 @@ get_deptype(const RC_DEPINFO *depinfo, const char *type)
 }
 
 RC_DEPTREE *
-rc_deptree_load(void)
+rc_deptree_load(void) {
+	return rc_deptree_load_file(RC_DEPTREE_CACHE);
+}
+librc_hidden_def(rc_deptree_load)
+
+RC_DEPTREE *
+rc_deptree_load_file(const char *deptree_file)
 {
 	FILE *fp;
 	RC_DEPTREE *deptree;
@@ -127,7 +133,7 @@ rc_deptree_load(void)
 	char *e;
 	int i;
 
-	if (!(fp = fopen(RC_DEPTREE_CACHE, "r")))
+	if (!(fp = fopen(deptree_file, "r")))
 		return NULL;
 
 	deptree = xmalloc(sizeof(*deptree));
@@ -175,7 +181,6 @@ rc_deptree_load(void)
 	
 	return deptree;
 }
-librc_hidden_def(rc_deptree_load)
 
 static bool
 valid_service(const char *runlevel, const char *service, const char *type)

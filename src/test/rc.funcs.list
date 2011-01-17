@@ -12,6 +12,8 @@ rc_deptree_free
 rc_deptree_free@@RC_1.0
 rc_deptree_load
 rc_deptree_load@@RC_1.0
+rc_deptree_load_file
+rc_deptree_load_file@@RC_1.0
 rc_deptree_order
 rc_deptree_order@@RC_1.0
 rc_deptree_update

@@ -375,6 +375,11 @@ bool rc_deptree_update_needed(time_t *, char *);
  * @return pointer to the dependency tree */
 RC_DEPTREE *rc_deptree_load(void);
 
+/*! Load a cached dependency tree from the specified file and return a pointer
+ * to it.  This pointer should be freed with rc_deptree_free when done.
+ * @return pointer to the dependency tree */
+RC_DEPTREE *rc_deptree_load_file(const char *);
+
 /*! List the depend for the type of service
  * @param deptree to search
  * @param type to use (keywords, etc)
