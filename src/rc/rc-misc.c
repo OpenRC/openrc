@@ -52,61 +52,7 @@
 #include "rc-misc.h"
 #include "version.h"
 
-#define PROFILE_ENV     RC_SYSCONFDIR "/profile.env"
-#define SYS_WHITELIST   RC_LIBEXECDIR "/conf.d/env_whitelist"
-#define USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"
-#define RC_CONF         RC_SYSCONFDIR "/rc.conf"
-#define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
-
-#define PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
-
-static RC_STRINGLIST *rc_conf = NULL;
-
 extern char **environ;
-
-#ifdef DEBUG_MEMORY
-static void
-_free_rc_conf(void)
-{
-	rc_stringlist_free(rc_conf);
-}
-#endif
-
-char *
-rc_conf_value(const char *setting)
-{
-	RC_STRINGLIST *old;
-	RC_STRING *s;
-	char *p;
-
-	if (! rc_conf) {
-		rc_conf = rc_config_load(RC_CONF);
-#ifdef DEBUG_MEMORY
-		atexit(_free_rc_conf);
-#endif
-
-		/* Support old configs */
-		if (exists(RC_CONF_OLD)) {
-			old = rc_config_load(RC_CONF_OLD);
-			TAILQ_CONCAT(rc_conf, old, entries);
-#ifdef DEBUG_MEMORY
-			free(old);
-#endif
-		}
-
-		/* Convert old uppercase to lowercase */
-		TAILQ_FOREACH(s, rc_conf, entries) {
-			p = s->value;
-			while (p && *p && *p != '=') {
-				if (isupper((unsigned char)*p))
-					*p = tolower((unsigned char)*p);
-				p++;
-			}
-		}
-	}
-
-	return rc_config_value(rc_conf, setting);
-}
 
 bool
 rc_conf_yesno(const char *setting)
@@ -135,7 +81,7 @@ env_filter(void)
 
 	/* Add the user defined list of vars */
 	env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
-	profile = rc_config_load(PROFILE_ENV);
+	profile = rc_config_load(RC_PROFILE_ENV);
 
 	/* Copy the env and work from this so we can manipulate it safely */
 	env_list = rc_stringlist_new();
@@ -181,7 +127,7 @@ env_filter(void)
 void
 env_config(void)
 {
-	size_t pplen = strlen(PATH_PREFIX);
+	size_t pplen = strlen(RC_PATH_PREFIX);
 	char *path;
 	char *p;
 	char *e;
@@ -199,16 +145,16 @@ env_config(void)
 	   for a little extra security */
 	path = getenv("PATH");
 	if (! path)
-		setenv("PATH", PATH_PREFIX, 1);
-	else if (strncmp (PATH_PREFIX, path, pplen) != 0) {
+		setenv("PATH", RC_PATH_PREFIX, 1);
+	else if (strncmp (RC_PATH_PREFIX, path, pplen) != 0) {
 		l = strlen(path) + pplen + 3;
 		e = p = xmalloc(sizeof(char) * l);
-		p += snprintf(p, l, "%s", PATH_PREFIX);
+		p += snprintf(p, l, "%s", RC_PATH_PREFIX);
 
 		/* Now go through the env var and only add bits not in our
 		 * PREFIX */
 		while ((token = strsep(&path, ":"))) {
-			np = npp = xstrdup(PATH_PREFIX);
+			np = npp = xstrdup(RC_PATH_PREFIX);
 			while ((tok = strsep(&npp, ":")))
 				if (strcmp(tok, token) == 0)
 					break;

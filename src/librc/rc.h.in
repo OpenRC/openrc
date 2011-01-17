@@ -43,6 +43,14 @@ __BEGIN_DECLS
 #define RC_CONFDIR              RC_SYSCONFDIR "/conf.d"
 #define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
+#define RC_PROFILE_ENV     RC_SYSCONFDIR "/profile.env"
+#define RC_SYS_WHITELIST   RC_LIBEXECDIR "/conf.d/env_whitelist"
+#define RC_USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"
+#define RC_CONF         RC_SYSCONFDIR "/rc.conf"
+#define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
+
+#define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
+
 /* PKG_PREFIX is where packages are installed if different from the base OS
  * On Gentoo this is normally unset, on FreeBSD /usr/local and on NetBSD
  * /usr/pkg. */
@@ -461,6 +469,9 @@ RC_STRINGLIST *rc_config_load(const char *);
 
 /*! Return the value of the entry from a key=value list. */
 char *rc_config_value(RC_STRINGLIST *, const char *);
+
+/*! Return the value of the entry from rc.conf. */
+char *rc_conf_value(const char *);
 
 /*! Check if a variable is a boolean and return its value.
  * If variable is not a boolean then we set errno to be ENOENT when it does

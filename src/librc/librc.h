@@ -72,6 +72,7 @@
 #define librc_hidden_proto(x) hidden_proto(x)
 #define librc_hidden_def(x) hidden_def(x)
 
+librc_hidden_proto(rc_conf_value)
 librc_hidden_proto(rc_config_list)
 librc_hidden_proto(rc_config_load)
 librc_hidden_proto(rc_config_value)
