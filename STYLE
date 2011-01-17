@@ -1,0 +1,34 @@
+This is the openrc style manual.  It governs the coding style of all code
+in this repository.  Follow it.  Contact openrc@gentoo.org for any questions
+or fixes you might notice.
+
+##########
+# C CODE #
+##########
+
+The BSD Kernel Normal Form (KNF) style is used:
+	http://en.wikipedia.org/wiki/Indent_style#BSD_KNF_style
+Basically, it's like K&R/LKML, but wrapped lines that are indented use 4 spaces.
+
+Highlights:
+	- no trailing whitespace
+	- indented code use tabs (not line wrapped)
+	- cuddle the braces (except for functions)
+	- space after native statements and before paren (for/if/while/...)
+	- no space between function and paren
+	- pointer asterisk cuddles the variable, not the type
+
+void foo(int c)
+{
+	int ret = 0;
+
+	if (c > 1000)
+		return;
+
+	while (c--) {
+		bar(c);
+		ret++;
+	}
+
+	return ret;
+}
