@@ -43,7 +43,7 @@
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
-#include <sys/termios.h>
+#include <termios.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 
