@@ -52,7 +52,7 @@ When: Removed already, compatbility warning in place.
 
 Why: ...
 
-Who:  
+Who:
 
 ---------------------------
 
@@ -65,6 +65,6 @@ Why: Obsolete or replaced by other options.
 	 --chuid => use --user
 	 --oknodo => ignore return code instead
 
-Who:  
+Who:
 
 ---------------------------
