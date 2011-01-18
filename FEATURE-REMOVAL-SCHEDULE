@@ -26,3 +26,45 @@ Who:  Robin H. Johnson <robbat2@gentoo.org>
 
 ---------------------------
 
+What: oldnet ADSL rp-pppoe mode
+
+When: undecided
+
+Why: Replaced by the oldnet PPP module
+
+Who:  Robin H. Johnson <robbat2@gentoo.org>
+
+---------------------------
+
+What: oldnet /etc/conf.d/wireless
+
+When: undecided
+
+Why: All configuration moved to /etc/conf.d/net
+
+Who:  Robin H. Johnson <robbat2@gentoo.org>
+
+---------------------------
+
+What: Service pause action
+
+When: Removed already, compatbility warning in place.
+
+Why: ...
+
+Who:  
+
+---------------------------
+
+What: Service --startas, --chuid , --oknodo
+
+When: undecided
+
+Why: Obsolete or replaced by other options.
+	 --startas => use --name or --exec
+	 --chuid => use --user
+	 --oknodo => ignore return code instead
+
+Who:  
+
+---------------------------
