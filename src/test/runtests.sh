@@ -74,6 +74,14 @@ out=$(cd ${top_srcdir}; find */ \
 [ -z "${out}" ]
 eend $? "Trailing whitespace needs to be deleted:"$'\n'"${out}"
 
+ebegin "Checking trailing newlines in code"
+out=$(cd ${top_srcdir};
+	for f in `find */ -name '*.[ch]'` ; do
+		sed -n -e :a -e '/^\n*$/{$q1;N;ba' -e '}' $f || echo $f
+	done)
+[ -z "${out}" ]
+eend $? "Trailing newlines need to be deleted:"$'\n'"${out}"
+
 ebegin "Checking for obsolete functions"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
 	-exec grep -n -E '\<(malloc|memory|sys/(errno|fcntl|signal|stropts|termios|unistd))\.h\>' {} +)
