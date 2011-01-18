@@ -267,5 +267,3 @@ _free_rc_conf(void)
 	rc_stringlist_free(rc_conf);
 }
 #endif
-
-
