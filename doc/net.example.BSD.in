@@ -23,7 +23,7 @@
 # We now support modular networking scripts which means we can easily
 # add support for new interface types and modules while keeping
 # compatibility with existing ones.
-# 
+#
 # Modules load by default if the package they need is installed.  If
 # you specify a module here that doesn't have its package installed
 # then you get an error stating which package you need to install.
@@ -212,7 +212,7 @@
 # not find them in a scan
 # "forcepreferredonly" means it forcibly connects to the APs in order and
 # does not bother to scan
-# "forceany" does the same as forcepreferred + connects to any other 
+# "forceany" does the same as forcepreferred + connects to any other
 # available AP
 # Default is "any"
 #associate_order="any"
@@ -266,13 +266,13 @@
 # won't have associated then)
 
 # If you're using anything else to configure wireless on your interface AND
-# you have installed wpa_supplicant, you need to disable wpa_supplicant 
+# you have installed wpa_supplicant, you need to disable wpa_supplicant
 #modules="!iwconfig !wpa_supplicant"
 #or
 #modules="!wireless"
 
 ##############################################################################
-# WIRELESS SSID IN VARIABLES 
+# WIRELESS SSID IN VARIABLES
 ##############################################################################
 # Remember to change SSID to your SSID.
 # Say that your SSID is My NET - the line
@@ -368,7 +368,7 @@
 
 ##############################################################################
 # ADVANCED CONFIGURATION
-# 
+#
 # Four functions can be defined which will be called surrounding the
 # start/stop operations.  The functions are called with the interface
 # name first so that one function can control multiple adapters. An extra two

@@ -19,7 +19,7 @@ arping_address()
 	esac
 
 	# We need to bring the interface up to test
-	_exists "${iface}" || return 1 
+	_exists "${iface}" || return 1
 	_up "${iface}"
 
 	eval w=\$arping_wait_${IFVAR}
@@ -43,7 +43,7 @@ arping_address()
 		sed -n -e 'y/abcdef/ABCDEF/' -e 's/.*\[\([^]]*\)\].*/\1/p')"
 	fi
 	[ -z "${foundmac}" ] && return 1
-	
+
 	if [ -n "${mac}" ]; then
 		if [ "${mac}" != "${foundmac}" ]; then
 			vewarn "Found ${ip} but MAC ${foundmac} does not match"
@@ -74,7 +74,7 @@ arping_start()
 	fi
 
 	eindent
-	
+
 	for x in ${gateways}; do
 		local IFS=,
 		set -- ${x}
@@ -119,7 +119,7 @@ arping_start()
 				fi
 			done
 			unset IFS
-			
+
 			_load_config
 			return 0
 		fi

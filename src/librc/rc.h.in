@@ -43,6 +43,14 @@ __BEGIN_DECLS
 #define RC_CONFDIR              RC_SYSCONFDIR "/conf.d"
 #define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
+#define RC_PROFILE_ENV     RC_SYSCONFDIR "/profile.env"
+#define RC_SYS_WHITELIST   RC_LIBEXECDIR "/conf.d/env_whitelist"
+#define RC_USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"
+#define RC_CONF         RC_SYSCONFDIR "/rc.conf"
+#define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
+
+#define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
+
 /* PKG_PREFIX is where packages are installed if different from the base OS
  * On Gentoo this is normally unset, on FreeBSD /usr/local and on NetBSD
  * /usr/pkg. */
@@ -274,7 +282,18 @@ bool rc_service_daemons_crashed(const char *);
 #define RC_SYS_VSERVER "VSERVER"
 #define RC_SYS_XEN0    "XEN0"
 #define RC_SYS_XENU    "XENU"
+
+/*! Returns the type of subsystem
+ * @return string from RC_SYS_* types or NULL if none detected */
 const char *rc_sys(void);
+
+/*! Returns the type of subsystem using old automatic code
+ * @return string from RC_SYS_* types or NULL if none detected */
+const char *rc_sys_v1(void);
+
+/*! Returns the type of subsystem using new rc.conf rc_sys value
+ * @return string from RC_SYS_* types or NULL if none detected */
+const char *rc_sys_v2(void);
 
 /*! @name Dependency options
  * These options can change the services found by the rc_get_depinfo and
@@ -331,7 +350,7 @@ typedef void *RC_DEPTREE;
  * @param target
  * @param mtime of newest target
  * @param filename of the newest target (needs mtime param)
- * @return true if source is newer than target, otherwise false */ 
+ * @return true if source is newer than target, otherwise false */
 bool rc_newer_than(const char *, const char *, time_t *, char *);
 
 /*! Check to see if source is older than target.
@@ -340,7 +359,7 @@ bool rc_newer_than(const char *, const char *, time_t *, char *);
  * @param target
  * @param mtime of oldest target
  * @param filename of the oldest target (needs mtime param)
- * @return true if source is older than target, otherwise false */ 
+ * @return true if source is older than target, otherwise false */
 bool rc_older_than(const char *, const char *, time_t *, char *);
 
 /*! Update the cached dependency tree if it's older than any init script,
@@ -363,6 +382,11 @@ bool rc_deptree_update_needed(time_t *, char *);
  * This pointer should be freed with rc_deptree_free when done.
  * @return pointer to the dependency tree */
 RC_DEPTREE *rc_deptree_load(void);
+
+/*! Load a cached dependency tree from the specified file and return a pointer
+ * to it.  This pointer should be freed with rc_deptree_free when done.
+ * @return pointer to the dependency tree */
+RC_DEPTREE *rc_deptree_load_file(const char *);
 
 /*! List the depend for the type of service
  * @param deptree to search
@@ -446,6 +470,9 @@ RC_STRINGLIST *rc_config_load(const char *);
 /*! Return the value of the entry from a key=value list. */
 char *rc_config_value(RC_STRINGLIST *, const char *);
 
+/*! Return the value of the entry from rc.conf. */
+char *rc_conf_value(const char *);
+
 /*! Check if a variable is a boolean and return its value.
  * If variable is not a boolean then we set errno to be ENOENT when it does
  * not exist or EINVAL if it's not a boolean.
@@ -492,7 +519,7 @@ RC_STRING *rc_stringlist_find(RC_STRINGLIST *, const char *);
 RC_STRINGLIST *rc_stringlist_split(const char *, const char *);
 
 
-/*! Sort the list according to C locale 
+/*! Sort the list according to C locale
  * @param list to sort */
 void rc_stringlist_sort(RC_STRINGLIST **);
 

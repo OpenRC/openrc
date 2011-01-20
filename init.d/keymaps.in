@@ -17,7 +17,7 @@ start()
 	: ${unicode:=$UNICODE}
 	: ${keymap:=$KEYMAP}
 	: ${extended_keymaps:=$EXTENDED_KEYMAPS}
-	: ${windowkeys:=$SET_WINDOWSKEYS} 
+	: ${windowkeys:=$SET_WINDOWSKEYS}
 	: ${fix_euro:=$FIX_EURO}
 	: ${dumpkeys_charset:=${DUMPKEYS_CHARSET}}
 

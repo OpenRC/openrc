@@ -24,7 +24,7 @@ macchanger_pre_start()
 
 	# The interface needs to be up for macchanger to work most of the time
 	_down
-	
+
 	mac=$(echo "${mac}" | tr '[:upper:]' '[:lower:]')
 	local hex="[0-9a-f][0-9a-f]"
 	case "${mac}" in

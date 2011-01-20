@@ -1,3 +1,5 @@
+rc_conf_value
+rc_conf_value@@RC_1.0
 rc_config_list
 rc_config_list@@RC_1.0
 rc_config_load
@@ -12,6 +14,8 @@ rc_deptree_free
 rc_deptree_free@@RC_1.0
 rc_deptree_load
 rc_deptree_load@@RC_1.0
+rc_deptree_load_file
+rc_deptree_load_file@@RC_1.0
 rc_deptree_order
 rc_deptree_order@@RC_1.0
 rc_deptree_update
@@ -104,5 +108,9 @@ rc_stringlist_split
 rc_stringlist_split@@RC_1.0
 rc_sys
 rc_sys@@RC_1.0
+rc_sys_v1
+rc_sys_v1@@RC_1.0
+rc_sys_v2
+rc_sys_v2@@RC_1.0
 rc_yesno
 rc_yesno@@RC_1.0

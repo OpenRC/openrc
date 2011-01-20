@@ -4,7 +4,7 @@
 
 extra_commands="save"
 
-description="Sets the local clock to UTC or Local Time." 
+description="Sets the local clock to UTC or Local Time."
 description_save="Saves the current time in the BIOS."
 
 : ${clock:=${CLOCK:-UTC}}
@@ -26,7 +26,7 @@ depend()
 }
 
 start()
-{	
+{
 	ebegin "Starting the System Clock Adjuster [${utc}]"
 	if [ "$clock" != "UTC" ]; then
 		echo >/etc/wall_cmos_clock

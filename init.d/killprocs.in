@@ -15,7 +15,7 @@ start()
 	killall5 -15
 	sleep 1
 	eend 0
-	ebegin "Killing remaining processes"	
+	ebegin "Killing remaining processes"
 	killall5 -9
 	sleep 1
 	eend 0

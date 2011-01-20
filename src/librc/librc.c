@@ -72,7 +72,7 @@ ls_dir(const char *dir, int options)
 {
 	DIR *dp;
 	struct dirent *d;
-	RC_STRINGLIST *list = NULL; 
+	RC_STRINGLIST *list = NULL;
 	struct stat buf;
 	size_t l;
 	char file[PATH_MAX];
@@ -198,12 +198,58 @@ file_regex(const char *file, const char *regex)
 }
 #endif
 
+/* New sys identification code
+ * Not to be used for any binaries outside of openrc. */
 const char *
-rc_sys(void)
+rc_sys_v2(void)
+{
+#define __STRING_SWITCH(x) { char *__string_switch = x; if (false) {}
+#define __STRING_CASE(y) else if (strcmp(__string_switch,y) == 0)
+#define __STRING_SWITCH_END() }
+	char *systype = rc_conf_value("rc_sys");
+	if (systype) {
+		char *s = systype;
+		/* Convert to uppercase */
+		while (s && *s) {
+			if (islower((unsigned char) *s))
+				*s = toupper((unsigned char) *s);
+			s++;
+		}
+		/* Now do detection */
+		__STRING_SWITCH(systype)
+		__STRING_CASE(RC_SYS_PREFIX)	{ return RC_SYS_PREFIX; }
+#ifdef __FreeBSD__
+		__STRING_CASE(RC_SYS_JAIL) { return RC_SYS_JAIL; }
+#endif /* __FreeBSD__ */
+#ifdef __NetBSD__
+		__STRING_CASE(RC_SYS_XEN0) { return RC_SYS_XEN0; }
+		__STRING_CASE(RC_SYS_XENU) { return RC_SYS_XENU; }
+#endif /* __NetBSD__ */
+#ifdef __linux__
+		__STRING_CASE(RC_SYS_XEN0) { return RC_SYS_XEN0; }
+		__STRING_CASE(RC_SYS_XENU) { return RC_SYS_XENU; }
+		__STRING_CASE(RC_SYS_UML) { return RC_SYS_UML; }
+		__STRING_CASE(RC_SYS_VSERVER) { return RC_SYS_VSERVER; }
+		__STRING_CASE(RC_SYS_OPENVZ) { return RC_SYS_OPENVZ; }
+		__STRING_CASE(RC_SYS_LXC) { return RC_SYS_LXC; }
+#endif /* __linux__ */
+		__STRING_SWITCH_END()
+	}
+#undef __STRING_SWITCH
+#undef __STRING_CASE
+#undef __STRING_SWITCH_END
+	return NULL;
+}
+librc_hidden_def(rc_sys_v2)
+
+/* Old sys identification code.
+ * Not to be used for any binaries outside of openrc. */
+const char *
+rc_sys_v1(void)
 {
 #ifdef PREFIX
 	return RC_SYS_PREFIX;
-#else	
+#else
 
 #ifdef __FreeBSD__
 	int jailed = 0;
@@ -233,8 +279,6 @@ rc_sys(void)
 		return RC_SYS_VSERVER;
 	else if (exists("/proc/vz/veinfo") && !exists("/proc/vz/version"))
 		return RC_SYS_OPENVZ;
-	else if (file_regex("/proc/self/cgroup", ":/.+$"))
-		return RC_SYS_LXC;
 	else if (file_regex("/proc/self/status",
 		"envID:[[:space:]]*[1-9]"))
 		return RC_SYS_OPENVZ; /* old test */
@@ -242,6 +286,17 @@ rc_sys(void)
 
 	return NULL;
 #endif /* PREFIX */
+}
+librc_hidden_def(rc_sys_v1)
+
+const char *
+rc_sys(void)
+{
+	if (rc_conf_value("rc_sys")) {
+		return rc_sys_v2();
+	} else {
+		return rc_sys_v1();
+	}
 }
 librc_hidden_def(rc_sys)
 
@@ -336,7 +391,7 @@ bool
 rc_runlevel_stack(const char *dst, const char *src)
 {
 	char d[PATH_MAX], s[PATH_MAX];
-	
+
 	if (!rc_runlevel_exists(dst) || !rc_runlevel_exists(src))
 		return false;
 	snprintf(s, sizeof(s), "../%s", src);
@@ -349,7 +404,7 @@ bool
 rc_runlevel_unstack(const char *dst, const char *src)
 {
 	char path[PATH_MAX];
-	
+
 	snprintf(path, sizeof(path), "%s/%s/%s", RC_RUNLEVELDIR, dst, src);
 	return (unlink(path) == 0 ? true : false);
 }
@@ -585,7 +640,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 		}
 		skip_state = state;
 	}
-	
+
 	if (state == RC_SERVICE_HOTPLUGGED || state == RC_SERVICE_FAILED) {
 		free(init);
 		return true;
@@ -733,7 +788,7 @@ rc_service_value_set(const char *service, const char *option,
 {
 	FILE *fp;
 	char file[PATH_MAX];
-	char *p = file; 
+	char *p = file;
 
 	p += snprintf(file, sizeof(file), RC_SVCDIR "/options/%s", service);
 	if (mkdir(file, 0755) != 0 && errno != EEXIST)

@@ -153,7 +153,7 @@ cleanup(void)
 
 #ifdef DEBUG_MEMORY
 	while (p1) {
-		p2 = LIST_NEXT(p1, entries); 
+		p2 = LIST_NEXT(p1, entries);
 		free(p1);
 		p1 = p2;
 	}
@@ -315,7 +315,7 @@ open_shell(void)
 {
 	const char *shell;
 	struct passwd *pw;
-	
+
 #ifdef __linux__
 	const char *sys = rc_sys();
 
@@ -586,7 +586,7 @@ do_stop_services(const char *newlevel, bool parallel, bool going_down)
 	}
 
 	crashed = rc_conf_yesno("rc_crashed_stop");
-	
+
 	nostop = rc_stringlist_split(rc_conf_value("rc_nostop"), " ");
 	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries)
 	{
@@ -804,6 +804,7 @@ main(int argc, char **argv)
 	int opt;
 	bool parallel;
 	int regen = 0;
+	int i;
 #ifdef __linux__
 	char *proc;
 	char *p;
@@ -816,6 +817,20 @@ main(int argc, char **argv)
 	signal_setup(SIGSEGV, handle_bad_signal);
 #endif
 
+	/* Bug 351712: We need an extra way to explicitly select an applet OTHER
+	 * than trusting argv[0], as argv[0] is not going to be the applet value if
+	 * we are doing SELinux context switching. For this, we allow calls such as
+	 * 'rc --applet APPLET', and shift ALL of argv down by two array items. */
+	if (strcmp(basename_c(argv[0]), "rc") == 0 && argc > 1 && strcmp(argv[1], "--applet") == 0) {
+		if (argc == 2)
+			eerrorx("applet argument required");
+		for (i = 2; i < argc; i++)
+			argv[i - 2] = argv[i];
+		argv[argc - 2] = NULL;
+		argv[argc - 1] = NULL;
+		argc -= 2;
+	}
+	/* Now we can trust our applet value in argv[0] */
 	applet = basename_c(argv[0]);
 	LIST_INIT(&service_pids);
 	atexit(cleanup);
@@ -878,9 +893,16 @@ main(int argc, char **argv)
 			eerrorx("%s: %s", applet, strerror(errno));
 			/* NOTREACHED */
 		case 'S':
-			bootlevel = rc_sys();
-			if (bootlevel)
-				printf("%s\n", bootlevel);
+			if (rc_conf_value("rc_sys")) {
+				bootlevel = rc_sys_v2();
+				if (bootlevel)
+					printf("%s\n", bootlevel);
+			} else {
+				ewarn("WARNING: rc_sys not defined in rc.conf. Falling back to automatic detection");
+				bootlevel = rc_sys_v1();
+				if (bootlevel)
+					printf("%s\n", bootlevel);
+			}
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
 			case_RC_COMMON_GETOPT

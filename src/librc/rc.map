@@ -1,5 +1,6 @@
 RC_1.0 {
 global:
+	rc_conf_value;
 	rc_config_list;
 	rc_config_load;
 	rc_config_value;
@@ -7,6 +8,7 @@ global:
 	rc_deptree_depends;
 	rc_deptree_free;
 	rc_deptree_load;
+	rc_deptree_load_file;
 	rc_deptree_order;
 	rc_deptree_update;
 	rc_deptree_update_needed;
@@ -55,6 +57,8 @@ global:
 	rc_stringlist_sort;
 	rc_stringlist_free;
 	rc_sys;
+	rc_sys_v1;
+	rc_sys_v2;
 	rc_yesno;
 
 local:

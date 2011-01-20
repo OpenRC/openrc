@@ -53,7 +53,6 @@ tweaking on a per distro basis. They are also non essential to the operation
 of the system.
 
 Reporting Bugs
--------------
 
 If you installed OpenRC from your chosen distribution, you should report
 bugs directly to them. For example, if you use Gentoo and emerged OpenRC
@@ -104,4 +103,3 @@ development back to Gentoo, which continues to maintain the scripts. In
 addition, Daniel Robbins continues to maintain an independent version OpenRC
 for Funtoo Linux, which includes a Funtoo-specific network configuration
 system.
-

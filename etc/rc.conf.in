@@ -95,7 +95,7 @@
 # We can set some things on a per service basis, like the nicelevel.
 #export SSD_NICELEVEL="-19"
 
-# Pass ulimit parameters 
+# Pass ulimit parameters
 #rc_ulimit="-u 30"
 
 # It's possible to define extra dependencies for services like so
@@ -115,3 +115,4 @@
 # You can also remove dependencies.
 # This is mainly used for saying which servies do NOT provide net.
 #rc_net_tap0_provide="!net"
+

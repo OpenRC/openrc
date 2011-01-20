@@ -4,7 +4,7 @@
 
 extra_commands="save show"
 
-description="Sets the local clock to UTC or Local Time." 
+description="Sets the local clock to UTC or Local Time."
 description_save="Saves the current time in the BIOS."
 description_show="Displays the current time in the BIOS."
 
@@ -87,7 +87,7 @@ start()
 		_hwclock --adjust $utc_cmd
 		retval=$(($retval + $?))
 	fi
-	
+
 	# If setting UTC, don't bother to run hwclock when first booting
 	# as that's the default
 	if [ "$PREVLEVEL" != N -o \
@@ -97,7 +97,7 @@ start()
 		_hwclock --hctosys $utc_cmd $clock_args
 		retval=$(($retval + $?))
 	fi
-	
+
 	eend $retval "Failed to set the system clock"
 
 	return 0
@@ -126,7 +126,7 @@ stop()
 	_hwclock --systohc $utc_cmd $clock_args
 	retval=$?
 
-	eend $retval "Failed to sync clocks" 
+	eend $retval "Failed to sync clocks"
 }
 
 save()

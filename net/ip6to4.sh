@@ -56,7 +56,7 @@ ip6to4_start()
 				[ ${i} -lt 32 ] && continue
 				;;
 		esac
-	
+
 		veinfo "IPv4 address on ${host}: ${ip}/${subnet}"
 		local ipa= ip6= IFS="${IFS}."
 		for i in ${ip}; do
@@ -87,7 +87,7 @@ ip6to4_start()
 		eend $? || return 1
 		_up
 	fi
-	
+
 	# Now apply our config
 	eval config_${config_index}=\'"${new}"\'
 	config_index=$((${config_index} - 1))

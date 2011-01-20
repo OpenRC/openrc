@@ -24,7 +24,7 @@
 # We now support modular networking scripts which means we can easily
 # add support for new interface types and modules while keeping
 # compatibility with existing ones.
-# 
+#
 # Modules load by default if the package they need is installed.  If
 # you specify a module here that doesn't have its package installed
 # then you get an error stating which package you need to install.
@@ -49,7 +49,7 @@
 
 ##############################################################################
 # INTERFACE HANDLERS
-# 
+#
 # We provide two interface handlers presently: ifconfig and iproute2.
 # You need one of these to do any kind of network configuration.
 # For ifconfig support, emerge sys-apps/net-tools
@@ -297,7 +297,7 @@
 # Surround each SSID with the " character and separate them with a space
 # If the first SSID isn't found then it moves onto the next
 # If this isn't defined then it connects to the first one found
-#preferred_aps="SSID1 SSID2" 
+#preferred_aps="SSID1 SSID2"
 
 # You can also define a preferred_aps list per interface
 #preferred_aps_eth0="SSID3 SSID4"
@@ -371,13 +371,13 @@
 # won't have associated then)
 
 # If you're using anything else to configure wireless on your interface AND
-# you have installed wpa_supplicant, you need to disable wpa_supplicant 
+# you have installed wpa_supplicant, you need to disable wpa_supplicant
 #modules="!iwconfig !wpa_supplicant"
 #or
 #modules="!wireless"
 
 ##############################################################################
-# WIRELESS SSID IN VARIABLES 
+# WIRELESS SSID IN VARIABLES
 ##############################################################################
 # Remember to change SSID to your SSID.
 # Say that your SSID is My NET - the line
@@ -421,7 +421,7 @@
 # Notes:
 # - All clients send the current hostname to the DHCP server by default
 # - dhcpcd does not daemonize when the lease time is infinite
-# - udhcp-0.9.3-r3 and earlier do not support getting NTP servers 
+# - udhcp-0.9.3-r3 and earlier do not support getting NTP servers
 # - pump does not support getting NIS servers
 # - DHCP tends to erase any existing device information - so add
 #   static addresses after dhcp if you need them
@@ -467,7 +467,7 @@
 #fallback_eth0="apipa"
 
 #-----------------------------------------------------------------------------
-# ARPING Gateway configuration 
+# ARPING Gateway configuration
 # and
 # Automatic Private IP Addressing (APIPA)
 # For arpingnet / apipa support, emerge net-misc/iputils or net-analyzer/arping
@@ -582,7 +582,7 @@
 
 
 #-----------------------------------------------------------------------------
-# Classical IP over ATM 
+# Classical IP over ATM
 # For CLIP support emerge net-dialup/linux-atm
 
 # Ensure that you have /etc/atmsigd.conf setup correctly
@@ -620,7 +620,7 @@
 #
 # Here you should specify what pppd plugins you want to use
 # Available plugins are: pppoe, pppoa, capi, dhcpc, minconn, radius,
-#			 radattr, radrealms and winbind 
+#			 radattr, radrealms and winbind
 #plugins_ppp0="pppoe"			# Required plugin for PPPoE
 #plugins_ppp0="pppoa vc-encaps"		# Required plugin for PPPoA with an option
 #plugins_ppp0="capi"			# Required plugin for ISDN
@@ -660,7 +660,7 @@
 #	lcp-echo-interval 15	# Send a LCP echo every 15 seconds
 #	lcp-echo-failure 3	# Make peer dead after 3 consecutive
 #				# echo-requests
-#	
+#
 # Compression options - use these to completely disable compression
 #	noaccomp noccp nobsdcomp nodeflate nopcomp novj novjccomp
 #
@@ -787,11 +787,18 @@
 #bridge_add_eth0="br0"
 #bridge_add_eth1="br0"
 
-# You need to configure the ports to null values so dhcp does not get started 
+# NOTE: If you want to manually start an empty bridge, and then dynamically add
+# ports to it you must set at least one of the following variables based on the
+# interface name, so that we can pick it up from your configuration. Even an
+# empty value variable is fine, but at least one of them must be set:
+# brctl_IFVAR
+
+# You need to configure the ports to null values so dhcp does not get started
 #config_eth0="null"
 #config_eth1="null"
 
-# Finally give the bridge an address - dhcp or a static IP
+# Finally give the bridge an address - dhcp or a static IP, this is assigned to
+# the bridge when the bridge is explicitly started.
 #config_br0="dhcp" # may not work when adding ports dynamically
 #config_br0="192.168.0.1/24"
 
@@ -805,8 +812,15 @@
 #sethello 0
 #stp off"
 
+# You can also configure the bridge or bridge members via sysfs on 2.6 kernels
+# or newer. See the kernel bridge documentation for a description of these
+# options.
+#stp_state_br0="0"
+#forward_delay_br0="10"
+#hairpin_mode_eth0="1"
+
 #-----------------------------------------------------------------------------
-# RFC 2684 Bridge Support 
+# RFC 2684 Bridge Support
 # For RFC 2684 bridge support emerge net-misc/br2684ctl
 
 # Interface names have to be of the form nas0, nas1, nas2, etc.
@@ -851,6 +865,52 @@
 # The default relay is 192.88.99.1 and the default suffix is :1
 #relay_6to4="192.168.3.2"
 #suffix_6to4=":ff"
+
+#-----------------------------------------------------------------------------
+# Advanced Routing
+# WARNING: For advanced routing you MUST be using sys-apps/iproute2
+#
+# This provides a means to do multi-homing and more using the Routing Policy
+# Database (RPDB).
+#
+# See the following links for background and more information.
+# http://linux-ip.net/html/ch-routing.html
+# http://linux-ip.net/html/ch-advanced-routing.html
+
+# The rules listed will be added with 'ip rule add LINE' when the interface is
+# being brought up. They will also be removed with 'ip rule delete LINE'.
+# The rules added are also stored for later removal, so if you alter your rules
+# directly before stopping, you should review your rules again after stopping.
+
+# Note in earlier versions of openrc, this was provided as an example in
+# postup/postdown, however that implementation suffered some bugs in corner
+# cases, which are now fixed with this merger. If you used the previous
+# example, you should only need to drop the relevent portions of your
+# postup/postdown functions, and review the quoting in your rules_IFACE
+# variables.
+
+# Below is a trivial example for a dual-homed connection where there is an OOB
+# management network. Only packets explicitly with an address from or to the
+# OOB are sent via eth0. All others go via eth1 as the eth1 rules have a lower
+# priority.
+
+# If you want to use names for your tables, you should put lines into
+# /etc/iproute2/rt_tables, an example follows:
+# 2 oob
+# 3 external
+
+#rules_eth0="
+#from ZZZ.ZZZ.200.128/27 table oob priority 500
+#to ZZZ.ZZZ.200.128/27 table oob priority 550"
+#rules_eth1="
+#from XXX.XXX.112.0/24 table external priority 400
+#to XXX.XXX.112.0/24 table external priority 450"
+#routes_eth0="
+#ZZZ.ZZZ.200.128/27 dev eth0 table oob scope link
+#default via ZZZ.ZZZ.200.129 table oob"
+#routes_eth1="
+#XXX.XXX.112.0/24 dev eth1 table external scope link
+#default via XXX.XXX.112.1 dev eth1"
 
 
 #-----------------------------------------------------------------------------
@@ -915,7 +975,7 @@
 
 ##############################################################################
 # ADVANCED CONFIGURATION
-# 
+#
 # Four functions can be defined which will be called surrounding the
 # start/stop operations.  The functions are called with the interface
 # name first so that one function can control multiple adapters. An extra two
@@ -941,7 +1001,7 @@
 #	if mii-tool "${IFACE}" 2> /dev/null | grep -q 'no link'; then
 #		ewarn "No link on ${IFACE}, aborting configuration"
 #		return 1
-#	fi 
+#	fi
 #
 #	# Test for link on the interface prior to bringing it up.  This
 #	# only works on some network adapters and requires the ethtool
@@ -980,33 +1040,6 @@
 #	# This function could be used, for example, to register with a
 #	# dynamic DNS service.  Another possibility would be to
 #	# send/receive mail once the interface is brought up.
-
-#	# Here is an example that allows the use of iproute rules
-#	# which have been configured using the rules_eth0 variable.
-#	#rules_eth0=" \
-#	#	'from 24.80.102.112/32 to 192.168.1.0/24 table localnet priority 100' \
-#	#	'from 216.113.223.51/32 to 192.168.1.0/24 table localnet priority 100' \
-#	#"
-#	eval set -- \$rules_${IFVAR}
-#	if [ $# != 0 ]; then
-#		einfo "Adding IP policy routing rules"
-#		eindent
-#		# Ensure that the kernel supports policy routing
-#		if ! ip rule list | grep -q "^"; then
-#			eerror "You need to enable IP Policy Routing (CONFIG_IP_MULTIPLE_TABLES)"
-#			eerror "in your kernel to use ip rules"
-#		else
-#			for x; do
-#				ebegin "${x}"
-#				ip rule add ${x}
-#				eend $?
-#			done
-#		fi
-#		eoutdent
-#		# Flush the cache
-#		ip route flush cache dev "${IFACE}"
-#	fi
-
 #}
 
 #postdown() {
@@ -1014,21 +1047,6 @@
 #	# Probably a good idea to set ifdown="no" in /etc/conf.d/net
 #	# as well ;)
 #	[ "${IFACE}" != "lo" ] && ethtool -s "${IFACE}" wol g
-
-#	Automatically erase any ip rules created in the example postup above
-#	if interface_exists "${IFACE}"; then
-#		# Remove any rules for this interface
-#		local rule
-#		ip rule list | grep " iif ${IFACE}[ ]*" | {
-#			while read rule; do
-#				rule="${rule#*:}"	
-#				ip rule del ${rule}
-#			done
-#		}
-#		# Flush the route cache
-#		ip route flush cache dev "${IFACE}"
-#	fi
-
 #	# Return 0 always
 #	return 0
 #}

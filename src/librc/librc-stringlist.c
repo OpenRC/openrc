@@ -146,7 +146,7 @@ librc_hidden_def(rc_stringlist_sort)
 void
 rc_stringlist_free(RC_STRINGLIST *list)
 {
-	RC_STRING *s1; 
+	RC_STRING *s1;
 	RC_STRING *s2;
 
 	if (!list)

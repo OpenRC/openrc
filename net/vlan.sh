@@ -68,7 +68,7 @@ vlan_post_start()
 	local vlans=
 	eval vlans=\$vlans_${IFVAR}
 	[ -z "${vlans}" ] && return 0
-	
+
 	_check_vlan || return 1
 	_exists || return 1
 
@@ -95,7 +95,7 @@ vlan_post_start()
 			start
 		) || mark_service_stopped "net.${ifname}"
 	done
-	
+
 	return 0
 }
 

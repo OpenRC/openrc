@@ -61,7 +61,7 @@ rc_getline(char **line, size_t *len, FILE *fp)
 	char *p;
 	size_t last = 0;
 
-	while(!feof(fp)) {
+	while (!feof(fp)) {
 		if (*line == NULL || last != 0) {
 			*len += BUFSIZ;
 			*line = xrealloc(*line, *len);
@@ -218,3 +218,52 @@ rc_config_value(RC_STRINGLIST *list, const char *entry)
 	return NULL;
 }
 librc_hidden_def(rc_config_value)
+
+/* Global for caching the strings loaded from rc.conf to avoid reparsing for
+ * each rc_conf_value call */
+static RC_STRINGLIST *rc_conf = NULL;
+
+char *
+rc_conf_value(const char *setting)
+{
+	RC_STRINGLIST *old;
+	RC_STRING *s;
+	char *p;
+
+	if (! rc_conf) {
+		rc_conf = rc_config_load(RC_CONF);
+#ifdef DEBUG_MEMORY
+		atexit(_free_rc_conf);
+#endif
+
+		/* Support old configs */
+		if (exists(RC_CONF_OLD)) {
+			old = rc_config_load(RC_CONF_OLD);
+			TAILQ_CONCAT(rc_conf, old, entries);
+#ifdef DEBUG_MEMORY
+			free(old);
+#endif
+		}
+
+		/* Convert old uppercase to lowercase */
+		TAILQ_FOREACH(s, rc_conf, entries) {
+			p = s->value;
+			while (p && *p && *p != '=') {
+				if (isupper((unsigned char)*p))
+					*p = tolower((unsigned char)*p);
+				p++;
+			}
+		}
+	}
+
+	return rc_config_value(rc_conf, setting);
+}
+librc_hidden_def(rc_conf_value)
+
+#ifdef DEBUG_MEMORY
+static void
+_free_rc_conf(void)
+{
+	rc_stringlist_free(rc_conf);
+}
+#endif

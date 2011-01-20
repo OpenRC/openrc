@@ -5,7 +5,7 @@ _config_vars="$_config_vars ccwgroup"
 
 ccwgroup_depend()
 {
-	before interface 
+	before interface
 }
 
 ccwgroup_pre_start()
@@ -42,7 +42,7 @@ ccwgroup_pre_stop()
 {
 	# Erase any existing ccwgroup to be safe
 	service_set_value ccwgroup_device ""
-	
+
 	[ ! -L /sys/class/net/"${FACE}"/driver ] && return 0
 	local driver="$(readlink /sys/class/net/"${IFACE}"/driver)"
 	case "${diver}" in
@@ -59,7 +59,7 @@ ccwgroup_post_stop()
 {
 	local device="$(service_get_value ccwgroup_device)"
 	[ -z "${device}" ] && return 0
-	
+
 	einfo "Disabling ccwgroup on ${iface}"
 	echo "0" >/sys/devices/qeth/"${device}"/online
 	echo "1" >/sys/devices/qeth/"${device}"/ungroup

@@ -31,5 +31,5 @@ start_pre()
 		eend $? || return 1
 	fi
 
-	$command -t	
+	$command -t
 }

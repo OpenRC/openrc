@@ -34,7 +34,7 @@ mount_svcdir()
 			[ $? -eq 0 ] && return 0
 		fi
 	fi
-	
+
 	if grep -Eq "[[:space:]]+ramfs$" /proc/filesystems; then
 		fs="ramfs"
 		# ramfs has no special options
@@ -65,19 +65,27 @@ mount_svcdir()
 # By default VServer already has /proc mounted, but OpenVZ does not!
 # However, some of our users have an old proc image in /proc
 # NFC how they managed that, but the end result means we have to test if
-# /proc actually works or not. We to this by comparing uptime to one a second
-# ago
+# /proc actually works or not. We to this by comparing two reads of
+# /proc/self/stat. They will not match, because at least the minor fault count
+# field (field 10) should have changed.
+#
+# We can use any file here that fills the following requirements:
+# - changes between sequential reads
+# - is world-readable (not blocked in hardened kernel)
+# - Is only a single line (ergo entire check is doable with no forks)
 mountproc=true
-if [ -e /proc/uptime ]; then
-	up="$(cat /proc/uptime)"
-	sleep 1
-	if [ "$up" = "$(cat /proc/uptime)" ]; then
+f=/proc/self/stat
+if [ -e $f ]; then
+	exec 9<$f ; read a <&9 ; exec 9<&-
+	exec 9<$f ; read b <&9 ; exec 9<&-
+	if [ "$a" = "$b" ]; then
 		eerror "You have cruft in /proc that should be deleted"
 	else
 		einfo "/proc is already mounted, skipping"
 		mountproc=false
 	fi
 fi
+unset a b f
 
 if $mountproc; then
 	procfs="proc"

@@ -35,7 +35,7 @@ pump_start()
 
 	ebegin "Running pump"
 	eval pump "${args}"
-	eend $? || return 1 
+	eend $? || return 1
 
 	_show_address
 	return 0
@@ -48,7 +48,7 @@ pump_stop()
 	start-stop-daemon --quiet --test --stop --exec /sbin/pump || return 0
 
 	# Check that pump is running on the interface
-	if ! pump --status --interface "${IFACE}" >/dev/null 2>&1; then 
+	if ! pump --status --interface "${IFACE}" >/dev/null 2>&1; then
 		return 0
 	fi
 

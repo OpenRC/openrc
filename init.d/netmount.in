@@ -39,7 +39,7 @@ depend()
 }
 
 start()
-{	
+{
 	local myneed= myuse= pmap="portmap" nfsmounts=
 	[ -x @SYSCONFDIR@/init.d/rpcbind ] && pmap="rpcbind"
 

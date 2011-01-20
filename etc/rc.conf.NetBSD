@@ -1,10 +1,6 @@
-# This is the subsystem type. Valid options on Linux:
+# This is the subsystem type. Valid options on NetBSD:
 # ""        - nothing special
-# "lxc"     - Linux Containers
-# "openvz"  - Linux OpenVZ
 # "prefix"  - Prefix
-# "uml"     - Usermode Linux
-# "vserver" - Linux vserver
 # "xen0"    - Xen0 Domain
 # "xenU"    - XenU Domain
 # If unset, the old automagic detection code will be triggered. Said old code
@@ -14,11 +10,4 @@
 # PRESENTLY in, not what virtualization the environment is capable of.
 # See the OpenRC migration guide for more details.
 rc_sys=""
-
-##############################################################################
-# LINUX SPECIFIC OPTIONS
-
-# This is the number of tty's used in most of the rc-scripts (like
-# consolefont, numlock, etc ...)
-rc_tty_number=12
 

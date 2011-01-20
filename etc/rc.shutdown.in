@@ -2,7 +2,7 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
-# Handle interrupts 
+# Handle interrupts
 trap : SIGINT SIGQUIT
 
 # Try and use stuff in /lib over anywhere else so we can shutdown

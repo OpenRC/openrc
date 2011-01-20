@@ -40,11 +40,11 @@ init() {
 	ipfw add deny all from any to 127.0.0.0/8
 	ipfw add deny ip from 127.0.0.0/8 to any
 
-	if have_ip6; then 
+	if have_ip6; then
 		ipfw add pass ip6 from any to any via lo0
 		ipfw add deny ip6 from any to ::1
 		ipfw add deny ip6 from ::1 to any
-	
+
 		ipfw add pass ip6 from :: to ff02::/16 proto ipv6-icmp
 		ipfw add pass ip6 from fe80::/10 to fe80::/10 proto ipv6-icmp
 		ipfw add pass ip6 from fe80::/10 to ff02::/16 proto ipv6-icmp
@@ -78,7 +78,7 @@ start() {
 	ipfw add pass udp  from 0.0.0.0 68 to 255.255.255.255 67 out
 	ipfw add pass udp  from any 67     to me 68 in
 	ipfw add pass udp  from any 67     to 255.255.255.255 68 in
-	# Some servers will ping the IP while trying to decide if it's 
+	# Some servers will ping the IP while trying to decide if it's
 	# still in use.
 	ipfw add pass icmp from any to any icmptype 8
 
@@ -88,11 +88,11 @@ start() {
 	if have_ip6; then
 		# Allow ICMPv6 destination unreach
 		ipfw add pass ip6 from any to any icmp6types 1 proto ipv6-icmp
-	
+
 		# Allow NS/NA/toobig (don't filter it out)
 		ipfw add pass ip6 from any to any icmp6types 2,135,136 proto ipv6-icmp
 	fi
-	
+
 	# Add permits for this workstations published services below
 	# Only IPs and nets in firewall_allowservices is allowed in.
 	for i in $ipfw_ip_in; do
@@ -107,7 +107,7 @@ start() {
 	for i in $ipfw_ip_trust; do
 		ipfw add pass ip from $i to me
 	done
-	
+
 	ipfw add 65000 count ip from any to any
 
 	# Drop packets to ports where we don't want logging
@@ -117,7 +117,7 @@ start() {
 
 	# Broadcasts and muticasts
 	ipfw add deny ip from any to 255.255.255.255
-	ipfw add deny ip from any to 224.0.0.0/24 
+	ipfw add deny ip from any to 224.0.0.0/24
 
 	# Noise from routers
 	ipfw add deny udp from any to any 520 in

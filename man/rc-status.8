@@ -62,6 +62,10 @@ Show information only for the named
 .Sh EXIT STATUS
 .Nm
 exits 0, except when checking for crashed services and it doesn't find any.
+.Sh IMPLEMENTATION NOTES
+.Nm
+tries to list services within each runlevel in the presently resolved
+dependency order if the dependency tree is available.
 .Sh SEE ALSO
 .Xr rc 8 ,
 .Xr rc-update 8

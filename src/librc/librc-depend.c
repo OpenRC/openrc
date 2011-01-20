@@ -114,7 +114,13 @@ get_deptype(const RC_DEPINFO *depinfo, const char *type)
 }
 
 RC_DEPTREE *
-rc_deptree_load(void)
+rc_deptree_load(void) {
+	return rc_deptree_load_file(RC_DEPTREE_CACHE);
+}
+librc_hidden_def(rc_deptree_load)
+
+RC_DEPTREE *
+rc_deptree_load_file(const char *deptree_file)
 {
 	FILE *fp;
 	RC_DEPTREE *deptree;
@@ -127,7 +133,7 @@ rc_deptree_load(void)
 	char *e;
 	int i;
 
-	if (!(fp = fopen(RC_DEPTREE_CACHE, "r")))
+	if (!(fp = fopen(deptree_file, "r")))
 		return NULL;
 
 	deptree = xmalloc(sizeof(*deptree));
@@ -172,16 +178,16 @@ rc_deptree_load(void)
 	}
 	fclose(fp);
 	free(line);
-	
+
 	return deptree;
 }
-librc_hidden_def(rc_deptree_load)
+librc_hidden_def(rc_deptree_load_file)
 
 static bool
 valid_service(const char *runlevel, const char *service, const char *type)
 {
 	RC_SERVICE state;
-	
+
 	if (!runlevel ||
 	    strcmp(type, "ineed") == 0 ||
 	    strcmp(type, "needsme") == 0)
@@ -393,7 +399,7 @@ visit_service(const RC_DEPTREE *deptree,
 			if (!(di = get_depinfo(deptree, service->value)))
 				continue;
 			provided = get_provided(di, runlevel, options);
-		
+
 			if (TAILQ_FIRST(provided)) {
 				TAILQ_FOREACH(p, provided, entries) {
 					di = get_depinfo(deptree, p->value);
@@ -767,14 +773,14 @@ rc_deptree_update(void)
 		if (!depinfo || strcmp(depinfo->service, service) != 0) {
 			deptype = NULL;
 			depinfo = get_depinfo(deptree, service);
-			if (!depinfo) {	
+			if (!depinfo) {
 				depinfo = xmalloc(sizeof(*depinfo));
 				TAILQ_INIT(&depinfo->depends);
 				depinfo->service = xstrdup(service);
 				TAILQ_INSERT_TAIL(deptree, depinfo, entries);
 			}
 		}
-		
+
 		/* We may not have any depends */
 		if (!type || !depends)
 			continue;
@@ -815,7 +821,7 @@ rc_deptree_update(void)
 			    depend[l - 2] == 's' &&
 			    depend[l - 1] == 'h')
 				continue;
-			
+
 			/* Remove our dependency if instructed */
 			if (depend[0] == '!') {
 				rc_stringlist_delete(deptype->services, depend + 1);
