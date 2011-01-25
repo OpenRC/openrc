@@ -64,6 +64,7 @@ _hwclock()
 
 start()
 {
+	yesno $clock_hctosys || return 0
 	local retval=0 errstr=""
 	setupopts
 
