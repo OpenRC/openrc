@@ -6,8 +6,8 @@ CFLAGS?=	-O2
 # Default to using the C99 standard
 CSTD?=		c99
 _CSTD_SH=	if test -n "${CSTD}"; then echo "-std=${CSTD}"; else echo ""; fi
-_CSTD!=		${_CSTD_SH}
-CFLAGS+=	${_CSTD}$(shell ${_CSTD_SH})
+_CSTD:=		$(shell ${_CSTD_SH})
+CFLAGS+=	${_CSTD}
 
 # Try and use some good cc flags if we're building from git
 # We don't use -pedantic as it will warn about our perfectly valid
@@ -29,5 +29,5 @@ _CC_FLAGS_SH=	for f in ${_CCFLAGS}; do \
 		${CC} $$f -S -xc -o /dev/null - ; \
 		then printf "%s" "$$f "; fi \
 		done;
-_CC_FLAGS!=	${_CC_FLAGS_SH}
-CFLAGS+=	${_CC_FLAGS}$(shell ${_CC_FLAGS_SH})
+_CC_FLAGS:=	$(shell ${_CC_FLAGS_SH})
+CFLAGS+=	${_CC_FLAGS}

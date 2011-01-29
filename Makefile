@@ -11,16 +11,16 @@ _OLDNET_SH=	case "${MKOLDNET}" in \
 		[Yy][Ee][Ss]) echo "net doc";; \
 		*) echo "";; \
 		esac
-_OLDNET!=	${_OLDNET_SH}
-SUBDIR+=	${_OLDNET}$(shell ${_OLDNET_SH})
+_OLDNET:=	$(shell ${_OLDNET_SH})
+SUBDIR+=	${_OLDNET}
 
 # Build pkgconfig or not
 _PKGCONFIG_SH=	case "${MKPKGCONFIG}" in \
 		[Yy][Ee][Ss]|"") echo "pkgconfig";; \
 		*) echo "";; \
 		esac
-_PKGCONFIG!=	${_PKGCONFIG_SH}
-SUBDIR+=	${_PKGCONFIG}$(shell ${_PKGCONFIG_SH})
+_PKGCONFIG:=	$(shell ${_PKGCONFIG_SH})
+SUBDIR+=	${_PKGCONFIG}
 
 # We need to ensure that runlevels is done last
 SUBDIR+=	runlevels

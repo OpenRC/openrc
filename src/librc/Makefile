@@ -24,16 +24,16 @@ _PKG_PREFIX_SH=	if test -n "${PKG_PREFIX}" && test "${PKG_PREFIX}" != "/" && tes
 		else \
 		echo "-e 's:.*@PKG_PREFIX@.*:\#undef RC_PKG_PREFIX:g'"; \
 		fi
-_PKG_PREFIX!=	${_PKG_PREFIX_SH}
-SED_CMD+=	${_PKG_PREFIX}$(shell ${_PKG_PREFIX_SH})
+_PKG_PREFIX:=	$(shell ${_PKG_PREFIX_SH})
+SED_CMD+=	${_PKG_PREFIX}
 
 _LCL_PREFIX_SH=	if test -n "${LOCAL_PREFIX}" && test "${LOCAL_PREFIX}" != "/" && test "${LOCAL_PREFIX}" != "${PREFIX}"; then \
 		echo "-e 's:@LOCAL_PREFIX@:${LOCAL_PREFIX}:g'"; \
 		else \
 		echo "-e 's:@LOCAL_PREFIX@::g'"; \
 		fi
-_LCL_PREFIX!=	${_LCL_PREFIX_SH}
-SED_CMD+=	${_LCL_PREFIX}$(shell ${_LCL_PREFIX_SH})
+_LCL_PREFIX:=	$(shell ${_LCL_PREFIX_SH})
+SED_CMD+=	${_LCL_PREFIX}
 
 .SUFFIXES:	.h.in .h
 .h.in.h:

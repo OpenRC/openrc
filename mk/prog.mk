@@ -15,8 +15,8 @@ _DYNLINK_SH=		if test "${PREFIX}" = "" && test -e /libexec/ld.elf_so; then \
 			else \
 				echo ""; \
 			fi
-_DYNLINK!=		${_DYNLINK_SH}
-LDFLAGS+=		${_DYNLINK}$(shell ${_DYNLINK_SH})
+_DYNLINK:=		$(shell ${_DYNLINK_SH})
+LDFLAGS+=		${_DYNLINK}
 LDFLAGS+=		-Wl,-rpath=${PREFIX}/${LIBNAME}
 LDFLAGS+=		${PROGLDFLAGS}
 
