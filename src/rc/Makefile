@@ -45,6 +45,22 @@ include ${MK}/${MKTERMCAP}.mk
 LDADD+=		${LIBDL} ${LIBKVM}
 include ${MK}/${MKPAM}.mk
 
+# create symlinks to rc if not an SELINUX system, otherwise create a wrapper
+# script to call rc with the proper name of the applet to execute.
+# $1 is a list of the links
+# $2 is the path+name of the target to link to (usually 'rc' or '/sbin/rc')
+# $3 is the path where the links are created
+define make-links
+	for x in $(1); do \
+		if test -n "${MKSELINUX}"; then \
+			printf '#!/bin/sh\nexec ${2} --applet %s "$$@"\n' $$x >${3}/$$x; \
+			chmod ${BINMODE} ${3}/$$x; \
+		else \
+			ln -sf ${2} ${3}/$$x; \
+		fi; \
+	done;
+endef
+
 ${SRCS}: version.h
 
 .PHONY:	version.h.tmp
@@ -61,13 +77,13 @@ install: all
 	${INSTALL} -d ${DESTDIR}${SBINDIR}
 	${INSTALL} -m ${BINMODE} ${PROG} ${DESTDIR}${SBINDIR}
 	${INSTALL} -d ${DESTDIR}${BINDIR}
-	for x in ${BINLINKS}; do ln -fs ${SBINDIR}/${PROG} ${DESTDIR}${BINDIR}/$$x; done
+	$(call make-links,${BINLINKS},${SBINDIR}/${PROG},${DESTDIR}${BINDIR})
 	${INSTALL} -d ${DESTDIR}${SBINDIR}
-	for x in ${SBINLINKS}; do ln -fs ${PROG} ${DESTDIR}${SBINDIR}/$$x; done
+	$(call make-links,${SBINLINKS},${PROG},${DESTDIR}${SBINDIR})
 	${INSTALL} -d ${DESTDIR}${LINKDIR}/bin
-	for x in $(RC_BINLINKS); do ln -fs ${SBINDIR}/${PROG} ${DESTDIR}${LINKDIR}/bin/$$x; done
+	$(call make-links,${RC_BINLINKS},${SBINDIR}/${PROG},${DESTDIR}${LINKDIR}/bin)
 	${INSTALL} -d ${DESTDIR}${LINKDIR}/sbin
-	for x in ${RC_SBINLINKS}; do ln -fs ${SBINDIR}/${PROG} ${DESTDIR}${LINKDIR}/sbin/$$x; done
+	$(call make-links, ${RC_SBINLINKS},${SBINDIR}/${PROG},${DESTDIR}${LINKDIR}/sbin)
 	if test "${MKPAM}" = pam; then \
 		${INSTALL} -d ${DESTDIR}${PAMDIR}; \
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam ${DESTDIR}${PAMDIR}/start-stop-daemon; \
@@ -76,4 +92,4 @@ install: all
 check test::
 
 links: rc
-	for l in ${ALL_LINKS}; do ln -sf rc $$l || exit $$? ; done
+	$(call make-links,${ALL_LINKS},rc,.)
