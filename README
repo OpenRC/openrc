@@ -4,7 +4,7 @@ OpenRC README
 Installation
 ------------
 make install
-Yup, that simple. Works with GNU make and BSD make.
+Yup, that simple. Works with GNU make.
 
 You may wish to tweak the installation with the below arguments
 PROGLDFLAGS=-static
