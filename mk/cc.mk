@@ -5,9 +5,9 @@ CFLAGS?=	-O2
 
 # Default to using the C99 standard
 CSTD?=		c99
-_CSTD_SH=	if test -n "${CSTD}"; then echo "-std=${CSTD}"; else echo ""; fi
-_CSTD:=		$(shell ${_CSTD_SH})
-CFLAGS+=	${_CSTD}
+ifneq (${CSTD},)
+CFLAGS+=	-std=${CSTD}
+endif
 
 # Try and use some good cc flags if we're building from git
 # We don't use -pedantic as it will warn about our perfectly valid
