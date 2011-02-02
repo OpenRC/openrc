@@ -5,11 +5,9 @@ SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in netmount.in \
 BIN=	${OBJS}
 
 # Build our old net foo or not
-_OLDNET_SH=	case "${MKOLDNET}" in \
-		[Yy][Ee][Ss]) echo "net.lo";; \
-		*) echo "";; \
-		esac
-_OLDNET:=	$(shell ${_OLDNET_SH})
+ifeq (${MKOLDNET},yes)
+_OLDNET=	net.lo
+endif
 _NET_LO=	${_OLDNET}
 
 INSTALLAFTER=	_installafter_${_NET_LO}
