@@ -41,9 +41,9 @@ include ${MK}/prog.mk
 include ${MK}/git.mk
 include ${MK}/cc.mk
 
-include ${MK}/${MKTERMCAP}.mk
+include ${MK}/termcap.mk
 LDADD+=		${LIBDL} ${LIBKVM}
-include ${MK}/${MKPAM}.mk
+include ${MK}/pam.mk
 
 # create symlinks to rc if not an SELINUX system, otherwise create a wrapper
 # script to call rc with the proper name of the applet to execute.
