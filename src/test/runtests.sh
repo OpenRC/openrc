@@ -57,6 +57,7 @@ sed -n '/^librc_hidden_proto/s:.*(\(.*\))$:\1:p' ${librc_srcdir}/librc.h \
 	| LC_ALL=C sort -u \
 	> librc.funcs.hidden.list
 readelf -Wr $(grep -l '#include[[:space:]]"librc\.h"' ${librc_srcdir}/*.c | sed 's:\.c$:.o:') \
+	| egrep -v -e 'R_PARISC_(DP|SEG)REL' \
 	| awk '$5 ~ /^rc_/ {print $5}' \
 	| LC_ALL=C sort -u \
 	| egrep -v '^rc_environ_fd$' \
