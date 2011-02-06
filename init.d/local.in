@@ -16,7 +16,7 @@ start()
 
 	local file
 	for file in @SYSCONFDIR@/local.d/*.start ; do
-		[ -x $file ] && $file
+		[ -x "$file" ] && "$file"
 	done
 
 	if type local_start >/dev/null 2>&1; then
@@ -36,7 +36,7 @@ stop()
 
 	local file
 	for file in @SYSCONFDIR@/local.d/*.stop; do
-		[ -x $file ] && $file
+		[ -x "$file" ] && "$file"
 	done
 
 	if type local_start >/dev/null 2>&1; then
