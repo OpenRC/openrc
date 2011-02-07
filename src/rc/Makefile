@@ -79,7 +79,7 @@ install: all
 	${INSTALL} -d ${DESTDIR}${BINDIR}
 	$(call make-links,${BINLINKS},${SBINDIR}/${PROG},${DESTDIR}${BINDIR})
 	${INSTALL} -d ${DESTDIR}${SBINDIR}
-	$(call make-links,${SBINLINKS},${PROG},${DESTDIR}${SBINDIR})
+	$(call make-links,${SBINLINKS},${SBINDIR}/${PROG},${DESTDIR}${SBINDIR})
 	${INSTALL} -d ${DESTDIR}${LINKDIR}/bin
 	$(call make-links,${RC_BINLINKS},${SBINDIR}/${PROG},${DESTDIR}${LINKDIR}/bin)
 	${INSTALL} -d ${DESTDIR}${LINKDIR}/sbin
