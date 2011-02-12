@@ -221,7 +221,7 @@ _ip_rule_runner() {
 	local IFS="$__IFS"
 	for ru in $rules ; do
 		unset IFS
-		ruN="$(trim "${ru}")"
+		ruN="$(_trim "${ru}")"
 		[ -z "${ruN}" ] && continue
 		vebegin "${cmd} ${ruN}"
 		ip rule ${cmd} ${ru}
