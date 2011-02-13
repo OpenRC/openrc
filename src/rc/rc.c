@@ -837,18 +837,6 @@ main(int argc, char **argv)
 	if (!applet)
 		eerrorx("arguments required");
 
-	if (argc > 1 && (strcmp(argv[1], "--version") == 0)) {
-		printf("%s (OpenRC", applet);
-		if ((bootlevel = rc_sys()))
-			printf(" [%s]", bootlevel);
-		printf(") " VERSION
-#ifdef BRANDING
-		    " (" BRANDING ")"
-#endif
-		    "\n");
-		exit(EXIT_SUCCESS);
-	}
-
 	/* Run our built in applets. If we ran one, we don't return. */
 	run_applets(argc, argv);
 
@@ -905,8 +893,8 @@ main(int argc, char **argv)
 			}
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
-			case_RC_COMMON_GETOPT
-			    }
+		case_RC_COMMON_GETOPT
+		}
 	}
 
 	newlevel = argv[optind++];

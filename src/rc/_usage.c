@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
  * All rights reserved
-
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -24,6 +24,8 @@
  * SUCH DAMAGE.
  */
 
+#include "version.h"
+
 #if lint
 #  define _noreturn
 #endif
@@ -32,6 +34,22 @@
 #else
 #  define _noreturn
 #endif
+
+_noreturn static void
+show_version(void)
+{
+	const char *bootlevel = NULL;
+
+	printf("%s (OpenRC", applet);
+	if ((bootlevel = rc_sys()))
+		printf(" [%s]", bootlevel);
+	printf(") %s", VERSION);
+#ifdef BRANDING
+	printf(" (%s)", BRANDING);
+#endif
+	printf("\n");
+	exit(EXIT_SUCCESS);
+}
 
 _noreturn static void
 usage(int exit_status)
