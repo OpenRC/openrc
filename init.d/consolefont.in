@@ -61,12 +61,6 @@ start()
 		done
 		cp "$font" "$RC_LIBEXECDIR"/console
 		echo "${font##*/}" >"$RC_LIBEXECDIR"/console/font
-		if yesno ${unicode:-${UNICODE}}; then
-			echo "" > "$RC_LIBEXECDIR"/console/unicode
-		else
-			rm -f "$RC_LIBEXECDIR"/console/unicode
-		fi
-
 	fi
 
 	return $retval
