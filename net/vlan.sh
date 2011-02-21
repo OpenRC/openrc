@@ -1,9 +1,18 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # All rights reserved. Released under the 2-clause BSD license.
 
+_ip()
+{
+	if [ -x /bin/ip ]; then
+		echo /bin/ip
+	else
+		echo /sbin/ip
+	fi
+}
+
 vlan_depend()
 {
-	program /sbin/vconfig
+	program $(_ip)
 	after interface
 	before dhcp
 }
@@ -36,31 +45,12 @@ _check_vlan()
 
 vlan_pre_start()
 {
-	local vc="$(_get_array "vconfig_${IFVAR}")"
-	[ -z "${vc}" ] && return 0
-
-	_check_vlan || return 1
-	_exists || return 1
-
-	local v= x= e=
-	local IFS="$__IFS"
-	for v in ${vc}; do
-		unset IFS
-		case "${v}" in
-			set_name_type" "*) x=${v};;
-			*)
-				set -- ${v}
-				x="$1 ${IFACE}"
-				shift
-				x="${x} $@"
-				;;
-		esac
-
-		e="$(vconfig ${x} 2>&1 1>/dev/null)"
-		[ -z "${e}" ] && continue
-		eerror "${e}"
+	local vconfig
+	eval vconfig=\$vconfig_${IFVAR}
+	if [ -n "${vconfig}" ]; then
+		eerror "You must convert your vconfig_ VLAN entries to vlan${N} entries."
 		return 1
-	done
+	fi
 }
 
 vlan_post_start()
@@ -72,10 +62,22 @@ vlan_post_start()
 	_check_vlan || return 1
 	_exists || return 1
 
-	local vlan= e= s=
+	local vlan= e= s= vname= vflags= vingress= vegress=
 	for vlan in ${vlans}; do
 		einfo "Adding VLAN ${vlan} to ${IFACE}"
-		e="$(vconfig add "${IFACE}" "${vlan}" 2>&1 1>/dev/null)"
+		# We need to gather all interface configuration options
+		# 1) naming. Default to the standard "${IFACE}.${vlan}" but it can be anything
+		eval vname=\$vlan${vlan}_name
+		[ -z "${vname}" ] && vname="${IFACE}.${vlan}"
+		# 2) flags
+		eval vflags=\$vlan${vlan}_flags
+		# 3) ingress/egress map
+		eval vingress=\$vlan${vlan}_ingress
+		[ -z "${vingress}" ] || vingress="ingress-qos-map ${vingress}"
+		eval vegress=\$vlan${vlan}_egress
+		[ -z "${vegress}" ] || vegress="egress-qos-map ${vegress}"
+
+		e="$(ip link add link "${IFACE}" name "${vname}" type vlan id "${vlan}" ${vflags} ${vingress} ${vegress} 2>&1 1>/dev/null)"
 		if [ -n "${e}" ]; then
 			eend 1 "${e}"
 			continue
@@ -110,7 +112,7 @@ vlan_post_stop()
 			stop
 		) && {
 			mark_service_stopped "net.${vlan}"
-			vconfig rem "${vlan}" >/dev/null
+			ip link delete "${vlan}" type vlan >/dev/null
 		}
 	done
 

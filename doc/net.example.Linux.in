@@ -527,7 +527,8 @@
 
 #-----------------------------------------------------------------------------
 # VLAN (802.1q support)
-# For VLAN support, emerge net-misc/vconfig
+# For VLAN support, emerge sys-apps/iproute2
+# The old vconfig based VLAN support is no longer available.
 
 # Specify the VLAN numbers for the interface like so
 # Please ensure your VLAN IDs are NOT zero-padded
@@ -537,10 +538,17 @@
 # need it up.
 #config_eth0="null"
 
-# You can also configure the VLAN - see for vconfig man page for more details
-#vconfig_eth0="set_name_type VLAN_PLUS_VID_NO_PAD"
-#vconfig_vlan1="set_flag 1
-#set_egress_map 2 6"
+# You can also configure the VLAN - see for ip man page for more details
+# To change the vlan interface name. If not set, the standard "iface.vlanid"
+# will be used
+#vlan1_name="vlan1"
+#vlan2_name="eth0.2"
+# Set the vlan flags
+#vlan1_flags="reorder_hdr off gvrp on loose_binding on"
+# Configure in/egress maps
+#vlan1_ingress="2:6 3:5"
+#vlan1_egress="1:2"
+
 #config_vlan1="172.16.3.1/23"
 #config_vlan2="172.16.2.1/23"
 
@@ -553,8 +561,7 @@
 # This means you do not need to create init scripts in /etc/init.d for each
 # vlan, you must need to create one for the physical interface.
 # If you wish to control the configuration of each vlan through a separate
-# script, or wish to rename the vlan interface to something that vconfig
-# cannot then you need to do this.
+# script then you need to do this.
 #vlan_start_eth0="no"
 
 # If you do the above then you may want to depend on eth0 like so
