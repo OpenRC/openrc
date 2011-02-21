@@ -239,9 +239,14 @@ iproute2_pre_start()
 	if [ -n "${tunnel}" ]; then
 		# Set our base metric to 1000
 		metric=1000
+		# Bug#347657: If the mode is 'ipip6' or 'ip6ip6', the -6 must be passed
+		# to iproute2 during tunnel creation.
+		local ipproto=''
+		[ "${tunnel##mode ipip6}" != "${tunnel}" ] && ipproto='-6'
+		[ "${tunnel##mode ip6ip6}" != "${tunnel}" ] && ipproto='-6'
 
 		ebegin "Creating tunnel ${IFVAR}"
-		ip tunnel add ${tunnel} name "${IFACE}"
+		ip ${ipproto} tunnel add ${tunnel} name "${IFACE}"
 		eend $? || return 1
 		_up
 	fi
