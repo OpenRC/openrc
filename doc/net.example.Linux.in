@@ -980,6 +980,72 @@
 #ifplugd_eth0="--api-mode=wlan"
 # man ifplugd for more options
 
+#-----------------------------------------------------------------------------
+# Interface hardware tuning & configuration via ethtool
+# If you need to change explicit hardware settings on your network card prior
+# to bringing the interface up, the following is available.
+#
+# For a full listing of settings, please consulting ethtool(8) and the output
+# of "ethtool --help".
+#
+# Multiple entries (seperated by newlines) are supported in all of the
+# variables as some settings cannot be changed at the same time.
+#
+# Valid variable name fragments: change pause coalesce ring offload
+# change_eeprom identify nfc flash rxfh_indir ntuple
+
+# Set Wake-On-Lan to listen for SecureOn MagicPacket(tm), the message level to
+# notify us of WOL changes, and the SecureOn password to 'DE:AD:BE:EF:CA:FE'.
+#ethtool_change_eth0="wol gs
+#msglvl wol on
+#sopass DE:AD:BE:EF:CA:FE"
+
+# Disable pause auto-negotiation and explicitly enable RX and TX pause.
+#ethtool_pause_eth0="autoneg off
+#rx on tx on"
+
+# Enasble adaptive RX and TX coalescing
+#ethtool_coalesce_eth0="adaptive-rx on adaptive-tx on"
+
+# Change ring buffer settings
+#ethtool_ring_eth0=""
+
+# Enable all offload settings
+#ethtool_offload_eth0="rx on tx on sg on tso on ufo on gso on gro on lro on"
+
+# Change specific bytes in the EEPROM
+#ethtool_change_eeprom_eth0=""
+
+# Run the identify sequence on the interface for 1 second (does not return until completion)
+#ethtool_identify_eth0="1"
+
+# Configure receive network flow classification
+#ethtool_nfc_eth0="
+#rx-flow-hash tcp4 f
+#rx-flow-hash udp4 s"
+
+# Flash firmware to all regions
+#ethtool_flash_eth0="/some/path/firmware1 0"
+
+# Flash firmware to region 1
+#ethtool_flash_eth0="/some/path/firmware2 1"
+
+# Set receive flow hash indirection table for even balancing between N receive queues
+#ethtool_rxfh_indir_eth0="equal 4"
+
+# Configure Rx ntuple filters and actions
+#ethtool_ntuple_eth0=""
+
+# Additionally, there is a special control variable, if you need to change the
+# order of option processing. The default order is:
+# flash change-eeprom change pause coalesce ring offload identify nfc rxfh-indir ntuple
+
+# Set global order to default
+#ethtool_order="flash change-eeprom change pause coalesce ring offload identify nfc rxfh-indir ntuple"
+
+# Hypothetical network card that requires a change-eeprom toggle to enable flashing
+#ethtool_order_eth0="change-eeprom flash change pause coalesce ring offload nfc rxfh-indir ntuple"
+
 ##############################################################################
 # ADVANCED CONFIGURATION
 #
