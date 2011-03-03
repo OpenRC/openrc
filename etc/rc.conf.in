@@ -21,7 +21,7 @@
 # Linux users could specify /sbin/sulogin
 #rc_shell=/bin/sh
 
-# Do we allow any started service in the runlevel to satisfy the depedency
+# Do we allow any started service in the runlevel to satisfy the dependency
 # or do we want all of them regardless of state? For example, if net.eth0
 # and net.eth1 are in the default runlevel then with rc_depend_strict="NO"
 # both will be started, but services that depend on 'net' will work if either
