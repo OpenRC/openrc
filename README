@@ -12,6 +12,7 @@ LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
 MKPAM=pam
 MKPKGCONFIG=no
+MKRCSYS=prefix
 MKSELINUX=yes
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
@@ -32,6 +33,20 @@ PKG_PREFIX should be set to where packages install to by default.
 LOCAL_PREFIX should be set when to where user maintained packages are.
 Only set LOCAL_PREFIX if different from PKG_PREFIX.
 PREFIX should be set when OpenRC is not installed to /.
+
+MKRCSYS should be set only if you need to specify a default system
+subtype. The subtype should be set to match the type of environment the
+file is installed into, not the virtualization the environment is
+capable of handling. Here is a list of subtypes and their meanings.
+
+jail	FreeBSD jail
+lxc	Linux container
+openvz	Linux OpenVZ
+prefix	Linux and *BSD prefix system
+uml	UsermodeLinux
+vserver	Linux vserver
+xen0 Linux and NetBSD xen0 Domain
+xenU Linux and NetBSD xenU Domain
 
 If any of the following files exist then we do not overwrite them
 /etc/devd.conf

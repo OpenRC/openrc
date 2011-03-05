@@ -13,7 +13,7 @@
 # This should be set to the value representing what environment this file is
 # PRESENTLY in, not what virtualization the environment is capable of.
 # See the OpenRC migration guide for more details.
-rc_sys=""
+rc_sys="@RC_SYS_DEFAULT@"
 
 ##############################################################################
 # LINUX SPECIFIC OPTIONS
