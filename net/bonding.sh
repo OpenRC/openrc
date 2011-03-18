@@ -100,9 +100,9 @@ bonding_pre_start()
 		if [ -n "${primary}" ]; then
 			echo "+${primary}" >/sys/class/net/"${IFACE}"/bonding/slaves
 			echo "${primary}" >/sys/class/net/"${IFACE}"/bonding/primary
-			slaves="${slaves/${primary}/}"
 		fi
 		for s in ${slaves}; do
+			[ "${s}" = "${primary}" ] && continue
 			echo "+${s}" >/sys/class/net/"${IFACE}"/bonding/slaves
 		done
 	else
