@@ -684,7 +684,11 @@ stop()
 
 	# Only delete addresses for interfaces that exist
 	if _exists; then
-		_delete_addresses "${IFACE}"
+		# PPP can manage it's own addresses when IN_BACKGROUND
+		# Important in case "demand" set on the ppp link
+		if ! (yesno ${IN_BACKGROUND} && is_ppp) ; then
+			_delete_addresses "${IFACE}"
+		fi
 	fi
 
 	for module in ${MODULES}; do
