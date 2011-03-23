@@ -26,14 +26,15 @@ cleanup_tmp_dir()
 	fi
 	dir_writeable "$dir" || return 1
 	chmod a+rwt "$dir" 2> /dev/null
-	cd "$dir"
+	cd "$dir" || return 1
 	if yesno $wipe_tmp; then
 		ebegin "Wiping $dir directory"
-		local startopts="-x . -depth"
-		[ "$RC_UNAME" = Linux ] && startopts=". -xdev -depth"
 
-		# Faster than find
-		rm -rf -- [^ajlq\.]*
+		# Faster than raw find
+		if ! rm -rf -- [^ajlq\.]* 2>/dev/null ; then
+			# Blah, too many files
+			find . -maxdepth 1 -name '[^ajlq\.]*' -exec rm -rf -- {} +
+		fi
 
 		# pam_mktemp creates a .private directory within which
 		# each user gets a private directory with immutable
@@ -41,27 +42,23 @@ cleanup_tmp_dir()
 		# remove it.
 		[ -d /tmp/.private ] && chattr -R -a /tmp/.private 2> /dev/null
 
-		find $startopts ! -name . \
-			! -path "./lost+found" \
-			! -path "./lost+found/*" \
-			! -path "./quota.user" \
-			! -path "./quota.user/*" \
-			! -path "./aquota.user" \
-			! -path "./aquota.user/*" \
-			! -path "./quota.group" \
-			! -path "./quota.group/*" \
-			! -path "./aquota.group" \
-			! -path "./aquota.group/*" \
-			! -path "./journal" \
-			! -path "./journal/*" \
-			-exec rm -rf {} \;
+		# Prune the paths that are left
+		find . -maxdepth 1 \
+			! -name . \
+			! -name lost+found \
+			! -name quota.user \
+			! -name aquota.user \
+			! -name quota.group \
+			! -name aquota.group \
+			! -name journal \
+			-exec rm -rf -- {} +
 		eend 0
 	else
 		ebegin "Cleaning $dir directory"
-		rm -rf -- "$dir"/.X*-lock "$dir"/esrv* "$dir"/kio* \
-			"$dir"/jpsock.* "$dir"/.fam* "$dir"/.esd* \
-			"$dir"/orbit-* "$dir"/ssh-* "$dir"/ksocket-* \
-			"$dir"/.*-unix
+		rm -rf -- .X*-lock esrv* kio* \
+			jpsock.* .fam* .esd* \
+			orbit-* ssh-* ksocket-* \
+			.*-unix
 		eend 0
 	fi
 }
