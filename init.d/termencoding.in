@@ -10,6 +10,7 @@ ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 depend()
 {
 	keyword -openvz -prefix -uml -vserver -xenu
+	need root
 }
 
 start()
