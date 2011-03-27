@@ -25,7 +25,7 @@ ethtool_pre_start() {
 	eindent
 	for opt in ${order} ; do
 		local args
-		eval args=\$ethtool_${opt//-/_}_${IFVAR}
+		eval args=\$ethtool_$(echo $opt | tr - _)_${IFVAR}
 
 		# Skip everything if no arguments
 		[ -z "${args}" ] && continue
