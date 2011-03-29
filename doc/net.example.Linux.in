@@ -540,11 +540,21 @@
 
 # You can also configure the VLAN - see for ip man page for more details
 # To change the vlan interface name. If not set, the standard "iface.vlanid"
-# will be used
+# will be used. This is the replacement for the old 'vconfig set_name_type'
+# functionality.
 #vlan1_name="vlan1"
 #vlan2_name="eth0.2"
+
+# The following shows the old set_name_type setting and what new option to set:
+# Using eth9 & VLAN VID 26 as an example.
+# VLAN_PLUS_VID         vlan26_name="vlan0026"
+# VLAN_PLUS_VID_NO_PAD  vlan26_name="vlan26"
+# DEV_PLUS_VID          vlan26_name="eth9.0026"
+# DEV_PLUS_VID_NO_PAD   vlan26_name="eth9.26"
+
 # Set the vlan flags
 #vlan1_flags="reorder_hdr off gvrp on loose_binding on"
+
 # Configure in/egress maps
 #vlan1_ingress="2:6 3:5"
 #vlan1_egress="1:2"
