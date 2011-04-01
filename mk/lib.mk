@@ -31,8 +31,6 @@ lib${LIB}.a:	${OBJS} ${STATICOBJS}
 
 ${SHLIB_NAME}: ${VERSION_MAP}
 LDFLAGS+=	-Wl,--version-script=${VERSION_MAP}
-# We need to ensure we use libraries in /lib
-LDFLAGS+=	-L/${LIBNAME} -Wl,-rpath=/${LIBNAME}
 
 ${SHLIB_NAME}:	${SOBJS}
 	@${ECHO} building shared library $@
