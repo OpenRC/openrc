@@ -37,7 +37,7 @@ ethtool_pre_start() {
 			IFS="${OIFS}"
 			local args_pretty="$(_trim "${p}")"
 			# Do nothing if empty
-			[ -z "${args_prety}" ] && continue
+			[ -z "${args_pretty}" ] && continue
 			args_pretty="--${opt} $IFACE ${args_pretty}"
 			args="--${opt} $IFACE ${args}"
 			ebegin "ethtool ${args_pretty}"
