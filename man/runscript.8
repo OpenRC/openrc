@@ -148,7 +148,8 @@ have this keyword.
 Don't stop this service when changing runlevels, even if not present.
 This includes shutting the system down.
 .It Dv -timeout
-Do not time out waiting for that service.
+Other services should wait indefinitely for this service to start. Use
+this keyword if your service may take longer than 60 seconds to start.
 .It Dv -jail
 When in a jail, exclude this service from any dependencies. The service can
 still be run directly. Set via 
