@@ -924,7 +924,7 @@ rc_deptree_update(void)
 					if (strcmp(deptype->type, "ineed") == 0) {
 						fprintf (stderr,
 							 "Service `%s' needs non"
-							 " existant service `%s'\n",
+							 " existent service `%s'\n",
 							 depinfo->service, s->value);
 						dt = get_deptype(depinfo, "broken");
 						if (!dt) {
