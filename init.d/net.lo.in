@@ -476,7 +476,7 @@ interface_down()
 
 start()
 {
-	local IFACE=${RC_SVCNAME#*.} oneworked=false module=
+	local IFACE=${RC_SVCNAME#*.} oneworked=false fallback=false module=
 	local IFVAR=$(shell_var "${IFACE}") cmd= our_metric=
 	local metric=0
 
@@ -563,6 +563,7 @@ start()
 		else
 			eval config=\$fallback_${config_index}
 			if [ -n "${config}" ]; then
+				fallback=true
 				eoutdent
 				ewarn "Trying fallback configuration ${config}"
 				eindent
@@ -585,8 +586,13 @@ start()
 		return 1
 	fi
 
-	local hidefirstroute=false first=true
-	local routes="$(_get_array "routes_${IFVAR}")"
+	local hidefirstroute=false first=true routes=
+	if ${fallback}; then
+		routes="$(_get_array "fallback_routes_${IFVAR}")"
+	fi
+	if [ -z "${routes}" ]; then
+		routes="$(_get_array "routes_${IFVAR}")"
+	fi
 	if [ "${IFACE}" = "lo" -o "${IFACE}" = "lo0" ]; then
 		if [ "${config_0}" != "null" ]; then
 			routes="127.0.0.0/8 via 127.0.0.1

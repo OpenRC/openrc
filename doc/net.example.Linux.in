@@ -94,10 +94,12 @@
 # If a specified module fails (like dhcp - see below), you can specify a
 # fallback like so
 #fallback_eth0="192.168.0.2/24"
-#fallback_route_eth0="default via 192.168.0.1"
+#fallback_routes_eth0="default via 192.168.0.1"
 
 # NOTE: fallback entry must match the entry location in config_eth0
 # As such you can only have one fallback route.
+# Also, if you do not set a fallback_routes entry for an interface, the
+# routes entry will be used if that is set.
 
 # Some users may need to alter the MTU - here's how
 #mtu_eth0="1500"
