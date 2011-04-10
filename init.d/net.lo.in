@@ -18,13 +18,12 @@ depend()
 	local IFACE=${RC_SVCNAME#*.}
 	local IFVAR=$(shell_var "${IFACE}")
 
-	after bootmisc
 	provide net
 	keyword -jail -prefix -vserver
 
 	case "${IFACE}" in
 		lo|lo0) need root ;;
-		*) after net.lo net.lo0 ; need localmount ;;
+		*) after bootmisc net.lo net.lo0 ; need localmount ;;
 	esac
 
 	if [ "$(command -v "depend_${IFVAR}")" = "depend_${IFVAR}" ]; then
