@@ -962,6 +962,15 @@
 # manager like resolvconf-gentoo to manage this file for you. All packages
 # that baselayout supports use resolvconf-gentoo if installed.
 
+# If you run any services on net.lo which need localmount, either the
+# services or net.lo should explicitly bring in localmount.
+# If you do not do this, openrc will try to bring up net.lo as soon as
+# possible, which may be too early for your services.
+# If you use network file systems for your core system this may
+# interfere.
+# Also, you may need this if 127.0.0.1 is in your /etc/resolv.conf.
+#rc_net_lo_need="localmount"
+
 #-----------------------------------------------------------------------------
 # Cable in/out detection
 # Sometimes the cable is in, others it's out. Obviously you don't want to
