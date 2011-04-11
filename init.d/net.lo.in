@@ -22,7 +22,7 @@ depend()
 	keyword -jail -prefix -vserver
 
 	case "${IFACE}" in
-		lo|lo0) need root ;;
+		lo|lo0) before mtab ; need root ;;
 		*) after bootmisc net.lo net.lo0 ; need localmount ;;
 	esac
 
