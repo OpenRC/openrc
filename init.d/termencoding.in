@@ -11,6 +11,7 @@ depend()
 {
 	keyword -openvz -prefix -uml -vserver -xenu
 	need root
+	after bootmisc
 }
 
 start()
