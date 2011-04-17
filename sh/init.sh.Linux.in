@@ -91,6 +91,28 @@ if $mountproc; then
 	eend $?
 fi
 
+# Mount tmpfs on /run when directory exists.
+# /run is a new directory for storing volatile runtime data.
+# Read more about /run at https://lwn.net/Articles/436012
+if [ -d /run ]; then
+	if mountinfo -q /run; then
+		einfo "/run is already mounted, skipping"
+	else
+		ebegin "Mounting /run"
+		if ! fstabinfo --mount /run; then
+			mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run
+		fi
+		eend $?
+	fi
+	if [ ! -d /run/lock ]; then
+		mkdir /run/lock
+		chown root:uucp /run/lock
+		chmod 0775 /run/lock
+	fi
+else
+	einfo "Unable to mount /run since it is not a directory"
+fi
+
 # Try to mount xenfs as early as possible, otherwise rc_sys() will always
 # return RC_SYS_XENU and will think that we are in a domU while it's not.
 if grep -Eq "[[:space:]]+xenfs$" /proc/filesystems; then
