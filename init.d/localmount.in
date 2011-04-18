@@ -49,7 +49,7 @@ stop()
 	fi
 
 	if [ "$RC_UNAME" = Linux ]; then
-		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/sys|/sys/.*"
+		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/run|/sys|/sys/.*"
 	fi
 	no_umounts_r="^($no_umounts_r)$"
 
