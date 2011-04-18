@@ -1,3 +1,6 @@
+##############################################################################
+# LINUX SPECIFIC OPTIONS
+
 # This is the subsystem type. Valid options on Linux:
 # ""        - nothing special
 # "lxc"     - Linux Containers
@@ -14,9 +17,6 @@
 # This should be set to the value representing the environment this file is
 # PRESENTLY in, not the virtualization the environment is capable of.
 rc_sys="@RC_SYS_DEFAULT@"
-
-##############################################################################
-# LINUX SPECIFIC OPTIONS
 
 # This is the number of tty's used in most of the rc-scripts (like
 # consolefont, numlock, etc ...)

@@ -1,3 +1,6 @@
+##############################################################################
+# NetBSD SPECIFIC OPTIONS
+
 # This is the subsystem type. Valid options on NetBSD:
 # ""        - nothing special
 # "prefix"  - Prefix
