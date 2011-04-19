@@ -106,6 +106,8 @@ if [ -d /run ]; then
 	fi
 	if [ ! -d /run/lock ]; then
 		mkdir /run/lock
+	fi
+	if [ -d /run/lock ]; then
 		chown root:uucp /run/lock
 		chmod 0775 /run/lock
 	fi
