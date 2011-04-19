@@ -53,7 +53,9 @@ netplugd_pre_start()
 
 	eindent
 
+	# IFACE-specific, then global, then default
 	eval timeout=\$plug_timeout_${IFVAR}
+	[ -z "${timeout}" ] && timeout=$plug_timeout
 	[ -z "${timeout}" ] && timeout=-1
 	if [ ${timeout} -eq 0 ]; then
 		ewarn "WARNING: infinite timeout set for ${IFACE} to come up"

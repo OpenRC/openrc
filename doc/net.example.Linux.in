@@ -975,10 +975,12 @@
 # and you're done :)
 
 # By default we don't wait for netplug/ifplugd to configure the interface.
-# If you would like it to wait so that other services know that network is up
-# then you can specify a timeout here.
+# If you would like it to wait so that other services know that network is
+# up then you can specify a timeout here. A value of 0 means wait forever,
+# and a negative value means never wait.
+#plug_timeout_eth0="10"
+# If you want to set it for all interfaces:
 #plug_timeout="10"
-# A value of 0 means wait forever.
 
 # If you don't want to use netplug on a specific interface but you have it
 # installed, you can disable it for that interface via the modules statement
