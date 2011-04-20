@@ -550,14 +550,16 @@ rc_service_extra_commands(const char *service)
 	if ((fp = popen(cmd, "r"))) {
 		rc_getline(&buffer, &len, fp);
 		p = buffer;
-		while ((token = strsep(&p, " "))) {
-			if (!commands)
-				commands = rc_stringlist_new();
-			rc_stringlist_add(commands, token);
-		}
+		commands = rc_stringlist_new();
+
+		while ((token = strsep(&p, " ")))
+			if (token[0] != '\0')
+				rc_stringlist_add(commands, token);
+
 		pclose(fp);
 		free(buffer);
 	}
+
 	free(cmd);
 	return commands;
 }
