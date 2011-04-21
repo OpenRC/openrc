@@ -27,7 +27,7 @@ start()
 		local_start
 	fi
 
-	return 0
+	eend 0
 }
 
 stop()
@@ -47,5 +47,5 @@ stop()
 		local_stop
 	fi
 
-	return 0
+	eend 0
 }
