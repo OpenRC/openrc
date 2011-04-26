@@ -414,7 +414,7 @@
 # dhclient: emerge net-misc/dhcp
 # dhcpcd:   emerge net-misc/dhcpcd
 # pump:     emerge net-misc/pump
-# udhcpc:   emerge net-misc/udhcp
+# udhcpc:   emerge sys-apps/busybox
 
 # If you have more than one DHCP client installed, you need to specify which
 # one to use - otherwise we default to dhcpcd if available.

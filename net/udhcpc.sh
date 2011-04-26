@@ -3,14 +3,13 @@
 
 udhcpc_depend()
 {
-	program start /sbin/udhcpc
+	program start /bin/busybox
 	after interface
 	provide dhcp
 }
 
 _config_vars="$_config_vars dhcp udhcpc"
 
-# WARNING:- The relies heavily on Gentoo patches and scripts for udhcpc
 udhcpc_start()
 {
 	local args= opt= opts= pidfile="/var/run/udhcpc-${IFACE}.pid"
@@ -22,17 +21,22 @@ udhcpc_start()
 	eval opts=\$dhcp_${IFVAR}
 	[ -z "${opts}" ] && opts=${dhcp}
 
+	# This omits the Gentoo specific patch to busybox,
+	# but it creates temporary files.
+	# We can move this stuff to udhcpc hook script to avoid that, should we do?
+	local conf="/var/run/udhcpc-${IFACE}.conf"
+	echo -n >"$conf"
 	# Map some generic options to dhcpcd
 	for opt in ${opts}; do
 		case "${opt}" in
-			nodns) args="${args} --env PEER_DNS=no";;
-			nontp) args="${args} --env PEER_NTP=no";;
-			nogateway) args="${args} --env PEER_ROUTERS=no";;
+			nodns) echo "PEER_DNS=no" >>"$conf" ;;
+			nontp) echo "PEER_NTP=no" >>"$conf" ;;
+			nogateway) echo "PEER_ROUTERS=no" >>"$conf" ;;
 			nosendhost) sendhost=false;
 		esac
 	done
 
-	[ "${metric:-0}" != "0" ] && args="${args} --env IF_METRIC=${metric}"
+	[ "${metric:-0}" != "0" ] && echo "IF_METRIC=${metric}" >>"$conf"
 
 	ebegin "Running udhcpc"
 
@@ -51,9 +55,9 @@ udhcpc_start()
 	fi
 
 	case " ${args} " in
-		*" --quit "*|*" -q "*) x="/sbin/udhcpc";;
-		*) x="start-stop-daemon --start --exec /sbin/udhcpc \
-			--pidfile \"${pidfile}\" --";;
+		*" --quit "*|*" -q "*) x="/bin/busybox udhcpc";;
+		*) x="start-stop-daemon --start --exec /bin/busybox \
+			--pidfile \"${pidfile}\" -- udhcpc";;
 	esac
 
 	case " ${args} " in
@@ -68,11 +72,8 @@ udhcpc_start()
 			;;
 	esac
 
-	local script="${RC_LIBEXECDIR}"/sh/udhcpc.h
-	[ -x "${script}" ] || script=/lib/rcscripts/sh/udhcpc.sh
-
 	eval "${x}" "${args}" --interface="${IFACE}" --now \
-		--script="${script}" \
+		--script="${RC_LIBEXECDIR}/sh/udhcpc-hook.sh" \
 		--pidfile="${pidfile}" >/dev/null
 	eend $? || return 1
 
@@ -92,14 +93,18 @@ udhcpc_stop()
 	ebegin "Stopping udhcpc on ${IFACE}"
 	case " ${opts} " in
 		*" release "*)
-			start-stop-daemon --stop --quiet --oknodo --signal USR2 \
-				--exec /sbin/udhcpc --pidfile "${pidfile}"
+			start-stop-daemon --stop --quiet --signal USR2 \
+				--exec /bin/busybox --pidfile "${pidfile}"
 			if [ -f /var/cache/udhcpc-"${IFACE}".lease ]; then
 				rm -f /var/cache/udhcpc-"${IFACE}".lease
 			fi
 			;;
 	esac
 
-	start-stop-daemon --stop --exec /sbin/udhcpc --pidfile "${pidfile}"
+	start-stop-daemon --stop --exec /bin/busybox --pidfile "${pidfile}"
 	eend $?
+
+	if [ -e "/var/run/udhcpc-${IFACE}.conf" ]; then
+		rm -f "/var/run/udhcpc-${IFACE}.conf"
+	fi
 }
