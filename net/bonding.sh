@@ -97,13 +97,15 @@ bonding_pre_start()
 	# finally add in slaves
 	eoutdent
 	if [ -d /sys/class/net ]; then
+		sys_bonding_path=/sys/class/net/"${IFACE}"/bonding
 		if [ -n "${primary}" ]; then
-			echo "+${primary}" >/sys/class/net/"${IFACE}"/bonding/slaves
-			echo "${primary}" >/sys/class/net/"${IFACE}"/bonding/primary
+			echo "+${primary}" >$sys_bonding_path/slaves
+			echo "${primary}" >$sys_bonding_path/primary
 		fi
 		for s in ${slaves}; do
 			[ "${s}" = "${primary}" ] && continue
-			echo "+${s}" >/sys/class/net/"${IFACE}"/bonding/slaves
+			grep -q ${s} $sys_bonding_path/slaves \
+				|| echo "+${s}" >$sys_bonding_path/slaves
 		done
 	else
 		/sbin/ifenslave "${IFACE}" ${slaves} >/dev/null
