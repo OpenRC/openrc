@@ -104,8 +104,9 @@ bonding_pre_start()
 		fi
 		for s in ${slaves}; do
 			[ "${s}" = "${primary}" ] && continue
-			grep -q ${s} $sys_bonding_path/slaves \
-				|| echo "+${s}" >$sys_bonding_path/slaves
+			if ! grep -q ${s} $sys_bonding_path/slaves; then
+				echo "+${s}" >$sys_bonding_path/slaves
+			fi
 		done
 	else
 		/sbin/ifenslave "${IFACE}" ${slaves} >/dev/null
