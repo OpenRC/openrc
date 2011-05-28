@@ -164,6 +164,7 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 	char buffer[PATH_MAX];
 	size_t l;
 
+	rc_stringlist_sort(&services);
 	TAILQ_FOREACH(service, services, entries) {
 		in = rc_stringlist_new();
 		inone = false;
@@ -299,6 +300,7 @@ rc_update(int argc, char **argv)
 			runlevels = rc_runlevel_list();
 		}
 
+		rc_stringlist_sort(&runlevels);
 		show (runlevels, verbose);
 	} else {
 		if (!service)
