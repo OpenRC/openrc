@@ -806,7 +806,6 @@ main(int argc, char **argv)
 	int opt;
 	bool parallel;
 	int regen = 0;
-	int i;
 #ifdef __linux__
 	char *proc;
 	char *p;
