@@ -31,3 +31,5 @@ _CC_FLAGS_SH=	for f in ${_CCFLAGS}; do \
 		done;
 _CC_FLAGS:=	$(shell ${_CC_FLAGS_SH})
 CFLAGS+=	${_CC_FLAGS}
+
+include ${MK}/debug.mk

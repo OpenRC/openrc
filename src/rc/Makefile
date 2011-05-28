@@ -36,7 +36,6 @@ LDADD+=		-lutil -lrc -leinfo
 
 include ../../Makefile.inc
 MK=		../../mk
-include ${MK}/debug.mk
 include ${MK}/prog.mk
 include ${MK}/git.mk
 include ${MK}/cc.mk

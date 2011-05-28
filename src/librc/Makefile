@@ -12,7 +12,6 @@ CPPFLAGS+=	-I../includes
 MK=		../../mk
 include ${MK}/lib.mk
 include ${MK}/cc.mk
-include ${MK}/debug.mk
 
 # Massage our header file for our dirs
 SED_CMD=	-e 's:@PREFIX@:${PREFIX}:g'
