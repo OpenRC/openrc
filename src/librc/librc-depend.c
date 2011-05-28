@@ -144,7 +144,7 @@ rc_deptree_load_file(const char *deptree_file)
 		e = strsep(&p, "_");
 		if (!e || strcmp(e, "depinfo") != 0)
 			continue;
-		e = strsep (&p, "_");
+		e = strsep(&p, "_");
 		if (!e || sscanf(e, "%d", &i) != 1)
 			continue;
 		if (!(type = strsep(&p, "_=")))
@@ -425,8 +425,8 @@ visit_service(const RC_DEPTREE *deptree,
 				continue;
 			provided = get_provided(di, runlevel, options);
 			TAILQ_FOREACH(p, provided, entries)
-				if (strcmp (p->value, depinfo->service) == 0) {
-					visit_service (deptree, types, sorted, visited, di,
+				if (strcmp(p->value, depinfo->service) == 0) {
+					visit_service(deptree, types, sorted, visited, di,
 						       runlevel, options | RC_DEP_TRACE);
 					break;
 				}
@@ -681,7 +681,7 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	/* Create base directories if needed */
 	for (i = 0; depdirs[i]; i++)
 		if (mkdir(depdirs[i], 0755) != 0 && errno != EEXIST)
-			fprintf(stderr, "mkdir `%s': %s\n", depdirs[i], strerror (errno));
+			fprintf(stderr, "mkdir `%s': %s\n", depdirs[i], strerror(errno));
 
 	/* Quick test to see if anything we use has changed and we have
 	 * data in our deptree */
@@ -922,7 +922,7 @@ rc_deptree_update(void)
 				di = get_depinfo(deptree, s->value);
 				if (!di) {
 					if (strcmp(deptype->type, "ineed") == 0) {
-						fprintf (stderr,
+						fprintf(stderr,
 							 "Service `%s' needs non"
 							 " existent service `%s'\n",
 							 depinfo->service, s->value);
@@ -1032,7 +1032,7 @@ rc_deptree_update(void)
 	if (TAILQ_FIRST(config)) {
 		if ((fp = fopen(RC_DEPCONFIG, "w"))) {
 			TAILQ_FOREACH(s, config, entries)
-				fprintf (fp, "%s\n", s->value);
+				fprintf(fp, "%s\n", s->value);
 			fclose(fp);
 		} else {
 			fprintf(stderr, "fopen `%s': %s\n",

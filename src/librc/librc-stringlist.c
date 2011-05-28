@@ -41,7 +41,7 @@ rc_stringlist_new(void)
 librc_hidden_def(rc_stringlist_new)
 
 RC_STRING *
-rc_stringlist_add (RC_STRINGLIST *list, const char *value)
+rc_stringlist_add(RC_STRINGLIST *list, const char *value)
 {
 	RC_STRING *s = xmalloc(sizeof(*s));
 
@@ -52,7 +52,7 @@ rc_stringlist_add (RC_STRINGLIST *list, const char *value)
 librc_hidden_def(rc_stringlist_add)
 
 RC_STRING *
-rc_stringlist_addu (RC_STRINGLIST *list, const char *value)
+rc_stringlist_addu(RC_STRINGLIST *list, const char *value)
 {
 	RC_STRING *s;
 
@@ -74,8 +74,8 @@ rc_stringlist_delete(RC_STRINGLIST *list, const char *value)
 	TAILQ_FOREACH(s, list, entries)
 	    if (strcmp(s->value, value) == 0) {
 		    TAILQ_REMOVE(list, s, entries);
-		    free (s->value);
-		    free (s);
+		    free(s->value);
+		    free(s);
 		    return true;
 	    }
 
@@ -127,7 +127,7 @@ rc_stringlist_sort(RC_STRINGLIST **list)
 		TAILQ_REMOVE(l, s, entries);
 		last = NULL;
 		TAILQ_FOREACH(n, new, entries) {
-			if (strcmp (s->value, n->value) < 0)
+			if (strcmp(s->value, n->value) < 0)
 				break;
 			last = n;
 		}

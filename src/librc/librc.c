@@ -749,7 +749,7 @@ rc_service_state(const char *service)
 
 	if (state & RC_SERVICE_STOPPED) {
 		dirs = ls_dir(RC_SVCDIR "/scheduled", 0);
-		TAILQ_FOREACH (dir, dirs, entries) {
+		TAILQ_FOREACH(dir, dirs, entries) {
 			snprintf(file, sizeof(file),
 			    RC_SVCDIR "/scheduled/%s/%s",
 			    dir->value, service);
@@ -892,7 +892,7 @@ rc_services_in_runlevel_stacked(const char *runlevel)
 
 	list = rc_services_in_runlevel(runlevel);
 	stacks = rc_runlevel_stacks(runlevel);
-	TAILQ_FOREACH (stack, stacks, entries) {
+	TAILQ_FOREACH(stack, stacks, entries) {
 		sl = rc_services_in_runlevel(stack->value);
 		if (list != NULL) {
 			TAILQ_CONCAT(list, sl, entries);
@@ -1008,7 +1008,7 @@ rc_services_scheduled_by(const char *service)
 	RC_STRING *dir;
 	char file[PATH_MAX];
 
-	TAILQ_FOREACH (dir, dirs, entries) {
+	TAILQ_FOREACH(dir, dirs, entries) {
 		snprintf(file, sizeof(file), RC_SVCDIR "/scheduled/%s/%s",
 		    dir->value, service);
 		if (exists(file))
