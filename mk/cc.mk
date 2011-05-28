@@ -1,7 +1,7 @@
 # Copyright (c) 2008 Roy Marples <roy@marples.name>
 
 # Setup some good default CFLAGS
-CFLAGS?=	-O2
+CFLAGS?=	-O2 -g
 
 # Default to using the C99 standard
 CSTD?=		c99
