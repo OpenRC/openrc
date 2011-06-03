@@ -1,4 +1,3 @@
-.depend
 version.h
 rc-status
 rc-service
@@ -56,20 +55,4 @@ mark_service_wasinactive
 mark_service_hotplugged
 mark_service_failed
 rc-abort
-checkpath.o
-fstabinfo.o
-mountinfo.o
-start-stop-daemon.o
-swclock.o
-rc-applets.o
-rc-depend.o
-rc-logger.o
-rc-misc.o
-rc-plugin.o
-rc-service.o
-rc-status.o
-rc-update.o
-runscript.o
-rc.o
 rc
-.depend
