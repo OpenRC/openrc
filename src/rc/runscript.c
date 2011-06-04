@@ -1101,7 +1101,8 @@ runscript(int argc, char **argv)
 	bool doneone = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
-	char path[PATH_MAX], lnk[PATH_MAX], *dir, *save = NULL, pidstr[10];
+	char path[PATH_MAX], lnk[PATH_MAX], *dir, *save = NULL, *save2 = NULL;
+	char pidstr[10];
 	size_t l = 0, ll;
 	const char *file;
 	struct stat stbuf;
@@ -1133,7 +1134,8 @@ runscript(int argc, char **argv)
 		dir = dirname(path);
 		if (strchr(lnk, '/')) {
 			save = xstrdup(dir);
-			dir = dirname(lnk);
+			save2 = xstrdup(lnk);
+			dir = dirname(save2);
 			if (strcmp(dir, save) == 0)
 				file = basename_c(argv[1]);
 			else
@@ -1149,6 +1151,7 @@ runscript(int argc, char **argv)
 			service = xstrdup(lnk);
 		}
 		free(save);
+		free(save2);
 	}
 	if (!service)
 		service = xstrdup(path);

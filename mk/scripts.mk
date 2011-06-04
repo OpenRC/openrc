@@ -8,11 +8,11 @@ include ${MK}/os.mk
 OBJS+=	${SRCS:.in=}
 
 _PKG_SED_SH=		if test "${PREFIX}" = "${PKG_PREFIX}"; then echo "-e 's:@PKG_PREFIX@::g'"; else echo "-e 's:@PKG_PREFIX@:${PKG_PREFIX}:g'"; fi
-_PKG_SED!=		${_PKG_SED_SH}
+_PKG_SED:=		$(shell ${_PKG_SED_SH})
 _LCL_SED_SH=		if test "${PREFIX}" = "${LOCAL_PREFIX}"; then echo "-e 's:@LOCAL_PREFIX@::g'"; else echo "-e 's:@LOCAL_PREFIX@:${LOCAL_PREFIX}:g'"; fi
-_LCL_SED!=		${_LCL_SED_SH}
+_LCL_SED:=		$(shell ${_LCL_SED_SH})
 
-SED_REPLACE=		-e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR@:${SYSCONFDIR}:g' -e 's:@LIBEXECDIR@:${LIBEXECDIR}:g' -e 's:@PREFIX@:${PREFIX}:g' ${_PKG_SED}$(shell ${_PKG_SED_SH}) ${_LCL_SED}$(shell ${_LCL_SED_SH})
+SED_REPLACE=		-e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR@:${SYSCONFDIR}:g' -e 's:@LIBEXECDIR@:${LIBEXECDIR}:g' -e 's:@PREFIX@:${PREFIX}:g' -e 's:@RC_SYS_DEFAULT@:${MKRCSYS}:g' ${_PKG_SED} ${_LCL_SED}
 
 # Tweak our shell scripts
 .SUFFIXES:	.sh.in .in

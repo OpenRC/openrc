@@ -49,7 +49,7 @@ stop()
 	fi
 
 	if [ "$RC_UNAME" = Linux ]; then
-		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/sys|/sys/.*"
+		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/run|/sys|/sys/.*"
 	fi
 	no_umounts_r="^($no_umounts_r)$"
 
@@ -58,8 +58,8 @@ stop()
 
 	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
-	# Umount loopback devices
-	einfo "Unmounting loopback devices"
+	# Umount loop devices
+	einfo "Unmounting loop devices"
 	eindent
 	do_unmount "umount -d" --skip-point-regex "$no_umounts_r" \
 		--node-regex "^/dev/loop"

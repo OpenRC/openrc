@@ -1,0 +1,9 @@
+This directory should contain programs or scripts which are to be run
+when the local service is started or stopped.
+
+If a file in this directory is executable and it has a .start extension,
+it will be run when the local service is started. If a file is
+executable and it has a .stop extension, it will be run when the local
+service is stopped.
+
+All files are processed in lexical order.

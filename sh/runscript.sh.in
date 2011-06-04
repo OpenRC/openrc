@@ -16,6 +16,18 @@ sourcex()
 	fi
 }
 
+if [ ! -e ${RC_SVCDIR}/softlevel ]; then
+	eerror "You are attempting to run an openrc service on a"
+	eerror "system which openrc did not boot."
+	eerror "You may be inside a chroot or you may have used"
+	eerror "another initialization system to boot this system."
+	eerror "In this situation, you will get unpredictable results!"
+	eerror
+	eerror "If you really want to do this, issue the following command:"
+	eerror "touch ${RC_SVCDIR}/softlevel"
+	exit 1
+fi
+
 sourcex "@SYSCONFDIR@/init.d/functions.sh"
 sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
 

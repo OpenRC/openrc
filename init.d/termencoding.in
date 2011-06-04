@@ -10,6 +10,8 @@ ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 depend()
 {
 	keyword -openvz -prefix -uml -vserver -xenu
+	need root
+	after bootmisc
 }
 
 start()
@@ -31,5 +33,16 @@ start()
 		printf "\033%s" "$termencoding" >$ttydev$n
 		n=$(($n + 1))
 	done
+
+	# Save the encoding for use immediately at boot
+	if [ -w "$RC_LIBEXECDIR" ]; then
+		mkdir -p "$RC_LIBEXECDIR"/console
+		if yesno ${unicode:-${UNICODE}}; then
+			echo "" > "$RC_LIBEXECDIR"/console/unicode
+		else
+			rm -f "$RC_LIBEXECDIR"/console/unicode
+		fi
+	fi
+
 	eend 0
 }

@@ -9,8 +9,8 @@ DISTFILE?=	${DISTPREFIX}.tar.bz2
 CLEANFILES+=	${NAME}-*.tar.bz2
 
 _SNAP_SH=	date -u +%Y%m%d%H%M
-_SNAP!=		${_SNAP_SH}
-SNAP=		${_SNAP}$(shell ${_SNAP_SH})
+_SNAP:=		$(shell ${_SNAP_SH})
+SNAP=		${_SNAP}
 SNAPDIR=	${DISTPREFIX}-${SNAP}
 SNAPFILE=	${SNAPDIR}.tar.bz2
 

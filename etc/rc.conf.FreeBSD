@@ -1,12 +1,14 @@
+##############################################################################
+# FreeBSD SPECIFIC OPTIONS
+
 # This is the subsystem type. Valid options on FreeBSD:
 # ""        - nothing special
 # "jail"    - FreeBSD jails
 # "prefix"  - Prefix
-# If unset, the old automagic detection code will be triggered. Said old code
-# is deprecated and will be removed not later than 2011/03/01.
+# If this is commented out, automatic detection will be attempted.
+# Note that automatic detection does not work in a prefix environment.
 #
-# This should be set to the value representing what environment this file is
-# PRESENTLY in, not what virtualization the environment is capable of.
-# See the OpenRC migration guide for more details.
-rc_sys=""
+# This should be set to the value representing the environment this file is
+# PRESENTLY in, not the virtualization the environment is capable of.
+rc_sys="@RC_SYS_DEFAULT@"
 

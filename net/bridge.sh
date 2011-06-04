@@ -45,8 +45,8 @@ bridge_pre_start()
 	eval bridge_unset=\${bridge_${IFVAR}-y\}
 	eval brctl_unset=\${brctl_${IFVAR}-y\}
 
-	if [ -z "${brif}" -a "${brctl_unset}" == 'y' ]; then
-		if [ -z "${ports}" -a "${bridge_unset}" == "y" ]; then
+	if [ -z "${brif}" -a "${brctl_unset}" = 'y' ]; then
+		if [ -z "${ports}" -a "${bridge_unset}" = "y" ]; then
 			#eerror "Misconfigured static bridge detected (see net.example)"
 			return 0
 		fi

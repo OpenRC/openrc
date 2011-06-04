@@ -104,7 +104,7 @@ else
 	# the last ecmd
 	for _e in ebegin eend error errorn einfo einfon ewarn ewarnn ewend \
 		vebegin veend veinfo vewarn vewend; do
-		eval "$_e() { local _r; @LIBEXECDIR@/bin/$_e \"\$@\"; _r=$?; \
+		eval "$_e() { local _r; @LIBEXECDIR@/bin/$_e \"\$@\"; _r=\$?; \
 		export EINFO_LASTCMD=$_e; return \$_r; }"
 	done
 	unset _e

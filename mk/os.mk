@@ -4,8 +4,8 @@
 # Generic definitions
 
 _OS_SH=		uname -s
-_OS!= 		${_OS_SH}
-OS?= 		${_OS}$(shell ${_OS_SH})
+_OS:= 		$(shell ${_OS_SH})
+OS?= 		${_OS}
 include ${MK}/os-${OS}.mk
 
 RC_LIB=		/$(LIBNAME)/rc

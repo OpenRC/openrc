@@ -429,6 +429,17 @@ run_applets(int argc, char **argv)
 	char *p;
 	pid_t pid = 0;
 
+	/* Bug 351712: We need an extra way to explicitly select an applet OTHER
+	 * than trusting argv[0], as argv[0] is not going to be the applet value if
+	 * we are doing SELinux context switching. For this, we allow calls such as
+	 * 'rc --applet APPLET', and shift ALL of argv down by two array items. */
+	if (strcmp(applet, "rc") == 0 && argc >= 3 &&
+		    (strcmp(argv[1],"--applet") == 0 || strcmp(argv[1], "-a") == 0)) {
+		applet = argv[2];
+		argv += 2;
+		argc -= 2;
+	}
+
 	/* These are designed to be applications in their own right */
 	if (strcmp(applet, "fstabinfo") == 0)
 		exit(fstabinfo(argc, argv));

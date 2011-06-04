@@ -308,10 +308,10 @@ _match_list(const char *exec, const char *const *argv, const char *pidfile)
 
 	if (pidfile) {
 		l = strlen(pidfile) + 9;
-		m = xmalloc(sizeof (char) * l);
+		m = xmalloc(sizeof(char) * l);
 		snprintf(m, l, "pidfile=%s", pidfile);
 		rc_stringlist_add(match, m);
-		free (m);
+		free(m);
 	}
 
 	return match;
@@ -508,7 +508,7 @@ rc_service_daemons_crashed(const char *service)
 			if ((fp = fopen(pidfile, "r"))) {
 				if (fscanf(fp, "%d", &pid) == 1)
 					retval = false;
-				fclose (fp);
+				fclose(fp);
 			}
 			free(pidfile);
 			pidfile = NULL;

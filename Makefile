@@ -4,23 +4,18 @@
 
 include Makefile.inc
 
-SUBDIR=		conf.d etc init.d man scripts sh src
+SUBDIR=		conf.d etc init.d local.d man scripts sh src
 
 # Build our old net foo or not
-_OLDNET_SH=	case "${MKOLDNET}" in \
-		[Yy][Ee][Ss]) echo "net doc";; \
-		*) echo "";; \
-		esac
-_OLDNET!=	${_OLDNET_SH}
-SUBDIR+=	${_OLDNET}$(shell ${_OLDNET_SH})
+ifeq (${MKOLDNET},yes)
+SUBDIR+=	net doc
+endif
 
 # Build pkgconfig or not
-_PKGCONFIG_SH=	case "${MKPKGCONFIG}" in \
-		[Yy][Ee][Ss]|"") echo "pkgconfig";; \
-		*) echo "";; \
-		esac
-_PKGCONFIG!=	${_PKGCONFIG_SH}
-SUBDIR+=	${_PKGCONFIG}$(shell ${_PKGCONFIG_SH})
+MKPKGCONFIG?=	yes
+ifeq (${MKPKGCONFIG},yes)
+SUBDIR+=	pkgconfig
+endif
 
 # We need to ensure that runlevels is done last
 SUBDIR+=	runlevels

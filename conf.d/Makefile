@@ -1,5 +1,5 @@
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname local localmount network staticroute urandom
+CONF=	bootmisc fsck hostname localmount network staticroute urandom
 
 TARGETS+=	network staticroute
 CLEANFILES+=	network staticroute

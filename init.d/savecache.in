@@ -8,17 +8,22 @@ start()
 {
 	if [ -e "$RC_SVCDIR"/clock-skewed ]; then
 		ewarn "WARNING: clock skew detected!"
-		if ! yesno "savecache_skewed"; then
+		if ! yesno "${RC_GOINGDOWN}"; then
 			eerror "Not saving deptree cache"
 			return 1
 		fi
 	fi
 	ebegin "Saving dependency cache"
+	local rc=
 	if [ ! -d "$RC_LIBEXECDIR"/cache ]; then
 		rm -rf "$RC_LIBEXECDIR"/cache
 		if ! mkdir "$RC_LIBEXECDIR"/cache; then
-			eend $?
-			return $?
+			rc=$?
+			if yesno "${RC_GOINGDOWN}"; then
+				rc=0
+			fi
+			eend $rc
+			return $rc
 		fi
 	fi
 	local save=
@@ -28,5 +33,9 @@ start()
 	if [ -n "$save" ]; then
 		cp -p $save "$RC_LIBEXECDIR"/cache 2>/dev/null
 	fi
-	eend $?
+	rc=$?
+	if yesno "${RC_GOINGDOWN}"; then
+		rc=0
+	fi
+	eend $rc
 }

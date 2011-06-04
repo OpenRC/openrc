@@ -65,27 +65,21 @@ mount_svcdir()
 # By default VServer already has /proc mounted, but OpenVZ does not!
 # However, some of our users have an old proc image in /proc
 # NFC how they managed that, but the end result means we have to test if
-# /proc actually works or not. We to this by comparing two reads of
-# /proc/self/stat. They will not match, because at least the minor fault count
-# field (field 10) should have changed.
-#
-# We can use any file here that fills the following requirements:
-# - changes between sequential reads
-# - is world-readable (not blocked in hardened kernel)
-# - Is only a single line (ergo entire check is doable with no forks)
+# /proc actually works or not. We do this by comparing two reads of
+# /proc/self/environ for which we have set the variable VAR to two
+# different values. If the comparison comes back equal, we know that
+# /proc is not working.
 mountproc=true
-f=/proc/self/stat
+f=/proc/self/environ
 if [ -e $f ]; then
-	exec 9<$f ; read a <&9 ; exec 9<&-
-	exec 9<$f ; read b <&9 ; exec 9<&-
-	if [ "$a" = "$b" ]; then
+	if [ "$(VAR=a cat $f)" = "$(VAR=b cat $f)" ]; then
 		eerror "You have cruft in /proc that should be deleted"
 	else
 		einfo "/proc is already mounted, skipping"
 		mountproc=false
 	fi
 fi
-unset a b f
+unset f
 
 if $mountproc; then
 	procfs="proc"
@@ -95,6 +89,30 @@ if $mountproc; then
 		mount -n -t "$procfs" -o noexec,nosuid,nodev proc /proc
 	fi
 	eend $?
+fi
+
+# Mount tmpfs on /run when directory exists.
+# /run is a new directory for storing volatile runtime data.
+# Read more about /run at https://lwn.net/Articles/436012
+if [ -d /run ]; then
+	if mountinfo -q /run; then
+		einfo "/run is already mounted, skipping"
+	else
+		ebegin "Mounting /run"
+		if ! fstabinfo --mount /run; then
+			mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run
+		fi
+		eend $?
+	fi
+	if [ ! -d /run/lock ]; then
+		mkdir /run/lock
+	fi
+	if [ -d /run/lock ]; then
+		chown root:uucp /run/lock
+		chmod 0775 /run/lock
+	fi
+elif [ -e /run ]; then
+	einfo "Unable to mount /run since it is not a directory"
 fi
 
 # Try to mount xenfs as early as possible, otherwise rc_sys() will always

@@ -91,10 +91,14 @@ start()
 	# If setting UTC, don't bother to run hwclock when first booting
 	# as that's the default
 	if [ "$PREVLEVEL" != N -o \
-		"$utc_cmd}" != --utc -o \
+		"$utc_cmd" != --utc -o \
 		-n "$clock_args" ];
 	then
-		_hwclock --hctosys $utc_cmd $clock_args
+		if yesno $clock_hctosys; then
+			_hwclock --hctosys $utc_cmd $clock_args
+		else
+			_hwclock --systz $utc_cmd $clock_args
+		fi
 		retval=$(($retval + $?))
 	fi
 

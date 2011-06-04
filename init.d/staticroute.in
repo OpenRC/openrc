@@ -81,7 +81,7 @@ do_routes()
 					*) family=;;
 					esac
 				fi
-				route $famly $xtra $2 -$args
+				route $family $xtra $2 -$args
 				;;
 			esac
 			veend $?

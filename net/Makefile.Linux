@@ -1,7 +1,7 @@
 SRCS+=		iwconfig.sh.in
 INC+=		adsl.sh apipa.sh arping.sh bonding.sh br2684ctl.sh bridge.sh \
-		ccwgroup.sh clip.sh iproute2.sh ifplugd.sh ip6to4.sh ipppd.sh \
-		iwconfig.sh netplugd.sh pppd.sh pump.sh tuntap.sh udhcpc.sh \
+		ccwgroup.sh clip.sh ethtool.sh iproute2.sh ifplugd.sh ip6to4.sh \
+		ipppd.sh iwconfig.sh netplugd.sh pppd.sh pump.sh tuntap.sh udhcpc.sh \
 		vlan.sh
 
 .SUFFIXES:	.sh.Linux.in
