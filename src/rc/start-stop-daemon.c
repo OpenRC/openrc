@@ -791,6 +791,9 @@ start_stop_daemon(int argc, char **argv)
 		case 'u':  /* --user <username>|<uid> */
 		case 'c':  /* --chuid <username>|<uid> */
 		{
+			/* DEPRECATED */
+			ewarn("WARNING: -c/--chuid is deprecated and will be removed in the future, please use -u/--user instead");
+
 			p = optarg;
 			tmp = strsep(&p, ":");
 			changeuser = xstrdup(tmp);
@@ -867,6 +870,8 @@ start_stop_daemon(int argc, char **argv)
 			break;
 
 		case 'o':  /* --oknodo */
+			/* DEPRECATED */
+			ewarn("WARNING: -o/--oknodo is deprecated and will be removed in the future");
 			oknodo = true;
 			break;
 
@@ -887,6 +892,8 @@ start_stop_daemon(int argc, char **argv)
 			break;
 
 		case 'a': /* --startas <name> */
+			/* DEPRECATED */
+			ewarn("WARNING: -a/--startas is deprecated and will be removed in the future, please use -x/--exec or -n/--name instead");
 			startas = optarg;
 			break;
 		case 'w':
