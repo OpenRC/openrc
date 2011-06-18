@@ -10,16 +10,25 @@ depend()
 
 start()
 {
-	local conf= retval=0
+	local conf= retval=0 err errs
+
 	ebegin "Configuring kernel parameters"
 	eindent
+
 	for conf in /etc/sysctl.d/*.conf /etc/sysctl.conf; do
 		if [ -r "$conf" ]; then
 			vebegin "applying $conf"
-			sysctl -p "$conf" >/dev/null
+			if ! err=$(sysctl -q -p "$conf" 2>&1) ; then
+				errs="${errs} ${err}"
+				sysctl -q -e -p "${conf}"
+			fi
 			veend $? || retval=1
 		fi
 	done
+
 	eoutdent
-	eend $retval "Some errors were encountered"
+	if [ ${retval} -eq 0 ] && [ -n "${errs}" ] ; then
+		ewarn "Unknown keys:${errs}"
+	fi
+	eend $retval "Some errors were encountered: ${errs}"
 }
