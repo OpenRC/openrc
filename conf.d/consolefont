@@ -3,7 +3,7 @@
 # you shouldn't specify the trailing ".psf.gz", just the font name below.
 # To use the default console font, comment out the CONSOLEFONT setting below.
 # This setting is used by the /etc/init.d/consolefont script (NOTE: if you do
-# not want to use it, run "rc-update del consolefont" as root).
+# not want to use it, run "rc-update del consolefont boot" as root).
 consolefont="default8x16"
 
 # consoletranslation is the charset map file to use.  Leave commented to use
