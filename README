@@ -70,9 +70,11 @@ of the system.
 
 Reporting Bugs
 --------------
-Bugs should go to the Gentoo Bugzilla:
+Since Gentoo Linux is hosting OpenRC development, Bugs should go to
+the Gentoo Bugzilla:
 	http://bugs.gentoo.org/
-You'll want the "Gentoo Linux" product and the "baselayout" component.
+They should be filed under the "Gentoo Hosted Projects" product and
+the "openrc" component.
 
 
 History - by Roy Marples
