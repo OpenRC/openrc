@@ -13,8 +13,6 @@ include ${MK}/scripts.mk
 
 _installafter:
 	${INSTALL} -d ${DESTDIR}/${INITDIR}
-	@# Put functions.sh into init for backwards compat
-	ln -snf ${LIBEXECDIR}/sh/functions.sh ${DESTDIR}/${INITDIR} || exit $$?
 
 check test::
 	./runtests.sh
