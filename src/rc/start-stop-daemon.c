@@ -788,12 +788,11 @@ start_stop_daemon(int argc, char **argv)
 			background = true;
 			break;
 
-		case 'u':  /* --user <username>|<uid> */
 		case 'c':  /* --chuid <username>|<uid> */
-		{
 			/* DEPRECATED */
 			ewarn("WARNING: -c/--chuid is deprecated and will be removed in the future, please use -u/--user instead");
-
+		case 'u':  /* --user <username>|<uid> */
+		{
 			p = optarg;
 			tmp = strsep(&p, ":");
 			changeuser = xstrdup(tmp);
