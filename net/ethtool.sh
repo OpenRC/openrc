@@ -1,5 +1,5 @@
 # Copyright (c) 2011 by Gentoo Foundation
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 _ethtool() {
 	echo /usr/sbin/ethtool

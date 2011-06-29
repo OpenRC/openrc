@@ -1,5 +1,5 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 _config_vars="$_config_vars dns_servers dns_domain dns_search"
 _config_vars="$_config_vars dns_sortlist dns_options"

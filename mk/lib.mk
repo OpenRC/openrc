@@ -2,7 +2,7 @@
 # based on FreeBSD's bsd.lib.mk
 
 # Copyright (c) 2008 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 SHLIB_NAME=		lib${LIB}.so.${SHLIB_MAJOR}
 SHLIB_LINK=		lib${LIB}.so

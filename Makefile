@@ -1,6 +1,6 @@
 # OpenRC Makefile
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 include Makefile.inc
 
