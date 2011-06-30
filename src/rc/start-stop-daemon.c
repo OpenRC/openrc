@@ -599,7 +599,7 @@ expand_home(const char *home, const char *path)
 }
 
 #include "_usage.h"
-#define getoptstring "I:KN:PR:Sbc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
+#define getoptstring "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
