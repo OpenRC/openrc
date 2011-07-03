@@ -38,7 +38,8 @@ yesno()
 	esac
 }
 
-rc_runlevel() {
+rc_runlevel()
+{
     rc-status --runlevel
 }
 
