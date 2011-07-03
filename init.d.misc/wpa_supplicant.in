@@ -1,6 +1,6 @@
 #!@PREFIX@/sbin/runscript
 # Copyright (c) 2009 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 command=/usr/sbin/wpa_supplicant
 : ${wpa_supplicant_conf:=/etc/wpa_supplicant.conf}

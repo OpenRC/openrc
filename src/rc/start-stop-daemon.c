@@ -9,8 +9,7 @@
 
 /*
  * Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
- * All rights reserved
-
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -600,7 +599,7 @@ expand_home(const char *home, const char *path)
 }
 
 #include "_usage.h"
-#define getoptstring "I:KN:PR:Sbc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
+#define getoptstring "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
@@ -788,8 +787,10 @@ start_stop_daemon(int argc, char **argv)
 			background = true;
 			break;
 
-		case 'u':  /* --user <username>|<uid> */
 		case 'c':  /* --chuid <username>|<uid> */
+			/* DEPRECATED */
+			ewarn("WARNING: -c/--chuid is deprecated and will be removed in the future, please use -u/--user instead");
+		case 'u':  /* --user <username>|<uid> */
 		{
 			p = optarg;
 			tmp = strsep(&p, ":");
@@ -867,6 +868,8 @@ start_stop_daemon(int argc, char **argv)
 			break;
 
 		case 'o':  /* --oknodo */
+			/* DEPRECATED */
+			ewarn("WARNING: -o/--oknodo is deprecated and will be removed in the future");
 			oknodo = true;
 			break;
 
@@ -887,6 +890,8 @@ start_stop_daemon(int argc, char **argv)
 			break;
 
 		case 'a': /* --startas <name> */
+			/* DEPRECATED */
+			ewarn("WARNING: -a/--startas is deprecated and will be removed in the future, please use -x/--exec or -n/--name instead");
 			startas = optarg;
 			break;
 		case 'w':

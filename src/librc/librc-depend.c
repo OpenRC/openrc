@@ -5,8 +5,7 @@
 
 /*
  * Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
- * All rights reserved
-
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -707,7 +706,7 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR, newest, file))
 		newer = true;
 #endif
-	if (!rc_newer_than(RC_DEPTREE_CACHE, "/etc/rc.conf", newest, file))
+	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_CONF, newest, file))
 		newer = true;
 
 	/* Some init scripts dependencies change depending on config files

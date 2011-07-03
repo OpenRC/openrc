@@ -1,5 +1,5 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 _config_vars="$_config_vars ccwgroup"
 
@@ -58,6 +58,11 @@ ccwgroup_pre_start()
 		echo "${val}" > /sys/devices/${ccw_type}/${first}/${var}
 	done
 	eend $?
+
+	# Now that we've properly configured the device, we can run
+	# bring the interface up.  Common code tried to do this already,
+	# but it failed because we didn't setup sysfs yet.
+	_up
 }
 
 ccwgroup_pre_stop()
@@ -88,9 +93,14 @@ ccwgroup_post_stop()
 	local device="$(service_get_value ccwgroup_device)"
 	[ -z "${device}" ] && return 0
 	local ccw_type="$(service_get_value ccwgroup_type)"
+	local path="/sys/devices/${ccw_type}/${device}"
 
 	einfo "Disabling ccwgroup/${ccw_type} on ${IFACE}"
-	echo "0" >/sys/devices/${ccw_type}/"${device}"/online
-	echo "1" >/sys/devices/${ccw_type}/"${device}"/ungroup
+	if echo "0" >"${path}"/online &&
+	   echo "1" >"${path}"/ungroup ; then
+		# The device doesn't disappear right away which breaks
+		# restart, or a quick start up, so wait around.
+		while [ -e "${path}" ] ; do :; done
+	fi
 	eend $?
 }

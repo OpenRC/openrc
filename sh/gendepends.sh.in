@@ -2,7 +2,7 @@
 # Shell wrapper to list our dependencies
 
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 . @SYSCONFDIR@/init.d/functions.sh
 . @LIBEXECDIR@/sh/rc-functions.sh

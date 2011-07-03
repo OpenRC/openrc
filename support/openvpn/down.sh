@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 # If we have a service specific script, run this now
 [ -x "${RC_SVCNAME}"-down.sh ] && "${RC_SVCNAME}"-down.sh

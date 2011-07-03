@@ -1,6 +1,6 @@
 #!@PREFIX@/sbin/runscript
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 description="Kill all processes so we can unmount disks cleanly."
 
@@ -12,11 +12,11 @@ depend()
 start()
 {
 	ebegin "Terminating remaining processes"
-	killall5 -15
+	killall5 -15 ${killall5_opts}
 	sleep 1
 	eend 0
 	ebegin "Killing remaining processes"
-	killall5 -9
+	killall5 -9 ${killall5_opts}
 	sleep 1
 	eend 0
 }

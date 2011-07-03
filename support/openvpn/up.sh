@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 # Setup our resolv.conf
 # Vitally important that we use the domain entry in resolv.conf so we

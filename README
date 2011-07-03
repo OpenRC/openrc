@@ -80,8 +80,8 @@ History - by Daniel Robbins
 The Gentoo modular network scripts were created by Daniel Robbins for
 Gentoo Linux 1.0_rc6, in development during most of 2001 and released
 in September 2001. After their development, the dependency-based initscript
-system was maintained by a number of senior developers (add names here....
-need to look at baselayout cvs logs.)
+system was maintained by a number of senior developers, primarily Martin
+Schlemmer (azarah).
 
 excerpt from http://www.gentoo.org/news/en/gwn/20040426-newsletter.xml
 by Grant Goodyear:

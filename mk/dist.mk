@@ -1,6 +1,6 @@
 # rules to make a distribution tarball from a git repo
 # Copyright (c) 2008 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 GITREF?=	HEAD
 DISTPREFIX?=	${NAME}-${VERSION}

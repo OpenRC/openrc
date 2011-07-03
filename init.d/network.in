@@ -1,6 +1,6 @@
 #!@PREFIX@/sbin/runscript
 # Copyright (c) 2009 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 # This script was inspired by the equivalent rc.d network from NetBSD.
 

@@ -1,6 +1,6 @@
 #!@PREFIX@/sbin/runscript
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
-# All rights reserved. Released under the 2-clause BSD license.
+# Released under the 2-clause BSD license.
 
 description="Mounts disks and swap according to /etc/fstab."
 
@@ -37,7 +37,7 @@ stop()
 	local x= no_umounts_r="/|/dev|/dev/.*|${RC_SVCDIR}"
 	no_umounts_r="${no_umounts_r}|/bin|/sbin|/lib|/libexec"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
-	OIFS=$IFS SIFS=${IFS-y}
+	local OIFS=$IFS SIFS=${IFS-y}
 	IFS=$IFS:
 	for x in $no_umounts $RC_NO_UMOUNTS; do
 		no_umounts_r="$no_umounts_r|$x"

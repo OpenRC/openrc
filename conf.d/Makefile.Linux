@@ -1,2 +1,2 @@
-CONF+=	consolefont dmesg hwclock keymaps modules
+CONF+=	consolefont dmesg hwclock keymaps killprocs modules
 SOS=	Linux
