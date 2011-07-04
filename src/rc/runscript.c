@@ -1333,12 +1333,6 @@ runscript(int argc, char **argv)
 			prefix = NULL;
 			retval = svc_exec("status", NULL);
 		} else {
-			if (strcmp(optarg, "pause") == 0) {
-				ewarn("WARNING: 'pause' is deprecated; please use '--nodeps stop'");
-				deps = false;
-				optarg = "stop";
-			}
-
 			if (strcmp(optarg, "conditionalrestart") == 0 ||
 			    strcmp(optarg, "condrestart") == 0)
 			{
@@ -1349,7 +1343,11 @@ runscript(int argc, char **argv)
 				svc_restart();
 			} else if (strcmp(optarg, "start") == 0) {
 				svc_start();
-			} else if (strcmp(optarg, "stop") == 0) {
+			} else if (strcmp(optarg, "stop") == 0 || strcmp(optarg, "pause") == 0) {
+				if (strcmp(optarg, "pause") == 0) {
+					ewarn("WARNING: 'pause' is deprecated; please use '--nodeps stop'");
+					deps = false;
+				}
 				if (deps && in_background)
 					get_started_services();
 				svc_stop();
