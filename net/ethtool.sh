@@ -29,7 +29,7 @@ ethtool_pre_start() {
 
 		# Skip everything if no arguments
 		[ -z "${args}" ] && continue
-		
+
 		# Split on \n
 		local IFS="$__IFS"
 

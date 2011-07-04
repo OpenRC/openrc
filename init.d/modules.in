@@ -23,11 +23,11 @@ start()
 	# remove any KV_EXTRA options to just get the full version
 	x=${KV%%-*}
 	# now slowly strip them
-	while [ -n "$x" ] && [ "$x" != "$y" ]; do 
+	while [ -n "$x" ] && [ "$x" != "$y" ]; do
 		kv_variant_list="${kv_variant_list} $x"
 		y=$x
 		x=${x%.*}
-	done 
+	done
 
 	local list= x= xx= y= args= mpargs= cnt=0 a=
 	for x in $kv_variant_list ; do
