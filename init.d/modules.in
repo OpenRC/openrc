@@ -16,18 +16,21 @@ start()
 	# support compiled in ...
 	[ ! -f /proc/modules ] && return 0
 
-	local KV=$(uname -r)
-	local KV_MAJOR=${KV%%.*}
-	local x=${KV#*.}
-	local KV_MINOR=${x%%.*}
-	x=${KV#*.*.}
-	local KV_MICRO=${x%%-*}
+	local KV x y kv_variant_list
+	KV=$(uname -r)
+	# full $KV
+	kv_variant_list="${KV}"
+	# remove any KV_EXTRA options to just get the full version
+	x=${KV%%-*}
+	# now slowly strip them
+	while [ -n "$x" ] && [ "$x" != "$y" ]; do 
+		kv_variant_list="${kv_variant_list} $x"
+		y=$x
+		x=${x%.*}
+	done 
 
 	local list= x= xx= y= args= mpargs= cnt=0 a=
-	for x in "$KV" \
-		$KV_MAJOR.$KV_MINOR.$KV_MICRO \
-		$KV_MAJOR.$KV_MINOR \
-	; do
+	for x in $kv_variant_list ; do
 		eval list=\$modules_$(shell_var "$x")
 		[ -n "$list" ] && break
 	done
@@ -45,10 +48,7 @@ start()
 		fi
 		aa=$(shell_var "$a")
 		xx=$(shell_var "$x")
-		for y in "$KV" \
-			$KV_MAJOR.$KV_MINOR.$KV_MICRO \
-			$KV_MAJOR.$KV_MINOR \
-		; do
+		for y in $kv_variant_list ; do
 			eval args=\$module_${aa}_args_$(shell_var "$y")
 			[ -n "${args}" ] && break
 			eval args=\$module_${xx}_args_$(shell_var "$y")
