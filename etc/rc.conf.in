@@ -47,6 +47,10 @@
 # logging can take place and as such cannot log the sysinit runlevel.
 #rc_logger="YES"
 
+# Through rc_logger_path you can specify a custom log file.
+# The default value is: /var/log/rc.log
+#rc_logger_path=/var/log/rc.log
+
 # By default we filter the environment for our running scripts. To allow other
 # variables through, add them here. Use a * to allow all variables through.
 #rc_env_allow="VAR1 VAR2"
