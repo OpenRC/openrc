@@ -57,10 +57,8 @@
 #include "rc.h"
 #include "rc-misc.h"
 
-#define LOGFILE RC_SVCDIR "/rc.log"
-#define PERMLOG "/var/log/rc.log"
-#define MOVELOG	"cat " LOGFILE " 2>/dev/null >>" PERMLOG " && "		      \
-	"rm -f " LOGFILE
+#define TMPLOG RC_SVCDIR "/rc.log"
+#define DEFAULTLOG "/var/log/rc.log"
 
 static int signal_pipe[2] = { -1, -1 };
 static int fd_stdout = -1;
@@ -149,12 +147,15 @@ rc_logger_open(const char *level)
 	int slave_tty;
 	struct termios tt;
 	struct winsize ws;
-	char *buffer;
+	char buffer[BUFSIZ];
 	struct pollfd fd[2];
 	int s = 0;
 	size_t bytes;
 	int i;
 	FILE *log = NULL;
+	FILE *plog = NULL;
+	const char *logfile;
+	int log_error = 0;
 
 	if (!rc_conf_yesno("rc_logger"))
 		return;
@@ -192,7 +193,7 @@ rc_logger_open(const char *level)
 		signal_pipe[1] = -1;
 
 		runlevel = level;
-		if ((log = fopen(LOGFILE, "a")))
+		if ((log = fopen(TMPLOG, "ae")))
 			write_time(log, "started");
 		else {
 			free(logbuf);
@@ -201,7 +202,6 @@ rc_logger_open(const char *level)
 			logbuf_len = 0;
 		}
 
-		buffer = xmalloc(sizeof (char) * BUFSIZ);
 		fd[0].fd = signal_pipe[0];
 		fd[0].events = fd[1].events = POLLIN;
 		fd[0].revents = fd[1].revents = 0;
@@ -242,9 +242,8 @@ rc_logger_open(const char *level)
 			if (fd[0].revents & (POLLIN | POLLHUP))
 				break;
 		}
-		free(buffer);
 		if (logbuf) {
-			if ((log = fopen(LOGFILE, "a"))) {
+			if ((log = fopen(TMPLOG, "ae"))) {
 				write_time(log, "started");
 				write_log(fileno(log), logbuf, logbuf_len);
 			}
@@ -255,10 +254,39 @@ rc_logger_open(const char *level)
 			fclose(log);
 		}
 
-		/* Try and cat our new logfile to a more permament location
-		   and then punt it */
-		if (system(MOVELOG) == -1)
-			eerror("system: %s: %s", MOVELOG, strerror(errno));
+		/* Append the temporary log to the real log */
+		logfile = rc_conf_value("rc_logger_path");
+		if (logfile == NULL)
+			logfile = DEFAULTLOG;
+
+		if ((plog = fopen(logfile, "ae"))) {
+			if ((log = fopen(TMPLOG, "re"))) {
+				while ((bytes = fread(buffer, sizeof(*buffer), BUFSIZ, log)) > 0) {
+					if (fwrite(buffer, sizeof(*buffer), bytes, plog) < bytes) {
+						log_error = 1;
+						eerror("Error: write(%s) failed: %s", logfile, strerror(errno));
+						break;
+					}
+				}
+			} else {
+				log_error = 1;
+				eerror("Error: fopen(%s) failed: %s", TMPLOG, strerror(errno));
+			}
+
+			fclose(log);
+			fclose(plog);
+		} else {
+			log_error = 1;
+			eerror("Error: fopen(%s) failed: %s", logfile, strerror(errno));
+		}
+
+		/* Try to keep the temporary log in case of errors */
+		if (!log_error) {
+			if (unlink(TMPLOG) == -1)
+				eerror("Error: unlink(%s) failed: %s", TMPLOG, strerror(errno));
+		} else if (exists(TMPLOG))
+			eerrorx("Warning: temporary logfile left behind: %s", TMPLOG);
+
 		exit(0);
 		/* NOTREACHED */
 
