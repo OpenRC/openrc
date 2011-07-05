@@ -34,7 +34,7 @@ start()
 	fi
 	m="^($m)$"
 	fs=
-	for x in $net_fs_list; do
+	for x in $net_fs_list $extra_net_fs_list; do
 		fs="$fs${fs:+|}$x"
 	done
 	[ -n "$fs" ] && fs="^($fs)$"

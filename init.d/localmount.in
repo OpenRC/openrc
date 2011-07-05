@@ -16,7 +16,7 @@ start()
 {
 	# Mount local filesystems in /etc/fstab.
 	local types="noproc" x= no_netdev=
-	for x in $net_fs_list; do
+	for x in $net_fs_list $extra_net_fs_list; do
 		types="${types},${x}"
 	done
 
@@ -70,7 +70,7 @@ stop()
 	einfo "Unmounting filesystems"
 	eindent
 	local fs=
-	for x in $net_fs_list; do
+	for x in $net_fs_list $extra_net_fs_list; do
 		fs="$fs${fs:+|}$x"
 	done
 	[ -n "$fs" ] && fs="^($fs)$"

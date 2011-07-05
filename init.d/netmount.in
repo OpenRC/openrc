@@ -44,7 +44,7 @@ start()
 	[ -x @SYSCONFDIR@/init.d/rpcbind ] && pmap="rpcbind"
 
 	local x= fs= rc=
-	for x in $net_fs_list; do
+	for x in $net_fs_list $extra_net_fs_list; do
 		case "$x" in
 			nfs|nfs4)
 			# If the nfsmount script took care of the nfs
@@ -81,7 +81,7 @@ stop()
 	ebegin "Unmounting network filesystems"
 	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
-	for x in $net_fs_list; do
+	for x in $net_fs_list $extra_net_fs_list; do
 		fs="$fs${fs:+,}$x"
 	done
 	if [ -n "$fs" ]; then
@@ -90,7 +90,7 @@ stop()
 
 	eindent
 	fs=
-	for x in $net_fs_list; do
+	for x in $net_fs_list $extra_net_fs_list; do
 		fs="$fs${fs:+|}$x"
 	done
 	[ -n "$fs" ] && fs="^($fs)$"
