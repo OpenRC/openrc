@@ -50,7 +50,7 @@ is_net_fs()
 
 	# Fall back on fs types
 	local t=$(mountinfo --fstype "$1")
-	for x in $net_fs_list; do
+	for x in $net_fs_list $extra_net_fs_list; do
 		[ "$x" = "$t" ] && return 0
 	done
 	return 1
