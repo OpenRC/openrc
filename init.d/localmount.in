@@ -37,16 +37,10 @@ stop()
 	local x= no_umounts_r="/|/dev|/dev/.*|${RC_SVCDIR}"
 	no_umounts_r="${no_umounts_r}|/bin|/sbin|/lib|/libexec"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
-	local OIFS=$IFS SIFS=${IFS-y}
-	IFS=$IFS:
+	local IFS="$IFS:"
 	for x in $no_umounts $RC_NO_UMOUNTS; do
 		no_umounts_r="$no_umounts_r|$x"
 	done
-	if [ "$SIFS" = y ]; then
-		IFS=$OIFS
-	else
-		unset IFS
-	fi
 
 	if [ "$RC_UNAME" = Linux ]; then
 		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/run|/sys|/sys/.*"

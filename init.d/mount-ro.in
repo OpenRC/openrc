@@ -22,16 +22,10 @@ start()
 	local m="/dev|/dev/.*|/proc|/proc.*|/sys|/sys/.*|${RC_SVCDIR}" x= fs=
 	m="$m|/bin|/sbin|/lib|/libexec"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
-	local OIFS=$IFS SIFS=${IFS-y} IFS=$IFS
-	IFS=$IFS:
+	local IFS="$IFS:"
 	for x in $no_umounts $RC_NO_UMOUNTS; do
 		m="$m|$x"
 	done
-	if [ "$SIFS" = y ]; then
-		IFS=$OIFS
-	else
-		unset IFS
-	fi
 	m="^($m)$"
 	fs=
 	for x in $net_fs_list $extra_net_fs_list; do
