@@ -173,10 +173,8 @@ rc_config_load(const char *file)
 		/* In shells the last item takes precedence, so we need to remove
 		   any prior values we may already have */
 		TAILQ_FOREACH(cline, config, entries) {
-			p = strchr(cline->value, '=');
-			if (p && strncmp(entry, cline->value,
-				(size_t)(p - cline->value)) == 0)
-			{
+			i = strlen(entry);
+			if (strncmp(entry, cline->value, i) == 0 && cline->value[i] == '=') {
 				/* We have a match now - to save time we directly replace it */
 				free(cline->value);
 				cline->value = newline;
@@ -202,15 +200,13 @@ rc_config_value(RC_STRINGLIST *list, const char *entry)
 {
 	RC_STRING *line;
 	char *p;
-	size_t len, dif;
+	size_t len;
 
 	len = strlen(entry);
 	TAILQ_FOREACH(line, list, entries) {
 		p = strchr(line->value, '=');
 		if (p != NULL) {
-			dif = (p - line->value);
-			if (dif == len &&
-			    strncmp(entry, line->value, dif) == 0)
+			if (strncmp(entry, line->value, len) == 0 && line->value[len] == '=')
 				return ++p;
 		}
 	}
