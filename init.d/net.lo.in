@@ -48,6 +48,9 @@ _get_array()
 	if [ -n "${BASH}" ]; then
 		case "$(declare -p "$1" 2>/dev/null)" in
 			"declare -a "*)
+				ewarn "You are using a bash array for $1."
+				ewarn "This feature will be removed in the future."
+				ewarn "Please see net.example for the correct format for $1."
 				eval "set -- \"\${$1[@]}\""
 				for _a; do
 					printf "%s\n" "${_a}"
@@ -69,6 +72,9 @@ _flatten_array()
 	if [ -n "${BASH}" ]; then
 		case "$(declare -p "$1" 2>/dev/null)" in
 			"declare -a "*)
+				ewarn "You are using a bash array for $1."
+				ewarn "This feature will be removed in the future."
+				ewarn "Please see net.example for the correct format for $1."
 				eval "set -- \"\${$1[@]}\""
 				for x; do
 					printf "'%s' " "$(printf "$x" | sed "s:':'\\\'':g")"
