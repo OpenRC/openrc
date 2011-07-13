@@ -54,6 +54,54 @@ rc_yesno(const char *value)
 }
 librc_hidden_def(rc_yesno)
 
+
+/**
+ * Read the entire @file into the buffer and set @len to the
+ * size of the buffer when finished. For C strings, this will
+ * be strlen(buffer) + 1.
+ * Don't forget to free the buffer afterwards!
+ */
+bool
+rc_getfile(const char *file, char **buffer, size_t *len)
+{
+	bool ret = false;
+	FILE *fp;
+	int fd;
+	struct stat st;
+	size_t done, left;
+
+	fp = fopen(file, "re");
+	if (!fp)
+		return false;
+
+	/* assume fileno() never fails */
+	fd = fileno(fp);
+
+	if (fstat(fd, &st))
+		goto finished;
+
+	left = st.st_size;
+	*len = left + 1; /* NUL terminator */
+	*buffer = xrealloc(*buffer, *len);
+	while (left) {
+		done = fread(*buffer, sizeof(*buffer[0]), left, fp);
+		if (done == 0 && ferror(fp))
+			goto finished;
+		left -= done;
+	}
+	ret = true;
+
+ finished:
+	if (!ret) {
+		free(*buffer);
+		*len = 0;
+	} else
+		(*buffer)[*len - 1] = '\0';
+	fclose(fp);
+	return ret;
+}
+librc_hidden_def(rc_getfile)
+
 ssize_t
 rc_getline(char **line, size_t *len, FILE *fp)
 {
