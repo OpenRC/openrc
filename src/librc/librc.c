@@ -767,19 +767,15 @@ librc_hidden_def(rc_service_state)
 char *
 rc_service_value_get(const char *service, const char *option)
 {
-	FILE *fp;
-	char *line = NULL;
+	char *buffer = NULL;
 	size_t len = 0;
 	char file[PATH_MAX];
 
 	snprintf(file, sizeof(file), RC_SVCDIR "/options/%s/%s",
 	    service, option);
-	if ((fp = fopen(file, "r"))) {
-		rc_getline(&line, &len, fp);
-		fclose(fp);
-	}
+	rc_getfile(file, &buffer, &len);
 
-	return line;
+	return buffer;
 }
 librc_hidden_def(rc_service_value_get)
 
