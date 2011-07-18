@@ -111,38 +111,32 @@ _add_address()
 		return 0
 	fi
 
-	# Convert an ifconfig line to iproute2
-	if [ "$2" = "netmask" ]; then
-		local one="$1" three="$3"
-		shift; shift; shift
-		set -- "${one}/$(_netmask2cidr "${three}")" "$@"
-	fi
-
-	# tunnel keyword is 'peer' in iproute2, but 'pointopoint' in ifconfig.
-	if [ "$2" = "pointopoint" ]; then
-		local one="$1"
-		shift; shift
-		set -- "${one}" "peer" "$@"
-	fi
+	local address netmask broadcast peer anycast label scope
+	local valid_lft preferred_lft home nodad
+	address="$1" ; shift
+	while [ -n "$*" ]; do
+		case "$1" in
+			netmask)
+				netmask="/$(_netmask2cidr "$2")" ; shift ; shift ;;
+			broadcast|brd)
+				broadcast="broadcast $2" ; shift ; shift ;;
+			pointopoint|pointtopoint|peer)
+				peer="peer $2" ; shift ; shift ;;
+			anycast|label|scope|valid_lft|preferred_lft)
+				eval "$1=$2" ; shift ; shift ;;
+			home|nodad)
+				eval "$1=$1" ; shift ;;
+		esac
+	done
 
 	# Always scope lo addresses as host unless specified otherwise
 	if [ "${IFACE}" = "lo" ]; then
-		set -- "$@" "scope" "host"
+		[ -z "$scope" ] && scope="scope host"
 	fi
 
-	# IPv4 specifics
-	case "$1" in
-		*.*.*.*)
-			case "$@" in
-				*" brd "*);;
-				*" broadcast "*);;
-				*) set -- "$@" brd +;;
-			esac
-			;;
-	esac
-
-	veinfo ip addr add "$@" dev "${IFACE}"
-	ip addr add "$@" dev "${IFACE}"
+	set -- "${address}${netmask}" $peer $broadcast $anycast $label $scope dev "${IFACE}" $valid_lft $preferred_lft $home $nodad
+	veinfo ip addr add "$@"
+	ip addr add "$@"
 }
 
 _add_route()
