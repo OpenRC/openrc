@@ -1100,7 +1100,8 @@ runscript(int argc, char **argv)
 	bool doneone = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
-	char path[PATH_MAX], lnk[PATH_MAX], *dir, *save = NULL, *save2 = NULL;
+	char path[PATH_MAX], lnk[PATH_MAX];
+	char *dir, *saveDir = NULL, *saveLnk = NULL;
 	char pidstr[10];
 	size_t l = 0, ll;
 	const char *file;
@@ -1132,14 +1133,14 @@ runscript(int argc, char **argv)
 	if (readlink(argv[1], lnk, sizeof(lnk)-1)) {
 		dir = dirname(path);
 		if (strchr(lnk, '/')) {
-			save = xstrdup(dir);
-			save2 = xstrdup(lnk);
-			dir = dirname(save2);
-			if (strcmp(dir, save) == 0)
+			saveDir = xstrdup(dir);
+			saveLnk = xstrdup(lnk);
+			dir = dirname(saveLnk);
+			if (strcmp(dir, saveDir) == 0)
 				file = basename_c(argv[1]);
 			else
 				file = basename_c(lnk);
-			dir = save;
+			dir = saveDir;
 		} else
 			file = basename_c(argv[1]);
 		ll = strlen(dir) + strlen(file) + 2;
@@ -1149,8 +1150,8 @@ runscript(int argc, char **argv)
 			free(service);
 			service = xstrdup(lnk);
 		}
-		free(save);
-		free(save2);
+		free(saveDir);
+		free(saveLnk);
 	}
 	if (!service)
 		service = xstrdup(path);
