@@ -14,7 +14,7 @@ start()
 {
 	# /etc/mtab could be a symlink to /proc/mounts
 	if [ ! -w /etc/mtab -a -L /etc/mtab ]; then
-		eeinfo "Skipping mtab update (non writeable symlink)"
+		einfo "Skipping mtab update (non writeable symlink)"
 		return 0
 	fi
 
