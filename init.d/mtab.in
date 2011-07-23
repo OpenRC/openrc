@@ -12,9 +12,10 @@ depend()
 
 start()
 {
-	# /etc/mtab could be a symlink to /proc/mounts
-	if [ ! -w /etc/mtab -a -L /etc/mtab ]; then
-		einfo "Skipping mtab update (non writeable symlink)"
+	# /etc/mtab could be a symlink to a location in /proc
+	if readlink -f /etc/mtab | grep -sq '^/proc/\(self\|[0-9]\+\)/mounts$'
+	then
+		einfo "Skipping mtab update (link points to location in /proc)"
 		return 0
 	fi
 
