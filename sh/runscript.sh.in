@@ -206,6 +206,12 @@ for _f in $required_files; do
 done
 unset _f
 
+if [ -n "$opts" ]; then
+		ewarn "Use of the opts variable is deprecated and will be"
+		ewarn "removed in the future."
+		ewarn "Please use extra_commands or extra_started_commands."
+fi
+
 while [ -n "$1" ]; do
 	# Sepcial case depend
 	if [ "$1" = depend ]; then
