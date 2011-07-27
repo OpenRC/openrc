@@ -16,6 +16,23 @@ sourcex()
 	fi
 }
 
+loadconfig()
+{
+	# If we're net.eth0 or openvpn.work then load net or openvpn config
+	_c=${RC_SVCNAME%%.*}
+	if [ -n "$_c" -a "$_c" != "$RC_SVCNAME" ]; then
+		if ! sourcex -e "$1/$_c.$RC_RUNLEVEL"; then
+			sourcex -e "$1/$_c"
+		fi
+	fi
+	unset _c
+
+	# Overlay with our specific config
+	if ! sourcex -e "$1/$RC_SVCNAME.$RC_RUNLEVEL"; then
+		sourcex -e "$1/$RC_SVCNAME"
+	fi
+}
+
 if [ ! -e ${RC_SVCDIR}/softlevel ]; then
 	eerror "You are attempting to run an openrc service on a"
 	eerror "system which openrc did not boot."
@@ -165,21 +182,9 @@ status()
 
 yesno $RC_DEBUG && set -x
 
-_conf_d=${RC_SERVICE%/*}/../conf.d
-# If we're net.eth0 or openvpn.work then load net or openvpn config
-_c=${RC_SVCNAME%%.*}
-if [ -n "$_c" -a "$_c" != "$RC_SVCNAME" ]; then
-	if ! sourcex -e "$_conf_d/$_c.$RC_RUNLEVEL"; then
-		sourcex -e "$_conf_d/$_c"
-	fi
+if ! loadconfig "${RC_SERVICE%/*}/../conf.d"; then
+		loadconfig "@SYSCONFDIR@/conf.d"
 fi
-unset _c
-
-# Overlay with our specific config
-if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
-	sourcex -e "$_conf_d/$RC_SVCNAME"
-fi
-unset _conf_d
 
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"

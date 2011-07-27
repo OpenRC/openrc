@@ -1100,8 +1100,7 @@ runscript(int argc, char **argv)
 	bool doneone = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
-	char path[PATH_MAX], lnk[PATH_MAX];
-	char *dir, *save = NULL, *saveLnk = NULL;
+	char *save = NULL;
 	char pidstr[10];
 	size_t l = 0, ll;
 	const char *file;
@@ -1121,40 +1120,7 @@ runscript(int argc, char **argv)
 
 	atexit(cleanup);
 
-	/* We need to work out the real full path to our service.
-	 * This works fine, provided that we ONLY allow multiplexed services
-	 * to exist in the same directory as the master link.
-	 * Also, the master link as to be a real file in the init dir. */
-	if (!realpath(argv[1], path)) {
-		fprintf(stderr, "realpath: %s\n", strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-	memset(lnk, 0, sizeof(lnk));
-	if (readlink(argv[1], lnk, sizeof(lnk)-1)) {
-		dir = dirname(path);
-		if (strchr(lnk, '/')) {
-			save = xstrdup(dir);
-			saveLnk = xstrdup(lnk);
-			dir = dirname(saveLnk);
-			if (strcmp(dir, save) == 0)
-				file = basename_c(argv[1]);
-			else
-				file = basename_c(lnk);
-			dir = save;
-		} else
-			file = basename_c(argv[1]);
-		ll = strlen(dir) + strlen(file) + 2;
-		service = xmalloc(ll);
-		snprintf(service, ll, "%s/%s", dir, file);
-		if (stat(service, &stbuf) != 0) {
-			free(service);
-			service = xstrdup(lnk);
-		}
-		free(save);
-		free(saveLnk);
-	}
-	if (!service)
-		service = xstrdup(path);
+	service = xstrdup(argv[1]);
 	applet = basename_c(service);
 
 	if (argc < 3)
