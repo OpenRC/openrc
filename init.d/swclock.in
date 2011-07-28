@@ -16,7 +16,9 @@ depend()
 start()
 {
 	ebegin "Setting the local clock based on last shutdown time"
-	swclock --warn
+	if ! swclock 2> /dev/null; then
+	swclock --warn @PREFIX@/sbin/runscript
+	fi
 	eend $?
 }
 
