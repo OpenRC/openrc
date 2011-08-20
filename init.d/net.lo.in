@@ -545,7 +545,9 @@ start()
 		[ -z "${config}" ] && break
 
 		set -- ${config}
-		ebegin "$1"
+		if [ "$1" != "null" -a "$1" != "noop" ]; then
+			ebegin "$1"
+		fi
 		eindent
 		case "$1" in
 			noop)
