@@ -725,7 +725,7 @@ ewarn(const char *EINFO_RESTRICT fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (!fmt || is_quiet())
+	if (!fmt)
 		return 0;
 	va_start(ap, fmt);
 	elogv(LOG_WARNING, fmt, ap);
