@@ -1184,8 +1184,6 @@ start_stop_daemon(int argc, char **argv)
 			    "nobody", &conv, &pamh);
 
 		if (pamr == PAM_SUCCESS)
-			pamr = pam_authenticate(pamh, PAM_SILENT);
-		if (pamr == PAM_SUCCESS)
 			pamr = pam_acct_mgmt(pamh, PAM_SILENT);
 		if (pamr == PAM_SUCCESS)
 			pamr = pam_open_session(pamh, PAM_SILENT);
