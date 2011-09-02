@@ -12,7 +12,7 @@ depend()
 
 start()
 {
-	if [ -l /etc/mtab ]
+	if [ -L /etc/mtab ]
 	then
 		einfo "Skipping mtab update (mtab is a symbolic link)"
 		return 0
