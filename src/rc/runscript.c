@@ -1346,7 +1346,7 @@ runscript(int argc, char **argv)
 					    strerror(errno));
 				unhotplug();
 			} else
-				svc_exec(optarg, NULL);
+				retval = svc_exec(optarg, NULL);
 
 			/* We should ensure this list is empty after
 			 * an action is done */
