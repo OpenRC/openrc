@@ -1103,7 +1103,6 @@ runscript(int argc, char **argv)
 	char *save = NULL;
 	char pidstr[10];
 	size_t l = 0, ll;
-	const char *file;
 	struct stat stbuf;
 
 	/* Show help if insufficient args */
