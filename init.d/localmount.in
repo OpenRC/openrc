@@ -34,8 +34,12 @@ start()
 stop()
 {
 	# We never unmount / or /dev or $RC_SVCDIR
-	local x= no_umounts_r="/|/dev|/dev/.*|${RC_SVCDIR}"
-	no_umounts_r="${no_umounts_r}|/bin|/sbin|/lib|/libexec"
+
+	# Bug 381783
+	local rc_svcdir=$(echo $RC_SVCDIR | sed 's:/lib\(32\|64\)\?/:/lib(32|64)?/:g')
+
+	local x= no_umounts_r="/|/dev|/dev/.*|${rc_svcdir}"
+	no_umounts_r="${no_umounts_r}|/bin|/sbin|/lib(32|64)?|/libexec"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
 	local IFS="$IFS:"
 	for x in $no_umounts $RC_NO_UMOUNTS; do
@@ -69,7 +73,7 @@ stop()
 	done
 	[ -n "$fs" ] && fs="^($fs)$"
 	do_unmount umount --skip-point-regex "$no_umounts_r" \
-		${fs:+--skip-fstype-regex} $fs --nonetdev
+		"${fs:+--skip-fstype-regex}" $fs --nonetdev
 	eoutdent
 
 	return 0
