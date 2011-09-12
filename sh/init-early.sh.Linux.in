@@ -5,24 +5,6 @@
 : ${CONSOLE:=/dev/console}
 : ${RC_LIBEXECDIR:=@LIBEXECDIR@}
 
-# Mount tmpfs on /run when directory exists.
-# /run is a new directory for storing volatile runtime data.
-# Read more about /run at https://lwn.net/Articles/436012
-if [ -d /run ]; then
-	if mountinfo -q /run; then
-		einfo "/run is already mounted, skipping"
-	else
-		ebegin "Mounting /run"
-		if ! fstabinfo --mount /run; then
-			mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run
-		fi
-		eend $?
-	fi
-	checkpath -d -m 0775 -o root:uucp /run/lock
-elif [ -e /run ]; then
-	einfo "Unable to mount /run since it is not a directory"
-fi
-
 if [ -e "$RC_LIBEXECDIR"/console/unicode ]; then
 	termencoding="%G"
 	kmode="-u"
