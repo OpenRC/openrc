@@ -54,15 +54,18 @@ tuntap_pre_start()
 		do_tunctl=true
 	elif type openvpn >/dev/null 2>&1; then
 		do_openvpn=true
-	else
+	elif type tunctl >/dev/null 2>&1; then
 		do_tunctl=true
 	fi
 
 	if ${do_openvpn}; then
 		openvpn --mktun --dev-type "${tuntap}" --dev "${IFACE}" \
 			${o_opts} >/dev/null
-	else
+	elif ${do_tunctl}; then
 		tunctl ${t_opts} -t "${IFACE}" >/dev/null
+	else
+		eerror "Neither openvpn nor tunctl has been found, please install"
+		eerror "either net-misc/openvpn or sys-apps/usermode-utilities."
 	fi
 	eend $? && _up && service_set_value tuntap "${tuntap}"
 }
