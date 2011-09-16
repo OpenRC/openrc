@@ -40,7 +40,7 @@ arping_address()
 		[ -z "$(_get_inet_address)" ] && opts="${opts} -D"
 
 		foundmac="$(arping -w "${w}" ${opts} -f -I "${IFACE}" "${ip}" 2>/dev/null | \
-		sed -n -e 'y/abcdef/ABCDEF/' -e 's/.*\[\([^]]*\)\].*/\1/p')"
+			sed -n -e 'y/abcdef/ABCDEF/' -e 's/[^[]*\[\([^]]*\)\].*/\1/p')"
 	fi
 	[ -z "${foundmac}" ] && return 1
 
