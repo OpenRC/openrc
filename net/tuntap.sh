@@ -65,7 +65,7 @@ tuntap_pre_start()
 		tunctl ${t_opts} -t "${IFACE}" >/dev/null
 	else
 		eerror "Neither openvpn nor tunctl has been found, please install"
-		eerror "either net-misc/openvpn or sys-apps/usermode-utilities."
+		eerror "either \"openvpn\" or \"usermode-utilities\"."
 	fi
 	eend $? && _up && service_set_value tuntap "${tuntap}"
 }
