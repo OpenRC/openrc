@@ -31,6 +31,7 @@ ethtool_pre_start() {
 		[ -z "${args}" ] && continue
 
 		# Split on \n
+		OIFS="${IFS}"
 		local IFS="$__IFS"
 
 		for p in ${args} ; do
@@ -38,6 +39,7 @@ ethtool_pre_start() {
 			local args_pretty="$(_trim "${p}")"
 			# Do nothing if empty
 			[ -z "${args_pretty}" ] && continue
+			[ "${opt}" = "ring" ] && opt="set-ring"
 			args_pretty="--${opt} $IFACE ${args_pretty}"
 			args="--${opt} $IFACE ${args}"
 			ebegin "ethtool ${args_pretty}"
