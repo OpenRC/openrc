@@ -49,8 +49,7 @@ sourcex "@SYSCONFDIR@/init.d/functions.sh"
 sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
 
 # Support LiveCD foo
-if [ -r /sbin/livecd-functions.sh ]; then
-	sourcex "/sbin/livecd-functions.sh"
+if sourcex -e "/sbin/livecd-functions.sh"; then
 	livecd_read_commandline
 fi
 
