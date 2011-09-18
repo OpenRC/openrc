@@ -38,8 +38,7 @@ start()
 	fi
 
 	# Setup Kernel Support for miscellaneous Binary Formats
-	if [ -d /proc/sys/fs/binfmt_misc ] \
-		&& ! mountinfo -q /proc/sys/fs/binfmt_misc; then
+	if [ -d /proc/sys/fs/binfmt_misc -a ! -e /proc/sys/fs/binfmt_misc/register ]; then
 		if grep -qs binfmt_misc /proc/filesystems; then
 			ebegin "Mounting misc binary format filesystem"
 			mount -t binfmt_misc -o nodev,noexec,nosuid \
