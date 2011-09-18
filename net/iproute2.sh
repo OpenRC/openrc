@@ -301,6 +301,9 @@ iproute2_post_start()
 
 iproute2_post_stop()
 {
+	# Only do something if the interface actually exist
+	_exists || return
+
 	# Kernel may not have IP built in
 	if [ -e /proc/net/route ]; then
 		local rules="$(service_get_value "ip_rule")"
