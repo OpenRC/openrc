@@ -37,16 +37,6 @@ start()
 		fi
 	fi
 
-	# Setup Kernel Support for the NFS daemon status
-	if [ -d /proc/fs/nfsd ] && ! mountinfo -q /proc/fs/nfsd; then
-		if grep -qs nfsd /proc/filesystems; then
-			ebegin "Mounting NFS filesystem"
-			mount -t nfsd -o nodev,noexec,nosuid \
-				nfsd /proc/fs/nfsd
-			eend $?
-		fi
-	fi
-
 	# Setup Kernel Support for miscellaneous Binary Formats
 	if [ -d /proc/sys/fs/binfmt_misc ] \
 		&& ! mountinfo -q /proc/sys/fs/binfmt_misc; then
