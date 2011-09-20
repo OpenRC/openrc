@@ -41,6 +41,15 @@ depend()
 	done
 }
 
+_array_helper() {
+	local _a=
+
+	eval _a=\$$1
+	_a=$(echo "${_a}" | sed -e 's:^[[:space:]]*::' -e 's:[[:space:]]*$::' -e '/^$/d' -e 's:[[:space:]]\{1,\}: :g')
+
+	[ -n "${_a}" ] && printf "%s\n" "${_a}"
+}
+
 # Support bash arrays - sigh
 _get_array()
 {
@@ -60,10 +69,7 @@ _get_array()
 		esac
 	fi
 
-	eval _a=\$$1
-	printf "%s" "${_a}"
-	printf "\n"
-	[ -n "${_a}" ]
+	_array_helper $1
 }
 
 # Flatten bash arrays to simple strings
@@ -84,10 +90,7 @@ _flatten_array()
 		esac
 	fi
 
-	eval _a=\$$1
-	printf "%s" "${_a}"
-	printf "\n"
-	[ -n "${_a}" ]
+	_array_helper $1
 }
 
 _wait_for_carrier()
