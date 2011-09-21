@@ -301,9 +301,6 @@ iproute2_post_start()
 
 iproute2_post_stop()
 {
-	# Only do something if the interface actually exist
-	_exists || return
-
 	# Kernel may not have IP built in
 	if [ -e /proc/net/route ]; then
 		local rules="$(service_get_value "ip_rule")"
@@ -311,7 +308,11 @@ iproute2_post_stop()
 			einfo "Removing RPDB rules"
 			_ip_rule_runner del "${rules}"
 		fi
-		ip route flush table cache dev "${IFACE}"
+
+		# Only do something if the interface actually exist
+		if _exists; then
+			ip route flush table cache dev "${IFACE}"
+		fi
 	fi
 
 	# Don't delete sit0 as it's a special tunnel
