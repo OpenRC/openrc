@@ -101,9 +101,11 @@ vlan_post_start()
 	return 0
 }
 
-vlan_post_stop()
+vlan_pre_stop()
 {
 	local vlan=
+
+	_exists || return 1
 
 	for vlan in $(_get_vlans); do
 		einfo "Removing VLAN ${vlan##*.} from ${IFACE}"
