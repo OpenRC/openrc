@@ -16,6 +16,7 @@ dir_writeable()
 }
 
 : ${wipe_tmp:=${WIPE_TMP:-yes}}
+: ${log_dmesg:=${LOG_DMESG:-yes}}
 
 cleanup_tmp_dir()
 {
@@ -142,11 +143,13 @@ start()
 		fi
 	fi
 
-	if $logw || dir_writeable /var/log; then
-		# Create an 'after-boot' dmesg log
-		if [ "$RC_SYS" != VSERVER -a "$RC_SYS" != OPENVZ ]; then
-			dmesg > /var/log/dmesg
-			chmod 640 /var/log/dmesg
+	if yesno $log_dmesg; then
+		if $logw || dir_writeable /var/log; then
+			# Create an 'after-boot' dmesg log
+			if [ "$RC_SYS" != VSERVER -a "$RC_SYS" != OPENVZ ]; then
+				dmesg > /var/log/dmesg
+				chmod 640 /var/log/dmesg
+			fi
 		fi
 	fi
 
