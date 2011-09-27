@@ -581,6 +581,18 @@
 # NOTE: depend functions only work in /etc/conf.d/net
 # and not in profile configs such as /etc/conf.d/net.foo
 
+# MAC-VLAN support
+# The following configuration can be used to create a new interface 'macvlan0'
+# linked to 'eth0'
+#macvlan_macvlan0="eth0"
+
+# MAC-VLAN mode (private, vepa, bridge, passtru)
+#mode_macvlan0="private"
+
+# IP address, MAC address, ... are configured as a normal interface
+#config_macvlan0="192.168.20.20/24"
+#mac_macvlan0="00:50:06:20:20:20"
+
 #-----------------------------------------------------------------------------
 # Bonding
 # For link bonding/trunking on 2.4 kernels, or kernels without sysfs
