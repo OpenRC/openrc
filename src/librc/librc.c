@@ -281,6 +281,8 @@ rc_sys_v1(void)
 	else if (file_regex("/proc/self/status",
 		"envID:[[:space:]]*[1-9]"))
 		return RC_SYS_OPENVZ; /* old test */
+	else if (file_regex("/proc/1/environ", "container=lxc"))
+		return RC_SYS_LXC;
 #endif
 
 	return NULL;
