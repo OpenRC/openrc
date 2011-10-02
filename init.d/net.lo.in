@@ -41,7 +41,9 @@ depend()
 	done
 }
 
-_array_helper() {
+# Support bash arrays - sigh
+_array_helper()
+{
 	local _a=
 
 	eval _a=\$$1
@@ -50,7 +52,6 @@ _array_helper() {
 	[ -n "${_a}" ] && printf "%s\n" "${_a}"
 }
 
-# Support bash arrays - sigh
 _get_array()
 {
 	local _a=
