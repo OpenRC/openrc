@@ -77,7 +77,17 @@ vlan_post_start()
 		eval vegress=\$vlan${vlan}_egress
 		[ -z "${vegress}" ] || vegress="egress-qos-map ${vegress}"
 
-		e="$(ip link add link "${IFACE}" name "${vname}" type vlan id "${vlan}" ${vflags} ${vingress} ${vegress} 2>&1 1>/dev/null)"
+		local txqueuelen=
+		eval txqueuelen=\$txqueuelen_vlan${vlan}
+		local mac=
+		eval mac=\$mac_vlan${vlan}
+		local broadcast=
+		eval broadcast=\$broadcast_vlan${vlan}
+		local mtu=
+		eval mtu=\$mtu_vlan${vlan}
+		local opts="${txqueuelen:+txqueuelen} ${txqueuelen} ${mac:+address} ${mac} ${broadcast:+broadcast} ${broadcast} ${mtu+:mtu} ${mtu}"
+
+		e="$(ip link add link "${IFACE}" name "${vname}" ${opts} type vlan id "${vlan}" ${vflags} ${vingress} ${vegress} 2>&1 1>/dev/null)"
 		if [ -n "${e}" ]; then
 			eend 1 "${e}"
 			continue
