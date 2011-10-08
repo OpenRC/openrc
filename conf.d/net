@@ -1,4 +1,4 @@
 # This blank configuration will automatically use DHCP for any net.*
 # scripts in /etc/init.d.  To create a more complete configuration,
-# please review /usr/share/doc/openrc/net.example and save your configuration
+# please review /usr/share/doc/openrc*/net.example* and save your configuration
 # in /etc/conf.d/net (this file :]!).
