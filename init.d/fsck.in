@@ -91,7 +91,7 @@ start()
 			_reboot
 		fi;;
 	8)	ewend 1 "Operational error"; return 0;;
-	12)	ewend 1 "fsck interupted";;
+	12)	ewend 1 "fsck interrupted";;
 	*)	eend 2 "Filesystems couldn't be fixed";;
 	esac
 	_abort || return 1

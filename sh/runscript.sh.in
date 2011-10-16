@@ -88,7 +88,7 @@ keyword() {
 	[ -n "$*" ] && echo "keyword $*"
 }
 
-# Descript the init script to the user
+# Describe the init script to the user
 describe()
 {
 	if [ -n "$description" ]; then
@@ -217,7 +217,7 @@ if [ -n "$opts" ]; then
 fi
 
 while [ -n "$1" ]; do
-	# Sepcial case depend
+	# Special case depend
 	if [ "$1" = depend ]; then
 		shift
 		_depend

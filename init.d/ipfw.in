@@ -59,7 +59,7 @@ start() {
 		return 1
 	fi
 
-	# Use a statefull firewall
+	# Use a stateful firewall
 	ipfw add check-state
 	ipfw add pass tcp from me to any established
 
@@ -123,7 +123,7 @@ start() {
 	ipfw add deny udp from any to any 520 in
 
 	# Noise from webbrowsing.
-	# The statefull filter is a bit agressive, and will cause some
+	# The stateful filter is a bit aggressive, and will cause some
 	# connection teardowns to be logged.
 	ipfw add deny tcp from any 80,443 to any 1024-65535 in
 

@@ -19,7 +19,7 @@ start() {
 }
 
 stop() {
-	ebegin "Deactiving kernel core dump device"
+	ebegin "Deactivating kernel core dump device"
 	dumpon off
 	eend $?
 }

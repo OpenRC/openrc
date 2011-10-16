@@ -11,7 +11,7 @@ depend()
 
 start()
 {
-	ebegin "Bulding the dev database"
+	ebegin "Building the dev database"
 	if [ /var/run/dev.db -nt /dev ]; then
 		:
 	else
