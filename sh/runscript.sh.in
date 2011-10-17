@@ -98,7 +98,8 @@ describe()
 	fi
 
 	local svc= desc=
-	for svc in ${extra_commands:-$opts} $extra_started_commands; do
+	for svc in ${extra_commands:-$opts} $extra_started_commands \
+		$extra_stopped_commands; do
 		eval desc=\$description_$svc
 		if [ -n "$desc" ]; then
 			einfo "$HILITE$svc$NORMAL: $desc"
@@ -213,7 +214,7 @@ unset _f
 if [ -n "$opts" ]; then
 		ewarn "Use of the opts variable is deprecated and will be"
 		ewarn "removed in the future."
-		ewarn "Please use extra_commands or extra_started_commands."
+		ewarn "Please use extra_commands, extra_started_commands or extra_stopped_commands."
 fi
 
 while [ -n "$1" ]; do
@@ -225,7 +226,7 @@ while [ -n "$1" ]; do
 	fi
 	# See if we have the required function and run it
 	for _cmd in describe start stop status ${extra_commands:-$opts} \
-		$extra_started_commands
+		$extra_started_commands $extra_stopped_commands
 	do
 		if [ "$_cmd" = "$1" ]; then
 			if [ "$(command -v "$1")" = "$1" ]; then
@@ -249,6 +250,16 @@ while [ -n "$1" ]; do
 					if [ "$_cmd" = "$1" ]; then
 						if ! service_started; then
 							eerror "$RC_SVCNAME: cannot \`$1' as it has not been started"
+							exit 1
+						fi
+					fi
+				done
+				# Check to see if we need to be stopped before
+				# we can run this command
+				for _cmd in $extra_stopped_commands; do
+					if [ "$_cmd" = "$1" ]; then
+						if ! service_stopped; then
+							eerror "$RC_SVCNAME: cannot \`$1' as it has not been stopped"
 							exit 1
 						fi
 					fi

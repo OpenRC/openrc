@@ -526,7 +526,9 @@ rc_service_exists(const char *service)
 }
 librc_hidden_def(rc_service_exists)
 
-#define OPTSTR ". '%s'; echo $extra_commands $extra_started_commands"
+#define OPTSTR \
+". '%s'; echo $extra_commands $extra_started_commands $extra_stopped_commands"
+
 RC_STRINGLIST *
 rc_service_extra_commands(const char *service)
 {
