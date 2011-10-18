@@ -1,5 +1,0 @@
-INC+=		ifwatchd.sh
-
-.SUFFIXES:	.sh.BSD.in
-.sh.BSD.in.sh:
-	${CP} $< $@

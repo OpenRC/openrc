@@ -1,6 +1,0 @@
-SRCS+=		init.sh.in
-
-.SUFFIXES:	.sh.BSD.in
-.sh.BSD.in.sh:
-	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
-

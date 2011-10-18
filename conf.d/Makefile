@@ -6,7 +6,16 @@ CLEANFILES+=	network staticroute
 
 MK=	../mk
 include ${MK}/os.mk
-include Makefile.${OS}
+
+ifeq ($(OS),FreeBSD)
+CONF+=	ipfw moused powerd rarpd savecore syscons
+else ifeq ($(OS),Linux)
+CONF+=	consolefont dmesg hwclock keymaps killprocs modules
+SOS=	Linux
+else ifeq ($(OS),NetBSD)
+CONF+=	moused rarpd savecore
+endif
+
 include ${MK}/scripts.mk
 
 SOS?=	BSD

@@ -1,8 +1,0 @@
-SRCS+=		init.sh.in
-
-SRCS+=		ifwatchd-carrier.sh.in ifwatchd-nocarrier.sh.in
-BIN+=		ifwatchd-carrier.sh ifwatchd-nocarrier.sh
-
-.SUFFIXES:	.sh.BSD.in
-.sh.BSD.in.sh:
-	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@

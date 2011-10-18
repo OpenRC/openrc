@@ -1,1 +1,0 @@
-BOOT+=		hostid newsyslog savecore syslogd swap-blk

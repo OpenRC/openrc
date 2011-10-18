@@ -1,7 +1,0 @@
-SRCS+=		init.sh.in init-early.sh.in udhcpc-hook.sh.in
-BIN+=		init-early.sh udhcpc-hook.sh
-
-.SUFFIXES:	.sh.Linux.in
-.sh.Linux.in.sh:
-	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
-

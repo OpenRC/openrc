@@ -1,5 +1,0 @@
-# Generic BSD stuff
-BOOT+=		hostid net.lo0 newsyslog savecore syslogd
-
-# NetBSD specific stuff
-BOOT+=		devdb swap-blk ttys wscons

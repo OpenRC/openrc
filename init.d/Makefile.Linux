@@ -1,9 +1,0 @@
-NET_LO=	net.lo
-
-SRCS+=	devfs.in dmesg.in hwclock.in consolefont.in keymaps.in killprocs.in \
-	modules.in mount-ro.in mtab.in numlock.in procfs.in sysfs.in \
-	termencoding.in
-
-.SUFFIXES:	.Linux.in
-.Linux.in:
-	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@

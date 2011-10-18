@@ -1,5 +1,0 @@
-SRCS+=		net.example.in
-
-.SUFFIXES:	.BSD.in
-.BSD.in:
-	${CP} $< $@
