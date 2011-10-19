@@ -9,14 +9,14 @@ INSTALLAFTER=	_installafter
 MK=	../mk
 include ${MK}/os.mk
 
-ifeq ($(OS),FreeBSD)
+ifeq (${OS},FreeBSD)
 SRCS+=		init.sh.in
 
 .SUFFIXES:	.sh.BSD.in
 .sh.BSD.in.sh:
 	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
-else ifeq ($(OS),Linux)
+else ifeq (${OS},Linux)
 SRCS+=		init.sh.in init-early.sh.in udhcpc-hook.sh.in
 BIN+=		init-early.sh udhcpc-hook.sh
 
@@ -24,7 +24,7 @@ BIN+=		init-early.sh udhcpc-hook.sh
 .sh.Linux.in.sh:
 	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
-else ifeq ($(OS),NetBSD)
+else ifeq (${OS},NetBSD)
 SRCS+=		init.sh.in
 
 SRCS+=		ifwatchd-carrier.sh.in ifwatchd-nocarrier.sh.in

@@ -16,19 +16,19 @@ include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/gitignore.mk
 
-ifeq ($(OS),BSD)
+ifeq (${OS},BSD)
 BOOT+=		hostid newsyslog savecore syslogd swap-blk
-else ifeq ($(OS),FreeBSD)
+else ifeq (${OS},FreeBSD)
 # Generic BSD stuff
 BOOT+=		hostid net.lo0 newsyslog savecore syslogd
 
 # FreeBSD specific stuff
 BOOT+=		adjkerntz dumpon syscons
-else ifeq ($(OS),Linux)
+else ifeq (${OS},Linux)
 SYSINIT+=	devfs dmesg
 BOOT+=		hwclock keymaps modules mtab procfs termencoding
 SHUTDOWN+=	killprocs mount-ro
-else ifeq ($(OS),NetBSD)
+else ifeq (${OS},NetBSD)
 # Generic BSD stuff
 BOOT+=		hostid net.lo0 newsyslog savecore syslogd
 

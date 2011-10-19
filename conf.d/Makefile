@@ -7,12 +7,12 @@ CLEANFILES+=	network staticroute
 MK=	../mk
 include ${MK}/os.mk
 
-ifeq ($(OS),FreeBSD)
+ifeq (${OS},FreeBSD)
 CONF+=	ipfw moused powerd rarpd savecore syscons
-else ifeq ($(OS),Linux)
+else ifeq (${OS},Linux)
 CONF+=	consolefont dmesg hwclock keymaps killprocs modules
 SOS=	Linux
-else ifeq ($(OS),NetBSD)
+else ifeq (${OS},NetBSD)
 CONF+=	moused rarpd savecore
 endif
 

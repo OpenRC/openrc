@@ -6,14 +6,14 @@ INC=	dhclient.sh dhcpcd.sh ifconfig.sh macchanger.sh macnet.sh \
 MK=	../mk
 include ${MK}/os.mk
 
-ifeq ($(OS),FreeBSD)
+ifeq (${OS},FreeBSD)
 SRCS+=		iwconfig.sh.in
 INC+=		iwconfig.sh
 
 .SUFFIXES:	.sh.BSD.in
 .sh.BSD.in.sh:
 	${CP} $< $@
-else ifeq ($(OS),Linux)
+else ifeq (${OS},Linux)
 SRCS+=		iwconfig.sh.in
 INC+=		adsl.sh apipa.sh arping.sh bonding.sh br2684ctl.sh bridge.sh \
 		ccwgroup.sh clip.sh ethtool.sh iproute2.sh ifplugd.sh ip6to4.sh \
@@ -23,7 +23,7 @@ INC+=		adsl.sh apipa.sh arping.sh bonding.sh br2684ctl.sh bridge.sh \
 .SUFFIXES:	.sh.Linux.in
 .sh.Linux.in.sh:
 	${CP} $< $@
-else ifeq ($(OS),NetBSD)
+else ifeq (${OS},NetBSD)
 INC+=		ifwatchd.sh
 
 .SUFFIXES:	.sh.BSD.in

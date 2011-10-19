@@ -4,19 +4,19 @@ INC=	net.example
 MK=	../mk
 include ${MK}/os.mk
 
-ifeq ($(OS),FreeBSD)
+ifeq (${OS},FreeBSD)
 SRCS+=		net.example.in
 
 .SUFFIXES:	.BSD.in
 .BSD.in:
 	${CP} $< $@
-else ifeq ($(OS),Linux)
+else ifeq (${OS},Linux)
 SRCS+=		net.example.in
 
 .SUFFIXES:	.Linux.in
 .Linux.in:
 	${CP} $< $@
-else ifeq ($(OS),NetBSD)
+else ifeq (${OS},NetBSD)
 SRCS+=		net.example.in
 
 .SUFFIXES:	.BSD.in
