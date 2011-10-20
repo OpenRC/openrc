@@ -1,7 +1,8 @@
 BOOT=		bootmisc fsck hostname localmount network \
-		root staticroute swap sysctl urandom
+		root staticroute swap sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
-SHUTDOWN=	savecache
+SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
+SYSINIT=	${SYSINIT-${OS}}
 
 LEVELDIR=	${DESTDIR}/${SYSCONFDIR}/runlevels
 SYSINITDIR=	${LEVELDIR}/sysinit
@@ -16,25 +17,25 @@ include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/gitignore.mk
 
-ifeq (${OS},BSD)
-BOOT+=		hostid newsyslog savecore syslogd swap-blk
-else ifeq (${OS},FreeBSD)
-# Generic BSD stuff
-BOOT+=		hostid net.lo0 newsyslog savecore syslogd
+BOOT-${OS}=
+SHUTDOWN-${OS}=
+SYSINIT-${OS}=
 
+BOOT-BSD=	hostid newsyslog savecore syslogd swap-blk
+
+# Generic BSD stuff
+BOOT-FreeBSD=	hostid net.lo0 newsyslog savecore syslogd
 # FreeBSD specific stuff
-BOOT+=		adjkerntz dumpon syscons
-else ifeq (${OS},Linux)
-SYSINIT+=	devfs dmesg
-BOOT+=		hwclock keymaps modules mtab procfs termencoding
-SHUTDOWN+=	killprocs mount-ro
-else ifeq (${OS},NetBSD)
-# Generic BSD stuff
-BOOT+=		hostid net.lo0 newsyslog savecore syslogd
+BOOT-FreeBSD+=	adjkerntz dumpon syscons
 
+BOOT-Linux=	hwclock keymaps modules mtab procfs termencoding
+SHUTDOWN-Linux=	killprocs mount-ro
+SYSINIT-Linux=	devfs dmesg
+
+# Generic BSD stuff
+BOOT-NetBSD=	hostid net.lo0 newsyslog savecore syslogd
 # NetBSD specific stuff
-BOOT+=		devdb swap-blk ttys wscons
-endif
+BOOT-NetBSD+=	devdb swap-blk ttys wscons
 
 all:
 

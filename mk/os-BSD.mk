@@ -3,4 +3,7 @@
 
 # Generic definitions
 
+PKG_PREFIX?=	/usr/local
+SFX=		.BSD.in
+
 LIBKVM?=	-lkvm

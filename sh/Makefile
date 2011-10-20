@@ -1,41 +1,28 @@
 DIR=	${LIBEXECDIR}/sh
-SRCS=	functions.sh.in gendepends.sh.in init-common-post.sh.in \
-	rc-functions.sh.in runscript.sh.in
+SRCS=	init.sh.in functions.sh.in gendepends.sh.in init-common-post.sh.in \
+	rc-functions.sh.in runscript.sh.in ${SRCS-${OS}}
 INC=	init-common-post.sh rc-mount.sh functions.sh rc-functions.sh
-BIN=	gendepends.sh init.sh runscript.sh
+BIN=	gendepends.sh init.sh runscript.sh ${BIN-${OS}}
 
 INSTALLAFTER=	_installafter
 
+SFX_PFX=	.sh
 MK=	../mk
 include ${MK}/os.mk
 
-ifeq (${OS},FreeBSD)
-SRCS+=		init.sh.in
+SRCS-FreeBSD=
+BIN-FreeBSD=
 
-.SUFFIXES:	.sh.BSD.in
-.sh.BSD.in.sh:
-	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
+SRCS-Linux=	init-early.sh.in udhcpc-hook.sh.in
+BIN-Linux=	init-early.sh udhcpc-hook.sh
 
-else ifeq (${OS},Linux)
-SRCS+=		init.sh.in init-early.sh.in udhcpc-hook.sh.in
-BIN+=		init-early.sh udhcpc-hook.sh
-
-.SUFFIXES:	.sh.Linux.in
-.sh.Linux.in.sh:
-	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
-
-else ifeq (${OS},NetBSD)
-SRCS+=		init.sh.in
-
-SRCS+=		ifwatchd-carrier.sh.in ifwatchd-nocarrier.sh.in
-BIN+=		ifwatchd-carrier.sh ifwatchd-nocarrier.sh
-
-.SUFFIXES:	.sh.BSD.in
-.sh.BSD.in.sh:
-	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
-endif
+SRCS-NetBSD=	ifwatchd-carrier.sh.in ifwatchd-nocarrier.sh.in
+BIN-NetBSD=	ifwatchd-carrier.sh ifwatchd-nocarrier.sh
 
 include ${MK}/scripts.mk
+
+${SFX}.sh:
+	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
 _installafter:
 	${INSTALL} -d ${DESTDIR}/${INITDIR}

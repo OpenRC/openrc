@@ -10,3 +10,5 @@ include ${MK}/os-${OS}.mk
 
 RC_LIB=		/$(LIBNAME)/rc
 
+SFX:=		${SFX_PFX}${SFX}
+.SUFFIXES:	${SFX}

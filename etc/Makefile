@@ -1,24 +1,26 @@
 DIR=	${SYSCONFDIR}
-CONF=	rc.conf
+SRCS=	rc.conf.in rc.in rc.shutdown.in
+BIN=	${BIN-${OS}}
+CONF=	rc.conf ${BIN-${OS}}
 
 CLEANFILES+=	rc.conf
 
 MK=	../mk
 include ${MK}/os.mk
 
-ifeq (${OS},FreeBSD)
-SED_EXTRA=	-e 's:@TERM@:cons25:g'
-SRCS+=		rc.conf.in rc.in rc.shutdown.in
-CONF+=		devd.conf
-BIN+=		rc rc.shutdown rc.devd
-else ifeq (${OS},Linux)
-SED_EXTRA=	-e 's:@TERM@:wsvt25:g'
-SRCS+=		rc.conf.in rc.in rc.shutdown.in
-else ifeq (${OS},NetBSD)
-SED_EXTRA=	-e 's:@TERM@:wsvt25:g'
-SRCS+=		rc.conf.in rc.in rc.shutdown.in
-BIN+=		rc rc.shutdown
-endif
+SED_EXTRA-FreeBSD=	-e 's:@TERM@:cons25:g'
+BIN-FreeBSD=		rc rc.shutdown rc.devd
+CONF-FreeBSD=		devd.conf
+
+SED_EXTRA-Linux=	-e 's:@TERM@:wsvt25:g'
+BIN-Linux=
+CONF-Linux=
+
+SED_EXTRA-NetBSD=	-e 's:@TERM@:wsvt25:g'
+BIN-NetBSD=		rc rc.shutdown
+CONF-NetBSD=
+
+SED_EXTRA=	${SED_EXTRA-${OS}}
 
 include ${MK}/scripts.mk
 
