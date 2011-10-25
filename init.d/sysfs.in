@@ -50,6 +50,26 @@ mount_misc()
 			eend $?
 		fi
 	fi
+
+	# Setup Kernel Support for configfs
+	if [ -d /sys/kernel/config ] && ! mountinfo -q /sys/kernel/config; then
+		if grep -qs configfs /proc/filesystems; then
+			ebegin "Mounting config filesystem"
+			mount -n -t configfs -o  nodev,noexec,nosuid \
+				configfs /sys/kernel/config
+			eend $?
+		fi
+	fi
+
+	# Setup Kernel Support for cgroup
+	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
+		if grep -qs cgroup /proc/filesystems; then
+			ebegin "Mounting cgroup filesystem"
+			mount -n -t cgroup -o  nodev,noexec,nosuid \
+				cgroup /sys/fs/cgroup
+			eend $?
+		fi
+	fi
 }
 
 start()
