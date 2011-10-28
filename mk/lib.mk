@@ -14,12 +14,10 @@ _LIBS=			lib${LIB}.a ${SHLIB_NAME}
 
 CLEANFILES+=		${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK}
 
-.SUFFIXES:		.So
-
-.c.o:
+%.o: %.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -c $< -o $@
 
-.c.So:
+%.So: %.c
 	${CC} ${PICFLAG} -DPIC ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
 all: depend ${_LIBS}

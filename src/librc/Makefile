@@ -39,8 +39,7 @@ endif
 endif
 SED_CMD+=	${_LCL_PREFIX}
 
-.SUFFIXES:	.h.in .h
-.h.in.h:
+%.h: %.h.in
 	${SED} ${SED_CMD} $< > $@
 ${SRCS}:	rc.h
 

@@ -15,11 +15,10 @@ _LCL_SED:=		$(shell ${_LCL_SED_SH})
 SED_REPLACE=		-e 's:@SHELL@:${SH}:g' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR@:${SYSCONFDIR}:g' -e 's:@LIBEXECDIR@:${LIBEXECDIR}:g' -e 's:@PREFIX@:${PREFIX}:g' -e 's:@RC_SYS_DEFAULT@:${MKRCSYS}:g' ${_PKG_SED} ${_LCL_SED}
 
 # Tweak our shell scripts
-.SUFFIXES:	.sh.in .in
-.sh.in.sh:
+%.sh: %.sh.in
 	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
-.in:
+%: %.in
 	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
 all: ${OBJS} ${TARGETS}

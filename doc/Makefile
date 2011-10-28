@@ -5,7 +5,7 @@ INC=	net.example
 MK=	../mk
 include ${MK}/os.mk
 
-${SFX}:
+%.example.in: %.example${SFX}
 	${CP} $< $@
 
 include ${MK}/scripts.mk

@@ -18,7 +18,7 @@ INC-Linux=	adsl.sh apipa.sh arping.sh bonding.sh br2684ctl.sh bridge.sh \
 SRCS-NetBSD=
 INC-NetBSD=	ifwatchd.sh
 
-${SFX}.sh:
+%.sh: %.sh${SFX}
 	${CP} $< $@
 
 include ${MK}/scripts.mk

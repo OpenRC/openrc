@@ -6,7 +6,6 @@ BIN=	gendepends.sh init.sh runscript.sh ${BIN-${OS}}
 
 INSTALLAFTER=	_installafter
 
-SFX_PFX=	.sh
 MK=	../mk
 include ${MK}/os.mk
 
@@ -21,7 +20,7 @@ BIN-NetBSD=	ifwatchd-carrier.sh ifwatchd-nocarrier.sh
 
 include ${MK}/scripts.mk
 
-${SFX}.sh:
+%.sh: %.sh${SFX}
 	${SED} ${SED_REPLACE} ${SED_EXTRA} $< > $@
 
 _installafter:
