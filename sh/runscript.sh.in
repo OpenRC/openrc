@@ -33,6 +33,14 @@ loadconfig()
 	fi
 }
 
+sourcex "@SYSCONFDIR@/init.d/functions.sh"
+sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
+
+# Support LiveCD foo
+if sourcex -e "/sbin/livecd-functions.sh"; then
+	livecd_read_commandline
+fi
+
 if [ ! -e ${RC_SVCDIR}/softlevel ]; then
 	eerror "You are attempting to run an openrc service on a"
 	eerror "system which openrc did not boot."
@@ -43,14 +51,6 @@ if [ ! -e ${RC_SVCDIR}/softlevel ]; then
 	eerror "If you really want to do this, issue the following command:"
 	eerror "touch ${RC_SVCDIR}/softlevel"
 	exit 1
-fi
-
-sourcex "@SYSCONFDIR@/init.d/functions.sh"
-sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
-
-# Support LiveCD foo
-if sourcex -e "/sbin/livecd-functions.sh"; then
-	livecd_read_commandline
 fi
 
 if [ -z "$1" -o -z "$2" ]; then
