@@ -48,13 +48,8 @@ start()
 
 	if [ -n "$fsck_passno" ]; then
 		check_extra="[passno $fsck_passno] $check_extra"
-		if -n "$fsck_mnt" ]; then
-			eerror "Only 1 of fsck_passno and fsck_mnt must be set!"
-			return 1
-		fi
 	fi
 	ebegin "Checking local filesystems $check_extra"
-	# Append passno mounts
 	for p in $fsck_passno; do
 		local IFS="$_IFS"
 		case "$p" in
@@ -63,16 +58,10 @@ start()
 		set -- "$@" $(fstabinfo --passno "$p")
 		unset IFS
 	done
-	# Append custom mounts
-	for m in $fsck_mnt ; do
-		local IFS="$_IFS"
-		set -- "$@" "$m"
-		unset IFS
-	done
 
 	if [ "$RC_UNAME" = Linux ]; then
 		fsck_opts="$fsck_opts -C0 -T"
-		if [ -z "$fsck_passno" -a -z "$fsck_mnt" ]; then
+		if [ -z "$fsck_passno" ]; then
 			fsck_args=${fsck_args--A -p}
 			if echo 2>/dev/null >/.test.$$; then
 				rm -f /.test.$$
