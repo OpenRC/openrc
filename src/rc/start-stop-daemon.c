@@ -107,12 +107,17 @@ static char *changeuser, *ch_root, *ch_dir;
 
 extern char **environ;
 
-#ifdef __linux__
+#if !defined(SYS_ioprio_set) && defined(__NR_ioprio_set)
+# define SYS_ioprio_set __NR_ioprio_set
+#endif
 static inline int ioprio_set(int which, int who, int ioprio)
 {
+#ifdef SYS_ioprio_set
 	return syscall(SYS_ioprio_set, which, who, ioprio);
-}
+#else
+	return 0;
 #endif
+}
 
 static void
 free_schedulelist(void)
@@ -1150,13 +1155,10 @@ start_stop_daemon(int argc, char **argv)
 				    strerror(errno));
 		}
 
-/* Only linux suports setting an IO priority */
-#ifdef __linux__
 		if (ionicec != -1 &&
 		    ioprio_set(1, mypid, ionicec | ioniced) == -1)
 			eerrorx("%s: ioprio_set %d %d: %s", applet,
 			    ionicec, ioniced, strerror(errno));
-#endif
 
 		if (ch_root && chroot(ch_root) < 0)
 			eerrorx("%s: chroot `%s': %s",
