@@ -449,7 +449,7 @@ eat()
 	veinfo "Eating `basename ${food}`"
 	${command} --eat ${food}
 	retval=$?
-	: $((${result} += ${retval}))
+	: $(( result += retval ))
 	[ ${retval} = 0 ] && ate="${ate} `basename ${food}`"
     done
 

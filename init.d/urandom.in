@@ -16,7 +16,7 @@ save_seed()
 	local psz=1
 
 	if [ -e /proc/sys/kernel/random/poolsize ]; then
-		psz=$(($(cat /proc/sys/kernel/random/poolsize) / 4096))
+		: $(( psz = $(cat /proc/sys/kernel/random/poolsize) / 4096 ))
 	fi
 
 	(	# sub shell to prevent umask pollution

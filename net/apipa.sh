@@ -26,20 +26,20 @@ apipa_start()
 	eindent
 
 	while [ ${i} -lt 64516 ]; do
-		i1=$((($(_random) % 255) + 1))
-		i2=$((($(_random) % 255) + 1))
+		: $(( i1 = (_random % 255) + 1 ))
+		: $(( i2 = (_random % 255) + 1 ))
 
 		addr="169.254.${i1}.${i2}"
 		vebegin "${addr}/16"
 		if ! arping_address "${addr}"; then
 			eval config_${config_index}="\"${addr}/16 broadcast 169.254.255.255\""
-			config_index=$((${config_index} - 1))
+			: $(( config_index -= 1 ))
 			veend 0
 			eoutdent
 			return 0
 		fi
 
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 
 	eerror "No free address found!"

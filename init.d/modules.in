@@ -57,7 +57,7 @@ start()
 		[ -z "$args" ] && eval args=\$module_${aa}_args
 		[ -z "$args" ] && eval args=\$module_${xx}_args
 		eval modprobe -q "$mpargs" "$x" "$args"
-		eend $? "Failed to load $x" && cnt=$(($cnt + 1))
+		eend $? "Failed to load $x" && : $(( cnt += 1 ))
 	done
 	einfo "Autoloaded $cnt module(s)"
 }

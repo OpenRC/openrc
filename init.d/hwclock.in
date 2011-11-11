@@ -85,7 +85,7 @@ start()
 
 	if [ -e /etc/adjtime ] && yesno $clock_adjfile; then
 		_hwclock --adjust $utc_cmd
-		retval=$(($retval + $?))
+		: $(( retval += $? ))
 	fi
 
 	# If setting UTC, don't bother to run hwclock when first booting
@@ -99,7 +99,7 @@ start()
 		else
 			_hwclock --systz $utc_cmd $clock_args
 		fi
-		retval=$(($retval + $?))
+		: $(( retval += $? ))
 	fi
 
 	eend $retval "Failed to set the system clock"

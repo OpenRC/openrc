@@ -34,7 +34,7 @@ _get_ssid()
 			return 0
 		fi
 		sleep 1
-		timeout=$((timeout - 1))
+		: $(( timeout -= 1 ))
 	done
 
 	return 1

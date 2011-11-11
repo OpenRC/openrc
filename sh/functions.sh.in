@@ -8,14 +8,14 @@ RC_GOT_FUNCTIONS="yes"
 
 eindent()
 {
-	EINFO_INDENT=$((${EINFO_INDENT:-0} + 2))
+	: $(( EINFO_INDENT = ${EINFO_INDENT:-0} + 2 ))
 	[ "$EINFO_INDENT" -gt 40 ] && EINFO_INDENT=40
 	export EINFO_INDENT
 }
 
 eoutdent()
 {
-	EINFO_INDENT=$((${EINFO_INDENT:-0} - 2))
+	: $(( EINFO_INDENT = ${EINFO_INDENT:-0} - 2 ))
 	[ "$EINFO_INDENT" -lt 0 ] && EINFO_INDENT=0
 	return 0
 }

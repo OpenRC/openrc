@@ -148,7 +148,7 @@ clip_post_start()
 
 		local nleftretries=10 emsg= ecode=
 		while [ ${nleftretries} -gt 0 ]; do
-			nleftretries=$((${nleftretries} - 1))
+			: $(( nleftretries -= 1 ))
 	    	emsg="$(atmarp -s "${peerip}" "${ifvpivci}" "$@" 2>&1)"
 	    	ecode=$? && break
 	    	sleep 2

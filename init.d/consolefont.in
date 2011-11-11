@@ -49,7 +49,7 @@ start()
 			retval=1
 			break
 		fi
-		x=$(($x + 1))
+		: $(( x += 1 ))
 	done
 	eend $retval
 

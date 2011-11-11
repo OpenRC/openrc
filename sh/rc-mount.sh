@@ -59,7 +59,7 @@ do_unmount()
 						eend 1
 					else
 						local sig="TERM"
-						retry=$(($retry - 1))
+						: $(( retry -= 1 ))
 						[ $retry = 1 ] && sig="KILL"
 						fuser $f_kill$sig -k $f_opts \
 							"$mnt" >/dev/null 2>&1

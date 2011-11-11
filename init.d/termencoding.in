@@ -31,7 +31,7 @@ start()
 	n=1
 	while [ ${n} -le "$ttyn" ]; do
 		printf "\033%s" "$termencoding" >$ttydev$n
-		n=$(($n + 1))
+		: $(( n += 1 ))
 	done
 
 	# Save the encoding for use immediately at boot

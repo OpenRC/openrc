@@ -21,7 +21,7 @@ restore()
 			mixer -f "$mixer" \
 			$(cat "/var/db/${mixer#/dev/}-state") >/dev/null
 			veend $?
-			: $((retval += $?))
+			: $(( retval += $? ))
 		fi
 	done
 }
@@ -40,7 +40,7 @@ stop()
 		vebegin "$mixer"
 		mixer -f "$mixer" -s >/var/db/"${mixer#/dev/}"-state
 		veend $?
-		: $((retval += $?))
+		: $(( retval += $? ))
 	done
 	eoutdent
 	eend $retval

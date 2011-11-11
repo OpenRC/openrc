@@ -54,7 +54,7 @@ start()
 		local ttyv=
 		for ttyv in /dev/ttyv*; do
 			vidcontrol < "$ttyv" -m on
-			: $((retval+= $?))
+			: $(( retval += $? ))
 		done
 	fi
 

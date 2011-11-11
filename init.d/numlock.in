@@ -21,7 +21,7 @@ _setleds()
 
 	while [ $i -le $ttyn ]; do
 		setleds -D "$1"num < $dev$i || retval=1
-		i=$(($i + 1))
+		: $(( i += 1 ))
 	done
 
 	return $retval

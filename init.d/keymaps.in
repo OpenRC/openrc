@@ -47,7 +47,7 @@ start()
 	n=1
 	while [ $n -le $ttyn ]; do
 		kbd_mode $kmode -C $ttydev$n
-		n=$(($n + 1))
+		: $(( n += 1 ))
 	done
 	eend 0
 

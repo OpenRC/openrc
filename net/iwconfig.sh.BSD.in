@@ -218,7 +218,7 @@ iwconfig_associate()
 		sleep 1
 
 		[ ${timeout} -eq 0 ] && continue
-		i=$((${i} +  1))
+		: $(( i +=  1 ))
 		[ ${i} -ge ${timeout} ] && { eend 1; return 1; }
 	done
 
@@ -252,13 +252,13 @@ iwconfig_scan()
 	scan="$(LC_ALL=C ifconfig -v "${IFACE}" list scan 2>/dev/null | sed -e "1 d" -e "s/$/'/g" -e "s/^/'/g")"
 	while [ ${i} -lt 3 -a -z "${scan}" ] ; do
 		scan="${scan}${scan:+ }$(LC_ALL=C ifconfig -v "${IFACE}" scan 2>/dev/null | sed -e "1 d" -e "s/$/'/g" -e "s/^/'/g")"
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 
 	APS=-1
 	eval set -- ${scan}
 	for line in "$@" ; do
-		APS=$((${APS} + 1))
+		: $(( APS += 1 ))
 		set -- ${line}
 		while true ; do
 			case "$1" in
@@ -276,7 +276,7 @@ iwconfig_scan()
 		# Add 1000 for managed nodes as we prefer them to adhoc
 		set -- $*
 		case "$1" in
-			*E*) eval QUAL_${APS}=$((${quality} + 1000)) ;;
+			*E*) eval QUAL_${APS}=$(( quality + 1000 )) ;;
 			*)   eval QUAL_${APS}=\$quality ;;
 		esac
 	done
@@ -290,7 +290,7 @@ iwconfig_scan()
 	# Sort based on quality
 	local i=0 k=1 a= b= x= t=
 	while [ ${i} -lt ${APS} ] ; do
-		k=$((${i} + 1))
+		: $(( k = i + 1 ))
 		while [ ${k} -le ${APS} ] ; do
 			eval a=\$QUALITY_${i}
 			[ -z "${a}" ] && break
@@ -302,15 +302,15 @@ iwconfig_scan()
 					eval ${x}_${k}=\$t
 				done
 			fi
-			k=$((${k} + 1))
+			: $(( k += 1 ))
 		done
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 
 	# Strip any duplicates
 	local i=0 k=1 a= b=
 	while [ ${i} -lt ${APS} ] ; do
-		k=$((${i} + 1))
+		: $(( k = i + 1 ))
 		while [ ${k} -le ${APS} ] ; do
 			eval a=\$MAC_${i}
 			eval b=\$MAC_${k}
@@ -327,9 +327,9 @@ iwconfig_scan()
 					unset MAC_${k} SSID_${k} CHAN_${k} QUALITY_${k} CAPS_${k}
 				fi
 			fi
-			k=$((${k} + 1))
+			: $(( k += 1 ))
 		done
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 
 	local i=0 e= m= s=
@@ -337,7 +337,7 @@ iwconfig_scan()
 	while [ ${i} -le ${APS} ] ; do
 		eval x=\$MAC_${i}
 		if [ -z "${x}" ] ; then
-			i=$((${i} + 1))
+			: $(( i += 1 ))
 			continue
 		fi
 
@@ -374,7 +374,7 @@ iwconfig_scan()
 				unset SSID_${i} MAC_${i} CHAN_${i} QUALITY_${i} CAPS_${i}
 			fi
 		done
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 	eoutdent
 	return 0
@@ -396,7 +396,7 @@ iwconfig_force_preferred()
 				found_AP=true
 				break
 			fi
-			i=$((${i} + 1))
+			: $(( i += 1 ))
 		done
 		if ! ${found_AP} ; then
 			SSID=${ssid}
@@ -428,7 +428,7 @@ iwconfig_connect_preferred()
 				iwconfig_associate "${mac}" \
 				"${chan}" "${caps}" && return 0
 			fi
-			i=$((${i} + 1))
+			: $(( i += 1 ))
 		done
 	done
 
@@ -442,7 +442,7 @@ iwconfig_connect_not_preferred()
 	while [ ${i} -le ${APS} ] ; do
 		eval e=\$SSID_${i}
 		if [ -z "${e}" ] ; then
-			i=$((${i} + 1))
+			: $(( i += 1 ))
 			continue
 		fi
 
@@ -465,7 +465,7 @@ iwconfig_connect_not_preferred()
 			iwconfig_associate "${mac}"  \
 			"${chan}" "${caps}" && return 0
 		fi
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 
 	return 1

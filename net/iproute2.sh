@@ -36,7 +36,7 @@ _ifindex()
 {
 	local line= i=-2
 	while read line; do
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 		[ ${i} -lt 1 ] && continue
 		case "${line}" in
 			"${IFACE}:"*) echo "${i}"; return 0;;
@@ -44,7 +44,7 @@ _ifindex()
 	done < /proc/net/dev
 
 	# Return the next available index
-	i=$((${i} + 1))
+	: $(( i += 1 ))
 	echo "${i}"
 	return 1
 }
@@ -290,7 +290,7 @@ iproute2_post_start()
 		while [ $n -ge 0 ]; do
 			_iproute2_ipv6_tentative || break
 			sleep 1
-			n=$(($n - 1))
+			: $(( n -= 1 ))
 		done
 		[ $n -ge 0 ]
 		eend $?

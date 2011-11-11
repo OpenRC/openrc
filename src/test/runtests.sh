@@ -15,7 +15,7 @@ checkit() {
 	echo "$@" | tr ' ' '\n' > ${base}.out
 	diff -u ${base}.list ${base}.out
 	eend $?
-	ret=$(($ret + $?))
+	: $(( ret += $? ))
 }
 
 ret=0
@@ -65,7 +65,7 @@ readelf -Wr $(grep -l '#include[[:space:]]"librc\.h"' ${librc_srcdir}/*.c | sed 
 syms=$(diff -u librc.funcs.hidden.list librc.funcs.hidden.out | sed -n '/^+[^+]/s:^+::p')
 [ -z "${syms}" ]
 eend $? "Missing hidden defs:"$'\n'"${syms}"
-ret=$(($ret + $?))
+: $(( ret += $? ))
 
 ebegin "Checking trailing whitespace in code"
 # XXX: Should we check man pages too ?
@@ -118,7 +118,7 @@ for u in units/*; do
 	ebegin "$(basename "${u}")"
 	./"${u}"
 	eend $?
-	ret=$(($ret + $?))
+	: $(( ret += $? ))
 done
 
 exit ${ret}

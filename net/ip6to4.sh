@@ -51,7 +51,7 @@ ip6to4_start()
 					case "${ip}" in
 						172.${i}.*) break;;
 					esac
-					i=$((${i} + 1))
+					: $(( i += 1 ))
 				done
 				[ ${i} -lt 32 ] && continue
 				;;
@@ -90,7 +90,7 @@ ip6to4_start()
 
 	# Now apply our config
 	eval config_${config_index}=\'"${new}"\'
-	config_index=$((${config_index} - 1))
+	: $(( config_index -= 1 ))
 
 	# Add a route for us, ensuring we don't delete anything else
 	local routes="$(_get_array "routes_${IFVAR}")

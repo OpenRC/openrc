@@ -287,7 +287,7 @@ start()
 		tentative || break
 		[ $r = 5 ] && vebegin "Waiting for tentative addresses"
 		sleep 1
-		r=$(($r - 1))
+		: $(( r -= 1 ))
 	done
 	if [ $r != 5 ]; then
 		[ $r != 0 ]

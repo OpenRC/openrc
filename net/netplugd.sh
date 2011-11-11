@@ -74,7 +74,7 @@ netplugd_pre_start()
 		fi
 		sleep 1
 		[ ${timeout} -eq 0 ] && continue
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 		[ ${i} -ge ${timeout} ] && break
 	done
 

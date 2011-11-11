@@ -39,7 +39,7 @@ _get_ssid()
 			return 0
 		fi
 		sleep 1
-		i=$((${i} - 1))
+		: $(( i -= 1 ))
 	done
 
 	return 1
@@ -229,7 +229,7 @@ iwconfig_wait_for_association()
 
 		sleep 1
 		[ ${timeout} -eq 0 ] && continue
-		i=$((${i} +  1))
+		: $(( i +=  1 ))
 		[ ${i} -ge ${timeout} ] && return 1
 	done
 	return 1
@@ -347,7 +347,7 @@ iwconfig_scan()
 					;;
 			esac
 		fi
-	    i=$((${i} + 1))
+	    : $(( i += 1 ))
 	done
 
 	if [ -z "${scan}" ]; then
@@ -377,7 +377,7 @@ iwconfig_scan()
 	for line; do
 		case "${line}" in
 			*Address:*)
-				APS=$((${APS} + 1))
+				: $(( APS += 1 ))
 				eval MAC_${APS}="\""$(echo "${line#*: }" | tr '[:lower:]' '[:upper:]')"\""
 				eval QUALITY_${APS}=0
 				;;
@@ -427,7 +427,7 @@ iwconfig_scan()
 	# Sort based on quality
 	local i=0 k=1 a= b= x= t=
 	while [ ${i} -lt ${APS} ]; do
-	    k=$((${i} + 1))
+	    : $(( k = i + 1 ))
 	    while [ ${k} -le ${APS} ]; do
 		eval a=\$QUALITY_${i}
 		[ -z "${a}" ] && break
@@ -439,15 +439,15 @@ iwconfig_scan()
 			eval ${x}_${k}=\$t
 		    done
 		fi
-		k=$((${k} + 1))
+		: $(( k += 1 ))
 	    done
-	    i=$((${i} + 1))
+	    : $(( i += 1 ))
 	done
 
 	# Strip any duplicates
 	local i=0 k=1 a= b=
 	while [ ${i} -lt ${APS} ]; do
-		k=$((${i} + 1))
+		: $(( k = i + 1 ))
 		while [ ${k} -le ${APS} ]; do
 			eval a=\$MAC_${i}
 			eval b=\$MAC_${k}
@@ -459,9 +459,9 @@ iwconfig_scan()
 				[ -n "${a}" -a -n "${b}" ] && [ "${a}" -lt "${b}" ] && u=${i}
 				unset MAC_${u} SSID_${u} MODE_${u} CHAN_${u} QUALITY_${u} ENC_${u}
 			fi
-			k=$((${k} + 1))
+			: $(( k += 1 ))
 		done
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 
 	local i=0 e= m= s=
@@ -469,7 +469,7 @@ iwconfig_scan()
 	while [ ${i} -le ${APS} ]; do
 		eval x=\$MAC_${i}
 		if [ -z "${x}" ]; then
-		    i=$((${i} + 1))
+		    : $(( i += 1 ))
 		    continue
 		fi
 
@@ -506,7 +506,7 @@ iwconfig_scan()
 				unset SSID_${i} MAC_${i} ${MODE}_${i} CHAN_${i} QUALITY_${i} ENC_${i}
 			fi
 		done
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 	eoutdent
 }
@@ -526,7 +526,7 @@ iwconfig_force_preferred()
 				found_AP=true
 				break
 			fi
-			i=$((${i} + 1))
+			: $(( i += 1 ))
 		done
 		if ! ${found_AP}; then
 			SSID=${ssid}
@@ -559,7 +559,7 @@ iwconfig_connect_preferred()
 				iwconfig_associate "${mode}" "${mac}" "${enc}" "${freq}" \
 					"${chan}" && return 0
 			fi
-			i=$((${i} + 1))
+			: $(( i += 1 ))
 		done
 	done
 
@@ -593,7 +593,7 @@ iwconfig_connect_not_preferred()
 					"${chan}" && return 0
 			fi
 		fi
-		i=$((${i} + 1))
+		: $(( i += 1 ))
 	done
 
 	return 1

@@ -34,7 +34,7 @@ while true; do
 	elif [ "${opt}" != "${opt#dhcp-option DNS *}" ]; then
 		NS="${NS}nameserver ${opt#dhcp-option DNS *}\n"
 	fi
-	i=$((${i} + 1))
+	: $(( i += 1 ))
 done
 
 if [ -n "${NS}" ]; then

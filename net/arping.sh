@@ -34,7 +34,7 @@ arping_address()
 		while [ ${w} -gt 0 -a -z "${foundmac}" ]; do
 			foundmac="$(arping2 ${opts} -r -c 1 -i "${IFACE}" "${ip}" 2>/dev/null | \
 			sed -e 'y/abcdef/ABCDEF/')"
-			w=$((${w} - 1))
+			: $(( w -= 1 ))
 		done
 	else
 		[ -z "$(_get_inet_address)" ] && opts="${opts} -D"

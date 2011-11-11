@@ -30,7 +30,7 @@ tuntap_pre_start()
 		local timeout=10
 		while [ ! -e /dev/net/tun -a ${timeout} -gt 0 ]; do
 			sleep 1
-			timeout=$((${timeout} - 1))
+			: $(( timeout -= 1 ))
 		done
 		if [ ! -e /dev/net/tun ]; then
 			eerror "TUN/TAP support present but /dev/net/tun is not"
