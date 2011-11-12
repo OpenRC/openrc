@@ -189,6 +189,16 @@ fi
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"
 
+# Attach to CGroup - dir existing is enough for us
+if [ -d /sys/fs/cgroup/ ]; then
+	# use RC_SVCNAME unless overridden in conf.d
+	SVC_CGROUP=${RC_CGROUP:-$RC_SVCNAME}
+	mkdir -p /sys/fs/cgroup/${SVC_CGROUP}
+	# now attach self to cgroup - any children of this process will inherit this
+	echo $$ > /sys/fs/cgroup/${SVC_CGROUP}/tasks
+	# TODO: set res limits from conf.d
+fi
+
 # Apply any ulimit defined
 [ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}
 
@@ -291,3 +301,15 @@ while [ -n "$1" ]; do
 	eerror "$RC_SVCNAME: unknown function \`$1'"
 	exit 1
 done
+
+# CGroup cleanup
+if [ -d /sys/fs/cgroup/ ]; then
+	# use RC_SVCNAME unless overridden in conf.d
+	SVC_CGROUP=${RC_CGROUP:-$RC_SVCNAME}
+	# reattach to root cgroup
+	echo $$ > /sys/fs/cgroup/tasks
+	# remove cgroup if empty, will fail if any task attached
+	rmdir  /sys/fs/cgroup/${SVC_CGROUP} 2>/dev/null
+fi
+
+exit 0

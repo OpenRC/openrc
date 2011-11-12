@@ -1,3 +1,10 @@
+# Set the control group for this service.
+# If you do not set this, the default setting is the value of
+# RC_SVCNAME.
+# This setting is ignored if you do not have CONFIG_CGROUPS active in
+# your kernel.
+# RC_CGROUP="foo"
+
 ##############################################################################
 # LINUX SPECIFIC OPTIONS
 
