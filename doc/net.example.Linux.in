@@ -350,7 +350,7 @@
 # By default we don't wait for wpa_supplicant to associate and authenticate.
 # If you need to change this behaviour then you don't know how our scripts work
 # and setting this value could cause strange things to happen.
-# If you would like to, so can specify how long in seconds.
+# If you would like it to wait, you can specify how long in seconds.
 #associate_timeout_eth0=60
 # A value of 0 means wait forever.
 
