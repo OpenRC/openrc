@@ -839,9 +839,9 @@
 
 # Below is an example of configuring the bridge
 # Consult "man brctl" for more details
-#brctl_br0="setfd 0
-#sethello 0
-#stp off"
+#brctl_br0="setfd 15
+#sethello 2
+#stp on"
 
 # You can also configure the bridge or bridge members via sysfs on 2.6 kernels
 # or newer. See the kernel bridge documentation for a description of these
