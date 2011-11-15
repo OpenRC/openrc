@@ -458,10 +458,10 @@ mountinfo(int argc, char **argv)
 		if (argv[optind][0] != '/')
 			eerrorx("%s: `%s' is not a mount point",
 			    argv[0], argv[optind]);
-		if (realpath(argv[optind++], real_path) == NULL) {
-			eerrorx("%s: realpath() failed: %s", argv[0], strerror(errno));
-		}
-		rc_stringlist_add(args.mounts, real_path);
+		char *this_path = argv[optind++];
+		if (realpath(this_path, real_path))
+			this_path = real_path;
+		rc_stringlist_add(args.mounts, this_path);
 	}
 	nodes = find_mounts(&args);
 	rc_stringlist_free(args.mounts);
