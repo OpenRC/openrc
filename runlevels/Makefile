@@ -1,5 +1,5 @@
-BOOT=		bootmisc fsck hostname localmount network \
-		root staticroute swap sysctl urandom ${BOOT-${OS}}
+BOOT=		bootmisc fsck hostname localmount \
+		root swap sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
 SYSINIT=	${SYSINIT-${OS}}
@@ -9,8 +9,6 @@ SYSINITDIR=	${LEVELDIR}/sysinit
 BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 SHUTDOWNDIR=	${LEVELDIR}/shutdown
-
-INITDIR=	../init.d
 
 MK=		../mk
 include ${MK}/sys.mk
@@ -28,7 +26,7 @@ BOOT-FreeBSD=	hostid net.lo0 newsyslog savecore syslogd
 # FreeBSD specific stuff
 BOOT-FreeBSD+=	adjkerntz dumpon syscons
 
-BOOT-Linux=	hwclock keymaps modules mtab procfs termencoding
+BOOT-Linux=	hwclock keymaps modules mtab net.lo procfs termencoding
 SHUTDOWN-Linux=	killprocs mount-ro
 SYSINIT-Linux=	devfs dmesg
 
