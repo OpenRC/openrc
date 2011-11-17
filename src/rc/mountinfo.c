@@ -391,6 +391,7 @@ mountinfo(int argc, char **argv)
 	int opt;
 	int result;
 	bool quiet;
+	char *this_path;
 
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv("EINFO_QUIET");
@@ -458,7 +459,7 @@ mountinfo(int argc, char **argv)
 		if (argv[optind][0] != '/')
 			eerrorx("%s: `%s' is not a mount point",
 			    argv[0], argv[optind]);
-		char *this_path = argv[optind++];
+		this_path = argv[optind++];
 		if (realpath(this_path, real_path))
 			this_path = real_path;
 		rc_stringlist_add(args.mounts, this_path);
