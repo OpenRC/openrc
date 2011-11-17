@@ -192,7 +192,7 @@ sourcex -e "@SYSCONFDIR@/rc.conf"
 # Attach to CGroup - dir existing is enough for us
 if [ -d /sys/fs/cgroup/ ]; then
 	# use RC_SVCNAME unless overridden in conf.d
-	SVC_CGROUP=${RC_CGROUP:-$RC_SVCNAME}
+	SVC_CGROUP=${rc_cgroup:-$RC_SVCNAME}
 	mkdir -p /sys/fs/cgroup/${SVC_CGROUP}
 	# now attach self to cgroup - any children of this process will inherit this
 	echo $$ > /sys/fs/cgroup/${SVC_CGROUP}/tasks
@@ -305,7 +305,7 @@ done
 # CGroup cleanup
 if [ -d /sys/fs/cgroup/ ]; then
 	# use RC_SVCNAME unless overridden in conf.d
-	SVC_CGROUP=${RC_CGROUP:-$RC_SVCNAME}
+	SVC_CGROUP=${rc_cgroup:-$RC_SVCNAME}
 	# reattach to root cgroup
 	echo $$ > /sys/fs/cgroup/tasks
 	# remove cgroup if empty, will fail if any task attached

@@ -3,7 +3,7 @@
 # RC_SVCNAME.
 # This setting is ignored if you do not have CONFIG_CGROUPS active in
 # your kernel.
-# RC_CGROUP="foo"
+# rc_cgroup="foo"
 
 ##############################################################################
 # LINUX SPECIFIC OPTIONS
