@@ -65,7 +65,7 @@ mount_misc()
 	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
 		if grep -qs cgroup /proc/filesystems; then
 			ebegin "Mounting cgroup filesystem"
-			mount -n -t cgroup -o  nodev,noexec,nosuid \
+			mount -n -t tmpfs -o  nodev,noexec,nosuid \
 				cgroup /sys/fs/cgroup
 			eend $?
 		fi
