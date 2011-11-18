@@ -8,9 +8,15 @@ SHLIB_NAME=		lib${LIB}.so.${SHLIB_MAJOR}
 SHLIB_LINK=		lib${LIB}.so
 SONAME?=		${SHLIB_NAME}
 
+SOBJS+=			${SRCS:.c=.So}
+
+MKSTATICLIBS?=  yes
+ifeq (${MKSTATICLIBS},yes)
 OBJS+=			${SRCS:.c=.o}
-SOBJS+=			${OBJS:.o=.So}
-_LIBS=			lib${LIB}.a ${SHLIB_NAME}
+_LIBS+=			lib${LIB}.a
+endif
+
+_LIBS+=			${SHLIB_NAME}
 
 CLEANFILES+=		${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK}
 
@@ -39,8 +45,10 @@ ${SHLIB_NAME}:	${SOBJS}
 	${SOBJS} ${LDADD}
 
 install: all
+ifeq (${MKSTATICLIBS},yes)
 	${INSTALL} -d ${DESTDIR}${LIBDIR}
 	${INSTALL} -m ${LIBMODE} lib${LIB}.a ${DESTDIR}${LIBDIR}
+endif
 	${INSTALL} -d ${DESTDIR}${SHLIBDIR}
 	${INSTALL} -m ${LIBMODE} ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}
 	ln -fs ${SHLIB_NAME} ${DESTDIR}${SHLIBDIR}/${SHLIB_LINK}
