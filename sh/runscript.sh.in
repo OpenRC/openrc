@@ -194,8 +194,11 @@ if [ -d /sys/fs/cgroup/ ]; then
 	# use RC_SVCNAME unless overridden in conf.d
 	SVC_CGROUP=${rc_cgroup:-$RC_SVCNAME}
 	mkdir -p /sys/fs/cgroup/${SVC_CGROUP}
-	cp /sys/fs/cgroup/cpuset.cpus /sys/fs/cgroup/${SVC_CGROUP}
-	cp /sys/fs/cgroup/cpuset.mems /sys/fs/cgroup/${SVC_CGROUP}
+	for f in cpuset.cpus cpuset.mems; do
+		if [ -f /sys/fs/cgroup/${f} ]; then
+			cp /sys/fs/cgroup/${f} /sys/fs/cgroup/${SVC_CGROUP}
+		fi
+	done
 	# now attach self to cgroup - any children of this process will inherit this
 	echo $$ > /sys/fs/cgroup/${SVC_CGROUP}/tasks
 	# TODO: set res limits from conf.d
