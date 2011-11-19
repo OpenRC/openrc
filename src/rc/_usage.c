@@ -75,8 +75,9 @@ usage(int exit_status)
 
 		lo = p = xstrdup(longopts_help[i]);
 		while ((token = strsep(&p, "\n"))) {
-			while (++len < 37)
-				printf(" ");
+			len = 36 - len;
+			if (len > 0)
+				printf("%*s", len, "");
 			puts(token);
 			len = 0;
 		}
