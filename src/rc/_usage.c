@@ -24,6 +24,7 @@
  */
 
 #include "version.h"
+#include <ctype.h>
 
 #if lint
 #  define _noreturn
@@ -59,6 +60,7 @@ usage(int exit_status)
 	char *lo;
 	char *p;
 	char *token;
+	char val[4] = "-?,";
 
 #ifdef usagestring
 	printf(usagestring);
@@ -70,8 +72,9 @@ usage(int exit_status)
 #endif
 	printf("\n\nOptions: [" getoptstring "]\n");
 	for (i = 0; longopts[i].name; ++i) {
-		len = printf("  -%c, --%s %s", longopts[i].val, longopts[i].name,
-		    has_arg[longopts[i].has_arg]);
+		val[1] = longopts[i].val;
+		len = printf("  %3s --%s %s", isprint(longopts[i].val) ? val : "",
+		    longopts[i].name, has_arg[longopts[i].has_arg]);
 
 		lo = p = xstrdup(longopts_help[i]);
 		while ((token = strsep(&p, "\n"))) {
