@@ -243,7 +243,7 @@ rc_update(int argc, char **argv)
 			if (deptree)
 				rc_deptree_free(deptree);
 			return ret;
-			case_RC_COMMON_GETOPT;
+		case_RC_COMMON_GETOPT
 		}
 
 	verbose = rc_yesno(getenv ("EINFO_VERBOSE"));

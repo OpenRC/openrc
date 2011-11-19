@@ -236,8 +236,8 @@ fstabinfo(int argc, char **argv)
 			}
 			break;
 
-			case_RC_COMMON_GETOPT
-			    }
+		case_RC_COMMON_GETOPT
+		}
 	}
 
 	if (optind < argc) {

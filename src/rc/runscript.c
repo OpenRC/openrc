@@ -1201,7 +1201,7 @@ runscript(int argc, char **argv)
 		case 'Z':
 			dry_run = true;
 			break;
-			case_RC_COMMON_GETOPT;
+		case_RC_COMMON_GETOPT
 		}
 
 	/* If we're changing runlevels and not called by rc then we cannot

@@ -109,8 +109,8 @@ rc_service(int argc, char **argv)
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
 
-			case_RC_COMMON_GETOPT
-			    }
+		case_RC_COMMON_GETOPT
+		}
 	}
 
 	argc -= optind;

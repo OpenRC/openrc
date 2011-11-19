@@ -916,8 +916,8 @@ start_stop_daemon(int argc, char **argv)
 			redirect_stderr = optarg;
 			break;
 
-			case_RC_COMMON_GETOPT
-			    }
+		case_RC_COMMON_GETOPT
+		}
 
 	endpwent();
 	argc -= optind;

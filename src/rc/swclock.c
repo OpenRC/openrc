@@ -82,7 +82,7 @@ swclock(int argc, char **argv)
 		case 'w':
 			wflag = 1;
 			break;
-		case_RC_COMMON_GETOPT;
+		case_RC_COMMON_GETOPT
 		}
 	}
 

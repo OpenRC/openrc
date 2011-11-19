@@ -173,7 +173,7 @@ rc_depend(int argc, char **argv)
 			break;
 
 		case_RC_COMMON_GETOPT
-			    }
+		}
 	}
 
 	if (deptree_file) {

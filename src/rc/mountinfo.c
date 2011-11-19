@@ -451,8 +451,8 @@ mountinfo(int argc, char **argv)
 			args.mount_type = mount_from;
 			break;
 
-			case_RC_COMMON_GETOPT
-			    }
+		case_RC_COMMON_GETOPT
+		}
 	}
 
 	while (optind < argc) {

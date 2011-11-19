@@ -193,7 +193,7 @@ checkpath(int argc, char **argv)
 				    applet, optarg);
 			break;
 
-			case_RC_COMMON_GETOPT;
+		case_RC_COMMON_GETOPT
 		}
 	}
 
