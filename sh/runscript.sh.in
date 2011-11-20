@@ -148,6 +148,19 @@ start()
 		service_inactive && _inactive=true
 		mark_service_inactive
 	fi
+	if [ "$RC_UNAME" = Linux ]; then
+		local cgroup=/sys/fs/cgroup/openrc
+		local svc_cgroup=${cgroup}/${RC_SVCNAME}
+		if mountinfo -q ${cgroup}; then
+			mkdir ${svc_cgroup}
+			for f in cpuset.cpus cpuset.mems; do
+					if [ -f ${cgroup}/${f} ]; then
+							cp ${cgroup}/${f} ${svc_cgroup}
+						fi
+					done
+			echo $$ > ${svc_cgroup}/tasks
+		fi
+	fi
 	eval start-stop-daemon --start \
 		--exec $command \
 		${procname:+--name} $procname \
@@ -188,16 +201,6 @@ fi
 
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"
-
-# Attach to CGroup - dir existing is enough for us
-if [ -d /sys/fs/cgroup -a -n "${rc_cgroup}" ]; then
-	if [ -d /sys/fs/cgroup/${rc_cgroup} ]; then
-		# attach self to cgroup - any children of this process will inherit this
-		echo $$ > /sys/fs/cgroup/${rc_cgroup}/tasks
-	else
-		eerror "Control group /sys/fs/cgroup/${rc_cgroup} does not exist."
-	fi
-fi
 
 # Apply any ulimit defined
 [ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}

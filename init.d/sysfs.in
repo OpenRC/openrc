@@ -62,12 +62,23 @@ mount_misc()
 	fi
 
 	# Setup Kernel Support for cgroup
-	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
-		if grep -qs cgroup /proc/filesystems; then
+	if [ -d /sys/fs/cgroup ]; then
+		if grep -qs cgroup /proc/filesystems && \
+			! mountinfo -q /sys/fs/cgroup; then
 			ebegin "Mounting cgroup filesystem"
 			mount -n -t tmpfs -o  nodev,noexec,nosuid \
 				cgroup /sys/fs/cgroup
 			eend $?
+		fi
+		if ! mountinfo -q /sys/fs/cgroup/openrc; then
+			ebegin "creating openrc control group"
+			mkdir /sys/fs/cgroup/openrc
+			mount -n -t cgroup -o  nodev,noexec,nosuid \
+				openrc /sys/fs/cgroup/openrc
+			echo 1 > /sys/fs/cgroup/openrc/notify_on_release
+			echo @LIBEXECDIR@/sh/cgroup-release-agent.sh \
+				> /sys/fs/cgroup/openrc/release_agent
+			eend
 		fi
 	fi
 }
