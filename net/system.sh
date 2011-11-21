@@ -46,7 +46,11 @@ _system_dns()
 
 	# Support resolvconf if we have it.
 	if [ -x /sbin/resolvconf ]; then
-		printf "${buffer}" | resolvconf -a "${IFACE}"
+		x="-a ${IFACE}"
+		if [ -n "${metric_${IFVAR}}" ]; then
+			x="${x} -m ${metric_${IFVAR}}"
+		fi
+		printf "${buffer}" | resolvconf ${x}
 	else
 		printf "${buffer}" > /etc/resolv.conf
 		chmod 644 /etc/resolv.conf
