@@ -1,0 +1,28 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 1999-2011 Gentoo Foundation
+# Released under the 2-clause BSD license.
+
+description="Migrate /var/run and /var/lock to /run"
+
+depend()
+{
+	before *
+	after localmount
+}
+
+start()
+{
+	return 0
+}
+
+stop()
+{
+	if [ -d /run -a ! -L /var/lock -a ! -L /var/run ]; then
+		ebegin "Migrating /var/lock and /var/run to /run"
+		rm -rf /var/lock /var/run
+		ln -s /var/lock /run/lock
+		ln -s /var/run /run
+		eend 0
+	fi
+	return 0
+}
