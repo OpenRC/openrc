@@ -13,7 +13,7 @@ system_depend()
 
 _system_dns()
 {
-	local servers= domain= search= sortlist= options= x=
+	local servers= domain= search= sortlist= options= x= imetric=
 
 	eval servers=\$dns_servers_${IFVAR}
 	[ -z "${servers}" ] && servers=${dns_servers}
@@ -47,8 +47,9 @@ _system_dns()
 	# Support resolvconf if we have it.
 	if [ -x /sbin/resolvconf ]; then
 		x="-a ${IFACE}"
-		if [ -n "${metric_${IFVAR}}" ]; then
-			x="${x} -m ${metric_${IFVAR}}"
+		eval imetric=\${metric_${IFVAR}}
+		if [ -n "${imetric}" ]; then
+			x="${x} -m ${imetric}"
 		fi
 		printf "${buffer}" | resolvconf ${x}
 	else
