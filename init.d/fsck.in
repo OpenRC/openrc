@@ -48,7 +48,7 @@ start()
 
 	if [ -n "$fsck_passno" ]; then
 		check_extra="[passno $fsck_passno] $check_extra"
-		if -n "$fsck_mnt" ]; then
+		if [ -n "$fsck_mnt" ]; then
 			eerror "Only 1 of fsck_passno and fsck_mnt must be set!"
 			return 1
 		fi
