@@ -12,11 +12,13 @@ depend()
 
 start()
 {
+	einfo "starting $RC_SVCNAME"
 	return 0
 }
 
 stop()
 {
+	einfo "completing /var/run and /var/lock migration."
 	if [ -d /run -a ! -L /var/lock -a ! -L /var/run ]; then
 		ebegin "Migrating /var/lock and /var/run to /run"
 		rm -rf /var/lock /var/run
