@@ -19,12 +19,19 @@ start()
 stop()
 {
 	einfo "completing /var/run and /var/lock migration."
-	if [ -d /run -a ! -L /var/lock -a ! -L /var/run ]; then
-		ebegin "Migrating /var/lock and /var/run to /run"
-		rm -rf /var/lock /var/run
-		ln -s /var/lock /run/lock
-		ln -s /var/run /run
-		eend 0
+	if [ -d /run ]; then
+		if [ ! -L /var/lock ]; then
+			ebegin "Migrating /var/lock to /run"
+			rm -rf /var/lock
+			ln -s /run/lock /var/lock
+			eend 0
+		fi
+		if [ ! -L /var/run ]; then
+			ebegin "Migrating /var/run to /run"
+			rm -rf /var/run
+			ln -s /run /var/run
+			eend 0
+		fi
 	fi
 	return 0
 }
