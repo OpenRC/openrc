@@ -72,6 +72,26 @@ mkutmp()
 	chmod 0664 "$1"
 }
 
+migrate_to_run()
+{
+	src="$1"
+	dst="$2"
+ 	if [ -L $src -a "$(readlink -f $src)" != $dst ]; then
+ 		ewarn "$src does not point to $dst."
+ 		ewarn "Setting $src to point to $dst."
+ 		rm $src
+ 	elif [ ! -L $src -a -d $src ]; then
+ 		ebegin "Migrating $src to $dst"
+ 		cp -a $src/* $dst/
+ 		rm -rf $src
+ 		eend $?
+ 	fi
+ 	# If $src doesn't exist at all, just run this
+ 	if [ ! -e $src ]; then
+ 		ln -s $dst $src
+ 	fi
+}
+
 start()
 {
 	# Remove any added console dirs
@@ -79,8 +99,16 @@ start()
 
 	local logw=false runw=false extra=
 	# Ensure that our basic dirs exist
-	[ "$RC_UNAME" = Linux ] && extra=/var/lib/misc # Satisfy Linux FHS
-	for x in /var/log /var/run /tmp $extra; do
+	if [ "$RC_UNAME" = Linux ]; then
+		# Satisfy Linux FHS
+		extra=/var/lib/misc
+		if [ ! -d /run ]; then
+			extra="/var/run $extra"
+		fi
+	else
+		extra=/var/run
+	fi
+	for x in /var/log /tmp $extra; do
 		if ! [ -d $x ]; then
 			if ! mkdir -p $x; then
 				eend 1 "failed to create needed directory $x"
@@ -88,6 +116,11 @@ start()
 			fi
 		fi
 	done
+
+	if [ "$RC_UNAME" = Linux -a -d /run ]; then
+		migrate_to_run	/var/lock /run/lock
+		migrate_to_run	/var/run /run
+	fi
 
 	if dir_writable /var/run; then
 		ebegin "Creating user login records"

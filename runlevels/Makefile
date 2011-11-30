@@ -26,7 +26,7 @@ BOOT-FreeBSD=	hostid net.lo0 newsyslog savecore syslogd
 # FreeBSD specific stuff
 BOOT-FreeBSD+=	adjkerntz dumpon syscons
 
-BOOT-Linux=	hwclock keymaps modules mtab net.lo procfs termencoding migrate-run
+BOOT-Linux=	hwclock keymaps modules mtab net.lo procfs termencoding
 SHUTDOWN-Linux=	killprocs mount-ro
 SYSINIT-Linux=	devfs dmesg
 
