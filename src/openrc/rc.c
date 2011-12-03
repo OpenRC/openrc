@@ -474,10 +474,29 @@ handle_signal(int sig)
 }
 
 static void
+do_early_hostname(void)
+{
+	/* Set hostname if available */
+	char *buffer = NULL;
+	size_t len;
+
+	if (rc_getfile(RC_SYSCONFDIR "/hostname", &buffer, &len)) {
+		if (buffer[len - 2] == '\n')
+			buffer[--len - 1] = '\0';
+		if (sethostname(buffer, len)) {
+			/* ignore */;
+		}
+		free(buffer);
+	}
+}
+
+static void
 do_sysinit(void)
 {
 	struct utsname uts;
 	const char *sys;
+
+	do_early_hostname();
 
 	/* exec init-early.sh if it exists
 	 * This should just setup the console to use the correct
