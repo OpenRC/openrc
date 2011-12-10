@@ -134,6 +134,9 @@ _add_address()
 		[ -z "$scope" ] && scope="scope host"
 	fi
 
+	# figure out the broadcast address if it is not specified
+	[ -z "$broadcast" ] && broadcast="broadcast +"
+
 	set -- "${address}${netmask}" $peer $broadcast $anycast $label $scope dev "${IFACE}" $valid_lft $preferred_lft $home $nodad
 	veinfo ip addr add "$@"
 	ip addr add "$@"
