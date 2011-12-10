@@ -67,7 +67,7 @@ ip6to4_start()
 		veinfo "Derived IPv6 address: ${ip6}"
 
 		# Now apply our IPv6 address to our config
-		new="${new}${new:+ }${ip6}/16"
+		new="${new}${new:+ }${ip6}/48"
 
 		if [ -n "${localip}" ]; then
 			localip="any"
