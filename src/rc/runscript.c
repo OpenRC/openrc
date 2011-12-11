@@ -1104,6 +1104,7 @@ runscript(int argc, char **argv)
 	char *dir, *save = NULL, *saveLnk = NULL;
 	char pidstr[10];
 	size_t l = 0, ll;
+ 	const char *file;
 	struct stat stbuf;
 
 	/* Show help if insufficient args */
