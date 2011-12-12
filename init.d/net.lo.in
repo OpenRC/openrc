@@ -25,7 +25,7 @@ depend()
 
 	case "${IFACE}" in
 		lo|lo0);;
-		*) after net.lo net.lo0;;
+		*) after net.lo net.lo0 dbus;;
 	esac
 
 	if [ "$(command -v "depend_${IFVAR}")" = "depend_${IFVAR}" ]; then
