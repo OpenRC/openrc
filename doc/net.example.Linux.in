@@ -790,7 +790,7 @@
 
 #-----------------------------------------------------------------------------
 # TUN/TAP
-# For TUN/TAP support emerge net-misc/openvpn or sys-apps/usermode-utilities
+# For TUN/TAP support install iproute2, openvpn or usermode-utilities
 #
 # You must specify if we're a tun or tap device. Then you can give it any
 # name you like - such as vpn
@@ -801,6 +801,9 @@
 #tuntap_tap0="tap"
 #config_tap0="192.168.0.1/24"
 
+# Use something like this to pass custom options to iproute2 during
+# tunnel creation. This sets the user and group ownership of the node.
+#iproute2_tun1="user foo group bar"
 # For passing custom options to tunctl use something like the following.  This
 # example sets the owner to adm
 #tunctl_tun1="-u adm"
