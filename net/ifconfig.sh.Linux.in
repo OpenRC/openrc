@@ -297,3 +297,26 @@ ifconfig_post_stop()
 	iptunnel del "${IFACE}"
 	eend $?
 }
+
+# Is the interface administratively/operationally up?
+# The 'UP' status in ifconfig/iproute2 is the administrative status
+# Operational state is available in iproute2 output as 'state UP', or the
+# operstate sysfs variable.
+# 0: up
+# 1: down
+# 2: invalid arguments
+is_admin_up()
+{
+	local iface="$1"
+	[ -z "$iface" ] && iface="$IFACE"
+	ifconfig "${iface}" | \
+	sed -n '1,1{ /flags=.*[<,]UP[,>]/{ q 0 }}; q 1; '
+}
+
+is_oper_up()
+{
+	local iface="$1"
+	[ -z "$iface" ] && iface="$IFACE"
+	read state </sys/class/net/"${iface}"/operstate
+	[ "x$state" = "up" ]
+}
