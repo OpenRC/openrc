@@ -16,6 +16,7 @@ _is_tuntap()
 tuntap_pre_start()
 {
 	local tuntap=
+	local rc=
 	eval tuntap=\$tuntap_${IFVAR}
 
 	[ -z "${tuntap}" ] && return 0
@@ -66,16 +67,20 @@ tuntap_pre_start()
 
 	if ${do_iproute2}; then
 		ip tuntap add dev "${IFACE}" mode "${tuntap}" ${i_opts}
+		rc=$?
 	elif ${do_openvpn}; then
 		openvpn --mktun --dev-type "${tuntap}" --dev "${IFACE}" \
 			${o_opts} >/dev/null
+		rc=$?
 	elif ${do_tunctl}; then
 		tunctl ${t_opts} -t "${IFACE}" >/dev/null
+		rc=$?
 	else
 		eerror "Neither iproute2, openvpn nor tunctl has been found, please install"
 		eerror "either \"iproute2\" \"openvpn\" or \"usermode-utilities\"."
+		rc=1
 	fi
-	eend $? && _up && service_set_value tuntap "${tuntap}"
+	eend $rc && _up && service_set_value tuntap "${tuntap}"
 }
 
 tuntap_post_stop()
