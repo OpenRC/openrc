@@ -95,16 +95,22 @@ bonding_pre_start()
 	_up
 
 	# finally add in slaves
+	# things needed in the process, and if they are done by ifenslave, openrc, and/or the kernel.
+	# down new slave interface: ifenslave, openrc
+	# set mtu: ifenslave, kernel
+	# set slave MAC: ifenslave, kernel
 	eoutdent
 	if [ -d /sys/class/net ]; then
 		sys_bonding_path=/sys/class/net/"${IFACE}"/bonding
 		if [ -n "${primary}" ]; then
+			IFACE=$primary _down
 			echo "+${primary}" >$sys_bonding_path/slaves
 			echo "${primary}" >$sys_bonding_path/primary
 		fi
 		for s in ${slaves}; do
 			[ "${s}" = "${primary}" ] && continue
 			if ! grep -q ${s} $sys_bonding_path/slaves; then
+				IFACE=$s _down
 				echo "+${s}" >$sys_bonding_path/slaves
 			fi
 		done
