@@ -85,7 +85,7 @@ vlan_post_start()
 		eval broadcast=\$broadcast_vlan${vlan}
 		local mtu=
 		eval mtu=\$mtu_vlan${vlan}
-		local opts="${txqueuelen:+txqueuelen} ${txqueuelen} ${mac:+address} ${mac} ${broadcast:+broadcast} ${broadcast} ${mtu+:mtu} ${mtu}"
+		local opts="${txqueuelen:+txqueuelen} ${txqueuelen} ${mac:+address} ${mac} ${broadcast:+broadcast} ${broadcast} ${mtu:+mtu} ${mtu}"
 
 		e="$(ip link add link "${IFACE}" name "${vname}" ${opts} type vlan id "${vlan}" ${vflags} ${vingress} ${vegress} 2>&1 1>/dev/null)"
 		if [ -n "${e}" ]; then
