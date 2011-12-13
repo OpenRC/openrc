@@ -149,6 +149,12 @@ _add_route()
 	if [ "$1" = "-A" -o "$1" = "-f" -o "$1" = "-family" ]; then
 		family="-f $2"
 		shift; shift
+	elif [ "$1" = "-4" ]; then
+	    family="-f inet"
+		shift
+	elif [ "$1" = "-6" ]; then
+	    family="-f inet6"
+		shift
 	fi
 
 	if [ $# -eq 3 ]; then
@@ -212,10 +218,7 @@ _trim() {
 # This allows for advanced routing tricks
 _ip_rule_runner() {
 	local cmd rules OIFS="${IFS}" family
-	if [ "x$1" = "-4" ]; then
-		family="$1"
-		shift
-	elif [ "x$1" = "-6" ]; then
+	if [ "$1" = "-4" -o "$1" = "-6" ]; then
 		family="$1"
 		shift
 	else

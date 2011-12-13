@@ -188,6 +188,12 @@ _add_route()
 	if [ "$1" = "-A" -o "$1" = "-f" -o "$1" = "-family" ]; then
 		family="-A $2"
 		shift; shift
+	elif [ "$1" = "-4" ]; then
+	    family="-A inet"
+		shift
+	elif [ "$1" = "-6" ]; then
+	    family="-A inet6"
+		shift
 	fi
 
 	if [ -n "${metric}" ]; then
