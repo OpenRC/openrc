@@ -932,6 +932,8 @@
 # /etc/iproute2/rt_tables, an example follows:
 # 2 oob
 # 3 external
+#
+# IPv6 RPDB entries are to be found in the rules6_IFVAR variables:
 
 #rules_eth0="
 #from ZZZ.ZZZ.200.128/27 table oob priority 500
@@ -945,6 +947,11 @@
 #routes_eth1="
 #XXX.XXX.112.0/24 dev eth1 table external scope link
 #default via XXX.XXX.112.1 dev eth1"
+
+# IPv6 example:
+#rules6_eth0="
+#from 2001:0DB8:AAAA:BBBB::/64 table vpn priority 100
+#to 2001:0DB8:AAAA:BBBB::/64 table vpn priority 150"
 
 
 #-----------------------------------------------------------------------------

@@ -211,7 +211,16 @@ _trim() {
 # This is our interface to Routing Policy Database RPDB
 # This allows for advanced routing tricks
 _ip_rule_runner() {
-	local cmd rules OIFS="${IFS}"
+	local cmd rules OIFS="${IFS}" family
+	if [ "x$1" = "-4" ]; then
+		family="$1"
+		shift
+	elif [ "x$1" = "-6" ]; then
+		family="$1"
+		shift
+	else
+		family="-4"
+	fi
 	cmd="$1"
 	rules="$2"
 	veindent
@@ -221,7 +230,7 @@ _ip_rule_runner() {
 		ruN="$(_trim "${ru}")"
 		[ -z "${ruN}" ] && continue
 		vebegin "${cmd} ${ruN}"
-		ip rule ${cmd} ${ru}
+		ip $family rule ${cmd} ${ru}
 		veend $?
 		local IFS="$__IFS"
 	done
@@ -277,15 +286,30 @@ iproute2_post_start()
 	if [ -e /proc/net/route ]; then
 		local rules="$(_get_array "rules_${IFVAR}")"
 		if [ -n "${rules}" ]; then
-			if ! ip rule list | grep -q "^"; then
+			if ! ip -4 rule list | grep -q "^"; then
 				eerror "IP Policy Routing (CONFIG_IP_MULTIPLE_TABLES) needed for ip rule"
 			else
 				service_set_value "ip_rule" "${rules}"
-				einfo "Adding RPDB rules"
-				_ip_rule_runner add "${rules}"
+				einfo "Adding IPv4 RPDB rules"
+				_ip_rule_runner -4 add "${rules}"
 			fi
 		fi
-		ip route flush table cache dev "${IFACE}"
+		ip -4 route flush table cache dev "${IFACE}"
+	fi
+
+	# Kernel may not have IPv6 built in
+	if [ -e /proc/net/ipv6_route ]; then
+		local rules="$(_get_array "rules6_${IFVAR}")"
+		if [ -n "${rules}" ]; then
+			if ! ip -6 rule list | grep -q "^"; then
+				eerror "IPv6 Policy Routing (CONFIG_IPV6_MULTIPLE_TABLES) needed for ip rule"
+			else
+				service_set_value "ip6_rule" "${rules}"
+				einfo "Adding IPv6 RPDB rules"
+				_ip_rule_runner -6 add "${rules}"
+			fi
+		fi
+		ip -6 route flush table cache dev "${IFACE}"
 	fi
 
 	if _iproute2_ipv6_tentative; then
@@ -308,13 +332,27 @@ iproute2_post_stop()
 	if [ -e /proc/net/route ]; then
 		local rules="$(service_get_value "ip_rule")"
 		if [ -n "${rules}" ]; then
-			einfo "Removing RPDB rules"
-			_ip_rule_runner del "${rules}"
+			einfo "Removing IPv4 RPDB rules"
+			_ip_rule_runner -4 del "${rules}"
 		fi
 
 		# Only do something if the interface actually exist
 		if _exists; then
-			ip route flush table cache dev "${IFACE}"
+			ip -4 route flush table cache dev "${IFACE}"
+		fi
+	fi
+	
+	# Kernel may not have IPv6 built in
+	if [ -e /proc/net/ipv6_route ]; then
+		local rules="$(service_get_value "ip6_rule")"
+		if [ -n "${rules}" ]; then
+			einfo "Removing IPv6 RPDB rules"
+			_ip_rule_runner -6 del "${rules}"
+		fi
+
+		# Only do something if the interface actually exist
+		if _exists; then
+			ip -6 route flush table cache dev "${IFACE}"
 		fi
 	fi
 
