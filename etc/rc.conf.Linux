@@ -22,3 +22,9 @@ rc_sys="@RC_SYS_DEFAULT@"
 # consolefont, numlock, etc ...)
 rc_tty_number=12
 
+# openrc can set up linux control groups the way the documentation in
+# the kernel recommends creating them.
+# Currently, this option is disabled by default, but it will be enabled
+# in the future, so if you would like to see how control groups will be
+# created, uncomment this line.
+#rc_cgroups="YES"

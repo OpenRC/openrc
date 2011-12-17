@@ -64,6 +64,7 @@ mount_misc()
 
 mount_cgroups()
 {
+	yesno ${rc_cgroups:-NO} || return 0
 	if [ ! -e /proc/cgroups ]; then
 		return 0
 	fi
