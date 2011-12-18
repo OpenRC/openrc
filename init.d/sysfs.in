@@ -60,27 +60,36 @@ mount_misc()
 			eend $?
 		fi
 	fi
+}
 
-	# Setup Kernel Support for cgroup
-	if [ -d /sys/fs/cgroup ]; then
-		if grep -qs cgroup /proc/filesystems && \
-			! mountinfo -q /sys/fs/cgroup; then
+mount_cgroups()
+{
+	if [ ! -e /proc/cgroups ]; then
+		return 0
+	fi
+
+	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
+		if grep -qs cgroup /proc/filesystems; then
 			ebegin "Mounting cgroup filesystem"
-			mount -n -t tmpfs -o  nodev,noexec,nosuid \
-				cgroup /sys/fs/cgroup
+			mount -n -t tmpfs -o  nodev,noexec,nosuid,mode=755 \
+				cgroup_root /sys/fs/cgroup
 			eend $?
 		fi
-		if ! mountinfo -q /sys/fs/cgroup/openrc; then
-			ebegin "creating openrc control group"
-			mkdir /sys/fs/cgroup/openrc
-			mount -n -t cgroup -o  nodev,noexec,nosuid \
-				openrc /sys/fs/cgroup/openrc
-			echo 1 > /sys/fs/cgroup/openrc/notify_on_release
-			echo @LIBEXECDIR@/sh/cgroup-release-agent.sh \
-				> /sys/fs/cgroup/openrc/release_agent
-			eend
-		fi
 	fi
+
+	while read name hier groups enabled rest; do
+		case "${enabled}" in
+			1)	mkdir /sys/fs/cgroup/${name}
+				mount -t cgroup -o nodev,noexec,nosuid,${name} \
+					${name} /sys/fs/cgroup/${name}
+				;;
+		esac
+	done < /proc/cgroups
+
+	# mkdir /sys/fs/cgroup/openrc
+	# mount -t cgroup \
+	# -o nodev,noexec,nosuid,name=openrc \
+	# openrc /sys/fs/cgroup/openrc
 }
 
 start()
@@ -90,6 +99,11 @@ start()
 	retval=$?
 	if [ $retval -eq 0 ]; then
 		mount_misc
+		retval=$?
+	fi
+	if [ $retval -eq 0 ]; then
+		mount_cgroups
+		retval=$?
 	fi
 	return $retval
 }
