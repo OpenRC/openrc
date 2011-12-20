@@ -85,11 +85,6 @@ mount_cgroups()
 				;;
 		esac
 	done < /proc/cgroups
-
-	# mkdir /sys/fs/cgroup/openrc
-	# mount -t cgroup \
-	# -o nodev,noexec,nosuid,name=openrc \
-	# openrc /sys/fs/cgroup/openrc
 }
 
 start()

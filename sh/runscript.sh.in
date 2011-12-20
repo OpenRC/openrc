@@ -131,19 +131,6 @@ start()
 		service_inactive && _inactive=true
 		mark_service_inactive
 	fi
-	if [ "$RC_UNAME" = Linux ]; then
-		local cgroup=/sys/fs/cgroup/openrc
-		local svc_cgroup=${cgroup}/${RC_SVCNAME}
-		if mountinfo -q ${cgroup}; then
-			mkdir ${svc_cgroup}
-			for f in cpuset.cpus cpuset.mems; do
-					if [ -f ${cgroup}/${f} ]; then
-							cp ${cgroup}/${f} ${svc_cgroup}
-						fi
-					done
-			echo $$ > ${svc_cgroup}/tasks
-		fi
-	fi
 	eval start-stop-daemon --start \
 		--exec $command \
 		${procname:+--name} $procname \
