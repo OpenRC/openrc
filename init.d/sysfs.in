@@ -60,15 +60,8 @@ mount_misc()
 			eend $?
 		fi
 	fi
-}
 
-mount_cgroups()
-{
-	yesno ${rc_cgroups:-NO} || return 0
-	if [ ! -e /proc/cgroups ]; then
-		return 0
-	fi
-
+	# set up kernel support for cgroups
 	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
 		if grep -qs cgroup /proc/filesystems; then
 			ebegin "Mounting cgroup filesystem"
@@ -76,6 +69,14 @@ mount_cgroups()
 				cgroup_root /sys/fs/cgroup
 			eend $?
 		fi
+	fi
+}
+
+mount_cgroups()
+{
+	yesno ${rc_cgroups:-NO} || return 0
+	if [ ! -e /proc/cgroups ]; then
+		return 0
 	fi
 
 	while read name hier groups enabled rest; do
