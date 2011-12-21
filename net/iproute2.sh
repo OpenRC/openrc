@@ -113,31 +113,35 @@ _add_address()
 
 	local address netmask broadcast peer anycast label scope
 	local valid_lft preferred_lft home nodad
+	local confflaglist
 	address="$1" ; shift
 	while [ -n "$*" ]; do
 		case "$1" in
 			netmask)
 				netmask="/$(_netmask2cidr "$2")" ; shift ; shift ;;
 			broadcast|brd)
-				broadcast="broadcast $2" ; shift ; shift ;;
+				broadcast="$2" ; shift ; shift ;;
 			pointopoint|pointtopoint|peer)
-				peer="peer $2" ; shift ; shift ;;
+				peer="$2" ; shift ; shift ;;
 			anycast|label|scope|valid_lft|preferred_lft)
 				eval "$1=$2" ; shift ; shift ;;
 			home|nodad)
-				eval "$1=$1" ; shift ;;
+				# FIXME: If we need to reorder these, this will take more code
+				confflaglist="${confflaglist} $1" ; shift ;;
 		esac
 	done
 
 	# Always scope lo addresses as host unless specified otherwise
 	if [ "${IFACE}" = "lo" ]; then
-		[ -z "$scope" ] && scope="scope host"
+		[ -z "$scope" ] && scope="host"
 	fi
 
 	# figure out the broadcast address if it is not specified
-	[ -z "$broadcast" ] && broadcast="broadcast +"
+	# FIXME: I'm not sure if this should be set if we are passing a peer arg
+	[ -z "$broadcast" ] && broadcast="+"
 
-	set -- "${address}${netmask}" $peer $broadcast $anycast $label $scope dev "${IFACE}" $valid_lft $preferred_lft $home $nodad
+	# This must appear on a single line, continuations cannot be used
+	set -- "${address}${netmask}" ${peer:+peer} ${peer} ${broadcast:+broadcast} ${broadcast} ${anycast:+anycast} ${anycast} ${label:+label} ${label} ${scope:+scope} ${scope} dev "${IFACE}" ${valid_lft:+valid_lft} $valid_lft ${preferred_lft:+preferred_lft} $preferred_lft $confflaglist
 	veinfo ip addr add "$@"
 	ip addr add "$@"
 }
