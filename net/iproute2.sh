@@ -139,7 +139,6 @@ _add_address()
 	# figure out the broadcast address if it is not specified
 	# This must NOT be set for IPv6 addresses
 	if [ "${address/:}" = "${address}" ]; then
-		# FIXME: I'm not sure if this should be set if we are passing a peer arg
 		[ -z "$broadcast" ] && broadcast="+"
 	elif [ -n "$broadcast" ]; then
 		eerror "Broadcast keywords are not valid with IPv6 addresses"
