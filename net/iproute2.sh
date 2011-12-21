@@ -137,8 +137,14 @@ _add_address()
 	fi
 
 	# figure out the broadcast address if it is not specified
-	# FIXME: I'm not sure if this should be set if we are passing a peer arg
-	[ -z "$broadcast" ] && broadcast="+"
+	# This must NOT be set for IPv6 addresses
+	if [ "${address/:}" = "${address}" ]; then
+		# FIXME: I'm not sure if this should be set if we are passing a peer arg
+		[ -z "$broadcast" ] && broadcast="+"
+	elif [ -n "$broadcast" ]; then
+		eerror "Broadcast keywords are not valid with IPv6 addresses"
+		return 1
+	fi
 
 	# This must appear on a single line, continuations cannot be used
 	set -- "${address}${netmask}" ${peer:+peer} ${peer} ${broadcast:+broadcast} ${broadcast} ${anycast:+anycast} ${anycast} ${label:+label} ${label} ${scope:+scope} ${scope} dev "${IFACE}" ${valid_lft:+valid_lft} $valid_lft ${preferred_lft:+preferred_lft} $preferred_lft $confflaglist
