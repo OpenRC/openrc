@@ -353,7 +353,7 @@ iproute2_post_stop()
 			ip -4 route flush table cache dev "${IFACE}"
 		fi
 	fi
-	
+
 	# Kernel may not have IPv6 built in
 	if [ -e /proc/net/ipv6_route ]; then
 		local rules="$(service_get_value "ip6_rule")"

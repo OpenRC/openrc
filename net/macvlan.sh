@@ -43,7 +43,7 @@ macvlan_pre_start()
 	[ -z "${macvlan}" ] && return 0
 
 	_check_macvlan || return 1
-	
+
 	case " ${MODULES} " in
 		*" ifconfig "*)
 				eerror "sys-apps/iproute2 is required to configure MACVLANs"
