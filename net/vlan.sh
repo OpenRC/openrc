@@ -123,7 +123,7 @@ vlan_pre_stop()
 {
 	local vlan=
 
-	_exists || return 1
+	_exists || return 0
 
 	for vlan in $(_get_vlans); do
 		einfo "Removing VLAN ${vlan##*.} from ${IFACE}"
