@@ -8,8 +8,15 @@ ip6to4_depend()
 	after interface
 }
 
-ip6to4_start()
+ip6to4_pre_start()
 {
+	# ALL interfaces run pre_start blocks, not just those with something
+	# assigned, so we must check if we need to run on this interface before we
+	# do so.
+	local config
+	eval config=\$config_${IFVAR}
+	[ "$config" = "ip6to4" ] || return 0
+
 	case " ${MODULES} " in
 		*" ifconfig "*)
 			if [ "${IFACE}" != "sit0" ]; then
@@ -19,7 +26,7 @@ ip6to4_start()
 			fi
 	esac
 
-	local host= suffix= relay= addr= iface=${IFACE} new= localip=
+	local host= suffix= relay= addr= iface=${IFACE} config_ip6to4= localip=
 	eval host=\$link_${IFVAR}
 	if [ -z "${host}" ]; then
 		eerror "link_${IFVAR} not set"
@@ -67,7 +74,7 @@ ip6to4_start()
 		veinfo "Derived IPv6 address: ${ip6}"
 
 		# Now apply our IPv6 address to our config
-		new="${new}${new:+ }${ip6}/48"
+		config_ip6to4="${config_ip6to4}${config_ip6to4:+ }${ip6}/48"
 
 		if [ -n "${localip}" ]; then
 			localip="any"
@@ -76,7 +83,7 @@ ip6to4_start()
 		fi
 	done
 
-	if [ -z "${new}" ]; then
+	if [ -z "${config_ip6to4}" ]; then
 		eerror "No global IPv4 addresses found on interface ${host}"
 		return 1
 	fi
@@ -87,13 +94,22 @@ ip6to4_start()
 		eend $? || return 1
 		_up
 	fi
+	routes_ip6to4="2003::/3 via ::${relay} metric 2147483647"
+	service_set_value "config_ip6to4_$IFVAR" "$config_ip6to4"
+	service_set_value "routes_ip6to4_$IFVAR" "$routes_ip6to4"
+}
+
+ip6to4_start()
+{
+	local config_ip6to4=$(service_get_value "config_ip6to4_$IFVAR")
+	local routes_ip6to4=$(service_get_value "routes_ip6to4_$IFVAR")
 
 	# Now apply our config
-	eval config_${config_index}=\'"${new}"\'
+	eval config_${config_index}=\'"${config_ip6to4}"\'
 	: $(( config_index -= 1 ))
 
 	# Add a route for us, ensuring we don't delete anything else
 	local routes="$(_get_array "routes_${IFVAR}")
-2003::/3 via ::${relay} metric 2147483647"
+$routes_ip6to4"
 	eval routes_${IFVAR}=\$routes
 }
