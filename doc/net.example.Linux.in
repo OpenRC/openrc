@@ -1102,6 +1102,16 @@
 #
 # ${IFACE} is set to the interface being brought up/down
 # ${IFVAR} is ${IFACE} converted to variable name bash allows
+#
+# For historical & compatbility reasons, preup is actually normally called in
+# the follow sequence: up ; preup ; up
+# In that case, the first up causes the kernel to initialize the device, so
+# that it is available for use in the preup function.  However, for some other
+# hardware, eg CAN devices, some configuration is needed before trying to up
+# the interface will actually work. For such harware, there are the
+# 'up_before_preup' variables, that skips the first up call.
+#up_before_preup_IFVAR=no
+#up_before_preup=no
 
 #preup() {
 #	# Test for link on the interface prior to bringing it up.  This

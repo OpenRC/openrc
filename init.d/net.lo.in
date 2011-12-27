@@ -488,7 +488,9 @@ start()
 {
 	local IFACE=${RC_SVCNAME#*.} oneworked=false fallback=false module=
 	local IFVAR=$(shell_var "${IFACE}") cmd= our_metric=
-	local metric=0
+	local metric=0 _up_before_preup
+	eval _up_before_preup="\$up_before_preup_${IFVAR}"
+	[ -z "${_up_before_preup}" ] && _up_before_preup=$up_before_preup
 
 	einfo "Bringing up interface ${IFACE}"
 	eindent
@@ -502,7 +504,7 @@ start()
 	# available in preup and afterwards incase the user inadvertently
 	# brings it down
 	if [ "$(command -v preup)" = "preup" ]; then
-		_up 2>/dev/null
+		[ "${_up_before_preup}" = "no" ] ||  _up 2>/dev/null
 		ebegin "Running preup"
 		eindent
 		preup || return 1
