@@ -51,6 +51,14 @@ vlan_pre_start()
 		eerror "You must convert your vconfig_ VLAN entries to vlan${N} entries."
 		return 1
 	fi
+	local vlans=
+	eval vlans=\$vlans_${IFVAR}
+	[ -z "$vlans" ] && return 0
+	case " ${MODULES} " in
+		*" ifconfig "*)
+				eerror "sys-apps/iproute2 is required to configure VLANs"
+				return 1 ;;
+	esac
 }
 
 vlan_post_start()
