@@ -138,7 +138,7 @@ _add_address()
 
 	# figure out the broadcast address if it is not specified
 	# This must NOT be set for IPv6 addresses
-	if [ "${address/:}" = "${address}" ]; then
+	if [ "${address#*:}" = "${address}" ]; then
 		[ -z "$broadcast" ] && broadcast="+"
 	elif [ -n "$broadcast" ]; then
 		eerror "Broadcast keywords are not valid with IPv6 addresses"
