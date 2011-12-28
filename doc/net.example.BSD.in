@@ -388,6 +388,17 @@
 #
 # ${IFACE} is set to the interface being brought up/down
 # ${IFVAR} is ${IFACE} converted to variable name bash allows
+#
+# For historical and compatibility reasons, preup is actually normally called
+# in the following sequence: up ; preup ; up.
+# The first up causes the kernel to initialize the device, so
+# that it is available for use in the preup function.  However, for some
+# hardware, e.g. CAN devices, some configuration is needed before trying to up
+# the interface will actually work. For such hardware, the
+# up_before_preup variables will allow skipping the first up call if set
+# to yes.
+#up_before_preup_IFVAR="NO"
+#up_before_preup="NO"
 
 #preup() {
 #	# Remember to return 0 on success
