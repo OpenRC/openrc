@@ -276,8 +276,14 @@ rc_logger_open(const char *level)
 			fclose(log);
 			fclose(plog);
 		} else {
-			log_error = 1;
-			eerror("Error: fopen(%s) failed: %s", logfile, strerror(errno));
+			/*
+			 * logfile or its basedir may be read-only during shutdown so skip
+			 * the error in this case
+			 */
+			if (strcmp(rc_runlevel_get(), "shutdown") != 0) {
+				log_error = 1;
+				eerror("Error: fopen(%s) failed: %s", logfile, strerror(errno));
+			}
 		}
 
 		/* Try to keep the temporary log in case of errors */
