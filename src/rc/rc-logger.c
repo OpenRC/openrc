@@ -280,7 +280,7 @@ rc_logger_open(const char *level)
 			 * logfile or its basedir may be read-only during shutdown so skip
 			 * the error in this case
 			 */
-			if (strcmp(level, "shutdown") != 0) {
+			if (strcmp(level, RC_LEVEL_SHUTDOWN) != 0) {
 				log_error = 1;
 				eerror("Error: fopen(%s) failed: %s", logfile, strerror(errno));
 			}
