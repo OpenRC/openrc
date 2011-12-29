@@ -277,10 +277,10 @@ rc_logger_open(const char *level)
 			fclose(plog);
 		} else {
 			/*
-			 * logfile or its basedir may be read-only during shutdown so skip
-			 * the error in this case
+			 * logfile or its basedir may be read-only during sysinit and
+			 * shutdown so skip the error in this case
 			 */
-			if (strcmp(level, RC_LEVEL_SHUTDOWN) != 0) {
+			if ((strcmp(level, RC_LEVEL_SHUTDOWN) != 0) && (strcmp(level, RC_LEVEL_SYSINIT) != 0)) {
 				log_error = 1;
 				eerror("Error: fopen(%s) failed: %s", logfile, strerror(errno));
 			}
