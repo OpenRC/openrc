@@ -188,11 +188,11 @@ proc_getent(const char *ent)
 	if (rc_getline(&proc, &i, fp) == -1 || proc == NULL)
 		eerror("rc_getline: %s", strerror(errno));
 
-	if(proc != NULL) {
+	if (proc != NULL) {
 		len = strlen(ent);
 
-		while((p = strsep(&proc, " "))) {
-			if(strncmp(ent, p, len) == 0 && (p[len] == '\0' || p[len] == ' ' || p[len] == '=')) {
+		while ((p = strsep(&proc, " "))) {
+			if (strncmp(ent, p, len) == 0 && (p[len] == '\0' || p[len] == ' ' || p[len] == '=')) {
 				p += len;
 
 				if (*p == '=')
@@ -203,7 +203,7 @@ proc_getent(const char *ent)
 		}
 	}
 
-	if(!value)
+	if (!value)
 		errno = ENOENT;
 
 	fclose(fp);
