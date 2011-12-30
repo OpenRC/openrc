@@ -47,7 +47,7 @@ macvlan_pre_start()
 	if [ -n "${e}" ]; then
 		eend 1 "${e}"
 	else
-		eend 0 && service_set_value macvlan "${macvlan}"
+		eend 0 && _up && service_set_value macvlan "${macvlan}"
 	fi
 }
 
