@@ -214,6 +214,60 @@ rc_config_list(const char *file)
 }
 librc_hidden_def(rc_config_list)
 
+/*
+ * Override some specific rc.conf options via kernel cmdline
+ */
+#ifdef __linux__
+static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config) {
+	RC_STRINGLIST *overrides;
+	RC_STRING *cline, *override, *config_np;
+	char *tmp = NULL;
+	char *value = NULL;
+	size_t varlen = 0;
+	size_t len = 0;
+
+	overrides = rc_stringlist_new();
+
+	/* A list of variables which may be overriden through cmdline */
+	rc_stringlist_add(overrides, "rc_parallel");
+
+	TAILQ_FOREACH(override, overrides, entries) {
+		varlen = strlen(override->value);
+		value = rc_proc_getent(override->value);
+
+		/* No need to continue if there's nothing to override */
+		if (!value) {
+			free(value);
+			continue;
+		}
+
+		if (value != NULL) {
+			len = (varlen + strlen(value) + 2);
+			tmp = xmalloc(sizeof(char) * len);
+			snprintf(tmp, len, "%s=%s", override->value, value);
+		}
+
+		/* Whenever necessary remove the old config entry first to prevent duplicates */
+		TAILQ_FOREACH_SAFE(cline, config, entries, config_np) {
+			if (strncmp(override->value, cline->value, varlen) == 0 && cline->value[varlen] == '=') {
+				rc_stringlist_delete(config, cline->value);
+				break;
+			}
+		}
+
+		/* Add the option (var/value) to the current config */
+		rc_stringlist_add(config, tmp);
+
+		free(tmp);
+		free(value);
+	}
+
+	rc_stringlist_free(overrides);
+
+	return config;
+}
+#endif
+
 RC_STRINGLIST *
 rc_config_load(const char *file)
 {
@@ -286,6 +340,10 @@ rc_config_load(const char *file)
 		free(entry);
 	}
 	rc_stringlist_free(list);
+
+#ifdef __linux__
+	config = rc_config_override(config);
+#endif
 
 	return config;
 }
