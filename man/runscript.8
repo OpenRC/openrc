@@ -99,9 +99,9 @@ the service has already been stopped.
 .It Ar description
 String describing the service.
 .It Ar description_$command
-String describing the extra command the.
+String describing the extra command.
 .It Ar start_stop_daemon_args
-List of arguments passed to start-stop-daemon.
+List of arguments passed to start-stop-daemon when starting the daemon.
 .It Ar command
 Daemon to start or stop via
 .Nm start-stop-daemon
@@ -144,7 +144,7 @@ Tags a service with a keyword. Here's the keywords we currently understand:-
 .Bl -tag -width indent
 .It Dv -shutdown
 Don't stop this service when shutting the system down.
-This normally quite safe as remaining daemons will be sent a SIGTERM just
+This is normally quite safe as remaining daemons will be sent a SIGTERM just
 before final shutdown.
 Network related services such as the network and dhcpcd init scripts normally
 have this keyword.
@@ -226,7 +226,7 @@ seconds until all files exist.
 Returns 0 if all files exist, otherwise non zero.
 If
 .Ar timeout
-is less then 1 then we wait indefinitely.
+is less than 1 then we wait indefinitely.
 .It Ic is_newer_than Ar file1 Ar file2 ...
 If
 .Ar file1
