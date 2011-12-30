@@ -173,7 +173,7 @@ proc_getent(const char *ent)
 {
 	FILE *fp;
 	char *proc, *p, *value = NULL;
-	size_t i;
+	size_t i, len;
 
 	if (!exists("/proc/cmdline"))
 		return NULL;
@@ -187,16 +187,25 @@ proc_getent(const char *ent)
 	i = 0;
 	if (rc_getline(&proc, &i, fp) == -1 || proc == NULL)
 		eerror("rc_getline: %s", strerror(errno));
-	if (*proc && (p = strstr(proc, ent))) {
-		i = p - proc;
-		if (i == '\0' || proc[i - 1] == ' ') {
-			p += strlen(ent);
-			if (*p == '=')
-				p++;
-			value = xstrdup(strsep(&p, " "));
+
+	if(proc != NULL) {
+		len = strlen(ent);
+
+		while((p = strsep(&proc, " "))) {
+			if(strncmp(ent, p, len) == 0 && (p[len] == '\0' || p[len] == ' ' || p[len] == '=')) {
+				p += len;
+
+				if (*p == '=')
+					p++;
+
+				value = xstrdup(p);
+			}
 		}
-	} else
+	}
+
+	if(!value)
 		errno = ENOENT;
+
 	fclose(fp);
 	free(proc);
 
