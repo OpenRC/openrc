@@ -29,6 +29,7 @@
  */
 
 #include "librc.h"
+#include "einfo.h"
 
 bool
 rc_yesno(const char *value)
@@ -126,6 +127,53 @@ rc_getline(char **line, size_t *len, FILE *fp)
 	return last;
 }
 librc_hidden_def(rc_getline)
+
+#ifdef __linux__
+char *
+rc_proc_getent(const char *ent)
+{
+	FILE *fp;
+	char *proc, *p, *value = NULL;
+	size_t i, len;
+
+	if (!exists("/proc/cmdline"))
+		return NULL;
+
+	if (!(fp = fopen("/proc/cmdline", "r"))) {
+		eerror("failed to open `/proc/cmdline': %s", strerror(errno));
+		return NULL;
+	}
+
+	proc = NULL;
+	i = 0;
+	if (rc_getline(&proc, &i, fp) == -1 || proc == NULL)
+		eerror("rc_getline: %s", strerror(errno));
+
+	if (proc != NULL) {
+		len = strlen(ent);
+
+		while ((p = strsep(&proc, " "))) {
+			if (strncmp(ent, p, len) == 0 && (p[len] == '\0' || p[len] == ' ' || p[len] == '=')) {
+				p += len;
+
+				if (*p == '=')
+					p++;
+
+				value = xstrdup(p);
+			}
+		}
+	}
+
+	if (!value)
+		errno = ENOENT;
+
+	fclose(fp);
+	free(proc);
+
+	return value;
+}
+librc_hidden_def(rc_proc_getent)
+#endif
 
 RC_STRINGLIST *
 rc_config_list(const char *file)

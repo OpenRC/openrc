@@ -167,52 +167,6 @@ cleanup(void)
 #endif
 }
 
-#ifdef __linux__
-static char *
-proc_getent(const char *ent)
-{
-	FILE *fp;
-	char *proc, *p, *value = NULL;
-	size_t i, len;
-
-	if (!exists("/proc/cmdline"))
-		return NULL;
-
-	if (!(fp = fopen("/proc/cmdline", "r"))) {
-		eerror("failed to open `/proc/cmdline': %s", strerror(errno));
-		return NULL;
-	}
-
-	proc = NULL;
-	i = 0;
-	if (rc_getline(&proc, &i, fp) == -1 || proc == NULL)
-		eerror("rc_getline: %s", strerror(errno));
-
-	if (proc != NULL) {
-		len = strlen(ent);
-
-		while ((p = strsep(&proc, " "))) {
-			if (strncmp(ent, p, len) == 0 && (p[len] == '\0' || p[len] == ' ' || p[len] == '=')) {
-				p += len;
-
-				if (*p == '=')
-					p++;
-
-				value = xstrdup(p);
-			}
-		}
-	}
-
-	if (!value)
-		errno = ENOENT;
-
-	fclose(fp);
-	free(proc);
-
-	return value;
-}
-#endif
-
 static char
 read_key(bool block)
 {
@@ -969,9 +923,9 @@ main(int argc, char **argv)
 #ifdef __linux__
 			if (strcmp(newlevel, RC_LEVEL_SYSINIT) == 0) {
 				/* If we requested a runlevel, save it now */
-				p = proc_getent("rc_runlevel");
+				p = rc_proc_getent("rc_runlevel");
 				if (p == NULL)
-					p = proc_getent("softlevel");
+					p = rc_proc_getent("softlevel");
 				if (p != NULL) {
 					set_krunlevel(p);
 					free(p);
@@ -1123,7 +1077,7 @@ main(int argc, char **argv)
 
 #ifdef __linux__
 	/* mark any services skipped as started */
-	proc = p = proc_getent("noinit");
+	proc = p = rc_proc_getent("noinit");
 	if (proc) {
 		while ((token = strsep(&p, ",")))
 			rc_service_mark(token, RC_SERVICE_STARTED);
@@ -1144,7 +1098,7 @@ main(int argc, char **argv)
 
 #ifdef __linux__
 	/* mark any services skipped as stopped */
-	proc = p = proc_getent("noinit");
+	proc = p = rc_proc_getent("noinit");
 	if (proc) {
 		while ((token = strsep(&p, ",")))
 			rc_service_mark(token, RC_SERVICE_STOPPED);

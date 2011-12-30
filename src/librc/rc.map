@@ -18,6 +18,7 @@ global:
 	rc_getline;
 	rc_newer_than;
 	rc_older_than;
+	rc_proc_getent;
 	rc_runlevel_exists;
 	rc_runlevel_get;
 	rc_runlevel_list;
