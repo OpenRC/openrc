@@ -24,25 +24,12 @@ _is_macvlan()
 	[ -n "$(export RC_SVCNAME="net.${IFACE}"; service_get_value macvlan)" ]
 }
 
-_check_macvlan()
-{
-	if [ ! -d /sys/module/macvlan ]; then
-		modprobe macvlan
-		if [ ! -d /sys/module/macvlan ]; then
-			eerror "MAC-VLAN support is not present in this kernel"
-			return 1
-		fi
-	fi
-}
-
 macvlan_pre_start()
 {
 	# MAC-VLAN needs an existing interface to link to
 	local macvlan=
 	eval macvlan=\$macvlan_${IFVAR}
 	[ -z "${macvlan}" ] && return 0
-
-	_check_macvlan || return 1
 
 	case " ${MODULES} " in
 		*" ifconfig "*)
