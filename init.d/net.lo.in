@@ -21,7 +21,7 @@ depend()
 	need localmount
 	after bootmisc
 	provide net
-	keyword -jail -prefix -vserver
+	keyword -shutdown -jail -prefix -vserver
 
 	case "${IFACE}" in
 		lo|lo0);;
