@@ -821,7 +821,7 @@ svc_start(void)
 		svc_start_real();
 }
 
-static void
+static int
 svc_stop_check(RC_SERVICE *state)
 {
 	*state = rc_service_state(service);
@@ -848,7 +848,7 @@ svc_stop_check(RC_SERVICE *state)
 
 	if (*state & RC_SERVICE_STOPPED) {
 		ewarn("WARNING: %s is already stopped", applet);
-		exit(EXIT_SUCCESS);
+		return 1;
 	}
 
 	rc_service_mark(service, RC_SERVICE_STOPPING);
@@ -861,6 +861,8 @@ svc_stop_check(RC_SERVICE *state)
 		else if (rc_service_in_runlevel(service, RC_LEVEL_BOOT))
 			ewarn("WARNING: you are stopping a boot service");
 	}
+
+	return 0;
 }
 
 static void
@@ -986,7 +988,7 @@ svc_stop_real(void)
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
 }
 
-static void
+static int
 svc_stop(void)
 {
 	RC_SERVICE state;
@@ -995,13 +997,16 @@ svc_stop(void)
 	if (dry_run)
 		einfon("stop:");
 	else
-		svc_stop_check(&state);
+		if (svc_stop_check(&state) == 1)
+			return 1; /* Service has been stopped already */
 	if (deps)
 		svc_stop_deps(state);
 	if (dry_run)
 		printf(" %s\n", applet);
 	else
 		svc_stop_real();
+
+	return 0;
 }
 
 static void
@@ -1351,7 +1356,8 @@ runscript(int argc, char **argv)
 				}
 				if (deps && in_background)
 					get_started_services();
-				svc_stop();
+				if (svc_stop() == 1)
+					continue; /* Service has been stopped already */
 				if (deps) {
 					if (!in_background &&
 					    !rc_runlevel_stopping() &&
