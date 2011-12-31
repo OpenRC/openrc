@@ -113,8 +113,8 @@ Pidfile to use for the above defined command.
 .It Ar name
 Display name used for the above defined command.
 .It Ar retry
-You can either specify a timeout in seconds or a multiple signal/timeout pairs
-as a stopping schedule. This is only used during stop().
+Retry schedule to use when stopping the daemon. It can either be a
+timeout in seconds or multiple signal/timeout pairs (like SIGTERM/5).
 .El
 .Sh DEPENDENCIES
 You should define a
