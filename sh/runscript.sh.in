@@ -151,6 +151,7 @@ stop()
 	[ -n "$command" -o -n "$procname" -o -n "$pidfile" ] || return 0
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
 	start-stop-daemon --stop \
+		${retry:+--retry} $retry \
 		${command:+--exec} $command \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $pidfile \
