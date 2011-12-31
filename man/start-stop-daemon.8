@@ -162,8 +162,8 @@ but with the standard error output.
 These options are only used for stopping daemons:
 .Bl -tag -width indent
 .It Fl R , -retry Ar timeout | Ar signal Ns / Ns Ar timeout
-You can either specify a timeout in seconds or a multiple signal/timeout
-(like SIGTERM/5) pairs as a stopping schedule.
+The retry specification can be either a timeout in seconds or multiple
+signal/timeout pairs (like SIGTERM/5).
 .El
 .Sh ENVIRONMENT
 .Va SSD_NICELEVEL
