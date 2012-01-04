@@ -1,9 +1,18 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
+_ifconfig()
+{
+	if [ -x /bin/ifconfig ]; then
+		echo /bin/ifconfig
+	else
+		which ifconfig 2>/dev/null
+	fi
+}
+
 ifconfig_depend()
 {
-	program /sbin/ifconfig
+	program $(_ifconfig)
 	provide interface
 }
 
