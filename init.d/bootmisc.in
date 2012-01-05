@@ -117,7 +117,7 @@ start()
 		fi
 	done
 
-	if [ "$RC_UNAME" = Linux -a -d /run -a false ]; then
+	if [ "$RC_UNAME" = Linux -a -d /run ] && false; then
 		migrate_to_run	/var/lock /run/lock
 		migrate_to_run	/var/run /run
 	fi
