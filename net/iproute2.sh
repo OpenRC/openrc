@@ -6,7 +6,7 @@ _ip()
 	if [ -x /bin/ip ]; then
 		echo /bin/ip
 	else
-		which ip 2>/dev/null
+		echo /sbin/ip
 	fi
 }
 
