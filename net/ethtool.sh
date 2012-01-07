@@ -1,13 +1,12 @@
 # Copyright (c) 2011 by Gentoo Foundation
 # Released under the 2-clause BSD license.
 
-_ethtool() {
-	echo /usr/sbin/ethtool
-}
-
 ethtool_depend()
 {
-	program $(_ethtool)
+	local x
+	x=$(_which ethtool)
+	[ -z "$x" ] && return 1
+	program $x
 	before interface
 }
 
