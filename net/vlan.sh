@@ -1,18 +1,12 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-_ip()
-{
-	if [ -x /bin/ip ]; then
-		echo /bin/ip
-	else
-		echo /sbin/ip
-	fi
-}
-
 vlan_depend()
 {
-	program $(_ip)
+	local x
+	x=$(_which ip)
+	[ -z "$x" ] && return 1
+	program $x
 	after interface
 	before dhcp
 }
