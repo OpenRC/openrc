@@ -169,6 +169,18 @@ _configure_variables()
 	done
 }
 
+_which()
+{
+	local i OIFS
+	[ -z "$1" ] && return
+	OIFS="$IFS"
+	IFS=:
+	for i in $PATH ; do
+		[ -x $i/$1 ] && echo $i/$1 && break
+	done
+	IFS=$OIFS
+}
+
 _show_address()
 {
 	einfo "received address $(_get_inet_address "${IFACE}")"
