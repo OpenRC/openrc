@@ -3,10 +3,7 @@
 
 vlan_depend()
 {
-	local x
-	x=$(_which ip)
-	[ -z "$x" ] && return 1
-	program $x
+	program ip
 	after interface
 	before dhcp
 }

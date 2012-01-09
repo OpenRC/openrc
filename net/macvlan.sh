@@ -5,10 +5,7 @@
 
 macvlan_depend()
 {
-	local x
-	x=$(_which ip)
-	[ -z "${X}" ] && return 1
-	program $x
+	program ip
 	after interface
 	before dhcp macchanger
 }

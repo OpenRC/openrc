@@ -1,19 +1,10 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-_br2684ctl()
-{
-	if [ -x /usr/sbin/br2684ctl ]; then
-		echo /usr/sbin/br2684ctl
-	else
-		echo /sbin/br2684ctl
-	fi
-}
-
 br2684ctl_depend()
 {
 	before ppp
-	program start $(_br2684ctl)
+	program start br2684ctl
 }
 
 _config_vars="$_config_vars bridge bridge_add brctl"
@@ -42,7 +33,7 @@ br2684ctl_pre_start()
 	esac
 
 	einfo "Starting RFC 2684 Bridge control on ${IFACE}"
-	start-stop-daemon --start --exec $(_br2684ctl) --background \
+	start-stop-daemon --start --exec $(_which br2684ctl) --background \
 		--make-pidfile --pidfile "/var/run/br2684ctl-${IFACE}.pid" \
 		-- -c "${IFACE#nas*}" ${opts}
 	eend $?

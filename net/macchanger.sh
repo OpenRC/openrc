@@ -4,6 +4,7 @@
 macchanger_depend()
 {
 	before macnet
+	# no program 'macchanger', as we have partial functionality without it
 }
 
 _config_vars="$_config_vars mac"

@@ -4,7 +4,7 @@
 bridge_depend()
 {
 	before interface macnet
-	program /sbin/brctl
+	program brctl
 }
 
 _config_vars="$_config_vars bridge bridge_add brctl"

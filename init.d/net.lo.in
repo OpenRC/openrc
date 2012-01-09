@@ -172,13 +172,31 @@ _configure_variables()
 _which()
 {
 	local i OIFS
+	# Empty
 	[ -z "$1" ] && return
+	# check paths
 	OIFS="$IFS"
 	IFS=:
 	for i in $PATH ; do
 		[ -x $i/$1 ] && echo $i/$1 && break
 	done
 	IFS=$OIFS
+}
+
+# Like _which, but also consider shell builtins, and multiple alternatives
+_program_available()
+{
+	[ -z "$1" ] && return 0
+	local x=
+	for x; do
+		case "${x}" in
+			/*) [ -x "${x}" ] && break;;
+			*) type "${x}" >/dev/null 2>&1 && break;;
+		esac
+		unset x
+	done
+	[ -n "${x}" ] && echo $x && return 0
+	return 1
 }
 
 _show_address()
@@ -323,11 +341,10 @@ _load_modules()
 
 		eval set -- \$module_${i}_program
 		if [ -n "$1" ]; then
-			x=
-			for x; do
-				[ -x "${x}" ] && break
-			done
-			[ -x "${x}" ] || continue
+			if ! _program_available "$@" >/dev/null; then
+				vewarn "Skipping module $mod due to missing program: $@"
+				continue
+			fi
 		fi
 		if ${starting}; then
 			eval set -- \$module_${i}_program_start
@@ -335,15 +352,10 @@ _load_modules()
 			eval set -- \$module_${i}_program_stop
 		fi
 		if [ -n "$1" ]; then
-			x=
-			for x; do
-				case "${x}" in
-					/*) [ -x "${x}" ] && break;;
-					*) type "${x}" >/dev/null 2>&1 && break;;
-				esac
-				unset x
-			done
-			[ -n "${x}" ] || continue
+			if ! _program_available "$@" >/dev/null; then
+				vewarn "Skipping module $mod due to missing program: $@"
+				continue
+			fi
 		fi
 
 		eval provides=\$module_${i}_provide

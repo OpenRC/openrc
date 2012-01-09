@@ -6,6 +6,7 @@ _config_vars="$_config_vars link suffix relay"
 ip6to4_depend()
 {
 	after interface
+	program ip
 }
 
 ip6to4_pre_start()

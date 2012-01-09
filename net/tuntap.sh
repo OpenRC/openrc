@@ -4,6 +4,7 @@
 tuntap_depend()
 {
 	before bridge interface macchanger
+	program ip openvpn tunctl
 }
 
 _config_vars="$_config_vars iproute2 openvpn tunctl"
