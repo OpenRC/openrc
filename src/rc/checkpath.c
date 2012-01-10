@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <features.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -46,44 +47,68 @@
 #include "einfo.h"
 #include "rc-misc.h"
 
+typedef enum {
+	inode_unknown = 0,
+	inode_file = 1,
+	inode_dir = 2,
+	inode_fifo = 3,
+} inode_t;
+
 extern const char *applet;
 
 static int
-do_check(char *path, uid_t uid, gid_t gid, mode_t mode, int file)
+do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc)
 {
 	struct stat st;
-	int fd;
+	int fd, flags;
 
 	if (stat(path, &st)) {
-		if (file) {
+		if (type == inode_file) {
 			einfo("%s: creating file", path);
-			if (!mode)
-				mode = S_IRUSR | S_IWUSR | S_IRGRP |
-				    S_IWGRP | S_IROTH;
-			if ((fd = open(path, O_CREAT, mode)) == -1) {
+			if (!mode) /* 664 */
+				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+			flags = O_CREAT|O_NDELAY|O_WRONLY|O_NOCTTY;
+#ifdef __USE_XOPEN2K8
+			flags |= O_CLOEXEC|O_NOFOLLOW;
+#endif
+			if (trunc)
+				flags |= O_TRUNC;
+			if ((fd = open(path, flags, mode)) == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
 			}
 			close (fd);
-		} else {
+		} else if (type == inode_dir) {
 			einfo("%s: creating directory", path);
-			if (!mode)
+			if (!mode) /* 775 */
 				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-			if (mkdir(path, mode)) {
+			if (mkdir(path, mode) == -1) {
 				eerror("%s: mkdir: %s", applet,
 				    strerror (errno));
 				return -1;
 			}
 			mode = 0;
+		} else if (type == inode_fifo) {
+			einfo("%s: creating fifo", path);
+			if (!mode) /* 600 */
+				mode = S_IRUSR | S_IWUSR;
+			if (mkfifo(path, mode) == -1) {
+				eerror("%s: mkfifo: %s", applet,
+				    strerror (errno));
+				return -1;
+			}
 		}
 	} else {
-		if ((file && S_ISDIR(st.st_mode)) ||
-		    (!file && !S_ISDIR(st.st_mode)))
-		{
-			if (file)
-				eerror("%s: is a directory", path);
-			else
-				eerror("%s: is a file", path);
+		if (type != inode_dir && S_ISDIR(st.st_mode)) {
+			eerror("%s: is a directory", path);
+			return 1;
+		}
+		if (type != inode_file && S_ISREG(st.st_mode)) {
+			eerror("%s: is a file", path);
+			return 1;
+		}
+		if (type != inode_fifo && S_ISFIFO(st.st_mode)) {
+			eerror("%s: is a fifo", path);
 			return -1;
 		}
 	}
@@ -143,17 +168,23 @@ parse_owner(struct passwd **user, struct group **group, const char *owner)
 
 #include "_usage.h"
 #define extraopts "path1 path2 ..."
-#define getoptstring "dfm:o:" getoptstring_COMMON
+#define getoptstring "dDfFpm:o:" getoptstring_COMMON
 static const struct option longopts[] = {
-	{ "directory",      0, NULL, 'd'},
-	{ "file",           0, NULL, 'f'},
-	{ "mode",           1, NULL, 'm'},
-	{ "owner",          1, NULL, 'o'},
+	{ "directory",          0, NULL, 'd'},
+	{ "directory-truncate", 0, NULL, 'D'},
+	{ "file",               0, NULL, 'f'},
+	{ "file-truncate",      0, NULL, 'F'},
+	{ "pipe",               0, NULL, 'p'},
+	{ "mode",               1, NULL, 'm'},
+	{ "owner",              1, NULL, 'o'},
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
-	"Check if a directory",
-	"Check if a file",
+	"Create a directory if not exists",
+	"Create/empty directory",
+	"Create a file if not exists",
+	"Truncate file",
+	"Create a named pipe (FIFO) if not exists",
 	"Mode to check",
 	"Owner to check (user:group)",
 	longopts_help_COMMON
@@ -169,18 +200,26 @@ checkpath(int argc, char **argv)
 	mode_t mode = 0;
 	struct passwd *pw = NULL;
 	struct group *gr = NULL;
-	bool file = 0;
+	inode_t type = inode_unknown;
 	int retval = EXIT_SUCCESS;
+	bool trunc = 0;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+		case 'D':
+			trunc = 1;
 		case 'd':
-			file = 0;
+			type = inode_dir;
 			break;
+		case 'F':
+			trunc = 1;
 		case 'f':
-			file = 1;
+			type = inode_file;
+			break;
+		case 'p':
+			type = inode_fifo;
 			break;
 		case 'm':
 			if (parse_mode(&mode, optarg) != 0)
@@ -208,7 +247,7 @@ checkpath(int argc, char **argv)
 		gid = gr->gr_gid;
 
 	while (optind < argc) {
-		if (do_check(argv[optind], uid, gid, mode, file))
+		if (do_check(argv[optind], uid, gid, mode, type, trunc))
 			retval = EXIT_FAILURE;
 		optind++;
 	}
