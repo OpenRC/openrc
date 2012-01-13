@@ -101,24 +101,35 @@ _add_address()
 		ip addr add "$@" dev "${IFACE}" 2>/dev/null
 		return 0
 	fi
-
+	local x
 	local address netmask broadcast peer anycast label scope
 	local valid_lft preferred_lft home nodad
 	local confflaglist
 	address="$1" ; shift
 	while [ -n "$*" ]; do
-		case "$1" in
-			netmask)
-				netmask="/$(_netmask2cidr "$2")" ; shift ; shift ;;
-			broadcast|brd)
-				broadcast="$2" ; shift ; shift ;;
-			pointopoint|pointtopoint|peer)
-				peer="$2" ; shift ; shift ;;
-			anycast|label|scope|valid_lft|preferred_lft)
-				eval "$1=$2" ; shift ; shift ;;
-			home|nodad)
+		x=$1 ; shift
+		case "$x" in
+			netmask|ne*)
+				netmask="/$(_netmask2cidr "$1")" ; shift ;;
+			broadcast|brd|br*)
+				broadcast="$1" ; shift ;;
+			pointopoint|pointtopoint|peer|po*|pe*)
+				peer="$1" ; shift ;;
+			anycast|label|scope|valid_lft|preferred_lft|a*|l*|s*|v*|pr*)
+				case $x in
+					a*) x=anycast ;;
+					l*) x=label ;;
+					s*) x=scope ;;
+					v*) x=valid_lft ;;
+					pr*) x=preferred_lft ;;
+				esac
+				eval "$x=$1" ; shift ;;
+			home|nodad|h*|no*)
+				case $x in h*) x=home ;; n*) x=nodad ;; esac
 				# FIXME: If we need to reorder these, this will take more code
-				confflaglist="${confflaglist} $1" ; shift ;;
+				confflaglist="${confflaglist} $x" ; ;;
+			*)
+				ewarn "Unknown argument to config_$IFACE: $x"
 		esac
 	done
 
