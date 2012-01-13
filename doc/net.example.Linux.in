@@ -68,6 +68,7 @@
 # NOTE: ifconfig creates an aliased device for each extra IPv4 address
 #       (eth0:1, eth0:2, etc)
 #       iproute2 does not do this as there is no need to
+# WARNING: You cannot mix multiple addresses on a line with other parameters!
 #config_eth0="192.168.0.2/24 192.168.0.3/24 192.168.0.4/24"
 # However, that only works with CIDR addresses, so you can't use netmask.
 
@@ -84,6 +85,14 @@
 
 # If you don't want ANY address (only useful when calling for advanced stuff)
 #config_eth0="null"
+
+# If you need to pass parameters to go with an address, you can do so on the
+# same line as the address. You should split multiple addresses with newlines.
+# WARNING: You cannot mix multiple addresses on a line with other parameters!
+#config_eth0="192.168.0.2/24 scope host"
+#config_eth0="4321:0:1:2:3:4:567:89ab/64 nodad home preferred_lft 0"
+#config_eth0="192.168.0.2/24 scope host
+#4321:0:1:2:3:4:567:89ab/64 nodad home preferred_lft 0"
 
 # Here's how to do routing if you need it
 # We add an IPv4 default route, IPv4 subnet route and an IPv6 unicast route

@@ -431,16 +431,18 @@ _load_config()
 	set -- ${config}
 
 	# We should support a space separated array for cidr configs
+	# But only as long as they do not contain other parameters for the address
 	if [ $# = 1 ]; then
 		unset IFS
 		set -- ${config}
 		# Of course, we may have a single address added old style.
-		case "$2" in
-			netmask|broadcast|brd|brd+|peer|pointopoint)
-				local IFS="$__IFS"
-				set -- ${config}
-				;;
-		esac
+		# If the NEXT argument is a v4 or v6 address, it's the next config.
+		# Otherwise, it's arguments to the first config...
+		if [ "${2#*.*}" = "${2}" -a "${2#*:*}" = "${2}" ]; then
+			# Not an IPv4/IPv6
+			local IFS="$__IFS"
+			set -- ${config}
+		fi
 	fi
 
 	# Ensure that loopback has the correct address
