@@ -32,6 +32,7 @@
 .Op Fl D , -nodeps
 .Op Fl d , -debug
 .Op Fl s , -ifstarted
+.Op Fl S , -ifstopped
 .Op Fl Z , -dry-run
 .Op Ar command ...
 .Sh DESCRIPTION
@@ -76,6 +77,8 @@ Set xtrace on in the shell to assist in debugging.
 Ignore all dependency information the service supplies.
 .It Fl s , -ifstarted
 Only run the command if the service has been started.
+.It Fl S , -ifstopped
+Only run the command if the service has been stopped.
 .It Fl q , -quiet
 Turns off all informational output the service generates.
 Output from any non OpenRC commands is not affected.

@@ -1079,12 +1079,13 @@ service_plugable(void)
 }
 
 #include "_usage.h"
-#define getoptstring "dDsvl:Z" getoptstring_COMMON
+#define getoptstring "dDsSvl:Z" getoptstring_COMMON
 #define extraopts "stop | start | restart | describe | zap"
 static const struct option longopts[] = {
 	{ "debug",      0, NULL, 'd'},
 	{ "dry-run",    0, NULL, 'Z'},
 	{ "ifstarted",  0, NULL, 's'},
+	{ "ifstopped",  0, NULL, 'S'},
 	{ "nodeps",     0, NULL, 'D'},
 	{ "lockfd",     1, NULL, 'l'},
 	longopts_COMMON
@@ -1093,6 +1094,7 @@ static const char *const longopts_help[] = {
 	"set xtrace when running the script",
 	"show what would be done",
 	"only run commands when started",
+	"only run commands when stopped",
 	"ignore dependencies",
 	"fd of the exclusive lock from rc",
 	longopts_help_COMMON
@@ -1233,6 +1235,10 @@ runscript(int argc, char **argv)
 			break;
 		case 's':
 			if (!(rc_service_state(service) & RC_SERVICE_STARTED))
+				exit(EXIT_FAILURE);
+			break;
+		case 'S':
+			if (!(rc_service_state(service) & RC_SERVICE_STOPPED))
 				exit(EXIT_FAILURE);
 			break;
 		case 'D':
