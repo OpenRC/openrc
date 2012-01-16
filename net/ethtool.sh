@@ -39,7 +39,7 @@ ethtool_pre_start() {
 			args_pretty="--${opt} $IFACE ${args_pretty}"
 			args="--${opt} $IFACE ${args}"
 			ebegin "ethtool ${args_pretty}"
-			$(_ethtool) ${args}
+			ethtool ${args}
 			rc=$?
 			eend $rc "ethtool exit code $rc"
 			# TODO: ethtool has MANY different exit codes, with no
