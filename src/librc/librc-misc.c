@@ -215,10 +215,11 @@ rc_config_list(const char *file)
 librc_hidden_def(rc_config_list)
 
 /*
- * Override some specific rc.conf options via kernel cmdline
+ * Override some specific rc.conf options on the kernel command line
  */
 #ifdef __linux__
-static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config) {
+static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config)
+{
 	RC_STRINGLIST *overrides;
 	RC_STRING *cline, *override, *config_np;
 	char *tmp = NULL;
@@ -228,7 +229,7 @@ static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config) {
 
 	overrides = rc_stringlist_new();
 
-	/* A list of variables which may be overriden through cmdline */
+	/* A list of variables which may be overridden on the kernel command line */
 	rc_stringlist_add(overrides, "rc_parallel");
 
 	TAILQ_FOREACH(override, overrides, entries) {
@@ -242,14 +243,18 @@ static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config) {
 		}
 
 		if (value != NULL) {
-			len = (varlen + strlen(value) + 2);
+			len = varlen + strlen(value) + 2;
 			tmp = xmalloc(sizeof(char) * len);
 			snprintf(tmp, len, "%s=%s", override->value, value);
 		}
 
-		/* Whenever necessary remove the old config entry first to prevent duplicates */
+		/*
+		 * Whenever necessary remove the old config entry first to prevent
+		 * duplicates
+		 */
 		TAILQ_FOREACH_SAFE(cline, config, entries, config_np) {
-			if (strncmp(override->value, cline->value, varlen) == 0 && cline->value[varlen] == '=') {
+			if (strncmp(override->value, cline->value, varlen) == 0
+				&& cline->value[varlen] == '=') {
 				rc_stringlist_delete(config, cline->value);
 				break;
 			}
@@ -261,9 +266,7 @@ static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config) {
 		free(tmp);
 		free(value);
 	}
-
 	rc_stringlist_free(overrides);
-
 	return config;
 }
 #endif
