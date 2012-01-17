@@ -124,7 +124,11 @@ start()
 	local _background=
 	ebegin "Starting ${name:-$RC_SVCNAME}"
 	if yesno "${command_background}"; then
-		_background="--background --pidfile"
+		if [ -z "${pidfile}" ]; then
+			eend 1 "command_background option used but no pidfile specified"
+			return 1
+		fi
+		_background="--background --make-pidfile --pidfile"
 	fi
 	if yesno "$start_inactive"; then
 		local _inactive=false

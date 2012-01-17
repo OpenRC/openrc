@@ -111,6 +111,11 @@ Daemon to start or stop via
 if no start or stop function is defined by the service.
 .It Ar command_args
 List of arguments to pass to the daemon when starting.
+.It Ar command_background
+Set this to "true", "yes" or "1" (case-insensitive) to force the daemon into
+the background. This implies the "--make-pidfile" and "--pidfile" option of
+.Xr start-stop-daemon 8
+so the pidfile variable must be set.
 .It Ar pidfile
 Pidfile to use for the above defined command.
 .It Ar name
