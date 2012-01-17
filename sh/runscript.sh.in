@@ -128,7 +128,7 @@ start()
 			eend 1 "command_background option used but no pidfile specified"
 			return 1
 		fi
-		_background="--background --make-pidfile --pidfile"
+		_background="--background --make-pidfile"
 	fi
 	if yesno "$start_inactive"; then
 		local _inactive=false
