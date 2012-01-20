@@ -54,7 +54,7 @@ start()
 	eend $retval
 
 	# Store the last font so we can use it ASAP on boot
-	if [ $retval -eq 0 -a -w "$RC_LIBEXECDIR" ]; then
+	if [ $retval -eq 0 ] && dir_writable "$RC_LIBEXECDIR"; then
 		mkdir -p "$RC_LIBEXECDIR"/console
 		for font in /usr/share/consolefonts/"$consolefont".*; do
 			:

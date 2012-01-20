@@ -4,6 +4,11 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
+dir_writable()
+{
+	mkdir "$1"/.test.$$ 2>/dev/null && rmdir "$1"/.test.$$
+}
+
 sourcex()
 {
 	if [ "$1" = "-e" ]; then

@@ -35,7 +35,7 @@ start()
 	done
 
 	# Save the encoding for use immediately at boot
-	if [ -w "$RC_LIBEXECDIR" ]; then
+	if dir_writable "$RC_LIBEXECDIR"; then
 		mkdir -p "$RC_LIBEXECDIR"/console
 		if yesno ${unicode:-${UNICODE}}; then
 			echo "" > "$RC_LIBEXECDIR"/console/unicode

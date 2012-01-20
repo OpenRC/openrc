@@ -10,11 +10,6 @@ depend()
 	keyword -prefix -timeout
 }
 
-dir_writable()
-{
-	mkdir "$1"/.test.$$ 2>/dev/null && rmdir "$1"/.test.$$
-}
-
 : ${wipe_tmp:=${WIPE_TMP:-yes}}
 : ${log_dmesg:=${LOG_DMESG:-yes}}
 
