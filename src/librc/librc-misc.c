@@ -266,6 +266,7 @@ static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config)
 		free(tmp);
 		free(value);
 	}
+
 	rc_stringlist_free(overrides);
 	return config;
 }
