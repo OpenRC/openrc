@@ -4,7 +4,7 @@
 # Released under the 2-clause BSD license.
 
 _+_ ?= +
-ECHODIR ?= echo 
+ECHODIR ?= echo
 _SUBDIR = @${_+_}for x in ${SUBDIR}; do \
 	if test -d $$x; then \
 	${ECHODIR} "===> ${DIRPRFX}$$x (${@:realinstall=install})"; \

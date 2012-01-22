@@ -53,6 +53,6 @@ check test::
 # so we ensure that it has a bogus argument
 CLEANFILES+=	${OBJS}
 clean:
-	@if test -n "${CLEANFILES}"; then echo "rm -f ${CLEANFILES}"; rm -f ${CLEANFILES}; fi 
+	@if test -n "${CLEANFILES}"; then echo "rm -f ${CLEANFILES}"; rm -f ${CLEANFILES}; fi
 
 include ${MK}/gitignore.mk

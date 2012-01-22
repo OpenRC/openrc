@@ -10,7 +10,7 @@ RANLIB?=		ranlib
 SED?=			sed
 SH=			/bin/sh
 
-PREFIX?=	
+PREFIX?=
 _UPREFIX_SH=		case "${PREFIX}" in "") echo /usr;; *) echo "${PREFIX}";; esac
 _UPREFIX:=		$(shell ${_UPREFIX_SH})
 UPREFIX=		${_UPREFIX}
@@ -43,6 +43,6 @@ MANDIR?=		${MANPREFIX}/man
 MANMODE?=		0444
 
 DOCDIR?=		${UPREFIX}/share/doc
-DOCMODE?=		0644	
+DOCMODE?=		0644
 
 CONFMODE?=		0644

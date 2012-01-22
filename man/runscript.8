@@ -25,7 +25,7 @@
 .Dt RUNSCRIPT 8 SMM
 .Os OpenRC
 .Sh NAME
-.Nm runscript 
+.Nm runscript
 .Nd a means of hooking shell commands into a service
 .Sh SYNOPSIS
 .Nm
@@ -135,7 +135,7 @@ Here is a list of the functions you can use in a
 .Ic depend
 function. You simply pass the names of the services to it to add to that
 dependency type, or prefix it with ! to remove it.
-.Bl -tag -width "RC_DEFAULTLEVEL" 
+.Bl -tag -width "RC_DEFAULTLEVEL"
 .It Ic need
 The service will refuse to start until needed services have started and it
 will refuse to stop until any services that need it have stopped.
@@ -167,9 +167,9 @@ Other services should wait indefinitely for this service to start. Use
 this keyword if your service may take longer than 60 seconds to start.
 .It Dv -jail
 When in a jail, exclude this service from any dependencies. The service can
-still be run directly. Set via 
-.Ic rc_sys 
-in 
+still be run directly. Set via
+.Ic rc_sys
+in
 .Pa /etc/rc.conf
 .It Dv -lxc
 Same as -jail, but for Linux Resource Containers (LXC).
@@ -323,7 +323,7 @@ matches YES, TRUE, ON or 1 regardless of case then we return 0, otherwise 1.
 .Sh ENVIRONMENT
 .Nm
 sets the following environment variables for use in the service scripts:
-.Bl -tag -width "RC_DEFAULTLEVEL" 
+.Bl -tag -width "RC_DEFAULTLEVEL"
 .It Va RC_SVCNAME
 Name of the service.
 .It Va RC_RUNLEVEL
@@ -418,7 +418,7 @@ depend()
 	_need=`service_get_value need`
     else
 	if _need_dbus; then
-	   _need="${_need} dbus" 
+	   _need="${_need} dbus"
 	fi
     fi
     need ${_need}

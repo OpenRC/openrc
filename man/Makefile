@@ -27,7 +27,7 @@ install:
 	for man in ${MAN3}; do \
 		${INSTALL} -m ${MANMODE} "$$man" ${DESTDIR}/${MANDIR}/man3 || exit $$?; \
 		${MAKE_LINKS} \
-	done	
+	done
 	${INSTALL} -d ${DESTDIR}/${MANDIR}/man8
 	for man in ${MAN8}; do \
 		${INSTALL} -m ${MANMODE} "$$man" ${DESTDIR}/${MANDIR}/man8 || exit $$?; \

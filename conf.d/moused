@@ -11,6 +11,6 @@
 
 # You can also multiplex the init script for each device like so
 #   ln -s moused /etc/init.d/moused.ums0
-# This enables you to have a config file per mouse (forces moused_device 
+# This enables you to have a config file per mouse (forces moused_device
 # to ums0 in this case) and control each mouse.
 # devd can also start and stop these mice, which laptop users will find handy.

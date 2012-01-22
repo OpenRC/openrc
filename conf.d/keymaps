@@ -12,7 +12,7 @@ windowkeys="NO"
 extended_keymaps=""
 #extended_keymaps="backspace keypad euro2"
 
-# Tell dumpkeys(1) to interpret character action codes to be 
+# Tell dumpkeys(1) to interpret character action codes to be
 # from the specified character set.
 # This only matters if you set unicode="yes" in /etc/rc.conf.
 # For a list of valid sets, run `dumpkeys --help`
