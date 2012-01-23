@@ -55,11 +55,17 @@ typedef enum {
 
 extern const char *applet;
 
+/* TODO: SELinux
+ * This needs a LOT of SELinux loving
+ * See systemd's src/label.c:label_mkdir
+ */
 static int
 do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc)
 {
 	struct stat st;
 	int fd, flags;
+	int r;
+	int u;
 
 	if (stat(path, &st) || trunc) {
 		if (type == inode_file) {
@@ -75,7 +81,10 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc
 #endif
 			if (trunc)
 				flags |= O_TRUNC;
-			if ((fd = open(path, flags, mode)) == -1) {
+			u = umask(0);
+			fd = open(path, flags, mode);
+			umask(u);
+			if (fd == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
 			}
@@ -84,7 +93,11 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc
 			einfo("%s: creating directory", path);
 			if (!mode) /* 775 */
 				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-			if (mkdir(path, mode) == -1) {
+			u = umask(0);
+			/* We do not recursively create parents */
+			r = mkdir(path, mode);
+			umask(u);
+			if (r == -1 && errno != EEXIST) {
 				eerror("%s: mkdir: %s", applet,
 				    strerror (errno));
 				return -1;
@@ -94,7 +107,10 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc
 			einfo("%s: creating fifo", path);
 			if (!mode) /* 600 */
 				mode = S_IRUSR | S_IWUSR;
-			if (mkfifo(path, mode) == -1) {
+			u = umask(0);
+			r = mkfifo(path, mode);
+			umask(u);
+			if (r == -1 && errno != EEXIST) {
 				eerror("%s: mkfifo: %s", applet,
 				    strerror (errno));
 				return -1;
