@@ -61,7 +61,7 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc
 	struct stat st;
 	int fd, flags;
 
-	if (stat(path, &st)) {
+	if (stat(path, &st) || trunc) {
 		if (type == inode_file) {
 			einfo("%s: creating file", path);
 			if (!mode) /* 664 */
