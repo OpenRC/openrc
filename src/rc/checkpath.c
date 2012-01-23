@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <features.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
