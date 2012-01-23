@@ -32,7 +32,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <features.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -68,8 +67,11 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc
 			if (!mode) /* 664 */
 				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 			flags = O_CREAT|O_NDELAY|O_WRONLY|O_NOCTTY;
-#ifdef __USE_XOPEN2K8
-			flags |= O_CLOEXEC|O_NOFOLLOW;
+#ifdef O_CLOEXEC
+			flags |= O_CLOEXEC;
+#endif
+#ifdef O_NOFOLLOW
+			flags |= O_NOFOLLOW;
 #endif
 			if (trunc)
 				flags |= O_TRUNC;
