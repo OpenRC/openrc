@@ -346,7 +346,10 @@ rc_config_load(const char *file)
 	rc_stringlist_free(list);
 
 #ifdef __linux__
-	config = rc_config_override(config);
+	/* Only override rc.conf settings */
+	if(strcmp(file, RC_CONF) == 0) {
+		config = rc_config_override(config);
+	}
 #endif
 
 	return config;
