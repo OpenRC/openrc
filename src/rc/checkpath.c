@@ -185,8 +185,8 @@ parse_owner(struct passwd **user, struct group **group, const char *owner)
 }
 
 #include "_usage.h"
-#define extraopts "path1 path2 ..."
-#define getoptstring "dDfFpm:o:" getoptstring_COMMON
+#define extraopts "path1 [path2] [...]"
+#define getoptstring "dDfFpm:o:W:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "directory",          0, NULL, 'd'},
 	{ "directory-truncate", 0, NULL, 'D'},
@@ -195,6 +195,7 @@ static const struct option longopts[] = {
 	{ "pipe",               0, NULL, 'p'},
 	{ "mode",               1, NULL, 'm'},
 	{ "owner",              1, NULL, 'o'},
+	{ "writable",           1, NULL, 'W'},
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
@@ -205,6 +206,7 @@ static const char * const longopts_help[] = {
 	"Create a named pipe (FIFO) if not exists",
 	"Mode to check",
 	"Owner to check (user:group)",
+	"Check whether the path is writable or not",
 	longopts_help_COMMON
 };
 #include "_usage.c"
@@ -248,6 +250,11 @@ checkpath(int argc, char **argv)
 			if (parse_owner(&pw, &gr, optarg) != 0)
 				eerrorx("%s: owner `%s' not found",
 				    applet, optarg);
+			break;
+		case 'W':
+			if (argv[optind] != NULL)
+				ewarn("-W/--writable takes only one path, everything else will be ignored");
+			exit(!is_writable(optarg));
 			break;
 
 		case_RC_COMMON_GETOPT
