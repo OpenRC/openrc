@@ -9,7 +9,7 @@ depend()
 {
 	use root
 	before devd net
-	keyword -jail -prefix
+	keyword -jail
 }
 
 _set()

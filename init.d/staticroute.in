@@ -12,7 +12,7 @@ depend()
 {
 	provide net
 	use network
-	keyword -jail -prefix -vserver
+	keyword -jail -vserver
 }
 
 pre_flight_checks()

@@ -8,7 +8,7 @@ depend()
 {
 	use modules devfs
 	need localmount
-	keyword -prefix -vserver -lxc
+	keyword -openvz -vserver -lxc
 }
 
 start()

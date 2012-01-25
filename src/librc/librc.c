@@ -216,7 +216,6 @@ rc_sys_v2(void)
 		}
 		/* Now do detection */
 		__STRING_SWITCH(systype)
-		__STRING_CASE(RC_SYS_PREFIX)	{ return RC_SYS_PREFIX; }
 #ifdef __FreeBSD__
 		__STRING_CASE(RC_SYS_JAIL) { return RC_SYS_JAIL; }
 #endif /* __FreeBSD__ */
@@ -246,10 +245,6 @@ librc_hidden_def(rc_sys_v2)
 const char *
 rc_sys_v1(void)
 {
-#ifdef PREFIX
-	return RC_SYS_PREFIX;
-#else
-
 #ifdef __FreeBSD__
 	int jailed = 0;
 	size_t len = sizeof(jailed);
@@ -286,7 +281,6 @@ rc_sys_v1(void)
 #endif
 
 	return NULL;
-#endif /* PREFIX */
 }
 librc_hidden_def(rc_sys_v1)
 

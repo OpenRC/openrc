@@ -35,7 +35,7 @@ depend()
 	need net $pmap
 	use afc-client amd autofs openvpn
 	use dns nfs nfsmount portmap rpcbind rpc.statd rpc.lockd
-	keyword -jail -prefix -vserver
+	keyword -jail -vserver
 }
 
 start()

@@ -4,9 +4,7 @@
 # This is the subsystem type. Valid options on FreeBSD:
 # ""        - nothing special
 # "jail"    - FreeBSD jails
-# "prefix"  - Prefix
-# If this is commented out, automatic detection will be attempted.
-# Note that automatic detection does not work in a prefix environment.
+# If this is commented out, automatic detection will be used.
 #
 # This should be set to the value representing the environment this file is
 # PRESENTLY in, not the virtualization the environment is capable of.

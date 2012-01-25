@@ -7,7 +7,6 @@ required_files="/etc/newsyslog.conf"
 depend()
 {
 	need localmount
-	keyword -prefix
 }
 
 start()

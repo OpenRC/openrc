@@ -7,7 +7,6 @@ depend()
 	need localmount net
 	after *
 	before local
-	keyword -prefix
 }
 
 start()

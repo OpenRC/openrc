@@ -5,7 +5,7 @@
 depend()
 {
 	before fsck
-	keyword -jail -prefix
+	keyword -jail
 }
 
 start()

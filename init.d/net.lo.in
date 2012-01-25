@@ -20,7 +20,7 @@ depend()
 
 	need localmount
 	after bootmisc
-	keyword -jail -prefix -vserver
+	keyword -jail -vserver
 
 	case "${IFACE}" in
 		lo|lo0) provide lo;;

@@ -5,7 +5,6 @@
 depend()
 {
 	before bootmisc logger
-	keyword -prefix
 }
 
 start()
