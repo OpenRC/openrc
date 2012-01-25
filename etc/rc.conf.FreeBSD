@@ -10,5 +10,5 @@
 #
 # This should be set to the value representing the environment this file is
 # PRESENTLY in, not the virtualization the environment is capable of.
-rc_sys="@RC_SYS_DEFAULT@"
+#rc_sys=""
 
