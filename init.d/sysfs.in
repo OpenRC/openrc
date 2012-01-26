@@ -74,10 +74,8 @@ mount_misc()
 
 mount_cgroups()
 {
-	yesno ${rc_cgroups:-YES} || return 0
-	if [ ! -e /proc/cgroups ]; then
-		return 0
-	fi
+	yesno ${rc_cgroups:-YES} && [ -e /proc/cgroups ] && \
+		mountinfo -q /sys/fs/cgroup || return 0
 
 	local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
 	mkdir /sys/fs/cgroup/openrc
