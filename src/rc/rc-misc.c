@@ -331,3 +331,12 @@ parse_mode(mode_t *mode, char *text)
 	errno = EINVAL;
 	return -1;
 }
+
+int
+is_writable(const char *path)
+{
+	if (access(path, W_OK) == 0)
+		return 1;
+
+	return 0;
+}

@@ -36,6 +36,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
@@ -165,6 +166,12 @@ int signal_setup(int sig, void (*handler)(int));
 int svc_lock(const char *);
 int svc_unlock(const char *, int);
 pid_t exec_service(const char *, const char *);
+
+/*
+ * Check whether path is writable or not,
+ * this also works properly with read-only filesystems
+ */
+int is_writable(const char *);
 
 #define service_start(service) exec_service(service, "start");
 #define service_stop(service)  exec_service(service, "stop");
