@@ -181,7 +181,6 @@ start()
 		fi
 	fi
 
-	[ -w /etc/nologin ] && rm -f /etc/nologin
 	return 0
 }
 
