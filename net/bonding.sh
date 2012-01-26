@@ -105,7 +105,7 @@ bonding_pre_start()
 		local oiface
 		oiface=$IFACE
 		if [ -n "${primary}" ]; then
-			IFACE=$primary 
+			IFACE=$primary
 			_down
 			IFACE=$oiface
 			echo "+${primary}" >$sys_bonding_path/slaves
@@ -114,7 +114,7 @@ bonding_pre_start()
 		for s in ${slaves}; do
 			[ "${s}" = "${primary}" ] && continue
 			if ! grep -q ${s} $sys_bonding_path/slaves; then
-				IFACE=$s 
+				IFACE=$s
 				_down
 				IFACE=$oiface
 				echo "+${s}" >$sys_bonding_path/slaves

@@ -347,7 +347,7 @@ rc_config_load(const char *file)
 
 #ifdef __linux__
 	/* Only override rc.conf settings */
-	if(strcmp(file, RC_CONF) == 0) {
+	if (strcmp(file, RC_CONF) == 0) {
 		config = rc_config_override(config);
 	}
 #endif
