@@ -79,14 +79,14 @@ mount_cgroups()
 
 	local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
 	mkdir /sys/fs/cgroup/openrc
-	mount -t cgroup \
+	mount -n -t cgroup \
 		-o none,nodev,noexec,nosuid,name=openrc,release_agent="$agent" \
 		openrc /sys/fs/cgroup/openrc
 	echo 1 > /sys/fs/cgroup/openrc/notify_on_release
 	while read name hier groups enabled rest; do
 		case "${enabled}" in
 			1)	mkdir /sys/fs/cgroup/${name}
-				mount -t cgroup -o nodev,noexec,nosuid,${name} \
+				mount -n -t cgroup -o nodev,noexec,nosuid,${name} \
 					${name} /sys/fs/cgroup/${name}
 				;;
 		esac
