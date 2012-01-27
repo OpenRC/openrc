@@ -82,7 +82,7 @@ mount_cgroups()
 	while read name hier groups enabled rest; do
 		case "${enabled}" in
 			1)	mkdir /sys/fs/cgroup/${name}
-				mount -t cgroup -o nodev,noexec,nosuid,${name} \
+				mount -n -t cgroup -o nodev,noexec,nosuid,${name} \
 					${name} /sys/fs/cgroup/${name}
 				;;
 		esac
