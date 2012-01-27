@@ -194,6 +194,14 @@ unset _conf_d
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"
 
+if [ "$RC_UNAME" = "Linux" ]; then
+	if [ -d /sys/fs/cgroup/openrc ]; then
+		mkdir -p /sys/fs/cgroup/openrc/${RC_SVCNAME}
+		echo $$ > /sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks
+	fi
+	#todo: add processes to cgroups based on settings in conf.d
+fi
+
 # Apply any ulimit defined
 [ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}
 
