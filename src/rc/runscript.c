@@ -288,6 +288,13 @@ cleanup(void)
 #endif
 }
 
+/* Buffer and lock all output messages so that we get readable content */
+/* FIXME: Use a dynamic lock file that contains the tty/pts as well.
+ * For example openrc-pts8.lock or openrc-tty1.lock.
+ * Using a static lock file makes no sense, esp. in multi-user environments.
+ * Why don't we use (f)printf, as it is thread-safe through POSIX already?
+ * Bug: 360013
+ */
 static int
 write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 {
@@ -297,14 +304,20 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	ssize_t ret = 0;
 	int fd = fileno(stdout), lock_fd = -1;
 
-	/* Spin until we lock the prefix */
-	for (;;) {
-		lock_fd = open(PREFIX_LOCK, O_WRONLY | O_CREAT, 0664);
-		if (lock_fd != -1)
-			if (flock(lock_fd, LOCK_EX) == 0)
-				break;
-		close(lock_fd);
+	/*
+	 * Lock the prefix.
+	 * open() may fail here when running as user, as RC_SVCDIR may not be writable.
+	 */
+	lock_fd = open(PREFIX_LOCK, O_WRONLY | O_CREAT, 0664);
+
+	if (lock_fd != -1) {
+		if (flock(lock_fd, LOCK_EX) != 0)
+			eerror("flock() failed: %s", strerror(errno));
 	}
+#ifdef RC_DEBUG
+	else
+		ewarn("Couldn't open the prefix lock, please make sure you have enough permissions");
+#endif
 
 	for (i = 0; i < bytes; i++) {
 		/* We don't prefix eend calls (cursor up) */
@@ -332,6 +345,7 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 
 	/* Release the lock */
 	close(lock_fd);
+
 	return ret;
 }
 
