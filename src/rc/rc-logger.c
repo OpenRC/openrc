@@ -280,7 +280,7 @@ rc_logger_open(const char *level)
 			 * logfile or its basedir may be read-only during sysinit and
 			 * shutdown so skip the error in this case
 			 */
-			if ((strcmp(level, RC_LEVEL_SHUTDOWN) != 0) && (strcmp(level, RC_LEVEL_SYSINIT) != 0)) {
+			if (errno != EROFS && ((strcmp(level, RC_LEVEL_SHUTDOWN) != 0) && (strcmp(level, RC_LEVEL_SYSINIT) != 0))) {
 				log_error = 1;
 				eerror("Error: fopen(%s) failed: %s", logfile, strerror(errno));
 			}
@@ -288,8 +288,9 @@ rc_logger_open(const char *level)
 
 		/* Try to keep the temporary log in case of errors */
 		if (!log_error) {
-			if (unlink(TMPLOG) == -1)
-				eerror("Error: unlink(%s) failed: %s", TMPLOG, strerror(errno));
+			if (errno != EROFS && ((strcmp(level, RC_LEVEL_SHUTDOWN) != 0) && (strcmp(level, RC_LEVEL_SYSINIT) != 0)))
+				if (unlink(TMPLOG) == -1)
+					eerror("Error: unlink(%s) failed: %s", TMPLOG, strerror(errno));
 		} else if (exists(TMPLOG))
 			eerrorx("Warning: temporary logfile left behind: %s", TMPLOG);
 
