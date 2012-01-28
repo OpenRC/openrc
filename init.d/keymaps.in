@@ -63,7 +63,7 @@ start()
 	fi
 
 	# Save the keymapping for use immediately at boot
-	if dir_writable "$RC_LIBEXECDIR"; then
+	if checkpath -W "$RC_LIBEXECDIR"; then
 		mkdir -p "$RC_LIBEXECDIR"/console
 		dumpkeys >"$RC_LIBEXECDIR"/console/keymap
 	fi
