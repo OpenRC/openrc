@@ -195,7 +195,7 @@ unset _conf_d
 sourcex -e "@SYSCONFDIR@/rc.conf"
 
 if [ "$RC_UNAME" = "Linux" ]; then
-	if [ -d /sys/fs/cgroup/openrc ]; then
+	if [ -d /sys/fs/cgroup/openrc ] && checkpath -W /sys/fs/cgroup/openrc ; then
 		mkdir -p /sys/fs/cgroup/openrc/${RC_SVCNAME}
 		echo $$ > /sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks
 	fi
