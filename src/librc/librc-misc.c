@@ -392,10 +392,13 @@ rc_conf_value(const char *setting)
 		atexit(_free_rc_conf);
 #endif
 
-		/* Support old configs */
+		/* Support old configs, but complain about it. */
 		if (exists(RC_CONF_OLD)) {
 			old = rc_config_load(RC_CONF_OLD);
 			TAILQ_CONCAT(rc_conf, old, entries);
+			ewarn("Your system still has %s", RC_CONF_OLD);
+			ewarn("Please migrate to the appropriate settings in %s", RC_CONF);
+			ewarn("and delete %s.", RC_CONF_OLD);
 #ifdef DEBUG_MEMORY
 			free(old);
 #endif
