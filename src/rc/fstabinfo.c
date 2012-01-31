@@ -93,9 +93,9 @@ getmntfile(const char *file)
 extern const char *applet;
 
 static int
-do_mount(struct ENT *ent)
+do_mount(struct ENT *ent, bool remount)
 {
-	char *argv[8];
+	char *argv[10];
 	pid_t pid;
 	int status;
 
@@ -104,9 +104,24 @@ do_mount(struct ENT *ent)
 	argv[2] = ENT_OPTS(*ent);
 	argv[3] = UNCONST("-t");
 	argv[4] = ENT_TYPE(*ent);
-	argv[5] = ENT_BLOCKDEVICE(*ent);
-	argv[6] = ENT_FILE(*ent);
-	argv[7] = NULL;
+	if (!remount) {
+		argv[5] = ENT_BLOCKDEVICE(*ent);
+		argv[6] = ENT_FILE(*ent);
+		argv[7] = NULL;
+	} else {
+#ifdef __linux__
+		argv[5] = UNCONST("-o");
+		argv[6] = UNCONST("remount");
+		argv[7] = ENT_BLOCKDEVICE(*ent);
+		argv[8] = ENT_FILE(*ent);
+		argv[9] = NULL;
+#else
+		argv[5] = UNCONST("-u");
+		argv[6] = ENT_BLOCKDEVICE(*ent);
+		argv[7] = ENT_FILE(*ent);
+		argv[8] = NULL;
+#endif
+	}
 	switch (pid = vfork()) {
 	case -1:
 		eerrorx("%s: vfork: %s", applet, strerror(errno));
@@ -127,9 +142,10 @@ do_mount(struct ENT *ent)
 }
 
 #include "_usage.h"
-#define getoptstring "Mbmop:t:" getoptstring_COMMON
+#define getoptstring "MRbmop:t:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "mount",          0, NULL, 'M' },
+	{ "remount",        0, NULL, 'R' },
 	{ "blockdevice",    0, NULL, 'b' },
 	{ "mountargs",      0, NULL, 'm' },
 	{ "options",        0, NULL, 'o' },
@@ -139,6 +155,7 @@ static const struct option longopts[] = {
 };
 static const char * const longopts_help[] = {
 	"Mounts the filesytem from the mountpoint",
+	"Remounts the filesystem based on the information in fstab",
 	"Extract the block device",
 	"Show arguments needed to mount the entry",
 	"Extract the options field",
@@ -154,6 +171,7 @@ static const char * const longopts_help[] = {
 #define OUTPUT_PASSNO    (1 << 4)
 #define OUTPUT_BLOCKDEV  (1 << 5)
 #define OUTPUT_MOUNT     (1 << 6)
+#define OUTPUT_REMOUNT   (1 << 7)
 
 int
 fstabinfo(int argc, char **argv)
@@ -181,6 +199,9 @@ fstabinfo(int argc, char **argv)
 		switch (opt) {
 		case 'M':
 			output = OUTPUT_MOUNT;
+			break;
+		case 'R':
+			output = OUTPUT_REMOUNT;
 			break;
 		case 'b':
 			output = OUTPUT_BLOCKDEV;
@@ -287,7 +308,11 @@ fstabinfo(int argc, char **argv)
 			break;
 
 		case OUTPUT_MOUNT:
-			result += do_mount(ent);
+			result += do_mount(ent, false);
+			break;
+
+		case OUTPUT_REMOUNT:
+			result += do_mount(ent, true);
 			break;
 
 		case OUTPUT_MOUNTARGS:
