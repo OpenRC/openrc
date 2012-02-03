@@ -13,20 +13,40 @@ depend()
 start()
 {
 	case ",$(fstabinfo -o /)," in
-	*,ro,*) return 0;;
+		*,ro,*)
+		;;
+		*)
+			# Check if the rootfs isn't already writable.
+			if checkpath -W /; then
+				rm -f /fastboot /forcefsck
+			else
+				ebegin "Remounting root filesystem read/write"
+				case "$RC_UNAME" in
+					Linux)
+						mount -n -o remount,rw /
+					;;
+					*)
+						mount -u -o rw /
+					;;
+				esac
+				eend $? "Root filesystem could not be mounted read/write"
+				if [ $?  -eq 0 ]; then
+					rm -f /fastboot /forcefsck
+				fi
+			fi
+		;;
 	esac
 
-	if echo 2>/dev/null >/.test.$$; then
-		rm -f /.test.$$ /fastboot /forcefsck
-		return 0
-	fi
-
-	ebegin "Remounting root filesystem read/write"
-	case "$RC_UNAME" in
-		Linux)	mount -n -o remount,rw /;;
-		*)	mount -u -o rw /;;
-	esac
-	if eend $? "Root filesystem could not be mounted read/write"; then
-		rm -f /fastboot /forcefsck
-	fi
+	ebegin "Remounting filesystems"
+	local mountpoint
+	for mountpoint in $(fstabinfo); do
+		case "${mountpoint}" in
+			/)
+			;;
+			/*)
+				mountinfo -q "${mountpoint}" && fstabinfo --remount "${mountpoint}"
+			;;
+		esac
+	done
+	eend 0
 }
