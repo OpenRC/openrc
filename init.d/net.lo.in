@@ -20,12 +20,14 @@ depend()
 
 	need localmount
 	after bootmisc
-	provide net
 	keyword -jail -prefix -vserver
 
 	case "${IFACE}" in
-		lo|lo0);;
-		*) after net.lo net.lo0 dbus;;
+		lo|lo0) provide lo;;
+		*)
+			after net.lo net.lo0 dbus
+			provide net
+			;;
 	esac
 
 	if [ "$(command -v "depend_${IFVAR}")" = "depend_${IFVAR}" ]; then
