@@ -4,7 +4,7 @@
 
 include Makefile.inc
 
-SUBDIR=		conf.d doc etc init.d local.d man net scripts sh src
+SUBDIR=		conf.d doc etc init.d local.d sysctl.d man net scripts sh src
 
 # Build pkgconfig or not
 MKPKGCONFIG?=	yes
