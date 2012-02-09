@@ -5,6 +5,19 @@
 : ${CONSOLE:=/dev/console}
 : ${RC_LIBEXECDIR:=@LIBEXECDIR@}
 
+service_present()
+{
+	local p="/etc/runlevels/$1/$2"
+	# fail if the file doesn't exist
+	[ ! -e "$p" ] && return 1
+	# succeed if $RC_SYS empty, can't check further, assume script will run
+	[ -z "$RC_SYS" ] && return 0
+	# fail if file contains "-$RC_SYS", because then it won't run
+	egrep -qi "^[[:space:]]*keyword[[:space:]].*-$RC_SYS\>" "$p" && return 1
+	# succeed otherwise
+	return 0
+}
+
 if [ -e "$RC_LIBEXECDIR"/console/unicode ]; then
 	termencoding="%G"
 	kmode="-u"
@@ -14,8 +27,8 @@ else
 fi
 
 # Try and set a font and as early as we can
-if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/consolefont \
-	 -o -e /etc/runlevels/"$RC_BOOTLEVEL"/consolefont ]; then
+if service_present "$RC_DEFAULTLEVEL" consolefont ||
+   service_present "$RC_BOOTLEVEL" consolefont; then
 	printf "\033%s" "$termencoding" >"$CONSOLE" 2>/dev/null
 	if [ -r "$RC_LIBEXECDIR"/console/font -a -x /usr/bin/setfont ]; then
 		font="$(cat "$RC_LIBEXECDIR"/console/font)"
@@ -25,8 +38,8 @@ if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/consolefont \
 fi
 
 # Try and set a keyboard map as early as possible
-if [ -e /etc/runlevels/"$RC_DEFAULTLEVEL"/keymaps \
-	 -o -e /etc/runlevels/"$RC_BOOTLEVEL"/keymaps ]; then
+if service_present "$RC_DEFAULTLEVEL" keymaps ||
+   service_present "$RC_BOOTLEVEL" keymaps; then
 	kbd_mode $kmode -C "$CONSOLE" 2>/dev/null
 	if [ -r "$RC_LIBEXECDIR"/console/keymap ]; then
 		loadkeys -q "$RC_LIBEXECDIR"/console/keymap 2>/dev/null
