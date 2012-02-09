@@ -46,7 +46,7 @@ ip6rd_pre_start()
 		eerror "${host} is not configured with an IPv4 address"
 		return 1
 	fi
-	# TODO: Get this settings from DHCP (Option 212) 
+	# TODO: Get this settings from DHCP (Option 212)
 	if [ -z "${prefix}" ]; then
 		eerror "prefix_${IFVAR} not set"
 		return 1
@@ -164,5 +164,5 @@ _ip6rd_prefix_shave_bits()
 	then
 		printf "%0$(( (32-$2>>2)+(($2%4)?1:0) ))x" \
 		$((ipi >> 16))
-	fi	
+	fi
 }
