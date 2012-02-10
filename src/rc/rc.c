@@ -306,15 +306,6 @@ open_shell(void)
 	run_program(shell);
 }
 
-_dead static void
-single_user(void)
-{
-	rc_logger_close();
-	execl(SHUTDOWN, SHUTDOWN, "now", (char *) NULL);
-	eerrorx("%s: unable to exec `" SHUTDOWN "': %s",
-	    applet, strerror(errno));
-}
-
 static bool
 set_krunlevel(const char *level)
 {
