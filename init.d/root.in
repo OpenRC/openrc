@@ -44,7 +44,8 @@ start()
 			/)
 			;;
 			/*)
-				mountinfo -q "${mountpoint}" && fstabinfo --remount "${mountpoint}"
+				mountinfo -q "${mountpoint}" && \
+					fstabinfo --remount "${mountpoint}"
 			;;
 		esac
 	done
