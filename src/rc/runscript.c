@@ -75,7 +75,7 @@
 #define WARN_TIMEOUT	10		/* warn about this every N seconds */
 
 static const char *applet;
-static char *service, *runlevel, *ibsave, *prefix;;
+static char *service, *runlevel, *ibsave, *prefix;
 static RC_DEPTREE *deptree;
 static RC_STRINGLIST *applet_list, *services, *tmplist;
 static RC_STRINGLIST *restart_services, *need_services, *use_services;

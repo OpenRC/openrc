@@ -492,7 +492,7 @@ rc_service_exists(const char *service)
 {
 	char *file;
 	bool retval = false;
-	int len;
+	size_t len;
 	struct stat buf;
 
 	if (!service) {
