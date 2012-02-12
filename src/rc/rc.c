@@ -333,11 +333,11 @@ set_krunlevel(const char *level)
 	return true;
 }
 
-static int
+static size_t
 get_krunlevel(char *buffer, int buffer_len)
 {
 	FILE *fp;
-	int i = 0;
+	size_t i = 0;
 
 	if (!exists(RC_KRUNLEVEL))
 		return 0;
