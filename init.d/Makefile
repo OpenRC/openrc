@@ -1,7 +1,7 @@
 DIR=	${INITDIR}
 SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in netmount.in \
-	network.in root.in savecache.in staticroute.in swap.in swclock.in \
-	sysctl.in urandom.in ${SRCS-${OS}}
+	network.in root.in savecache.in staticroute.in swap.in swapfiles.in \
+	swclock.in sysctl.in urandom.in ${SRCS-${OS}}
 BIN=	${OBJS}
 
 INSTALLAFTER=	_installafter_net.lo

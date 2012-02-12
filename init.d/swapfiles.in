@@ -4,23 +4,14 @@
 
 depend()
 {
-	before localmount
+	need localmount
 	keyword -jail -openvz -prefix -vserver -lxc
 }
 
 start()
 {
-	ebegin "Activating swap devices"
+	ebegin "Activating additional swap space"
 	case "$RC_UNAME" in
-		Linux)
-			local dev
-			for dev in $(fstabinfo -b -t swap); do
-				case "$dev" in
-					/dev/loop*) ;;
-					*) swapon $dev 2>/dev/null;;
-				esac
-			done
-			;;
 		NetBSD|OpenBSD) swapctl -A -t noblk >/dev/null;;
 		*)		swapon -a >/dev/null;;
 	esac
@@ -29,16 +20,26 @@ start()
 
 stop()
 {
-	ebegin "Deactivating swap devices"
+	ebegin "Deactivating additional swap space"
 
 	# Try to unmount all tmpfs filesystems not in use, else a deadlock may
 	# occur. As $RC_SVCDIR may also be tmpfs we cd to it to lock it
+	# fixme: Do we need this here since we are only unmounting swap files
+	# and loopback swap?
 	cd "$RC_SVCDIR"
 	umount -a -t tmpfs 2>/dev/null
 
 	case "$RC_UNAME" in
-		NetBSD|OpenBSD)	swapctl -U -t noblk >/dev/null;;
-		*)		swapoff -a >/dev/null;;
+		Linux)
+			while read filename type rest; do
+				case "$type" in
+					file) swapoff $filename >/dev/null;;
+				esac
+				case "$filename" in
+					/dev/loop*) swapoff $filename >/dev/null;;
+				esac
+			done < /proc/swaps
+			;;
 	esac
 	eend 0
 }

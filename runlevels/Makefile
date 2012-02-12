@@ -1,5 +1,5 @@
 BOOT=		bootmisc fsck hostname localmount \
-		root swap sysctl urandom ${BOOT-${OS}}
+		root swap swapfiles sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
 SYSINIT=	${SYSINIT-${OS}}
