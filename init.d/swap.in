@@ -17,7 +17,7 @@ start()
 			for dev in $(fstabinfo -b -t swap); do
 				case "$dev" in
 					/dev/loop*) ;;
-					*) swapon $dev 2>/dev/null;;
+					*) swapon $dev >/dev/null;;
 				esac
 			done
 			;;
