@@ -8,7 +8,7 @@ depend()
 {
 	use modules devfs
 	need localmount
-	keyword -openvz -prefix -vserver -lxc
+	keyword -prefix -vserver -lxc
 }
 
 start()
@@ -19,23 +19,6 @@ start()
 	fi
 
 	[ -e /proc/filesystems ] || return 0
-
-	# Check what USB fs the kernel support.  Currently
-	# 2.5+ kernels, and later 2.4 kernels have 'usbfs',
-	# while older kernels have 'usbdevfs'.
-	if [ -d /proc/bus/usb -a ! -e /proc/bus/usb/devices ]; then
-		local usbfs=$(grep -Fow usbfs /proc/filesystems ||
-			grep -Fow usbdevfs /proc/filesystems)
-		if [ -n "$usbfs" ]; then
-			ebegin "Mounting USB device filesystem [$usbfs]"
-			local usbgid="$(getent group usb | \
-				sed -e 's/.*:.*:\(.*\):.*/\1/')"
-			mount -t $usbfs \
-				-o ${usbgid:+devmode=0664,devgid=$usbgid,}noexec,nosuid \
-				usbfs /proc/bus/usb
-			eend $?
-		fi
-	fi
 
 	# Setup Kernel Support for miscellaneous Binary Formats
 	if [ -d /proc/sys/fs/binfmt_misc -a ! -e /proc/sys/fs/binfmt_misc/register ]; then
@@ -55,6 +38,25 @@ start()
 				fi
 				eend $?
 			fi
+		fi
+	fi
+
+	[ "$RC_SYS" == "OPENVZ" ] && return 0
+
+	# Check what USB fs the kernel support.  Currently
+	# 2.5+ kernels, and later 2.4 kernels have 'usbfs',
+	# while older kernels have 'usbdevfs'.
+	if [ -d /proc/bus/usb -a ! -e /proc/bus/usb/devices ]; then
+		local usbfs=$(grep -Fow usbfs /proc/filesystems ||
+			grep -Fow usbdevfs /proc/filesystems)
+		if [ -n "$usbfs" ]; then
+			ebegin "Mounting USB device filesystem [$usbfs]"
+			local usbgid="$(getent group usb | \
+				sed -e 's/.*:.*:\(.*\):.*/\1/')"
+			mount -t $usbfs \
+				-o ${usbgid:+devmode=0664,devgid=$usbgid,}noexec,nosuid \
+				usbfs /proc/bus/usb
+			eend $?
 		fi
 	fi
 
