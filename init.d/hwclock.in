@@ -94,7 +94,7 @@ start()
 		"$utc_cmd" != --utc -o \
 		-n "$clock_args" ];
 	then
-		if yesno $clock_hctosys; then
+		if yesno ${clock_hctosys:-YES}; then
 			_hwclock --hctosys $utc_cmd $clock_args
 		else
 			_hwclock --systz $utc_cmd $clock_args
@@ -111,7 +111,7 @@ stop()
 {
 	# Don't tweak the hardware clock on LiveCD halt.
 	[ -n "$CDBOOT" ] && return 0
-	yesno $clock_systohc || return 0
+	yesno ${clock_systohc:-NO} || return 0
 
 	local retval=0 errstr=""
 	setupopts
