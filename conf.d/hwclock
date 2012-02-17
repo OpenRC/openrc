@@ -9,9 +9,9 @@ clock="UTC"
 # running a modern kernel with CONFIG_RTC_HCTOSYS set to y.
 #clock_hctosys="YES"
 
-# If you want to set the hardware clock to the current system time
-# (software clock) during shutdown, set this to yes.
-#clock_systohc="NO"
+# If you do not want to set the hardware clock to the current system
+# time (software clock) during shutdown, set this to no.
+#clock_systohc="YES"
 
 # If you wish to pass any other arguments to hwclock during bootup,
 # you may do so here. Alpha users may wish to use --arc or --srm here.

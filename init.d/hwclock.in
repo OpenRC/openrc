@@ -111,7 +111,7 @@ stop()
 {
 	# Don't tweak the hardware clock on LiveCD halt.
 	[ -n "$CDBOOT" ] && return 0
-	yesno ${clock_systohc:-NO} || return 0
+	yesno ${clock_systohc:-YES} || return 0
 
 	local retval=0 errstr=""
 	setupopts
