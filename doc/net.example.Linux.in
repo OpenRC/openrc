@@ -586,9 +586,14 @@
 #vlan_start_eth0="no"
 
 # If you do the above then you may want to depend on eth0 like so
-# rc_need_vlan1="net.eth0"
+# rc_net_vlan1_need="net.eth0"
 # NOTE: depend functions only work in /etc/conf.d/net
 # and not in profile configs such as /etc/conf.d/net.foo
+
+# Also, you might want to make eth0 not provide net in this case so that
+# dependent services will start when the vlan is active instead of the
+# physical interface.
+# rc_net_eth0_provide="!net"
 
 # MAC-VLAN support
 # The following configuration can be used to create a new interface 'macvlan0'
@@ -618,7 +623,7 @@
 
 # If any of the slaves require extra configuration - for example wireless or
 # ppp devices - we need to depend function on the bonded interfaces
-#rc_need_bond0="net.eth0 net.eth1"
+#rc_net_bond0_need="net.eth0 net.eth1"
 
 
 #-----------------------------------------------------------------------------
@@ -735,7 +740,7 @@
 # If the link require extra configuration - for example wireless or
 # RFC 268 bridge - we need to depend on the bridge so they get
 # configured correctly.
-#rc_need_ppp0="net.nas0"
+#rc_net_ppp0_need="net.nas0"
 
 #WARNING: if MTU of the PPP interface is less than 1500 and you use this
 #machine as a router, you should add the following rule to your firewall
@@ -847,7 +852,7 @@
 
 # If any of the ports require extra configuration - for example wireless or
 # ppp devices - we need to depend on them like so.
-#rc_need_br0="net.eth0 net.eth1"
+#rc_net_br0_need="net.eth0 net.eth1"
 
 # Below is an example of configuring the bridge
 # Consult "man brctl" for more details
@@ -898,7 +903,7 @@
 # link_6to4="eth0"		# Interface to base its addresses on
 # config_6to4="ip6to4"
 # You may want to depend on eth0 like so
-#rc_need_6to4="net.eth0"
+#rc_net_6to4_need="net.eth0"
 # To ensure that eth0 is configured before 6to4. Of course, the tunnel could be
 # any name and this also works for any configured interface.
 # NOTE: If you're not using iproute2 then your 6to4 tunnel has to be called
