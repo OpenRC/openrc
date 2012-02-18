@@ -39,6 +39,8 @@ depend()
 		eval prov=\$rc_${dep}_${IFVAR}
 		if [ -n "${prov}" ]; then
 			${dep} ${prov}
+			ewarn "rc_${dep}_${IFVAR} is deprecated."
+			ewarn "Please use rc_net_${IFVAR}_${dep} instead."
 		fi
 	done
 }
