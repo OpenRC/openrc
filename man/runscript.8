@@ -332,7 +332,13 @@ sets the following environment variables for use in the service scripts:
 .It Va RC_SVCNAME
 Name of the service.
 .It Va RC_RUNLEVEL
-Current runlevel that rc is in.
+Current runlevel that rc is in. Note that, in OpenRC, the reboot
+runlevel does not exist. This was done because most services do not need
+to know if a system is shutting down or rebooting. If you are writing a
+service that needs to know the difference, see the RC_REBOOT variable.
+.It Va RC_REBOOT
+This variable contains YES if the system is rebooting. If your service
+needs to know the system is rebooting, you should test this variable.
 .It Va RC_BOOTLEVEL
 Boot runlevel chosen. Default is boot.
 .It Va RC_DEFAULTLEVEL
