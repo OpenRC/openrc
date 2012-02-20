@@ -12,7 +12,15 @@ start()
 {
 	ebegin "Activating swap devices"
 	case "$RC_UNAME" in
-		Linux)		swapon -a -e >/dev/null;;
+		Linux)
+			local dev
+			for dev in $(fstabinfo -b -t swap); do
+				case "$dev" in
+					/dev/loop*) ;;
+					*) swapon $dev >/dev/null;;
+				esac
+			done
+			;;
 		NetBSD|OpenBSD) swapctl -A -t noblk >/dev/null;;
 		*)		swapon -a >/dev/null;;
 	esac
