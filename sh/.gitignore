@@ -3,6 +3,7 @@ gendepends.sh
 init-common-post.sh
 rc-functions.sh
 runscript.sh
+cgroup-release-agent.sh
 init.sh
 init-early.sh
 ifwatchd-carrier.sh

@@ -11,6 +11,7 @@ network
 root
 savecache
 swap
+swapfiles
 sysctl
 urandom
 devfs
