@@ -826,15 +826,9 @@ main(int argc, char **argv)
 			eerrorx("%s: %s", applet, strerror(errno));
 			/* NOTREACHED */
 		case 'S':
-			if (rc_conf_value("rc_sys")) {
-				bootlevel = rc_sys_v2();
-				if (bootlevel)
-					printf("%s\n", bootlevel);
-			} else {
-				bootlevel = rc_sys_v1();
-				if (bootlevel)
-					printf("%s\n", bootlevel);
-			}
+			bootlevel = rc_sys();
+			if (bootlevel)
+				printf("%s\n", bootlevel);
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
 		case_RC_COMMON_GETOPT
