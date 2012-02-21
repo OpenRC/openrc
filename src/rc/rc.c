@@ -831,7 +831,6 @@ main(int argc, char **argv)
 				if (bootlevel)
 					printf("%s\n", bootlevel);
 			} else {
-				ewarn("WARNING: rc_sys not defined in rc.conf. Falling back to automatic detection");
 				bootlevel = rc_sys_v1();
 				if (bootlevel)
 					printf("%s\n", bootlevel);
