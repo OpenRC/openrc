@@ -10,3 +10,4 @@ ifwatchd-carrier.sh
 ifwatchd-nocarrier.sh
 udhcpc-hook.sh
 tmpfiles.sh
+migrate-to-run.sh

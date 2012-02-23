@@ -25,6 +25,8 @@ include ${MK}/dist.mk
 include ${MK}/git.mk
 
 _installafter:
+ifneq ($(OS),Linux)
 	${INSTALL} -d ${DESTDIR}/${LIBEXECDIR}/init.d
+endif
 	${INSTALL} -d ${DESTDIR}/${LIBEXECDIR}/tmp
 	${ECHO} "${VERSION}${GITVER}" > ${DESTDIR}/${LIBEXECDIR}/version

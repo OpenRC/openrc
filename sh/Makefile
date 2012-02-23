@@ -12,8 +12,10 @@ include ${MK}/os.mk
 SRCS-FreeBSD=
 BIN-FreeBSD=
 
-SRCS-Linux=	cgroup-release-agent.sh.in init-early.sh.in udhcpc-hook.sh.in
-BIN-Linux=	cgroup-release-agent.sh init-early.sh udhcpc-hook.sh
+SRCS-Linux=	cgroup-release-agent.sh.in init-early.sh.in migrate-to-run.sh.in \
+	udhcpc-hook.sh.in
+BIN-Linux=	cgroup-release-agent.sh init-early.sh migrate-to-run.sh \
+	udhcpc-hook.sh
 
 SRCS-NetBSD=	ifwatchd-carrier.sh.in ifwatchd-nocarrier.sh.in
 BIN-NetBSD=	ifwatchd-carrier.sh ifwatchd-nocarrier.sh
