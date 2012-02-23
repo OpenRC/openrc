@@ -1178,20 +1178,18 @@ start_stop_daemon(int argc, char **argv)
 		}
 
 #ifdef HAVE_PAM
-		if (changeuser != NULL)
+		if (changeuser != NULL) {
 			pamr = pam_start("start-stop-daemon",
 			    changeuser, &conv, &pamh);
-		else
-			pamr = pam_start("start-stop-daemon",
-			    "nobody", &conv, &pamh);
 
-		if (pamr == PAM_SUCCESS)
-			pamr = pam_acct_mgmt(pamh, PAM_SILENT);
-		if (pamr == PAM_SUCCESS)
-			pamr = pam_open_session(pamh, PAM_SILENT);
-		if (pamr != PAM_SUCCESS)
-			eerrorx("%s: pam error: %s",
-			    applet, pam_strerror(pamh, pamr));
+			if (pamr == PAM_SUCCESS)
+				pamr = pam_acct_mgmt(pamh, PAM_SILENT);
+			if (pamr == PAM_SUCCESS)
+				pamr = pam_open_session(pamh, PAM_SILENT);
+			if (pamr != PAM_SUCCESS)
+				eerrorx("%s: pam error: %s",
+					applet, pam_strerror(pamh, pamr));
+		}
 #endif
 
 		if (gid && setgid(gid))
@@ -1219,15 +1217,17 @@ start_stop_daemon(int argc, char **argv)
 			rc_stringlist_add(env_list, environ[i++]);
 
 #ifdef HAVE_PAM
-		pamenv = (const char *const *)pam_getenvlist(pamh);
-		if (pamenv) {
-			while (*pamenv) {
-				/* Don't add strings unless they set a var */
-				if (strchr(*pamenv, '='))
-					putenv(xstrdup(*pamenv));
-				else
-					unsetenv(*pamenv);
-				pamenv++;
+		if (changeuser != NULL) {
+			pamenv = (const char *const *)pam_getenvlist(pamh);
+			if (pamenv) {
+				while (*pamenv) {
+					/* Don't add strings unless they set a var */
+					if (strchr(*pamenv, '='))
+						putenv(xstrdup(*pamenv));
+					else
+						unsetenv(*pamenv);
+					pamenv++;
+				}
 			}
 		}
 #endif
@@ -1304,7 +1304,7 @@ start_stop_daemon(int argc, char **argv)
 		setsid();
 		execvp(exec, argv);
 #ifdef HAVE_PAM
-		if (pamr == PAM_SUCCESS)
+		if (changeuser != NULL && pamr == PAM_SUCCESS)
 			pam_close_session(pamh, PAM_SILENT);
 #endif
 		eerrorx("%s: failed to exec `%s': %s",
