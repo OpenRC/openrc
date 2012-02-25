@@ -128,10 +128,10 @@ rc_getline(char **line, size_t *len, FILE *fp)
 }
 librc_hidden_def(rc_getline)
 
-#ifdef __linux__
 char *
 rc_proc_getent(const char *ent)
 {
+#ifdef __linux__
 	FILE *fp;
 	char *proc, *p, *value = NULL;
 	size_t i, len;
@@ -171,9 +171,11 @@ rc_proc_getent(const char *ent)
 	free(proc);
 
 	return value;
+#else
+	return NULL;
+#endif
 }
 librc_hidden_def(rc_proc_getent)
-#endif
 
 RC_STRINGLIST *
 rc_config_list(const char *file)

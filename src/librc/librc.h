@@ -87,9 +87,7 @@ librc_hidden_proto(rc_find_pids)
 librc_hidden_proto(rc_getfile)
 librc_hidden_proto(rc_getline)
 librc_hidden_proto(rc_newer_than)
-#ifdef __linux__
 librc_hidden_proto(rc_proc_getent)
-#endif
 librc_hidden_proto(rc_older_than)
 librc_hidden_proto(rc_runlevel_exists)
 librc_hidden_proto(rc_runlevel_get)
