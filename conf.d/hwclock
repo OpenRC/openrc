@@ -4,9 +4,11 @@
 # you should set it to "local".
 clock="UTC"
 
-# If you want to set the system time to the current hardware clock
-# during bootup, then say "YES" here. You do not need this if you are
-# running a modern kernel with CONFIG_RTC_HCTOSYS set to y.
+# If you want the hwclock script to set the system time (software clock)
+# to match the current hardware clock during bootup, leave this
+# commented out.
+# However, you can set this to "NO" ifyou are running a modern kernel
+# with CONFIG_RTC_HCTOSYS set to y and your hardware clock set to UTC.
 #clock_hctosys="YES"
 
 # If you do not want to set the hardware clock to the current system
