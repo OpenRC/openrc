@@ -3,7 +3,7 @@
 
 ifconfig_depend()
 {
-	program /sbin/ifconfig
+	program /sbin/ifconfig /bin/ifconfig
 	provide interface
 }
 
