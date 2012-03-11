@@ -20,7 +20,7 @@ _down()
 
 _exists()
 {
-	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/dev
+	[ -e /sys/class/net/"$IFACE" ]
 }
 
 _ifindex()

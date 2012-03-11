@@ -3,7 +3,7 @@
 
 ifconfig_depend()
 {
-	program /sbin/ifconfig
+	program /sbin/ifconfig /bin/ifconfig
 	provide interface
 }
 
@@ -19,7 +19,7 @@ _down()
 
 _exists()
 {
-	grep -Eq "^[[:space:]]*${IFACE}:" /proc/net/dev
+	[ -e /sys/class/net/"$IFACE" ]
 }
 
 _ifindex()

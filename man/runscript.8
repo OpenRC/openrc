@@ -92,7 +92,8 @@ or stopping them.
 The following variables affect the service script:
 .Bl -tag -width "RC_DEFAULTLEVEL"
 .It Ar extra_commands
-Space separated list of extra commands the service defines.
+Space separated list of extra commands the service defines. These should
+not depend on the service being stopped or started.
 .It Ar extra_started_commands
 Space separated list of extra commands the service defines. These only work if
 the service has already been started.
