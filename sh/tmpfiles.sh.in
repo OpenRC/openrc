@@ -19,17 +19,19 @@ warninvalid() {
 } >&2
 
 relabel() {
+	local path
 	local paths=$1 mode=$2 uid=$3 gid=$4
 
 	for path in ${paths}; do
-		if [ -e $path ]; then
+		if [ -e "$path" ]; then
 			[ $uid != '-' ] && chown $CHOPTS "$uid" "$path"
 			[ $gid != '-' ] && chgrp $CHOPTS "$gid" "$path"
 			[ $mode != '-' ] && chmod $CHOPTS "$mode" "$path"
-			# TODO: SELinux relabel
+			[ -x /sbin/restorecon ] && restorecon $CHOPTS "$path"
 		fi
 	done
 }
+
 _b() {
 	# Create a block device node if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
@@ -49,7 +51,7 @@ _f() {
 
 	[ $CREATE -gt 0 ] || return 0
 
-	if [ ! -e $path ]; then
+	if [ ! -e "$path" ]; then
 		install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
 		[ -n "$arg" ] && _w "$@"
 	fi
@@ -80,7 +82,7 @@ _D() {
 	# Create or empty a directory
 	local path=$1 mode=$2 uid=$3 gid=$4
 
-	if [ -d $path ] && [ $REMOVE -gt 0 ]; then
+	if [ -d "$path" ] && [ $REMOVE -gt 0 ]; then
 		find "$path" -mindepth 1 -maxdepth 1 -xdev -exec rm -rf {} +
 	fi
 
@@ -125,10 +127,10 @@ _r() {
 
 	[ $REMOVE -gt 0 ] || return 0
 
-	for path in "${paths}"; do
-		if [ -f $path ]; then
+	for path in ${paths}; do
+		if [ -f "$path" ]; then
 			rm -f "$path"
-		elif [ -d $path ]; then
+		elif [ -d "$path" ]; then
 			rmdir "$path"
 		fi
 	done
@@ -142,8 +144,8 @@ _R() {
 
 	[ $REMOVE -gt 0 ] || return 0
 
-	for path in "${paths}"; do
-		[ -d $path ] && rm -rf --one-file-system "$path"
+	for path in ${paths}; do
+		[ -d "$path" ] && rm -rf --one-file-system "$path"
 	done
 }
 
@@ -174,9 +176,8 @@ _Z() {
 CREATE=0 REMOVE=0 CLEAN=0 VERBOSE=0 DRYRUN=0 error=0 LINENO=0
 FILE=
 fragments=
-# TODO: The systemd spec explicitly says /usr/lib/, but it should probably be
-# OUTSIDE of lib entirely, or at the very least handle multilib systems better.
-tmpfiles_dirs='/usr/lib64/tmpfiles.d/ /usr/lib/tmpfiles.d/ /etc/tmpfiles.d/ /run/tmpfiles.d/'
+# XXX: The harcoding of /usr/lib/ is an explicit choice by upstream
+tmpfiles_dirs='/usr/lib/tmpfiles.d/ /etc/tmpfiles.d/ /run/tmpfiles.d/'
 tmpfiles_basenames=''
 tmpfiles_d=''
 # Build a list of sorted unique basenames
@@ -212,7 +213,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ $(( CREATE + REMOVE )) -ne 1 ] ; then
-	printf 'usage: %s [--create] [--remove]\n' "${0##*/}"
+	printf 'usage: %s [--create] [--remove] [--clean] [--verbose] [--dry-run]\n' "${0##*/}"
 	exit 1
 fi
 
@@ -230,14 +231,15 @@ for FILE in $tmpfiles_d ; do
 	# d    /run/user      0755 root root 10d -
 	# Mode, UID, GID, Age, Argument may be omitted!
 
-	# TODO: Sorry, we don't handle whitespace in paths.
+	# XXX: Upstream says whitespace is NOT permitted in the Path argument.
+	# But IS allowed when globs are expanded for the x/r/R/z/Z types.
 	while read line; do
 		LINENUM=$(( LINENUM+1 ))
 
-		# This will fix up whitespace and comment lines
-		# skip over comments and empty lines
+		# This will skip over comments and empty lines
 		set -- $line
 
+		# Unless we have both command and path, skip this line.
 		if [ -z "$1" -o -z "$2" ]; then
 			continue
 		fi
