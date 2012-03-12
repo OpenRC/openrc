@@ -9,3 +9,4 @@ init-early.sh
 ifwatchd-carrier.sh
 ifwatchd-nocarrier.sh
 udhcpc-hook.sh
+tmpfiles.sh
