@@ -616,6 +616,12 @@
 #slaves_bond0="eth0 eth1 eth2"
 #config_bond0="null" # You may not want to assign an IP the the bond
 
+# Please note, that you should generally NOT try to change the MAC addresses of
+# a bond interface yourself. If you do so, the kernel and your network switches
+# may not work quite right. It is permissible to set the MAC addresses of bond
+# slaves BEFORE the bond comes up, but not after the bond is up (it will change
+# MAC addresses of the slaves on it's own).
+
 # You can also configure the parameters of the bond here, which must be done
 # via sysfs on 2.6 kernels or newer. The description of all the options can be
 # found in the kernel: /usr/src/linux-*/Documentation/networking/bonding.txt
@@ -787,6 +793,8 @@
 
 #-----------------------------------------------------------------------------
 # MAC changer
+# Warning: Do NOT use this on bonding interfaces! Bonding changes MACs itself.
+#
 # To set a specific MAC address
 #mac_eth0="00:11:22:33:44:55"
 
