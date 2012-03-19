@@ -616,9 +616,16 @@
 #slaves_bond0="eth0 eth1 eth2"
 #config_bond0="null" # You may not want to assign an IP the the bond
 
-# You can also configure the bond here, which must be done via sysfs on 2.6
-# kernels or newer. See the kernel bonding documentation for a description of
-# these options.
+# You can also configure the parameters of the bond here, which must be done
+# via sysfs on 2.6 kernels or newer. The description of all the options can be
+# found in the kernel: /usr/src/linux-*/Documentation/networking/bonding.txt
+# You will probably want the 'mode' option at the least.
+# Some possible parameters: mode fail_over_mac arp_validate arp_interval
+# arp_ip_target downdelay updelay lacp_rate ad_select xmit_hash_policy
+# num_grat_arp num_unsol_na miimon primary primary_reselect use_carrier
+# active_slave queue_id all_slaves_active resend_igmp min_links
+#mode_bond0="round-robin"
+#miimon_bond0="100"
 #arp_ip_target_bond0="+26.0.0.0"
 
 # If any of the slaves require extra configuration - for example wireless or
