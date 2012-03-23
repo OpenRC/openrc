@@ -18,9 +18,9 @@ start()
 	for conf in /etc/sysctl.d/*.conf /etc/sysctl.conf; do
 		if [ -r "$conf" ]; then
 			vebegin "applying $conf"
-			if ! err=$(sysctl -q -p "$conf" 2>&1) ; then
+			if ! err=$(sysctl -p "$conf" 2>&1 >/dev/null) ; then
 				errs="${errs} ${err}"
-				sysctl -q -e -p "${conf}"
+				sysctl -e -p "${conf}" >/dev/null
 			fi
 			veend $? || retval=1
 		fi
