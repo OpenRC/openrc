@@ -15,7 +15,7 @@ start()
 	ebegin "Configuring kernel parameters"
 	eindent
 
-	for conf in /etc/sysctl.d/*.conf /etc/sysctl.conf; do
+	for conf in /etc/sysctl.conf /etc/sysctl.d/*.conf; do
 		if [ -r "$conf" ]; then
 			vebegin "applying $conf"
 			if ! err=$(sysctl -p "$conf" 2>&1 >/dev/null) ; then
