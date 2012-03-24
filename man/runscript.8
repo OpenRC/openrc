@@ -124,6 +124,10 @@ Display name used for the above defined command.
 .It Ar retry
 Retry schedule to use when stopping the daemon. It can either be a
 timeout in seconds or multiple signal/timeout pairs (like SIGTERM/5).
+.It Ar required_dirs
+A list of directories which must exist for the service to start.
+.It Ar required_files
+A list of files which must exist for the service to start.
 .El
 .Sh DEPENDENCIES
 You should define a
