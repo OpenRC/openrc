@@ -13,7 +13,7 @@ start()
 	local retval=0 var= comments= conf=
 	ebegin "Configuring kernel parameters"
 	eindent
-	for conf in /etc/sysctl.conf /etc/sysctl.d/*.conf; do
+	for conf in @SYSCONFDIR@/sysctl.conf @SYSCONFDIR@/sysctl.d/*.conf; do
 		if [ -r "$conf" ]; then
 			vebegin "applying $conf"
 			while read var comments; do
