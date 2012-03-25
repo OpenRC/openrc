@@ -33,6 +33,7 @@ start()
 
 stop()
 {
+	yesno $RC_GOINGDOWN || return 0
 	# We never unmount / or /dev or $RC_SVCDIR
 
 	# Bug 381783
