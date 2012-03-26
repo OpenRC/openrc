@@ -5,7 +5,7 @@
 depend()
 {
 	before bootmisc logger
-	keyword -vserver
+	keyword -lxc -vserver
 }
 
 start()
