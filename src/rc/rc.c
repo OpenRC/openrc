@@ -793,6 +793,13 @@ main(int argc, char **argv)
 	env_filter();
 	env_config();
 
+	/* complain about old configuration settings if they exist */
+	if (exists(RC_CONF_OLD)) {
+		ewarn("%s still exists on your system and should be removed.",
+				RC_CONF_OLD);
+		ewarn("Please migrate to the appropriate settings in %s", RC_CONF);
+	}
+
 	argc++;
 	argv--;
 	while ((opt = getopt_long(argc, argv, getoptstring,

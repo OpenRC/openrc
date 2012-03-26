@@ -29,7 +29,6 @@
  */
 
 #include "librc.h"
-#include "einfo.h"
 
 bool
 rc_yesno(const char *value)
@@ -139,15 +138,13 @@ rc_proc_getent(const char *ent)
 	if (!exists("/proc/cmdline"))
 		return NULL;
 
-	if (!(fp = fopen("/proc/cmdline", "r"))) {
-		eerror("failed to open `/proc/cmdline': %s", strerror(errno));
+	if (!(fp = fopen("/proc/cmdline", "r")))
 		return NULL;
-	}
 
 	proc = NULL;
 	i = 0;
 	if (rc_getline(&proc, &i, fp) == -1 || proc == NULL)
-		eerror("rc_getline: %s", strerror(errno));
+		return NULL;
 
 	if (proc != NULL) {
 		len = strlen(ent);
@@ -394,13 +391,10 @@ rc_conf_value(const char *setting)
 		atexit(_free_rc_conf);
 #endif
 
-		/* Support old configs, but complain about it. */
+		/* Support old configs. */
 		if (exists(RC_CONF_OLD)) {
 			old = rc_config_load(RC_CONF_OLD);
 			TAILQ_CONCAT(rc_conf, old, entries);
-			ewarn("Your system still has %s", RC_CONF_OLD);
-			ewarn("Please migrate to the appropriate settings in %s", RC_CONF);
-			ewarn("and delete %s.", RC_CONF_OLD);
 #ifdef DEBUG_MEMORY
 			free(old);
 #endif
