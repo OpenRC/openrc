@@ -71,7 +71,12 @@ start()
 	done
 
 	if [ "$RC_UNAME" = Linux ]; then
-		fsck_opts="$fsck_opts -C0 -T"
+		local skiptypes x
+		for x in $net_fs_list $extra_net_fs_list; do
+			skiptypes="${skiptypes}no${x},"
+		done
+		skiptypes="${skiptypes}noopts=_netdev"
+		fsck_opts="$fsck_opts -C0 -T -t $skiptypes"
 		if [ -z "$fsck_passno" -a -z "$fsck_mnt" ]; then
 			fsck_args=${fsck_args--A -p}
 			if echo 2>/dev/null >/.test.$$; then
