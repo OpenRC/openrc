@@ -25,19 +25,19 @@ _exists()
 
 _ifindex()
 {
-	local line= i=-2
-	while read line; do
-		: $(( i += 1 ))
-		[ ${i} -lt 1 ] && continue
-		case "${line}" in
-			"${IFACE}:"*) echo "${i}"; return 0;;
-		esac
-	done < /proc/net/dev
-
-	# Return the next available index
-	: $(( i += 1 ))
-	echo "${i}"
-	return 1
+	local index=-1
+	local f v
+	if [ -e /sys/class/net/"${IFACE}"/ifindex ]; then
+		index=$(cat /sys/class/net/"${IFACE}"/ifindex)
+	else
+		for f in /sys/class/net/*/ifindex ; do
+			v=$(cat $f)
+			[ $v -gt $index ] && index=$v
+		done 
+		: $(( index += 1 ))
+	fi
+	echo "${index}"
+	return 0
 }
 
 _is_wireless()
