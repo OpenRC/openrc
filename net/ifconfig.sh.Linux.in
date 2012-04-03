@@ -5,6 +5,9 @@ ifconfig_depend()
 {
 	program /sbin/ifconfig /bin/ifconfig
 	provide interface
+	case "${IFACE}" in
+		lo|lo0) need sysfs ;;
+	esac
 }
 
 _up()
