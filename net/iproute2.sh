@@ -6,9 +6,6 @@ iproute2_depend()
 	program ip
 	provide interface
 	after ifconfig
-	case "${IFACE}" in
-		lo|lo0) need sysfs ;;
-	esac
 }
 
 _up()

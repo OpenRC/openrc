@@ -19,6 +19,9 @@ depend()
 	local IFVAR=$(shell_var "${IFACE}")
 
 	need localmount
+	if [ "$RC_UNAME" = Linux ]; then
+		need sysfs
+	fi
 	after bootmisc
 	keyword -jail -vserver
 
