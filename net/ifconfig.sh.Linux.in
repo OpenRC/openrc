@@ -32,7 +32,7 @@ _ifindex()
 		for f in /sys/class/net/*/ifindex ; do
 			v=$(cat $f)
 			[ $v -gt $index ] && index=$v
-		done 
+		done
 		: $(( index += 1 ))
 	fi
 	echo "${index}"
