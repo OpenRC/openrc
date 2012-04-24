@@ -322,7 +322,7 @@ do_mark_service(int argc, char **argv)
 	if (argc > 1)
 		service = argv[1];
 	else
-		service = getenv("RC_SVCNAME");
+		service = svcname;
 
 	if (service == NULL || *service == '\0')
 		eerrorx("%s: no service specified", applet);
