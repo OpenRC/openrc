@@ -315,9 +315,9 @@ do_mark_service(int argc, char **argv)
 	char *svcname = getenv("RC_SVCNAME");
 	char *service = NULL;
 	char *runscript_pid;
-	char *mtime;
+	/* char *mtime; */
 	pid_t pid;
-	size_t l;
+	/* size_t l; */
 
 	if (argc > 1)
 		service = argv[1];
@@ -346,6 +346,13 @@ do_mark_service(int argc, char **argv)
 
 	/* If we're marking ourselves then we need to inform our parent
 	   runscript process so they do not mark us based on our exit code */
+	/*
+	 * FIXME: svcname and service are almost always equal except called from a
+	 * shell with just argv[1] - So that doesn't seem to do what Roy initially
+	 * expected.
+	 * See 20120424041423.GA23657@odin.qasl.de (Tue, 24 Apr 2012 06:14:23 +0200,
+	 * openrc@gentoo.org).
+	 */
 	if (ok && svcname && strcmp(svcname, service) == 0) {
 		runscript_pid = getenv("RC_RUNSCRIPT_PID");
 		if (runscript_pid && sscanf(runscript_pid, "%d", &pid) == 1)
@@ -355,6 +362,7 @@ do_mark_service(int argc, char **argv)
 
 		/* Remove the exclusive time test. This ensures that it's not
 		   in control as well */
+		/*
 		l = strlen(RC_SVCDIR "/exclusive") + strlen(svcname) +
 		    strlen(runscript_pid) + 4;
 		mtime = xmalloc(l);
@@ -363,6 +371,7 @@ do_mark_service(int argc, char **argv)
 		if (exists(mtime) && unlink(mtime) != 0)
 			eerror("%s: unlink: %s", applet, strerror(errno));
 		free(mtime);
+		*/
 	}
 
 	return ok ? EXIT_SUCCESS : EXIT_FAILURE;
