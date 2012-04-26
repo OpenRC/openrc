@@ -174,10 +174,6 @@ status()
 
 yesno $RC_DEBUG && set -x
 
-# Enter the dir of the init script to fix the globbing with e.g. depend()
-# bug 412677
-cd ${RC_SERVICE%/*}
-
 _conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${RC_SVCNAME%%.*}
@@ -237,7 +233,12 @@ while [ -n "$1" ]; do
 	# Special case depend
 	if [ "$1" = depend ]; then
 		shift
+
+		# Enter the dir of the init script to fix the globbing
+		# bug 412677
+		cd ${RC_SERVICE%/*}
 		_depend
+		cd /
 		continue
 	fi
 	# See if we have the required function and run it
