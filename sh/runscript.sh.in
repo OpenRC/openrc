@@ -32,7 +32,7 @@ sourcex()
 	fi
 }
 
-sourcex "@SYSCONFDIR@/init.d/functions.sh"
+sourcex "@LIBEXECDIR@/sh/functions.sh"
 sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
 
 # Support LiveCD foo

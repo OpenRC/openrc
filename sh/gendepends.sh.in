@@ -4,7 +4,7 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-. @SYSCONFDIR@/init.d/functions.sh
+. @LIBEXECDIR@/sh/functions.sh
 . @LIBEXECDIR@/sh/rc-functions.sh
 
 config() {
