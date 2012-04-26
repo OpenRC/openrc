@@ -687,27 +687,27 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	if (!existss(RC_DEPTREE_CACHE))
 		return true;
 	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_INITDIR, newest, file))
-		newer = true;
+		return true;
 	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_CONFDIR, newest, file))
-		newer = true;
+		return true;
 #ifdef RC_PKG_INITDIR
 	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_INITDIR, newest, file))
-		newer = true;
+		return true;
 #endif
 #ifdef RC_PKG_CONFDIR
 	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_CONFDIR, newest, file))
-		newer = true;
+		return true;
 #endif
 #ifdef RC_LOCAL_INITDIR
 	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_INITDIR, newest, file))
-		newer = true;
+		return true;
 #endif
 #ifdef RC_LOCAL_CONFDIR
 	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR, newest, file))
-		newer = true;
+		return true;
 #endif
 	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_CONF, newest, file))
-		newer = true;
+		return true;
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
@@ -715,8 +715,7 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	TAILQ_FOREACH(s, config, entries) {
 		if (!rc_newer_than(RC_DEPTREE_CACHE, s->value, newest, file)) {
 			newer = true;
-			if (newest == NULL)
-				break;
+			break;
 		}
 	}
 	rc_stringlist_free(config);
