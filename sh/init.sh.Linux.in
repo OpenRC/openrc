@@ -75,7 +75,7 @@ if [ -e $f ]; then
 	if [ "$(VAR=a cat $f)" = "$(VAR=b cat $f)" ]; then
 		eerror "You have cruft in /proc that should be deleted"
 	else
-		einfo "/proc is already mounted, skipping"
+		einfo "/proc is already mounted"
 		mountproc=false
 	fi
 fi
