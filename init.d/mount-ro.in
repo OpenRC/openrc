@@ -23,7 +23,7 @@ start()
 	# Bug 381783
 	local rc_svcdir=$(echo $RC_SVCDIR | sed 's:/lib\(32\|64\)\?/:/lib(32|64)?/:g')
 
-	local m="/dev|/dev/.*|/proc|/proc.*|/sys|/sys/.*|${rc_svcdir}" x= fs=
+	local m="/dev|/dev/.*|/proc|/proc.*|/sys|/sys/.*|/run|${rc_svcdir}" x= fs=
 	m="$m|/bin|/sbin|/lib(32|64)?|/libexec"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
 	local IFS="$IFS:"
