@@ -135,7 +135,7 @@ static const struct ecolor ecolors[] = {
 	{ ECOLOR_BRACKET, BRACKET, "bracket" },
 	{ ECOLOR_NORMAL,  0,       NULL      },
 };
-static const char *ecolors_str[sizeof(ecolors)/sizeof(ecolors[0])];
+static const char *ecolors_str[ARRAY_SIZE(ecolors)];
 
 static char *flush = NULL;
 static char *up = NULL;
@@ -442,7 +442,7 @@ colour_terminal(FILE * EINFO_RESTRICT f)
 
 	/* Now setup our colours */
 	p = ebuffer;
-	for (i = 0; i < sizeof(ecolors) / sizeof(ecolors[0]); i++) {
+	for (i = 0; i < ARRAY_SIZE(ecolors); ++i) {
 		tmp[0] = '\0';
 		if (ecolors[i].name) {
 			bold = _md;
@@ -578,7 +578,7 @@ _ecolor(FILE * EINFO_RESTRICT f, ECOLOR color)
 	if (!colour_terminal(f))
 		return "";
 
-	for (i = 0; i < sizeof(ecolors) / sizeof(ecolors[0]); i++)
+	for (i = 0; i < ARRAY_SIZE(ecolors); ++i)
 		if (ecolors[i].color == color)
 			return ecolors_str[i];
 	return "";

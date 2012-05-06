@@ -192,7 +192,7 @@ parse_signal(const char *sig)
 	else
 		s = NULL;
 
-	for (i = 0; i < sizeof(signallist) / sizeof(signallist[0]); i++)
+	for (i = 0; i < ARRAY_SIZE(signallist); ++i)
 		if (strcmp(sig, signallist[i].name) == 0 ||
 		    (s && strcmp(s, signallist[i].name) == 0))
 			return signallist[i].signal;

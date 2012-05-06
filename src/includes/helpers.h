@@ -46,6 +46,8 @@
 # define _unused
 #endif
 
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
 /* Some libc implemntations don't have these */
 #ifndef TAILQ_CONCAT
 #define TAILQ_CONCAT(head1, head2, field) do {				      \
