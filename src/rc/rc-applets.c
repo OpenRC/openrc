@@ -253,13 +253,38 @@ do_e(int argc, char **argv)
 	return retval;
 }
 
+static const struct {
+	const char * const name;
+	RC_SERVICE bit;
+} service_bits[] = {
+	{ "service_started",     RC_SERVICE_STARTED,     },
+	{ "service_stopped",     RC_SERVICE_STOPPED,     },
+	{ "service_inactive",    RC_SERVICE_INACTIVE,    },
+	{ "service_starting",    RC_SERVICE_STARTING,    },
+	{ "service_stopping",    RC_SERVICE_STOPPING,    },
+	{ "service_hotplugged",  RC_SERVICE_HOTPLUGGED,  },
+	{ "service_wasinactive", RC_SERVICE_WASINACTIVE, },
+	{ "service_failed",      RC_SERVICE_FAILED,      },
+};
+
+static RC_SERVICE
+lookup_service_state(const char *service)
+{
+	size_t i;
+	for (i = 0; i < ARRAY_SIZE(service_bits); ++i)
+		if (!strcmp(service, service_bits[i].name))
+			return service_bits[i].bit;
+	return 0;
+}
+
 static int
 do_service(int argc, char **argv)
 {
 	bool ok = false;
 	char *service;
 	char *exec;
-	int idx = 0;
+	int idx;
+	RC_SERVICE state, bit;
 
 	if (argc > 1)
 		service = argv[1];
@@ -269,21 +294,11 @@ do_service(int argc, char **argv)
 	if (service == NULL || *service == '\0')
 		eerrorx("%s: no service specified", applet);
 
-	if (strcmp(applet, "service_started") == 0)
-		ok = (rc_service_state(service) & RC_SERVICE_STARTED);
-	else if (strcmp(applet, "service_stopped") == 0)
-		ok = (rc_service_state(service) & RC_SERVICE_STOPPED);
-	else if (strcmp(applet, "service_inactive") == 0)
-		ok = (rc_service_state(service) & RC_SERVICE_INACTIVE);
-	else if (strcmp(applet, "service_starting") == 0)
-		ok = (rc_service_state(service) & RC_SERVICE_STARTING);
-	else if (strcmp(applet, "service_stopping") == 0)
-		ok = (rc_service_state(service) & RC_SERVICE_STOPPING);
-	else if (strcmp(applet, "service_hotplugged") == 0)
-		ok = (rc_service_state(service) & RC_SERVICE_HOTPLUGGED);
-	else if (strcmp(applet, "service_wasinactive") == 0)
-		ok = (rc_service_state(service) & RC_SERVICE_WASINACTIVE);
-	else if (strcmp(applet, "service_started_daemon") == 0) {
+	state = rc_service_state(service);
+	bit = lookup_service_state(service);
+	if (bit) {
+		ok = (state & bit);
+	} else if (strcmp(applet, "service_started_daemon") == 0) {
 		service = getenv("RC_SVCNAME");
 		exec = argv[1];
 		if (argc > 3) {
@@ -317,6 +332,7 @@ do_mark_service(int argc, char **argv)
 	char *runscript_pid;
 	/* char *mtime; */
 	pid_t pid;
+	RC_SERVICE bit;
 	/* size_t l; */
 
 	if (argc > 1)
@@ -327,20 +343,9 @@ do_mark_service(int argc, char **argv)
 	if (service == NULL || *service == '\0')
 		eerrorx("%s: no service specified", applet);
 
-	if (strcmp(applet, "mark_service_started") == 0)
-		ok = rc_service_mark(service, RC_SERVICE_STARTED);
-	else if (strcmp(applet, "mark_service_stopped") == 0)
-		ok = rc_service_mark(service, RC_SERVICE_STOPPED);
-	else if (strcmp(applet, "mark_service_inactive") == 0)
-		ok = rc_service_mark(service, RC_SERVICE_INACTIVE);
-	else if (strcmp(applet, "mark_service_starting") == 0)
-		ok = rc_service_mark(service, RC_SERVICE_STARTING);
-	else if (strcmp(applet, "mark_service_stopping") == 0)
-		ok = rc_service_mark(service, RC_SERVICE_STOPPING);
-	else if (strcmp(applet, "mark_service_hotplugged") == 0)
-		ok = rc_service_mark(service, RC_SERVICE_HOTPLUGGED);
-	else if (strcmp(applet, "mark_service_failed") == 0)
-		ok = rc_service_mark(service, RC_SERVICE_FAILED);
+	if (strncmp(applet, "mark_", 5) &&
+	    (bit = lookup_service_state(applet + 5)))
+		ok = rc_service_mark(service, bit);
 	else
 		eerrorx("%s: unknown applet", applet);
 
@@ -409,7 +414,7 @@ do_value(int argc, char **argv)
 }
 
 static int
-do_shell_var(int argc, char **argv)
+shell_var(int argc, char **argv)
 {
 	int i;
 	char *p;
@@ -430,105 +435,126 @@ do_shell_var(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
+static int
+is_older_than(int argc, char **argv)
+{
+	int i;
+
+	if (argc < 3)
+		return EXIT_FAILURE;
+
+	/* This test is perverted - historically the baselayout function
+	 * returns 0 on *failure*, which is plain wrong */
+	for (i = 2; i < argc; ++i)
+		if (!rc_newer_than(argv[1], argv[i], NULL, NULL))
+			return EXIT_SUCCESS;
+
+	return EXIT_FAILURE;
+}
+
+static int
+is_newer_than(int argc, char **argv)
+{
+	int i;
+
+	if (argc < 3)
+		return EXIT_FAILURE;
+
+	/* This test is correct as it's not present in baselayout */
+	for (i = 2; i < argc; ++i)
+		if (!rc_newer_than(argv[1], argv[i], NULL, NULL))
+			return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
+}
+
+static int
+is_runlevel_start(_unused int argc, _unused char **argv)
+{
+	return rc_runlevel_starting() ? 0 : 1;
+}
+
+static int
+is_runlevel_stop(_unused int argc, _unused char **argv)
+{
+	return rc_runlevel_stopping() ? 0 : 1;
+}
+
+static int
+rc_abort(_unused int argc, _unused char **argv)
+{
+	const char *p = getenv("RC_PID");
+	int pid;
+
+	if (p && sscanf(p, "%d", &pid) == 1) {
+		if (kill(pid, SIGUSR1) != 0)
+			eerrorx("rc-abort: failed to signal parent %d: %s",
+			    pid, strerror(errno));
+		return EXIT_SUCCESS;
+	}
+
+	return EXIT_FAILURE;
+}
+
+static const struct {
+	const char * const name;
+	int (* const applet)(int argc, char **argv);
+} applets[] = {
+#define A(a) { #a, a }
+	A(fstabinfo),
+	A(mountinfo),
+	{ "rc-depend",           rc_depend,         },
+	{ "rc-service",          rc_service,        },
+	{ "rc-status",           rc_status,         },
+	{ "rc-update",           rc_update,         },
+	{ "update-rc",           rc_update,         },
+	A(runscript),
+	{ "start-stop-daemon",   start_stop_daemon, },
+	A(checkpath),
+	A(swclock),
+	A(shell_var),
+	A(is_older_than),
+	A(is_newer_than),
+	A(is_runlevel_start),
+	A(is_runlevel_stop),
+	{ "rc-abort",            rc_abort,          },
+	/* These are purely for init scripts and do not make sense as
+	 * anything else */
+	{ "service_get_value",   do_value,          },
+	{ "service_set_value",   do_value,          },
+	{ "get_options",         do_value,          },
+	{ "save_options",        do_value,          },
+#undef A
+};
+
 void
 run_applets(int argc, char **argv)
 {
-	int i = 2;
-	char *p;
-	pid_t pid = 0;
+	size_t i;
 
 	/* Bug 351712: We need an extra way to explicitly select an applet OTHER
 	 * than trusting argv[0], as argv[0] is not going to be the applet value if
 	 * we are doing SELinux context switching. For this, we allow calls such as
 	 * 'rc --applet APPLET', and shift ALL of argv down by two array items. */
 	if (strcmp(applet, "rc") == 0 && argc >= 3 &&
-		    (strcmp(argv[1],"--applet") == 0 || strcmp(argv[1], "-a") == 0)) {
+		(strcmp(argv[1],"--applet") == 0 || strcmp(argv[1], "-a") == 0)) {
 		applet = argv[2];
 		argv += 2;
 		argc -= 2;
 	}
 
-	/* These are designed to be applications in their own right */
-	if (strcmp(applet, "fstabinfo") == 0)
-		exit(fstabinfo(argc, argv));
-	else if (strcmp(applet, "mountinfo") == 0)
-		exit(mountinfo(argc, argv));
-	else if (strcmp(applet, "rc-depend") == 0)
-		exit(rc_depend(argc, argv));
-	else if (strcmp(applet, "rc-service") == 0)
-		exit(rc_service(argc, argv));
-	else if (strcmp(applet, "rc-status") == 0)
-		exit(rc_status(argc, argv));
-	else if (strcmp(applet, "rc-update") == 0 ||
-	    strcmp(applet, "update-rc") == 0)
-		exit(rc_update(argc, argv));
-	else if (strcmp(applet, "runscript") == 0)
-		exit(runscript(argc, argv));
-	else if (strcmp(applet, "start-stop-daemon") == 0)
-		exit(start_stop_daemon(argc, argv));
-	else if (strcmp (applet, "checkpath") == 0)
-		exit(checkpath(argc, argv));
-	else if (strcmp(applet, "swclock") == 0)
-		exit(swclock(argc, argv));
-
-	/* These could also be applications in their own right */
-	if (strcmp(applet, "shell_var") == 0)
-		exit(do_shell_var(argc, argv));
-
-	/* This test is perverted - historically the baselayout function
-	 * returns 0 on *failure*, which is plain wrong */
-	if (strcmp(applet, "is_older_than") == 0) {
-		if (argc < 3)
-			exit (EXIT_FAILURE);
-		while (i < argc) {
-			if (!rc_newer_than(argv[1], argv[i++], NULL, NULL))
-				exit(EXIT_SUCCESS);
-		}
-		exit(EXIT_FAILURE);
-	};
-	/* This test is correct as it's not present in baselayout */
-	if (strcmp(applet, "is_newer_than") == 0) {
-		if (argc < 3)
-			exit (EXIT_FAILURE);
-		while (i < argc) {
-			if (!rc_newer_than(argv[1], argv[i++], NULL, NULL))
-				exit(EXIT_FAILURE);
-		}
-		exit(EXIT_SUCCESS);
-	};
+	for (i = 0; i < ARRAY_SIZE(applets); ++i)
+		if (!strcmp(applet, applets[i].name))
+			exit(applets[i].applet(argc, argv));
 
 	if (applet[0] == 'e' || (applet[0] == 'v' && applet[1] == 'e'))
 		exit(do_e(argc, argv));
-
-	/* These are purely for init scripts and do not make sense as
-	 * anything else */
-	if (strcmp(applet, "service_get_value") == 0 ||
-	    strcmp(applet, "service_set_value") == 0 ||
-	    strcmp(applet, "get_options") == 0 ||
-	    strcmp(applet, "save_options") == 0)
-		exit(do_value(argc, argv));
 
 	if (strncmp(applet, "service_", strlen("service_")) == 0)
 		exit(do_service(argc, argv));
 
 	if (strncmp(applet, "mark_service_", strlen("mark_service_")) == 0)
 		exit(do_mark_service(argc, argv));
-
-	if (strcmp(applet, "is_runlevel_start") == 0)
-		exit(rc_runlevel_starting() ? 0 : 1);
-	else if (strcmp (applet, "is_runlevel_stop") == 0)
-		exit(rc_runlevel_stopping() ? 0 : 1);
-
-	if (strcmp(applet, "rc-abort") == 0) {
-		p = getenv("RC_PID");
-		if (p && sscanf(p, "%d", &pid) == 1) {
-			if (kill(pid, SIGUSR1) != 0)
-				eerrorx("rc-abort: failed to signal parent %d: %s",
-				    pid, strerror(errno));
-			exit(EXIT_SUCCESS);
-		}
-		exit(EXIT_FAILURE);
-	}
 
 	if (strcmp(applet, "rc") != 0)
 		eerrorx("%s: unknown applet", applet);
