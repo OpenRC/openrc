@@ -38,6 +38,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "helpers.h"
+
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
 
@@ -51,98 +53,6 @@
 #define RC_SVCDIR_INACTIVE      RC_SVCDIR "/inactive"
 #define RC_SVCDIR_STARTED       RC_SVCDIR "/started"
 #define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "/coldplugged"
-
-#define ERRX fprintf (stderr, "out of memory\n"); exit (1)
-
-#define UNCONST(a)		((void *)(unsigned long)(const void *)(a))
-
-#ifdef lint
-# define _unused
-#endif
-#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
-# define _dead __attribute__((__noreturn__))
-# define _unused __attribute__((__unused__))
-#else
-# define _dead
-# define _unused
-#endif
-
-/* Some libc implemntations don't have these */
-#ifndef TAILQ_CONCAT
-#define TAILQ_CONCAT(head1, head2, field) do {				      \
-		if (!TAILQ_EMPTY(head2)) {				      \
-			*(head1)->tqh_last = (head2)->tqh_first;	      \
-			(head2)->tqh_first->field.tqe_prev = (head1)->tqh_last; \
-			(head1)->tqh_last = (head2)->tqh_last;		      \
-			TAILQ_INIT((head2));				      \
-		}							      \
-	} while (0)
-#endif
-
-#ifndef TAILQ_FOREACH_SAFE
-#define	TAILQ_FOREACH_SAFE(var, head, field, tvar)			      \
-	for ((var) = TAILQ_FIRST((head));				      \
-	     (var) && ((tvar) = TAILQ_NEXT((var), field), 1);		      \
-	     (var) = (tvar))
-#endif
-
-#ifdef __GLIBC__
-#  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
-#    define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
-#  endif
-#endif
-
-#ifndef timespecsub
-#define	timespecsub(tsp, usp, vsp)					      \
-	do {								      \
-		(vsp)->tv_sec = (tsp)->tv_sec - (usp)->tv_sec;		      \
-		(vsp)->tv_nsec = (tsp)->tv_nsec - (usp)->tv_nsec;	      \
-		if ((vsp)->tv_nsec < 0) {				      \
-			(vsp)->tv_sec--;				      \
-			(vsp)->tv_nsec += 1000000000L;			      \
-		}							      \
-	} while (/* CONSTCOND */ 0)
-#endif
-
-_unused static void *xmalloc (size_t size)
-{
-	void *value = malloc(size);
-
-	if (value)
-		return (value);
-
-	ERRX;
-	/* NOTREACHED */
-}
-
-_unused static void *xrealloc(void *ptr, size_t size)
-{
-	void *value = realloc(ptr, size);
-
-	if (value)
-		return (value);
-
-	ERRX;
-	/* NOTREACHED */
-}
-
-_unused static char *xstrdup(const char *str)
-{
-	char *value;
-
-	if (! str)
-		return (NULL);
-
-	value = strdup(str);
-
-	if (value)
-		return (value);
-
-	ERRX;
-	/* NOTREACHED */
-}
-
-#undef ERRX
 
 _unused static bool exists(const char *pathname)
 {
@@ -175,17 +85,6 @@ int is_writable(const char *);
 
 #define service_start(service) exec_service(service, "start");
 #define service_stop(service)  exec_service(service, "stop");
-
-/* basename_c never modifies the argument. As such, if there is a trailing
- * slash then an empty string is returned. */
-_unused static const char *basename_c(const char *path)
-{
-	const char *slash = strrchr(path, '/');
-
-	if (slash)
-		return (++slash);
-	return (path);
-}
 
 int parse_mode(mode_t *, char *);
 #endif

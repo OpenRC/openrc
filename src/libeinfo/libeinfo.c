@@ -51,6 +51,7 @@ const char libeinfo_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <unistd.h>
 
 #include "einfo.h"
+#include "helpers.h"
 #include "hidden-visibility.h"
 
 hidden_proto(ecolor)
@@ -224,27 +225,6 @@ strlcat(char *dst, const char *src, size_t size)
 	*d = '\0';
 
 	return dst_n + (s - src);
-}
-
-static size_t
-strlcpy(char *dst, const char *src, size_t size)
-{
-	const char *s = src;
-	size_t n = size;
-
-	if (n && --n)
-		do {
-			if (!(*dst++ = *src++))
-				break;
-		} while (--n);
-
-	if (!n) {
-		if (size)
-			*dst = '\0';
-		while (*src++);
-	}
-
-	return src - s - 1;
 }
 #  endif
 #endif

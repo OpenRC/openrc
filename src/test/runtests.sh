@@ -93,7 +93,7 @@ ebegin "Checking for x* func usage"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
 	-exec grep -n -E '\<(malloc|strdup)[[:space:]]*\(' {} + \
 	| grep -v \
-		-e src/includes/rc-misc.h \
+		-e src/includes/helpers.h \
 		-e src/libeinfo/libeinfo.c)
 [ -z "${out}" ]
 eend $? "These need to be using the x* variant:"$'\n'"${out}"
