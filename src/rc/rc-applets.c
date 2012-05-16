@@ -295,7 +295,7 @@ do_service(int argc, char **argv)
 		eerrorx("%s: no service specified", applet);
 
 	state = rc_service_state(service);
-	bit = lookup_service_state(service);
+	bit = lookup_service_state(applet);
 	if (bit) {
 		ok = (state & bit);
 	} else if (strcmp(applet, "service_started_daemon") == 0) {
