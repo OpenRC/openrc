@@ -17,7 +17,6 @@ if [ ! -d "@PREFIX@/run" ]; then
 fi
 
 if ! mountinfo -q -f tmpfs "@PREFIX@/run"; then
-	local x
 	for x in "@PREFIX@/run/."* "@PREFIX@/run/"*; do
 		case "$x" in
 			"@PREFIX@/run/."|"@PREFIX@/run/..")
