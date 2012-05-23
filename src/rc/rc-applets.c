@@ -343,7 +343,7 @@ do_mark_service(int argc, char **argv)
 	if (service == NULL || *service == '\0')
 		eerrorx("%s: no service specified", applet);
 
-	if (strncmp(applet, "mark_", 5) &&
+	if (!strncmp(applet, "mark_", 5) &&
 	    (bit = lookup_service_state(applet + 5)))
 		ok = rc_service_mark(service, bit);
 	else
