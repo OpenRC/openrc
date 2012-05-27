@@ -9,7 +9,7 @@ ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 
 depend()
 {
-	keyword -openvz -uml -vserver -xenu
+	keyword -lxc -openvz -uml -vserver -xenu
 	use root
 	after bootmisc
 }
