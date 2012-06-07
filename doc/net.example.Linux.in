@@ -34,7 +34,7 @@
 # In other words, you probably should DO NOTHING HERE...
 
 # Prefer ifconfig over iproute2
-#modules="ifconfig"
+#modules="!iproute2"
 
 # You can also specify other modules for an interface
 # In this case we prefer udhcpc over dhcpcd
@@ -57,7 +57,7 @@
 
 # If you don't specify an interface then we prefer iproute2 if it's installed
 # To prefer ifconfig over iproute2
-#modules="ifconfig"
+#modules="!iproute2"
 
 # For a static configuration, use something like this
 # (They all do exactly the same thing btw)
