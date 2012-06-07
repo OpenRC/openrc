@@ -66,7 +66,7 @@ udhcpc_start()
 			if ${sendhost}; then
 				local hname="$(hostname)"
 				if [ "${hname}" != "(none)" ] && [ "${hname}" != "localhost" ]; then
-					args="${args} --hostname='${hname}'"
+					args="${args} -x hostname:'${hname}'"
 				fi
 			fi
 			;;
