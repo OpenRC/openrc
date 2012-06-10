@@ -5,12 +5,32 @@
 description="Sets the hostname of the machine."
 
 depend() {
-	keyword -lxc
+	need root
 }
 
 start()
 {
 	hostname=${hostname-${HOSTNAME-localhost}}
+	out=$hostname
+	short=${hostname%%.*}
+	if [ "$short" != "$hostname" ]; then
+		out="$out $short"
+	fi
+	if [ "$short" != "localhost" ]; then
+		out="$out localhost"
+	fi
+	if [ "$hostname" != "localhost.localdomain" ]; then
+		out="$out localhost.localdomain"
+	fi
+	ebegin "Configuring /etc/hosts"
+	sed -i -e '/[[:space:]]*127.0.0.1[[:space:]]/d' -e '/[[:space:]]*::1[[:space:]]/d' /etc/hosts
+	cat <<END >> /etc/hosts
+127.0.0.1	$out
+::1		$out
+END
+	chmod 0644 /etc/hosts
+	eend $?
+	[ "$RC_SYS" = "LXC" ] && return 0
 	ebegin "Setting hostname to $hostname"
 	hostname "$hostname"
 	eend $? "Failed to set the hostname"
