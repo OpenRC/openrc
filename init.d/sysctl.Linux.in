@@ -20,8 +20,8 @@ start()
 	mem_max=`expr $mem_bytes / 4` 
 	page_size=`getconf PAGE_SIZE`
 	shmall=`expr $mem_bytes / $page_size`
-	sysctl kernel.shmmax=$mem_max
-	sysctl kernel.shmall=$shmall
+	sysctl kernel.shmmax=$mem_max > /dev/null
+	sysctl kernel.shmall=$shmall > /dev/null
 
 	for conf in @SYSCONFDIR@/sysctl.conf @SYSCONFDIR@/sysctl.d/*.conf; do
 		if [ -r "$conf" ]; then
