@@ -16,6 +16,11 @@ start()
 	if [ "$short" != "$hostname" ]; then
 		out="$out $short"
 	fi
+	if [ "$nisdomainname" != "" ]; then
+		ebegin "Setting NIS domain name to $nisdomainname"
+		nisdomainname $nisdomainname
+		eend $? "Failed to set the NIS domain name"
+	fi
 	if [ "$short" != "localhost" ]; then
 		out="$out localhost"
 	fi
