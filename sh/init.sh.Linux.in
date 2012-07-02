@@ -37,14 +37,23 @@ fi
 
 # /run is a new directory for storing volatile runtime data.
 # Read more about /run at https://lwn.net/Articles/436012
+sys="$(rc --sys)"
+
 if [ ! -d /run ]; then
-	eerror "The /run directory does not exist. Unable to continue."
-	return 1
+	if [ "$sys" = VSERVER ]; then
+		if [ -e /run ]; then
+		rm -rf /run
+		fi
+		mkdir /run
+	else
+		eerror "The /run directory does not exist. Unable to continue."
+		return 1
+	fi
 fi
 
-if mountinfo -q /run; then
-	einfo "/run is already mounted, skipping"
-else
+if [ "$sys" = VSERVER ]; then
+	rm -rf /run/*
+elif ! mountinfo -q /run; then
 	ebegin "Mounting /run"
 	rc=0
 	if ! fstabinfo --mount /run; then
