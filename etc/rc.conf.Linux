@@ -18,3 +18,11 @@
 # This is the number of tty's used in most of the rc-scripts (like
 # consolefont, numlock, etc ...)
 rc_tty_number=12
+
+# If you have cgroups turned on in your kernel, this switch controls
+# whether or not a group for each controler is mounted under
+# /sys/fs/cgroup.
+# Support for process management by cgroups is planned in the future,
+# so if you turn this off, be aware that you may not be able to use that
+# feature.
+#rc_controller_cgroups="YES"
