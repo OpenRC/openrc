@@ -5,6 +5,7 @@
 depend()
 {
 	after fsck
+	keyword -prefix
 }
 
 start()

@@ -8,7 +8,7 @@ depend()
 {
 	need dumpon localmount
 	before encswap
-	keyword -jail
+	keyword -jail -prefix
 }
 
 start()

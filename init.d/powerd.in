@@ -12,7 +12,7 @@ depend()
 	need localmount
 	use logger
 	after bootmisc
-	keyword -jail
+	keyword -jail -prefix
 }
 
 start_pre()

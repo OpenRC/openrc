@@ -5,6 +5,7 @@
 # ""        - nothing special
 # "lxc"     - Linux Containers
 # "openvz"  - Linux OpenVZ
+# "prefix"  - Prefix
 # "uml"     - Usermode Linux
 # "vserver" - Linux vserver
 # "xen0"    - Xen0 Domain

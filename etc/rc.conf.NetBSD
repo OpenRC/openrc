@@ -3,6 +3,7 @@
 
 # This is the subsystem type. Valid options on NetBSD:
 # ""        - nothing special
+# "prefix"  - Prefix
 # "xen0"    - Xen0 Domain
 # "xenU"    - XenU Domain
 # If this is commented out, automatic detection will be used.

@@ -4,7 +4,7 @@
 
 depend() {
 	need localmount
-	keyword -jail
+	keyword -jail -prefix
 }
 
 start() {
