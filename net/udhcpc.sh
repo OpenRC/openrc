@@ -61,7 +61,7 @@ udhcpc_start()
 	esac
 
 	case " ${args} " in
-		*" --hosname="*|*" -h "*|*" -H "*);;
+		*" --hostname="*|*" -h "*|*" -H "*);;
 		*)
 			if ${sendhost}; then
 				local hname="$(hostname)"
