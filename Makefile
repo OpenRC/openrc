@@ -4,7 +4,12 @@
 
 include Makefile.inc
 
-SUBDIR=		conf.d doc etc init.d local.d sysctl.d man net scripts sh src
+SUBDIR=		conf.d etc init.d local.d man scripts sh src sysctl.d
+
+# Build our old net foo or not
+ifeq (${MKOLDNET},yes)
+SUBDIR+=	net doc
+endif
 
 # Build pkgconfig or not
 MKPKGCONFIG?=	yes

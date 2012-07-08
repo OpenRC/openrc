@@ -4,9 +4,15 @@ SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in netmount.in \
 	swclock.in sysctl.in urandom.in ${SRCS-${OS}}
 BIN=	${OBJS}
 
-INSTALLAFTER=	_installafter_net.lo
-CLEANFILES+=	net.lo
-TARGETS+=	net.lo
+# Build our old net foo or not
+ifeq (${MKOLDNET},yes)
+_OLDNET=	net.lo
+endif
+_NET_LO=	${_OLDNET}
+
+INSTALLAFTER=	_installafter_${_NET_LO}
+CLEANFILES+=	${_NET_LO}
+TARGETS+=	${_NET_LO}
 
 MK=	../mk
 include ${MK}/os.mk
@@ -39,4 +45,4 @@ include ${MK}/scripts.mk
 _installafter_: realinstall
 
 _installafter_net.lo: realinstall
-	${INSTALL} -m ${BINMODE} net.lo ${DESTDIR}/${INITDIR}/${NET_LO-${OS}}
+	${INSTALL} -m ${BINMODE} net.lo ${DESTDIR}/${INITDIR}/${NET_LO}

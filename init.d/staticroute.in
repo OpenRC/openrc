@@ -93,11 +93,6 @@ do_routes()
 
 start()
 {
-	ewarn
-	ewarn "The $RC_SVCNAME script is deprecated and will be"
-	ewarn "removed in the future."
-	ewarn "Please use the net.* scripts to manage your network interfaces."
-	ewarn
 	do_routes "Adding" "add"
 }
 

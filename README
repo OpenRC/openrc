@@ -16,6 +16,7 @@ MKSELINUX=yes
 MKSTATICLIBS=no
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
+MKOLDNET=yes
 PKG_PREFIX=/usr/pkg
 LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local

@@ -219,12 +219,6 @@ start()
 		eend $?
 	fi
 
-	ewarn
-	ewarn "The $RC_SVCNAME script is deprecated and will be"
-	ewarn "removed in the future."
-	ewarn "Please use the net.* scripts to manage your network interfaces."
-	ewarn
-
 	einfo "Starting network"
 	routeflush
 	if [ "$RC_UNAME" = "Linux" ]; then

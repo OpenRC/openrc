@@ -1,5 +1,5 @@
-BOOT=		bootmisc fsck hostname localmount \
-		root swap swapfiles sysctl urandom ${BOOT-${OS}}
+BOOT=		bootmisc fsck hostname localmount network \
+		root staticroute swap swapfiles sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
 SYSINIT=	${SYSINIT-${OS}}
@@ -9,6 +9,8 @@ SYSINITDIR=	${LEVELDIR}/sysinit
 BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 SHUTDOWNDIR=	${LEVELDIR}/shutdown
+
+INITDIR=	../init.d
 
 MK=		../mk
 include ${MK}/sys.mk
@@ -22,16 +24,16 @@ SYSINIT-${OS}=
 BOOT-BSD=	hostid newsyslog savecore syslogd swap-blk
 
 # Generic BSD stuff
-BOOT-FreeBSD=	hostid net.lo0 newsyslog savecore syslogd
+BOOT-FreeBSD=	hostid newsyslog savecore syslogd
 # FreeBSD specific stuff
 BOOT-FreeBSD+=	adjkerntz dumpon syscons
 
-BOOT-Linux=	hwclock keymaps modules mtab net.lo procfs termencoding
+BOOT-Linux=	hwclock keymaps modules mtab procfs termencoding
 SHUTDOWN-Linux=	killprocs mount-ro
 SYSINIT-Linux=	devfs dmesg
 
 # Generic BSD stuff
-BOOT-NetBSD=	hostid net.lo0 newsyslog savecore syslogd
+BOOT-NetBSD=	hostid newsyslog savecore syslogd
 # NetBSD specific stuff
 BOOT-NetBSD+=	devdb swap-blk ttys wscons
 
