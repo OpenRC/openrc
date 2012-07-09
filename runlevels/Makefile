@@ -1,5 +1,5 @@
-BOOT=		bootmisc fsck hostname localmount network \
-		root staticroute swap swapfiles sysctl urandom ${BOOT-${OS}}
+BOOT=		bootmisc fsck hostname localmount \
+		root swap swapfiles sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
 SYSINIT=	${SYSINIT-${OS}}
@@ -36,6 +36,14 @@ SYSINIT-Linux=	devfs dmesg
 BOOT-NetBSD=	hostid newsyslog savecore syslogd
 # NetBSD specific stuff
 BOOT-NetBSD+=	devdb swap-blk ttys wscons
+
+ifeq(${MKOLDNET},yes)
+boot-FreeBSD += net.lo0
+boot-Linux += net.lo
+boot-NetBSD += net.lo0
+else
+boot += network staticroute
+endif
 
 all:
 
