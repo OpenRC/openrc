@@ -37,7 +37,7 @@ BOOT-NetBSD=	hostid newsyslog savecore syslogd
 # NetBSD specific stuff
 BOOT-NetBSD+=	devdb swap-blk ttys wscons
 
-ifeq(${MKOLDNET},yes)
+ifeq (${MKOLDNET},yes)
 boot-FreeBSD += net.lo0
 boot-Linux += net.lo
 boot-NetBSD += net.lo0
