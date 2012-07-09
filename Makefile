@@ -7,6 +7,7 @@ include Makefile.inc
 SUBDIR=		conf.d etc init.d local.d man scripts sh src sysctl.d
 
 # Build our old net foo or not
+MKOLDNET?= yes
 ifeq (${MKOLDNET},yes)
 SUBDIR+=	net doc
 endif
