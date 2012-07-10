@@ -1,5 +1,5 @@
-BOOT=		bootmisc fsck hostname localmount network \
-		root staticroute swap swapfiles sysctl urandom ${BOOT-${OS}}
+BOOT=		bootmisc fsck hostname localmount \
+		root swap swapfiles sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
 SYSINIT=	${SYSINIT-${OS}}
@@ -9,6 +9,16 @@ SYSINITDIR=	${LEVELDIR}/sysinit
 BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 SHUTDOWNDIR=	${LEVELDIR}/shutdown
+
+ifeq (${MKNET},)
+BOOT-FreeBSD += net.lo0
+BOOT-Linux += net.lo
+BOOT-NetBSD += net.lo0
+endif
+
+ifeq (${MKNET},newnet)
+BOOT+= network staticroute
+endif
 
 INITDIR=	../init.d
 

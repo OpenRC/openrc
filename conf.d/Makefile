@@ -1,9 +1,11 @@
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname localmount network staticroute urandom \
-	${CONF-${OS}}
+CONF=	bootmisc fsck hostname localmount urandom ${CONF-${OS}}
 
+ifeq (${MKNET},newnet)
+CONF+= network staticroute
 TARGETS+=	network staticroute
 CLEANFILES+=	network staticroute
+endif
 
 MK=	../mk
 include ${MK}/os.mk

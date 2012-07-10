@@ -10,13 +10,13 @@ You may wish to tweak the installation with the below arguments
 PROGLDFLAGS=-static
 LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
+MKNET=newnet
 MKPAM=pam
 MKPKGCONFIG=no
 MKSELINUX=yes
 MKSTATICLIBS=no
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
-MKOLDNET=no
 PKG_PREFIX=/usr/pkg
 LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local
