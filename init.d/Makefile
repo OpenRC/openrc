@@ -6,12 +6,12 @@ BIN=	${OBJS}
 
 # Build our old net foo or not
 ifeq (${MKNET},)
-INSTALLAFTER=	_installafter_net.lo
-SRCS+= net.lo.in
+SRCS+= network.in staticroute.in
 endif
 
-ifeq (${MKNET},newnet)
-SRCS+= network.in staticroute.in
+ifeq (${MKNET},oldnet)
+INSTALLAFTER=	_installafter_net.lo
+SRCS+= net.lo.in
 endif
 
 MK=	../mk
