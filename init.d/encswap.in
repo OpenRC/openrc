@@ -11,10 +11,9 @@ start() {
 	while read device mountpoint type options rest ; do
 		case ":${device}:${type}:${options}" in
 		:#*)
-			continue
 			;;
 		*.bde:swap:sw)
-			passphrase=`dd if=/dev/random count=1 2>/dev/null | md5 -q`
+			passphrase=$(dd if=/dev/random count=1 2>/dev/null | md5 -q)
 			device="${device%.bde}"
 			gbde init "${device}" -P "${passphrase}" || return 1
 			gbde attach "${device}" -p "${passphrase}" || return 1
@@ -31,7 +30,6 @@ stop() {
 	while read device mountpoint type options rest ; do
 		case ":${device}:${type}:${options}" in
 		:#*)
-			continue
 			;;
 		*.bde:swap:sw)
 			device="${device%.bde}"
