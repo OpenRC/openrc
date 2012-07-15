@@ -22,8 +22,8 @@ NET_LO-FreeBSD=	net.lo0
 SRCS-FreeBSD=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
 		rpcbind.in savecore.in syslogd.in
 # These are FreeBSD specific
-SRCS-FreeBSD+=	adjkerntz.in devd.in dumpon.in ipfw.in mixer.in nscd.in \
-		powerd.in syscons.in
+SRCS-FreeBSD+=	adjkerntz.in devd.in dumpon.in encswap.in ipfw.in \
+		mixer.in nscd.in powerd.in syscons.in
 
 NET_LO-Linux=	net.lo
 SRCS-Linux=	devfs.in dmesg.in hwclock.in consolefont.in keymaps.in \
