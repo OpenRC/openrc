@@ -66,26 +66,41 @@ vlan_post_start()
 		einfo "Adding VLAN ${vlan} to ${IFACE}"
 		# We need to gather all interface configuration options
 		# 1) naming. Default to the standard "${IFACE}.${vlan}" but it can be anything
-		eval vname=\$vlan${vlan}_name
+		eval vname=\$${IFACE}_vlan${vlan}_name
+		[ -z "${vname}" ] && eval vname=\$vlan${vlan}_name
 		[ -z "${vname}" ] && vname="${IFACE}.${vlan}"
 		# 2) flags
-		eval vflags=\$vlan${vlan}_flags
+		eval vflags=\$${IFACE}_vlan${vlan}_flags
+		[ -z "${vname}" ] && eval vflags=\$vlan${vlan}_flags
 		# 3) ingress/egress map
-		eval vingress=\$vlan${vlan}_ingress
+		eval vingress=\$${IFACE}_vlan${vlan}_ingress
+		[ -z "${vingress}" ] && eval vingress=\$vlan${vlan}_ingress
 		[ -z "${vingress}" ] || vingress="ingress-qos-map ${vingress}"
-		eval vegress=\$vlan${vlan}_egress
+		eval vegress=\$${IFACE}_vlan${vlan}_egress
+		[ -z "${vegress}" ] && eval vegress=\$vlan${vlan}_egress
 		[ -z "${vegress}" ] || vegress="egress-qos-map ${vegress}"
 
+		# txqueue
 		local txqueuelen=
-		eval txqueuelen=\$txqueuelen_vlan${vlan}
+		eval txqueuelen=\$txqueuelen_${IFACE}_vlan${vlan}
+		[ -z "${txqueuelen}" ] && eval txqueuelen=\$txqueuelen_vlan${vlan}
+		# mac
 		local mac=
-		eval mac=\$mac_vlan${vlan}
+		eval mac=\$mac_${IFACE}_vlan${vlan}
+		[ -z "${mac}" ] && eval mac=\$mac_vlan${vlan}
+		# broadcast
 		local broadcast=
-		eval broadcast=\$broadcast_vlan${vlan}
+		eval broadcast=\$broadcast_${IFACE}_vlan${vlan}
+		[ -z "${broadcast}" ] && eval broadcast=\$broadcast_vlan${vlan}
+		# mtu
 		local mtu=
-		eval mtu=\$mtu_vlan${vlan}
+		eval mtu=\$mtu_${IFACE}_vlan${vlan}
+		[ -z "${mtu}" ] && eval mtu=\$mtu_vlan${vlan}
+
+		# combine it all
 		local opts="${txqueuelen:+txqueuelen} ${txqueuelen} ${mac:+address} ${mac} ${broadcast:+broadcast} ${broadcast} ${mtu:+mtu} ${mtu}"
 
+		veinfo "ip link add link \"${IFACE}\" name \"${vname}\" ${opts} type vlan id \"${vlan}\" ${vflags} ${vingress} ${vegress}"
 		e="$(ip link add link "${IFACE}" name "${vname}" ${opts} type vlan id "${vlan}" ${vflags} ${vingress} ${vegress} 2>&1 1>/dev/null)"
 		if [ -n "${e}" ]; then
 			eend 1 "${e}"

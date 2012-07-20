@@ -552,26 +552,34 @@
 # You can also configure the VLAN - see for ip man page for more details
 # To change the vlan interface name. If not set, the standard "iface.vlanid"
 # will be used. This is the replacement for the old 'vconfig set_name_type'
-# functionality.
+# functionality. If you previously relied on the DEV_PLUS_VID or
+# DEV_PLUS_VID_NO_PAD options to have different VLANs with same ID value, on
+# different interfaces, please note that you need to use both the interface and
+# vlan number in the numbering. This applies for all of the options: name,
+# txqueuelen, mac, broadcast, mtu, ingress, egress, flags
 #vlan1_name="vlan1"
-#vlan2_name="eth0.2"
+#eth0_vlan2_name="eth0.2"
+#eth1_vlan2_name="eth1.2"
 
 # The following shows the old set_name_type setting and what new option to set:
 # Using eth9 & VLAN VID 26 as an example.
 # VLAN_PLUS_VID         vlan26_name="vlan0026"
 # VLAN_PLUS_VID_NO_PAD  vlan26_name="vlan26"
-# DEV_PLUS_VID          vlan26_name="eth9.0026"
-# DEV_PLUS_VID_NO_PAD   vlan26_name="eth9.26"
+# DEV_PLUS_VID          eth9_vlan26_name="eth9.0026"
+# DEV_PLUS_VID_NO_PAD   eth9_vlan26_name="eth9.26"
 
 # Set the vlan flags
 #vlan1_flags="reorder_hdr off gvrp on loose_binding on"
+#eth0_vlan1_flags="reorder_hdr off gvrp on loose_binding on"
 
 # Configure in/egress maps
 #vlan1_ingress="2:6 3:5"
-#vlan1_egress="1:2"
+#eth0_vlan1_egress="1:2"
 
-#config_vlan1="172.16.3.1/23"
-#config_vlan2="172.16.2.1/23"
+#config_vlan1="172.16.2.1/24"
+#config_vlan2="172.16.3.1/24"
+#config_eth0_1="172.16.4.1/24"
+#config_eth1_1="172.16.5.1/24"
 
 # NOTE: Vlans can be configured with a . in their interface names
 # When configuring vlans with this name type, you need to replace . with a _
