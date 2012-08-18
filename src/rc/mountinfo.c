@@ -393,8 +393,7 @@ mountinfo(int argc, char **argv)
 	bool quiet;
 	char *this_path;
 
-	/* Ensure that we are only quiet when explicitly told to be */
-	unsetenv("EINFO_QUIET");
+	quiet = rc_yesno(getenv("EINFO_QUIET"));
 
 #define DO_REG(_var)							      \
 	if (_var) free(_var);						      \
@@ -475,7 +474,6 @@ mountinfo(int argc, char **argv)
 	REG_FREE(args.skip_options_regex);
 
 	result = EXIT_FAILURE;
-	quiet = rc_yesno(getenv("EINFO_QUIET"));
 
 	/* We should report the mounts in reverse order to ease unmounting */
 	TAILQ_FOREACH_REVERSE(s, nodes, rc_stringlist, entries) {
