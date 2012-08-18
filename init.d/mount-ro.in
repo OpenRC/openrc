@@ -12,6 +12,8 @@ depend()
 
 start()
 {
+	local ret=0
+
 	# Flush all pending disk writes now
 	sync; sync
 
@@ -39,6 +41,9 @@ start()
 	do_unmount "umount -r" \
 		--skip-point-regex "$m" \
 		"${fs:+--skip-fstype-regex}" $fs --nonetdev
+	ret=$?
+
 	eoutdent
-	eend $?
+
+	eend $ret
 }
