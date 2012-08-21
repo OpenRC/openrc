@@ -6,7 +6,7 @@ description="Mount the sys filesystem."
 
 depend()
 {
-	keyword -prefix -vserver
+	keyword -lxc -prefix -vserver
 }
 
 mount_sys()
