@@ -12,7 +12,10 @@ depend()
 {
 	need localmount
 	after bootmisc
-	provide net
+	provide lo
+	if [ -n "$(interfaces)" ]; then
+		provide net
+	fi
 	keyword -jail -prefix -vserver
 }
 
