@@ -11,9 +11,14 @@ SED?=			sed
 SH=			/bin/sh
 
 PREFIX?=
-_UPREFIX_SH=		case "${PREFIX}" in "") echo /usr;; *) echo "${PREFIX}";; esac
-_UPREFIX:=		$(shell ${_UPREFIX_SH})
-UPREFIX=		${_UPREFIX}
+ifeq (${PREFIX},)
+UPREFIX= /usr
+else
+UPREFIX= ${PREFIX}
+ifeq (${MKPREFIX},yes)
+UPREFIX= ${PREFIX}/usr
+endif
+endif
 LOCAL_PREFIX=		/usr/local
 
 PICFLAG?=		-fPIC
