@@ -7,5 +7,6 @@ _OS_SH=		uname -s
 _OS:= 		$(shell ${_OS_SH})
 OS?= 		${_OS}
 include ${MK}/os-${OS}.mk
+include ${MK}/os-prefix.mk
 
 RC_LIB=		/$(LIBNAME)/rc
