@@ -352,6 +352,9 @@ Default runlevel chosen. Default is default.
 .It Va RC_SYS
 A special variable to describe the system more.
 Possible values are OPENVZ, XENU, XEN0, UML and VSERVER.
+.It Va RC_PREFIX
+In a Gentoo Prefix installation, this variable contains the prefix
+offset. Otherwise it is undefined.
 .It Va RC_UNAME
 The result of `uname -s`.
 .El

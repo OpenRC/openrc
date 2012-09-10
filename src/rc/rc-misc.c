@@ -191,6 +191,10 @@ env_config(void)
 	if (sys)
 		setenv("RC_SYS", sys, 1);
 
+#ifdef PREFIX
+	setenv("RC_PREFIX", RC_PREFIX, 1);
+#endif
+
 	/* Some scripts may need to take a different code path if
 	   Linux/FreeBSD, etc
 	   To save on calling uname, we store it in an environment variable */
