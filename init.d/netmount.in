@@ -19,6 +19,21 @@ need_portmap()
 	return 1
 }
 
+need_idmap()
+{
+	local opts=
+	local IFS="
+"
+	set -- $(fstabinfo --options --fstype nfs4)
+	for opts; do
+		case ,$opts, in
+			*,noauto,*|*,nolock,*);;
+			*) return 0;;
+		esac
+	done
+	return 1
+}
+
 depend()
 {
 	# Only have portmap as a dependency if there is a nfs mount in fstab
@@ -29,6 +44,12 @@ depend()
 		[ -x @SYSCONFDIR@/init.d/rpcbind ] \
 			&& pmap="$pmap rpcbind" \
 			|| pmap="$pmap portmap"
+	fi
+
+	# Only have rpc.idmapd as a dependency if there is a nfs4 mount in fstab
+	# that is set to mount at boot
+	if need_idmap; then
+		pmap="$pmap rpc.idmapd"
 	fi
 
 	config /etc/fstab
