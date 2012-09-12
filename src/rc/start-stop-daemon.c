@@ -1081,7 +1081,7 @@ start_stop_daemon(int argc, char **argv)
 	}
 
 	if (pidfile)
-		pid = get_pid(pidfile, false);
+		pid = get_pid(pidfile, true);
 	else
 		pid = 0;
 
@@ -1354,7 +1354,7 @@ start_stop_daemon(int argc, char **argv)
 				alive = true;
 		} else {
 			if (pidfile) {
-				pid = get_pid(pidfile, true);
+				pid = get_pid(pidfile, false);
 				if (pid == -1) {
 					eerrorx("%s: did not "
 					    "create a valid"
