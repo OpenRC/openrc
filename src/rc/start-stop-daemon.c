@@ -305,7 +305,7 @@ parse_schedule(const char *string, int timeout)
 }
 
 static pid_t
-get_pid(const char *pidfile)
+get_pid(const char *pidfile, bool quiet)
 {
 	FILE *fp;
 	pid_t pid;
@@ -314,12 +314,14 @@ get_pid(const char *pidfile)
 		return -1;
 
 	if ((fp = fopen(pidfile, "r")) == NULL) {
-		eerror("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
+		if(!quiet)
+			eerror("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
 		return -1;
 	}
 
 	if (fscanf(fp, "%d", &pid) != 1) {
-		eerror("%s: no pid found in `%s'", applet, pidfile);
+		if(!quiet)
+			eerror("%s: no pid found in `%s'", applet, pidfile);
 		fclose(fp);
 		return -1;
 	}
@@ -413,7 +415,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 	}
 
 	if (pidfile) {
-		pid = get_pid(pidfile);
+		pid = get_pid(pidfile, false);
 		if (pid == -1)
 			return 0;
 	}
@@ -1079,7 +1081,7 @@ start_stop_daemon(int argc, char **argv)
 	}
 
 	if (pidfile)
-		pid = get_pid(pidfile);
+		pid = get_pid(pidfile, false);
 	else
 		pid = 0;
 
@@ -1352,7 +1354,7 @@ start_stop_daemon(int argc, char **argv)
 				alive = true;
 		} else {
 			if (pidfile) {
-				pid = get_pid(pidfile);
+				pid = get_pid(pidfile, true);
 				if (pid == -1) {
 					eerrorx("%s: did not "
 					    "create a valid"
