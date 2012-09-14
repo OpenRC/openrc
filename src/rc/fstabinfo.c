@@ -282,7 +282,7 @@ fstabinfo(int argc, char **argv)
 		END_ENT;
 
 		if (!TAILQ_FIRST(files))
-			eerrorx("%s: emtpy fstab", argv[0]);
+			eerrorx("%s: empty fstab", argv[0]);
 	}
 
 	if (!TAILQ_FIRST(files)) {
