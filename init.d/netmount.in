@@ -2,83 +2,27 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-description="Mounts network shares according to /etc/fstab."
-
-need_portmap()
-{
-	local opts=
-	local IFS="
-"
-	set -- $(fstabinfo --options --fstype nfs,nfs4)
-	for opts; do
-		case ,$opts, in
-			*,noauto,*|*,nolock,*);;
-			*) return 0;;
-		esac
-	done
-	return 1
-}
-
-need_idmap()
-{
-	local opts=
-	local IFS="
-"
-	set -- $(fstabinfo --options --fstype nfs4)
-	for opts; do
-		case ,$opts, in
-			*,noauto,*|*,nolock,*);;
-			*) return 0;;
-		esac
-	done
-	return 1
-}
+description="Mounts network shares, other than NFS, according to /etc/fstab."
+# We skip all NFS shares in this script because they require extra
+# daemons to be running on the client in order to work correctly.
+# It is best to allow nfs-utils to handle all nfs shares.
 
 depend()
 {
-	# Only have portmap as a dependency if there is a nfs mount in fstab
-	# that is set to mount at boot
-	local pmap=
-	if need_portmap; then
-		pmap="rpc.statd"
-		[ -x @SYSCONFDIR@/init.d/rpcbind ] \
-			&& pmap="$pmap rpcbind" \
-			|| pmap="$pmap portmap"
-	fi
-
-	# Only have rpc.idmapd as a dependency if there is a nfs4 mount in fstab
-	# that is set to mount at boot
-	if need_idmap; then
-		pmap="$pmap rpc.idmapd"
-	fi
-
 	config /etc/fstab
-	need net $pmap
+	need net
 	use afc-client amd autofs openvpn
-	use dns nfs nfsmount portmap rpcbind rpc.statd rpc.lockd
+	use dns
 	keyword -jail -vserver
 }
 
 start()
 {
-	local myneed= myuse= pmap="portmap" nfsmounts=
-	[ -x @SYSCONFDIR@/init.d/rpcbind ] && pmap="rpcbind"
-
 	local x= fs= rc=
 	for x in $net_fs_list $extra_net_fs_list; do
 		case "$x" in
 			nfs|nfs4)
-			# If the nfsmount script took care of the nfs
-			# filesystems, then there's no point in trying
-			# them twice
-			service_started nfsmount && continue
-
-			# Only try to mount NFS filesystems if portmap was
-			# started. This is to fix "hang" problems for new
-			# users who do not add portmap to the default runlevel.
-			if need_portmap && ! service_started "$pmap"; then
-				continue
-			fi
+			continue
 			;;
 		esac
 		fs="$fs${fs:+,}$x"
@@ -103,7 +47,14 @@ stop()
 	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
 	for x in $net_fs_list $extra_net_fs_list; do
-		fs="$fs${fs:+,}$x"
+		case "$x" in
+			nfs|nfs4)
+				continue
+				;;
+			*)
+				fs="$fs${fs:+,}$x"
+				;;
+		esac
 	done
 	if [ -n "$fs" ]; then
 		umount -at $fs || eerror "Failed to simply unmount filesystems"
@@ -112,7 +63,14 @@ stop()
 	eindent
 	fs=
 	for x in $net_fs_list $extra_net_fs_list; do
-		fs="$fs${fs:+|}$x"
+		case "$x" in
+			nfs|nfs4)
+				continue
+				;;
+			*)
+				fs="$fs${fs:+|}$x"
+				;;
+		esac
 	done
 	[ -n "$fs" ] && fs="^($fs)$"
 	do_unmount umount ${fs:+--fstype-regex} $fs --netdev
