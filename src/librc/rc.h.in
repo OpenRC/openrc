@@ -37,7 +37,9 @@ __BEGIN_DECLS
 #define RC_SYSCONFDIR		"@SYSCONFDIR@"
 #define RC_LIBDIR               "@PREFIX@/@LIB@/rc"
 #define RC_LIBEXECDIR           "@LIBEXECDIR@"
-#ifdef __linux__
+#if defined(PREFIX)
+#define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
+#elif defined(__linux__)
 #define RC_SVCDIR               "@PREFIX@/run/openrc"
 #else
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
