@@ -357,6 +357,9 @@ In a Gentoo Prefix installation, this variable contains the prefix
 offset. Otherwise it is undefined.
 .It Va RC_UNAME
 The result of `uname -s`.
+.It Va RC_CMD
+Name of the command like start, stop, restart, ...
+RC_CMD is one way to determine whether it's a restart or normal start/stop.
 .El
 .Sh FILES
 .Pp
@@ -442,6 +445,11 @@ depend()
 	fi
     fi
     need ${_need}
+}
+
+restart_pre() {
+	# Verify a config and abort the restart in case it's not valid
+	...
 }
 
 start_pre()
