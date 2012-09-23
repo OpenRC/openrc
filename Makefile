@@ -32,7 +32,7 @@ include ${MK}/git.mk
 _installafter:
 ifeq (${MKPREFIX},yes)
 	${INSTALL} -d ${DESTDIR}/${LIBEXECDIR}/init.d
-	else ifneq (${OS},Linux)
+else ifneq (${OS},Linux)
 	${INSTALL} -d ${DESTDIR}/${LIBEXECDIR}/init.d
 endif
 	${INSTALL} -d ${DESTDIR}/${LIBEXECDIR}/tmp
