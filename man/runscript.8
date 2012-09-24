@@ -447,11 +447,6 @@ depend()
     need ${_need}
 }
 
-restart_pre() {
-	# Verify a config and abort the restart in case it's not valid
-	...
-}
-
 # This function does any pre-start setup. If it fails, the service will
 # not be started.
 # If you need this function to behave differently for a restart command,

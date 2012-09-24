@@ -285,37 +285,15 @@ while [ -n "$1" ]; do
 				case $1 in
 						start|stop|status) verify_boot;;
 				esac
-
-				# FIXME: We may want to skip the start/stop _pre functions later
-				# restart_pre
-				if [ "${RC_CMD}" = "restart" ]; then
-					if [ "${1}" = "stop" -a "$(command -v "restart_pre")" = "restart_pre" ]; then
-						restart_pre || exit $?
-					fi
-				fi
-
-				# Execute _pre functions
 				if [ "$(command -v "$1_pre")" = "$1_pre" ]
 				then
 					"$1"_pre || exit $?
 				fi
-
-				# Execute the actual command/function, start, stop, ...
 				"$1" || exit $?
-
-				# restart_post
-				if [ "${RC_CMD}" = "restart" ]; then
-					if [ "${1}" = "start" -a "$(command -v "restart_post")" = "restart_post" ]; then
-						restart_post || exit $?
-					fi
-				fi
-
-				# Execute the _post functions
 				if [ "$(command -v "$1_post")" = "$1_post" ]
 				then
 					"$1"_post || exit $?
 				fi
-
 				shift
 				continue 2
 			else
