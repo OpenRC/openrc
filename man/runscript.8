@@ -37,7 +37,7 @@
 .Op Ar command ...
 .Sh DESCRIPTION
 .Nm
-is basically an interpreter for shell scripts which provide an easy interface
+is basically an interpreter for shell scripts which provides an easy interface
 to the often complex system commands and daemons.
 When a service runs a command it first loads its multiplexed configuration
 file, then its master configuration file, then
@@ -156,7 +156,7 @@ We provide this virtual service. For example, named provides dns.
 .It Ic config
 We should recalculate our dependencies if the listed files have changed.
 .It Ic keyword
-Tags a service with a keyword. Here's the keywords we currently understand:-
+Tags a service with a keyword. These are the keywords we currently understand:
 .Bl -tag -width indent
 .It Dv -shutdown
 Don't stop this service when shutting the system down.
@@ -358,7 +358,7 @@ offset. Otherwise it is undefined.
 .It Va RC_UNAME
 The result of `uname -s`.
 .It Va RC_CMD
-This contains the name of the command the init script is executing, such
+This contains the name of the command the service script is executing, such
 as start, stop, restart etc.
 .El
 .Sh FILES
