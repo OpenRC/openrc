@@ -13,10 +13,18 @@
 # This script should match the manpage as of 2012/03/12
 #
 
+DRYRUN=0
+
 warninvalid() {
 	printf "tmpfiles: ignoring invalid entry on line %d of \`%s'\n" "$LINENUM" "$FILE"
 	error=$(( error+1 ))
 } >&2
+
+dryrun_or_real() {
+	local dryrun=
+	[ $DRYRUN -eq 1 ] && dryrun=echo
+	$dryrun "$@"
+}
 
 relabel() {
 	local path
@@ -24,10 +32,10 @@ relabel() {
 
 	for path in ${paths}; do
 		if [ -e "$path" ]; then
-			[ $uid != '-' ] && chown $CHOPTS "$uid" "$path"
-			[ $gid != '-' ] && chgrp $CHOPTS "$gid" "$path"
-			[ $mode != '-' ] && chmod $CHOPTS "$mode" "$path"
-			[ -x /sbin/restorecon ] && restorecon $CHOPTS "$path"
+			[ $uid != '-' ] && dryrun_or_real chown $CHOPTS "$uid" "$path"
+			[ $gid != '-' ] && dryrun_or_real chgrp $CHOPTS "$gid" "$path"
+			[ $mode != '-' ] && dryrun_or_real chmod $CHOPTS "$mode" "$path"
+			[ -x /sbin/restorecon ] && dryrun_or_real restorecon $CHOPTS "$path"
 		fi
 	done
 }
@@ -35,13 +43,13 @@ relabel() {
 _b() {
 	# Create a block device node if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && mknod $path b ${arg%:*} ${arg#*:}
+	[ ! -e "$path" ] && dryrun_or_real mknod $path b ${arg%:*} ${arg#*:}
 }
 
 _c() {
 	# Create a character device node if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && mknod $path c ${arg%:*} ${arg#*:}
+	[ ! -e "$path" ] && dryrun_or_real mknod $path c ${arg%:*} ${arg#*:}
 }
 
 
@@ -52,7 +60,7 @@ _f() {
 	[ $CREATE -gt 0 ] || return 0
 
 	if [ ! -e "$path" ]; then
-		install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
+		dryrun_or_real install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
 		[ -n "$arg" ] && _w "$@"
 	fi
 }
@@ -63,7 +71,7 @@ _F() {
 
 	[ $CREATE -gt 0 ] || return 0
 
-	install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
+	dryrun_or_real install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
 	[ -n "$arg" ] && _w "$@"
 }
 
@@ -74,7 +82,7 @@ _d() {
 	[ $CREATE -gt 0 ] || return 0
 
 	if [ ! -d "$path" ]; then
-		install -d -m"$mode" -o"$uid" -g"$gid" "$path"
+		dryrun_or_real install -d -m"$mode" -o"$uid" -g"$gid" "$path"
 	fi
 }
 
@@ -83,18 +91,18 @@ _D() {
 	local path=$1 mode=$2 uid=$3 gid=$4
 
 	if [ -d "$path" ] && [ $REMOVE -gt 0 ]; then
-		find "$path" -mindepth 1 -maxdepth 1 -xdev -exec rm -rf {} +
+		dryrun_or_real find "$path" -mindepth 1 -maxdepth 1 -xdev -exec rm -rf {} +
 	fi
 
 	if [ $CREATE -gt 0 ]; then
-		install -d -m"$mode" -o"$uid" -g"$gid" "$path"
+		dryrun_or_real install -d -m"$mode" -o"$uid" -g"$gid" "$path"
 	fi
 }
 
 _L() {
 	# Create a symlink if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && ln -s "$args" "$path"
+	[ ! -e "$path" ] && dryrun_or_real ln -s "$args" "$path"
 }
 
 _p() {
@@ -104,8 +112,8 @@ _p() {
 	[ $CREATE -gt 0 ] || return 0
 
 	if [ ! -p "$path" ]; then
-		mkfifo -m$mode "$path"
-		chown "$uid:$gid" "$path"
+		dryrun_or_real mkfifo -m$mode "$path"
+		dryrun_or_real chown "$uid:$gid" "$path"
 	fi
 }
 
@@ -129,9 +137,9 @@ _r() {
 
 	for path in ${paths}; do
 		if [ -f "$path" ]; then
-			rm -f "$path"
+			dryrun_or_real rm -f "$path"
 		elif [ -d "$path" ]; then
-			rmdir "$path"
+			dryrun_or_real rmdir "$path"
 		fi
 	done
 }
@@ -145,14 +153,20 @@ _R() {
 	[ $REMOVE -gt 0 ] || return 0
 
 	for path in ${paths}; do
-		[ -d "$path" ] && rm -rf --one-file-system "$path"
+		[ -d "$path" ] && dryrun_or_real rm -rf --one-file-system "$path"
 	done
 }
 
 _w() {
 	# Write the argument parameter to a file, if it exists.
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ -f "$path" ] && echo "$arg" >>"$path"
+	if [ -f "$path" ]; then
+		if [ $DRYRUN -eq 1 ]; then
+			echo "echo \"$arg\" >>\"$path\""
+		else
+			echo "$arg" >>"$path"
+		fi
+	fi
 }
 
 _z() {
@@ -212,6 +226,11 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
+if [ $(( CLEAN )) -eq 1 ] ; then
+	printf '%s clean mode is not implemented\n' "${0##*/}"
+	exit 1
+fi
+
 if [ $(( CREATE + REMOVE )) -ne 1 ] ; then
 	printf 'usage: %s [--create] [--remove] [--clean] [--verbose] [--dry-run]\n' "${0##*/}"
 	exit 1
@@ -247,6 +266,7 @@ for FILE in $tmpfiles_d ; do
 		# whine about invalid entries
 		case $1 in
 			f|F|w|d|D|p|L|c|b|x|r|R|z|Z) ;;
+			\#) continue ;; 
 			*) warninvalid ; continue ;;
 		esac
 
@@ -275,9 +295,9 @@ for FILE in $tmpfiles_d ; do
 		set -- "$path" "$mode" "$uid" "$gid" "$age" "$arg"
 
 		[ "$VERBOSE" -eq "1" ] && echo _$cmd "$@"
+		_$cmd "$@"
+		rc=$?
 		if [ "${DRYRUN}" -eq "0" ]; then
-			_$cmd "$@"
-			rc=$?
 			[ $rc -ne 0 ] && error=$((error + 1))
 		fi
 	done <$FILE
