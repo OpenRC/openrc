@@ -1,0 +1,18 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 1999-2012 Gentoo Foundation
+# Released under the 2-clause BSD license.
+
+description="Create tmpfiles.d entries (boot)"
+
+depend()
+{
+	need localmount
+}
+
+start()
+{
+	ebegin "${description/Create/Creating}"
+	@LIBEXECDIR@/sh/tmpfiles.sh --create ${tmpfiles_opts}
+	eend $?
+	return 0
+}

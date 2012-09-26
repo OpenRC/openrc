@@ -1,0 +1,3 @@
+# Extra options for tmpfiles.sh
+#tmpfiles_opts="--verbose"
+tmpfiles_opts=""

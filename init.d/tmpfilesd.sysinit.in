@@ -1,0 +1,20 @@
+#!@PREFIX@/sbin/runscript
+# Copyright 1999-2012 Gentoo Foundation
+# Released under the 2-clause BSD license.
+
+description="Create tmpfiles.d entries (sysinit)"
+
+depend()
+{
+	# Convert to 'need dev' when the new udev is ready, for OpenRC 0.11
+	#need dev-mount
+	need dev
+}
+
+start()
+{
+	ebegin "${description/Create/Creating}"
+	@LIBEXECDIR@/sh/tmpfiles.sh --create ${tmpfiles_opts}
+	eend $?
+	return 0
+}

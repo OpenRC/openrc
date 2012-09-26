@@ -1,6 +1,7 @@
 DIR=	${INITDIR}
 SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in netmount.in \
 	root.in savecache.in swap.in swapfiles.in \
+	tmpfilesd.boot.in tmpfilesd.sysinit.in \
 	swclock.in sysctl.in urandom.in ${SRCS-${OS}}
 BIN=	${OBJS}
 

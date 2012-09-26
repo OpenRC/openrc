@@ -1,5 +1,5 @@
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname localmount urandom ${CONF-${OS}}
+CONF=	bootmisc fsck hostname localmount urandom tmpfilesd ${CONF-${OS}}
 
 ifeq (${MKNET},)
 CONF+= network staticroute

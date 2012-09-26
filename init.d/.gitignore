@@ -41,3 +41,5 @@ syslogd
 termencoding
 ttys
 wscons
+tmpfilesd.boot
+tmpfilesd.sysinit

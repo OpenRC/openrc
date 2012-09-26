@@ -266,7 +266,7 @@ for FILE in $tmpfiles_d ; do
 		# whine about invalid entries
 		case $1 in
 			f|F|w|d|D|p|L|c|b|x|r|R|z|Z) ;;
-			\#) continue ;; 
+			\#) continue ;;
 			*) warninvalid ; continue ;;
 		esac
 
