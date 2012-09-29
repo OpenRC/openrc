@@ -18,7 +18,7 @@ l3:3:wait:/sbin/rc default
 l4:4:wait:/sbin/rc default
 l5:5:wait:/sbin/rc default
 l6:6:wait:/sbin/rc reboot
-l6r:6:wait:/sbin/reboot -dk
+l6r:6:wait:/sbin/reboot -d
 #z6:6:respawn:/sbin/sulogin
 
 # new-style single-user
