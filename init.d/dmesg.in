@@ -7,7 +7,7 @@ description="Set the dmesg level for a cleaner boot"
 depend()
 {
 	before dev modules
-	keyword -prefix -vserver
+	keyword -lxc -prefix -vserver
 }
 
 start()
