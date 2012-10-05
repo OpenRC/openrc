@@ -28,6 +28,8 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/utsname.h>
+
 #include "librc.h"
 
 #define GENDEP          RC_LIBEXECDIR "/sh/gendepends.sh"
@@ -747,12 +749,15 @@ rc_deptree_update(void)
 	size_t i, k, l;
 	bool retval = true;
 	const char *sys = rc_sys();
+	struct utsname uts;
 
 	/* Some init scripts need RC_LIBEXECDIR to source stuff
 	   Ideally we should be setting our full env instead */
 	if (!getenv("RC_LIBEXECDIR"))
 		setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 0);
 
+	if (uname(&uts) == 0)
+		setenv("RC_UNAME", uts.sysname, 1);
 	/* Phase 1 - source all init scripts and print dependencies */
 	if (!(fp = popen(GENDEP, "r")))
 		return false;
