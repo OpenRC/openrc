@@ -223,20 +223,20 @@ checkpath(int argc, char **argv)
 	struct group *gr = NULL;
 	inode_t type = inode_unknown;
 	int retval = EXIT_SUCCESS;
-	bool trunc = 0;
-	bool chowner = 0;
+	bool trunc = false;
+	bool chowner = false;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
 		case 'D':
-			trunc = 1;
+			trunc = true;
 		case 'd':
 			type = inode_dir;
 			break;
 		case 'F':
-			trunc = 1;
+			trunc = true;
 		case 'f':
 			type = inode_file;
 			break;
@@ -249,7 +249,7 @@ checkpath(int argc, char **argv)
 				    applet, optarg);
 			break;
 		case 'o':
-			chowner = 1;
+			chowner = true;
 			if (parse_owner(&pw, &gr, optarg) != 0)
 				eerrorx("%s: owner `%s' not found",
 				    applet, optarg);
