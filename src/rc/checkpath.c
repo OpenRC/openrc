@@ -60,7 +60,8 @@ extern const char *applet;
  * See systemd's src/label.c:label_mkdir
  */
 static int
-do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc)
+do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
+		bool trunc, bool chowner)
 {
 	struct stat st;
 	int fd, flags;
@@ -139,7 +140,7 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type, bool trunc
 		}
 	}
 
-	if (st.st_uid != uid || st.st_gid != gid) {
+	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
 		if (st.st_dev || st.st_ino)
 			einfo("%s: correcting owner", path);
 		if (chown(path, uid, gid)) {
@@ -223,6 +224,7 @@ checkpath(int argc, char **argv)
 	inode_t type = inode_unknown;
 	int retval = EXIT_SUCCESS;
 	bool trunc = 0;
+	bool chowner = 0;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
@@ -247,6 +249,7 @@ checkpath(int argc, char **argv)
 				    applet, optarg);
 			break;
 		case 'o':
+			chowner = 1;
 			if (parse_owner(&pw, &gr, optarg) != 0)
 				eerrorx("%s: owner `%s' not found",
 				    applet, optarg);
@@ -272,7 +275,7 @@ checkpath(int argc, char **argv)
 		gid = gr->gr_gid;
 
 	while (optind < argc) {
-		if (do_check(argv[optind], uid, gid, mode, type, trunc))
+		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner))
 			retval = EXIT_FAILURE;
 		optind++;
 	}
