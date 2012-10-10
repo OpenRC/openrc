@@ -119,10 +119,8 @@ bridge_pre_start()
 				return 1
 			fi
 			# The interface is known to exist now
-			_set_flag promisc
 			_up
 			if ! brctl addif "${BR_IFACE}" "${x}"; then
-				_set_flag -promisc
 				eend 1
 				return 1
 			fi
@@ -144,6 +142,7 @@ bridge_pre_start()
 	) || return 1
 
 	# Bring up the bridge
+	_set_flag promisc
 	_up
 }
 

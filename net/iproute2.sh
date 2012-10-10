@@ -10,12 +10,12 @@ iproute2_depend()
 
 _up()
 {
-	ip link set "${IFACE}" up
+	ip link set dev "${IFACE}" up
 }
 
 _down()
 {
-	ip link set "${IFACE}" down
+	ip link set dev "${IFACE}" down
 }
 
 _exists()
@@ -57,7 +57,7 @@ _set_flag()
 		flag=${flag#-}
 		opt="off"
 	fi
-	ip link set "${IFACE}" "${flag}" "${opt}"
+	ip link set dev "${IFACE}" "${flag}" "${opt}"
 }
 
 _get_mac_address()
@@ -79,7 +79,7 @@ _get_mac_address()
 
 _set_mac_address()
 {
-	ip link set "${IFACE}" address "$1"
+	ip link set dev "${IFACE}" address "$1"
 }
 
 _get_inet_addresses()
@@ -274,12 +274,12 @@ iproute2_pre_start()
 	# MTU support
 	local mtu=
 	eval mtu=\$mtu_${IFVAR}
-	[ -n "${mtu}" ] && ip link set "${IFACE}" mtu "${mtu}"
+	[ -n "${mtu}" ] && ip link set dev "${IFACE}" mtu "${mtu}"
 
 	# TX Queue Length support
 	local len=
 	eval len=\$txqueuelen_${IFVAR}
-	[ -n "${len}" ] && ip link set "${IFACE}" txqueuelen "${len}"
+	[ -n "${len}" ] && ip link set dev "${IFACE}" txqueuelen "${len}"
 
 	return 0
 }
