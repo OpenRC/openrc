@@ -5,6 +5,11 @@ bonding_depend()
 {
 	before interface macchanger
 	program /sbin/ifconfig /bin/ifconfig
+	# If you do not have sysfs, you MUST have this binary instead for ioctl
+	# Also you will loose some functionality that cannot be done via sysfs:
+	if [ ! -d /sys/class/net ]; then
+		program /sbin/ifenslave
+	fi
 }
 
 _config_vars="$_config_vars slaves"
@@ -38,6 +43,10 @@ bonding_pre_start()
 		fi
 	fi
 
+	if [ ! -d /sys/class/net ]; then
+		ewarn "sysfs is not available! You will be unable to create new bonds, or change dynamic parameters!"
+	fi
+
 	# We can create the interface name we like now, but this
 	# requires sysfs
 	if ! _exists && [ -d /sys/class/net ]; then
@@ -55,7 +64,7 @@ bonding_pre_start()
 
 	# Configure the bond mode, then we can reloop to ensure we configure
 	# All other options
-	for x in /sys/class/net/"${IFACE}"/bonding/mode; do
+	[ -d /sys/class/net ] && for x in /sys/class/net/"${IFACE}"/bonding/mode; do
 		[ -f "${x}" ] || continue
 		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
@@ -66,7 +75,7 @@ bonding_pre_start()
 		fi
 	done
 	# Nice and dynamic for remaining options:)
-	for x in /sys/class/net/"${IFACE}"/bonding/*; do
+	[ -d /sys/class/net ] && for x in /sys/class/net/"${IFACE}"/bonding/*; do
 		[ -f "${x}" ] || continue
 		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
@@ -154,7 +163,7 @@ bonding_pre_start()
 			fi
 		done
 	else
-		/sbin/ifenslave "${IFACE}" ${slaves} >/dev/null
+		ifenslave "${IFACE}" ${slaves} >/dev/null
 	fi
 	eend $?
 
@@ -187,7 +196,7 @@ bonding_stop()
 			echo -"${s}" > /sys/class/net/"${IFACE}"/bonding/slaves
 		done
 	else
-		/sbin/ifenslave -d "${IFACE}" ${slaves}
+		ifenslave -d "${IFACE}" ${slaves}
 	fi
 
 	# reset all slaves
