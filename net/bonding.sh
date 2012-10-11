@@ -4,6 +4,7 @@
 bonding_depend()
 {
 	before interface macchanger
+	program /sbin/ifconfig /bin/ifconfig
 }
 
 _config_vars="$_config_vars slaves"
@@ -22,6 +23,9 @@ bonding_pre_start()
 
 	eval primary="\$primary_${IFVAR}"
 	unset primary_${IFVAR}
+
+	eval subsume="\$subsume_${IFVAR}"
+	unset subsume_${IFVAR}
 
 
 	[ -z "${slaves}" ] && return 0
@@ -84,15 +88,44 @@ bonding_pre_start()
 		_exists true || return 1
 	done
 
-	# Must force the slaves to a particular state before adding them
-	for IFACE in ${slaves}; do
-		_delete_addresses
-		_down
-	done
+	# Unless we are subsuming an existing interface (NFS root), we down
+	# slave interfaces to work around bugs supposedly in some chipsets
+	# that cause failure to enslave from other states.
+	if [ -z "${subsume}" ]; then
+		for IFACE in ${slaves}; do
+			_delete_addresses
+			_down
+		done
+	fi
 	)
 
-	# now force the master to up
-	_up
+	# Now force the master to up
+	#  - First test for interface subsume request (required for NFS root)
+	if [ -n "${subsume}" ]; then
+		einfo "Subsuming ${subsume} interface characteristics."
+		eindent
+		local oiface=${IFACE}
+		IFACE=${subsume}
+		local addr="$(_get_inet_address)"
+		einfo "address: ${addr}"
+		IFACE=${oiface}
+		unset oiface
+		eoutdent
+		# subsume (presumably kernel auto-)configured IP
+		ifconfig ${IFACE} ${addr} up
+	else
+		# warn if root on nfs and no subsume interface supplied
+		local root_fs_type=$(mountinfo -s /)
+		if [ "${root_fs_type}" == "nfs" ]; then
+			warn_nfs=1
+			ewarn "NFS root detected!!!"
+			ewarn " If your system crashes here, /etc/conf.d/net needs"
+			ewarn " subsume_${IFACE}=\"<iface>\" ... where <iface> is the"
+			ewarn " existing, (usually kernel auto-)configured interface."
+		fi
+		# up the interface
+		_up
+    fi
 
 	# finally add in slaves
 	# things needed in the process, and if they are done by ifenslave, openrc, and/or the kernel.
@@ -131,6 +164,11 @@ bonding_pre_start()
 bonding_stop()
 {
 	_is_bond || return 0
+
+	# Wipe subsumed interface
+	if [ -n "${subsume}" ]; then
+		ifconfig ${subsume} 0.0.0.0
+	fi
 
 	local slaves= s=
 	slaves=$( \
