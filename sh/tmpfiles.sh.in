@@ -61,7 +61,7 @@ _f() {
 
 	if [ ! -e "$path" ]; then
 		dryrun_or_real install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
-		[ -n "$arg" ] && _w "$@"
+		[ -z "$arg" ] || _w "$@"
 	fi
 }
 
@@ -72,7 +72,7 @@ _F() {
 	[ $CREATE -gt 0 ] || return 0
 
 	dryrun_or_real install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
-	[ -n "$arg" ] && _w "$@"
+	[ -z "$arg" ] || _w "$@"
 }
 
 _d() {
