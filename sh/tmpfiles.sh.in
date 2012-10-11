@@ -253,46 +253,34 @@ for FILE in $tmpfiles_d ; do
 
 	# XXX: Upstream says whitespace is NOT permitted in the Path argument.
 	# But IS allowed when globs are expanded for the x/r/R/z/Z types.
-	while read line; do
+	while read cmd path mode uid gid age arg; do
 		LINENUM=$(( LINENUM+1 ))
 
-		# This will skip over comments and empty lines
-		set -- $line
-
 		# Unless we have both command and path, skip this line.
-		if [ -z "$1" -o -z "$2" ]; then
+		if [ -z "$cmd" -o -z "$path" ]; then
 			continue
 		fi
 
 		# whine about invalid entries
-		case $1 in
+		case $cmd in
 			f|F|w|d|D|p|L|c|b|x|r|R|z|Z) ;;
 			\#) continue ;;
 			*) warninvalid ; continue ;;
 		esac
 
-		cmd=$1
-		path=$2
-
 		# fall back on defaults when parameters are passed as '-'
-		if [ "$3" = '-' -o "$3" = '' ]; then
-			case ${1} in
+		if [ "$mode" = '-' -o "$mode" = '' ]; then
+			case "$cmd" in
 				p|f|F) mode=0644 ;;
 				d|D) mode=0755 ;;
 				z|Z|x|r|R|L) ;;
 			esac
-		else
-			mode=$3
 		fi
-		uid=$4
-		gid=$5
-		age=$6
-		arg=$7
 
-		[ "${4}" = '-' -o "${4}" = '' ] && uid=0
-		[ "${5}" = '-' -o "${5}" = '' ] && gid=0
-		[ "${6}" = '-' -o "${6}" = '' ] && age=0
-		[ "${7}" = '-' -o "${7}" = '' ] && arg=''
+		[ "$uid" = '-' -o "$uid" = '' ] && uid=0
+		[ "$gid" = '-' -o "$gid" = '' ] && gid=0
+		[ "$age" = '-' -o "$age" = '' ] && age=0
+		[ "$arg" = '-' -o "$arg" = '' ] && arg=''
 		set -- "$path" "$mode" "$uid" "$gid" "$age" "$arg"
 
 		[ "$VERBOSE" -eq "1" ] && echo _$cmd "$@"
