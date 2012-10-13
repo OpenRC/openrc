@@ -646,6 +646,17 @@
 # ppp devices - we need to depend function on the bonded interfaces
 #rc_net_bond0_need="net.eth0 net.eth1"
 
+# Bonding subsume support (prevents crashes for root-on-NFS)
+#  - Only tested in the default bonding mode ('active-backup') with
+# IPv4
+#  - Only subsumes basic interface characteristics (IP, netmask) and
+#    excludes additional routes, interface properties such as MTU,
+#    interface-associated netfilter rules, etc.
+# In the example below, the (usually kernel-autoconfigured)
+# 'eth0' interface is a member of bond0, which subsumes the
+# existing interface configuration without upsetting NFS.
+#slaves_bond0="eth0 eth1"
+#subsume_bond0="eth0"
 
 #-----------------------------------------------------------------------------
 # Classical IP over ATM
