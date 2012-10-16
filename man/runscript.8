@@ -454,6 +454,15 @@ depend()
 # This also applies to start_post, stop_pre and stop_post.
 start_pre()
 {
+	if [ "$RC_CMD" = restart ]; then
+		# This block will only execute for a restart command. Use a
+		# structure like this if you need special processing for a
+		# restart which you do not need for a normal start.
+		# The function can also fail from here, which will mean that a
+		# restart can fail.
+		# This logic can also be used in start_post, stop_pre and
+		# stop_post.
+	fi
     # Ensure that our dirs are correct
     checkpath --dir --owner foo:foo --mode 0664 \\
 	/var/run/foo /var/cache/foo
