@@ -196,3 +196,5 @@ stop()
 
 	return 0
 }
+
+# vim: ft=sh
