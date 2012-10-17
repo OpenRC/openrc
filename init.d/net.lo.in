@@ -19,7 +19,7 @@ depend()
 	local IFVAR=$(shell_var "${IFACE}")
 
 	need localmount
-	if [ "$RC_UNAME" = Linux ]; then
+	if [ "$RC_UNAME" = Linux -a "$IFACE" != lo ]; then
 		need sysfs
 	fi
 	after bootmisc
