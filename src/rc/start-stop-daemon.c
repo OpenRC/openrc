@@ -314,13 +314,13 @@ get_pid(const char *pidfile, bool quiet)
 		return -1;
 
 	if ((fp = fopen(pidfile, "r")) == NULL) {
-		if(!quiet)
+		if (!quiet)
 			eerror("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
 		return -1;
 	}
 
 	if (fscanf(fp, "%d", &pid) != 1) {
-		if(!quiet)
+		if (!quiet)
 			eerror("%s: no pid found in `%s'", applet, pidfile);
 		fclose(fp);
 		return -1;
