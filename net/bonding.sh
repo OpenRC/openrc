@@ -74,12 +74,23 @@ bonding_pre_start()
 			eerror "Failed to configure $n (${n}_${IFVAR})"
 		fi
 	done
+	# Configure link monitoring
+	for x in /sys/class/net/"${IFACE}"/bonding/miimon; do
+		[ -f "${x}" ] || continue
+		n=${x##*/}
+		eval s=\$${n}_${IFVAR}
+		if [ -n "${s}" ]; then
+			einfo "Setting ${n}: ${s}"
+			echo "${s}" >"${x}" || \
+			eerror "Failed to configure $n (${n}_${IFVAR})"
+		fi
+	done
 	# Nice and dynamic for remaining options:)
 	[ -d /sys/class/net ] && for x in /sys/class/net/"${IFACE}"/bonding/*; do
 		[ -f "${x}" ] || continue
 		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
-		[ "${n}" != "mode" ] || continue
+		[ "${n}" != "mode" -o "${n}" != "miimon" ] || continue
 		if [ -n "${s}" ]; then
 			einfo "Setting ${n}: ${s}"
 			echo "${s}" >"${x}" || \
