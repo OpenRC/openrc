@@ -11,7 +11,7 @@ depend()
 
 start()
 {
-	ebegin "${description/Create/Creating}"
+	ebegin "Creating ${description#Create }"
 	@LIBEXECDIR@/sh/tmpfiles.sh --create ${tmpfiles_opts}
 	eend $?
 	return 0
