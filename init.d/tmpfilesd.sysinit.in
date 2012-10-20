@@ -8,7 +8,7 @@ depend()
 {
 	# Convert to 'need dev' when the new udev is ready, for OpenRC 0.11
 	#need dev-mount
-	need dev
+	use dev
 }
 
 start()
