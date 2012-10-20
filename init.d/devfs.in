@@ -5,8 +5,8 @@
 description="Mount system critical filesystems in /dev."
 
 depend() {
-	use dev-mount udev-mount
-	before udev mdev
+	use dev-mount
+	before dev
 	keyword -prefix -vserver
 }
 
