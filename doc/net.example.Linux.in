@@ -1130,6 +1130,11 @@
 # Hypothetical network card that requires a change-eeprom toggle to enable flashing
 #ethtool_order_eth0="change-eeprom flash change pause coalesce ring offload nfc rxfh-indir ntuple"
 
+# Set carrier detection timeout.
+# This allows the interface to only start if there is a carrier. The
+# default setting is 0 which means to ignore this.
+# carrier_timeout_eth0=0
+
 ##############################################################################
 # ADVANCED CONFIGURATION
 #
