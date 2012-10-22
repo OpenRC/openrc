@@ -368,6 +368,11 @@
 #rc-update add devd boot
 #rc
 
+# Set carrier detection timeout.
+# This allows the interface to only start if there is a carrier. The
+# default setting is 0 which means to ignore this.
+# carrier_timeout_eth0=0
+
 ##############################################################################
 # ADVANCED CONFIGURATION
 #
