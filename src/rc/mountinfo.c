@@ -390,10 +390,7 @@ mountinfo(int argc, char **argv)
 	char real_path[PATH_MAX + 1];
 	int opt;
 	int result;
-	bool quiet;
 	char *this_path;
-
-	quiet = rc_yesno(getenv("EINFO_QUIET"));
 
 #define DO_REG(_var)							      \
 	if (_var) free(_var);						      \
@@ -483,7 +480,7 @@ mountinfo(int argc, char **argv)
 		if (skip_point_regex &&
 		    regexec(skip_point_regex, s->value, 0, NULL, 0) == 0)
 			continue;
-		if (! quiet)
+		if (! rc_yesno(getenv("EINFO_QUIET")))
 			printf("%s\n", s->value);
 		result = EXIT_SUCCESS;
 	}
