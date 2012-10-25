@@ -10,7 +10,6 @@ description="Mounts network shares, other than NFS, according to /etc/fstab."
 depend()
 {
 	config /etc/fstab
-	need net
 	use afc-client amd autofs openvpn
 	use dns
 	keyword -jail -prefix -vserver
