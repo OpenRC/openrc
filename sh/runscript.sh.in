@@ -193,11 +193,24 @@ unset _conf_d
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"
 
-if [ "$RC_UNAME" = "Linux" -a "$1" = "start" ]; then
-	if [ -d /sys/fs/cgroup/openrc ]; then
-		mkdir -p /sys/fs/cgroup/openrc/${RC_SVCNAME}
-		echo $$ > /sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks
+if [ "$RC_UNAME" = "Linux" -a "$RC_SYS" != "PREFIX" -a "$1" = "start" ]; then
+	openrc_cgroup=/sys/fs/cgroup/openrc
+	if [ -d ${openrc_cgroup} ]; then
+		cgroup=${openrc_cgroup}/${RC_SVCNAME}
+		mkdir -p ${cgroup}
+		[ -f "${cgroup}"/tasks ] && echo 0 > "${cgroup}"/tasks
 	fi
+
+	shares="${rc_cgroup_cpu_shares:-$RC_CGROUP_CPU_SHARES}"
+	if [ -n "${shares}" -a -d /sys/fs/cgroup/cpu ]; then
+		cgroup=/sys/fs/cgroup/cpu/openrc_${RC_SVCNAME}
+		if [ ! -d ${cgroup} ]; then
+			mkdir -p ${cgroup}
+		fi
+		[ -f "${cgroup}"/cpu.shares ] && echo ${shares} > "${cgroup}"/cpu.shares
+		[ -f "${cgroup}"/tasks ] && echo 0 >> "${cgroup}"/tasks
+	fi
+
 	#todo: add processes to cgroups based on settings in conf.d
 fi
 
