@@ -133,7 +133,7 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
 	}
 
 	if (mode && (st.st_mode & 0777) != mode) {
-		einfo("%s: correcting mode", applet);
+		einfo("%s: correcting mode", path);
 		if (chmod(path, mode)) {
 			eerror("%s: chmod: %s", applet, strerror(errno));
 			return -1;
