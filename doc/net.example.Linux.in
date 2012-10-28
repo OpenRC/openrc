@@ -126,6 +126,13 @@
 # tables you may have to set a global metric as the due to a simple read of
 # the routing table taking over a minute at a time.
 
+# Most drivers that report carrier status function correctly, but some do not
+# One of these faulty drivers is for the Intel e1000 network card, but only
+# at boot time. To get around this you may alter the carrier_timeout value for
+# the interface. 0 is disable and any other number of seconds is how
+# long we wait for carrier. The current default is disabled.
+#carrier_timeout_eth0=0
+
 # You may wish to disable the interface being brought down when stopping.
 # This is only of use for WakeOnLan.
 #ifdown_eth0="NO"
@@ -1129,11 +1136,6 @@
 
 # Hypothetical network card that requires a change-eeprom toggle to enable flashing
 #ethtool_order_eth0="change-eeprom flash change pause coalesce ring offload nfc rxfh-indir ntuple"
-
-# Set carrier detection timeout.
-# This allows the interface to only start if there is a carrier. The
-# default setting is 0 which means to ignore this.
-# carrier_timeout_eth0=0
 
 ##############################################################################
 # ADVANCED CONFIGURATION
