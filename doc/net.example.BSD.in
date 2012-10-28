@@ -80,9 +80,9 @@
 # Most drivers that report carrier status function correctly, but some do not
 # One of these faulty drivers is for the Intel e1000 network card, but only
 # at boot time. To get around this you may alter the carrier_timeout value for
-# the interface. -1 is disable, 0 is infinite and any other number of seconds
-# is how long we wait for carrier. The current default is 3 seconds
-#carrier_timeout_eth0=-1
+# the interface. 0 is disable and any other number of seconds is how
+# long we wait for carrier. The current default is disabled.
+#carrier_timeout_eth0=0
 
 # You may wish to disable the interface being brought down when stopping.
 # This is only of use for WakeOnLan.
@@ -367,11 +367,6 @@
 # To enable this,  simple add devd to the boot runlevel
 #rc-update add devd boot
 #rc
-
-# Set carrier detection timeout.
-# This allows the interface to only start if there is a carrier. The
-# default setting is 0 which means to ignore this.
-# carrier_timeout_eth0=0
 
 ##############################################################################
 # ADVANCED CONFIGURATION
