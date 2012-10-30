@@ -94,6 +94,10 @@
 # These variables are documented here, but should be configured in
 # /etc/conf.d/foo for service foo and NOT enabled here unless you
 # really want them to work on a global basis.
+# If your service has characters in its name which are not legal in
+# shell variable names and you configure the variables for it in this
+# file, those characters should be replaced with underscores in the
+# variable names as shown below.
 
 # Some daemons are started and stopped via start-stop-daemon.
 # We can set some things on a per service basis, like the nicelevel.
@@ -115,6 +119,13 @@
 #rc_foo_config="/etc/foo"
 #rc_foo_need="openvpn"
 #rc_foo_after="clock"
+
+# Below is an example for service foo-bar. Note that the '-' is illegal
+# in a shell variable name, so we convert it to an underscore.
+# example for service foo-bar.
+#rc_foo_bar_config="/etc/foo-bar"
+#rc_foo_bar_need="openvpn"
+#rc_foo_bar_after="clock"
 
 # You can also remove dependencies.
 # This is mainly used for saying which servies do NOT provide net.
