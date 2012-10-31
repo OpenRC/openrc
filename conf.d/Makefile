@@ -1,5 +1,5 @@
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname localmount netmount urandom tmpfilesd \
+CONF=	bootmisc fsck hostname localmount netmount urandom tmpfiles \
 		${CONF-${OS}}
 
 ifeq (${MKNET},)
