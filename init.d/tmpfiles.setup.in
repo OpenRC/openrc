@@ -2,7 +2,7 @@
 # Copyright 1999-2012 Gentoo Foundation
 # Released under the 2-clause BSD license.
 
-description="Create tmpfiles.d entries (boot)"
+description="set up tmpfiles.d entries"
 
 depend()
 {
@@ -11,8 +11,8 @@ depend()
 
 start()
 {
-	ebegin "Creating ${description#Create }"
-	@LIBEXECDIR@/sh/tmpfiles.sh --create ${tmpfiles_opts}
+	ebegin "setting up tmpfiles.d entries"
+	@LIBEXECDIR@/sh/tmpfiles.sh --create --remove ${tmpfiles_opts}
 	eend $?
 	return 0
 }
