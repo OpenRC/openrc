@@ -1137,6 +1137,13 @@
 # Hypothetical network card that requires a change-eeprom toggle to enable flashing
 #ethtool_order_eth0="change-eeprom flash change pause coalesce ring offload nfc rxfh-indir ntuple"
 
+#-----------------------------------------------------------------------------
+# Firewalld support
+# If you are using the firewalld daemon to configure your firewall
+# settings and you have specific zones you want to apply to your
+# interfaces, you can do this here.
+#firewalld_zone_eth0="myzone"
+
 ##############################################################################
 # ADVANCED CONFIGURATION
 #
