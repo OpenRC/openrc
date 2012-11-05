@@ -232,7 +232,7 @@ if [ $(( CLEAN )) -eq 1 ] ; then
 	exit 1
 fi
 
-if [ $(( CREATE + REMOVE )) -ne 1 ] ; then
+if [ "$CREATE$REMOVE" == '00' ]; then
 	printf 'usage: %s [--create] [--remove] [--clean] [--verbose] [--dry-run]\n' "${0##*/}"
 	exit 1
 fi
