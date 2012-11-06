@@ -29,7 +29,7 @@ cleanup_tmp_dir()
 		# Faster than raw find
 		if ! rm -rf -- [!ajlq\.]* 2>/dev/null ; then
 			# Blah, too many files
-			find . -maxdepth 1 -name '[^ajlq\.]*' -exec rm -rf -- {} +
+			find . -maxdepth 1 -name '[!ajlq\.]*' -exec rm -rf -- {} +
 		fi
 
 		# pam_mktemp creates a .private directory within which
