@@ -27,7 +27,7 @@ cleanup_tmp_dir()
 		ebegin "Wiping $dir directory"
 
 		# Faster than raw find
-		if ! rm -rf -- [^ajlq\.]* 2>/dev/null ; then
+		if ! rm -rf -- [!ajlq\.]* 2>/dev/null ; then
 			# Blah, too many files
 			find . -maxdepth 1 -name '[^ajlq\.]*' -exec rm -rf -- {} +
 		fi
