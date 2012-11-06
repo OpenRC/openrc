@@ -136,7 +136,7 @@ bonding_pre_start()
 	else
 		# warn if root on nfs and no subsume interface supplied
 		local root_fs_type=$(mountinfo -s /)
-		if [ "${root_fs_type}" == "nfs" ]; then
+		if [ "${root_fs_type}" = "nfs" ]; then
 			warn_nfs=1
 			ewarn "NFS root detected!!!"
 			ewarn " If your system crashes here, /etc/conf.d/net needs"
