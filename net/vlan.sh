@@ -117,7 +117,7 @@ vlan_post_start()
 			/proc/net/vlan/config )"
 		mark_service_started "net.${ifname}"
 		(
-			export RC_SVCNAME="net.${ifname}"
+			RC_SVCNAME="net.${ifname}" ; export RC_SVCNAME
 			start
 		) || mark_service_stopped "net.${ifname}"
 	done
@@ -134,7 +134,7 @@ vlan_pre_stop()
 	for vlan in $(_get_vlans); do
 		einfo "Removing VLAN ${vlan##*.} from ${IFACE}"
 		(
-			export RC_SVCNAME="net.${vlan}"
+			RC_SVCNAME="net.${vlan}" ; export RC_SVCNAME
 			stop
 		) && {
 			mark_service_stopped "net.${vlan}"
