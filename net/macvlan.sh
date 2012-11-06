@@ -12,7 +12,7 @@ macvlan_depend()
 
 _is_macvlan()
 {
-	[ -n "$(export RC_SVCNAME="net.${IFACE}"; service_get_value macvlan)" ]
+	[ -n "$(RC_SVCNAME="net.${IFACE}"; export RC_SVCNAME ; service_get_value macvlan)" ]
 }
 
 macvlan_pre_start()

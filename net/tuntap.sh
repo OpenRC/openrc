@@ -11,7 +11,7 @@ _config_vars="$_config_vars iproute2 openvpn tunctl"
 
 _is_tuntap()
 {
-	[ -n "$(export RC_SVCNAME="net.${IFACE}"; service_get_value tuntap)" ]
+	[ -n "$(RC_SVCNAME="net.${IFACE}"; export RC_SVCNAME ; service_get_value tuntap)" ]
 }
 
 tuntap_pre_start()

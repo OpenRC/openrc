@@ -31,7 +31,7 @@ ifwatchd_pre_start()
 	mark_service_inactive
 
 	# Start ifwatchd
-	export IN_BACKGROUND=yes
+	IN_BACKGROUND=yes ; export IN_BACKGROUND
 	start-stop-daemon --start --exec /usr/sbin/ifwatchd \
 		-- -c "${RC_LIBEXECDIR}/sh/ifwatchd-carrier.sh" \
 		-n "${RC_LIBEXECDIR}/sh/ifwatchd-nocarrier.sh" "${IFACE}"
