@@ -10,7 +10,7 @@ depend() {
 
 start()
 {
-	# HOSTNAME variable used to be defined in caps in conf.d/hostname. 
+	# HOSTNAME variable used to be defined in caps in conf.d/hostname.
 	# It is also a magic variable in bash.
 	hostname=${hostname-${HOSTNAME-localhost}} # checkbashisms: false positive
 	ebegin "Setting hostname to $hostname"
