@@ -101,7 +101,7 @@
 
 # Some daemons are started and stopped via start-stop-daemon.
 # We can set some things on a per service basis, like the nicelevel.
-#export SSD_NICELEVEL="-19"
+#SSD_NICELEVEL="-19"
 
 # Pass ulimit parameters
 #rc_ulimit="-u 30"

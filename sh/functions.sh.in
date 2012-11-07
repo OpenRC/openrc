@@ -85,13 +85,13 @@ if [ -n "$_LOCAL_PREFIX" ]; then
 	_PATH="$_PATH:$_LOCAL_PREFIX/bin:$_LOCAL_PREFIX/sbin"
 fi
 _path="$(_sanitize_path "$PATH")"
-export PATH="$_PATH${_path:+:}$_path"
+PATH="$_PATH${_path:+:}$_path" ; export PATH
 unset _sanitize_path _PREFIX _PKG_PREFIX _LOCAL_PREFIX _PATH _path
 
 for arg; do
 	case "$arg" in
 		--nocolor|--nocolour|-C)
-			export EINFO_COLOR="NO"
+			EINFO_COLOR="NO" ; export EINFO_COLOR
 			;;
 	esac
 done
@@ -106,7 +106,7 @@ else
 	for _e in ebegin eend error errorn einfo einfon ewarn ewarnn ewend \
 		vebegin veend veinfo vewarn vewend; do
 		eval "$_e() { local _r; command $_e \"\$@\"; _r=\$?; \
-		export EINFO_LASTCMD=$_e; return \$_r; }"
+		EINFO_LASTCMD=$_e; export EINFO_LASTCMD ; return \$_r; }"
 	done
 	unset _e
 fi

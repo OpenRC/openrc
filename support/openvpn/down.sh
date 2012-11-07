@@ -18,7 +18,8 @@ fi
 # Re-enter the init script to stop any dependant services
 if [ -x "${RC_SERVICE}" ]; then
 	if "${RC_SERVICE}" --quiet status; then
-		export IN_BACKGROUND=YES
+		IN_BACKGROUND=YES
+		export IN_BACKGROUND
 		"${RC_SERVICE}" --quiet stop
 	fi
 fi

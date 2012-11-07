@@ -3,8 +3,9 @@
 # Released under the 2-clause BSD license.
 
 # Inform RC that we are in the background and hotplugged
-export IN_BACKGROUND=yes
-export IN_HOTPLUG=yes
+IN_BACKGROUND=yes
+IN_HOTPLUG=yes
+export IN_BACKGROUND IN_HOTPLUG
 
 getmedia() {
 	ifconfig "$1" | while read line; do

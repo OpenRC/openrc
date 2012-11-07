@@ -46,11 +46,11 @@ if [ -z "$1" -o -z "$2" ]; then
 fi
 
 # So daemons know where to recall us if needed
-export RC_SERVICE="$1"
+RC_SERVICE="$1" ; export RC_SERVICE
 shift
 
 # Compat
-export SVCNAME=$RC_SVCNAME
+SVCNAME=$RC_SVCNAME ; export SVCNAME
 
 # Dependency function
 config() {

@@ -109,5 +109,5 @@ _depend() {
 # Add our sbin to $PATH
 case "$PATH" in
 	"$RC_LIBEXECDIR"/sbin|"$RC_LIBEXECDIR"/sbin:*);;
-	*) export PATH="$RC_LIBEXECDIR/sbin:$PATH";;
+	*) PATH="$RC_LIBEXECDIR/sbin:$PATH" ; export PATH ;;
 esac
