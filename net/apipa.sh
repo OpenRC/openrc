@@ -8,7 +8,7 @@ apipa_depend()
 
 _random()
 {
-	local r=${RANDOM}
+	local r=${RANDOM} # checkbashisms: false positive, we handle it AFTERWARDS
 	if [ -n "${r}" ]; then
 		echo "${r}"
 	else
