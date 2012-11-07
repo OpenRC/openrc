@@ -79,7 +79,7 @@ deconfig()
 	ifconfig "${interface}" 0.0.0.0
 
 	if ! peer_var "${PEER_ROUTERS}" ; then
-		while route del default dev "${interface}" >& /dev/null; do
+		while route del default dev "${interface}" >/dev/null 2>&1; do
 			:
 		done
 	fi

@@ -21,7 +21,7 @@ ccwgroup_load_modules()
 
 	# verify the specific interface is supported
 	if [ ! -d /sys/bus/ccwgroup/drivers/$1 ] ; then
-		modprobe $1 >& /dev/null
+		modprobe $1 >/dev/null 2>&1
 		if [ ! -d /sys/bus/ccwgroup/drivers/$1 ] ; then
 			eerror "$1 support missing in kernel"
 			return 1
