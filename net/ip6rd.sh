@@ -117,27 +117,34 @@ _ip6rd_inet_atoi()
 {
 	local IFS="${IFS}." ipi=0 j=3
 	for i in $1 ; do
-	       ipi=$(( ipi | i << 8*j-- ))
+		# post-decrement isn't valid
+		ipi=$(( ipi | (i << (8*j))  ))
+		j=$(( j - 1 ))
 	done
 	echo ${ipi}
 }
 
 _ip6rd_inet_itoa()
 {
-	local ipi=$1
+	local ipi=$1 bitmask v
+	bitmask=$(( (1 << 24)-1 ))
 	for i in 0 1 2 3; do
+		v=$(( (ipi & ~bitmask) >> 24 ))
+		ipi=$(( (ipi & bitmask) << 8 ))
 		if [ $i != 3 ] ; then
-			printf "%d." $(( (ipi & ~((1<<24)-1)) >> 24 ))
-			ipi=$(( (ipi & ((1<<24)-1)) << 8))
+			printf "%d." $v
 		else
-			printf "%d\n" $(( (ipi & ~((1<<24)-1)) >> 24 ))
+			printf "%d\n" $v
 		fi
 	done
 }
 
 _ip6rd_inet_get_network()
 {
-	echo $(_ip6rd_inet_itoa $(( ($(_ip6rd_inet_atoi $1) & ((1<<$2)-1) << (32-$2) ) )) )
+	local a=$(_ip6rd_inet_atoi $1)
+	local net=$(( a & ( (1<<$2)-1 ) ))
+	local cidr=$(( 32 - $2 ))
+	echo $(_ip6rd_inet_itoa $(( (net << cidr ) )) )
 }
 
 _ip6rd_inet_is_private_network()
