@@ -168,7 +168,7 @@ file_regex(const char *file, const char *regex)
 	char *line = NULL;
 	size_t len = 0;
 	regex_t re;
-	bool retval = false;
+	bool retval = true;
 	int result;
 
 	if (!(fp = fopen(file, "r")))
@@ -184,11 +184,21 @@ file_regex(const char *file, const char *regex)
 	}
 
 	while ((rc_getline(&line, &len, fp))) {
-		if (regexec(&re, line, 0, NULL, 0) == 0)
-			retval = true;
-		if (retval)
-			break;
+		char *str = line;
+		/* some /proc files have \0 separated content so we have to
+		   loop through the 'line' */
+		do {
+			if (regexec(&re, str, 0, NULL, 0) == 0)
+				goto found;
+			str += strlen(str) + 1;
+			/* len is the size of allocated buffer and we don't
+			   want call regexec BUFSIZE times. find next str */
+			while (*str == '\0' && str < line + len)
+				str++;
+		} while (str < line + len);
 	}
+	retval = false;
+found:
 	fclose(fp);
 	free(line);
 	regfree(&re);
