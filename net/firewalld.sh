@@ -5,7 +5,7 @@ firewalld_depend()
 {
 	after interface
 	before dhcp
-	program start firewall-cmd
+	program firewall-cmd
 	[ "$IFACE" != "lo" ] && need firewalld
 }
 
