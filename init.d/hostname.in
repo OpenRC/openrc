@@ -28,7 +28,7 @@ start()
 		out="$out localhost.localdomain"
 	fi
 	ebegin "Configuring /etc/hosts"
-	sed -i -e '/[[:space:]]*127.0.0.1[[:space:]]/d' -e '/[[:space:]]*::1[[:space:]]/d' /etc/hosts
+	[ -e /etc/hosts ] && sed -i -e '/[[:space:]]*127.0.0.1[[:space:]]/d' -e '/[[:space:]]*::1[[:space:]]/d' /etc/hosts
 	cat <<END >> /etc/hosts
 127.0.0.1	$out
 ::1		$out
