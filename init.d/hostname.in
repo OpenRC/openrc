@@ -27,6 +27,7 @@ start()
 	if [ "$hostname" != "localhost.localdomain" ]; then
 		out="$out localhost.localdomain"
 	fi
+	[ -n "$aliases" ] && out="$out $aliases"
 	ebegin "Configuring /etc/hosts"
 	[ -e /etc/hosts ] && sed -i -e '/[[:space:]]*127.0.0.1[[:space:]]/d' -e '/[[:space:]]*::1[[:space:]]/d' /etc/hosts
 	cat <<END >> /etc/hosts
