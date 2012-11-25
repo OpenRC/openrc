@@ -9,7 +9,7 @@ depend()
 	need fsck
 	use lvm modules mtab
 	after lvm modules
-	keyword -jail -openvz -vserver -lxc
+	keyword -jail -vserver -lxc
 }
 
 start()
