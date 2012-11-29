@@ -22,6 +22,9 @@ start()
 
 	if [ "$RC_UNAME" = Linux ]; then
 		no_netdev="-O no_netdev"
+		if [ mountinfo -q /usr ]; then
+			touch $rc_svcdir/usr_premounted
+		fi
 	fi
 	ebegin "Mounting local filesystems"
 	mount -at "$types" $no_netdev
@@ -48,7 +51,10 @@ stop()
 	done
 
 	if [ "$RC_UNAME" = Linux ]; then
-		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/run|/sys|/sys/.*|/usr"
+		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/run|/sys|/sys/.*"
+		if [ -e $rc_svcdir/usr_premounted ]; then
+			no_umounts_r="$no_umounts_r|/usr"
+		fi
 	fi
 	no_umounts_r="^($no_umounts_r)$"
 
