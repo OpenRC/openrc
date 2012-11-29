@@ -1,20 +1,40 @@
-# Depending on how mounting your network file systems behaves when your
-# network interfaces are down, you may need to set the netmount script to
-# require  specific network interfaces to be active. This file gives
-# examples of how to do this:
+# You will need to set the dependencies in the netmount script to match
+# the network configuration tools you are using. This should be done in
+# this file by following the examples below, and not by changing the
+# service script itself.
 #
-# If you are using newnet and configuring the interface with a static
-# address with the network script:
-# rc_need="network"
+# Each of these examples is meant to be used separately. So, for
+# example, do not set rc_need to something like "net.eth0 dhcpcd".
+#
+# If you are using newnet and configuring your interfaces with static
+# addresses with the network script, you  should use this setting.
+#
+#rc_need="network"
 #
 # If you are using oldnet, you must list the specific net.* services you
-# need:
+# need.
 #
-# rc_need="net.eth0"
-# rc_need="net.eth1 net.eth2"
+# This example assumes all of your netmounts can be reached on
+# eth0.
+#
+#rc_need="net.eth0"
+#
+# This example assumes some of your netmounts are on eth1 and some
+# are on eth2.
+#
+#rc_need="net.eth1 net.eth2"
 #
 # If you are using a dynamic network management tool like
-# networkmanager, dhcpcd, etc, you should list that tool here.
+# networkmanager, dhcpcd in standalone mode, wicd, badvpn-ncd, etc, to
+# manage the network interfaces with the routes to your netmounts, you
+# should list that tool.
 #
-# rc_need="networkmanager"
-# rc_need="dhcpcd"
+#rc_need="networkmanager"
+#rc_need="dhcpcd"
+#rc_need="wicd"
+#
+# The default setting is designed to be backward compatible with our
+# current setup, but you are highly discouraged from using this. In
+# other words, please change it to be more suited to your system.
+#
+rc_need="net"
