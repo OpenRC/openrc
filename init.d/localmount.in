@@ -22,8 +22,8 @@ start()
 
 	if [ "$RC_UNAME" = Linux ]; then
 		no_netdev="-O no_netdev"
-		if [ mountinfo -q /usr ]; then
-			touch $rc_svcdir/usr_premounted
+		if mountinfo -q /usr; then
+			touch $RC_SVCDIR/usr_premounted
 		fi
 	fi
 	ebegin "Mounting local filesystems"
