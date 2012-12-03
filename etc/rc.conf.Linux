@@ -24,7 +24,7 @@ rc_tty_number=12
 # CGROUPS RESOURCE MANAGEMENT
 
 # If you have cgroups turned on in your kernel, this switch controls
-# whether or not a group for each controler is mounted under
+# whether or not a group for each controller is mounted under
 # /sys/fs/cgroup.
 # None of the other options in this section work if this is set to "NO".
 #rc_controller_cgroups="YES"
