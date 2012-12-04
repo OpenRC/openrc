@@ -40,7 +40,7 @@ __BEGIN_DECLS
 #if defined(PREFIX)
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
 #elif defined(__linux__)
-#define RC_SVCDIR               "@PREFIX@/run/openrc"
+#define RC_SVCDIR               "/run/openrc"
 #else
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
 #endif
