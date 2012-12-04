@@ -9,39 +9,38 @@ if ! mountinfo -q -f tmpfs "@LIBEXECDIR@/init.d"; then
 	exit 0
 fi
 
-if [ ! -d "@PREFIX@/run" ]; then
-	eerror "'@PREFIX@/run' is not a directory."
+if [ ! -d /run ]; then
+	eerror "/run is not a directory."
 	eerror "This means the OpenRC dependency data cannot be migrated."
-	eerror "Please create the '@PREFIX@/run' directory and reboot the system."
+	eerror "Please create the /run directory and reboot the system."
 	exit 1
 fi
 
-if ! mountinfo -q -f tmpfs "@PREFIX@/run"; then
-	for x in "@PREFIX@/run/."* "@PREFIX@/run/"*; do
+if ! mountinfo -q -f tmpfs /run; then
+	for x in /run/.* /run/*; do
 		case "$x" in
-			"@PREFIX@/run/."|"@PREFIX@/run/..")
+			/run/.|/run/..)
 				continue
 				;;
 		esac
 		if [ -e "$x" ]; then
-				eerror "Your '@PREFIX@/run' directory contains files."
+				eerror "Your /run directory contains files."
 				eerror "Please reboot the system."
 				exit 1
 		fi
 	done
 
-	mount -t tmpfs -o mode=0755,nosuid,nodev \
-		tmpfs "@PREFIX@/run" 2> /dev/null
+	mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run 2> /dev/null
 	if [ $? != 0 ]; then
-		eerror "Unable to mount a tmpfs on '@PREFIX@/run'."
+		eerror "Unable to mount a tmpfs on /run."
 		eerror "This means the OpenRC dependency data cannot be migrated."
-		eerror "Please create the '@PREFIX@/run' directory and reboot the system."
+		eerror "Please create the /run directory and reboot the system."
 		exit 1
 	fi
 fi
 
-rm -rf "@PREFIX@/run/openrc"
-cp -a "@LIBEXECDIR@/init.d" "@PREFIX@/run/openrc"
+rm -rf /run/openrc
+cp -a "@LIBEXECDIR@/init.d" /run/openrc
 rc-update -u
 umount "@LIBEXECDIR@/init.d"
 rm -rf "@LIBEXECDIR@/init.d"
