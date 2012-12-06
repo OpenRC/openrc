@@ -51,6 +51,10 @@ if [ ! -d /run ]; then
 	fi
 fi
 
+if [ -L /run/openrc ]; then
+	rm /run/openrc
+fi
+
 if [ "$sys" = VSERVER ]; then
 	rm -rf /run/*
 elif ! mountinfo -q /run; then
@@ -82,6 +86,10 @@ fi
 
 if [ -e "$RC_LIBEXECDIR"/cache/deptree ]; then
 	cp -p "$RC_LIBEXECDIR"/cache/* "$RC_SVCDIR" 2>/dev/null
+fi
+
+if [ -e "$RC_LIBEXECDIR"/init.d ]; then
+	rm -rf "$RC_LIBEXECDIR"/init.d
 fi
 
 echo sysinit >"$RC_SVCDIR"/softlevel

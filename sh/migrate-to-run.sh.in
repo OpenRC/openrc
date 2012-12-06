@@ -11,38 +11,19 @@ fi
 
 if [ ! -d /run ]; then
 	eerror "/run is not a directory."
-	eerror "This means the OpenRC dependency data cannot be migrated."
-	eerror "Please create the /run directory and reboot the system."
-	exit 1
-fi
-
-if ! mountinfo -q -f tmpfs /run; then
-	for x in /run/.* /run/*; do
-		case "$x" in
-			/run/.|/run/..)
-				continue
-				;;
-		esac
-		if [ -e "$x" ]; then
-				eerror "Your /run directory contains files."
-				eerror "Please reboot the system."
-				exit 1
-		fi
-	done
-
-	mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run 2> /dev/null
-	if [ $? != 0 ]; then
-		eerror "Unable to mount a tmpfs on /run."
-		eerror "This means the OpenRC dependency data cannot be migrated."
-		eerror "Please create the /run directory and reboot the system."
-		exit 1
-	fi
+	eerror "moving /run to /run.pre-openrc"
+	mv /run /run.pre-openrc
+	mkdir /run
 fi
 
 rm -rf /run/openrc
-cp -a "@LIBEXECDIR@/init.d" /run/openrc
-rc-update -u
-umount "@LIBEXECDIR@/init.d"
-rm -rf "@LIBEXECDIR@/init.d"
+
+if ! mountinfo -q -f tmpfs /run; then
+	ln -s "@LIBEXECDIR@"/init.d /run/openrc
+else
+	cp -a "@LIBEXECDIR@/init.d" /run/openrc
+	rc-update -u
+fi
+
 einfo "The OpenRC dependency data was migrated successfully."
 exit 0
