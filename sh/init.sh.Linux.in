@@ -88,9 +88,5 @@ if [ -e "$RC_LIBEXECDIR"/cache/deptree ]; then
 	cp -p "$RC_LIBEXECDIR"/cache/* "$RC_SVCDIR" 2>/dev/null
 fi
 
-if [ -e "$RC_LIBEXECDIR"/init.d ]; then
-	rm -rf "$RC_LIBEXECDIR"/init.d
-fi
-
 echo sysinit >"$RC_SVCDIR"/softlevel
 exit 0
