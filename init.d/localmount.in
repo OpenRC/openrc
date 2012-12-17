@@ -23,7 +23,7 @@ start()
 	if [ "$RC_UNAME" = Linux ]; then
 		no_netdev="-O no_netdev"
 		if mountinfo -q /usr; then
-			touch $RC_SVCDIR/usr_premounted
+			touch "$RC_SVCDIR"/usr_premounted
 		fi
 	fi
 	ebegin "Mounting local filesystems"
@@ -40,7 +40,7 @@ stop()
 	# We never unmount / or /dev or $RC_SVCDIR
 
 	# Bug 381783
-	local rc_svcdir=$(echo $RC_SVCDIR | sed 's:/lib\(32\|64\)\?/:/lib(32|64)?/:g')
+	local rc_svcdir=$(printf '%s\n' "$RC_SVCDIR" | sed 's:/lib\(32\|64\)\?/:/lib(32|64)?/:g')
 
 	local x= no_umounts_r="/|/dev|/dev/.*|${rc_svcdir}"
 	no_umounts_r="${no_umounts_r}|/bin|/sbin|/lib(32|64)?|/libexec"
@@ -52,7 +52,7 @@ stop()
 
 	if [ "$RC_UNAME" = Linux ]; then
 		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/run|/sys|/sys/.*"
-		if [ -e $rc_svcdir/usr_premounted ]; then
+		if [ -e "$rc_svcdir"/usr_premounted ]; then
 			no_umounts_r="$no_umounts_r|/usr"
 		fi
 	fi
