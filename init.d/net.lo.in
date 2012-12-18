@@ -116,12 +116,12 @@ _wait_for_carrier()
 	yesno ${RC_PARALLEL} && efunc=einfo
 	${efunc} "Waiting for carrier (${timeout} seconds) "
 	while [ ${timeout} -gt 0 ]; do
-		sleep 1
 		if _has_carrier; then
 			[ "${efunc}" = "einfon" ] && echo
 			eend 0
 			return 0
 		fi
+		sleep 1
 		: $(( timeout -= 1 ))
 		[ "${efunc}" = "einfon" ] && printf "."
 	done
