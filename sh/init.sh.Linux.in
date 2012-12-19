@@ -51,10 +51,6 @@ if [ ! -d /run ]; then
 	fi
 fi
 
-if [ -L /run/openrc ]; then
-	rm /run/openrc
-fi
-
 if [ "$sys" = VSERVER ]; then
 	rm -rf /run/*
 elif ! mountinfo -q /run; then
