@@ -62,22 +62,13 @@ bonding_pre_start()
 	# Interface must be down in order to configure
 	_down
 
-	# Configure the bond mode, then we can reloop to ensure we configure
-	# All other options
-	[ -d /sys/class/net ] && for x in /sys/class/net/"${IFACE}"/bonding/mode; do
+	# Configure the bond mode & link monitoring, then we can reloop to ensure
+	# we configure all other options
+	# mode needs to be done before all other options.
+	# miimon needs to be done BEFORE downdelay
+	[ -d /sys/class/net ] && for n in mode miimon; do
+		x=/sys/class/net/"${IFACE}"/bonding/$n
 		[ -f "${x}" ] || continue
-		n=${x##*/}
-		eval s=\$${n}_${IFVAR}
-		if [ -n "${s}" ]; then
-			einfo "Setting ${n}: ${s}"
-			echo "${s}" >"${x}" || \
-			eerror "Failed to configure $n (${n}_${IFVAR})"
-		fi
-	done
-	# Configure link monitoring
-	for x in /sys/class/net/"${IFACE}"/bonding/miimon; do
-		[ -f "${x}" ] || continue
-		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
 		if [ -n "${s}" ]; then
 			einfo "Setting ${n}: ${s}"
@@ -90,7 +81,8 @@ bonding_pre_start()
 		[ -f "${x}" ] || continue
 		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
-		[ "${n}" != "mode" -o "${n}" != "miimon" ] || continue
+		# skip mode and miimon
+		[ "${n}" == "mode" -o "${n}" == "miimon" ] && continue
 		if [ -n "${s}" ]; then
 			einfo "Setting ${n}: ${s}"
 			echo "${s}" >"${x}" || \
