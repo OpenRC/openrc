@@ -650,12 +650,19 @@ ${routes}"
 
 	local OIFS="${IFS}" SIFS="${IFS-y}"
 	local IFS="$__IFS"
+	local fam
 	for cmd in ${routes}; do
 		unset IFS
 		if ${first}; then
 			first=false
 			einfo "Adding routes"
 		fi
+
+		case ${cmd} in
+			-6" "*) fam="-6"; cmd=${cmd#-6 };;
+			-4" "*) fam="-4"; cmd=${cmd#-4 };;
+		esac
+
 		eindent
 		ebegin ${cmd}
 		# Work out if we're a host or a net if not told
@@ -668,10 +675,10 @@ ${routes}"
 			*)                                 cmd="-host ${cmd}";;
 		esac
 		if ${hidefirstroute}; then
-			_add_route ${cmd} >/dev/null 2>&1
+			_add_route ${fam} ${cmd} >/dev/null 2>&1
 			hidefirstroute=false
 		else
-			_add_route ${cmd} >/dev/null
+			_add_route ${fam} ${cmd} >/dev/null
 		fi
 		eend $?
 		eoutdent
