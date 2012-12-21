@@ -209,7 +209,7 @@ _add_route()
 	fi
 
 	case "$@" in
-		*:*) [ "$1" = "-net" ] && shift;;
+		*:*|default*) [ "$1" = "-net" -o "$1" = "-host" ] && shift;;
 	esac
 
 	route ${family} add "$@" dev "${IFACE}"
