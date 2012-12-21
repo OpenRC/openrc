@@ -672,6 +672,8 @@ ${routes}"
 			*.*.*.*/32*)                       cmd="-host ${cmd}";;
 			*.*.*.*/*|0.0.0.0|0.0.0.0" "*)     cmd="-net ${cmd}";;
 			default|default" "*)               cmd="-net ${cmd}";;
+			*:*/128*)                          cmd="-host ${cmd}";;
+			*:*/*)                             cmd="-net ${cmd}";;
 			*)                                 cmd="-host ${cmd}";;
 		esac
 		if ${hidefirstroute}; then
