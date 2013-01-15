@@ -161,9 +161,9 @@ start()
 
 stop()
 {
-	local startcommand="$(rc_service_get "command")"
-	local startpidfile="$(rc_service_get "pidfile")"
-	local startprocname="$(rc_service_get "procname")"
+	local startcommand="$(service_get_value "command")"
+	local startpidfile="$(service_get_value "pidfile")"
+	local startprocname="$(service_get_value "procname")"
 	command="${startcommand:-$command}"
 	pidfile="${startpidfile:-$pidfile}"
 	procname="${startprocname:-$procname}"
