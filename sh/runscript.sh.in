@@ -145,7 +145,12 @@ start()
 		${pidfile:+--pidfile} $pidfile \
 		$_background $start_stop_daemon_args \
 		-- $command_args
-	eend $? "Failed to start $RC_SVCNAME" && return 0
+	if eend $? "Failed to start $RC_SVCNAME"; then
+		service_set_value "command" "${command}"
+		[ -n "${pidfile}" ] && service_set_value "pidfile" "${pidfile}"
+		[ -n "${procname}" ] && service_set_value "procname" "${procname}"
+		return 0
+	fi
 	if yesno "$start_inactive"; then
 		if ! $_inactive; then
 			mark_service_stopped
@@ -156,6 +161,12 @@ start()
 
 stop()
 {
+	local startcommand="$(rc_service_get "command")"
+	local startpidfile="$(rc_service_get "pidfile")"
+	local startprocname="$(rc_service_get "procname")"
+	command="${startcommand:-$command}"
+	pidfile="${startpidfile:-$pidfile}"
+	procname="${startprocname:-$procname}"
 	[ -n "$command" -o -n "$procname" -o -n "$pidfile" ] || return 0
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
 	start-stop-daemon --stop \
