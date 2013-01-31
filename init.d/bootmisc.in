@@ -87,6 +87,16 @@ migrate_to_run()
  	fi
 }
 
+clean_run()
+{
+	local dir
+	dir=$(mktemp -d)
+	mount --bind / $dir
+	rm -rf $dir/run/*
+	umount $dir
+	rm -rf $dir
+}
+
 start()
 {
 	# Remove any added console dirs
@@ -115,6 +125,7 @@ start()
 	if [ "$RC_UNAME" = Linux -a -d /run ]; then
 		migrate_to_run	/var/lock /run/lock
 		migrate_to_run	/var/run /run
+		clean_run
 	fi
 
 	if checkpath -W /var/run; then
