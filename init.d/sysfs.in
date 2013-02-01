@@ -4,6 +4,8 @@
 
 description="Mount the sys filesystem."
 
+sysfs_opts=nodev,noexec,nosuid
+
 depend()
 {
 	keyword -lxc -prefix -vserver
@@ -23,7 +25,7 @@ mount_sys()
 
 	ebegin "Mounting /sys"
 	if ! fstabinfo --mount /sys; then
-		mount -n -t sysfs -o noexec,nosuid,nodev sysfs /sys
+		mount -n -t sysfs -o ${sysfs_opts} sysfs /sys
 	fi
 	eend $?
 }
@@ -35,7 +37,7 @@ mount_misc()
 		! mountinfo -q /sys/kernel/security; then
 		if grep -qs securityfs /proc/filesystems; then
 			ebegin "Mounting security filesystem"
-			mount -n -t securityfs -o nodev,noexec,nosuid \
+			mount -n -t securityfs -o ${sysfs_opts} \
 				securityfs /sys/kernel/security
 			eend $?
 		fi
@@ -45,8 +47,7 @@ mount_misc()
 	if [ -d /sys/kernel/debug ] && ! mountinfo -q /sys/kernel/debug; then
 		if grep -qs debugfs /proc/filesystems; then
 			ebegin "Mounting debug filesystem"
-			mount -n -t debugfs -o nodev,noexec,nosuid \
-				debugfs /sys/kernel/debug
+			mount -n -t debugfs -o ${sysfs_opts} debugfs /sys/kernel/debug
 			eend $?
 		fi
 	fi
@@ -55,8 +56,7 @@ mount_misc()
 	if [ -d /sys/kernel/config ] && ! mountinfo -q /sys/kernel/config; then
 		if grep -qs configfs /proc/filesystems; then
 			ebegin "Mounting config filesystem"
-			mount -n -t configfs -o  nodev,noexec,nosuid \
-				configfs /sys/kernel/config
+			mount -n -t configfs -o  ${sysfs_opts} configfs /sys/kernel/config
 			eend $?
 		fi
 	fi
@@ -65,8 +65,19 @@ mount_misc()
 	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
 		if grep -qs cgroup /proc/filesystems; then
 			ebegin "Mounting cgroup filesystem"
-			local opts="nodev,noexec,nosuid,mode=755,size=${rc_cgroupsize:-10m}"
+			local opts="${sysfs_opts},mode=755,size=${rc_cgroupsize:-10m}"
 			mount -n -t tmpfs -o ${opts} cgroup_root /sys/fs/cgroup
+			eend $?
+		fi
+	fi
+
+	# set up kernel support for fusectl
+	if [ -d /sys/fs/fuse/connections ] \
+		&& ! mountinfo -q /sys/fs/fuse/connections; then
+		if grep -qs fusectl /proc/filesystems; then
+			ebegin "Mounting fuse control filesystem"
+			mount -n -t fusectl -o ${sysfs_opts} \
+				fusectl /sys/fs/fuse/connections
 			eend $?
 		fi
 	fi
@@ -79,7 +90,7 @@ mount_cgroups()
 	local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
 	mkdir /sys/fs/cgroup/openrc
 	mount -n -t cgroup \
-		-o none,nodev,noexec,nosuid,name=openrc,release_agent="$agent" \
+		-o none,${sysfs_opts},name=openrc,release_agent="$agent" \
 		openrc /sys/fs/cgroup/openrc
 	echo 1 > /sys/fs/cgroup/openrc/notify_on_release
 
@@ -87,7 +98,7 @@ mount_cgroups()
 	while read name hier groups enabled rest; do
 		case "${enabled}" in
 			1)	mkdir /sys/fs/cgroup/${name}
-				mount -n -t cgroup -o nodev,noexec,nosuid,${name} \
+				mount -n -t cgroup -o ${sysfs_opts},${name} \
 					${name} /sys/fs/cgroup/${name}
 				;;
 		esac
