@@ -311,8 +311,12 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	lock_fd = open(PREFIX_LOCK, O_WRONLY | O_CREAT, 0664);
 
 	if (lock_fd != -1) {
-		if (flock(lock_fd, LOCK_EX) != 0)
-			eerror("flock() failed: %s", strerror(errno));
+		while (flock(lock_fd, LOCK_EX) != 0) {
+			if (errno != EINTR) {
+				eerror("flock() failed: %s", strerror(errno));
+				break;
+			}
+		}
 	}
 #ifdef RC_DEBUG
 	else
