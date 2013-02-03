@@ -1,0 +1,59 @@
+#@SHELL@
+# Copyright (c) 2012 Alexander Vershilov <qnikst@gentoo.org>
+# Released under the 2-clause BSD license.
+
+cgroup_find_path()
+{
+	local OIFS n name dir result
+	[ -n "$1" ] || return 0
+	OIFS="$IFS"
+	IFS=":"
+	while read n name dir; do
+		[ "$name" = "$1" ] && result="$dir"
+	done < /proc/1/cgroup
+	IFS="$OIFS"
+	echo $result
+}
+
+# prepare values to be attached inside cgroups
+cgroup_prepare()
+{
+	local h=$(cgroup_find_path "$1")
+	cgroup="/sys/fs/cgroup/${1}${h}openrc_${RC_SVCNAME}"
+	[ -d ${cgroup} ] || mkdir -p ${cgroup}
+	return 0
+}
+
+cgroup_set_value()
+{
+	[ -f "$cgroup/${1}" -a -n "$2" ] && echo $2 > "${cgroup}/${1}"
+	return 0
+}
+
+cgroup_add_process()
+{
+	[ -f "${cgroup}"/tasks ] && echo 0 > "${cgroup}"/tasks
+	return 0
+}
+
+cgroup_set_limits()
+{
+	openrc_cgroup=/sys/fs/cgroup/openrc
+	if [ -d ${openrc_cgroup} ]; then
+		cgroup=${openrc_cgroup}/${RC_SVCNAME}
+		mkdir -p ${cgroup}
+		[ -f "${cgroup}"/tasks ] && echo 0 > "${cgroup}"/tasks
+	fi
+
+	if [ -d /sys/fs/cgroup/cpu ]; then
+		local share
+
+		share=${rc_cgroup_cpu_shares:-$RC_CGROUP_CPU_SHARES}
+		if [ -n "$share" ]; then
+			cgroup_prepare "cpu"
+		cgroup_set_value "cpu.shares" $share
+			cgroup_add_process
+		fi
+	fi
+	return 0
+}

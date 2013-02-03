@@ -34,6 +34,7 @@ sourcex()
 
 sourcex "@LIBEXECDIR@/sh/functions.sh"
 sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
+[ "$RC_SYS" != "PREFIX" ] && sourcex -e "@LIBEXECDIR@/sh/rc-cgroup.sh"
 
 # Support LiveCD foo
 if sourcex -e "/sbin/livecd-functions.sh"; then
@@ -204,29 +205,12 @@ unset _conf_d
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"
 
-if [ "$RC_UNAME" = "Linux" -a "$RC_SYS" != "PREFIX" -a "$1" = "start" ]; then
-	openrc_cgroup=/sys/fs/cgroup/openrc
-	if [ -d ${openrc_cgroup} ]; then
-		cgroup=${openrc_cgroup}/${RC_SVCNAME}
-		mkdir -p ${cgroup}
-		[ -f "${cgroup}"/tasks ] && echo 0 > "${cgroup}"/tasks
-	fi
-
-	shares="${rc_cgroup_cpu_shares:-$RC_CGROUP_CPU_SHARES}"
-	if [ -n "${shares}" -a -d /sys/fs/cgroup/cpu ]; then
-		cgroup=/sys/fs/cgroup/cpu/openrc_${RC_SVCNAME}
-		if [ ! -d ${cgroup} ]; then
-			mkdir -p ${cgroup}
-		fi
-		[ -f "${cgroup}"/cpu.shares ] && echo ${shares} > "${cgroup}"/cpu.shares
-		[ -f "${cgroup}"/tasks ] && echo 0 >> "${cgroup}"/tasks
-	fi
-
-	#todo: add processes to cgroups based on settings in conf.d
-fi
-
 # Apply any ulimit defined
 [ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}
+
+# Apply cgroups settings if defined
+[ "$(command -v cgroup_set_limits)" = "cgroup_set_limits" ] && \
+	cgroup_set_limits
 
 # Load our script
 sourcex "$RC_SERVICE"
