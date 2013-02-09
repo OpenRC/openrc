@@ -633,7 +633,7 @@ start()
 		return 1
 	fi
 
-	local hidefirstroute=false first=true routes=
+	local hideFirstroute=false first=true routes=
 	if ${fallback}; then
 		routes="$(_get_array "fallback_routes_${IFVAR}")"
 	fi
@@ -644,7 +644,7 @@ start()
 		if [ "${config_0}" != "null" ]; then
 			routes="127.0.0.0/8 via 127.0.0.1
 ${routes}"
-			hidefirstroute=true
+			hideFirstroute=true
 		fi
 	fi
 
@@ -676,9 +676,9 @@ ${routes}"
 			*:*/*)                             cmd="-net ${cmd}";;
 			*)                                 cmd="-host ${cmd}";;
 		esac
-		if ${hidefirstroute}; then
+		if ${hideFirstroute}; then
 			_add_route ${fam} ${cmd} >/dev/null 2>&1
-			hidefirstroute=false
+			hideFirstroute=false
 		else
 			_add_route ${fam} ${cmd} >/dev/null
 		fi
