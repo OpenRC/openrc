@@ -1242,3 +1242,6 @@
 #       # This function is mostly here for completeness... I haven't
 #       # thought of anything nifty to do with it yet ;-)
 #}
+
+# You should note that we don't stop the network at system shutdown by default.
+# If you really need this, then set shutdown_network=YES
