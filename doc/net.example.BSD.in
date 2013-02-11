@@ -442,4 +442,4 @@
 #}
 
 # You should note that we don't stop the network at system shutdown by default.
-# If you really need this, then set shutdown_network=YES
+# If you really need this, then set keep_network=NO
