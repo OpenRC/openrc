@@ -22,7 +22,7 @@ mount_svcdir()
 }
 
 . "$RC_LIBEXECDIR"/sh/functions.sh
-[ -r /etc/rc.conf ] && . /etc/rc.conf
+[ -r "@SYSCONFDIR@/rc.conf" ] && . "@SYSCONFDIR@/rc.conf"
 
 # Disable devd until we need it
 if [ -z "$RC_SYS" -a "$RC_UNAME" = "FreeBSD" ]; then

@@ -4,7 +4,7 @@
 # Released under the 2-clause BSD license.
 
 . "$RC_LIBEXECDIR"/sh/functions.sh
-[ -r /etc/rc.conf ] && . /etc/rc.conf
+[ -r "@SYSCONFDIR@/rc.conf" ] && . "@SYSCONFDIR@/rc.conf"
 
 # By default VServer already has /proc mounted, but OpenVZ does not!
 # However, some of our users have an old proc image in /proc
