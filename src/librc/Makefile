@@ -18,6 +18,8 @@ SED_CMD=	-e 's:@PREFIX@:${PREFIX}:g'
 SED_CMD+=	-e 's:@LIB@:${LIBNAME}:g'
 SED_CMD+=	-e 's:@SYSCONFDIR@:${SYSCONFDIR}:g'
 SED_CMD+=	-e 's:@LIBEXECDIR@:${LIBEXECDIR}:g'
+SED_CMD+=	-e 's:@BINDIR@:${BINDIR}:g'
+SED_CMD+=	-e 's:@SBINDIR@:${SBINDIR}:g'
 
 _PKG_PREFIX=	-e 's:.*@PKG_PREFIX@.*:\#undef RC_PKG_PREFIX:g'
 ifneq (${PKG_PREFIX},)
