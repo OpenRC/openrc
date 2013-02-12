@@ -49,7 +49,7 @@ _sanitize_path()
 	for p in $PATH; do
 		case "$p" in
 			@LIBEXECDIR@/bin|@LIBEXECDIR@/sbin);;
-			@PREFIX@/bin|@PREFIX@/sbin|/usr/bin|/usr/sbin);;
+			@BINDIR@|@SBINDIR@|/usr/bin|/usr/sbin);;
 			@PKG_PREFIX@/bin|@PKG_PREFIX@/sbin);;
 			@LOCAL_PREFIX@/bin|@LOCAL_PREFIX@/sbin);;
 			*) path="$path${path:+:}$p";;
