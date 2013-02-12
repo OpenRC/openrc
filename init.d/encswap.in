@@ -1,4 +1,4 @@
-#!@PREFIX@/sbin/runscript
+#!@SBINDIR@/runscript
 # Copyright 1992-2012 FreeBSD Project
 # Released under the 2-clause BSD license
 

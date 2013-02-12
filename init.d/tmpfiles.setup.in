@@ -1,4 +1,4 @@
-#!@PREFIX@/sbin/runscript
+#!@SBINDIR@/runscript
 # Copyright 1999-2012 Gentoo Foundation
 # Released under the 2-clause BSD license.
 

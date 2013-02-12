@@ -53,8 +53,8 @@ do
 
 		# Only generate dependencies for runscripts
 		read one two three <"$RC_SERVICE"
-		[ "$one" = "#!@PREFIX@/sbin/runscript" ] || \
-		[ "$one" = "#!" -a "$two" = "@PREFIX@/sbin/runscript" ] || \
+		[ "$one" = "#!@SBINDIR@/runscript" ] || \
+		[ "$one" = "#!" -a "$two" = "@SBINDIR@/runscript" ] || \
 			continue
 		unset one two three
 
