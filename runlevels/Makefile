@@ -53,7 +53,7 @@ install:
 	if ! test -d "${SYSINITDIR}"; then \
 		${INSTALL} -d ${SYSINITDIR} || exit $$?; \
 		for x in ${SYSINIT}; do \
-			if test -n "${PREFIX}"; then \
+			if test "${MKPREFIX}" = yes; then \
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${SYSINITDIR}/"$$x" || exit $$?; done \
@@ -61,7 +61,7 @@ install:
 	if ! test -d "${BOOTDIR}"; then \
 		${INSTALL} -d ${BOOTDIR} || exit $$?; \
 		for x in ${BOOT}; do \
-			if test -n "${PREFIX}"; then \
+			if test "${MKPREFIX}" = yes; then \
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${BOOTDIR}/"$$x" || exit $$?; \
@@ -70,7 +70,7 @@ install:
 	if ! test -d "${DEFAULTDIR}"; then \
 		${INSTALL} -d ${DEFAULTDIR} || exit $$?; \
 		for x in ${DEFAULT}; do \
-			if test -n "${PREFIX}"; then \
+			if test "${MKPREFIX}" = yes; then \
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${DEFAULTDIR}/"$$x" || exit $$?; done \
@@ -78,7 +78,7 @@ install:
 	if ! test -d "${SHUTDOWNDIR}"; then \
 		${INSTALL} -d ${SHUTDOWNDIR} || exit $$?; \
 		for x in ${SHUTDOWN}; do \
-			if test -n "${PREFIX}"; then \
+			if test "${MKPREFIX}" = yes; then \
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${SHUTDOWNDIR}/"$$x" || exit $$?; done \
