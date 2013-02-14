@@ -13,6 +13,7 @@ depend() {
 start() {
 	# Mount required stuff as user may not have then in /etc/fstab
 	for x in \
+		"mqueue /dev/mqueue 1777 ,nodev mqueue" \
 		"devpts /dev/pts 0755 ,gid=5,mode=0620 devpts" \
 		"tmpfs /dev/shm 1777 ,nodev shm" \
 	; do
