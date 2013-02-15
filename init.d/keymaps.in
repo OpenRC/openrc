@@ -58,7 +58,7 @@ start()
 	if yesno $fix_euro; then
 		ebegin "Fixing font for euro symbol"
 		# Fix some fonts displaying the Euro, #173528.
-		echo "altgr keycode 18 = U+20AC" | loadkeys -q
+		echo "altgr keycode 18 = U+20AC" | loadkeys -q -
 		eend $?
 	fi
 
