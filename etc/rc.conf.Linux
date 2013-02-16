@@ -20,6 +20,10 @@
 # consolefont, numlock, etc ...)
 rc_tty_number=12
 
+# This is how long fuser should wait for a remote server to respond. The
+# default is 60 seconds, but  it can be adjusted here.
+#rc_fuser_timeout=60
+
 ##############################################################################
 # CGROUPS RESOURCE MANAGEMENT
 
