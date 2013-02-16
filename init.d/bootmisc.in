@@ -59,6 +59,34 @@ cleanup_tmp_dir()
 	fi
 }
 
+cleanup_var_run_dir()
+{
+	ebegin "Cleaning /var/run"
+	for x in $(find /var/run ! -type d ! -name utmp \
+		! -name random-seed ! -name dev.db \
+		! -name ld-elf.so.hints ! -name ld.so.hints);
+	do
+		# Clean stale sockets
+		if [ -S "$x" ]; then
+			if type fuser >/dev/null 2>&1; then
+				fuser "$x" >/dev/null 2>&1 || rm -- "$x"
+			else
+				rm -- "$x"
+			fi
+		fi
+		[ ! -f "$x" ] && continue
+		# Do not remove pidfiles of already running daemons
+		case "$x" in
+			*.pid)
+				start-stop-daemon --test --quiet \
+				--stop --pidfile "$x" && continue
+			;;
+		esac
+		rm -f -- "$x"
+	done
+	eend 0
+}
+
 mkutmp()
 {
 	: >"$1"
@@ -138,36 +166,13 @@ start()
 		[ -e /var/log/wtmp ] || mkutmp /var/log/wtmp
 		eend 0
 
-		ebegin "Cleaning /var/run"
-		for x in $(find /var/run ! -type d ! -name utmp \
-			! -name random-seed ! -name dev.db \
-			! -name ld-elf.so.hints ! -name ld.so.hints);
-		do
-			# Clean stale sockets
-			if [ -S "$x" ]; then
-				if type fuser >/dev/null 2>&1; then
-					fuser "$x" >/dev/null 2>&1 || rm -- "$x"
-				else
-					rm -- "$x"
-				fi
-			fi
-			[ ! -f "$x" ] && continue
-			# Do not remove pidfiles of already running daemons
-			case "$x" in
-				*.pid)
-					start-stop-daemon --test --quiet \
-					--stop --pidfile "$x" && continue
-				;;
-			esac
-			rm -f -- "$x"
-		done
-		eend 0
+		mountinfo -q -f tmpfs /var/run || cleanup_var_run_dir
 	fi
 
 	# Clean up /tmp directories
 	local tmp=
 	for tmp in ${clean_tmp_dirs:-${wipe_tmp_dirs-/tmp}}; do
-		cleanup_tmp_dir "$tmp"
+		mountinfo -q -f tmpfs "$tmp" || cleanup_tmp_dir "$tmp"
 	done
 
 	if checkpath -W /tmp; then
