@@ -37,5 +37,4 @@ rc_tty_number=12
 # This is the number of CPU shares a service is allowed to use. The
 # default value, set by the kernel, is 1024.
 # This requires CONFIG_FAIR_GROUP_SCHED to be set in the kernel.
-# Also, this setting is not preserved if you suspend your computer.
 #rc_cgroup_cpu_shares=1024
