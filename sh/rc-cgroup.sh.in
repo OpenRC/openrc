@@ -15,45 +15,74 @@ cgroup_find_path()
 	echo $result
 }
 
-# prepare values to be attached inside cgroups
-cgroup_prepare()
+cgroup_set_values()
 {
-	local h=$(cgroup_find_path "$1")
+	[ -n "$1" -a -n "$2" -a -d "/sys/fs/cgroup/$1" ] || return 0
+
+	local controller="$1" h=$(cgroup_find_path "$1")
 	cgroup="/sys/fs/cgroup/${1}${h}openrc_${RC_SVCNAME}"
-	[ -d ${cgroup} ] || mkdir -p ${cgroup}
-	return 0
-}
+	[ -d "$cgroup" ] || mkdir -p "$cgroup"
 
-cgroup_set_value()
-{
-	[ -f "$cgroup/${1}" -a -n "$2" ] && echo $2 > "${cgroup}/${1}"
-	return 0
-}
+	set -- $2
+	local name val
+	while [ -n "$1" -a "$controller" != "cpuacct" ]; do
+		case "$1" in
+			$controller.*)
+				if [ -n "$name" -a -f "$cgroup/$name" -a -n "$val" ]; then
+					veinfo "$RC_SVCNAME: Setting $cgroup/$name to $val"
+					echo $val > "$cgroup/$name"
+				fi
+				name=$1
+				val=
+				;;
+			*)
+				val="$val $1"
+				;;
+		esac
+		shift
+	done
+	if [ -n "$name" -a -f "$cgroup/$name" -a -n "$val" ]; then
+		veinfo "$RC_SVCNAME: Setting $cgroup/$name to $val"
+		echo $val > "$cgroup/$name"
+	fi
 
-cgroup_add_process()
-{
-	[ -f "${cgroup}"/tasks ] && echo 0 > "${cgroup}"/tasks
+	if [ -f "$cgroup/tasks" ]; then
+		veinfo "$RC_SVCNAME: adding to $cgroup/tasks"
+		echo 0 > "$cgroup/tasks"
+	fi
+
 	return 0
 }
 
 cgroup_set_limits()
 {
 	openrc_cgroup=/sys/fs/cgroup/openrc
-	if [ -d ${openrc_cgroup} ]; then
-		cgroup=${openrc_cgroup}/${RC_SVCNAME}
-		mkdir -p ${cgroup}
-		[ -f "${cgroup}"/tasks ] && echo 0 > "${cgroup}"/tasks
+	if [ -d "$openrc_cgroup" ]; then
+		cgroup="$openrc_cgroup/$RC_SVCNAME"
+		mkdir -p "$cgroup"
+		[ -f "$cgroup/tasks" ] && echo 0 > "$cgroup/tasks"
 	fi
 
-	if [ -d /sys/fs/cgroup/cpu ]; then
-		local share
+	local blkio="${rc_cgroup_blkio:-$RC_CGROUP_BLKIO}"
+	[ -n "$blkio" ] && cgroup_set_values blkio "$blkio"
 
-		share=${rc_cgroup_cpu_shares:-$RC_CGROUP_CPU_SHARES}
-		if [ -n "$share" ]; then
-			cgroup_prepare "cpu"
-		cgroup_set_value "cpu.shares" $share
-			cgroup_add_process
-		fi
-	fi
+	local cpu="${rc_cgroup_cpu:-$RC_CGROUP_CPU}"
+	[ -n "$cpu" ] && cgroup_set_values cpu "$cpu"
+
+	local cpuacct="${rc_cgroup_cpuacct:-$RC_CGROUP_CPUACCT}"
+	[ -n "$cpuacct" ] && cgroup_set_values cpuacct "$cpuacct"
+
+	local cpuset="${rc_cgroup_cpuset:-$RC_CGROUP_cpuset}"
+	[ -n "$cpuset" ] && cgroup_set_values cpuset "$cpuset"
+
+	local devices="${rc_cgroup_devices:-$RC_CGROUP_DEVICES}"
+	[ -n "$devices" ] && cgroup_set_values devices "$devices"
+
+	local memory="${rc_cgroup_memory:-$RC_CGROUP_MEMORY}"
+	[ -n "$memory" ] && cgroup_set_values memory "$memory"
+
+	local net_prio="${rc_cgroup_net_prio:-$RC_CGROUP_NET_PRIO}"
+	[ -n "$net_prio" ] && cgroup_set_values net_prio "$net_prio"
+
 	return 0
 }

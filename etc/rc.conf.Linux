@@ -29,12 +29,40 @@ rc_tty_number=12
 # None of the other options in this section work if this is set to "NO".
 #rc_controller_cgroups="YES"
 
-# These options can be set globally in this file; however, if you do
-# this, the same setting will apply to all of your services.
+# The following settings allow you to set up values for the cgroup
+# controllers for your services.
+# They can be set in this file;, however, if you do this, the settings
+# will apply to all of your services.
 # If you want different settings for each service, place the settings in
 # /etc/conf.d/foo for service foo.
+# The format is to specify the names of the settings followed by their
+# values. Each variable can hold multiple settings.
+# For example, you would use this to set the cpu.shares setting in the
+# cpu controller to 512 for your service.
+# rc_cgroup_cpu="
+# cpu.shares 512
+# "
+#
+#For more information about the adjustments that can be made with
+#cgroups, see Documentation/cgroups/* in the linux kernel source tree.
 
-# This is the number of CPU shares a service is allowed to use. The
-# default value, set by the kernel, is 1024.
-# This requires CONFIG_FAIR_GROUP_SCHED to be set in the kernel.
-#rc_cgroup_cpu_shares=1024
+# Set the blkio controller settings for this service.
+#rc_cgroup_blkio=""
+
+# Set the cpu controller settings for this service.
+#rc_cgroup_cpu=""
+
+# Add this service to the cpuacct controller (any value means yes).
+#rc_cgroup_cpuacct=""
+
+# Set the cpuset controller settings for this service.
+#rc_cgroup_cpuset=""
+
+# Set the devices controller settings for this service.
+#rc_cgroup_devices=""
+
+# Set the memory controller settings for this service.
+#rc_cgroup_memory=""
+
+# Set the net_prio controller settings for this service.
+#rc_cgroup_net_prio=""
