@@ -71,7 +71,7 @@ vlan_post_start()
 		[ -z "${vname}" ] && vname="${IFACE}.${vlan}"
 		# 2) flags
 		eval vflags=\$${IFACE}_vlan${vlan}_flags
-		[ -z "${vname}" ] && eval vflags=\$vlan${vlan}_flags
+		[ -z "${vflags}" ] && eval vflags=\$vlan${vlan}_flags
 		# 3) ingress/egress map
 		eval vingress=\$${IFACE}_vlan${vlan}_ingress
 		[ -z "${vingress}" ] && eval vingress=\$vlan${vlan}_ingress
