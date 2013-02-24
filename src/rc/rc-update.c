@@ -195,10 +195,10 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 }
 
 #include "_usage.h"
-#define usagestring ""							      \
-	"Usage: rc-update [options] add service <runlevel>\n"		      \
-	"       rc-update [options] del service <runlevel>\n"		      \
-	"       rc-update [options] show"
+#define usagestring ""							\
+	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] [show [<runlevel>...]]"
 #define getoptstring "su" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "stack",           0, NULL, 's' },
