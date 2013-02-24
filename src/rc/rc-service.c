@@ -42,6 +42,11 @@
 extern char *applet;
 
 #include "_usage.h"
+#define usagestring ""							\
+	"Usage: rc-service [options] [-i] <service> <cmd>...\n"		\
+	"   or: rc-service [options] -e <service>\n"			\
+	"   or: rc-service [options] -l\n"				\
+	"   or: rc-service [options] -r <service>"
 #define getoptstring "e:ilr:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "exists",   1, NULL, 'e' },
