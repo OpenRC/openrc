@@ -727,6 +727,8 @@ handle_bad_signal(int sig)
 #endif
 
 #include "_usage.h"
+#define usagestring ""					\
+    "Usage: rc [options] [<runlevel>]"
 #define getoptstring "a:o:s:S" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "applet",   1, NULL, 'a' },
