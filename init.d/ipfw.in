@@ -8,7 +8,7 @@ ipfw_ip_in=${ipfw_ip_in-any}
 ipfw_ports_in=${ipfw_ports_in-auth ssh}
 ipfw_ports_nolog=${ipfw_ports_nolog-135-139,445 1026,1027 1433,1434}
 
-opts="panic showstatus"
+extra_commands="panic showstatus"
 
 depend() {
 	before net
