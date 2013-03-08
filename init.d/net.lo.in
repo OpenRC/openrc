@@ -151,6 +151,9 @@ _netmask2cidr()
 	local i= len=
 	local IFS=.
 	for i in $1; do
+		case $i in
+			0x*)	i=$((i)) ;;
+		esac
 		while [ ${i} -ne 0 ]; do
 			: $(( len += i % 2 ))
 			: $(( i >>= 1 ))
