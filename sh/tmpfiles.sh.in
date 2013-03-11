@@ -126,6 +126,16 @@ _x() {
 	# XXX: we don't implement this
 }
 
+_X() {
+	# Ignore a path during cleanup. Use this type to prevent path
+	# removal as controled with the age parameter. Note that if path is
+	# a directory, the content of the directory is not excluded from
+	# clean-up, only the directory itself.
+	# Lines of this type accept shell-style globs in place of normal path names.
+	:
+	# XXX: we don't implement this
+}
+
 _r() {
 	# Remove a file or directory if it exists. This may not be used to remove
 	# non-empty directories, use R for that. Lines of this type accept shell-style
@@ -263,7 +273,7 @@ for FILE in $tmpfiles_d ; do
 
 		# whine about invalid entries
 		case $cmd in
-			f|F|w|d|D|p|L|c|b|x|r|R|z|Z) ;;
+			f|F|w|d|D|p|L|c|b|x|X|r|R|z|Z) ;;
 			\#) continue ;;
 			*) warninvalid ; continue ;;
 		esac
