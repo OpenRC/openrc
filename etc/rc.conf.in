@@ -80,6 +80,10 @@
 # Set unicode to YES to turn on unicode support for keyboards and screens.
 #unicode="NO"
 
+# This is how long fuser should wait for a remote server to respond. The
+# default is 60 seconds, but  it can be adjusted here.
+#rc_fuser_timeout=60
+
 # Below is the default list of network fstypes.
 #
 # afs cifs coda davfs fuse fuse.sshfs gfs glusterfs lustre ncpfs
