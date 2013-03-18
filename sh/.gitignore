@@ -6,9 +6,6 @@ runscript.sh
 cgroup-release-agent.sh
 init.sh
 init-early.sh
-ifwatchd-carrier.sh
-ifwatchd-nocarrier.sh
 rc-cgroup.sh
-udhcpc-hook.sh
 tmpfiles.sh
 migrate-to-run.sh

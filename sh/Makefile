@@ -13,12 +13,12 @@ SRCS-FreeBSD=
 BIN-FreeBSD=
 
 SRCS-Linux=	cgroup-release-agent.sh.in init-early.sh.in migrate-to-run.sh.in \
-	rc-cgroup.sh.in udhcpc-hook.sh.in
+	rc-cgroup.sh.in
 BIN-Linux=	cgroup-release-agent.sh init-early.sh migrate-to-run.sh \
-	rc-cgroup.sh udhcpc-hook.sh
+	rc-cgroup.sh
 
-SRCS-NetBSD=	ifwatchd-carrier.sh.in ifwatchd-nocarrier.sh.in
-BIN-NetBSD=	ifwatchd-carrier.sh ifwatchd-nocarrier.sh
+SRCS-NetBSD=
+BIN-NetBSD=
 
 include ${MK}/scripts.mk
 

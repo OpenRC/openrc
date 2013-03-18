@@ -1,3 +1,5 @@
+include ../mk/net.mk
+
 BOOT=		bootmisc fsck hostname localmount loopback \
 		root swap swapfiles sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
@@ -10,7 +12,7 @@ BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 SHUTDOWNDIR=	${LEVELDIR}/shutdown
 
-ifeq (${MKNET},)
+ifeq (${MKNET},yes)
 BOOT+= network staticroute
 endif
 
@@ -24,12 +26,6 @@ include ${MK}/gitignore.mk
 BOOT-${OS}=
 SHUTDOWN-${OS}=
 SYSINIT-${OS}=
-
-ifeq (${MKNET},oldnet)
-BOOT-FreeBSD+= net.lo0
-BOOT-Linux+= net.lo
-BOOT-NetBSD+= net.lo0
-endif
 
 BOOT-BSD=	hostid newsyslog savecore syslogd swap-blk
 

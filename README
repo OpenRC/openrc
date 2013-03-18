@@ -10,7 +10,7 @@ You may wish to tweak the installation with the below arguments
 PROGLDFLAGS=-static
 LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
-MKNET=oldnet
+MKNET=no
 MKPAM=pam
 MKPREFIX=yes
 MKPKGCONFIG=no

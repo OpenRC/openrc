@@ -6,11 +6,6 @@ include Makefile.inc
 
 SUBDIR=		conf.d etc init.d local.d man scripts sh src sysctl.d
 
-# Build our old net foo or not
-ifeq (${MKNET},oldnet)
-SUBDIR+=	net doc
-endif
-
 # Build pkgconfig or not
 MKPKGCONFIG?=	yes
 ifeq (${MKPKGCONFIG},yes)
