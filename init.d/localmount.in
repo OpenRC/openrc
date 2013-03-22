@@ -17,7 +17,7 @@ start()
 	# Mount local filesystems in /etc/fstab.
 	local types="noproc" x= no_netdev=
 	for x in $net_fs_list $extra_net_fs_list; do
-		types="${types},${x}"
+		types="${types},no${x}"
 	done
 
 	if [ "$RC_UNAME" = Linux ]; then
