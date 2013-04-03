@@ -4,7 +4,7 @@
 
 . "@LIBEXECDIR@/sh/functions.sh"
 
-if ! mountinfo -q -f tmpfs "@LIBEXECDIR@/init.d"; then
+if [ -e /run/openrc/softlevel ]; then
 	einfo "The OpenRC dependency data has already been migrated."
 	exit 0
 fi
