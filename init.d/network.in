@@ -223,15 +223,6 @@ start()
 
 	einfo "Starting network"
 	routeflush
-	if [ "$RC_UNAME" = "Linux" ]; then
-		ifconfig lo 127.0.0.1 netmask 255.0.0.0 || cr=1
-		route add -net 127.0.0.0 netmask 255.0.0.0 \
-			gw 127.0.0.1 reject 2>/dev/null
-	else
-		ifconfig lo0 127.0.0.1 netmask 255.0.0.0 || cr=1
-		route -q add -inet 127.0.0.0 -netmask 255.0.0.0 \
-			127.0.0.1 -reject || cr=1
-	fi
 	eindent
 	for int in $(interfaces); do
 		local func= cf=
@@ -330,6 +321,10 @@ stop()
 	routeflush
 	eindent
 	for int in $(reverse $(interfaces u)); do
+		case "$int" in
+			lo|lo0) continue ;;
+			*) ;;
+		esac
 		intv=$(shell_var "$int")
 		eval downcmd=\$ifdown_$intv
 		eval cmd=\$ip_$intv
