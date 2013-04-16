@@ -1,6 +1,7 @@
 #!@SHELL@
 # Copyright (c) 2012 Alexander Vershilov <qnikst@gentoo.org>
 # Released under the 2-clause BSD license.
+extra_stopped_commands="${extra_stopped_commands} cgroup_cleanup"
 
 cgroup_find_path()
 {
@@ -13,6 +14,21 @@ cgroup_find_path()
 	done < /proc/1/cgroup
 	IFS="$OIFS"
 	echo $result
+}
+
+cgroup_get_pids()
+{
+	local p
+	pids=
+	while read p; do
+		[ $p -eq $$ ] || $pids="${pids} ${p}"
+	done < /sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks
+	[ -n "$pids" ]
+}
+
+cgroup_running()
+{
+	[ -d "/sys/fs/cgroup/openrc/${RC_SVCNAME}" ]
 }
 
 cgroup_set_values()
@@ -85,4 +101,23 @@ cgroup_set_limits()
 	[ -n "$net_prio" ] && cgroup_set_values net_prio "$net_prio"
 
 	return 0
+}
+
+cgroup_cleanup()
+{
+	yesno "${rc_cgroup_cleanup:-no}" && cgroup_running || return 0
+	ebegin "starting cgroups cleanup"
+	for sig in TERM QUIT INT; do
+		cgroup_get_pids || { eend 0 "finished" ; return 0 ; }
+		for i in 0 1; do
+			kill -s $sig $pids
+			for j in 0 1 2; do
+				cgroup_get_pids || { eend 0 "finished" ; return 0 ; }
+				sleep 1
+			done
+		done
+	done
+	cgroup_get_pids || { eend 0 "finished" ; return 0; }
+	kill -9 $pids
+	eend $(cgroup_running && echo 1 || echo 0) "fail to stop all processes"
 }
