@@ -76,7 +76,7 @@ start()
 		[ "${skiptypes}" = "no," ] && skiptypes=""
 		fsck_opts="$fsck_opts -C0 -T -t ${skiptypes}noopts=_netdev"
 		if [ -z "$fsck_passno" -a -z "$fsck_mnt" ]; then
-			fsck_args=${fsck_args--A -p}
+			fsck_args=${fsck_args:--A -p}
 			if echo 2>/dev/null >/.test.$$; then
 				rm -f /.test.$$
 				fsck_opts="$fsck_opts -R"
@@ -85,7 +85,7 @@ start()
 	fi
 
 	trap : INT QUIT
-	fsck ${fsck_args--p} $fsck_opts "$@"
+	fsck ${fsck_args:--p} $fsck_opts "$@"
 	case $? in
 	0)	eend 0; return 0;;
 	1)	ewend 1 "Filesystems repaired"; return 0;;
