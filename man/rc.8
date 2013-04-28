@@ -29,16 +29,17 @@
 .Nd stops and starts services for the specified runlevel
 .Sh SYNOPSIS
 .Nm
+.Op Fl n , -no-stop
 .Op Fl o , -override
 .Op Ar runlevel
 .Sh DESCRIPTION
 .Nm
-first stops any services that are not for the runlevel and then starts any
-services in the runlevel and from stacked runlevels added by
+first stops any services that are not in the specified runlevel unless
+--no-stop is specified, then starts any services in the runlevel and
+stacked runlevels added by
 .Nm rc-update
 that are not currently started.
-If no runlevel is specified then we use the current runlevel the system
-is currently in.
+If no runlevel is specified, we use the current runlevel.
 .Pp
 There are some special runlevels that you should be aware of:
 .Bl -tag -width "shutdown"
