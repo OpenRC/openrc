@@ -51,7 +51,7 @@ include ${MK}/pam.mk
 # $3 is the path where the links are created
 define make-links
 	for x in $(1); do \
-		if test -n "${MKSELINUX}"; then \
+		if [ "${MKSELINUX}" = yes ]; then \
 			printf '#!/bin/sh\nexec ${2} --applet %s "$$@"\n' $$x >${3}/$$x; \
 			chmod ${BINMODE} ${3}/$$x; \
 		else \
