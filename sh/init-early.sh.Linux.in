@@ -30,7 +30,8 @@ fi
 if service_present "$RC_DEFAULTLEVEL" consolefont ||
    service_present "$RC_BOOTLEVEL" consolefont; then
 	printf "\033%s" "$termencoding" >"$CONSOLE" 2>/dev/null
-	if [ -r "$RC_LIBEXECDIR"/console/font -a -x /usr/bin/setfont ]; then
+	if [ -r "$RC_LIBEXECDIR"/console/font ] && \
+		type setfont > /dev/null 2>&1; then
 		[ -c "$CONSOLE" ] && cons="-C $CONSOLE"
 		setfont $cons "$RC_LIBEXECDIR"/console/font 2>/dev/null
 	fi
