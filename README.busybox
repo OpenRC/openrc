@@ -1,0 +1,28 @@
+Using Busybox as your Default Shell
+-----------------------------------
+
+
+If you have/bin/sh linked to busybox, you need to be aware of several
+incompatibilities between busybox's applets and the standalone
+counterparts. Since it is possible to configure busybox to not include
+these applets or to prefer the standalone counterparts, OpenRC does not
+attempt to support the busybox applets.
+
+All of these apply to busybox 1.20.2, which is the current version of
+busybox as of this writing.
+
+1. The start-stop-daemon applet is not compatible with start-stop-daemon
+in OpenRC. Please make sure CONFIG_START_STOP_DAEMON is not set to y in
+the configuration file you use to build busybox.
+
+2. The -O option for the mount applet does not support the [no]_netdev
+options from util-linux for handling network file systems.
+
+3. The umount applet does not support the -O option from util-linux.
+
+4. The swapon applet does not support the -e option from util-linux.
+
+5. the setfont applet does not support the -u option from kbd.
+
+There is work to get most of these supported by busybox, so this file
+will be updated as things change.
