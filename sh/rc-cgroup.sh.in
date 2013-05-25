@@ -21,7 +21,7 @@ cgroup_get_pids()
 	local p
 	pids=
 	while read p; do
-		[ $p -eq $$ ] || $pids="${pids} ${p}"
+		[ $p -eq $$ ] || pids="${pids} ${p}"
 	done < /sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks
 	[ -n "$pids" ]
 }
