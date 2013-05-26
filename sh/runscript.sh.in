@@ -302,7 +302,8 @@ while [ -n "$1" ]; do
 				then
 					"$1"_post || exit $?
 				fi
-				[ "$(command -v cgroup_cleanup)" = "cgroup_cleanup" ] && \
+				[ "$(command -v cgroup_cleanup)" = "cgroup_cleanup" -a \
+				"$1" = "stop" ] && \
 					cgroup_cleanup
 				shift
 				continue 2
