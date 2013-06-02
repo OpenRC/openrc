@@ -5,6 +5,6 @@
 
 cgroup=/sys/fs/cgroup/openrc
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
-if [ -d ${cgroup}/$1 ]; then
-	rmdir ${cgroup}/$1
+if [ -d ${cgroup}/"$1" ]; then
+	rmdir ${cgroup}/"$1"
 fi
