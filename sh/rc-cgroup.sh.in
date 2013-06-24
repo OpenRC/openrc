@@ -115,7 +115,7 @@ cgroup_cleanup()
 				cgroup_get_pids || { eend 0 "finished" ; return 0 ; }
 				sleep 1
 			done
-		done
+		done 2>/dev/null
 	done
 	cgroup_get_pids || { eend 0 "finished" ; return 0; }
 	kill -9 $pids
