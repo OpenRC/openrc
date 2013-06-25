@@ -70,15 +70,17 @@ cgroup_set_values()
 	return 0
 }
 
-cgroup_set_limits()
+cgroup_add_service()
 {
-	openrc_cgroup=/sys/fs/cgroup/openrc
-	if [ -d "$openrc_cgroup" ]; then
-		cgroup="$openrc_cgroup/$RC_SVCNAME"
+	if [ -d "$1" ]; then
+		cgroup="$1/$RC_SVCNAME"
 		mkdir -p "$cgroup"
 		[ -f "$cgroup/tasks" ] && echo 0 > "$cgroup/tasks"
 	fi
+}
 
+cgroup_set_limits()
+{
 	local blkio="${rc_cgroup_blkio:-$RC_CGROUP_BLKIO}"
 	[ -n "$blkio" ] && cgroup_set_values blkio "$blkio"
 
