@@ -72,8 +72,17 @@ cgroup_set_values()
 
 cgroup_add_service()
 {
-	if [ -d "$1" ]; then
-		cgroup="$1/$RC_SVCNAME"
+    # relocate starting process to the top of the cgroup
+    # it prevents from unwanted inheriting of the user
+    # cgroups. But may lead to a problems where that inheriting
+    # is needed.
+	for d in /sys/fs/cgroup/* ; do
+		echo $$ > "${d}"/tasks
+	done
+
+	openrc_cgroup=/sys/fs/cgroup/openrc
+	if [ -d "$openrc_cgroup" ]; then
+		cgroup="$openrc_cgroup/$RC_SVCNAME"
 		mkdir -p "$cgroup"
 		[ -f "$cgroup/tasks" ] && echo 0 > "$cgroup/tasks"
 	fi
