@@ -351,6 +351,9 @@ rc_status(int argc, char **argv)
 			rc_stringlist_free(tmp);
 		}
 		l->value = p;
+		/* we are unsetting RC_SVCNAME because last loaded service 
+		   wount be added to list */
+		unsetenv(RC_SVCNAME);
 		print_level("Dynamic", "needed");
 		print_services(NULL, nservices);
 		print_level("Dynamic", "manual");
