@@ -102,7 +102,7 @@ _D() {
 _L() {
 	# Create a symlink if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && dryrun_or_real ln -s "$args" "$path"
+	[ ! -e "$path" ] && dryrun_or_real ln -s "$arg" "$path"
 }
 
 _p() {
