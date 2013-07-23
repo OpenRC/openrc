@@ -43,13 +43,17 @@ relabel() {
 _b() {
 	# Create a block device node if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && dryrun_or_real mknod $path b ${arg%:*} ${arg#*:}
+	[ ! -e "$path" ] && \
+		dryrun_or_real mknod -m $mode $path b ${arg%:*} ${arg#*:} && \
+		dryrun_or_real chown $uid:$gid $path
 }
 
 _c() {
 	# Create a character device node if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && dryrun_or_real mknod $path c ${arg%:*} ${arg#*:}
+	[ ! -e "$path" ] && \
+		dryrun_or_real mknod -m $mode $path c ${arg%:*} ${arg#*:} && \
+		dryrun_or_real chown $uid:$gid $path
 }
 
 
