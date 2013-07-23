@@ -110,6 +110,7 @@ extern char **environ;
 #if !defined(SYS_ioprio_set) && defined(__NR_ioprio_set)
 # define SYS_ioprio_set __NR_ioprio_set
 #endif
+#if !defined(__DragonFly__)
 static inline int ioprio_set(int which, int who, int ioprio)
 {
 #ifdef SYS_ioprio_set
@@ -118,6 +119,7 @@ static inline int ioprio_set(int which, int who, int ioprio)
 	return 0;
 #endif
 }
+#endif
 
 static void
 free_schedulelist(void)
