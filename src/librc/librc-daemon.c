@@ -164,9 +164,15 @@ librc_hidden_def(rc_find_pids)
 #  endif
 #  define _KINFO_PROC kinfo_proc
 #  define _KVM_GETARGV kvm_getargv
-#  define _GET_KINFO_UID(kp) (kp.ki_ruid)
-#  define _GET_KINFO_COMM(kp) (kp.ki_comm)
-#  define _GET_KINFO_PID(kp) (kp.ki_pid)
+#  if defined(__DragonFly__)
+#    define _GET_KINFO_UID(kp) (kp.kp_ruid)
+#    define _GET_KINFO_COMM(kp) (kp.kp_comm)
+#    define _GET_KINFO_PID(kp) (kp.kp_pid)
+#  else
+#    define _GET_KINFO_UID(kp) (kp.ki_ruid)
+#    define _GET_KINFO_COMM(kp) (kp.ki_comm)
+#    define _GET_KINFO_PID(kp) (kp.ki_pid)
+#  endif
 #  define _KVM_PATH _PATH_DEVNULL
 #  define _KVM_FLAGS O_RDONLY
 # endif
