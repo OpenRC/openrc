@@ -15,6 +15,17 @@
 
 DRYRUN=0
 
+checkprefix() {
+	n=$1
+	shift
+	for x in $@; do
+		case $n in
+			${x}*) return 0 ;;
+	esac
+	done
+	return 1
+}
+
 warninvalid() {
 	printf "tmpfiles: ignoring invalid entry on line %d of \`%s'\n" "$LINENUM" "$FILE"
 	error=$(( error+1 ))
@@ -202,6 +213,8 @@ _Z() {
 }
 
 CREATE=0 REMOVE=0 CLEAN=0 VERBOSE=0 DRYRUN=0 error=0 LINENO=0
+EXCLUDE=
+PREFIX=
 FILE=
 fragments=
 # XXX: The harcoding of /usr/lib/ is an explicit choice by upstream
@@ -237,6 +250,8 @@ while [ $# -gt 0 ]; do
 		--clean) CLEAN=1 ;; # TODO: Not implemented
 		--verbose) VERBOSE=1 ;;
 		--dryrun|--dry-run) DRYRUN=1 ;;
+		--exclude-prefix=*) EXCLUDE="${EXCLUDE}${1##--exclude-prefix=} " ;;
+		--prefix=*) PREFIX="${PREFIX}${1##--prefix=} " ;;
 	esac
 	shift
 done
@@ -247,7 +262,7 @@ if [ $(( CLEAN )) -eq 1 ] ; then
 fi
 
 if [ "$CREATE$REMOVE" = '00' ]; then
-	printf 'usage: %s [--create] [--remove] [--clean] [--verbose] [--dry-run]\n' "${0##*/}"
+	printf 'usage: %s [--exclude-prefix=path] [--prefix=path] [--create] [--remove] [--clean] [--verbose] [--dry-run]\n' "${0##*/}"
 	exit 1
 fi
 
@@ -297,6 +312,8 @@ for FILE in $tmpfiles_d ; do
 		[ "$arg" = '-' -o "$arg" = '' ] && arg=''
 		set -- "$path" "$mode" "$uid" "$gid" "$age" "$arg"
 
+		[ -n "$EXCLUDE" ] && checkprefix $path $EXCLUDE && continue
+		[ -n "$PREFIX" ] && ! checkprefix $path $PREFIX && continue
 		[ "$VERBOSE" -eq "1" ] && echo _$cmd "$@"
 		_$cmd "$@"
 		rc=$?
