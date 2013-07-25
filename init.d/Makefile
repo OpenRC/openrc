@@ -28,7 +28,7 @@ SRCS-FreeBSD+=	adjkerntz.in devd.in dumpon.in encswap.in ipfw.in \
 NET_LO-Linux=	net.lo
 SRCS-Linux=	devfs.in dmesg.in hwclock.in consolefont.in keymaps.in \
 		killprocs.in modules.in mount-ro.in mtab.in numlock.in \
-		procfs.in sysfs.in termencoding.in
+		procfs.in sysfs.in termencoding.in tmpfiles.dev.in
 
 NET_LO-NetBSD=	net.lo0
 # Generic BSD scripts
