@@ -21,14 +21,6 @@ start()
 stop()
 {
 	ebegin "Deactivating additional swap space"
-
-	# Try to unmount all tmpfs filesystems not in use, else a deadlock may
-	# occur. As $RC_SVCDIR may also be tmpfs we cd to it to lock it
-	# fixme: Do we need this here since we are only unmounting swap files
-	# and loopback swap?
-	cd "$RC_SVCDIR"
-	umount -a -t tmpfs 2>/dev/null
-
 	case "$RC_UNAME" in
 		Linux)
 			if [ -e /proc/swaps ]; then
