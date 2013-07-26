@@ -77,7 +77,7 @@ cgroup_add_service()
     # cgroups. But may lead to a problems where that inheriting
     # is needed.
 	for d in /sys/fs/cgroup/* ; do
-		echo 0 > "${d}"/tasks
+		[ -f "${d}"/tasks ] && echo 0 > "${d}"/tasks
 	done
 
 	openrc_cgroup=/sys/fs/cgroup/openrc
