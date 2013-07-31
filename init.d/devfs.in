@@ -7,7 +7,7 @@ description="Mount system critical filesystems in /dev."
 depend() {
 	use dev-mount
 	before dev
-	keyword -prefix -vserver
+	keyword -prefix -vserver -lxc
 }
 
 start() {
