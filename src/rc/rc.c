@@ -79,12 +79,6 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 const char *applet = NULL;
 static char *runlevel;
-static RC_STRINGLIST *hotplugged_services;
-static RC_STRINGLIST *stop_services;
-static RC_STRINGLIST *start_services;
-static RC_STRINGLIST *types_n;
-static RC_STRINGLIST *types_nua;
-static RC_DEPTREE *deptree;
 static RC_HOOK hook_out;
 
 struct termios *termios_orig = NULL;
@@ -524,7 +518,9 @@ runlevel_config(const char *service, const char *level)
 }
 
 static void
-do_stop_services(const char *newlevel, bool parallel, bool going_down)
+do_stop_services(const RC_STRINGLIST *types_n, const RC_STRINGLIST *start_services,
+				 const RC_STRINGLIST *stop_services, const RC_DEPTREE *deptree,
+				 const char *newlevel, bool parallel, bool going_down)
 {
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
@@ -627,7 +623,7 @@ stop:
 }
 
 static void
-do_start_services(bool parallel)
+do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 {
 	RC_STRING *service;
 	pid_t pid;
@@ -754,6 +750,12 @@ main(int argc, char **argv)
 {
 	const char *bootlevel = NULL;
 	char *newlevel = NULL;
+	static RC_STRINGLIST *hotplugged_services;
+	static RC_STRINGLIST *stop_services;
+	static RC_STRINGLIST *start_services;
+	static RC_STRINGLIST *types_n;
+	static RC_STRINGLIST *types_nua;
+	static RC_DEPTREE *deptree;
 	RC_STRINGLIST *deporder = NULL;
 	RC_STRINGLIST *tmplist;
 	RC_STRING *service;
@@ -868,7 +870,11 @@ main(int argc, char **argv)
 	snprintf(pidstr, sizeof(pidstr), "%d", getpid());
 	setenv("RC_PID", pidstr, 1);
 
-	/* Load current runlevel */
+	/* Create a list of all services which should be started for the new or
+	* current runlevel including those in boot, sysinit and hotplugged
+	* runlevels.  Clearly, some of these will already be started so we
+	* won't actually be starting them all.
+	*/
 	bootlevel = getenv("RC_BOOTLEVEL");
 	runlevel = rc_runlevel_get();
 
@@ -972,8 +978,13 @@ main(int argc, char **argv)
 		    applet, RC_STOPPING, strerror(errno));
 	}
 
-	/* Build a list of all services to stop and then work out the
-	 * correct order for stopping them */
+	/* Create a list of all services which we could stop (assuming
+	* they won't be active in the new or current runlevel) including
+	* all those services which have been started, are inactive or
+	* are currently starting.  Clearly, some of these will be listed
+	* in the new or current runlevel so we won't actually be stopping
+	* them all.
+	*/
 	stop_services = rc_services_in_state(RC_SERVICE_STARTED);
 	tmplist = rc_services_in_state(RC_SERVICE_INACTIVE);
 	TAILQ_CONCAT(stop_services, tmplist, entries);
@@ -996,7 +1007,11 @@ main(int argc, char **argv)
 		stop_services = tmplist;
 	}
 
-	/* Load our list of start services */
+	/* Create a list of all services which should be started for the new or
+	 * current runlevel including those in boot, sysinit and hotplugged
+	 * runlevels.  Clearly, some of these will already be started so we
+	 * won't actually be starting them all.
+	 */
 	hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
 	start_services = rc_services_in_runlevel_stacked(newlevel ?
 	    newlevel : runlevel);
@@ -1006,9 +1021,11 @@ main(int argc, char **argv)
 		tmplist = rc_services_in_runlevel(RC_LEVEL_SYSINIT);
 		TAILQ_CONCAT(start_services, tmplist, entries);
 		free(tmplist);
+		/* If we are NOT headed for the single-user runlevel... */
 		if (strcmp(newlevel ? newlevel : runlevel,
 			RC_LEVEL_SINGLE) != 0)
 		{
+			/* If we are NOT headed for the boot runlevel... */
 			if (strcmp(newlevel ? newlevel : runlevel,
 				bootlevel) != 0)
 			{
@@ -1029,7 +1046,7 @@ main(int argc, char **argv)
 
 	/* Now stop the services that shouldn't be running */
 	if (stop_services && !nostop)
-		do_stop_services(newlevel, parallel, going_down);
+		do_stop_services(types_n, start_services, stop_services, deptree, newlevel, parallel, going_down);
 
 	/* Wait for our services to finish */
 	wait_for_services();
@@ -1065,18 +1082,10 @@ main(int argc, char **argv)
 		TAILQ_FOREACH(service, hotplugged_services, entries)
 		    rc_service_mark(service->value, RC_SERVICE_HOTPLUGGED);
 
-	/* Order the services to start */
-	if (start_services) {
-		rc_stringlist_sort(&start_services);
-		deporder = rc_deptree_depends(deptree, types_nua,
-		    start_services, runlevel,
-		    depoptions | RC_DEP_START);
-		rc_stringlist_free(start_services);
-		start_services = deporder;
-	}
-
 #ifdef __linux__
-	/* mark any services skipped as started */
+	/* If the "noinit" parameter was passed on the kernel command line then
+	 * mark the specified services as started so they will not be started
+	 * by us. */
 	proc = p = rc_proc_getent("noinit");
 	if (proc) {
 		while ((token = strsep(&p, ",")))
@@ -1085,19 +1094,38 @@ main(int argc, char **argv)
 	}
 #endif
 
+	/* If we have a list of services to start then... */
 	if (start_services) {
-		do_start_services(parallel);
-		/* FIXME: If we skip the boot runlevel and go straight
-		 * to default from sysinit, we should now re-evaluate our
-		 * start services + hotplugged services and call
-		 * do_start_services a second time. */
+		/* Get a list of the chained runlevels which compose the target runlevel */
+		RC_STRINGLIST *runlevel_chain = rc_runlevel_stacks(runlevel);
 
-		/* Wait for our services to finish */
-		wait_for_services();
+		/* Loop through them in reverse order. */
+		RC_STRING *rlevel;
+		TAILQ_FOREACH_REVERSE(rlevel, runlevel_chain, rc_stringlist, entries)
+		{
+			/* Get a list of all the services in that runlevel */
+			RC_STRINGLIST *run_services = rc_services_in_runlevel(rlevel->value);
+
+			/* Start those services. */
+			rc_stringlist_sort(&run_services);
+			deporder = rc_deptree_depends(deptree, types_nua, run_services, rlevel->value, depoptions | RC_DEP_START);
+			rc_stringlist_free(run_services);
+			run_services = deporder;
+			do_start_services(run_services, parallel);
+
+			/* Wait for our services to finish */
+			wait_for_services();
+			
+			/* Free the list of services, we're done with it. */
+			rc_stringlist_free(run_services);
+		}
+		rc_stringlist_free(runlevel_chain);
 	}
 
 #ifdef __linux__
-	/* mark any services skipped as stopped */
+	/* If the "noinit" parameter was passed on the kernel command line then
+	 * mark the specified services as stopped so that our records reflect
+	 * reality.	 */
 	proc = p = rc_proc_getent("noinit");
 	if (proc) {
 		while ((token = strsep(&p, ",")))

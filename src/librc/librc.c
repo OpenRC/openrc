@@ -421,25 +421,43 @@ rc_runlevel_unstack(const char *dst, const char *src)
 }
 librc_hidden_def(rc_runlevel_unstack)
 
-RC_STRINGLIST *
-rc_runlevel_stacks(const char *runlevel)
+/* Returns a list of all the chained runlevels used by the
+ * specified runlevel in dependency order, including the
+ * specified runlevel. */
+void
+rc_get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list)
 {
+	// If we haven't been passed a runlevel or a level list, or
+	// if the passed runlevel doesn't exist then we're done already!
+	if (!runlevel || !level_list || !rc_runlevel_exists(runlevel))
+		return;
+
+	// We want to add this runlevel to the list but if
+	// it is already in the list it needs to go at the
+	// end again.
+	if (rc_stringlist_find(level_list, runlevel))
+		rc_stringlist_delete(level_list, runlevel);
+	rc_stringlist_add(level_list, runlevel);
+
+	// We can now do exactly the above procedure for our chained
+	// runlevels.
 	char path[PATH_MAX];
 	RC_STRINGLIST *dirs;
 	RC_STRING *d, *dn;
-
-	if (!runlevel)
-		return false;
 	snprintf(path, sizeof(path), "%s/%s", RC_RUNLEVELDIR, runlevel);
 	dirs = ls_dir(path, LS_DIR);
-	TAILQ_FOREACH_SAFE(d, dirs, entries, dn) {
-		if (!rc_runlevel_exists(d->value)) {
-			TAILQ_REMOVE(dirs, d, entries);
-			free(d->value);
-			free(d);
-		}
-	}
-	return dirs;
+	TAILQ_FOREACH_SAFE(d, dirs, entries, dn)
+		rc_get_runlevel_chain(d->value, level_list);
+}
+/*librc_hidden_def(rc_get_runlevel_chain)*/
+
+RC_STRINGLIST *
+rc_runlevel_stacks(const char *runlevel)
+{
+	RC_STRINGLIST *stack;
+	stack = rc_stringlist_new();
+	rc_get_runlevel_chain(runlevel, stack);
+	return stack;
 }
 librc_hidden_def(rc_runlevel_stacks)
 
@@ -903,16 +921,12 @@ rc_services_in_runlevel_stacked(const char *runlevel)
 	stacks = rc_runlevel_stacks(runlevel);
 	TAILQ_FOREACH(stack, stacks, entries) {
 		sl = rc_services_in_runlevel(stack->value);
-		if (list != NULL) {
-			TAILQ_CONCAT(list, sl, entries);
-			free(sl);
-		} else
-			list = sl;
+		TAILQ_CONCAT(list, sl, entries);
+		free(sl);
 	}
 	return list;
 }
 librc_hidden_def(rc_services_in_runlevel_stacked)
-
 
 RC_STRINGLIST *
 rc_services_in_state(RC_SERVICE state)
