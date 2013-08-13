@@ -60,7 +60,10 @@ First we ensure that any services that depend on us are stopped. If any
 services that need us fail to stop then we exit with a suitable error,
 otherwise call the supplied stop function if it exists.
 .It Ar restart
-Stop and start the service, including dependencies.
+Stop and start the service, including dependencies. This cannot be
+overridden. See the description of the RC_CMD variable below for the
+method to make your service behave differently when restart is being
+executed.
 .It Ar status
 Show the status of the service. The return code matches the status, with the
 exception of "started" returning 0 to match standard command behaviour.
@@ -362,7 +365,8 @@ offset. Otherwise it is undefined.
 The result of `uname -s`.
 .It Va RC_CMD
 This contains the name of the command the service script is executing, such
-as start, stop, restart etc.
+as start, stop, restart etc. One example of using this is to make a
+service script behave differently when restart is being executed.
 .El
 .Sh FILES
 .Pp
