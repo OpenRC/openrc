@@ -57,6 +57,9 @@ init.d.misc is not installed by default as the scripts will need
 tweaking on a per distro basis. They are also non essential to the operation
 of the system.
 
+As of OpenRc-0.12, the net.* scripts, originally from Gentoo Linux, have
+been removed. If you need these scripts, look for a package called
+netifrc, which is maintained by them.
 
 Reporting Bugs
 --------------
