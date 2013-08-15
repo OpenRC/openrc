@@ -471,7 +471,7 @@ start_pre()
 		# stop_post.
 	fi
     # Ensure that our dirs are correct
-    checkpath --dir --owner foo:foo --mode 0664 \\
+    checkpath --directory --owner foo:foo --mode 0775 \\
 	/var/run/foo /var/cache/foo
 }
 
