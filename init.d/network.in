@@ -46,7 +46,11 @@ sys_interfaces()
 		local w= rest= i= cmd=$1
 		while read w rest; do
 			i=${w%%:*}
-			[ "$i" != "$w" ] || continue
+			case "$i" in
+				"$w") continue ;;
+				lo|lo0) continue ;;
+				*) ;;
+			esac
 			if [ "$cmd" = u ]; then
 				ifconfig "$i" | grep -q "[ ]*UP" || continue
 			fi
