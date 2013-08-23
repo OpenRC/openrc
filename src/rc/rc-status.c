@@ -171,6 +171,26 @@ print_services(const char *runlevel, RC_STRINGLIST *svcs)
 	rc_stringlist_free(l);
 }
 
+static void
+print_stacked_services(const char *runlevel)
+{
+	RC_STRINGLIST *stackedlevels, *servicelist;
+	RC_STRING *stackedlevel;
+
+	stackedlevels = rc_runlevel_stacks(runlevel);
+	TAILQ_FOREACH(stackedlevel, stackedlevels, entries) {
+		if (rc_stringlist_find(levels, stackedlevel->value) != NULL)
+			continue;
+		print_level("Stacked", stackedlevel->value);
+		servicelist = rc_services_in_runlevel(stackedlevel->value);
+		print_services(stackedlevel->value, servicelist);
+		rc_stringlist_free(servicelist);
+		print_stacked_services(stackedlevel->value);
+	}
+	rc_stringlist_free(stackedlevels);
+	stackedlevels = NULL;
+}
+
 #include "_usage.h"
 #define usagestring ""						\
 	"Usage: rc-status [options] <runlevel>...\n"		\
@@ -199,7 +219,8 @@ static const char * const longopts_help[] = {
 int
 rc_status(int argc, char **argv)
 {
-	RC_STRING *s, *l, *t;
+    RC_STRING *s, *l, *t, *level;
+
 	char *p, *runlevel = NULL;
 	int opt, aflag = 0, retval = 0;
 
@@ -280,16 +301,7 @@ rc_status(int argc, char **argv)
 		print_level(NULL, l->value);
 		services = rc_services_in_runlevel(l->value);
 		print_services(l->value, services);
-		nservices = rc_runlevel_stacks(l->value);
-		TAILQ_FOREACH(s, nservices, entries) {
-			if (rc_stringlist_find(levels, s->value) != NULL)
-				continue;
-			print_level("Stacked", s->value);
-			sservices = rc_services_in_runlevel(s->value);
-			print_services(s->value, sservices);
-			rc_stringlist_free(sservices);
-		}
-		sservices = NULL;
+		print_stacked_services(l->value);
 		rc_stringlist_free(nservices);
 		nservices = NULL;
 		rc_stringlist_free(services);
@@ -317,16 +329,14 @@ rc_status(int argc, char **argv)
 		services = rc_services_in_runlevel(NULL);
 		sservices = rc_stringlist_new();
 		TAILQ_FOREACH(l, levels, entries) {
-			nservices = rc_services_in_runlevel(l->value);
+			nservices = rc_services_in_runlevel_stacked(l->value);
 			TAILQ_CONCAT(sservices, nservices, entries);
 			free(nservices);
 		}
 		TAILQ_FOREACH_SAFE(s, services, entries, t) {
-			if (rc_stringlist_find(sservices, s->value) ||
-			    rc_service_state(s->value) &
-			    (RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED))
-		{
-			TAILQ_REMOVE(services, s, entries);
+			if ((rc_stringlist_find(sservices, s->value) ||
+			    (rc_service_state(s->value) & ( RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED)))) {
+				TAILQ_REMOVE(services, s, entries);
 				free(s->value);
 				free(s);
 			}
@@ -337,18 +347,17 @@ rc_status(int argc, char **argv)
 		alist = rc_stringlist_new();
 		l = rc_stringlist_add(alist, "");
 		p = l->value;
-		if (!runlevel)
-			runlevel = rc_runlevel_get();
-		TAILQ_FOREACH_SAFE(s, services, entries, t) {
-			l->value = s->value;
-			unsetenv("RC_SVCNAME");
-			setenv("RC_SVCNAME", l->value, 1);
-			tmp = rc_deptree_depends(deptree, needsme, alist, runlevel, RC_DEP_TRACE);
-			if (TAILQ_FIRST(tmp)) {
-				TAILQ_REMOVE(services, s, entries);
-				TAILQ_INSERT_TAIL(nservices, s, entries);
+		TAILQ_FOREACH(level, levels, entries) {
+			TAILQ_FOREACH_SAFE(s, services, entries, t) {
+				l->value = s->value;
+				setenv("RC_SVCNAME", l->value, 1);
+				tmp = rc_deptree_depends(deptree, needsme, alist, level->value, RC_DEP_TRACE);
+				if (TAILQ_FIRST(tmp)) {
+					TAILQ_REMOVE(services, s, entries);
+					TAILQ_INSERT_TAIL(nservices, s, entries);
+				}
+				rc_stringlist_free(tmp);
 			}
-			rc_stringlist_free(tmp);
 		}
 		l->value = p;
 		/* we are unsetting RC_SVCNAME because last loaded service 
