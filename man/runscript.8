@@ -60,12 +60,12 @@ First we ensure that any services that depend on us are stopped. If any
 services that need us fail to stop then we exit with a suitable error,
 otherwise call the supplied stop function if it exists.
 .It Ar restart
-Stop and start the service, including dependencies. This cannot be
+Stops and starts the service, including dependencies. This cannot be
 overridden. See the description of the RC_CMD variable below for the
 method to make your service behave differently when restart is being
 executed.
 .It Ar status
-Show the status of the service. The return code matches the status, with the
+Shows the status of the service. The return code matches the status, with the
 exception of "started" returning 0 to match standard command behaviour.
 .It Ar zap
 Resets the service state to stopped and removes all saved data about the
@@ -88,8 +88,8 @@ Output from any non OpenRC commands is not affected.
 .It Fl v , -verbose
 Turns on any extra informational output the service generates.
 .It Fl Z , -dry-run
-Shows what services would be stopped and/or started without actually starting
-or stopping them.
+Shows which services would be stopped and/or started without actually stopping
+or starting them.
 .El
 .Pp
 The following variables affect the service script:
