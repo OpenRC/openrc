@@ -38,7 +38,7 @@
 	"Disable color output",						      \
 	"Display software version",			              \
 	"Run verbosely",						      \
-	"Run quietly (Does not affect errors)"
+	"Run quietly"
 
 #define case_RC_COMMON_getopt_case_C  setenv ("EINFO_COLOR", "NO", 1);
 #define case_RC_COMMON_getopt_case_h  usage (EXIT_SUCCESS);
