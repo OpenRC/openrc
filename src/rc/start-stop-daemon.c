@@ -355,8 +355,7 @@ do_stop(const char *exec, const char *const *argv,
 
 	LIST_FOREACH_SAFE(pi, pids, entries, np) {
 		if (test) {
-			if (!quiet)
-				einfo("Would send signal %d to PID %d", sig, pi->pid);
+			einfo("Would send signal %d to PID %d", sig, pi->pid);
 			nkilled++;
 		} else {
 			if (verbose)
