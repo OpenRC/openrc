@@ -674,6 +674,8 @@ eerrorn(const char *EINFO_RESTRICT fmt, ...)
 	int retval;
 	va_list ap;
 
+	if (!fmt || is_quiet())
+		return 0;
 	va_start(ap, fmt);
 	retval = _eerrorvn(fmt, ap);
 	va_end(ap);
@@ -740,7 +742,7 @@ eerror(const char *EINFO_RESTRICT fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (!fmt)
+	if (!fmt || is_quiet())
 		return 0;
 	va_start(ap, fmt);
 	elogv(LOG_ERR, fmt, ap);
@@ -757,7 +759,7 @@ eerrorx(const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
-	if (fmt) {
+	if (fmt && !is_quiet()) {
 		va_start(ap, fmt);
 		elogv(LOG_ERR, fmt, ap);
 		_eerrorvn(fmt, ap);
