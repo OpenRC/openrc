@@ -274,6 +274,12 @@ is_quiet(void)
 }
 
 static bool
+is_really_quiet(void)
+{
+	return yesno(getenv("EERROR_QUIET"));
+}
+
+static bool
 is_verbose(void)
 {
 	return yesno(getenv ("EINFO_VERBOSE"));
@@ -674,7 +680,7 @@ eerrorn(const char *EINFO_RESTRICT fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (!fmt || is_quiet())
+	if (!fmt || is_really_quiet())
 		return 0;
 	va_start(ap, fmt);
 	retval = _eerrorvn(fmt, ap);
@@ -742,7 +748,7 @@ eerror(const char *EINFO_RESTRICT fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (!fmt || is_quiet())
+	if (!fmt || is_really_quiet())
 		return 0;
 	va_start(ap, fmt);
 	elogv(LOG_ERR, fmt, ap);
@@ -759,7 +765,7 @@ eerrorx(const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
-	if (fmt && !is_quiet()) {
+	if (fmt && !is_really_quiet()) {
 		va_start(ap, fmt);
 		elogv(LOG_ERR, fmt, ap);
 		_eerrorvn(fmt, ap);

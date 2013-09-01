@@ -107,7 +107,6 @@ respectively, but only work when
 is true. You can also make the
 .Fn einfo ,
 .Fn ewarn ,
-.Fn eerror ,
 and
 .Fn ebegin
 functions silent by setting
@@ -185,6 +184,12 @@ when set to true makes the
 .Fn einfo
 and
 .Fn einfon
+family of functions quiet, so nothing is printed.
+.Va EERROR_QUIET
+when set to true makes the
+.Fn eerror
+and
+.Fn eerrorn
 family of functions quiet, so nothing is printed.
 .Pp
 .Va EINFO_VERBOSE
