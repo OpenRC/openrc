@@ -3,9 +3,8 @@ fsck
 hostname
 local
 localmount
+loopback
 moused
-net.lo
-net.lo0
 netmount
 network
 root
@@ -41,4 +40,5 @@ syslogd
 termencoding
 ttys
 wscons
+tmpfiles.dev
 tmpfiles.setup
