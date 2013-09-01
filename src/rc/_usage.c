@@ -35,6 +35,21 @@
 #  define _noreturn
 #endif
 
+static void set_quiet_options(void)
+{
+	static int qcount = 0;
+
+	qcount ++;
+	switch (qcount) {
+	case 1:
+		setenv ("EINFO_QUIET", "YES", 1);
+		break;
+	case 2:
+		setenv ("EERROR_QUIET", "YES", 1);
+		break;
+	}
+}
+
 _noreturn static void
 show_version(void)
 {

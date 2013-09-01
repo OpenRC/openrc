@@ -38,13 +38,13 @@
 	"Disable color output",						      \
 	"Display software version",			              \
 	"Run verbosely",						      \
-	"Run quietly"
+	"Run quietly (repeat to suppress errors)"
 
 #define case_RC_COMMON_getopt_case_C  setenv ("EINFO_COLOR", "NO", 1);
 #define case_RC_COMMON_getopt_case_h  usage (EXIT_SUCCESS);
 #define case_RC_COMMON_getopt_case_V  if (argc == 2) show_version();
 #define case_RC_COMMON_getopt_case_v  setenv ("EINFO_VERBOSE", "YES", 1);
-#define case_RC_COMMON_getopt_case_q  setenv ("EINFO_QUIET", "YES", 1);
+#define case_RC_COMMON_getopt_case_q  set_quiet_options();
 #define case_RC_COMMON_getopt_default usage (EXIT_FAILURE);
 
 #define case_RC_COMMON_GETOPT						      \
