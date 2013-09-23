@@ -1,4 +1,4 @@
-MAN3=		einfo.3 \
+MAN3=		\
 		rc_config.3 rc_deptree.3 rc_find_pids.3 rc_plugin_hook.3 \
 		rc_runlevel.3 rc_service.3 rc_stringlist.3
 MAN8=		rc-service.8 rc-status.8 rc-update.8 rc.8 runscript.8 \
