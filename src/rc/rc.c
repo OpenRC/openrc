@@ -1115,7 +1115,7 @@ main(int argc, char **argv)
 
 			/* Wait for our services to finish */
 			wait_for_services();
-			
+
 			/* Free the list of services, we're done with it. */
 			rc_stringlist_free(run_services);
 		}

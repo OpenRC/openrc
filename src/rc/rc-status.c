@@ -360,8 +360,10 @@ rc_status(int argc, char **argv)
 			}
 		}
 		l->value = p;
-		/* we are unsetting RC_SVCNAME because last loaded service 
-		   wount be added to list */
+		/*
+		 * we are unsetting RC_SVCNAME because last loaded service will not
+		 * be added to the list
+		 */
 		unsetenv("RC_SVCNAME");
 		print_level("Dynamic", "needed");
 		print_services(NULL, nservices);
