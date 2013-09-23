@@ -3,6 +3,7 @@ rc-status
 rc-service
 rc-update
 runscript
+service
 start-stop-daemon
 einfon
 einfo
