@@ -307,7 +307,7 @@ parse_schedule(const char *string, int timeout)
 }
 
 static pid_t
-get_pid(const char *pidfile, bool quiet)
+get_pid(const char *pidfile)
 {
 	FILE *fp;
 	pid_t pid;
@@ -316,14 +316,12 @@ get_pid(const char *pidfile, bool quiet)
 		return -1;
 
 	if ((fp = fopen(pidfile, "r")) == NULL) {
-		if (!quiet)
-			eerror("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
+		eerror("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
 		return -1;
 	}
 
 	if (fscanf(fp, "%d", &pid) != 1) {
-		if (!quiet)
-			eerror("%s: no pid found in `%s'", applet, pidfile);
+		eerror("%s: no pid found in `%s'", applet, pidfile);
 		fclose(fp);
 		return -1;
 	}
@@ -337,7 +335,7 @@ get_pid(const char *pidfile, bool quiet)
 static int
 do_stop(const char *exec, const char *const *argv,
     pid_t pid, uid_t uid,int sig,
-    bool quiet, bool verbose, bool test)
+    bool verbose, bool test)
 {
 	RC_PIDLIST *pids;
 	RC_PID *pi;
@@ -385,7 +383,7 @@ do_stop(const char *exec, const char *const *argv,
 static int
 run_stop_schedule(const char *exec, const char *const *argv,
     const char *pidfile, uid_t uid,
-    bool quiet, bool verbose, bool test, bool progress)
+    bool verbose, bool test, bool progress)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
 	int nkilled = 0;
@@ -416,7 +414,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 	}
 
 	if (pidfile) {
-		pid = get_pid(pidfile, quiet);
+		pid = get_pid(pidfile);
 		if (pid == -1)
 			return 0;
 	}
@@ -430,12 +428,11 @@ run_stop_schedule(const char *exec, const char *const *argv,
 		case SC_SIGNAL:
 			nrunning = 0;
 			nkilled = do_stop(exec, argv, pid, uid, item->value,
-			    quiet, verbose, test);
+			    verbose, test);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
 					if (progressed)
 						printf("\n");
-					if (! quiet)
 						eerror("%s: no matching processes found", applet);
 				}
 				return tkilled;
@@ -460,8 +457,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 				     nloops++)
 				{
 					if ((nrunning = do_stop(exec, argv,
-						    pid, uid, 0, true, false,
-						    true)) == 0)
+						    pid, uid, 0, false, true)) == 0)
 						return 0;
 
 
@@ -506,12 +502,10 @@ run_stop_schedule(const char *exec, const char *const *argv,
 
 	if (progressed)
 		printf("\n");
-	if (! quiet) {
-		if (nrunning == 1)
-			eerror("%s: %d process refused to stop", applet, nrunning);
-		else
-			eerror("%s: %d process(es) refused to stop", applet, nrunning);
-	}
+	if (nrunning == 1)
+		eerror("%s: %d process refused to stop", applet, nrunning);
+	else
+		eerror("%s: %d process(es) refused to stop", applet, nrunning);
 
 	return -nrunning;
 }
@@ -680,7 +674,6 @@ start_stop_daemon(int argc, char **argv)
 	bool stop = false;
 	bool oknodo = false;
 	bool test = false;
-	bool quiet;
 	bool verbose = false;
 	char *exec = NULL;
 	char *startas = NULL;
@@ -918,7 +911,6 @@ start_stop_daemon(int argc, char **argv)
 	endpwent();
 	argc -= optind;
 	argv += optind;
-	quiet = rc_yesno(getenv("EINFO_QUIET"));
 	verbose = rc_yesno(getenv("EINFO_VERBOSE"));
 
 	/* Allow start-stop-daemon --signal HUP --exec /usr/sbin/dnsmasq
@@ -1063,7 +1055,7 @@ start_stop_daemon(int argc, char **argv)
 		else
 			parse_schedule(NULL, sig);
 		i = run_stop_schedule(exec, (const char *const *)margv,
-		    pidfile, uid, quiet, verbose, test, progress);
+		    pidfile, uid, verbose, test, progress);
 
 		if (i < 0)
 			/* We failed to stop something */
@@ -1085,16 +1077,16 @@ start_stop_daemon(int argc, char **argv)
 	}
 
 	if (pidfile)
-		pid = get_pid(pidfile, true);
+		pid = get_pid(pidfile);
 	else
 		pid = 0;
 
 	if (do_stop(exec, (const char * const *)margv, pid, uid,
-		0, true, false, true) > 0)
+		0, false, true) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
 	if (test) {
-		if (quiet)
+		if (rc_yesno(getenv("EINFO_QUIET")))
 			exit (EXIT_SUCCESS);
 
 		einfon("Would start");
@@ -1289,9 +1281,9 @@ start_stop_daemon(int argc, char **argv)
 		}
 
 		/* We don't redirect stdin as some daemons may need it */
-		if (background || quiet || redirect_stdout)
+		if (background || redirect_stdout || rc_yesno(getenv("EINFO_QUIET")))
 			dup2(stdout_fd, STDOUT_FILENO);
-		if (background || quiet || redirect_stderr)
+		if (background || redirect_stderr || rc_yesno(getenv("EINFO_QUIET")))
 			dup2(stderr_fd, STDERR_FILENO);
 
 		for (i = getdtablesize() - 1; i >= 3; --i)
@@ -1323,8 +1315,7 @@ start_stop_daemon(int argc, char **argv)
 			}
 		} while (!WIFEXITED(i) && !WIFSIGNALED(i));
 		if (!WIFEXITED(i) || WEXITSTATUS(i) != 0) {
-			if (!quiet)
-				eerrorx("%s: failed to start `%s'", applet, exec);
+			eerror("%s: failed to start `%s'", applet, exec);
 			exit(EXIT_FAILURE);
 		}
 		pid = spid;
@@ -1360,7 +1351,7 @@ start_stop_daemon(int argc, char **argv)
 				alive = true;
 		} else {
 			if (pidfile) {
-				pid = get_pid(pidfile, true);
+				pid = get_pid(pidfile);
 				if (pid == -1) {
 					eerrorx("%s: did not "
 					    "create a valid"
@@ -1370,7 +1361,7 @@ start_stop_daemon(int argc, char **argv)
 			} else
 				pid = 0;
 			if (do_stop(exec, (const char *const *)margv,
-				pid, uid, 0, true, false, true) > 0)
+				pid, uid, 0, false, true) > 0)
 				alive = true;
 		}
 
