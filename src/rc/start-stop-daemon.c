@@ -334,8 +334,7 @@ get_pid(const char *pidfile)
 /* return number of processed killed, -1 on error */
 static int
 do_stop(const char *exec, const char *const *argv,
-    pid_t pid, uid_t uid,int sig,
-    bool verbose, bool test)
+    pid_t pid, uid_t uid,int sig, bool test)
 {
 	RC_PIDLIST *pids;
 	RC_PID *pi;
@@ -356,16 +355,13 @@ do_stop(const char *exec, const char *const *argv,
 			einfo("Would send signal %d to PID %d", sig, pi->pid);
 			nkilled++;
 		} else {
-			if (verbose)
-				ebegin("Sending signal %d to PID %d",
-				    sig, pi->pid);
+			ebeginv("Sending signal %d to PID %d", sig, pi->pid);
 			errno = 0;
 			killed = (kill(pi->pid, sig) == 0 ||
 			    errno == ESRCH ? true : false);
-			if (verbose)
-				eend(killed ? 0 : 1,
-				    "%s: failed to send signal %d to PID %d: %s",
-				    applet, sig, pi->pid, strerror(errno));
+			eendv(killed ? 0 : 1,
+				"%s: failed to send signal %d to PID %d: %s",
+				applet, sig, pi->pid, strerror(errno));
 			if (!killed) {
 				nkilled = -1;
 			} else {
@@ -383,7 +379,7 @@ do_stop(const char *exec, const char *const *argv,
 static int
 run_stop_schedule(const char *exec, const char *const *argv,
     const char *pidfile, uid_t uid,
-    bool verbose, bool test, bool progress)
+    bool test, bool progress)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
 	int nkilled = 0;
@@ -395,15 +391,15 @@ run_stop_schedule(const char *exec, const char *const *argv,
 	const char *const *p;
 	bool progressed = false;
 
-	if (verbose) {
-		if (exec)
-			einfo ("Will stop %s", exec);
-		if (pidfile)
-			einfo("Will stop PID in pidfile `%s'", pidfile);
-		if (uid)
-			einfo("Will stop processes owned by UID %d", uid);
-		if (argv && *argv) {
-			einfon("Will stop processes of `");
+	if (exec)
+		einfov("Will stop %s", exec);
+	if (pidfile)
+		einfov("Will stop PID in pidfile `%s'", pidfile);
+	if (uid)
+		einfov("Will stop processes owned by UID %d", uid);
+	if (argv && *argv) {
+		einfovn("Will stop processes of `");
+		if (rc_yesno(getenv("EINFO_VERBOSE"))) {
 			for (p = argv; p && *p; p++) {
 				if (p != argv)
 					printf(" ");
@@ -427,8 +423,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 
 		case SC_SIGNAL:
 			nrunning = 0;
-			nkilled = do_stop(exec, argv, pid, uid, item->value,
-			    verbose, test);
+			nkilled = do_stop(exec, argv, pid, uid, item->value, test);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
 					if (progressed)
@@ -457,7 +452,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 				     nloops++)
 				{
 					if ((nrunning = do_stop(exec, argv,
-						    pid, uid, 0, false, true)) == 0)
+						    pid, uid, 0, true)) == 0)
 						return 0;
 
 
@@ -674,7 +669,6 @@ start_stop_daemon(int argc, char **argv)
 	bool stop = false;
 	bool oknodo = false;
 	bool test = false;
-	bool verbose = false;
 	char *exec = NULL;
 	char *startas = NULL;
 	char *name = NULL;
@@ -911,7 +905,6 @@ start_stop_daemon(int argc, char **argv)
 	endpwent();
 	argc -= optind;
 	argv += optind;
-	verbose = rc_yesno(getenv("EINFO_VERBOSE"));
 
 	/* Allow start-stop-daemon --signal HUP --exec /usr/sbin/dnsmasq
 	 * instead of forcing --stop --oknodo as well */
@@ -1055,7 +1048,7 @@ start_stop_daemon(int argc, char **argv)
 		else
 			parse_schedule(NULL, sig);
 		i = run_stop_schedule(exec, (const char *const *)margv,
-		    pidfile, uid, verbose, test, progress);
+		    pidfile, uid, test, progress);
 
 		if (i < 0)
 			/* We failed to stop something */
@@ -1082,7 +1075,7 @@ start_stop_daemon(int argc, char **argv)
 		pid = 0;
 
 	if (do_stop(exec, (const char * const *)margv, pid, uid,
-		0, false, true) > 0)
+		0, true) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
 	if (test) {
@@ -1110,10 +1103,8 @@ start_stop_daemon(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
-	if (verbose) {
-		ebegin("Detaching to start `%s'", exec);
-		eindent();
-	}
+	ebeginv("Detaching to start `%s'", exec);
+	eindentv();
 
 	/* Remove existing pidfile */
 	if (pidfile)
@@ -1361,7 +1352,7 @@ start_stop_daemon(int argc, char **argv)
 			} else
 				pid = 0;
 			if (do_stop(exec, (const char *const *)margv,
-				pid, uid, 0, false, true) > 0)
+				pid, uid, 0, true) > 0)
 				alive = true;
 		}
 
