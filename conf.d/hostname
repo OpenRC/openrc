@@ -1,2 +1,2 @@
-# Set to the hostname of this machine
+# Set to the fully-qualified hostname of this machine
 hostname="localhost"
