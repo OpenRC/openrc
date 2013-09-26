@@ -1,11 +1,11 @@
-#!@SBINDIR@/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
 depend()
 {
 	before bootmisc logger
-	keyword -lxc -prefix -vserver
+	keyword -lxc -vserver
 }
 
 start()
@@ -14,6 +14,14 @@ start()
 
 	ebegin "Configuring kernel parameters"
 	eindent
+
+	# default sysctl System V max shared memory to 1/4 of RAM:
+	mem_bytes=`awk '/MemTotal:/ { printf "%0.f",$2 * 1024}' /proc/meminfo`
+	mem_max=`expr $mem_bytes / 4` 
+	page_size=`getconf PAGE_SIZE`
+	shmall=`expr $mem_bytes / $page_size`
+	sysctl kernel.shmmax=$mem_max > /dev/null
+	sysctl kernel.shmall=$shmall > /dev/null
 
 	for conf in @SYSCONFDIR@/sysctl.conf @SYSCONFDIR@/sysctl.d/*.conf; do
 		if [ -r "$conf" ]; then
