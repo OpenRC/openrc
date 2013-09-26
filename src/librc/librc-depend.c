@@ -856,7 +856,7 @@ rc_deptree_update(void)
 	 * work for them. This doesn't stop them from being run directly. */
 	if (sys) {
 		len = strlen(sys);
-		nosys = xmalloc(len + 1);
+		nosys = xmalloc(len + 2);
 		nosys[0] = '-';
 		for (i = 0; i < len; i++)
 			nosys[i + 1] = (char)tolower((unsigned char)sys[i]);
