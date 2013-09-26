@@ -193,7 +193,7 @@ file_regex(const char *file, const char *regex)
 			str += strlen(str) + 1;
 			/* len is the size of allocated buffer and we don't
 			   want call regexec BUFSIZE times. find next str */
-			while (*str == '\0' && str < line + len)
+			while (str < line + len && *str == '\0')
 				str++;
 		} while (str < line + len);
 	}
