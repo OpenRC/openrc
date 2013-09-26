@@ -308,6 +308,7 @@ while [ -n "$1" ]; do
 				fi
 				[ "$(command -v cgroup_cleanup)" = "cgroup_cleanup" -a \
 				"$1" = "stop" ] && \
+				yesno "${rc_cgroup_cleanup}" && \
 					cgroup_cleanup
 				shift
 				continue 2
