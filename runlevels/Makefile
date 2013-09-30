@@ -1,6 +1,6 @@
 include ../mk/net.mk
 
-BOOT=		bootmisc fsck hostname localmount loopback \
+BOOT=		bootmisc fsck hostname localmount \
 		root swap swapfiles sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
