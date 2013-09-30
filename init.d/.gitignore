@@ -3,7 +3,6 @@ fsck
 hostname
 local
 localmount
-loopback
 moused
 netmount
 network

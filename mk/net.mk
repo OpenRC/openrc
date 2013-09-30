@@ -1,1 +1,1 @@
-MKNET?= yes
+MKNET?= no
