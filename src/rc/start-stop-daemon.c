@@ -459,7 +459,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 				{
 					if ((nrunning = do_stop(exec, argv,
 						    pid, uid, 0, true, false,
-						    true)) == 0)
+	test)) == 0)
 						return 0;
 
 
@@ -1086,7 +1086,7 @@ start_stop_daemon(int argc, char **argv)
 		pid = 0;
 
 	if (do_stop(exec, (const char * const *)margv, pid, uid,
-		0, true, false, true) > 0)
+		0, true, false, test) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
 	if (test) {
@@ -1364,7 +1364,7 @@ start_stop_daemon(int argc, char **argv)
 			} else
 				pid = 0;
 			if (do_stop(exec, (const char *const *)margv,
-				pid, uid, 0, true, false, true) > 0)
+				pid, uid, 0, true, false, test) > 0)
 				alive = true;
 		}
 
