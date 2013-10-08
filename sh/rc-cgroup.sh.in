@@ -116,7 +116,7 @@ cgroup_set_limits()
 
 cgroup_cleanup()
 {
-	yesno "${rc_cgroup_cleanup:-no}" && cgroup_running || return 0
+	cgroup_running || return 0
 	ebegin "starting cgroups cleanup"
 	for sig in TERM QUIT INT; do
 		cgroup_get_pids || { eend 0 "finished" ; return 0 ; }

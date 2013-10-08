@@ -316,12 +316,12 @@ get_pid(const char *pidfile)
 		return -1;
 
 	if ((fp = fopen(pidfile, "r")) == NULL) {
-		eerror("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
+		ewarnv("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
 		return -1;
 	}
 
 	if (fscanf(fp, "%d", &pid) != 1) {
-		eerror("%s: no pid found in `%s'", applet, pidfile);
+		ewarnv("%s: no pid found in `%s'", applet, pidfile);
 		fclose(fp);
 		return -1;
 	}
@@ -452,7 +452,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 				     nloops++)
 				{
 					if ((nrunning = do_stop(exec, argv,
-						    pid, uid, 0, true)) == 0)
+						    pid, uid, 0, test)) == 0)
 						return 0;
 
 
@@ -1075,7 +1075,7 @@ start_stop_daemon(int argc, char **argv)
 		pid = 0;
 
 	if (do_stop(exec, (const char * const *)margv, pid, uid,
-		0, true) > 0)
+		0, test) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
 	if (test) {
@@ -1352,7 +1352,7 @@ start_stop_daemon(int argc, char **argv)
 			} else
 				pid = 0;
 			if (do_stop(exec, (const char *const *)margv,
-				pid, uid, 0, true) > 0)
+				pid, uid, 0, test) > 0)
 				alive = true;
 		}
 

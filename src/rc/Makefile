@@ -1,8 +1,21 @@
 PROG=		rc
-SRCS=		checkpath.c fstabinfo.c mountinfo.c start-stop-daemon.c \
-		rc-applets.c rc-depend.c rc-logger.c \
-		rc-misc.c rc-plugin.c rc-service.c rc-status.c rc-update.c \
-		runscript.c rc.c swclock.c
+SRCS=	\
+	checkpath.c \
+	einfo.c \
+	fstabinfo.c \
+	mountinfo.c \
+	rc-applets.c \
+	rc-depend.c \
+	rc-logger.c \
+	rc-misc.c \
+	rc-plugin.c \
+	rc-service.c \
+	rc-status.c \
+	rc-update.c \
+	rc.c \
+	runscript.c \
+	start-stop-daemon.c \
+	swclock.c
 
 CLEANFILES=	version.h
 
@@ -30,9 +43,9 @@ RC_SBINLINKS=	mark_service_starting mark_service_started \
 ALL_LINKS=	${BINLINKS} ${SBINLINKS} ${RC_BINLINKS} ${RC_SBINLINKS}
 CLEANFILES+=	${ALL_LINKS}
 
-CPPFLAGS+=	-I../includes -I../librc -I../libeinfo
-LDFLAGS+=	-L../librc -L../libeinfo
-LDADD+=		-lutil -lrc -leinfo
+CPPFLAGS+=	-I../includes -I../librc
+LDFLAGS+=	-L../librc
+LDADD+=		-lutil -lrc
 
 include ../../Makefile.inc
 MK=		../../mk
