@@ -313,15 +313,13 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	if (lock_fd != -1) {
 		while (flock(lock_fd, LOCK_EX) != 0) {
 			if (errno != EINTR) {
-				eerror("flock() failed: %s", strerror(errno));
+				ewarnv("flock() failed: %s", strerror(errno));
 				break;
 			}
 		}
 	}
-#ifdef RC_DEBUG
 	else
-		ewarn("Couldn't open the prefix lock, please make sure you have enough permissions");
-#endif
+		ewarnv("Couldn't open the prefix lock, please make sure you have enough permissions");
 
 	for (i = 0; i < bytes; i++) {
 		/* We don't prefix eend calls (cursor up) */
