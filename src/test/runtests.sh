@@ -3,6 +3,8 @@
 top_srcdir=${top_srcdir:-../..}
 . ${top_srcdir}/test/setup_env.sh
 
+libeinfo_srcdir="${srcdir}/../libeinfo"
+libeinfo_builddir="${builddir}/../libeinfo"
 librc_srcdir="${srcdir}/../librc"
 librc_builddir="${builddir}/../librc"
 rc_srcdir="${srcdir}/../rc"
@@ -17,6 +19,22 @@ checkit() {
 }
 
 ret=0
+
+ebegin "Checking exported symbols in libeinfo.so (data)"
+checkit einfo.data $(
+readelf -Ws ${libeinfo_builddir}/libeinfo.so \
+	| awk '$4 == "OBJECT" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
+	| LC_ALL=C sort -u
+)
+
+ebegin "Checking exported symbols in libeinfo.so (functions)"
+checkit einfo.funcs $(
+readelf -Ws ${libeinfo_builddir}/libeinfo.so \
+	| awk '$4 == "FUNC" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
+	| LC_ALL=C sort -u \
+	| egrep -v \
+		-e '^_(init|fini)$'
+)
 
 ebegin "Checking exported symbols in librc.so (data)"
 checkit rc.data $(
