@@ -15,7 +15,7 @@ start()
 	local ret=0
 
 	# Flush all pending disk writes now
-	sync; sync
+	sync
 
 	ebegin "Remounting remaining filesystems read-only"
 	# We need the do_unmount function

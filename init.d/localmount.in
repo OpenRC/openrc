@@ -59,7 +59,7 @@ stop()
 	no_umounts_r="^($no_umounts_r)$"
 
 	# Flush all pending disk writes now
-	sync; sync
+	sync
 
 	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
