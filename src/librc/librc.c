@@ -425,7 +425,7 @@ rc_runlevel_exists(const char *runlevel)
 	char path[PATH_MAX];
 	struct stat buf;
 
-	if (!runlevel)
+	if (!runlevel || strcmp(runlevel, ".") == 0 || strcmp(runlevel, "..") == 0)
 		return false;
 	snprintf(path, sizeof(path), "%s/%s", RC_RUNLEVELDIR, runlevel);
 	if (stat(path, &buf) == 0 && S_ISDIR(buf.st_mode))
