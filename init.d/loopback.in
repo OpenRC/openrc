@@ -6,7 +6,7 @@ description="Configures the loopback interface."
 
 depend()
 {
-	return 0
+	keyword -jail -prefix -vserver
 }
 
 start()
