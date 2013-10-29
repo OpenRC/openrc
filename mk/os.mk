@@ -3,7 +3,7 @@
 
 # Generic definitions
 
-_OS_SH=		uname -s
+_OS_SH=		uname -s | tr '/' '-'
 _OS:= 		$(shell ${_OS_SH})
 OS?= 		${_OS}
 include ${MK}/os-${OS}.mk
