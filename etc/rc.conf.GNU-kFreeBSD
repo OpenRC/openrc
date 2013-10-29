@@ -1,0 +1,11 @@
+##############################################################################
+# GNU/kFreeBSD SPECIFIC OPTIONS
+
+# This is the subsystem type. Valid options on GNU/kFreeBSD:
+# ""        - nothing special
+# "jail"    - FreeBSD jails (not yet implemented)
+# If this is commented out, automatic detection will be used.
+#
+# This should be set to the value representing the environment this file is
+# PRESENTLY in, not the virtualization the environment is capable of.
+#rc_sys=""

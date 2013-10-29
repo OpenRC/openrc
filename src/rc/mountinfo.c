@@ -39,7 +39,7 @@
 #  include <sys/statvfs.h>
 #  define statfs statvfs
 #  define F_FLAGS f_flag
-#elif defined (__linux__)
+#elif defined (__linux__) || defined (__GLIBC__)
 #  include <mntent.h>
 #endif
 
@@ -265,7 +265,7 @@ find_mounts(struct args *args)
 	return list;
 }
 
-#elif defined (__linux__)
+#elif defined (__linux__) || defined (__GLIBC__)
 static struct mntent *
 getmntfile(const char *file)
 {
