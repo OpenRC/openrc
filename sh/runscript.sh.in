@@ -208,6 +208,12 @@ sourcex -e "@SYSCONFDIR@/rc.conf"
 # Apply any ulimit defined
 [ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}
 
+# Set verbose mode
+if yesno "${rc_verbose:-$RC_VERBOSE}"; then
+	EINFO_VERBOSE=yes
+	export EINFO_VERBOSE
+fi
+
 # Apply cgroups settings if defined
 if [ "$(command -v cgroup_add_service)" = "cgroup_add_service" ]; then
 	cgroup_add_service /sys/fs/cgroup/openrc
