@@ -24,13 +24,18 @@ yesno()
 {
 	[ -z "$1" ] && return 1
 
+	# Check the value directly so people can do:
+	# yesno ${VAR}
 	case "$1" in
 		[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1) return 0;;
 		[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|[Oo][Ff][Ff]|0) return 1;;
 	esac
 
+	# Check the value of the var so people can do:
+	# yesno VAR
+	# Note: this breaks when the var contains a double quote.
 	local value=
-	eval value=\$${1}
+	eval value=\"\$$1\"
 	case "$value" in
 		[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1) return 0;;
 		[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|[Oo][Ff][Ff]|0) return 1;;
