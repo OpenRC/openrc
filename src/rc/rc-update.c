@@ -62,7 +62,7 @@ add(const char *runlevel, const char *service)
 			eerror("%s: service `%s' does not exist",
 			    applet, service);
 	} else if (rc_service_in_runlevel(service, runlevel)) {
-		ewarn("%s: %s already installed in runlevel `%s'; skipping",
+		einfo("%s: %s already installed in runlevel `%s'; skipping",
 		    applet, service, runlevel);
 		retval = 0;
 	} else if (rc_service_add(runlevel, service)) {
