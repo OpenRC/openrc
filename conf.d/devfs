@@ -1,0 +1,2 @@
+# Set this to yes if your /dev is not a devtmpfs or tmpfs.
+# static_dev="NO"

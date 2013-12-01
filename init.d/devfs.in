@@ -2,15 +2,71 @@
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-description="Mount system critical filesystems in /dev."
+description="Set up the /dev directory"
 
-depend() {
-	use dev-mount
+depend()
+{
+	provide dev-mount
 	before dev
 	keyword -prefix -vserver -lxc
 }
 
-start() {
+mount_dev()
+{
+	local action=--mount devfstype msg=Mounting
+	# Some devices require exec, Bug #92921
+	local mountopts="exec,nosuid,mode=0755"
+	if yesno ${static_dev:-no}; then
+		einfo "Using static /dev"
+		return 0
+	fi
+	if mountinfo -q /dev; then
+		action=--remount
+		mountopts="remount,$mountopts"
+		msg=Remounting
+	fi
+	if fstabinfo -q /dev; then
+		ebegin "$msg /dev according to @SYSCONFDIR@/fstab"
+		fstabinfo -q $action /dev
+		eend $?
+		return 0
+	fi
+	if grep -q devtmpfs /proc/filesystems; then
+		devfstype=devtmpfs
+		mountopts="$mountopts,size=10M"
+	elif grep -q tmpfs /proc/filesystems; then
+		devfstype=tmpfs
+		mountopts="$mountopts,size=10M"
+	fi
+	if [ -n "$devfstype" ]; then
+		ebegin "$msg $devfstype on /dev"
+		mount -n -t $devfstype -o $mountopts dev /dev
+		eend $?
+	else
+		ewarn "This kernel does not have devtmpfs or tmpfs support."
+		ewarn "Assuming you want static /dev. If this is not the case,"
+		ewarn "please set the CONFIG_DEVTMPFS or CONFIG_TMPFS option"
+		ewarn "in your kernel."
+	fi
+}
+
+seed_dev()
+{
+	# Seed /dev with some things that we know we need
+
+	# creating /dev/console, /dev/tty and /dev/tty1 to be able to write
+	# to $CONSOLE with/without bootsplash before udevd creates it
+	[ -c /dev/console ] || mknod -m 600 /dev/console c 5 1
+	[ -c /dev/tty1 ] || mknod -m 620 /dev/tty1 c 4 1
+	[ -c /dev/tty ] || mknod -m 666 /dev/tty c 5 0
+
+	# udevd will dup its stdin/stdout/stderr to /dev/null
+	# and we do not want a file which gets buffered in ram
+	[ -c /dev/null ] || mknod -m 666 /dev/null c 1 3
+
+	# so udev can add its start-message to dmesg
+	[ -c /dev/kmsg ] || mknod -m 660 /dev/kmsg c 1 11
+
 	# Mount required stuff as user may not have then in /etc/fstab
 	for x in \
 		"mqueue /dev/mqueue 1777 ,nodev mqueue" \
@@ -34,5 +90,11 @@ start() {
 			eend $?
 		fi
 	done
+}
+
+start()
+{
+	mount_dev
+	seed_dev
 	return 0
 }
