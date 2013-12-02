@@ -17,7 +17,7 @@ depend() {
 start()
 {
 	ebegin "Starting $name"
-	if type kldload >/dev/null 2>&1; then
+	if command -v kldload >/dev/null 2>&1; then
 		kldload pf 2>/dev/null
 	fi
 	pfctl -q -F all

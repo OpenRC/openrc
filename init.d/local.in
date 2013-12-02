@@ -19,7 +19,7 @@ start()
 		[ -x "$file" ] && "$file"
 	done
 
-	if type local_start >/dev/null 2>&1; then
+	if command -v local_start >/dev/null 2>&1; then
 		ewarn "@SYSCONFDIR@/conf.d/local should be removed."
 		ewarn "Please move the code from the local_start function"
 		ewarn "to scripts with an .start extension"
@@ -39,7 +39,7 @@ stop()
 		[ -x "$file" ] && "$file"
 	done
 
-	if type local_start >/dev/null 2>&1; then
+	if command -v local_stop >/dev/null 2>&1; then
 		ewarn "@SYSCONFDIR@/conf.d/local should be removed."
 		ewarn "Please move the code from the local_stop function"
 		ewarn "to scripts with an .stop extension"

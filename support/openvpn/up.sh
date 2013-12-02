@@ -45,7 +45,7 @@ if [ -n "${NS}" ]; then
 		DNS="${DNS}domain ${DOMAIN}\n"
 	fi
 	DNS="${DNS}${NS}"
-	if type resolvconf >/dev/null 2>&1; then
+	if command -v resolvconf >/dev/null 2>&1; then
 		printf "${DNS}" | resolvconf -a "${dev}"
 	else
 		# Preserve the existing resolv.conf

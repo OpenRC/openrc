@@ -40,7 +40,7 @@ reset()
 {
 	local uuid= x="[0-9a-f]" y="$x$x$x$x"
 
-	if type kenv >/dev/null 2>&1; then
+	if command -v kenv >/dev/null 2>&1; then
 		uuid=$(kenv smbios.system.uuid 2>/dev/null)
 	fi
 	case "$uuid" in

@@ -19,7 +19,7 @@ elif [ -f /proc/pmu/info ]; then
 		"AC Power"*": 0") exit 128;;
 		esac
 	done
-elif type envstat >/dev/null 2>&1; then
+elif command -v envstat >/dev/null 2>&1; then
 	# NetBSD has envstat
 	envstat -d acpiacad0 2>/dev/null | while read line; do
 		case "$line" in

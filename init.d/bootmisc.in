@@ -68,7 +68,7 @@ cleanup_var_run_dir()
 	do
 		# Clean stale sockets
 		if [ -S "$x" ]; then
-			if type fuser >/dev/null 2>&1; then
+			if command -v fuser >/dev/null 2>&1; then
 				fuser "$x" >/dev/null 2>&1 || rm -- "$x"
 			else
 				rm -- "$x"

@@ -53,7 +53,7 @@ start_pre()
 			eend $?
 		fi
 	else
-		if type kldload >/dev/null 2>&1; then
+		if command -v kldload >/dev/null 2>&1; then
 			# Hammer the modules home by default
 			sysctl -a | grep -q '\.tun\.' || kldload if_tun
 			sysctl -a | grep -q '\.tap\.' || kldload if_tap
