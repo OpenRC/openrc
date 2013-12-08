@@ -6,7 +6,7 @@ depend()
 {
 	need localmount
 	before logger
-	after clock sysctl
+	after clock root sysctl
 	keyword -prefix -timeout
 }
 
