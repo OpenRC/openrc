@@ -234,7 +234,7 @@ for d in ${tmpfiles_dirs} ; do
 		[ -f $f ] && tmpfiles_basenames="${tmpfiles_basenames}\n${f##*/}"
 	done # for f in ${d}
 done # for d in ${tmpfiles_dirs}
-tmpfiles_basenames="`printf "${tmpfiles_basenames}\n" | sort | uniq`"
+tmpfiles_basenames="$(printf "${tmpfiles_basenames}\n" | sort -u )"
 
 for b in $tmpfiles_basenames ; do
 	real_f=''
