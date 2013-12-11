@@ -1,4 +1,4 @@
-PROG=		rc
+PROG=		openrc
 SRCS=		checkpath.c fstabinfo.c mountinfo.c start-stop-daemon.c \
 		rc-applets.c rc-depend.c rc-logger.c \
 		rc-misc.c rc-plugin.c rc-service.c rc-status.c rc-update.c \
@@ -11,7 +11,7 @@ SBINDIR=	${PREFIX}/sbin
 LINKDIR=	${LIBEXECDIR}
 
 BINLINKS=	rc-status
-SBINLINKS=	rc-service rc-update runscript service start-stop-daemon
+SBINLINKS=	rc rc-service rc-update runscript service start-stop-daemon
 RC_BINLINKS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 		eindent eoutdent esyslog eval_ecolors ewaitfile \
 		veinfo vewarn vebegin veend vewend veindent veoutdent \
@@ -90,5 +90,5 @@ install: all
 
 check test::
 
-links: rc
-	$(call make-links,${ALL_LINKS},rc,.)
+links: $PROG
+	$(call make-links,${ALL_LINKS},$PROG,.)

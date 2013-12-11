@@ -61,6 +61,11 @@ As of OpenRC-0.12, the net.* scripts, originally from Gentoo Linux, have
 been removed. If you need these scripts, look for a package called
 netifrc, which is maintained by them.
 
+As of OpenRC-0.13, the /sbin/rc binary has been renamed /sbin/openrc.
+There is a /sbin/rc symbolic link in place currently in case you are
+still using the old name.  However, it is strongly advised that you
+migrate your system to the new name.
+
 Reporting Bugs
 --------------
 Since Gentoo Linux is hosting OpenRC development, Bugs should go to

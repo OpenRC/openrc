@@ -343,7 +343,7 @@ sets the following environment variables for use in the service scripts:
 .It Va RC_SVCNAME
 Name of the service.
 .It Va RC_RUNLEVEL
-Current runlevel that rc is in. Note that, in OpenRC, the reboot
+Current runlevel that OpenRC is in. Note that, in OpenRC, the reboot
 runlevel is mapped to the shutdown runlevel. This was done because most
 services do not need to know if a system is shutting down or rebooting.
 If you are writing a service that does need to know this, see the
@@ -536,7 +536,7 @@ Instead we return 1 to be compliant with Gentoo baselayout.
 Users are encouraged to use the is_newer_than function which returns correctly.
 .Sh SEE ALSO
 .Xr einfo 3 ,
-.Xr rc 8 ,
+.Xr openrc 8 ,
 .Xr rc-status 8 ,
 .Xr rc-update 8 ,
 .Xr rc_plugin_hook 3 ,

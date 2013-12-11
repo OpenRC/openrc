@@ -6,7 +6,7 @@
 # the old service state data
 : ${RC_LIBEXECDIR:=@LIBEXECDIR@}
 : ${RC_SVCDIR:=@LIBEXECDIR@/init.d}
-case "$(rc --sys)" in
+case "$(openrc --sys)" in
 	OPENVZ|VSERVER)	rm -rf "$RC_SVCDIR"/*;;
 	*)		if mountinfo --quiet "$RC_SVCDIR"; then
 				rm -rf "$RC_SVCDIR"/*

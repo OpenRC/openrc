@@ -533,11 +533,18 @@ run_applets(int argc, char **argv)
 {
 	size_t i;
 
+	/*
+	 * The "rc" applet is deprecated and should be referred to as
+	 * "openrc", so output a warning.
+	 */
+	if (strcmp(applet, "rc") == 0)
+		ewarn("The 'rc' applet is deprecated; please use 'openrc' instead.");
 	/* Bug 351712: We need an extra way to explicitly select an applet OTHER
 	 * than trusting argv[0], as argv[0] is not going to be the applet value if
 	 * we are doing SELinux context switching. For this, we allow calls such as
 	 * 'rc --applet APPLET', and shift ALL of argv down by two array items. */
-	if (strcmp(applet, "rc") == 0 && argc >= 3 &&
+	if ((strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0) &&
+		argc >= 3 &&
 		(strcmp(argv[1],"--applet") == 0 || strcmp(argv[1], "-a") == 0)) {
 		applet = argv[2];
 		argv += 2;
@@ -557,6 +564,6 @@ run_applets(int argc, char **argv)
 	if (strncmp(applet, "mark_service_", strlen("mark_service_")) == 0)
 		exit(do_mark_service(argc, argv));
 
-	if (strcmp(applet, "rc") != 0)
+	if (strcmp(applet, "rc") != 0 && strcmp(applet, "openrc") != 0)
 		eerrorx("%s: unknown applet", applet);
 }

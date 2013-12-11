@@ -125,7 +125,7 @@ cleanup(void)
 #endif
 
 	if (!rc_in_logger && !rc_in_plugin &&
-	    applet && strcmp(applet, "rc") == 0)
+	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
 	{
 		if (hook_out)
 			rc_plugin_run(hook_out, runlevel);
@@ -724,7 +724,7 @@ handle_bad_signal(int sig)
 
 #include "_usage.h"
 #define usagestring ""					\
-    "Usage: rc [options] [<runlevel>]"
+    "Usage: openrc [options] [<runlevel>]"
 #define getoptstring "a:no:s:S" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "applet",   1, NULL, 'a' },
@@ -864,7 +864,7 @@ main(int argc, char **argv)
 	}
 
 	/* Enable logging */
-	setenv("EINFO_LOG", "rc", 1);
+	setenv("EINFO_LOG", "openrc", 1);
 
 	/* Export our PID */
 	snprintf(pidstr, sizeof(pidstr), "%d", getpid());
