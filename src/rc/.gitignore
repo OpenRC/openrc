@@ -57,3 +57,4 @@ mark_service_hotplugged
 mark_service_failed
 rc-abort
 rc
+openrc
