@@ -210,8 +210,7 @@ start_services(RC_STRINGLIST *list)
 			{
 				rc_service_schedule_start(service,
 				    svc->value);
-				ewarn("WARNING: %s is scheduled to started"
-				    " when %s has started",
+				ewarn("WARNING: %s will start when %s has started",
 				    svc->value, applet);
 			} else
 				service_start(svc->value);
@@ -760,8 +759,7 @@ svc_start_deps(void)
 		}
 		rc_stringlist_free(tmplist);
 		tmplist = NULL;
-		ewarnx("WARNING: %s is scheduled to start when "
-		    "%s has started", applet, tmp);
+		ewarnx("WARNING: %s will start when %s has started", applet, tmp);
 		free(tmp);
 	}
 
