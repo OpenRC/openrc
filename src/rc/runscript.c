@@ -1116,7 +1116,7 @@ static const char *const longopts_help[] = {
 #include "_usage.c"
 
 int
-runscript(int argc, char **argv)
+openrc_run(int argc, char **argv)
 {
 	bool doneone = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
@@ -1130,12 +1130,12 @@ runscript(int argc, char **argv)
 
 	/* Show help if insufficient args */
 	if (argc < 2 || !exists(argv[1])) {
-		fprintf(stderr, "runscript should not be run directly\n");
+		fprintf(stderr, "openrc-run should not be run directly\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (stat(argv[1], &stbuf) != 0) {
-		fprintf(stderr, "runscript `%s': %s\n",
+		fprintf(stderr, "openrc-run `%s': %s\n",
 		    argv[1], strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -1419,4 +1419,11 @@ runscript(int argc, char **argv)
 	}
 
 	return retval;
+}
+
+int
+runscript(int argc, char **argv)
+{
+	ewarn("runscript is deprecated; please use openrc-run instead.");
+	return (openrc_run(argc, argv));
 }

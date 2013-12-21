@@ -503,6 +503,7 @@ static const struct {
 #define A(a) { #a, a }
 	A(fstabinfo),
 	A(mountinfo),
+	{ "openrc-run",           openrc_run,         },
 	{ "rc-depend",           rc_depend,         },
 	{ "rc-service",          rc_service,        },
 	{ "rc-status",           rc_status,         },

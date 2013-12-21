@@ -22,10 +22,10 @@
 .\" SUCH DAMAGE.
 .\"
 .Dd December 31, 2011
-.Dt RUNSCRIPT 8 SMM
+.Dt openrc-run 8 SMM
 .Os OpenRC
 .Sh NAME
-.Nm runscript
+.Nm openrc-run
 .Nd a means of hooking shell commands into a service
 .Sh SYNOPSIS
 .Nm
@@ -47,7 +47,7 @@ and finally the script itself. At this point
 then runs the command given.
 .Pp
 Commands are defined as shell functions within the script. Here is a list of
-some functions that all runscripts have by default:
+some functions that all scripts have by default:
 .Bl -tag -width "RC_DEFAULTLEVEL"
 .It Ar describe
 Describes what the service does and each command the service defines.
@@ -411,7 +411,7 @@ rc_keyword="!-prefix"
 .Pp
 An example service script for foo.
 .Bd -literal -offset indent
-#!/sbin/runscript
+#!/sbin/openrc-run
 command=/usr/bin/foo
 command_args="${foo_args} --bar"
 pidfile=/var/run/foo.pid

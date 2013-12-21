@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@SBINDIR@/openrc-run
 # Copyright (c) 2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -17,7 +17,7 @@ start()
 {
 	ebegin "Setting the local clock based on last shutdown time"
 	if ! swclock 2> /dev/null; then
-	swclock --warn @SBINDIR@/runscript
+	swclock --warn @SBINDIR@/openrc-run
 	fi
 	eend $?
 }

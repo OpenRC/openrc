@@ -28,6 +28,7 @@
 int checkpath(int, char **);
 int fstabinfo(int, char **);
 int mountinfo(int, char **);
+int openrc_run(int, char **);
 int rc_depend(int, char **);
 int rc_service(int, char **);
 int rc_status(int, char **);

@@ -53,7 +53,8 @@ All services must reside in the
 or
 .Pa /usr/local/etc/init.d
 directories.
-They must also conform to the OpenRC runscript standard.
+They must also be standard OpenRC scripts, meaning they must use
+openrc-run.
 .Pp
 .Bl -tag -width "Fl a , -delete service"
 .It Ar add Ar service
@@ -87,6 +88,7 @@ option is given then we either add or remove the runlevel from the runlevel.
 This allows inheritance of runlevels.
 .Sh SEE ALSO
 .Xr openrc 8 ,
+.Xr openrc-run 8 ,
 .Xr rc-status 8
 .Sh AUTHORS
 .An Roy Marples <roy@marples.name>

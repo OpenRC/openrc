@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@SBINDIR@/openrc-run
 # Copyright (c) 2013 William Hubbs <w.d.hubbs@gmail.com>
 # Released under the 2-clause BSD license.
 

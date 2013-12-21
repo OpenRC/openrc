@@ -51,10 +51,12 @@ do
 	for RC_SERVICE in *; do
 		[ -x "$RC_SERVICE" -a -f "$RC_SERVICE" ] || continue
 
-		# Only generate dependencies for runscripts
+		# Only generate dependencies for OpenRC scripts
 		read one two three <"$RC_SERVICE"
 		[ "$one" = "#!@SBINDIR@/runscript" ] || \
+		[ "$one" = "#!@SBINDIR@/openrc-run" ] || \
 		[ "$one" = "#!" -a "$two" = "@SBINDIR@/runscript" ] || \
+		[ "$one" = "#!" -a "$two" = "@SBINDIR@/openrc-run" ] || \
 			continue
 		unset one two three
 
