@@ -342,6 +342,8 @@ sets the following environment variables for use in the service scripts:
 .Bl -tag -width "RC_DEFAULTLEVEL"
 .It Va RC_SVCNAME
 Name of the service.
+.It Va RC_SERVICE
+Full path to the service.
 .It Va RC_RUNLEVEL
 Current runlevel that OpenRC is in. Note that, in OpenRC, the reboot
 runlevel is mapped to the shutdown runlevel. This was done because most
@@ -367,6 +369,15 @@ The result of `uname -s`.
 This contains the name of the command the service script is executing, such
 as start, stop, restart etc. One example of using this is to make a
 service script behave differently when restart is being executed.
+.It Va RC_GOINGDOWN
+This variable contains YES if the system is going into single user mode
+or shutting down.
+.It Va RC_LIBEXECDIR
+The value of libexecdir which OpenRC was configured with during build
+time.
+.It Va RC_NO_UMOUNTS
+This variable is used by plugins to contain a list of directories which
+should not be unmounted.
 .El
 .Sh FILES
 .Pp
