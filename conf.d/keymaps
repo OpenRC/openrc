@@ -18,6 +18,6 @@ extended_keymaps=""
 # For a list of valid sets, run `dumpkeys --help`
 dumpkeys_charset=""
 
-# Some fonts map AltGr-E to the currency symbol ¤ instead of the Euro €
+# Some fonts map AltGr-E to the currency symbol instead of the Euro.
 # To fix this, set to "yes"
 fix_euro="NO"
