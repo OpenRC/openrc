@@ -199,13 +199,15 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
 	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
 	"   or: rc-update [options] [show [<runlevel>...]]"
-#define getoptstring "su" getoptstring_COMMON
+#define getoptstring "asu" getoptstring_COMMON
 static const struct option longopts[] = {
+	{ "all",             0, NULL, 'a' },
 	{ "stack",           0, NULL, 's' },
 	{ "update",          0, NULL, 'u' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
+	"Process all runlevels",
 	"Stack a runlevel instead of a service",
 	"Force an update of the dependency tree",
 	longopts_help_COMMON
@@ -225,7 +227,7 @@ rc_update(int argc, char **argv)
 	char *service = NULL;
 	char *p;
 	int action = 0;
-	bool verbose = false, stack = false;
+	bool verbose = false, stack = false, all_runlevels = false;
 	int opt;
 	int retval = EXIT_FAILURE;
 	int num_updated = 0;
@@ -235,6 +237,9 @@ rc_update(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *)0)) != -1)
 		switch (opt) {
+		case 'a':
+		    all_runlevels = true;
+		break;
 		case 's':
 		    stack = true;
 		break;
@@ -306,6 +311,10 @@ rc_update(int argc, char **argv)
 			eerror ("%s: no service specified", applet);
 		else {
 			if (action & DOADD) {
+				if (all_runlevels) {
+					rc_stringlist_free(runlevels);
+					eerrorx("%s: the -a option is invalid with add", applet);
+				}
 				actfunc = stack ? addstack : add;
 			} else if (action & DODELETE) {
 				actfunc = stack ? delstack : delete;
@@ -315,9 +324,14 @@ rc_update(int argc, char **argv)
 			}
 
 			if (!TAILQ_FIRST(runlevels)) {
-				p = rc_runlevel_get();
-				rc_stringlist_add(runlevels, p);
-				free(p);
+				if (all_runlevels) {
+					free(runlevels);
+					runlevels = rc_runlevel_list();
+				} else {
+					p = rc_runlevel_get();
+					rc_stringlist_add(runlevels, p);
+					free(p);
+				}
 			}
 
 			if (!TAILQ_FIRST(runlevels)) {
