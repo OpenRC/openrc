@@ -129,7 +129,9 @@ clean_run()
 start()
 {
 	# Remove any added console dirs
-	rm -rf "$RC_LIBEXECDIR"/console/*
+	if checkpath -W "$RC_LIBEXECDIR"; then
+		rm -rf "$RC_LIBEXECDIR"/console/*
+	fi
 
 	local logw=false runw=false extra=
 	# Ensure that our basic dirs exist
