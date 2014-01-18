@@ -298,6 +298,17 @@ fstabinfo(int argc, char **argv)
 			continue;
 		}
 
+		/* mount or remount? */
+		switch (output) {
+		case OUTPUT_MOUNT:
+			result += do_mount(ent, false);
+			break;
+
+		case OUTPUT_REMOUNT:
+			result += do_mount(ent, true);
+			break;
+		}
+
 		/* No point in outputting if quiet */
 		if (rc_yesno(getenv("EINFO_QUIET")))
 			continue;
@@ -305,14 +316,6 @@ fstabinfo(int argc, char **argv)
 		switch (output) {
 		case OUTPUT_BLOCKDEV:
 			printf("%s\n", ENT_BLOCKDEVICE(ent));
-			break;
-
-		case OUTPUT_MOUNT:
-			result += do_mount(ent, false);
-			break;
-
-		case OUTPUT_REMOUNT:
-			result += do_mount(ent, true);
 			break;
 
 		case OUTPUT_MOUNTARGS:
