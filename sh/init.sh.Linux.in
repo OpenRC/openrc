@@ -57,7 +57,7 @@ elif ! mountinfo -q /run; then
 	ebegin "Mounting /run"
 	rc=0
 	if ! fstabinfo --mount /run; then
-		mount -t tmpfs -o mode=0755,nosuid,nodev,size=10% tmpfs /run
+		mount -t tmpfs -o mode=0755,nodev,size=10% tmpfs /run
 		rc=$?
 	fi
 	if [ $rc != 0 ]; then
