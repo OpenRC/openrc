@@ -690,9 +690,27 @@ svc_start_deps(void)
 	if (dry_run)
 		return;
 
-	/* Now wait for them to start */
+	/* Getting dependencies to start */
 	services = rc_deptree_depends(deptree, types_nua, applet_list,
-	    runlevel, depoptions);
+	    runlevel, 
+	    depoptions|(rc_conf_yesno("rc_parallel")?RC_DEP_CHECKLOOP:0));
+
+	if(services == NULL) {
+		switch(errno) {
+			case ELOOP:
+				eerrorx("ERROR: %s failed to start. Dependencies loop.", applet);
+				break;
+			default:
+				eerrorx("ERROR: %s failed to start. Unknown error.", applet);
+				break;
+		}
+		rc_stringlist_free(services);
+		services = NULL;
+		return;
+	}
+
+	/* Now wait for them to start */
+
 	/* We use tmplist to hold our scheduled by list */
 	tmplist = rc_stringlist_new();
 	TAILQ_FOREACH(svc, services, entries) {

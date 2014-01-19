@@ -376,6 +376,9 @@ visit_service(const RC_DEPTREE *deptree,
 	RC_STRINGLIST *provided;
 	RC_STRING *p;
 	const char *svcname;
+	svcname = getenv("RC_SVCNAME");
+
+	errno = 0;	// 0 - succes; ELOOP - on dependencies loop
 
 	/* Check if we have already visited this service or not */
 	TAILQ_FOREACH(type, visited, entries)
@@ -390,6 +393,15 @@ visit_service(const RC_DEPTREE *deptree,
 			continue;
 
 		TAILQ_FOREACH(service, dt->services, entries) {
+			if(options&RC_DEP_CHECKLOOP)
+				/* Check for dependencies loop.
+					See: https://bugs.gentoo.org/show_bug.cgi?id=391945
+				*/
+				if(!strcmp(svcname, service->value)) {
+					errno = ELOOP;
+					return;
+				}
+
 			if (!(options & RC_DEP_TRACE) ||
 			    strcmp(type->value, "iprovide") == 0)
 			{
@@ -437,7 +449,6 @@ visit_service(const RC_DEPTREE *deptree,
 
 	/* We've visited everything we need, so add ourselves unless we
 	   are also the service calling us or we are provided by something */
-	svcname = getenv("RC_SVCNAME");
 	if (!svcname || strcmp(svcname, depinfo->service) != 0) {
 		if (!get_deptype(depinfo, "providedby"))
 			rc_stringlist_add(sorted, depinfo->service);
@@ -478,6 +489,7 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 	RC_STRINGLIST *visited = rc_stringlist_new();
 	RC_DEPINFO *di;
 	const RC_STRING *service;
+	errno = 0;	// 0 - on success; ELOOP - on dependencies loop
 
 	bootlevel = getenv("RC_BOOTLEVEL");
 	if (!bootlevel)
@@ -488,8 +500,12 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 			continue;
 		}
 		if (types)
-			visit_service(deptree, types, sorted, visited,
-				      di, runlevel, options);
+			if(visit_service(deptree, types, sorted, visited,
+				      di, runlevel, options), errno) {
+				rc_stringlist_free(sorted);
+				rc_stringlist_free(visited);
+				return NULL;
+			}
 	}
 	rc_stringlist_free(visited);
 	return sorted;
