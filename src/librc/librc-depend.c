@@ -51,10 +51,10 @@ typedef enum loopfound {
 
 /* "use, need, after" dependencies matrix types */
 typedef enum unam_type {
-	UNAM_USE,
-	UNAM_NEED,
-	UNAM_AFTER,
-	UNAM_MIXED,
+	UNAM_USE   = 0,
+	UNAM_AFTER = 1,
+	UNAM_NEED  = 2,
+	UNAM_MIXED = 3,
 	UNAM_MAX
 } unam_type_t;
 
@@ -865,7 +865,7 @@ svc_id2depinfo_bt_compare(const void *a, const void *b)
 static loopfound_t
 rc_deptree_solve_loop(service_id_t **una_matrix[UNAM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num) {
 	char chain_str[BUFSIZ], *chain_str_end = &chain_str[BUFSIZ-2];
-	int dep_num_max, closer_dep_num, endreached, chain_count;
+	int dep_num_max, closer_dep_num, endreached, chain_count, dep_remove_cost;
 	int dep_remove_metric = end_dep_num;
 	service_id_t dep_remove_from_service_id, dep_remove_to_service_id, deeper_dep_service_id, chain[end_dep_num+1];
 
@@ -946,22 +946,23 @@ rc_deptree_solve_loop(service_id_t **una_matrix[UNAM_MAX], service_id_t service_
 	endreached = 0;
 	deeper_dep_service_id = service_id;
 	dep_num_max           = end_dep_num;
+	dep_remove_cost       = UNAM_MAX;
 	while (dep_num_max > 0 && !endreached) {
-		int deeper_dep_parents, isweak, dep_num;
+		int deeper_dep_parents, cost, dep_num;
 		service_id_t dep_service_id, closer_dep_service_id;
 		/*printf("iteration %i %i %i\n", dep_num_max, dep_remove_from_service_id, dep_remove_to_service_id);*/
 
-		isweak             = 1;
-		deeper_dep_parents = 0;
+		cost                  = -1;
+		deeper_dep_parents    =  0;
 
-		closer_dep_service_id      = 0;
+		closer_dep_service_id =  0;
 
 		dep_num = dep_num_max;
 		while (--dep_num) {
 
 			dep_service_id = una_matrix[UNAM_MIXED][service_id][dep_num];
 
-#			define SCAN(type, code) {\
+#			define SCAN(type) {\
 				int dep_dep_num, dep_dep_count;\
 				dep_dep_num        = 0;\
 				dep_dep_count      = una_matrix[type][dep_service_id][0];\
@@ -974,14 +975,14 @@ rc_deptree_solve_loop(service_id_t **una_matrix[UNAM_MAX], service_id_t service_
 						deeper_dep_parents++;\
 						closer_dep_num        = dep_num;\
 						closer_dep_service_id = dep_service_id;\
-						code;\
+						cost = MAX(cost, type);\
 					}\
 				}\
 			}
 
-			SCAN(UNAM_USE,    (void)0);
-			SCAN(UNAM_NEED,   isweak=0);
-			SCAN(UNAM_AFTER,  (void)0);
+			SCAN(UNAM_NEED);
+			SCAN(UNAM_AFTER);
+			SCAN(UNAM_USE);
 
 #			undef SCAN
 			/*printf("%i %i MAX:%i %i %i CLOSER:%i %i\n", service_id, end_dep_num, dep_num_max, dep_num, dep_service_id, closer_dep_num, deeper_dep_parents);*/
@@ -995,25 +996,36 @@ rc_deptree_solve_loop(service_id_t **una_matrix[UNAM_MAX], service_id_t service_
 		if (endreached) {
 			int need_dep_num, need_dep_count;
 
-			need_dep_count = una_matrix[UNAM_NEED][service_id][0];
-			need_dep_num   = 0;
-			/*printf("RC: %i\n", need_dep_count);*/
-			while (need_dep_num++ < need_dep_count) {
-				/*printf("%i: need %i\n", service_id, una_matrix[UNAM_NEED][service_id][need_dep_num]);*/
-				if (una_matrix[UNAM_NEED][service_id][need_dep_num] == deeper_dep_service_id) {
-					isweak = 0;
-					break;
-				}
+			cost = 0;
+
+#			define SCAN(type) {\
+				if(type > cost) {\
+					need_dep_count = una_matrix[type][service_id][0];\
+					need_dep_num   = 0;\
+					while (need_dep_num++ < need_dep_count) {\
+						if (una_matrix[type][service_id][need_dep_num] == deeper_dep_service_id) {\
+							cost = type;\
+							break;\
+						}\
+					}\
+				}\
 			}
+
+			SCAN(UNAM_NEED);
+			SCAN(UNAM_AFTER);
+
+#			undef SCAN
 		}
 
-		if (isweak && deeper_dep_parents <= dep_remove_metric) {
+		if (cost < UNAM_NEED && deeper_dep_parents <= dep_remove_metric && cost <= dep_remove_cost && cost >= 0) {
 			/*printf("R: %i %i %i %i %i\n", isweak, deeper_dep_parents, dep_remove_metric, closer_dep_service_id, deeper_dep_service_id);*/
 
 			dep_remove_from_service_id = closer_dep_service_id;
 			dep_remove_to_service_id   = deeper_dep_service_id;
 
 			dep_remove_metric          = deeper_dep_parents;
+
+			dep_remove_cost            = cost;
 
 			if (endreached)
 				dep_remove_from_service_id = service_id;
