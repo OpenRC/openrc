@@ -71,7 +71,7 @@ seed_dev()
 	for x in \
 		"mqueue /dev/mqueue 1777 ,nodev mqueue" \
 		"devpts /dev/pts 0755 ,gid=5,mode=0620 devpts" \
-		"tmpfs /dev/shm 1777 ,nodev shm" \
+		"tmpfs /dev/shm 1777 ,nodev,mode=1777 shm" \
 	; do
 		set -- $x
 		grep -Eq "[[:space:]]+$1$" /proc/filesystems || continue
