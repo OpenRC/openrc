@@ -695,19 +695,8 @@ svc_start_deps(void)
 	    runlevel,
 	    depoptions|(rc_conf_yesno("rc_parallel")?RC_DEP_CHECKLOOP:0));
 
-	if (errno) {
-		switch (errno) {
-			case ELOOP:
-				eerrorx("ERROR: %s failed to start. Dependencies loop.", applet);
-				break;
-			default:
-				eerrorx("ERROR: %s failed to start. Unknown error.", applet);
-				break;
-		}
-		rc_stringlist_free(services);
-		services = NULL;
-		return;
-	}
+	if (errno == ELOOP)
+		eerrorx("ERROR: %s failed to start. Dependencies loop.", applet);
 
 	/* Now wait for them to start */
 
