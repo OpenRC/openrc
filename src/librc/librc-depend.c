@@ -1115,8 +1115,8 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 			}
 
 			deptype_num = 0;
-			while(deppairs[deptype_num].depend) {
-				if(!strcmp(deppairs[deptype_num].depend, type)) {
+			while (deppairs[deptype_num].depend) {
+				if (!strcmp(deppairs[deptype_num].depend, type)) {
 					type_reverse = deppairs[deptype_num].addto;
 					break;
 				}
