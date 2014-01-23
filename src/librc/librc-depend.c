@@ -522,12 +522,8 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 			continue;
 		}
 		if (types)
-			if (visit_service(deptree, types, sorted, visited,
-				      di, runlevel, options), errno) {
-				rc_stringlist_free(sorted);
-				rc_stringlist_free(visited);
-				return NULL;
-			}
+			visit_service(deptree, types, sorted, visited,
+				      di, runlevel, options);
 	}
 	rc_stringlist_free(visited);
 	return sorted;
