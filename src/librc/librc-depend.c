@@ -842,6 +842,9 @@ rc_deptree_unbm_getdependencies(service_id_t **unb_matrix,
 		if (item_p == NULL)	/* Deadend branch, no sense to continue checking it anyway */
 			continue;
 
+		if (dependon == service_id)
+			continue;	/* To prevent looping detection services on themselves (for example in case of depending on '*') */
+
 		dependon = (int)(long int)item_p->data;
 		unb_matrix[service_id][ ++unb_matrix[service_id][0] ] = dependon;
 	}
