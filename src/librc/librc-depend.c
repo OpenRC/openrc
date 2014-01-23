@@ -1095,7 +1095,7 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 		{
 			RC_DEPTYPE *deptype_from, *deptype_to;
 			int dep_num, dep_count;
-			const char *type_reverse;
+			const char *type_reverse = NULL;
 			int deptype_num;
 
 			deptype_from = get_deptype(depinfo_from, type);
@@ -1116,15 +1116,16 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 
 			deptype_num = 0;
 			while(deppairs[deptype_num].depend) {
-				if(strcmp(deppairs[deptype_num].depend, type))
+				if(!strcmp(deppairs[deptype_num].depend, type)) {
 					type_reverse = deppairs[deptype_num].addto;
+					break;
+				}
 				deptype_num++;
 			}
 
 			deptype_to = get_deptype(depinfo_to, type_reverse);
-			if (deptype_from != NULL) {
+			if (deptype_to != NULL)
 				rc_stringlist_delete(deptype_to->services, depinfo_from->service);
-			}
 		}
 
 		item.key     = (void *)(long)dep_remove_from_service_id;
