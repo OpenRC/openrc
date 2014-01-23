@@ -134,6 +134,7 @@ _unused static char *xstrdup(const char *str)
 	/* NOTREACHED */
 }
 
+#ifndef _GNU_SOURCE
 typedef struct tree_node {
 	void *data;
 	struct tree_node *left, *right;
@@ -155,6 +156,7 @@ _unused static void tdestroy(tree_node_t *root, void (*free_data)(void *))
 
 	return;
 }
+#endif
 
 #undef ERRX
 
