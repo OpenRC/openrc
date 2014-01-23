@@ -1103,7 +1103,7 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 					/*printf("CUT SEARCH: %i: %i %i %i\n", dep_remove_from_service_id, unbm_type, dep_num, unb_matrix[unbm_type][dep_remove_from_service_id][dep_num]);*/
 					if (unb_matrix[unbm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id)
 						unb_matrix[unbm_type][dep_remove_from_service_id][dep_num] =
-							unb_matrix[UNBM_BEFORE][dep_remove_from_service_id][dep_count--];
+							unb_matrix[unbm_type][dep_remove_from_service_id][dep_count--];
 				}
 				unb_matrix[unbm_type][dep_remove_from_service_id][0] = dep_count;
 			}
