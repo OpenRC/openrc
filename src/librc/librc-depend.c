@@ -1092,8 +1092,10 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 		void
 		rc_deptree_remove_loopdependency(service_id_t **unb_matrix[UNBM_MAX], service_id_t dep_remove_from_service_id, service_id_t dep_remove_to_service_id, RC_DEPINFO *depinfo_from, RC_DEPINFO *depinfo_to, const char *const type, unbm_type_t unbm_type)
 		{
-			RC_DEPTYPE *deptype_from;
+			RC_DEPTYPE *deptype_from, *deptype_to;
 			int dep_num, dep_count;
+			const char *type_reverse;
+			int deptype_num;
 
 			deptype_from = get_deptype(depinfo_from, type);
 			if (deptype_from != NULL) {
@@ -1109,6 +1111,18 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 							unb_matrix[unbm_type][dep_remove_from_service_id][dep_count--];
 				}
 				unb_matrix[unbm_type][dep_remove_from_service_id][0] = dep_count;
+			}
+
+			deptype_num = 0;
+			while(deppairs[deptype_num].depend) {
+				if(strcmp(deppairs[deptype_num].depend, type))
+					type_reverse = deppairs[deptype_num].addto;
+				deptype_num++;
+			}
+
+			deptype_to = get_deptype(depinfo_to, type_reverse);
+			if (deptype_from != NULL) {
+				rc_stringlist_delete(deptype_to->services, depinfo_from->service);
 			}
 		}
 
