@@ -32,7 +32,7 @@
 #include <search.h>		/* hsearch() */
 
 #include "librc.h"
-#include "einfo.h"
+#include "../libeinfo/einfo.h"
 
 #define GENDEP			RC_LIBEXECDIR "/sh/gendepends.sh"
 
