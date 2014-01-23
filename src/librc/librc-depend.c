@@ -40,6 +40,15 @@
 
 #define LOOPSOLVER_LIMIT	128
 
+/*! Type definition of service ID */
+typedef int service_id_t;
+
+/*! Enumeration of rc_deptree_solve_loop()'s return cases */
+typedef enum loopfound {
+	LOOP_SOLVABLE	= 0x01,
+	LOOP_UNSOLVABLE	= 0x02,
+} loopfound_t;
+
 /* "use, need, before" dependencies matrix types */
 typedef enum unbm_type {
 	UNBM_USE,
@@ -803,7 +812,13 @@ rc_deptree_unbm_expandsdeps(service_id_t **unb, service_id_t service_id)
 	return ismodified;
 }
 
-void
+/*! Fills dependency matrix for further loop detection
+ * @param unb_matrix matrix to fill
+ * @param useneedbefore_count number of use/need/before dependencies
+ * @param service_id ID of the service for dependency scanning
+ * @param type dependencies type
+ * @param depinfo dependencies information */
+static void
 rc_deptree_unbm_getdependencies(service_id_t **unb_matrix,
 	int useneedbefore_count, service_id_t service_id,
 	const char *type, RC_DEPINFO *depinfo)
@@ -833,7 +848,6 @@ rc_deptree_unbm_getdependencies(service_id_t **unb_matrix,
 
 	return;
 }
-librc_hidden_def(rc_deptree_unbm_getdependencies)
 
 static int
 svc_id2depinfo_bt_compare(const void *a, const void *b)
@@ -841,9 +855,14 @@ svc_id2depinfo_bt_compare(const void *a, const void *b)
 	return ((const ENTRY *)a)->key - ((const ENTRY *)b)->key;
 }
 
+/*! Solves dependecies loops
+ * @param unb_matrix matrixes to scan ways to solve the loop
+ * @param looped service id
+ * @param svc_id2depinfo_bt ptr to binary tree root to get depinfo by svc id
+ * @param dep_num dependency id in use/need/before matrix line */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
-loopfound_t
+static loopfound_t
 rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num) {
 	char chain_str[BUFSIZ], *chain_str_end = &chain_str[BUFSIZ-2];
 	int dep_num_max, closer_dep_num, endreached, chain_count;

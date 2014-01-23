@@ -347,31 +347,6 @@ typedef struct rc_depinfo
 } RC_DEPINFO;
 
 typedef TAILQ_HEAD(,rc_depinfo) RC_DEPTREE;
-
-/*! Type definition of service ID */
-typedef int service_id_t;
-
-/*! Enumeration of rc_deptree_solve_loop()'s return cases */
-typedef enum loopfound {
-	LOOP_SOLVABLE	= 0x01,
-	LOOP_UNSOLVABLE	= 0x02,
-} loopfound_t;
-
-/*! Fills dependency matrix for further loop detection
- * @param unb_matrix matrix to fill
- * @param useneedbefore_count number of use/need/before dependencies
- * @param service_id ID of the service for dependency scanning
- * @param type dependencies type
- * @param depinfo dependencies information */
-void rc_deptree_unbm_getdependencies(service_id_t **, int, service_id_t,
-				     const char *, RC_DEPINFO *);
-
-/*! Solves dependecies loops
- * @param unb_matrix matrixes to scan ways to solve the loop
- * @param looped service id
- * @param svc_id2depinfo_bt ptr to binary tree root to get depinfo by svc id
- * @param dep_num dependency id in use/need/before matrix line */
-loopfound_t rc_deptree_solve_loop(service_id_t ***, service_id_t, void *, int);
 #else
 /* Handles to internal structures */
 typedef void *RC_DEPTREE;
