@@ -1542,16 +1542,7 @@ rc_deptree_update(void)
 			free(unb_matrix[unbm_type++]);
 		}
 
-		/* svc_id2depinfo_bt * /
-
-		service_id=1;
-		while (service_id < (useneedbefore_count+1)) {
-			tdestroy(svc_id2depinfo_bt[service_id], free);
-			service_id++;
-		}
-		free(svc_id2depinfo_bt);
-		*/
-
+		tdestroy(svc_id2depinfo_bt, free);
 	}
 
 	/* Phase 7 - save to disk
