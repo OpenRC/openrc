@@ -1003,7 +1003,7 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 		if (closer_dep_num) {
 			/*printf("C: %i %i %i\n", dep_service_id, closer_dep_num, dep_num_max);*/
 			deeper_dep_service_id = closer_dep_service_id;
-			if(dep_num_max != closer_dep_num)
+			if (dep_num_max != closer_dep_num)
 				chain[chain_count++]  = closer_dep_service_id;
 
 			dep_num_max = closer_dep_num;
@@ -1020,7 +1020,7 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 		ptr_dst = chain_str;
 
 		i = chain_count;
-		while(i--) {
+		while (i--) {
 			ENTRY item, **item_pp;
 			RC_DEPINFO *depinfo;
 			const char *service_name, *ptr_src;
@@ -1032,15 +1032,15 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 			service_name = depinfo->service;
 
 			ptr_src = service_name;
-			while(*ptr_src && (ptr_dst < chain_str_end))
+			while (*ptr_src && (ptr_dst < chain_str_end))
 				*(ptr_dst++) = *(ptr_src++);
 
-			if(ptr_dst >= chain_str_end) {
+			if (ptr_dst >= chain_str_end) {
 				ptr_dst--;
 				break;
 			}
 
-			if(i) {
+			if (i) {
 				memcpy(ptr_dst, " -> ", 4);
 				ptr_dst += 4;
 			}
@@ -1080,10 +1080,11 @@ rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_
 				dep_num   = 0;
 				dep_count = unb_matrix[unbm_type][dep_remove_from_service_id][0];
 				/*printf("CUT SEARCH INIT: %i %i\n", unbm_type, dep_count);*/
-				while(dep_num++ < dep_count) {
+				while (dep_num++ < dep_count) {
 					/*printf("CUT SEARCH: %i: %i %i %i\n", dep_remove_from_service_id, unbm_type, dep_num, unb_matrix[unbm_type][dep_remove_from_service_id][dep_num]);*/
-					if(unb_matrix[unbm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id)
-						unb_matrix[unbm_type][dep_remove_from_service_id][dep_num] = unb_matrix[UNBM_BEFORE][dep_remove_from_service_id][dep_count--] ;
+					if (unb_matrix[unbm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id)
+						unb_matrix[unbm_type][dep_remove_from_service_id][dep_num] =
+							unb_matrix[UNBM_BEFORE][dep_remove_from_service_id][dep_count--];
 				}
 				unb_matrix[unbm_type][dep_remove_from_service_id][0] = dep_count;
 			}
@@ -1527,7 +1528,7 @@ rc_deptree_update(void)
 			}
 		} while (loopfound == LOOP_SOLVABLE && loopsolver_counter < LOOPSOLVER_LIMIT);
 
-		if(loopsolver_counter >= LOOPSOLVER_LIMIT)
+		if (loopsolver_counter >= LOOPSOLVER_LIMIT)
 			eerror("Dependencies loop solver reached iterations limit.");
 
 		/* clean up */
