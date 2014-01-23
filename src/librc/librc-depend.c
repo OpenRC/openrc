@@ -29,12 +29,25 @@
  */
 
 #include <sys/utsname.h>
+#include <search.h>		/* hsearch() */
 
 #include "librc.h"
+#include "einfo.h"
 
-#define GENDEP          RC_LIBEXECDIR "/sh/gendepends.sh"
+#define GENDEP			RC_LIBEXECDIR "/sh/gendepends.sh"
 
-#define RC_DEPCONFIG    RC_SVCDIR "/depconfig"
+#define RC_DEPCONFIG		RC_SVCDIR "/depconfig"
+
+#define LOOPSOLVER_LIMIT	128
+
+/* "use, need, before" dependencies matrix types */
+typedef enum unbm_type {
+	UNBM_USE,
+	UNBM_NEED,
+	UNBM_BEFORE,
+	UNBM_MIXED,
+	UNBM_MAX
+} unbm_type_t;
 
 static const char *bootlevel = NULL;
 
@@ -378,7 +391,7 @@ visit_service(const RC_DEPTREE *deptree,
 	const char *svcname;
 	svcname = getenv("RC_SVCNAME");
 
-	errno = 0;	// 0 - succes; ELOOP - on dependencies loop
+	errno = 0;	/* 0 - succes; ELOOP - on dependencies loop */
 
 	/* Check if we have already visited this service or not */
 	TAILQ_FOREACH(type, visited, entries)
@@ -393,11 +406,11 @@ visit_service(const RC_DEPTREE *deptree,
 			continue;
 
 		TAILQ_FOREACH(service, dt->services, entries) {
-			if(options&RC_DEP_CHECKLOOP)
+			if (options&RC_DEP_CHECKLOOP)
 				/* Check for dependencies loop.
 					See: https://bugs.gentoo.org/show_bug.cgi?id=391945
 				*/
-				if(!strcmp(svcname, service->value)) {
+				if (!strcmp(svcname, service->value)) {
 					errno = ELOOP;
 					return;
 				}
@@ -489,7 +502,7 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 	RC_STRINGLIST *visited = rc_stringlist_new();
 	RC_DEPINFO *di;
 	const RC_STRING *service;
-	errno = 0;	// 0 - on success; ELOOP - on dependencies loop
+	errno = 0;	/* 0 - on success; ELOOP - on dependencies loop */
 
 	bootlevel = getenv("RC_BOOTLEVEL");
 	if (!bootlevel)
@@ -500,7 +513,7 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 			continue;
 		}
 		if (types)
-			if(visit_service(deptree, types, sorted, visited,
+			if (visit_service(deptree, types, sorted, visited,
 				      di, runlevel, options), errno) {
 				rc_stringlist_free(sorted);
 				rc_stringlist_free(visited);
@@ -741,14 +754,373 @@ rc_deptree_update_needed(time_t *newest, char *file)
 }
 librc_hidden_def(rc_deptree_update_needed)
 
-/* This is a 6 phase operation
+static inline int
+rc_deptree_unbm_expandsdeps(service_id_t **unb, service_id_t service_id)
+{
+	int dep_num, dep_count;
+	int ismodified;
+
+	ismodified = 0;
+	dep_num    = 0;
+	dep_count  = unb[service_id][0];
+	while (dep_num < dep_count) {
+		service_id_t dep_service_id;
+		int dep_dep_num, dep_dep_count;
+
+		dep_num++;
+		dep_service_id = unb[service_id][dep_num];
+		/*printf("service_id == %i; dep_num == %i (%i); dep_service_id == %i\n", service_id, dep_num, dep_count, dep_service_id);*/
+
+		dep_dep_num   = 0;
+		dep_dep_count = unb[dep_service_id][0];
+
+		while (dep_dep_num < dep_dep_count) {
+			int istoadd, dep_num_2;
+			service_id_t dep_dep_service_id;
+			dep_dep_num++;
+
+			dep_dep_service_id = unb[dep_service_id][dep_dep_num];
+
+			istoadd   = 1;
+			dep_num_2 = 0;
+			while (dep_num_2 < dep_count) {
+				dep_num_2++;
+				if (dep_dep_service_id == unb[service_id][dep_num_2]) {
+					istoadd = 0;
+					break;
+				}
+			}
+
+			if (istoadd) {
+				ismodified = 1;
+				dep_count++;
+				unb[service_id][dep_count] = dep_dep_service_id;
+				unb[service_id][0]         = dep_count;
+			}
+		}
+	}
+
+	return ismodified;
+}
+
+void
+rc_deptree_unbm_getdependencies(service_id_t **unb_matrix,
+	int useneedbefore_count, service_id_t service_id,
+	const char *type, RC_DEPINFO *depinfo)
+{
+	RC_STRING *svc, *svc_np;
+	RC_DEPTYPE *deptype;
+
+	unb_matrix[service_id] = xcalloc((useneedbefore_count+1), sizeof(**unb_matrix));
+
+	deptype = get_deptype(depinfo, type);
+	if (deptype == NULL)
+		return;
+
+	TAILQ_FOREACH_SAFE(svc, deptype->services, entries, svc_np) {
+		ENTRY item, *item_p;
+		service_id_t dependon;
+
+		item.key = svc->value;
+
+		item_p = hsearch(item, FIND);
+		if (item_p == NULL)	/* Deadend branch, no sense to continue checking it anyway */
+			continue;
+
+		dependon = (int)(long int)item_p->data;
+		unb_matrix[service_id][ ++unb_matrix[service_id][0] ] = dependon;
+	}
+
+	return;
+}
+librc_hidden_def(rc_deptree_unbm_getdependencies)
+
+static int
+svc_id2depinfo_bt_compare(const void *a, const void *b)
+{
+	return ((const ENTRY *)a)->key - ((const ENTRY *)b)->key;
+}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+loopfound_t
+rc_deptree_solve_loop(service_id_t **unb_matrix[UNBM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num) {
+	char chain_str[BUFSIZ], *chain_str_end = &chain_str[BUFSIZ-2];
+	int dep_num_max, closer_dep_num, endreached, chain_count;
+	int dep_remove_metric = end_dep_num;
+	service_id_t dep_remove_from_service_id, dep_remove_to_service_id, deeper_dep_service_id, chain[end_dep_num+1];
+
+	/*printf("%i %i %i\n", service_id, end_dep_num, unb_matrix[UNBM_MIXED][service_id][end_dep_num]);*/
+
+	dep_remove_from_service_id = 0;
+	dep_remove_to_service_id   = 0;
+
+	chain_count    = 0;
+
+	closer_dep_num = 0;
+
+	/* Searching the dependency caused the loop */
+
+	/* The later dependency can be caused only by earlier dependency
+	   and dep_num-s of earlier dependencies is less the later ones */
+
+	/*
+	   S - service
+	   D - dependency on not S
+	   X - dependency on S (looper)
+
+	  One UNB matrix line meaning:
+
+	   S D D D D D D D D D D D D X D D
+
+
+	  Using information about individual services dependecies, restoring:
+	    _____
+	   |___  |  ___     ___   ___   __
+	   |_  | | |_  |   |  _| |_  | |
+	   S D D D D D D_D D D D_D D X D D ...
+	     | |___| | |___| |   | |___| |
+	     |_______| |_____|   | |_____|
+	               |_________|
+
+	  Without extra:
+
+	  U - use
+	  N - need
+	  B - before
+
+	    _U_     _B_     _U_   _N_
+	   |   |   |   |   |  _| |   |
+	   S   D   D   D   D D D_D   X
+	       |_N_|   |_U_| |   |
+	               |__B__|   |
+	               |____N____|
+
+
+	  Removing minimal amount of weak dependencies (use and before)
+		to avoid the loop
+
+	            ___     ___   ___
+	           |   |   |  _| |   |
+	   S   D   D   D   D D D_D   X
+	       |___|   |___| |   |
+	               |_____|   |
+	               |_________|
+
+
+	  The result:
+	    _____
+	   |     |
+	   |_    |
+	   S D   D   D
+	     |       |
+	     |_______|
+
+
+	  After that the UNB matrix (that is the mixed one) will be stale.
+	  It will be need to recalculate dependencies in it
+	      and recheck for loops.
+	 */
+
+	chain[chain_count++]  = service_id;
+
+	endreached = 0;
+	deeper_dep_service_id = service_id;
+	dep_num_max           = end_dep_num;
+	while (dep_num_max > 0 && !endreached) {
+		int deeper_dep_parents, isweak, dep_num;
+		service_id_t dep_service_id, closer_dep_service_id;
+		/*printf("iteration %i %i %i\n", dep_num_max, dep_remove_from_service_id, dep_remove_to_service_id);*/
+
+		isweak             = 1;
+		deeper_dep_parents = 0;
+
+		closer_dep_service_id      = 0;
+
+		dep_num = dep_num_max;
+		while (--dep_num) {
+
+			dep_service_id = unb_matrix[UNBM_MIXED][service_id][dep_num];
+
+#			define SCAN(type, code) {\
+				int dep_dep_num, dep_dep_count;\
+				dep_dep_num        = 0;\
+				dep_dep_count      = unb_matrix[type][dep_service_id][0];\
+				while (dep_dep_num++ < dep_dep_count) {\
+					service_id_t dep_dep_service_id;\
+					\
+					dep_dep_service_id = unb_matrix[type][dep_service_id][dep_dep_num];\
+					if (dep_dep_service_id == deeper_dep_service_id) {\
+						/*printf("MATCH: %i %i %i %i\n", type, deeper_dep_service_id, dep_dep_num, dep_num);*/\
+						deeper_dep_parents++;\
+						closer_dep_num        = dep_num;\
+						closer_dep_service_id = dep_service_id;\
+						code;\
+					}\
+				}\
+			}
+
+			SCAN(UNBM_USE,    (void)0);
+			SCAN(UNBM_NEED,   isweak=0);
+			SCAN(UNBM_BEFORE, (void)0);
+
+#			undef SCAN
+			/*printf("%i %i MAX:%i %i %i CLOSER:%i %i\n", service_id, end_dep_num, dep_num_max, dep_num, dep_service_id, closer_dep_num, deeper_dep_parents);*/
+		}
+
+		if (!deeper_dep_parents) {	/* the end reached */
+			endreached         = 1;
+			deeper_dep_parents = 1;
+		}
+
+		if (endreached) {
+			int need_dep_num, need_dep_count;
+
+			need_dep_count = unb_matrix[UNBM_NEED][service_id][0];
+			need_dep_num   = 0;
+			/*printf("RC: %i\n", need_dep_count);*/
+			while (need_dep_num++ < need_dep_count) {
+				/*printf("%i: need %i\n", service_id, unb_matrix[UNBM_NEED][service_id][need_dep_num]);*/
+				if (unb_matrix[UNBM_NEED][service_id][need_dep_num] == deeper_dep_service_id) {
+					isweak = 0;
+					break;
+				}
+			}
+		}
+
+		if (isweak && deeper_dep_parents <= dep_remove_metric) {
+			/*printf("R: %i %i %i %i %i\n", isweak, deeper_dep_parents, dep_remove_metric, closer_dep_service_id, deeper_dep_service_id);*/
+
+			dep_remove_from_service_id = closer_dep_service_id;
+			dep_remove_to_service_id   = deeper_dep_service_id;
+
+			dep_remove_metric          = deeper_dep_parents;
+
+			if (endreached)
+				dep_remove_from_service_id = service_id;
+		}
+
+		if (closer_dep_num) {
+			/*printf("C: %i %i %i\n", dep_service_id, closer_dep_num, dep_num_max);*/
+			deeper_dep_service_id = closer_dep_service_id;
+			if(dep_num_max != closer_dep_num)
+				chain[chain_count++]  = closer_dep_service_id;
+
+			dep_num_max = closer_dep_num;
+		} else
+			dep_num_max--;
+	}
+	chain[chain_count++]  = service_id;
+
+	/* Preparing a string of services forming the loop */
+	{
+		char *ptr_dst;
+		int i;
+
+		ptr_dst = chain_str;
+
+		i = chain_count;
+		while(i--) {
+			ENTRY item, **item_pp;
+			RC_DEPINFO *depinfo;
+			const char *service_name, *ptr_src;
+
+			item.key = (void *)(long)chain[i];
+			item_pp  = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
+			depinfo  = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
+
+			service_name = depinfo->service;
+
+			ptr_src = service_name;
+			while(*ptr_src && (ptr_dst < chain_str_end))
+				*(ptr_dst++) = *(ptr_src++);
+
+			if(ptr_dst >= chain_str_end) {
+				ptr_dst--;
+				break;
+			}
+
+			if(i) {
+				memcpy(ptr_dst, " -> ", 4);
+				ptr_dst += 4;
+			}
+		}
+
+		*ptr_dst = 0;
+	}
+
+	/* No weak dependencies in the loop, cannot solve */
+	if (!dep_remove_from_service_id) {
+		ENTRY item, **item_pp;
+		RC_DEPINFO *depinfo;
+
+		item.key = (void *)(long)service_id;
+		item_pp  = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
+		depinfo  = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
+
+		eerror("Found an unresolvable dependencies loop with service %s: %s.", depinfo->service, chain_str);
+		return LOOP_UNSOLVABLE;
+	}
+
+
+	{
+		ENTRY item, **item_pp;
+		RC_DEPINFO *depinfo_from, *depinfo_to;
+
+		void
+		rc_deptree_remove_loopdependency(service_id_t **unb_matrix[UNBM_MAX], service_id_t dep_remove_from_service_id, service_id_t dep_remove_to_service_id, RC_DEPINFO *depinfo_from, RC_DEPINFO *depinfo_to, const char *const type, unbm_type_t unbm_type)
+		{
+			RC_DEPTYPE *deptype_from;
+			int dep_num, dep_count;
+
+			deptype_from = get_deptype(depinfo_from, type);
+			if (deptype_from != NULL) {
+				rc_stringlist_delete(deptype_from->services, depinfo_to->service);
+
+				dep_num   = 0;
+				dep_count = unb_matrix[unbm_type][dep_remove_from_service_id][0];
+				/*printf("CUT SEARCH INIT: %i %i\n", unbm_type, dep_count);*/
+				while(dep_num++ < dep_count) {
+					/*printf("CUT SEARCH: %i: %i %i %i\n", dep_remove_from_service_id, unbm_type, dep_num, unb_matrix[unbm_type][dep_remove_from_service_id][dep_num]);*/
+					if(unb_matrix[unbm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id)
+						unb_matrix[unbm_type][dep_remove_from_service_id][dep_num] = unb_matrix[UNBM_BEFORE][dep_remove_from_service_id][dep_count--] ;
+				}
+				unb_matrix[unbm_type][dep_remove_from_service_id][0] = dep_count;
+			}
+		}
+
+		item.key     = (void *)(long)dep_remove_from_service_id;
+		item_pp      = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
+		depinfo_from = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
+
+		item.key     = (void *)(long)dep_remove_to_service_id;
+		item_pp      = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
+		depinfo_to   = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
+
+		/* Remove weak dependency */
+
+		ewarn("Found a dependencies loop: %s. Trying to solve it by removing use/before dependencies of %s on %s from the cache.", chain_str, depinfo_from->service, depinfo_to->service);
+		/*printf("DEP CUT: %i %i\n", dep_remove_from_service_id, dep_remove_to_service_id);*/
+
+		rc_deptree_remove_loopdependency(unb_matrix, dep_remove_from_service_id, dep_remove_to_service_id, depinfo_from, depinfo_to, "iuse",    UNBM_USE);
+		rc_deptree_remove_loopdependency(unb_matrix, dep_remove_from_service_id, dep_remove_to_service_id, depinfo_from, depinfo_to, "ibefore", UNBM_BEFORE);
+
+	}
+
+	return LOOP_SOLVABLE;
+}
+#pragma GCC diagnostic pop
+
+
+/* This is a 7 phase operation
    Phase 1 is a shell script which loads each init script and config in turn
    and echos their dependency info to stdout
    Phase 2 takes that and populates a depinfo object with that data
    Phase 3 adds any provided services to the depinfo object
    Phase 4 scans that depinfo object and puts in backlinks
    Phase 5 removes broken before dependencies
-   Phase 6 saves the depinfo object to disk
+   Phase 6 - check for loops
+   Phase 7 saves the depinfo object to disk
    */
 bool
 rc_deptree_update(void)
@@ -766,6 +1138,7 @@ rc_deptree_update(void)
 	bool retval = true;
 	const char *sys = rc_sys();
 	struct utsname uts;
+	int useneedbefore_count=0;
 
 	/* Some init scripts need RC_LIBEXECDIR to source stuff
 	   Ideally we should be setting our full env instead */
@@ -975,6 +1348,8 @@ rc_deptree_update(void)
 	rc_stringlist_add(types, "iuse");
 	rc_stringlist_add(types, "iafter");
 	TAILQ_FOREACH(depinfo, deptree, entries) {
+		useneedbefore_count++;
+
 		deptype = get_deptype(depinfo, "ibefore");
 		if (!deptype)
 			continue;
@@ -1018,7 +1393,168 @@ rc_deptree_update(void)
 	}
 	rc_stringlist_free(types);
 
-	/* Phase 6 - save to disk
+	/* Phase 6 - check for loops (non-recursive way) */
+	{
+		int loopfound;
+		unbm_type_t unbm_type;
+		service_id_t **unb_matrix[UNBM_MAX];
+		service_id_t service_id;
+		void *svc_id2depinfo_bt = NULL;
+		int loopsolver_counter = 0;
+
+		hcreate(useneedbefore_count*2);
+
+		unbm_type = 0;
+		while (unbm_type < UNBM_MAX)
+			unb_matrix[unbm_type++] = xmalloc(sizeof(*unb_matrix) * (useneedbefore_count+1));
+
+		/* preparing hash-table: service_name -> service_id */
+		service_id = 1;
+		TAILQ_FOREACH(depinfo, deptree, entries) {
+			ENTRY item, *item_p;
+
+			item.key     = depinfo->service;
+			item.data    = (void *)(long int)service_id;
+			hsearch(item, ENTER);
+
+			item_p       = xmalloc(sizeof(*item_p));
+			item_p->key  = (void *)(long int)service_id;
+			item_p->data = depinfo;
+			/*printf("%i %p %p %s\n", service_id, item_p, depinfo, depinfo->service);*/
+			tsearch(item_p, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
+
+			service_id++;
+		}
+
+		/* getting dependencies pre-matrixes */
+		service_id = 1;
+		TAILQ_FOREACH(depinfo, deptree, entries) {
+			rc_deptree_unbm_getdependencies(unb_matrix[UNBM_USE],    useneedbefore_count, service_id, "iuse",    depinfo);
+			rc_deptree_unbm_getdependencies(unb_matrix[UNBM_NEED],   useneedbefore_count, service_id, "ineed",   depinfo);
+			rc_deptree_unbm_getdependencies(unb_matrix[UNBM_BEFORE], useneedbefore_count, service_id, "ibefore", depinfo);
+			service_id++;
+		}
+
+		hdestroy();
+
+		/* getting pre-matrix of all dependencies types together (allocating memory) */
+
+		service_id = 1;
+		while (service_id < (useneedbefore_count+1)) {
+			unb_matrix[UNBM_MIXED][service_id] = xmalloc((useneedbefore_count+1) * sizeof(**unb_matrix));
+			service_id++;
+		}
+
+		do {
+			int onemorecycle;
+
+			loopfound = 0;
+
+			/* getting pre-matrix of all dependencies types together */
+
+			service_id = 1;
+			while (service_id < (useneedbefore_count+1)) {
+				service_id_t services_dst;
+				memset(unb_matrix[UNBM_MIXED][service_id], 0, (useneedbefore_count+1) * sizeof(**unb_matrix));
+				services_dst = 0;
+				unbm_type = 0;
+				while (unbm_type < UNBM_MIXED) {
+					service_id_t services_src;
+
+					services_src = unb_matrix[unbm_type][service_id][0];
+					while (services_src)  {
+						/*printf("%i %i: %i %i %i\n", service_id, services_dst+1, unbm_type, services_src,
+							unb_matrix[unbm_type][service_id][services_src]);*/
+						unb_matrix[UNBM_MIXED][service_id][ ++services_dst ] =
+							unb_matrix[unbm_type][service_id][ services_src-- ];
+					}
+					unbm_type++;
+				}
+				unb_matrix[UNBM_MIXED][service_id][0] = services_dst;
+				service_id++;
+			}
+
+			/* preparing full dependencies matrix */
+
+			/* this's the most important and difficult stage:
+			       preparing full dependencies matrix (non-recursive way)
+
+			   IMHO, complexity of the algorithm is about:
+				o((services count)^1*(average dependencies count per service)^3)
+				O((services count)^2*(average dependencies count per service)^3) */
+
+			/* In this loop we are adding to own dependencies of depending on services
+			   We are doing it by two directions per cycle: direct and revert.
+			   Empirically it allows to greatly reduce number of iterations */
+
+			/* getting new dependencies while there're countinuing to arrive.
+			   However there's a hypothesis, that only one iteration is already
+			   enough to detect loops, so the next "do" and "while ()" can be
+			   removed, but then will be no guarantee of loop detection until
+			   the hypothesis will be proved  */
+			do {
+				onemorecycle = 0;
+
+				/* direct way: service_id = 1 -> end */
+				service_id = 1;
+				while (service_id < (useneedbefore_count+1))
+					onemorecycle += rc_deptree_unbm_expandsdeps(unb_matrix[UNBM_MIXED], service_id++);
+
+				/* reverse way: service_id = end -> 1 */
+				while (--service_id)
+					onemorecycle += rc_deptree_unbm_expandsdeps(unb_matrix[UNBM_MIXED], service_id);
+
+			} while (onemorecycle);
+
+			/* detecting and solving loop (non-recursive method) */
+			/* the loop is a situation where service is depended on itself */
+			service_id=1;
+			while ((service_id < (useneedbefore_count+1)) && !loopfound) {
+				int dep_num, dep_count;
+
+				dep_num = 0;
+				dep_count = unb_matrix[UNBM_MIXED][service_id][0];
+				while (dep_num < dep_count) {
+					dep_num++;
+					if (unb_matrix[UNBM_MIXED][service_id][dep_num] == service_id) {
+						loopfound = rc_deptree_solve_loop(unb_matrix, service_id, svc_id2depinfo_bt, dep_num);
+						loopsolver_counter++;
+						break;
+					}
+				}
+
+				service_id++;
+			}
+		} while (loopfound == LOOP_SOLVABLE && loopsolver_counter < LOOPSOLVER_LIMIT);
+
+		if(loopsolver_counter >= LOOPSOLVER_LIMIT)
+			eerror("Dependencies loop solver reached iterations limit.");
+
+		/* clean up */
+
+		/* unb_matrix */
+
+		unbm_type = 0;
+		while (unbm_type < UNBM_MAX) {
+			service_id=1;
+			while (service_id < (useneedbefore_count+1))
+				free(unb_matrix[unbm_type][service_id++]);
+			free(unb_matrix[unbm_type++]);
+		}
+
+		/* svc_id2depinfo_bt * /
+
+		service_id=1;
+		while (service_id < (useneedbefore_count+1)) {
+			tdestroy(svc_id2depinfo_bt[service_id], free);
+			service_id++;
+		}
+		free(svc_id2depinfo_bt);
+		*/
+
+	}
+
+	/* Phase 7 - save to disk
 	   Now that we're purely in C, do we need to keep a shell parseable file?
 	   I think yes as then it stays human readable
 	   This works and should be entirely shell parseable provided that depend

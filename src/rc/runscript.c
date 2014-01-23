@@ -692,11 +692,11 @@ svc_start_deps(void)
 
 	/* Getting dependencies to start */
 	services = rc_deptree_depends(deptree, types_nua, applet_list,
-	    runlevel, 
+	    runlevel,
 	    depoptions|(rc_conf_yesno("rc_parallel")?RC_DEP_CHECKLOOP:0));
 
-	if(services == NULL) {
-		switch(errno) {
+	if (services == NULL) {
+		switch (errno) {
 			case ELOOP:
 				eerrorx("ERROR: %s failed to start. Dependencies loop.", applet);
 				break;
