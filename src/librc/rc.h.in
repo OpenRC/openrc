@@ -305,13 +305,15 @@ const char *rc_sys_v2(void);
  * These options can change the services found by the rc_get_depinfo and
  * rc_get_depends functions. */
 /*! Trace provided services */
-#define RC_DEP_TRACE    (1<<0)
+#define RC_DEP_TRACE     (1<<0)
 /*! Only use services added to runlevels */
-#define RC_DEP_STRICT   (1<<1)
+#define RC_DEP_STRICT    (1<<1)
 /*! Runlevel is starting */
-#define RC_DEP_START    (1<<2)
+#define RC_DEP_START     (1<<2)
 /*! Runlevel is stopping */
-#define RC_DEP_STOP     (1<<3)
+#define RC_DEP_STOP      (1<<3)
+/*! Check for dependencies loop */
+#define RC_DEP_CHECKLOOP (1<<4)
 
 /*! @name Dependencies
  * We analyse each init script and cache the resultant dependency tree.

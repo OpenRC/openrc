@@ -361,7 +361,7 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 	return providers;
 }
 
-static void
+static int
 visit_service(const RC_DEPTREE *deptree,
 	      const RC_STRINGLIST *types,
 	      RC_STRINGLIST *sorted,
@@ -376,11 +376,16 @@ visit_service(const RC_DEPTREE *deptree,
 	RC_STRINGLIST *provided;
 	RC_STRING *p;
 	const char *svcname;
+	static int looped = 0;
+	svcname = getenv("RC_SVCNAME");
+
+	if(looped)
+		return looped;
 
 	/* Check if we have already visited this service or not */
 	TAILQ_FOREACH(type, visited, entries)
 		if (strcmp(type->value, depinfo->service) == 0)
-			return;
+			return 0;
 	/* Add ourselves as a visited service */
 	rc_stringlist_add(visited, depinfo->service);
 
@@ -390,6 +395,16 @@ visit_service(const RC_DEPTREE *deptree,
 			continue;
 
 		TAILQ_FOREACH(service, dt->services, entries) {
+
+			if (options&RC_DEP_CHECKLOOP)
+				/* Check for dependencies loop.
+				   See: https://bugs.gentoo.org/show_bug.cgi?id=391945
+				*/
+				if (!strcmp(svcname, service->value)) {
+					looped = 1;
+					return looped;
+				}
+
 			if (!(options & RC_DEP_TRACE) ||
 			    strcmp(type->value, "iprovide") == 0)
 			{
@@ -437,11 +452,12 @@ visit_service(const RC_DEPTREE *deptree,
 
 	/* We've visited everything we need, so add ourselves unless we
 	   are also the service calling us or we are provided by something */
-	svcname = getenv("RC_SVCNAME");
 	if (!svcname || strcmp(svcname, depinfo->service) != 0) {
 		if (!get_deptype(depinfo, "providedby"))
 			rc_stringlist_add(sorted, depinfo->service);
 	}
+
+	return looped;
 }
 
 RC_STRINGLIST *
@@ -478,6 +494,9 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 	RC_STRINGLIST *visited = rc_stringlist_new();
 	RC_DEPINFO *di;
 	const RC_STRING *service;
+	int looped = 0;
+
+	errno = 0;  /* 0 - on success; ELOOP - on dependencies loop */
 
 	bootlevel = getenv("RC_BOOTLEVEL");
 	if (!bootlevel)
@@ -487,11 +506,17 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 			errno = ENOENT;
 			continue;
 		}
-		if (types)
-			visit_service(deptree, types, sorted, visited,
-				      di, runlevel, options);
+		if (types) {
+			if (visit_service(deptree, types, sorted, visited,
+				         di, runlevel, options)) 
+				looped = 1;
+		}
 	}
 	rc_stringlist_free(visited);
+
+	if (looped)
+		errno = ELOOP;
+
 	return sorted;
 }
 librc_hidden_def(rc_deptree_depends)
