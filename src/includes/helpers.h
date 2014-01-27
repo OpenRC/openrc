@@ -32,6 +32,7 @@
 #define __HELPERS_H__
 
 #define ERRX fprintf (stderr, "out of memory\n"); exit (1)
+#define bitsizeof(a) (CHAR_BIT*sizeof(a))
 
 #define UNCONST(a)		((void *)(unsigned long)(const void *)(a))
 
@@ -96,6 +97,17 @@ _unused static void *xmalloc (size_t size)
 	/* NOTREACHED */
 }
 
+_unused static void *xcalloc(size_t nmemb, size_t size)
+{
+	void *value = calloc(nmemb, size);
+
+	if (value)
+		return (value);
+
+	ERRX;
+	/* NOTREACHED */
+}
+
 _unused static void *xrealloc(void *ptr, size_t size)
 {
 	void *value = realloc(ptr, size);
@@ -122,6 +134,30 @@ _unused static char *xstrdup(const char *str)
 	ERRX;
 	/* NOTREACHED */
 }
+
+#ifndef _GNU_SOURCE
+typedef struct tree_node {
+	void *data;
+	struct tree_node *left, *right;
+} tree_node_t;
+
+_unused static void tdestroy(tree_node_t *root, void (*free_data)(void *))
+{
+	tree_node_t *node = root;
+
+	if (!node)
+		return;
+
+	tdestroy(node->left,  free_data);
+	tdestroy(node->right, free_data);
+
+	free_data((void*)(node->data));
+
+	free(node);
+
+	return;
+}
+#endif
 
 #undef ERRX
 
