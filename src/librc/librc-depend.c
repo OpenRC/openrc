@@ -1299,21 +1299,25 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 						/* removing use/after from cache */
 						if (di_from != NULL) {
 							deptype_from = get_deptype(di_from, type);
-							if (deptype_from != NULL) {
+							if (deptype_from != NULL)
 								rc_stringlist_delete(deptype_from->services, di_to->service);
-								ewarn("Solving the loop by breaking %s %c> %s.",
-									depinfo_to->service, deptype2char(unapm_type), depinfo_from->service);
-							}
 						}
+
+						if (di_to != NULL)
+							deptype_to = get_deptype(di_to, type_reverse);
 
 						/* removing from the UNAP matrix */
 						if (deptype_from != NULL || di_from == NULL) {
 							dep_num   = 0;
 							dep_count = unap[unapm_type][dep_remove_from_service_id][0];
 							while (dep_num++ < dep_count) {
-								if (unap[unapm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id)
+								if (unap[unapm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id) {
 									unap[unapm_type][dep_remove_from_service_id][dep_num] =
 										unap[unapm_type][dep_remove_from_service_id][dep_count--];
+									if (deptype_from != NULL && depinfo_to != NULL)
+										ewarn("Solving the loop by breaking %s %c> %s.",
+											depinfo_to->service, deptype2char(unapm_type), depinfo_from->service);
+								}
 							}
 							unap[unapm_type][dep_remove_from_service_id][0] = dep_count;
 						}
@@ -1332,7 +1336,6 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 							deptype_num++;
 						}
 
-						deptype_to = get_deptype(di_to, type_reverse);
 						if (deptype_to != NULL)
 							rc_stringlist_delete(deptype_to->services, di_from->service);
 
