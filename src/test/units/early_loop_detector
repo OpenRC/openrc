@@ -14,9 +14,9 @@ run_test() {
 #include "../../librc/librc-depend.c"
 
 int main() {
-	service_id_t **una_matrix[UNAM_MAX], **una_matrix_result[UNAM_MAX];
+	service_id_t **unap_matrix[UNAPM_MAX], **unap_matrix_result[UNAPM_MAX];
 	service_id_t service_id;
-	unam_type_t unam_type, type;
+	unapm_type_t unapm_type, type;
 	int useneedafter_count = 9;
 	int loopsolver_counter, loopfound, errfound;
 	char *service_id2str[] = {
@@ -26,55 +26,55 @@ int main() {
 		[4] = "checkroot",
 	};
 	char *deptype_id2str[] = {
-		[UNAM_USE]	= "use",
-		[UNAM_AFTER]	= "after",
-		[UNAM_NEED]	= "need",
+		[UNAPM_USE]	= "use",
+		[UNAPM_AFTER]	= "after",
+		[UNAPM_NEED]	= "need",
 	};
 
-	unam_type = 0;
-	while (unam_type < UNAM_MAX) {
-		una_matrix[unam_type]        = xcalloc((useneedafter_count+1), sizeof(*una_matrix));
-		una_matrix_result[unam_type] = xcalloc((useneedafter_count+1), sizeof(*una_matrix));
+	unapm_type = 0;
+	while (unapm_type < UNAPM_MAX) {
+		unap_matrix[unapm_type]        = xcalloc((useneedafter_count+1), sizeof(*unap_matrix));
+		unap_matrix_result[unapm_type] = xcalloc((useneedafter_count+1), sizeof(*unap_matrix));
 		service_id = 0;
 		while(service_id < (useneedafter_count+1)) {
-			una_matrix       [unam_type][service_id] = xcalloc((useneedafter_count+1), sizeof(**una_matrix));
-			una_matrix_result[unam_type][service_id] = xcalloc((useneedafter_count+1), sizeof(**una_matrix));
+			unap_matrix       [unapm_type][service_id] = xcalloc((useneedafter_count+1), sizeof(**unap_matrix));
+			unap_matrix_result[unapm_type][service_id] = xcalloc((useneedafter_count+1), sizeof(**unap_matrix));
 			service_id++;
 		}
-		unam_type++;
+		unapm_type++;
 	}
 
 	/* hwclock */
-	una_matrix[UNAM_USE  ][1][0] = 2;	/* the count */
-	una_matrix[UNAM_USE  ][1][1] = 2;	/* "mountall" */
-	una_matrix[UNAM_USE  ][1][2] = 3;	/* "mountall-bootclean" */
+	unap_matrix[UNAPM_USE  ][1][0] = 2;	/* the count */
+	unap_matrix[UNAPM_USE  ][1][1] = 2;	/* "mountall" */
+	unap_matrix[UNAPM_USE  ][1][2] = 3;	/* "mountall-bootclean" */
 
 	/* mountall */
-	una_matrix[UNAM_NEED ][2][0] = 1;	/* the count */
-	una_matrix[UNAM_NEED ][2][1] = 4;	/* "checkroot" */
+	unap_matrix[UNAPM_NEED ][2][0] = 1;	/* the count */
+	unap_matrix[UNAPM_NEED ][2][1] = 4;	/* "checkroot" */
 
 	/* mountall-bootclean */
-	una_matrix[UNAM_NEED ][3][0] = 1;	/* the count */
-	una_matrix[UNAM_NEED ][3][1] = 2;	/* "mountall" */
+	unap_matrix[UNAPM_NEED ][3][0] = 1;	/* the count */
+	unap_matrix[UNAPM_NEED ][3][1] = 2;	/* "mountall" */
 
 	/* checkroot */
-	una_matrix[UNAM_AFTER][4][0] = 1;	/* the count */
-	una_matrix[UNAM_AFTER][4][1] = 1;	/* "hwclock" */
+	unap_matrix[UNAPM_AFTER][4][0] = 1;	/* the count */
+	unap_matrix[UNAPM_AFTER][4][1] = 1;	/* "hwclock" */
 
-	una_matrix[0][0][0] = 5; /* number of services+1 */
+	unap_matrix[0][0][0] = 5; /* number of services+1 */
 
 	/* expected result */
 
-	una_matrix_result[UNAM_USE  ][1][0] = 0;
+	unap_matrix_result[UNAPM_USE  ][1][0] = 0;
 
-	una_matrix_result[UNAM_NEED ][2][0] = 1;
-	una_matrix_result[UNAM_NEED ][2][1] = 4;
+	unap_matrix_result[UNAPM_NEED ][2][0] = 1;
+	unap_matrix_result[UNAPM_NEED ][2][1] = 4;
 
-	una_matrix_result[UNAM_NEED ][3][0] = 1;
-	una_matrix_result[UNAM_NEED ][3][1] = 2;
+	unap_matrix_result[UNAPM_NEED ][3][0] = 1;
+	unap_matrix_result[UNAPM_NEED ][3][1] = 2;
 
-	una_matrix_result[UNAM_AFTER][4][0] = 1;
-	una_matrix_result[UNAM_AFTER][4][1] = 1;
+	unap_matrix_result[UNAPM_AFTER][4][0] = 1;
+	unap_matrix_result[UNAPM_AFTER][4][1] = 1;
 
 	/* solving */
 
@@ -82,18 +82,18 @@ int main() {
 	do {
 		loopfound = 0;
 
-		rc_deptree_unam_prepare_mixed(una_matrix, useneedafter_count);
+		rc_deptree_unapm_prepare_mixed(unap_matrix, useneedafter_count);
 
 		service_id=1;
 		while ((service_id < (useneedafter_count+1)) && !loopfound) {
 			int dep_num, dep_count;
 
 			dep_num = 0;
-			dep_count = una_matrix[UNAM_MIXED_EXPANDED][service_id][0];
+			dep_count = unap_matrix[UNAPM_MIXED_EXPANDED][service_id][0];
 			while (dep_num < dep_count) {
 				dep_num++;
-				if (una_matrix[UNAM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
-					loopfound = rc_deptree_solve_loop(una_matrix, service_id, NULL, dep_num);
+				if (unap_matrix[UNAPM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
+					loopfound = rc_deptree_solve_loop(unap_matrix, service_id, NULL, dep_num);
 					loopsolver_counter++;
 					break;
 				}
@@ -109,26 +109,26 @@ int main() {
 
 	errfound = 0;
 	type = 0;
-	while (type <= UNAM_AFTER) {
+	while (type <= UNAPM_AFTER) {
 		service_id = 1;
 		while (service_id < (useneedafter_count+1)) {
 			int dep_count, dep_num;
 
 			dep_num   = 0;
-			dep_count = una_matrix_result[type][service_id][0];
+			dep_count = unap_matrix_result[type][service_id][0];
 
 			while (dep_num++ < dep_count) {
 				int dep_count2, dep_num2, found;
 				found = 0;
 
 				dep_num2   = 0;
-				dep_count2 = una_matrix[type][service_id][0];
+				dep_count2 = unap_matrix[type][service_id][0];
 
 				while (dep_num2++ < dep_count2)
 					if (
-						una_matrix_result[type][service_id][dep_num]
+						unap_matrix_result[type][service_id][dep_num]
 						  ==
-						una_matrix       [type][service_id][dep_num2]
+						unap_matrix       [type][service_id][dep_num2]
 					) {
 						found = 1;
 						break;
@@ -138,27 +138,27 @@ int main() {
 					printf("unit-test: early loop detector: error: There's no \"%s\"\tdependency: %s -> %s\n",
 							deptype_id2str[type],
 							service_id2str[service_id],
-							service_id2str[una_matrix_result[type][service_id][dep_num]]
+							service_id2str[unap_matrix_result[type][service_id][dep_num]]
 						);
 					errfound = 1;
 				}
 			}
 
 			dep_num   = 0;
-			dep_count = una_matrix[type][service_id][0];
+			dep_count = unap_matrix[type][service_id][0];
 
 			while (dep_num++ < dep_count) {
 				int dep_count2, dep_num2, found;
 				found = 0;
 
 				dep_num2   = 0;
-				dep_count2 = una_matrix_result[type][service_id][0];
+				dep_count2 = unap_matrix_result[type][service_id][0];
 
 				while (dep_num2++ < dep_count2)
 					if (
-						una_matrix_result[type][service_id][dep_num2]
+						unap_matrix_result[type][service_id][dep_num2]
 						  ==
-						una_matrix       [type][service_id][dep_num]
+						unap_matrix       [type][service_id][dep_num]
 					) {
 						found = 1;
 						break;
@@ -168,7 +168,7 @@ int main() {
 					printf("unit-test: early loop detector: error: There's extra \"%s\"\tdependency found: %s -> %s\n",
 							deptype_id2str[type],
 							service_id2str[service_id],
-							service_id2str[una_matrix[type][service_id][dep_num]]
+							service_id2str[unap_matrix[type][service_id][dep_num]]
 						);
 					errfound = 1;
 				}
