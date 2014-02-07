@@ -373,13 +373,21 @@ bool rc_older_than(const char *, const char *, time_t *, char *);
  * @return pointer to the value, otherwise NULL */
 char *rc_proc_getent(const char *);
 
+/*! @brief flags that may be passed to rc_deptree_update() */
+typedef enum
+{
+	/* Print warnings about found loops */
+	RCDTFLAGS_WARNINGS = 0x0001,
+} RC_DT_FLAGS;
+
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.
  * time_t returns the time of the newest file that the dependency tree
  * will be checked against.
+ * @param flags
  * @return true if successful, otherwise false */
-bool rc_deptree_update(void);
+bool rc_deptree_update(RC_DT_FLAGS flags);
 
 /*! Check if the cached dependency tree is older than any init script,
  * its configuration file or an external configuration file the init script

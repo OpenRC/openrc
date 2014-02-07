@@ -891,12 +891,16 @@ deptype2char(unapm_type_t type) {
  * @param svc_id2depinfo_bt ptr to binary tree root to get depinfo by svc id
  * @param end_dep_num looping dependency id in use/need/after/provide matrix line */
 static loopfound_t
-rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num) {
+rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num, RC_DT_FLAGS flags) {
 	char **chain_strs = NULL;
 	service_id_t **chains;
 	unapm_type_t **deptypes;
 	unapm_type_t minimal_cost;
 	int chains_size = unap_matrix[0][0][0], chain_count;
+
+	/* svc_id2depinfo_bt may be NULL while any unit tests to simplify them */
+	char printwarn  =  (svc_id2depinfo_bt != NULL) && (flags & RCDTFLAGS_WARNINGS);
+	char printerr   =   svc_id2depinfo_bt != NULL;
 
 	chains = xmalloc(chains_size * sizeof(*chains));
 
@@ -1060,9 +1064,9 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 		}
 	}
 
-	/* printing */
+	/* preparing services chain for further printing */
 
-	if (svc_id2depinfo_bt != NULL) {
+	if (printwarn || printerr) {
 		int chain_num;
 		chain_strs = xmalloc(chain_count * sizeof(*chain_strs));
 
@@ -1157,19 +1161,21 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 
 			minimal_cost = MAX(minimal_cost, chain_cost);
 
-			if (svc_id2depinfo_bt != NULL) {
 /*
-				RC_DEPINFO *depinfo;
-				ENTRY item, **item_pp;
-				item.key = (void *)(long)service_id;
-				item_pp  = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
-				depinfo  = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
+			RC_DEPINFO *depinfo;
+			ENTRY item, **item_pp;
+			item.key = (void *)(long)service_id;
+			item_pp  = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
+			depinfo  = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
 */
-				if (minimal_cost > UNAPM_AFTER)
+			if (minimal_cost > UNAPM_AFTER) {
+				if (printerr)
 					eerror("Found an unresolvable dependency: %s.", chain_strs[i]);
-				else
+			} else {
+				if (printwarn)
 					ewarn("Found a solvable dependency loop: %s.", chain_strs[i]);
 			}
+
 			i++;
 		}
 		/*printf("minimal cost: %i\n", minimal_cost);*/
@@ -1342,7 +1348,7 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 						return;
 					}
 
-					if (svc_id2depinfo_bt != NULL) {
+					if (printwarn) {
 						item.key     = (void *)(long)service_id_from;
 						item_pp      = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
 						depinfo_from = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
@@ -1373,13 +1379,13 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 
 		i = 0;
 		while (i < chain_count) {
-			if (svc_id2depinfo_bt != NULL)
+			if (printwarn || printerr)
 				free(chain_strs[i]);
 			free(deptypes[i]);
 			free(chains[i]);
 			i++;
 		}
-		if (svc_id2depinfo_bt != NULL)
+		if (printwarn || printerr)
 			free(chain_strs);
 		free(deptypes);
 		free(chains);
@@ -1457,7 +1463,7 @@ rc_deptree_unapm_prepare_mixed(service_id_t **unap_matrix[UNAPM_MAX], unsigned i
    Phase 7 saves the depinfo object to disk
    */
 bool
-rc_deptree_update(void)
+rc_deptree_update(RC_DT_FLAGS flags)
 {
 	FILE *fp;
 	RC_DEPTREE *deptree, *providers;
@@ -1801,7 +1807,7 @@ rc_deptree_update(void)
 				while (dep_num < dep_count) {
 					dep_num++;
 					if (unap_matrix[UNAPM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
-						loopfound = rc_deptree_solve_loop(unap_matrix, service_id, svc_id2depinfo_bt, dep_num);
+						loopfound = rc_deptree_solve_loop(unap_matrix, service_id, svc_id2depinfo_bt, dep_num, flags);
 						loopsolver_counter++;
 						break;
 					}

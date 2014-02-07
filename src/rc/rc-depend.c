@@ -76,7 +76,7 @@ _rc_deptree_load(int force, int *regen) {
 		if (regen)
 			*regen = 1;
 		ebegin("Caching service dependencies");
-		retval = rc_deptree_update() ? 0 : -1;
+		retval = rc_deptree_update(rc_conf_yesno("rc_loopsolver_warnings")?RCDTFLAGS_WARNINGS:0) ? 0 : -1;
 		eend (retval, "Failed to update the dependency tree");
 
 		if (retval == 0) {
