@@ -48,6 +48,7 @@ typedef uint32_t service_id_t;
 typedef enum loopfound {
 	LOOP_SOLVABLE	= 0x01,
 	LOOP_UNSOLVABLE	= 0x02,
+	LOOP_CANCELED	= 0x03,
 } loopfound_t;
 
 /* "use, need, after" dependencies matrix types */
@@ -899,8 +900,11 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 	int chains_size = unap_matrix[0][0][0], chain_count;
 
 	/* svc_id2depinfo_bt may be NULL while any unit tests to simplify them */
-	char printwarn  =  (svc_id2depinfo_bt != NULL) && (flags & RCDTFLAGS_WARNINGS);
+	char printwarn  =  (svc_id2depinfo_bt != NULL) && (flags & RCDTFLAGS_LOOPSOLVER_WARNINGS);
 	char printerr   =   svc_id2depinfo_bt != NULL;
+
+	if (! (flags & RCDTFLAGS_LOOPSOLVER))
+		return LOOP_CANCELED;
 
 	chains = xmalloc(chains_size * sizeof(*chains));
 
@@ -1734,6 +1738,7 @@ rc_deptree_update(RC_DT_FLAGS flags)
 	rc_stringlist_free(types);
 
 	/* Phase 6 - check for loops (non-recursive way) */
+	if (flags & RCDTFLAGS_LOOPSOLVER)
 	{
 		int loopfound;
 		unapm_type_t unapm_type;

@@ -376,8 +376,12 @@ char *rc_proc_getent(const char *);
 /*! @brief flags that may be passed to rc_deptree_update() */
 typedef enum
 {
+	/* Enable dependency loop solver */
+	RCDTFLAGS_LOOPSOLVER		= 0x0001,
+
 	/* Print warnings about found loops */
-	RCDTFLAGS_WARNINGS = 0x0001,
+	RCDTFLAGS_LOOPSOLVER_WARNINGS	= 0x0002,
+
 } RC_DT_FLAGS;
 
 /*! Update the cached dependency tree if it's older than any init script,

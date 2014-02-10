@@ -93,7 +93,7 @@ int main() {
 			while (dep_num < dep_count) {
 				dep_num++;
 				if (unap_matrix[UNAPM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
-					loopfound = rc_deptree_solve_loop(unap_matrix, service_id, NULL, dep_num, 0);
+					loopfound = rc_deptree_solve_loop(unap_matrix, service_id, NULL, dep_num, RCDTFLAGS_LOOPSOLVER);
 					loopsolver_counter++;
 					break;
 				}

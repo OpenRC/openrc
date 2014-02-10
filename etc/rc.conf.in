@@ -135,6 +135,9 @@
 # This is mainly used for saying which servies do NOT provide net.
 #rc_net_tap0_provide="!net"
 
+# Comment this line to disable dependency loop solver
+rc_loopsolver_enable="YES"
+
 # Comment this line to disable warnings about dependency loops
 rc_loopsolver_warnings="YES"
 
