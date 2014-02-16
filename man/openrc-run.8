@@ -317,15 +317,28 @@ Mark the service as inactive.
 .Ic checkpath
 .Op Fl D , -directory-truncate
 .Op Fl d , -directory
-.Op Fl F , -file-truncate
+.Op Fl F , -file-trucate.
 .Op Fl f , -file
 .Op Fl p , -pipe
 .Op Fl m , -mode Ar mode
-.Op Fl o , owner Ar owner
+.Op Fl o , -owner Ar owner
+.Op Fl q , -quiet
 .Ar path ...
 .Xc
 Checks to see if the path exists, is of the right type, owned by the right
 people and has the correct access modes. If not, then it corrects the path.
+
+Type.
+File, directory and pipe types are supported, if type is not provided then
+directory is used
+
+Mode.
+Mode should be provided as a three (644) or four digit string (0644). If mode
+is argument is not provided then default value is used: 0644 - for files, and
+0775 for directories.
+
+Truncate variant of options create empty directory or file, or clears contents
+if it exists.
 .It Ic checkpath
 .Op Fl W , -writable
 .Ar path
