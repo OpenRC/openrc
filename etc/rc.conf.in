@@ -73,6 +73,10 @@
 #rc_crashed_stop=NO
 #rc_crashed_start=YES
 
+# Set rc_nocolor to yes if you do not want colors displayed in OpenRc
+# output.
+#rc_nocolor=NO
+
 ##############################################################################
 # MISC CONFIGURATION VARIABLES
 # There variables are shared between many init scripts
