@@ -12,7 +12,7 @@ depend()
 start()
 {
 	ebegin "setting up tmpfiles.d entries"
-	@LIBEXECDIR@/sh/tmpfiles.sh --exclude-prefix=/dev --create --remove \
+	@LIBEXECDIR@/sh/tmpfiles.sh --exclude-prefix=/dev --create --remove --boot \
 		${tmpfiles_opts}
 	eend $?
 	return 0
