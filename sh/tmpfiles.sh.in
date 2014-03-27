@@ -230,7 +230,9 @@ tmpfiles_d=''
 # `/run/tmpfiles/foo.conf' will always be read after `/etc/tmpfiles.d/bar.conf'
 for d in ${tmpfiles_dirs} ; do
 	[ -d $d ] && for f in ${d}/*.conf ; do
-		[ "$f" = "$d/systemd.conf" ] && continue
+		case "${f##*/}" in
+			systemd.conf|systemd-*.conf) continue;;
+		esac
 		[ -f $f ] && tmpfiles_basenames="${tmpfiles_basenames}\n${f##*/}"
 	done # for f in ${d}
 done # for d in ${tmpfiles_dirs}
