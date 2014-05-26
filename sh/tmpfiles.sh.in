@@ -3,10 +3,11 @@
 # Control creation, deletion, and cleaning of volatile and temporary files
 #
 # Copyright (c) 2012 Gentoo Foundation
+# Released under the 2-clause BSD license.
 #
-# This instance based on the Arch Linux version:
+# This instance is a pure-POSIX sh version, written by Robin H Johnson
+# <robbat2@gentoo.org>, based on the Arch Linux version as of 2012/01/01:
 # http://projects.archlinux.org/initscripts.git/tree/arch-tmpfiles
-# As of 2012/01/01
 #
 # See the tmpfiles.d manpage as well:
 # http://0pointer.de/public/systemd-man/tmpfiles.d.html
