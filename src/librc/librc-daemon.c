@@ -90,6 +90,11 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 {
 	DIR *procdir;
 	struct dirent *entry;
+	FILE *fp;
+	bool container_pid = false;
+	bool openvz_host = false;
+	char *line = NULL;
+	size_t len = 0;
 	pid_t p;
 	char buffer[PATH_MAX];
 	struct stat sb;
@@ -117,6 +122,26 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 			runscript_pid = 0;
 	}
 
+	/*
+	If /proc/self/status contains EnvID: 0, then we are an OpenVZ host,
+	and we will need to filter out processes that are inside containers
+	from our list of pids.
+	*/
+
+	if (exists("/proc/self/status")) {
+		fp = fopen("/proc/self/status", "r");
+		if (fp) {
+			while(! feof(fp)) {
+				rc_getline(&line, &len, fp);
+				if (strncmp(line, "envID:\t0", 8) == 0) {
+					openvz_host = true;
+					break;
+				}
+			}
+			fclose(fp);
+		}
+	}
+
 	while ((entry = readdir(procdir)) != NULL) {
 		if (sscanf(entry->d_name, "%d", &p) != 1)
 			continue;
@@ -134,6 +159,25 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		if (argv &&
 		    !pid_is_argv(p, (const char *const *)argv))
 			continue;
+		/* If this is an OpenVZ host, filter out container processes */
+		if (openvz_host) {
+			snprintf(buffer, sizeof(buffer), "/proc/%d/status", p);
+			if (exists(buffer)) {
+				fp = fopen(buffer, "r");
+				if (! fp)
+					continue;
+				while (! feof(fp)) {
+					rc_getline(&line, &len, fp);
+					if (strncmp(line, "envID:", 6) == 0) {
+						container_pid = ! (strncmp(line, "envID:\t0", 8) == 0);
+						break;
+					}
+				}
+				fclose(fp);
+			}
+		}
+		if (container_pid)
+			continue;
 		if (!pids) {
 			pids = xmalloc(sizeof(*pids));
 			LIST_INIT(pids);
@@ -142,6 +186,8 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		pi->pid = p;
 		LIST_INSERT_HEAD(pids, pi, entries);
 	}
+	if (line != NULL)
+		free(line);
 	closedir(procdir);
 	return pids;
 }
