@@ -38,3 +38,14 @@ Why: Deprecated in favor of openrc-run and openrc due to naming
 Who:
 
 ---------------------------
+
+What: support for the opts variable in service scripts
+
+When: 1.0
+
+Why: Depprecated in favor of extra_commands, extra_started_commands
+	 and extra_stopped_commands.
+
+Who:
+
+---------------------------
