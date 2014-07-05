@@ -14,20 +14,17 @@ start()
 {
 	ebegin "Starting local"
 
-	local file has_errors retval
+	local file has_errors=0 retval
 	eindent
 	for file in @SYSCONFDIR@/local.d/*.start; do
 		if [ -x "${file}" ]; then
-			has_executables=1
 			vebegin "Executing \"${file}\""
 			"${file}" 2>&1 >/dev/null
 			retval=$?
 			if [ ${retval} -ne 0 ]; then
 				has_errors=1
-				ewend ${retval} "Execution of \"${file}\" failed."
-			else
-				vewend 0
 			fi
+			veend ${retval} "Execution of \"${file}\" failed."
 		fi
 	done
 	eoutdent
@@ -40,9 +37,7 @@ start()
 		local_start
 	fi
 
-	if [ -z "${has_errors}" ]; then
-		eend 0
-	fi
+	eend ${has_errors}
 
 	# We have to end with a zero exit code, because a failed execution
 	# of an executable @SYSCONFDIR@/local.d/*.start file shouldn't result in
@@ -57,20 +52,17 @@ stop()
 {
 	ebegin "Stopping local"
 
-	local file has_errors retval
+	local file has_errors=0 retval
 	eindent
 	for file in @SYSCONFDIR@/local.d/*.stop; do
 		if [ -x "${file}" ]; then
-			has_executables=1
 			vebegin "Executing \"${file}\""
 			"${file}" 2>&1 >/dev/null
 			retval=$?
 			if [ ${retval} -ne 0 ]; then
 				has_errors=1
-				ewend ${retval} "Execution of \"${file}\" failed."
-			else
-				vewend 0
 			fi
+			veend ${retval} "Execution of \"${file}\" failed."
 		fi
 	done
 	eoutdent
@@ -83,9 +75,7 @@ stop()
 		local_stop
 	fi
 
-	if [ -z "${has_errors}" ]; then
-		eend 0
-	fi
+	eend ${has_errors}
 
 	# An executable @SYSCONFDIR@/local.d/*.stop file which failed with a
 	# non-zero exit status is not a reason to mark this service
