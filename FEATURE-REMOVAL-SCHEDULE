@@ -49,3 +49,13 @@ Why: Depprecated in favor of extra_commands, extra_started_commands
 Who:
 
 ---------------------------
+
+What: support for local_start and local_stop
+
+When: 1.0
+
+Why: Depprecated in favor of executable scripts in @SYSCONFDIR@/local.d
+
+Who:
+
+---------------------------
