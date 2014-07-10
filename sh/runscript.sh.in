@@ -216,12 +216,12 @@ fi
 
 # Apply cgroups settings if defined
 if [ "$1" = "start" ] ; then
-if [ "$(command -v cgroup_add_service)" = "cgroup_add_service" ]; then
-	cgroup_add_service /sys/fs/cgroup/openrc
-	cgroup_add_service /sys/fs/cgroup/systemd/system
-fi
-[ "$(command -v cgroup_set_limits)" = "cgroup_set_limits" ] && \
-	cgroup_set_limits
+	if [ "$(command -v cgroup_add_service)" = "cgroup_add_service" ]; then
+		cgroup_add_service /sys/fs/cgroup/openrc
+		cgroup_add_service /sys/fs/cgroup/systemd/system
+	fi
+	[ "$(command -v cgroup_set_limits)" = "cgroup_set_limits" ] && \
+		cgroup_set_limits
 fi
 
 # Load our script
