@@ -268,7 +268,7 @@ checkpath(int argc, char **argv)
 		usage(EXIT_FAILURE);
 
 	if (type == inode_unknown)
-		eerrorx("%s: -d -f or -p must be specified.", applet);
+		eerrorx("%s: -d, -f, -p, or -W must be specified.", applet);
 
 	if (pw) {
 		uid = pw->pw_uid;
