@@ -322,30 +322,35 @@ Mark the service as inactive.
 .Op Fl p , -pipe
 .Op Fl m , -mode Ar mode
 .Op Fl o , -owner Ar owner
+.Op Fl W , -writable
 .Op Fl q , -quiet
 .Ar path ...
 .Xc
-Checks to see if the path exists, is of the right type, owned by the right
-people and has the correct access modes. If not, then it corrects the path.
+If -d, -f or -p is specified, checkpath checks to see if the path
+exists, is the right type and has the correct owner and access modes. If
+any of these tests fail, the path is created and set up as specified. If
+more than one of -d, -f or -p are specified, the last one will be used.
 
-Type.
-File, directory and pipe types are supported, if type is not provided then
-directory is used
+The argument to -m is a three or four digit octal number. If this option
+is not provided, the value defaults to 0644 for files and 0775 for
+directories.
 
-Mode.
-Mode should be provided as a three (644) or four digit string (0644). If mode
-is argument is not provided then default value is used: 0644 - for files, and
-0775 for directories.
+The argument to -o is a representation of the user and/or group which
+should own the path. The user and group can be represented numerically
+or with names, and are separated by a colon.
 
-Truncate variant of options create empty directory or file, or clears contents
-if it exists.
+The truncate options (-D and -F) cause the directory or file to be
+cleared of all contents.
 
-Quiet argument suppress normal output, repeat quiet argument to suppress errors.
-.It Ic checkpath
-.Op Fl W , -writable
-.Ar path
-.Xc
-checks to see if the path is writable.
+If -W is specified, checkpath checks to see if the first path given on
+the command line is writable.  This is different from how the test
+command in the shell works, because it also checks to make sure the file
+system is not read only.
+
+Also, the -d, -f or -p options should not be specified along with this option.
+
+The -q option suppresses all informational output. If it is specified
+twice, all error messages are suppressed as well.
 .It Ic yesno Ar value
 If
 .Ar value
