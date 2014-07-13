@@ -187,7 +187,7 @@ parse_owner(struct passwd **user, struct group **group, const char *owner)
 
 #include "_usage.h"
 #define extraopts "path1 [path2] [...]"
-#define getoptstring "dDfFpm:o:W:" getoptstring_COMMON
+#define getoptstring "dDfFpm:o:W" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "directory",          0, NULL, 'd'},
 	{ "directory-truncate", 0, NULL, 'D'},
@@ -196,7 +196,7 @@ static const struct option longopts[] = {
 	{ "pipe",               0, NULL, 'p'},
 	{ "mode",               1, NULL, 'm'},
 	{ "owner",              1, NULL, 'o'},
-	{ "writable",           1, NULL, 'W'},
+	{ "writable",           0, NULL, 'W'},
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
@@ -225,6 +225,7 @@ checkpath(int argc, char **argv)
 	int retval = EXIT_SUCCESS;
 	bool trunc = false;
 	bool chowner = false;
+	bool writable = false;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
@@ -255,9 +256,7 @@ checkpath(int argc, char **argv)
 				    applet, optarg);
 			break;
 		case 'W':
-			if (argv[optind] != NULL)
-				ewarn("-W/--writable takes only one path, everything else will be ignored");
-			exit(!is_writable(optarg));
+			writable = true;
 			break;
 
 		case_RC_COMMON_GETOPT
@@ -267,8 +266,8 @@ checkpath(int argc, char **argv)
 	if (optind >= argc)
 		usage(EXIT_FAILURE);
 
-	if (type == inode_unknown)
-		eerrorx("%s: -d, -f, -p, or -W must be specified.", applet);
+	if (writable && type != inode_unknown)
+		eerrorx("%s: -W cannot be specified along with -d, -f or -p", applet);
 
 	if (pw) {
 		uid = pw->pw_uid;
@@ -278,6 +277,8 @@ checkpath(int argc, char **argv)
 		gid = gr->gr_gid;
 
 	while (optind < argc) {
+		if (writable)
+			exit(!is_writable(argv[optind]));
 		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner))
 			retval = EXIT_FAILURE;
 		optind++;
