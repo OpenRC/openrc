@@ -99,8 +99,8 @@ mount_misc()
 
 mount_cgroups()
 {
-		mountinfo -q /sys/fs/cgroup || return 0
-		mountinfo -q /sys/fs/cgroup/openrc || return 0
+	mountinfo -q /sys/fs/cgroup || return 0
+	mountinfo -q /sys/fs/cgroup/openrc || return 0
 
 	local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
 	mkdir /sys/fs/cgroup/openrc
