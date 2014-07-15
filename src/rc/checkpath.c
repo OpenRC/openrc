@@ -46,6 +46,10 @@
 #include "einfo.h"
 #include "rc-misc.h"
 
+#ifdef HAVE_SELINUX
+#include "rc-selinux-util.h"
+#endif
+
 typedef enum {
 	inode_unknown = 0,
 	inode_file = 1,
@@ -55,13 +59,9 @@ typedef enum {
 
 extern const char *applet;
 
-/* TODO: SELinux
- * This needs a LOT of SELinux loving
- * See systemd's src/label.c:label_mkdir
- */
 static int
 do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
-		bool trunc, bool chowner)
+		bool trunc, bool chowner, bool selinux_on)
 {
 	struct stat st;
 	int fd, flags;
@@ -149,6 +149,11 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
 		}
 	}
 
+#ifdef HAVE_SELINUX
+	if (selinux_on)
+		selinux_util_label(path);
+#endif
+
 	return 0;
 }
 
@@ -226,6 +231,7 @@ checkpath(int argc, char **argv)
 	bool trunc = false;
 	bool chowner = false;
 	bool writable = false;
+	bool selinux_on = false;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
@@ -276,13 +282,23 @@ checkpath(int argc, char **argv)
 	if (gr)
 		gid = gr->gr_gid;
 
+#ifdef HAVE_SELINUX
+	if (1 == selinux_util_open())
+		selinux_on = true;
+#endif
+
 	while (optind < argc) {
 		if (writable)
 			exit(!is_writable(argv[optind]));
-		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner))
+		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner, selinux_on))
 			retval = EXIT_FAILURE;
 		optind++;
 	}
+
+#ifdef HAVE_SELINUX
+	if (selinux_on)
+		selinux_util_close();
+#endif
 
 	return retval;
 }
