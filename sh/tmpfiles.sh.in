@@ -52,12 +52,20 @@ relabel() {
 	done
 }
 
+_restorecon() {
+    local path=$1
+    if [ -x /sbin/restorecon ]; then
+        dryrun_or_real restorecon -F "$path"
+    fi
+}
+
 _b() {
 	# Create a block device node if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
 	if [ ! -e "$path" ]; then
 		dryrun_or_real mknod -m $mode $path b ${arg%:*} ${arg#*:}
 		dryrun_or_real chown $uid:$gid $path
+		_restorecon "$path"
 	fi
 }
 
@@ -67,6 +75,7 @@ _c() {
 	if [ ! -e "$path" ]; then
 		dryrun_or_real mknod -m $mode $path c ${arg%:*} ${arg#*:}
 		dryrun_or_real chown $uid:$gid $path
+		_restorecon "$path"
 	fi
 }
 
@@ -80,6 +89,7 @@ _f() {
 	if [ ! -e "$path" ]; then
 		dryrun_or_real install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
 		[ -z "$arg" ] || _w "$@"
+		_restorecon "$path"
 	fi
 }
 
@@ -91,6 +101,7 @@ _F() {
 
 	dryrun_or_real install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
 	[ -z "$arg" ] || _w "$@"
+	_restorecon "$path"
 }
 
 _d() {
@@ -101,6 +112,7 @@ _d() {
 
 	if [ ! -d "$path" ]; then
 		dryrun_or_real install -d -m"$mode" -o"$uid" -g"$gid" "$path"
+		_restorecon "$path"
 	fi
 }
 
@@ -110,10 +122,12 @@ _D() {
 
 	if [ -d "$path" ] && [ $REMOVE -gt 0 ]; then
 		dryrun_or_real find "$path" -mindepth 1 -maxdepth 1 -xdev -exec rm -rf {} +
+		_restorecon "$path"
 	fi
 
 	if [ $CREATE -gt 0 ]; then
 		dryrun_or_real install -d -m"$mode" -o"$uid" -g"$gid" "$path"
+		_restorecon "$path"
 	fi
 }
 
@@ -121,6 +135,7 @@ _L() {
 	# Create a symlink if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
 	[ ! -e "$path" ] && dryrun_or_real ln -s "$arg" "$path"
+	_restorecon "$path"
 }
 
 _p() {
@@ -132,6 +147,7 @@ _p() {
 	if [ ! -p "$path" ]; then
 		dryrun_or_real mkfifo -m$mode "$path"
 		dryrun_or_real chown "$uid:$gid" "$path"
+		_restorecon "$path"
 	fi
 }
 
