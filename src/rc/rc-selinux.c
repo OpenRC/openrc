@@ -36,7 +36,7 @@
 #include <selinux/selinux.h>
 #include <selinux/label.h>
 
-#include "rc-selinux-util.h"
+#include "rc-selinux.h"
 
 static struct selabel_handle *hnd = NULL;
 

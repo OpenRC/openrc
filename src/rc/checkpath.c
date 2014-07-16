@@ -47,7 +47,7 @@
 #include "rc-misc.h"
 
 #ifdef HAVE_SELINUX
-#include "rc-selinux-util.h"
+#include "rc-selinux.h"
 #endif
 
 typedef enum {

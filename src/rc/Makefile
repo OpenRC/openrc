@@ -5,10 +5,10 @@ SRCS=		checkpath.c fstabinfo.c mountinfo.c start-stop-daemon.c \
 		runscript.c rc.c swclock.c
 
 ifeq (${MKSELINUX},yes)
-SRCS+=		rc-selinux-util.c
+SRCS+=		rc-selinux.c
 endif
 
-CLEANFILES=	version.h rc-selinux-util.o
+CLEANFILES=	version.h rc-selinux.o
 
 BINDIR=		${PREFIX}/bin
 SBINDIR=	${PREFIX}/sbin
