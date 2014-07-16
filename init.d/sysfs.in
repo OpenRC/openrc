@@ -120,6 +120,18 @@ mount_cgroups()
 	done < /proc/cgroups
 }
 
+restorecon_sys()
+{
+	if [ -x /sbin/restorecon ]; then
+		ebegin "Restoring SELinux contexts in /sys"
+		restorecon -F /sys/devices/system/cpu/online >/dev/null 2>&1
+		restorecon -rF /sys/fs/cgroup >/dev/null 2>&1
+		eend $?
+	fi
+
+	return 0
+}
+
 start()
 {
 	local retval
@@ -133,5 +145,8 @@ start()
 		mount_cgroups
 		retval=$?
 	fi
+
+	restorecon_sys
+
 	return $retval
 }
