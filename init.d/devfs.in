@@ -95,7 +95,7 @@ seed_dev()
 restorecon_dev()
 {
 	if [ -x /sbin/restorecon ]; then
-		ebegin "Set SELinux labels in /dev"
+		ebegin "Restoring SELinux contexts in /dev"
 		restorecon -rF /dev >/dev/null 2>&1
 		eend $?
 	fi
