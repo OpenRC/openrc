@@ -36,7 +36,6 @@
 #include <sys/wait.h>
 
 #include <ctype.h>
-#include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <fnmatch.h>
@@ -66,7 +65,9 @@
 #include "rc-misc.h"
 #include "rc-plugin.h"
 
-#define SELINUX_LIB     RC_LIBDIR "/runscript_selinux.so"
+#ifdef HAVE_SELINUX
+#include "rc-selinux.h"
+#endif
 
 #define PREFIX_LOCK	RC_SVCDIR "/prefix.lock"
 
@@ -87,42 +88,6 @@ static int signal_pipe[2] = { -1, -1 };
 
 static RC_STRINGLIST *types_b, *types_n, *types_nu, *types_nua, *types_m;
 static RC_STRINGLIST *types_mua = NULL;
-
-#ifdef __linux__
-static void (*selinux_run_init_old)(void);
-static void (*selinux_run_init_new)(int argc, char **argv);
-
-static void
-setup_selinux(int argc, char **argv)
-{
-	void *lib_handle = NULL;
-
-	if (! exists(SELINUX_LIB))
-		return;
-
-	lib_handle = dlopen(SELINUX_LIB, RTLD_NOW | RTLD_GLOBAL);
-	if (! lib_handle) {
-		eerror("dlopen: %s", dlerror());
-		return;
-	}
-
-	selinux_run_init_old = (void (*)(void))
-	    dlfunc(lib_handle, "selinux_runscript");
-	selinux_run_init_new = (void (*)(int, char **))
-	    dlfunc(lib_handle, "selinux_runscript2");
-
-	/* Use new run_init if it exists, else fall back to old */
-	if (selinux_run_init_new)
-		selinux_run_init_new(argc, argv);
-	else if (selinux_run_init_old)
-		selinux_run_init_old();
-	else
-		/* This shouldnt happen... probably corrupt lib */
-		eerrorx("run_init is missing from runscript_selinux.so!");
-
-	dlclose(lib_handle);
-}
-#endif
 
 static void
 handle_signal(int sig)
@@ -1224,9 +1189,9 @@ openrc_run(int argc, char **argv)
 		eprefix(prefix);
 	}
 
-#ifdef __linux__
+#ifdef HAVE_SELINUX
 	/* Ok, we are ready to go, so setup selinux if applicable */
-	setup_selinux(argc, argv);
+	selinux_setup(argc, argv);
 #endif
 
 	deps = true;

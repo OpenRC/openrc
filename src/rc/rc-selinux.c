@@ -30,13 +30,23 @@
 
 #include <stddef.h>
 #include <errno.h>
+#include <dlfcn.h>
 
 #include <sys/stat.h>
 
 #include <selinux/selinux.h>
 #include <selinux/label.h>
 
+#include "einfo.h"
+#include "rc.h"
+#include "rc-misc.h"
+#include "rc-plugin.h"
 #include "rc-selinux.h"
+
+#define SELINUX_LIB     RC_LIBDIR "/runscript_selinux.so"
+
+static void (*selinux_run_init_old) (void);
+static void (*selinux_run_init_new) (int argc, char **argv);
 
 static struct selabel_handle *hnd = NULL;
 
@@ -120,4 +130,35 @@ int selinux_util_close(void)
 	}
 
 	return 0;
+}
+
+void selinux_setup(int argc, char **argv)
+{
+	void *lib_handle = NULL;
+
+	if (!exists(SELINUX_LIB))
+		return;
+
+	lib_handle = dlopen(SELINUX_LIB, RTLD_NOW | RTLD_GLOBAL);
+	if (!lib_handle) {
+		eerror("dlopen: %s", dlerror());
+		return;
+	}
+
+	selinux_run_init_old = (void (*)(void))
+	    dlfunc(lib_handle, "selinux_runscript");
+	selinux_run_init_new = (void (*)(int, char **))
+	    dlfunc(lib_handle, "selinux_runscript2");
+
+	/* Use new run_init if it exists, else fall back to old */
+	if (selinux_run_init_new)
+		selinux_run_init_new(argc, argv);
+	else if (selinux_run_init_old)
+		selinux_run_init_old();
+	else
+		/* This shouldnt happen... probably corrupt lib */
+		eerrorx
+		    ("run_init is missing from runscript_selinux.so!");
+
+	dlclose(lib_handle);
 }

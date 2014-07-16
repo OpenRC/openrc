@@ -30,4 +30,6 @@ int selinux_util_open(void);
 int selinux_util_label(const char *path);
 int selinux_util_close(void);
 
+void selinux_setup(int argc, char **argv);
+
 #endif
