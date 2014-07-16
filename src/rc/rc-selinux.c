@@ -40,8 +40,7 @@
 
 static struct selabel_handle *hnd = NULL;
 
-int
-selinux_util_label(const char *path)
+int selinux_util_label(const char *path)
 {
 	int retval = 0;
 	int enforce;
@@ -52,12 +51,12 @@ selinux_util_label(const char *path)
 	if (retval < 0)
 		return retval;
 
-	if (NULL == hnd)
+	if (!hnd)
 		return (enforce) ? -1 : 0;
 
 	retval = lstat(path, &st);
 	if (retval < 0) {
-		if (ENOENT == errno)
+		if (errno == ENOENT)
 			return 0;
 		return (enforce) ? -1 : 0;
 	}
@@ -65,7 +64,7 @@ selinux_util_label(const char *path)
 	/* lookup the context */
 	retval = selabel_lookup_raw(hnd, &con, path, st.st_mode);
 	if (retval < 0) {
-		if (ENOENT == errno)
+		if (errno == ENOENT)
 			return 0;
 		return (enforce) ? -1 : 0;
 	}
@@ -74,9 +73,9 @@ selinux_util_label(const char *path)
 	retval = lsetfilecon(path, con);
 	freecon(con);
 	if (retval < 0) {
-		if (ENOENT == errno)
+		if (errno == ENOENT)
 			return 0;
-		if (ENOTSUP == errno)
+		if (errno == ENOTSUP)
 			return 0;
 		return (enforce) ? -1 : 0;
 	}
@@ -88,8 +87,7 @@ selinux_util_label(const char *path)
  * Open the label handle
  * returns 1 on success, 0 if no selinux, negative on error
  */
-int
-selinux_util_open(void)
+int selinux_util_open(void)
 {
 	int retval = 0;
 
@@ -98,7 +96,7 @@ selinux_util_open(void)
 		return retval;
 
 	hnd = selabel_open(SELABEL_CTX_FILE, NULL, 0);
-	if (NULL == hnd)
+	if (!hnd)
 		return -2;
 
 	return 1;
@@ -108,8 +106,7 @@ selinux_util_open(void)
  * Close the label handle
  * returns 1 on success, 0 if no selinux, negative on error
  */
-int
-selinux_util_close(void)
+int selinux_util_close(void)
 {
 	int retval = 0;
 
