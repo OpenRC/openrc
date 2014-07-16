@@ -59,9 +59,8 @@ typedef enum {
 
 extern const char *applet;
 
-static int
-do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
-		bool trunc, bool chowner, bool selinux_on)
+static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
+	inode_t type, bool trunc, bool chowner, bool selinux_on)
 {
 	struct stat st;
 	int fd, flags;
@@ -157,8 +156,8 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
 	return 0;
 }
 
-static int
-parse_owner(struct passwd **user, struct group **group, const char *owner)
+static int parse_owner(struct passwd **user, struct group **group,
+	const char *owner)
 {
 	char *u = xstrdup (owner);
 	char *g = strchr (u, ':');
@@ -217,8 +216,7 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int
-checkpath(int argc, char **argv)
+int checkpath(int argc, char **argv)
 {
 	int opt;
 	uid_t uid = geteuid();
