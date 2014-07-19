@@ -131,7 +131,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	if (exists("/proc/self/status")) {
 		fp = fopen("/proc/self/status", "r");
 		if (fp) {
-			while(! feof(fp)) {
+			while (! feof(fp)) {
 				rc_getline(&line, &len, fp);
 				if (strncmp(line, "envID:\t0", 8) == 0) {
 					openvz_host = true;
