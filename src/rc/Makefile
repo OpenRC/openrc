@@ -95,5 +95,5 @@ install: all
 
 check test::
 
-links: $PROG
-	$(call make-links,${ALL_LINKS},$PROG,.)
+links: ${PROG}
+	$(call make-links,${ALL_LINKS},${PROG},.)
