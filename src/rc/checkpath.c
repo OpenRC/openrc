@@ -281,7 +281,7 @@ int checkpath(int argc, char **argv)
 		gid = gr->gr_gid;
 
 #ifdef HAVE_SELINUX
-	if (1 == selinux_util_open())
+	if (selinux_util_open() == 1)
 		selinux_on = true;
 #endif
 
