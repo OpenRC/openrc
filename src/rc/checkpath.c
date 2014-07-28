@@ -67,6 +67,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	int r;
 	int u;
 
+	memset(&st, 0, sizeof(st));
 	if (stat(path, &st) || trunc) {
 		if (type == inode_file) {
 			einfo("%s: creating file", path);
@@ -140,8 +141,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	}
 
 	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
-		if (st.st_dev || st.st_ino)
-			einfo("%s: correcting owner", path);
+		einfo("%s: correcting owner", path);
 		if (chown(path, uid, gid)) {
 			eerror("%s: chown: %s", applet, strerror(errno));
 			return -1;
