@@ -15,6 +15,7 @@
 #
 
 DRYRUN=0
+CHECKPATH="@LIBEXECDIR@/bin/checkpath"
 
 checkprefix() {
 	n=$1
@@ -87,9 +88,8 @@ _f() {
 	[ $CREATE -gt 0 ] || return 0
 
 	if [ ! -e "$path" ]; then
-		dryrun_or_real install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
+		dryrun_or_real $CHECKPATH -fq -m "$mode" -o "$uid:$gid" "$path"
 		[ -z "$arg" ] || _w "$@"
-		_restorecon "$path"
 	fi
 }
 
@@ -99,9 +99,8 @@ _F() {
 
 	[ $CREATE -gt 0 ] || return 0
 
-	dryrun_or_real install -m"$mode" -o"$uid" -g"$gid" /dev/null "$path"
+	dryrun_or_real $CHECKPATH -Fq -m "$mode" -o "$uid:$gid" "$path"
 	[ -z "$arg" ] || _w "$@"
-	_restorecon "$path"
 }
 
 _d() {
@@ -111,8 +110,8 @@ _d() {
 	[ $CREATE -gt 0 ] || return 0
 
 	if [ ! -d "$path" ]; then
-		dryrun_or_real install -d -m"$mode" -o"$uid" -g"$gid" "$path"
-		_restorecon "$path"
+		dryrun_or_real mkdir -p "$path" 2>/dev/null
+		dryrun_or_real $CHECKPATH -dq -m "$mode" -o "$uid:$gid" "$path"
 	fi
 }
 
@@ -126,8 +125,8 @@ _D() {
 	fi
 
 	if [ $CREATE -gt 0 ]; then
-		dryrun_or_real install -d -m"$mode" -o"$uid" -g"$gid" "$path"
-		_restorecon "$path"
+		dryrun_or_real mkdir -p "$path" 2>/dev/null
+		dryrun_or_real $CHECKPATH -Dq -m "$mode" -o "$uid:$gid" "$path"
 	fi
 }
 
@@ -145,9 +144,7 @@ _p() {
 	[ $CREATE -gt 0 ] || return 0
 
 	if [ ! -p "$path" ]; then
-		dryrun_or_real mkfifo -m$mode "$path"
-		dryrun_or_real chown "$uid:$gid" "$path"
-		_restorecon "$path"
+		dryrun_or_real $CHECKPATH -pq -m $mode -o "$uid:$gid" "$path"
 	fi
 }
 
