@@ -117,7 +117,7 @@ migrate_to_run()
 
 clean_run()
 {
-	[ "$RC_SYS" = VSERVER ] && return 0
+	[ "$RC_SYS" = VSERVER -o "$RC_SYS" = LXC ] && return 0
 	local dir
 	dir=$(mktemp -d)
 	mount --bind / $dir
