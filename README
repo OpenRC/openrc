@@ -67,7 +67,12 @@ conflicts with other software. The /sbin/rc binary was renamed to
 
 Backward compatible symbolic links are currently in place so your
 system will keep working if you are using the old names; however, it is
-strongly advised that you migrate to the new names.
+strongly advised that you migrate to the new names because the symbolic
+links will be removed in the future.
+
+Warnings have been added to assist with this migration; however, they
+only show in verbose mode in this release due to the level of noise they
+produce.
 
 Reporting Bugs
 --------------
