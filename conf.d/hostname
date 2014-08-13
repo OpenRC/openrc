@@ -2,3 +2,7 @@
 # this machine, if it has one, otherwise set to the machine name
 # (e.g. "mybox").
 hostname="localhost"
+
+# Set to the NIS domain name of this machine, if it has one, otherwise
+# leave commented out.
+#nisdomainname="localdomain.com"
