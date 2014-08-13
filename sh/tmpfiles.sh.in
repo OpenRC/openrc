@@ -65,8 +65,8 @@ _b() {
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
 	if [ ! -e "$path" ]; then
 		dryrun_or_real mknod -m $mode $path b ${arg%:*} ${arg#*:}
-		dryrun_or_real chown $uid:$gid $path
 		_restorecon "$path"
+		dryrun_or_real chown $uid:$gid $path
 	fi
 }
 
@@ -75,8 +75,8 @@ _c() {
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
 	if [ ! -e "$path" ]; then
 		dryrun_or_real mknod -m $mode $path c ${arg%:*} ${arg#*:}
-		dryrun_or_real chown $uid:$gid $path
 		_restorecon "$path"
+		dryrun_or_real chown $uid:$gid $path
 	fi
 }
 
