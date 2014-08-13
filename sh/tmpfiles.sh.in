@@ -45,10 +45,10 @@ relabel() {
 
 	for path in ${paths}; do
 		if [ -e "$path" ]; then
+			[ -x /sbin/restorecon ] && dryrun_or_real restorecon $CHOPTS "$path"
 			[ $uid != '-' ] && dryrun_or_real chown $CHOPTS "$uid" "$path"
 			[ $gid != '-' ] && dryrun_or_real chgrp $CHOPTS "$gid" "$path"
 			[ $mode != '-' ] && dryrun_or_real chmod $CHOPTS "$mode" "$path"
-			[ -x /sbin/restorecon ] && dryrun_or_real restorecon $CHOPTS "$path"
 		fi
 	done
 }
