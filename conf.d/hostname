@@ -1,2 +1,4 @@
-# Set to the fully-qualified hostname of this machine
+# Set to the fully qualified domain name (e.g. "mybox.example.com") of
+# this machine, if it has one, otherwise set to the machine name
+# (e.g. "mybox").
 hostname="localhost"
