@@ -6,3 +6,10 @@ hostname="localhost"
 # Set to the NIS domain name of this machine, if it has one, otherwise
 # leave commented out.
 #nisdomainname="localdomain.com"
+
+# Set other alias-to-address mappings, if needed, otherwise leave
+# commented out.
+#aliases="127.0.0.1 mybox
+#10.0.0.1	mylaptop
+#172.16.0.1	myserver
+#192.168.0.1	myworkstation"
