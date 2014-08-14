@@ -59,3 +59,14 @@ Why: Depprecated in favor of executable scripts in @SYSCONFDIR@/local.d
 Who:
 
 ---------------------------
+
+What: the mtab service script
+
+When: 1.0
+
+Why: /etc/mtab should be a symbolic link to /proc/self/mounts on modern
+	 Linux systems
+
+Who:
+
+---------------------------
