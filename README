@@ -74,6 +74,15 @@ Warnings have been added to assist with this migration; however, they
 only show in verbose mode in this release due to the level of noise they
 produce.
 
+Also, the devfs script now completely controls mounting and the initial
+setup of the /dev directory.
+
+It attempts to mount /dev from fstab first if an entry exists there. If
+it doesn't it attempts to mount devtmpfs if it is configured in the
+kernel. If not, it attempts to mount tmpfs.
+If none of these is available, an error message is displayed and static
+/dev is assumed.
+
 Reporting Bugs
 --------------
 Since Gentoo Linux is hosting OpenRC development, Bugs should go to
