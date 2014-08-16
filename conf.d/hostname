@@ -9,7 +9,7 @@ hostname="localhost"
 
 # Set other alias-to-address mappings, if needed, otherwise leave
 # commented out.
-#aliases="127.0.0.1 mybox
+#aliases="127.0.0.1	mybox
 #10.0.0.1	mylaptop
 #172.16.0.1	myserver
 #192.168.0.1	myworkstation"
