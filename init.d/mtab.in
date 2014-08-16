@@ -16,12 +16,6 @@ start()
 		return 0
 	fi
 
-	ewarn "Please run the following command as root on your system."
-	ewarn
-	ewarn "ln -snf /proc/self/mounts /etc/mtab"
-	ewarn
-	ewarn "The support for updating /etc/mtab as a file is"
-	ewarn "deprecated and will be removed in the future."
 	ebegin "Updating /etc/mtab"
 	if ! echo 2>/dev/null >/etc/mtab; then
 		ewend 1 "/etc/mtab is not updateable"

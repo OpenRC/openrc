@@ -62,7 +62,7 @@ Who:
 
 What: the mtab service script
 
-When: 1.0
+When: 2.0
 
 Why: /etc/mtab should be a symbolic link to /proc/self/mounts on modern
 	 Linux systems
