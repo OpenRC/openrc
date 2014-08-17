@@ -62,7 +62,7 @@ Who:
 
 What: the mtab service script
 
-When: 2.0
+When: make warnings more visible in 1.0, remove in 2.0
 
 Why: /etc/mtab should be a symbolic link to /proc/self/mounts on modern
 	 Linux systems
