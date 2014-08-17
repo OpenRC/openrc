@@ -74,8 +74,10 @@ Warnings have been added to assist with this migration; however, they
 only show in verbose mode in this release due to the level of noise they
 produce.
 
-Also, the devfs script now completely controls mounting and the initial
-setup of the /dev directory.
+Also, the devfs script now handles the initial mounting and setup of the
+/dev directory. If /dev has already been mounted by the kernel or an
+initramfs, devfs will remount /dev with the correct mount options
+instead of mounting a second /dev over the existing mount point.
 
 It attempts to mount /dev from fstab first if an entry exists there. If
 it doesn't it attempts to mount devtmpfs if it is configured in the
