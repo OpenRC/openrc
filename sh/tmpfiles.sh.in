@@ -304,6 +304,7 @@ for FILE in $tmpfiles_d ; do
 	# But IS allowed when globs are expanded for the x/r/R/z/Z types.
 	while read cmd path mode uid gid age arg; do
 		LINENUM=$(( LINENUM+1 ))
+		FORCE=0
 
 		# Unless we have both command and path, skip this line.
 		if [ -z "$cmd" -o -z "$path" ]; then
@@ -311,13 +312,20 @@ for FILE in $tmpfiles_d ; do
 		fi
 
 		case $cmd in
-			*!) [ "$BOOT" -eq "1" ] || continue; cmd=${cmd%!} ;;
+			\#*) continue ;;
 		esac
+
+		while [ ${#cmd} -gt 1 ]; do
+			case $cmd in
+				*!) cmd=${cmd%!}; [ "$BOOT" -eq "1" ] || continue 2 ;;
+				*+) cmd=${cmd%+}; FORCE=1; ;;
+				*) warninvalid ; continue 2 ;;
+			esac
+		done
 
 		# whine about invalid entries
 		case $cmd in
 			f|F|w|d|D|p|L|c|b|x|X|r|R|z|Z) ;;
-			\#*) continue ;;
 			*) warninvalid ; continue ;;
 		esac
 
@@ -338,6 +346,13 @@ for FILE in $tmpfiles_d ; do
 
 		[ -n "$EXCLUDE" ] && checkprefix $path $EXCLUDE && continue
 		[ -n "$PREFIX" ] && ! checkprefix $path $PREFIX && continue
+
+		if [ $FORCE -gt 0 ]; then
+			case $cmd in
+				p|L|c|b) [ -f "$path" ] && dryrun_or_real rm -f "$path"
+			esac
+		fi
+
 		[ "$VERBOSE" -eq "1" ] && echo _$cmd "$@"
 		_$cmd "$@"
 		rc=$?
