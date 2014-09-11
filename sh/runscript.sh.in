@@ -185,6 +185,10 @@ status()
 }
 
 yesno $RC_DEBUG && set -x
+if yesno "${rc_verbose:-$RC_VERBOSE}"; then
+	EINFO_VERBOSE=yes
+	export EINFO_VERBOSE
+fi
 
 _conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
@@ -207,12 +211,6 @@ sourcex -e "@SYSCONFDIR@/rc.conf"
 
 # Apply any ulimit defined
 [ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}
-
-# Set verbose mode
-if yesno "${rc_verbose:-$RC_VERBOSE}"; then
-	EINFO_VERBOSE=yes
-	export EINFO_VERBOSE
-fi
 
 # Apply cgroups settings if defined
 if [ "$1" = "start" ] ; then
