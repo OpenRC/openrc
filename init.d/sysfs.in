@@ -101,11 +101,12 @@ mount_cgroups()
 {
 	mountinfo -q /sys/fs/cgroup || return 0
 
+	local opts="${sysfs_opts},mode=755"
 	if ! mountinfo -q /sys/fs/cgroup/openrc; then
 		local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
 		mkdir /sys/fs/cgroup/openrc
 		mount -n -t cgroup \
-			-o none,${sysfs_opts},name=openrc,release_agent="$agent" \
+			-o none,${opts},name=openrc,release_agent="$agent" \
 			openrc /sys/fs/cgroup/openrc
 		echo 1 > /sys/fs/cgroup/openrc/notify_on_release
 	fi
@@ -114,7 +115,7 @@ mount_cgroups()
 	while read name hier groups enabled rest; do
 		case "${enabled}" in
 			1)	mkdir /sys/fs/cgroup/${name}
-				mount -n -t cgroup -o ${sysfs_opts},${name} \
+				mount -n -t cgroup -o ${opts},${name} \
 					${name} /sys/fs/cgroup/${name}
 				;;
 		esac
