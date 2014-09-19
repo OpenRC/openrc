@@ -131,6 +131,12 @@ timeout in seconds or multiple signal/timeout pairs (like SIGTERM/5).
 A list of directories which must exist for the service to start.
 .It Ar required_files
 A list of files which must exist for the service to start.
+.It Ar start_inactive
+Set to yes to have the service marked inactive when it starts. This is
+used along with in_background_fake to support re-entrant services.
+.It Ar in_background_fake
+Space separated list of commands which should always succeed when
+in_background is yes.
 .El
 .Sh DEPENDENCIES
 You should define a
