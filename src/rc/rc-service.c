@@ -57,7 +57,7 @@ static const struct option longopts[] = {
 };
 static const char * const longopts_help[] = {
 	"tests if the service exists or not",
-	"if the service exsits then run the command",
+	"if the service exists then run the command",
 	"list all available services",
 	"resolve the service name to an init script",
 	longopts_help_COMMON
