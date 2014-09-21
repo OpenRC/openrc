@@ -29,10 +29,12 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "e:ilr:" getoptstring_COMMON;
+const char *getoptstring = "e:ilr:IN" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "exists",   1, NULL, 'e' },
 	{ "ifexists", 0, NULL, 'i' },
+	{ "ifinactive", 0, NULL, 'I' },
+	{ "ifnotstarted", 0, NULL, 'N' },
 	{ "list",     0, NULL, 'l' },
 	{ "resolve",  1, NULL, 'r' },
 	longopts_COMMON
@@ -40,6 +42,8 @@ const struct option longopts[] = {
 const char * const longopts_help[] = {
 	"tests if the service exists or not",
 	"if the service exists then run the command",
+	"if the service is inactive then run the command",
+	"if the service is not started then run the command",
 	"list all available services",
 	"resolve the service name to an init script",
 	longopts_help_COMMON
@@ -56,7 +60,10 @@ int main(int argc, char **argv)
 	char *service;
 	RC_STRINGLIST *list;
 	RC_STRING *s;
+	RC_SERVICE state;
 	bool if_exists = false;
+	bool if_inactive = false;
+	bool if_notstarted = false;
 
 	applet = basename_c(argv[0]);
 	/* Ensure that we are only quiet when explicitly told to be */
@@ -76,6 +83,12 @@ int main(int argc, char **argv)
 			/* NOTREACHED */
 		case 'i':
 			if_exists = true;
+			break;
+		case 'I':
+			if_inactive = true;
+			break;
+		case 'N':
+			if_notstarted = true;
 			break;
 		case 'l':
 			list = rc_services_in_runlevel(NULL);
@@ -113,6 +126,11 @@ int main(int argc, char **argv)
 			return 0;
 		eerrorx("%s: service `%s' does not exist", applet, *argv);
 	}
+	state = rc_service_state(*argv);
+	if (if_inactive && ! (state & RC_SERVICE_INACTIVE))
+		return 0;
+	if (if_notstarted && (state & RC_SERVICE_STARTED))
+		return 0;
 	*argv = service;
 	execv(*argv, argv);
 	eerrorx("%s: %s", applet, strerror(errno));

@@ -20,6 +20,14 @@
 .Ar service cmd
 .Op Ar ...
 .Nm
+.Op Fl I , -ifinactive
+.Ar service cmd
+.Op Ar ...
+.Nm
+.Op Fl N , -ifnotstarted
+.Ar service cmd
+.Op Ar ...
+.Nm
 .Fl e , -exists
 .Ar service
 .Nm
@@ -36,6 +44,13 @@ If
 is given then
 .Nm
 returns 0 even if the service does not exist.
+If
+.Fl I , -ifinactive
+or
+.Fl N , -ifnotstarted
+is given then
+.Nm
+returns 0 if the service exists but is in the wrong state.
 .Pp
 If given the
 .Fl l , -list
