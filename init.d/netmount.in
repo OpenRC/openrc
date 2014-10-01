@@ -2,10 +2,7 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-description="Mounts network shares, other than NFS, according to /etc/fstab."
-# We skip all NFS shares in this script because they require extra
-# daemons to be running on the client in order to work correctly.
-# It is best to allow nfs-utils to handle all nfs shares.
+description="Mounts network shares according to /etc/fstab."
 
 depend()
 {
@@ -19,11 +16,6 @@ start()
 {
 	local x= fs= rc=
 	for x in $net_fs_list $extra_net_fs_list; do
-		case "$x" in
-			nfs|nfs4)
-			continue
-			;;
-		esac
 		fs="$fs${fs:+,}$x"
 	done
 
@@ -46,14 +38,7 @@ stop()
 	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
 	for x in $net_fs_list $extra_net_fs_list; do
-		case "$x" in
-			nfs|nfs4)
-				continue
-				;;
-			*)
-				fs="$fs${fs:+,}$x"
-				;;
-		esac
+		fs="$fs${fs:+,}$x"
 	done
 	if [ -n "$fs" ]; then
 		umount -at $fs || eerror "Failed to simply unmount filesystems"
