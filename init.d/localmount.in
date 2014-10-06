@@ -63,6 +63,31 @@ stop()
 
 	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
+	if [ "$RC_UNAME" = Linux ] && [ -d /sys/fs/aufs ] ; then
+		#if / is aufs we remount it noxino during shutdown
+		if mountinfo -q -f '^aufs$' / ; then
+			mount -o remount,noxino,rw /
+			sync
+		fi
+
+		local aufs_branch aufs_mount_dir aufs_mount_point aufs_si_dir aufs_si_id
+		for aufs_si_dir in /sys/fs/aufs/*; do
+			aufs_mount_dir=${aufs_si_dir#/sys/fs/aufs/}
+			aufs_si_id="$(printf "%s" $aufs_mount_dir | sed 's/_/=/g')"
+			aufs_mount_point="$(mountinfo -o ${aufs_si_id})"
+			for x in $aufs_si_dir/br[0-9][0-9][0-9]; do
+				aufs_branch=$(sed 's/=.*//g' $x)
+				eindent
+				if ! mount -o "remount,del:$aufs_branch" "$aufs_mount_point" > /dev/null 2>&1; then
+					ewarn "Failed to remove branch $aufs_branch from aufs \
+						$aufs_mount_point"
+				fi
+				eoutdent
+				sync
+			done
+		done
+	fi
+
 	# Umount loop devices
 	einfo "Unmounting loop devices"
 	eindent
