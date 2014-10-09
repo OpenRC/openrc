@@ -22,6 +22,8 @@ Note that OpenRC provides their own implementations of `start-stop-daemon` and `
     mount --bind /sbin/openrc /sbin/start-stop-daemon
     mount --bind /sbin/openrc /usr/sbin/service
 
+###Tweaking
+
 You may wish to tweak the installation with the below arguments
 
     PROGLDFLAGS=-static
@@ -53,6 +55,8 @@ You can also brand OpenRC if you so wish like so
 `LOCAL_PREFIX` should be set when to where user maintained packages are.
 Only set `LOCAL_PREFIX` if different from `PKG_PREFIX`.
 PREFIX should be set when OpenRC is not installed to /.
+
+###Details
 
 If any of the following files exist then we do not overwrite them
 
