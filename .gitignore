@@ -5,6 +5,8 @@
 *.orig
 *.rej
 
+*.swp
+
 core
 .gdb_history
 .gdbinit
