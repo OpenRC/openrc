@@ -4,6 +4,11 @@ This file will contain a list of notable changes for each release.
 
 OpenRC-0.13.2
 =============
+
+A chroot variable has been added to the service script variables.
+This fixes the support for running a service in a chroot.
+This is documented in man 8 openrc-run.
+
 The netmount service now mounts nfs file systems.
 This change was made to correct a fix for an earlier bug.
 
