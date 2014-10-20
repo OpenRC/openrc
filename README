@@ -57,34 +57,6 @@ init.d.misc is not installed by default as the scripts will need
 tweaking on a per distro basis. They are also non essential to the operation
 of the system.
 
-As of OpenRC-0.12, the net.* scripts, originally from Gentoo Linux, have
-been removed. If you need these scripts, look for a package called
-netifrc, which is maintained by them.
-
-As of OpenRC-0.13, two binaries have been renamed due to naming
-conflicts with other software. The /sbin/rc binary was renamed to
-/sbin/openrc, and /sbin/runscript was renamed to /sbin/openrc-run.
-
-Backward compatible symbolic links are currently in place so your
-system will keep working if you are using the old names; however, it is
-strongly advised that you migrate to the new names because the symbolic
-links will be removed in the future.
-
-Warnings have been added to assist with this migration; however, they
-only show in verbose mode in this release due to the level of noise they
-produce.
-
-Also, the devfs script now handles the initial mounting and setup of the
-/dev directory. If /dev has already been mounted by the kernel or an
-initramfs, devfs will remount /dev with the correct mount options
-instead of mounting a second /dev over the existing mount point.
-
-It attempts to mount /dev from fstab first if an entry exists there. If
-it doesn't it attempts to mount devtmpfs if it is configured in the
-kernel. If not, it attempts to mount tmpfs.
-If none of these is available, an error message is displayed and static
-/dev is assumed.
-
 Reporting Bugs
 --------------
 Since Gentoo Linux is hosting OpenRC development, Bugs should go to
