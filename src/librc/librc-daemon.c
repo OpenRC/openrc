@@ -553,16 +553,28 @@ rc_service_daemons_crashed(const char *service)
 		}
 		fclose(fp);
 
+		char *ch_root = rc_service_value_get(basename_c(service), "chroot");
+		char *spidfile = pidfile;
+		if (ch_root) {
+			spidfile = malloc(strlen(ch_root) + strlen(pidfile));
+			strcpy(spidfile, ch_root);
+			strcat(spidfile, pidfile);
+		}
+
 		pid = 0;
-		if (pidfile) {
+		if (spidfile) {
 			retval = true;
-			if ((fp = fopen(pidfile, "r"))) {
+			if ((fp = fopen(spidfile, "r"))) {
 				if (fscanf(fp, "%d", &pid) == 1)
 					retval = false;
 				fclose(fp);
 			}
-			free(pidfile);
-			pidfile = NULL;
+			free(spidfile);
+			spidfile = NULL;
+			if (ch_root) {
+				free(pidfile);
+				pidfile = NULL;
+			}
 
 			/* We have the pid, so no need to match
 			   on exec or name */
