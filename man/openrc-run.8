@@ -120,6 +120,9 @@ Set this to "true", "yes" or "1" (case-insensitive) to force the daemon into
 the background. This implies the "--make-pidfile" and "--pidfile" option of
 .Xr start-stop-daemon 8
 so the pidfile variable must be set.
+.It Ar chroot
+.Xr start-stop-daemon 8
+will chroot into this path before writing the pid file or starting the daemon.
 .It Ar pidfile
 Pidfile to use for the above defined command.
 .It Ar name
