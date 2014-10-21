@@ -3,7 +3,9 @@
 
 # Generic definitions
 
+SFX=		.GNU-kFreeBSD.in
+PKG_PREFIX?=	/usr
+
 CPPFLAGS+=	-D_BSD_SOURCE -D_XOPEN_SOURCE=700
 LIBDL=		-Wl,-Bdynamic -ldl
 LIBKVM?=
-include ${MK}/os-BSD.mk
