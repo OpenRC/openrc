@@ -51,7 +51,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#if defined(__linux__) || defined(__GLIBC__)
+#if defined(__linux__) || defined(__FreeBSD_kernel__)
 #  include <pty.h>
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 #  include <util.h>
