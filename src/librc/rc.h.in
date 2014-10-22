@@ -31,17 +31,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#undef __BEGIN_DECLS
-#undef __END_DECLS
+/* __BEGIN_DECLS */
 #ifdef __cplusplus
-# define __BEGIN_DECLS extern "C" {
-# define __END_DECLS }
-#else
-# define __BEGIN_DECLS /* empty */
-# define __END_DECLS /* empty */
+extern "C" {
 #endif
-
-__BEGIN_DECLS
 
 #define RC_PREFIX "@PREFIX@"
 #define RC_SYSCONFDIR		"@SYSCONFDIR@"
@@ -573,5 +566,9 @@ bool rc_getfile(const char *, char **, size_t *);
  * we have our own */
 ssize_t rc_getline(char **, size_t *, FILE *);
 
-__END_DECLS
+/* __END_DECLS */
+#ifdef __cplusplus
+}
+#endif
+
 #endif
