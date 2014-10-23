@@ -48,25 +48,6 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
-/* Some libc implemntations don't have these */
-#ifndef TAILQ_CONCAT
-#define TAILQ_CONCAT(head1, head2, field) do {				      \
-		if (!TAILQ_EMPTY(head2)) {				      \
-			*(head1)->tqh_last = (head2)->tqh_first;	      \
-			(head2)->tqh_first->field.tqe_prev = (head1)->tqh_last; \
-			(head1)->tqh_last = (head2)->tqh_last;		      \
-			TAILQ_INIT((head2));				      \
-		}							      \
-	} while (0)
-#endif
-
-#ifndef TAILQ_FOREACH_SAFE
-#define	TAILQ_FOREACH_SAFE(var, head, field, tvar)			      \
-	for ((var) = TAILQ_FIRST((head));				      \
-	     (var) && ((tvar) = TAILQ_NEXT((var), field), 1);		      \
-	     (var) = (tvar))
-#endif
-
 #ifdef __GLIBC__
 #  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
 #    define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
