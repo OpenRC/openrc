@@ -54,6 +54,7 @@
 
 #include "einfo.h"
 #include "rc-logger.h"
+#include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
 

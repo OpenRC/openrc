@@ -74,6 +74,7 @@ static struct pam_conv conv = { NULL, NULL};
 
 #include "builtins.h"
 #include "einfo.h"
+#include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
 

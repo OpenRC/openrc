@@ -62,6 +62,7 @@
 
 #include "builtins.h"
 #include "einfo.h"
+#include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
 #include "rc-plugin.h"
