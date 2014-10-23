@@ -78,15 +78,6 @@ static struct pam_conv conv = { NULL, NULL};
 #include "rc.h"
 #include "rc-misc.h"
 
-/* Some libc implementations don't define this */
-#ifndef LIST_FOREACH_SAFE
-#define	LIST_FOREACH_SAFE(var, head, field, tvar)			      \
-	for ((var) = LIST_FIRST((head));				      \
-	     (var) && ((tvar) = LIST_NEXT((var), field), 1);		      \
-	     (var) = (tvar))
-#endif
-
-
 typedef struct scheduleitem
 {
 	enum
