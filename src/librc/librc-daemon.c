@@ -28,6 +28,7 @@
  * SUCH DAMAGE.
  */
 
+#include "queue.h"
 #include "librc.h"
 
 #if defined(__linux__) || (defined (__FreeBSD_kernel__) && defined(__GLIBC__))

@@ -30,6 +30,7 @@
 
 #include <sys/utsname.h>
 
+#include "queue.h"
 #include "librc.h"
 
 #define GENDEP          RC_LIBEXECDIR "/sh/gendepends.sh"

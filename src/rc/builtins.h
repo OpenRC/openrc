@@ -23,6 +23,7 @@
  * SUCH DAMAGE.
  */
 
+#include "queue.h"
 #include "rc.h"
 
 int checkpath(int, char **);

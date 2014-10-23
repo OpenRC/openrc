@@ -60,6 +60,7 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "builtins.h"
 #include "einfo.h"
+#include "queue.h"
 #include "rc.h"
 #include "rc-logger.h"
 #include "rc-misc.h"
