@@ -886,7 +886,99 @@ deptype2char(unapm_type_t type) {
 	return '?';
 }
 
-/*! Solves dependecies loops
+
+/*! an "action" function for twalk() to build an unsorted array of dependencies presence from prepared btree */
+
+static int           idid_btree_builddescarray_amount;		/* number of elements of the result array (should be set to zero before running this function) */
+static idid_entry_t *idid_btree_builddescarray_counters;	/* the result array (should be allocated before running this function) */
+
+static void
+idid_btree_builddescarray(const void *nodep, const VISIT which, const int depth) {
+	idid_entry_t *idid_counters = idid_btree_builddescarray_counters;	/* Just a shorthand */
+	(void)depth;
+	switch (which) {
+		case preorder:
+		case leaf: {
+			const idid_entry_t *idid_entry_p = *(idid_entry_t * const*)nodep;
+
+			memcpy(
+				&idid_counters[idid_btree_builddescarray_amount],
+				idid_entry_p,
+				sizeof(idid_counters[idid_btree_builddescarray_amount])
+			);
+			idid_btree_builddescarray_amount++;
+			break;
+		}
+		default:
+			break;
+	}
+	return;
+}
+
+
+/*! removes a looping dependency (in both directions)
+ * @param unap matrixes to scan ways to solve the loop (it should be modified to be able to continue scanning after the dependency removing)
+ * @param dep_remove_from_service_id source service id of the dependency
+ * @param dep_remove_to_service_id   destination service id of the dependency
+ * @param di_from RC_DEPINFO of the direct-way dependency
+ * @param di_to   RC_DEPINFO of the reverse-way dependency
+ * @param type the direct-way dependency type (string, e.g. "iuse")
+ * @param unapm_type binary direct-way dependency type for the UNA matrix */
+static void
+rc_deptree_remove_loopdependency(service_id_t **unap[UNAPM_MAX], service_id_t dep_remove_from_service_id, service_id_t dep_remove_to_service_id, RC_DEPINFO *di_from, RC_DEPINFO *di_to, const char *const type, unapm_type_t unapm_type)
+{
+	RC_DEPTYPE *deptype_from = NULL, *deptype_to = NULL;
+	int dep_num, dep_count;
+	const char *type_reverse = NULL;
+	int deptype_num;
+
+	/* removing use/after from cache */
+	if (di_from != NULL) {
+		deptype_from = get_deptype(di_from, type);
+		if (deptype_from != NULL)
+			rc_stringlist_delete(deptype_from->services, di_to->service);
+	}
+
+	if (di_to != NULL)
+		deptype_to = get_deptype(di_to, type_reverse);
+
+	/* removing from the UNAP matrix */
+	if (deptype_from != NULL || di_from == NULL) {
+		dep_num   = 0;
+		dep_count = unap[unapm_type][dep_remove_from_service_id][0];
+		while (dep_num++ < dep_count) {
+			if (unap[unapm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id) {
+				unap[unapm_type][dep_remove_from_service_id][dep_num] =
+					unap[unapm_type][dep_remove_from_service_id][dep_count--];
+				if (deptype_from != NULL && di_to != NULL)
+					ewarn("Solving the loop by breaking %s %c> %s.",
+						di_to->service, deptype2char(unapm_type), di_from->service);
+			}
+		}
+		unap[unapm_type][dep_remove_from_service_id][0] = dep_count;
+	}
+
+	/* removing the reverse dependency */
+
+	if (di_to == NULL)
+		return;
+
+	deptype_num = 0;
+	while (deppairs[deptype_num].depend) {
+		if (!strcmp(deppairs[deptype_num].depend, type)) {
+			type_reverse = deppairs[deptype_num].addto;
+			break;
+		}
+		deptype_num++;
+	}
+
+	if (deptype_to != NULL)
+		rc_stringlist_delete(deptype_to->services, di_from->service);
+
+	return;
+}
+
+/*! solves dependecies loops
  * @param unap_matrix matrixes to scan ways to solve the loop
  * @param service_id looped service id
  * @param svc_id2depinfo_bt ptr to binary tree root to get depinfo by svc id
@@ -1244,42 +1336,28 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 
 		{
 			int idid_count2;
-			idid_entry_t *idid_counters;
 
-			void idid_btree_builddescarray(const void *nodep, const VISIT which, const int depth) {
-				(void)depth;
-				switch (which) {
-					case preorder:
-					case leaf: {
-						const idid_entry_t *idid_entry_p = *(idid_entry_t * const*)nodep;
-
-						memcpy(&idid_counters[idid_count2], idid_entry_p, sizeof(idid_counters[idid_count2]));
-						idid_count2++;
-						break;
-					}
-					default:
-						break;
-				}
-				return;
-			}
-
-			idid_counters = xmalloc(idid_count * sizeof(*idid_counters));
-
-			idid_count2 = 0;
+			idid_btree_builddescarray_counters = xmalloc(idid_count * sizeof(*idid_btree_builddescarray_counters));
+			idid_btree_builddescarray_amount   = 0;
 
 			twalk(btree, idid_btree_builddescarray);
 
-			qsort(idid_counters, idid_count2, sizeof(*idid_counters), idid_compare_data_desc);
+			qsort(
+				idid_btree_builddescarray_counters,
+				idid_btree_builddescarray_amount,
+				sizeof(*idid_btree_builddescarray_counters),
+				idid_compare_data_desc
+			);
 
-			idid_to_break_count = MIN(idid_count2, chain_count);
+			idid_to_break_count = MIN(idid_btree_builddescarray_amount, chain_count);
 			idid_count2 = 0;
 			while (idid_count2 < idid_to_break_count) {
-				idid_to_break[idid_count2] = idid_counters[idid_count2].idid;
+				idid_to_break[idid_count2] = idid_btree_builddescarray_counters[idid_count2].idid;
 				/*printf("B: %li %li\n", idid_counters[idid_count2].idid, (long)idid_counters[idid_count2].data);*/
 				idid_count2++;
 			}
 
-			free(idid_counters);
+			free(idid_btree_builddescarray_counters);
 		}
 
 		/* solving loops */
@@ -1297,60 +1375,6 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 				{
 					ENTRY item, **item_pp;
 					RC_DEPINFO *depinfo_from = NULL, *depinfo_to = NULL;
-
-					void
-					rc_deptree_remove_loopdependency(service_id_t **unap[UNAPM_MAX], service_id_t dep_remove_from_service_id, service_id_t dep_remove_to_service_id, RC_DEPINFO *di_from, RC_DEPINFO *di_to, const char *const type, unapm_type_t unapm_type)
-					{
-						RC_DEPTYPE *deptype_from = NULL, *deptype_to = NULL;
-						int dep_num, dep_count;
-						const char *type_reverse = NULL;
-						int deptype_num;
-
-						/* removing use/after from cache */
-						if (di_from != NULL) {
-							deptype_from = get_deptype(di_from, type);
-							if (deptype_from != NULL)
-								rc_stringlist_delete(deptype_from->services, di_to->service);
-						}
-
-						if (di_to != NULL)
-							deptype_to = get_deptype(di_to, type_reverse);
-
-						/* removing from the UNAP matrix */
-						if (deptype_from != NULL || di_from == NULL) {
-							dep_num   = 0;
-							dep_count = unap[unapm_type][dep_remove_from_service_id][0];
-							while (dep_num++ < dep_count) {
-								if (unap[unapm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id) {
-									unap[unapm_type][dep_remove_from_service_id][dep_num] =
-										unap[unapm_type][dep_remove_from_service_id][dep_count--];
-									if (deptype_from != NULL && depinfo_to != NULL)
-										ewarn("Solving the loop by breaking %s %c> %s.",
-											depinfo_to->service, deptype2char(unapm_type), depinfo_from->service);
-								}
-							}
-							unap[unapm_type][dep_remove_from_service_id][0] = dep_count;
-						}
-
-						/* removing back dependencies */
-
-						if (di_to == NULL)
-							return;
-
-						deptype_num = 0;
-						while (deppairs[deptype_num].depend) {
-							if (!strcmp(deppairs[deptype_num].depend, type)) {
-								type_reverse = deppairs[deptype_num].addto;
-								break;
-							}
-							deptype_num++;
-						}
-
-						if (deptype_to != NULL)
-							rc_stringlist_delete(deptype_to->services, di_from->service);
-
-						return;
-					}
 
 					if (printwarn) {
 						item.key     = (void *)(long)service_id_from;
