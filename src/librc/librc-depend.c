@@ -862,10 +862,10 @@ idid_compare(const void *a, const void *b)
 static int
 idid_compare_data_desc(const void *a, const void *b)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpointer-arith"
-	return ((const idid_entry_t *)b)->data - ((const idid_entry_t *)a)->data;
-#pragma GCC diagnostic pop
+	intptr_t a_dat = (intptr_t)(((const idid_entry_t *)a)->data);
+	intptr_t b_dat = (intptr_t)(((const idid_entry_t *)b)->data);
+
+	return b_dat - a_dat;
 }
 
 static inline char
