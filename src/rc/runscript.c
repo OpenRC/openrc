@@ -1193,7 +1193,7 @@ openrc_run(int argc, char **argv)
 
 #ifdef HAVE_SELINUX
 	/* Ok, we are ready to go, so setup selinux if applicable */
-	selinux_setup(argc, argv);
+	selinux_setup(argv);
 #endif
 
 	deps = true;
