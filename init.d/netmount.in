@@ -47,14 +47,7 @@ stop()
 	eindent
 	fs=
 	for x in $net_fs_list $extra_net_fs_list; do
-		case "$x" in
-			nfs|nfs4)
-				continue
-				;;
-			*)
-				fs="$fs${fs:+|}$x"
-				;;
-		esac
+		fs="$fs${fs:+|}$x"
 	done
 	[ -n "$fs" ] && fs="^($fs)$"
 	do_unmount umount ${fs:+--fstype-regex} $fs --netdev
