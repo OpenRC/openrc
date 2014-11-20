@@ -23,6 +23,7 @@ modules
 mount-ro
 mtab
 numlock
+osclock
 procfs
 staticroute
 sysfs
