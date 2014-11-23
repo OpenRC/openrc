@@ -113,7 +113,8 @@ mount_cgroups()
 	yesno ${rc_controller_cgroups:-YES} && [ -e /proc/cgroups ] || return 0
 	while read name hier groups enabled rest; do
 		case "${enabled}" in
-			1)	mkdir /sys/fs/cgroup/${name}
+			1)	mountinfo -q /sys/fs/cgroup/${name} && continue
+				mkdir /sys/fs/cgroup/${name}
 				mount -n -t cgroup -o ${sysfs_opts},${name} \
 					${name} /sys/fs/cgroup/${name}
 				;;
@@ -129,25 +130,13 @@ restorecon_sys()
 		restorecon -rF /sys/fs/cgroup >/dev/null 2>&1
 		eend $?
 	fi
-
-	return 0
 }
 
 start()
 {
-	local retval
 	mount_sys
-	retval=$?
-	if [ $retval -eq 0 ]; then
-		mount_misc
-		retval=$?
-	fi
-	if [ $retval -eq 0 ]; then
-		mount_cgroups
-		retval=$?
-	fi
-
+	mount_misc
+	mount_cgroups
 	restorecon_sys
-
-	return $retval
+	return 0
 }
