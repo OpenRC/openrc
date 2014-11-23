@@ -57,11 +57,13 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifdef BSD
+#if defined(BSD) && !defined(__GNU__)
 #include <sys/param.h>
 #include <sys/user.h>
 #include <sys/sysctl.h>
 #include <kvm.h>
+#else
+#include <sys/param.h>
 #endif
 
 #include "rc.h"

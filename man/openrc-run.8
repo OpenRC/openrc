@@ -120,6 +120,9 @@ Set this to "true", "yes" or "1" (case-insensitive) to force the daemon into
 the background. This implies the "--make-pidfile" and "--pidfile" option of
 .Xr start-stop-daemon 8
 so the pidfile variable must be set.
+.It Ar chroot
+.Xr start-stop-daemon 8
+will chroot into this path before writing the pid file or starting the daemon.
 .It Ar pidfile
 Pidfile to use for the above defined command.
 .It Ar name
@@ -131,6 +134,12 @@ timeout in seconds or multiple signal/timeout pairs (like SIGTERM/5).
 A list of directories which must exist for the service to start.
 .It Ar required_files
 A list of files which must exist for the service to start.
+.It Ar start_inactive
+Set to yes to have the service marked inactive when it starts. This is
+used along with in_background_fake to support re-entrant services.
+.It Ar in_background_fake
+Space separated list of commands which should always succeed when
+in_background is yes.
 .El
 .Sh DEPENDENCIES
 You should define a
@@ -321,16 +330,36 @@ Mark the service as inactive.
 .Op Fl f , -file
 .Op Fl p , -pipe
 .Op Fl m , -mode Ar mode
-.Op Fl o , owner Ar owner
+.Op Fl o , -owner Ar owner
+.Op Fl W , -writable
+.Op Fl q , -quiet
 .Ar path ...
 .Xc
-Checks to see if the path exists, is of the right type, owned by the right
-people and has the correct access modes. If not, then it corrects the path.
-.It Ic checkpath
-.Op Fl W , -writable
-.Ar path
-.Xc
-checks to see if the path is writable.
+If -d, -f or -p is specified, checkpath checks to see if the path
+exists, is the right type and has the correct owner and access modes. If
+any of these tests fail, the path is created and set up as specified. If
+more than one of -d, -f or -p are specified, the last one will be used.
+
+The argument to -m is a three or four digit octal number. If this option
+is not provided, the value defaults to 0644 for files and 0775 for
+directories.
+
+The argument to -o is a representation of the user and/or group which
+should own the path. The user and group can be represented numerically
+or with names, and are separated by a colon.
+
+The truncate options (-D and -F) cause the directory or file to be
+cleared of all contents.
+
+If -W is specified, checkpath checks to see if the first path given on
+the command line is writable.  This is different from how the test
+command in the shell works, because it also checks to make sure the file
+system is not read only.
+
+Also, the -d, -f or -p options should not be specified along with this option.
+
+The -q option suppresses all informational output. If it is specified
+twice, all error messages are suppressed as well.
 .It Ic yesno Ar value
 If
 .Ar value

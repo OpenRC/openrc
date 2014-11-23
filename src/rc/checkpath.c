@@ -46,6 +46,10 @@
 #include "einfo.h"
 #include "rc-misc.h"
 
+#ifdef HAVE_SELINUX
+#include "rc-selinux.h"
+#endif
+
 typedef enum {
 	inode_unknown = 0,
 	inode_file = 1,
@@ -55,19 +59,15 @@ typedef enum {
 
 extern const char *applet;
 
-/* TODO: SELinux
- * This needs a LOT of SELinux loving
- * See systemd's src/label.c:label_mkdir
- */
-static int
-do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
-		bool trunc, bool chowner)
+static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
+	inode_t type, bool trunc, bool chowner, bool selinux_on)
 {
 	struct stat st;
 	int fd, flags;
 	int r;
 	int u;
 
+	memset(&st, 0, sizeof(st));
 	if (stat(path, &st) || trunc) {
 		if (type == inode_file) {
 			einfo("%s: creating file", path);
@@ -141,19 +141,23 @@ do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
 	}
 
 	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
-		if (st.st_dev || st.st_ino)
-			einfo("%s: correcting owner", path);
+		einfo("%s: correcting owner", path);
 		if (chown(path, uid, gid)) {
 			eerror("%s: chown: %s", applet, strerror(errno));
 			return -1;
 		}
 	}
 
+#ifdef HAVE_SELINUX
+	if (selinux_on)
+		selinux_util_label(path);
+#endif
+
 	return 0;
 }
 
-static int
-parse_owner(struct passwd **user, struct group **group, const char *owner)
+static int parse_owner(struct passwd **user, struct group **group,
+	const char *owner)
 {
 	char *u = xstrdup (owner);
 	char *g = strchr (u, ':');
@@ -187,7 +191,7 @@ parse_owner(struct passwd **user, struct group **group, const char *owner)
 
 #include "_usage.h"
 #define extraopts "path1 [path2] [...]"
-#define getoptstring "dDfFpm:o:W:" getoptstring_COMMON
+#define getoptstring "dDfFpm:o:W" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "directory",          0, NULL, 'd'},
 	{ "directory-truncate", 0, NULL, 'D'},
@@ -196,7 +200,7 @@ static const struct option longopts[] = {
 	{ "pipe",               0, NULL, 'p'},
 	{ "mode",               1, NULL, 'm'},
 	{ "owner",              1, NULL, 'o'},
-	{ "writable",           1, NULL, 'W'},
+	{ "writable",           0, NULL, 'W'},
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
@@ -212,8 +216,7 @@ static const char * const longopts_help[] = {
 };
 #include "_usage.c"
 
-int
-checkpath(int argc, char **argv)
+int checkpath(int argc, char **argv)
 {
 	int opt;
 	uid_t uid = geteuid();
@@ -225,6 +228,8 @@ checkpath(int argc, char **argv)
 	int retval = EXIT_SUCCESS;
 	bool trunc = false;
 	bool chowner = false;
+	bool writable = false;
+	bool selinux_on = false;
 
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
@@ -255,9 +260,7 @@ checkpath(int argc, char **argv)
 				    applet, optarg);
 			break;
 		case 'W':
-			if (argv[optind] != NULL)
-				ewarn("-W/--writable takes only one path, everything else will be ignored");
-			exit(!is_writable(optarg));
+			writable = true;
 			break;
 
 		case_RC_COMMON_GETOPT
@@ -267,6 +270,9 @@ checkpath(int argc, char **argv)
 	if (optind >= argc)
 		usage(EXIT_FAILURE);
 
+	if (writable && type != inode_unknown)
+		eerrorx("%s: -W cannot be specified along with -d, -f or -p", applet);
+
 	if (pw) {
 		uid = pw->pw_uid;
 		gid = pw->pw_gid;
@@ -274,11 +280,23 @@ checkpath(int argc, char **argv)
 	if (gr)
 		gid = gr->gr_gid;
 
+#ifdef HAVE_SELINUX
+	if (selinux_util_open() == 1)
+		selinux_on = true;
+#endif
+
 	while (optind < argc) {
-		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner))
+		if (writable)
+			exit(!is_writable(argv[optind]));
+		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner, selinux_on))
 			retval = EXIT_FAILURE;
 		optind++;
 	}
+
+#ifdef HAVE_SELINUX
+	if (selinux_on)
+		selinux_util_close();
+#endif
 
 	return retval;
 }

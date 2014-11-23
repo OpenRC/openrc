@@ -16,8 +16,8 @@ mount_dev()
 	local action=--mount devfstype msg=Mounting
 	# Some devices require exec, Bug #92921
 	local mountopts="exec,nosuid,mode=0755"
-	if yesno ${static_dev:-no}; then
-		einfo "Using static /dev"
+	if yesno ${skip_mount_dev:-no} ; then
+		einfo "/dev will not be mounted due to user request"
 		return 0
 	fi
 	if mountinfo -q /dev; then
@@ -43,11 +43,13 @@ mount_dev()
 		mount -n -t $devfstype -o $mountopts dev /dev
 		eend $?
 	else
-		ewarn "This kernel does not have devtmpfs or tmpfs support."
-		ewarn "Assuming you want static /dev. If this is not the case,"
-		ewarn "please set the CONFIG_DEVTMPFS or CONFIG_TMPFS option"
-		ewarn "in your kernel."
+		ewarn "This kernel does not have devtmpfs or tmpfs support, and there"
+		ewarn "is no entry for /dev in fstab."
+		ewarn "This means /dev will not be mounted."
+		ewarn "To avoid this message, set CONFIG_DEVTMPFS or CONFIG_TMPFS to y"
+		ewarn "in your kernel configuration or see @SYSCONFDIR@/conf.d/devfs"
 	fi
+	return 0
 }
 
 seed_dev()
@@ -67,7 +69,14 @@ seed_dev()
 	# so udev can add its start-message to dmesg
 	[ -c /dev/kmsg ] || mknod -m 660 /dev/kmsg c 1 11
 
-	# Mount required stuff as user may not have then in /etc/fstab
+	# extra symbolic links not provided by default
+	[ -e /dev/fd ] || ln -snf /proc/self/fd /dev/fd
+	[ -e /dev/stdin ] || ln -snf /proc/self/fd/0 /dev/stdin
+	[ -e /dev/stdout ] || ln -snf /proc/self/fd/1 /dev/stdout
+	[ -e /dev/stderr ] || ln -snf /proc/self/fd/2 /dev/stderr
+	[ -e /proc/kcore ] && ln -snf /proc/kcore /dev/core
+
+	# Mount required directories as user may not have them in /etc/fstab
 	for x in \
 		"mqueue /dev/mqueue 1777 ,nodev mqueue" \
 		"devpts /dev/pts 0755 ,gid=5,mode=0620 devpts" \
@@ -92,9 +101,21 @@ seed_dev()
 	done
 }
 
+restorecon_dev()
+{
+	if [ -x /sbin/restorecon ]; then
+		ebegin "Restoring SELinux contexts in /dev"
+		restorecon -rF /dev >/dev/null 2>&1
+		eend $?
+	fi
+
+	return 0
+}
+
 start()
 {
 	mount_dev
 	seed_dev
+	restorecon_dev
 	return 0
 }

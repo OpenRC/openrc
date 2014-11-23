@@ -13,8 +13,8 @@ start()
 			return 1
 		fi
 	fi
-	if ! checkpath -W "$RC_LIBEXECDIR"; then
-		ewarn "WARNING: ${RC_LIBEXECDIR} is not writable!"
+	if ! checkpath -W "$RC_LIBEXECDIR"/cache; then
+		ewarn "WARNING: ${RC_LIBEXECDIR}/cache is not writable!"
 		if ! yesno "${RC_GOINGDOWN}"; then
 			ewarn "Unable to save deptree cache"
 			return 1

@@ -539,7 +539,7 @@ run_applets(int argc, char **argv)
 	 * "openrc", so output a warning.
 	 */
 	if (strcmp(applet, "rc") == 0)
-		ewarn("The 'rc' applet is deprecated; please use 'openrc' instead.");
+		ewarnv("The 'rc' applet is deprecated; please use 'openrc' instead.");
 	/* Bug 351712: We need an extra way to explicitly select an applet OTHER
 	 * than trusting argv[0], as argv[0] is not going to be the applet value if
 	 * we are doing SELinux context switching. For this, we allow calls such as

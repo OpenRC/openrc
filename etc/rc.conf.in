@@ -51,6 +51,10 @@
 # The default value is: /var/log/rc.log
 #rc_log_path="/var/log/rc.log"
 
+# If you want verbose output for OpenRC, set this to yes. If you want
+# verbose output for service foo only, set it to yes in /etc/conf.d/foo.
+#rc_verbose=no
+
 # By default we filter the environment for our running scripts. To allow other
 # variables through, add them here. Use a * to allow all variables through.
 #rc_env_allow="VAR1 VAR2"
@@ -72,6 +76,10 @@
 # critical services.
 #rc_crashed_stop=NO
 #rc_crashed_start=YES
+
+# Set rc_nocolor to yes if you do not want colors displayed in OpenRC
+# output.
+#rc_nocolor=NO
 
 ##############################################################################
 # MISC CONFIGURATION VARIABLES

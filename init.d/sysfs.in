@@ -99,14 +99,16 @@ mount_misc()
 
 mount_cgroups()
 {
-		mountinfo -q /sys/fs/cgroup || return 0
+	mountinfo -q /sys/fs/cgroup || return 0
 
-	local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
-	mkdir /sys/fs/cgroup/openrc
-	mount -n -t cgroup \
-		-o none,${sysfs_opts},name=openrc,release_agent="$agent" \
-		openrc /sys/fs/cgroup/openrc
-	echo 1 > /sys/fs/cgroup/openrc/notify_on_release
+	if ! mountinfo -q /sys/fs/cgroup/openrc; then
+		local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
+		mkdir /sys/fs/cgroup/openrc
+		mount -n -t cgroup \
+			-o none,${sysfs_opts},name=openrc,release_agent="$agent" \
+			openrc /sys/fs/cgroup/openrc
+		echo 1 > /sys/fs/cgroup/openrc/notify_on_release
+	fi
 
 	yesno ${rc_controller_cgroups:-YES} && [ -e /proc/cgroups ] || return 0
 	while read name hier groups enabled rest; do
@@ -117,6 +119,18 @@ mount_cgroups()
 				;;
 		esac
 	done < /proc/cgroups
+}
+
+restorecon_sys()
+{
+	if [ -x /sbin/restorecon ]; then
+		ebegin "Restoring SELinux contexts in /sys"
+		restorecon -F /sys/devices/system/cpu/online >/dev/null 2>&1
+		restorecon -rF /sys/fs/cgroup >/dev/null 2>&1
+		eend $?
+	fi
+
+	return 0
 }
 
 start()
@@ -132,5 +146,8 @@ start()
 		mount_cgroups
 		retval=$?
 	fi
+
+	restorecon_sys
+
 	return $retval
 }

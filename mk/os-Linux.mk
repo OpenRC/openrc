@@ -6,3 +6,22 @@ PKG_PREFIX?=	/usr
 
 CPPFLAGS+=	-D_BSD_SOURCE -D_XOPEN_SOURCE=700
 LIBDL=		-Wl,-Bdynamic -ldl
+
+ifeq (${MKSELINUX},yes)
+CPPFLAGS+= -DHAVE_SELINUX
+LIBSELINUX?= -lselinux
+LDADD += $(LIBSELINUX)
+
+ifneq (${MKPAM},pam)
+# if using selinux but not pam then we need crypt
+LIBCRYPT?= -lcrypt
+LDADD += $(LIBCRYPT)
+endif
+
+endif
+
+ifeq (${MKAUDIT},yes)
+LIBAUDIT?=	-laudit
+CPPFLAGS+=	-DHAVE_AUDIT
+LDADD+=		${LIBAUDIT}
+endif

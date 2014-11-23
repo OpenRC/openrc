@@ -28,6 +28,7 @@
  * SUCH DAMAGE.
  */
 
+#include "queue.h"
 #include "librc.h"
 
 RC_STRINGLIST *

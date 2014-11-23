@@ -57,18 +57,6 @@ init.d.misc is not installed by default as the scripts will need
 tweaking on a per distro basis. They are also non essential to the operation
 of the system.
 
-As of OpenRC-0.12, the net.* scripts, originally from Gentoo Linux, have
-been removed. If you need these scripts, look for a package called
-netifrc, which is maintained by them.
-
-As of OpenRC-0.13, two binaries have been renamed due to naming
-conflicts with other software. The /sbin/rc binary was renamed to
-/sbin/openrc, and /sbin/runscript was renamed to /sbin/openrc-run.
-
-Backward compatible symbolic links are currently in place so your
-system will keep working if you are using the old names; however, it is
-strongly advised that you migrate to the new names.
-
 Reporting Bugs
 --------------
 Since Gentoo Linux is hosting OpenRC development, Bugs should go to
@@ -76,25 +64,3 @@ the Gentoo Bugzilla:
 	http://bugs.gentoo.org/
 They should be filed under the "Gentoo Hosted Projects" product and
 the "openrc" component.
-
-
-History - by Roy Marples
-------------------------
-I became a Gentoo/Linux developer in 2004 and wrote the modular network
-scripts for the Gentoo baselayout package. baselayout is a collection of
-bash scripts to bring up your computer and its services.
-Then towards the end of 2005 I found myself as the primary maintainer
-for baselayout.
-
-At the start of 2007, baselayout-2 is announced to the world, re-writing the
-core of baselayout in C and allowing POSIX sh init scripts instead of
-forcing the use of bash. By Mid 2007 I have re-written everything, including
-init scripts, and alpha and pre baselayout-2 snapshots where put into Gentoo.
-Towards the end of 2007 I retired as a Gentoo developer for reasons I won't
-go into here. baselayout-2 was still in the pre stage, and aside from the
-fbsd users, it was masked everywhere. However, I also desired to keep the
-baselayout-2 project alive, but outside of Gentoo and into other projects
-such as FreeBSD.
-
-As such, the Gentoo Council have allowed the creation of OpenRC under the
-2 clause BSD license, managed by me as an external project.

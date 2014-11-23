@@ -48,7 +48,10 @@
 # endif
 #endif
 
-__BEGIN_DECLS
+/* __BEGIN_DECLS */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*! @brief Color types to use */
 typedef enum
@@ -140,5 +143,9 @@ void eoutdentv(void);
 /*! @brief Prefix each einfo line with something */
 void eprefix(const char * EINFO_RESTRICT);
 
-__END_DECLS
+/* __END_DECLS */
+#ifdef __cplusplus
+}
+#endif
+
 #endif

@@ -1,0 +1,12 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2014 Ralph Sennhauser <sera@igentoo.org>
+# Released under the 2-clause BSD license.
+
+# Can be used on OSs that take care of the clock.
+
+description="Provides clock"
+
+depend()
+{
+	provide clock
+}

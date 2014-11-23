@@ -12,40 +12,73 @@ depend()
 
 start()
 {
-	einfo "Starting local"
+	ebegin "Starting local"
 
-	local file
-	for file in @SYSCONFDIR@/local.d/*.start ; do
-		[ -x "$file" ] && "$file"
+	local file has_errors=0 retval
+	eindent
+	for file in @SYSCONFDIR@/local.d/*.start; do
+		if [ -x "${file}" ]; then
+			vebegin "Executing \"${file}\""
+			"${file}" 2>&1 >/dev/null
+			retval=$?
+			if [ ${retval} -ne 0 ]; then
+				has_errors=1
+			fi
+			veend ${retval} "Execution of \"${file}\" failed."
+		fi
 	done
+	eoutdent
 
 	if command -v local_start >/dev/null 2>&1; then
-		ewarn "@SYSCONFDIR@/conf.d/local should be removed."
+		ewarn "\"@SYSCONFDIR@/conf.d/local\" should be removed."
 		ewarn "Please move the code from the local_start function"
-		ewarn "to scripts with an .start extension"
-		ewarn "in @SYSCONFDIR@/local.d"
+		ewarn "to executable scripts with an .start extension"
+		ewarn "in \"@SYSCONFDIR@/local.d\""
 		local_start
 	fi
 
-	eend 0
+	eend ${has_errors}
+
+	# We have to end with a zero exit code, because a failed execution
+	# of an executable @SYSCONFDIR@/local.d/*.start file shouldn't result in
+	# marking the local service as failed. Otherwise we are unable to
+	# execute any executable @SYSCONFDIR@/local.d/*.stop file, because a failed
+	# marked service cannot be stopped (and the stop function would
+	# actually call the executable @SYSCONFDIR@/local.d/*.stop file(s)).
+	return 0
 }
 
 stop()
 {
-	einfo "Stopping local"
+	ebegin "Stopping local"
 
-	local file
+	local file has_errors=0 retval
+	eindent
 	for file in @SYSCONFDIR@/local.d/*.stop; do
-		[ -x "$file" ] && "$file"
+		if [ -x "${file}" ]; then
+			vebegin "Executing \"${file}\""
+			"${file}" 2>&1 >/dev/null
+			retval=$?
+			if [ ${retval} -ne 0 ]; then
+				has_errors=1
+			fi
+			veend ${retval} "Execution of \"${file}\" failed."
+		fi
 	done
+	eoutdent
 
 	if command -v local_stop >/dev/null 2>&1; then
-		ewarn "@SYSCONFDIR@/conf.d/local should be removed."
+		ewarn "\"@SYSCONFDIR@/conf.d/local\" should be removed."
 		ewarn "Please move the code from the local_stop function"
-		ewarn "to scripts with an .stop extension"
-		ewarn "in @SYSCONFDIR@/local.d"
+		ewarn "to executable scripts with an .stop extension"
+		ewarn "in \"@SYSCONFDIR@/local.d\""
 		local_stop
 	fi
 
-	eend 0
+	eend ${has_errors}
+
+	# An executable @SYSCONFDIR@/local.d/*.stop file which failed with a
+	# non-zero exit status is not a reason to mark this service
+	# as failed, therefore we have to end with a zero exit code.
+	return 0
 }

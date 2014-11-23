@@ -1,0 +1,35 @@
+#!@SHELL@
+# Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
+# Released under the 2-clause BSD license.
+
+if [ ! -d /run ]; then
+    ebegin "Creating /run"
+    mkdir -p /run
+    eend $?
+fi
+
+if [ -L $RC_SVCDIR ]; then
+    rm $RC_SVCDIR
+fi
+
+ebegin "Mounting /run"
+if ! fstabinfo --mount /run; then
+    mount -t tmpfs -o mode=0755,noexec,nosuid,size=10% tmpfs /run
+    if [ $? != 0 ]; then
+        eerror "Unable to mount tmpfs on /run."
+        eerror "Can't continue."
+        exit 1
+    fi
+fi
+eend
+
+ebegin "Creating $RC_SVCDIR"
+mkdir -p $RC_SVCDIR
+eend $?
+
+if [ -e "$RC_LIBEXECDIR"/cache/deptree ]; then
+    cp -p "$RC_LIBEXECDIR"/cache/* "$RC_SVCDIR" 2>/dev/null
+fi
+
+echo sysinit >"$RC_SVCDIR"/softlevel
+exit 0

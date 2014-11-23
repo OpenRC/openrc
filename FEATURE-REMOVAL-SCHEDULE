@@ -38,3 +38,35 @@ Why: Deprecated in favor of openrc-run and openrc due to naming
 Who:
 
 ---------------------------
+
+What: support for the opts variable in service scripts
+
+When: 1.0
+
+Why: Depprecated in favor of extra_commands, extra_started_commands
+	 and extra_stopped_commands.
+
+Who:
+
+---------------------------
+
+What: support for local_start and local_stop
+
+When: 1.0
+
+Why: Depprecated in favor of executable scripts in @SYSCONFDIR@/local.d
+
+Who:
+
+---------------------------
+
+What: the mtab service script
+
+When: make warnings more visible in 1.0, remove in 2.0
+
+Why: /etc/mtab should be a symbolic link to /proc/self/mounts on modern
+	 Linux systems
+
+Who:
+
+---------------------------

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
+ * Copyright (c) 2014 Jason Zaman <jason@perfinion.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,25 +23,13 @@
  * SUCH DAMAGE.
  */
 
-#include "queue.h"
-#include "rc.h"
+#ifndef RC_SELINUX_UTIL_H
+#define RC_SELINUX_UTIL_H
 
-int checkpath(int, char **);
-int fstabinfo(int, char **);
-int mountinfo(int, char **);
-int openrc_run(int, char **);
-int rc_depend(int, char **);
-int rc_service(int, char **);
-int rc_status(int, char **);
-int rc_update(int, char **);
-int runscript(int, char **);
-int start_stop_daemon(int, char **);
-int swclock(int, char **);
+int selinux_util_open(void);
+int selinux_util_label(const char *path);
+int selinux_util_close(void);
 
-void run_applets(int, char **);
+void selinux_setup(char **argv);
 
-/* Handy function so we can wrap einfo around our deptree */
-RC_DEPTREE *_rc_deptree_load (int, int *);
-
-/* Test to see if we can see pid 1 or not */
-bool _rc_can_find_pids(void);
+#endif

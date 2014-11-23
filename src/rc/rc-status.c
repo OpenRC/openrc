@@ -36,6 +36,7 @@
 
 #include "builtins.h"
 #include "einfo.h"
+#include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
 
@@ -185,7 +186,6 @@ print_stacked_services(const char *runlevel)
 		servicelist = rc_services_in_runlevel(stackedlevel->value);
 		print_services(stackedlevel->value, servicelist);
 		rc_stringlist_free(servicelist);
-		print_stacked_services(stackedlevel->value);
 	}
 	rc_stringlist_free(stackedlevels);
 	stackedlevels = NULL;

@@ -1,0 +1,31 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
+# Released under the 2-clause BSD license.
+
+depend()
+{
+	before bootmisc logger
+	keyword -prefix
+}
+
+start()
+{
+	[ -e /etc/sysctl.conf ] || return 0
+	local retval=0 var= comments= conf=
+	ebegin "Configuring kernel parameters"
+	eindent
+	for conf in @SYSCONFDIR@/sysctl.conf @SYSCONFDIR@/sysctl.d/*.conf; do
+		if [ -r "$conf" ]; then
+			vebegin "applying $conf"
+			while read var comments; do
+				case "$var" in
+				""|"#"*) continue;;
+				esac
+				sysctl -w "$var" >/dev/null || retval=1
+			done < "$conf"
+			veend $retval
+		fi
+	done
+	eoutdent
+	eend $retval "Some errors were encountered"
+}

@@ -35,11 +35,12 @@
 #  include <sys/ucred.h>
 #  include <sys/mount.h>
 #  define F_FLAGS f_flags
-#elif defined(BSD)
+#elif defined(BSD) && !defined(__GNU__)
 #  include <sys/statvfs.h>
 #  define statfs statvfs
 #  define F_FLAGS f_flag
-#elif defined (__linux__) || defined (__GLIBC__)
+#elif defined (__linux__) || (defined(__FreeBSD_kernel__) && \
+		defined(__GLIBC__)) || defined(__GNU__)
 #  include <mntent.h>
 #endif
 
@@ -53,6 +54,7 @@
 
 #include "builtins.h"
 #include "einfo.h"
+#include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
 
@@ -168,7 +170,7 @@ process_mount(RC_STRINGLIST *list, struct args *args,
 	return -1;
 }
 
-#ifdef BSD
+#if defined(BSD) && !defined(__GNU__)
 
 /* Translate the mounted options to english
  * This is taken directly from FreeBSD mount.c */
@@ -265,7 +267,8 @@ find_mounts(struct args *args)
 	return list;
 }
 
-#elif defined (__linux__) || defined (__GLIBC__)
+#elif defined (__linux__) || (defined (__FreeBSD_kernel__) && \
+		defined(__GLIBC__))
 static struct mntent *
 getmntfile(const char *file)
 {

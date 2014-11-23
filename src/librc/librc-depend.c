@@ -32,6 +32,7 @@
 #include <search.h>		/* hsearch() */
 #include <stdint.h>		/* uint32_t/uint64_t */
 
+#include "queue.h"
 #include "librc.h"
 #include "../include/einfo.h"
 
