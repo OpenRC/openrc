@@ -940,9 +940,6 @@ rc_deptree_remove_loopdependency(service_id_t **unap[UNAPM_MAX], service_id_t de
 			rc_stringlist_delete(deptype_from->services, di_to->service);
 	}
 
-	if (di_to != NULL)
-		deptype_to = get_deptype(di_to, type_reverse);
-
 	/* removing from the UNAP matrix */
 	if (deptype_from != NULL || di_from == NULL) {
 		dep_num   = 0;
@@ -972,6 +969,8 @@ rc_deptree_remove_loopdependency(service_id_t **unap[UNAPM_MAX], service_id_t de
 		}
 		deptype_num++;
 	}
+
+	deptype_to = get_deptype(di_to, type_reverse);
 
 	if (deptype_to != NULL)
 		rc_stringlist_delete(deptype_to->services, di_from->service);
