@@ -45,7 +45,7 @@
 /*! Type definition of service ID */
 typedef uint32_t service_id_t;
 
-/*! Enumeration of rc_deptree_solve_loop()'s return cases */
+/*! Enumeration of solve_loop()'s return cases */
 typedef enum loopfound {
 	LOOP_SOLVABLE	= 0x01,
 	LOOP_UNSOLVABLE	= 0x02,
@@ -758,7 +758,7 @@ rc_deptree_update_needed(time_t *newest, char *file)
 librc_hidden_def(rc_deptree_update_needed)
 
 static inline int
-rc_deptree_unapm_expandsdeps(service_id_t **unap, service_id_t service_id)
+unapm_expandsdeps(service_id_t **unap, service_id_t service_id)
 {
 	int dep_num, dep_count;
 	int ismodified;
@@ -813,7 +813,7 @@ rc_deptree_unapm_expandsdeps(service_id_t **unap, service_id_t service_id)
  * @param type dependencies type
  * @param depinfo dependencies information */
 static void
-rc_deptree_unapm_getdependencies(service_id_t **unap_matrix,
+unapm_getdependencies(service_id_t **unap_matrix,
 	int useneedafter_count, service_id_t service_id,
 	const char *type, RC_DEPINFO *depinfo)
 {
@@ -926,7 +926,7 @@ idid_btree_builddescarray(const void *nodep, const VISIT which, const int depth)
  * @param type the direct-way dependency type (string, e.g. "iuse")
  * @param unapm_type binary direct-way dependency type for the UNA matrix */
 static void
-rc_deptree_remove_loopdependency(service_id_t **unap[UNAPM_MAX], service_id_t dep_remove_from_service_id, service_id_t dep_remove_to_service_id, RC_DEPINFO *di_from, RC_DEPINFO *di_to, const char *const type, unapm_type_t unapm_type)
+remove_loopdependency(service_id_t **unap[UNAPM_MAX], service_id_t dep_remove_from_service_id, service_id_t dep_remove_to_service_id, RC_DEPINFO *di_from, RC_DEPINFO *di_to, const char *const type, unapm_type_t unapm_type)
 {
 	RC_DEPTYPE *deptype_from = NULL, *deptype_to = NULL;
 	int dep_num, dep_count;
@@ -984,7 +984,7 @@ rc_deptree_remove_loopdependency(service_id_t **unap[UNAPM_MAX], service_id_t de
  * @param svc_id2depinfo_bt ptr to binary tree root to get depinfo by svc id
  * @param end_dep_num looping dependency id in use/need/after/provide matrix line */
 static loopfound_t
-rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num, RC_DT_FLAGS flags) {
+solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num, RC_DT_FLAGS flags) {
 	char **chain_strs = NULL;
 	service_id_t **chains;
 	unapm_type_t **deptypes;
@@ -1388,8 +1388,8 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
 
 					/* Remove weak dependency */
 
-					rc_deptree_remove_loopdependency(unap_matrix, service_id_from, service_id_to, depinfo_from, depinfo_to, "iuse",   UNAPM_USE);
-					rc_deptree_remove_loopdependency(unap_matrix, service_id_from, service_id_to, depinfo_from, depinfo_to, "iafter", UNAPM_AFTER);
+					remove_loopdependency(unap_matrix, service_id_from, service_id_to, depinfo_from, depinfo_to, "iuse",   UNAPM_USE);
+					remove_loopdependency(unap_matrix, service_id_from, service_id_to, depinfo_from, depinfo_to, "iafter", UNAPM_AFTER);
 
 				}
 			}
@@ -1426,7 +1426,7 @@ rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t servic
  * @param unap_matrix matrixes to scan ways to solve the loop
  * @param useneedafter_count total count of use/need/before/provide relations */
 static void
-rc_deptree_unapm_prepare_mixed(service_id_t **unap_matrix[UNAPM_MAX], unsigned int useneedafter_count) {
+unapm_prepare_mixed(service_id_t **unap_matrix[UNAPM_MAX], unsigned int useneedafter_count) {
 	service_id_t service_id;
 	int onemorecycle;
 
@@ -1469,11 +1469,11 @@ rc_deptree_unapm_prepare_mixed(service_id_t **unap_matrix[UNAPM_MAX], unsigned i
 		/* direct way: service_id = 1 -> end */
 		service_id = 1;
 		while (service_id < (useneedafter_count+1))
-			onemorecycle += rc_deptree_unapm_expandsdeps(unap_matrix[UNAPM_MIXED_EXPANDED], service_id++);
+			onemorecycle += unapm_expandsdeps(unap_matrix[UNAPM_MIXED_EXPANDED], service_id++);
 
 		/* reverse way: service_id = end -> 1 */
 		while (--service_id)
-			onemorecycle += rc_deptree_unapm_expandsdeps(unap_matrix[UNAPM_MIXED_EXPANDED], service_id);
+			onemorecycle += unapm_expandsdeps(unap_matrix[UNAPM_MIXED_EXPANDED], service_id);
 
 	} while (onemorecycle);
 
@@ -1800,10 +1800,10 @@ rc_deptree_update(RC_DT_FLAGS flags)
 		/* getting dependencies pre-matrixes */
 		service_id = 1;
 		TAILQ_FOREACH(depinfo, deptree, entries) {
-			rc_deptree_unapm_getdependencies(unap_matrix[UNAPM_USE],         useneedafter_count, service_id, "iuse",       depinfo);
-			rc_deptree_unapm_getdependencies(unap_matrix[UNAPM_NEED],        useneedafter_count, service_id, "ineed",      depinfo);
-			rc_deptree_unapm_getdependencies(unap_matrix[UNAPM_PROVIDEDBY],  useneedafter_count, service_id, "providedby", depinfo);
-			rc_deptree_unapm_getdependencies(unap_matrix[UNAPM_AFTER],       useneedafter_count, service_id, "iafter",     depinfo);
+			unapm_getdependencies(unap_matrix[UNAPM_USE],         useneedafter_count, service_id, "iuse",       depinfo);
+			unapm_getdependencies(unap_matrix[UNAPM_NEED],        useneedafter_count, service_id, "ineed",      depinfo);
+			unapm_getdependencies(unap_matrix[UNAPM_PROVIDEDBY],  useneedafter_count, service_id, "providedby", depinfo);
+			unapm_getdependencies(unap_matrix[UNAPM_AFTER],       useneedafter_count, service_id, "iafter",     depinfo);
 			service_id++;
 		}
 
@@ -1823,7 +1823,7 @@ rc_deptree_update(RC_DT_FLAGS flags)
 
 			/* updating UNAPM_MIXED and UNAPM_MIXED_EXPANDED in UNAP matrix */
 
-			rc_deptree_unapm_prepare_mixed(unap_matrix, useneedafter_count);
+			unapm_prepare_mixed(unap_matrix, useneedafter_count);
 
 			/* detecting and solving loop (non-recursive method) */
 			/* the loop is a situation where service is depended on itself */
@@ -1836,7 +1836,7 @@ rc_deptree_update(RC_DT_FLAGS flags)
 				while (dep_num < dep_count) {
 					dep_num++;
 					if (unap_matrix[UNAPM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
-						loopfound = rc_deptree_solve_loop(unap_matrix, service_id, svc_id2depinfo_bt, dep_num, flags);
+						loopfound = solve_loop(unap_matrix, service_id, svc_id2depinfo_bt, dep_num, flags);
 						loopsolver_counter++;
 						break;
 					}

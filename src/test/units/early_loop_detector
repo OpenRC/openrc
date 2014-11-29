@@ -9,7 +9,7 @@ cleanup() {
 }
 
 run_test() {
-	cat > "${TMPDIR}"/rc_deptree_solve_loop.c <<EOF
+	cat > "${TMPDIR}"/solve_loop.c <<EOF
 
 #include "../../librc/librc-depend.c"
 
@@ -82,7 +82,7 @@ int main() {
 	do {
 		loopfound = 0;
 
-		rc_deptree_unapm_prepare_mixed(unap_matrix, useneedafter_count);
+		unapm_prepare_mixed(unap_matrix, useneedafter_count);
 
 		service_id=1;
 		while ((service_id < (useneedafter_count+1)) && !loopfound) {
@@ -93,7 +93,7 @@ int main() {
 			while (dep_num < dep_count) {
 				dep_num++;
 				if (unap_matrix[UNAPM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
-					loopfound = rc_deptree_solve_loop(unap_matrix, service_id, NULL, dep_num, RCDTFLAGS_LOOPSOLVER);
+					loopfound = solve_loop(unap_matrix, service_id, NULL, dep_num, RCDTFLAGS_LOOPSOLVER);
 					loopsolver_counter++;
 					break;
 				}
@@ -183,8 +183,8 @@ int main() {
 }
 
 EOF
-	gcc -ggdb3 -O0 -I../includes/ "${TMPDIR}"/rc_deptree_solve_loop.c ../libeinfo/libeinfo.o ../librc/librc.o ../librc/librc-stringlist.o ../librc/librc-misc.o  -o "${TMPDIR}"/rc_deptree_solve_loop
-	./"${TMPDIR}"/rc_deptree_solve_loop
+	gcc -ggdb3 -O0 -I../includes/ "${TMPDIR}"/solve_loop.c ../libeinfo/libeinfo.o ../librc/librc.o ../librc/librc-stringlist.o ../librc/librc-misc.o  -o "${TMPDIR}"/solve_loop
+	./"${TMPDIR}"/solve_loop
 }
 
 
