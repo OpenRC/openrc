@@ -34,7 +34,6 @@
 
 #include "queue.h"
 #include "librc.h"
-#include "../include/einfo.h"
 
 #define GENDEP			RC_LIBEXECDIR "/sh/gendepends.sh"
 
