@@ -1,3 +1,0 @@
-# Sets the level at which logging of messages is done to the
-# console.  See dmesg(1) for more info.
-dmesg_level="1"

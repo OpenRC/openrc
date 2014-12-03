@@ -1,8 +1,0 @@
-# Separate multiple routes using ; or new lines.
-
-# Example static routes. See route(8) for syntax.
-#staticroute="net 192.168.0.0 netmask 255.255.255.0 gw 10.73.1.1
-#net 192.168.1.0 netmask 255.255.255.0 gw 10.73.1.1"
-
-# Example static routes using iproute2. See ip(8) for syntax.
-#staticiproute="192.168.0.0/24 via 10.73.1.1; 192.168.1.0/24 via 10.73.1.1"

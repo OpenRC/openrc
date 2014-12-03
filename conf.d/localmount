@@ -1,3 +1,0 @@
-# Stop the unmounting of certain points.
-# This could be useful for some NFS related work.
-#no_umounts="/dir1:/var/dir2"

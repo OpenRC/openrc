@@ -1,3 +1,0 @@
-# If you wish to pass any options to killall5 during shutdown,
-# you should do so here.
-killall5_opts=""
