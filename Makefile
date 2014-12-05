@@ -22,7 +22,7 @@ include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/subdir.mk
 include ${MK}/dist.mk
-include ${MK}/git.mk
+include ${MK}/gitver.mk
 
 _installafter:
 ifeq (${MKPREFIX},yes)
