@@ -39,33 +39,6 @@
 
 #define GENDEP			RC_LIBEXECDIR "/sh/gendepends.sh"
 
-#define LOOPSOLVER_LIMIT	128
-
-/*! Type definition of service ID */
-typedef uint32_t service_id_t;
-
-/*! Enumeration of solve_loop()'s return cases */
-typedef enum loopfound {
-	LOOP_SOLVABLE	= 0x01,
-	LOOP_UNSOLVABLE	= 0x02,
-	LOOP_CANCELED	= 0x03,
-} loopfound_t;
-
-/* "use, need, after" dependencies matrix types */
-typedef enum unapm_type {
-	UNAPM_USE            = 0,
-	UNAPM_AFTER          = 1,
-	UNAPM_NEED           = 2,
-	UNAPM_PROVIDEDBY     = 3,
-	UNAPM_MIXED          = 4,
-	UNAPM_MIXED_EXPANDED = 5,
-	UNAPM_MAX
-} unapm_type_t;
-
-typedef struct idid_entry {
-	uint64_t	idid;
-	void		*data;
-} idid_entry_t;
 
 static const char *bootlevel = NULL;
 
