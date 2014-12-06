@@ -1,0 +1,196 @@
+#!/bin/sh
+# unit test for the code of early loop detector (2014-01-27)
+# Author: Dmitry Yu Okunev <dyokunev@ut.mephi.ru> 0x8E30679C
+
+TMPDIR=tmp-"$(basename "$0")"
+
+cleanup() {
+	rm -rf "${TMPDIR}"
+}
+
+run_test() {
+	cat > "${TMPDIR}"/solve_loop.c <<EOF
+
+#include "../../librc/librc-depend.c"
+
+int main() {
+	service_id_t **unap_matrix[UNAPM_MAX], **unap_matrix_result[UNAPM_MAX];
+	service_id_t service_id;
+	unapm_type_t unapm_type, type;
+	int useneedafter_count = 9;
+	int loopsolver_counter, loopfound, errfound;
+	char *service_id2str[] = {
+		[1] = "hwclock",
+		[2] = "mountall",
+		[3] = "mountall-bootclean",
+		[4] = "checkroot",
+	};
+	char *deptype_id2str[] = {
+		[UNAPM_USE]	= "use",
+		[UNAPM_AFTER]	= "after",
+		[UNAPM_NEED]	= "need",
+	};
+
+	unapm_type = 0;
+	while (unapm_type < UNAPM_MAX) {
+		unap_matrix[unapm_type]        = xcalloc((useneedafter_count+1), sizeof(*unap_matrix));
+		unap_matrix_result[unapm_type] = xcalloc((useneedafter_count+1), sizeof(*unap_matrix));
+		service_id = 0;
+		while(service_id < (useneedafter_count+1)) {
+			unap_matrix       [unapm_type][service_id] = xcalloc((useneedafter_count+1), sizeof(**unap_matrix));
+			unap_matrix_result[unapm_type][service_id] = xcalloc((useneedafter_count+1), sizeof(**unap_matrix));
+			service_id++;
+		}
+		unapm_type++;
+	}
+
+	/* hwclock */
+	unap_matrix[UNAPM_USE  ][1][0] = 2;	/* the count */
+	unap_matrix[UNAPM_USE  ][1][1] = 2;	/* "mountall" */
+	unap_matrix[UNAPM_USE  ][1][2] = 3;	/* "mountall-bootclean" */
+
+	/* mountall */
+	unap_matrix[UNAPM_NEED ][2][0] = 1;	/* the count */
+	unap_matrix[UNAPM_NEED ][2][1] = 4;	/* "checkroot" */
+
+	/* mountall-bootclean */
+	unap_matrix[UNAPM_NEED ][3][0] = 1;	/* the count */
+	unap_matrix[UNAPM_NEED ][3][1] = 2;	/* "mountall" */
+
+	/* checkroot */
+	unap_matrix[UNAPM_AFTER][4][0] = 1;	/* the count */
+	unap_matrix[UNAPM_AFTER][4][1] = 1;	/* "hwclock" */
+
+	unap_matrix[0][0][0] = 5; /* number of services+1 */
+
+	/* expected result */
+
+	unap_matrix_result[UNAPM_USE  ][1][0] = 0;
+
+	unap_matrix_result[UNAPM_NEED ][2][0] = 1;
+	unap_matrix_result[UNAPM_NEED ][2][1] = 4;
+
+	unap_matrix_result[UNAPM_NEED ][3][0] = 1;
+	unap_matrix_result[UNAPM_NEED ][3][1] = 2;
+
+	unap_matrix_result[UNAPM_AFTER][4][0] = 1;
+	unap_matrix_result[UNAPM_AFTER][4][1] = 1;
+
+	/* solving */
+
+	loopsolver_counter = 0;
+	do {
+		loopfound = 0;
+
+		unapm_prepare_mixed(unap_matrix, useneedafter_count);
+
+		service_id=1;
+		while ((service_id < (useneedafter_count+1)) && !loopfound) {
+			int dep_num, dep_count;
+
+			dep_num = 0;
+			dep_count = unap_matrix[UNAPM_MIXED_EXPANDED][service_id][0];
+			while (dep_num < dep_count) {
+				dep_num++;
+				if (unap_matrix[UNAPM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
+					loopfound = solve_loop(unap_matrix, service_id, NULL, dep_num, RCDTFLAGS_LOOPSOLVER);
+					loopsolver_counter++;
+					break;
+				}
+			}
+
+			service_id++;
+		}
+	} while (loopfound == LOOP_SOLVABLE && loopsolver_counter < LOOPSOLVER_LIMIT);
+	/* don't free memory, it's just a unittest */
+
+	/* checking the result */
+
+
+	errfound = 0;
+	type = 0;
+	while (type <= UNAPM_AFTER) {
+		service_id = 1;
+		while (service_id < (useneedafter_count+1)) {
+			int dep_count, dep_num;
+
+			dep_num   = 0;
+			dep_count = unap_matrix_result[type][service_id][0];
+
+			while (dep_num++ < dep_count) {
+				int dep_count2, dep_num2, found;
+				found = 0;
+
+				dep_num2   = 0;
+				dep_count2 = unap_matrix[type][service_id][0];
+
+				while (dep_num2++ < dep_count2)
+					if (
+						unap_matrix_result[type][service_id][dep_num]
+						  ==
+						unap_matrix       [type][service_id][dep_num2]
+					) {
+						found = 1;
+						break;
+					}
+
+				if (!found) {
+					printf("unit-test: early loop detector: error: There's no \"%s\"\tdependency: %s -> %s\n",
+							deptype_id2str[type],
+							service_id2str[service_id],
+							service_id2str[unap_matrix_result[type][service_id][dep_num]]
+						);
+					errfound = 1;
+				}
+			}
+
+			dep_num   = 0;
+			dep_count = unap_matrix[type][service_id][0];
+
+			while (dep_num++ < dep_count) {
+				int dep_count2, dep_num2, found;
+				found = 0;
+
+				dep_num2   = 0;
+				dep_count2 = unap_matrix_result[type][service_id][0];
+
+				while (dep_num2++ < dep_count2)
+					if (
+						unap_matrix_result[type][service_id][dep_num2]
+						  ==
+						unap_matrix       [type][service_id][dep_num]
+					) {
+						found = 1;
+						break;
+					}
+
+				if (!found) {
+					printf("unit-test: early loop detector: error: There's extra \"%s\"\tdependency found: %s -> %s\n",
+							deptype_id2str[type],
+							service_id2str[service_id],
+							service_id2str[unap_matrix[type][service_id][dep_num]]
+						);
+					errfound = 1;
+				}
+			}
+
+			service_id++;
+		}
+		type++;
+	}
+
+	return errfound != 0;
+}
+
+EOF
+	gcc -ggdb3 -O0 -I../includes/ "${TMPDIR}"/solve_loop.c ../libeinfo/libeinfo.o ../librc/librc.o ../librc/librc-stringlist.o ../librc/librc-misc.o  -o "${TMPDIR}"/solve_loop
+	./"${TMPDIR}"/solve_loop
+}
+
+
+cleanup
+mkdir "${TMPDIR}"
+trap cleanup INT TERM EXIT
+
+run_test
+exit $?
