@@ -8,11 +8,16 @@ DISTFILE?=	${DISTPREFIX}.tar.bz2
 
 CLEANFILES+=	${NAME}-*.tar.bz2
 
+CHANGELOG_LIMIT?= --after=$(shell date --utc --date="1 year ago" +%Y-%m-%d)
+
 _SNAP_SH=	date -u +%Y%m%d%H%M
 _SNAP:=		$(shell ${_SNAP_SH})
 SNAP=		${_SNAP}
 SNAPDIR=	${DISTPREFIX}-${SNAP}
 SNAPFILE=	${SNAPDIR}.tar.bz2
+
+changelog:
+	git log ${CHANGELOG_LIMIT} --format=medium > ChangeLog
 
 dist:
 	git archive --prefix=${DISTPREFIX}/ ${GITREF} | bzip2 > ${DISTFILE}
