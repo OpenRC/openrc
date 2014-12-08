@@ -10,9 +10,9 @@
 trap : SIGINT
 trap "echo 'Boot interrupted'; exit 1" SIGQUIT
 
-/sbin/rc sysinit || exit 1
-/sbin/rc boot || exit 1
-/sbin/rc default
+/sbin/openrc sysinit || exit 1
+/sbin/openrc boot || exit 1
+/sbin/openrc default
 
 # We don't actually care if rc default worked or not, we should exit 0
 # to allow logins

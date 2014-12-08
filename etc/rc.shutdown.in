@@ -14,4 +14,4 @@ LD_LIBRARY_PATH="/lib${LD_LIBRARY_PATH:+:}${LDLIBRARY_PATH}" ; export LD_LIBRARY
 [ -z "$TERM" -o "$TERM" = "dumb" ] && TERM="@TERM@" && export TERM
 
 action=${1:-shutdown}
-exec /sbin/rc "${action}"
+exec /sbin/openrc "${action}"
