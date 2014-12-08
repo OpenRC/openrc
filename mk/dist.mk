@@ -8,7 +8,7 @@ DISTFILE?=	${DISTPREFIX}.tar.bz2
 
 CLEANFILES+=	${NAME}-*.tar.bz2
 
-CHANGELOG_LIMIT?= --after=$(shell date --utc --date="1 year ago" +%Y-%m-%d)
+CHANGELOG_LIMIT?= --after="1 year ago"
 
 _SNAP_SH=	date -u +%Y%m%d%H%M
 _SNAP:=		$(shell ${_SNAP_SH})
