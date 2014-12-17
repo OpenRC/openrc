@@ -29,7 +29,12 @@ start()
 		fi
 	fi
 	ebegin "Mounting local filesystems"
-	mount -at "$types" $no_netdev
+	if [ "$RC_UNAME" = QNX ]  ; then
+	    # QNX does not support "notype" style entries; so we just proceed blindly
+        mount -a
+	else
+	    mount -at "$types" $no_netdev
+	fi
 	eend $? "Some local filesystem failed to mount"
 
 	# Always return 0 - some local mounts may not be critical for boot
