@@ -65,7 +65,11 @@
 #  define ENT_TYPE(_ent) ent->fs_vfstype
 #  define ENT_FILE(_ent) ent->fs_file
 #  define ENT_OPTS(_ent) ent->fs_mntops
-#  define ENT_PASS(_ent) ent->fs_passno
+#  ifdef __QNX__
+#    define ENT_PASS(_ent) 1
+#  else
+#    define ENT_PASS(_ent) ent->fs_passno
+#  endif
 #endif
 
 #include "builtins.h"

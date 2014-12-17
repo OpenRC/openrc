@@ -42,6 +42,16 @@
 #elif defined (__linux__) || (defined(__FreeBSD_kernel__) && \
 		defined(__GLIBC__)) || defined(__GNU__)
 #  include <mntent.h>
+#elif defined (__QNX__)
+#  include <sys/ftype.h>
+#  include <sys/mount.h>
+#  include <sys/types.h>
+#  include <sys/stat.h>
+#  include <sys/dcmd_blk.h>
+#  include <fcntl.h>
+#  include <devctl.h>
+#  include <dirent.h>
+#  define F_FLAGS f_flag
 #endif
 
 #include <errno.h>
@@ -324,6 +334,157 @@ find_mounts(struct args *args)
 
 	return list;
 }
+#elif defined(__QNX__)
+
+/* Translate the mounted options to english */
+static struct opt {
+	int o_opt;
+	const char *o_name;
+} optnames[] = {
+    { _MOUNT_READONLY, "read-only" },
+    { _MOUNT_NOEXEC, "noexec" },
+    { _MOUNT_NOSUID, "nosuid" },
+    { _MOUNT_NOCREAT, "nocreat" },
+    { _MOUNT_OFF32, "off32" },
+    { _MOUNT_NOATIME, "noatime" },
+	{ 0, NULL }
+};
+
+
+static void _report_mounts(RC_STRINGLIST* list, struct args* args, char *path, int pathsize, int offset) {
+    /* This code is derived from QNX's 'mount.c'
+       (which was in turn originally based on NetBSD's mount.c)
+    */    
+	DIR *dp;
+	struct dirent *dent;
+	struct stat st;
+	int ret, len;
+	int nd,pid,chid,handle,ftype;
+	char mounton[256], fstype[17];    
+	char *options = NULL;
+	struct opt *o;
+	char *tmp;	
+	size_t l;
+
+	if (!(dp = opendir(path))) {
+		eerrorx("opendir: %s", strerror(errno));
+	}
+	len = strlen(path);
+	
+	/* iterate over the directory entries */
+	while ((dent = readdir(dp))) {
+		if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0) {
+			continue;
+		}
+
+		if (len + strlen(dent->d_name) + 1 > PATH_MAX) {
+			continue;
+		}
+
+		ret = sscanf(dent->d_name, "%d,%d,%d,%d,%d", 
+					&nd, &pid, &chid, &handle, &ftype);
+
+		path[len] = '/';
+		strcpy(&path[len+1], dent->d_name);
+		
+		fstype[0] = mounton[0] = '\0';
+		memset(&st, 0, sizeof(st));
+
+		if (stat(path, &st) == -1) {
+			continue;
+		}
+
+		/* Recurse through non matching directories */
+		if (ret != 5) {
+			if (S_ISDIR(st.st_mode)) {
+				_report_mounts(list, args, path, pathsize, offset);
+			}
+			continue;
+		}
+
+		/* Skip these mount placeholders */
+		if (ftype == _FTYPE_MOUNT) {
+			continue;
+		}
+
+		/* These are real fileystems (or pretend to be), get more info */
+		if (S_ISDIR(st.st_mode) && ftype == _FTYPE_ANY) {
+			struct statvfs stvfs;
+			int  fd;
+
+			if ((fd = open(path, /* O_ACCMODE */ O_RDONLY)) == -1) {
+				ret = -1;
+			} else {
+				devctl(fd, DCMD_FSYS_MOUNTED_ON, mounton, 256, 0);
+				ret = fstatvfs(fd, &stvfs);	
+				close(fd);
+			}
+
+			if (ret != -1) {
+				strcpy(fstype, stvfs.f_basetype);
+			} else { /* If we can't get a statvfs, assume it ain't a real fs */
+				continue;
+            }
+        
+        	/* Process the flags */
+        	for (o = optnames; stvfs.F_FLAGS && o->o_opt; o++) {
+        		if (stvfs.F_FLAGS & o->o_opt) {
+        			if (! options)
+        				options = xstrdup(o->o_name);
+        			else {
+        				l = strlen(options) +
+        				    strlen(o->o_name) + 2;
+        				tmp = xmalloc(sizeof (char) * l);
+        				snprintf(tmp, l, "%s,%s", options,
+        				    o->o_name);
+        				free(options);
+        				options = tmp;
+        			}
+        		}
+        		stvfs.F_FLAGS &= ~o->o_opt;
+        	}
+        
+        	path[len] = '\0';
+        	
+        	if (!mounton[0]) {
+        	    strcpy(mounton,"none");
+        	};
+        	
+        	if (!fstype[0]) {
+        	     strcpy(fstype,"unknown");
+            };
+            
+            /* add trailing /, if not present */
+            if (*(path + offset) == '\0') {
+                *(path + offset) = '/';
+                *(path + offset + 1) = '\0';
+            };
+        
+        	process_mount(list, args, 
+        	    mounton,    /* from */
+                path+offset, /* to */
+                fstype,
+                options, 
+                -1);    /* netdev: TODO: parse fstype, maybe? */
+                
+    		free(options);
+	    	options = NULL;                
+		};            
+	}
+};
+
+static RC_STRINGLIST *
+find_mounts(struct args *args) {   
+    char path[PATH_MAX] = "/proc/mount/";
+	RC_STRINGLIST *list;
+	
+    list = rc_stringlist_new();
+	
+	_report_mounts(list, args, path, PATH_MAX, strlen(path));
+
+	return list;
+}
+
 
 #else
 #  error "Operating system not supported!"

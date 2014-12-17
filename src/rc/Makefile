@@ -37,7 +37,13 @@ CLEANFILES+=	${ALL_LINKS}
 
 LOCAL_CPPFLAGS=-I../includes -I../librc -I../libeinfo
 LOCAL_LDFLAGS=-L../librc -L../libeinfo
-LDADD+=		-lutil -lrc -leinfo
+
+ifneq (${OS},QNX)
+# Not needed for QNX
+LDADD+=      -lutil 
+endif
+
+LDADD+=		-lrc -leinfo
 
 include ../../Makefile.inc
 MK=		../../mk

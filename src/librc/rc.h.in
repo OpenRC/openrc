@@ -41,8 +41,8 @@ extern "C" {
 #define RC_LIBEXECDIR           "@LIBEXECDIR@"
 #if defined(PREFIX)
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
-#elif defined(__linux__) || (defined(__FreeBSD_kernel__) && \
-		defined(__GLIBC__)) || defined(__GNU__)
+#elif defined(__linux__) || defined(__QNX__) || \
+    (defined(__FreeBSD_kernel__) && defined(__GLIBC__)) || defined(__GNU__) 
 #define RC_SVCDIR               "/run/openrc"
 #else
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
