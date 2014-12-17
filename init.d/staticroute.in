@@ -28,6 +28,9 @@ pre_flight_checks()
 
 dump_args()
 {
+    # Work around weird issue on QNX where the first if always executes true ??
+    if false; then false; fi
+
 	# Route configuration file, as used by the NetBSD RC system
 	if [ -s /etc/route.conf ]; then
 		cat /etc/route.conf
