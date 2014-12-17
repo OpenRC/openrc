@@ -17,6 +17,10 @@ depend()
 start()
 {
 	# Mount local filesystems in /etc/fstab.
+	if [ ! -s /etc/fstab ] ; then
+	    return 0;   # Nothing to do
+    fi
+		
 	local types="noproc" x= no_netdev=
 	for x in $net_fs_list $extra_net_fs_list; do
 		types="${types},no${x}"
