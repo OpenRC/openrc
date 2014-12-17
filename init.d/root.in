@@ -6,7 +6,9 @@ description="Mount the root fs read/write"
 
 depend()
 {
-	need fsck
+    if [ "$RC_UNAME" != QNX ]; then
+	    need fsck
+    fi
 	keyword -jail -openvz -prefix -vserver -lxc
 }
 

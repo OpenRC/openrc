@@ -6,7 +6,9 @@ description="Mounts disks and swap according to /etc/fstab."
 
 depend()
 {
-	need fsck
+    if [ "$RC_UNAME" != QNX ]; then
+	    need fsck
+    fi
 	use lvm modules mtab
 	after lvm modules
 	keyword -jail -prefix -vserver -lxc
