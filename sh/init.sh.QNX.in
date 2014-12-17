@@ -1,0 +1,44 @@
+#!@SHELL@
+# Copyright (c) 2014 W. Miles, Sander Geophysics Ltd. <wmiles@sgl.com>
+# Released under the 2-clause BSD license.
+
+# Start the pipe server, if not present.
+if [ ! -e /dev/pipe ] ; then
+    pipe &
+    waitfor /dev/pipe
+fi
+
+# Mount a small ramdisk to act as /run
+if ! mountinfo -q /run; then
+    ebegin "Mounting /run"
+    if ! fstabinfo --mount /run; then
+        # This actually creates two ramdisks: one at /dev/runrd0 through 
+        # devb-ram, and another at /dev/ramX through io-blk.  The io-blk drive
+        # has higher performance, as it "knows" it's a ramdisk and skips the
+        # caching later.
+        devb-ram cam quiet disk name=runrd ram capacity=1,nodinit blk ramdisk=${rc_svcsize:-1024}k,cache=0,vnode=256        
+        waitfor /dev/runrd0
+        # Find the last /dev/ramX entry
+        node=$( ls /dev/ram* | sed 's/\/dev\/ram//' | sort -n | tail -n 1 )
+        dinit -hq /dev/ram$node
+        mount -t qnx4 /dev/ram$node /run
+        if [ $? != 0 ]; then
+            eerror "Unable to mount /run."
+            eerror "Can't continue."
+            exit 1
+        fi
+        mkdir /run/lock
+    fi
+    eend
+fi
+
+ebegin "Creating $RC_SVCDIR"
+mkdir -p $RC_SVCDIR
+eend $?
+
+if [ -e "$RC_LIBEXECDIR"/cache/deptree ]; then
+    cp -p "$RC_LIBEXECDIR"/cache/* "$RC_SVCDIR" 2>/dev/null
+fi
+
+echo sysinit >"$RC_SVCDIR"/softlevel
+exit 0
