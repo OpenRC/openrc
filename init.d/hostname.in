@@ -53,6 +53,6 @@ END
 	eend $?
 	[ "$RC_SYS" = "LXC" ] && return 0
 	ebegin "Setting hostname to $hostname"
-	hostname "$hostname"
+	hostname "$short"
 	eend $? "Failed to set the hostname"
 }
