@@ -1,0 +1,14 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2014-15 Will Miles, Sander Geophysics Ltd. <wmiles@sgl.com>
+# Released under the 2-clause BSD license.
+
+description="Networking stack daemon."
+command="/sbin/io-pkt-${io_pkt_variant}"
+command_args="$io_pkt_args"
+
+depend()
+{	
+	need hostname slogger random
+	before network net
+    keyword -shutdown
+}

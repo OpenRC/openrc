@@ -21,10 +21,13 @@ keymaps
 killprocs
 modules
 mount-ro
+mqueue
 mtab
 numlock
 osclock
 procfs
+random
+rtc
 staticroute
 sysfs
 devdb
@@ -35,6 +38,8 @@ rarpd
 rc-enabled
 rpcbind
 savecore
+slogger
+slogger2
 swap-blk
 swclock
 syslogd
@@ -43,3 +48,7 @@ ttys
 wscons
 tmpfiles.dev
 tmpfiles.setup
+devc-pty
+dumper
+io-pkt
+

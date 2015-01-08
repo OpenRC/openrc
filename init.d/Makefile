@@ -31,6 +31,12 @@ SRCS-NetBSD=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
 # These are NetBSD specific
 SRCS-NetBSD+=	devdb.in swap-blk.in ttys.in wscons.in
 
+# Carried from generic BSD
+SRCS-QNX= rpcbind.in syslogd.in 
+# These are QNX specific
+SRCS-QNX+= devc-pty.in dumper.in io-pkt.in mqueue.in random.in rtc.in \
+		slogger.in slogger2.in
+
 %.in: %${SFX}
 	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
 

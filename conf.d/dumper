@@ -1,0 +1,2 @@
+# Set the path to which core dump files should be written
+dump_dir="/var/dumps"

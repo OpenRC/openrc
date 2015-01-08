@@ -43,6 +43,9 @@ BOOT-NetBSD+=	hostid newsyslog savecore syslogd
 # NetBSD specific stuff
 BOOT-NetBSD+=	devdb swap-blk ttys wscons
 
+SYSINIT-QNX+=mqueue 
+BOOT-QNX+=devc-pty dumper io-pkt rtc random syslogd 
+
 all:
 
 install:

@@ -19,6 +19,8 @@ CONF-Linux=	consolefont devfs dmesg hwclock keymaps killprocs modules
 
 CONF-NetBSD=	moused rarpd savecore
 
+CONF-QNX=dumper io-pkt
+
 include ${MK}/scripts.mk
 
 network: network.in network${SFX}

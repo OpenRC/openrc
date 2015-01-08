@@ -1,0 +1,52 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2014-15 Will Miles, Sander Geophysics Ltd. <wmiles@sgl.com>
+# Released under the 2-clause BSD license.
+
+extra_commands="save"
+command_args=${rtc_args:-"hw"}
+
+description="Sets the local clock to UTC or Local Time."
+description_save="Saves the current time in the BIOS."
+
+: ${clock:=${CLOCK:-UTC}}
+if [ "$clock" = "UTC" ]; then
+	utc="UTC"
+else
+	utc="Local Time"
+	command_args="-l $command_args"	
+fi
+
+depend()
+{
+	provide clock
+}
+
+start()
+{
+    # Load the timezone file
+    if [ -z "$TZ" ]; then
+        TZ=$(cat /etc/TIMEZONE 2>/dev/null)
+        if [ -z "$TZ" ]; then
+            TZ=UTC
+        fi
+    fi
+    getconf -s CS_TIMEZONE $TZ
+
+	ebegin "Setting system time from real-time clock"
+	rtc $command_args
+	eend $?
+}
+
+save()
+{
+	ebegin "Setting hardware clock using the system clock [${utc}]"
+	rtc -s $command_args
+	eend $?
+}
+
+stop()
+{
+	if yesno "${clock_systohc:-$CLOCK_SYSTOHC}"; then
+	   save
+	fi
+}
