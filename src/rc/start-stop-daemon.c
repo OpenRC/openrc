@@ -1075,7 +1075,7 @@ start_stop_daemon(int argc, char **argv)
 			exit (EXIT_SUCCESS);
 
 		einfon("Would start");
-		while (argc-- >= 0)
+		while (argc-- > 0)
 			printf(" %s", *argv++);
 		printf("\n");
 		eindent();
