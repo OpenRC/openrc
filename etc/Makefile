@@ -20,6 +20,10 @@ SED_EXTRA-NetBSD=	-e 's:@TERM@:wsvt25:g'
 BIN-NetBSD=		rc rc.shutdown
 CONF-NetBSD=
 
+SED_EXTRA-QNX=	-e 's:@TERM@:qansi:g'
+BIN-QNX=rc rc.shutdown
+CONF-QNX=
+
 SED_EXTRA=	${SED_EXTRA-${OS}}
 
 include ${MK}/scripts.mk
