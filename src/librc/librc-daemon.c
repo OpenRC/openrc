@@ -560,22 +560,20 @@ rc_service_daemons_crashed(const char *service)
 			spidfile = xmalloc(strlen(ch_root) + strlen(pidfile) + 1);
 			strcpy(spidfile, ch_root);
 			strcat(spidfile, pidfile);
+			free(pidfile);
+			pidfile = spidfile;
 		}
 
 		pid = 0;
-		if (spidfile) {
+		if (pidfile) {
 			retval = true;
-			if ((fp = fopen(spidfile, "r"))) {
+			if ((fp = fopen(pidfile, "r"))) {
 				if (fscanf(fp, "%d", &pid) == 1)
 					retval = false;
 				fclose(fp);
 			}
-			free(spidfile);
-			spidfile = NULL;
-			if (ch_root) {
-				free(pidfile);
-				pidfile = NULL;
-			}
+			free(pidfile);
+			pidfile = NULL;
 
 			/* We have the pid, so no need to match
 			   on exec or name */
