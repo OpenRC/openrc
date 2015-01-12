@@ -2,6 +2,7 @@
 # Copyright (c) 2012 Alexander Vershilov <qnikst@gentoo.org>
 # Released under the 2-clause BSD license.
 extra_stopped_commands="${extra_stopped_commands} cgroup_cleanup"
+description_cgroup_cleanup="Kill all processes in the cgroup"
 
 cgroup_find_path()
 {
