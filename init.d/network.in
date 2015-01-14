@@ -11,6 +11,9 @@ __nl="
 depend()
 {
 	need localmount
+	if [ "$RC_UNAME" = QNX ]; then
+		need io-pkt
+	fi	
 	after bootmisc
 	if [ -n "$(interfaces 2>/dev/null)" ]; then
 		provide net
