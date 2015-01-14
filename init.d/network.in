@@ -12,7 +12,7 @@ depend()
 {
 	need localmount
 	after bootmisc
-	if [ -n "$(interfaces)" ]; then
+	if [ -n "$(interfaces 2>/dev/null)" ]; then
 		provide net
 	fi
 	keyword -jail -prefix -vserver
@@ -287,8 +287,12 @@ start()
 
 	if [ -n "$defaultroute" ]; then
 		ebegin "Setting default route $defaultroute"
-		route add default $defaultroute
-		eend $?
+		if [ "$RC_UNAME" = QNX ]; then
+		    route -q add default $defaultroute
+		else
+		    route add default $defaultroute
+        fi
+		eend $?		
 	elif [ -n "$defaultiproute" ]; then
 		ebegin "Setting default route $defaultiproute"
 		ip route add default $defaultiproute
