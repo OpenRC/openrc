@@ -57,7 +57,10 @@ stop()
 		if [ -e "$rc_svcdir"/usr_premounted ]; then
 			no_umounts_r="$no_umounts_r|/usr"
 		fi
+	elif [ "$RC_UNAME" = QNX ] ; then
+		no_umounts_r="${no_umounts_r}|/run"
 	fi
+
 	no_umounts_r="^($no_umounts_r)$"
 
 	# Flush all pending disk writes now
