@@ -1,3 +1,21 @@
+commit 1a2f45a4c540c5ff29b8615e7241c60f36637608
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Date:   Sun Jan 18 09:12:58 2015 -0600
+
+    tmpfiles.dev: pass --boot to tmpfiles.sh so kmod works properly
+
+commit 34b55f31b357af37b999bc3e619c332fc5be1938
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Date:   Sun Jan 18 09:31:53 2015 -0600
+
+    start work on 0.13.8
+
+commit e0c746e938f7f22dc270cd0802ccfd2803ca7a8c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Date:   Thu Jan 15 09:34:01 2015 -0600
+
+    Create ChangeLog
+
 commit 50329eee7a126dd1e961d8fb823e5f35f515a143
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Date:   Mon Jan 12 14:37:10 2015 -0600
@@ -988,23 +1006,3 @@ Date:   Sat Jan 18 13:50:05 2014 -0600
     
     X-Gentoo-Bug: 498206
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=498206
-
-commit cdc0dd061bed38be298e714e45cd0faa7cf77bf6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Jan 18 02:34:39 2014 -0600
-
-    init-Linux.sh: do not mount /run with nosuid
-    
-    This is so that we will be consistent with the systemd spec forr the
-    /run directory mentioned in this wiki article:
-    
-    http://www.freedesktop.org/wiki/Software/systemd/InitrdInterface/
-
-commit 561b53ef09eed4dfba0b7f3026ddcdc2b7b5c54a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Jan 15 10:43:52 2014 -0600
-
-    bootmisc: Remove console directories only if $RC_LIBEXECDIR is writable
-    
-    X-Gentoo-Bug: 489368
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=489368
