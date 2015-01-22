@@ -6,7 +6,7 @@ IGNOREFILES+=	.depend
 
 .depend: ${SRCS}
 	rm -f .depend
-	${CC} ${CPPFLAGS} -MM ${SRCS} > .depend
+	${CC} ${LOCAL_CPPFLAGS} ${CPPFLAGS} -MM ${SRCS} > .depend
 
 depend: .depend extra_depend
 

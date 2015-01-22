@@ -21,10 +21,10 @@ _LIBS+=			${SHLIB_NAME}
 CLEANFILES+=		${OBJS} ${SOBJS} ${_LIBS} ${SHLIB_LINK}
 
 %.o: %.c
-	${CC} ${CFLAGS} ${CPPFLAGS} -c $< -o $@
+	${CC} ${LOCAL_CFLAGS} ${LOCAL_CPPFLAGS} ${CFLAGS} ${CPPFLAGS} -c $< -o $@
 
 %.So: %.c
-	${CC} ${PICFLAG} -DPIC ${CPPFLAGS} ${CFLAGS} -c $< -o $@
+	${CC} ${PICFLAG} -DPIC ${LOCAL_CFLAGS} ${LOCAL_CPPFLAGS} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
 
 all: depend ${_LIBS}
 
@@ -40,7 +40,7 @@ ${SHLIB_NAME}:	${SOBJS}
 	@${ECHO} building shared library $@
 	@rm -f $@ ${SHLIB_LINK}
 	@ln -fs $@ ${SHLIB_LINK}
-	${CC} ${CFLAGS} ${LDFLAGS} -shared -Wl,-x \
+	${CC} ${LOCAL_CFLAGS} ${CFLAGS} ${LOCAL_LDFLAGS} ${LDFLAGS} -shared -Wl,-x \
 	-o $@ -Wl,-soname,${SONAME} \
 	${SOBJS} ${LDADD}
 

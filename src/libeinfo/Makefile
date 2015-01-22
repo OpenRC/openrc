@@ -4,7 +4,7 @@ SRCS=			libeinfo.c
 INCS=			einfo.h
 VERSION_MAP=		einfo.map
 
-CPPFLAGS+=		-I../includes
+LOCAL_CPPFLAGS+=		-I../includes
 
 MK=			../../mk
 include ${MK}/lib.mk
