@@ -2,7 +2,10 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-include Makefile.inc
+TOP:=		${dir ${realpath ${firstword ${MAKEFILE_LIST}}}}
+MK=			${TOP}/mk
+
+include ${TOP}/Makefile.inc
 
 SUBDIR=		conf.d etc init.d local.d man scripts sh src sysctl.d
 
@@ -17,7 +20,6 @@ SUBDIR+=	runlevels
 
 INSTALLAFTER=	_installafter
 
-MK= 		mk
 include ${MK}/sys.mk
 include ${MK}/os.mk
 include ${MK}/subdir.mk
