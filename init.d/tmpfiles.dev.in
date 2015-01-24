@@ -2,7 +2,7 @@
 # Copyright 1999-2012 Gentoo Foundation
 # Released under the 2-clause BSD license.
 
-description="set up tmpfiles.d entries"
+description="Set up tmpfiles.d entries"
 
 depend()
 {
@@ -13,7 +13,7 @@ depend()
 
 start()
 {
-	ebegin "setting up tmpfiles.d entries for /dev"
+	ebegin "Setting up tmpfiles.d entries for /dev"
 	@LIBEXECDIR@/sh/tmpfiles.sh --prefix=/dev --create --boot ${tmpfiles_opts}
 	eend $?
 	return 0
