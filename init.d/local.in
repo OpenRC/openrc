@@ -14,12 +14,13 @@ start()
 {
 	ebegin "Starting local"
 
-	local file has_errors=0 retval
+	local file has_errors=0 redirect retval
+	yesno $rc_verbose || redirect='> /dev/null 2>&1'
 	eindent
 	for file in @SYSCONFDIR@/local.d/*.start; do
 		if [ -x "${file}" ]; then
 			vebegin "Executing \"${file}\""
-			"${file}" 2>&1 >/dev/null
+			"${file}" $redirect
 			retval=$?
 			if [ ${retval} -ne 0 ]; then
 				has_errors=1
@@ -52,12 +53,13 @@ stop()
 {
 	ebegin "Stopping local"
 
-	local file has_errors=0 retval
+	local file has_errors=0 redirect retval
+	yesno $rc_verbose || redirect='> /dev/null 2>&1'
 	eindent
 	for file in @SYSCONFDIR@/local.d/*.stop; do
 		if [ -x "${file}" ]; then
 			vebegin "Executing \"${file}\""
-			"${file}" 2>&1 >/dev/null
+			"${file}" $redirect
 			retval=$?
 			if [ ${retval} -ne 0 ]; then
 				has_errors=1
