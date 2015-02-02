@@ -1,0 +1,23 @@
+# The mount service is a multiplexed service. This means you must have
+# symbolic links to it in your init.d directory for each file system you
+# want to mount. I recommend naming those symbolic links the same as the
+# paths to the file systems they mount, removing the leading slash and
+# substituting _ for the remaining slashes, for example:
+#
+# cd /etc/init.d
+# ln -s mount mount.usr
+# ln -s mount mount.usr_local
+#
+# Set up a symbolic link like this for each file system you wish to
+# mount, then add the symbolic link to the appropriate runlevel. Once
+# that is done, add the appropriate definitions for the file system to
+# this file.
+#
+#You will need to define the mountpoint and any dependencies for each
+#filesystem as shown here.
+#
+#If the mountpoint does not match an entry in fstab, the mount will be
+#ignored.
+#
+#mount_usr_mountpoint="/usr"
+#

@@ -4,6 +4,7 @@ hostname
 local
 localmount
 loopback
+mount
 moused
 netmount
 network

@@ -1,7 +1,7 @@
 include ../mk/net.mk
 
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname localmount netmount urandom tmpfiles \
+CONF=	bootmisc fsck hostname localmount mount netmount urandom tmpfiles \
 		${CONF-${OS}}
 
 ifeq (${MKNET},yes)

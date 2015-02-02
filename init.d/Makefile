@@ -2,7 +2,7 @@ include ../mk/net.mk
 
 DIR=	${INITDIR}
 SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in loopback.in \
-	netmount.in osclock.in root.in savecache.in swap.in swapfiles.in \
+	mount.in netmount.in osclock.in root.in savecache.in swap.in swapfiles.in \
 	tmpfiles.setup.in swclock.in sysctl.in urandom.in s6-svscan.in ${SRCS-${OS}}
 BIN=	${OBJS}
 

@@ -1,0 +1,118 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2015 William Hubbs <w.d.hubbs@gmail.com>
+# Released under the 2-clause BSD license.
+
+description="Mount a file system defined in @SYSCONFDIR@/fstab"
+extra_commands="generate"
+
+depend()
+{
+	need fsck
+	use modules mtab
+	after modules
+	keyword -jail -prefix -vserver -lxc
+}
+
+. "$RC_LIBEXECDIR"/sh/rc-mount.sh
+
+start_pre()
+{
+	# Do not start this service as "mount"
+	if [ "$rc_svcname" = mount ]; then
+		eerror "The mount service should not be started directly"
+		return 1
+	fi
+	return 0
+}
+
+start()
+{
+	if [ "$rc_svcname" = mount-generate-symlinks ]; then
+		generate
+		return $?
+	fi
+
+	local mountname=${rc_svcname#*.}
+	local fspath=${mount_${mountname}_mountpoint}
+
+	# for now, make sure fspath is in fstab
+	if [ ! fstabinfo -q $fspath ]; then
+		einfo "$rc_svcname: $fspath is not in @SYSCONFDIR@/fstab"
+		return 0
+	fi
+
+	# Is the file system mounted?
+	if mountinfo -q $fspath; then
+		action=remount
+		msg=Remounting
+	else
+		action=mount
+		msg=Mounting
+	fi
+
+	ebegin "$msg $fspath according to @SYSCONFDIR@/fstab"
+	fstabinfo --$action $fspath
+	eend $? "$fspath failed to $action"
+}
+
+stop_pre()
+{
+	# Do not stop this service as "mount"
+	if [ "$rc_svcname" = mount ]; then
+		eerror "The mount service should not be stopped directly"
+		return 1
+	fi
+	return 0
+}
+
+stop()
+{
+	yesno $RC_GOINGDOWN || return 0
+	local mountname=${rc_svcname#*.}
+	local fspath=${mount_${mountname}_mountpoint}
+
+	# make sure fspath is in fstab
+	if ! fstabinfo -q $fspath; then
+		einfo "$rc_svcname: $fspath is not in @SYSCONFDIR@/fstab"
+		return 0
+	fi
+
+	# Is the file system mounted?
+	mountinfo -q $fspath || return 0
+
+	# Flush all pending disk writes now
+	sync
+
+	ebegin "Unmounting $fspath"
+	do_unmount umount $fspath
+	eend $? "Unable to umount $fspath"
+	return 0
+}
+
+generate()
+{
+	local fslist="$(fstabinfo)"
+	local fs fsopts rc=0
+	local svcpath=${RC_SVCNAME%/*}
+	ebegin "Generating mount symlinks"
+	for fs in $fslist; do
+		case $fs in
+		/) ;;
+		/*)
+			fsopts="$(fstabinfo -o $fs)"
+			case "$fsopts" in
+			*noauto*) ;;
+			*)
+				local name="${fs#/}"
+				name="$(echo $name | sed 's#/#.#g')"
+				einfo ln -snf mount "${svcpath}/${name}"
+				rc=$?
+				[ $rc -ne 0 ] && break
+			*) ;;
+			esac
+		*) ;;
+		esac
+	done
+	eend $rc "Failed to generate symlinks for all mounts"
+	return $rc
+}
