@@ -7,7 +7,7 @@ description="Mounts network shares according to /etc/fstab."
 depend()
 {
 	config /etc/fstab
-	use afc-client amd autofs openvpn
+	use afc-client amd nfsclient autofs openvpn
 	use dns
 	keyword -jail -prefix -vserver -lxc
 }
