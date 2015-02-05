@@ -1,3 +1,24 @@
+commit bb4c14999c569781c7289269949b205955f376bb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Date:   Tue Feb 3 10:53:48 2015 -0600
+
+    Add nfsclient to netmount use dependencies
+    
+    X-Gentoo-Bug: 537996
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=537996
+
+commit 252422dcf0c408742cdb039a8a7eb1732ea15b78
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Date:   Wed Feb 4 21:59:14 2015 -0600
+
+    start openrc-0.13.9
+
+commit a3a64ac94eaadb38dcb78f8c88437d8a1335fa07
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Date:   Sun Jan 18 09:45:32 2015 -0600
+
+    update ChangeLog
+
 commit 1a2f45a4c540c5ff29b8615e7241c60f36637608
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Date:   Sun Jan 18 09:12:58 2015 -0600
@@ -967,42 +988,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Date:   Sun Mar 9 15:35:41 2014 -0500
 
     rc.conf: document rc_nocolor setting
-
-commit 4ee8e90ffed3ab9f9627f7bbaa48f514fd520f2a
-Author: Mike Frysinger <vapier@gentoo.org>
-Date:   Thu Jan 23 01:19:35 2014 -0500
-
-    devfs: explicitly mount /dev/shm with mode=1777
-    
-    The current code relies on the tmpfs mount defaulting to 1777
-    permissions.  If it doesn't, things break badly.
-    
-    This can come up when tmpfs is disabled in the kernel and ramfs
-    is being used instead (the kernel will alias tmpfs to ramfs).
-    The default permissions for ramfs is 0755.
-
-commit 2cc6ef723a7395993362f8015cd8aab6430301a9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Jan 23 11:08:35 2014 -0600
-
-    update feature removal schedule
-    
-    - Remove the netifrc related items since netifrc is now a separate
-      package.
-    
-    - State that the features we are planning to remove will be removed
-      in version 1.0.
-    
-    - Clarify the last entry; we are refering to start-stop-daemon options.
-
-commit de186401e5843e376cc12545c2ea35212f5e0490
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Jan 18 13:50:05 2014 -0600
-
-    fstabinfo: fix mount and remount
-    
-    The mount and remount options should always be processed. They were only
-    being processed if -q was not on the command line.
-    
-    X-Gentoo-Bug: 498206
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=498206
