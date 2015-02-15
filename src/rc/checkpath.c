@@ -134,7 +134,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 
 	if (mode && (st.st_mode & 0777) != mode) {
 		if ((type != inode_dir) && (st.st_nlink != 1)) {
-			eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
+			eerror("%s: chmod: %s %s", applet, "Too many hard links to", path);
 			return -1;
 		}
 		einfo("%s: correcting mode", path);
