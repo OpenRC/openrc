@@ -133,6 +133,10 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	}
 
 	if (mode && (st.st_mode & 0777) != mode) {
+		if ((type != inode_dir) && (st.st_nlink != 1)) {
+			eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
+			return -1;
+		}
 		einfo("%s: correcting mode", path);
 		if (chmod(path, mode)) {
 			eerror("%s: chmod: %s", applet, strerror(errno));
@@ -141,6 +145,10 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	}
 
 	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
+		if ((type != inode_dir) && (st.st_nlink != 1)) {
+			eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
+			return -1;
+		}
 		einfo("%s: correcting owner", path);
 		if (chown(path, uid, gid)) {
 			eerror("%s: chown: %s", applet, strerror(errno));
