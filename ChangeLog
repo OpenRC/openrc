@@ -1,6 +1,55 @@
+commit 52220d5df177353b222c16bd941261501fce9ddb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    ChangeLog: show authors and committers
+
+commit d5dfc6d529115a3216e70491173468e8edfb1d63
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    local: fix redirections
+    
+    The local service now redirects stdout and stderr for the scripts it
+    runs to /dev/null unless it is run in verbose mode.
+    
+    X-Gentoo-Bug: 537444
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=537444
+
+commit 7f33410e5d68de990ebef84c76924e485d933e80
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+
+commit 56993950f26026cc0bce20ae32abc289540eb361
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    checkpath: security fix for -m and -o options
+    
+    Do not change permissions on the target if it is a file and has multiple
+    hard links. This is necessary because a hard link can be an attack
+    vector to gain privilege escalation.
+    
+    X-Gentoo-Bug: 540006
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=540006
+
+commit e3999c15ad26816934d0ea0792f06c5666bfc9ee
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    bump version to 0.13.10
+
+commit 4a9c450ec2e73e66ceeba8c9e6ca9496cf3363f4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update change log
+
 commit bb4c14999c569781c7289269949b205955f376bb
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Tue Feb 3 10:53:48 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Add nfsclient to netmount use dependencies
     
@@ -9,37 +58,37 @@ Date:   Tue Feb 3 10:53:48 2015 -0600
 
 commit 252422dcf0c408742cdb039a8a7eb1732ea15b78
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Feb 4 21:59:14 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     start openrc-0.13.9
 
 commit a3a64ac94eaadb38dcb78f8c88437d8a1335fa07
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Jan 18 09:45:32 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     update ChangeLog
 
 commit 1a2f45a4c540c5ff29b8615e7241c60f36637608
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Jan 18 09:12:58 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles.dev: pass --boot to tmpfiles.sh so kmod works properly
 
 commit 34b55f31b357af37b999bc3e619c332fc5be1938
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Jan 18 09:31:53 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     start work on 0.13.8
 
 commit e0c746e938f7f22dc270cd0802ccfd2803ca7a8c
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Jan 15 09:34:01 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Create ChangeLog
 
 commit 50329eee7a126dd1e961d8fb823e5f35f515a143
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Jan 12 14:37:10 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Add description for cgroup_cleanup
     
@@ -48,7 +97,7 @@ Date:   Mon Jan 12 14:37:10 2015 -0600
 
 commit fb81028121471c32bbcc88a61956baa7264ff090
 Author: Doug Freed <dwfreed@mtu.edu>
-Date:   Mon Jan 12 09:10:29 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     fix double free of pidfile
     
@@ -60,7 +109,7 @@ Date:   Mon Jan 12 09:10:29 2015 -0600
 
 commit 50e99aa30aee155865842e0a198fda473b647096
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Dec 8 09:47:42 2014 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Do not call the shell to evaluate CHANGELOG_LIMIT
     
@@ -69,7 +118,7 @@ Date:   Mon Dec 8 09:47:42 2014 -0600
 
 commit b177b7924250058d1ad9f8d758dcf8182099341d
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Dec 7 17:16:48 2014 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Add target to create ChangeLog
     
@@ -79,13 +128,13 @@ Date:   Sun Dec 7 17:16:48 2014 -0600
 
 commit 7009f6687289753e6b8207c32c1294fbe48b65c2
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Tue Jan 13 00:45:19 2015 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     start working on 0.13.7
 
 commit 2eb0ea9afbba584fc4c5ee0feefa9ae6a3d3278d
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Nov 23 10:28:21 2014 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Make sysfs behave like netmount and localmount
     
@@ -100,13 +149,13 @@ Date:   Sun Nov 23 10:28:21 2014 -0600
 
 commit 534031fc7ac3795cc42ea6f54b7ee1c304ee53de
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Nov 23 21:57:44 2014 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Start work on 0.13.6
 
 commit 6b85d4288c9409f8870396b8026862463e732bf8
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Nov 20 10:55:53 2014 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     devfs: optionally add missing symbolic links
     
@@ -115,25 +164,25 @@ Date:   Thu Nov 20 10:55:53 2014 -0600
 
 commit dec899b946281c7c12829f3300d533f40e468c20
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Nov 20 11:06:03 2014 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Start work on 0.13.5
 
 commit c9f6e2a6c8ca4e258f1b577010586668759b361a
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Nov 6 14:38:17 2014 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     netmount: unmount nfs file systems
 
 commit e1a4aef3e551371a83a38eb1a275f10b0e9e165e
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Nov 6 14:43:02 2014 -0600
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     start work on 0.13.4
 
 commit cb2c45a3c092de617fa037089599e624a758aea9
 Author: Alexander Vershilov <alexander.vershilov@gmail.com>
-Date:   Wed Oct 29 23:16:35 2014 +0300
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Fix incorrect handling of chroot option.
     Fixes #28.
@@ -143,13 +192,13 @@ Date:   Wed Oct 29 23:16:35 2014 +0300
 
 commit d92eca3988a1756e12c22c99a5e17f525ebffc6c
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Nov 1 18:31:20 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Start work on 0.13.3
 
 commit 5bdd08e0e74bb071e775c706cf88b7bd7c48a572
 Author: Johan Bergström <bugs@bergstroem.nu>
-Date:   Thu Oct 23 09:59:57 2014 +1100
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Pass ncurses cflags to build
     
@@ -160,13 +209,13 @@ Date:   Thu Oct 23 09:59:57 2014 +1100
 
 commit 8a68dc899e93ff925fac8417148cebbdaa975849
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Oct 24 10:44:14 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Fix compile errors created by bundling queue.h
 
 commit 2d1e2552857c51b424704d214c3226d9b2a89ec6
 Author: Anthony G. Basile <blueness@gentoo.org>
-Date:   Thu Oct 23 19:56:19 2014 -0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     helpers.h, start-stop-daemon.c: remove uneeded macros
     
@@ -175,7 +224,7 @@ Date:   Thu Oct 23 19:56:19 2014 -0400
 
 commit 6f9fd30edb7f9938cff5efcf33d4f867c9b94def
 Author: Anthony G. Basile <blueness@gentoo.org>
-Date:   Thu Oct 23 18:33:27 2014 -0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Bundle <sys/queue.h> from NetBSD
     
@@ -184,7 +233,7 @@ Date:   Thu Oct 23 18:33:27 2014 -0400
 
 commit e0c32c23dc00d7aff79614129614944f4b1fde92
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Oct 23 18:47:04 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Fix all tests for GNU/kFreeBSD
     
@@ -195,37 +244,37 @@ Date:   Thu Oct 23 18:47:04 2014 -0500
 
 commit 4777035d53cc56444865cbeb287e2b5e73d7e901
 Author: Gabriele Giacone <1o5g4r8o@gmail.com>
-Date:   Wed Oct 22 15:02:51 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Fix rc_svcdir for GNU/Hurd
 
 commit f049b535b3dfb4becd62143289a0f7804329c72d
 Author: Svante Signell <svante.signell@gmail.com>
-Date:   Wed Oct 22 14:59:01 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     fix defines for GNU/Hurd
 
 commit 4ba30c5a1bb0571e7d79f30c29525f206bed12e5
 Author: Svante Signell <svante.signell@gmail.com>
-Date:   Wed Oct 22 14:25:00 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     add missing files for GNU/Hurd
 
 commit 91734d20be62dfbf7f637df576b70c9f04bae73d
 Author: Gabriele Giacone <1o5g4r8o@gmail.com>
-Date:   Tue Oct 21 21:17:52 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Fix rc_svcdir for GNU/kFreeBSD
 
 commit b4194fef43c05cb7c601a2c454687eebf6e77e99
 Author: Gabriele Giacone <1o5g4r8o@gmail.com>
-Date:   Tue Oct 21 02:24:12 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Add missing files for GNU/kFreeBSD
 
 commit 5f23128f303b98ec882a3afaf7d98087f452a938
 Author: Svante Signell <svante.signell@gmail.com>
-Date:   Tue Oct 21 01:53:37 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Fix GNU/kFreeBSD port
     
@@ -238,7 +287,7 @@ Date:   Tue Oct 21 01:53:37 2014 -0500
 
 commit a634534167f4fb66464568a837ba22a5e0c97410
 Author: Anthony G. Basile <blueness@gentoo.org>
-Date:   Wed Oct 22 07:46:49 2014 -0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     einfo.h, rc.h.in: simplify __BEGIN_DECLS logic
     
@@ -247,7 +296,7 @@ Date:   Wed Oct 22 07:46:49 2014 -0400
 
 commit f77006b58e3fffb80208804dae75a69a29414e95
 Author: Anthony G. Basile <blueness@gentoo.org>
-Date:   Tue Oct 21 09:31:07 2014 -0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     einfo.h, rc.h.in: ensure __BEGIN_DECLS is defined
     
@@ -257,13 +306,13 @@ Date:   Tue Oct 21 09:31:07 2014 -0400
 
 commit ef22f78a480e4f6efb1ae7a9bef0b2ef9c456cd3
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Oct 20 15:52:11 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Update news file wrt chroot variable
 
 commit 735dc45c392821fbb278ed9cbdefbf8b07b2c750
 Author: Alexander Vershilov <alexander.vershilov@gmail.com>
-Date:   Sun Oct 19 19:41:36 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     librc:look for the pid file in a chroot if defined
     
@@ -272,7 +321,7 @@ Date:   Sun Oct 19 19:41:36 2014 -0500
 
 commit 0d3fdd3769be9801b800f89ee8ce9d1b816434db
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Oct 19 19:36:57 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     runscript.sh: add chroot support
     
@@ -286,13 +335,13 @@ Date:   Sun Oct 19 19:36:57 2014 -0500
 
 commit 5a1a94b2cc7a5ab8e6a7bc75e503d2dd2377558a
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Oct 20 15:28:13 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Add NEWS file
 
 commit a76e5a827c23616760e8aab8870239b66c9fda59
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Oct 1 17:14:25 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     add back nfs and nfs4 file systems
     
@@ -306,19 +355,19 @@ Date:   Wed Oct 1 17:14:25 2014 -0500
 
 commit b964de828731b5989fb1117822016cacbfe1ad8a
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Sep 19 17:23:55 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     man: Document start_inactive and in_background_fake
 
 commit 2c1051ad3fc6d39a6201b676f94b055d00265813
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Sep 20 16:51:30 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     typo fix
 
 commit a2187e897e3c0fc9a29adb0b81a57f2b718e74c5
 Author: Roy Marples <roy@marples.name>
-Date:   Thu Sep 11 13:26:58 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Use exception-based approach for cgroup/ulimit setup
     
@@ -333,25 +382,25 @@ Date:   Thu Sep 11 13:26:58 2014 -0500
 
 commit e8043fe378a410dfa78b1e14162a94cc859a5f69
 Author: Rick Farina (ZeroChaos) <sidhayn@gmail.com>
-Date:   Mon Oct 6 11:15:44 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     localmount: unmount aufs branches
 
 commit 082fd53d9e634318e87e2cb1f2ccc7bf12bf09df
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Sep 11 12:02:51 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     runscript: move verbose mode setting near debug setting
 
 commit 61fd8b29961650a0132b9cfece80bdf7d16cd05c
 Author: Joe M <joe9mail@gmail.com>
-Date:   Fri Aug 29 09:10:58 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     savecache: check permissions on the correct directory
 
 commit 43d727dc3f17bc9a1d020ed2a5684d4a26bb620a
 Author: Andrew Gregory <andrew.gregory.8@gmail.com>
-Date:   Mon Aug 25 15:46:28 2014 -0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles.sh: add support for C action
     
@@ -359,7 +408,7 @@ Date:   Mon Aug 25 15:46:28 2014 -0400
 
 commit b8e52583ca590d0f956acea0ec558e84495e3818
 Author: Andrew Gregory <andrew.gregory.8@gmail.com>
-Date:   Mon Aug 25 15:37:45 2014 -0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles.sh: add support for + modifier
     
@@ -368,13 +417,13 @@ Date:   Mon Aug 25 15:37:45 2014 -0400
 
 commit 1a7af5bbde0108d5d997d96af7e513eb362d71c5
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Oct 13 11:43:20 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Start work on 0.13.2
 
 commit 785b61e8725f26b7d7c66b00e6e87597dd7bd735
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Aug 22 12:41:55 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     cgroups: fix cgroup subsystem mounting
     
@@ -387,19 +436,19 @@ Date:   Fri Aug 22 12:41:55 2014 -0500
 
 commit 54ed42503fbae45eb1fa6cf8c09ca1e34c8002cd
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Aug 22 14:18:33 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     start work on 0.13.1
 
 commit c60ef5c381e9edc7e30be9dcc9cc7e123515452e
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Aug 17 11:23:52 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     mtab: add verbose level deprecation warnings
 
 commit bee3f8463cbc372c344541077924ddd45ca62ef1
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Aug 17 00:11:14 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     README: Clarify devfs changes
     
@@ -410,13 +459,13 @@ Date:   Sun Aug 17 00:11:14 2014 -0500
 
 commit 72b7b32502ff149c0f0f8a7833cfd213f6cf933e
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Aug 16 17:16:20 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     README: add notes about devfs changes
 
 commit 645f7b6947d9fc44fbece0931a3ddb10d3d79b27
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Aug 16 15:07:48 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     adjust deprecation schedule for mtab
     
@@ -426,7 +475,7 @@ Date:   Sat Aug 16 15:07:48 2014 -0500
 
 commit 1b26d547a50e2554483bdbfd288fae75fd76bfa0
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Aug 14 13:50:48 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Deprecate the mtab service script
     
@@ -436,13 +485,13 @@ Date:   Thu Aug 14 13:50:48 2014 -0500
 
 commit c8018d04a7b238b57a3d74a68e2af02af395f510
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Aug 13 15:26:37 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles: fix relabel to run restorecon before chown and chmod
 
 commit 6f080e9c1a2a9b9c308cdc03f9cf782c4ce4d440
 Author: Jason Zaman <jason@perfinion.com>
-Date:   Wed Aug 13 10:50:34 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles: Move relabelling before any other calls for device nodes
     
@@ -452,19 +501,19 @@ Date:   Wed Aug 13 10:50:34 2014 +0400
 
 commit 2c265e13c60be0ed583a871ca12a22e4d379a7c0
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Aug 11 13:17:33 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     README: expand information about rc and runscript deprecation
 
 commit 24d82d9ff1ca1ba7085814f8f6530124c117aa5f
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Aug 11 12:57:23 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     rc.conf: document rc_verbose
 
 commit d1e71b07afd4b900894ce4ea45f94010c70e32cc
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Aug 11 12:29:04 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Show rc and runscript deprecation warnings in verbose mode
     
@@ -473,13 +522,13 @@ Date:   Mon Aug 11 12:29:04 2014 -0500
 
 commit 7b744befac2049eb6372a7f0c5420c740aa0a4ea
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Aug 10 17:15:05 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     bootmisc: do not run the clean_run function in an LXC container
 
 commit faaaab4bf540b4df011abea5985963dbc9e1646a
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Aug 10 13:00:39 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     hwclock: fix comments about the usage of clock_hctosys
     
@@ -489,7 +538,7 @@ Date:   Sun Aug 10 13:00:39 2014 -0500
 
 commit d29db70efb2adfbd200ba4a03fa78653e97893a6
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Aug 6 22:01:30 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     sysctl.linux.in: use the --system option
     
@@ -508,7 +557,7 @@ Date:   Wed Aug 6 22:01:30 2014 -0500
 
 commit 6a337ff6c531d9d7310253b67b3e95d1ce5d214c
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Aug 8 14:49:00 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     devfs: several small clarifications
     
@@ -520,7 +569,7 @@ Date:   Fri Aug 8 14:49:00 2014 -0500
 
 commit 647e08eb9166d23d0c64f0c8767d93a06bd21a40
 Author: Jason Zaman <jason@perfinion.com>
-Date:   Wed Aug 6 02:12:35 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles.sh: do not use install
     
@@ -535,7 +584,7 @@ Date:   Wed Aug 6 02:12:35 2014 +0400
 
 commit 2624a8c8a7030180f9548a6e2fba5b0a82c5f046
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Jul 28 10:41:24 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     checkpath: apply ownership to all paths given on command line
     
@@ -551,13 +600,13 @@ Date:   Mon Jul 28 10:41:24 2014 -0500
 
 commit 275714bdc74c363ca1612b2b6b97f74f7a62b50c
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Jul 25 11:04:57 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     checkpath: style fix
 
 commit e3bfb68aece9378a0669c2893285808100fd5ea6
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Jul 23 16:19:25 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     hwclock: always set the kernel's timezone
     
@@ -570,19 +619,19 @@ Date:   Wed Jul 23 16:19:25 2014 -0500
 
 commit 1f7582c78b2697c3f2617a4a89afabaf3550b0fb
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Jul 19 13:03:00 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     src/librc/librc-daemon.c: style fix
 
 commit cc1bc6a4cec772c50a1b5232655ff34370d204b1
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Jul 19 12:59:35 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     src/rc/Makefile: typo fix
 
 commit 40f42ced21b1c0c99780b801d28fafd91a858f90
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Jul 17 23:10:28 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     rc-status: fix infinite  loop when using stacked runlevels
     
@@ -596,7 +645,7 @@ Date:   Thu Jul 17 23:10:28 2014 -0500
 
 commit 1a1d53335b2e6e3240b738ba1f81de64e552c337
 Author: Jason Zaman <jason@perfinion.com>
-Date:   Thu Jul 17 03:07:19 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     devfs: fix restorecon ebegin message to match sys
     
@@ -605,7 +654,7 @@ Date:   Thu Jul 17 03:07:19 2014 +0400
 
 commit 99939b9839fb45093fe193e06139eab4a95637da
 Author: Jason Zaman <jason@perfinion.com>
-Date:   Thu Jul 17 03:07:18 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     sysfs: restorecon after mounting /sys
     
@@ -614,7 +663,7 @@ Date:   Thu Jul 17 03:07:18 2014 +0400
 
 commit 89907b60bac51db2cda1afe4555676577ef498a8
 Author: Jason Zaman <jason@perfinion.com>
-Date:   Thu Jul 17 00:46:25 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     move the selinux_setup function into rc-selinux
     
@@ -623,19 +672,19 @@ Date:   Thu Jul 17 00:46:25 2014 +0400
 
 commit a94a9740d545817294cc431180db0f22fc923b13
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Jul 16 15:03:11 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     checkpath: style fixes
 
 commit 8b8edc29705b843988b97242942a409241c182eb
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Jul 16 14:48:03 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     style fixes
 
 commit 010c2ab18b4be2068237cf0db97e9348bba65ac6
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Jul 16 14:14:37 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Rename SELinux source files
     
@@ -647,7 +696,7 @@ Date:   Wed Jul 16 14:14:37 2014 -0500
 
 commit 9c689542c3246e793310db938374bc97600435e6
 Author: Jason Zaman <jason@perfinion.com>
-Date:   Tue Jul 15 22:27:34 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     checkpath: restore the SELinux context
     
@@ -656,7 +705,7 @@ Date:   Tue Jul 15 22:27:34 2014 +0400
 
 commit 525d7140b12a8e259f9d919f24148e369e9ff7d1
 Author: Jason Zaman <jason@perfinion.com>
-Date:   Tue Jul 15 22:27:33 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     devfs: fix SELinux contexts
     
@@ -667,7 +716,7 @@ Date:   Tue Jul 15 22:27:33 2014 +0400
 
 commit 4f784bd46923486773edcd7749246a21bd419e6b
 Author: Jason Zaman <jason@perfinion.com>
-Date:   Tue Jul 15 22:27:32 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles: set the proper SELinux context
     
@@ -679,7 +728,7 @@ Date:   Tue Jul 15 22:27:32 2014 +0400
 
 commit 4a1afa694cd8ebd6591d5a825ee35e4f57c98469
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Tue Jul 15 11:38:02 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Add SELinux support to the build system
     
@@ -688,13 +737,13 @@ Date:   Tue Jul 15 11:38:02 2014 -0500
 
 commit 25c229cf830c8e822a206f2e08f9c94964a47aa9
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Jul 14 15:58:50 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     sysfs.in: fix indentation
 
 commit 71d6d61b28c4c0f285ec51459551d900dfa4ea71
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Jul 13 14:12:36 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     checkpath: fix logic for the writable option
     
@@ -706,7 +755,7 @@ Date:   Sun Jul 13 14:12:36 2014 -0500
 
 commit 40141244e349e6e1d2dfb9ebfbcbf62f68d33a9d
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Jul 13 11:15:26 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     man/openrc-run.8: more updates and clarifications for checkpath
     
@@ -715,7 +764,7 @@ Date:   Sun Jul 13 11:15:26 2014 -0500
 
 commit d59737afb159d993916836903d9e670a1334c93a
 Author: Alexander V Vershilov <qnikst@gentoo.org>
-Date:   Sun Feb 16 04:08:23 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     man/openrc.8: update checkpath documentation
     
@@ -724,19 +773,19 @@ Date:   Sun Feb 16 04:08:23 2014 +0400
 
 commit f66f41c4f03d8077bdaa047a7a93f6c92c0a69de
 Author: Alexander V Vershilov <qnikst@gentoo.org>
-Date:   Fri Jul 11 16:33:42 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     typo fix
 
 commit d80482c2f4ec35a880ee099eeb3983b255d65e8f
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Jul 11 15:23:38 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     checkpath: fix error message in previous commit
 
 commit d0040aff0aa033fd5d5c40480008e98ee5e1f11a
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Jul 11 14:50:20 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     checkpath: report an error if required options were not specified
     
@@ -747,13 +796,13 @@ Date:   Fri Jul 11 14:50:20 2014 -0500
 
 commit 75e06d85584fc3ebfa26fbca97ea60b687247bb0
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Jul 10 05:18:00 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Style Fixes
 
 commit 1a44be0f16a7a1de8a176e7c656f8513494e0e64
 Author: Alexander V Vershilov <qnikst@gentoo.org>
-Date:   Sun Feb 16 04:27:52 2014 +0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     cgroups: only run cgroup setup when starting a service
     
@@ -768,13 +817,13 @@ Date:   Sun Feb 16 04:27:52 2014 +0400
 
 commit f265ddde971d0fdb97a4f14b4cc96140be7b4628
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Jul 10 09:04:04 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     FEATURE_REMOVAL_SCHEDULE: add entry for local_start/stop
 
 commit 57b9e601a97fac3a044ec5d7e5f11b6219c892b7
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Jul 5 14:30:33 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     init.d/local: bring functioning more in line with how sysctl works
     
@@ -788,7 +837,7 @@ Date:   Sat Jul 5 14:30:33 2014 -0500
 
 commit c1de8c09bf4895c6108d297fcebd63046e49e614
 Author: Thomas D <whissi@whissi.de>
-Date:   Tue Jun 10 15:23:17 2014 +0200
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Add support for verbose "local" service runscript
     
@@ -825,7 +874,7 @@ Date:   Tue Jun 10 15:23:17 2014 +0200
 
 commit 143f1c64c13e4930e3880a393b7253d6fbc0ed58
 Author: Kaarle Ritvanen <kaarle.ritvanen@datakunkku.fi>
-Date:   Wed Jul 2 11:45:14 2014 +0300
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     sysctl.Linux.in: remove -lxc from keywords
     
@@ -836,13 +885,13 @@ Date:   Wed Jul 2 11:45:14 2014 +0300
 
 commit b4b34d909c36898095a0036f90a328838137e3a4
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Tue Jul 1 07:14:31 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Schedule removal of the opts variable from service scripts
 
 commit 56112a6f1f176696e5f39a86fe4b52017ccdd04c
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Jun 30 20:30:39 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     sysfs: Do not mount openrc cgroup if it is already mounted
     
@@ -852,7 +901,7 @@ Date:   Mon Jun 30 20:30:39 2014 -0500
 
 commit 09d81e86f210acf5270ea4bd0fa7319a49f88131
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Mon Jun 23 20:26:18 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Make history a separate document
     
@@ -865,7 +914,7 @@ Date:   Mon Jun 23 20:26:18 2014 -0500
 
 commit 23cb55d843b165d5508f330287ed329358fc85dc
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sat Jun 21 01:53:17 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     man/start-stop-daemon.8: correct argument from --nice to --nicelevel
     
@@ -874,7 +923,7 @@ Date:   Sat Jun 21 01:53:17 2014 -0500
 
 commit 094bc17cb0ad75da189ebf1a8242a378928a1eef
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Jun 20 19:39:07 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles.sh: fix comment processing
     
@@ -887,7 +936,7 @@ Date:   Fri Jun 20 19:39:07 2014 -0500
 
 commit 6126700a0723efa4ef1e299da0f58498f742c3a1
 Author: Sven Vermeulen <sven.vermeulen@siphos.be>
-Date:   Sat Apr 19 21:18:18 2014 +0200
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     SELinux filesystem is at /sys/fs/selinux
     
@@ -901,7 +950,7 @@ Date:   Sat Apr 19 21:18:18 2014 +0200
 
 commit 19cccb2e9416311b85fcad3c15d4d988fed2f954
 Author: Robin H. Johnson <robbat2@gentoo.org>
-Date:   Sun May 25 23:51:37 2014 -0700
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     sh/tmpfiles.sh: license under 2-clause BSD
     
@@ -912,7 +961,7 @@ Date:   Sun May 25 23:51:37 2014 -0700
 
 commit 9eb9b28d3e3b6725559fb38101ae869c1e4530ce
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Jun 20 16:01:47 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     librc: filter out container processes on OpenVZ host
     
@@ -935,13 +984,13 @@ Date:   Fri Jun 20 16:01:47 2014 -0500
 
 commit a817915632f7f2162e7c3740d204989f6cfde554
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Wed Apr 9 19:27:12 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     README.busybox: document incompatibility with built-in ip applet
 
 commit 20d7b83150b18b0eca550d9bb2e1d5fb0acbbd89
 Author: Andrew Gregory <andrew.gregory.8@gmail.com>
-Date:   Wed Mar 26 12:14:08 2014 -0400
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles.dev: remove --remove option
     
@@ -951,7 +1000,7 @@ Date:   Wed Mar 26 12:14:08 2014 -0400
 
 commit 686ee62a79e12ad73581ef4e151baad21b624935
 Author: Andrew Gregory <andrew.gregory.8@gmail.com>
-Date:   Wed Mar 26 12:13:20 2014 -0400
+Commit: Andrew Gregory <andrew.gregory.8@gmail.com>
 
     tmpfiles: add support for --boot option
     
@@ -963,7 +1012,7 @@ Date:   Wed Mar 26 12:13:20 2014 -0400
 
 commit c081633762dc66235fe385eedcc2cdf6bff83391
 Author: Andrew Gregory <andrew.gregory.8@gmail.com>
-Date:   Thu Mar 27 11:02:47 2014 -0400
+Commit: Andrew Gregory <andrew.gregory.8@gmail.com>
 
     tmpfiles: ignore all files starting with systemd-
     
@@ -973,18 +1022,18 @@ Date:   Thu Mar 27 11:02:47 2014 -0400
 
 commit e0e1f2a4da376d9d05487ec23922c1ca356cbbc6
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Fri Mar 14 22:18:25 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     rc.conf: typo fix
 
 commit 7fb209a6fc3512d3437bbb175853f1f01393b74d
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Thu Mar 13 15:27:40 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     conf.d/hwclock: typo fix
 
 commit d0186d422c3bb75ac2977dfe7d1f8f97c3ce5c3b
 Author: William Hubbs <w.d.hubbs@gmail.com>
-Date:   Sun Mar 9 15:35:41 2014 -0500
+Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     rc.conf: document rc_nocolor setting
