@@ -17,7 +17,7 @@ SNAPDIR=	${DISTPREFIX}-${SNAP}
 SNAPFILE=	${SNAPDIR}.tar.bz2
 
 changelog:
-	git log ${CHANGELOG_LIMIT} --format=medium > ChangeLog
+	git log ${CHANGELOG_LIMIT} --format=full > ChangeLog
 
 dist:
 	git archive --prefix=${DISTPREFIX}/ ${GITREF} | bzip2 > ${DISTFILE}
