@@ -68,7 +68,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	int u;
 
 	memset(&st, 0, sizeof(st));
-	if (stat(path, &st) || trunc) {
+	if (lstat(path, &st) || trunc) {
 		if (type == inode_file) {
 			einfo("%s: creating file", path);
 			if (!mode) /* 664 */
@@ -133,8 +133,12 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	}
 
 	if (mode && (st.st_mode & 0777) != mode) {
-		if ((type != inode_dir) && (st.st_nlink != 1)) {
+		if ((type != inode_dir) && (st.st_nlink > 1)) {
 			eerror("%s: chmod: %s %s", applet, "Too many hard links to", path);
+			return -1;
+		}
+		if (S_ISLNK(st.st_mode)) {
+			eerror("%s: chmod: %s %s", applet, path, " is a symbolic link");
 			return -1;
 		}
 		einfo("%s: correcting mode", path);
@@ -145,8 +149,12 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	}
 
 	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
-		if ((type != inode_dir) && (st.st_nlink != 1)) {
+		if ((type != inode_dir) && (st.st_nlink > 1)) {
 			eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
+			return -1;
+		}
+		if (S_ISLNK(st.st_mode)) {
+			eerror("%s: chown: %s %s", applet, path, " is a symbolic link");
 			return -1;
 		}
 		einfo("%s: correcting owner", path);
