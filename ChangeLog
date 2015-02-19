@@ -1,3 +1,28 @@
+commit 90ecf23310111d06086454f9ee709bdafb257056
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    checkpath: do not chown or chmod symbolic links
+    
+    This is another security fix. If you use chown() or chmod() on a
+    symbolic link, it affects the referenced file, not the symbolic link
+    itself.
+    
+    X-Gentoo-Bug: 540006
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=540006
+
+commit 55a3746d80c77e1ba3fd0d55151a4adffea85db8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    increment version
+
+commit 8f7351cf7f31cbf005d2dd32a280d0bb0dcea5d1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 52220d5df177353b222c16bd941261501fce9ddb
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
