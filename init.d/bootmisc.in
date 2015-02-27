@@ -119,11 +119,32 @@ clean_run()
 {
 	[ "$RC_SYS" = VSERVER -o "$RC_SYS" = LXC ] && return 0
 	local dir
+	# If / is still read-only due to a problem, this will fail!
+	if ! checkpath -W /; then
+		eerror "/ is not writable; unable to clean up underlying /run"
+		return 1
+	fi
+	if ! checkpath -W /tmp; then
+		eerror "/tmp is not writable; unable to clean up underlying /run"
+		return 1
+	fi
+	# Now we know that we can modify /tmp and /
+	# if mktemp -d fails, it returns an EMPTY string
+	# STDERR: mktemp: failed to create directory via template ‘/tmp/tmp.XXXXXXXXXX’: Read-only file system
+	# STDOUT: ''
+	rc=0
 	dir=$(mktemp -d)
-	mount --bind / $dir
-	rm -rf $dir/run/*
-	umount $dir
-	rm -rf $dir
+	if [ -n "$dir" -a -d $dir -a -w $dir ]; then
+		mount --bind / $dir && rm -rf $dir/run/* || rc=1
+		umount $dir
+		rm -rf $dir
+	else
+		rc=1
+	fi
+	if [ $rc -ne 0 ]; then
+		eerror "Could not clean up underlying /run on /"
+		return 1
+	fi
 }
 
 start()
