@@ -23,7 +23,7 @@ start()
 		# Don't quote ${dump_device}, so that if it's unset,
 		# savecore will check on the partitions listed in fstab
 		# without errors in the output
-		savecore -C "$dump_dir" $dump_device >/dev/null
+		savecore -C $dump_device >/dev/null
 	else
 		ls "$dump_dir"/bsd* > /dev/null 2>&1
 	fi
