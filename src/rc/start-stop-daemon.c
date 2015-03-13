@@ -919,10 +919,13 @@ start_stop_daemon(int argc, char **argv)
 			exec = name;
 		if (name && start)
 			*argv = name;
-	} else if (name)
+	} else if (name) {
 		*--argv = name;
-	else if (exec)
+		++argc;
+    } else if (exec) {
 		*--argv = exec;
+		++argc;
+	};
 
 	if (stop || sig != -1) {
 		if (sig == -1)
