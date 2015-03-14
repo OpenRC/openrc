@@ -1,15 +1,18 @@
-# Set to the fully qualified domain name (e.g. "mybox.example.com") of
-# this machine, if it has one, otherwise set to the machine name
-# (e.g. "mybox").
+# Set to the fully qualified domain name (e.g. "mybox.example.com") of this
+# machine, if it has one, otherwise set to the machine name (e.g. "mybox").
+# This hostname will be automatically added to /etc/hosts for the 127.0.0.1 and
+# ::1 addresses.
+
 hostname="localhost"
 
-# Set to the NIS domain name of this machine, if it has one, otherwise
-# leave commented out.
-#nisdomainname="localdomain.com"
+# If your local system has other aliases for your local interfaces, you can
+# add them here. These will also be added to /etc/hosts for 127.0.0.1 and ::1:
+# Add aliases for other hosts to /etc/hosts directly. The networking scripts
+# automatically generate the localhost lines only.
 
-# Set other alias-to-address mappings, if needed, otherwise leave
+#aliases="mybox server1"
+
+# Set to the NIS domain name of this machine, if it has one, otherwise leave
 # commented out.
-#aliases="127.0.0.1	mybox
-#10.0.0.1	mylaptop
-#172.16.0.1	myserver
-#192.168.0.1	myworkstation"
+
+#nisdomainname="localdomain.com"
