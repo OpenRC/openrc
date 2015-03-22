@@ -331,7 +331,6 @@ int main(int argc, char **argv)
 
 exit:
 	free(runlevel);
-#ifdef DEBUG_MEMORY
 	rc_stringlist_free(alist);
 	rc_stringlist_free(needsme);
 	rc_stringlist_free(sservices);
@@ -340,7 +339,6 @@ exit:
 	rc_stringlist_free(types);
 	rc_stringlist_free(levels);
 	rc_deptree_free(deptree);
-#endif
 
 	return retval;
 }

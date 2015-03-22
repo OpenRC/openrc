@@ -177,7 +177,6 @@ free_schedulelist(void)
 	TAILQ_INIT(&schedule);
 }
 
-#ifdef DEBUG_MEMORY
 static void
 cleanup(void)
 {
@@ -185,7 +184,6 @@ cleanup(void)
 	free(nav);
 	free_schedulelist();
 }
-#endif
 
 static int
 parse_signal(const char *sig)
@@ -688,9 +686,7 @@ int main(int argc, char **argv)
 
 	applet = basename_c(argv[0]);
 	TAILQ_INIT(&schedule);
-#ifdef DEBUG_MEMORY
 	atexit(cleanup);
-#endif
 
 	signal_setup(SIGINT, handle_signal);
 	signal_setup(SIGQUIT, handle_signal);

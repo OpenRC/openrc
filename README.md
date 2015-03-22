@@ -43,9 +43,6 @@ We don't support building a static OpenRC with PAM.
 
 You may need to use `PROGLDFLAGS=-Wl,-Bstatic` on glibc instead of just `-static`.
 
-If you debug memory under valgrind, add `-DDEBUG_MEMORY`
-to your `CPPFLAGS` so that all malloc memory should be freed at exit.
-
 If you are building OpenRC for a Gentoo Prefix installation, add `MKPREFIX=yes`.
 
 `PKG_PREFIX` should be set to where packages install to by default.

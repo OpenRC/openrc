@@ -247,7 +247,6 @@ cleanup(void)
 
 	rc_plugin_unload();
 
-#ifdef DEBUG_MEMORY
 	rc_stringlist_free(deptypes_b);
 	rc_stringlist_free(deptypes_n);
 	rc_stringlist_free(deptypes_nw);
@@ -267,7 +266,6 @@ cleanup(void)
 	free(service);
 	free(prefix);
 	free(runlevel);
-#endif
 }
 
 /* Buffer and lock all output messages so that we get readable content */
@@ -1097,9 +1095,7 @@ service_plugable(void)
 			break;
 		}
 	}
-#ifdef DEBUG_MEMORY
 	free(list);
-#endif
 	return allow;
 }
 
