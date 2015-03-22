@@ -110,11 +110,9 @@ env_filter(void)
 			setenv(env->value, e + 1, 1);
 	}
 
-#ifdef DEBUG_MEMORY
 	rc_stringlist_free(env_list);
 	rc_stringlist_free(env_allow);
 	rc_stringlist_free(profile);
-#endif
 }
 
 void

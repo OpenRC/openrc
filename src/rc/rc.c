@@ -86,6 +86,12 @@ const char *usagestring = ""					\
 #define DEVBOOT			"/dev/.rcboot"
 
 const char *applet = NULL;
+static RC_STRINGLIST *hotplugged_services;
+static RC_STRINGLIST *stop_services;
+static RC_STRINGLIST *start_services;
+static RC_STRINGLIST *types_nw;
+static RC_STRINGLIST *types_nwua;
+static RC_DEPTREE *deptree;
 static char *runlevel;
 static RC_HOOK hook_out;
 
@@ -127,10 +133,8 @@ clean_failed(void)
 static void
 cleanup(void)
 {
-#ifdef DEBUG_MEMORY
 	RC_PID *p1 = LIST_FIRST(&service_pids);
 	RC_PID *p2;
-#endif
 
 	if (!rc_in_logger && !rc_in_plugin &&
 	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
@@ -152,7 +156,6 @@ cleanup(void)
 		rc_logger_close();
 	}
 
-#ifdef DEBUG_MEMORY
 	while (p1) {
 		p2 = LIST_NEXT(p1, entries);
 		free(p1);
@@ -166,7 +169,6 @@ cleanup(void)
 	rc_stringlist_free(types_nwua);
 	rc_deptree_free(deptree);
 	free(runlevel);
-#endif
 }
 
 static char
@@ -735,12 +737,6 @@ int main(int argc, char **argv)
 	const char *bootlevel = NULL;
 	char *newlevel = NULL;
 	const char *systype = NULL;
-	static RC_STRINGLIST *hotplugged_services;
-	static RC_STRINGLIST *stop_services;
-	static RC_STRINGLIST *start_services;
-	static RC_STRINGLIST *types_nw;
-	static RC_STRINGLIST *types_nwua;
-	static RC_DEPTREE *deptree;
 	RC_STRINGLIST *deporder = NULL;
 	RC_STRINGLIST *tmplist;
 	RC_STRING *service;

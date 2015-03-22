@@ -76,9 +76,7 @@ int main(int argc, char **argv)
 		case 'e':
 			service = rc_service_resolve(optarg);
 			opt = service ? EXIT_SUCCESS : EXIT_FAILURE;
-#ifdef DEBUG_MEMORY
 			free(service);
-#endif
 			return opt;
 			/* NOTREACHED */
 		case 'i':
@@ -97,9 +95,7 @@ int main(int argc, char **argv)
 			rc_stringlist_sort(&list);
 			TAILQ_FOREACH(s, list, entries)
 			    printf("%s\n", s->value);
-#ifdef DEBUG_MEMORY
 			rc_stringlist_free(list);
-#endif
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
 		case 'r':
@@ -107,9 +103,7 @@ int main(int argc, char **argv)
 			if (service == NULL)
 				return EXIT_FAILURE;
 			printf("%s\n", service);
-#ifdef DEBUG_MEMORY
 			free(service);
-#endif
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
 

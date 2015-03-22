@@ -404,6 +404,12 @@ librc_hidden_def(rc_config_value)
  * each rc_conf_value call */
 static RC_STRINGLIST *rc_conf = NULL;
 
+static void
+_free_rc_conf(void)
+{
+	rc_stringlist_free(rc_conf);
+}
+
 char *
 rc_conf_value(const char *setting)
 {
@@ -413,17 +419,13 @@ rc_conf_value(const char *setting)
 
 	if (! rc_conf) {
 		rc_conf = rc_config_load(RC_CONF);
-#ifdef DEBUG_MEMORY
 		atexit(_free_rc_conf);
-#endif
 
 		/* Support old configs. */
 		if (exists(RC_CONF_OLD)) {
 			old = rc_config_load(RC_CONF_OLD);
 			TAILQ_CONCAT(rc_conf, old, entries);
-#ifdef DEBUG_MEMORY
 			free(old);
-#endif
 		}
 
 		rc_conf = rc_config_directory(rc_conf);
@@ -443,11 +445,3 @@ rc_conf_value(const char *setting)
 	return rc_config_value(rc_conf, setting);
 }
 librc_hidden_def(rc_conf_value)
-
-#ifdef DEBUG_MEMORY
-static void
-_free_rc_conf(void)
-{
-	rc_stringlist_free(rc_conf);
-}
-#endif
