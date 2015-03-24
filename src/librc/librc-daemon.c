@@ -510,6 +510,8 @@ rc_service_daemons_crashed(const char *service)
 	RC_STRINGLIST *list = NULL;
 	RC_STRING *s;
 	size_t i;
+	char *ch_root;
+	char *spidfile;
 
 	path += snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
 	    basename_c(service));
@@ -554,8 +556,8 @@ rc_service_daemons_crashed(const char *service)
 		}
 		fclose(fp);
 
-		char *ch_root = rc_service_value_get(basename_c(service), "chroot");
-		char *spidfile = pidfile;
+		ch_root = rc_service_value_get(basename_c(service), "chroot");
+		spidfile = pidfile;
 		if (ch_root && pidfile) {
 			spidfile = xmalloc(strlen(ch_root) + strlen(pidfile) + 1);
 			strcpy(spidfile, ch_root);
