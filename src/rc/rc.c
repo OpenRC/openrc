@@ -519,7 +519,7 @@ runlevel_config(const char *service, const char *level)
 }
 
 static void
-do_stop_services(const RC_STRINGLIST *types_n, const RC_STRINGLIST *start_services,
+do_stop_services(RC_STRINGLIST *types_n, RC_STRINGLIST *start_services,
 				 const RC_STRINGLIST *stop_services, const RC_DEPTREE *deptree,
 				 const char *newlevel, bool parallel, bool going_down)
 {
