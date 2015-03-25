@@ -45,10 +45,7 @@
 #include "builtins.h"
 #include "einfo.h"
 #include "rc-misc.h"
-
-#ifdef HAVE_SELINUX
 #include "rc-selinux.h"
-#endif
 
 typedef enum {
 	inode_unknown = 0,
@@ -164,8 +161,10 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 		}
 	}
 
+#ifdef HAVE_SELINUX
 	if (selinux_on)
 		selinux_util_label(path);
+#endif
 
 	return 0;
 }
@@ -294,10 +293,8 @@ int checkpath(int argc, char **argv)
 	if (gr)
 		gid = gr->gr_gid;
 
-#ifdef HAVE_SELINUX
 	if (selinux_util_open() == 1)
 		selinux_on = true;
-#endif
 
 	while (optind < argc) {
 		if (writable)
@@ -307,10 +304,8 @@ int checkpath(int argc, char **argv)
 		optind++;
 	}
 
-#ifdef HAVE_SELINUX
 	if (selinux_on)
 		selinux_util_close();
-#endif
 
 	return retval;
 }

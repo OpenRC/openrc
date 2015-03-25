@@ -66,10 +66,7 @@
 #include "rc.h"
 #include "rc-misc.h"
 #include "rc-plugin.h"
-
-#ifdef HAVE_SELINUX
 #include "rc-selinux.h"
-#endif
 
 #define PREFIX_LOCK	RC_SVCDIR "/prefix.lock"
 
@@ -1191,10 +1188,8 @@ openrc_run(int argc, char **argv)
 		eprefix(prefix);
 	}
 
-#ifdef HAVE_SELINUX
 	/* Ok, we are ready to go, so setup selinux if applicable */
 	selinux_setup(argv);
-#endif
 
 	deps = true;
 
