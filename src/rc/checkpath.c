@@ -164,10 +164,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 		}
 	}
 
-#ifdef HAVE_SELINUX
 	if (selinux_on)
 		selinux_util_label(path);
-#endif
 
 	return 0;
 }
