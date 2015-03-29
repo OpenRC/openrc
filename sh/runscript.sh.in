@@ -189,10 +189,6 @@ status()
 }
 
 yesno $RC_DEBUG && set -x
-if yesno "${rc_verbose:-$RC_VERBOSE}"; then
-	EINFO_VERBOSE=yes
-	export EINFO_VERBOSE
-fi
 
 _conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
@@ -212,6 +208,12 @@ unset _conf_d
 
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"
+
+# Set verbose mode
+if yesno "${rc_verbose:-$RC_VERBOSE}"; then
+	EINFO_VERBOSE=yes
+	export EINFO_VERBOSE
+fi
 
 for _cmd; do
 	if [ "$_cmd" != status -a "$_cmd" != describe ]; then
