@@ -1,8 +1,13 @@
 include ../mk/net.mk
 
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname localmount netmount urandom tmpfiles \
+CONF=	bootmisc fsck hostname localmount netmount tmpfiles \
 		${CONF-${OS}}
+		
+# If we're not QNX, include these
+ifneq (${OS},QNX)
+CONF+=urandom
+endif		
 
 ifeq (${MKNET},yes)
 CONF+= network staticroute
@@ -18,6 +23,8 @@ CONF-FreeBSD=	ipfw moused powerd rarpd savecore syscons
 CONF-Linux=	consolefont devfs dmesg hwclock keymaps killprocs modules
 
 CONF-NetBSD=	moused rarpd savecore
+
+CONF-QNX=dumper io-pkt
 
 include ${MK}/scripts.mk
 

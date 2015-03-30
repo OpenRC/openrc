@@ -1,0 +1,33 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2014-15 Will Miles, Sander Geophysics Ltd. <wmiles@sgl.com>
+# Released under the 2-clause BSD license.
+
+command=/usr/sbin/random
+command_args=${random_args:-"-t"}
+description="Secure random number generator"
+name=random
+
+depend()
+{
+    keyword -stop
+}    
+
+start()
+{
+    # Don't start the program if it's already running; just take it over
+    if [ -c /dev/random ] ; then        
+        einfo "Skipping $name: started by initrd"
+    else
+        ebegin "Starting $name"
+        $command $command_args
+        eend
+    fi
+}
+
+stop()
+{
+    # Explicitly do not check for argument match
+    ebegin "Stopping $name"
+    start-stop-daemon -K -n $command
+    eend
+}

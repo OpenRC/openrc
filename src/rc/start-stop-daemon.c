@@ -50,6 +50,10 @@
 #include <sys/syscall.h> /* For io priority */
 #endif
 
+#ifdef __QNX__
+#include <pthread.h> /* for priority adjustment */
+#endif
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -1123,10 +1127,25 @@ start_stop_daemon(int argc, char **argv)
 		devnull_fd = open("/dev/null", O_RDWR);
 
 		if (nicelevel) {
+#ifdef __QNX__
+            /* On QNX, 'setpriority' has a completely different 
+             * signature. Instead we use 'pthread_setschedparam'.
+             */
+            int policy;
+            struct sched_param param;            
+            pthread_getschedparam(pthread_self(), &policy, &param);
+            param.sched_priority -= nicelevel;            
+            
+            if (pthread_setschedparam(pthread_self(), policy, &param) == -1)
+				eerrorx("%s: setschedparam %d: %s",
+				    applet, nicelevel,
+				    strerror(errno));                
+#else		    
 			if (setpriority(PRIO_PROCESS, mypid, nicelevel) == -1)
-				eerrorx("%s: setpritory %d: %s",
+				eerrorx("%s: setpriority %d: %s",
 				    applet, nicelevel,
 				    strerror(errno));
+#endif				    			    
 		}
 
 		if (ionicec != -1 &&

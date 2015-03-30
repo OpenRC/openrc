@@ -1,0 +1,13 @@
+# io-pkt - the QNX network stack
+
+# io-pkt comes in three variants: v4, v4-hc, and v6.
+# v4 supports only IPv4, with no encryption or wifi features.
+# v4-hc is a full IPv4 stack with IPSec, Wifi, and such.
+# v6-hc is a full IPv4/IPv6 stack with all of the above features.
+io_pkt_variant=v4-hc
+
+# Other io-pkt command line arguments
+# Protocols, specified with -p, such as autoip, pf-v4, pf-v6, or qnet
+# Drivers, specified with -d
+#io_pkt_args=-de1000
+

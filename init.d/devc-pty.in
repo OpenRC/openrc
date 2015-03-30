@@ -1,0 +1,14 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2014-2015 Will Miles, Sander Geophysics Ltd. <wmiles@sgl.com>
+# Released under the 2-clause BSD license.
+
+command=/sbin/devc-pty
+command_args=${devc_pty_args:-"-n 32"}
+command_background=yes
+pidfile=/run/devc-pty.pid
+description="QNX host service for pseudoterminals"
+
+depend()
+{
+    keyword -stop
+}    

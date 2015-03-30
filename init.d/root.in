@@ -6,7 +6,9 @@ description="Mount the root fs read/write"
 
 depend()
 {
-	need fsck
+    if [ "$RC_UNAME" != QNX ]; then
+	    need fsck
+    fi
 	keyword -jail -openvz -prefix -vserver -lxc
 }
 
@@ -36,6 +38,10 @@ start()
 			fi
 		;;
 	esac
+	
+	if [ ! -s /etc/fstab ] ; then
+	    return 0;   # Nothing to do
+    fi		    	
 
 	ebegin "Remounting filesystems"
 	local mountpoint

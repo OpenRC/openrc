@@ -95,6 +95,20 @@ mkutmp()
 	chmod 0664 "$1"
 }
 
+
+# Some shims for QNX
+if [ "$RC_UNAME" = QNX ]; then
+
+# Logic borrowed from http://stackoverflow.com/a/7400673
+# We don't need to consider non-absolute links
+# and we use $2 to ignore the -f
+readlink() { 
+    echo $(expr "$(command ls -ld -- "$2" 2>/dev/null)" : '.*-> \(.*\)$')
+}
+
+fi
+# END QNX shims
+
 migrate_to_run()
 {
 	src="$1"
@@ -105,13 +119,22 @@ migrate_to_run()
  		rm $src
  	elif [ ! -L $src -a -d $src ]; then
  		ebegin "Migrating $src to $dst"
- 		cp -a $src/* $dst/
+ 		if [ "$RC_UNAME" = QNX ]; then
+ 		    cp -Rp $src/* $dst/
+        else
+            cp -a $src/* $dst/
+        fi
  		rm -rf $src
  		eend $?
  	fi
  	# If $src doesn't exist at all, just run this
  	if [ ! -e $src ]; then
- 		ln -s $dst $src
+ 	    if [ "$RC_UNAME" = QNX ]; then
+ 	        # Fastest symlink in the west
+ 	        ln -sP $dst $src
+ 	    else 	
+ 		    ln -s $dst $src
+        fi
  	fi
 }
 
@@ -162,6 +185,9 @@ start()
 		if [ ! -d /run ]; then
 			extra="/var/run $extra"
 		fi
+	elif [ "$RC_UNAME" = QNX ] ; then
+	    # Nothing to do
+		extra=
 	else
 		extra=/var/run
 	fi
@@ -174,10 +200,10 @@ start()
 		fi
 	done
 
-	if [ "$RC_UNAME" = Linux -a -d /run ]; then
+	if [ "$RC_UNAME" = Linux -o "$RC_UNAME" = QNX -a -d /run ]; then
 		migrate_to_run	/var/lock /run/lock
 		migrate_to_run	/var/run /run
-		clean_run
+		[ "$RC_UNAME" = Linux ] && clean_run
 	fi
 
 	if checkpath -W /var/run; then
@@ -187,6 +213,7 @@ start()
 		for x in "" $xtra; do
 			mkutmp /var/run/utmp$x
 		done
+		[ "$RC_UNAME" = QNX ] && ln -sfP /var/run/utmp /var/log/utmp 
 		[ -e /var/log/wtmp ] || mkutmp /var/log/wtmp
 		eend 0
 
@@ -214,7 +241,7 @@ start()
 	if yesno $log_dmesg; then
 		if $logw || checkpath -W /var/log; then
 			# Create an 'after-boot' dmesg log
-			if [ "$RC_SYS" != VSERVER -a "$RC_SYS" != OPENVZ -a "$RC_SYS" != LXC ]; then
+			if [ "$RC_SYS" != VSERVER -a "$RC_SYS" != OPENVZ -a "$RC_SYS" != LXC -a "$RC_UNAME" != QNX ]; then
 				dmesg > /var/log/dmesg
 				chmod 640 /var/log/dmesg
 			fi

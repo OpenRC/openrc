@@ -1,10 +1,15 @@
 include ../mk/net.mk
 
 DIR=	${INITDIR}
-SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in loopback.in \
-	netmount.in osclock.in root.in savecache.in swap.in swapfiles.in \
-	tmpfiles.setup.in swclock.in sysctl.in urandom.in ${SRCS-${OS}}
+SRCS=	bootmisc.in hostname.in local.in localmount.in loopback.in \
+	osclock.in root.in savecache.in tmpfiles.setup.in swclock.in \
+	sysctl.in ${SRCS-${OS}}
 BIN=	${OBJS}
+
+# If we're not QNX, include these
+ifneq (${OS},QNX)
+SRCS+=fsck.in netmount.in swap.in swapfiles.in urandom.in
+endif
 
 # Are we installing our network scripts?
 ifeq (${MKNET},yes)
@@ -30,6 +35,12 @@ SRCS-NetBSD=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
 		rpcbind.in savecore.in syslogd.in
 # These are NetBSD specific
 SRCS-NetBSD+=	devdb.in swap-blk.in ttys.in wscons.in
+
+# Carried from generic BSD
+SRCS-QNX= rpcbind.in syslogd.in 
+# These are QNX specific
+SRCS-QNX+= devc-pty.in dumper.in io-pkt.in mqueue.in random.in rtc.in \
+		slogger.in slogger2.in
 
 %.in: %${SFX}
 	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@

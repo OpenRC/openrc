@@ -299,6 +299,197 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 }
 librc_hidden_def(rc_find_pids)
 
+#elif defined(__QNX__)
+#include <sys/procfs.h>
+#include <stdint.h>
+
+typedef struct {
+	procfs_debuginfo		info;
+	char					buff[_POSIX_PATH_MAX];
+} procfs_name;
+
+
+/* This logic is derived from QNX's 'pidin arg' call
+   It opens up the process memory and reads the initial stack
+   Unforunately, the original command line is not kept, and processes
+   can write to this space (basename() is an easy example), so it could 
+   potentially be fooled.
+*/ 
+static bool is_argv(int fd, const char* path, const procfs_info* info, const char *const * argv) {
+	char p[PATH_MAX];
+	char *args[32];
+	int	 argc, valid, i;
+	off_t pos;    
+	int	num;
+	
+    
+    /* Read the argc, argv from the process' address space */
+    if (!info->initial_stack) {
+        /* No stack ptr available; just try the path */
+        if (strcmp(*argv,path) != 0) {
+            return false;
+        };
+        ++argv;
+        return (*argv == 0);        
+    };
+    
+	if (lseek64(fd, info->initial_stack, SEEK_SET) == -1) {
+	    /* Couldn't seek to stack */
+		return false;
+	}
+	if ((valid = read(fd, p, sizeof(argc))) < (int)sizeof(argc)) {
+	    /* Couldn't read stack */
+	    return false;
+	}
+	argc = *(int *) p;
+	pos = info->initial_stack + sizeof(argc);
+	
+	while (argc) {
+
+		num = min(argc, 32);
+		if (read(fd, args, num * sizeof args[0]) < num * (int)sizeof args[0]) {
+		    /* Couldn't read argv ptrs from stack */
+			return false;
+		}
+		argc -= num;
+
+		for (i = 0; i < num; i++) {
+			/* don't continue past a null argv[i] pointer */
+			if ( args[i] == 0 ) {
+				return false;
+			}
+
+			if (lseek64(fd, (off64_t)(uintptr_t)args[i], SEEK_SET) == -1) {
+			    /* Couldn't seek to arg */
+			    return false;
+			}
+			
+			if ((valid = read(fd, p, sizeof p - 1)) == -1) {
+				/* Couldn't read arg */
+				return false;
+			}
+			p[valid] = 0;
+			if (strcmp(*argv,p) != 0) { 
+			    return false;
+			};
+			++argv;
+			if (!*argv) return true;
+		}
+		pos += num * sizeof args[0];
+		if (lseek64(fd, pos, SEEK_SET) == -1) {
+			/* couldn't seek to argv stack */
+			return false;
+		}
+	}    
+    return false;  /* ran out of argc before argv */
+};
+
+RC_PIDLIST *
+rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
+{
+	DIR *procdir;
+	struct dirent *entry;
+	pid_t p;
+	char buffer[PATH_MAX];
+	pid_t runscript_pid = 0;
+	char *pp;
+	RC_PIDLIST *pids = NULL;
+	RC_PID *pi;
+	int fd;
+    procfs_name name;
+    procfs_info	info;
+    char exec_basename[PATH_MAX];
+    char* process_basename;
+
+
+	if ((procdir = opendir("/proc")) == NULL)
+		return NULL;
+
+    /* TODO: refactor this with the linux code above */
+	/*
+	  We never match RC_RUNSCRIPT_PID if present so we avoid the below
+	  scenario
+
+	  /etc/init.d/ntpd stop does
+	  start-stop-daemon --stop --name ntpd
+	  catching /etc/init.d/ntpd stop
+
+	  nasty
+	*/
+
+	if ((pp = getenv("RC_RUNSCRIPT_PID"))) {
+		if (sscanf(pp, "%d", &runscript_pid) != 1)
+			runscript_pid = 0;
+	}
+	
+	// We check only the basename of exec
+	if (exec) {
+	    strncpy(exec_basename,exec,sizeof(exec_basename));
+	    exec = basename(exec_basename);
+	};	
+
+	while ((entry = readdir(procdir)) != NULL) {
+		if (sscanf(entry->d_name, "%d", &p) != 1)
+			continue;
+		if (runscript_pid != 0 && runscript_pid == p)
+			continue;
+		if (pid != 0 && pid != p)
+			continue;
+
+        snprintf(buffer, sizeof(buffer), "/proc/%d/as", p);
+        fd=open64(buffer,O_RDONLY);
+        if (fd == -1) {
+            /* Alas */
+            continue;
+        };
+        
+        if (devctl(fd, DCMD_PROC_INFO, &info, sizeof info, 0) != EOK) {
+            /* Process has probably terminated before we got to look at it */
+            close(fd);
+            continue;
+        };
+        			
+		if (uid && (info.uid != uid)) {			
+            close(fd);
+            continue;
+		}
+		
+		if (devctl(fd, DCMD_PROC_MAPDEBUG_BASE, &name, sizeof name, 0) != EOK) {
+		    close(fd);
+		    continue;
+		};
+		
+		// Save the full path
+		buffer[0] = '/';
+		strncpy(buffer+1,name.info.path,sizeof(buffer)-1);
+		process_basename = basename(name.info.path);
+
+		if (exec && (strcmp(exec,process_basename)) != 0) {
+		    close(fd);
+			continue;
+		};
+				
+		if (argv && *argv && !is_argv(fd, buffer, &info, argv)) {
+		    close(fd);
+			continue;
+        };
+        close(fd);
+			
+		if (!pids) {
+			pids = xmalloc(sizeof(*pids));
+			LIST_INIT(pids);
+		}
+		pi = xmalloc(sizeof(*pi));
+		pi->pid = p;
+		LIST_INSERT_HEAD(pids, pi, entries);
+	}
+
+	closedir(procdir);
+	return pids;
+}
+librc_hidden_def(rc_find_pids)
+
+
 #else
 #  error "Platform not supported!"
 #endif

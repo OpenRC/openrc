@@ -6,7 +6,9 @@ description="Mounts disks and swap according to /etc/fstab."
 
 depend()
 {
-	need fsck
+    if [ "$RC_UNAME" != QNX ]; then
+	    need fsck
+    fi
 	use lvm modules mtab
 	after lvm modules
 	keyword -jail -prefix -vserver -lxc
@@ -15,6 +17,10 @@ depend()
 start()
 {
 	# Mount local filesystems in /etc/fstab.
+	if [ ! -s /etc/fstab ] ; then
+	    return 0;   # Nothing to do
+    fi
+		
 	local types="noproc" x= no_netdev=
 	for x in $net_fs_list $extra_net_fs_list; do
 		types="${types},no${x}"
@@ -27,7 +33,12 @@ start()
 		fi
 	fi
 	ebegin "Mounting local filesystems"
-	mount -at "$types" $no_netdev
+	if [ "$RC_UNAME" = QNX ]  ; then
+	    # QNX does not support "notype" style entries; so we just proceed blindly
+        mount -a
+	else
+	    mount -at "$types" $no_netdev
+	fi
 	eend $? "Some local filesystem failed to mount"
 
 	# Always return 0 - some local mounts may not be critical for boot
@@ -55,7 +66,10 @@ stop()
 		if [ -e "$rc_svcdir"/usr_premounted ]; then
 			no_umounts_r="$no_umounts_r|/usr"
 		fi
+	elif [ "$RC_UNAME" = QNX ] ; then
+		no_umounts_r="${no_umounts_r}|/run"
 	fi
+
 	no_umounts_r="^($no_umounts_r)$"
 
 	# Flush all pending disk writes now

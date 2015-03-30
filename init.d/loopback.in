@@ -6,6 +6,9 @@ description="Configures the loopback interface."
 
 depend()
 {
+	if [ "$RC_UNAME" = QNX ]; then
+		need io-pkt
+	fi
 	keyword -jail -prefix -vserver
 }
 

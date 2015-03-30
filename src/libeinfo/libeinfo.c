@@ -142,7 +142,15 @@ static char *up = NULL;
 static char *goto_column = NULL;
 
 static const char *term = NULL;
-static bool term_is_cons25 = false;
+
+static const char *const offbyone_terms[] = {
+    "cons25",
+	"qansi",
+	"qansi-g",
+	"qansi-m",  /* 'mouse', not 'mono' */	
+	"qansi-t",
+	NULL
+};
 
 /* Termcap buffers and pointers
  * Static buffers suck hard, but some termcap implementations require them */
@@ -176,6 +184,10 @@ static const char *const color_terms[] = {
 	"linux-c",
 	"mlterm",
 	"putty",
+	"qansi",
+	"qansi-g",
+	"qansi-m",  /* 'mouse', not 'mono' */	
+	"qansi-t",
 	"rxvt",
 	"rxvt-cygwin",
 	"rxvt-cygwin-native",
@@ -352,6 +364,33 @@ tgoto(const char *cap, int col, int line)
 #endif
 
 static bool
+term_is_offbyone() {
+    static bool term_offbyone = -1;
+    unsigned int i = 0;   
+    
+    if (term_offbyone == 0)
+        return false;
+    if (term_offbyone == 1)
+        return true;
+    
+	if (!term) {
+		term = getenv("TERM");
+		if (!term)
+			return false;
+	}
+	    
+	while (offbyone_terms[i]) {
+		if (strcmp(offbyone_terms[i], term) == 0) {
+			term_offbyone = 1;
+			return true;
+		}
+		i++;
+	}
+    term_offbyone = 0;
+    return false;
+};
+
+static bool
 colour_terminal(FILE * EINFO_RESTRICT f)
 {
 	static int in_colour = -1;
@@ -377,20 +416,20 @@ colour_terminal(FILE * EINFO_RESTRICT f)
 	if (in_colour == 1)
 		return true;
 
-	term_is_cons25 = false;
 	if (!term) {
 		term = getenv("TERM");
 		if (!term)
 			return false;
 	}
-	if (strcmp(term, "cons25") == 0)
-		term_is_cons25 = true;
 
 #ifdef HAVE_TERMCAP
 	/* Check termcap to see if we can do colour or not */
 	if (tgetent(termcapbuf, term) == 1) {
 		bp = tcapbuf;
 		_af = tgetstr("AF", &bp);
+		/* allow non-ansi setf, if setaf isn't in termcap */
+		if (!_af)
+            _af = tgetstr("Sf", &bp);
 		_ce = tgetstr("ce", &bp);
 		_ch = tgetstr("ch", &bp);
 		/* Our ch use also works with RI .... for now */
@@ -403,7 +442,7 @@ colour_terminal(FILE * EINFO_RESTRICT f)
 
 	/* Cheat here as vanilla BSD has the whole termcap info in /usr
 	 * which is not available to us when we boot */
-	if (term_is_cons25 || strcmp(term, "wsvt25") == 0) {
+	if (strcmp(term,"cons25") || strcmp(term, "wsvt25") == 0) {
 #else
 		if (strstr(term, "color"))
 			in_colour = 1;
@@ -806,16 +845,9 @@ _eend(FILE * EINFO_RESTRICT fp, int col, ECOLOR color, const char *msg)
 
 	cols = get_term_columns(fp) - (strlen(msg) + 5);
 
-	/* cons25 is special - we need to remove one char, otherwise things
+	/* some terminals are special - we need to remove one char, otherwise things
 	 * do not align properly at all. */
-	if (!term) {
-		term = getenv("TERM");
-		if (term && strcmp(term, "cons25") == 0)
-			term_is_cons25 = true;
-		else
-			term_is_cons25 = false;
-	}
-	if (term_is_cons25)
+	if (term_is_offbyone())
 		cols--;
 
 	if (cols > 0 && colour_terminal(fp)) {

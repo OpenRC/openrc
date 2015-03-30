@@ -1,0 +1,20 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2014-2015 Will Miles, Sander Geophysics Ltd. <wmiles@sgl.com>
+# Released under the 2-clause BSD license.
+
+command=/usr/sbin/dumper
+command_args="${dumper_args} -d $dump_dir"
+description="Core file creation service"
+name=dumper
+
+depend()
+{
+    need root
+}    
+
+start() {
+    checkpath -d $dump_dir -q
+    ebegin "Starting $name"
+    $command $command_args
+    eend
+}
