@@ -15,24 +15,13 @@ start()
 {
 	# Setup Kernel Support for miscellaneous Binary Formats
 	if [ -d /proc/sys/fs/binfmt_misc -a ! -e /proc/sys/fs/binfmt_misc/register ]; then
+		modprobe -q binfmt-misc
 		if grep -qs binfmt_misc /proc/filesystems; then
 			ebegin "Mounting misc binary format filesystem"
 			mount -t binfmt_misc -o nodev,noexec,nosuid \
 				binfmt_misc /proc/sys/fs/binfmt_misc
-			if eend $? ; then
-				local fmts
-				ebegin "Loading custom binary format handlers"
-				fmts=$(grep -hsv -e '^[#;]' -e '^[[:space:]]*$' \
-					/run/binfmt.d/*.conf \
-					/etc/binfmt.d/*.conf \
-					""/usr/lib/binfmt.d/*.conf)
-				if [ -n "${fmts}" ]; then
-					echo "${fmts}" > /proc/sys/fs/binfmt_misc/register
-				fi
 				eend $?
-			fi
 		fi
 	fi
-
 	return 0
 }

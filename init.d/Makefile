@@ -21,7 +21,7 @@ SRCS-FreeBSD=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
 SRCS-FreeBSD+=	adjkerntz.in devd.in dumpon.in encswap.in ipfw.in \
 		mixer.in nscd.in powerd.in syscons.in
 
-SRCS-Linux=	devfs.in dmesg.in hwclock.in consolefont.in keymaps.in \
+SRCS-Linux=	binfmt.in devfs.in dmesg.in hwclock.in consolefont.in keymaps.in \
 		killprocs.in modules.in mount-ro.in mtab.in numlock.in \
 		procfs.in sysfs.in termencoding.in tmpfiles.dev.in
 

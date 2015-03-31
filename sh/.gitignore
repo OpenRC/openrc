@@ -8,3 +8,4 @@ init-early.sh
 rc-cgroup.sh
 tmpfiles.sh
 migrate-to-run.sh
+binfmt.sh

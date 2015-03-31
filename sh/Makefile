@@ -12,9 +12,9 @@ include ${MK}/os.mk
 SRCS-FreeBSD=
 BIN-FreeBSD=
 
-SRCS-Linux=	cgroup-release-agent.sh.in init-early.sh.in migrate-to-run.sh.in \
-	rc-cgroup.sh.in
-BIN-Linux=	cgroup-release-agent.sh init-early.sh migrate-to-run.sh \
+SRCS-Linux=	binfmt.sh.in cgroup-release-agent.sh.in init-early.sh.in \
+	migrate-to-run.sh.in rc-cgroup.sh.in
+BIN-Linux=	binfmt.sh cgroup-release-agent.sh init-early.sh migrate-to-run.sh \
 	rc-cgroup.sh
 
 SRCS-NetBSD=

@@ -1,0 +1,20 @@
+#!@SBINDIR@/openrc-run
+# Copyright 2015 William Hubbs <w.d.hubbs@gmail.com>
+# Released under the 2-clause BSD license.
+
+description="Register misc binary format handlers"
+
+depend()
+{
+	after procfs
+	use modules devfs
+	keyword -openvz -prefix -vserver -lxc
+}
+
+start()
+{
+	ebegin "Loading custom binary format handlers"
+	"$RC_LIBEXECDIR"/sh/binfmt.sh
+	eend $?
+return 0
+}
