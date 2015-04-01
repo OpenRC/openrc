@@ -245,7 +245,7 @@ PREFIX=
 FILE=
 fragments=
 # XXX: The harcoding of /usr/lib/ is an explicit choice by upstream
-tmpfiles_dirs='/usr/lib/tmpfiles.d/ /etc/tmpfiles.d/ /run/tmpfiles.d/'
+tmpfiles_dirs='/usr/lib/tmpfiles.d/ /run/tmpfiles.d/ /etc/tmpfiles.d/'
 tmpfiles_basenames=''
 tmpfiles_d=''
 # Build a list of sorted unique basenames
