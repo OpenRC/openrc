@@ -20,7 +20,7 @@ start()
 	for file in @SYSCONFDIR@/local.d/*.start; do
 		if [ -x "${file}" ]; then
 			vebegin "Executing \"${file}\""
-			"${file}" $redirect
+			eval "${file}" $redirect
 			retval=$?
 			if [ ${retval} -ne 0 ]; then
 				has_errors=1
@@ -59,7 +59,7 @@ stop()
 	for file in @SYSCONFDIR@/local.d/*.stop; do
 		if [ -x "${file}" ]; then
 			vebegin "Executing \"${file}\""
-			"${file}" $redirect
+			eval "${file}" $redirect
 			retval=$?
 			if [ ${retval} -ne 0 ]; then
 				has_errors=1
