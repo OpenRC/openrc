@@ -82,6 +82,15 @@ mount_misc()
 		fi
 	fi
 
+	# Setup Kernel Support for SELinux
+	if [ -d /sys/fs/selinux ] && ! mountinfo -q /sys/fs/selinux; then
+		if grep -qs selinuxfs /proc/filesystems; then
+			ebegin "Mounting SELinux filesystem"
+			mount -t selinuxfs selinuxfs /sys/fs/selinux
+			eend $?
+		fi
+	fi
+
 	# setup up kernel support for efivarfs
 	# slightly complicated, as if it's build as a module but NOT yet loaded,
 	# it will NOT appear in /proc/filesystems yet
