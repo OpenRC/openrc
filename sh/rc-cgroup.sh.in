@@ -1,6 +1,7 @@
 #!@SHELL@
 # Copyright (c) 2012 Alexander Vershilov <qnikst@gentoo.org>
 # Released under the 2-clause BSD license.
+
 extra_stopped_commands="${extra_stopped_commands} cgroup_cleanup"
 description_cgroup_cleanup="Kill all processes in the cgroup"
 
@@ -47,7 +48,7 @@ cgroup_set_values()
 			$controller.*)
 				if [ -n "$name" -a -f "$cgroup/$name" -a -n "$val" ]; then
 					veinfo "$RC_SVCNAME: Setting $cgroup/$name to $val"
-					echo $val > "$cgroup/$name"
+					printf "%s" "$val" > "$cgroup/$name"
 				fi
 				name=$1
 				val=
@@ -60,12 +61,12 @@ cgroup_set_values()
 	done
 	if [ -n "$name" -a -f "$cgroup/$name" -a -n "$val" ]; then
 		veinfo "$RC_SVCNAME: Setting $cgroup/$name to $val"
-		echo $val > "$cgroup/$name"
+		printf "%s" "$val" > "$cgroup/$name"
 	fi
 
 	if [ -f "$cgroup/tasks" ]; then
 		veinfo "$RC_SVCNAME: adding to $cgroup/tasks"
-		echo 0 > "$cgroup/tasks"
+		printf "%d" 0 > "$cgroup/tasks"
 	fi
 
 	return 0
@@ -78,14 +79,14 @@ cgroup_add_service()
     # cgroups. But may lead to a problems where that inheriting
     # is needed.
 	for d in /sys/fs/cgroup/* ; do
-		[ -f "${d}"/tasks ] && echo 0 > "${d}"/tasks
+		[ -f "${d}"/tasks ] && printf "%d" 0 > "${d}"/tasks
 	done
 
 	openrc_cgroup=/sys/fs/cgroup/openrc
 	if [ -d "$openrc_cgroup" ]; then
 		cgroup="$openrc_cgroup/$RC_SVCNAME"
 		mkdir -p "$cgroup"
-		[ -f "$cgroup/tasks" ] && echo 0 > "$cgroup/tasks"
+		[ -f "$cgroup/tasks" ] && printf "%d" 0 > "$cgroup/tasks"
 	fi
 }
 
