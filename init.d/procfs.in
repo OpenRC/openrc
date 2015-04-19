@@ -18,8 +18,6 @@ start()
 		modprobe -q usbcore
 	fi
 
-	[ -e /proc/filesystems ] || return 0
-
 	# Setup Kernel Support for miscellaneous Binary Formats
 	if [ -d /proc/sys/fs/binfmt_misc -a ! -e /proc/sys/fs/binfmt_misc/register ]; then
 		if grep -qs binfmt_misc /proc/filesystems; then
