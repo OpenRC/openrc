@@ -25,12 +25,12 @@ start()
 	local rc=
 	if [ ! -d "$RC_LIBEXECDIR"/cache ]; then
 		rm -rf "$RC_LIBEXECDIR"/cache
-		if ! mkdir "$RC_LIBEXECDIR"/cache; then
+		if ! mkdir -p "$RC_LIBEXECDIR"/cache; then
 			rc=$?
 			if yesno "${RC_GOINGDOWN}"; then
 				rc=0
 			fi
-			eend $rc
+			eend $rc "Unable to create $RC_SVCDIR/cache"
 			return $rc
 		fi
 	fi
