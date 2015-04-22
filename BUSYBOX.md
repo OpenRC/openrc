@@ -1,6 +1,4 @@
-Using Busybox as your Default Shell
------------------------------------
-
+# Using Busybox as your Default Shell with OpenRC
 
 If you have/bin/sh linked to busybox, you need to be aware of several
 incompatibilities between busybox's applets and the standalone
@@ -26,6 +24,9 @@ CONFIG_SETFONT -- The setfont applet does not support the -u option from kbd.
 
 CONFIG_IP -- The ip applet  doesn't support the "scope" modifier for
 "ip route add" and "ip address add".
+
+CONFIG_BB_SYSCTL -- The sysctl applet does not support the --system command
+line switch.
 
 There is work to get most of these supported by busybox, so this file
 will be updated as things change.
