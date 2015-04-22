@@ -1,23 +1,23 @@
+# OpenRC Style Guide
+
 This is the openrc style manual.  It governs the coding style of all code
 in this repository.  Follow it.  Contact openrc@gentoo.org for any questions
 or fixes you might notice.
 
-##########
-# C CODE #
-##########
+## C CODE
 
-The BSD Kernel Normal Form (KNF) style is used:
-	http://en.wikipedia.org/wiki/Indent_style#BSD_KNF_style
-Basically, it's like K&R/LKML, but wrapped lines that are indented use 4 spaces.
+The BSD Kernel Normal Form (KNF) style is used [1]. Basically, it is like
+K&R/LKML, but wrapped lines that are indented use 4 spaces. Here are the
+highlights.
 
-Highlights:
-	- no trailing whitespace
-	- indented code use tabs (not line wrapped)
-	- cuddle the braces (except for functions)
-	- space after native statements and before paren (for/if/while/...)
-	- no space between function and paren
-	- pointer asterisk cuddles the variable, not the type
+- no trailing whitespace
+- indented code use tabs (not line wrapped)
+- cuddle the braces (except for functions)
+- space after native statements and before paren (for/if/while/...)
+- no space between function and paren
+- pointer asterisk cuddles the variable, not the type
 
+```
 void foo(int c)
 {
 	int ret = 0;
@@ -32,16 +32,15 @@ void foo(int c)
 
 	return ret;
 }
+```
 
-##################
-# COMMIT MESSAGES #
-##################
+## COMMIT MESSAGES
 
 The following is an example of a correctly formatted git commit message
 for this repository. Most of this information came from this blog post
-[1], so I would like to thank the author.
+[2], so I would like to thank the author.
 
-### cut here ###
+```
 Capitalized, short (50 chars or less) summary
 
 More detailed explanatory text, if necessary.  Wrap it to about 72
@@ -67,7 +66,7 @@ Further paragraphs come after blank lines.
 Reported-by: User Name <email>
 X-[Distro]-Bug: BugID
 X-[Distro]-Bug-URL: URL for the bug (on the distribution's web site typically)
-### cut here ###
+```
 
 If you did not write the code and the patch does not include authorship
 information in a format git can use, please use the --author option of the
@@ -81,5 +80,5 @@ different from the author and committer.
   *BSD. Also, [Distro] should be replaced with the name of the
   distribution, e.g. X-Gentoo-Bug.
 
-[1] http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
-
+[1]	http://en.wikipedia.org/wiki/Indent_style#BSD_KNF_style
+[2] http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
