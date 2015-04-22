@@ -1,9 +1,9 @@
-OpenRC NEWS
+# OpenRC NEWS
 
-This file will contain a list of notable changes for each release.
+This file will contain a list of notable changes for each release. Note
+the information in this file is in reverse order.
 
-OpenRC-0.13.2
-=============
+## OpenRC-0.13.2
 
 A chroot variable has been added to the service script variables.
 This fixes the support for running a service in a chroot.
@@ -12,8 +12,7 @@ This is documented in man 8 openrc-run.
 The netmount service now mounts nfs file systems.
 This change was made to correct a fix for an earlier bug.
 
-OpenRC-0.13
-===========
+## OpenRC-0.13
 
 /sbin/rc was renamed to /sbin/openrc and /sbin/runscript was renamed to
 /sbin/openrc-run due to naming conflicts with other software.
@@ -36,8 +35,7 @@ kernel. If not, it attempts to mount tmpfs.
 If none of these is available, an error message is displayed and static
 /dev is assumed.
 
-OpenRC-0.12
-===========
+## OpenRC-0.12
 
 The net.* scripts, originally from Gentoo Linux, have
 been removed. If you need these scripts, look for a package called
