@@ -18,6 +18,7 @@ make install
 You may wish to configure the installation by passing one or more of the
 below arguments to the make command
 
+```
 PROGLDFLAGS=-static
 LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
@@ -34,6 +35,7 @@ PKG_PREFIX=/usr/pkg
 LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local
 BRANDING=\"Gentoo/$(uname -s)\"
+```
 
 ## Notes
 
@@ -55,10 +57,12 @@ Only set `LOCAL_PREFIX` if different from `PKG_PREFIX`.
 
 If any of the following files exist then we do not overwrite them
 
+```
 /etc/devd.conf
 /etc/rc
 /etc/rc.shutdown
 /etc/conf.d/*
+```
 
 `rc` and `rc.shutdown` are the hooks from the BSD init into OpenRC.
 
@@ -79,7 +83,7 @@ operation of the system.
 ## Reporting Bugs
 
 If you are using Gentoo Linux, bugs can be filed on their bugzilla under
-the "gentoo hosted projects" product and the "openrc" component [1].
+the `gentoo hosted projects` product and the `openrc` component [1].
 Otherwise, you can report issues on our github [2].
 
 Better yet, if you can contribute code, please feel free to submit pull
