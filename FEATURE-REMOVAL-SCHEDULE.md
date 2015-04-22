@@ -1,34 +1,31 @@
+# Features Scheduled for Removal
+
 The following is a list of files and features that are going to be removed in
 the source tree.  Every entry should contain what exactly is going away, why it
 is happening, and who is going to be doing the work.  When the feature is
 removed, it should also be removed from this file.
 
----------------------------
-
-What: Service pause action
+## Service pause action
 
 When: 1.0
 
-Why: ...
+Why: The same affect can be obtained with the --nodeps option to stop.
 
 Who:
 
----------------------------
-
-What: start-stop-daemon options --startas, --chuid , --oknodo
+## start-stop-daemon options --startas, --chuid , --oknodo
 
 When: 1.0
 
 Why: Obsolete or replaced by other options.
-	 --startas => use --name or --exec
-	 --chuid => use --user
-	 --oknodo => ignore return code instead
+
+* --startas => use --name or --exec
+* --chuid => use --user
+* --oknodo => ignore return code instead
 
 Who:
 
----------------------------
-
-What: runscript and rc symbolic links
+## runscript and rc symbolic links
 
 When: 1.0
 
@@ -37,9 +34,7 @@ Why: Deprecated in favor of openrc-run and openrc due to naming
 
 Who:
 
----------------------------
-
-What: support for the opts variable in service scripts
+## support for the opts variable in service scripts
 
 When: 1.0
 
@@ -48,9 +43,7 @@ Why: Depprecated in favor of extra_commands, extra_started_commands
 
 Who:
 
----------------------------
-
-What: support for local_start and local_stop
+## support for local_start and local_stop
 
 When: 1.0
 
@@ -58,9 +51,7 @@ Why: Depprecated in favor of executable scripts in @SYSCONFDIR@/local.d
 
 Who:
 
----------------------------
-
-What: the mtab service script
+## the mtab service script
 
 When: make warnings more visible in 1.0, remove in 2.0
 
@@ -68,5 +59,3 @@ Why: /etc/mtab should be a symbolic link to /proc/self/mounts on modern
 	 Linux systems
 
 Who:
-
----------------------------
