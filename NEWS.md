@@ -3,6 +3,27 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.14
+
+The binfmt service, which registers misc binary formats with the Linux
+kernel, has been separated from the procfs service. This service will be
+automatically added to the sysinit runlevel for new Linux installs. When
+you upgrade, you will need to use rc-update to add it to your sysinit
+runlevel.
+
+The procfs service no longer automounts the deprecated usbfs and
+usbdevfs file systems. Nothing should be using usbdevfs any longer, and
+if you still need usbfs it can be added to fstab.
+
+Related to the above change, the procfs service no longer attempts to
+modprobe the usbcore module. If your device manager does not load it,
+you will need to configure the modules service to do so.
+
+The override order of binfmt.d and tmpfiles.d directories has been
+changed to match systemd. Files in /run/binfmt.d and /run/tmpfiles.d
+override their /usr/lib counterparts, and files in the /etc counterparts
+override both /usr/lib and /run.
+
 ## OpenRC-0.13.2
 
 A chroot variable has been added to the service script variables.
