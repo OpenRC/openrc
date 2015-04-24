@@ -678,6 +678,7 @@ start_stop_daemon(int argc, char **argv)
 	int tid = 0;
 	char *redirect_stderr = NULL;
 	char *redirect_stdout = NULL;
+	int stdin_fd;
 	int stdout_fd;
 	int stderr_fd;
 	pid_t pid, spid;
@@ -1247,6 +1248,7 @@ start_stop_daemon(int argc, char **argv)
 			setenv("PATH", newpath, 1);
 		}
 
+		stdin_fd = devnull_fd;
 		stdout_fd = devnull_fd;
 		stderr_fd = devnull_fd;
 		if (redirect_stdout) {
@@ -1266,7 +1268,8 @@ start_stop_daemon(int argc, char **argv)
 				    applet, redirect_stderr, strerror(errno));
 		}
 
-		/* We don't redirect stdin as some daemons may need it */
+		if (background)
+			dup2(stdin_fd, STDIN_FILENO);
 		if (background || redirect_stdout || rc_yesno(getenv("EINFO_QUIET")))
 			dup2(stdout_fd, STDOUT_FILENO);
 		if (background || redirect_stderr || rc_yesno(getenv("EINFO_QUIET")))
