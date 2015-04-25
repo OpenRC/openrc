@@ -7,8 +7,8 @@ the information in this file is in reverse order.
 
 The binfmt service, which registers misc binary formats with the Linux
 kernel, has been separated from the procfs service. This service will be
-automatically added to the sysinit runlevel for new Linux installs. When
-you upgrade, you will need to use rc-update to add it to your sysinit
+automatically added to the boot runlevel for new Linux installs. When
+you upgrade, you will need to use rc-update to add it to your boot
 runlevel.
 
 The procfs service no longer automounts the deprecated usbfs and
