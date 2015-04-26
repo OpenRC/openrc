@@ -99,7 +99,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	pid_t p;
 	char buffer[PATH_MAX];
 	struct stat sb;
-	pid_t runscript_pid = 0;
+	pid_t openrc_pid = 0;
 	char *pp;
 	RC_PIDLIST *pids = NULL;
 	RC_PID *pi;
@@ -108,7 +108,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		return NULL;
 
 	/*
-	  We never match RC_RUNSCRIPT_PID if present so we avoid the below
+	  We never match RC_OPENRC_PID if present so we avoid the below
 	  scenario
 
 	  /etc/init.d/ntpd stop does
@@ -118,9 +118,9 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	  nasty
 	*/
 
-	if ((pp = getenv("RC_RUNSCRIPT_PID"))) {
-		if (sscanf(pp, "%d", &runscript_pid) != 1)
-			runscript_pid = 0;
+	if ((pp = getenv("RC_OPENRC_PID"))) {
+		if (sscanf(pp, "%d", &openrc_pid) != 1)
+			openrc_pid = 0;
 	}
 
 	/*
@@ -146,7 +146,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	while ((entry = readdir(procdir)) != NULL) {
 		if (sscanf(entry->d_name, "%d", &p) != 1)
 			continue;
-		if (runscript_pid != 0 && runscript_pid == p)
+		if (openrc_pid != 0 && openrc_pid == p)
 			continue;
 		if (pid != 0 && pid != p)
 			continue;

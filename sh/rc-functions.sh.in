@@ -85,7 +85,7 @@ get_bootparam()
 	return 1
 }
 
-# Called from runscript.sh or gendepends.sh
+# Called from openrc-run.sh or gendepends.sh
 _depend() {
 	depend
 	local _rc_svcname=$(shell_var "$RC_SVCNAME") _deptype= _depends=

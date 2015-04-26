@@ -329,7 +329,7 @@ do_mark_service(int argc, char **argv)
 	bool ok = false;
 	char *svcname = getenv("RC_SVCNAME");
 	char *service = NULL;
-	char *runscript_pid;
+	char *openrc_pid;
 	/* char *mtime; */
 	pid_t pid;
 	RC_SERVICE bit;
@@ -350,7 +350,7 @@ do_mark_service(int argc, char **argv)
 		eerrorx("%s: unknown applet", applet);
 
 	/* If we're marking ourselves then we need to inform our parent
-	   runscript process so they do not mark us based on our exit code */
+	   openrc-run process so they do not mark us based on our exit code */
 	/*
 	 * FIXME: svcname and service are almost always equal except called from a
 	 * shell with just argv[1] - So that doesn't seem to do what Roy initially
@@ -359,8 +359,8 @@ do_mark_service(int argc, char **argv)
 	 * openrc@gentoo.org).
 	 */
 	if (ok && svcname && strcmp(svcname, service) == 0) {
-		runscript_pid = getenv("RC_RUNSCRIPT_PID");
-		if (runscript_pid && sscanf(runscript_pid, "%d", &pid) == 1)
+		openrc_pid = getenv("RC_OPENRC_PID");
+		if (openrc_pid && sscanf(openrc_pid, "%d", &pid) == 1)
 			if (kill(pid, SIGHUP) != 0)
 				eerror("%s: failed to signal parent %d: %s",
 				    applet, pid, strerror(errno));
@@ -369,10 +369,10 @@ do_mark_service(int argc, char **argv)
 		   in control as well */
 		/*
 		l = strlen(RC_SVCDIR "/exclusive") + strlen(svcname) +
-		    strlen(runscript_pid) + 4;
+		    strlen(openrc_pid) + 4;
 		mtime = xmalloc(l);
 		snprintf(mtime, l, RC_SVCDIR "/exclusive/%s.%s",
-		    svcname, runscript_pid);
+		    svcname, openrc_pid);
 		if (exists(mtime) && unlink(mtime) != 0)
 			eerror("%s: unlink: %s", applet, strerror(errno));
 		free(mtime);

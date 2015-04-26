@@ -1,5 +1,5 @@
 /*
- * runscript.c
+ * openrc-run.c
  * Handle launching of init scripts.
  */
 
@@ -370,18 +370,18 @@ svc_exec(const char *arg1, const char *arg2)
 			dup2(slave_tty, STDERR_FILENO);
 		}
 
-		if (exists(RC_SVCDIR "/runscript.sh")) {
-			execl(RC_SVCDIR "/runscript.sh",
-			    RC_SVCDIR "/runscript.sh",
+		if (exists(RC_SVCDIR "/openrc-run.sh")) {
+			execl(RC_SVCDIR "/openrc-run.sh",
+			    RC_SVCDIR "/openrc-run.sh",
 			    service, arg1, arg2, (char *) NULL);
-			eerror("%s: exec `" RC_SVCDIR "/runscript.sh': %s",
+			eerror("%s: exec `" RC_SVCDIR "/openrc-run.sh': %s",
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		} else {
-			execl(RC_LIBEXECDIR "/sh/runscript.sh",
-			    RC_LIBEXECDIR "/sh/runscript.sh",
+			execl(RC_LIBEXECDIR "/sh/openrc-run.sh",
+			    RC_LIBEXECDIR "/sh/openrc-run.sh",
 			    service, arg1, arg2, (char *) NULL);
-			eerror("%s: exec `" RC_LIBEXECDIR "/sh/runscript.sh': %s",
+			eerror("%s: exec `" RC_LIBEXECDIR "/sh/openrc-run.sh': %s",
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		}
@@ -1162,6 +1162,11 @@ openrc_run(int argc, char **argv)
 	   subshells the init script may create so that our mark_service_*
 	   functions can always instruct us of this change */
 	snprintf(pidstr, sizeof(pidstr), "%d", (int) getpid());
+	setenv("RC_OPENRC_PID", pidstr, 1);
+	/*
+	 * RC_RUNSCRIPT_PID is deprecated, but we will keep it for a while
+	 * for safety.
+	 */
 	setenv("RC_RUNSCRIPT_PID", pidstr, 1);
 
 	/* eprefix is kinda klunky, but it works for our purposes */

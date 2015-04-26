@@ -1,8 +1,8 @@
 PROG=		openrc
-SRCS=		checkpath.c fstabinfo.c mountinfo.c start-stop-daemon.c \
+SRCS=		checkpath.c fstabinfo.c mountinfo.c openrc-run.c \
 		rc-applets.c rc-depend.c rc-logger.c \
 		rc-misc.c rc-plugin.c rc-service.c rc-status.c rc-update.c \
-		runscript.c rc.c swclock.c
+		rc.c start-stop-daemon.c swclock.c
 
 ifeq (${MKSELINUX},yes)
 SRCS+=		rc-selinux.c

@@ -1,5 +1,5 @@
 #!@SHELL@
-# Shell wrapper for runscript
+# Shell wrapper for openrc-run
 
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.

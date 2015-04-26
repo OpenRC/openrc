@@ -1,4 +1,4 @@
-#!@PREFIX@/sbin/runscript
+#!@PREFIX@/sbin/openrc-run
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 #FIXME: Modify for GNU/Hurd
