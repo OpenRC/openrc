@@ -2,14 +2,15 @@
 # LINUX SPECIFIC OPTIONS
 
 # This is the subsystem type. Valid options on Linux:
-# ""        - nothing special
-# "lxc"     - Linux Containers
-# "openvz"  - Linux OpenVZ
-# "prefix"  - Prefix
-# "uml"     - Usermode Linux
-# "vserver" - Linux vserver
-# "xen0"    - Xen0 Domain
-# "xenU"    - XenU Domain
+# ""               - nothing special
+# "lxc"            - Linux Containers
+# "openvz"         - Linux OpenVZ
+# "prefix"         - Prefix
+# "uml"            - Usermode Linux
+# "vserver"        - Linux vserver
+# "systemd-nspawn" - Container created by the systemd-nspawn utility
+# "xen0"           - Xen0 Domain
+# "xenU"           - XenU Domain
 # If this is commented out, automatic detection will be used.
 #
 # This should be set to the value representing the environment this file is

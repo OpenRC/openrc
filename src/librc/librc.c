@@ -294,6 +294,8 @@ rc_sys_v1(void)
 		return RC_SYS_OPENVZ; /* old test */
 	else if (file_regex("/proc/1/environ", "container=lxc"))
 		return RC_SYS_LXC;
+	else if (file_regex("/proc/1/environ", "container=systemd-nspawn"))
+		return RC_SYS_SYSTEMD_NSPAWN;
 #endif
 
 	return NULL;
