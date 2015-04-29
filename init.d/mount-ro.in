@@ -7,7 +7,7 @@ description="Re-mount filesytems read-only for a clean reboot."
 depend()
 {
 	need killprocs savecache
-	keyword -openvz -prefix -vserver -lxc
+	keyword -openvz -prefix -systemd-nspawn -vserver -lxc
 }
 
 start()

@@ -8,7 +8,7 @@ depend()
 {
 	before *
 	provide clock
-	keyword -openvz -prefix -uml -vserver -xenu -lxc
+	keyword -openvz -prefix -systemd-nspawn -uml -vserver -xenu -lxc
 }
 
 # swclock is an OpenRC built in
