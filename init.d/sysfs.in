@@ -8,7 +8,7 @@ sysfs_opts=nodev,noexec,nosuid
 
 depend()
 {
-	keyword -lxc -prefix -vserver
+	keyword -lxc -prefix -systemd-nspawn -vserver
 }
 
 mount_sys()

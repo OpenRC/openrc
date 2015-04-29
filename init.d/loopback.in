@@ -6,7 +6,7 @@ description="Configures the loopback interface."
 
 depend()
 {
-	keyword -jail -prefix -vserver
+	keyword -jail -prefix -systemd-nspawn -vserver
 }
 
 start()

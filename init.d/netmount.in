@@ -9,7 +9,7 @@ depend()
 	config /etc/fstab
 	use afc-client amd nfsclient autofs openvpn
 	use dns
-	keyword -jail -prefix -vserver -lxc
+	keyword -jail -prefix -systemd-nspawn -vserver -lxc
 }
 
 start()

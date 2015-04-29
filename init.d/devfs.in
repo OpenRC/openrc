@@ -8,7 +8,7 @@ depend()
 {
 	provide dev-mount
 	before dev
-	keyword -prefix -vserver -lxc
+	keyword -prefix -systemd-nspawn -vserver -lxc
 }
 
 mount_dev()

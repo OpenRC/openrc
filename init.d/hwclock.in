@@ -28,7 +28,7 @@ depend()
 	else
 		before *
 	fi
-	keyword -openvz -prefix -uml -vserver -xenu -lxc
+	keyword -openvz -prefix -systemd-nspawn -uml -vserver -xenu -lxc
 }
 
 setupopts()

@@ -8,7 +8,7 @@ depend()
 {
 	after procfs
 	use modules devfs
-	keyword -openvz -prefix -vserver -lxc
+	keyword -openvz -prefix -systemd-nspawn -vserver -lxc
 }
 
 start()
