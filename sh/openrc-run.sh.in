@@ -34,7 +34,10 @@ sourcex()
 
 sourcex "@LIBEXECDIR@/sh/functions.sh"
 sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
-[ "$RC_SYS" != "PREFIX" ] && sourcex -e "@LIBEXECDIR@/sh/rc-cgroup.sh"
+case $RC_SYS in
+	PREFIX|SYSTEMD-NSPAWN) ;;
+	*) sourcex -e "@LIBEXECDIR@/sh/rc-cgroup.sh";;
+esac
 
 # Support LiveCD foo
 if sourcex -e "/sbin/livecd-functions.sh"; then

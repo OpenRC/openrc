@@ -9,7 +9,7 @@ depend()
 	need fsck
 	use lvm modules mtab
 	after lvm modules
-	keyword -jail -prefix -vserver -lxc
+	keyword -jail -prefix -systemd-nspawn -vserver -lxc
 }
 
 start()

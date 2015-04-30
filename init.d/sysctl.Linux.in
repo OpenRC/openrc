@@ -5,7 +5,7 @@
 depend()
 {
 	before bootmisc logger
-	keyword -prefix -vserver
+	keyword -prefix -systemd-nspawn -vserver
 }
 
 start()

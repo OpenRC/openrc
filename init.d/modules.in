@@ -7,7 +7,7 @@ description="Loads a user defined list of kernel modules."
 depend()
 {
 	use isapnp
-	keyword -openvz -prefix -vserver -lxc
+	keyword -openvz -prefix -systemd-nspawn -vserver -lxc
 }
 
 start()
