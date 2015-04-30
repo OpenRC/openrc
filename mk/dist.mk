@@ -2,7 +2,7 @@
 # Copyright (c) 2008 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-GITREF?=	HEAD
+GITREF?=	${VERSION}
 DISTPREFIX?=	${NAME}-${VERSION}
 DISTFILE?=	${DISTPREFIX}.tar.bz2
 
