@@ -34,7 +34,7 @@ snapshot:
 	mkdir /tmp/${SNAPDIR}
 	cp -RPp * /tmp/${SNAPDIR}
 	(cd /tmp/${SNAPDIR}; make clean)
-	find /tmp/${SNAPDIR} -name .svn -exec rm -rf -- {} \; 2>/dev/null || true
+	rm -rf /tmp/${SNAPDIR}/.git 2>/dev/null || true
 	tar -cvjpf ${SNAPFILE} -C /tmp ${SNAPDIR}
 	rm -rf /tmp/${SNAPDIR}
 	ls -l ${SNAPFILE}
