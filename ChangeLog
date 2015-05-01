@@ -1,3 +1,65 @@
+commit 9225bfa6918cfd488c8f1055cf986b542f1f157e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Build: make snapshot remove .git directory from tarball
+
+commit 7bd456ed7bf35da2d7a53650baa33637e178064e
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Disable service scripts for systemd-nspawn
+    
+    This adds the -systemd-nspawn keyword to service scripts which are not
+    intended to run in systemd-nspawn containers.
+    
+    This fixes #52.
+    
+        X-Gentoo-Bug: 548058
+        X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=548058
+
+commit c709e6077c6eda3f4f7e7222298213413254ee0f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add support for systemd-nspawn containers
+    
+    This adds support for running OpenRC in a container created by
+    the systemd-nspawn utility.
+    
+    This fixes #52.
+    
+    X-Gentoo-Bug: 548058
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=548058
+
+commit a27d577da8cf4f1c7f9784a043ecf02d71a81ca6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Build: fix the dist target
+    
+    The dist target now creates an archive based on the version setting.
+    This makes it possible to create an archive identical to the ones github
+    generates once the release is tagged.
+
+commit 8b9349208696e5caed1a8b34f066cec4ee642194
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    convert all references from runscript to openrc-run
+
+commit 4b1b457cd15cc1609c101b99a49a5e4c67b62567
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Start work on 0.15
+
+commit 1d6602bb8e7062323ead03eaa0c4ae307c517b9e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add ChangeLog
+
 commit a6391f44ee6c68d674ae8425983467b971710d5d
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
