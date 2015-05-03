@@ -101,7 +101,9 @@ ls_dir(const char *dir, int options)
 					continue;
 			}
 			if (options & LS_DIR) {
-				if (stat(d->d_name, &buf) == 0 &&
+				snprintf(file, sizeof(file), "%s/%s",
+				    dir, d->d_name);
+				if (stat(file, &buf) != 0 ||
 				    !S_ISDIR(buf.st_mode))
 					continue;
 			}
