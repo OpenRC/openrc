@@ -1,3 +1,34 @@
+commit 1969be04e54ad162329001d4b09ebfcf162a6808
+Author: Jakob Drexel <jake42@rommel.stw.uni-erlangen.de>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: Fix crash if the service name is the same as the including runlevel
+    
+    If a service has the same name as the runlevel it is in, openrc will
+    crash on changing to such runlevel. It goes in a recursive madness and
+    eventually gets a SEGV while in snprintf (don't know why).
+    
+    This fixes two errors:
+    1. ls_dir stats files not with full path -> stat always returns != 0
+    2. ls_dir adds files to list if stat failed
+    
+    This fixes #53.
+    
+    X-Gentoo-Bug: 537304
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=537304
+
+commit ae6039356177a9030adc93b025f487e7a4df05aa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Start work on 0.15.1
+
+commit 60488069c08201cbfbc661a3e7bd1fafa31fceed
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 9225bfa6918cfd488c8f1055cf986b542f1f157e
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
