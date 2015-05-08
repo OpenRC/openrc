@@ -1,7 +1,7 @@
 DIR=	${LIBEXECDIR}/sh
 SRCS=	init.sh.in functions.sh.in gendepends.sh.in \
 	openrc-run.sh.in rc-functions.sh.in tmpfiles.sh.in ${SRCS-${OS}}
-INC=	rc-mount.sh functions.sh rc-functions.sh
+INC=	rc-mount.sh functions.sh rc-functions.sh start-stop-daemon.sh
 BIN=	gendepends.sh init.sh openrc-run.sh tmpfiles.sh ${BIN-${OS}}
 
 INSTALLAFTER=	_installafter
