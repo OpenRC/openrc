@@ -111,12 +111,6 @@
 # file, those characters should be replaced with underscores in the
 # variable names as shown below.
 
-# Set rc_supervisor to use a program to monitor your daemons and restart
-# them when they crash.
-# Leaving this undefined uses start-stop-daemon, which is OpenRC's
-# default.
-#rc_supervisor=""
-
 # Some daemons are started and stopped via start-stop-daemon.
 # We can set some things on a per service basis, like the nicelevel.
 #SSD_NICELEVEL="-19"

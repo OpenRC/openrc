@@ -1,8 +1,8 @@
-# Default start / stop / status functions
+# start / stop / status functions for start-stop-daemon
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-start()
+ssd_start()
 {
 	[ -n "$command" ] || return 0
 
@@ -45,7 +45,7 @@ start()
 	return 1
 }
 
-stop()
+ssd_stop()
 {
 	local startcommand="$(service_get_value "command")"
 	local startpidfile="$(service_get_value "pidfile")"
@@ -65,7 +65,7 @@ stop()
 	eend $? "Failed to stop $RC_SVCNAME"
 }
 
-status()
+ssd_status()
 {
 	_status
 }

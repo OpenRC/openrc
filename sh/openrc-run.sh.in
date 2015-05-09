@@ -125,6 +125,42 @@ _status()
 	fi
 }
 
+# Template start / stop / status functions
+# These functions select the appropriate function to call from the
+# supervisor modules
+start()
+{
+	local func=ssd_start
+	case "$supervisor" in
+		?*)
+			ewarn "Invalid supervisor, \"$supervisor\", using start-stop-daemon"
+			;;
+	esac
+	$func
+}
+
+stop()
+{
+	local func=ssd_stop
+	case "$supervisor" in
+		?*)
+			ewarn "Invalid supervisor, \"$supervisor\", using start-stop-daemon"
+			;;
+	esac
+	$func
+}
+
+status()
+{
+	local func=ssd_status
+	case "$supervisor" in
+		?*)
+			ewarn "Invalid supervisor, \"$supervisor\", using start-stop-daemon"
+			;;
+	esac
+	$func
+}
+
 yesno $RC_DEBUG && set -x
 
 _conf_d=${RC_SERVICE%/*}/../conf.d
@@ -146,14 +182,8 @@ unset _conf_d
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"
 
-# load a service supervisor
+# load service supervisor functions
 sourcex "@LIBEXECDIR@/sh/start-stop-daemon.sh"
-if [ -n "$rc_supervisor" ]; then
-	if ! sourcex -e "@LIBEXECDIR@/sh/${rc_supervisor}.sh"; then
-		ewarn "$rc_supervisor is an invalid value for rc_supervisor"
-		ewarn "Using the default."
-	fi
-fi
 
 # Set verbose mode
 if yesno "${rc_verbose:-$RC_VERBOSE}"; then
