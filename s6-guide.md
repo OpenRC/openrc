@@ -1,0 +1,56 @@
+# Using S6 with OpenRC
+
+Beginning with OpenRC-0.16, we support using the s6 supervision suite
+from Skarmet Software in place of start-stop-daemon for monitoring
+daemons [1].
+
+## Setup
+
+Documenting s6 in detail is beyond the scope of this guide. It will
+document how to set up OpenRC services to communicate with s6.
+
+### Use Default start, stop and status functions
+
+If you write your own start, stop and status functions in your service
+script, none of this will work. You must allow OpenRC to use the default
+functions.
+
+### Dependencies
+
+All OpenRC service scripts that want their daemons monitored by s6
+should have the following line added to their dependencies to make sure
+the s6 scan directory is being monitored.
+
+need s6-svscan
+
+### Variable Settings
+
+The most important setting is the supervisor variable. At the top of
+your service script, you should set this variable as follows:
+
+supervisor=s6
+
+Several other variables affect s6 services. They are documented on the
+openrc-run man page, but I will list them here for convenience:
+
+s6_service_path - the path to the s6 service directory
+s6_svwait_options_start - the options to pass to s6-svwait when starting
+s6_svwait_options_stop - the options to pass to s6-svwait when stopping.
+
+The s6_service_path variable defaults to /etc/svc.d/${RC_SVCNAME} if it
+is not set in the service script. For example, if you want a service
+script called /etc/init.d/foobar to use s6 to monitor its daemon, the s6
+service should be the directory /etc/svc.d/foobar.
+
+See the documentation for s6 for more information about s6 service
+directories.
+
+The s6_svwait_options_* variables set command line options to pass to
+s6-svwait when starting or stopping the s6 service. These can be very
+useful for waiting for s6 services to signal when they are up, timing out
+when an s6 service doesn't come up, etc.
+
+This is very early support, so feel free to file bugs if you have
+issues.
+
+[1] https://www.skarnet.org/software/s6

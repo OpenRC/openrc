@@ -107,6 +107,18 @@ the service has already been stopped.
 String describing the service.
 .It Ar description_$command
 String describing the extra command.
+.It Ar supervisor
+Supervisor to use to monitor this daemon. If this is unset,
+start-stop-daemon will be used. The only alternate supervisor we support
+in this release is S6 from Skarnet software. To use this, set
+supervisor=s6.
+.It Ar s6_service_path
+The path to the s6 service directory if you are monitoring this service
+with S6. The default is /etc/svc.d/${RC_SVCNAME}.
+.It Ar s6_svwait_options_start
+The options to pass to s6-svwait when starting the service via s6.
+.It Ar s6_svwait_options_stop
+The options to pass to s6-svwait when stopping the service via s6.
 .It Ar start_stop_daemon_args
 List of arguments passed to start-stop-daemon when starting the daemon.
 .It Ar command
