@@ -1,3 +1,77 @@
+commit bb2d7becfd3008379f8f69b5d036922281aa211f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add support for the s6 supervision suite
+
+commit 0f9354becfbd54f9800c93092aa26be859dcf16a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: Clarify the documentation for command_args
+    
+    The command_args variable only works if using start-stop-daemon to start
+    the daemon.
+
+commit a15fa1a3b12a5372c1b3c8d5df7e489648bef913
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Rework supervisor integration framework
+    
+    The original way of doing this allowed users to change the supervisor in
+    conf.d/*. This changes this so that the supervisor setup can be done in
+    the service script itself.
+
+commit 0198affc742297b6e203bbcecc14436682119cc7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    The rc_supervisor variable is a service configuration variable
+    
+    This variable should not be changed globally unless you really know what
+    you are doing.
+
+commit abef2fcb2dbcc277bb05f0d9c674d4b47826f17f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Make the default start, stop and status functions overridable
+    
+    This will make it possible to add support for supervision suites such as
+    runit and s6.
+
+commit 0b435ddd834bd18254c4d3341acdebf0829921f5
+Author: Jakob Drexel <jake42@rommel.stw.uni-erlangen.de>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: Fix crash if the service name is the same as the including runlevel
+    
+    If a service has the same name as the runlevel it is in, openrc will
+    crash on changing to such runlevel. It goes in a recursive madness and
+    eventually gets a SEGV while in snprintf (don't know why).
+    
+    This fixes two errors:
+    1. ls_dir stats files not with full path -> stat always returns != 0
+    2. ls_dir adds files to list if stat failed
+    
+    This fixes #53.
+    
+    X-Gentoo-Bug: 537304
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=537304
+
+commit 9f6427ea57c6c950b4d1c356ad1bfb0aa8deb40b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Start work on 0.16
+
+commit 60488069c08201cbfbc661a3e7bd1fafa31fceed
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 9225bfa6918cfd488c8f1055cf986b542f1f157e
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
