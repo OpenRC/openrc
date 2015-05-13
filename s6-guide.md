@@ -37,10 +37,10 @@ s6_service_path - the path to the s6 service directory
 s6_svwait_options_start - the options to pass to s6-svwait when starting
 s6_svwait_options_stop - the options to pass to s6-svwait when stopping.
 
-The s6_service_path variable defaults to /etc/svc.d/${RC_SVCNAME} if it
+The s6_service_path variable defaults to /var/svc.d/${RC_SVCNAME} if it
 is not set in the service script. For example, if you want a service
 script called /etc/init.d/foobar to use s6 to monitor its daemon, the s6
-service should be the directory /etc/svc.d/foobar.
+service should be the directory /var/svc.d/foobar.
 
 See the documentation for s6 for more information about s6 service
 directories.
