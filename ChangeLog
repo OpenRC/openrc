@@ -1,3 +1,35 @@
+commit c65bed756e5f5cfa244d9aa4325691345d8c324d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    More s6 fixes
+    
+    - When no service link is in the scan directory, show the default
+      stopped message.
+    - Do not remove the service link when stopping the service.
+
+commit ccc81a9cad5d9beb739593827fc4bbc04c4a3304
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix the s6 handling
+    
+    This changes the default s6 service directory to /var/svc.d, also
+    it changes the code to work with the individual services instead of
+    forcing a rescan when a service is started or stopped.
+
+commit 3a1e304d6c56875838b884b6e0608fe756ccce4e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Start work on 0.16.1
+
+commit d247ac4cbbe0ab62564ef82a5940b4f1a03973b3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update changelog
+
 commit bb2d7becfd3008379f8f69b5d036922281aa211f
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
