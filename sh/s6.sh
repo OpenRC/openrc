@@ -37,12 +37,16 @@ s6_stop()
 	fi
 	sleep 1.5
 	set -- $(s6-svstat "${s6_service_link}")
-	[ "$1" = "down" ] && rm -fr "${s6_service_link}"
+	[ "$1" = "down" ]
 	eend $? "Failed to stop $RC_SVCNAME"
 }
 
 s6_status()
 {
 	s6_service_link="${RC_SVCDIR}/s6-scan/${s6_service_path##*/}"
-	s6-svstat "${s6_service_link}"
+	if [ -L "${s6_service_link}" ]; then
+		s6-svstat "${s6_service_link}"
+	else
+		_status
+	fi
 }
