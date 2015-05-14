@@ -33,22 +33,14 @@ supervisor=s6
 Several other variables affect s6 services. They are documented on the
 openrc-run man page, but I will list them here for convenience:
 
-s6_service_path - the path to the s6 service directory
+s6_service_path - the path to the s6 service directory. The default is
+/var/svc.d/$RC_SVCNAME.
+
 s6_svwait_options_start - the options to pass to s6-svwait when starting
-s6_svwait_options_stop - the options to pass to s6-svwait when stopping.
+the service. If this is not set, s6-svwait will not be called.
 
-The s6_service_path variable defaults to /var/svc.d/${RC_SVCNAME} if it
-is not set in the service script. For example, if you want a service
-script called /etc/init.d/foobar to use s6 to monitor its daemon, the s6
-service should be the directory /var/svc.d/foobar.
-
-See the documentation for s6 for more information about s6 service
-directories.
-
-The s6_svwait_options_* variables set command line options to pass to
-s6-svwait when starting or stopping the s6 service. These can be very
-useful for waiting for s6 services to signal when they are up, timing out
-when an s6 service doesn't come up, etc.
+s6_service_timeout_stop - the amount of time, in milliseconds, s6-svc
+should wait for a service to go down when stopping.
 
 This is very early support, so feel free to file bugs if you have
 issues.
