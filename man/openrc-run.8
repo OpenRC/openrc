@@ -117,8 +117,9 @@ The path to the s6 service directory if you are monitoring this service
 with S6. The default is /var/svc.d/${RC_SVCNAME}.
 .It Ar s6_svwait_options_start
 The options to pass to s6-svwait when starting the service via s6.
-.It Ar s6_svwait_options_stop
-The options to pass to s6-svwait when stopping the service via s6.
+.It Ar s6_service_timeout_stop
+The amount of time, in milliseconds, s6-svc should wait for the service
+to go down when stopping the service. The default is 10000.
 .It Ar start_stop_daemon_args
 List of arguments passed to start-stop-daemon when starting the daemon.
 .It Ar command
