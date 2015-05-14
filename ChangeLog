@@ -1,3 +1,24 @@
+commit 01088e282f08ca373ae1d61b2ed954c3075f130a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    s6: Use s6-svc -Dd to stop services
+    
+    This allows us to get rid of the sleep call in the stop function. Also,
+    we set a configurable timeout value for stopping daemons.
+
+commit b95ae213e9435f267da3331fd4568a5ad297b54c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Start work on 0.16.2
+
+commit 4f544f4130e0b62e18bdde42cad2b3aed085136d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update change log
+
 commit c65bed756e5f5cfa244d9aa4325691345d8c324d
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
