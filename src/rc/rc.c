@@ -757,6 +757,7 @@ main(int argc, char **argv)
 	static RC_STRINGLIST *types_n;
 	static RC_STRINGLIST *types_nua;
 	static RC_DEPTREE *deptree;
+	RC_STRINGLIST *runlevel_chain;
 	RC_STRINGLIST *deporder = NULL;
 	RC_STRINGLIST *tmplist;
 	RC_STRING *service;
@@ -1016,6 +1017,7 @@ main(int argc, char **argv)
 	hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
 	start_services = rc_services_in_runlevel_stacked(newlevel ?
 	    newlevel : runlevel);
+	runlevel_chain = rc_runlevel_stacks(newlevel ? newlevel : runlevel);
 	if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
 	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT) != 0)
 	{
@@ -1033,6 +1035,7 @@ main(int argc, char **argv)
 				tmplist = rc_services_in_runlevel(bootlevel);
 				TAILQ_CONCAT(start_services, tmplist, entries);
 				free(tmplist);
+				rc_stringlist_add(runlevel_chain, bootlevel);
 			}
 			if (hotplugged_services) {
 				TAILQ_FOREACH(service, hotplugged_services,
@@ -1041,6 +1044,7 @@ main(int argc, char **argv)
 					service->value);
 			}
 		}
+		rc_stringlist_add(runlevel_chain, RC_LEVEL_SYSINIT);
 	}
 
 	parallel = rc_conf_yesno("rc_parallel");
@@ -1097,9 +1101,6 @@ main(int argc, char **argv)
 
 	/* If we have a list of services to start then... */
 	if (start_services) {
-		/* Get a list of the chained runlevels which compose the target runlevel */
-		RC_STRINGLIST *runlevel_chain = rc_runlevel_stacks(runlevel);
-
 		/* Loop through them in reverse order. */
 		RC_STRING *rlevel;
 		TAILQ_FOREACH_REVERSE(rlevel, runlevel_chain, rc_stringlist, entries)
