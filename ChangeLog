@@ -1,3 +1,21 @@
+commit fe0847c9a2565518334ef03da5c6cdc63726e122
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    S6: kick the scanner and sleep 1.5 seconds to avoid a race condition
+
+commit 58156137f9bbb0d853d994b793622cf48281cf08
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Start on 0.16.3
+
+commit b1d7df15ef017e7b011a211eff2b2b75a39c8c9e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update change log
+
 commit 01088e282f08ca373ae1d61b2ed954c3075f130a
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
