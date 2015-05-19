@@ -141,6 +141,8 @@ will chroot into this path before writing the pid file or starting the daemon.
 Pidfile to use for the above defined command.
 .It Ar name
 Display name used for the above defined command.
+.It Ar stopsig
+Signal to send when stopping the daemon.
 .It Ar retry
 Retry schedule to use when stopping the daemon. It can either be a
 timeout in seconds or multiple signal/timeout pairs (like SIGTERM/5).
