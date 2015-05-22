@@ -116,6 +116,9 @@
 #SSD_NICELEVEL="-19"
 
 # Pass ulimit parameters
+# If you are using bash in POSIX mode for your shell, note that the
+# ulimit command uses a block size of 512 bytes for the -c and -f
+# options
 #rc_ulimit="-u 30"
 
 # It's possible to define extra dependencies for services like so
