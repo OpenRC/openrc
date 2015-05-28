@@ -214,10 +214,13 @@ start()
 	if yesno $log_dmesg; then
 		if $logw || checkpath -W /var/log; then
 			# Create an 'after-boot' dmesg log
-			if [ "$RC_SYS" != VSERVER -a "$RC_SYS" != OPENVZ -a "$RC_SYS" != LXC ]; then
-				dmesg > /var/log/dmesg
-				chmod 640 /var/log/dmesg
-			fi
+			case "$RC_SYS" in
+				VSERVER|OPENVZ|LXC|SYSTEMD-NSPAWN) ;;
+				*)
+					dmesg > /var/log/dmesg
+					chmod 640 /var/log/dmesg
+					;;
+			esac
 		fi
 	fi
 
