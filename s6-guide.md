@@ -45,4 +45,4 @@ should wait for a service to go down when stopping.
 This is very early support, so feel free to file bugs if you have
 issues.
 
-[1] https://www.skarnet.org/software/s6
+[1] http://www.skarnet.org/software/s6
