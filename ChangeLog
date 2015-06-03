@@ -1,3 +1,52 @@
+commit 4f3df4cacb20bb17838986376ad53d4063749a14
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    bootmisc: Don't call dmesg in systemd-nspawn containers
+    
+    This fixes #57.
+
+commit 514b007e2713ac5046f6df78a720ca8e3de013b5
+Author: Mike Frysinger <vapier@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix link to s6 website
+
+commit 6ad9b134e6c9da009842f61bdaf129a1716274ba
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: Document the stopsig variable
+    
+    This variable can be used to set the signal to send if the service is
+    using start-stop-daemon.
+    
+    This fixes #56
+
+commit e571c67ff812ad839107acaa5ba97313dde9dd7a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Document bash's handling of ulimit options
+    
+    When bash is used in posix mode for the shell, the ulimit command uses
+    a block size of 512 bytes for the -c and -f options.
+    
+    X-Gentoo-Bug: 549238
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=549238
+
+commit c4067a65b0ecfad3e6b97416640c6b85382b8fe8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Start work on 0.16.4
+
+commit a8c30a89c417aff5bc863d65976ff8abcffa9e40
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update change log
+
 commit fe0847c9a2565518334ef03da5c6cdc63726e122
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
