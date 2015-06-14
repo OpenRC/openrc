@@ -141,6 +141,13 @@ _D() {
 	fi
 }
 
+_v() {
+	# Create a subvolume if the path does not exist yet and the file system
+	# supports this (btrfs). Otherwise create a normal directory.
+	# TODO: Implement btrfs subvol creation.
+	_d "$@"
+}
+
 _L() {
 	# Create a symlink if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
@@ -336,7 +343,7 @@ for FILE in $tmpfiles_d ; do
 
 		# whine about invalid entries
 		case $cmd in
-			f|F|w|d|D|p|L|c|C|b|x|X|r|R|z|Z) ;;
+			f|F|w|d|D|v|p|L|c|C|b|x|X|r|R|z|Z) ;;
 			*) warninvalid ; continue ;;
 		esac
 
@@ -344,7 +351,7 @@ for FILE in $tmpfiles_d ; do
 		if [ "$mode" = '-' -o "$mode" = '' ]; then
 			case "$cmd" in
 				p|f|F) mode=0644 ;;
-				d|D) mode=0755 ;;
+				d|D|v) mode=0755 ;;
 				C|z|Z|x|r|R|L) ;;
 			esac
 		fi
