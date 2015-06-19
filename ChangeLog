@@ -1,3 +1,98 @@
+commit d2ce07e227ec95370e8aee5f1199edc6ad61aff9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add rc-sstat script
+    
+    The rc-sstat script is written to display status of s6 services and
+    run rc-status to display all services status.
+    
+    This currently only works on Linux.
+
+commit b209fe3859c05c286037843bb34058f849c54b15
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    bootmisc: Don't call dmesg in systemd-nspawn containers
+    
+    This fixes #57.
+
+commit c94c8288cd5217b01c24d6f048c64ebbc30bee02
+Author: Mike Frysinger <vapier@gentoo.org>
+Commit: Mike Frysinger <vapier@gentoo.org>
+
+    fix link to s6 website
+
+commit bcb9c44e73ccf332c7c961a6f82520699c6e776d
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: Document the stopsig variable
+    
+    This variable can be used to set the signal to send if the service is
+    using start-stop-daemon.
+    
+    This fixes #56
+
+commit bbabf546f9d72cbfc48bd839a6d01b402ee6cced
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Document bash's handling of ulimit options
+    
+    When bash is used in posix mode for the shell, the ulimit command uses
+    a block size of 512 bytes for the -c and -f options.
+    
+    X-Gentoo-Bug: 549238
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=549238
+
+commit a7fcc1e264b035177b4e524a40b27145baa86969
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    S6: kick the scanner and sleep 1.5 seconds to avoid a race condition
+
+commit b79d058f162d8b49ccc968744e7cb1b7a7ba729c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    s6: Use s6-svc -Dd to stop services
+    
+    This allows us to get rid of the sleep call in the stop function. Also,
+    we set a configurable timeout value for stopping daemons.
+
+commit ddce529c71c2e9f01d8e5666e27050b6ed6c6761
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    More s6 fixes
+    
+    - When no service link is in the scan directory, show the default
+      stopped message.
+    - Do not remove the service link when stopping the service.
+
+commit e372f97bebd4866633ad56aa5d5b1ae59fa88118
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix the s6 handling
+    
+    This changes the default s6 service directory to /var/svc.d, also
+    it changes the code to work with the individual services instead of
+    forcing a rescan when a service is started or stopped.
+
+commit c2abf4b436b8cca8ebed395ff08f5fdc546eadac
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Start work on 0.17
+
+commit d247ac4cbbe0ab62564ef82a5940b4f1a03973b3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update changelog
+
 commit bb2d7becfd3008379f8f69b5d036922281aa211f
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
