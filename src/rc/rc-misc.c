@@ -79,8 +79,6 @@ env_filter(void)
 	char *e;
 	size_t i = 0;
 
-	/* Add the user defined list of vars */
-	env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
 	profile = rc_config_load(RC_PROFILE_ENV);
 
 	/* Copy the env and work from this so we can manipulate it safely */
@@ -91,22 +89,26 @@ env_filter(void)
 		if (e)
 			*e = '\0';
 	}
+	if (rc_conf_value("rc_env_allow") != "*") {
+		/* Add the user defined list of vars */
+		env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
 
-	TAILQ_FOREACH(env, env_list, entries) {
-		/* Check the whitelist */
-		for (i = 0; env_whitelist[i]; i++) {
-			if (strcmp(env_whitelist[i], env->value) == 0)
-				break;
-		}
-		if (env_whitelist[i])
-			continue;
+		TAILQ_FOREACH(env, env_list, entries) {
+			/* Check the whitelist */
+			for (i = 0; env_whitelist[i]; i++) {
+				if (strcmp(env_whitelist[i], env->value) == 0)
+				  break;
+				}
+			if (env_whitelist[i])
+			  continue;
 
-		/* Check our user defined list */
-		if (rc_stringlist_find(env_allow, env->value))
-			continue;
+		  /* Check our user defined list */
+		  if (rc_stringlist_find(env_allow, env->value))
+			  continue;
 
-		/* OK, not allowed! */
-		unsetenv(env->value);
+		  /* OK, not allowed! */
+		  unsetenv(env->value);
+		  }
 	}
 
 	/* Now add anything missing from the profile */
