@@ -53,10 +53,18 @@ relabel() {
 	done
 }
 
+splitpath() {
+    local path=$1
+    while [ -n "$path" ]; do
+        echo $path
+        path=${path%/*}
+    done
+}
+
 _restorecon() {
     local path=$1
     if [ -x /sbin/restorecon ]; then
-        dryrun_or_real restorecon -F "$path"
+        dryrun_or_real restorecon -F $(splitpath "$path")
     fi
 }
 
@@ -122,6 +130,7 @@ _d() {
 
 	if [ ! -d "$path" ]; then
 		dryrun_or_real mkdir -p "$path" 2>/dev/null
+		_restorecon "$path"
 		dryrun_or_real $CHECKPATH -dq -m "$mode" -o "$uid:$gid" "$path"
 	fi
 }
@@ -137,6 +146,7 @@ _D() {
 
 	if [ $CREATE -gt 0 ]; then
 		dryrun_or_real mkdir -p "$path" 2>/dev/null
+		_restorecon "$path"
 		dryrun_or_real $CHECKPATH -Dq -m "$mode" -o "$uid:$gid" "$path"
 	fi
 }
