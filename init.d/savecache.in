@@ -30,7 +30,7 @@ start()
 			if yesno "${RC_GOINGDOWN}"; then
 				rc=0
 			fi
-			eend $rc "Unable to create $RC_SVCDIR/cache"
+			eend $rc "Unable to create $RC_LIBEXECDIR/cache"
 			return $rc
 		fi
 	fi
