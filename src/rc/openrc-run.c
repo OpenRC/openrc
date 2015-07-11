@@ -1028,7 +1028,7 @@ static bool
 service_plugable(void)
 {
 	char *list, *p, *token;
-	bool allow = true, truefalse;
+	bool allow = false, truefalse;
 	char *match = rc_conf_value("rc_hotplug");
 
 	if (!match)
