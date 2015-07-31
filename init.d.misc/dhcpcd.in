@@ -10,7 +10,7 @@ name="DHCP Client Daemon"
 depend()
 {
 	provide net
-	need localmount
+	need mount.usr mount.var
 	use logger
 	after bootmisc modules
 	before dns

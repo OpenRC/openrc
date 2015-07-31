@@ -4,7 +4,7 @@
 
 depend()
 {
-	need localmount net
+	need mount.usr mount.var net
 	after *
 	before local
 	keyword -prefix

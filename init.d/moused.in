@@ -14,7 +14,7 @@ name="Console Mouse Daemon"
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	after bootmisc
 	keyword -jail -prefix
 }

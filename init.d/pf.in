@@ -10,7 +10,7 @@ extra_commands="checkconfig showstatus"
 extra_started_commands="reload"
 
 depend() {
-	need localmount
+	need mount.usr mount.var
 	keyword -jail -prefix
 }
 

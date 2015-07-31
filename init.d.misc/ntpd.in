@@ -14,7 +14,7 @@ name="Network Time Protocol Daemon"
 depend()
 {
 	use dns
-	need localmount
+	need mount.usr mount.var
 	after bootmisc ntp-client
 }
 

@@ -6,7 +6,7 @@ description="Set up tmpfiles.d entries"
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 }
 
 start()

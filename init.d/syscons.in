@@ -3,7 +3,7 @@
 # Released under the 2-clause BSD license.
 
 depend() {
-	need localmount
+	need mount.usr mount.var
 	keyword -jail -prefix
 }
 

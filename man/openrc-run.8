@@ -487,8 +487,8 @@ _need_dbus()
 
 depend()
 {
-    # We write a pidfile and to /var/cache, so we need localmount.
-    need localmount
+    # We write a pidfile and to /var/cache, so we need mount.var.
+    need mount.var
     # We can optionally use the network, but it's not essential.
     use net
     # We should be after bootmisc so that /var/run is cleaned before

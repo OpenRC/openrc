@@ -4,7 +4,7 @@
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	keyword -prefix
 }
 

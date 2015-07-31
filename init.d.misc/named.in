@@ -24,7 +24,7 @@ esac
 depend()
 {
 	provide dns
-	need localmount
+	need mount.usr mount.var
 	after bootmisc
 }
 

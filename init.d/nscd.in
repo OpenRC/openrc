@@ -10,7 +10,7 @@ name="Name Service Cache Daemon"
 extra_started_commands="flush"
 
 depend() {
-	need localmount
+	need mount.usr mount.var
 	use net dns ldap ypbind
 	after bootmisc
 }

@@ -4,7 +4,7 @@
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	before logger
 	after clock root sysctl
 	keyword -prefix -timeout

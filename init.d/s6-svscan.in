@@ -9,7 +9,7 @@ pidfile=/var/run/s6-svscan.pid
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 }
 
 start_pre()

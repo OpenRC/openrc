@@ -9,7 +9,7 @@ name="RPC program number mapper"
 depend()
 {
 	provide rpc
-	need localmount
+	need mount.usr mount.var
 	use net logger dns
 	before inetd xinetd ntpd ntp-client
 }

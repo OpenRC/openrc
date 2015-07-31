@@ -14,7 +14,7 @@ depend()
 {
 	provide logger
 	use net newsyslog
-	need localmount
+	need mount.usr mount.var
 	after bootmisc
 	keyword -prefix
 }

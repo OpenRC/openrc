@@ -10,7 +10,7 @@ name="WPA Supplicant Daemon"
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	use logger
 	after bootmisc modules
 	before dns dhcpcd net

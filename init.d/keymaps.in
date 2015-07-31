@@ -6,7 +6,7 @@ description="Applies a keymap for the consoles."
 
 depend()
 {
-	need localmount termencoding
+	need mount.usr mount.var termencoding
 	after bootmisc
 	keyword -openvz -prefix -systemd-nspawn -uml -vserver -xenu -lxc
 }

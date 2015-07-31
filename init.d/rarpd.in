@@ -17,7 +17,7 @@ command_background=YES
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	after bootmisc
 	need net
 }

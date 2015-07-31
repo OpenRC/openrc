@@ -9,7 +9,7 @@ name="Power Control Daemon"
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	use logger
 	after bootmisc
 	keyword -jail -prefix

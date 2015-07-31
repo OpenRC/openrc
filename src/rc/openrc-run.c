@@ -939,9 +939,9 @@ svc_stop_real(void)
 {
 	bool stopped;
 
-	/* If we're stopping localmount, set LC_ALL=C so that
+	/* If we're stopping mount.*, set LC_ALL=C so that
 	 * bash doesn't load anything blocking the unmounting of /usr */
-	if (strcmp(applet, "localmount") == 0)
+	if (strncmp(applet, "mount.", 6) == 0)
 		setenv("LC_ALL", "C", 1);
 
 	if (ibsave)

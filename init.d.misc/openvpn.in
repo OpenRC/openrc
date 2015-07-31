@@ -31,7 +31,7 @@ fi
 
 depend()
 {
-	need localmount net
+	need mount.usr mount.var net
 	use dns
 	after bootmisc
 }

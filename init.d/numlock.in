@@ -8,7 +8,7 @@ ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	keyword -openvz -prefix -systemd-nspawn -vserver -lxc
 }
 

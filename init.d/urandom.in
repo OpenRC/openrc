@@ -7,7 +7,7 @@ description="Initializes the random number generator."
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	keyword -jail -lxc -openvz -prefix -systemd-nspawn
 }
 

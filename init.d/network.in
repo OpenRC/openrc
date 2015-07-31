@@ -10,7 +10,7 @@ __nl="
 
 depend()
 {
-	need localmount
+	need mount.usr mount.var
 	after bootmisc
 	if [ -n "$(interfaces)" ]; then
 		provide net

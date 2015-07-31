@@ -9,7 +9,7 @@ name="Message Bus Daemon"
 
 depend()
 {
-	need localmount net
+	need mount.usr mount.var net
 	after bootmisc
 }
 

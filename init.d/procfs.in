@@ -7,7 +7,7 @@ description="Mounts misc filesystems in /proc."
 depend()
 {
 	use modules devfs
-	need localmount
+	need mount.usr mount.var
 	keyword -openvz -prefix -systemd-nspawn -vserver -lxc
 }
 

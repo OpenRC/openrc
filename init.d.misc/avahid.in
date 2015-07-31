@@ -10,6 +10,6 @@ name="Avahi Service Advertisement Daemon"
 depend()
 {
 	use dns
-	need localmount dbus
+	need mount.usr mount.var dbus
 	after bootmisc
 }

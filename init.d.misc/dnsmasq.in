@@ -12,7 +12,7 @@ extra_started_commands="reload"
 depend()
 {
 	provide dns
-	need localmount net
+	need mount.usr mount.var net
 	after bootmisc
 }
 
