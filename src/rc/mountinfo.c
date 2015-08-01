@@ -347,7 +347,7 @@ get_regex(const char *string)
 
 #include "_usage.h"
 #define extraopts "[mount1] [mount2] ..."
-#define getoptstring "f:F:n:N:o:O:p:P:ist" getoptstring_COMMON
+#define getoptstring "f:F:n:N:o:O:p:P:iste:E:" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "fstype-regex",        1, NULL, 'f'},
 	{ "skip-fstype-regex",   1, NULL, 'F'},
