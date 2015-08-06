@@ -4,11 +4,24 @@
 
 description="Mounts network shares according to /etc/fstab."
 
+get_fs_services()
+{
+	local fsclient fstype list=$(ls $RC_LIBEXECDIR/netfs/*) services
+	local x
+	for x in $list; do
+		fstype=${x##*/}
+		fstabinfo -q -t ${fstype} && services="${services} $(cat x)"
+	done
+	printf "%s\n" $services
+	}
+
 depend()
 {
 	config /etc/fstab
 	use afc-client amd nfsclient autofs openvpn
 	use dns
+	local fs_services ="$(get_fs_services)"
+	[ -n "$fs_services" ] && use $fs_services
 	keyword -jail -prefix -systemd-nspawn -vserver -lxc
 }
 
