@@ -27,7 +27,6 @@ start()
 		rc=$?
 	fi
 	ewend $rc "Could not mount all network filesystems"
-	return 0
 }
 
 stop()

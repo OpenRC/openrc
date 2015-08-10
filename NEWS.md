@@ -3,6 +3,17 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-x.xx
+
+The behaviour of localmount and netmount in this version is changing. In
+the past, these services always started successfully. In this version,
+they will be able to fail if file systems they mount fail to mount. If
+you have file systems listed in fstab which should not be mounted at
+boot time, make sure to add noauto to the mount options. If you have
+file systems that you want to attempt to mount at boot time but failure
+should be allowed, add nofail to the mount options for these file
+systems in fstab.
+
 ## OpenRC-0.14
 
 The binfmt service, which registers misc binary formats with the Linux
