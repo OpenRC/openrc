@@ -7,43 +7,53 @@ description="Saves the caches OpenRC uses to non volatile storage"
 start()
 {
 	if [ -e "$RC_SVCDIR"/clock-skewed ]; then
-		ewarn "WARNING: clock skew detected!"
+		ewarn "Clock skew detected!"
 		if ! yesno "${RC_GOINGDOWN}"; then
 			eerror "Not saving deptree cache"
 			return 1
 		fi
 	fi
-	if ! checkpath -W "$RC_LIBEXECDIR"; then
-		ewarn "WARNING: ${RC_LIBEXECDIR} is not writable!"
-		if ! yesno "${RC_GOINGDOWN}"; then
-			ewarn "Unable to save deptree cache"
+	if [ ! -d "$RC_LIBEXECDIR"/cache ]; then
+		if ! checkpath -W "$RC_LIBEXECDIR"; then
+			eerror "${RC_LIBEXECDIR} is not writable!"
+			eerror "Unable to save dependency cache"
+			if yesno "${RC_GOINGDOWN}"; then
+				return 0
+			fi
 			return 1
 		fi
-		return 0
-	fi
-	ebegin "Saving dependency cache"
-	local rc=
-	if [ ! -d "$RC_LIBEXECDIR"/cache ]; then
 		rm -rf "$RC_LIBEXECDIR"/cache
 		if ! mkdir -p "$RC_LIBEXECDIR"/cache; then
-			rc=$?
+			eerror "Unable to create $RC_LIBEXECDIR/cache"
+			eerror "Unable to save dependency cache"
 			if yesno "${RC_GOINGDOWN}"; then
-				rc=0
+				return 0
 			fi
-			eend $rc "Unable to create $RC_LIBEXECDIR/cache"
-			return $rc
+			return 1
 		fi
 	fi
-	local save=
+	if ! checkpath -W "$RC_LIBEXECDIR"/cache; then
+		eerror "${RC_LIBEXECDIR}/cache is not writable!"
+		eerror "Unable to save dependency cache"
+		if yesno "${RC_GOINGDOWN}"; then
+			return 0
+		fi
+		return 1
+	fi
+	ebegin "Saving dependency cache"
+	local rc=0 save=
 	for x in deptree depconfig shutdowntime softlevel nettree rc.log; do
 		[ -e "$RC_SVCDIR/$x" ] && save="$save $RC_SVCDIR/$x"
 	done
 	if [ -n "$save" ]; then
-		cp -p $save "$RC_LIBEXECDIR"/cache 2>/dev/null
+		cp -p $save "$RC_LIBEXECDIR"/cache
+		rc=$?
 	fi
-	rc=$?
 	if yesno "${RC_GOINGDOWN}"; then
-		rc=0
+		if [ $rc -ne 0 ]; then
+			eerror "Unable to save dependency cache"
+		fi
+		eend 0
 	fi
-	eend $rc
+	eend $rc "Unable to save dependency cache"
 }
