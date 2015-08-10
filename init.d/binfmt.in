@@ -16,5 +16,5 @@ start()
 	ebegin "Loading custom binary format handlers"
 	"$RC_LIBEXECDIR"/sh/binfmt.sh
 	eend $?
-return 0
+	return 0
 }
