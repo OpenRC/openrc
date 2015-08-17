@@ -103,8 +103,7 @@ generate()
 			case "$fsopts" in
 			*noauto*) ;;
 			*)
-				local name="${fs#/}"
-				name="$(echo $name | sed 's#/#.#g')"
+				local name="$(_mountpoint_to_mountname $fs)"
 				einfo ln -snf mount "${svcpath}/${name}"
 				rc=$?
 				[ $rc -ne 0 ] && break

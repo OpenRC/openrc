@@ -78,6 +78,9 @@ provide() {
 keyword() {
 	[ -n "$*" ] && echo "keyword $*"
 }
+path() {
+	[ -n "$*" ] && echo "path $*"
+}
 
 # Describe the init script to the user
 describe()
@@ -217,7 +220,7 @@ for _cmd; do
 		break
 	fi
 done
- 
+
 # Load our script
 sourcex "$RC_SERVICE"
 
