@@ -15,7 +15,7 @@ depend()
 start()
 {
 	# Mount local filesystems in /etc/fstab.
-	local types="noproc" x=
+	local types="noproc" x= rc=
 	for x in $net_fs_list $extra_net_fs_list; do
 		types="${types},no${x}"
 	done
@@ -28,6 +28,13 @@ start()
 	ebegin "Mounting local filesystems"
 	mount -at "$types"
 	eend $? "Some local filesystem failed to mount"
+	rc=$?
+	if [ "$RC_UNAME" != Linux ]; then
+		rc=0
+	elif [ "$rc" = 64 ]; then
+		rc=0
+	fi
+	return $rc
 }
 
 stop()

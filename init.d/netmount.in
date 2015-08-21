@@ -23,6 +23,12 @@ start()
 	mount -at $fs
 	rc=$?
 	ewend $rc "Could not mount all network filesystems"
+	if [ "$RC_UNAME" != Linux ]; then
+		rc=0
+	elif [ "$rc" = 64 ]; then
+		rc=0
+	fi
+	return $rc
 }
 
 stop()
