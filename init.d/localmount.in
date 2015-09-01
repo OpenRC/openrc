@@ -31,8 +31,6 @@ start()
 	rc=$?
 	if [ "$RC_UNAME" != Linux ]; then
 		rc=0
-	elif [ "$rc" = 64 ]; then
-		rc=0
 	fi
 	return $rc
 }
