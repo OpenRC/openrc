@@ -41,7 +41,7 @@ s6_stop()
  fi
 	s6_service_link="${RC_SVCDIR}/s6-scan/${s6_service_path##*/}"
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
-	s6-svc -Dd -T ${s6_service_timeout_stop:-10000} "${s6_service_link}"
+	s6-svc -wD -d -T ${s6_service_timeout_stop:-10000} "${s6_service_link}"
 	set -- $(s6-svstat "${s6_service_link}")
 	[ "$1" = "down" ]
 	eend $? "Failed to stop $RC_SVCNAME"
