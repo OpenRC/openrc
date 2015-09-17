@@ -85,8 +85,12 @@ static bool sighup, in_background, deps, dry_run;
 static pid_t service_pid;
 static int signal_pipe[2] = { -1, -1 };
 
-static RC_STRINGLIST *types_b, *types_n, *types_nu, *types_nua, *types_m;
-static RC_STRINGLIST *types_mua = NULL;
+static RC_STRINGLIST *deptypes_b;
+static RC_STRINGLIST *deptypes_n;
+static RC_STRINGLIST *deptypes_nu;
+static RC_STRINGLIST *deptypes_nua;
+static RC_STRINGLIST *deptypes_m;
+static RC_STRINGLIST *deptypes_mua;
 
 static void
 handle_signal(int sig)
@@ -231,12 +235,12 @@ cleanup(void)
 	rc_plugin_unload();
 
 #ifdef DEBUG_MEMORY
-	rc_stringlist_free(types_b);
-	rc_stringlist_free(types_n);
-	rc_stringlist_free(types_nu);
-	rc_stringlist_free(types_nua);
-	rc_stringlist_free(types_m);
-	rc_stringlist_free(types_mua);
+	rc_stringlist_free(deptypes_b);
+	rc_stringlist_free(deptypes_n);
+	rc_stringlist_free(deptypes_nu);
+	rc_stringlist_free(deptypes_nua);
+	rc_stringlist_free(deptypes_m);
+	rc_stringlist_free(deptypes_mua);
 	rc_deptree_free(deptree);
 	rc_stringlist_free(restart_services);
 	rc_stringlist_free(need_services);
@@ -518,30 +522,30 @@ get_started_services(void)
 }
 
 static void
-setup_types(void)
+setup_deptypes(void)
 {
-	types_b = rc_stringlist_new();
-	rc_stringlist_add(types_b, "broken");
+	deptypes_b = rc_stringlist_new();
+	rc_stringlist_add(deptypes_b, "broken");
 
-	types_n = rc_stringlist_new();
-	rc_stringlist_add(types_n, "ineed");
+	deptypes_n = rc_stringlist_new();
+	rc_stringlist_add(deptypes_n, "ineed");
 
-	types_nu = rc_stringlist_new();
-	rc_stringlist_add(types_nu, "ineed");
-	rc_stringlist_add(types_nu, "iuse");
+	deptypes_nu = rc_stringlist_new();
+	rc_stringlist_add(deptypes_nu, "ineed");
+	rc_stringlist_add(deptypes_nu, "iuse");
 
-	types_nua = rc_stringlist_new();
-	rc_stringlist_add(types_nua, "ineed");
-	rc_stringlist_add(types_nua, "iuse");
-	rc_stringlist_add(types_nua, "iafter");
+	deptypes_nua = rc_stringlist_new();
+	rc_stringlist_add(deptypes_nua, "ineed");
+	rc_stringlist_add(deptypes_nua, "iuse");
+	rc_stringlist_add(deptypes_nua, "iafter");
 
-	types_m = rc_stringlist_new();
-	rc_stringlist_add(types_m, "needsme");
+	deptypes_m = rc_stringlist_new();
+	rc_stringlist_add(deptypes_m, "needsme");
 
-	types_mua = rc_stringlist_new();
-	rc_stringlist_add(types_mua, "needsme");
-	rc_stringlist_add(types_mua, "usesme");
-	rc_stringlist_add(types_mua, "beforeme");
+	deptypes_mua = rc_stringlist_new();
+	rc_stringlist_add(deptypes_mua, "needsme");
+	rc_stringlist_add(deptypes_mua, "usesme");
+	rc_stringlist_add(deptypes_mua, "beforeme");
 }
 
 static void
@@ -604,10 +608,10 @@ svc_start_deps(void)
 
 	if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL))
 		eerrorx("failed to load deptree");
-	if (!types_b)
-		setup_types();
+	if (!deptypes_b)
+		setup_deptypes();
 
-	services = rc_deptree_depends(deptree, types_b, applet_list,
+	services = rc_deptree_depends(deptree, deptypes_b, applet_list,
 	    runlevel, 0);
 	if (TAILQ_FIRST(services)) {
 		eerrorn("ERROR: %s needs service(s) ", applet);
@@ -625,9 +629,9 @@ svc_start_deps(void)
 	rc_stringlist_free(services);
 	services = NULL;
 
-	need_services = rc_deptree_depends(deptree, types_n,
+	need_services = rc_deptree_depends(deptree, deptypes_n,
 	    applet_list, runlevel, depoptions);
-	use_services = rc_deptree_depends(deptree, types_nu,
+	use_services = rc_deptree_depends(deptree, deptypes_nu,
 	    applet_list, runlevel, depoptions);
 
 	if (!rc_runlevel_starting()) {
@@ -655,7 +659,7 @@ svc_start_deps(void)
 		return;
 
 	/* Now wait for them to start */
-	services = rc_deptree_depends(deptree, types_nua, applet_list,
+	services = rc_deptree_depends(deptree, deptypes_nua, applet_list,
 	    runlevel, depoptions);
 	/* We use tmplist to hold our scheduled by list */
 	tmplist = rc_stringlist_new();
@@ -860,10 +864,10 @@ svc_stop_deps(RC_SERVICE state)
 	if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL))
 		eerrorx("failed to load deptree");
 
-	if (!types_m)
-		setup_types();
+	if (!deptypes_m)
+		setup_deptypes();
 
-	services = rc_deptree_depends(deptree, types_m, applet_list,
+	services = rc_deptree_depends(deptree, deptypes_m, applet_list,
 	    runlevel, depoptions);
 	tmplist = rc_stringlist_new();
 	TAILQ_FOREACH_REVERSE(svc, services, rc_stringlist, entries) {
@@ -923,7 +927,7 @@ svc_stop_deps(RC_SERVICE state)
 
 	/* We now wait for other services that may use us and are
 	 * stopping. This is important when a runlevel stops */
-	services = rc_deptree_depends(deptree, types_mua, applet_list,
+	services = rc_deptree_depends(deptree, deptypes_mua, applet_list,
 	    runlevel, depoptions);
 	TAILQ_FOREACH(svc, services, entries) {
 		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
