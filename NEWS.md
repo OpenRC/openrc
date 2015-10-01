@@ -5,22 +5,14 @@ the information in this file is in reverse order.
 
 ## OpenRC-0.18
 
-The behaviour of localmount and netmount is changing. In the past, these
-services always started successfully. However, now they will fail if a
-file system they attempt to mount cannot be mounted.
-
-If you have file systems listed in fstab which should not be mounted at
+The behaviour of localmount and netmount in this version is changing. In
+the past, these services always started successfully. In this version,
+they will be able to fail if file systems they mount fail to mount. If
+you have file systems listed in fstab which should not be mounted at
 boot time, make sure to add noauto to the mount options. If you have
 file systems that you want to attempt to mount at boot time but failure
 should be allowed, add nofail to the mount options for these file
 systems in fstab.
-
-In this version, we are dropping the use of the -O switch for
-mount/umount -a. This is being dropped because it is util-linux
-specific and not compatible with busybox.
-
-This should not be a regression for Gentoo users, but I am publishing
-this here because it may be for others.
 
 ## OpenRC-0.14
 

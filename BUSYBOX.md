@@ -12,6 +12,11 @@ configuration settings for best results with OpenRC.
 CONFIG_START_STOP_DAEMON -- The start-stop-daemon applet is not compatible with
 start-stop-daemon in OpenRC.
 
+CONFIG_MOUNT -- The mount applet does not support the -O [no]_netdev options to
+skip over or include network file systems when the -a option is present.
+
+CONFIG_UMOUNT -- The umount applet does not support the -O option along with -a.
+
 CONFIG_SWAPONOFF -- The swapon applet does not support the -e option
 or recognize the nofail option in fstab.
 

@@ -15,18 +15,19 @@ depend()
 start()
 {
 	# Mount local filesystems in /etc/fstab.
-	local types="noproc" x= rc=
+	local types="noproc" x= no_netdev= rc=
 	for x in $net_fs_list $extra_net_fs_list; do
 		types="${types},no${x}"
 	done
 
 	if [ "$RC_UNAME" = Linux ]; then
+		no_netdev="-O no_netdev"
 		if mountinfo -q /usr; then
 			touch "$RC_SVCDIR"/usr_premounted
 		fi
 	fi
 	ebegin "Mounting local filesystems"
-	mount -at "$types"
+	mount -at "$types" $no_netdev
 	eend $? "Some local filesystem failed to mount"
 	rc=$?
 	if [ "$RC_UNAME" != Linux ]; then

@@ -22,6 +22,10 @@ start()
 	ebegin "Mounting network filesystems"
 	mount -at $fs
 	rc=$?
+	if [ "$RC_UNAME" = Linux ]; then
+		mount -a -O _netdev
+		rc=$?
+	fi
 	ewend $rc "Could not mount all network filesystems"
 	if [ "$RC_UNAME" != Linux ]; then
 		rc=0
@@ -53,5 +57,9 @@ stop()
 	retval=$?
 
 	eoutdent
+	if [ "$RC_UNAME" = Linux ]; then
+		umount -a -O _netdev
+		retval=$?
+	fi
 	eend $retval "Failed to unmount network filesystems"
 }
