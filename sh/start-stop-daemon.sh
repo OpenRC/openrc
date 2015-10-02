@@ -4,7 +4,13 @@
 
 ssd_start()
 {
-	[ -n "$command" ] || return 0
+	if [ -z "$command" ]; then
+		ewarn "The command variable is undefined."
+		ewarn "There is nothing for ${name:-$RC_SVCNAME} to start."
+		ewarn "If this is what you intend, please write a start function."
+		ewarn "This will become a failure in a future release."
+		return 0
+	fi
 
 	local _background=
 	ebegin "Starting ${name:-$RC_SVCNAME}"
