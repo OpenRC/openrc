@@ -298,7 +298,7 @@ find_mounts(struct args *args)
 	int netdev;
 	RC_STRINGLIST *list;
 
-	if ((fp = fopen("/proc/mounts", "r")) == NULL)
+	if ((fp = fopen("/proc/self/mounts", "r")) == NULL)
 		eerrorx("getmntinfo: %s", strerror(errno));
 
 	list = rc_stringlist_new();
