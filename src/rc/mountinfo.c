@@ -305,7 +305,6 @@ find_mounts(struct args *args)
 
 	buffer = xmalloc(sizeof(char) * PATH_MAX * 3);
 	while (fgets(buffer, PATH_MAX * 3, fp)) {
-		netdev = -1;
 		p = buffer;
 		from = strsep(&p, " ");
 		to = strsep(&p, " ");
@@ -315,6 +314,8 @@ find_mounts(struct args *args)
 		if ((ent = getmntfile(to))) {
 			if (strstr(ent->mnt_opts, "_netdev"))
 				netdev = 0;
+			else
+				netdev = 1;
 		}
 
 		process_mount(list, args, from, to, fst, opts, netdev);
