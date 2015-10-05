@@ -121,11 +121,11 @@ clean_run()
 	local dir
 	# If / is still read-only due to a problem, this will fail!
 	if ! checkpath -W /; then
-		eerror "/ is not writable; unable to clean up underlying /run"
+		ewarn "/ is not writable; unable to clean up underlying /run"
 		return 1
 	fi
 	if ! checkpath -W /tmp; then
-		eerror "/tmp is not writable; unable to clean up underlying /run"
+		ewarn "/tmp is not writable; unable to clean up underlying /run"
 		return 1
 	fi
 	# Now we know that we can modify /tmp and /
@@ -141,7 +141,7 @@ clean_run()
 		rc=1
 	fi
 	if [ $rc -ne 0 ]; then
-		eerror "Could not clean up underlying /run on /"
+		ewarn "Could not clean up underlying /run on /"
 		return 1
 	fi
 }
