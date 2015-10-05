@@ -136,8 +136,7 @@ clean_run()
 	dir=$(mktemp -d)
 	if [ -n "$dir" -a -d $dir -a -w $dir ]; then
 		mount --bind / $dir && rm -rf $dir/run/* || rc=1
-		umount $dir
-		rm -rf $dir
+		umount $dir && rmdir $dir
 	else
 		rc=1
 	fi
