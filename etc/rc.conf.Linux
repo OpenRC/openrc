@@ -62,11 +62,20 @@ rc_tty_number=12
 # Set the devices controller settings for this service.
 #rc_cgroup_devices=""
 
+# Set the hugetlb controller settings for this service.
+#rc_cgroup_hugetlb=""
+
 # Set the memory controller settings for this service.
 #rc_cgroup_memory=""
 
+# Set the net_cls controller settings for this service.
+#rc_cgroup_net_cls=""
+
 # Set the net_prio controller settings for this service.
 #rc_cgroup_net_prio=""
+
+# Set the pids controller settings for this service.
+#rc_cgroup_pids=""
 
 # Set this to YES if yu want all of the processes in a service's cgroup
 # killed when the service is stopped or restarted.

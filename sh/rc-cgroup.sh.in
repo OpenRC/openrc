@@ -109,11 +109,20 @@ cgroup_set_limits()
 	local devices="${rc_cgroup_devices:-$RC_CGROUP_DEVICES}"
 	[ -n "$devices" ] && cgroup_set_values devices "$devices"
 
+	local hugetlb="${rc_cgroup_hugetlb:-$RC_CGROUP_HUGETLB}"
+	[ -n "$hugetlb" ] && cgroup_set_values hugetlb "$hugetlb"
+
 	local memory="${rc_cgroup_memory:-$RC_CGROUP_MEMORY}"
 	[ -n "$memory" ] && cgroup_set_values memory "$memory"
 
+	local net_cls="${rc_cgroup_net_cls:-$RC_CGROUP_NET_CLS}"
+	[ -n "$net_cls" ] && cgroup_set_values net_cls "$net_cls"
+
 	local net_prio="${rc_cgroup_net_prio:-$RC_CGROUP_NET_PRIO}"
 	[ -n "$net_prio" ] && cgroup_set_values net_prio "$net_prio"
+
+	local pids="${rc_cgroup_pids:-$RC_CGROUP_PIDS}"
+	[ -n "$pids" ] && cgroup_set_values pids "$pids"
 
 	return 0
 }
