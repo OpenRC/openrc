@@ -54,7 +54,9 @@ cgroup_set_values()
 				val=
 				;;
 			*)
-				val="$val $1"
+				[ -n "$val" ] &&
+					val="$val $1" ||
+					val="$1"
 				;;
 		esac
 		shift
