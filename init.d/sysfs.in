@@ -116,7 +116,7 @@ mount_cgroups()
 		mount -n -t cgroup \
 			-o none,${sysfs_opts},name=openrc,release_agent="$agent" \
 			openrc /sys/fs/cgroup/openrc
-		echo 1 > /sys/fs/cgroup/openrc/notify_on_release
+		printf 1 > /sys/fs/cgroup/openrc/notify_on_release
 	fi
 
 	yesno ${rc_controller_cgroups:-YES} && [ -e /proc/cgroups ] || return 0
