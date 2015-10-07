@@ -12,21 +12,18 @@ depend()
 
 start()
 {
-	[ -L /etc/mtab ] && return 0
 	local rc=0
 	ebegin "Updating /etc/mtab"
-	if ! checkpath -W /etc; then
+	if [ -L /etc/mtab ] ; then
+		ewarn "/etc/mtab is a symlink, not updating."
+		ewarn "FYI - You can safely remove mtab from your runlevels."
+	elif ! checkpath -W /etc; then
 		rc=1
 	elif [ ! -e /etc/mtab ]; then
+		einfo "Creating mtab symlink"
 		ln -snf /proc/self/mounts /etc/mtab
 	else
-		ewarn "The support for updating /etc/mtab as a file is"
-		ewarn "deprecated and will be removed in the future."
-		ewarn "Please run the following command as root on your system."
-		ewarn
-		ewarn "ln -snf /proc/self/mounts /etc/mtab"
-		ewarn
-
+		einfo "Updating mtab file"
 		# With / as tmpfs we cannot umount -at tmpfs in localmount as that
 		# makes / readonly and dismounts all tmpfs even if in use which is
 		# not good. Luckily, umount uses /etc/mtab instead of /proc/mounts
