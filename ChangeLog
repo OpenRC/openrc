@@ -1,3 +1,257 @@
+commit d5116cc697c9eb275ab8497939ab41504e5ce578
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    localmount: white space cleanup
+
+commit b86d170037197d7bdcda57c7d4c09c17bda97f31
+Author: Ian Stakenvicius <axs@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    localmount: clean up handling of aufs branches
+    
+    X-Gentoo-Bug: 560008
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=560008
+
+commit 6fa0d6318bcd5c98548cff2ff840bca116892ca5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mtab: fix update logic
+    
+    This advises users to remove mtab from their runlevels if /etc/mtab is a
+    symlink, and it creates the symlink if /etc/mtab does not exist on a
+    system.
+    
+    X-Gentoo-Bug: 560060
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=560060
+
+commit 80d3928b0d13f09a9c1e82bd27c9fff943d84d43
+Author: Austin S. Hemmelgarn <ahferroin7@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    cgroups: Add the hugetlb, net_cls and pids controllers
+    
+    Note from WilliamH: I slightly rearranged the code and added the
+    settings in rc.conf.
+    
+    X-Gentoo-Bug: 555488
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=555488
+
+commit 17ef205bc63a4e231dccee719394a7a8563f8c3f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sysfs: use printf instead of echo to write to cgroup files
+    
+    This is needed for compatibility with musl and printf is also posix.
+    
+    X-Gentoo-Bug: 562334
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562334
+
+commit b20a1951adf9a705a903fb3047b7ef26c013103c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-cgroup.sh: Do not add leading spaces to cgroup values
+    
+    We were starting the value we write to the cgroup setting file with
+    leading spaces and this was causing issues. This change makes sure that
+    we aren't adding leading spaces to the value.
+    
+    X-Gentoo-Bug: 562354
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562354
+
+commit bf0c0dd5644436efe4986c2b259b755d111266b9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    bootmisc: convert errors in clean_run function to warnings
+    
+    X-Gentoo-Bug: 552418
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=552418
+
+commit 1558ad2b9ebf319b85876a940d31d513bf21324f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    bootmisc: only remove temp directory if umount is successful
+    
+    Change the clean_run function to only remove the temp directory if the
+    umount was successful.
+    
+    X-Gentoo-Bug: 561230
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=561230
+
+commit 5f4f2420364098835522da868a9e75205c9e4f9c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mountinfo: fix --netdev and --nonetdev on Linux
+    
+    On Linux, the --netdev and --nonetdev switches were not working. They
+    were both returning false. After this change, they operate based on the
+    presence or abscence of the _netdev option in mount options.
+
+commit b3f7ff901f7d3ed00b9f73c601193ac507f62eaf
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mountinfo: read /proc/self/mounts instead of /proc/mounts on Linux
+
+commit a59365a582c3a8c9a8b863b572fddcb65fccadfd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon.sh: complain in start if command is undefined
+    
+    The default start-stop-daemon start function expects the command
+    variable to be defined to point to the daemon we want to start.
+    
+    If the variable is undefined, this means that there will be nothing to
+    start, and in this case we should complain because it is possible that
+    the script writer made a typo in the variable name.
+
+commit dac5966ca40610797d2b2aabef17154ca3dc20af
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "local/netmount: remove uses of -O [no]_netdev"
+    
+    This reverts commit 2a439c85bd69efc14847b4397bd6783cac051405.
+    There is another use case for -O involving iscsi, so we can't remove it.
+
+commit 3b6a6df4b5b818e576a88444632d5c73cffd1c57
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-run: rename some dependency variables and a function for clarity
+    
+    All of the dependency type lists had the types_ prefix in their names;
+    this has been changed to deptypes_ to make them more self documenting.
+    
+    Along the same lines, the setup_types function was renamed
+    setup_deptypes.
+
+commit b047ea47e97d7e8b96d6d0e064613f6860c8eb36
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    localmount/netmount: on Linux, fail if some file systems do not mount
+    
+    The following return codes are returned by mount -a:
+    
+    0:  all file systems mounted.
+    32: no file systems mounted.
+    64: some file systems mounted.
+    
+    The localmount/netmount services should fail if all file systems that
+    should mount did not mount.
+
+commit b652752339690e10a55ae50d046f4cf2a98daf1a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Make localmount and netmount always succeed on non-linux
+
+commit 2a439c85bd69efc14847b4397bd6783cac051405
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    local/netmount: remove uses of -O [no]_netdev
+    
+    This was causing an incompatibility with busybox, and we do not use it
+    in Gentoo.
+
+commit 7341cd882fba522c1f1d183603334839bd4df7fc
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    allow localmount and netmount to fail
+
+commit 279f1e5d1013309d99509ab4b7b57521f8a4aba4
+Author: Mike Frysinger <vapier@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    binfmt: fix indent on return
+
+commit c256a7aa80c683eca6194c80b57294e4d51c9a16
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    savecache: clean up implementation
+    
+    X-Gentoo-Bug: 557222
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=557222
+
+commit 6a422982579786cb8308af04ccca6622afa06e50
+Author: Jason Zaman <jason@perfinion.com>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    tmpfiles: run restorecon on the entire path
+    
+    The tmpfiles "d" entry will create a full path and only the last dir in
+    the path will have its SELinux label set correctly. This patch will
+    restorecon the parents as well so that the selinux labels are correct.
+    
+    eg, "d /run/libvirt/lxc", then "lxc" would have the correct SELinux
+    label but "libvirt" would not.
+    
+    Signed-off-by: Jason Zaman <jason@perfinion.com>
+
+commit f69833a1e17d1cf65e96a34fcc0e48caf9d90d64
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mountinfo: fix -e and -E options
+    
+    Add the -e and -E options to getoptstring so they are recognized.
+
+commit eeadca0b8a5b87c26e60a58563251604350a7a3b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add EERROR_QUIET and EINFO_QUIET to environment whitelist
+
+commit dde339070b4850dc1fadf4992cc01d3468992106
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Increment version
+
+commit 1736be3bc3ebbc1440f87b49fc353e81fb0a6037
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    savecache: Fix unable to create cache message
+    
+    The cache is created in $RC_LIBEXECDIR, not $RC_SVCDIR, so fix the error
+    message when we fail to create it to match.
+
+commit a36a635b016a7427dd1739a26c951fedf22f0dec
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    tmpfiles: Recognize type 'v' (create btrfs subvol)
+    
+    This change does NOT implement btrfs subvol creation.  Instead, it
+    treats 'v' the same as 'd', which is an acceptable fallback
+    according to the manual.
+    
+    Fixes #58
+
+commit 9310ccc06bcadd8897aed51cd51c94fccb7d9c07
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    Remove execute bit from tmpfiles.sh.in
+
+commit 0c2e4eb3cd7935d375b74099a3a9a5fe519e6cab
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit d2ce07e227ec95370e8aee5f1199edc6ad61aff9
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -977,641 +1231,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 508574
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=508574
-
-commit ad770d739cd7d68dd16b4b2e23d4822ebeb3305b
-Author: Rick Farina (ZeroChaos) <sidhayn@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    localmount: unmount aufs branches
-
-commit 866501be1c554de074533ee98400124393d7fe9d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    typo fix
-
-commit 20006625a6d37c5add84dd4c8454649279645604
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: Document start_inactive and in_background_fake
-
-commit e860b7cb4f3749528ae3db0f3cb500ef889d2781
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "sysfs: fix permissions on cgroup mounts"
-    
-    This reverts commit 7a25491ced95e14b04b8fe6225171564c87fcde0.
-    This was broken; I need to look further into it.
-
-commit 7a25491ced95e14b04b8fe6225171564c87fcde0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysfs: fix permissions on cgroup mounts
-
-commit 50658449bd46f1a53b8eb11d34f6eefdd1ceba9c
-Author: Roy Marples <roy@marples.name>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Use exception-based approach for cgroup/ulimit setup
-    
-    Note from William Hubbs:
-    I spoke with Roy about this, and he pointed out that user-defined
-    functions may need the limits applied, so it is better to go with a
-    method that uses exceptions to determine which functions apply the
-    limits.
-    
-    X-Gentoo-Bug: 522408
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=522408
-
-commit de60ffeebe93ffdc09c1dda51e04f29485d96cdb
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    runscript: move verbose mode setting near debug setting
-
-commit d032b17897278659ae103d1bcf2aea7739cdbfbb
-Author: Joe M <joe9mail@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    savecache: check permissions on the correct directory
-
-commit d4204a97a2410fcf37a64385204e6452c6958e8d
-Author: Andrew Gregory <andrew.gregory.8@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles.sh: add support for C action
-    
-    Recursively copies files or directories.  Added by systemd in 849958d1.
-
-commit 6f3f50d4530f583d0d2aedec8af20077a9d07f4f
-Author: Andrew Gregory <andrew.gregory.8@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles.sh: add support for + modifier
-    
-    systemd added support for b+, c+, p+, and L+ in 2e78fa79 and 1554afae to
-    remove the target path if it already exists.
-
-commit 4f4f00d612ce6b43a2dcba9e0c39816e5d6d92a7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    cgroups: fix cgroup subsystem mounting
-    
-    Originally, we aborted all of the cgroup setup if /sys/fs/cgroup/openrc
-    was already mounted. This  caused an issue in lxc containers, so we
-    should always allow the subsystems to be mounted.
-    
-    X-Gentoo-Bug: 520606
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=520606
-
-commit 7b9fe5fced762935c48c90797b3bba2c82f10eb2
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start work on 0.14
-
-commit c60ef5c381e9edc7e30be9dcc9cc7e123515452e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mtab: add verbose level deprecation warnings
-
-commit bee3f8463cbc372c344541077924ddd45ca62ef1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    README: Clarify devfs changes
-    
-    I was informed that the previous explanation of the devfs changes could
-    be interpreted to mean that we mount a second /dev on top of the one
-    that was mounted by the kernel or initramfs. This change makes it clear
-    that is not the case.
-
-commit 72b7b32502ff149c0f0f8a7833cfd213f6cf933e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    README: add notes about devfs changes
-
-commit 645f7b6947d9fc44fbece0931a3ddb10d3d79b27
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    adjust deprecation schedule for mtab
-    
-    - Quiet the deprecation messages forr now
-    - update the feature removal schedule to reflect that it will be removed
-      in 2.0.
-
-commit 1b26d547a50e2554483bdbfd288fae75fd76bfa0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Deprecate the mtab service script
-    
-    The mtab service script is no longer needed on modern Linux systems, so
-    we can remove it in 1.0. However, we need to set a deprecation notice
-    first.
-
-commit c8018d04a7b238b57a3d74a68e2af02af395f510
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles: fix relabel to run restorecon before chown and chmod
-
-commit 6f080e9c1a2a9b9c308cdc03f9cf782c4ce4d440
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles: Move relabelling before any other calls for device nodes
-    
-    Device nodes are normally never device_t so this type does not
-    have many permissions. After the mknod, the device should have
-    its label corrected before any other operations (like chmod).
-
-commit 2c265e13c60be0ed583a871ca12a22e4d379a7c0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    README: expand information about rc and runscript deprecation
-
-commit 24d82d9ff1ca1ba7085814f8f6530124c117aa5f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc.conf: document rc_verbose
-
-commit d1e71b07afd4b900894ce4ea45f94010c70e32cc
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Show rc and runscript deprecation warnings in verbose mode
-    
-    These messages are being changed for this release to show in verbose
-    mode because of the number of times they display.
-
-commit 7b744befac2049eb6372a7f0c5420c740aa0a4ea
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    bootmisc: do not run the clean_run function in an LXC container
-
-commit faaaab4bf540b4df011abea5985963dbc9e1646a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    hwclock: fix comments about the usage of clock_hctosys
-    
-    The clock_hctosys variable should be set to YES if you are not using NTP to
-    synchronize your system time; it doesn't have anything to do with the
-    kernel configuration.
-
-commit d29db70efb2adfbd200ba4a03fa78653e97893a6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysctl.linux.in: use the --system option
-    
-    According to the sysctl man page, the --system option causes sysctl to
-    process all system configuration files, which include the following:
-    
-    /run/sysctl.d/*.conf
-    /etc/sysctl.d/*.conf
-    /usr/local/lib/sysctl.d/*.conf
-    /usr/lib/sysctl.d/*.conf
-    /lib/sysctl.d/*.conf
-    /etc/sysctl.conf
-    
-    X-Gentoo-Bug: 484796
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=484796
-
-commit 6a337ff6c531d9d7310253b67b3e95d1ce5d214c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    devfs: several small clarifications
-    
-    - Rename the static_dev switch in conf.d/devfs to skip_mount_dev since
-      this is a better description of what the switch does.
-    
-    - Clarify the error messages in the devfs service script based on the
-      new name of the switch.
-
-commit 647e08eb9166d23d0c64f0c8767d93a06bd21a40
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles.sh: do not use install
-    
-    install is in /usr which causes problems if /usr is not mounted.
-    Instead, checkpath and "mkdir -p" can do everything required and are
-    both available before /usr is mounted.
-    Since checkpath also handles selinux labels correctly,
-    _restorecon after is not required.
-    
-    X-Gentoo-Bug: 503408
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=503408
-
-commit 2624a8c8a7030180f9548a6e2fba5b0a82c5f046
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: apply ownership to all paths given on command line
-    
-    The stat structure was not being initialized correctly in do_check. This
-    was causing the owner adjustment to be skipped if the first path had the
-    correct owner.
-    
-    Also, the "correcting owner" message should always be printed when the
-    owner is being changed.
-    
-    X-Gentoo-Bug: 518042
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=518042
-
-commit 275714bdc74c363ca1612b2b6b97f74f7a62b50c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: style fix
-
-commit e3bfb68aece9378a0669c2893285808100fd5ea6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    hwclock: always set the kernel's timezone
-    
-    The hwclock service should set the time zone regardless of the setting
-    of the clock_hctosys variable. This needs to be done to prevent issues
-    when the system time is being synchronized using ntp.
-    
-    X-Gentoo-Bug: 434410
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=434410
-
-commit 1f7582c78b2697c3f2617a4a89afabaf3550b0fb
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/librc/librc-daemon.c: style fix
-
-commit cc1bc6a4cec772c50a1b5232655ff34370d204b1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/rc/Makefile: typo fix
-
-commit 40f42ced21b1c0c99780b801d28fafd91a858f90
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-status: fix infinite  loop when using stacked runlevels
-    
-    Remove the recursive call in print_stacked_services which was causing an
-    infinite loop when using stacked runlevels.
-    I would like to thank Doug Freed and Jason Zaman for assisting with
-    tracking this down.
-    
-    X-Gentoo-Bug: 514972
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=514972
-
-commit 1a1d53335b2e6e3240b738ba1f81de64e552c337
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    devfs: fix restorecon ebegin message to match sys
-    
-    X-Gentoo-Bug: 516956
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516956
-
-commit 99939b9839fb45093fe193e06139eab4a95637da
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysfs: restorecon after mounting /sys
-    
-    X-Gentoo-Bug: 516956
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516956
-
-commit 89907b60bac51db2cda1afe4555676577ef498a8
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    move the selinux_setup function into rc-selinux
-    
-    X-Gentoo-Bug: 516956
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516956
-
-commit a94a9740d545817294cc431180db0f22fc923b13
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: style fixes
-
-commit 8b8edc29705b843988b97242942a409241c182eb
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    style fixes
-
-commit 010c2ab18b4be2068237cf0db97e9348bba65ac6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Rename SELinux source files
-    
-    The name rc-selinux-util.* is a bit long, so I renamed the source files
-    to rc-selinux.*
-    
-    X-Gentoo-Bug: 516956
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516956
-
-commit 9c689542c3246e793310db938374bc97600435e6
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: restore the SELinux context
-    
-    X-Gentoo-Bug: 516956
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516956
-
-commit 525d7140b12a8e259f9d919f24148e369e9ff7d1
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    devfs: fix SELinux contexts
-    
-    SELinux contexts in /dev need to be fixed after it is mounted
-    
-    X-Gentoo-Bug: 516956
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516956
-
-commit 4f784bd46923486773edcd7749246a21bd419e6b
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles: set the proper SELinux context
-    
-    Restore the label on the created file / dir based on the policy
-    fcontexts.
-    
-    X-Gentoo-Bug: 516956
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516956
-
-commit 4a1afa694cd8ebd6591d5a825ee35e4f57c98469
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add SELinux support to the build system
-    
-    X-Gentoo-Bug: 516956
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516956
-
-commit 25c229cf830c8e822a206f2e08f9c94964a47aa9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysfs.in: fix indentation
-
-commit 71d6d61b28c4c0f285ec51459551d900dfa4ea71
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: fix logic for the writable option
-    
-    The -W option does not need an argument of its own; it can take the
-    first path after all other options are processed on the command line.
-    
-    Also, move the processing for the -W option out of the switch so it will
-    be in the same loop as the other processing.
-
-commit 40141244e349e6e1d2dfb9ebfbcbf62f68d33a9d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc-run.8: more updates and clarifications for checkpath
-    
-    X-Gentoo-Bug: 500606
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=500606
-
-commit d59737afb159d993916836903d9e670a1334c93a
-Author: Alexander V Vershilov <qnikst@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc.8: update checkpath documentation
-    
-    X-GENTOO-BUG: 500606
-    X-GENTOO-BUG-URL: https://bugs.gentoo.org/show_bug.cgi?id=500606
-
-commit f66f41c4f03d8077bdaa047a7a93f6c92c0a69de
-Author: Alexander V Vershilov <qnikst@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    typo fix
-
-commit d80482c2f4ec35a880ee099eeb3983b255d65e8f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: fix error message in previous commit
-
-commit d0040aff0aa033fd5d5c40480008e98ee5e1f11a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: report an error if required options were not specified
-    
-    Before this commit, not specifying -d, -f, -p or -W in a checkpath
-    command meant the command exited successfully but actually did nothing.
-    
-    This is an error condition, so report it as such.
-
-commit 75e06d85584fc3ebfa26fbca97ea60b687247bb0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Style Fixes
-
-commit 1a44be0f16a7a1de8a176e7c656f8513494e0e64
-Author: Alexander V Vershilov <qnikst@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    cgroups: only run cgroup setup when starting a service
-    
-    Status call should not set limits as it requires root permissions,
-    also this is not safe, as current process may reach limitation.
-    
-    Solution is to set limits and move process to service cgroup only
-    on start.
-    
-    X-GENTOO-BUG: 500364
-    X-GENTOO-BUG-URL: https://bugs.gentoo.org/show_bug.cgi?id=500364
-
-commit f265ddde971d0fdb97a4f14b4cc96140be7b4628
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    FEATURE_REMOVAL_SCHEDULE: add entry for local_start/stop
-
-commit 57b9e601a97fac3a044ec5d7e5f11b6219c892b7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/local: bring functioning more in line with how sysctl works
-    
-    - remove the has_executables variable since it isn't used.
-    - Convert the conditional calls to ewend/vewend to a single call to veend.
-    - Always call eend after all scripts are executed passing the appropriate
-    error code.
-    
-    Because of this change, you will see only an overall status when
-    starting or stopping local unless you are using verbose mode.
-
-commit c1de8c09bf4895c6108d297fcebd63046e49e614
-Author: Thomas D <whissi@whissi.de>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add support for verbose "local" service runscript
-    
-    With this patch, the "local" service runscript will be verbose like the
-    "sysctl" service when 'rc_verbose="yes"' is set.
-    
-    Example output successful start:
-    
-     * Stopping local ...
-     *   Executing "/etc/local.d/00will-stop.stop" ...                  [ ok ]
-     * Starting local ...
-     *   Executing "/etc/local.d/00will-start.start" ...                [ ok ]
-     *   Executing "/etc/local.d/01 test.start" ...                     [ ok ]
-    
-    Example output with failing executables:
-    
-     * Stopping local ...
-     *   Executing "/etc/local.d/00will-stop.stop" ...                  [ ok ]
-     *   Executing "/etc/local.d/will-fail.stop" ...
-    mount: can't find foo in /etc/fstab
-     *   Execution of "/etc/local.d/will-fail.stop" failed.             [ !! ]
-     * Starting local ...
-     *   Executing "/etc/local.d/00will-start.start" ...                [ ok ]
-     *   Executing "/etc/local.d/01 test.start" ...                     [ ok ]
-     *   Executing "/etc/local.d/will-fail2.start" ...
-    mount: can't find bar in /etc/fstab
-     *   Execution of "/etc/local.d/will-fail2.start" failed.           [ !! ]
-     *   Executing "/etc/local.d/will-fail.start" ...
-    mount: can't find foo in /etc/fstab
-     *   Execution of "/etc/local.d/will-fail.start" failed.            [ !! ]
-    
-    X-Gentoo-Bug: 489274
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=489274
-
-commit 143f1c64c13e4930e3880a393b7253d6fbc0ed58
-Author: Kaarle Ritvanen <kaarle.ritvanen@datakunkku.fi>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysctl.Linux.in: remove -lxc from keywords
-    
-    certain tunables can be set independently for each container
-    
-    X-Gentoo-Bug: 516050
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=516050
-
-commit b4b34d909c36898095a0036f90a328838137e3a4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Schedule removal of the opts variable from service scripts
-
-commit 56112a6f1f176696e5f39a86fe4b52017ccdd04c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysfs: Do not mount openrc cgroup if it is already mounted
-    
-    We were not checking to see if /sys/fs/cgroup/openrc was already mounted
-    before we mounted it. This fixes that issue.
-    Thanks to Robin Johnson <robbat2@gentoo.org> for pointing this out.
-
-commit 09d81e86f210acf5270ea4bd0fa7319a49f88131
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Make history a separate document
-    
-    Move the additional history information from Daniel Robbins' wiki
-    page along with the history from README to a separate file,
-    README.history.
-    
-    X-Gentoo-Bug: 513024
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/513024
-
-commit 23cb55d843b165d5508f330287ed329358fc85dc
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/start-stop-daemon.8: correct argument from --nice to --nicelevel
-    
-    X-Gentoo-Bug: 510648
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=510648
-
-commit 094bc17cb0ad75da189ebf1a8242a378928a1eef
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles.sh: fix comment processing
-    
-    If you happened to format a comment with no white space after the '#',
-    it was not being processed.
-    
-    Reported-by: consus@gmx.com
-    X-Gentoo-Bug: 511804
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=511804
-
-commit 6126700a0723efa4ef1e299da0f58498f742c3a1
-Author: Sven Vermeulen <sven.vermeulen@siphos.be>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    SELinux filesystem is at /sys/fs/selinux
-    
-    The SELinux filesystem has been moved to /sys/fs/selinux for quite some
-    time. We kept supporting /selinux for backwards compatibility, but it's
-    time to move forward on this.
-    
-    X-Gentoo-Bug: 511718
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=511718
-    Signed-off-by: Sven Vermeulen <sven.vermeulen@siphos.be>
-
-commit 19cccb2e9416311b85fcad3c15d4d988fed2f954
-Author: Robin H. Johnson <robbat2@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sh/tmpfiles.sh: license under 2-clause BSD
-    
-    As the author of our tmpfiles.sh script, I hereby license it under
-    2-clause BSD, like the rest of openrc.
-    
-    Signed-off-by: Robin H. Johnson <robbat2@gentoo.org>
-
-commit 9eb9b28d3e3b6725559fb38101ae869c1e4530ce
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: filter out container processes on OpenVZ host
-    
-    Thanks to info and testing done by Daniel Robbins <drobbins@funtoo.org>,
-    there is now a fix for this. Below is his description of the steps
-    OpenRC needed to use.
-    
-    1) See if /proc/<pid>/status exists
-    2) If it does, see if it has a "envID:" field
-    3) If it does, see if "envID:" is set to "0"
-    4) If so, then it's one of the host's processes and should be a
-    candidate for the list. Otherwise, it is one of the container's
-    processes and should be ignored.
-    
-    This should fix the bug and allow start-stop-daemon to work properly on
-    OpenVZ hosts.
-    
-    X-Gentoo-Bug: 376817
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=376817
