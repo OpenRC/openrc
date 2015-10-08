@@ -74,22 +74,21 @@ stop()
 
 		local aufs_branch aufs_mount_point aufs_si_id aufs_br_id branches
 		for aufs_si_dir in /sys/fs/aufs/si*; do
-			if [ -d "${aufs_si_dir}" ]; then
-				aufs_si_id="si=${aufs_si_dir#/sys/fs/aufs/si_}"
-				aufs_mount_point="$(mountinfo -o ${aufs_si_id})"
-				branches="$aufs_si_dir/br[0-9] $aufs_si_dir/br[0-9][0-9] $aufs_si_dir/br[0-9][0-9][0-9]"
-				for x in $branches; do
-					[ -e "${x}" ] || continue
-					aufs_branch=$(sed 's/=.*//g' $x)
-					eindent
-					if ! mount -o "remount,del:$aufs_branch" "$aufs_mount_point" > /dev/null 2>&1; then
-						ewarn "Failed to remove branch $aufs_branch from aufs \
-						$aufs_mount_point"
-					fi
-					eoutdent
-					sync
-				done
-			fi
+			[ -d "${aufs_si_dir}" ] || continue
+			aufs_si_id="si=${aufs_si_dir#/sys/fs/aufs/si_}"
+			aufs_mount_point="$(mountinfo -o ${aufs_si_id})"
+			branches="$aufs_si_dir/br[0-9] $aufs_si_dir/br[0-9][0-9] $aufs_si_dir/br[0-9][0-9][0-9]"
+			for x in $branches; do
+				[ -e "${x}" ] || continue
+				aufs_branch=$(sed 's/=.*//g' $x)
+				eindent
+				if ! mount -o "remount,del:$aufs_branch" "$aufs_mount_point" > /dev/null 2>&1; then
+					ewarn "Failed to remove branch $aufs_branch from aufs \
+					$aufs_mount_point"
+				fi
+				eoutdent
+				sync
+			done
 		done
 	fi
 
