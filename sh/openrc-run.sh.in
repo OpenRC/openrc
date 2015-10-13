@@ -222,7 +222,7 @@ done
 sourcex "$RC_SERVICE"
 
 eval "printf '%s\n' $required_dirs" | while read _d; do
-	if [ ! -d "$_d" ]; then
+	if [ -n "$_d" ] && [ ! -d "$_d" ]; then
 		eerror "$RC_SVCNAME: \`$_d' is not a directory"
 		exit 1
 	fi
@@ -230,7 +230,7 @@ done
 unset _d
 
 eval "printf '%s\n' $required_files" | while read _f; do
-	if [ ! -r "$_f" ]; then
+	if [ -n "$_f" ] && [ ! -r "$_f" ]; then
 		eerror "$RC_SVCNAME: \`$_f' is not readable"
 		exit 1
 	fi
