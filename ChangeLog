@@ -1,3 +1,50 @@
+commit 4e44e2cd73fb7fe08fb229bc3192d14f97dc2aa2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+    
+    X-Gentoo-Bug: 563010
+    X-Gentoo-Bug: https://bugs.gentoo.org/show_bug.cgi?id=563010
+
+commit 88b807f9bcea5ec5bf5c5edb3c7161bf5c12d2d0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    increment version number
+
+commit feba5d86b73b0df5587b178e80e85129a60861cd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mountinfo: make sure the netdev variable is initialized on Linux
+    
+    This fixes the following regression:
+    
+    X-Gentoo-Bug: 562668
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562668
+
+commit 3b1e96a6a3af3de68a18558f3a6ebac31430a1cd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-run.sh: allow spaces in required_{files,dirs}
+    
+    X-Gentoo-Bug: 562320
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562320
+
+commit 79998bdf9cb5089f423e00bfa4bc3816b64c58d4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    increment version number
+
+commit 050ddfae4ad1ad0dc5993766e0bd90739bd41de9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit d5116cc697c9eb275ab8497939ab41504e5ce578
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
