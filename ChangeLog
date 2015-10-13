@@ -1,3 +1,15 @@
+commit ce71ffbfbe5e44bb61a3f00faf8466071dab5ea7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-run.sh: fix new required_* tests to exit properly
+
+commit d9ee8ca5842983b59cc2c6e595d21e9a26a4f000
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update changelog
+
 commit 4e44e2cd73fb7fe08fb229bc3192d14f97dc2aa2
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
