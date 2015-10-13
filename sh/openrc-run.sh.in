@@ -227,6 +227,7 @@ eval "printf '%s\n' $required_dirs" | while read _d; do
 		exit 1
 	fi
 done
+[ $? -ne 0 ] && exit 1
 unset _d
 
 eval "printf '%s\n' $required_files" | while read _f; do
@@ -235,6 +236,7 @@ eval "printf '%s\n' $required_files" | while read _f; do
 		exit 1
 	fi
 done
+[ $? -ne 0 ] && exit 1
 unset _f
 
 if [ -n "$opts" ]; then
