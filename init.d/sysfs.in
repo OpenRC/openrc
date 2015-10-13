@@ -61,16 +61,6 @@ mount_misc()
 		fi
 	fi
 
-	# set up kernel support for cgroups
-	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
-		if grep -qs cgroup /proc/filesystems; then
-			ebegin "Mounting cgroup filesystem"
-			local opts="${sysfs_opts},mode=755,size=${rc_cgroupsize:-10m}"
-			mount -n -t tmpfs -o ${opts} cgroup_root /sys/fs/cgroup
-			eend $?
-		fi
-	fi
-
 	# set up kernel support for fusectl
 	if [ -d /sys/fs/fuse/connections ] \
 		&& ! mountinfo -q /sys/fs/fuse/connections; then
@@ -108,6 +98,16 @@ mount_misc()
 
 mount_cgroups()
 {
+	# set up kernel support for cgroups
+	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
+		if grep -qs cgroup /proc/filesystems; then
+			ebegin "Mounting cgroup filesystem"
+			local opts="${sysfs_opts},mode=755,size=${rc_cgroupsize:-10m}"
+			mount -n -t tmpfs -o ${opts} cgroup_root /sys/fs/cgroup
+			eend $?
+		fi
+	fi
+
 	mountinfo -q /sys/fs/cgroup || return 0
 
 	if ! mountinfo -q /sys/fs/cgroup/openrc; then
