@@ -221,16 +221,16 @@ done
 # Load our script
 sourcex "$RC_SERVICE"
 
-for _d in $required_dirs; do
-	if [ ! -d $_d ]; then
+eval "printf '%s\n' $required_dirs" | while read _d; do
+	if [ ! -d "$_d" ]; then
 		eerror "$RC_SVCNAME: \`$_d' is not a directory"
 		exit 1
 	fi
 done
 unset _d
 
-for _f in $required_files; do
-	if [ ! -r $_f ]; then
+eval "printf '%s\n' $required_files" | while read _f; do
+	if [ ! -r "$_f" ]; then
 		eerror "$RC_SVCNAME: \`$_f' is not readable"
 		exit 1
 	fi
