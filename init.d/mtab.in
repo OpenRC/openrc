@@ -14,16 +14,17 @@ start()
 {
 	local rc=0
 	ebegin "Updating /etc/mtab"
-	if [ -L /etc/mtab ] ; then
-		ewarn "/etc/mtab is a symlink, not updating."
-		ewarn "FYI - You can safely remove mtab from your runlevels."
-	elif ! checkpath -W /etc; then
+	if ! checkpath -W /etc; then
 		rc=1
-	elif [ ! -e /etc/mtab ]; then
-		einfo "Creating mtab symlink"
+	elif ! yesno ${mtab_is_file:-no}; then
+		[ ! -L /etc/mtab ] && [ -f /etc/mtab] &&
+			ewarn "Removing /etc/mtab file"
+		einfo "Creating mtab symbolic link"
 		ln -snf /proc/self/mounts /etc/mtab
 	else
-		einfo "Updating mtab file"
+		[ -L /etc/mtab ] && ewarn "Removing /etc/mtab symbolic link"
+		rm -f /etc/mtab
+		einfo "Creating mtab file"
 		# With / as tmpfs we cannot umount -at tmpfs in localmount as that
 		# makes / readonly and dismounts all tmpfs even if in use which is
 		# not good. Luckily, umount uses /etc/mtab instead of /proc/mounts

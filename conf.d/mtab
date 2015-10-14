@@ -1,0 +1,5 @@
+# This setting controls whether /etc/mtab is a file or symbolic link.
+# Most of the time, you shouldn't touch this. However, if the default
+# breaks your system in some way, please see the NEWS.md file that comes
+# with OpenRC for the actions to take.
+# mtab_is_file=no

@@ -3,6 +3,29 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.18.3
+
+Modern Linux systems expect /etc/mtab to be a symbolic link to
+/proc/self/mounts. Reasons for this change include support for mount
+namespaces, which will not work if /etc/mtab is a file.
+By default, the mtab service enforces this on each reboot.
+
+If you find that this breaks your system in some way, please do the
+following:
+
+- Set mtab_is_file=yes in /etc/conf.d/mtab.
+
+- Restart mtab. This will recreate the /etc/mtab file.
+
+- Check for an issue on https://github.com/openrc/openrc/issues
+  explaining why you need /etc/mtab to be a file. If there isn't one,
+  please open one and explain in detail why you need this to be a file.
+  If there is one, please add your comments to it. Please give concrete
+  examples of why  it is important that /etc/mtab be a file instead of a
+  symbolic link. Those comments will be taken into consideration for how
+  long to keep supporting mtab as a file or when the support can be
+  removed.
+
 ## OpenRC-0.18
 
 The behaviour of localmount and netmount in this version is changing. In
