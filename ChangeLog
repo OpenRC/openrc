@@ -1,3 +1,21 @@
+commit fb23cbe204b9adeb817e2f5be7a1bb827bb9a477
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mtab: make /etc/mtab as a file configurable
+
+commit a4346bb7f5fc09e81a61032ebc05f70692a4a04c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start work on 0.18.3
+
+commit 776346e2cd4a43ffeaf268b8a89927d9f3f9eca5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update changelog
+
 commit ce71ffbfbe5e44bb61a3f00faf8466071dab5ea7
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
