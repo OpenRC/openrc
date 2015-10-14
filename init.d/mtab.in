@@ -17,7 +17,7 @@ start()
 	if ! checkpath -W /etc; then
 		rc=1
 	elif ! yesno ${mtab_is_file:-no}; then
-		[ ! -L /etc/mtab ] && [ -f /etc/mtab] &&
+		[ ! -L /etc/mtab ] && [ -f /etc/mtab ] &&
 			ewarn "Removing /etc/mtab file"
 		einfo "Creating mtab symbolic link"
 		ln -snf /proc/self/mounts /etc/mtab
