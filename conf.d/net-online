@@ -1,0 +1,15 @@
+# The interfaces setting controls which interfaces the net-online
+# service considers in deciding whether the network is active. By
+# default, it is all ethernet or wireless LAN interfaces.
+#interfaces=""
+
+# This setting controls whether a ping to the default gateway is
+# included in the test for network connectivity after all interfaces
+# are active.
+#ping_default_gateway=no
+
+# The timeout setting controls how long the net-online service waits
+# for the network to be configured.
+# The default is 120 seconds.
+# if this is set to 0, the wait is infinite.
+#timeout=120

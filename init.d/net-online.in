@@ -1,0 +1,69 @@
+#!@SBINDIR@/openrc-run
+# Copyright (C) 2015 William Hubbs <w.d.hubbs@gmail.com>
+# Released under the 2-clause BSD license.
+
+description="Delays until the network is online or a specific timeout"
+
+depend()
+{
+	after modules
+	need sysfs
+	keyword -jail -lxc -openvz -prefix -systemd-nspawn -uml -vserver
+}
+
+get_interfaces()
+{
+	local ifname iftype
+	for ifname in /sys/class/net/*; do
+		read iftype < ${ifname}/type
+		[ "$iftype" = "1" ] && printf "%s " ${ifname##*/}
+	done
+}
+
+get_default_gateway()
+{
+	local cmd gateway
+	if command -v ip > /dev/null 2>&1; then
+		cmd="ip route show"
+	else
+		cmd=route
+	fi
+	set -- $($cmd | grep default)
+	[ "$2" != via ] && gateway="$2" || gateway="$3"
+	printf "%s" $gateway
+}
+
+start ()
+{
+	local carriers configured dev gateway ifcount infinite interfaces
+	local rc state timeout x
+
+	ebegin "Checking to see if the network is online"
+	rc=0
+	interfaces=${interfaces:-$(get_interfaces)}
+	timeout=${timeout:-120}
+ [ $timeout -eq 0 ] && infinite=true || infinite=false
+ while $infinite || [ $timeout -gt 0 ]; do
+	carriers=0
+	configured=0
+	ifcount=0
+ 	for dev in ${interfaces}; do
+		: $((ifcount += 1))
+		read x < /sys/class/net/$dev/carrier
+		[ $x -eq 1 ] && : $((carriers += 1))
+		read x < /sys/class/net/$dev/operstate
+		[ "$x" = up ] && : $((configured += 1))
+	done
+	[ $configured -eq $ifcount ] && [ $carriers -ge 1 ] && break
+	sleep 1
+	: $((timeout -= 1))
+ done
+ ! $infinite && [ $timeout -eq 0 ] && rc=1
+ if [ $rc -eq 0 ] && yesno ${ping_default_gateway:-no}; then
+ 	gateway="$(get_default_gateway)"
+ 	if [ -n "$gateway" ] && ! ping -c 1 $gateway > /dev/null 2>&1; then
+		rc=1
+	fi
+ fi
+ eend $rc "The network is offline"
+}

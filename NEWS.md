@@ -3,6 +3,18 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.19
+
+This version adds a net-online service. By default, this
+service will check all known network interfaces for a configured
+interface or a carrier. It will register as started only when all
+interfaces are configured and there is at least a carrier on one
+interface. The behaviour of this service can be modified in
+/etc/conf.d/net-online.
+
+Currently, this only works on Linux, but if anyone wants to port to
+*bsd, that would be welcomed.
+
 ## OpenRC-0.18.3
 
 Modern Linux systems expect /etc/mtab to be a symbolic link to
