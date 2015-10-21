@@ -216,6 +216,9 @@ start()
 			case "$RC_SYS" in
 				VSERVER|OPENVZ|LXC|SYSTEMD-NSPAWN) ;;
 				*)
+					if yesno ${previous_dmesg:-no}; then
+						mv /var/log/dmesg /var/log/dmesg.old
+					fi
 					dmesg > /var/log/dmesg
 					chmod 640 /var/log/dmesg
 					;;

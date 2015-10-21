@@ -8,3 +8,8 @@ wipe_tmp="YES"
 # Write the initial dmesg log into /var/log/dmesg after boot
 # This may be useful if you need the kernel boot log afterwards
 log_dmesg="YES"
+
+# Save the previous dmesg log to dmesc.old
+# This may be useful if you need to compare the current boot to the
+# previous one.
+#previous_dmesg=no
