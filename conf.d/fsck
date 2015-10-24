@@ -32,3 +32,9 @@ fsck_on_battery="YES"
 # This is useful when periodic filesystem checks are causing undesirable
 # delays at startup, but such delays at shutdown are acceptable.
 fsck_shutdown="NO"
+
+# fsck_abort_on_errors can be set to no to cause fsck to not abort on
+# errors.
+# This is useful when periodic filesystem checks are causing undesirable
+# aborts.
+fsck_abort_on_errors="YES"

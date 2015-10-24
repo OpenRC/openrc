@@ -20,7 +20,7 @@ depend()
 }
 
 _abort() {
-	rc-abort
+	yesno ${fsck_abort_on_errors:-yes} && rc-abort
 	return 1
 }
 
