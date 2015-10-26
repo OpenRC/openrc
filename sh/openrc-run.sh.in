@@ -66,6 +66,9 @@ need() {
 use() {
 	[ -n "$*" ] && echo "use $*"
 }
+want() {
+	[ -n "$*" ] && echo "want $*"
+}
 before() {
 	[ -n "$*" ] && echo "before $*"
 }

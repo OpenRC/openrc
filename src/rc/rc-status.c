@@ -343,6 +343,7 @@ rc_status(int argc, char **argv)
 		}
 		needsme = rc_stringlist_new();
 		rc_stringlist_add(needsme, "needsme");
+		rc_stringlist_add(needsme, "wantsme");
 		nservices = rc_stringlist_new();
 		alist = rc_stringlist_new();
 		l = rc_stringlist_add(alist, "");
@@ -365,7 +366,7 @@ rc_status(int argc, char **argv)
 		 * be added to the list
 		 */
 		unsetenv("RC_SVCNAME");
-		print_level("Dynamic", "needed");
+		print_level("Dynamic", "needed/wanted");
 		print_services(NULL, nservices);
 		print_level("Dynamic", "manual");
 		print_services(NULL, services);

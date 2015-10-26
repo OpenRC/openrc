@@ -16,6 +16,9 @@ need() {
 use() {
 	[ -n "$*" ] && echo "$RC_SVCNAME iuse $*" >&3
 }
+want() {
+	[ -n "$*" ] && echo "$RC_SVCNAME iwant $*" >&3
+}
 before() {
 	[ -n "$*" ] && echo "$RC_SVCNAME ibefore $*" >&3
 }

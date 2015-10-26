@@ -192,7 +192,9 @@ valid_service(const char *runlevel, const char *service, const char *type)
 
 	if (!runlevel ||
 	    strcmp(type, "ineed") == 0 ||
-	    strcmp(type, "needsme") == 0)
+	    strcmp(type, "needsme") == 0  ||
+	    strcmp(type, "iwant") == 0 ||
+	    strcmp(type, "wantsme") == 0)
 		return true;
 
 	if (rc_service_in_runlevel(service, runlevel))
@@ -543,6 +545,7 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 	types = rc_stringlist_new();
 	rc_stringlist_add(types, "ineed");
 	rc_stringlist_add(types, "iuse");
+	rc_stringlist_add(types, "iwant");
 	rc_stringlist_add(types, "iafter");
 	services = rc_deptree_depends(deptree, types, list, runlevel,
 				      RC_DEP_STRICT | RC_DEP_TRACE | options);
@@ -648,6 +651,7 @@ typedef struct deppair
 static const DEPPAIR deppairs[] = {
 	{ "ineed",	"needsme" },
 	{ "iuse",	"usesme" },
+	{ "iwant",	"wantsme" },
 	{ "iafter",	"ibefore" },
 	{ "ibefore",	"iafter" },
 	{ "iprovide",	"providedby" },
@@ -844,6 +848,7 @@ rc_deptree_update(void)
 			/* If we're after something, remove us from the before list */
 			if (strcmp(type, "iafter") == 0 ||
 			    strcmp(type, "ineed") == 0 ||
+			    strcmp(type, "iwant") == 0 ||
 			    strcmp(type, "iuse") == 0) {
 				if ((dt = get_deptype(depinfo, "ibefore")))
 					rc_stringlist_delete(dt->services, depend);
@@ -957,6 +962,7 @@ rc_deptree_update(void)
 	/* Phase 5 - Remove broken before directives */
 	types = rc_stringlist_new();
 	rc_stringlist_add(types, "ineed");
+	rc_stringlist_add(types, "iwant");
 	rc_stringlist_add(types, "iuse");
 	rc_stringlist_add(types, "iafter");
 	TAILQ_FOREACH(depinfo, deptree, entries) {

@@ -155,8 +155,8 @@ cleanup(void)
 	rc_stringlist_free(hotplugged_services);
 	rc_stringlist_free(stop_services);
 	rc_stringlist_free(start_services);
-	rc_stringlist_free(types_n);
-	rc_stringlist_free(types_nua);
+	rc_stringlist_free(types_nw);
+	rc_stringlist_free(types_nwua);
 	rc_deptree_free(deptree);
 	free(runlevel);
 #endif
@@ -519,7 +519,7 @@ runlevel_config(const char *service, const char *level)
 }
 
 static void
-do_stop_services(RC_STRINGLIST *types_n, RC_STRINGLIST *start_services,
+do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 				 const RC_STRINGLIST *stop_services, const RC_DEPTREE *deptree,
 				 const char *newlevel, bool parallel, bool going_down)
 {
@@ -530,9 +530,10 @@ do_stop_services(RC_STRINGLIST *types_n, RC_STRINGLIST *start_services,
 	RC_STRINGLIST *nostop;
 	bool crashed, nstop;
 
-	if (!types_n) {
-		types_n = rc_stringlist_new();
-		rc_stringlist_add(types_n, "needsme");
+	if (!types_nw) {
+		types_nw = rc_stringlist_new();
+		rc_stringlist_add(types_nw, "needsme");
+		rc_stringlist_add(types_nw, "wantsme");
 	}
 
 	crashed = rc_conf_yesno("rc_crashed_stop");
@@ -591,7 +592,7 @@ do_stop_services(RC_STRINGLIST *types_n, RC_STRINGLIST *start_services,
 		if (!svc1) {
 			tmplist = rc_stringlist_new();
 			rc_stringlist_add(tmplist, service->value);
-			deporder = rc_deptree_depends(deptree, types_n,
+			deporder = rc_deptree_depends(deptree, types_nw,
 			    tmplist, newlevel ? newlevel : runlevel,
 			    RC_DEP_STRICT | RC_DEP_TRACE);
 			rc_stringlist_free(tmplist);
@@ -754,8 +755,8 @@ main(int argc, char **argv)
 	static RC_STRINGLIST *hotplugged_services;
 	static RC_STRINGLIST *stop_services;
 	static RC_STRINGLIST *start_services;
-	static RC_STRINGLIST *types_n;
-	static RC_STRINGLIST *types_nua;
+	static RC_STRINGLIST *types_nw;
+	static RC_STRINGLIST *types_nwua;
 	static RC_DEPTREE *deptree;
 	RC_STRINGLIST *deporder = NULL;
 	RC_STRINGLIST *tmplist;
@@ -996,13 +997,14 @@ main(int argc, char **argv)
 	if (stop_services)
 		rc_stringlist_sort(&stop_services);
 
-	types_nua = rc_stringlist_new();
-	rc_stringlist_add(types_nua, "ineed");
-	rc_stringlist_add(types_nua, "iuse");
-	rc_stringlist_add(types_nua, "iafter");
+	types_nwua = rc_stringlist_new();
+	rc_stringlist_add(types_nwua, "ineed");
+	rc_stringlist_add(types_nwua, "iwant");
+	rc_stringlist_add(types_nwua, "iuse");
+	rc_stringlist_add(types_nwua, "iafter");
 
 	if (stop_services) {
-		tmplist = rc_deptree_depends(deptree, types_nua, stop_services,
+		tmplist = rc_deptree_depends(deptree, types_nwua, stop_services,
 		    runlevel, depoptions | RC_DEP_STOP);
 		rc_stringlist_free(stop_services);
 		stop_services = tmplist;
@@ -1047,7 +1049,7 @@ main(int argc, char **argv)
 
 	/* Now stop the services that shouldn't be running */
 	if (stop_services && !nostop)
-		do_stop_services(types_n, start_services, stop_services, deptree, newlevel, parallel, going_down);
+		do_stop_services(types_nw, start_services, stop_services, deptree, newlevel, parallel, going_down);
 
 	/* Wait for our services to finish */
 	wait_for_services();
@@ -1109,7 +1111,7 @@ main(int argc, char **argv)
 
 			/* Start those services. */
 			rc_stringlist_sort(&run_services);
-			deporder = rc_deptree_depends(deptree, types_nua, run_services, rlevel->value, depoptions | RC_DEP_START);
+			deporder = rc_deptree_depends(deptree, types_nwua, run_services, rlevel->value, depoptions | RC_DEP_START);
 			rc_stringlist_free(run_services);
 			run_services = deporder;
 			do_start_services(run_services, parallel);
