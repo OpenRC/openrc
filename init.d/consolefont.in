@@ -7,7 +7,7 @@ description="Sets a font for the consoles."
 depend()
 {
 	need localmount termencoding
-	after hotplug bootmisc
+	after hotplug bootmisc modules
 	keyword -openvz -prefix -systemd-nspawn -uml -vserver -xenu -lxc
 }
 
