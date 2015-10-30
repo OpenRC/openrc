@@ -28,6 +28,8 @@
  * SUCH DAMAGE.
  */
 
+#include <fnmatch.h>
+
 #include "queue.h"
 #include "librc.h"
 
@@ -214,6 +216,69 @@ rc_config_list(const char *file)
 }
 librc_hidden_def(rc_config_list)
 
+static void rc_config_set_value(RC_STRINGLIST *config, char *value)
+{
+	RC_STRING *cline;
+	char *entry;
+	size_t i = 0;
+	char *newline;
+	char *p = value;
+	bool replaced;
+	char *token;
+
+	if (! p)
+		return;
+	if (strncmp(p, "export ", 7) == 0)
+		p += 7;
+	if (! (token = strsep(&p, "=")))
+		return;
+
+	entry = xstrdup(token);
+	/* Preserve shell coloring */
+	if (*p == '$')
+		token = value;
+	else
+		do {
+			/* Bash variables are usually quoted */
+			token = strsep(&p, "\"\'");
+		} while (token && *token == '\0');
+
+	/* Drop a newline if that's all we have */
+	if (token) {
+		i = strlen(token) - 1;
+		if (token[i] == '\n')
+			token[i] = 0;
+
+		i = strlen(entry) + strlen(token) + 2;
+		newline = xmalloc(sizeof(char) * i);
+		snprintf(newline, i, "%s=%s", entry, token);
+	} else {
+		i = strlen(entry) + 2;
+		newline = xmalloc(sizeof(char) * i);
+		snprintf(newline, i, "%s=", entry);
+	}
+
+	replaced = false;
+	/* In shells the last item takes precedence, so we need to remove
+	   any prior values we may already have */
+	TAILQ_FOREACH(cline, config, entries) {
+		i = strlen(entry);
+		if (strncmp(entry, cline->value, i) == 0 && cline->value[i] == '=') {
+			/* We have a match now - to save time we directly replace it */
+			free(cline->value);
+			cline->value = newline;
+			replaced = true;
+			break;
+		}
+	}
+
+	if (!replaced) {
+		rc_stringlist_add(config, newline);
+		free(newline);
+	}
+	free(entry);
+}
+
 /*
  * Override some specific rc.conf options on the kernel command line
  */
@@ -271,6 +336,42 @@ static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config)
 	return config;
 }
 #endif
+
+static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
+{
+	DIR *dp;
+	struct dirent *d;
+	RC_STRINGLIST *rc_conf_d_files = rc_stringlist_new();
+	RC_STRING *fname;
+	RC_STRINGLIST *rc_conf_d_list;
+	char path[PATH_MAX];
+	RC_STRING *line;
+
+	if ((dp = opendir(RC_CONF_D)) != NULL) {
+		while ((d = readdir(dp)) != NULL) {
+			if (fnmatch("*.conf", d->d_name, FNM_PATHNAME) == 0) {
+				rc_stringlist_addu(rc_conf_d_files, d->d_name);
+			}
+		}
+		closedir(dp);
+
+		if (rc_conf_d_files) {
+			rc_stringlist_sort(&rc_conf_d_files);
+			TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
+				if (! fname->value)
+					continue;
+				sprintf(path, "%s/%s", RC_CONF_D, fname->value);
+				rc_conf_d_list = rc_config_list(path);
+				TAILQ_FOREACH(line, rc_conf_d_list, entries)
+					if (line->value)
+						rc_config_set_value(config, line->value);
+				rc_stringlist_free(rc_conf_d_list);
+			}
+			rc_stringlist_free(rc_conf_d_files);
+		}
+	}
+	return config;
+}
 
 RC_STRINGLIST *
 rc_config_load(const char *file)
@@ -400,6 +501,8 @@ rc_conf_value(const char *setting)
 			free(old);
 #endif
 		}
+
+		rc_conf = rc_config_directory(rc_conf);
 
 		/* Convert old uppercase to lowercase */
 		TAILQ_FOREACH(s, rc_conf, entries) {

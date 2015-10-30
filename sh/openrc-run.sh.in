@@ -184,6 +184,12 @@ unset _conf_d
 
 # Load any system overrides
 sourcex -e "@SYSCONFDIR@/rc.conf"
+if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
+	for _f in "@SYSCONFDIR@"/rc.conf.d/*.conf; do
+		sourcex -e "$_f"
+	done
+fi
+
 
 # load service supervisor functions
 sourcex "@LIBEXECDIR@/sh/s6.sh"

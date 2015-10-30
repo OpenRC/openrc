@@ -56,6 +56,7 @@ extern "C" {
 #define RC_SYS_WHITELIST   RC_LIBEXECDIR "/conf.d/env_whitelist"
 #define RC_USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"
 #define RC_CONF         RC_SYSCONFDIR "/rc.conf"
+#define RC_CONF_D         RC_SYSCONFDIR "/rc.conf.d"
 #define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
 
 #define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
