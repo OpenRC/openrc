@@ -153,6 +153,10 @@ The retry specification can be either a timeout in seconds or multiple
 signal/timeout pairs (like SIGTERM/5).
 .El
 .Sh ENVIRONMENT
+.Va SSD_IONICELEVEL
+can also set the IO scheduling priority of the daemon, but the command line
+option takes precedence.
+.Pp
 .Va SSD_NICELEVEL
 can also set the scheduling priority of the daemon, but the command line
 option takes precedence.
