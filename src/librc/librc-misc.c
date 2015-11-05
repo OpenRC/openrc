@@ -280,11 +280,14 @@ static void rc_config_set_value(RC_STRINGLIST *config, char *value)
 }
 
 /*
- * Override some specific rc.conf options on the kernel command line
+ * Override some specific rc.conf options on the kernel command line.
+ * I only know how to do this in Linux, so if someone wants to supply
+ * a patch for this on *BSD or tell me how to write the code to do this,
+ * any suggestions are welcome.
  */
-#ifdef __linux__
-static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config)
+static RC_STRINGLIST *rc_config_kcl(RC_STRINGLIST *config)
 {
+#ifdef __linux__
 	RC_STRINGLIST *overrides;
 	RC_STRING *cline, *override, *config_np;
 	char *tmp = NULL;
@@ -333,9 +336,9 @@ static RC_STRINGLIST *rc_config_override(RC_STRINGLIST *config)
 	}
 
 	rc_stringlist_free(overrides);
+#endif
 	return config;
 }
-#endif
 
 static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
 {
@@ -387,13 +390,6 @@ rc_config_load(const char *file)
 	}
 	rc_stringlist_free(list);
 
-#ifdef __linux__
-	/* Only override rc.conf settings */
-	if (strcmp(file, RC_CONF) == 0) {
-		config = rc_config_override(config);
-	}
-#endif
-
 	return config;
 }
 librc_hidden_def(rc_config_load)
@@ -444,6 +440,7 @@ rc_conf_value(const char *setting)
 		}
 
 		rc_conf = rc_config_directory(rc_conf);
+	rc_conf = rc_config_kcl(rc_conf);
 
 		/* Convert old uppercase to lowercase */
 		TAILQ_FOREACH(s, rc_conf, entries) {
