@@ -378,71 +378,12 @@ rc_config_load(const char *file)
 {
 	RC_STRINGLIST *list;
 	RC_STRINGLIST *config;
-	char *token;
 	RC_STRING *line;
-	RC_STRING *cline;
-	size_t i = 0;
-	bool replaced;
-	char *entry;
-	char *newline;
-	char *p;
 
 	list = rc_config_list(file);
 	config = rc_stringlist_new();
 	TAILQ_FOREACH(line, list, entries) {
-		/* Get entry */
-		p = line->value;
-		if (! p)
-			continue;
-		if (strncmp(p, "export ", 7) == 0)
-			p += 7;
-		if (! (token = strsep(&p, "=")))
-			continue;
-
-		entry = xstrdup(token);
-		/* Preserve shell coloring */
-		if (*p == '$')
-			token = line->value;
-		else
-			do {
-				/* Bash variables are usually quoted */
-				token = strsep(&p, "\"\'");
-			} while (token && *token == '\0');
-
-		/* Drop a newline if that's all we have */
-		if (token) {
-			i = strlen(token) - 1;
-			if (token[i] == '\n')
-				token[i] = 0;
-
-			i = strlen(entry) + strlen(token) + 2;
-			newline = xmalloc(sizeof(char) * i);
-			snprintf(newline, i, "%s=%s", entry, token);
-		} else {
-			i = strlen(entry) + 2;
-			newline = xmalloc(sizeof(char) * i);
-			snprintf(newline, i, "%s=", entry);
-		}
-
-		replaced = false;
-		/* In shells the last item takes precedence, so we need to remove
-		   any prior values we may already have */
-		TAILQ_FOREACH(cline, config, entries) {
-			i = strlen(entry);
-			if (strncmp(entry, cline->value, i) == 0 && cline->value[i] == '=') {
-				/* We have a match now - to save time we directly replace it */
-				free(cline->value);
-				cline->value = newline;
-				replaced = true;
-				break;
-			}
-		}
-
-		if (!replaced) {
-			rc_stringlist_add(config, newline);
-			free(newline);
-		}
-		free(entry);
+		rc_config_set_value(config, line->value);
 	}
 	rc_stringlist_free(list);
 
