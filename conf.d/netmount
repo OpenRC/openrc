@@ -25,11 +25,11 @@
 #rc_need="net.eth1 net.eth2"
 #
 # If you are using a dynamic network management tool like
-# networkmanager, dhcpcd in standalone mode, wicd, badvpn-ncd, etc, to
+# NetworkManager, dhcpcd in standalone mode, wicd, badvpn-ncd, etc, to
 # manage the network interfaces with the routes to your netmounts, you
 # should list that tool.
 #
-#rc_need="networkmanager"
+#rc_need="NetworkManager"
 #rc_need="dhcpcd"
 #rc_need="wicd"
 #
