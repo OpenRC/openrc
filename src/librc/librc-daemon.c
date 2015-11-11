@@ -31,7 +31,8 @@
 #include "queue.h"
 #include "librc.h"
 
-#if defined(__linux__) || (defined (__FreeBSD_kernel__) && defined(__GLIBC__))
+#if defined(__linux__) || (defined (__FreeBSD_kernel__) && defined(__GLIBC__)) \
+	|| defined(__GNU__)
 static bool
 pid_is_exec(pid_t pid, const char *exec)
 {
