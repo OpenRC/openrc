@@ -91,7 +91,7 @@ _depend() {
 	local _rc_svcname=$(shell_var "$RC_SVCNAME") _deptype= _depends=
 
 	# Add any user defined depends
-	for _deptype in config:CONFIG need:NEED use:USE \
+	for _deptype in config:CONFIG need:NEED use:USE want:WANT \
 	after:AFTER before:BEFORE \
 	provide:PROVIDE keyword:KEYWORD; do
 		IFS=:
