@@ -112,9 +112,5 @@ rc_stringlist_split
 rc_stringlist_split@@RC_1.0
 rc_sys
 rc_sys@@RC_1.0
-rc_sys_v1
-rc_sys_v1@@RC_1.0
-rc_sys_v2
-rc_sys_v2@@RC_1.0
 rc_yesno
 rc_yesno@@RC_1.0

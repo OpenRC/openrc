@@ -210,14 +210,14 @@ found:
 }
 #endif
 
-/* New sys identification code
- * Not to be used for any binaries outside of openrc. */
+
 const char *
-rc_sys_v2(void)
+rc_sys(void)
 {
-#define __STRING_SWITCH(x) { char *__string_switch = x; if (false) {}
-#define __STRING_CASE(y) else if (strcmp(__string_switch,y) == 0)
-#define __STRING_SWITCH_END() }
+#ifdef PREFIX
+	return RC_SYS_PREFIX;
+#endif
+
 	char *systype = rc_conf_value("rc_sys");
 	if (systype) {
 		char *s = systype;
@@ -227,43 +227,11 @@ rc_sys_v2(void)
 				*s = toupper((unsigned char) *s);
 			s++;
 		}
-		/* Now do detection */
-		__STRING_SWITCH(systype)
-		__STRING_CASE(RC_SYS_PREFIX)	{ return RC_SYS_PREFIX; }
-#ifdef __FreeBSD__
-		__STRING_CASE(RC_SYS_JAIL) { return RC_SYS_JAIL; }
-#endif /* __FreeBSD__ */
-#ifdef __NetBSD__
-		__STRING_CASE(RC_SYS_XEN0) { return RC_SYS_XEN0; }
-		__STRING_CASE(RC_SYS_XENU) { return RC_SYS_XENU; }
-#endif /* __NetBSD__ */
-#ifdef __linux__
-		__STRING_CASE(RC_SYS_XEN0) { return RC_SYS_XEN0; }
-		__STRING_CASE(RC_SYS_XENU) { return RC_SYS_XENU; }
-		__STRING_CASE(RC_SYS_UML) { return RC_SYS_UML; }
-		__STRING_CASE(RC_SYS_VSERVER) { return RC_SYS_VSERVER; }
-		__STRING_CASE(RC_SYS_OPENVZ) { return RC_SYS_OPENVZ; }
-		__STRING_CASE(RC_SYS_LXC) { return RC_SYS_LXC; }
-#endif /* __linux__ */
-		__STRING_SWITCH_END()
 	}
-#undef __STRING_SWITCH
-#undef __STRING_CASE
-#undef __STRING_SWITCH_END
-	return NULL;
-}
-librc_hidden_def(rc_sys_v2)
-
-/* Old sys identification code.
- * Not to be used for any binaries outside of openrc. */
-const char *
-rc_sys_v1(void)
-{
-#ifdef PREFIX
-	return RC_SYS_PREFIX;
-#else
 
 #ifdef __FreeBSD__
+	if (systype && strcmp(systype, RC_SYS_JAIL) == 0)
+		return RC_SYS_JAIL;
 	int jailed = 0;
 	size_t len = sizeof(jailed);
 
@@ -273,6 +241,12 @@ rc_sys_v1(void)
 #endif
 
 #ifdef __NetBSD__
+	if (systype) {
+		if(strcmp(systype, RC_SYS_XEN0) == 0)
+				return RC_SYS_XEN0;
+		if (strcmp(systype, RC_SYS_XENU) == 0)
+			return RC_SYS_XENU;
+	}
 	if (exists("/kern/xen/privcmd"))
 		return RC_SYS_XEN0;
 	if (exists("/kern/xen"))
@@ -280,6 +254,22 @@ rc_sys_v1(void)
 #endif
 
 #ifdef __linux__
+	if (systype) {
+		if (strcmp(systype, RC_SYS_XEN0) == 0)
+			return RC_SYS_XEN0;
+		if (strcmp(systype, RC_SYS_XENU) == 0)
+			return RC_SYS_XENU;
+		if (strcmp(systype, RC_SYS_UML) == 0)
+			return RC_SYS_UML;
+		if (strcmp(systype, RC_SYS_VSERVER) == 0)
+			return RC_SYS_VSERVER;
+		if (strcmp(systype, RC_SYS_OPENVZ) == 0)
+			return RC_SYS_OPENVZ;
+		if (strcmp(systype, RC_SYS_LXC) == 0)
+			return RC_SYS_LXC;
+		if (strcmp(systype, RC_SYS_SYSTEMD_NSPAWN) == 0)
+				return RC_SYS_SYSTEMD_NSPAWN;
+	}
 	if (exists("/proc/xen")) {
 		if (file_regex("/proc/xen/capabilities", "control_d"))
 			return RC_SYS_XEN0;
@@ -301,18 +291,6 @@ rc_sys_v1(void)
 #endif
 
 	return NULL;
-#endif /* PREFIX */
-}
-librc_hidden_def(rc_sys_v1)
-
-const char *
-rc_sys(void)
-{
-	if (rc_conf_value("rc_sys")) {
-		return rc_sys_v2();
-	} else {
-		return rc_sys_v1();
-	}
 }
 librc_hidden_def(rc_sys)
 

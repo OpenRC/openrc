@@ -130,8 +130,6 @@ librc_hidden_proto(rc_stringlist_new)
 librc_hidden_proto(rc_stringlist_split)
 librc_hidden_proto(rc_stringlist_sort)
 librc_hidden_proto(rc_sys)
-librc_hidden_proto(rc_sys_v1)
-librc_hidden_proto(rc_sys_v2)
 librc_hidden_proto(rc_yesno)
 
 #endif
