@@ -3,6 +3,7 @@
 
 # This is the subsystem type. Valid options on Linux:
 # ""               - nothing special
+# "docker"         - Docker container manager
 # "lxc"            - Linux Containers
 # "openvz"         - Linux OpenVZ
 # "prefix"         - Prefix
