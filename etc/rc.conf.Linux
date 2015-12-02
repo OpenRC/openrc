@@ -7,6 +7,7 @@
 # "lxc"            - Linux Containers
 # "openvz"         - Linux OpenVZ
 # "prefix"         - Prefix
+# "rkt"            - CoreOS container management system
 # "uml"            - Usermode Linux
 # "vserver"        - Linux vserver
 # "systemd-nspawn" - Container created by the systemd-nspawn utility
