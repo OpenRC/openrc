@@ -752,6 +752,7 @@ main(int argc, char **argv)
 {
 	const char *bootlevel = NULL;
 	char *newlevel = NULL;
+	const char *systype = NULL;
 	static RC_STRINGLIST *hotplugged_services;
 	static RC_STRINGLIST *stop_services;
 	static RC_STRINGLIST *start_services;
@@ -845,9 +846,9 @@ main(int argc, char **argv)
 			eerrorx("%s: %s", applet, strerror(errno));
 			/* NOTREACHED */
 		case 'S':
-			bootlevel = rc_sys();
-			if (bootlevel)
-				printf("%s\n", bootlevel);
+			systype = rc_sys();
+			if (systype)
+				printf("%s\n", systype);
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
 		case_RC_COMMON_GETOPT
