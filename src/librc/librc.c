@@ -267,6 +267,8 @@ rc_sys(void)
 			return RC_SYS_OPENVZ;
 		if (strcmp(systype, RC_SYS_LXC) == 0)
 			return RC_SYS_LXC;
+		if (strcmp(systype, RC_SYS_RKT) == 0)
+				return RC_SYS_RKT;
 		if (strcmp(systype, RC_SYS_SYSTEMD_NSPAWN) == 0)
 				return RC_SYS_SYSTEMD_NSPAWN;
 		if (strcmp(systype, RC_SYS_DOCKER) == 0)
@@ -288,6 +290,8 @@ rc_sys(void)
 		return RC_SYS_OPENVZ; /* old test */
 	else if (file_regex("/proc/1/environ", "container=lxc"))
 		return RC_SYS_LXC;
+	else if (file_regex("/proc/1/environ", "container=rkt"))
+		return RC_SYS_RKT;
 	else if (file_regex("/proc/1/environ", "container=systemd-nspawn"))
 		return RC_SYS_SYSTEMD_NSPAWN;
 	else if (file_regex("/proc/1/environ", "container=docker"))
