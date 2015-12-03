@@ -38,7 +38,7 @@ Who:
 
 When: 1.0
 
-Why: Depprecated in favor of extra_commands, extra_started_commands
+Why: Deprecated in favor of extra_commands, extra_started_commands
 	 and extra_stopped_commands.
 
 Who:
@@ -47,7 +47,7 @@ Who:
 
 When: 1.0
 
-Why: Depprecated in favor of executable scripts in @SYSCONFDIR@/local.d
+Why: Deprecated in favor of executable scripts in @SYSCONFDIR@/local.d
 
 Who:
 
