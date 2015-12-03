@@ -29,7 +29,18 @@ provide() {
 	[ -n "$*" ] && echo "$RC_SVCNAME iprovide $*" >&3
 }
 keyword() {
-	[ -n "$*" ] && echo "$RC_SVCNAME keyword $*" >&3
+	local c x
+	set -- $*
+	while [ -n "$*" ]; do
+		case "$1" in
+			-containers) x="$(_get_containers)" ;;
+			!-containers) x="$(_get_containers_remove)" ;;
+			*) x=$1 ;;
+		esac
+		c="${c}${x} "
+		shift
+	done
+	[ -n "$c" ] && echo "$RC_SVCNAME keyword $c" >&3
 }
 depend() {
 	:

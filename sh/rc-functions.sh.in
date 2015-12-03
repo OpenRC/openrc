@@ -86,6 +86,27 @@ get_bootparam()
 }
 
 # Called from openrc-run.sh or gendepends.sh
+_get_containers() {
+	local c
+	case "${RC_UNAME}" in
+	FreeBSD)
+		c="-jail"
+		;;
+	Linux)
+		c="-docker -lxc -openvz -rkt -systemd-nspawn -uml -vserver"
+		;;
+	esac
+	echo $c
+}
+
+_get_containers_remove() {
+	local c
+	for x in $(_get_containers); do
+		c="${c}!${x} "
+	done
+	echo $c
+}
+
 _depend() {
 	depend
 	local _rc_svcname=$(shell_var "$RC_SVCNAME") _deptype= _depends=

@@ -79,7 +79,18 @@ provide() {
 	[ -n "$*" ] && echo "provide $*"
 }
 keyword() {
-	[ -n "$*" ] && echo "keyword $*"
+	local c x
+	set -- $*
+	while [ -n "$*" ]; do
+		case "$1" in
+			-containers) x="$(_get_containers)" ;;
+			!-containers) x="$(_get_containers_remove)" ;;
+			*) x=$1 ;;
+		esac
+		c="${c}${x} "
+		shift
+	done
+	[ -n "$c" ] && echo "keyword $c"
 }
 
 # Describe the init script to the user
