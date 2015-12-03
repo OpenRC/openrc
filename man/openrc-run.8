@@ -166,23 +166,25 @@ will start and stop it in the right order in relation to other services.
 As it's a function it can be very flexible, see the example below.
 Here is a list of the functions you can use in a
 .Ic depend
-function. You simply pass the names of the services to it to add to that
-dependency type, or prefix it with ! to remove it.
+function. You simply pass the names of the services you want to add to
+that dependency type to the function, or prefix the names with ! to
+remove them from the dependencies.
 .Bl -tag -width "RC_DEFAULTLEVEL"
 .It Ic need
 The service will refuse to start until needed services have started and it
 will refuse to stop until any services that need it have stopped.
 .It Ic use
-The service will attempt to start any services we use that have been added
+The service will attempt to start any services it uses that have been added
 to the runlevel.
 .It Ic want
-The service will attempt to start any services we want.
+The service will attempt to start any services it wants, regardless of
+whether they have been added to the runlevel.
 .It Ic after
 The service will start after these services and stop before these services.
 .It Ic before
 The service will start before these services and stop after these services.
 .It Ic provide
-We provide this virtual service. For example, named provides dns.
+The service provides this virtual service. For example, named provides dns.
 Virtual services take precedence over real services, so it is highly
 recommended that you do not have a real service that has the same name
 as a virtual service.
@@ -471,6 +473,9 @@ rc_net_tap1_provide="!net"
 # It's also possible to negate keywords. This is mainly useful for prefix
 # users testing OpenRC.
 rc_keyword="!-prefix"
+# This can also be used to block a script from runining in all
+# containers except one or two
+rc_keyword="!-containers !-docker"
 .Ed
 .Sh EXAMPLES
 .Pp
