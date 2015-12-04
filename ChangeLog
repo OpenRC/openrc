@@ -1,3 +1,218 @@
+commit b810473e4f7218afbb7047890860c15a8c45472b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/openrc-run.8: Clarify documentation on dependencies and keywords
+    
+    Provide an example of using the -containers keyword and clarify
+    documentation on some of the dependency functions.
+
+commit 627e925463068e754ffd869f99a43634d6d9631e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add support for -containers keyword
+
+commit f5cf1136e70502ee530f20f0434f312611b12b51
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Use systype variable for rc_sys call
+
+commit a4038e11712d4c3f87f541f90be0b88f2903b82d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc.conf.Linux: document the rkt keyword
+
+commit a0cf8f91246ff4487b36d6432dab787e5b10957d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add detection for rkt containers
+
+commit 9fedb3b40b5983372b2c2de29dfe321c6dfaadf4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add detection for docker containers
+
+commit 635e33cdc8f18bb290756633ce0714c496383cfb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: comsolidate rc_sys_v1 and rc_sys_v2 into rc_sys
+    
+    These functions were never meant to be used outside of OpenRC, and they
+    were added when we thought we were going to do away with the automatic
+    detection of subsystems. Since the autodetection is not going away, we
+    can combine these functions into rc_sys.
+
+commit bd9456ff3172cc88f32d67bd4e789e2beee43595
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-functions.sh: add support for user-defined want dependencies
+
+commit 33d3f33b3ca7dd2ce616b8182d588d0743c2f124
+Author: Ian Stakenvicius <axs@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Implement "want" dependency
+    
+    The want dependency is similar to the use dependency. If a service
+    script, for example called service1, adds "want service2" to its depend
+    function, OpenRC will attempt to start service2, if it exists on the
+    system,  when service1 is started.
+    
+    However, service1 will start regardless of the status of
+    service2.
+    
+    X-Gentoo-Bug: 406021
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=406021
+
+commit ddb895b355e02c9c07b00bfaf00d1bf8a7abbc03
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    conf.d/netmount: typo fix
+    
+    X-Gentoo-Bug: 564846
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=564846
+
+commit 085d77f17e3bedd23ffa96fe7e4eb8515ae8bfc6
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Standardize macro tests for gnu hurd
+    
+    This also fixes breakage of GNU/hurd builds introduced by commit 3f82edbeb92.
+
+commit c831f1f994e187afd8edfff15e4063b99440bbcb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: rework overriding rc.conf options from the kcl
+    
+    Rename the rc_conf_override function to describe its purpose better,
+    drop one conditional compile by making it available everywhere, and move
+    the call to it after the optional rc.conf.d directory is processed.
+
+commit 591aea28215a8b5ad8660184dc6f6f15ff0c18b4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: Remove redundant code from rc_config_load
+
+commit c09eeca49145b034df6527c500099ba22f28e824
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add rc.conf.d support
+    
+    This makes it possible to override settings in rc.conf by adding a
+    directory @SYSCONFDIR@/rc.conf.d and putting files in this directory.
+    The files will be processed in lexical order, and the last setting in
+    these files will be used.
+
+commit 4cf6b0ecf7f5b35a6d80d76c60e77c3e1c7fee5c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    consolefont: add after modules to dependencies
+    
+    X-Gentoo-Bug: 559540
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=559540
+
+commit ee944553a9ea35622046bd1ab5657fd416a7019a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    bootmisc: optionally save the previous dmesg log
+    
+    X-Gentoo-Bug: 561204
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=561204
+
+commit 6cae41a4e63510cdcf3af1153d6e8300435e1838
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    etc/rc.conf: Clean up documentation for rc_hotplug
+    
+    X-Gentoo-Bug: 554540
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=554540
+
+commit 960881fcfe974178c0846a816663a258cdd488cc
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add net-online service
+
+commit d26013494db8ea8699db9815ef4c4b0eb2f55e7f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mtab: typo fix
+
+commit b29b2fb3cb3e73b4453483ced908f0ef10e47e9c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mtab: make /etc/mtab as a file configurable
+
+commit 7da72ce487a8d92d992e7fd3db881c198ae02609
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-run.sh: fix new required_* tests to exit properly
+
+commit fc777aeaf3e6e2d47f4599acfe6c8d1bf5bc760a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+    
+    X-Gentoo-Bug: 563010
+    X-Gentoo-Bug: https://bugs.gentoo.org/show_bug.cgi?id=563010
+
+commit 9d53d436ae22d6f0f6fc1537e836dd1b4d31cf35
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sysfs: consolidate cgroup processing code in a single function
+
+commit b81317bdf8e3eed8b8ff2bef757ba29f362ed297
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mountinfo: make sure the netdev variable is initialized on Linux
+    
+    This fixes the following regression:
+    
+    X-Gentoo-Bug: 562668
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562668
+
+commit 29f7e335927d4c1fb151124de8cdf01fb87723fa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-run.sh: allow spaces in required_{files,dirs}
+    
+    X-Gentoo-Bug: 562320
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562320
+
+commit 850ca030777cb0c3e2fb03d9ab1f0ccee7b89e93
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    increment version number
+
+commit 050ddfae4ad1ad0dc5993766e0bd90739bd41de9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit d5116cc697c9eb275ab8497939ab41504e5ce578
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -997,237 +1212,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     This is a more descriptive name since this file only sets the gitver
     variable.
-
-commit 30cc3cdb76a66c7c0f89a52db4e5cff77b570e31
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Make sysfs behave like netmount and localmount
-    
-    sysfs now mounts all related sysfs file systems and returns success,
-    like netmount and localmount.
-    
-    Also, we now check to make sure the cgroups are not mounted before we
-    mount them.
-    
-    X-Gentoo-Bug: 530138
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=530138
-
-commit dff6e4a004afeaa64f4ccb07c7d31bb821b043b4
-Author: S. Gilles <sgilles@umd.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix mdoc warning for empty line in rc-update man page.
-    
-    X-Gentoo-Bug: 529374
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=529374
-
-commit 3fad31a994f7eb14f3f001f3980eb2b0ae8fe4f1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d: add osclock to ignore patterns
-
-commit 8d0ca13fbd38e782bae655eca6646dabc8d63899
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    devfs: optionally add missing symbolic links
-    
-    If symbolic links for /dev/{fd,stdin,stdout,stderr,core} do not exist
-    once /dev is mounted, we should create them.
-
-commit 93ba67eff9333e434c969bb8131467f777546764
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    netmount: unmount nfs file systems
-
-commit 1932360adca3f9fe9b47bcfad7b8bd5efbd33bee
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Integrate the functionality from runscript_selinux.so
-    
-    runscript used to dlopen() runscript_selinux.so. This adds equivalent
-    functionality directly in to runscript instead. It authenticates with
-    either PAM or shadow and optionally has a dep on audit.
-    
-    X-Gentoo-Bug: 517450
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=517450
-
-commit be952bebb3647069fb93b9791ee3439698f697ca
-Author: Alexander Vershilov <alexander.vershilov@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix incorrect handling of chroot option.
-    Fixes #28.
-    
-    X-Gentoo-Bug: #527370
-    X-Gentoo-Bug-Url: https://bugs.gentoo.org/show_bug.cgi?id=527370
-
-commit 0bfde472d0154f14ea88c0f5ddd21a510443d713
-Author: Ralph Sennhauser <sera@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add osclock service
-    
-    This scripts sole purpose is to "provide clock" on OSs that already
-    take care of the clock being properly set.
-
-commit ba0a11fc94d303e208dd364b06c1c2a75bcdd62b
-Author: Johan Bergström <bugs@bergstroem.nu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Pass ncurses cflags to build
-    
-    Fixes #25
-    Note from William Hubbs:
-    The original patch overwrote CFLAGS. I modified this patch to add the
-    ncurses cflags to CPPFLAGS instead of overwriting CFLAGS.
-
-commit 7700e6fe796cabfa22eefddc024d66257a28d4dc
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix compile errors created by bundling queue.h
-
-commit 6ca79042b9aa9752e577346e6f355356ef8f2f9a
-Author: Anthony G. Basile <blueness@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    helpers.h, start-stop-daemon.c: remove uneeded macros
-    
-    TAILQ_CONCAT, TAILQ_FOREACH_SAFE and LIST_FOREACH_SAFE are defined
-    in our bundled queue.h and are no longer required.
-
-commit 1e0a4bebdefd06af09ba8f2459287d3ca28f89d7
-Author: Anthony G. Basile <blueness@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Bundle <sys/queue.h> from NetBSD
-    
-    We are bundling this to allow building on musl-based systems since musl
-    does not include <sys/queue.h>.
-
-commit ca6b86be44fc7ed618a7ab3bd021e208d38878b1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix all tests for GNU/kFreeBSD
-    
-    It is necessary to check for both the kernel and c library because
-    __FreeBSD_kernel is also defined on native FreeBSD [1].
-    
-    [1] http://sourceforge.net/p/predef/wiki/OperatingSystems/
-
-commit 4ac289b5397a688393c596a9a01651c94d3b5711
-Author: Gabriele Giacone <1o5g4r8o@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix rc_svcdir for GNU/Hurd
-
-commit 875f03e27c3475675f7b9572b071dd8c26257be7
-Author: Svante Signell <svante.signell@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix defines for GNU/Hurd
-
-commit 203b754f843fe6af0a40e983d557a9cdbc89f84b
-Author: Svante Signell <svante.signell@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add missing files for GNU/Hurd
-
-commit 89c8a62a1078e770e12c47f06c8dbc9c2924e771
-Author: Gabriele Giacone <1o5g4r8o@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix rc_svcdir for GNU/kFreeBSD
-
-commit d8e1d9a6edf94ecac580e80e1113f4fdbdc5a23b
-Author: Gabriele Giacone <1o5g4r8o@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add missing files for GNU/kFreeBSD
-
-commit 3f82edbeb9251149c6aff071d6537379af4e5eea
-Author: Svante Signell <svante.signell@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix GNU/kFreeBSD port
-    
-    Check for __FreeBSD_kernel instead of __GLIBC__ in source files.
-    
-    note from William Hubbs:
-    I was told this is a better check for GNU/kFreeBSD than checking the
-    C  library the source is being compiled against.
-    GNU/kFreeBSD than checking which library we are using.
-
-commit 86e9aa0d36813e2630c6613cd71c3ce8db642f71
-Author: Anthony G. Basile <blueness@gentoo.org>
-Commit: Anthony G. Basile <blueness@gentoo.org>
-
-    einfo.h, rc.h.in: simplify __BEGIN_DECLS logic
-    
-    There is no need to redefine __BEGIN_DECLS and __END_DECLS.
-    We simplify the logic here and avoid undefining these macros.
-
-commit 4a08517cac3c68c232694db7288654b58b68b8ba
-Author: Anthony G. Basile <blueness@gentoo.org>
-Commit: Anthony G. Basile <blueness@gentoo.org>
-
-    einfo.h, rc.h.in: ensure __BEGIN_DECLS is defined
-    
-    Some Standard C Libraries, like musl, don't define __BEGIN_DECLS
-    or __END_DECLS.  We add some ifdef magic to ensure these are
-    available.
-
-commit 9bf789f78890c8b5879d29acb9fb0e23285baee4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update news file wrt chroot variable
-
-commit f9acd65497c6e561fbf5420386a99d681fede859
-Author: Alexander Vershilov <alexander.vershilov@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc:look for the pid file in a chroot if defined
-    
-    X-Gentoo-Bug: 524388
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=524388
-
-commit 8c7ea4e9e8da500877a514402bbe90aababda2d6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    runscript.sh: add chroot support
-    
-    This adds support for a chroot variable which will be passed to the
-    start-stop-daemon --chroot switch to runscript.sh when starting a
-    daemon. This also needs to be saved so it can be used in locating the
-    pid file when stopping the daemon.
-    
-    X-Gentoo-Bug: 524388
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=524388
-
-commit 5f1439f1aac14618592789042e05daaf80f55a15
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add NEWS file
-
-commit 85da4a5e2621dc5f5356d440735aa058008a1b7e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add back nfs and nfs4 file systems
-    
-    Fix gentoo bug #427996 correctly.
-    We should attempt to mount the file systems, but not try to start the
-    daemons. The previous fix removed mounting the file systems as well as
-    starting the daemons.
-    
-    X-Gentoo-Bug: 508574
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=508574
