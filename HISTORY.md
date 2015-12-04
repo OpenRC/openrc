@@ -54,4 +54,9 @@ Daniel Robbins continues to maintain an independent, forked
 version of OpenRC for Funtoo Linux, which includes a Funtoo-specific network
 configuration system. 
 
+On 17-Dec-2015 utc, Roy gave the OpenRC developers permission to replace his
+copyrights in all source files with a generic Copyright assertion for
+the OpenRC developers as long as we keep the original copyright in the
+binaries and  LICENSE file.
+
 [1] http://www.gentoo.org/news/en/gwn/20040426-newsletter.xml
