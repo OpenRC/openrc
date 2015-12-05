@@ -87,4 +87,8 @@ int is_writable(const char *);
 #define service_stop(service)  exec_service(service, "stop");
 
 int parse_mode(mode_t *, char *);
+const char *detect_prefix(void);
+const char *get_systype(void);
+const char *detect_container(void);
+const char *detect_vm(void);
 #endif
