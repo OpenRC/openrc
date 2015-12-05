@@ -53,11 +53,11 @@ static void set_quiet_options(void)
 _noreturn static void
 show_version(void)
 {
-	const char *bootlevel = NULL;
+	const char *systype = NULL;
 
 	printf("%s (OpenRC", applet);
-	if ((bootlevel = rc_sys()))
-		printf(" [%s]", bootlevel);
+	if ((systype = rc_sys()))
+		printf(" [%s]", systype);
 	printf(") %s", VERSION);
 #ifdef BRANDING
 	printf(" (%s)", BRANDING);
