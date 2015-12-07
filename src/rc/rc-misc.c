@@ -139,7 +139,7 @@ env_config(void)
 	char *np;
 	char *npp;
 	char *tok;
-	const char *sys = rc_sys();
+	const char *sys = NULL;
 	char buffer[PATH_MAX];
 
 	/* Ensure our PATH is prefixed with the system locations first
@@ -190,7 +190,9 @@ env_config(void)
 	} else
 		setenv("RC_DEFAULTLEVEL", RC_LEVEL_DEFAULT, 1);
 
-	if (sys)
+	sys = detect_container();
+	if (!sys)
+		sys = detect_vm();
 		setenv("RC_SYS", sys, 1);
 
 #ifdef PREFIX
