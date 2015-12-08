@@ -59,8 +59,6 @@ global:
 	rc_stringlist_sort;
 	rc_stringlist_free;
 	rc_sys;
-	rc_sys_v1;
-	rc_sys_v2;
 	rc_yesno;
 
 local:
