@@ -6,8 +6,16 @@ description="Mounts network shares according to /etc/fstab."
 
 depend()
 {
-	config /etc/fstab
-	use afc-client amd nfsclient autofs openvpn
+	local opts mywant=""
+	for opts in $(fstabinfo -o -t nfs,nfs4); do
+		case $opts in
+			noauto) ;;
+			*) mywant="$mywant nfsclient"; break ;;
+		esac
+	done
+ 	config /etc/fstab
+	want $mywant	
+	use afc-client amd openvpn
 	use dns
 	keyword -jail -prefix -systemd-nspawn -vserver -lxc
 }
