@@ -1,3 +1,26 @@
+commit f45f7243c19554090458183fbb22e1659d3f8ae5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Complete support for rc.conf.d
+    
+    - gendepends.sh needs to read this directory to allow dependencies to be
+      overridden
+      - init.sh for Linux and Bsd need to read it to allow config settings
+        they use to be overridden.
+
+commit afe64e5e4942a1508ed301d900ec3fe8178e1bb6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    increment version number
+
+commit a1acdeb92ead07f2dc60cb9796aaf5b4ea377713
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit b810473e4f7218afbb7047890860c15a8c45472b
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1178,37 +1201,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 531600
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=531600
-
-commit 6a9679377f4de257f02de1d16a513df14b4c25ba
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Do not call the shell to evaluate CHANGELOG_LIMIT
-    
-    The git log command understands dates such as "1 year ago", so there is
-    no need to use the date command.
-
-commit 72186ea3bbbf0b09b88a6f3e1fb23bf04ce1ddad
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    etc/rc and etc/rc.shutdown: change references from rc to openrc
-
-commit 3647db7a27f7a5ca14b33b14effeb945fd986210
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add target to create ChangeLog
-    
-    This was added by request because some users are requesting a ChangeLog.
-    
-    This fixes #29.
-
-commit 7a92eb888794819a339babd0ee220b6aa3993db1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rename git.mk to gitver.mk
-    
-    This is a more descriptive name since this file only sets the gitver
-    variable.
