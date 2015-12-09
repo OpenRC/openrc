@@ -96,6 +96,11 @@ do
 		fi
 
 		[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
+		if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
+			for _f in "@SYSCONFDIR@"/rc.conf.d/*.conf; do
+				[ -e "$_f" ] && . "$_f"
+			done
+		fi
 
 		if . "$_dir/$RC_SVCNAME"; then
 			echo "$RC_SVCNAME" >&3
