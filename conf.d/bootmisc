@@ -9,7 +9,7 @@ wipe_tmp="YES"
 # This may be useful if you need the kernel boot log afterwards
 log_dmesg="YES"
 
-# Save the previous dmesg log to dmesc.old
+# Save the previous dmesg log to dmesg.old
 # This may be useful if you need to compare the current boot to the
 # previous one.
 #previous_dmesg=no
