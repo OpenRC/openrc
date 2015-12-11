@@ -61,7 +61,13 @@ Why: /etc/mtab should be a symbolic link to /proc/self/mounts on modern
 
 Who:
 
-## the rc_getline librc api function
+## C API Functions in rc.h
+
+If you have a c program that links to librc and uses functions from
+there, this section will list API functions which are deprecated and
+will be removed along with the reason they are being removed.
+
+### rc_getline()
 
 When: 1.0
 
@@ -70,7 +76,7 @@ Why: The getline() function was standardized in POSIX.1-2008, so it
 
 Who:
 
-## the rc_sys librc api function
+### rc_sys()
 
 When: 1.0
 
