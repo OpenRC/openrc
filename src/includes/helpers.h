@@ -1,7 +1,7 @@
 /*
-  helpers.h
-  This is private to us and not for user consumption
-*/
+ * helpers.h
+ * This is private to us and not for user consumption
+ */
 
 /*
  * Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
