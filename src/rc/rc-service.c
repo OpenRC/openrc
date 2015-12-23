@@ -21,39 +21,36 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
-
-extern char *applet;
-
 #include "_usage.h"
-#define usagestring ""							\
-	"Usage: rc-service [options] [-i] <service> <cmd>...\n"		\
-	"   or: rc-service [options] -e <service>\n"			\
-	"   or: rc-service [options] -l\n"				\
-	"   or: rc-service [options] -r <service>"
-#define getoptstring "e:ilr:" getoptstring_COMMON
-static const struct option longopts[] = {
+
+const char *applet = NULL;
+const char *extraopts = NULL;
+const char *getoptstring = "e:ilr:" getoptstring_COMMON;
+const struct option longopts[] = {
 	{ "exists",   1, NULL, 'e' },
 	{ "ifexists", 0, NULL, 'i' },
 	{ "list",     0, NULL, 'l' },
 	{ "resolve",  1, NULL, 'r' },
 	longopts_COMMON
 };
-static const char * const longopts_help[] = {
+const char * const longopts_help[] = {
 	"tests if the service exists or not",
 	"if the service exists then run the command",
 	"list all available services",
 	"resolve the service name to an init script",
 	longopts_help_COMMON
 };
-#include "_usage.c"
+const char *usagestring = ""							\
+	"Usage: rc-service [options] [-i] <service> <cmd>...\n"		\
+	"   or: rc-service [options] -e <service>\n"			\
+	"   or: rc-service [options] -l\n"				\
+	"   or: rc-service [options] -r <service>";
 
-int
-rc_service(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int opt;
 	char *service;
@@ -61,6 +58,7 @@ rc_service(int argc, char **argv)
 	RC_STRING *s;
 	bool if_exists = false;
 
+	applet = basename_c(argv[0]);
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv("EINFO_QUIET");
 

@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include "helpers.h"
+#include "rc.h"
 
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
@@ -40,20 +41,6 @@
 #define RC_SVCDIR_INACTIVE      RC_SVCDIR "/inactive"
 #define RC_SVCDIR_STARTED       RC_SVCDIR "/started"
 #define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "/coldplugged"
-
-_unused static bool exists(const char *pathname)
-{
-	struct stat buf;
-
-	return (stat(pathname, &buf) == 0);
-}
-
-_unused static bool existss(const char *pathname)
-{
-	struct stat buf;
-
-	return (stat(pathname, &buf) == 0 && buf.st_size != 0);
-}
 
 char *rc_conf_value(const char *var);
 bool rc_conf_yesno(const char *var);
@@ -78,4 +65,13 @@ const char *detect_prefix(void);
 const char *get_systype(void);
 const char *detect_container(void);
 const char *detect_vm(void);
+
+/* Handy function so we can wrap einfo around our deptree */
+RC_DEPTREE *_rc_deptree_load (int, int *);
+
+/* Test to see if we can see pid 1 or not */
+bool _rc_can_find_pids(void);
+
+RC_SERVICE lookup_service_state(const char *service);
+
 #endif

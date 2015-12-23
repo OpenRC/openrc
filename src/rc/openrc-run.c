@@ -47,13 +47,13 @@
 #  include <libutil.h>
 #endif
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
 #include "rc-plugin.h"
 #include "rc-selinux.h"
+#include "_usage.h"
 
 #define PREFIX_LOCK	RC_SVCDIR "/prefix.lock"
 
@@ -61,7 +61,29 @@
 #define WAIT_TIMEOUT	60		/* seconds until we timeout */
 #define WARN_TIMEOUT	10		/* warn about this every N seconds */
 
-static const char *applet;
+const char *applet = NULL;
+const char *extraopts = "stop | start | restart | describe | zap";
+const char *getoptstring = "dDsSvl:Z" getoptstring_COMMON;
+const struct option longopts[] = {
+	{ "debug",      0, NULL, 'd'},
+	{ "dry-run",    0, NULL, 'Z'},
+	{ "ifstarted",  0, NULL, 's'},
+	{ "ifstopped",  0, NULL, 'S'},
+	{ "nodeps",     0, NULL, 'D'},
+	{ "lockfd",     1, NULL, 'l'},
+	longopts_COMMON
+};
+const char *const longopts_help[] = {
+	"set xtrace when running the script",
+	"show what would be done",
+	"only run commands when started",
+	"only run commands when stopped",
+	"ignore dependencies",
+	"fd of the exclusive lock from rc",
+	longopts_help_COMMON
+};
+const char *usagestring = NULL;
+
 static char *service, *runlevel, *ibsave, *prefix;
 static RC_DEPTREE *deptree;
 static RC_STRINGLIST *applet_list, *services, *tmplist;
@@ -1063,31 +1085,7 @@ service_plugable(void)
 	return allow;
 }
 
-#include "_usage.h"
-#define getoptstring "dDsSvl:Z" getoptstring_COMMON
-#define extraopts "stop | start | restart | describe | zap"
-static const struct option longopts[] = {
-	{ "debug",      0, NULL, 'd'},
-	{ "dry-run",    0, NULL, 'Z'},
-	{ "ifstarted",  0, NULL, 's'},
-	{ "ifstopped",  0, NULL, 'S'},
-	{ "nodeps",     0, NULL, 'D'},
-	{ "lockfd",     1, NULL, 'l'},
-	longopts_COMMON
-};
-static const char *const longopts_help[] = {
-	"set xtrace when running the script",
-	"show what would be done",
-	"only run commands when started",
-	"only run commands when stopped",
-	"ignore dependencies",
-	"fd of the exclusive lock from rc",
-	longopts_help_COMMON
-};
-#include "_usage.c"
-
-int
-openrc_run(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	bool doneone = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
@@ -1395,11 +1393,4 @@ openrc_run(int argc, char **argv)
 	}
 
 	return retval;
-}
-
-int
-runscript(int argc, char **argv)
-{
-	ewarnv("runscript is deprecated; please use openrc-run instead.");
-	return (openrc_run(argc, argv));
 }

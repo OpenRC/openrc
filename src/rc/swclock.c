@@ -25,40 +25,39 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <utime.h>
 
-#include "builtins.h"
 #include "einfo.h"
 #include "rc-misc.h"
+#include "_usage.h"
 
 #define RC_SHUTDOWNTIME    RC_SVCDIR "/shutdowntime"
 
-extern const char *applet;
-
-#include "_usage.h"
-#define extraopts "file"
-#define getoptstring "sw" getoptstring_COMMON
-static const struct option longopts[] = {
+const char *applet = NULL;
+const char *extraopts = "file";
+const char *getoptstring = "sw" getoptstring_COMMON;
+const struct option longopts[] = {
 	{ "save", 0, NULL, 's' },
 	{ "warn", 0, NULL, 'w' },
 	longopts_COMMON
 };
-static const char * const longopts_help[] = {
+const char * const longopts_help[] = {
 	"saves the time",
 	"no error if no reference file",
 	longopts_help_COMMON
 };
-#include "_usage.c"
+const char *usagestring = NULL;
 
-int
-swclock(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int opt, sflag = 0, wflag = 0;
 	const char *file = RC_SHUTDOWNTIME;
 	struct stat sb;
 	struct timeval tv;
 
+	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
 	{

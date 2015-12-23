@@ -10,8 +10,12 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include "version.h"
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "rc-misc.h"
+#include "_usage.h"
+#include "version.h"
 
 #if lint
 #  define _noreturn
@@ -22,7 +26,7 @@
 #  define _noreturn
 #endif
 
-static void set_quiet_options(void)
+void set_quiet_options(void)
 {
 	static int qcount = 0;
 
@@ -37,8 +41,7 @@ static void set_quiet_options(void)
 	}
 }
 
-_noreturn static void
-show_version(void)
+_noreturn void show_version(void)
 {
 	const char *systype = NULL;
 
@@ -56,8 +59,7 @@ show_version(void)
 	exit(EXIT_SUCCESS);
 }
 
-_noreturn static void
-usage(int exit_status)
+_noreturn void usage(int exit_status)
 {
 	const char * const has_arg[] = { "", "<arg>", "[arg]" };
 	int i;
@@ -67,15 +69,15 @@ usage(int exit_status)
 	char *token;
 	char val[4] = "-?,";
 
-#ifdef usagestring
-	printf(usagestring);
-#else
-	printf("Usage: %s [options] ", applet);
-#endif
-#ifdef extraopts
-	printf(extraopts);
-#endif
-	printf("\n\nOptions: [" getoptstring "]\n");
+	if (usagestring)
+		printf("%s", usagestring);
+	else
+		printf("Usage: %s [options] ", applet);
+
+	if (extraopts)
+		printf("%s", extraopts);
+
+	printf("\n\nOptions: [ %s ]\n", getoptstring);
 	for (i = 0; longopts[i].name; ++i) {
 		val[1] = longopts[i].val;
 		len = printf("  %3s --%s %s", isprint(longopts[i].val) ? val : "",

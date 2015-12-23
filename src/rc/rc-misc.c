@@ -23,6 +23,7 @@
 #  include <sys/sysinfo.h>
 #endif
 
+#include <sys/time.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -31,7 +32,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
+#include <utime.h>
 
 #include "einfo.h"
 #include "queue.h"
@@ -487,4 +490,108 @@ const char *detect_vm(void)
 #endif
 
 	return NULL;
+}
+
+RC_DEPTREE * _rc_deptree_load(int force, int *regen)
+{
+	int fd;
+	int retval;
+	int serrno = errno;
+	int merrno;
+	time_t t;
+	char file[PATH_MAX];
+	struct stat st;
+	struct utimbuf ut;
+	FILE *fp;
+
+	t = 0;
+	if (rc_deptree_update_needed(&t, file) || force != 0) {
+		/* Test if we have permission to update the deptree */
+		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
+		merrno = errno;
+		errno = serrno;
+		if (fd == -1 && merrno == EACCES)
+			return rc_deptree_load();
+		close(fd);
+
+		if (regen)
+			*regen = 1;
+		ebegin("Caching service dependencies");
+		retval = rc_deptree_update() ? 0 : -1;
+		eend (retval, "Failed to update the dependency tree");
+
+		if (retval == 0) {
+			stat(RC_DEPTREE_CACHE, &st);
+			if (st.st_mtime < t) {
+				eerror("Clock skew detected with `%s'", file);
+				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
+				    "' to %s", ctime(&t));
+				fp = fopen(RC_DEPTREE_SKEWED, "w");
+				if (fp != NULL) {
+					fprintf(fp, "%s\n", file);
+					fclose(fp);
+				}
+				ut.actime = t;
+				ut.modtime = t;
+				utime(RC_DEPTREE_CACHE, &ut);
+			} else {
+				if (exists(RC_DEPTREE_SKEWED))
+					unlink(RC_DEPTREE_SKEWED);
+			}
+		}
+		if (force == -1 && regen != NULL)
+			*regen = retval;
+	}
+	return rc_deptree_load();
+}
+
+bool _rc_can_find_pids(void)
+{
+	RC_PIDLIST *pids;
+	RC_PID *pid;
+	RC_PID *pid2;
+	bool retval = false;
+
+	if (geteuid() == 0)
+		return true;
+
+	/* If we cannot see process 1, then we don't test to see if
+	 * services crashed or not */
+	pids = rc_find_pids(NULL, NULL, 0, 1);
+	if (pids) {
+		pid = LIST_FIRST(pids);
+		if (pid) {
+			retval = true;
+			while (pid) {
+				pid2 = LIST_NEXT(pid, entries);
+				free(pid);
+				pid = pid2;
+			}
+		}
+		free(pids);
+	}
+	return retval;
+}
+
+static const struct {
+	const char * const name;
+	RC_SERVICE bit;
+} service_bits[] = {
+	{ "service_started",     RC_SERVICE_STARTED,     },
+	{ "service_stopped",     RC_SERVICE_STOPPED,     },
+	{ "service_inactive",    RC_SERVICE_INACTIVE,    },
+	{ "service_starting",    RC_SERVICE_STARTING,    },
+	{ "service_stopping",    RC_SERVICE_STOPPING,    },
+	{ "service_hotplugged",  RC_SERVICE_HOTPLUGGED,  },
+	{ "service_wasinactive", RC_SERVICE_WASINACTIVE, },
+	{ "service_failed",      RC_SERVICE_FAILED,      },
+};
+
+RC_SERVICE lookup_service_state(const char *service)
+{
+	size_t i;
+	for (i = 0; i < ARRAY_SIZE(service_bits); ++i)
+		if (!strcmp(service, service_bits[i].name))
+			return service_bits[i].bit;
+	return 0;
 }

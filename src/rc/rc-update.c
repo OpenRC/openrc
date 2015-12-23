@@ -24,13 +24,31 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "_usage.h"
 
-extern const char *applet;
+const char *applet = NULL;
+const char *extraopts = NULL;
+const char *usagestring = ""							\
+	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] [show [<runlevel>...]]";
+const char *getoptstring = "asu" getoptstring_COMMON;
+const struct option longopts[] = {
+	{ "all",             0, NULL, 'a' },
+	{ "stack",           0, NULL, 's' },
+	{ "update",          0, NULL, 'u' },
+	longopts_COMMON
+};
+const char * const longopts_help[] = {
+	"Process all runlevels",
+	"Stack a runlevel instead of a service",
+	"Force an update of the dependency tree",
+	longopts_help_COMMON
+};
 
 /* Return the number of changes made:
  *  -1 = no changes (error)
@@ -182,32 +200,11 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 	rc_stringlist_free (services);
 }
 
-#include "_usage.h"
-#define usagestring ""							\
-	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
-	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
-	"   or: rc-update [options] [show [<runlevel>...]]"
-#define getoptstring "asu" getoptstring_COMMON
-static const struct option longopts[] = {
-	{ "all",             0, NULL, 'a' },
-	{ "stack",           0, NULL, 's' },
-	{ "update",          0, NULL, 'u' },
-	longopts_COMMON
-};
-static const char * const longopts_help[] = {
-	"Process all runlevels",
-	"Stack a runlevel instead of a service",
-	"Force an update of the dependency tree",
-	longopts_help_COMMON
-};
-#include "_usage.c"
-
 #define DOADD    (1 << 1)
 #define DODELETE (1 << 2)
 #define DOSHOW   (1 << 3)
 
-int
-rc_update(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	RC_DEPTREE *deptree;
 	RC_STRINGLIST *runlevels;
@@ -222,6 +219,7 @@ rc_update(int argc, char **argv)
 	int (*actfunc)(const char *, const char *);
 	int ret;
 
+	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *)0)) != -1)
 		switch (opt) {

@@ -59,11 +59,75 @@
 static struct pam_conv conv = { NULL, NULL};
 #endif
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "_usage.h"
+
+const char *applet = NULL;
+const char *extraopts = NULL;
+const char *getoptstring = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" \
+	getoptstring_COMMON;
+const struct option longopts[] = {
+	{ "ionice",       1, NULL, 'I'},
+	{ "stop",         0, NULL, 'K'},
+	{ "nicelevel",    1, NULL, 'N'},
+	{ "retry",        1, NULL, 'R'},
+	{ "start",        0, NULL, 'S'},
+	{ "startas",      1, NULL, 'a'},
+	{ "background",   0, NULL, 'b'},
+	{ "chuid",        1, NULL, 'c'},
+	{ "chdir",        1, NULL, 'd'},
+	{ "env",          1, NULL, 'e'},
+	{ "umask",        1, NULL, 'k'},
+	{ "group",        1, NULL, 'g'},
+	{ "interpreted",  0, NULL, 'i'},
+	{ "make-pidfile", 0, NULL, 'm'},
+	{ "name",         1, NULL, 'n'},
+	{ "oknodo",       0, NULL, 'o'},
+	{ "pidfile",      1, NULL, 'p'},
+	{ "signal",       1, NULL, 's'},
+	{ "test",         0, NULL, 't'},
+	{ "user",         1, NULL, 'u'},
+	{ "chroot",       1, NULL, 'r'},
+	{ "wait",         1, NULL, 'w'},
+	{ "exec",         1, NULL, 'x'},
+	{ "stdout",       1, NULL, '1'},
+	{ "stderr",       1, NULL, '2'},
+	{ "progress",     0, NULL, 'P'},
+	longopts_COMMON
+};
+const char * const longopts_help[] = {
+	"Set an ionice class:data when starting",
+	"Stop daemon",
+	"Set a nicelevel when starting",
+	"Retry schedule to use when stopping",
+	"Start daemon",
+	"deprecated, use --exec or --name",
+	"Force daemon to background",
+	"deprecated, use --user",
+	"Change the PWD",
+	"Set an environment string",
+	"Set the umask for the daemon",
+	"Change the process group",
+	"Match process name by interpreter",
+	"Create a pidfile",
+	"Match process name",
+	"deprecated",
+	"Match pid found in this file",
+	"Send a different signal",
+	"Test actions, don't do them",
+	"Change the process user",
+	"Chroot to this directory",
+	"Milliseconds to wait for daemon start",
+	"Binary to start/stop",
+	"Redirect stdout to file",
+	"Redirect stderr to file",
+	"Print dots each second while waiting",
+	longopts_help_COMMON
+};
+const char *usagestring = NULL;
 
 typedef struct scheduleitem
 {
@@ -81,7 +145,6 @@ typedef struct scheduleitem
 TAILQ_HEAD(, scheduleitem) schedule;
 static char **nav;
 
-extern const char *applet;
 static char *changeuser, *ch_root, *ch_dir;
 
 extern char **environ;
@@ -567,70 +630,7 @@ expand_home(const char *home, const char *path)
 	return nh;
 }
 
-#include "_usage.h"
-#define getoptstring "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" getoptstring_COMMON
-static const struct option longopts[] = {
-	{ "ionice",       1, NULL, 'I'},
-	{ "stop",         0, NULL, 'K'},
-	{ "nicelevel",    1, NULL, 'N'},
-	{ "retry",        1, NULL, 'R'},
-	{ "start",        0, NULL, 'S'},
-	{ "startas",      1, NULL, 'a'},
-	{ "background",   0, NULL, 'b'},
-	{ "chuid",        1, NULL, 'c'},
-	{ "chdir",        1, NULL, 'd'},
-	{ "env",          1, NULL, 'e'},
-	{ "umask",        1, NULL, 'k'},
-	{ "group",        1, NULL, 'g'},
-	{ "interpreted",  0, NULL, 'i'},
-	{ "make-pidfile", 0, NULL, 'm'},
-	{ "name",         1, NULL, 'n'},
-	{ "oknodo",       0, NULL, 'o'},
-	{ "pidfile",      1, NULL, 'p'},
-	{ "signal",       1, NULL, 's'},
-	{ "test",         0, NULL, 't'},
-	{ "user",         1, NULL, 'u'},
-	{ "chroot",       1, NULL, 'r'},
-	{ "wait",         1, NULL, 'w'},
-	{ "exec",         1, NULL, 'x'},
-	{ "stdout",       1, NULL, '1'},
-	{ "stderr",       1, NULL, '2'},
-	{ "progress",     0, NULL, 'P'},
-	longopts_COMMON
-};
-static const char * const longopts_help[] = {
-	"Set an ionice class:data when starting",
-	"Stop daemon",
-	"Set a nicelevel when starting",
-	"Retry schedule to use when stopping",
-	"Start daemon",
-	"deprecated, use --exec or --name",
-	"Force daemon to background",
-	"deprecated, use --user",
-	"Change the PWD",
-	"Set an environment string",
-	"Set the umask for the daemon",
-	"Change the process group",
-	"Match process name by interpreter",
-	"Create a pidfile",
-	"Match process name",
-	"deprecated",
-	"Match pid found in this file",
-	"Send a different signal",
-	"Test actions, don't do them",
-	"Change the process user",
-	"Chroot to this directory",
-	"Milliseconds to wait for daemon start",
-	"Binary to start/stop",
-	"Redirect stdout to file",
-	"Redirect stderr to file",
-	"Print dots each second while waiting",
-	longopts_help_COMMON
-};
-#include "_usage.c"
-
-int
-start_stop_daemon(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int devnull_fd = -1;
 #ifdef TIOCNOTTY
@@ -686,6 +686,7 @@ start_stop_daemon(int argc, char **argv)
 	char **margv;
 	unsigned int start_wait = 0;
 
+	applet = basename_c(argv[0]);
 	TAILQ_INIT(&schedule);
 #ifdef DEBUG_MEMORY
 	atexit(cleanup);

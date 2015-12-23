@@ -31,70 +31,16 @@
 #include <unistd.h>
 #include <utime.h>
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
-
-extern const char *applet;
-
-RC_DEPTREE *
-_rc_deptree_load(int force, int *regen) {
-	int fd;
-	int retval;
-	int serrno = errno;
-	int merrno;
-	time_t t;
-	char file[PATH_MAX];
-	struct stat st;
-	struct utimbuf ut;
-	FILE *fp;
-
-	t = 0;
-	if (rc_deptree_update_needed(&t, file) || force != 0) {
-		/* Test if we have permission to update the deptree */
-		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
-		merrno = errno;
-		errno = serrno;
-		if (fd == -1 && merrno == EACCES)
-			return rc_deptree_load();
-		close(fd);
-
-		if (regen)
-			*regen = 1;
-		ebegin("Caching service dependencies");
-		retval = rc_deptree_update() ? 0 : -1;
-		eend (retval, "Failed to update the dependency tree");
-
-		if (retval == 0) {
-			stat(RC_DEPTREE_CACHE, &st);
-			if (st.st_mtime < t) {
-				eerror("Clock skew detected with `%s'", file);
-				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
-				    "' to %s", ctime(&t));
-				fp = fopen(RC_DEPTREE_SKEWED, "w");
-				if (fp != NULL) {
-					fprintf(fp, "%s\n", file);
-					fclose(fp);
-				}
-				ut.actime = t;
-				ut.modtime = t;
-				utime(RC_DEPTREE_CACHE, &ut);
-			} else {
-				if (exists(RC_DEPTREE_SKEWED))
-					unlink(RC_DEPTREE_SKEWED);
-			}
-		}
-		if (force == -1 && regen != NULL)
-			*regen = retval;
-	}
-	return rc_deptree_load();
-}
-
 #include "_usage.h"
-#define getoptstring "aot:suTF:" getoptstring_COMMON
-static const struct option longopts[] = {
+
+const char *applet = NULL;
+const char *extraopts = NULL;
+const char *getoptstring = "aot:suTF:" getoptstring_COMMON;
+const struct option longopts[] = {
 	{ "starting", 0, NULL, 'a'},
 	{ "stopping", 0, NULL, 'o'},
 	{ "type",     1, NULL, 't'},
@@ -104,7 +50,7 @@ static const struct option longopts[] = {
 	{ "deptree-file", 1, NULL, 'F'},
 	longopts_COMMON
 };
-static const char * const longopts_help[] = {
+const char * const longopts_help[] = {
 	"Order services as if runlevel is starting",
 	"Order services as if runlevel is stopping",
 	"Type(s) of dependency to list",
@@ -114,10 +60,9 @@ static const char * const longopts_help[] = {
 	"File to load cached deptree from",
 	longopts_help_COMMON
 };
-#include "_usage.c"
+const char *usagestring = NULL;
 
-int
-rc_depend(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	RC_STRINGLIST *list;
 	RC_STRINGLIST *types;
@@ -132,6 +77,7 @@ rc_depend(int argc, char **argv)
 	char *token;
 	char *deptree_file = NULL;
 
+	applet = basename_c(argv[0]);
 	types = rc_stringlist_new();
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)

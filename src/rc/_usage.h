@@ -10,6 +10,8 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#include <getopt.h>
+
 #define getoptstring_COMMON "ChqVv"
 
 #define longopts_COMMON							      \
@@ -41,3 +43,14 @@
 	case 'v': case_RC_COMMON_getopt_case_v; break;			      \
 	case 'q': case_RC_COMMON_getopt_case_q; break;			      \
 	default:  case_RC_COMMON_getopt_default; break;
+
+extern const char *applet;
+extern const char *extraopts;
+extern const char *getoptstring;
+extern const struct option longopts[];
+extern const char * const longopts_help[];
+extern const char *usagestring;
+
+void set_quiet_options(void);
+void show_version(void);
+void usage(int exit_status);

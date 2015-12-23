@@ -55,11 +55,36 @@
 #  define ENT_PASS(_ent) ent->fs_passno
 #endif
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "_usage.h"
+
+const char *applet = NULL;
+const char *extraopts = NULL;
+const char *getoptstring = "MRbmop:t:" getoptstring_COMMON;
+const struct option longopts[] = {
+	{ "mount",          0, NULL, 'M' },
+	{ "remount",        0, NULL, 'R' },
+	{ "blockdevice",    0, NULL, 'b' },
+	{ "mountargs",      0, NULL, 'm' },
+	{ "options",        0, NULL, 'o' },
+	{ "passno",         1, NULL, 'p' },
+	{ "fstype",         1, NULL, 't' },
+	longopts_COMMON
+};
+const char * const longopts_help[] = {
+	"Mounts the filesytem from the mountpoint",
+	"Remounts the filesystem based on the information in fstab",
+	"Extract the block device",
+	"Show arguments needed to mount the entry",
+	"Extract the options field",
+	"Extract or query the pass number field",
+	"List entries with matching file system type",
+	longopts_help_COMMON
+};
+const char *usagestring = NULL;
 
 #ifdef HAVE_GETMNTENT
 static struct mntent *
@@ -129,30 +154,6 @@ do_mount(struct ENT *ent, bool remount)
 	}
 }
 
-#include "_usage.h"
-#define getoptstring "MRbmop:t:" getoptstring_COMMON
-static const struct option longopts[] = {
-	{ "mount",          0, NULL, 'M' },
-	{ "remount",        0, NULL, 'R' },
-	{ "blockdevice",    0, NULL, 'b' },
-	{ "mountargs",      0, NULL, 'm' },
-	{ "options",        0, NULL, 'o' },
-	{ "passno",         1, NULL, 'p' },
-	{ "fstype",         1, NULL, 't' },
-	longopts_COMMON
-};
-static const char * const longopts_help[] = {
-	"Mounts the filesytem from the mountpoint",
-	"Remounts the filesystem based on the information in fstab",
-	"Extract the block device",
-	"Show arguments needed to mount the entry",
-	"Extract the options field",
-	"Extract or query the pass number field",
-	"List entries with matching file system type",
-	longopts_help_COMMON
-};
-#include "_usage.c"
-
 #define OUTPUT_FILE      (1 << 1)
 #define OUTPUT_MOUNTARGS (1 << 2)
 #define OUTPUT_OPTIONS   (1 << 3)
@@ -161,8 +162,7 @@ static const char * const longopts_help[] = {
 #define OUTPUT_MOUNT     (1 << 6)
 #define OUTPUT_REMOUNT   (1 << 7)
 
-int
-fstabinfo(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	struct ENT *ent;
 	int result = EXIT_SUCCESS;
@@ -181,6 +181,7 @@ fstabinfo(int argc, char **argv)
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv("EINFO_QUIET");
 
+	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
 	{

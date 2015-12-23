@@ -39,13 +39,48 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "_usage.h"
 
-extern const char *applet;
+const char *applet = NULL;
+const char *extraopts = "[mount1] [mount2] ...";
+const char *getoptstring = "f:F:n:N:o:O:p:P:iste:E:" getoptstring_COMMON;
+const struct option longopts[] = {
+	{ "fstype-regex",        1, NULL, 'f'},
+	{ "skip-fstype-regex",   1, NULL, 'F'},
+	{ "node-regex",          1, NULL, 'n'},
+	{ "skip-node-regex",     1, NULL, 'N'},
+	{ "options-regex",       1, NULL, 'o'},
+	{ "skip-options-regex",  1, NULL, 'O'},
+	{ "point-regex",         1, NULL, 'p'},
+	{ "skip-point-regex",    1, NULL, 'P'},
+	{ "options",             0, NULL, 'i'},
+	{ "fstype",              0, NULL, 's'},
+	{ "node",                0, NULL, 't'},
+	{ "netdev",              0, NULL, 'e'},
+	{ "nonetdev",            0, NULL, 'E'},
+	longopts_COMMON
+};
+const char * const longopts_help[] = {
+	"fstype regex to find",
+	"fstype regex to skip",
+	"node regex to find",
+	"node regex to skip",
+	"options regex to find",
+	"options regex to skip",
+	"point regex to find",
+	"point regex to skip",
+	"print options",
+	"print fstype",
+	"print node",
+	"is it a network device",
+	"is it not a network device",
+	longopts_help_COMMON
+};
+const char *usagestring = NULL;
 
 typedef enum {
 	mount_from,
@@ -334,45 +369,7 @@ get_regex(const char *string)
 	return reg;
 }
 
-#include "_usage.h"
-#define extraopts "[mount1] [mount2] ..."
-#define getoptstring "f:F:n:N:o:O:p:P:iste:E:" getoptstring_COMMON
-static const struct option longopts[] = {
-	{ "fstype-regex",        1, NULL, 'f'},
-	{ "skip-fstype-regex",   1, NULL, 'F'},
-	{ "node-regex",          1, NULL, 'n'},
-	{ "skip-node-regex",     1, NULL, 'N'},
-	{ "options-regex",       1, NULL, 'o'},
-	{ "skip-options-regex",  1, NULL, 'O'},
-	{ "point-regex",         1, NULL, 'p'},
-	{ "skip-point-regex",    1, NULL, 'P'},
-	{ "options",             0, NULL, 'i'},
-	{ "fstype",              0, NULL, 's'},
-	{ "node",                0, NULL, 't'},
-	{ "netdev",              0, NULL, 'e'},
-	{ "nonetdev",            0, NULL, 'E'},
-	longopts_COMMON
-};
-static const char * const longopts_help[] = {
-	"fstype regex to find",
-	"fstype regex to skip",
-	"node regex to find",
-	"node regex to skip",
-	"options regex to find",
-	"options regex to skip",
-	"point regex to find",
-	"point regex to skip",
-	"print options",
-	"print fstype",
-	"print node",
-	"is it a network device",
-	"is it not a network device",
-	longopts_help_COMMON
-};
-#include "_usage.c"
-
-int
-mountinfo(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	struct args args;
 	regex_t *point_regex = NULL;
@@ -390,6 +387,7 @@ mountinfo(int argc, char **argv)
 #define REG_FREE(_var)							      \
 	if (_var) { regfree(_var); free(_var); }
 
+	applet = basename_c(argv[0]);
 	memset (&args, 0, sizeof(args));
 	args.mount_type = mount_to;
 	args.netdev = net_ignore;

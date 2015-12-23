@@ -29,10 +29,10 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "builtins.h"
 #include "einfo.h"
 #include "rc-misc.h"
 #include "rc-selinux.h"
+#include "_usage.h"
 
 typedef enum {
 	inode_unknown = 0,
@@ -41,7 +41,32 @@ typedef enum {
 	inode_fifo = 3,
 } inode_t;
 
-extern const char *applet;
+const char *applet = NULL;
+const char *extraopts ="path1 [path2] [...]";
+const char *getoptstring = "dDfFpm:o:W" getoptstring_COMMON;
+const struct option longopts[] = {
+	{ "directory",          0, NULL, 'd'},
+	{ "directory-truncate", 0, NULL, 'D'},
+	{ "file",               0, NULL, 'f'},
+	{ "file-truncate",      0, NULL, 'F'},
+	{ "pipe",               0, NULL, 'p'},
+	{ "mode",               1, NULL, 'm'},
+	{ "owner",              1, NULL, 'o'},
+	{ "writable",           0, NULL, 'W'},
+	longopts_COMMON
+};
+const char * const longopts_help[] = {
+	"Create a directory if not exists",
+	"Create/empty directory",
+	"Create a file if not exists",
+	"Truncate file",
+	"Create a named pipe (FIFO) if not exists",
+	"Mode to check",
+	"Owner to check (user:group)",
+	"Check whether the path is writable or not",
+	longopts_help_COMMON
+};
+const char *usagestring = NULL;
 
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool selinux_on)
@@ -187,34 +212,7 @@ static int parse_owner(struct passwd **user, struct group **group,
 	return retval;
 }
 
-#include "_usage.h"
-#define extraopts "path1 [path2] [...]"
-#define getoptstring "dDfFpm:o:W" getoptstring_COMMON
-static const struct option longopts[] = {
-	{ "directory",          0, NULL, 'd'},
-	{ "directory-truncate", 0, NULL, 'D'},
-	{ "file",               0, NULL, 'f'},
-	{ "file-truncate",      0, NULL, 'F'},
-	{ "pipe",               0, NULL, 'p'},
-	{ "mode",               1, NULL, 'm'},
-	{ "owner",              1, NULL, 'o'},
-	{ "writable",           0, NULL, 'W'},
-	longopts_COMMON
-};
-static const char * const longopts_help[] = {
-	"Create a directory if not exists",
-	"Create/empty directory",
-	"Create a file if not exists",
-	"Truncate file",
-	"Create a named pipe (FIFO) if not exists",
-	"Mode to check",
-	"Owner to check (user:group)",
-	"Check whether the path is writable or not",
-	longopts_help_COMMON
-};
-#include "_usage.c"
-
-int checkpath(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	int opt;
 	uid_t uid = geteuid();
@@ -229,6 +227,7 @@ int checkpath(int argc, char **argv)
 	bool writable = false;
 	bool selinux_on = false;
 
+	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
 	{

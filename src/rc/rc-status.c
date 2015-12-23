@@ -21,48 +21,43 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "_usage.h"
 
-extern const char *applet;
+const char *applet = NULL;
+const char *extraopts = NULL;
+const char *getoptstring = "aclrsu" getoptstring_COMMON;
+const struct option longopts[] = {
+	{"all",         0, NULL, 'a'},
+	{"crashed",     0, NULL, 'c'},
+	{"list",        0, NULL, 'l'},
+	{"runlevel",    0, NULL, 'r'},
+	{"servicelist", 0, NULL, 's'},
+	{"unused",      0, NULL, 'u'},
+	longopts_COMMON
+};
+const char * const longopts_help[] = {
+	"Show services from all run levels",
+	"Show crashed services",
+	"Show list of run levels",
+	"Show the name of the current runlevel",
+	"Show service list",
+	"Show services not assigned to any runlevel",
+	longopts_help_COMMON
+};
+const char *usagestring = ""						\
+	"Usage: rc-status [options] <runlevel>...\n"		\
+	"   or: rc-status [options] [-a | -c | -l | -r | -s | -u]";
+
 static bool test_crashed = false;
 static RC_DEPTREE *deptree;
 static RC_STRINGLIST *types;
 
 static RC_STRINGLIST *levels, *services, *tmp, *alist;
 static RC_STRINGLIST *sservices, *nservices, *needsme;
-
-bool
-_rc_can_find_pids(void)
-{
-	RC_PIDLIST *pids;
-	RC_PID *pid;
-	RC_PID *pid2;
-	bool retval = false;
-
-	if (geteuid() == 0)
-		return true;
-
-	/* If we cannot see process 1, then we don't test to see if
-	 * services crashed or not */
-	pids = rc_find_pids(NULL, NULL, 0, 1);
-	if (pids) {
-		pid = LIST_FIRST(pids);
-		if (pid) {
-			retval = true;
-			while (pid) {
-				pid2 = LIST_NEXT(pid, entries);
-				free(pid);
-				pid = pid2;
-			}
-		}
-		free(pids);
-	}
-	return retval;
-}
 
 static void
 print_level(const char *prefix, const char *level)
@@ -178,33 +173,7 @@ print_stacked_services(const char *runlevel)
 	stackedlevels = NULL;
 }
 
-#include "_usage.h"
-#define usagestring ""						\
-	"Usage: rc-status [options] <runlevel>...\n"		\
-	"   or: rc-status [options] [-a | -c | -l | -r | -s | -u]"
-#define getoptstring "aclrsu" getoptstring_COMMON
-static const struct option longopts[] = {
-	{"all",         0, NULL, 'a'},
-	{"crashed",     0, NULL, 'c'},
-	{"list",        0, NULL, 'l'},
-	{"runlevel",    0, NULL, 'r'},
-	{"servicelist", 0, NULL, 's'},
-	{"unused",      0, NULL, 'u'},
-	longopts_COMMON
-};
-static const char * const longopts_help[] = {
-	"Show services from all run levels",
-	"Show crashed services",
-	"Show list of run levels",
-	"Show the name of the current runlevel",
-	"Show service list",
-	"Show services not assigned to any runlevel",
-	longopts_help_COMMON
-};
-#include "_usage.c"
-
-int
-rc_status(int argc, char **argv)
+int main(int argc, char **argv)
 {
     RC_STRING *s, *l, *t, *level;
 
@@ -213,6 +182,7 @@ rc_status(int argc, char **argv)
 
 	test_crashed = _rc_can_find_pids();
 
+	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 				  (int *) 0)) != -1)
 		switch (opt) {

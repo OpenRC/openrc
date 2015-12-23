@@ -53,6 +53,9 @@
 	} while (/* CONSTCOND */ 0)
 #endif
 
+#include <stdbool.h>
+#include <sys/stat.h>
+
 _unused static void *xmalloc (size_t size)
 {
 	void *value = malloc(size);
@@ -102,6 +105,20 @@ _unused static const char *basename_c(const char *path)
 	if (slash)
 		return (++slash);
 	return (path);
+}
+
+_unused static bool exists(const char *pathname)
+{
+	struct stat buf;
+
+	return (stat(pathname, &buf) == 0);
+}
+
+_unused static bool existss(const char *pathname)
+{
+	struct stat buf;
+
+	return (stat(pathname, &buf) == 0 && buf.st_size != 0);
 }
 
 #endif

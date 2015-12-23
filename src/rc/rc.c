@@ -45,7 +45,6 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include <termios.h>
 #include <unistd.h>
 
-#include "builtins.h"
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
@@ -54,6 +53,27 @@ const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include "rc-plugin.h"
 
 #include "version.h"
+#include "_usage.h"
+
+const char *extraopts = NULL;
+const char *getoptstring = "a:no:s:S" getoptstring_COMMON;
+const struct option longopts[] = {
+	{ "no-stop", 0, NULL, 'n' },
+	{ "override",    1, NULL, 'o' },
+	{ "service",     1, NULL, 's' },
+	{ "sys",         0, NULL, 'S' },
+	longopts_COMMON
+};
+const char * const longopts_help[] = {
+	"do not stop any services",
+	"override the next runlevel to change into\n"
+	"when leaving single user or boot runlevels",
+	"runs the service specified with the rest\nof the arguments",
+	"output the RC system type, if any",
+	longopts_help_COMMON
+};
+const char *usagestring = ""					\
+    "Usage: openrc [options] [<runlevel>]";
 
 #define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"
@@ -721,31 +741,7 @@ handle_bad_signal(int sig)
 }
 #endif
 
-#include "_usage.h"
-#define usagestring ""					\
-    "Usage: openrc [options] [<runlevel>]"
-#define getoptstring "a:no:s:S" getoptstring_COMMON
-static const struct option longopts[] = {
-	{ "applet",   1, NULL, 'a' },
-	{ "no-stop", 0, NULL, 'n' },
-	{ "override",    1, NULL, 'o' },
-	{ "service",     1, NULL, 's' },
-	{ "sys",         0, NULL, 'S' },
-	longopts_COMMON
-};
-static const char * const longopts_help[] = {
-	"runs the applet specified by the next argument",
-	"do not stop any services",
-	"override the next runlevel to change into\n"
-	"when leaving single user or boot runlevels",
-	"runs the service specified with the rest\nof the arguments",
-	"output the RC system type, if any",
-	longopts_help_COMMON
-};
-#include "_usage.c"
-
-int
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	const char *bootlevel = NULL;
 	char *newlevel = NULL;
@@ -785,9 +781,6 @@ main(int argc, char **argv)
 	if (!applet)
 		eerrorx("arguments required");
 
-	/* Run our built in applets. If we ran one, we don't return. */
-	run_applets(argc, argv);
-
 	argc--;
 	argv++;
 
@@ -813,10 +806,6 @@ main(int argc, char **argv)
 		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-		case 'a':
-			/* Do nothing, actual logic in run_applets, this
-			 * is a placeholder */
-			break;
 		case 'n':
 			nostop = true;
 			break;
