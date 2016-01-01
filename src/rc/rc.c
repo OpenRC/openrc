@@ -261,7 +261,7 @@ open_shell(void)
 	struct passwd *pw;
 
 #ifdef __linux__
-	const char *sys = NULL;
+	char *sys = NULL;
 	
 	sys = detect_container();
 	if (!sys)
@@ -450,7 +450,7 @@ static void
 do_sysinit()
 {
 	struct utsname uts;
-	const char *sys;
+	char *sys;
 
 	/* exec init-early.sh if it exists
 	 * This should just setup the console to use the correct
@@ -749,7 +749,7 @@ main(int argc, char **argv)
 {
 	const char *bootlevel = NULL;
 	char *newlevel = NULL;
-	const char *systype = NULL;
+	char *systype = NULL;
 	static RC_STRINGLIST *hotplugged_services;
 	static RC_STRINGLIST *stop_services;
 	static RC_STRINGLIST *start_services;

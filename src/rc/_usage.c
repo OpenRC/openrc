@@ -40,7 +40,7 @@ static void set_quiet_options(void)
 _noreturn static void
 show_version(void)
 {
-	const char *systype = NULL;
+	char *systype = NULL;
 
 	printf("%s (OpenRC", applet);
 	systype = detect_container();

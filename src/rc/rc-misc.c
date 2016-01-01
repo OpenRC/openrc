@@ -126,7 +126,7 @@ env_config(void)
 	char *np;
 	char *npp;
 	char *tok;
-	const char *sys = NULL;
+	char *sys = NULL;
 	char buffer[PATH_MAX];
 
 	/* Ensure our PATH is prefixed with the system locations first
@@ -380,7 +380,7 @@ found:
 	return retval;
 }
 
-const char *detect_prefix(void)
+char *detect_prefix(void)
 {
 #ifdef PREFIX
 	return RC_SYS_PREFIX;
@@ -389,7 +389,7 @@ const char *detect_prefix(void)
 #endif
 }
 
-const char *get_systype(void)
+char *get_systype(void)
 {
 	char *systype = rc_conf_value("rc_sys");
 	if (systype) {
@@ -404,7 +404,7 @@ const char *get_systype(void)
 	return systype;
 }
 
-const char *detect_container(void)
+char *detect_container(void)
 {
 	char *systype = get_systype();
 
@@ -459,7 +459,7 @@ const char *detect_container(void)
 	return NULL;
 }
 
-const char *detect_vm(void)
+char *detect_vm(void)
 {
 	char *systype = get_systype();
 
