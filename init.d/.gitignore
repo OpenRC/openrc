@@ -1,3 +1,4 @@
+binfmt
 bootmisc
 fsck
 hostname
@@ -22,9 +23,11 @@ killprocs
 modules
 mount-ro
 mtab
+net-online
 numlock
 osclock
 procfs
+s6-svscan
 staticroute
 sysfs
 devdb
