@@ -48,12 +48,8 @@ rc_conf_yesno(const char *setting)
 }
 
 static const char *const env_whitelist[] = {
-	"CONSOLE", "PATH", "SHELL", "USER", "HOME", "TERM",
-	"LANG", "LC_CTYPE", "LC_NUMERIC", "LC_TIME", "LC_COLLATE",
-	"LC_MONETARY", "LC_MESSAGES", "LC_PAPER", "LC_NAME", "LC_ADDRESS",
-	"LC_TELEPHONE", "LC_MEASUREMENT", "LC_IDENTIFICATION", "LC_ALL",
-	"IN_HOTPLUG", "IN_BACKGROUND", "RC_INTERFACE_KEEP_CONFIG",
 	"EERROR_QUIET", "EINFO_QUIET",
+	"IN_BACKGROUND", "IN_HOTPLUG",
 	NULL
 };
 
