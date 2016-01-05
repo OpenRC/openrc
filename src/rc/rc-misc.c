@@ -122,7 +122,7 @@ env_config(void)
 	char *np;
 	char *npp;
 	char *tok;
-	char *sys = NULL;
+	const char *sys = NULL;
 	char buffer[PATH_MAX];
 
 	/* Ensure our PATH is prefixed with the system locations first
@@ -376,7 +376,7 @@ found:
 	return retval;
 }
 
-char *detect_prefix(void)
+const char *detect_prefix(void)
 {
 #ifdef PREFIX
 	return RC_SYS_PREFIX;
@@ -385,7 +385,7 @@ char *detect_prefix(void)
 #endif
 }
 
-char *get_systype(void)
+const char *get_systype(void)
 {
 	char *systype = rc_conf_value("rc_sys");
 	if (systype) {
@@ -400,9 +400,9 @@ char *get_systype(void)
 	return systype;
 }
 
-char *detect_container(void)
+const char *detect_container(void)
 {
-	char *systype = get_systype();
+	const char *systype = get_systype();
 
 #ifdef __FreeBSD__
 	if (systype && strcmp(systype, RC_SYS_JAIL) == 0)
@@ -455,9 +455,9 @@ char *detect_container(void)
 	return NULL;
 }
 
-char *detect_vm(void)
+const char *detect_vm(void)
 {
-	char *systype = get_systype();
+	const char *systype = get_systype();
 
 #ifdef __NetBSD__
 	if (systype) {
