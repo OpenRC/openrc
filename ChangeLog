@@ -1,3 +1,175 @@
+commit 9473ac514cb72663d5c3bac8b5473cced4a20bf7
+Author: joe9 <joe9mail@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    allow the user to decide whether fsck aborts for errors
+    
+    X-Gentoo-Bug: 564008
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=564008
+
+commit bf2f40828ee26d3ba9185f29db596ee5d7b9cf61
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Remove multicall binary structure from OpenRC
+    
+    This eliminates the need for the selinux-specific wrapper scrript we
+    were installing in /lib*/rc/{bin,sbin}.
+
+commit fe485f44339963fdbee143687dcbef2069924bc6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc: fix compiler warnings cleanup
+    
+    This reverts commit 981d2b3308edb0d0a68f7bdce4f2c99110de6940 and fixes
+    the warnings that generated.
+
+commit 53bc986ce5f9725d7117356e28224ac898f9c9bf
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Clean default env_whitelist
+    
+    The whitelist of environment variables we pass to service scripts
+    included several unnecessary variables.
+    
+    The default whitelist now includes EERROR_QUIET, EINFO_QUIET,
+    IN_BACKGROUND and IN_HOTPLUG.
+    
+    X-Gentoo-Bug: 569542
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=569542
+
+commit 981d2b3308edb0d0a68f7bdce4f2c99110de6940
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc: clean up compiler warnings
+    
+    The get_systype(), detect_container(), detect_prefix() and detect_vm()
+    functions need to return "char *" instead of "const char *".
+
+commit 5d3e85bc310e12411135e98a397b35fb920a72a3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add ignore patterns for init.d directory
+
+commit 000503fad72e4eb2ef956a24df358be84b2a9493
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Convert OpenRC to a centralized copyright/license structure
+    
+    In the past, OpenRC was a hybrid of a centralized and file-scope
+    license/copyright structure.
+    
+    I followed the instructions from the Software Freedom Law Center [1] to
+    convert to a Centralized structure where possible, for easier future
+    maintenance.
+    
+    [1] https://softwarefreedom.org/resources/2012/ManagingCopyrightInformation.html
+
+commit 065f034059d7ca26bbb985158c5d361ff75df186
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    format fix
+
+commit fe32ef8e09a2edf2690a3b281cea0be84a5541ca
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    FEATURE-REMOVAL-SCHEDULE: create section for librc API functions
+
+commit c45313dfa9880c4aedb72da1b2ac3159eee05a93
+Author: Rick Farina (Zero_Chaos) <zerochaos@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    netmount: use want dependency to start nfsclient
+    
+    add in parsing of fstab to determine if nfsclient should be automatically
+    started so that netmount can mount nfs without adding nfsclient
+    to the default runlevel
+    
+    This fixes #71.
+
+commit 3ef2bbfb19fe3ca0c169f9dcf48b70a59321a5d1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add note about deprecating rc_getline()
+
+commit cc9c23c8484ea7d07b1f8e54bcab46cc31ec727d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Complete support for rc.conf.d
+    
+    - gendepends.sh needs to read this directory to allow dependencies to be
+      overridden
+      - init.sh for Linux and Bsd need to read it to allow config settings
+        they use to be overridden.
+
+commit 935252b1152b4086ccbe76ace21e677d7ac8a357
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add note about removing rc_sys() from librc
+
+commit 0d202b5711228bb047140430ea8fe4f749503fb4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update feature-removal-schedule wrt mtab service
+
+commit f9bdb072e8d88079a20834fe921d43e326a9a18a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc.map: remove references to rc_sys_v{1,2}
+
+commit 9f6e05671d6d48faa7b83aec05a637bcdfcb3f82
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Convert rc_sys() calls to detect_container() and detect_vm()
+
+commit 8addd7913a743b75ef3854ab4a96fea81cc5245d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Create detect_container() and detect_vm() functions
+    
+    These functions replace rc_sys so that we can detect containers and vms
+    separately.
+    
+    Also, we copy file_regex() to rc-misc.c and open it to all operating
+    systems.
+
+commit 83cd7145e3e7c3ac453b6a87214cf5704e3875ce
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Rename bootlevel variable in _usage.c
+    
+    In src/rc/_usage.c, we were using bootlevel as the variable to hold the
+    return value of rc_sys.
+    This changes the variable name to systype because this function returns
+    a system type, not a runlevel.
+
+commit a67e3495d0b54ac83a00fc04aef50951646814ad
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Increment version number
+
+commit a1acdeb92ead07f2dc60cb9796aaf5b4ea377713
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit b810473e4f7218afbb7047890860c15a8c45472b
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1157,58 +1329,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     tmpfiles.dev: pass --boot to tmpfiles.sh so kmod works properly
-
-commit 7e3a33c8f5ccae03e035cf4c9d1c3c01a0f57b1e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add description for cgroup_cleanup
-    
-    X-Gentoo-Bug: 535184
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=535184
-
-commit 74478830a8d035c078e986b57efd40a5c48bc896
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix double free of pidfile
-    
-    This fixes a double free of the pidfile variable. For discussion of this
-    issue, see the bug.
-    
-    X-Gentoo-Bug: 531600
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=531600
-
-commit 6a9679377f4de257f02de1d16a513df14b4c25ba
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Do not call the shell to evaluate CHANGELOG_LIMIT
-    
-    The git log command understands dates such as "1 year ago", so there is
-    no need to use the date command.
-
-commit 72186ea3bbbf0b09b88a6f3e1fb23bf04ce1ddad
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    etc/rc and etc/rc.shutdown: change references from rc to openrc
-
-commit 3647db7a27f7a5ca14b33b14effeb945fd986210
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add target to create ChangeLog
-    
-    This was added by request because some users are requesting a ChangeLog.
-    
-    This fixes #29.
-
-commit 7a92eb888794819a339babd0ee220b6aa3993db1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rename git.mk to gitver.mk
-    
-    This is a more descriptive name since this file only sets the gitver
-    variable.
