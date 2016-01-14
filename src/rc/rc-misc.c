@@ -179,6 +179,8 @@ env_config(void)
 	sys = detect_container();
 	if (!sys)
 		sys = detect_vm();
+
+	if (sys)
 		setenv("RC_SYS", sys, 1);
 
 #ifdef PREFIX
