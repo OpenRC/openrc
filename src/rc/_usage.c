@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "rc.h"
 #include "rc-misc.h"
 #include "_usage.h"
 #include "version.h"

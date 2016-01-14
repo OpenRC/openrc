@@ -30,6 +30,7 @@
 #include <utime.h>
 
 #include "einfo.h"
+#include "rc.h"
 #include "rc-misc.h"
 #include "_usage.h"
 
