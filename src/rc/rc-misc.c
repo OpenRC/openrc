@@ -53,6 +53,7 @@ rc_conf_yesno(const char *setting)
 static const char *const env_whitelist[] = {
 	"EERROR_QUIET", "EINFO_QUIET",
 	"IN_BACKGROUND", "IN_HOTPLUG",
+	"LANG", "LC_MESSAGES", "TERM",
 	NULL
 };
 
