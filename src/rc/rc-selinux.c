@@ -15,8 +15,6 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#ifdef HAVE_SELINUX
-
 #include <stddef.h>
 #include <errno.h>
 #include <dlfcn.h>
@@ -386,5 +384,3 @@ out:
 	free(run_init_t);
 	free(curr_t);
 }
-
-#endif

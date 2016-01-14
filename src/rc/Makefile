@@ -75,7 +75,10 @@ check test::
 
 all: ${ALL_PROGS}
 
-checkpath: checkpath.o _usage.o rc-misc.o rc-selinux.o
+checkpath: checkpath.o _usage.o rc-misc.o
+ifeq (${MKSELINUX},yes)
+checkpath: rc-selinux.o
+endif
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
@@ -101,7 +104,10 @@ mark_service_hotplugged mark_service_failed: do_mark_service.o rc-misc.o
 mountinfo: mountinfo.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-openrc rc: rc.o rc-logger.o rc-misc.o rc-plugin.o rc-selinux.o _usage.o
+openrc rc: rc.o rc-logger.o rc-misc.o rc-plugin.o _usage.o
+ifeq (${MKSELINUX},yes)
+openrc rc: rc-selinux.o
+endif
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 openrc-run runscript: openrc-run.o _usage.o rc-misc.o rc-plugin.o
