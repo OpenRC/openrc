@@ -1,3 +1,33 @@
+commit 933972da532bdf23accaea68bd072fc723a4065d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix selinux build
+
+commit dbcb8ba3fe2ddce1052c6e0037c47e19d7c273aa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add LANG, LC_MESSAGES and TERM to the environment whitelist
+
+commit e462c3223ec71e4567916c74b7e02ec167d91819
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix seg fault
+
+commit 06f195ce37769fda1bbc2cfde13534abeb7f1176
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    increment version number
+
+commit 04f05c30d13ec83b85164a536eb570f29a66b275
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 9473ac514cb72663d5c3bac8b5473cced4a20bf7
 Author: joe9 <joe9mail@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
