@@ -1,3 +1,39 @@
+commit fb37e1aa96df351b1bf591dc36ef332f86820a2b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    src/rc/Makefile: fix make depend target
+
+commit 8769cca71089983ad8a8a69cec852c6bc169248d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    include rc.h properly in source files
+    
+    We were attempting to include rc.h in rc-misc.h instead of the source
+    files where it should be included.
+
+commit 506f2887e13eb8093bbff0915381644c4c08fc5c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix selinux build
+    
+    X-Gentoo-Bug: 571798
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=571798
+
+commit 83223a6e97ff2ed3a8b06c4794b55cdd1c61c657
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.20.2
+
+commit 2747f40f823c2d31b820f0525360532287c70eea
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update changelog
+
 commit 933972da532bdf23accaea68bd072fc723a4065d
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
