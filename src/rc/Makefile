@@ -105,12 +105,12 @@ mountinfo: mountinfo.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 openrc rc: rc.o rc-logger.o rc-misc.o rc-plugin.o _usage.o
-ifeq (${MKSELINUX},yes)
-openrc rc: rc-selinux.o
-endif
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 openrc-run runscript: openrc-run.o _usage.o rc-misc.o rc-plugin.o
+ifeq (${MKSELINUX},yes)
+openrc-run runscript: rc-selinux.o
+endif
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 rc-abort: rc-abort.o
