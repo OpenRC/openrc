@@ -30,6 +30,7 @@
 #include <unistd.h>
 
 #include "einfo.h"
+#include "rc.h"
 #include "rc-misc.h"
 #include "rc-selinux.h"
 #include "_usage.h"

@@ -26,7 +26,6 @@
 #include <unistd.h>
 
 #include "helpers.h"
-#include "rc.h"
 
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"

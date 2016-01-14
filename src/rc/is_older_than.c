@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "rc.h"
 #include "rc-misc.h"
 
 int main(int argc, char **argv)

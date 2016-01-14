@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include "einfo.h"
+#include "rc.h"
 #include "rc-misc.h"
 
 const char *applet = NULL;
