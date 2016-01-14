@@ -1,4 +1,9 @@
-SRCS=	rc.c 	rc-logger.c rc-misc.c rc-plugin.c
+SRCS=	checkpath.c do_e.c do_mark_service.c do_service.c \
+		do_value.c fstabinfo.c is_newer_than.c is_older_than.c \
+		mountinfo.c openrc-run.c rc-abort.c rc.c \
+		rc-depend.c rc-logger.c rc-misc.c rc-plugin.c \
+		rc-selinux.c rc-service.c rc-status.c rc-update.c \
+		shell_var.c start-stop-daemon.c swclock.c _usage.c
 
 ifeq (${MKSELINUX},yes)
 SRCS+=		rc-selinux.c
