@@ -228,8 +228,13 @@ static const char *
 detect_container(const char *systype)
 {
 #ifdef __FreeBSD__
-	if (systype && strcmp(systype, RC_SYS_JAIL) == 0)
-		return RC_SYS_JAIL;
+	if (systype) {
+		if (strcmp(systype, RC_SYS_NONE) == 0)
+		       return NULL;
+		if (strcmp(systype, RC_SYS_JAIL) == 0)
+			return RC_SYS_JAIL;
+	}
+
 	int jailed = 0;
 	size_t len = sizeof(jailed);
 
@@ -240,6 +245,8 @@ detect_container(const char *systype)
 
 #ifdef __linux__
 	if (systype) {
+		if (strcmp(systype, RC_SYS_NONE) == 0)
+			return NULL;
 		if (strcmp(systype, RC_SYS_UML) == 0)
 			return RC_SYS_UML;
 		if (strcmp(systype, RC_SYS_VSERVER) == 0)
@@ -283,6 +290,8 @@ detect_vm(const char *systype)
 {
 #ifdef __NetBSD__
 	if (systype) {
+		if (strcmp(systype, RC_SYS_NONE) == 0)
+			return NULL;
 		if (strcmp(systype, RC_SYS_XEN0) == 0)
 			return RC_SYS_XEN0;
 		if (strcmp(systype, RC_SYS_XENU) == 0)
@@ -296,6 +305,8 @@ detect_vm(const char *systype)
 
 #ifdef __linux__
 	if (systype) {
+		if (strcmp(systype, RC_SYS_NONE) == 0)
+			return NULL;
 		if (strcmp(systype, RC_SYS_XEN0) == 0)
 			return RC_SYS_XEN0;
 		if (strcmp(systype, RC_SYS_XENU) == 0)
