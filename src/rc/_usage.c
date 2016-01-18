@@ -47,10 +47,7 @@ _noreturn void show_version(void)
 	const char *systype = NULL;
 
 	printf("%s (OpenRC", applet);
-	systype = detect_container();
-	if (!systype)
-		systype = detect_vm();
-	if (systype)
+	if ((systype = rc_sys()))
 		printf(" [%s]", systype);
 	printf(") %s", VERSION);
 #ifdef BRANDING

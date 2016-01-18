@@ -27,7 +27,6 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <limits.h>
-#  include <regex.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,7 +125,7 @@ env_config(void)
 	char *np;
 	char *npp;
 	char *tok;
-	const char *sys = NULL;
+	const char *sys = rc_sys();
 	char buffer[PATH_MAX];
 
 	/* Ensure our PATH is prefixed with the system locations first
@@ -176,10 +175,6 @@ env_config(void)
 		fclose(fp);
 	} else
 		setenv("RC_DEFAULTLEVEL", RC_LEVEL_DEFAULT, 1);
-
-	sys = detect_container();
-	if (!sys)
-		sys = detect_vm();
 
 	if (sys)
 		setenv("RC_SYS", sys, 1);
@@ -336,163 +331,6 @@ is_writable(const char *path)
 		return 1;
 
 	return 0;
-}
-
-static bool file_regex(const char *file, const char *regex)
-{
-	FILE *fp;
-	char *line = NULL;
-	size_t len = 0;
-	regex_t re;
-	bool retval = true;
-	int result;
-
-	if (!(fp = fopen(file, "r")))
-		return false;
-
-	if ((result = regcomp(&re, regex, REG_EXTENDED | REG_NOSUB)) != 0) {
-		fclose(fp);
-		line = xmalloc(sizeof(char) * BUFSIZ);
-		regerror(result, &re, line, BUFSIZ);
-		fprintf(stderr, "file_regex: %s", line);
-		free(line);
-		return false;
-	}
-
-	while ((rc_getline(&line, &len, fp))) {
-		char *str = line;
-		/* some /proc files have \0 separated content so we have to
-		   loop through the 'line' */
-		do {
-			if (regexec(&re, str, 0, NULL, 0) == 0)
-				goto found;
-			str += strlen(str) + 1;
-			/* len is the size of allocated buffer and we don't
-			   want call regexec BUFSIZE times. find next str */
-			while (str < line + len && *str == '\0')
-				str++;
-		} while (str < line + len);
-	}
-	retval = false;
-found:
-	fclose(fp);
-	free(line);
-	regfree(&re);
-
-	return retval;
-}
-
-const char *detect_prefix(void)
-{
-#ifdef PREFIX
-	return RC_SYS_PREFIX;
-#else
-	return NULL;
-#endif
-}
-
-const char *get_systype(void)
-{
-	char *systype = rc_conf_value("rc_sys");
-	if (systype) {
-		char *s = systype;
-		/* Convert to uppercase */
-		while (s && *s) {
-			if (islower((unsigned char) *s))
-				*s = toupper((unsigned char) *s);
-			s++;
-		}
-	}
-	return systype;
-}
-
-const char *detect_container(void)
-{
-	const char *systype = get_systype();
-
-#ifdef __FreeBSD__
-	if (systype && strcmp(systype, RC_SYS_JAIL) == 0)
-		return RC_SYS_JAIL;
-	int jailed = 0;
-	size_t len = sizeof(jailed);
-
-	if (sysctlbyname("security.jail.jailed", &jailed, &len, NULL, 0) == 0)
-		if (jailed == 1)
-			return RC_SYS_JAIL;
-#endif
-
-#ifdef __linux__
-	if (systype) {
-		if (strcmp(systype, RC_SYS_UML) == 0)
-			return RC_SYS_UML;
-		if (strcmp(systype, RC_SYS_VSERVER) == 0)
-			return RC_SYS_VSERVER;
-		if (strcmp(systype, RC_SYS_OPENVZ) == 0)
-			return RC_SYS_OPENVZ;
-		if (strcmp(systype, RC_SYS_LXC) == 0)
-			return RC_SYS_LXC;
-		if (strcmp(systype, RC_SYS_RKT) == 0)
-				return RC_SYS_RKT;
-		if (strcmp(systype, RC_SYS_SYSTEMD_NSPAWN) == 0)
-				return RC_SYS_SYSTEMD_NSPAWN;
-		if (strcmp(systype, RC_SYS_DOCKER) == 0)
-				return RC_SYS_DOCKER;
-	}
-	if (file_regex("/proc/cpuinfo", "UML"))
-		return RC_SYS_UML;
-	else if (file_regex("/proc/self/status",
-		"(s_context|VxID):[[:space:]]*[1-9]"))
-		return RC_SYS_VSERVER;
-	else if (exists("/proc/vz/veinfo") && !exists("/proc/vz/version"))
-		return RC_SYS_OPENVZ;
-	else if (file_regex("/proc/self/status",
-		"envID:[[:space:]]*[1-9]"))
-		return RC_SYS_OPENVZ; /* old test */
-	else if (file_regex("/proc/1/environ", "container=lxc"))
-		return RC_SYS_LXC;
-	else if (file_regex("/proc/1/environ", "container=rkt"))
-		return RC_SYS_RKT;
-	else if (file_regex("/proc/1/environ", "container=systemd-nspawn"))
-		return RC_SYS_SYSTEMD_NSPAWN;
-	else if (file_regex("/proc/1/environ", "container=docker"))
-		return RC_SYS_DOCKER;
-#endif
-
-	return NULL;
-}
-
-const char *detect_vm(void)
-{
-	const char *systype = get_systype();
-
-#ifdef __NetBSD__
-	if (systype) {
-		if(strcmp(systype, RC_SYS_XEN0) == 0)
-				return RC_SYS_XEN0;
-		if (strcmp(systype, RC_SYS_XENU) == 0)
-			return RC_SYS_XENU;
-	}
-	if (exists("/kern/xen/privcmd"))
-		return RC_SYS_XEN0;
-	if (exists("/kern/xen"))
-		return RC_SYS_XENU;
-#endif
-
-#ifdef __linux__
-	if (systype) {
-		if (strcmp(systype, RC_SYS_XEN0) == 0)
-			return RC_SYS_XEN0;
-		if (strcmp(systype, RC_SYS_XENU) == 0)
-			return RC_SYS_XENU;
-	}
-	if (exists("/proc/xen")) {
-		if (file_regex("/proc/xen/capabilities", "control_d"))
-			return RC_SYS_XEN0;
-		return RC_SYS_XENU;
-	}
-#endif
-
-	return NULL;
 }
 
 RC_DEPTREE * _rc_deptree_load(int force, int *regen)

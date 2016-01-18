@@ -198,13 +198,9 @@ found:
 #endif
 
 
-const char *
-rc_sys(void)
+static const char *
+get_systype(void)
 {
-#ifdef PREFIX
-	return RC_SYS_PREFIX;
-#endif
-
 	char *systype = rc_conf_value("rc_sys");
 	if (systype) {
 		char *s = systype;
@@ -215,7 +211,22 @@ rc_sys(void)
 			s++;
 		}
 	}
+	return systype;
+}
 
+static const char *
+detect_prefix(const char *systype)
+{
+#ifdef PREFIX
+	return RC_SYS_PREFIX;
+#else
+	return NULL;
+#endif
+}
+
+static const char *
+detect_container(const char *systype)
+{
 #ifdef __FreeBSD__
 	if (systype && strcmp(systype, RC_SYS_JAIL) == 0)
 		return RC_SYS_JAIL;
@@ -227,25 +238,8 @@ rc_sys(void)
 			return RC_SYS_JAIL;
 #endif
 
-#ifdef __NetBSD__
-	if (systype) {
-		if(strcmp(systype, RC_SYS_XEN0) == 0)
-				return RC_SYS_XEN0;
-		if (strcmp(systype, RC_SYS_XENU) == 0)
-			return RC_SYS_XENU;
-	}
-	if (exists("/kern/xen/privcmd"))
-		return RC_SYS_XEN0;
-	if (exists("/kern/xen"))
-		return RC_SYS_XENU;
-#endif
-
 #ifdef __linux__
 	if (systype) {
-		if (strcmp(systype, RC_SYS_XEN0) == 0)
-			return RC_SYS_XEN0;
-		if (strcmp(systype, RC_SYS_XENU) == 0)
-			return RC_SYS_XENU;
 		if (strcmp(systype, RC_SYS_UML) == 0)
 			return RC_SYS_UML;
 		if (strcmp(systype, RC_SYS_VSERVER) == 0)
@@ -261,11 +255,7 @@ rc_sys(void)
 		if (strcmp(systype, RC_SYS_DOCKER) == 0)
 				return RC_SYS_DOCKER;
 	}
-	if (exists("/proc/xen")) {
-		if (file_regex("/proc/xen/capabilities", "control_d"))
-			return RC_SYS_XEN0;
-		return RC_SYS_XENU;
-	} else if (file_regex("/proc/cpuinfo", "UML"))
+	if (file_regex("/proc/cpuinfo", "UML"))
 		return RC_SYS_UML;
 	else if (file_regex("/proc/self/status",
 		"(s_context|VxID):[[:space:]]*[1-9]"))
@@ -286,6 +276,57 @@ rc_sys(void)
 #endif
 
 	return NULL;
+}
+
+static const char *
+detect_vm(const char *systype)
+{
+#ifdef __NetBSD__
+	if (systype) {
+		if (strcmp(systype, RC_SYS_XEN0) == 0)
+			return RC_SYS_XEN0;
+		if (strcmp(systype, RC_SYS_XENU) == 0)
+			return RC_SYS_XENU;
+	}
+	if (exists("/kern/xen/privcmd"))
+		return RC_SYS_XEN0;
+	if (exists("/kern/xen"))
+		return RC_SYS_XENU;
+#endif
+
+#ifdef __linux__
+	if (systype) {
+		if (strcmp(systype, RC_SYS_XEN0) == 0)
+			return RC_SYS_XEN0;
+		if (strcmp(systype, RC_SYS_XENU) == 0)
+			return RC_SYS_XENU;
+	}
+	if (exists("/proc/xen")) {
+		if (file_regex("/proc/xen/capabilities", "control_d"))
+			return RC_SYS_XEN0;
+		return RC_SYS_XENU;
+	}
+#endif
+
+	return NULL;
+}
+
+const char *
+rc_sys(void)
+{
+	const char *systype;
+	const char *sys;
+
+	systype = get_systype();
+	sys = detect_prefix(systype);
+	if (!sys) {
+		sys = detect_container(systype);
+		if (!sys) {
+			sys = detect_vm(systype);
+		}
+	}
+
+	return sys;
 }
 librc_hidden_def(rc_sys)
 

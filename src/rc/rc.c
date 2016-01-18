@@ -281,12 +281,8 @@ open_shell(void)
 	struct passwd *pw;
 
 #ifdef __linux__
-	const char *sys = NULL;
+	const char *sys = rc_sys();
 	
-	sys = detect_container();
-	if (!sys)
-		sys = detect_vm();
-
 	/* VSERVER and OPENVZ systems cannot really drop to shells */
 	if (sys &&
 	    (strcmp(sys, "VSERVER") == 0 || strcmp(sys, "OPENVZ") == 0))
@@ -491,10 +487,7 @@ do_sysinit()
 	    uts.machine);
 #endif
 
-	sys = detect_container();
-	if (!sys)
-		sys = detect_vm();
-	if (sys)
+	if ((sys = rc_sys()))
 		printf(" [%s]", sys);
 
 	printf("%s\n\n", ecolor(ECOLOR_NORMAL));
@@ -509,10 +502,7 @@ do_sysinit()
 
 	/* init may have mounted /proc so we can now detect or real
 	 * sys */
-	sys = detect_container();
-	if (!sys)
-		sys = detect_vm();
-	if (sys)
+	if ((sys = rc_sys()))
 		setenv("RC_SYS", sys, 1);
 }
 
@@ -832,9 +822,7 @@ int main(int argc, char **argv)
 			eerrorx("%s: %s", applet, strerror(errno));
 			/* NOTREACHED */
 		case 'S':
-			systype = detect_container();
-			if (!systype)
-				systype = detect_vm();
+			systype = rc_sys();
 			if (systype)
 				printf("%s\n", systype);
 			exit(EXIT_SUCCESS);
