@@ -220,6 +220,13 @@ detect_prefix(const char *systype)
 #ifdef PREFIX
 	return RC_SYS_PREFIX;
 #else
+	if (systype) {
+		if (strcmp(systype, RC_SYS_NONE) == 0)
+			return NULL;
+		if (strcmp(systype, RC_SYS_PREFIX) == 0)
+			return RC_SYS_PREFIX;
+	}
+
 	return NULL;
 #endif
 }
