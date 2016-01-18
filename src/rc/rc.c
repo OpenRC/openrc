@@ -283,9 +283,8 @@ open_shell(void)
 #ifdef __linux__
 	const char *sys = rc_sys();
 	
-	/* VSERVER and OPENVZ systems cannot really drop to shells */
-	if (sys &&
-	    (strcmp(sys, "VSERVER") == 0 || strcmp(sys, "OPENVZ") == 0))
+	/* VSERVER systems cannot really drop to shells */
+	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0)
 	{
 		execl("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
 		eerrorx("%s: unable to exec `/sbin/halt': %s",
