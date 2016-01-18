@@ -740,7 +740,7 @@ rc_deptree_update(void)
 	char *depend, *depends, *service, *type, *nosys, *onosys;
 	size_t i, k, l;
 	bool retval = true;
-	const char *sys = NULL;
+	const char *sys = rc_sys();
 	struct utsname uts;
 
 	/* Some init scripts need RC_LIBEXECDIR to source stuff
@@ -847,9 +847,6 @@ rc_deptree_update(void)
 
 	/* Phase 2 - if we're a special system, remove services that don't
 	 * work for them. This doesn't stop them from being run directly. */
-	sys = detect_container();
-		if (!sys)
-			sys = detect_vm();
 	if (sys) {
 		len = strlen(sys);
 		nosys = xmalloc(len + 2);
