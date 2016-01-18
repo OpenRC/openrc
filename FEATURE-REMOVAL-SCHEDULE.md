@@ -76,13 +76,3 @@ Why: The getline() function was standardized in POSIX.1-2008, so it
 
 Who:
 
-### rc_sys()
-
-When: 1.0
-
-Why: The OpenRC code now uses two internal functions, detect_container()
-	 and detect_vm() to handle this. rc_sys() is broken because it
-	 doesn't differentiate between containers and vm's.
-
-Who:
-
