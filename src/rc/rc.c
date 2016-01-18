@@ -281,12 +281,8 @@ open_shell(void)
 	struct passwd *pw;
 
 #ifdef __linux__
-	const char *sys = NULL;
+	char *sys = get_systype();
 	
-	sys = detect_container();
-	if (!sys)
-		sys = detect_vm();
-
 	/* VSERVER and OPENVZ systems cannot really drop to shells */
 	if (sys &&
 	    (strcmp(sys, "VSERVER") == 0 || strcmp(sys, "OPENVZ") == 0))
@@ -470,7 +466,7 @@ static void
 do_sysinit()
 {
 	struct utsname uts;
-	const char *sys;
+	char *sys = get_systype();
 
 	/* exec init-early.sh if it exists
 	 * This should just setup the console to use the correct
@@ -491,9 +487,6 @@ do_sysinit()
 	    uts.machine);
 #endif
 
-	sys = detect_container();
-	if (!sys)
-		sys = detect_vm();
 	if (sys)
 		printf(" [%s]", sys);
 
@@ -509,9 +502,7 @@ do_sysinit()
 
 	/* init may have mounted /proc so we can now detect or real
 	 * sys */
-	sys = detect_container();
-	if (!sys)
-		sys = detect_vm();
+	sys = get_systype();
 	if (sys)
 		setenv("RC_SYS", sys, 1);
 }
@@ -832,9 +823,7 @@ int main(int argc, char **argv)
 			eerrorx("%s: %s", applet, strerror(errno));
 			/* NOTREACHED */
 		case 'S':
-			systype = detect_container();
-			if (!systype)
-				systype = detect_vm();
+			systype = get_systype();
 			if (systype)
 				printf("%s\n", systype);
 			exit(EXIT_SUCCESS);
