@@ -1,3 +1,9 @@
 # Stop the unmounting of certain points.
 # This could be useful for some NFS related work.
 #no_umounts="/dir1:/var/dir2"
+#
+# Ignore errors when mounting local file systems.
+# This should be left alone unless you know what you are doing. If it is
+# set to yes, not only will we allow mount failures, but we will ignore
+# syntax errors in fstab.
+#ignore_mount_errors="NO"
