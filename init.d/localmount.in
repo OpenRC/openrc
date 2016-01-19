@@ -39,6 +39,11 @@ start()
 	rc=$?
 	if [ "$RC_UNAME" != Linux ]; then
 		rc=0
+	elif yesno "${ignore_mount_errors:-NO}"; then
+		if [ $rc -ne 0 ]; then
+			ewarn "localmount: errors detected, but ignored"
+		fi
+		rc=0
 	fi
 	return $rc
 }
