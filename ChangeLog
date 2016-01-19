@@ -1,3 +1,69 @@
+commit 7d63dc928ca02dc9ab654078c5c1ed0b6bb017d9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    localmount: Allow users to control whether errors are ignored
+    
+    X-Gentoo-Bug: 572138
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572138
+
+commit 8e16828bd3d97e6b1e40ded616a54cb8a9e7b403
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc: remove use of magic constant and allow OpenVZ to drop to shell
+    
+    OpenVZ has had console support for a long time now; allow them to use it
+    to drop to a shell during interactive boot.
+
+commit 3a307109168ac82f37a9a85a81b7b527a57665e5
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: handle rc_sys="prefix" even if we weren't built with a prefix
+    
+    This probably isn't needed, but it mimics old behavior.
+
+commit 290a91e8e9242582ee13c7343b630b097e2eeaf2
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: fix handling the nothing special case for rc_sys
+
+commit 04d94be766ae2808adc709b0e4e03ce1f3a75d5d
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: move system detection code into rc_sys and use it
+    
+    This fixes an issue where librc code was calling code that only existed
+    in the rc binary.
+    
+    This reverts commits 8addd79 and 9f6e056
+    
+    This fixes #75.
+
+commit fa6707e5b33738c3416bfbad661770302aa50212
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix bsd build
+    
+    X-Gentoo-Bug: 572068
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572068
+
+commit 3286a98fe60d1c2617ec73ef68fc4a18f092d9da
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start 0.20.3
+
+commit dc0ab571a26e4c990559f4222780a26aa84bd463
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update change log
+
 commit fb37e1aa96df351b1bf591dc36ef332f86820a2b
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1389,9 +1455,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     Fix off-by-one error in --test argument printout in start-stop-daemon.
     
     Fixes #34.
-
-commit 3c5dc0ec7774a72e243da43ac5180ea36a311ad8
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles.dev: pass --boot to tmpfiles.sh so kmod works properly
