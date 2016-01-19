@@ -43,7 +43,6 @@
 
 char *rc_conf_value(const char *var);
 bool rc_conf_yesno(const char *var);
-char *get_systype(void);
 void env_filter(void);
 void env_config(void);
 int signal_setup(int sig, void (*handler)(int));
@@ -61,6 +60,10 @@ int is_writable(const char *);
 #define service_stop(service)  exec_service(service, "stop");
 
 int parse_mode(mode_t *, char *);
+const char *detect_prefix(void);
+const char *get_systype(void);
+const char *detect_container(void);
+const char *detect_vm(void);
 
 /* Handy function so we can wrap einfo around our deptree */
 RC_DEPTREE *_rc_deptree_load (int, int *);
