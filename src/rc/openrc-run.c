@@ -390,6 +390,14 @@ svc_exec(const char *arg1, const char *arg2)
 		}
 
 		if (exists(RC_SVCDIR "/openrc-run.sh")) {
+			if (arg2)
+				einfov("Executing: %s %s %s %s %s",
+					RC_SVCDIR "/openrc-run.sh", RC_SVCDIR "/openrc-run.sh",
+					service, arg1, arg2);
+			else
+				einfov("Executing: %s %s %s %s",
+					RC_SVCDIR "/openrc-run.sh", RC_SVCDIR "/openrc-run.sh",
+					service, arg1);
 			execl(RC_SVCDIR "/openrc-run.sh",
 			    RC_SVCDIR "/openrc-run.sh",
 			    service, arg1, arg2, (char *) NULL);
@@ -397,6 +405,16 @@ svc_exec(const char *arg1, const char *arg2)
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		} else {
+			if (arg2)
+				einfov("Executing: %s %s %s %s %s",
+					RC_LIBEXECDIR "/sh/openrc-run.sh",
+					RC_LIBEXECDIR "/sh/openrc-run.sh",
+			    	service, arg1, arg2);
+			else
+				einfov("Executing: %s %s %s %s",
+					RC_LIBEXECDIR "/sh/openrc-run.sh",
+					RC_LIBEXECDIR "/sh/openrc-run.sh",
+			    	service, arg1);
 			execl(RC_LIBEXECDIR "/sh/openrc-run.sh",
 			    RC_LIBEXECDIR "/sh/openrc-run.sh",
 			    service, arg1, arg2, (char *) NULL);
