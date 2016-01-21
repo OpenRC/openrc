@@ -717,14 +717,16 @@ rc_deptree_update_needed(time_t *newest, char *file)
 }
 librc_hidden_def(rc_deptree_update_needed)
 
-/* This is a 6 phase operation
+/* This is a 7 phase operation
    Phase 1 is a shell script which loads each init script and config in turn
    and echos their dependency info to stdout
    Phase 2 takes that and populates a depinfo object with that data
    Phase 3 adds any provided services to the depinfo object
    Phase 4 scans that depinfo object and puts in backlinks
    Phase 5 removes broken before dependencies
-   Phase 6 saves the depinfo object to disk
+   Phase 6 looks for duplicate services indicating a real and virtual service
+   with the same names
+   Phase 7 saves the depinfo object to disk
    */
 bool
 rc_deptree_update(void)
@@ -733,7 +735,7 @@ rc_deptree_update(void)
 	RC_DEPTREE *deptree, *providers;
 	RC_DEPINFO *depinfo = NULL, *depinfo_np, *di;
 	RC_DEPTYPE *deptype = NULL, *dt_np, *dt, *provide;
-	RC_STRINGLIST *config, *types, *sorted, *visited;
+	RC_STRINGLIST *config, *dupes, *types, *sorted, *visited;
 	RC_STRING *s, *s2, *s2_np, *s3, *s4;
 	char *line = NULL;
 	size_t len = 0;
@@ -742,6 +744,7 @@ rc_deptree_update(void)
 	bool retval = true;
 	const char *sys = rc_sys();
 	struct utsname uts;
+	int serrno;
 
 	/* Some init scripts need RC_LIBEXECDIR to source stuff
 	   Ideally we should be setting our full env instead */
@@ -996,7 +999,22 @@ rc_deptree_update(void)
 	}
 	rc_stringlist_free(types);
 
-	/* Phase 6 - save to disk
+	/* Phase 6 - Print errors for duplicate services */
+	dupes = rc_stringlist_new();
+	TAILQ_FOREACH(depinfo, deptree, entries) {
+		serrno = errno;
+		errno = 0;
+		rc_stringlist_addu(dupes,depinfo->service);
+		if (errno == EEXIST) {
+			fprintf(stderr,
+					"Error: %s is the name of a real and virtual service.\n",
+					depinfo->service);
+		}
+		errno = serrno;
+	}
+	rc_stringlist_free(dupes);
+
+	/* Phase 7 - save to disk
 	   Now that we're purely in C, do we need to keep a shell parseable file?
 	   I think yes as then it stays human readable
 	   This works and should be entirely shell parseable provided that depend

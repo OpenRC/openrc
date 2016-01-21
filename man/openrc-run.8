@@ -172,9 +172,9 @@ The service will start after these services and stop before these services.
 The service will start before these services and stop after these services.
 .It Ic provide
 The service provides this virtual service. For example, named provides dns.
-Virtual services take precedence over real services, so it is highly
-recommended that you do not have a real service that has the same name
-as a virtual service.
+Note that it is not legal to have a virtual and real service with the
+same name. If you do this, you will receive an error message, and you
+must rename either the real or virtual service.
 .It Ic config
 We should recalculate our dependencies if the listed files have changed.
 .It Ic keyword
