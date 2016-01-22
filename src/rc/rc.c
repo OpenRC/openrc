@@ -282,7 +282,7 @@ open_shell(void)
 
 #ifdef __linux__
 	const char *sys = rc_sys();
-	
+
 	/* VSERVER systems cannot really drop to shells */
 	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0)
 	{

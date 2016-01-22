@@ -21,7 +21,3 @@ LD_LIBRARY_PATH=${top_builddir}/src/libeinfo:${top_builddir}/src/librc:${LD_LIBR
 PATH=${top_builddir}/src/rc:${PATH}
 export LD_LIBRARY_PATH PATH
 
-cd ${top_srcdir}/src/rc
-${MAKE:-make} links >/dev/null
-cd -
-
