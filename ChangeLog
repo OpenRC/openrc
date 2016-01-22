@@ -1,3 +1,57 @@
+commit f93396793a384afd6d8b82744fa260dd954e0f51
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add back deprecation warnings lost during refactoring
+
+commit c79b6d47304e14685b3be516e203080bd77f22a4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix tests
+    
+    X-Gentoo-Bug: 572602
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572602
+
+commit 3f8eb261ac46abdec3a42d4967e95d16efc3d65a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: Complain when a real and virtual service have the same name
+
+commit 505af695d8bebdf468ada0899931554b31b4d22c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-run: in verbose mode, log execution of the shell script
+    
+    This is to show when openrc-run runs the openrc-run.sh script; it is
+    used for debugging.
+
+commit f419d8b03aeb26739d11b79a899af2ad0a0a7b89
+Author: Colin Booth <colin@heliocat.net>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/s6.sh: update s6-svc syntax to be valid for 2.2.0.0+
+    
+    The s6-svc syntax changed for wait-up, wait-ready, wait-down, and
+    wait-finished. This changes the s6 handling script to use the current
+    valid syntax.
+    
+    This fixes #65.
+
+commit fd699ddf2f266c98d7ada3409b94233eb4b23b9a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start 0.20.4
+
+commit 66651180a7c9392c44f7baa4a2a11298a5f79f8a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update change log
+
 commit 7d63dc928ca02dc9ab654078c5c1ed0b6bb017d9
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1447,11 +1501,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     Add a new variable, ${TOP}, to the top level makefile, which points to
     the path of the source tree.
-
-commit cddb4aad08615420320f75050042d946b18d2bb5
-Author: Will Miles <wmiles@sgl.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix off-by-one error in --test argument printout in start-stop-daemon.
-    
-    Fixes #34.
