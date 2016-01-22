@@ -1121,6 +1121,10 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	applet = basename_c(argv[0]);
+	if (strcmp(applet, "runscript") == 0)
+		ewarnv("runscript is deprecated, please use openrc-run instead.");
+
 	if (stat(argv[1], &stbuf) != 0) {
 		fprintf(stderr, "openrc-run `%s': %s\n",
 		    argv[1], strerror(errno));
