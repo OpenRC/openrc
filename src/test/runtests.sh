@@ -85,12 +85,14 @@ eend $? "Trailing newlines need to be deleted:"$'\n'"${out}"
 
 ebegin "Checking for obsolete functions"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
+	! -name queue.h \
 	-exec grep -n -E '\<(malloc|memory|sys/(errno|fcntl|signal|stropts|termios|unistd))\.h\>' {} +)
 [ -z "${out}" ]
 eend $? "Avoid these obsolete functions:"$'\n'"${out}"
 
 ebegin "Checking for x* func usage"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
+	! -name queue.h \
 	-exec grep -n -E '\<(malloc|strdup)[[:space:]]*\(' {} + \
 	| grep -v \
 		-e src/includes/helpers.h \
@@ -100,6 +102,7 @@ eend $? "These need to be using the x* variant:"$'\n'"${out}"
 
 ebegin "Checking spacing style"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
+	! -name queue.h \
 	-exec grep -n -E \
 		-e '\<(for|if|switch|while)\(' \
 		-e '\<(for|if|switch|while) \( ' \

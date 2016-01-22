@@ -21,7 +21,7 @@ depend()
 		esac
 	done
  	config /etc/fstab
-	want $mywant	
+	want $mywant
 	use afc-client amd openvpn
 	use dns
 	keyword -jail -prefix -systemd-nspawn -vserver -lxc

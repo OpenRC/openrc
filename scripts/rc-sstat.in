@@ -52,8 +52,8 @@ if [ ! -d $scandir ]; then
 	exit 1
 fi
 
-# Make sure s6-svscan is running 
-if ! pgrep s6-svscan >/dev/null ; then 
+# Make sure s6-svscan is running
+if ! pgrep s6-svscan >/dev/null ; then
 	printf "s6-svscan is not running\n"
 	exit 1
 fi
@@ -141,7 +141,7 @@ do
 	fi
 done
 
-# Cleanup 
+# Cleanup
 rm -f $statfile 2>/dev/null
 
 printf "\n\n"
