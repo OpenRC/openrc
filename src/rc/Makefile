@@ -3,7 +3,7 @@ SRCS=	checkpath.c do_e.c do_mark_service.c do_service.c \
 		mountinfo.c openrc-run.c rc-abort.c rc.c \
 		rc-depend.c rc-logger.c rc-misc.c rc-plugin.c \
 		rc-service.c rc-status.c rc-update.c \
-		shell_var.c start-stop-daemon.c swclock.c _usage.c
+		shell_var.c start-stop-daemon.c supervise-daemon.c swclock.c _usage.c
 
 ifeq (${MKSELINUX},yes)
 SRCS+=		rc-selinux.c
@@ -16,7 +16,8 @@ SBINDIR=	${PREFIX}/sbin
 LINKDIR=	${LIBEXECDIR}
 
 BINPROGS=	rc-status
-SBINPROGS = openrc openrc-run rc rc-service rc-update runscript service start-stop-daemon
+SBINPROGS = openrc openrc-run rc rc-service rc-update runscript service \
+			start-stop-daemon supervise-daemon
 RC_BINPROGS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 				eindent eoutdent esyslog eval_ecolors ewaitfile \
 				veinfo vewarn vebegin veend vewend veindent veoutdent \
@@ -134,6 +135,9 @@ rc-update: rc-update.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 start-stop-daemon: start-stop-daemon.o _usage.o rc-misc.o
+	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
+
+supervise-daemon: supervise-daemon.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 service_get_value service_set_value get_options save_options: do_value.o rc-misc.o

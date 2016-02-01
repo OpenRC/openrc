@@ -5,6 +5,7 @@ rc-update
 runscript
 service
 start-stop-daemon
+supervise-daemon
 einfon
 einfo
 ewarnn

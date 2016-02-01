@@ -95,10 +95,17 @@ String describing the service.
 .It Ar description_$command
 String describing the extra command.
 .It Ar supervisor
-Supervisor to use to monitor this daemon. If this is unset,
-start-stop-daemon will be used. The only alternate supervisor we support
-in this release is S6 from Skarnet software. To use this, set
+Supervisor to use to monitor this daemon. If this is unset or invalid,
+start-stop-daemon will be used.
+Currently, we support s6 from scarnet software, and supervise-daemon
+which is a light-weight supervisor internal to OpenRC.
+To use s6, set
 supervisor=s6.
+or set
+supervisor=supervise-daemon
+to use supervise-daemon.
+Note that supervise-daemon is still in early development, so it is
+considered experimental.
 .It Ar s6_service_path
 The path to the s6 service directory if you are monitoring this service
 with S6. The default is /var/svc.d/${RC_SVCNAME}.
@@ -112,10 +119,16 @@ List of arguments passed to start-stop-daemon when starting the daemon.
 .It Ar command
 Daemon to start or stop via
 .Nm start-stop-daemon
+or
+.Nm supervise-daemon
 if no start or stop function is defined by the service.
 .It Ar command_args
 List of arguments to pass to the daemon when starting via
 .Nm start-stop-daemon .
+.It Ar command_args_foreground
+List of arguments to pass to the daemon when starting via
+.Nm supervise-daemon .
+to force the daemon to stay in the foreground
 .It Ar command_background
 Set this to "true", "yes" or "1" (case-insensitive) to force the daemon into
 the background. This implies the "--make-pidfile" and "--pidfile" option of
@@ -123,6 +136,8 @@ the background. This implies the "--make-pidfile" and "--pidfile" option of
 so the pidfile variable must be set.
 .It Ar chroot
 .Xr start-stop-daemon 8
+and
+.Xr supervise-daemon 8
 will chroot into this path before writing the pid file or starting the daemon.
 .It Ar pidfile
 Pidfile to use for the above defined command.
