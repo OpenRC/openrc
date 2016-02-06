@@ -88,6 +88,15 @@ mount_misc()
 		fi
 	fi
 
+	# Setup Kernel Support for persistent storage
+	if [ -d /sys/fs/pstore ] && ! mountinfo -q /sys/fs/pstore; then
+		if grep -qs 'pstore$' /proc/filesystems; then
+			ebegin "Mounting persistent storage (pstore) filesystem"
+			mount -t pstore pstore -o ${sysfs_opts} /sys/fs/pstore
+			eend $?
+		fi
+	fi
+
 	# setup up kernel support for efivarfs
 	# slightly complicated, as if it's build as a module but NOT yet loaded,
 	# it will NOT appear in /proc/filesystems yet
