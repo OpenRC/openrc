@@ -68,6 +68,12 @@ env_filter(void)
 
 	/* Add the user defined list of vars */
 	env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
+	/*
+	 * If '*' is an entry in rc_env_allow, do nothing as we are to pass
+	 * through all environment variables.
+	 */
+	if (rc_stringlist_find(env_allow, "*"))
+		return;
 	profile = rc_config_load(RC_PROFILE_ENV);
 
 	/* Copy the env and work from this so we can manipulate it safely */
