@@ -1,3 +1,25 @@
+commit 670861da88322722860eae26b3fb786928295704
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix rc_env_allow wildcard usage
+    
+    Before this commit, using * in rc_env_allow did not work.
+    
+    This fixes #60.
+
+commit bd4b217607e808139ef5ccefd77ab6182d5068c1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start 0.20.5
+
+commit cded32f748fcbdb00c4d13b6bda8b799f5884065
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update changelog
+
 commit f93396793a384afd6d8b82744fa260dd954e0f51
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1467,37 +1489,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 540006
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=540006
-
-commit 3100114bc104741145fb6c1d4b1664759114cc5c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add nfsclient to netmount use dependencies
-    
-    X-Gentoo-Bug: 537996
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=537996
-
-commit 3f80f22e22ec16ed517397fd303c3df99f9340fc
-Author: Will Miles <wmiles@sgl.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Prioritize local includes and libraries
-    
-    This fixes #35.
-
-commit 8250ac94dfc6156075081e0e2d0986cb51b3098d
-Author: Consus <consus@gmx.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles.*: Follow OpenRC's message style
-    
-    Just to be consistent.
-
-commit fbdd669ba7c5d1a67129236b4ffcd76198340a1b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Makefile: add variable for path to source tree
-    
-    Add a new variable, ${TOP}, to the top level makefile, which points to
-    the path of the source tree.
