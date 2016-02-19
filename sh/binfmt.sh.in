@@ -22,7 +22,7 @@ apply_file() {
 
 	### FILE FORMAT ###
 	# See https://www.kernel.org/doc/Documentation/binfmt_misc.txt
-	while read line; do
+	while read -r line; do
 		LINENUM=$(( LINENUM+1 ))
 		case $line in
 			\#*) continue ;;
