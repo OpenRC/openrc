@@ -55,7 +55,7 @@ depend() {
 
 _done_dirs=
 for _dir in \
-@SYSCONFDIR@/init.d \
+@INITDIR@ \
 @PKG_PREFIX@/etc/init.d \
 @LOCAL_PREFIX@/etc/init.d
 do
