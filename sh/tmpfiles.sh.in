@@ -264,6 +264,7 @@ _Z() {
 BOOT=0 CREATE=0 REMOVE=0 CLEAN=0 VERBOSE=0 DRYRUN=0 error=0 LINENO=0
 EXCLUDE=
 PREFIX=
+FILES=
 
 while [ $# -gt 0 ]; do
 	case $1 in
@@ -276,6 +277,7 @@ while [ $# -gt 0 ]; do
 		--exclude-prefix=*) EXCLUDE="${EXCLUDE}${1##--exclude-prefix=} " ;;
 		--prefix=*) PREFIX="${PREFIX}${1##--prefix=} " ;;
 		-*) invalid_option "$1" ;;
+		*) FILES="${FILES} $1"
 	esac
 	shift
 done
@@ -290,40 +292,49 @@ if [ "$CREATE$REMOVE" = '00' ]; then
 	exit 1
 fi
 
-FILE=
-fragments=
 # XXX: The harcoding of /usr/lib/ is an explicit choice by upstream
-tmpfiles_dirs='/usr/lib/tmpfiles.d/ /run/tmpfiles.d/ /etc/tmpfiles.d/'
+tmpfiles_dirs='/usr/lib/tmpfiles.d /run/tmpfiles.d /etc/tmpfiles.d'
 tmpfiles_basenames=''
-tmpfiles_d=''
-# Build a list of sorted unique basenames
-# directories declared later in the tmpfiles_d array will override earlier
-# directories, on a per file basename basis.
-# `/etc/tmpfiles.d/foo.conf' supersedes `/usr/lib/tmpfiles.d/foo.conf'.
-# `/run/tmpfiles/foo.conf' will always be read after `/etc/tmpfiles.d/bar.conf'
-for d in ${tmpfiles_dirs} ; do
-	[ -d $d ] && for f in ${d}/*.conf ; do
-		case "${f##*/}" in
-			systemd.conf|systemd-*.conf) continue;;
-		esac
-		[ -f $f ] && tmpfiles_basenames="${tmpfiles_basenames}\n${f##*/}"
-	done # for f in ${d}
-done # for d in ${tmpfiles_dirs}
-tmpfiles_basenames="$(printf "${tmpfiles_basenames}\n" | sort -u )"
 
-for b in $tmpfiles_basenames ; do
-	real_f=''
-	for d in $tmpfiles_dirs ; do
-		f=${d}/${b}
-		[ -f "${f}" ] && real_f=$f
-	done
-	[ -f "${real_f}" ] && tmpfiles_d="${tmpfiles_d} ${real_f}"
+if [ -z "${FILES}" ]; then
+	# Build a list of sorted unique basenames
+	# directories declared later in the tmpfiles_d array will override earlier
+	# directories, on a per file basename basis.
+	# `/etc/tmpfiles.d/foo.conf' supersedes `/usr/lib/tmpfiles.d/foo.conf'.
+	# `/run/tmpfiles/foo.conf' will always be read after `/etc/tmpfiles.d/bar.conf'
+	for d in ${tmpfiles_dirs} ; do
+		[ -d $d ] && for f in ${d}/*.conf ; do
+			case "${f##*/}" in
+				systemd.conf|systemd-*.conf) continue;;
+			esac
+			[ -f $f ] && tmpfiles_basenames="${tmpfiles_basenames}\n${f##*/}"
+		done # for f in ${d}
+	done # for d in ${tmpfiles_dirs}
+	FILES="$(printf "${tmpfiles_basenames}\n" | sort -u )"
+fi
+
+tmpfiles_d=''
+
+for b in ${FILES} ; do
+	if [ "${b##*/}" != "${b}" ]; then
+		# The user specified a path on the command line
+		# Just pass it through unaltered
+		tmpfiles_d="${tmpfiles_d} ${b}"
+	else
+		real_f=''
+		for d in $tmpfiles_dirs ; do
+			f=${d}/${b}
+			[ -f "${f}" ] && real_f=$f
+		done
+		[ -f "${real_f}" ] && tmpfiles_d="${tmpfiles_d} ${real_f}"
+	fi
 done
 
 error=0
 
 # loop through the gathered fragments, sorted globally by filename.
 # `/run/tmpfiles/foo.conf' will always be read after `/etc/tmpfiles.d/bar.conf'
+FILE=
 for FILE in $tmpfiles_d ; do
 	LINENUM=0
 
