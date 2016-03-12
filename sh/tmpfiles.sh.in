@@ -33,6 +33,11 @@ warninvalid() {
 	error=$(( error+1 ))
 } >&2
 
+invalid_option() {
+	printf "tmpfiles: invalid option '%s'\n" "$1" >&2
+	exit 1
+}
+
 dryrun_or_real() {
 	local dryrun=
 	[ $DRYRUN -eq 1 ] && dryrun=echo
@@ -299,6 +304,7 @@ while [ $# -gt 0 ]; do
 		--dryrun|--dry-run) DRYRUN=1 ;;
 		--exclude-prefix=*) EXCLUDE="${EXCLUDE}${1##--exclude-prefix=} " ;;
 		--prefix=*) PREFIX="${PREFIX}${1##--prefix=} " ;;
+		-*) invalid_option "$1" ;;
 	esac
 	shift
 done
