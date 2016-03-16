@@ -1242,7 +1242,7 @@ int main(int argc, char **argv)
 		if (redirect_stdout) {
 			if ((stdout_fd = open(redirect_stdout,
 				    O_WRONLY | O_CREAT | O_APPEND,
-				    S_IRUSR | S_IWUSR)) == -1)
+				    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) == -1)
 				eerrorx("%s: unable to open the logfile"
 				    " for stdout `%s': %s",
 				    applet, redirect_stdout, strerror(errno));
@@ -1250,7 +1250,7 @@ int main(int argc, char **argv)
 		if (redirect_stderr) {
 			if ((stderr_fd = open(redirect_stderr,
 				    O_WRONLY | O_CREAT | O_APPEND,
-				    S_IRUSR | S_IWUSR)) == -1)
+				    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) == -1)
 				eerrorx("%s: unable to open the logfile"
 				    " for stderr `%s': %s",
 				    applet, redirect_stderr, strerror(errno));
