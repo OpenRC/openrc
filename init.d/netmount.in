@@ -37,7 +37,7 @@ start()
 	ebegin "Mounting network filesystems"
 	mount -at $fs
 	rc=$?
-	if [ "$RC_UNAME" = Linux ]; then
+	if [ "$RC_UNAME" = Linux ] && [ $rc = 0 ]; then
 		mount -a -O _netdev
 		rc=$?
 	fi
@@ -72,7 +72,7 @@ stop()
 	retval=$?
 
 	eoutdent
-	if [ "$RC_UNAME" = Linux ]; then
+	if [ "$RC_UNAME" = Linux ] && [ $retval = 0 ]; then
 		umount -a -O _netdev
 		retval=$?
 	fi
