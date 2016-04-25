@@ -2,8 +2,9 @@
 # This could be useful for some NFS related work.
 #no_umounts="/dir1:/var/dir2"
 #
-# Ignore errors when mounting local file systems.
-# This should be left alone unless you know what you are doing. If it is
-# set to yes, not only will we allow mount failures, but we will ignore
-# syntax errors in fstab.
-#ignore_mount_errors="NO"
+# Mark certain mount points as critical.
+# This contains aspace separated list of mount points which should be
+# considered critical. If one of these mount points cannot be mounted,
+# localmount will fail.
+# By default, this is empty.
+#critical_mounts="/home /var"

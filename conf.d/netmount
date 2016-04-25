@@ -38,3 +38,10 @@
 # other words, please change it to be more suited to your system.
 #
 rc_need="net"
+#
+# Mark certain mount points as critical.
+# This contains aspace separated list of mount points which should be
+# considered critical. If one of these mount points cannot be mounted,
+# netmount will fail.
+# By default, this is empty.
+#critical_mounts="/home /var"

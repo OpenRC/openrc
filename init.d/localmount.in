@@ -22,7 +22,7 @@ depend()
 start()
 {
 	# Mount local filesystems in /etc/fstab.
-	local types="noproc" x= no_netdev= rc=
+	local critical= types="noproc" x= no_netdev= rc=
 	for x in $net_fs_list $extra_net_fs_list; do
 		types="${types},no${x}"
 	done
@@ -37,13 +37,13 @@ start()
 	mount -at "$types" $no_netdev
 	eend $? "Some local filesystem failed to mount"
 	rc=$?
-	if [ "$RC_UNAME" != Linux ]; then
+	if [ -z "$critical_mounts" ]; then
 		rc=0
-	elif yesno "${ignore_mount_errors:-NO}"; then
-		if [ $rc -ne 0 ]; then
-			ewarn "localmount: errors detected, but ignored"
-		fi
-		rc=0
+	else
+		for x in ${critical_mounts}; do
+		mountinfo -q $x || critical=x
+		done
+		[-z "$critical" ] && rc=0
 	fi
 	return $rc
 }

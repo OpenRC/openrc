@@ -42,8 +42,13 @@ start()
 		rc=$?
 	fi
 	ewend $rc "Could not mount all network filesystems"
-	if [ "$RC_UNAME" != Linux ]; then
+	if [ -z "$critical_mounts" ]; then
 		rc=0
+	else
+		for x in ${critical_mounts}; do
+		mountinfo -q $x || critical=x
+		done
+		[-z "$critical" ] && rc=0
 	fi
 	return $rc
 }
