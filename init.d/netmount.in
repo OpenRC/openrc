@@ -46,9 +46,13 @@ start()
 		rc=0
 	else
 		for x in ${critical_mounts}; do
-		mountinfo -q $x || critical=x
+		fstabinfo -q $x || continue
+		if ! mountinfo -q $x; then
+			critical=x
+			eerror "Failed to mount $x"
+		fi
 		done
-		[-z "$critical" ] && rc=0
+		[ -z "$critical" ] && rc=0
 	fi
 	return $rc
 }
