@@ -1106,6 +1106,7 @@ service_plugable(void)
 int main(int argc, char **argv)
 {
 	bool doneone = false;
+	bool runscript = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
 	char path[PATH_MAX], lnk[PATH_MAX];
@@ -1123,7 +1124,7 @@ int main(int argc, char **argv)
 
 	applet = basename_c(argv[0]);
 	if (strcmp(applet, "runscript") == 0)
-		ewarnv("runscript is deprecated, please use openrc-run instead.");
+		runscript = true;
 
 	if (stat(argv[1], &stbuf) != 0) {
 		fprintf(stderr, "openrc-run `%s': %s\n",
@@ -1171,6 +1172,9 @@ int main(int argc, char **argv)
 
 	if (argc < 3)
 		usage(EXIT_FAILURE);
+
+	if (runscript)
+		ewarnv("%s uses runscript, please convert to openrc-run.", service);
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
 	if (chdir("/") == -1)
