@@ -3,6 +3,7 @@ include ../mk/net.mk
 BOOT=		bootmisc fsck hostname localmount loopback \
 		root swap swapfiles sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
+NONETWORK=	local
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
 SYSINIT=	${SYSINIT-${OS}}
 
@@ -10,6 +11,7 @@ LEVELDIR=	${DESTDIR}/${SYSCONFDIR}/runlevels
 SYSINITDIR=	${LEVELDIR}/sysinit
 BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
+NONETWORKDIR=	${LEVELDIR}/nonetwork
 SHUTDOWNDIR=	${LEVELDIR}/shutdown
 
 ifeq (${MKNET},yes)
@@ -71,6 +73,14 @@ install:
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${DEFAULTDIR}/"$$x" || exit $$?; done \
+	fi
+	if ! test -d "${NONETWORKDIR}"; then \
+		${INSTALL} -d ${NONETWORKDIR} || exit $$?; \
+		for x in ${NONETWORK}; do \
+			if test "${MKPREFIX}" = yes; then \
+				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
+			fi; \
+			ln -snf ${INITDIR}/"$$x" ${NONETWORKDIR}/"$$x" || exit $$?; done \
 	fi
 	if ! test -d "${SHUTDOWNDIR}"; then \
 		${INSTALL} -d ${SHUTDOWNDIR} || exit $$?; \
