@@ -75,6 +75,7 @@ install: all
 	if test "${MKPAM}" = pam; then \
 		${INSTALL} -d ${DESTDIR}${PAMDIR}; \
 		${INSTALL} -m ${PAMMODE} start-stop-daemon.pam ${DESTDIR}${PAMDIR}/start-stop-daemon; \
+		${INSTALL} -m ${PAMMODE} supervise-daemon.pam ${DESTDIR}${PAMDIR}/supervise-daemon; \
 	fi
 
 check test::

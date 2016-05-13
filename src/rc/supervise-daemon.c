@@ -202,7 +202,7 @@ static void child_process(char *exec, char **argv)
 
 #ifdef HAVE_PAM
 	if (changeuser != NULL) {
-		pamr = pam_start("start-stop-daemon",
+		pamr = pam_start("supervise-daemon",
 		    changeuser, &conv, &pamh);
 
 		if (pamr == PAM_SUCCESS)
