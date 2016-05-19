@@ -20,24 +20,30 @@ supervise_start()
 
 	ebegin "Starting ${name:-$RC_SVCNAME}"
 	eval supervise-daemon --start \
+		${chroot:+--chroot} $chroot \
 		${pidfile:+--pidfile} $pidfile \
 		${command_user+--user} $command_user \
 		$supervise_daemon_args \
 		$command \
 		-- $command_args $command_args_foreground
 	rc=$?
-	[ -n "${pidfile}" ] && service_set_value "pidfile" "${pidfile}"
+	if [ $rc = 0 ]; then
+		[ -n "${chroot}" ] && service_set_value "chroot" "${chroot}"
+		[ -n "${pidfile}" ] && service_set_value "pidfile" "${pidfile}"
+	fi
 	eend $rc "failed to start $RC_SVCNAME"
 }
 
 supervise_stop()
 {
+	local startchroot="$(service_get_value "chroot")"
 	local startpidfile="$(service_get_value "pidfile")"
+	chroot="${startchroot:-$chroot}"
 	pidfile="${startpidfile:-$pidfile}"
 	[ -n "$pidfile" ] || return 0
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
 	supervise-daemon --stop \
-		${pidfile:+--pidfile} $pidfile \
+		${pidfile:+--pidfile} $chroot$pidfile \
 		${stopsig:+--signal} $stopsig
 
 	eend $? "Failed to stop $RC_SVCNAME"
