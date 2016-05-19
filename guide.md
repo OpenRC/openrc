@@ -173,7 +173,7 @@ start()
 stop()
 status()
 
-There are default implementations in rc/sh/runscript.sh - this allows very 
+There are default implementations in rc/sh/openrc-run.sh - this allows very 
 compact service scripts. These functions can be overridden per service script as 
 needed.
 
