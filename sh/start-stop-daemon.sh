@@ -40,6 +40,7 @@ ssd_start()
 	fi
 	eval start-stop-daemon --start \
 		--exec $command \
+		${chroot:+--chroot} $chroot \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $pidfile \
 		${command_user+--user} $command_user \
@@ -47,6 +48,7 @@ ssd_start()
 		-- $command_args $command_args_background
 	if eend $? "Failed to start $RC_SVCNAME"; then
 		service_set_value "command" "${command}"
+		[ -n "${chroot}" ] && service_set_value "chroot" "${chroot}"
 		[ -n "${pidfile}" ] && service_set_value "pidfile" "${pidfile}"
 		[ -n "${procname}" ] && service_set_value "procname" "${procname}"
 		return 0
@@ -62,9 +64,11 @@ ssd_start()
 ssd_stop()
 {
 	local startcommand="$(service_get_value "command")"
+	local startchroot="$(service_get_value "chroot")"
 	local startpidfile="$(service_get_value "pidfile")"
 	local startprocname="$(service_get_value "procname")"
 	command="${startcommand:-$command}"
+	chroot="${startchroot:-$chroot}"
 	pidfile="${startpidfile:-$pidfile}"
 	procname="${startprocname:-$procname}"
 	[ -n "$command" -o -n "$procname" -o -n "$pidfile" ] || return 0
@@ -73,7 +77,7 @@ ssd_stop()
 		${retry:+--retry} $retry \
 		${command:+--exec} $command \
 		${procname:+--name} $procname \
-		${pidfile:+--pidfile} $pidfile \
+		${pidfile:+--pidfile} $chroot$pidfile \
 		${stopsig:+--signal} $stopsig
 
 	eend $? "Failed to stop $RC_SVCNAME"
