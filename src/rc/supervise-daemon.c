@@ -702,8 +702,12 @@ int main(int argc, char **argv)
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 				kill(child_pid, SIGTERM);
 			} else {
-				syslog(LOG_INFO, "%s, pid %d, terminated unexpectedly",
-						exec, child_pid);
+				if (WIFEXITED(i))
+					syslog(LOG_INFO, "%s, pid %d, exited with return code %d",
+							exec, child_pid, WEXITSTATUS(i));
+				else if (WIFSIGNALED(i))
+					syslog(LOG_INFO, "%s, pid %d, terminated by signal %d",
+							exec, child_pid, WTERMSIG(i));
 				child_pid = fork();
 				if (child_pid == -1)
 					eerrorx("%s: fork: %s", applet, strerror(errno));
