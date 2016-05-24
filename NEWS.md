@@ -3,6 +3,20 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.21
+
+This version adds a daemon supervisor which can start daemons and
+restart them if they crash. See supervise-daemon-guide.md in the
+distribution for details on its use.
+
+It is now possible to mark certain mount points as critical. If these
+mount points are unable to be mounted, localmount or netmount will fail.
+This is handled in /etc/conf.d/localmount and /etc/conf.d/netmount. See
+these files for the setup.
+
+The deprecation messages in 0.13.x for runscript and rc are now
+made visible in preparation for the removal of these binaries in 1.0.
+
 ## OpenRC-0.19
 
 This version adds a net-online service. By default, this
