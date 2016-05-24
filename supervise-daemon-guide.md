@@ -4,6 +4,8 @@ Beginning with OpenRC-0.21 we have our own daemon supervisor,
 supervise-daemon., which can start a daemon and restart it if it
 terminates unexpectedly.
 
+The following is a brief guide on using this capability.
+
 ## Use Default start, stop and status functions
 
 If you write your own start, stop and status functions in your service
@@ -16,8 +18,10 @@ Any deamon that you would like to have monitored by supervise-daemon
 must not fork. Instead, it must stay in the foreground. If the daemon
 itself forks, the supervisor will be unable to monitor it.
 
-If the daemon has an option to instruct it not to fork, you should add this
-to the command_args_foreground variable listed below.
+If the daemon can be configured to not fork, this should be done in the
+daemon's configuration file, or by adding a command line option that
+instructs it not to fork to the command_args_foreground variable shown
+below.
 
 ## Variable Settings
 
