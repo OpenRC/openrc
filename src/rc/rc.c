@@ -831,7 +831,7 @@ int main(int argc, char **argv)
 	}
 
 	if (strcmp(applet, "rc") == 0)
-		ewarnv("rc is deprecated, please use openrc instead.");
+		ewarn("rc is deprecated, please use openrc instead.");
 	newlevel = argv[optind++];
 	/* To make life easier, we only have the shutdown runlevel as
 	 * nothing really needs to know that we're rebooting.

@@ -1174,7 +1174,7 @@ int main(int argc, char **argv)
 		usage(EXIT_FAILURE);
 
 	if (runscript)
-		ewarnv("%s uses runscript, please convert to openrc-run.", service);
+		ewarn("%s uses runscript, please convert to openrc-run.", service);
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
 	if (chdir("/") == -1)
