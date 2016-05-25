@@ -41,6 +41,17 @@ dryrun_or_real() {
 	$dryrun "$@"
 }
 
+_chattr() {
+	local attr="$2"
+	case $attr in
+		[+-=]*) : ;;
+		'') return ;;
+		*) attr="+$attr" ;;
+	esac
+	local IFS=
+	dryrun_or_real chattr $1 "$attr" -- $3
+}
+
 relabel() {
 	local path
 	local paths=$1 mode=$2 uid=$3 gid=$4
@@ -181,16 +192,14 @@ _h() {
 	# Set file/directory attributes. Lines of this type accept
 	# shell-style globs in place of normal path names.
 	# The format of the argument field matches chattr
-	local IFS=
-	chattr ${6:-$2} -- $1
+	_chattr '' "$6" "$1"
 }
 
 _H() {
 	# Recursively set file/directory attributes. Lines of this type accept
 	# shell-syle globs in place of normal path names.
 	# Does not follow symlinks
-	local IFS=
-	chattr -R ${6:-$2} -- $1
+	_chattr -R "$6" "$1"
 }
 
 _L() {
