@@ -10,8 +10,10 @@
 # http://projects.archlinux.org/initscripts.git/tree/arch-tmpfiles
 #
 # See the tmpfiles.d manpage as well:
+# https://www.freedesktop.org/software/systemd/man/tmpfiles.d.html
+# This script should match the old manpage
 # http://0pointer.de/public/systemd-man/tmpfiles.d.html
-# This script should match the manpage as of 2012/03/12
+# as of 2012/03/12 and also implements some more recent features
 #
 
 DRYRUN=0
@@ -42,6 +44,17 @@ dryrun_or_real() {
 	local dryrun=
 	[ $DRYRUN -eq 1 ] && dryrun=echo
 	$dryrun "$@"
+}
+
+_chattr() {
+	local attr="$2"
+	case $attr in
+		[+-=]*) : ;;
+		'') return ;;
+		*) attr="+$attr" ;;
+	esac
+	local IFS=
+	dryrun_or_real chattr $1 "$attr" -- $3
 }
 
 relabel() {
@@ -161,6 +174,37 @@ _v() {
 	# supports this (btrfs). Otherwise create a normal directory.
 	# TODO: Implement btrfs subvol creation.
 	_d "$@"
+}
+
+_q() {
+	# Similar to _v. However, make sure that the subvolume will be assigned
+	# to the same higher-level quota groups as the subvolume it has
+	# been created in.
+	# TODO: Implement btrfs subvol creation.
+	_d "$@"
+}
+
+_Q() {
+	# Similar to q. However, instead of copying the higher-level quota
+	# group assignments from the parent as-is, the lowest quota group
+	# of the parent subvolume is determined that is not the
+	# leaf quota group.
+	# TODO: Implement btrfs subvol creation.
+	_d "$@"
+}
+
+_h() {
+	# Set file/directory attributes. Lines of this type accept
+	# shell-style globs in place of normal path names.
+	# The format of the argument field matches chattr
+	_chattr '' "$6" "$1"
+}
+
+_H() {
+	# Recursively set file/directory attributes. Lines of this type accept
+	# shell-syle globs in place of normal path names.
+	# Does not follow symlinks
+	_chattr -R "$6" "$1"
 }
 
 _L() {
@@ -371,7 +415,7 @@ for FILE in $tmpfiles_d ; do
 
 		# whine about invalid entries
 		case $cmd in
-			f|F|w|d|D|v|p|L|c|C|b|x|X|r|R|z|Z) ;;
+			f|F|w|d|D|v|p|L|c|C|b|x|X|r|R|z|Z|q|Q|h|H) ;;
 			*) warninvalid ; continue ;;
 		esac
 
