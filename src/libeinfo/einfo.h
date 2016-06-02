@@ -71,6 +71,7 @@ void elog(int, const char * EINFO_RESTRICT, ...) EINFO_PRINTF(2, 3);
  *
  * The n suffix denotes that no new line should be printed.
  * The v suffix means only print if EINFO_VERBOSE is yes.
+ * The x suffix means function will exit() returning failure.
  */
 /*@{*/
 int einfon(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
