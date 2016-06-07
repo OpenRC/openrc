@@ -178,6 +178,9 @@ int main(int argc, char **argv)
 	FILE *fp;
 #endif
 
+	/* fail if there is no /etc/fstab */
+	if (!exists("/etc/fstab"))
+		eerrorx("/etc/fstab does not exist");
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv("EINFO_QUIET");
 
