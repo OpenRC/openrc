@@ -26,7 +26,7 @@ ifeq (${MKPREFIX},yes)
 UPREFIX= ${PREFIX}/usr
 endif
 endif
-LOCAL_PREFIX=		/usr/local
+LOCAL_PREFIX=		$(UPREFIX)/local
 
 PICFLAG?=		-fPIC
 
