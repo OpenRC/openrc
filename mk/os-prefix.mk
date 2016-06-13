@@ -3,4 +3,6 @@
 
 ifeq (${MKPREFIX},yes)
 CPPFLAGS+=	-DPREFIX
+PKG_PREFIX?=	$(PREFIX)/usr
+SED_EXTRA=	-e '/_PATH=.*usr.bin/d'
 endif
