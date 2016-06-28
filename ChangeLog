@@ -1,3 +1,42 @@
+commit 977811563dd93cab7a64caefa0e86f5b864fc04f
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix PATH for Prefix.
+    
+    1. remove default /bin:/sbin:/usr/bin:/usr/sbin
+    2. PKG_PREFIX should be defaulted to $(PREFIX)/usr
+    3. LOCAL_PREFIX should be defaulted to $(PREFIX)/usr/local
+    
+    X-Gentoo-Bug:583634
+    X-Gentoo-Bug-URL:https://bugs.gentoo.org/show_bug.cgi?id=583634
+
+commit 47aa0b93cdf14253c3a75b4feefabe97c43cbf8a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fstabinfo/mountinfo: ensure /etc/fstab exists before calling setmntent
+    
+    This is based on a patch by A. Wilcox <awilfox.gentoo@foxkit.us>.
+    
+    X-Gentoo-Bug: 478226
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=478226
+    
+    X-Gentoo-Bug: 478226
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=478226
+
+commit f680c89c26709164934ee72534af7a3960166cf3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.21.1
+
+commit 5bfb7d6c77ff533e34e2bbfe5b6e57410d961d70
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 12c8248b5f53879935d4e62ef42023f703c7b636
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1025,63 +1064,3 @@ Commit: Doug Freed <dwfreed@mtu.edu>
     
     The cache is created in $RC_LIBEXECDIR, not $RC_SVCDIR, so fix the error
     message when we fail to create it to match.
-
-commit a36a635b016a7427dd1739a26c951fedf22f0dec
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    tmpfiles: Recognize type 'v' (create btrfs subvol)
-    
-    This change does NOT implement btrfs subvol creation.  Instead, it
-    treats 'v' the same as 'd', which is an acceptable fallback
-    according to the manual.
-    
-    Fixes #58
-
-commit 9310ccc06bcadd8897aed51cd51c94fccb7d9c07
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    Remove execute bit from tmpfiles.sh.in
-
-commit 0c2e4eb3cd7935d375b74099a3a9a5fe519e6cab
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit d2ce07e227ec95370e8aee5f1199edc6ad61aff9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add rc-sstat script
-    
-    The rc-sstat script is written to display status of s6 services and
-    run rc-status to display all services status.
-    
-    This currently only works on Linux.
-
-commit b209fe3859c05c286037843bb34058f849c54b15
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    bootmisc: Don't call dmesg in systemd-nspawn containers
-    
-    This fixes #57.
-
-commit c94c8288cd5217b01c24d6f048c64ebbc30bee02
-Author: Mike Frysinger <vapier@gentoo.org>
-Commit: Mike Frysinger <vapier@gentoo.org>
-
-    fix link to s6 website
-
-commit bcb9c44e73ccf332c7c961a6f82520699c6e776d
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: Document the stopsig variable
-    
-    This variable can be used to set the signal to send if the service is
-    using start-stop-daemon.
-    
-    This fixes #56
