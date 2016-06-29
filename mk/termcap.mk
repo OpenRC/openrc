@@ -1,6 +1,6 @@
 ifeq (${MKTERMCAP},ncurses)
-TERMCAP_CFLAGS:=	$(shell pkg-config ncurses --cflags 2> /dev/null)
-LTERMCAP:=			$(shell pkg-config ncurses --libs 2> /dev/null)
+TERMCAP_CFLAGS:=	$(shell ${PKG_CONFIG} ncurses --cflags 2> /dev/null)
+LTERMCAP:=			$(shell ${PKG_CONFIG} ncurses --libs 2> /dev/null)
 ifeq ($(LTERMCAP),)
 LIBTERMCAP?=	-lncurses
 else

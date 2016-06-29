@@ -11,6 +11,7 @@
 
 AR?=			ar
 CP?=			cp
+PKG_CONFIG?=	pkg-config
 ECHO?=			echo
 INSTALL?=		install
 RANLIB?=		ranlib
