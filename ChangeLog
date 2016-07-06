@@ -1,3 +1,27 @@
+commit 6074cbd651da7f27fc6fbc20a66f651c2577857b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    hwclock: always use --noadjfile if available
+    
+    When we use the --utc or --localtime switch, also use --noadjfile if it
+    is available. This means hwclock will not use a drift file.
+    
+    X-Gentoo-Bug: 584722
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=584722
+
+commit 8b9ea8b9e6631d5cd987a7cb31560aa5a13c060b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.21.2
+
+commit c47b497483040107263c9b9984474db5c569485b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update changelog
+
 commit 977811563dd93cab7a64caefa0e86f5b864fc04f
 Author: Benda Xu <heroxbd@gentoo.org>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
