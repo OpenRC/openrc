@@ -69,6 +69,16 @@ _hwclock()
 	return 1
 }
 
+get_noadjfile()
+{
+	if ! yesno $clock_adjfile; then
+		# Some implementations don't handle adjustments
+		if LC_ALL=C hwclock --help 2>&1 | grep -q "\-\-noadjfile"; then
+			echo --noadjfile
+		fi
+	fi
+}
+
 start()
 {
 	local retval=0 errstr=""
@@ -91,16 +101,16 @@ start()
 	fi
 
 	# Always set the kernel's time zone.
-	_hwclock --systz $utc_cmd $clock_args
+	_hwclock --systz $utc_cmd $(get_noadjfile) $clock_args
 	: $(( retval += $? ))
 
 	if [ -e /etc/adjtime ] && yesno $clock_adjfile; then
-		_hwclock --adjust $utc_cmd
+		_hwclock --adjust $utc_cmd $(get_noadjfile)
 		: $(( retval += $? ))
 	fi
 
 	if yesno ${clock_hctosys:-YES}; then
-		_hwclock --hctosys $utc_cmd $clock_args
+		_hwclock --hctosys $utc_cmd $(get_noadjfile) $clock_args
 		: $(( retval += $? ))
 	fi
 
@@ -122,14 +132,7 @@ stop()
 
 	ebegin "Setting hardware clock using the system clock" "[$utc]"
 
-	if ! yesno $clock_adjfile; then
-		# Some implementations don't handle adjustments
-		if LC_ALL=C hwclock --help 2>&1 | grep -q "\-\-noadjfile"; then
-			utc_cmd="$utc_cmd --noadjfile"
-		fi
-	fi
-
-	_hwclock --systohc $utc_cmd $clock_args
+	_hwclock --systohc $utc_cmd $(get_noadjfile) $clock_args
 	retval=$?
 
 	eend $retval "Failed to sync clocks"
@@ -144,5 +147,5 @@ save()
 show()
 {
 	setupopts
-	hwclock --show "$utc_cmd" $clock_args
+	hwclock --show "$utc_cmd" $(get_noadjfile) $clock_args
 }
