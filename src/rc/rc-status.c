@@ -176,9 +176,9 @@ print_stacked_services(const char *runlevel)
 int main(int argc, char **argv)
 {
     RC_STRING *s, *l, *t, *level;
-
+	bool show_all = false;
 	char *p, *runlevel = NULL;
-	int opt, aflag = 0, retval = 0;
+	int opt, retval = 0;
 
 	test_crashed = _rc_can_find_pids();
 
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 				  (int *) 0)) != -1)
 		switch (opt) {
 		case 'a':
-			aflag++;
+			show_all = true;
 			levels = rc_runlevel_list();
 			break;
 		case 'c':
@@ -265,7 +265,7 @@ int main(int argc, char **argv)
 		services = NULL;
 	}
 
-	if (aflag || argc < 2) {
+	if (show_all || argc < 2) {
 		/* Show hotplugged services */
 		print_level("Dynamic", "hotplugged");
 		services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
 		services = NULL;
 
 		/* Show manually started and unassigned depended services */
-		if (aflag) {
+		if (show_all) {
 			rc_stringlist_free(levels);
 			levels = rc_stringlist_new();
 			if (!runlevel)
