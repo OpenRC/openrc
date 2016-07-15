@@ -29,11 +29,12 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "aclrsu" getoptstring_COMMON;
+const char *getoptstring = "aclmrsu" getoptstring_COMMON;
 const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
 	{"crashed",     0, NULL, 'c'},
 	{"list",        0, NULL, 'l'},
+	{"manual",        0, NULL, 'm'},
 	{"runlevel",    0, NULL, 'r'},
 	{"servicelist", 0, NULL, 's'},
 	{"unused",      0, NULL, 'u'},
@@ -43,6 +44,7 @@ const char * const longopts_help[] = {
 	"Show services from all run levels",
 	"Show crashed services",
 	"Show list of run levels",
+	"Show manually started services",
 	"Show the name of the current runlevel",
 	"Show service list",
 	"Show services not assigned to any runlevel",
@@ -50,7 +52,7 @@ const char * const longopts_help[] = {
 };
 const char *usagestring = ""						\
 	"Usage: rc-status [options] <runlevel>...\n"		\
-	"   or: rc-status [options] [-a | -c | -l | -r | -s | -u]";
+	"   or: rc-status [options] [-a | -c | -l | -m | -r | -s | -u]";
 
 static bool test_crashed = false;
 static RC_DEPTREE *deptree;
@@ -204,6 +206,27 @@ int main(int argc, char **argv)
 			levels = rc_runlevel_list();
 			TAILQ_FOREACH(l, levels, entries)
 				printf("%s\n", l->value);
+			goto exit;
+		case 'm':
+			services = rc_services_in_runlevel(NULL);
+			levels = rc_runlevel_list();
+			TAILQ_FOREACH_SAFE(s, services, entries, t) {
+				TAILQ_FOREACH(l, levels, entries)
+					if (rc_service_in_runlevel(s->value, l->value)) {
+						TAILQ_REMOVE(services, s, entries);
+						free(s->value);
+						free(s);
+						break;
+					}
+			}
+			TAILQ_FOREACH_SAFE(s, services, entries, t)
+				if (rc_service_state(s->value) &
+					(RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED)) {
+					TAILQ_REMOVE(services, s, entries);
+					free(s->value);
+					free(s);
+				}
+			print_services(NULL, services);
 			goto exit;
 		case 'r':
 			runlevel = rc_runlevel_get();
