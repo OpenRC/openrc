@@ -17,7 +17,18 @@ depend()
 	keyword -openvz -prefix -systemd-nspawn -vserver -lxc
 }
 
-start()
+FreeBSD_modules()
+{
+	local cnt=0 x
+	for x in $modules; do
+		ebegin "Loading module $x"
+		kldload "$x"
+		eend $? "Failed to load $x" && : $(( cnt += 1 ))
+	done
+	einfo "Autoloaded $cnt module(s)"
+}
+
+Linux_modules()
 {
 	# Should not fail if kernel do not have module
 	# support compiled in ...
@@ -67,4 +78,13 @@ start()
 		eend $? "Failed to load $x" && : $(( cnt += 1 ))
 	done
 	einfo "Autoloaded $cnt module(s)"
+}
+
+start()
+{
+	case "$RC_UNAME" in
+		FreeBSD|Linux) ${RC_UNAME}_modules ;;
+		*) ;;
+	esac
+	return 0
 }
