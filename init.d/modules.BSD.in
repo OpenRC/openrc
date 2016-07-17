@@ -1,0 +1,24 @@
+#!@SBINDIR@/openrc-run
+
+description="Loads a user defined list of kernel modules."
+
+depend() {
+	after bootmisc
+	keyword -jail -prefix
+}
+
+start()
+{
+	local cnt=0 x
+	for x in $modules
+	do
+		ebegin "Loading module $x"
+		kldload "$x";
+		eend $? "Failed to load $x" && : $(( cnt += 1 ))
+	done
+	if [ $cnt -eq 1 ]; then
+		einfo "Autoloaded 1 module"
+	else
+		einfo "Autoloaded $cnt modules"
+	fi
+}
