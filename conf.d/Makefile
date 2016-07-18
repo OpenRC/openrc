@@ -13,7 +13,7 @@ endif
 MK=	../mk
 include ${MK}/os.mk
 
-CONF-FreeBSD=	ipfw moused powerd rarpd savecore syscons
+CONF-FreeBSD=	ipfw modules moused powerd rarpd savecore syscons
 
 CONF-Linux=	consolefont devfs dmesg hwclock keymaps killprocs modules mtab \
 	net-online
@@ -21,6 +21,9 @@ CONF-Linux=	consolefont devfs dmesg hwclock keymaps killprocs modules mtab \
 CONF-NetBSD=	moused rarpd savecore
 
 include ${MK}/scripts.mk
+
+modules: modules${SFX}
+	cp $@${SFX} $@
 
 network: network.in network${SFX}
 	cat $^ > $@
