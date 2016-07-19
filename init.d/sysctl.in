@@ -12,14 +12,13 @@
 depend()
 {
 	before bootmisc logger
-	keyword -prefix
+	keyword -prefix -systemd-nspawn -vserver
 }
 
-start()
+BSD_sysctl()
 {
 	[ -e /etc/sysctl.conf ] || return 0
 	local retval=0 var= comments= conf=
-	ebegin "Configuring kernel parameters"
 	eindent
 	for conf in @SYSCONFDIR@/sysctl.conf @SYSCONFDIR@/sysctl.d/*.conf; do
 		if [ -r "$conf" ]; then
@@ -34,5 +33,25 @@ start()
 		fi
 	done
 	eoutdent
-	eend $retval "Some errors were encountered"
+	return $retval
+}
+
+Linux_sysctl()
+{
+	local quiet
+	yesno $rc_verbose || quiet=-q
+
+	sysctl ${quiet} --system
+}
+
+start()
+{
+	local rc=0
+
+	ebegin "Configuring kernel parameters"
+	case $RC_UNAME" in
+	*BSD|GNU) BSD_sysctl; rc=$? ;;
+	Linux) Linux_sysctl; rc=$? ;;
+	esac
+	eend $rc "Unable to configure some kernel parameters"
 }

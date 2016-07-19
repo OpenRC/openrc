@@ -31,9 +31,6 @@ SRCS-NetBSD=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
 # These are NetBSD specific
 SRCS-NetBSD+=	devdb.in swap-blk.in ttys.in wscons.in
 
-%.in: %${SFX}
-	sed ${SED_REPLACE} ${SED_EXTRA} $< > $@
-
 include ${MK}/scripts.mk
 
 _installafter_: realinstall
