@@ -1,9 +1,7 @@
 DIR=	${SYSCONFDIR}
-SRCS=	rc.conf.in rc.in rc.shutdown.in
+SRCS=	rc.in rc.shutdown.in
 BIN=	${BIN-${OS}}
 CONF=	rc.conf ${BIN-${OS}}
-
-CLEANFILES+=	rc.conf
 
 MK=	../mk
 include ${MK}/os.mk
@@ -23,6 +21,3 @@ CONF-NetBSD=
 SED_EXTRA=	${SED_EXTRA-${OS}}
 
 include ${MK}/scripts.mk
-
-rc.conf: rc.conf.in rc.conf.${OS}
-	${SED} ${SED_REPLACE} ${SED_EXTRA} $^ > $@
