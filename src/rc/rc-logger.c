@@ -247,6 +247,10 @@ rc_logger_open(const char *level)
 		logfile = rc_conf_value("rc_log_path");
 		if (logfile == NULL)
 			logfile = DEFAULTLOG;
+		if (!strcmp(logfile, TMPLOG)) {
+			eerror("Cowardly refusing to concatenate a logfile into itself.");
+			eerrorx("Please change rc_log_path to something other than %s to get rid of this message", TMPLOG);
+		}
 
 		if ((plog = fopen(logfile, "ae"))) {
 			if ((log = fopen(TMPLOG, "re"))) {
