@@ -35,8 +35,3 @@ start()
 	fi
 	eend $?
 }
-
-stop()
-{
-	return 0
-}
