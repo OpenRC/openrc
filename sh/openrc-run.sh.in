@@ -153,6 +153,7 @@ start()
 {
 	local func=ssd_start
 	case "$supervisor" in
+		runit) func=runit_start ;;
 		s6) func=s6_start ;;
 		supervise-daemon) func=supervise_start ;;
 		?*)
@@ -166,6 +167,7 @@ stop()
 {
 	local func=ssd_stop
 	case "$supervisor" in
+		runit) func=runit_stop ;;
 		s6) func=s6_stop ;;
 		supervise-daemon) func=supervise_stop ;;
 		?*)
@@ -179,6 +181,7 @@ status()
 {
 	local func=ssd_status
 	case "$supervisor" in
+		runit) func=runit_status ;;
 		s6) func=s6_status ;;
 		supervise-daemon) func=supervise_status ;;
 		?*)
@@ -216,6 +219,7 @@ fi
 
 
 # load service supervisor functions
+sourcex "@LIBEXECDIR@/sh/runit.sh"
 sourcex "@LIBEXECDIR@/sh/s6.sh"
 sourcex "@LIBEXECDIR@/sh/start-stop-daemon.sh"
 sourcex "@LIBEXECDIR@/sh/supervise-daemon.sh"
