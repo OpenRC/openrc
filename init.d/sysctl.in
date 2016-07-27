@@ -49,7 +49,7 @@ start()
 	local rc=0
 
 	ebegin "Configuring kernel parameters"
-	case $RC_UNAME" in
+	case "$RC_UNAME" in
 	*BSD|GNU) BSD_sysctl; rc=$? ;;
 	Linux) Linux_sysctl; rc=$? ;;
 	esac
