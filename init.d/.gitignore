@@ -37,6 +37,7 @@ pf
 rarpd
 rc-enabled
 rpcbind
+runsvdir
 savecore
 swap-blk
 swclock
