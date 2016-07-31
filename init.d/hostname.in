@@ -12,7 +12,7 @@
 description="Sets the hostname of the machine."
 
 depend() {
-	keyword -prefix -systemd-nspawn -lxc
+	keyword -docker -lxc -prefix -systemd-nspawn
 }
 
 start()

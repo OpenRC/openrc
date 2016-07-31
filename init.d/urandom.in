@@ -15,7 +15,7 @@ description="Initializes the random number generator."
 depend()
 {
 	need localmount
-	keyword -jail -lxc -openvz -prefix -systemd-nspawn
+	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn
 }
 
 save_seed()

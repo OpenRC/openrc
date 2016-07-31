@@ -24,7 +24,7 @@ depend()
 	want $mywant
 	use afc-client amd openvpn
 	use dns
-	keyword -jail -prefix -systemd-nspawn -vserver -lxc
+	keyword -docker -jail -lxc -prefix -systemd-nspawn -vserver
 }
 
 start()
