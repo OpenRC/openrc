@@ -12,7 +12,7 @@
 depend()
 {
 	need localmount
-	keyword -jail -openvz -prefix -systemd-nspawn -vserver -lxc
+	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -vserver
 }
 
 start()

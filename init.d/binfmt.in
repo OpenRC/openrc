@@ -15,7 +15,7 @@ depend()
 {
 	after procfs
 	use modules devfs
-	keyword -openvz -prefix -systemd-nspawn -vserver -lxc
+	keyword -docker -lxc -openvz -prefix -systemd-nspawn -vserver
 }
 
 start()

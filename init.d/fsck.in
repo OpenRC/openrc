@@ -16,7 +16,7 @@ _IFS="
 depend()
 {
 	use dev clock modules
-	keyword -jail -openvz -prefix -systemd-nspawn -timeout -vserver -lxc -uml
+	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -timeout -vserver -uml
 }
 
 _abort() {
