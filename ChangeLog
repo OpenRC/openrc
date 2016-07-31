@@ -1,3 +1,54 @@
+commit 61e211c1c4f51fdb8babb9a70ed7ce138d71c80b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: initial service adjustments for docker support
+    
+    Add -docker keyword to the same scripts that have -lxc keyword.
+
+commit 40d3795fbacc70349a52efc670a22458f4e2d7c4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: fix Docker auto detection
+    
+    The original auto detection of Docker containers assumed the presence of
+    a container environment variable. However, Docker-1.12 does not
+    implement this, and I'm not sure which versions of docker implemented
+    it.
+    
+    The new test is for the presence of a file named .dockerenv in the
+    root directory.
+
+commit fa39271d7a979ec8c1cf9c694d256456528baaf8
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-logger: refuse to cat TMPLOG into itself
+    
+    This prevents an infinite loop in case somebody decides to set
+    rc_log_path to match TMPLOG.
+
+commit 0077e54146c0c6180769bb5fa2d8da2924038baa
+Author: Julian Ospald <hasufell@posteo.de>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Build: fix hardcoded pkg-config invocation
+    
+    This fixes #89.
+
+commit 871fa56baaa0f1ae2b6531303f73f18acd74a71e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.21.3
+
+commit 53f6bd369057fd0f48c6ecfa813d35bfe47196cd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update changelog
+
 commit 6074cbd651da7f27fc6fbc20a66f651c2577857b
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1067,24 +1118,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     mountinfo: fix -e and -E options
     
     Add the -e and -E options to getoptstring so they are recognized.
-
-commit eeadca0b8a5b87c26e60a58563251604350a7a3b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add EERROR_QUIET and EINFO_QUIET to environment whitelist
-
-commit dde339070b4850dc1fadf4992cc01d3468992106
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Increment version
-
-commit 1736be3bc3ebbc1440f87b49fc353e81fb0a6037
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    savecache: Fix unable to create cache message
-    
-    The cache is created in $RC_LIBEXECDIR, not $RC_SVCDIR, so fix the error
-    message when we fail to create it to match.
