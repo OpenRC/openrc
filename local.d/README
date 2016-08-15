@@ -8,7 +8,7 @@ service is stopped.
 
 All files are processed in lexical order.
 
-Keep in mind that files in this directory are processed sequencially,
+Keep in mind that files in this directory are processed sequentially,
 and the local service is not considered started or stopped until
 everything is processed, so if you have a process which takes a long
 time to run, it can delay your boot or shutdown processing.
