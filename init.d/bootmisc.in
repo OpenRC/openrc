@@ -113,8 +113,10 @@ migrate_to_run()
  		rm $src
  	elif [ ! -L $src -a -d $src ]; then
  		ebegin "Migrating $src to $dst"
- 		cp -a $src/* $dst/
- 		rm -rf $src
+ 		if ! rmdir $src 2>/dev/null; then
+ 			cp -a $src/* $dst/
+ 			rm -rf $src
+ 		fi
  		eend $?
  	fi
  	# If $src doesn't exist at all, just run this
