@@ -15,6 +15,7 @@ sysfs_opts=nodev,noexec,nosuid
 
 depend()
 {
+	want modules
 	keyword -docker -lxc -prefix -systemd-nspawn -vserver
 }
 
@@ -102,7 +103,10 @@ mount_misc()
 	# it will NOT appear in /proc/filesystems yet
 	if [ -d /sys/firmware/efi/efivars ] \
 		&& ! mountinfo -q /sys/firmware/efi/efivars; then
-		modprobe -q efivarfs
+		if modprobe -q efivarfs; then
+			ewarn "The efivarfs module needs to be configured in \
+				@SYSCONFDIR@/conf.d/modules or built in"
+		fi
 		if grep -qs efivarfs /proc/filesystems; then
 			ebegin "Mounting efivarfs filesystem"
 			mount -n -t efivarfs -o ${sysfs_opts} \

@@ -30,6 +30,7 @@ fi
 depend()
 {
 	provide clock
+	want modules
 	if yesno $clock_adjfile; then
 		use root
 	else
@@ -81,7 +82,7 @@ get_noadjfile()
 
 start()
 {
-	local retval=0 errstr=""
+	local retval=0 errstr="" modname
 	setupopts
 
 	if [ -z "$utc_cmd" ]; then
@@ -96,7 +97,12 @@ start()
 			[ -e "$rtc" ] && break
 		done
 		if [ ! -e "${rtc}" ]; then
-			modprobe -q rtc-cmos || modprobe -q rtc || modprobe -q genrtc
+		for x in rtc-cmos rtc genrtc; do
+		 modprobe -q $x && modname=$x && break
+		done
+		[ -n "$modname" ] &&
+			ewarn "The $modname module needs to be configured in \
+				@SYSCONFDIR@/conf.d/modules or built in."
 		fi
 	fi
 

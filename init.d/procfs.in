@@ -13,7 +13,8 @@ description="Mounts misc filesystems in /proc."
 
 depend()
 {
-	use modules devfs
+	use devfs
+	want modules
 	need localmount
 	keyword -docker -lxc -openvz -prefix -systemd-nspawn -vserver
 }
@@ -22,7 +23,10 @@ start()
 {
 	# Setup Kernel Support for miscellaneous Binary Formats
 	if [ -d /proc/sys/fs/binfmt_misc -a ! -e /proc/sys/fs/binfmt_misc/register ]; then
-		modprobe -q binfmt-misc
+		if modprobe -q binfmt-misc; then
+			ewarn "The  binfmt-misc module needs to be configured in \
+				@SYSCONFDIR@/conf.d/modules or built in."
+		fi
 		if grep -qs binfmt_misc /proc/filesystems; then
 			ebegin "Mounting misc binary format filesystem"
 			mount -t binfmt_misc -o nodev,noexec,nosuid \
