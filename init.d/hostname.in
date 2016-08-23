@@ -17,10 +17,16 @@ depend() {
 
 start()
 {
-	# HOSTNAME variable used to be defined in caps in conf.d/hostname.
-	# It is also a magic variable in bash.
-	hostname=${hostname-${HOSTNAME-localhost}} # checkbashisms: false positive
-	ebegin "Setting hostname to $hostname"
-	hostname "$hostname"
+	local h source x
+	if [ -s @SYSCONFDIR@/hostname ] && [ -r @SYSCONFDIR@/hostname ]; then
+	read h x <@SYSCONFDIR@/hostname
+	source=" from @SYSCONFDIR@/hostname"
+	else
+		# HOSTNAME variable used to be defined in caps in conf.d/hostname.
+		# It is also a magic variable in bash.
+		h=${hostname-${HOSTNAME-localhost}} # checkbashisms: false positive
+	fi
+	ebegin "Setting hostname to $h $source"
+	hostname "$h"
 	eend $? "Failed to set the hostname"
 }
