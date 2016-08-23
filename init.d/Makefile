@@ -19,10 +19,10 @@ SRCS-FreeBSD=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
 		rpcbind.in savecore.in syslogd.in
 # These are FreeBSD specific
 SRCS-FreeBSD+=	adjkerntz.in devd.in dumpon.in encswap.in ipfw.in \
-		mixer.in nscd.in powerd.in syscons.in
+		modules.in modules-load.in mixer.in nscd.in powerd.in syscons.in
 
 SRCS-Linux=	binfmt.in devfs.in dmesg.in hwclock.in consolefont.in keymaps.in \
-		killprocs.in modules.in mount-ro.in mtab.in numlock.in \
+		killprocs.in modules.in modules-load.in mount-ro.in mtab.in numlock.in \
 		procfs.in net-online.in sysfs.in termencoding.in tmpfiles.dev.in
 
 # Generic BSD scripts

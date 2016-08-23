@@ -14,6 +14,7 @@ description="Loads a user defined list of kernel modules."
 depend()
 {
 	use isapnp
+	want modules-load
 	keyword -docker -lxc -openvz -prefix -systemd-nspawn -vserver
 }
 
