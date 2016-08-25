@@ -1,4 +1,5 @@
 binfmt
+modules-load
 bootmisc
 fsck
 hostname
