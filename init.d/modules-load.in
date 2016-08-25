@@ -16,12 +16,11 @@ depend()
 	keyword -docker -lxc -openvz -prefix -systemd-nspawn -vserver
 }
 
-modules_dirs="/usr/lib/modules-load.d /run/modules-load.d /etc/modules-load.d"
-
 find_modfiles()
 {
-	local basenames files x y
-	for x in $modules_dirs; do
+	local dirs="/usr/lib/modules-load.d /run/modules-load.d /etc/modules-load.d"
+	local basenames files fn x y
+	for x in $dirs; do
 		[ ! -d $x ] && continue
 		for y in $x/*.conf; do
 			[ -f $y ] && basenames="${basenames}\n${y##*/}"
@@ -29,11 +28,11 @@ find_modfiles()
 	done
 	basenames=$(printf "$basenames" | sort -u)
 	for x in $basenames; do
-		for y in $modules_dirs; do
+		for y in $dirs; do
 			[ -r $y/$x ] &&
-				path=$y/$x
+				fn=$y/$x
 		done
-		files="$files $path"
+		files="$files $fn"
 	done
 	echo $files
 }
