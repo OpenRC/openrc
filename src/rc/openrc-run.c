@@ -1173,9 +1173,6 @@ int main(int argc, char **argv)
 	if (argc < 3)
 		usage(EXIT_FAILURE);
 
-	if (runscript)
-		ewarn("%s uses runscript, please convert to openrc-run.", service);
-
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
 	if (chdir("/") == -1)
 		eerror("chdir: %s", strerror(errno));
@@ -1294,6 +1291,9 @@ int main(int argc, char **argv)
 
 	applet_list = rc_stringlist_new();
 	rc_stringlist_add(applet_list, applet);
+
+	if (runscript)
+		ewarn("%s uses runscript, please convert to openrc-run.", service);
 
 	/* Now run each option */
 	retval = EXIT_SUCCESS;
