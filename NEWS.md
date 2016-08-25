@@ -17,6 +17,19 @@ these files for the setup.
 The deprecation messages in 0.13.x for runscript and rc are now
 made visible in preparation for the removal of these binaries in 1.0.
 
+The steps you should take to get rid of these warnings is to run openrc
+in initialization steps instead of rc and change the shebang lines in
+service scripts to refer to "openrc-run" instead of "runscript".
+
+In 0.21.4, a modules-load service was added. This works like the
+equivalent service in systemd. It looks for files named *.conf first in
+/usr/lib/modules-load.d, then /run/modules-load.d, then
+/etc/modules-lload.d. These files contain, a list of modules, one per
+line, which should be loaded into the kernel. If a file name appears in
+/run/modules-load.d, it overrides a file of the same name in
+/usr/lib/modules-load.d. A file appearing in /etc/modules-load.d
+overrides a file of the same name in both previous directories.
+
 ## OpenRC-0.19
 
 This version adds a net-online service. By default, this
