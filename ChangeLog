@@ -1,3 +1,54 @@
+commit 147855207199970aa0a10ffa6575e980ffb3bdb8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update news file
+    
+    Add information on modules-load service and more explanation about
+    dealing with the rc -> openrc and runscript -> openrc-run transitions.
+
+commit 8aa0b5b8a943ad4d94de08a00bc0cbf1530847ee
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: add modules-load to ignore patterns
+
+commit c8059c8474cb0aeb6f7f89f7200f5faa73f9a66e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    modules-load.d: cleanups
+    
+    Move list of directories to a local variable and create the fn variable
+    to use for an individual file name rather than using path.
+
+commit b888f1a8e21008f45105ad2fdc84a5d579892eb5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add modules-load.d support
+
+commit 6e0bd2deb1efb49fd1f1db54f7d57b2a462ccf82
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-run: make runscript warning respect quiet option
+    
+    X-Gentoo-Bug: 591414
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=591414
+
+commit cdc42d91dbc1e661ef6cbe392008e1cff926bec4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.21.4
+
+commit bd4cafbbf357656958298f98083f27f6381cacbf
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 61e211c1c4f51fdb8babb9a70ed7ce138d71c80b
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1059,62 +1110,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     The localmount/netmount services should fail if all file systems that
     should mount did not mount.
-
-commit b652752339690e10a55ae50d046f4cf2a98daf1a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Make localmount and netmount always succeed on non-linux
-
-commit 2a439c85bd69efc14847b4397bd6783cac051405
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    local/netmount: remove uses of -O [no]_netdev
-    
-    This was causing an incompatibility with busybox, and we do not use it
-    in Gentoo.
-
-commit 7341cd882fba522c1f1d183603334839bd4df7fc
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    allow localmount and netmount to fail
-
-commit 279f1e5d1013309d99509ab4b7b57521f8a4aba4
-Author: Mike Frysinger <vapier@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    binfmt: fix indent on return
-
-commit c256a7aa80c683eca6194c80b57294e4d51c9a16
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    savecache: clean up implementation
-    
-    X-Gentoo-Bug: 557222
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=557222
-
-commit 6a422982579786cb8308af04ccca6622afa06e50
-Author: Jason Zaman <jason@perfinion.com>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    tmpfiles: run restorecon on the entire path
-    
-    The tmpfiles "d" entry will create a full path and only the last dir in
-    the path will have its SELinux label set correctly. This patch will
-    restorecon the parents as well so that the selinux labels are correct.
-    
-    eg, "d /run/libvirt/lxc", then "lxc" would have the correct SELinux
-    label but "libvirt" would not.
-    
-    Signed-off-by: Jason Zaman <jason@perfinion.com>
-
-commit f69833a1e17d1cf65e96a34fcc0e48caf9d90d64
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mountinfo: fix -e and -E options
-    
-    Add the -e and -E options to getoptstring so they are recognized.
