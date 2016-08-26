@@ -44,8 +44,8 @@ load_modules()
 	[ -z "$file" ] && return 0
 	while read m x; do
 		case $m in
-			\;) continue ;;
-			\#) continue ;;
+			\;*) continue ;;
+			\#*) continue ;;
 			*) modules="$modules $m"
 			;;
 		esac
