@@ -1,3 +1,38 @@
+commit 528bfa13f9bac4797e4238d05edcfbc996a6be72
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    another news typo fix
+
+commit 5f1daa6f30849d95db1f6b4b84abdc9645db3f94
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    modules-load: handle comments better
+    
+    This handles comments without a trailing space after the comment
+    character.
+    
+    Reported-By: josef64
+
+commit 0445bc13f84cd22c06c80464d51ab18651d42147
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    typo fix
+
+commit 73d024228d13c423939cc0eb2aa4be75e1481fc3
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    version 0.21.5
+
+commit 4809bc249f53f519d93fa7a7c444c4f9625061ac
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update changelog
+
 commit 147855207199970aa0a10ffa6575e980ffb3bdb8
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
