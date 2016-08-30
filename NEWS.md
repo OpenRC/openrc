@@ -24,7 +24,7 @@ service scripts to refer to "openrc-run" instead of "runscript".
 In 0.21.4, a modules-load service was added. This works like the
 equivalent service in systemd. It looks for files named *.conf first in
 /usr/lib/modules-load.d, then /run/modules-load.d, then
-/etc/modules-load.d. These files contain, a list of modules, one per
+/etc/modules-load.d. These files contain a list of modules, one per
 line, which should be loaded into the kernel. If a file name appears in
 /run/modules-load.d, it overrides a file of the same name in
 /usr/lib/modules-load.d. A file appearing in /etc/modules-load.d
