@@ -1,3 +1,25 @@
+commit 484e6089b90ffef9f53bdc8968c240e1b3a3f221
+Author: Martin Väth <martin@mvath.de>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix typo in RC_UNAME check of modules-load
+    
+    The $RC_UNAME "Linux" had been misspelled as "linux".
+    As a consequence, entries in e.g. /etc/modules-load.d failed to
+    load any module succesfully under Linux(!)
+
+commit 8b3efa6ae25dd07350bff22a998575d9f38b15c9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.21.6
+
+commit d1161c8aaec80ae7d0064f45d69b62694cd3d365
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 528bfa13f9bac4797e4238d05edcfbc996a6be72
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
