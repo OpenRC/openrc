@@ -3,6 +3,13 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.22
+
+The swapfiles service, which was basically a copy of the swap service,
+has been removed. If you are only using swap partitions, this change
+will not affect you. If you are using swap files, please adjust the
+dependencies of the swap service as shown in /etc/conf.d/swap.
+
 ## OpenRC-0.21
 
 This version adds a daemon supervisor which can start daemons and
