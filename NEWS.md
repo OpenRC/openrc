@@ -5,6 +5,12 @@ the information in this file is in reverse order.
 
 ## OpenRC-0.22
 
+In previous versions of OpenRC, configuration information was processed
+so that service-specific configuration stored in /etc/conf.d/* was
+overridden by global configuration stored in /etc/rc.conf. This release
+reverses that. Global configuration is now overridden by
+service-specific configuration.
+
 The swapfiles service, which was basically a copy of the swap service,
 has been removed. If you are only using swap partitions, this change
 will not affect you. If you are using swap files, please adjust the

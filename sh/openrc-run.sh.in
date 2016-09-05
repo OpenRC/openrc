@@ -193,6 +193,15 @@ status()
 
 yesno $RC_DEBUG && set -x
 
+# Load configuration settings. First the global ones, then any
+# service-specific settings.
+sourcex -e "@SYSCONFDIR@/rc.conf"
+if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
+	for _f in "@SYSCONFDIR@"/rc.conf.d/*.conf; do
+		sourcex -e "$_f"
+	done
+fi
+
 _conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${RC_SVCNAME%%.*}
@@ -208,15 +217,6 @@ if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
 	sourcex -e "$_conf_d/$RC_SVCNAME"
 fi
 unset _conf_d
-
-# Load any system overrides
-sourcex -e "@SYSCONFDIR@/rc.conf"
-if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
-	for _f in "@SYSCONFDIR@"/rc.conf.d/*.conf; do
-		sourcex -e "$_f"
-	done
-fi
-
 
 # load service supervisor functions
 sourcex "@LIBEXECDIR@/sh/runit.sh"
