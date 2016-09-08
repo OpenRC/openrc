@@ -80,6 +80,15 @@ get_noadjfile()
 	fi
 }
 
+rtc_exists()
+{
+	local rtc=
+	for rtc in /dev/rtc /dev/rtc[0-9]*; do
+		[ -e "$rtc" ] && break
+	done
+	[ -e "$rtc" ]
+}
+
 start()
 {
 	local retval=0 errstr="" modname
@@ -92,17 +101,13 @@ start()
 
 	ebegin "Setting system clock using the hardware clock [$utc]"
 	if [ -e /proc/modules ]; then
-		local rtc=
-		for rtc in /dev/rtc /dev/rtc[0-9]*; do
-			[ -e "$rtc" ] && break
-		done
-		if [ ! -e "${rtc}" ]; then
-		for x in rtc-cmos rtc genrtc; do
-		 modprobe -q $x && modname=$x && break
-		done
-		[ -n "$modname" ] &&
-			ewarn "The $modname module needs to be configured in \
-				@SYSCONFDIR@/conf.d/modules or built in."
+		if ! rtc_exists; then
+			for x in rtc-cmos rtc genrtc; do
+				modprobe -q $x && rtc_exists && modname="$x" && break
+			done
+			[ -n "$modname" ] &&
+				ewarn "The $modname module needs to be configured in \
+					@SYSCONFDIR@/conf.d/modules or built in."
 		fi
 	fi
 
