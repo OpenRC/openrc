@@ -125,15 +125,31 @@ if no start or stop function is defined by the service.
 .It Ar command_args
 List of arguments to pass to the daemon when starting via
 .Nm start-stop-daemon .
+.It Ar command_args_background
+This variable should be used if the daemon you are starting with
+.Xr start-stop-daemon 8
+runs in the foreground by default but has its own command line options
+to request that it background and write a pid file. It should be set to
+those options. It should not be used at the same time as
+command_background, because command_background requests that
+.Xr start-stop-daemon 8
+go into the background before executing the daemon.
 .It Ar command_args_foreground
 List of arguments to pass to the daemon when starting via
 .Nm supervise-daemon .
 to force the daemon to stay in the foreground
 .It Ar command_background
-Set this to "true", "yes" or "1" (case-insensitive) to force the daemon into
-the background. This implies the "--make-pidfile" and "--pidfile" option of
+Set this to "true", "yes" or "1" (case-insensitive) if you want 
 .Xr start-stop-daemon 8
-so the pidfile variable must be set.
+to force the daemon into the background. This forces the
+"--make-pidfile" and "--pidfile" options, so the pidfile variable must be set.
+.It Ar command_user
+If the daemon does not support changing to a different user id, you can
+use this to change the user id before
+.Xr start-stop-daemon 8
+or
+.Xr supervise-daemon 8
+launches the daemon
 .It Ar chroot
 .Xr start-stop-daemon 8
 and
