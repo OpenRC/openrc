@@ -21,7 +21,7 @@ runit_start()
 	ebegin "Starting ${name:-$RC_SVCNAME}"
 	ln -snf "${service_path}" "${service_link}"
 	sv start "${service_link}" > /dev/null 2>&1
-	eend $? "Failed to start $RC_SVCNAME"
+	eend $? "Failed to start ${name:-$RC_SVCNAME}"
 }
 
 runit_stop()
@@ -36,7 +36,7 @@ runit_stop()
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
 	sv stop "${service_link}" > /dev/null 2>&1 &&
 	rm "${service_link}"
-	eend $? "Failed to stop $RC_SVCNAME"
+	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
 }
 
 runit_status()

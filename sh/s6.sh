@@ -30,7 +30,7 @@ s6_start()
 	sleep 1.5
 	set -- $(s6-svstat "${s6_service_link}")
 	[ "$1" = "up" ]
-	eend $? "Failed to start $RC_SVCNAME"
+	eend $? "Failed to start ${name:-$RC_SVCNAME}"
 }
 
 s6_stop()
@@ -44,7 +44,7 @@ s6_stop()
 	s6-svc -wD -d -T ${s6_service_timeout_stop:-10000} "${s6_service_link}"
 	set -- $(s6-svstat "${s6_service_link}")
 	[ "$1" = "down" ]
-	eend $? "Failed to stop $RC_SVCNAME"
+	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
 }
 
 s6_status()

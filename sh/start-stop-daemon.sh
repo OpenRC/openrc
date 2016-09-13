@@ -46,7 +46,7 @@ ssd_start()
 		${command_user+--user} $command_user \
 		$_background $start_stop_daemon_args \
 		-- $command_args $command_args_background
-	if eend $? "Failed to start $RC_SVCNAME"; then
+	if eend $? "Failed to start ${name:-$RC_SVCNAME}"; then
 		service_set_value "command" "${command}"
 		[ -n "${chroot}" ] && service_set_value "chroot" "${chroot}"
 		[ -n "${pidfile}" ] && service_set_value "pidfile" "${pidfile}"
@@ -80,7 +80,7 @@ ssd_stop()
 		${pidfile:+--pidfile} $chroot$pidfile \
 		${stopsig:+--signal} $stopsig
 
-	eend $? "Failed to stop $RC_SVCNAME"
+	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
 }
 
 ssd_status()
