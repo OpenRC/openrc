@@ -53,7 +53,7 @@ cgroup_set_values()
 	while [ -n "$1" -a "$controller" != "cpuacct" ]; do
 		case "$1" in
 			$controller.*)
-				if [ -n "$name" -a -f "$cgroup/$name" -a -n "$val" ]; then
+				if [ -n "$name" -a -w "$cgroup/$name" -a -n "$val" ]; then
 					veinfo "$RC_SVCNAME: Setting $cgroup/$name to $val"
 					printf "%s" "$val" > "$cgroup/$name"
 				fi
@@ -68,12 +68,12 @@ cgroup_set_values()
 		esac
 		shift
 	done
-	if [ -n "$name" -a -f "$cgroup/$name" -a -n "$val" ]; then
+	if [ -n "$name" -a -w "$cgroup/$name" -a -n "$val" ]; then
 		veinfo "$RC_SVCNAME: Setting $cgroup/$name to $val"
 		printf "%s" "$val" > "$cgroup/$name"
 	fi
 
-	if [ -f "$cgroup/tasks" ]; then
+	if [ -w "$cgroup/tasks" ]; then
 		veinfo "$RC_SVCNAME: adding to $cgroup/tasks"
 		printf "%d" 0 > "$cgroup/tasks"
 	fi
@@ -88,14 +88,14 @@ cgroup_add_service()
     # cgroups. But may lead to a problems where that inheriting
     # is needed.
 	for d in /sys/fs/cgroup/* ; do
-		[ -f "${d}"/tasks ] && printf "%d" 0 > "${d}"/tasks
+		[ -w "${d}"/tasks ] && printf "%d" 0 > "${d}"/tasks
 	done
 
 	openrc_cgroup=/sys/fs/cgroup/openrc
 	if [ -d "$openrc_cgroup" ]; then
 		cgroup="$openrc_cgroup/$RC_SVCNAME"
 		mkdir -p "$cgroup"
-		[ -f "$cgroup/tasks" ] && printf "%d" 0 > "$cgroup/tasks"
+		[ -w "$cgroup/tasks" ] && printf "%d" 0 > "$cgroup/tasks"
 	fi
 }
 
