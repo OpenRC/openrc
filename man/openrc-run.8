@@ -143,6 +143,10 @@ Set this to "true", "yes" or "1" (case-insensitive) if you want
 .Xr start-stop-daemon 8
 to force the daemon into the background. This forces the
 "--make-pidfile" and "--pidfile" options, so the pidfile variable must be set.
+.It Ar command_progress
+Set this to "true", "yes" or "1" (case-insensitive) if you want 
+.Xr start-stop-daemon 8
+to display a progress meter when waiting for a daemon to stop.
 .It Ar command_user
 If the daemon does not support changing to a different user id, you can
 use this to change the user id before
