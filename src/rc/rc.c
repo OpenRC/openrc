@@ -664,7 +664,6 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 			interactive = want_interactive();
 
 		if (interactive) {
-			parallel = false;
 	interactive_retry:
 			printf("\n");
 			einfo("About to start the service %s",
