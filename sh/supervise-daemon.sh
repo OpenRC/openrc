@@ -19,7 +19,7 @@ supervise_start()
 	fi
 
 	ebegin "Starting ${name:-$RC_SVCNAME}"
-	eval supervise-daemon --start \
+	supervise-daemon --start \
 		${chroot:+--chroot} $chroot \
 		${pidfile:+--pidfile} $pidfile \
 		${command_user+--user} $command_user \
