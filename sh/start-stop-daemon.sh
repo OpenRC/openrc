@@ -38,7 +38,10 @@ ssd_start()
 		service_inactive && _inactive=true
 		mark_service_inactive
 	fi
-	start-stop-daemon --start \
+	#the eval call is necessary for cases like:
+	# command_args="this \"is a\" test"
+	# to work properly.
+	eval start-stop-daemon --start \
 		--exec $command \
 		${chroot:+--chroot} $chroot \
 		${procname:+--name} $procname \

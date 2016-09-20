@@ -19,7 +19,10 @@ supervise_start()
 	fi
 
 	ebegin "Starting ${name:-$RC_SVCNAME}"
-	supervise-daemon --start \
+	# The eval call is necessary for cases like:
+	# command_args="this \"is a\" test"
+	# to work properly.
+	eval supervise-daemon --start \
 		${chroot:+--chroot} $chroot \
 		${pidfile:+--pidfile} $pidfile \
 		${command_user+--user} $command_user \
