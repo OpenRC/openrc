@@ -54,7 +54,7 @@ load_modules()
 		ebegin "Loading module $x"
 		case "$RC_UNAME" in
 			FreeBSD) kldload "$x"; rc=$? ;;
-			Linux) modprobe -q "$x"; rc=$? ;;
+			Linux) modprobe --use-blacklist -q "$x"; rc=$? ;;
 			*) ;;
 		esac
 		eend $rc "Failed to load $x"
