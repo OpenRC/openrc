@@ -180,6 +180,10 @@ used along with in_background_fake to support re-entrant services.
 .It Ar in_background_fake
 Space separated list of commands which should always succeed when
 in_background is yes.
+.Pp
+Keep in mind that eval is used to process chroot, command, command_args_*,
+command_user, pidfile and procname. This may affect how they are
+evvaluated depending on how they are quoted.
 .El
 .Sh DEPENDENCIES
 You should define a
