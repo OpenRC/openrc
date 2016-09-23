@@ -19,7 +19,6 @@ start()
 {
 	ebegin "Activating swap devices"
 	case "$RC_UNAME" in
-		Linux)		swapon -a -e >/dev/null;;
 		NetBSD|OpenBSD) swapctl -A -t noblk >/dev/null;;
 		*)		swapon -a >/dev/null;;
 	esac
