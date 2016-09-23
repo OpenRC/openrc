@@ -1,4 +1,4 @@
-*.bz2
+*.gz
 
 *.diff
 *.patch

@@ -11,9 +11,9 @@
 
 GITREF?=	${VERSION}
 DISTPREFIX?=	${NAME}-${VERSION}
-DISTFILE?=	${DISTPREFIX}.tar.bz2
+DISTFILE?=	${DISTPREFIX}.tar.gz
 
-CLEANFILES+=	${NAME}-*.tar.bz2
+CLEANFILES+=	${NAME}-*.tar.gz
 
 CHANGELOG_LIMIT?= --after="1 year ago"
 
@@ -21,13 +21,13 @@ _SNAP_SH=	date -u +%Y%m%d%H%M
 _SNAP:=		$(shell ${_SNAP_SH})
 SNAP=		${_SNAP}
 SNAPDIR=	${DISTPREFIX}-${SNAP}
-SNAPFILE=	${SNAPDIR}.tar.bz2
+SNAPFILE=	${SNAPDIR}.tar.gz
 
 changelog:
 	git log ${CHANGELOG_LIMIT} --format=full > ChangeLog
 
 dist:
-	git archive --prefix=${DISTPREFIX}/ ${GITREF} | bzip2 > ${DISTFILE}
+	git archive --prefix=${DISTPREFIX}/ ${GITREF} --output=${DISTFILE}
 
 distcheck: dist
 	rm -rf ${DISTPREFIX}
@@ -42,7 +42,7 @@ snapshot:
 	cp -RPp * /tmp/${SNAPDIR}
 	(cd /tmp/${SNAPDIR}; make clean)
 	rm -rf /tmp/${SNAPDIR}/.git 2>/dev/null || true
-	tar -cvjpf ${SNAPFILE} -C /tmp ${SNAPDIR}
+	tar -cvzpf ${SNAPFILE} -C /tmp ${SNAPDIR}
 	rm -rf /tmp/${SNAPDIR}
 	ls -l ${SNAPFILE}
 
