@@ -1,3 +1,624 @@
+commit 24010dcb483cf7284cd8a5db111ae63f0d4e1038
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    dist: convert to tar.gz
+    
+    This allows the "make dist" target to be used as well as the github
+    archive generation.
+
+commit 0a76627345a173fc00be9864f3f3f5c3b15319cd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/swap: remove the case for linux
+    
+    I am removing the separate case for Linux, because we are droppping the
+    "-e" switch.
+
+commit bbf98befb86337a36ef5af7f273e503a6de4b9bd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/init.sh.Linux.in: update test for live /proc to use md5sum
+    
+    This allows us to avoid the warnings from bash-4.4 about null bytes in
+    command substitutions.
+    
+    If you have separate /usr, are not using an initramfs, and have a file
+    called /proc/self/environ on your root file system, this will break.
+    X-Gentoo-Bug: 594534
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=594534
+
+commit 316903fbf0da6edc067a98327c8c6cb2b3cdcf93
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/openrc-run.8: typo fix
+
+commit 66a9788435e51e658e4ae9d3ce0d0e54ea53e4f9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/openrc-run.8: Add note about eval usage
+    
+    This fixes #77.
+
+commit bf73363f220ff086d2559e7c2015801f80862749
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add --use-blacklist to modprobe calls in modules and modules-load
+    
+    This means that we will honor the modprobe black lists.
+    
+    X-Gentoo-Bug: 594012
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=594012
+
+commit d6c30ab12a3b335ac57cd1f0ac00231bb34fc0c4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "Remove eval calls from supervisor start functions"
+    
+    This reverts commit 0d1f1010c299a95332f224c3be9e8dfdd85eec54.
+    We need the eval in case someone uses something like:
+    command_args="this \"is a\" test"
+    
+    This is related to #77.
+
+commit 0d1f1010c299a95332f224c3be9e8dfdd85eec54
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Remove eval calls from supervisor start functions
+    
+    This fixes #77.
+
+commit 83bb827edf5b9be04a326d1970d6f55db239281f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "Disable parallel startup in interactive mode"
+    
+    This reverts commit 8b4fc05ff2645b2ecb0f153492f72dd8b39ba431.
+    The original commit did not explain why this feature was disabled, and I
+    now have a request to enable it.
+    
+    This fixes #24.
+
+commit c146b966913ae80652e3be925d3aba60ed82f14d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add command_progress variable
+    
+    If this is set to yes, 1, true, or on, start-stop-daemon will display a
+    progress meter while waiting for a daemon to stop.
+
+commit 6cabaf274defa11773094a2c85b3d0a9f0bd9b08
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    rc-misc: allow EINFO_VERBOSE through too
+
+commit 1edb5f6fd9c4827e5d4ed5c854bc322ba8a7df73
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    rc-misc: Allow EINFO_COLOR through env_filter()
+    
+    This allows rc-service -C <service> <action> to properly not print color
+    messages.
+    
+    Fixes #93
+
+commit c4d7e02abd7008b8e8ad16f62c2abbb60fab252b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix permission checks for cgroups
+    
+    This is needed because containers may give read access to cgroups but
+    not allow the settings to be changed.
+
+commit a4e0d675e13f07bf880da10a4d602983a556264d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/openrc-run.8: update variable documentation
+    
+    - document command_args_background and command_user.r
+    - clarify documentation for command_background
+    
+    This fixes #78.
+
+commit 8a8032478a755f6e2ceaebc5425e61c6817df936
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Make use of name vs RC_SVCNAME consistent in supervisor scripts
+    
+    This fixes #79.
+
+commit ac53c9a658589456c678b6bfe674a66a3845e564
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/init.sh: fix the test for cache restoration
+    
+    This fixes the test for cache restoration since we are no longer caching
+    the dependency tree.
+
+commit b02ff466fa75cc4b5bcfaff3f2989cc65c823f43
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    savecache: stop saving the dependency tree
+    
+    This fixes #85.
+
+commit 6bd0f2d096f149906061a4ac7b66b7e85516784a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/procfs: typo fix
+
+commit 63f8ae466f046dcdbb0ba13ef96e63eeec86e6e6
+Author: frickler01 <frickler01@users.noreply.github.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Format code blocks and variable/path notations
+    
+    Add markdown backticks for commands, variable names and path as well
+    as code blocks for better readability.
+    
+    This fixes #97.
+
+commit 841b883825ddf9982a673b3964757f6df25acd46
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    hwclock: fix module load warning
+
+commit ba10793b0b85b11fae04e6526716c6f7976afde1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/procfs: fix binfmt_misc module load warning
+    
+    This reworks the logic so that the warning about configuring the
+    binfmt_misc module is only displayed if the module actually has to be
+    loaded.
+
+commit d4d559323819c8a5279bf197d8d3ff80f1e28cdc
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/openrc-run.sh: read global configuration settings first
+    
+    X-Gentoo-Bug: 503134
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=503134
+
+commit d5db5489be135ae9295e378e789b4b7b13367fdd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/swap: do not unmount all tmpfs file systems
+    
+    X-Gentoo-Bug: 568162
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=568162
+
+commit d06db93d5954460668d09cf6ef2fc401ee9d981c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    remove swapfiles service
+    
+    The swapfiles service was basically a copy of the swap service, so this
+    commit consolidates the functionality into the swap service.
+    
+    X-Funtoo-Bug-URL: https://bugs.funtoo.org/browse/FL-2523
+    X-Gentoo-Bug: 568162
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=568162
+
+commit 8c14d0c476e06fff7598c526e26b6a13d53a4600
+Author: Martin Väth <martin@mvath.de>
+Commit: Martin Väth <martin@mvath.de>
+
+    Fix typo in RC_UNAME check of modules-load
+    
+    The $RC_UNAME "Linux" had been misspelled as "linux".
+    As a consequence, entries in e.g. /etc/modules-load.d failed to
+    load any module succesfully under Linux(!)
+
+commit 04debf6f25b3748a101b61cb85f78617dbe5be6e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    another news typo fix
+
+commit c289774b00d0d7dc38fdc1f0f623569bd184a4b1
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    modules-load: handle comments better
+    
+    This handles comments without a trailing space after the comment
+    character.
+    
+    Reported-By: josef64
+
+commit 9dd8ee330d8a4449c937bc95fc8393a55913c8d1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+
+commit 5d5856c193768d24f11d5f0533e48c39526aef5c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update news file
+    
+    Add information on modules-load service and more explanation about
+    dealing with the rc -> openrc and runscript -> openrc-run transitions.
+
+commit 686e172207ac9e23560da18a6f877be777ded935
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: add modules-load to ignore patterns
+
+commit fef6268f8d03e3ab3e2564cbf3634d0db2bcd99e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    modules-load.d: cleanups
+    
+    Move list of directories to a local variable and create the fn variable
+    to use for an individual file name rather than using path.
+
+commit 556dbff99d53cdcc00e6b1ec67e1679f72b6f284
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add modules-load.d support
+
+commit 69ac78d76a31d843c004717eb6aa6a77bb4c9a8e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-run: make runscript warning respect quiet option
+    
+    X-Gentoo-Bug: 591414
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=591414
+
+commit 4018dfc8de4818101c336ff8bcf0f4762b318c6a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/hostname: do not use localhost as a default hostname
+    
+    This allows the operating system default hostname to be used if no
+    hostname is configured.
+
+commit 353bb9bc9a0ab3c6650d72d2ceb14c990762a2a0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/hostname: add support for /etc/hostname
+
+commit 73cdf10f1f513be7b5dec4f1cc91e0c68cda689b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Deprecate automatic loading of modules
+    
+    In the hwclock, procfs and sysfs service scripts, we automatically
+    attempt to load the kernel modules we need before we take any action. We
+    shouldn't do this, because there are systems which do not use kernel
+    modules and do not have the kmod package installed.
+    
+    With this change, we continue to load the modules ourselves, but we warn
+    the admin that they need to be added to /etc/conf.d/modules or built
+    into the kernel.
+    
+    In the future, this automatic loading will be dropped.
+    
+    X-Gentoo-Bug: 342313
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=342313
+
+commit 1a55d46645b376cd27f394796934150120a08387
+Author: Raymond Jennings <shentino@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    local.d/README: typo fix
+    
+    X-Gentoo-Bug: 591258
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=591258
+
+commit cae3976ef1276ce33aa7e49474f13499a48a3fe6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: Add runsvdir to ignore patterns
+
+commit da28a3d367b6078deda6bc205806b43b971e67a9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: initial service adjustments for docker support
+    
+    Add -docker keyword to the same scripts that have -lxc keyword.
+
+commit ca8c29ee60b0e8ca89091aaf801725bd71e28001
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: fix Docker auto detection
+    
+    The original auto detection of Docker containers assumed the presence of
+    a container environment variable. However, Docker-1.12 does not
+    implement this, and I'm not sure which versions of docker implemented
+    it.
+    
+    The new test is for the presence of a file named .dockerenv in the
+    root directory.
+
+commit f62253b8334a85dac4671e42817b96a3bedd1881
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add support for runit
+    
+    X-Gentoo-Bug: 501364
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=501364
+
+commit f2c2e2dd5a5e0a22da4dcabea6615d0f4697a962
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysctl.in: typo fix
+
+commit 94b98430cb83a8f4e62d837100fc357e9eb12ca6
+Author: Kenneth Lakin <kennethlakin@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: Add SSD_IONICELEVEL
+    
+    This is the disk IO counterpart to SSD_NICELEVEL.
+    Modified by William Hubbs to add the variable to the start-stop-daemon
+    man page.
+    
+    This fixes #69.
+
+commit b19d0a40d7f20987323d5af91469c720ead39561
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/loopback: remove unnecessary stop function
+
+commit 0c229faf7e6a57bcff70f2143b83cb69a34c89f4
+Author: Martin Väth <martin@mvath.de>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    tmpfiles.sh: Support lines with q Q h H
+    
+    btrfs support is not implemented yet (for q Q v), but at least tmpfiles.sh
+    no longer chokes about tmpfiles.d lines of recent systemd versions
+    
+    This fixes #87.
+
+commit 3092e310acd376fc626cc051549e02bcd7697aed
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    tmpfiles: Accept filenames as command line arguments
+    
+    This brings us closer to being able to use tmpfiles.sh as a full
+    replacement for systemd-tmpfiles.
+    
+    This closes #83.
+
+commit 671911762d1bcd90c10d8ac0eb30fe10be4a65f6
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    tmpfiles: Process command line before gathering config files
+    
+    This is part of #83.
+
+commit 7d68839e9ea89b0a92aef69a9b4fd298554bb9b1
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    tmpfiles: Make unrecognized options fatal
+    
+    This is part of #83.
+
+commit 5341a925c15934674031aebb97533b0adcd10236
+Author: Jakub Jirutka <jakub@jirutka.cz>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    s6-guide: fix typo
+    
+    This fixes #92.
+
+commit 3adb8fb389caaafbed1be13c5ac4d96214c8eed3
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    rc-logger: refuse to cat TMPLOG into itself
+    
+    This prevents an infinite loop in case somebody decides to set
+    rc_log_path to match TMPLOG.
+
+commit 8927a37fb790e718c956376242a532ab9d1755e7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    etc: remove rc.conf.* file fragments
+
+commit b085b2cda58bc884acb959e48f14fb044c983042
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    etc: create default rc.conf
+    
+    Before now, /etc/rc.conf was created by the build system from multiple
+    rc.conf.* file fragments and there was no reason for this.
+
+commit daf93977641201f16c477b075ce9055a1da8f7b3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: combine sysctl scripts
+    
+    We had separate sysctl scripts for each operating system. However, there
+    is no need to do this since we can detect the operating system at
+    runtime with $RC_UNAME.
+
+commit 2984504c887afc9a36610eb7c20b097f7d1e70d0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    conf.d: remove staticroute file fragments
+
+commit 35e8386c24df6483f2918979dae150421f7151df
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    conf.d: makestaticroute file static
+
+commit 2108285d64e2ee8cc03fbe544efc3752fe349bdd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    conf.d: remove network file fragnents
+
+commit a3133fec250eca3cdfb460c2ce26c707fd593c09
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    conf.d: make network file static
+
+commit 314ae3dc781d7ae8fc26c276a85b0dc6ab6bc326
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    modules: add support for FreeBSD
+    
+    This is based on a patch submitted by
+    Joe Maloney <pkgdemonteam@gmail.com>.
+    
+    This fixes #91.
+
+commit 695be59083cdf0d2ff9296f2c210e591c51bdf40
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: add -m/--manual  option to show manually started services
+    
+    X-Gentoo-Bug: 585906
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=585906
+
+commit c962678dd6ab1314b55c2a3bcdae03902bda39b8
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    rc: Rename some static variables to kill warnings
+
+commit 3a1262703fd20d2e8288d13d908fb282c77d1793
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Remove the DEBUG_MEMORY macro
+    
+    This fixes #43.
+
+commit 20035210bdf5d5729734457f35f5f32a53a5b3ad
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    make variable aflag a boolean show_all
+
+commit 7f84b5d741c150cd159d5a3cda3ef532f0381826
+Author: Jaromil <jaromil@dyne.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    libeinfo: document the x suffix on function names
+    
+    This fixes #88.
+
+commit 8bca2cd4b3c710809131ac036456b34c223e8d12
+Author: Julian Ospald <hasufell@posteo.de>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Build: fix hardcoded pkg-config invocation
+    
+    This fixes #89.
+
+commit ac8ad169ae59fece38066c2e08ff57d53d737edd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    hwclock: always use --noadjfile if available
+    
+    When we use the --utc or --localtime switch, also use --noadjfile if it
+    is available. This means hwclock will not use a drift file.
+    
+    X-Gentoo-Bug: 584722
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=584722
+
+commit 553799400218903ab495d1154a41c6d8890cb752
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: Document the procname variable for openrc-run
+    
+    X-Gentoo-Bug: 586794
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/586794
+
+commit 5af5d12f3e56f9f2ff232d124d27c856fd66f551
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix PATH for Prefix.
+    
+    1. remove default /bin:/sbin:/usr/bin:/usr/sbin
+    2. PKG_PREFIX should be defaulted to $(PREFIX)/usr
+    3. LOCAL_PREFIX should be defaulted to $(PREFIX)/usr/local
+    
+    X-Gentoo-Bug:583634
+    X-Gentoo-Bug-URL:https://bugs.gentoo.org/show_bug.cgi?id=583634
+
+commit b2c92b88cc6ce6d81444667efbc6d44542db1788
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fstabinfo/mountinfo: ensure /etc/fstab exists before calling setmntent
+    
+    This is based on a patch by A. Wilcox <awilfox.gentoo@foxkit.us>.
+    
+    X-Gentoo-Bug: 478226
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=478226
+    
+    X-Gentoo-Bug: 478226
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=478226
+
+commit 1b32af17225a4b18ced7f4326727cbe8265e7fd2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    increment version to 0.22
+
+commit 5bfb7d6c77ff533e34e2bbfe5b6e57410d961d70
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 12c8248b5f53879935d4e62ef42023f703c7b636
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -918,170 +1539,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     This reverts commit 2a439c85bd69efc14847b4397bd6783cac051405.
     There is another use case for -O involving iscsi, so we can't remove it.
-
-commit 3b6a6df4b5b818e576a88444632d5c73cffd1c57
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: rename some dependency variables and a function for clarity
-    
-    All of the dependency type lists had the types_ prefix in their names;
-    this has been changed to deptypes_ to make them more self documenting.
-    
-    Along the same lines, the setup_types function was renamed
-    setup_deptypes.
-
-commit b047ea47e97d7e8b96d6d0e064613f6860c8eb36
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    localmount/netmount: on Linux, fail if some file systems do not mount
-    
-    The following return codes are returned by mount -a:
-    
-    0:  all file systems mounted.
-    32: no file systems mounted.
-    64: some file systems mounted.
-    
-    The localmount/netmount services should fail if all file systems that
-    should mount did not mount.
-
-commit b652752339690e10a55ae50d046f4cf2a98daf1a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Make localmount and netmount always succeed on non-linux
-
-commit 2a439c85bd69efc14847b4397bd6783cac051405
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    local/netmount: remove uses of -O [no]_netdev
-    
-    This was causing an incompatibility with busybox, and we do not use it
-    in Gentoo.
-
-commit 7341cd882fba522c1f1d183603334839bd4df7fc
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    allow localmount and netmount to fail
-
-commit 279f1e5d1013309d99509ab4b7b57521f8a4aba4
-Author: Mike Frysinger <vapier@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    binfmt: fix indent on return
-
-commit c256a7aa80c683eca6194c80b57294e4d51c9a16
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    savecache: clean up implementation
-    
-    X-Gentoo-Bug: 557222
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=557222
-
-commit 6a422982579786cb8308af04ccca6622afa06e50
-Author: Jason Zaman <jason@perfinion.com>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    tmpfiles: run restorecon on the entire path
-    
-    The tmpfiles "d" entry will create a full path and only the last dir in
-    the path will have its SELinux label set correctly. This patch will
-    restorecon the parents as well so that the selinux labels are correct.
-    
-    eg, "d /run/libvirt/lxc", then "lxc" would have the correct SELinux
-    label but "libvirt" would not.
-    
-    Signed-off-by: Jason Zaman <jason@perfinion.com>
-
-commit f69833a1e17d1cf65e96a34fcc0e48caf9d90d64
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mountinfo: fix -e and -E options
-    
-    Add the -e and -E options to getoptstring so they are recognized.
-
-commit eeadca0b8a5b87c26e60a58563251604350a7a3b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add EERROR_QUIET and EINFO_QUIET to environment whitelist
-
-commit dde339070b4850dc1fadf4992cc01d3468992106
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Increment version
-
-commit 1736be3bc3ebbc1440f87b49fc353e81fb0a6037
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    savecache: Fix unable to create cache message
-    
-    The cache is created in $RC_LIBEXECDIR, not $RC_SVCDIR, so fix the error
-    message when we fail to create it to match.
-
-commit a36a635b016a7427dd1739a26c951fedf22f0dec
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    tmpfiles: Recognize type 'v' (create btrfs subvol)
-    
-    This change does NOT implement btrfs subvol creation.  Instead, it
-    treats 'v' the same as 'd', which is an acceptable fallback
-    according to the manual.
-    
-    Fixes #58
-
-commit 9310ccc06bcadd8897aed51cd51c94fccb7d9c07
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    Remove execute bit from tmpfiles.sh.in
-
-commit 0c2e4eb3cd7935d375b74099a3a9a5fe519e6cab
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit d2ce07e227ec95370e8aee5f1199edc6ad61aff9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add rc-sstat script
-    
-    The rc-sstat script is written to display status of s6 services and
-    run rc-status to display all services status.
-    
-    This currently only works on Linux.
-
-commit b209fe3859c05c286037843bb34058f849c54b15
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    bootmisc: Don't call dmesg in systemd-nspawn containers
-    
-    This fixes #57.
-
-commit c94c8288cd5217b01c24d6f048c64ebbc30bee02
-Author: Mike Frysinger <vapier@gentoo.org>
-Commit: Mike Frysinger <vapier@gentoo.org>
-
-    fix link to s6 website
-
-commit bcb9c44e73ccf332c7c961a6f82520699c6e776d
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: Document the stopsig variable
-    
-    This variable can be used to set the signal to send if the service is
-    using start-stop-daemon.
-    
-    This fixes #56
