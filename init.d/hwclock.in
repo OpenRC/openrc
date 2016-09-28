@@ -106,8 +106,8 @@ start()
 				modprobe -q $x && rtc_exists && modname="$x" && break
 			done
 			[ -n "$modname" ] &&
-				ewarn "The $modname module needs to be configured in \
-					@SYSCONFDIR@/conf.d/modules or built in."
+				ewarn "The $modname module needs to be configured in" \
+					"@SYSCONFDIR@/conf.d/modules or built in."
 		fi
 	fi
 

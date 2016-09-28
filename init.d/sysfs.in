@@ -104,8 +104,8 @@ mount_misc()
 	if [ -d /sys/firmware/efi/efivars ] \
 		&& ! mountinfo -q /sys/firmware/efi/efivars; then
 		if modprobe -q efivarfs; then
-			ewarn "The efivarfs module needs to be configured in \
-				@SYSCONFDIR@/conf.d/modules or built in"
+			ewarn "The efivarfs module needs to be configured in" \
+				"@SYSCONFDIR@/conf.d/modules or built in"
 		fi
 		if grep -qs efivarfs /proc/filesystems; then
 			ebegin "Mounting efivarfs filesystem"
