@@ -99,8 +99,8 @@ stop()
 				aufs_branch=$(sed 's/=.*//g' $x)
 				eindent
 				if ! mount -o "remount,del:$aufs_branch" "$aufs_mount_point" > /dev/null 2>&1; then
-					ewarn "Failed to remove branch $aufs_branch from aufs \
-					$aufs_mount_point"
+					ewarn "Failed to remove branch $aufs_branch from aufs" \
+					"$aufs_mount_point"
 				fi
 				eoutdent
 				sync
