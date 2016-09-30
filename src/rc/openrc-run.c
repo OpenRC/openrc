@@ -1344,6 +1344,7 @@ int main(int argc, char **argv)
 			    applet_list,
 			    runlevel, depoptions);
 			rc_stringlist_free(tmplist);
+			tmplist = NULL;
 			TAILQ_FOREACH(svc, services, entries)
 			    printf("%s ", svc->value);
 			printf ("\n");
