@@ -1,3 +1,36 @@
+commit 5df511e9e435726e6c16698eae7fda0960d7c021
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    openrc-run: fix double free
+
+commit 60ede6b687590282fab7fd7a7aa38a3c7c9958d7
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: Clean up some bad ewarn output
+
+commit c2f2533db07ff346c5a5ade987c43a526f805341
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+    
+    X-Gentoo-Bug: 595306
+    X-Gentoo-Bug: https://bugs.gentoo.org/show_bug.cgi?id=595306
+
+commit e627ad48040437be8a5242ea4a418a0eeca95306
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.22.1
+
+commit b71bcc242202752bc74fce3a5c629f172b04fca5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 24010dcb483cf7284cd8a5db111ae63f0d4e1038
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
