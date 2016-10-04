@@ -99,7 +99,7 @@ mount_misc()
 	fi
 
 	# set up kernel support for efivarfs
-	if [ ! -d /sys/module/efivarfs ] && modprobe -q efivarfs; then
+	if [ ! -d /sys/firmware/efi/efivars ] && modprobe -q efivarfs; then
 		ewarn "The efivarfs module needs to be configured in " \
 			  "@SYSCONFDIR@/conf.d/modules or built in"
 	fi
