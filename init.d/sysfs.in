@@ -98,15 +98,13 @@ mount_misc()
 		fi
 	fi
 
-	# setup up kernel support for efivarfs
-	# slightly complicated, as if it's build as a module but NOT yet loaded,
-	# it will NOT appear in /proc/filesystems yet
-	if [ -d /sys/firmware/efi/efivars ] \
-		&& ! mountinfo -q /sys/firmware/efi/efivars; then
-		if modprobe -q efivarfs; then
-			ewarn "The efivarfs module needs to be configured in" \
-				"@SYSCONFDIR@/conf.d/modules or built in"
-		fi
+	# set up kernel support for efivarfs
+	if [ ! -d /sys/module/efivarfs ] && modprobe -q efivarfs; then
+		ewarn "The efivarfs module needs to be configured in " \
+			  "@SYSCONFDIR@/conf.d/modules or built in"
+	fi
+	if [ -d /sys/firmware/efi/efivars ] &&
+		! mountinfo -q /sys/firmware/efi/efivars; then
 		if grep -qs efivarfs /proc/filesystems; then
 			ebegin "Mounting efivarfs filesystem"
 			mount -n -t efivarfs -o ${sysfs_opts} \
