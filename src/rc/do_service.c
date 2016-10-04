@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 	bool ok = false;
 	char *service;
 	char *exec;
-	int idx;
+	int idx = 0;
 	RC_SERVICE state, bit;
 
 	applet = basename_c(argv[0]);
