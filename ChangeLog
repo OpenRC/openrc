@@ -1,3 +1,46 @@
+commit a537bd7abb8d3d1841635c78f9163e6d1abad0ba
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs: load efivarfs module when booting in efi mode
+    
+    The presence of /sys/firmware/efi is used to indicate that the system
+    was booted in efi mode.
+
+commit a13f2b91b2e5337d659844be19fd302a0f21b288
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs: fix efivarfs module test
+
+commit b5a7222fe062c691ba5d05d27195eeb646c90b86
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs: fix efivarfs handling
+    
+    Separate loading the module, if it isn't built in or loaded, from
+    mounting the file system.
+    
+    This also makes sure the warning about configuring the module in
+    /etc/conf.d/modules or building it in is displayed only if it is loaded
+    successfully.
+    
+    X-Gentoo-Bug: 595836
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=595836
+
+commit ace8dfdaae24f49a7397f72550b09543025c2173
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.22.2
+
+commit 70561077250e7684d14203d3ed1c2c9f0bad2380
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 5df511e9e435726e6c16698eae7fda0960d7c021
 Author: Doug Freed <dwfreed@mtu.edu>
 Commit: Doug Freed <dwfreed@mtu.edu>
@@ -1513,62 +1556,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 562354
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562354
-
-commit bf0c0dd5644436efe4986c2b259b755d111266b9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    bootmisc: convert errors in clean_run function to warnings
-    
-    X-Gentoo-Bug: 552418
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=552418
-
-commit 1558ad2b9ebf319b85876a940d31d513bf21324f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    bootmisc: only remove temp directory if umount is successful
-    
-    Change the clean_run function to only remove the temp directory if the
-    umount was successful.
-    
-    X-Gentoo-Bug: 561230
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=561230
-
-commit 5f4f2420364098835522da868a9e75205c9e4f9c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mountinfo: fix --netdev and --nonetdev on Linux
-    
-    On Linux, the --netdev and --nonetdev switches were not working. They
-    were both returning false. After this change, they operate based on the
-    presence or abscence of the _netdev option in mount options.
-
-commit b3f7ff901f7d3ed00b9f73c601193ac507f62eaf
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mountinfo: read /proc/self/mounts instead of /proc/mounts on Linux
-
-commit a59365a582c3a8c9a8b863b572fddcb65fccadfd
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon.sh: complain in start if command is undefined
-    
-    The default start-stop-daemon start function expects the command
-    variable to be defined to point to the daemon we want to start.
-    
-    If the variable is undefined, this means that there will be nothing to
-    start, and in this case we should complain because it is possible that
-    the script writer made a typo in the variable name.
-
-commit dac5966ca40610797d2b2aabef17154ca3dc20af
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "local/netmount: remove uses of -O [no]_netdev"
-    
-    This reverts commit 2a439c85bd69efc14847b4397bd6783cac051405.
-    There is another use case for -O involving iscsi, so we can't remove it.
