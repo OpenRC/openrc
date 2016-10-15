@@ -40,7 +40,7 @@ find_wireless()
 		done
 		;;
 	FreeBSD)
-		for iface in `sysctl -b net.wlan.devices 2>/dev/null`; do
+		for iface in $(sysctl -b net.wlan.devices) 2>/dev/null`; do
 			echo "${iface##*/}"
 		done
 		;;
