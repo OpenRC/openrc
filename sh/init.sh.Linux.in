@@ -21,7 +21,7 @@ fi
 mountproc=true
 f=/proc/self/environ
 if [ -e $f ]; then
-	if [ "$(VAR=a md5sum $f)" = "$(VAR=b md5sum $f)" ]; then
+	if command -v md5sum > /dev/null && [ "$(VAR=a md5sum $f)" = "$(VAR=b md5sum $f)" ]; then
 		eerror "You have cruft in /proc that should be deleted"
 	else
 		einfo "/proc is already mounted"
