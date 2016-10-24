@@ -22,9 +22,6 @@ or recognize the nofail option in fstab.
 
 CONFIG_SETFONT -- The setfont applet does not support the -u option from kbd.
 
-CONFIG_IP -- The ip applet  doesn't support the "scope" modifier for
-"ip route add" and "ip address add".
-
 CONFIG_BB_SYSCTL -- The sysctl applet does not support the --system command
 line switch.
 
