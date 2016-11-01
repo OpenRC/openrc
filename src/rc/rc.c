@@ -683,6 +683,8 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 		}
 
 		pid = service_start(service->value);
+		if (pid == -1)
+			break;
 		/* Remember the pid if we're running in parallel */
 		if (pid > 0) {
 			add_pid(pid);
