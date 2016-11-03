@@ -34,6 +34,9 @@ start()
 
 	local m="/dev|/dev/.*|/proc|/proc.*|/sys|/sys/.*|/run|${rc_svcdir}" x= fs=
 	m="$m|/bin|/sbin|/lib(32|64)?|/libexec"
+	if [ -e "$rc_svcdir"/usr_premounted ]; then
+		m="$m|/usr"
+	fi
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
 	local IFS="$IFS:"
 	for x in $no_umounts $RC_NO_UMOUNTS; do
