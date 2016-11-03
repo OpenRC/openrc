@@ -42,8 +42,8 @@ get_default_gateway()
 
 start ()
 {
-	local carriers configured dev gateway ifcount infinite interfaces
-	local rc state timeout x
+	local carriers configured dev gateway ifcount infinite
+	local rc state x
 
 	ebegin "Checking to see if the network is online"
 	rc=0
