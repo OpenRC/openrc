@@ -1,6 +1,6 @@
 # The interfaces setting controls which interfaces the net-online
-# service considers in deciding whether the network is active. By
-# default, it is all ethernet or wireless LAN interfaces.
+# service considers in deciding whether the network is active. The
+# default is all interfaces that support ethernet.
 #interfaces=""
 
 # This setting controls whether a ping to the default gateway is
