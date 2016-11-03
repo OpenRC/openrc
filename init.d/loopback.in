@@ -22,11 +22,9 @@ start()
 		ebegin "Bringing up network interface lo"
 		if command -v ip > /dev/null 2>&1; then
 			ip addr add 127.0.0.1/8 dev lo brd +
-			ip route add 127.0.0.0/8 dev lo
 			ip link set lo up
 		else
 			ifconfig lo 127.0.0.1 netmask 255.0.0.0
-			route add -net 127.0.0.0 netmask 255.0.0.0 gw 127.0.0.1
 		fi
 	else
 		ebegin "Bringing up network interface lo0"
