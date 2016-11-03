@@ -1,3 +1,90 @@
+commit 2bad4da89119c0385f9c92baef148590fb576c88
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/loopback.in: drop the route to the loopback interface on Linux
+    
+    This is related to #103.
+
+commit 3c5244fb6acaed01cd186c356e2730f12c77ca99
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/mount-ro: do not remount /usr read only if it is premounted
+    
+    X-Gentoo-Bug: 573760
+    X-Gentoo-Bug: https://bugs.gentoo.org/show_bug.cgi?id=573760
+
+commit f1134f4efefdc9b71b2e2c68aacf9b3f3b0ad7c0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    conf.d/net-online: clarify comment about interfaces setting
+    
+    This setting refers to all interfaces that support ethernet
+
+commit 9f68514f8ab9a2d4bf7e095b3a41b3c2043d07fe
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/net-online: remove interfaces and timeout from local declarations
+    
+    X-Gentoo-Bug:  598621
+    X-Gentoo-Bug-URL:  https://bugs.gentoo.org/show_bug.cgi?id=598621
+
+commit b16625e62502c2924f9c00ab144845b93857f6c7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    src/rc/rc: do not try to start services if fork fails
+
+commit 5dc13a0ff21f2e0a0b23e32e864a19f7f0a2766f
+Author: Robin H. Johnson <robbat2@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/loopback: drop scope on loopback
+    
+    Busybox does not support the 'scope' argument on 'ip address add' or 'ip
+    route add', this is documented in BUSYBOX.md, but is no longer actually
+    needed, as the kernel does get it right without manual specification,
+    and the ifconfig variant already relies on the kernel to get it right.
+    This is part of #103.
+    
+    X-Gentoo-Bug: 487208
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=487208
+
+commit c094c75f34776ccae2a89dcb8b6c19d7a8155f56
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    src/rc/rc-misc.c: report error if call to flock() fails
+    
+    X-Gentoo-Bug: 597390
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=597390
+
+commit 0e925c511d202257b04b27a6ff2a4563bf2f1469
+Author: Sven Wegener <swegener@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    do_service: Initialize idx to 0
+    
+    If index is not explicitly specified for service_started_daemon, it will
+    look for daemons by random index.
+    
+    This fixes #100.
+
+commit 9ae469289d89313dc3e6076f089a87015852a788
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.22.3
+
+commit d8ed89971bd2a9fa7cc5014f4d791220a915a3d6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit a537bd7abb8d3d1841635c78f9163e6d1abad0ba
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1394,165 +1481,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     directory @SYSCONFDIR@/rc.conf.d and putting files in this directory.
     The files will be processed in lexical order, and the last setting in
     these files will be used.
-
-commit 4cf6b0ecf7f5b35a6d80d76c60e77c3e1c7fee5c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    consolefont: add after modules to dependencies
-    
-    X-Gentoo-Bug: 559540
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=559540
-
-commit ee944553a9ea35622046bd1ab5657fd416a7019a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    bootmisc: optionally save the previous dmesg log
-    
-    X-Gentoo-Bug: 561204
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=561204
-
-commit 6cae41a4e63510cdcf3af1153d6e8300435e1838
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    etc/rc.conf: Clean up documentation for rc_hotplug
-    
-    X-Gentoo-Bug: 554540
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=554540
-
-commit 960881fcfe974178c0846a816663a258cdd488cc
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add net-online service
-
-commit d26013494db8ea8699db9815ef4c4b0eb2f55e7f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mtab: typo fix
-
-commit b29b2fb3cb3e73b4453483ced908f0ef10e47e9c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mtab: make /etc/mtab as a file configurable
-
-commit 7da72ce487a8d92d992e7fd3db881c198ae02609
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run.sh: fix new required_* tests to exit properly
-
-commit fc777aeaf3e6e2d47f4599acfe6c8d1bf5bc760a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    typo fix
-    
-    X-Gentoo-Bug: 563010
-    X-Gentoo-Bug: https://bugs.gentoo.org/show_bug.cgi?id=563010
-
-commit 9d53d436ae22d6f0f6fc1537e836dd1b4d31cf35
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysfs: consolidate cgroup processing code in a single function
-
-commit b81317bdf8e3eed8b8ff2bef757ba29f362ed297
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mountinfo: make sure the netdev variable is initialized on Linux
-    
-    This fixes the following regression:
-    
-    X-Gentoo-Bug: 562668
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562668
-
-commit 29f7e335927d4c1fb151124de8cdf01fb87723fa
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run.sh: allow spaces in required_{files,dirs}
-    
-    X-Gentoo-Bug: 562320
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562320
-
-commit 850ca030777cb0c3e2fb03d9ab1f0ccee7b89e93
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    increment version number
-
-commit 050ddfae4ad1ad0dc5993766e0bd90739bd41de9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit d5116cc697c9eb275ab8497939ab41504e5ce578
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    localmount: white space cleanup
-
-commit b86d170037197d7bdcda57c7d4c09c17bda97f31
-Author: Ian Stakenvicius <axs@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    localmount: clean up handling of aufs branches
-    
-    X-Gentoo-Bug: 560008
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=560008
-
-commit 6fa0d6318bcd5c98548cff2ff840bca116892ca5
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    mtab: fix update logic
-    
-    This advises users to remove mtab from their runlevels if /etc/mtab is a
-    symlink, and it creates the symlink if /etc/mtab does not exist on a
-    system.
-    
-    X-Gentoo-Bug: 560060
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=560060
-
-commit 80d3928b0d13f09a9c1e82bd27c9fff943d84d43
-Author: Austin S. Hemmelgarn <ahferroin7@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    cgroups: Add the hugetlb, net_cls and pids controllers
-    
-    Note from WilliamH: I slightly rearranged the code and added the
-    settings in rc.conf.
-    
-    X-Gentoo-Bug: 555488
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=555488
-
-commit 17ef205bc63a4e231dccee719394a7a8563f8c3f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysfs: use printf instead of echo to write to cgroup files
-    
-    This is needed for compatibility with musl and printf is also posix.
-    
-    X-Gentoo-Bug: 562334
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562334
-
-commit b20a1951adf9a705a903fb3047b7ef26c013103c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-cgroup.sh: Do not add leading spaces to cgroup values
-    
-    We were starting the value we write to the cgroup setting file with
-    leading spaces and this was causing issues. This change makes sure that
-    we aren't adding leading spaces to the value.
-    
-    X-Gentoo-Bug: 562354
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=562354
