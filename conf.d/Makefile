@@ -1,8 +1,7 @@
 include ../mk/net.mk
 
 DIR=	${CONFDIR}
-CONF=	bootmisc fsck hostname localmount netmount swap urandom tmpfiles \
-		${CONF-${OS}}
+CONF=	bootmisc fsck hostname localmount netmount swap urandom ${CONF-${OS}}
 
 ifeq (${MKNET},yes)
 CONF+= network staticroute

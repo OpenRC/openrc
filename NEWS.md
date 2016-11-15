@@ -3,6 +3,14 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.23
+
+The tmpfiles.d processing code, which was part of previous versions of
+OpenRC, has been separated into its own package [1]. If you need to
+process systemd style tmpfiles.d files, please install this package.
+
+[1] https://github.com/openrc/opentmpfiles
+
 ## OpenRC-0.22
 
 In previous versions of OpenRC, configuration information was processed

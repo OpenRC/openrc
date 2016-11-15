@@ -2,8 +2,8 @@ include ../mk/net.mk
 
 DIR=	${INITDIR}
 SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in loopback.in \
-	netmount.in osclock.in root.in savecache.in swap.in tmpfiles.setup.in  \
-	swclock.in sysctl.in runsvdir.in urandom.in s6-svscan.in ${SRCS-${OS}}
+	netmount.in osclock.in root.in savecache.in swap.in swclock.in \
+	sysctl.in runsvdir.in urandom.in s6-svscan.in ${SRCS-${OS}}
 BIN=	${OBJS}
 
 # Are we installing our network scripts?
@@ -23,7 +23,7 @@ SRCS-FreeBSD+=	adjkerntz.in devd.in dumpon.in encswap.in ipfw.in \
 
 SRCS-Linux=	binfmt.in devfs.in dmesg.in hwclock.in consolefont.in keymaps.in \
 		killprocs.in modules.in modules-load.in mount-ro.in mtab.in numlock.in \
-		procfs.in net-online.in sysfs.in termencoding.in tmpfiles.dev.in
+		procfs.in net-online.in sysfs.in termencoding.in
 
 # Generic BSD scripts
 SRCS-NetBSD=	hostid.in moused.in newsyslog.in pf.in rarpd.in rc-enabled.in \
