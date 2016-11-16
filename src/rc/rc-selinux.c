@@ -334,7 +334,19 @@ void selinux_setup(char **argv)
 
 	/* extract the type from the context */
 	curr_con = context_new(curr_context);
-	curr_t = xstrdup(context_type_get(curr_con));
+	if (!curr_con) {
+		free(curr_context);
+		goto out;
+	}
+
+	curr_t = context_type_get(curr_con);
+	if (!curr_t) {
+		context_free(curr_con);
+		free(curr_context);
+		goto out;
+	}
+
+	curr_t = xstrdup(curr_t);
 	/* dont need them anymore so free() now */
 	context_free(curr_con);
 	free(curr_context);
