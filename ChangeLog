@@ -1,3 +1,23 @@
+commit a8b79601c86232fe942c7a5aa6725799ba25aed2
+Author: Jason Zaman <jason@perfinion.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    selinux: fix SIGSEGV with invalid contexts
+    
+    Fixes: https://github.com/openrc/openrc/issues/104
+
+commit 09a62f2c260dccf835d29f31da7c9c0709cebff7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.22.4
+
+commit ea047033c40d7e014317b149566014d56e5e42bb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 2bad4da89119c0385f9c92baef148590fb576c88
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1420,64 +1440,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     rc-functions.sh: add support for user-defined want dependencies
-
-commit 33d3f33b3ca7dd2ce616b8182d588d0743c2f124
-Author: Ian Stakenvicius <axs@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Implement "want" dependency
-    
-    The want dependency is similar to the use dependency. If a service
-    script, for example called service1, adds "want service2" to its depend
-    function, OpenRC will attempt to start service2, if it exists on the
-    system,  when service1 is started.
-    
-    However, service1 will start regardless of the status of
-    service2.
-    
-    X-Gentoo-Bug: 406021
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=406021
-
-commit ddb895b355e02c9c07b00bfaf00d1bf8a7abbc03
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    conf.d/netmount: typo fix
-    
-    X-Gentoo-Bug: 564846
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=564846
-
-commit 085d77f17e3bedd23ffa96fe7e4eb8515ae8bfc6
-Author: Benda Xu <heroxbd@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Standardize macro tests for gnu hurd
-    
-    This also fixes breakage of GNU/hurd builds introduced by commit 3f82edbeb92.
-
-commit c831f1f994e187afd8edfff15e4063b99440bbcb
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: rework overriding rc.conf options from the kcl
-    
-    Rename the rc_conf_override function to describe its purpose better,
-    drop one conditional compile by making it available everywhere, and move
-    the call to it after the optional rc.conf.d directory is processed.
-
-commit 591aea28215a8b5ad8660184dc6f6f15ff0c18b4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: Remove redundant code from rc_config_load
-
-commit c09eeca49145b034df6527c500099ba22f28e824
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add rc.conf.d support
-    
-    This makes it possible to override settings in rc.conf by adding a
-    directory @SYSCONFDIR@/rc.conf.d and putting files in this directory.
-    The files will be processed in lexical order, and the last setting in
-    these files will be used.
