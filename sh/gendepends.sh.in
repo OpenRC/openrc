@@ -28,6 +28,20 @@ provide() {
 keyword() {
 	[ -n "$*" ] && echo "$RC_SVCNAME keyword $*" >&3
 }
+path() {
+    # Resolve each entry into an ineed line on a mountpoint
+	[ -n "$*" ] || return
+	for PATHNAME in *; do
+	    # We loop here because some systems (QNX) can have multiple fs's backing a mountpoint
+	    # The sed line chops off the
+	    df -P $PATHNAME | sed 1d | while read one two three four five six; do
+	        # borrowed from mount's generate: should go somewhere higher up as a function
+			local name="${six#/}"
+			name="$(echo $name | sed 's#/#.#g')"
+            [ -n "$name" ] && echo "$RC_SVCNAME ineed mount.$name" >&3
+        done
+    done # for PATHNAME
+}
 depend() {
 	:
 }

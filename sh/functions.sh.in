@@ -63,6 +63,11 @@ _sanitize_path()
 	echo "$path"
 }
 
+_mountpoint_to_mountname()
+{
+	echo ${*#/} | sed 's#/#.#g'
+}
+
 # Allow our scripts to support zsh
 if [ -n "$ZSH_VERSION" ]; then
 	emulate sh
