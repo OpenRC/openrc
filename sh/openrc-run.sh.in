@@ -146,10 +146,9 @@ _status()
 	fi
 }
 
-# Template start / stop / status functions
 # These functions select the appropriate function to call from the
 # supervisor modules
-start()
+default_start()
 {
 	local func=ssd_start
 	case "$supervisor" in
@@ -163,7 +162,7 @@ start()
 	$func
 }
 
-stop()
+default_stop()
 {
 	local func=ssd_stop
 	case "$supervisor" in
@@ -177,7 +176,7 @@ stop()
 	$func
 }
 
-status()
+default_status()
 {
 	local func=ssd_status
 	case "$supervisor" in
@@ -191,6 +190,26 @@ status()
 	$func
 }
 
+# Template start / stop / status functions
+# package init scripts may override these, but the bodies are as minimal as
+# possible, so that the init scripts can creatively wrap default_*
+# functions.
+start()
+{
+	default_start
+}
+
+stop()
+{
+	default_stop
+}
+
+status()
+{
+	default_status
+}
+
+# Start debug output
 yesno $RC_DEBUG && set -x
 
 # Load configuration settings. First the global ones, then any
