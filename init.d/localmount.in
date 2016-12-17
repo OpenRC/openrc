@@ -22,6 +22,7 @@ depend()
 start()
 {
 	# Mount local filesystems in /etc/fstab.
+	# The types variable must start with no, and must be a type
 	local critical= types="noproc" x= no_netdev= rc=
 	for x in $net_fs_list $extra_net_fs_list; do
 		types="${types},${x}"
