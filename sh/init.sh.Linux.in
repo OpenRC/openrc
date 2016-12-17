@@ -32,7 +32,7 @@ unset f
 
 if $mountproc; then
 	procfs="proc"
-	[ "$RC_UNAME" = "GNU/kFreeBSD" ] && proc="linprocfs"
+	[ "$RC_UNAME" = "GNU/kFreeBSD" ] && procfs="linprocfs"
 	ebegin "Mounting /proc"
 	if ! fstabinfo --mount /proc; then
 		mount -n -t "$procfs" -o noexec,nosuid,nodev proc /proc

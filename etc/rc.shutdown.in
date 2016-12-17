@@ -14,7 +14,7 @@ trap : SIGINT SIGQUIT
 
 # Try and use stuff in /lib over anywhere else so we can shutdown
 # local mounts correctly.
-LD_LIBRARY_PATH="/lib${LD_LIBRARY_PATH:+:}${LDLIBRARY_PATH}" ; export LD_LIBRARY_PATH
+LD_LIBRARY_PATH="/lib${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH}" ; export LD_LIBRARY_PATH
 
 # If $TERM is not set then assume default of @TERM@
 # This gives us a nice colour boot :)
