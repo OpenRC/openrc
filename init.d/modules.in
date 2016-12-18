@@ -31,7 +31,7 @@ FreeBSD_modules()
 
 Linux_modules()
 {
-	# Should not fail if kernel do not have module
+	# Should not fail if kernel does not have module
 	# support compiled in ...
 	[ ! -f /proc/modules ] && return 0
 
@@ -48,22 +48,21 @@ Linux_modules()
 		x=${x%.*}
 	done
 
-	local list= x= xx= y= args= mpargs= cnt=0 a=
+	local list= x= xx= y= args= mpargs= a=
 	for x in $kv_variant_list ; do
 		eval list=\$modules_$(shell_var "$x")
 		[ -n "$list" ] && break
 	done
 	[ -z "$list" ] && list=$modules
 
+	[ -n "$list" ] && ebegin "Loading kernel modules"
 	for x in $list; do
 		a=${x#*:}
 		if [ "$a" = "$x" ]; then
 			unset mpargs
-			ebegin "Loading module $x"
 		else
 			x=${x%%:*}
 			mpargs="-o $a"
-			ebegin "Loading module $x as $a"
 		fi
 		aa=$(shell_var "$a")
 		xx=$(shell_var "$x")
@@ -75,10 +74,9 @@ Linux_modules()
 		done
 		[ -z "$args" ] && eval args=\$module_${aa}_args
 		[ -z "$args" ] && eval args=\$module_${xx}_args
-		eval modprobe --use-blacklist -q "$mpargs" "$x" "$args"
-		eend $? "Failed to load $x" && : $(( cnt += 1 ))
+		eval modprobe --use-blacklist --verbose "$mpargs" "$x" "$args"
 	done
-	einfo "Autoloaded $cnt module(s)"
+	[ -n "$list" ] && eend
 }
 
 start()
