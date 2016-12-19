@@ -367,11 +367,12 @@ rc_parse_service_state(RC_SERVICE state)
  * specified runlevel in dependency order, including the
  * specified runlevel. */
 static void
-get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list)
+get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list, RC_STRINGLIST *ancestor_list)
 {
 	char path[PATH_MAX];
 	RC_STRINGLIST *dirs;
-	RC_STRING *d, *dn;
+	RC_STRING *d, *parent;
+	const char *nextlevel;
 
 	/*
 	 * If we haven't been passed a runlevel or a level list, or
@@ -395,8 +396,27 @@ get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list)
 	 */
 	snprintf(path, sizeof(path), "%s/%s", RC_RUNLEVELDIR, runlevel);
 	dirs = ls_dir(path, LS_DIR);
-	TAILQ_FOREACH_SAFE(d, dirs, entries, dn)
-		get_runlevel_chain(d->value, level_list);
+	TAILQ_FOREACH(d, dirs, entries) {
+		nextlevel = d->value;
+
+		/* Check for loop */
+		if (rc_stringlist_find(ancestor_list, nextlevel)) {
+			fprintf(stderr, "Loop detected in stacked runlevels attempting to enter runlevel %s!\n",
+			    nextlevel);
+			fprintf(stderr, "Ancestors:\n");
+			TAILQ_FOREACH(parent, ancestor_list, entries)
+				fprintf(stderr, "\t%s\n", parent->value);
+			exit(1);
+		}
+
+		/* Add new ancestor */
+		rc_stringlist_add(ancestor_list, nextlevel);
+
+		get_runlevel_chain(nextlevel, level_list, ancestor_list);
+
+		rc_stringlist_delete(ancestor_list, nextlevel);
+	}
+	rc_stringlist_free(dirs);
 }
 
 bool
@@ -500,9 +520,12 @@ librc_hidden_def(rc_runlevel_unstack)
 RC_STRINGLIST *
 rc_runlevel_stacks(const char *runlevel)
 {
-	RC_STRINGLIST *stack;
+	RC_STRINGLIST *stack, *ancestor_list;
 	stack = rc_stringlist_new();
-	get_runlevel_chain(runlevel, stack);
+	ancestor_list = rc_stringlist_new();
+	rc_stringlist_add(ancestor_list, runlevel);
+	get_runlevel_chain(runlevel, stack, ancestor_list);
+	rc_stringlist_free(ancestor_list);
 	return stack;
 }
 librc_hidden_def(rc_runlevel_stacks)
