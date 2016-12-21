@@ -29,7 +29,6 @@ start()
 	else
 		ebegin "Bringing up network interface lo0"
 		ifconfig lo0 127.0.0.1 netmask 255.0.0.0
-		route -q add -inet 127.0.0.0 -netmask 255.0.0.0 127.0.0.1
 	fi
 	eend $?
 }
