@@ -67,7 +67,7 @@ static struct pam_conv conv = { NULL, NULL};
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" \
+const char *getoptstring = "I:KN:PR:Sa:bc:d:e:E:g:ik:mn:op:s:tu:r:w:x:1:2:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "ionice",       1, NULL, 'I'},
@@ -80,6 +80,7 @@ const struct option longopts[] = {
 	{ "chuid",        1, NULL, 'c'},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
+	{ "envfile",      1, NULL, 'E'},
 	{ "umask",        1, NULL, 'k'},
 	{ "group",        1, NULL, 'g'},
 	{ "interpreted",  0, NULL, 'i'},
@@ -109,6 +110,7 @@ const char * const longopts_help[] = {
 	"deprecated, use --user",
 	"Change the PWD",
 	"Set an environment string",
+	"Read environment strings from a file",
 	"Set the umask for the daemon",
 	"Change the process group",
 	"Match process name by interpreter",
@@ -812,6 +814,10 @@ int main(int argc, char **argv)
 
 		case 'e': /* --env */
 			putenv(optarg);
+			break;
+
+		case 'E': /* --envfile */
+			putenvfile(optarg);
 			break;
 
 		case 'g':  /* --group <group>|<gid> */
