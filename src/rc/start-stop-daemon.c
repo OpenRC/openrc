@@ -64,6 +64,7 @@ static struct pam_conv conv = { NULL, NULL};
 #include "rc.h"
 #include "rc-misc.h"
 #include "_usage.h"
+#include "helpers.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
@@ -153,7 +154,9 @@ extern char **environ;
 # define SYS_ioprio_set __NR_ioprio_set
 #endif
 #if !defined(__DragonFly__)
-static inline int ioprio_set(int which, int who, int ioprio)
+static inline int ioprio_set(int which _unused,
+			     int who _unused,
+			     int ioprio _unused)
 {
 #ifdef SYS_ioprio_set
 	return syscall(SYS_ioprio_set, which, who, ioprio);

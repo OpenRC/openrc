@@ -19,6 +19,7 @@ const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "queue.h"
 #include "librc.h"
+#include <helpers.h>
 #ifdef __FreeBSD__
 #  include <sys/sysctl.h>
 #endif
@@ -232,7 +233,7 @@ detect_prefix(const char *systype)
 }
 
 static const char *
-detect_container(const char *systype)
+detect_container(const char *systype _unused)
 {
 #ifdef __FreeBSD__
 	if (systype) {
@@ -296,7 +297,7 @@ detect_container(const char *systype)
 }
 
 static const char *
-detect_vm(const char *systype)
+detect_vm(const char *systype _unused)
 {
 #ifdef __NetBSD__
 	if (systype) {
