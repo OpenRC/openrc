@@ -19,6 +19,7 @@
 
 #include "queue.h"
 #include "librc.h"
+#include "helpers.h"
 
 bool
 rc_yesno(const char *value)
@@ -118,7 +119,7 @@ rc_getline(char **line, size_t *len, FILE *fp)
 librc_hidden_def(rc_getline)
 
 char *
-rc_proc_getent(const char *ent)
+rc_proc_getent(const char *ent _unused)
 {
 #ifdef __linux__
 	FILE *fp;
