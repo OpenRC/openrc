@@ -468,7 +468,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 				if (tkilled == 0) {
 					if (progressed)
 						printf("\n");
-						eerror("%s: no matching processes found", applet);
+					eerror("%s: no matching processes found", applet);
 				}
 				return tkilled;
 			}
@@ -696,17 +696,17 @@ int main(int argc, char **argv)
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
 			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
 			    applet, tmp);
-		if ((tmp = getenv("SSD_IONICELEVEL"))) {
-			int n = sscanf(tmp, "%d:%d", &ionicec, &ioniced);
-			if (n != 1 && n != 2)
-				eerror("%s: invalid ionice level `%s' (SSD_IONICELEVEL)",
-				    applet, tmp);
-			if (ionicec == 0)
-				ioniced = 0;
-			else if (ionicec == 3)
-				ioniced = 7;
-			ionicec <<= 13; /* class shift */
-		}
+	if ((tmp = getenv("SSD_IONICELEVEL"))) {
+		int n = sscanf(tmp, "%d:%d", &ionicec, &ioniced);
+		if (n != 1 && n != 2)
+			eerror("%s: invalid ionice level `%s' (SSD_IONICELEVEL)",
+			    applet, tmp);
+		if (ionicec == 0)
+			ioniced = 0;
+		else if (ionicec == 3)
+			ioniced = 7;
+		ionicec <<= 13; /* class shift */
+	}
 
 	/* Get our user name and initial dir */
 	p = getenv("USER");
