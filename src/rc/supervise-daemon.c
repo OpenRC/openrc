@@ -662,7 +662,7 @@ int main(int argc, char **argv)
 	fp = fopen(pidfile, "w");
 	if (! fp)
 		eerrorx("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
-		fclose(fp);
+	fclose(fp);
 
 	child_pid = fork();
 	if (child_pid == -1)
