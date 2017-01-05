@@ -1,3 +1,53 @@
+commit 90ee9cd49df773b2aef2acb2ca72ac92c3e62835
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mountinfo: make the path to /proc/mounts a constant
+    
+    This path should not be hard coded in the open call.
+    Linux prior to 2.4.19 did not have /proc/self/mounts, so for now I'm
+    making this value /proc/mounts everywhere, but that may change to
+    /proc/self/mounts on linux; I'm not sure we should care about <2.4.19.
+    
+    X-Gentoo-Bug: 604646
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604646
+
+commit a7f92e3219d0a5278fe8bd742e2e5cb68048210e
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Clean up warnings that can use the _unused macro
+    
+    X-Gentoo-Bug: 604666
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604666
+
+commit 8ae9a9b85614d6c3b246805c3be9e01d49f0b986
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Indentation fixes
+    
+    X-Gentoo-Bug: 604666
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604666
+
+commit c4ebd431c9997e21c82ba020f36c549d1e1bb53c
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    loopback: drop explicit route for BSD too
+
+commit 7e885f37bbe40e098bb84562348a776b60cf17a3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.23.1
+
+commit a15cff21c63f2ad951af1c59a74fc7d37f78e91b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 45aa36cc623eeeb15fb6827b57e0c07a37cdef41
 Author: Doug Freed <dwfreed@mtu.edu>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1343,57 +1393,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     This eliminates the need for the selinux-specific wrapper scrript we
     were installing in /lib*/rc/{bin,sbin}.
-
-commit fe485f44339963fdbee143687dcbef2069924bc6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc: fix compiler warnings cleanup
-    
-    This reverts commit 981d2b3308edb0d0a68f7bdce4f2c99110de6940 and fixes
-    the warnings that generated.
-
-commit 53bc986ce5f9725d7117356e28224ac898f9c9bf
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Clean default env_whitelist
-    
-    The whitelist of environment variables we pass to service scripts
-    included several unnecessary variables.
-    
-    The default whitelist now includes EERROR_QUIET, EINFO_QUIET,
-    IN_BACKGROUND and IN_HOTPLUG.
-    
-    X-Gentoo-Bug: 569542
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=569542
-
-commit 981d2b3308edb0d0a68f7bdce4f2c99110de6940
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc: clean up compiler warnings
-    
-    The get_systype(), detect_container(), detect_prefix() and detect_vm()
-    functions need to return "char *" instead of "const char *".
-
-commit 5d3e85bc310e12411135e98a397b35fb920a72a3
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add ignore patterns for init.d directory
-
-commit 000503fad72e4eb2ef956a24df358be84b2a9493
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Convert OpenRC to a centralized copyright/license structure
-    
-    In the past, OpenRC was a hybrid of a centralized and file-scope
-    license/copyright structure.
-    
-    I followed the instructions from the Software Freedom Law Center [1] to
-    convert to a Centralized structure where possible, for easier future
-    maintenance.
-    
-    [1] https://softwarefreedom.org/resources/2012/ManagingCopyrightInformation.html
