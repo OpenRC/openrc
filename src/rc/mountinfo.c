@@ -46,6 +46,7 @@
 #include "_usage.h"
 
 const char *applet = NULL;
+const char *procmounts = "/proc/mounts";
 const char *extraopts = "[mount1] [mount2] ...";
 const char *getoptstring = "f:F:n:N:o:O:p:P:iste:E:" getoptstring_COMMON;
 const struct option longopts[] = {
@@ -323,7 +324,7 @@ find_mounts(struct args *args)
 	int netdev;
 	RC_STRINGLIST *list;
 
-	if ((fp = fopen("/proc/self/mounts", "r")) == NULL)
+	if ((fp = fopen(procmounts, "r")) == NULL)
 		eerrorx("getmntinfo: %s", strerror(errno));
 
 	list = rc_stringlist_new();
