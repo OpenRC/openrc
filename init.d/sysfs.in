@@ -15,7 +15,7 @@ sysfs_opts=nodev,noexec,nosuid
 
 depend()
 {
-	want modules
+	use modules
 	keyword -docker -lxc -prefix -systemd-nspawn -vserver
 }
 
@@ -105,7 +105,9 @@ mount_misc()
 		if [ ! -d /sys/firmware/efi/efivars ] &&
 			modprobe -q efivarfs; then
 			ewarn "The efivarfs module needs to be configured in " \
-				  "@SYSCONFDIR@/conf.d/modules or built in"
+				  "@SYSCONFDIR@/conf.d/modules (with " \
+				  "\"modules\" added to sysinit runlevel) or " \
+				  "built in"
 		fi
 		if [ -d /sys/firmware/efi/efivars ] &&
 			! mountinfo -q /sys/firmware/efi/efivars; then
