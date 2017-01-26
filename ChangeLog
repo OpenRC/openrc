@@ -1,3 +1,27 @@
+commit 2e22b32f600676495e5d5a6ccbf7b307c0588b1a
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: allow all standard signals
+    
+    Also we define the signalpair_item macro.
+    This fixes #113.
+    
+    X-Gentoo-Bug: 604986
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604986
+
+commit c283fb6b67efc83b9567e63aae5ef12cd8a463f4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.23.2
+
+commit cf5ccbc7599c0fed7e189c5f73cb632d5ab929c6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 90ee9cd49df773b2aef2acb2ca72ac92c3e62835
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1181,215 +1205,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 523174
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=523174
-
-commit 47dd5e37cbf372df3ee0fad2c87226dce5b51587
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add back deprecation warnings lost during refactoring
-
-commit e277ae57efaba3be3eb619fd00084b116c370231
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix tests
-    
-    X-Gentoo-Bug: 572602
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572602
-
-commit 69f052b611878d771fc3f56ee77639269db9b6e1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: Complain when a real and virtual service have the same name
-
-commit e4eacf02cae10eca48f6906592981d701b0c1973
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: in verbose mode, log execution of the shell script
-    
-    This is to show when openrc-run runs the openrc-run.sh script; it is
-    used for debugging.
-
-commit 30c3561b6b648d60174a22a73555b680d2cc86fc
-Author: Colin Booth <colin@heliocat.net>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sh/s6.sh: update s6-svc syntax to be valid for 2.2.0.0+
-    
-    The s6-svc syntax changed for wait-up, wait-ready, wait-down, and
-    wait-finished. This changes the s6 handling script to use the current
-    valid syntax.
-    
-    This fixes #65.
-
-commit 5f2850366ea0f30f0f9cb6b129b69192c11e74ac
-Author: Manuel Rüger <manuel@rueg.eu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix typo
-    
-    This fixes #70.
-
-commit 1cb7eec31f37db0de11a4b39939fd3fbe17c1e24
-Author: Gokturk Yuksek <gokturk@binghamton.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    conf.d/bootmisc: typo fix: s/dmesc/dmesg/
-    
-    This fixes #72.
-
-commit cd7883d25d0a9321b68df1c1e6ad9662306fa9e7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    localmount: Allow users to control whether errors are ignored
-    
-    X-Gentoo-Bug: 572138
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572138
-
-commit 62b49b2a3ad1c13012305b4d7281d7f6543c70d7
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc: remove use of magic constant and allow OpenVZ to drop to shell
-    
-    OpenVZ has had console support for a long time now; allow them to use it
-    to drop to a shell during interactive boot.
-
-commit 4c814a0a285565bc09d662f602f93dbb938503c6
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: handle rc_sys="prefix" even if we weren't built with a prefix
-    
-    This probably isn't needed, but it mimics old behavior.
-
-commit 36dde4e7f21afba36a96837aa86f2b5d2dae3807
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: fix handling the nothing special case for rc_sys
-
-commit 649f63d882d53533ae8b1c3b28967e772e738c45
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: move system detection code into rc_sys and use it
-    
-    This fixes an issue where librc code was calling code that only existed
-    in the rc binary.
-    
-    This reverts commits 8addd79 and 9f6e056
-    
-    This fixes #75.
-
-commit 55a28f5d2524615560698453a5a6afd50460030c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "rc: make get_systype similar to the old rc_sys function"
-    
-    This reverts commit f79a7a7be18d68bf264efc60d82838d03048da6b.
-
-commit 6c0942137572608d02eb4b34bad55c9bf418a6ba
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "librc: fix librc-depend functions to call rc_sys"
-    
-    This reverts commit 73482cf13a338051606788957cbd0031ac850c70.
-
-commit 79359f77cc786e18695368bccb6b6186ecfe38c0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix bsd build
-    
-    X-Gentoo-Bug: 572068
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572068
-
-commit f79a7a7be18d68bf264efc60d82838d03048da6b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc: make get_systype similar to the old rc_sys function
-
-commit 73482cf13a338051606788957cbd0031ac850c70
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: fix librc-depend functions to call rc_sys
-
-commit 0910c455d3723ac4d4b793afb61cd82f660547f4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/rc/Makefile: fix make depend target
-
-commit f5e06bc55ab1717ddff8c21f00f48cfcba8cb4a7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    include rc.h properly in source files
-    
-    We were attempting to include rc.h in rc-misc.h instead of the source
-    files where it should be included.
-
-commit e7ae08c38d4753d8d54a4ed60ca98794d85aadd9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.21
-
-commit 6da0abc0850dfc99df0ba50cbd0092929ec0107b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix selinux build
-    
-    X-Gentoo-Bug: 571798
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=571798
-
-commit b34df9dd817069ade7e0526a59aaa9d3f2beb806
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix selinux build
-
-commit 6f02069746f4d8a2331ab7e000abdca9bbdd622d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add LANG, LC_MESSAGES and TERM to the environment whitelist
-
-commit d4c7207ef3906daf6f8646e8deb6d968fe76cb36
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix seg fault
-
-commit 04f05c30d13ec83b85164a536eb570f29a66b275
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    update ChangeLog
-
-commit 9473ac514cb72663d5c3bac8b5473cced4a20bf7
-Author: joe9 <joe9mail@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    allow the user to decide whether fsck aborts for errors
-    
-    X-Gentoo-Bug: 564008
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=564008
-
-commit bf2f40828ee26d3ba9185f29db596ee5d7b9cf61
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove multicall binary structure from OpenRC
-    
-    This eliminates the need for the selinux-specific wrapper scrript we
-    were installing in /lib*/rc/{bin,sbin}.
