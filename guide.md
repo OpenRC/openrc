@@ -198,7 +198,7 @@ script:
 command=
 command_args=
 pidfile=
-``
+```
 
 Thus the 'smallest' service scripts can be half a dozen lines long
 
