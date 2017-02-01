@@ -21,6 +21,8 @@ depend()
 
 start()
 {
+	[ -x /sbin/mkmntdirs ] && mkmntdirs
+
 	# Mount local filesystems in /etc/fstab.
 	# The types variable must start with no, and must be a type
 	local critical= types="noproc" x= no_netdev= rc=
