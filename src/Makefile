@@ -3,9 +3,5 @@
 
 SUBDIR=		test libeinfo librc rc
 
-ifeq (${MKTOOLS},yes)
-SUBDIR+= tools
-endif
-
 MK=		../mk
 include		${MK}/subdir.mk

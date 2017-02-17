@@ -30,7 +30,6 @@ MKSELINUX=yes
 MKSTATICLIBS=no
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
-MKTOOLS=yes
 PKG_PREFIX=/usr/pkg
 LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local

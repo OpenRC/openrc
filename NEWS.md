@@ -3,6 +3,12 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.24
+
+Since the deptree2dot tool and the perl requirement are completely
+optional, the deptree2dot tool has been moved to the support directory.
+As a result, the MKTOOLS=yes/no switch has been removed from the makefiles.
+
 ## OpenRC-0.23
 
 The tmpfiles.d processing code, which was part of previous versions of
