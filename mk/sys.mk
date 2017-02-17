@@ -59,6 +59,9 @@ MANPREFIX?=		${UPREFIX}/share
 MANDIR?=		${MANPREFIX}/man
 MANMODE?=		0444
 
+DATADIR?=		${UPREFIX}/share/openrc
+DATAMODE?=		0644
+
 DOCDIR?=		${UPREFIX}/share/doc
 DOCMODE?=		0644
 
