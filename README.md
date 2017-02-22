@@ -72,10 +72,6 @@ Obviously, if you're installing this onto a system that does not use
 OpenRC by default then you may wish to backup the above listed files,
 remove them and then install so that the OS hooks into OpenRC.
 
-`init.d.misc` is not installed by default as the scripts will need
-tweaking on a per distro basis. They are also non essential to the
-operation of the system.
-
 ## Reporting Bugs
 
 If you are using Gentoo Linux, bugs can be filed on their bugzilla under

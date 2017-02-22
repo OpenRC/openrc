@@ -11,7 +11,7 @@
 MK=		../mk
 include		${MK}/os.mk
 
-SUBDIR=		deptree2dot openvpn
+SUBDIR=		deptree2dot init.d.examples openvpn
 
 ifeq (${OS},Linux)
 SUBDIR+=	sysvinit
