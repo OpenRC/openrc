@@ -85,6 +85,40 @@ get_bootparam()
 	return 1
 }
 
+get_bootparam_value()
+{
+	local match="$1" which_value="$2" sep="$3" result value
+	if [ -n "$match" -a -r /proc/cmdline ]; then
+		set -- $(cat /proc/cmdline)
+		while [ -n "$1" ]; do
+			case "$1" in
+				$match=*)
+					value="${1##*=}"
+					case "$which_value" in
+						all)
+							[ -z "$sep" ] && sep=' '
+							if [ -z "$result" ]; then
+								result="$value"
+							else
+								result="${result}${sep}${value}"
+							fi
+							;;
+						last)
+							result="$value"
+							;;
+						*)
+							result="$value"
+							break
+							;;
+					esac
+					;;
+			esac
+			shift
+		done
+	fi
+	echo $result
+}
+
 # Called from openrc-run.sh or gendepends.sh
 _get_containers() {
 	local c
