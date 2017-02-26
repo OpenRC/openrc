@@ -15,6 +15,7 @@ depend()
 {
 	after modules
 	need sysfs
+	provide network-online
 	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -uml -vserver
 }
 
@@ -25,19 +26,6 @@ get_interfaces()
 		read iftype < ${ifname}/type
 		[ "$iftype" = "1" ] && printf "%s " ${ifname##*/}
 	done
-}
-
-get_default_gateway()
-{
-	local cmd gateway
-	if command -v ip > /dev/null 2>&1; then
-		cmd="ip route show"
-	else
-		cmd=route
-	fi
-	set -- $($cmd | grep default)
-	[ "$2" != via ] && gateway="$2" || gateway="$3"
-	printf "%s" $gateway
 }
 
 start ()
@@ -66,10 +54,15 @@ start ()
 	: $((timeout -= 1))
  done
  ! $infinite && [ $timeout -eq 0 ] && rc=1
- if [ $rc -eq 0 ] && yesno ${ping_default_gateway:-no}; then
- 	gateway="$(get_default_gateway)"
- 	if [ -n "$gateway" ] && ! ping -c 1 $gateway > /dev/null 2>&1; then
-		rc=1
+ include_ping_test=${include_ping_test:-${ping_default_gateway}}
+ if [ -n "${ping_default_gateway}" ]; then
+ ewarn "ping_default_gateway is deprecated, please use include_ping_test'
+ fi
+ if [ $rc -eq 0 ] && yesno ${include_ping_test:-no}; then
+ 	ping_test_host="${ping_test_host:-google.com}"
+ 	if [ -n "$ping_test_host" ]; then
+		ping -c 1 $ping_test_host > /dev/null 2>&1
+		rc=$?
 	fi
  fi
  eend $rc "The network is offline"
