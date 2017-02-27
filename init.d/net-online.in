@@ -56,7 +56,7 @@ start ()
  ! $infinite && [ $timeout -eq 0 ] && rc=1
  include_ping_test=${include_ping_test:-${ping_default_gateway}}
  if [ -n "${ping_default_gateway}" ]; then
- ewarn "ping_default_gateway is deprecated, please use include_ping_test'
+ ewarn "ping_default_gateway is deprecated, please use include_ping_test"
  fi
  if [ $rc -eq 0 ] && yesno ${include_ping_test:-no}; then
  	ping_test_host="${ping_test_host:-google.com}"
