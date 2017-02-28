@@ -20,10 +20,12 @@ depend()
 			*) mywant="$mywant nfsclient"; break ;;
 		esac
 	done
+	after root
  	config /etc/fstab
 	want $mywant
 	use afc-client amd openvpn
 	use dns
+	use root
 	keyword -docker -jail -lxc -prefix -systemd-nspawn -vserver
 }
 
