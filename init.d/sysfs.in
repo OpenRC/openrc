@@ -15,7 +15,6 @@ sysfs_opts=nodev,noexec,nosuid
 
 depend()
 {
-	use modules
 	keyword -docker -lxc -prefix -systemd-nspawn -vserver
 }
 
