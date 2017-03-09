@@ -12,8 +12,8 @@ include ${MK}/os.mk
 
 CONF-FreeBSD=	ipfw modules moused powerd rarpd savecore syscons
 
-CONF-Linux=	consolefont devfs dmesg hwclock keymaps killprocs modules mtab \
-	net-online
+CONF-Linux=	agetty consolefont devfs dmesg hwclock keymaps killprocs modules \
+	mtab net-online
 
 CONF-NetBSD=	moused rarpd savecore
 

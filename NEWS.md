@@ -9,6 +9,10 @@ Since the deptree2dot tool and the perl requirement are completely
 optional, the deptree2dot tool has been moved to the support directory.
 As a result, the MKTOOLS=yes/no switch has been removed from the makefiles.
 
+This version adds the agetty service which can be used to spawn
+agetty on a specific terminal. This is currently documented in the
+agetty-guide.md file at the top level of this distribution.
+
 ## OpenRC-0.23
 
 The tmpfiles.d processing code, which was part of previous versions of

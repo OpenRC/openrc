@@ -1,0 +1,8 @@
+# Set the baud rate of the terminal line
+#baud=""
+
+# set the terminal type
+#termtype="linux"
+
+# extra options to pass to agetty for this port
+#agetty_options=""
