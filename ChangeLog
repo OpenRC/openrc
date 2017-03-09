@@ -1,3 +1,219 @@
+commit d7bbb0f5830e1ec4df1ec52714d70ac6b0a81878
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add agetty service
+    
+    The agetty service is an alternate way to manage gettys with agetty
+    under Linux which is separate from an external init system.
+
+commit 21ca2b746cce67e2b3578fb7015c9d4c243e3a0c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs: drop modules completely from the dependencies
+    
+    This is for #112.
+
+commit 6a79aef0159d7035778fd852b26ecfac903cd029
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs: Do not load efivarfs module
+    
+    My understanding is that the kernel can autoload this module. If it
+    doesn't, the module should be built in or loaded from an initramfs.
+    
+    This fixes https://github.com/openrc/openrc/pulls/112.
+
+commit 4a269674b765e5267f024fa55c8644480a7304ea
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    make sure netmount and localmount start after root
+
+commit eea4decdd1c84e4b8775a255d8ed85bce5eb40a5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    net-online: typo fix
+
+commit d4d0f25a4844ecaed43de913e8b729e7a2e894db
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    net-online: updates to make the service more usable
+    
+    - switch from attempting to ping the default gateway to a host outside
+    the local network, defaulting to google.com.
+    - along with this, change the name of the variable that requests a ping
+    test to include_ping_test so the meaning is more clear.
+
+commit 1cb44092fce298004ab4c4547c6fbcac29c5997f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/rc-functions.sh.in: add get_bootparam_value function
+
+commit 4207e46622f584eb5f0cc10bbfd36f92f001a2e2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    move init.d examples under support and install them
+
+commit f6ea16159ec8583a6f2182578334aa00578cb080
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts: make sure the rc-sstat symlink is always replaced
+
+commit 9047ea4cb0d0e5e27704369380e128d26c3e86b2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    install support files
+    
+    These files have been in the distribution for some time but haven't been
+    installed. They are good examples of how to do things, so we should
+    install them.
+
+commit d7f5a696c173e7af67dd4b3f90744e0a056441e1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    support: rename all README files to README.md
+
+commit 6f614cd3f33dbdea3a67ac2fb414b1130674ee04
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Move deptree2dot to the support folder
+    
+    Since deptree2dot and the perl requirement are completely optional, we
+    can move this tool to the support folder. This gives the user the option
+    of using it if they have perl installed, and means we do not have an
+    optional runtime dependency on perl.
+    
+    Documentation for this tool has also been added to the support folder.
+    
+    X-Gentoo-Bug: 600742
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=600742
+
+commit 85c1930acf15b0c9d3c5537fb2b0409c6a11c982
+Author: William Pitcock <nenolod@dereferenced.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    test/setup_env: ensure that eval_ecolors is available on the path.
+    
+    The test environment previously used the system default paths instead of installing the necessary $PATH environment
+    variable to make finding eval_ecolors work.
+    This closes #117.
+    
+    X-Gentoo-Bug: 374191.
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=374191.
+
+commit 96bd0c004c9549e5a2ef64277216a15da6f96a8e
+Author: Nicolas Porcel <nicolasporcel06@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix typo in guide.md
+    
+    This fixes #115.
+
+commit b693af90556ac9b055ba5c6e589066c1e08b2146
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "scripts: do not substitute for @SHELL@ in rc-sstat"
+    
+    This reverts commit e2e652e469efa5f3ebcd69828ff16d8f5ad3f1b8.
+
+commit 6dcb6929869c2f81c1f8d0930191f74fc6dfaa3e
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: allow all standard signals
+    
+    Also we define the signalpair_item macro.
+    This fixes #113.
+    
+    X-Gentoo-Bug: 604986
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604986
+
+commit e2e652e469efa5f3ebcd69828ff16d8f5ad3f1b8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts: do not substitute for @SHELL@ in rc-sstat
+
+commit b73941f0c3020e3dbd1684d09685e114c678b520
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    mountinfo: make the path to /proc/mounts a constant
+    
+    This path should not be hard coded in the open call.
+    Linux prior to 2.4.19 did not have /proc/self/mounts, so for now I'm
+    making this value /proc/mounts everywhere, but that may change to
+    /proc/self/mounts on linux; I'm not sure we should care about <2.4.19.
+    
+    X-Gentoo-Bug: 604646
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604646
+
+commit c304522131a795cf882444b5f94e81db4baf65b3
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Clean up warnings that can use the _unused macro
+    
+    X-Gentoo-Bug: 604666
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604666
+
+commit 92325b44ba58a7ca04d88ae8ca202b402b032b43
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Indentation fixes
+    
+    X-Gentoo-Bug: 604666
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604666
+
+commit 074d90f5a4e3b66e532a0becde372acf38346397
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Drop the use of the _BSD_SOURCE macro on Linux
+    
+    X-Gentoo-Bug: 604666
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604666
+
+commit 7056b56b3ccc9cbde4ef8297b923919c49c7c242
+Author: Benda Xu <heroxbd@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Drop the use of the _BSD_SOURCE macro on GNU/Hurd
+    
+    X-Gentoo-Bug: 604666
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=604666
+
+commit d5c3b85e3fbddbba149687244d607fcdae222f95
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    loopback: drop explicit route for BSD too
+
+commit 1ab2249448ba24a591b561f53aa64ff3df1e41f6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.24
+
+commit a15cff21c63f2ad951af1c59a74fc7d37f78e91b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 45aa36cc623eeeb15fb6827b57e0c07a37cdef41
 Author: Doug Freed <dwfreed@mtu.edu>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1065,335 +1281,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 577362
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/577362
-
-commit beaa71df0ab2cfa61beba4be0303099aa6c75e6a
-Author: Dustin C. Hatch <dustin@hatch.name>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    binfmt.sh: use read in raw mode
-    
-    The read builtin in most shells will interpret backslash characters
-    as escapes, and they are lost when reading binfmt files line-by-line.
-    This causes magic strings containing backslashes to be mangled and
-    become invalid, resulting in erroneous 'invalid entry' messages.
-    
-    The -r option to read disables special handling of backslashes and
-    keeps all lines intact.
-    
-    X-Gentoo-Bug: 575114
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=575114
-
-commit 7eaf71176b87ae69bfa622aa621341a19a9d32b0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix rc_env_allow wildcard usage
-    
-    Before this commit, using * in rc_env_allow did not work.
-    
-    This fixes #60.
-
-commit 2c1f6a16e10a45397e0872585dcb0e16684b6cbf
-Author: Mike Frysinger <vapier@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysfs: mount pstore when available
-
-commit e82653782e1803e3c924aef055113333b18dafd9
-Author: Patrick Lauer <patrick@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add a basic OpenRC users guide
-    
-    X-Gentoo-Bug: 513024
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=513024
-
-commit e52b5f59c22283b22e2b5a0d2ab9de6b92a73ebf
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    savecache: stop saving nettree
-    
-    Netifrc is no longer part of OpenRC, so we shouldn't save its dep tree
-    as part of savecache.
-    
-    This should have been removed when netifrc was split out. also, it
-    might be related to the following bug.
-    
-    X-Gentoo-Bug: 563720
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=563720
-
-commit 8a7e4d38a74c714e1a532e1b7a53fd2a5c528b63
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-service: add --ifinactive and --ifnotstarted flags
-    
-    X-Gentoo-Bug: 523174
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=523174
-
-commit 47dd5e37cbf372df3ee0fad2c87226dce5b51587
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add back deprecation warnings lost during refactoring
-
-commit e277ae57efaba3be3eb619fd00084b116c370231
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix tests
-    
-    X-Gentoo-Bug: 572602
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572602
-
-commit 69f052b611878d771fc3f56ee77639269db9b6e1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: Complain when a real and virtual service have the same name
-
-commit e4eacf02cae10eca48f6906592981d701b0c1973
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: in verbose mode, log execution of the shell script
-    
-    This is to show when openrc-run runs the openrc-run.sh script; it is
-    used for debugging.
-
-commit 30c3561b6b648d60174a22a73555b680d2cc86fc
-Author: Colin Booth <colin@heliocat.net>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sh/s6.sh: update s6-svc syntax to be valid for 2.2.0.0+
-    
-    The s6-svc syntax changed for wait-up, wait-ready, wait-down, and
-    wait-finished. This changes the s6 handling script to use the current
-    valid syntax.
-    
-    This fixes #65.
-
-commit 5f2850366ea0f30f0f9cb6b129b69192c11e74ac
-Author: Manuel Rüger <manuel@rueg.eu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix typo
-    
-    This fixes #70.
-
-commit 1cb7eec31f37db0de11a4b39939fd3fbe17c1e24
-Author: Gokturk Yuksek <gokturk@binghamton.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    conf.d/bootmisc: typo fix: s/dmesc/dmesg/
-    
-    This fixes #72.
-
-commit cd7883d25d0a9321b68df1c1e6ad9662306fa9e7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    localmount: Allow users to control whether errors are ignored
-    
-    X-Gentoo-Bug: 572138
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572138
-
-commit 62b49b2a3ad1c13012305b4d7281d7f6543c70d7
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc: remove use of magic constant and allow OpenVZ to drop to shell
-    
-    OpenVZ has had console support for a long time now; allow them to use it
-    to drop to a shell during interactive boot.
-
-commit 4c814a0a285565bc09d662f602f93dbb938503c6
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: handle rc_sys="prefix" even if we weren't built with a prefix
-    
-    This probably isn't needed, but it mimics old behavior.
-
-commit 36dde4e7f21afba36a96837aa86f2b5d2dae3807
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: fix handling the nothing special case for rc_sys
-
-commit 649f63d882d53533ae8b1c3b28967e772e738c45
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: move system detection code into rc_sys and use it
-    
-    This fixes an issue where librc code was calling code that only existed
-    in the rc binary.
-    
-    This reverts commits 8addd79 and 9f6e056
-    
-    This fixes #75.
-
-commit 55a28f5d2524615560698453a5a6afd50460030c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "rc: make get_systype similar to the old rc_sys function"
-    
-    This reverts commit f79a7a7be18d68bf264efc60d82838d03048da6b.
-
-commit 6c0942137572608d02eb4b34bad55c9bf418a6ba
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "librc: fix librc-depend functions to call rc_sys"
-    
-    This reverts commit 73482cf13a338051606788957cbd0031ac850c70.
-
-commit 79359f77cc786e18695368bccb6b6186ecfe38c0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix bsd build
-    
-    X-Gentoo-Bug: 572068
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=572068
-
-commit f79a7a7be18d68bf264efc60d82838d03048da6b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc: make get_systype similar to the old rc_sys function
-
-commit 73482cf13a338051606788957cbd0031ac850c70
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: fix librc-depend functions to call rc_sys
-
-commit 0910c455d3723ac4d4b793afb61cd82f660547f4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/rc/Makefile: fix make depend target
-
-commit f5e06bc55ab1717ddff8c21f00f48cfcba8cb4a7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    include rc.h properly in source files
-    
-    We were attempting to include rc.h in rc-misc.h instead of the source
-    files where it should be included.
-
-commit e7ae08c38d4753d8d54a4ed60ca98794d85aadd9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.21
-
-commit 6da0abc0850dfc99df0ba50cbd0092929ec0107b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix selinux build
-    
-    X-Gentoo-Bug: 571798
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=571798
-
-commit b34df9dd817069ade7e0526a59aaa9d3f2beb806
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix selinux build
-
-commit 6f02069746f4d8a2331ab7e000abdca9bbdd622d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add LANG, LC_MESSAGES and TERM to the environment whitelist
-
-commit d4c7207ef3906daf6f8646e8deb6d968fe76cb36
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix seg fault
-
-commit 04f05c30d13ec83b85164a536eb570f29a66b275
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    update ChangeLog
-
-commit 9473ac514cb72663d5c3bac8b5473cced4a20bf7
-Author: joe9 <joe9mail@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    allow the user to decide whether fsck aborts for errors
-    
-    X-Gentoo-Bug: 564008
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=564008
-
-commit bf2f40828ee26d3ba9185f29db596ee5d7b9cf61
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove multicall binary structure from OpenRC
-    
-    This eliminates the need for the selinux-specific wrapper scrript we
-    were installing in /lib*/rc/{bin,sbin}.
-
-commit fe485f44339963fdbee143687dcbef2069924bc6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc: fix compiler warnings cleanup
-    
-    This reverts commit 981d2b3308edb0d0a68f7bdce4f2c99110de6940 and fixes
-    the warnings that generated.
-
-commit 53bc986ce5f9725d7117356e28224ac898f9c9bf
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Clean default env_whitelist
-    
-    The whitelist of environment variables we pass to service scripts
-    included several unnecessary variables.
-    
-    The default whitelist now includes EERROR_QUIET, EINFO_QUIET,
-    IN_BACKGROUND and IN_HOTPLUG.
-    
-    X-Gentoo-Bug: 569542
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=569542
-
-commit 981d2b3308edb0d0a68f7bdce4f2c99110de6940
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc: clean up compiler warnings
-    
-    The get_systype(), detect_container(), detect_prefix() and detect_vm()
-    functions need to return "char *" instead of "const char *".
-
-commit 5d3e85bc310e12411135e98a397b35fb920a72a3
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add ignore patterns for init.d directory
-
-commit 000503fad72e4eb2ef956a24df358be84b2a9493
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Convert OpenRC to a centralized copyright/license structure
-    
-    In the past, OpenRC was a hybrid of a centralized and file-scope
-    license/copyright structure.
-    
-    I followed the instructions from the Software Freedom Law Center [1] to
-    convert to a Centralized structure where possible, for easier future
-    maintenance.
-    
-    [1] https://softwarefreedom.org/resources/2012/ManagingCopyrightInformation.html
