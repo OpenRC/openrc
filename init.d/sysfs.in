@@ -98,16 +98,12 @@ mount_misc()
 	fi
 
 	# set up kernel support for efivarfs
-	# The presence of /sys/firmware/efi indicates that the system was
-	# booted in efi mode.
-	if [ -d /sys/firmware/efi ]; then
-		if [ -d /sys/firmware/efi/efivars ] &&
-			! mountinfo -q /sys/firmware/efi/efivars; then
-			ebegin "Mounting efivarfs filesystem"
-			mount -n -t efivarfs -o ${sysfs_opts} \
-				efivarfs /sys/firmware/efi/efivars
-			eend $?
-		fi
+	if [ -d /sys/firmware/efi/efivars ] &&
+		! mountinfo -q /sys/firmware/efi/efivars; then
+		ebegin "Mounting efivarfs filesystem"
+		mount -n -t efivarfs -o ${sysfs_opts} \
+			efivarfs /sys/firmware/efi/efivars 2> /dev/null
+		eend 0
 	fi
 }
 
