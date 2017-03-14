@@ -13,7 +13,10 @@ description="Sets the local clock to the mtime of a given file."
 
 depend()
 {
-	before *
+	before adjkerntz binfmt bootmisc devdb dumpon fsck hostid hostname keymaps
+	before localmount loopback modules mtab network newsyslog procfs root
+	before savecore staticroute swap swap-blk syscons sysctl syslogd
+	before termencoding ttys urandom wscons
 	provide clock
 	keyword -docker -lxc -openvz -prefix -systemd-nspawn -uml -vserver -xenu
 }
