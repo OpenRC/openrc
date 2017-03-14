@@ -3,6 +3,18 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.24.1
+
+This version starts cleaning up the dependencies so that rc_parallel
+will work correctly.
+
+The first step in this process is to remove the 'before *' from the
+depend functions in the clock services. This means some  services not
+controlled by OpenRC may now start before instead of after the clock
+service. If it is important for these services to start after the clock
+service, they need to have 'after clock' added to their depend
+functions.
+
 ## OpenRC-0.24
 
 Since the deptree2dot tool and the perl requirement are completely
