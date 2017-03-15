@@ -1,3 +1,45 @@
+commit bc05fb75515b3f65f3c63ae5972c749fac00924f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update news file
+
+commit e5c2a378f3000cd20826ec6b59ecca15d31190ae
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Remove all occurances of 'before *' from dependencies
+    
+    Using wildcards in dependencies causes issues when rc_parallel is set to
+    yes because it can lead to deadlocks.
+    All dependencies need to be explicit rather than implicit.
+    
+    This is the first stage of moving this direction.
+
+commit 3c1a71bd9db50fd410eb64e715a99911c8fad978
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs.in: efivarfs tweaks
+    
+    Since we check for /sys/firmware/efi/efivars, we do not need to check
+    for /sys/firmware/efi
+    
+    Since Failing to mount efivarfs is not critical, we silence the error
+    message from mount.
+
+commit fcb826a45137fec589bf945fe23deeba55879a34
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.24.1
+
+commit fde3902d069dfdce9c59555186a5541d6d99c8aa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit d7bbb0f5830e1ec4df1ec52714d70ac6b0a81878
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
