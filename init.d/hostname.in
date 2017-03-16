@@ -12,6 +12,7 @@
 description="Sets the hostname of the machine."
 
 depend() {
+	after clock
 	keyword -docker -lxc -prefix -systemd-nspawn
 }
 

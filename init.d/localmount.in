@@ -15,7 +15,7 @@ depend()
 {
 	need fsck
 	use lvm modules mtab root
-	after lvm modules root
+	after clock lvm modules root
 	keyword -docker -jail -lxc -prefix -systemd-nspawn -vserver
 }
 

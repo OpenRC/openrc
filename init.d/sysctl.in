@@ -11,6 +11,7 @@
 
 depend()
 {
+	after clock
 	before bootmisc logger
 	keyword -prefix -systemd-nspawn -vserver
 }

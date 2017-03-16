@@ -22,6 +22,6 @@ depend()
 	provide logger
 	use net newsyslog
 	need localmount
-	after bootmisc
+	after bootmisc clock
 	keyword -prefix
 }

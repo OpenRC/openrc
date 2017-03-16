@@ -13,6 +13,7 @@ description="Update /etc/mtab to match what the kernel knows about"
 
 depend()
 {
+	after clock
 	need root
 	keyword -prefix -systemd-nspawn
 }

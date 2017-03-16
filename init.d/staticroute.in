@@ -1,4 +1,4 @@
-#!@SBINDIR@/openrc-run
+S#!@BINDIR@/openrc-run
 # Copyright (c) 2009-2015 The OpenRC Authors.
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/master/AUTHORS
@@ -14,9 +14,9 @@
 description="Configures static routes."
 __nl="
 "
-
 depend()
 {
+	after clock
 	provide net
 	use network
 	keyword -jail -prefix -vserver

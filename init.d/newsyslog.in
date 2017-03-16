@@ -13,6 +13,7 @@ required_files="/etc/newsyslog.conf"
 
 depend()
 {
+	after clock
 	need localmount
 	keyword -prefix
 }

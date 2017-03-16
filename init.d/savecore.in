@@ -14,6 +14,7 @@ description="Saves a kernel dump."
 depend()
 {
 	need dumpon localmount
+	after clock
 	before encswap
 	keyword -jail -prefix
 }

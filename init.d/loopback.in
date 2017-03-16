@@ -13,6 +13,7 @@ description="Configures the loopback interface."
 
 depend()
 {
+	after clock
 	keyword -jail -prefix -systemd-nspawn -vserver
 }
 

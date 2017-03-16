@@ -15,6 +15,7 @@ extra_commands="reset"
 depend()
 {
 	use root
+	after clock
 	before devd net
 	keyword -jail -prefix
 }

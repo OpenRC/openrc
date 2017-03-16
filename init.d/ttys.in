@@ -11,7 +11,7 @@
 
 depend()
 {
-	after fsck
+	after clock fsck
 	keyword -prefix
 }
 

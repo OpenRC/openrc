@@ -11,6 +11,7 @@
 
 depend()
 {
+	after clock
 	before localmount
 	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -vserver
 }

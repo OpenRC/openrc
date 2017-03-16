@@ -13,6 +13,7 @@ description="Creates the dev database"
 
 depend()
 {
+	after clock
 	need localmount
 }
 

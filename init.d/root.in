@@ -13,6 +13,7 @@ description="Mount the root fs read/write"
 
 depend()
 {
+	after clock
 	need fsck
 	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -vserver
 }
