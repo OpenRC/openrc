@@ -1,3 +1,25 @@
+commit 477e3dd8c13705affe87cc2c0e9286b2653a5688
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/gendepends.sh.in: fix detection of service scripts
+    
+    We do not need to care about the path on the shebang line of a service
+    script as long as the shebang line ends with "openrc-run".
+    This fixes #119 and #120.
+
+commit 678e7adeb237edd080a13e463e5d8c40d2acdea7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.24.2
+
+commit b087a751deb06986e0d77873046e08ca4864175c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit bc05fb75515b3f65f3c63ae5972c749fac00924f
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
