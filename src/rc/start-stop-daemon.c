@@ -960,6 +960,9 @@ int main(int argc, char **argv)
 		if (redirect_stdout || redirect_stderr)
 			eerrorx("%s: --stdout and --stderr are only relevant"
 			    " with --start", applet);
+		if (start_wait)
+			ewarn("using --wait with --stop has no effect,"
+			    " use --retry instead");
 	} else {
 		if (!exec)
 			eerrorx("%s: nothing to start", applet);
@@ -1012,7 +1015,11 @@ int main(int argc, char **argv)
 		eerror("%s: %s does not exist", applet,
 		    *exec_file ? exec_file : exec);
 		exit(EXIT_FAILURE);
+
 	}
+	if (start && retry)
+		ewarn("using --retry with --start has no effect,"
+		    " use --wait instead");
 
 	/* If we don't have a pidfile we should check if it's interpreted
 	 * or not. If it we, we need to pass the interpreter through
