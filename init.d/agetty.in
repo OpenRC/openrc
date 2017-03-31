@@ -19,6 +19,7 @@ pidfile="/run/${RC_SVCNAME}.pid"
 
 depend() {
 	after local
+	keyword -prefix
 }
 
 start_pre() {
