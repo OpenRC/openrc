@@ -3,6 +3,13 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.25
+
+This version contains an OpenRC-specific implementation of init for
+Linux which can be used in place of sysvinit or any other init process.
+For information on its usage, see the man pages for openrc-init (8) and
+openrc-shutdown (8).
+
 ## OpenRC-0.24.1
 
 This version starts cleaning up the dependencies so that rc_parallel

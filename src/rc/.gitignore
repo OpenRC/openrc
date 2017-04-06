@@ -59,4 +59,6 @@ mark_service_failed
 rc-abort
 rc
 openrc
+openrc-init
 openrc-run
+openrc-shutdown

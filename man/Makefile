@@ -9,7 +9,7 @@ MAN8=		rc-service.8 rc-status.8 rc-update.8 openrc.8 openrc-run.8 \
 		service.8 start-stop-daemon.8 supervise-daemon.8
 
 ifeq (${OS},Linux)
-MAN8 += rc-sstat.8
+MAN8 += rc-sstat.8 openrc-init.8 openrc-shutdown.8
 endif
 
 # Handy macro to create symlinks

@@ -1,0 +1,42 @@
+.\" Copyright (c) 2017 The OpenRC Authors.
+.\" See the Authors file at the top-level directory of this distribution and
+.\" https://github.com/OpenRC/openrc/blob/master/AUTHORS
+.\"
+.\" This file is part of OpenRC. It is subject to the license terms in
+.\" the LICENSE file found in the top-level directory of this
+.\" distribution and at https://github.com/OpenRC/openrc/blob/master/LICENSE
+.\" This file may not be copied, modified, propagated, or distributed
+.\"    except according to the terms contained in the LICENSE file.
+.\"
+.Dd April 6, 2017
+.Dt openrc-shutdown 8 SMM
+.Os OpenRC
+.Sh NAME
+.Nm openrc-shutdown
+.Nd bring the system down
+.Sh SYNOPSIS
+.Nm
+.Op Fl H , -halt
+.Op Fl k , -kexec
+.Op Fl p , -poweroff
+.Op Fl r , -reboot
+.Sh DESCRIPTION
+.Nm
+is the utility that communicates with openrc-init(8) to bring down the
+system.  The following options affect how the system is brought down:
+.Bl -tag -width "poweroff"
+.It Fl H , -halt
+Stop all services, kill all remaining processes and halt the system.
+.It Fl k , -kexec
+Stop all services, kill all processes and boot directly into a new
+kernel loaded via kexec(8).
+.It Fl p , -poweroff
+Stop all services, kill all processes and power off the system.
+.It Fl r , -reboot
+Stop all services, kill all processes and reboot the system.
+.El
+.Sh SEE ALSO
+.Xr openrc-init 8 ,
+.Xr kexec 8 ,
+.Sh AUTHORS
+.An William Hubbs <w.d.hubbs@gmail.com>

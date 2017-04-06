@@ -39,6 +39,7 @@ extern "C" {
 #define RC_CONFDIR              RC_SYSCONFDIR "/conf.d"
 #define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
+#define RC_INIT_FIFO RC_SVCDIR"/init.ctl"
 #define RC_PROFILE_ENV     RC_SYSCONFDIR "/profile.env"
 #define RC_SYS_WHITELIST   RC_LIBEXECDIR "/conf.d/env_whitelist"
 #define RC_USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"

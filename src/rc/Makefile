@@ -1,3 +1,7 @@
+include ../../Makefile.inc
+MK=		../../mk
+include ${MK}/os.mk
+
 SRCS=	checkpath.c do_e.c do_mark_service.c do_service.c \
 		do_value.c fstabinfo.c is_newer_than.c is_older_than.c \
 		mountinfo.c openrc-run.c rc-abort.c rc.c \
@@ -7,6 +11,10 @@ SRCS=	checkpath.c do_e.c do_mark_service.c do_service.c \
 
 ifeq (${MKSELINUX},yes)
 SRCS+=		rc-selinux.c
+endif
+
+ifeq (${OS},Linux)
+SRCS+=		openrc-init.c openrc-shutdown.c
 endif
 
 CLEANFILES=	version.h rc-selinux.o
@@ -34,6 +42,11 @@ RC_SBINPROGS=	mark_service_starting mark_service_started \
 		mark_service_inactive mark_service_wasinactive \
 		mark_service_hotplugged mark_service_failed \
 		rc-abort swclock
+
+ifeq (${OS},Linux)
+SBINPROGS+= openrc-init openrc-shutdown
+endif
+
 ALL_PROGS=	${BINPROGS} ${SBINPROGS} ${RC_BINPROGS} ${RC_SBINPROGS}
 CLEANFILES+=	${ALL_PROGS}
 
@@ -41,8 +54,6 @@ LOCAL_CPPFLAGS=-I../includes -I../librc -I../libeinfo
 LOCAL_LDFLAGS=-L../librc -L../libeinfo
 LDADD+=		-lutil -lrc -leinfo
 
-include ../../Makefile.inc
-MK=		../../mk
 include ${MK}/prog.mk
 include ${MK}/gitver.mk
 include ${MK}/cc.mk
@@ -96,6 +107,9 @@ veinfo vewarn vebegin veend vewend veindent veoutdent: do_e.o rc-misc.o
 fstabinfo: fstabinfo.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
+openrc-init: openrc-init.o
+	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
+
 is_newer_than: is_newer_than.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
@@ -112,6 +126,9 @@ mountinfo: mountinfo.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 openrc rc: rc.o rc-logger.o rc-misc.o rc-plugin.o _usage.o
+	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
+
+openrc-shutdown: openrc-shutdown.o _usage.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 openrc-run runscript: openrc-run.o _usage.o rc-misc.o rc-plugin.o
