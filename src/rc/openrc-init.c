@@ -1,6 +1,9 @@
 /*
  * openrc-init.c
  * This is the init process (pid 1) for OpenRC.
+ *
+ * This is based on code written by James Hammons <jlhamm@acm.org>, so
+ * I would like to publically thank him for his work.
  */
 
 /*

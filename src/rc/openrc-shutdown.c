@@ -2,6 +2,9 @@
  * openrc-shutdown.c
  * If you are using OpenRC's provided init, this will shut down or
  * reboot your system.
+ *
+ * This is based on code written by James Hammons <jlhamm@acm.org>, so
+ * I would like to publically thank him for his work.
  */
 
 /*
