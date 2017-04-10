@@ -71,7 +71,8 @@ cleanup_var_run_dir()
 	ebegin "Cleaning /var/run"
 	for x in $(find /var/run ! -type d ! -name utmp \
 		! -name random-seed ! -name dev.db \
-		! -name ld-elf.so.hints ! -name ld.so.hints);
+		! -name ld-elf.so.hints ! -name ld-elf32.so.hints \
+		! -name ld.so.hints);
 	do
 		# Clean stale sockets
 		if [ -S "$x" ]; then
