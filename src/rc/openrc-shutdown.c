@@ -35,11 +35,12 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "kpr" getoptstring_COMMON;
+const char *getoptstring = "HkpRr" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "halt",        no_argument, NULL, 'H'},
 	{ "kexec",        no_argument, NULL, 'k'},
 	{ "poweroff",        no_argument, NULL, 'p'},
+	{ "reexec",        no_argument, NULL, 'R'},
 	{ "reboot",        no_argument, NULL, 'r'},
 	longopts_COMMON
 };
@@ -47,11 +48,13 @@ const char * const longopts_help[] = {
 	"halt the system",
 	"reboot the system using kexec",
 	"power off the system",
+	"re-execute init (use after upgrading)",
 	"reboot the system",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
-const char *exclusive = "Select one of --halt, --kexec, --poweroff or --reboot";
+const char *exclusive = "Select one of "
+"--halt, --kexec, --poweroff, --reexec or --reboot";
 
 static void send_cmd(const char *cmd)
 {
@@ -79,6 +82,7 @@ int main(int argc, char **argv)
 	bool do_kexec = false;
 	bool do_poweroff = false;
 	bool do_reboot = false;
+	bool do_reexec = false;
 
 	applet = basename_c(argv[0]);
 if (geteuid() != 0)
@@ -97,6 +101,10 @@ if (geteuid() != 0)
 			break;
 		case 'p':
 			do_poweroff = true;
+			cmd_count++;
+			break;
+		case 'R':
+			do_reexec = true;
 			cmd_count++;
 			break;
 		case 'r':
@@ -118,5 +126,7 @@ if (geteuid() != 0)
 		send_cmd("poweroff");
 	else if (do_reboot)
 		send_cmd("reboot");
+	else if (do_reexec)
+		send_cmd("reexec");
 	return 0;
 }

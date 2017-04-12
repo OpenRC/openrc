@@ -19,11 +19,13 @@
 .Op Fl H , -halt
 .Op Fl k , -kexec
 .Op Fl p , -poweroff
+.Op Fl R , -reexec
 .Op Fl r , -reboot
 .Sh DESCRIPTION
 .Nm
 is the utility that communicates with openrc-init(8) to bring down the
-system.  The following options affect how the system is brought down:
+system or instruct openrc-init to re-execute itself. It supports the
+following options:
 .Bl -tag -width "poweroff"
 .It Fl H , -halt
 Stop all services, kill all remaining processes and halt the system.
@@ -32,6 +34,9 @@ Stop all services, kill all processes and boot directly into a new
 kernel loaded via kexec(8).
 .It Fl p , -poweroff
 Stop all services, kill all processes and power off the system.
+.It Fl R , -reexec
+instruct openrc-init to re-exec itself. This should be used after an
+upgrade of OpenRC if you are using openrc-init as your init process.
 .It Fl r , -reboot
 Stop all services, kill all processes and reboot the system.
 .El

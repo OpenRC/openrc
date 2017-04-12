@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -79,6 +80,12 @@ static void init(const char *default_runlevel)
 	waitpid(pid, NULL, 0);
 }
 
+static void handle_reexec(char *my_name)
+{
+	execl(my_name, my_name, "reexec", NULL);
+	return;
+}
+
 static void handle_shutdown(const char *runlevel, int cmd)
 {
 	pid_t pid;
@@ -123,10 +130,11 @@ static void signal_handler(int sig)
 
 int main(int argc, char **argv)
 {
-	char *default_runlevel = NULL;
+	char *default_runlevel;
 	char buf[2048];
 	int count;
 	FILE *fifo;
+	bool reexec = false;
 	struct sigaction sa;
 
 	if (getpid() != 1)
@@ -134,16 +142,22 @@ int main(int argc, char **argv)
 
 	if (argc > 1)
 		default_runlevel = argv[1];
+	else
+		default_runlevel = NULL;
+
+	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
+		reexec = true;
 
 	printf("OpenRC init version %s starting\n", VERSION);
-	init(default_runlevel);
+	if (! reexec)
+		init(default_runlevel);
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = signal_handler;
 	sigaction(SIGCHLD, &sa, NULL);
 	sigaction(SIGINT, &sa, NULL);
 	reboot(RB_DISABLE_CAD);
 
-	if (mkfifo(RC_INIT_FIFO, 0600) == -1)
+	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)
 		perror("mkfifo");
 
 	for (;;) {
@@ -166,6 +180,8 @@ int main(int argc, char **argv)
 			handle_shutdown("shutdown", RB_POWER_OFF);
 		else if (strcmp(buf, "reboot") == 0)
 			handle_shutdown("reboot", RB_AUTOBOOT);
+		else if (strcmp(buf, "reexec") == 0)
+			handle_reexec(argv[0]);
 	}
 	return 0;
 }
