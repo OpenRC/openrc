@@ -39,6 +39,7 @@ static const char *rc_default_runlevel = "default";
 static pid_t do_openrc(const char *runlevel)
 {
 	pid_t pid;
+	sigset_t signals;
 
 	pid = fork();
 	switch(pid) {
@@ -47,6 +48,9 @@ static pid_t do_openrc(const char *runlevel)
 			break;
 		case 0:
 			setsid();
+			/* unblock all signals */
+			sigemptyset(&signals);
+			sigprocmask(SIG_SETMASK, &signals, NULL);
 			printf("Starting %s runlevel\n", runlevel);
 			execl("/sbin/openrc", "/sbin/openrc", runlevel, NULL);
 			perror("exec");
@@ -135,10 +139,13 @@ int main(int argc, char **argv)
 	int count;
 	FILE *fifo;
 	bool reexec = false;
+	sigset_t signals;
 	struct sigaction sa;
 
 	if (getpid() != 1)
 		return 1;
+
+	printf("OpenRC init version %s starting\n", VERSION);
 
 	if (argc > 1)
 		default_runlevel = argv[1];
@@ -148,14 +155,21 @@ int main(int argc, char **argv)
 	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
 		reexec = true;
 
-	printf("OpenRC init version %s starting\n", VERSION);
-	if (! reexec)
-		init(default_runlevel);
+	/* block all signals we do not handle */
+	sigfillset(&signals);
+	sigdelset(&signals, SIGCHLD);
+	sigdelset(&signals, SIGINT);
+	sigprocmask(SIG_SETMASK, &signals, NULL);
+
+	/* install signal  handler */
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = signal_handler;
 	sigaction(SIGCHLD, &sa, NULL);
 	sigaction(SIGINT, &sa, NULL);
 	reboot(RB_DISABLE_CAD);
+
+	if (! reexec)
+		init(default_runlevel);
 
 	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)
 		perror("mkfifo");
