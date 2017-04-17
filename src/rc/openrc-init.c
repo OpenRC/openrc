@@ -96,6 +96,11 @@ static void handle_shutdown(const char *runlevel, int cmd)
 
 	pid = do_openrc(runlevel);
 	while (waitpid(pid, NULL, 0) != pid);
+	printf("Sending the final term signal\n");
+	kill(-1, SIGTERM);
+	sleep(3);
+	printf("Sending the final kill signal\n");
+	kill(-1, SIGKILL);
 	sync();
 	reboot(cmd);
 }
