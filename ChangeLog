@@ -1,3 +1,161 @@
+commit 0e3f8720984d7d5752a78a4135cd268e4f83b3d7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init: send term/kill signals as final step of shutdown
+
+commit 5fd3747b190887d094225547f23007d25e2d9592
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    reword the bugs section of the openrc-init man page
+
+commit 4694900190a9078397bb9083328b68b489af92f4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init: fix signal handling
+    
+    The only signals we handle are SIGINT and SIGCHLD, so block all others
+    and unblock them in the child process before we start a rurnlevel.
+
+commit 05738bfce120114037d4f02c67ec740813f94b89
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init: add re-exec capability
+    
+    This will allow the re-execution of the init process after upgrading
+    OpenRC.
+
+commit 6f88ee4ec6f59e545346a7422facc3e5b6adac04
+Author: i.Dark_Templar <darktemplar@dark-templar-archives.net>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    bootmisc: do not remove ld-elf32.so.hints
+    
+    File /var/run/ld-elf32.so.hints is used on FreeBSD 64bit multilib
+    This fixes #125.
+
+commit cc51bdca3bac963878141da047e92f125772e14f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add attribution to openrc-init.c and openrc-shutdown.c
+
+commit 13ca79856e5836117e469c3edbcfd4bf47b6bab0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add init process
+    
+    openrc-init.c and openrc-shutdown.c are based on code which was written by
+    James Hammons <jlhamm@acm.org>, so I would like to publically
+    thank him for his work.
+
+commit 79a9edc73068244ad843f2edbe4206ce696c91c8
+Author: i.Dark_Templar <darktemplar@dark-templar-archives.net>
+Commit: i.Dark_Templar <darktemplar@dark-templar-archives.net>
+
+    Fix make install on FreeBSD: don't try to install /etc/init.d/modules twice
+
+commit 9eb669591e16c5ee0ca07babe058d0b7b2396077
+Author: Austin English <austinenglish@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: warn if calling --start with --retry or --stop with --wait
+    
+    This fixes #122
+
+commit 55a87a30ec845eb725e8a923c8f8eb7aa75baa72
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/agetty.in: add -prefix keyword
+
+commit a912029462ae988ab4e2a96a0958e54a3c2e822f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/mount-ro: change dependency on killprocs and savecache to after
+    
+    killprocs always succeeds and savecache is not required by mount-ro, so
+    we can just start after both of these have run.
+
+commit 1e9078279709df2a3617bf1460890ceb1ddfcf59
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    agetty-guide: typo fix
+
+commit 51a292e09b9362f13d5747d4eedaa521ddf9ce72
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: add agetty to ignore patterns
+
+commit 50fccf47d4bd2ed6e7ea6ff7f72577c8e7b95d0d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/gendepends.sh.in: fix detection of service scripts
+    
+    We do not need to care about the path on the shebang line of a service
+    script as long as the shebang line ends with "openrc-run".
+    This fixes #119 and #120.
+
+commit 9bd63b5d4a16601712a65eb8962214cdd4d26ce5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update dependencies for clock service
+    
+    The clock services had a very long list of "before" dependencies that
+    referred to other services within OpenRC. For ease of maintenance,
+    convert these to "after clock" dependencies in the individual services.
+
+commit 48db17a93f5e60c0d241f8fb06bfbdd01206fb9c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update news file
+
+commit c333707cba356f4cacfd58a6fcc78f7c073dddcd
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Remove all occurances of 'before *' from dependencies
+    
+    Using wildcards in dependencies causes issues when rc_parallel is set to
+    yes because it can lead to deadlocks.
+    All dependencies need to be explicit rather than implicit.
+    
+    This is the first stage of moving this direction.
+
+commit 5f5b1f7cbefd0bc14352e86a9c33260266f98d9b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs.in: efivarfs tweaks
+    
+    Since we check for /sys/firmware/efi/efivars, we do not need to check
+    for /sys/firmware/efi
+    
+    Since Failing to mount efivarfs is not critical, we silence the error
+    message from mount.
+
+commit cfdf56475e600f79a433cd721cadf39114c6c58d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.25
+
+commit fde3902d069dfdce9c59555186a5541d6d99c8aa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit d7bbb0f5830e1ec4df1ec52714d70ac6b0a81878
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1256,28 +1414,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     Now both localmount and netmount support a critical_mounts setting. If
     mount points listed in this setting fail to mount, localmount and
     netmount will fail.
-
-commit 1c3c2cf6d8cb060d03919297f5fe706f6027a4c6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    netmount: fix mounting on Linux
-    
-    Before this commit, on Linux, we were always trying to mount file
-    systems marked with _netdev, even when the previous mount command
-    failed. Now, we do not run the second mount if the first fails.
-    
-    X-Gentoo-Bug: 579876
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=579876
-
-commit 171e856ec8a0a64504b4b4a47ab6181d37fc3dbe
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: Allow group read/write when creating output files
-    
-    This allows for better interaction with inherited ACL entries.
-    This fixes #84.
-    
-    X-Gentoo-Bug: 577362
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/577362
