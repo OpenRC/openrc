@@ -226,6 +226,7 @@ static void child_process(char *exec, char **argv)
 	/* Close any fd's to the passwd database */
 	endpwent();
 
+	/* remove the controlling tty */
 #ifdef TIOCNOTTY
 	ioctl(tty_fd, TIOCNOTTY, 0);
 	close(tty_fd);
@@ -695,6 +696,12 @@ int main(int argc, char **argv)
 		if (svcname)
 			rc_service_daemon_set(svcname, exec,
 									(const char * const *) argv, pidfile, true);
+
+	/* remove the controlling tty */
+#ifdef TIOCNOTTY
+		ioctl(tty_fd, TIOCNOTTY, 0);
+		close(tty_fd);
+#endif
 
 		/*
 		 * Supervisor main loop
