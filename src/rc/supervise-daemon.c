@@ -694,6 +694,10 @@ int main(int argc, char **argv)
 		fprintf(fp, "%d\n", getpid());
 		fclose(fp);
 
+		if (svcname)
+			rc_service_daemon_set(svcname, exec,
+									(const char * const *) argv, pidfile, true);
+
 		/*
 		 * Supervisor main loop
 		 */
@@ -717,10 +721,6 @@ int main(int argc, char **argv)
 					child_process(exec, argv);
 			}
 		}
-
-		if (svcname)
-			rc_service_daemon_set(svcname, exec,
-									(const char * const *) argv, pidfile, true);
 
 		exit(EXIT_SUCCESS);
 	} else if (child_pid == 0)
