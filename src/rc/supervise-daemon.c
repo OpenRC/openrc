@@ -322,7 +322,7 @@ static void child_process(char *exec, char **argv)
 		dup2(stderr_fd, STDERR_FILENO);
 
 	for (i = getdtablesize() - 1; i >= 3; --i)
-		close(i);
+		fcntl(i, F_SETFD, FD_CLOEXEC);
 
 	*cmdline = '\0';
 	c = argv;
