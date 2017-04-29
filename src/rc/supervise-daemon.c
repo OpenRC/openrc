@@ -674,6 +674,10 @@ int main(int argc, char **argv)
 	if (child_pid != 0)
 		exit(EXIT_SUCCESS);
 
+#ifdef TIOCNOTTY
+	tty_fd = open("/dev/tty", O_RDWR);
+#endif
+	devnull_fd = open("/dev/null", O_RDWR);
 	child_pid = fork();
 	if (child_pid == -1)
 		eerrorx("%s: fork: %s", applet, strerror(errno));
@@ -681,12 +685,6 @@ int main(int argc, char **argv)
 	if (child_pid != 0) {
 		/* this is the supervisor */
 		umask(numask);
-
-#ifdef TIOCNOTTY
-		tty_fd = open("/dev/tty", O_RDWR);
-#endif
-
-		devnull_fd = open("/dev/null", O_RDWR);
 
 		fp = fopen(pidfile, "w");
 		if (! fp)
