@@ -25,6 +25,7 @@ supervise_start()
 	eval supervise-daemon --start \
 		${chroot:+--chroot} $chroot \
 		${pidfile:+--pidfile} $pidfile \
+		${respawn_limit:+--respawn-limit} $respawn_limit \
 		${command_user+--user} $command_user \
 		$supervise_daemon_args \
 		$command \

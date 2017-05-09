@@ -66,7 +66,7 @@ static struct pam_conv conv = { NULL, NULL};
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "d:e:g:I:Kk:N:p:r:Su:1:2:" \
+const char *getoptstring = "d:e:g:I:Kk:N:p:r:R:Su:1:2:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "chdir",        1, NULL, 'd'},
@@ -79,6 +79,7 @@ const struct option longopts[] = {
 	{ "pidfile",      1, NULL, 'p'},
 	{ "user",         1, NULL, 'u'},
 	{ "chroot",       1, NULL, 'r'},
+	{ "respawn-limit",        1, NULL, 'R'},
 	{ "start",        0, NULL, 'S'},
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
@@ -95,6 +96,7 @@ const char * const longopts_help[] = {
 	"Match pid found in this file",
 	"Change the process user",
 	"Chroot to this directory",
+	"set a respawn limit",
 	"Start daemon",
 	"Redirect stdout to file",
 	"Redirect stderr to file",
@@ -424,7 +426,13 @@ int main(int argc, char **argv)
 	char *p;
 	char *token;
 	int i;
+	int n;
 	char exec_file[PATH_MAX];
+	int respawn_count = 0;
+	int respawn_max = 10;
+	int respawn_period = 5;
+	time_t respawn_now= 0;
+	time_t first_spawn= 0;
 	struct passwd *pw;
 	struct group *gr;
 	FILE *fp;
@@ -517,6 +525,17 @@ int main(int argc, char **argv)
 
 		case 'r':  /* --chroot /new/root */
 			ch_root = optarg;
+			break;
+
+		case 'R':  /* --respawn-limit unlimited|count:period */
+			if (strcasecmp(optarg, "unlimited") == 0) {
+				respawn_max = 0;
+				respawn_period = 0;
+			} else {
+				n = sscanf(optarg, "%d:%d", &respawn_max, &respawn_period);
+				if (n	!= 2 || respawn_max < 1 || respawn_period < 1)
+					eerrorx("Invalid respawn-limit setting '%s'", optarg);
+			}
 			break;
 
 		case 'u':  /* --user <username>|<uid> */
@@ -713,6 +732,22 @@ int main(int argc, char **argv)
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 				kill(child_pid, SIGTERM);
 			} else {
+				if (respawn_max > 0 && respawn_period > 0) {
+					respawn_now = time(NULL);
+					if (first_spawn == 0)
+						first_spawn = respawn_now;
+					if (respawn_now - first_spawn > respawn_period) {
+						respawn_count = 0;
+						first_spawn = 0;
+					} else
+						respawn_count++;
+					if (respawn_count >= respawn_max) {
+						syslog(LOG_INFO, "respawned \"%s\" too many times, "
+								"exiting", exec);
+						exiting = true;
+						continue;
+					}
+				}
 				if (WIFEXITED(i))
 					syslog(LOG_INFO, "%s, pid %d, exited with return code %d",
 							exec, child_pid, WEXITSTATUS(i));

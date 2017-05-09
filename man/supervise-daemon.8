@@ -34,6 +34,8 @@
 .Ar user
 .Fl r , -chroot
 .Ar chrootpath
+.Fl R , -respawn-limit
+.Ar limit
 .Fl 1 , -stdout
 .Ar logfile
 .Fl 2 , -stderr
@@ -99,6 +101,24 @@ Modifies the scheduling priority of the daemon.
 .It Fl r , -chroot Ar path
 chroot to this directory before starting the daemon. All other paths, such
 as the path to the daemon, chdir and pidfile, should be relative to the chroot.
+.It Fl R , -respawn-limit Ar limit
+Control how agressively
+.Nm
+will try to respawn a daemon when it fails to start. The limit argument
+can be a pair of integers separated bya colon or the string unlimited.
+.Pp
+If a pair of integers is given, the first is a maximum number of respawn
+attempts and the second is a time period. It should be interpreted as:
+If the daemon dies and has to be respawned more than <first number>
+times in any time period of <second number> seconds, exit and give up.
+.Pp
+For example, the default is 10:5.
+This means if the supervisor respawns a daemon more than ten times
+in any 5 second period, it gives up and exits.
+.Pp
+if unlimited is given as the limit, it means that the supervisor will
+not exit or give up, no matter how many times the daemon it is
+supervising needs to be respawned.
 .It Fl u , -user Ar user
 Start the daemon as the specified user.
 .It Fl 1 , -stdout Ar logfile
