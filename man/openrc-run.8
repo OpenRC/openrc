@@ -167,8 +167,20 @@ Display name used for the above defined command.
 Process name to match when signaling the daemon.
 .It Ar stopsig
 Signal to send when stopping the daemon.
-.It Ar respawn_limit
-Respawn limit
+.It Ar respawn_delay
+Respawn delay
+.Xr supervise-daemon 8
+will use for this daemon.  See
+.Xr supervise-daemon 8
+for more information about this setting.
+.It Ar respawn_max
+Respawn max
+.Xr supervise-daemon 8
+will use for this daemon.  See
+.Xr supervise-daemon 8
+for more information about this setting.
+.It Ar respawn_period
+Respawn period
 .Xr supervise-daemon 8
 will use for this daemon.  See
 .Xr supervise-daemon 8

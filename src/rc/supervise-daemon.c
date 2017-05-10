@@ -66,38 +66,42 @@ static struct pam_conv conv = { NULL, NULL};
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "d:e:g:I:Kk:N:p:r:R:Su:1:2:" \
+const char *getoptstring = "D:d:e:g:I:Kk:m:N:p:r:Su:1:2:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
+	{ "respawn-delay",        1, NULL, 'D'},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
 	{ "group",        1, NULL, 'g'},
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "umask",        1, NULL, 'k'},
+	{ "respawn-max",    1, NULL, 'm'},
 	{ "nicelevel",    1, NULL, 'N'},
 	{ "pidfile",      1, NULL, 'p'},
-	{ "user",         1, NULL, 'u'},
+	{ "respawn-period",        1, NULL, 'P'},
 	{ "chroot",       1, NULL, 'r'},
-	{ "respawn-limit",        1, NULL, 'R'},
 	{ "start",        0, NULL, 'S'},
+	{ "user",         1, NULL, 'u'},
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
+	"Set a respawn delay",
 	"Change the PWD",
 	"Set an environment string",
 	"Change the process group",
 	"Set an ionice class:data when starting",
 	"Stop daemon",
 	"Set the umask for the daemon",
+	"set maximum number of respawn attempts",
 	"Set a nicelevel when starting",
 	"Match pid found in this file",
-	"Change the process user",
+	"Set respawn time period",
 	"Chroot to this directory",
-	"set a respawn limit",
 	"Start daemon",
+	"Change the process user",
 	"Redirect stdout to file",
 	"Redirect stderr to file",
 	longopts_help_COMMON
@@ -429,6 +433,7 @@ int main(int argc, char **argv)
 	int n;
 	char exec_file[PATH_MAX];
 	int respawn_count = 0;
+	int respawn_delay = 0;
 	int respawn_max = 10;
 	int respawn_period = 5;
 	time_t respawn_now= 0;
@@ -469,6 +474,12 @@ int main(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 		    (int *) 0)) != -1)
 		switch (opt) {
+		case 'D':  /* --respawn-delay time */
+			n = sscanf(optarg, "%d", &respawn_delay);
+			if (n	!= 1 || respawn_delay < 1)
+				eerrorx("Invalid respawn-delay value '%s'", optarg);
+			break;
+
 		case 'I': /* --ionice */
 			if (sscanf(optarg, "%d:%d", &ionicec, &ioniced) == 0)
 				eerrorx("%s: invalid ionice `%s'",
@@ -488,6 +499,12 @@ int main(int argc, char **argv)
 			if (sscanf(optarg, "%d", &nicelevel) != 1)
 				eerrorx("%s: invalid nice level `%s'",
 				    applet, optarg);
+			break;
+
+		case 'P':  /* --respawn-period time */
+			n = sscanf(optarg, "%d", &respawn_period);
+			if (n	!= 1 || respawn_delay < 1)
+				eerrorx("Invalid respawn-delay value '%s'", optarg);
 			break;
 
 		case 'S':  /* --start */
@@ -519,23 +536,18 @@ int main(int argc, char **argv)
 				    applet, optarg);
 			break;
 
+		case 'm':  /* --respawn-max count */
+			n = sscanf(optarg, "%d", &respawn_max);
+			if (n	!= 1 || respawn_max < 1)
+				eerrorx("Invalid respawn-max value '%s'", optarg);
+			break;
+
 		case 'p':  /* --pidfile <pid-file> */
 			pidfile = optarg;
 			break;
 
 		case 'r':  /* --chroot /new/root */
 			ch_root = optarg;
-			break;
-
-		case 'R':  /* --respawn-limit unlimited|count:period */
-			if (strcasecmp(optarg, "unlimited") == 0) {
-				respawn_max = 0;
-				respawn_period = 0;
-			} else {
-				n = sscanf(optarg, "%d:%d", &respawn_max, &respawn_period);
-				if (n	!= 2 || respawn_max < 1 || respawn_period < 1)
-					eerrorx("Invalid respawn-limit setting '%s'", optarg);
-			}
 			break;
 
 		case 'u':  /* --user <username>|<uid> */
@@ -600,6 +612,11 @@ int main(int argc, char **argv)
 	if (start) {
 		if (!exec)
 			eerrorx("%s: nothing to start", applet);
+		if (respawn_delay * respawn_max > respawn_period) {
+			ewarn("%s: Please increase the value of --respawn-period to more "
+				"than %d to avoid infinite respawning", applet, 
+				respawn_delay * respawn_max);
+		}
 	}
 
 	/* Expand ~ */
@@ -732,6 +749,7 @@ int main(int argc, char **argv)
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 				kill(child_pid, SIGTERM);
 			} else {
+				sleep(respawn_delay);
 				if (respawn_max > 0 && respawn_period > 0) {
 					respawn_now = time(NULL);
 					if (first_spawn == 0)

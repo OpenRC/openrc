@@ -16,6 +16,8 @@
 .Nd starts a daemon and restarts it if it crashes
 .Sh SYNOPSIS
 .Nm
+.Fl D , -respawn-delay
+.Ar seconds
 .Fl d , -chdir
 .Ar path
 .Fl e , -env
@@ -26,16 +28,18 @@
 .Ar arg
 .Fl k , -umask
 .Ar value
+.Fl m , -respawn-max
+.Ar count
 .Fl N , -nicelevel
 .Ar level
 .Fl p , -pidfile
 .Ar pidfile
-.Fl u , -user
-.Ar user
+.Fl P , -respawn-period
+.Ar seconds
 .Fl r , -chroot
 .Ar chrootpath
-.Fl R , -respawn-limit
-.Ar limit
+.Fl u , -user
+.Ar user
 .Fl 1 , -stdout
 .Ar logfile
 .Fl 2 , -stderr
@@ -84,6 +88,9 @@ Print the action(s) that are taken just before doing them.
 .Pp
 The options are as follows:
 .Bl -tag -width indent
+.It Fl D , -respawn-delay Ar seconds
+wait this number of seconds before restarting a daemon after it crashes.
+The default is 0.
 .It Fl d , -chdir Ar path
 chdir to this directory before starting the daemon.
 .It Fl e , -env Ar VAR=VALUE
@@ -96,29 +103,21 @@ Class can be 0 for none, 1 for real time, 2 for best effort and 3 for idle.
 Data can be from 0 to 7 inclusive.
 .It Fl k , -umask Ar mode
 Set the umask of the daemon.
+.It Fl m , -respawn-max Ar count
+Sets the maximum number of times a daemon will be respawned during a
+respawn period. If a daemon dies more than this number of times during a
+respawn period,
+.Nm
+will give up trying to respawn it and exit. The default is 10, and 0
+means unlimited.
 .It Fl N , -nicelevel Ar level
 Modifies the scheduling priority of the daemon.
+.It Fl P , -respawn-period Ar seconds
+Sets the length of a respawn period. The default is 10 seconds. See the
+description of --respawn-max for more information.
 .It Fl r , -chroot Ar path
 chroot to this directory before starting the daemon. All other paths, such
 as the path to the daemon, chdir and pidfile, should be relative to the chroot.
-.It Fl R , -respawn-limit Ar limit
-Control how agressively
-.Nm
-will try to respawn a daemon when it fails to start. The limit argument
-can be a pair of integers separated bya colon or the string unlimited.
-.Pp
-If a pair of integers is given, the first is a maximum number of respawn
-attempts and the second is a time period. It should be interpreted as:
-If the daemon dies and has to be respawned more than <first number>
-times in any time period of <second number> seconds, exit and give up.
-.Pp
-For example, the default is 10:5.
-This means if the supervisor respawns a daemon more than ten times
-in any 5 second period, it gives up and exits.
-.Pp
-if unlimited is given as the limit, it means that the supervisor will
-not exit or give up, no matter how many times the daemon it is
-supervising needs to be respawned.
 .It Fl u , -user Ar user
 Start the daemon as the specified user.
 .It Fl 1 , -stdout Ar logfile
@@ -143,6 +142,15 @@ to parse its options, which allows it to accept the `--' option which will
 cause it to stop processing options at that point. Any subsequent arguments
 are passed as arguments to the daemon to start and used when finding a daemon
 to stop or signal.
+.Sh NOTE
+If respawn-delay, respawn-max and respawn-period are not set correctly,
+it is possible to trigger a situation in which the supervisor will
+infinitely try to respawn a daemon. To avoid this, if you change the
+values of --respawn-delay, --respawn-max or --respawn-period, always
+make sure the settings mmake sense. For example, a respawn period of 5
+seconds with a respawn max of 10 and a respawn delay of 1 second leads
+to infinite respawning since there can never be 10 respawns within 5
+seconds.
 .Sh SEE ALSO
 .Xr chdir 2 ,
 .Xr chroot 2 ,
