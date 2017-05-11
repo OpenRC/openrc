@@ -185,7 +185,6 @@ static void child_process(char *exec, char **argv, char *svcname,
 	char **c;
 	char cmdline[PATH_MAX];
 	time_t start_time;
-	char start_time_string[20];
 	char start_count_string[20];
 
 #ifdef HAVE_PAM
@@ -344,8 +343,7 @@ static void child_process(char *exec, char **argv, char *svcname,
 	syslog(LOG_INFO, "Running command line: %s", cmdline);
 	if (svcname) {
 start_time = time(NULL);
-strftime(start_time_string, 20, "%Y-%m-%d %H:%M:%S", localtime(&start_time));
-		rc_service_value_set(svcname, "start_time", start_time_string);
+		rc_service_value_set(svcname, "start_time", from_time_t(start_time));
 sprintf(start_count_string, "%i", start_count);
 		rc_service_value_set(svcname, "start_count", start_count_string);
 	}

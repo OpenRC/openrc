@@ -442,3 +442,37 @@ RC_SERVICE lookup_service_state(const char *service)
 			return service_bits[i].bit;
 	return 0;
 }
+
+char *from_time_t(time_t tv)
+{
+	char time_string[20];
+
+	strftime(time_string, 20, "%Y-%m-%d %H:%M:%S", localtime(&tv));
+	return time_string;
+}
+
+time_t to_time_t(char *timestring)
+{
+	int check = 0;
+	int year = 0;
+	int month = 0;
+	int day = 0;
+	int hour = 0;
+	int min = 0;
+	int sec = 0;
+	struct tm breakdown = {0};
+	time_t result = -1;
+
+	check = sscanf(timestring, "%4d-%2d-%2d %2d:%2d:%2d",
+			&year, &month, &day, &hour, &min, &sec);
+	if (check == 6) {
+		breakdown.tm_year = year - 1900; /* years since 1900 */
+		breakdown.tm_mon = month - 1;
+		breakdown.tm_mday = day;
+		breakdown.tm_hour = hour;
+		breakdown.tm_min = min;
+		breakdown.tm_sec = sec;
+		result = mktime(&breakdown);
+	}
+	return result;
+}
