@@ -469,6 +469,7 @@ time_t to_time_t(char *timestring)
 		breakdown.tm_hour = hour;
 		breakdown.tm_min = min;
 		breakdown.tm_sec = sec;
+		breakdown.tm_isdst = -1;
 		result = mktime(&breakdown);
 	}
 	return result;
