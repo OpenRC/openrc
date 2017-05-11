@@ -676,10 +676,12 @@ int main(int argc, char **argv)
 		 * result would be the same. */
 		if (pidfile && exists(pidfile))
 			unlink(pidfile);
-		if (svcname)
+		if (svcname) {
 			rc_service_daemon_set(svcname, exec,
 			    (const char *const *)argv,
 			    pidfile, false);
+			rc_service_mark(svcname, RC_SERVICE_STOPPED);
+		}
 		exit(EXIT_SUCCESS);
 	}
 
@@ -780,6 +782,14 @@ int main(int argc, char **argv)
 			}
 		}
 
+		if (pidfile && exists(pidfile))
+			unlink(pidfile);
+		if (svcname) {
+			rc_service_daemon_set(svcname, exec,
+			    (const char *const *)argv,
+			    pidfile, false);
+			rc_service_mark(svcname, RC_SERVICE_STOPPED);
+		}
 		exit(EXIT_SUCCESS);
 	} else if (child_pid == 0)
 		child_process(exec, argv);
