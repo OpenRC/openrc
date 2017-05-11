@@ -171,7 +171,8 @@ static pid_t get_pid(const char *pidfile)
 	return pid;
 }
 
-static void child_process(char *exec, char **argv)
+static void child_process(char *exec, char **argv, char *svcname,
+		int start_count)
 {
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
@@ -183,6 +184,9 @@ static void child_process(char *exec, char **argv)
 	char *np;
 	char **c;
 	char cmdline[PATH_MAX];
+	time_t start_time;
+	char start_time_string[20];
+	char start_count_string[20];
 
 #ifdef HAVE_PAM
 	pam_handle_t *pamh = NULL;
@@ -338,6 +342,13 @@ static void child_process(char *exec, char **argv)
 		c++;
 	}
 	syslog(LOG_INFO, "Running command line: %s", cmdline);
+	if (svcname) {
+start_time = time(NULL);
+strftime(start_time_string, 20, "%Y-%m-%d %H:%M:%S", localtime(&start_time));
+		rc_service_value_set(svcname, "start_time", start_time_string);
+sprintf(start_count_string, "%i", start_count);
+		rc_service_value_set(svcname, "start_count", start_count_string);
+	}
 	execvp(exec, argv);
 
 #ifdef HAVE_PAM
@@ -778,7 +789,7 @@ int main(int argc, char **argv)
 				if (child_pid == -1)
 					eerrorx("%s: fork: %s", applet, strerror(errno));
 				if (child_pid == 0)
-					child_process(exec, argv);
+					child_process(exec, argv, svcname, respawn_count);
 			}
 		}
 
@@ -792,5 +803,5 @@ int main(int argc, char **argv)
 		}
 		exit(EXIT_SUCCESS);
 	} else if (child_pid == 0)
-		child_process(exec, argv);
+		child_process(exec, argv, svcname, respawn_count);
 }
