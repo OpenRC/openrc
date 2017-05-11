@@ -443,12 +443,9 @@ RC_SERVICE lookup_service_state(const char *service)
 	return 0;
 }
 
-char *from_time_t(time_t tv)
+void from_time_t(char *time_string, time_t tv)
 {
-	char time_string[20];
-
 	strftime(time_string, 20, "%Y-%m-%d %H:%M:%S", localtime(&tv));
-	return time_string;
 }
 
 time_t to_time_t(char *timestring)

@@ -69,7 +69,7 @@ RC_DEPTREE *_rc_deptree_load (int, int *);
 bool _rc_can_find_pids(void);
 
 RC_SERVICE lookup_service_state(const char *service);
-char *from_time_t(time_t tv);
+void from_time_t(char *time_string, time_t tv);
 time_t to_time_t(char *timestring);
 
 #endif
