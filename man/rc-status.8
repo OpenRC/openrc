@@ -25,6 +25,12 @@ in different runlevels.  The default behavior is to show information
 about the current runlevel and any unassigned services that are not stopped,
 but any runlevel can be quickly examined.
 .Pp
+If an active service is being supervised by
+.Xr supervise-daemon 8, 
+the amount of time the daemon has been active along with the number of
+times it has been respawned in the current respawn period will be
+displayed.
+.Pp
 The options are as follows:
 .Bl -tag -width ".Fl test , test string"
 .It Fl a , -all
@@ -57,5 +63,6 @@ dependency order if the dependency tree is available.
 .Sh SEE ALSO
 .Xr openrc 8 ,
 .Xr rc-update 8
+.Xr supervise-daemon 8
 .Sh AUTHORS
 .An Roy Marples <roy@marples.name>
