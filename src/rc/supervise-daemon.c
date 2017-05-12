@@ -196,6 +196,14 @@ static void child_process(char *exec, char **argv, char *svcname,
 
 	setsid();
 
+	if (svcname) {
+start_time = time(NULL);
+from_time_t(start_time_string, start_time);
+		rc_service_value_set(svcname, "start_time", start_time_string);
+sprintf(start_count_string, "%i", start_count);
+		rc_service_value_set(svcname, "start_count", start_count_string);
+	}
+
 	if (nicelevel) {
 		if (setpriority(PRIO_PROCESS, getpid(), nicelevel) == -1)
 			eerrorx("%s: setpriority %d: %s", applet, nicelevel,
@@ -342,13 +350,6 @@ static void child_process(char *exec, char **argv, char *svcname,
 		c++;
 	}
 	syslog(LOG_INFO, "Running command line: %s", cmdline);
-	if (svcname) {
-start_time = time(NULL);
-from_time_t(start_time_string, start_time);
-		rc_service_value_set(svcname, "start_time", start_time_string);
-sprintf(start_count_string, "%i", start_count);
-		rc_service_value_set(svcname, "start_count", start_count_string);
-	}
 	execvp(exec, argv);
 
 #ifdef HAVE_PAM
