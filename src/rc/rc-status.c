@@ -76,10 +76,55 @@ print_level(const char *prefix, const char *level)
 		printf("%s\n", level);
 }
 
+static void get_uptime(const char *service, char *uptime, int uptime_size)
+{
+	RC_SERVICE state = rc_service_state(service);
+	char *start_count;
+	time_t now;
+	char *start_time_string;
+	time_t start_time;
+	double time_diff;
+	double diff_tmp;
+	double diff_days;
+	double diff_hours;
+	double diff_mins;
+
+	uptime[0] = '\0';
+	if (state & RC_SERVICE_STARTED) {
+		start_count = rc_service_value_get(service, "start_count");
+		start_time_string = rc_service_value_get(service, "start_time");
+		if (start_count && start_time_string) {
+			start_time = to_time_t(start_time_string);
+			now = time(NULL);
+			time_diff = difftime(now, start_time);
+			diff_tmp = time_diff;
+			if (diff_tmp > 86400.0) {
+				diff_days = diff_tmp / 86400.0;
+				diff_tmp -= diff_days * 86400.0;
+			}
+			if (diff_tmp > 3600.0) {
+				diff_hours = diff_tmp / 3600.0;
+				diff_tmp -= diff_hours * 3600.0;
+			}
+			if (diff_tmp > 60.0) {
+				diff_mins = diff_tmp / 60.0;
+				diff_tmp -= diff_mins * 60.0;
+			}
+			if ((int) diff_days > 0)
+				snprintf(uptime, uptime_size, "%.0f days %02.0f:%02.0f (%s)",
+						diff_days, diff_hours, diff_mins, start_count);
+			else
+				snprintf(uptime, uptime_size, "%02.0f:%02.0f (%s)",
+						diff_hours, diff_mins, start_count);
+		}
+	}
+}
+
 static void
 print_service(const char *service)
 {
-	char status[10];
+	char status[60];
+	char uptime [40];
 	int cols =  printf(" %s", service);
 	const char *c = ecolor(ECOLOR_GOOD);
 	RC_SERVICE state = rc_service_state(service);
@@ -101,7 +146,8 @@ print_service(const char *service)
 		{
 			snprintf(status, sizeof(status), " crashed ");
 		} else {
-			snprintf(status, sizeof(status), " started ");
+			get_uptime(service, uptime, 40);
+			snprintf(status, sizeof(status), " started %s", uptime);
 			color = ECOLOR_GOOD;
 		}
 	} else if (state & RC_SERVICE_SCHEDULED) {
