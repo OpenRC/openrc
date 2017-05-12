@@ -1,3 +1,21 @@
+commit ddbd1caa35986b9f1be0070dad1cedfc427a1bf1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: save start time and respawn count before dropping privs
+
+commit a24965121834b64cc5e62c52c67b88886e5c5f5c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.26.1
+
+commit e4bfb4530a86a4ccdff312c857df37fa0da36fd6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 78e0042eccaf5a5554b195ad391b3ab0b8974cf6
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1462,20 +1480,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     supervise-daemon: add pam service file
-
-commit b3a04e797e5e459842c2c239886ab6ea08a8dc29
-Author: Anthony G. Basile <blueness@gentoo.org>
-Commit: Anthony G. Basile <blueness@gentoo.org>
-
-    runlevels/Makefile: add support for runlevel ‘nonetwork’
-    
-    Traditional System V reserves runlevel 2 for multiuser with no
-    networking.  We add support for this which is already defined in
-    the inittab as
-    
-        l2:2:wait:/sbin/rc nonetwork
-    
-    X-Gentoo-Bug: 533828
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=533828
-    
-    Signed-off-by: Anthony G. Basile <blueness@gentoo.org>
