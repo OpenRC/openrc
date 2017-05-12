@@ -1,3 +1,114 @@
+commit 78e0042eccaf5a5554b195ad391b3ab0b8974cf6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/rc-status: document changes for supervised daemons
+    
+    rc-status now shows the amount of time a supervised daemon has been
+    active as well as the number of times it has been respawned during the
+    current respawn period.
+
+commit 82e12e309247bc84abf29aca04b3a2dd845fa11b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: show uptimes and respawn counts for supervised daemons
+
+commit 1ebef0d7a38ec0a9635418b75c3aabb564c1577e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix to_time_t to honor dst
+
+commit 6b4050ab9cf9d678a1d6b7af7af7494f8533dbca
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix from_time_t function
+
+commit cf5e9aa2bbcdf1783fadeab26586c1134929d928
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Move time_t conversions to rc-misc.c so they can be shared
+
+commit a3250e77d412f2290e381b9e7569930d95e4fc5b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: save start time and respawn count
+    
+    This will allow rc-status to display an uptime and restart count for
+    supervised processes.
+
+commit df027ca4722c8755b23a65db75728b835ccca807
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: fix our status when we give up on the child process
+
+commit 4c89e3f5fa1c65ccd0c843f98e4013c2085f243f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon:create multiple options from --respawn-limit
+    
+    This creates --respawn-delay, --respawn-max and --respawn-period. It was
+    suggested that it would be easier to follow if the options were
+    separated.
+    
+    This is for #126.
+
+commit 3673040722b75c0a4d06fbeb272f917c7d1ea7c4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: add a --respawn-limit option
+    
+    Allow limiting the number of times supervise-daemon will attempt to respawn a
+    daemon once it has died to prevent infinite respawning. Also, set a
+    reasonable default limit (10 times in a 5 second period).
+    
+    This is for issue #126.
+
+commit 96c8ba2fb5f91a711ef5bfcfd8affe0b74ad18fe
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: mark all open file descriptors FD_CLOEXEC
+
+commit 47cf1d0c707dc88d216bebc15be3f39d5eb47fa9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon:remove the controlling tty in the supervisor
+
+commit 06a6a27e441372164872c7712b80728527a6ec05
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon:  fix access to tty_fd and devnull_fd
+    
+    Both the child and supervisor need access to these file descriptors.
+
+commit 5de3798afc55ce147e65926f863ec9c9cef60e79
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: mark the service started when the supervisor is active
+
+commit 6ac094a59cf7b51d8527af15b07feca707a635c8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.26
+
+commit 84c81ca02d7077a619dc704ff654385846fcd2b4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 0e3f8720984d7d5752a78a4135cd268e4f83b3d7
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1368,49 +1479,3 @@ Commit: Anthony G. Basile <blueness@gentoo.org>
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=533828
     
     Signed-off-by: Anthony G. Basile <blueness@gentoo.org>
-
-commit 92e2f2c7cc958effcec0ef773dda954a153d8e42
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    killprocs: remove calls to sleep
-    
-    X-Gentoo-Bug: 487084
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=487084
-
-commit ad23d5b8dbee70815c02271c78f415bcd7088076
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: clean up runscript deprecation message
-
-commit 62410eaf4ba92516a58a550717d7f3faf63bb79f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add daemon supervisor
-    
-    The supervise-daemon process is meant to be a lightweight supervisor
-    which can monitor and restart a daemon if it crashes.
-
-commit fd80b6fc67ec6a0fe4853167fb67ee40bb51b742
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    localmount/netmount: clean up critical mount processing
-    
-    Fix a typo and do not fail if a path in critical_mounts is not listed as
-    a critical mount does not get mounted.
-
-commit 5d130cc45cd334fd38b0c6874bcc81ac74636217
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    localmount/netmount: allow mount points to be marked critical
-    
-    In previous releases, we either treated no mount points as critical or
-    all of them.
-    
-    Now both localmount and netmount support a critical_mounts setting. If
-    mount points listed in this setting fail to mount, localmount and
-    netmount will fail.
