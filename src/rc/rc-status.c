@@ -83,11 +83,11 @@ static void get_uptime(const char *service, char *uptime, int uptime_size)
 	time_t now;
 	char *start_time_string;
 	time_t start_time;
-	double time_diff;
-	double diff_tmp;
-	double diff_days;
-	double diff_hours;
-	double diff_mins;
+	time_t time_diff;
+	time_t diff_days = (time_t) 0;
+	time_t diff_hours = (time_t) 0;
+	time_t diff_mins = (time_t) 0;
+	time_t diff_secs = (time_t) 0;
 
 	uptime[0] = '\0';
 	if (state & RC_SERVICE_STARTED) {
@@ -96,26 +96,29 @@ static void get_uptime(const char *service, char *uptime, int uptime_size)
 		if (start_count && start_time_string) {
 			start_time = to_time_t(start_time_string);
 			now = time(NULL);
-			time_diff = difftime(now, start_time);
-			diff_tmp = time_diff;
-			if (diff_tmp > 86400.0) {
-				diff_days = diff_tmp / 86400.0;
-				diff_tmp -= diff_days * 86400.0;
+			time_diff = (time_t) difftime(now, start_time);
+			diff_secs = time_diff;
+			if (diff_secs > (time_t) 86400) {
+				diff_days = diff_secs / (time_t) 86400;
+				diff_secs %= diff_days * (time_t) 86400;
 			}
-			if (diff_tmp > 3600.0) {
-				diff_hours = diff_tmp / 3600.0;
-				diff_tmp -= diff_hours * 3600.0;
+			if (diff_secs > (time_t) 3600) {
+				diff_hours = diff_secs / (time_t) 3600;
+				diff_secs %= diff_hours * (time_t) 3600;
 			}
-			if (diff_tmp > 60.0) {
-				diff_mins = diff_tmp / 60.0;
-				diff_tmp -= diff_mins * 60.0;
+			if (diff_secs > (time_t) 60) {
+				diff_mins = diff_secs / (time_t) 60;
+				diff_secs %= diff_mins * (time_t) 60;
 			}
-			if ((int) diff_days > 0)
-				snprintf(uptime, uptime_size, "%.0f days %02.0f:%02.0f (%s)",
-						diff_days, diff_hours, diff_mins, start_count);
+			if (diff_days > 0)
+				snprintf(uptime, uptime_size,
+						"%ld day(s) %02ld:%02ld:%02ld (%s)",
+						diff_days, diff_hours, diff_mins, diff_secs,
+						start_count);
 			else
-				snprintf(uptime, uptime_size, "%02.0f:%02.0f (%s)",
-						diff_hours, diff_mins, start_count);
+				snprintf(uptime, uptime_size,
+						"%02ld:%02ld:%02ld (%s)",
+						diff_hours, diff_mins, diff_secs, start_count);
 		}
 	}
 }
