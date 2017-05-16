@@ -1,3 +1,21 @@
+commit 1967cd402caf6e229263f15aef40c6c4d8f60ce3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc_status: calculate time differences in time_t and display seconds in uptime
+
+commit a7f3eb466c750eee160c49ab728ad1f8cd3380ee
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.26.2
+
+commit ae7490929d35322e1ce19daaa9f1edadbfe8dfd6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit ddbd1caa35986b9f1be0070dad1cedfc427a1bf1
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1468,15 +1486,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     guide.md: typo fix
     
     This fixes #86.
-
-commit 3fa9015b8e5610d38366f781a08789e34159b0dc
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-selinux: access check was backwards
-
-commit 3b5a8b331e81ecd9a9362553c16f4527291d5528
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: add pam service file
