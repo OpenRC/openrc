@@ -14,7 +14,7 @@ SRCS+=		rc-selinux.c
 endif
 
 ifeq (${OS},Linux)
-SRCS+=		openrc-init.c openrc-shutdown.c
+SRCS+=		kill_all.c openrc-init.c openrc-shutdown.c
 endif
 
 CLEANFILES=	version.h rc-selinux.o
@@ -44,6 +44,7 @@ RC_SBINPROGS=	mark_service_starting mark_service_started \
 		rc-abort swclock
 
 ifeq (${OS},Linux)
+RC_BINPROGS+= kill_all
 SBINPROGS+= openrc-init openrc-shutdown
 endif
 
@@ -97,6 +98,9 @@ checkpath: checkpath.o _usage.o rc-misc.o
 ifeq (${MKSELINUX},yes)
 checkpath: rc-selinux.o
 endif
+	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
+
+kill_all: kill_all.o _usage.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
