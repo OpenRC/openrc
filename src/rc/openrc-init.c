@@ -105,6 +105,14 @@ static void handle_shutdown(const char *runlevel, int cmd)
 	reboot(cmd);
 }
 
+static void handle_single(void)
+{
+	pid_t pid;
+
+	pid = do_openrc("single");
+	while (waitpid(pid, NULL, 0) != pid);
+}
+
 static void reap_zombies(void)
 {
 	pid_t pid;
@@ -201,6 +209,8 @@ int main(int argc, char **argv)
 			handle_shutdown("reboot", RB_AUTOBOOT);
 		else if (strcmp(buf, "reexec") == 0)
 			handle_reexec(argv[0]);
+		else if (strcmp(buf, "single") == 0)
+			handle_single();
 	}
 	return 0;
 }
