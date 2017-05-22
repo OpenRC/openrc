@@ -14,7 +14,7 @@ supervisor=supervise-daemon
 port="${RC_SVCNAME#*.}"
 term_type="${term_type:-linux}"
 command=/sbin/agetty
-command_args_foreground="${agetty_options} ${port} ${baud} ${termtype}"
+command_args_foreground="${agetty_options} ${port} ${baud} ${term_type}"
 pidfile="/run/${RC_SVCNAME}.pid"
 
 depend() {
