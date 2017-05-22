@@ -8,7 +8,7 @@
 .\" This file may not be copied, modified, propagated, or distributed
 .\"    except according to the terms contained in the LICENSE file.
 .\"
-.Dd April 6, 2017
+.Dd May 22, 2017
 .Dt openrc-shutdown 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -40,6 +40,9 @@ upgrade of OpenRC if you are using openrc-init as your init process.
 .It Fl r , -reboot
 Stop all services, kill all processes and reboot the system.
 .El
+.Pp
+If none of these options are given, the default is to move the system
+into single user mode.
 .Sh SEE ALSO
 .Xr openrc-init 8 ,
 .Xr kexec 8 ,

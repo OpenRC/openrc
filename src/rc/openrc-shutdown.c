@@ -114,7 +114,7 @@ if (geteuid() != 0)
 		case_RC_COMMON_GETOPT
 		}
 	}
-	if (cmd_count != 1) {
+	if (cmd_count > 1) {
 		eerror("%s: %s\n", applet, exclusive);
 		usage(EXIT_FAILURE);
 	}
@@ -128,5 +128,7 @@ if (geteuid() != 0)
 		send_cmd("reboot");
 	else if (do_reexec)
 		send_cmd("reexec");
+	else
+		send_cmd("single");
 	return 0;
 }
