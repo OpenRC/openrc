@@ -27,6 +27,9 @@ is the utility that communicates with openrc-init(8) to bring down the
 system or instruct openrc-init to re-execute itself. It supports the
 following options:
 .Bl -tag -width "poweroff"
+.It Fl d , -dry-run
+Print the action that would be taken without executing it. This is to
+allow testing.
 .It Fl H , -halt
 Stop all services, kill all remaining processes and halt the system.
 .It Fl k , -kexec
