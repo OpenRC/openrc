@@ -26,7 +26,8 @@ _CCFLAGS=	-Wall -Wextra -Wimplicit -Wshadow -Wformat=2 \
 		-Wnested-externs \
 		-Winline -Wwrite-strings -Wcast-align -Wcast-qual \
 		-Wpointer-arith \
-		-Wdeclaration-after-statement -Wsequence-point
+		-Wdeclaration-after-statement -Wsequence-point \
+		-Werror=implicit-function-declaration
 
 # We should be using -Wredundant-decls, but our library hidden proto stuff
 # gives loads of warnings. I don't fully understand it (the hidden proto,
