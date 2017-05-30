@@ -1,3 +1,27 @@
+commit 809c205c356992145b8781ae07a5d3c98b79a8c9
+Author: Sergei Trofimovich <slyfox@inbox.ru>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-logger.c: fix crash on fclose(NULL) (#137)
+    
+    Only close the log if we successfully opened it.
+    
+    Reported-by: Brian Evans <grknight@gentoo.org>
+    Tested-by: Brian Evans <grknight@gentoo.org>
+    Signed-off-by: Sergei Trofimovich <slyfox@gentoo.org>
+
+commit 238bffca9bbec8ed723b9e46fbc04407e5daddeb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.26.3
+
+commit da0ddd521ad15d030308fbf2017577acc422f1d6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 1967cd402caf6e229263f15aef40c6c4d8f60ce3
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1429,60 +1453,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     increment version to 0.22
-
-commit 5bfb7d6c77ff533e34e2bbfe5b6e57410d961d70
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit 12c8248b5f53879935d4e62ef42023f703c7b636
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    update news for 0.21
-
-commit 820ef6dab674c2878d72edc8ea21e7250b1b5aec
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: clarify documentation about configuring daemon not to fork
-
-commit 87884db66767eba6317b506a4d7270dd22721831
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Make deprecation warnings for rc and runscript more visible
-    
-    These warnings were inserted in verbose only mode in OpenRC-0.13.A
-    Now, we are making them more visible in preparation for removing these
-    compatibility binaries in the future.
-
-commit 94077d264e14783e6ca5603d64e9d579fb206c20
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: log the exit code or signal when a child process dies
-
-commit 3351c8b4c3027f09003f8ba33e43f46762f5c453
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon.sh: add support for chroot variable
-
-commit a8214af2fe3aa91930e3270af99cf1d9b7ef5b0a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon.sh: fix regression in chroot support
-    
-    The support for the chroot variable was broken in 0.16, this fixes that
-    breakage.
-
-commit 9a372812c78ea8efc55b3dea6a39c2d0559bca45
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    guide.md: typo fix
-    
-    This fixes #86.
