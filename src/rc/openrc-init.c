@@ -195,8 +195,8 @@ int main(int argc, char **argv)
 				perror("fopen");
 			continue;
 		}
-		count = fread(buf, 1, 2048, fifo);
-		buf[count] = 0;
+		count = fread(buf, 1, sizeof(buf) - 1 /* '\0' */, fifo);
+		buf[count] = 0; /* '\0' */
 		fclose(fifo);
 		printf("PID1: Received \"%s\" from FIFO...\n", buf);
 		if (strcmp(buf, "halt") == 0)
