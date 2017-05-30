@@ -261,12 +261,12 @@ rc_logger_open(const char *level)
 						break;
 					}
 				}
+				fclose(log);
 			} else {
 				log_error = 1;
 				eerror("Error: fopen(%s) failed: %s", TMPLOG, strerror(errno));
 			}
 
-			fclose(log);
 			fclose(plog);
 		} else {
 			/*
