@@ -19,9 +19,9 @@ depend()
 start()
 {
 	ebegin "Terminating remaining processes"
-	killall5 -15 ${killall5_opts}
+	kill_all 15 ${killall5_opts}
 	eend 0
 	ebegin "Killing remaining processes"
-	killall5 -9 ${killall5_opts}
+	kill_all 9 ${killall5_opts}
 	eend 0
 }
