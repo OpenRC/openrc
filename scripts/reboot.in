@@ -1,0 +1,3 @@
+#!@SHELL@
+
+exec @SBINDIR@/openrc-shutdown --reboot "$@"
