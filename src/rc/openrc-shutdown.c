@@ -27,46 +27,63 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 
 #include "einfo.h"
 #include "rc.h"
 #include "helpers.h"
 #include "_usage.h"
+#include "rc-wtmp.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "dHkpRr" getoptstring_COMMON;
+const char *getoptstring = "dDHKpRrw" getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "dry-run",        no_argument, NULL, 'd'},
+	{ "no-write",        no_argument, NULL, 'd'},
+	{ "dry-run",        no_argument, NULL, 'D'},
 	{ "halt",        no_argument, NULL, 'H'},
-	{ "kexec",        no_argument, NULL, 'k'},
+	{ "kexec",        no_argument, NULL, 'K'},
 	{ "poweroff",        no_argument, NULL, 'p'},
 	{ "reexec",        no_argument, NULL, 'R'},
 	{ "reboot",        no_argument, NULL, 'r'},
+	{ "write-only",        no_argument, NULL, 'w'},
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
+	"do not write wtmp record",
 	"print actions instead of executing them",
 	"halt the system",
 	"reboot the system using kexec",
 	"power off the system",
 	"re-execute init (use after upgrading)",
 	"reboot the system",
+	"write wtmp boot record and exit",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
 const char *exclusive = "Select one of "
 "--halt, --kexec, --poweroff, --reexec or --reboot";
 
-static void send_cmd(const char *cmd, bool dryrun)
+static bool do_dryrun = false;
+static bool do_halt = false;
+static bool do_kexec = false;
+static bool do_poweroff = false;
+static bool do_reboot = false;
+static bool do_reexec = false;
+static bool do_wtmp = true;
+static bool do_wtmp_only = false;
+
+static void send_cmd(const char *cmd)
 {
 	FILE *fifo;
  	size_t ignored;
 
-	if (dryrun) {
+	if (do_dryrun) {
 		einfo("Would send %s to init", cmd);
 		return;
 	}
+	if (do_wtmp && (do_halt || do_kexec || do_reboot || do_poweroff))
+		log_wtmp("shutdown", "~~", 0, RUN_LVL, "~~");
 	fifo = fopen(RC_INIT_FIFO, "w");
 	if (!fifo) {
 		perror("fopen");
@@ -83,26 +100,23 @@ int main(int argc, char **argv)
 {
 	int opt;
 	int cmd_count = 0;
-	bool do_dryrun = false;
-	bool do_halt = false;
-	bool do_kexec = false;
-	bool do_poweroff = false;
-	bool do_reboot = false;
-	bool do_reexec = false;
 
 	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-		case 'd':
+			case 'd':
+				do_wtmp = false;
+				break;
+		case 'D':
 			do_dryrun = true;
 			break;
 		case 'H':
 			do_halt = true;
 			cmd_count++;
 			break;
-		case 'k':
+		case 'K':
 			do_kexec = true;
 			cmd_count++;
 			break;
@@ -118,26 +132,31 @@ int main(int argc, char **argv)
 			do_reboot = true;
 			cmd_count++;
 			break;
+		case 'w':
+			do_wtmp_only = true;
+			break;
 		case_RC_COMMON_GETOPT
 		}
 	}
-if (geteuid() != 0 && ! do_dryrun)
-	eerrorx("%s: you must be root\n", applet);
+	if (geteuid() != 0 && ! do_dryrun)
+		eerrorx("%s: you must be root\n", applet);
 	if (cmd_count > 1) {
 		eerror("%s: %s\n", applet, exclusive);
 		usage(EXIT_FAILURE);
 	}
 	if (do_halt)
-		send_cmd("halt", do_dryrun);
+		send_cmd("halt");
 	else if (do_kexec)
-		send_cmd("kexec", do_dryrun);
+		send_cmd("kexec");
 	else if (do_poweroff)
-		send_cmd("poweroff", do_dryrun);
+		send_cmd("poweroff");
 	else if (do_reboot)
-		send_cmd("reboot", do_dryrun);
+		send_cmd("reboot");
 	else if (do_reexec)
-		send_cmd("reexec", do_dryrun);
+		send_cmd("reexec");
+	else if (do_wtmp_only)
+		log_wtmp("shutdown", "~~", 0, RUN_LVL, "~~");
 	else
-		send_cmd("single", do_dryrun);
+		send_cmd("single");
 	return 0;
 }

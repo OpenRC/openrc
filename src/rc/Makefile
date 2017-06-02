@@ -14,7 +14,7 @@ SRCS+=		rc-selinux.c
 endif
 
 ifeq (${OS},Linux)
-SRCS+=		kill_all.c openrc-init.c openrc-shutdown.c
+SRCS+=		kill_all.c openrc-init.c openrc-shutdown.c rc-wtmp.c
 endif
 
 CLEANFILES=	version.h rc-selinux.o
@@ -111,7 +111,7 @@ veinfo vewarn vebegin veend vewend veindent veoutdent: do_e.o rc-misc.o
 fstabinfo: fstabinfo.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-openrc-init: openrc-init.o
+openrc-init: openrc-init.o rc-wtmp.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 is_newer_than: is_newer_than.o rc-misc.o
@@ -132,7 +132,7 @@ mountinfo: mountinfo.o _usage.o rc-misc.o
 openrc rc: rc.o rc-logger.o rc-misc.o rc-plugin.o _usage.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-openrc-shutdown: openrc-shutdown.o _usage.o
+openrc-shutdown: openrc-shutdown.o _usage.o rc-wtmp.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 openrc-run runscript: openrc-run.o _usage.o rc-misc.o rc-plugin.o
