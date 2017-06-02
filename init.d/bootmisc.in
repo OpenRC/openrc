@@ -241,7 +241,7 @@ stop()
 {
 	# Write a halt record if we're shutting down
 	if [ "$RC_RUNLEVEL" = shutdown ]; then
-		[ "$RC_UNAME" = Linux ] && halt -w
+		[ "$RC_UNAME" = Linux ] && openrc-shutdown -w
 		if [ "$RC_SYS" = OPENVZ ]; then
 			yesno $RC_REBOOT && printf "" >/reboot
 		fi
