@@ -37,7 +37,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "dDHKpRrw" getoptstring_COMMON;
+const char *getoptstring = "dDHKpRrsw" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "no-write",        no_argument, NULL, 'd'},
 	{ "dry-run",        no_argument, NULL, 'D'},
@@ -46,6 +46,7 @@ const struct option longopts[] = {
 	{ "poweroff",        no_argument, NULL, 'p'},
 	{ "reexec",        no_argument, NULL, 'R'},
 	{ "reboot",        no_argument, NULL, 'r'},
+	{ "single",        no_argument, NULL, 's'},
 	{ "write-only",        no_argument, NULL, 'w'},
 	longopts_COMMON
 };
@@ -57,12 +58,13 @@ const char * const longopts_help[] = {
 	"power off the system",
 	"re-execute init (use after upgrading)",
 	"reboot the system",
+	"single user mode",
 	"write wtmp boot record and exit",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
 const char *exclusive = "Select one of "
-"--halt, --kexec, --poweroff, --reexec or --reboot";
+"--halt, --kexec, --poweroff, --reexec, --reboot, --single or --write-only";
 
 static bool do_dryrun = false;
 static bool do_halt = false;
@@ -70,6 +72,7 @@ static bool do_kexec = false;
 static bool do_poweroff = false;
 static bool do_reboot = false;
 static bool do_reexec = false;
+static bool do_single = false;
 static bool do_wtmp = true;
 static bool do_wtmp_only = false;
 
@@ -132,15 +135,20 @@ int main(int argc, char **argv)
 			do_reboot = true;
 			cmd_count++;
 			break;
+		case 's':
+			do_single = true;
+			cmd_count++;
+			break;
 		case 'w':
 			do_wtmp_only = true;
+			cmd_count++;
 			break;
 		case_RC_COMMON_GETOPT
 		}
 	}
 	if (geteuid() != 0 && ! do_dryrun)
 		eerrorx("%s: you must be root\n", applet);
-	if (cmd_count > 1) {
+	if (cmd_count != 1) {
 		eerror("%s: %s\n", applet, exclusive);
 		usage(EXIT_FAILURE);
 	}
@@ -156,7 +164,7 @@ int main(int argc, char **argv)
 		send_cmd("reexec");
 	else if (do_wtmp_only)
 		log_wtmp("shutdown", "~~", 0, RUN_LVL, "~~");
-	else
+	else if (do_single)
 		send_cmd("single");
 	return 0;
 }
