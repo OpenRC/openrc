@@ -1,3 +1,194 @@
+commit caacedc0a82285fb2d25c6d3473f154044c7ad66
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: update openrc-shutdown man page
+    
+    Add the new wtmp options and fix some cross references.
+
+commit 84d140a1f6abf95a4170d13527152d3ab14e6613
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts/shutdown: pass --single to openrc-shutdown
+    
+    Sysvinit shutdown has a default of single user mode, but openrc-shutdown
+    makes you choose a default action. Because of this, the shutdown wrapper
+    needs to pass --single to openrc-shutdown.
+
+commit ee886c44824b1dd892eaff2c6da666286e61bc73
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-shutdown: add --single option and clean up option processing
+
+commit 1801561c2d36c330df7fd02c7508f503a61ff5ba
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/bootmisc: use openrc-shutdown instead of halt to write halt record
+    
+    This fixes #139 and fixes #128.
+    and fixes #124.
+
+commit 7689106aa10f7852b707b4c21ec080ccb2767280
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add support for writing reboot and shutdown records to wtmp
+
+commit 1564e155b726308200ecd5df315c002bd8b16952
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-init: add optional sysvinit compatibility
+
+commit 44bac3c3798f7eb9186c3ea8774552aa191bfae7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Change killprocs to use kill_all instead of killall5
+    
+    X-Gentoo-Bug:376977
+    X-Gentoo-Bug-URL:https://bugs.gentoo.org/show_bug.cgi?id=376977
+
+commit 0ddee9b7d2b8dea810e252ca6a95c457876df120
+Author: Sergei Trofimovich <slyfox@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-init: fix buffer overflow in init.ctl
+    
+    How to reproduce 1-byte overflow:
+    
+    ```
+    $ FEATURES=-test CFLAGS="-fsanitize=address -O0 -ggdb3" emerge -1 openrc
+    
+    =================================================================
+    ==1==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fff0efd8710
+        at pc 0x000000402076 bp 0x7fff0efd7d50 sp 0x7fff0efd7d40
+    WRITE of size 1 at 0x7fff0efd8710 thread T0
+        #0 0x402075  (/sbin/openrc-init+0x402075)
+        #1 0x3cf6e2070f in __libc_start_main (/lib64/libc.so.6+0x3cf6e2070f)
+        #2 0x4013b8  (/sbin/openrc-init+0x4013b8)
+    
+    Address 0x7fff0efd8710 is located in stack of thread T0 at offset 2432 in frame
+        #0 0x401cfb  (/sbin/openrc-init+0x401cfb)
+    
+      This frame has 3 object(s):
+        [32, 160) 'signals'
+        [192, 344) 'sa'
+        [384, 2432) 'buf' <== Memory access at offset 2432 overflows this variable
+    HINT: this may be a false positive if your program uses some custom stack unwind mechanism or swapcontext
+          (longjmp and C++ exceptions *are* supported)
+    SUMMARY: AddressSanitizer: stack-buffer-overflow ??:0 ??
+    ```
+    
+    The problem here is in the code handling reads from 'init.ctl':
+    
+    ```
+    int main(int argc, char **argv) {
+    ...
+        char buf[2048];
+        for (;;) {
+            /* This will block until a command is sent down the pipe... */
+            fifo = fopen(RC_INIT_FIFO, "r");
+            count = fread(buf, 1, 2048, fifo);
+            buf[count] = 0;
+            ...
+        }
+    ```
+    
+    `buf[count] = 0;` writes outside the buffer when `fread()` returns non-truncated read.
+    
+    This fixes #138.
+
+commit 688566c535111a141f77caf88db12a4338544f7b
+Author: Sergei Trofimovich <slyfox@inbox.ru>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    mk/cc.mk: make implicit function declarations fatal (#136)
+    
+    Avoids issues with missing prototypes causing truncation of pointers.
+    
+    Signed-off-by: Sergei Trofimovich <slyfox@gentoo.org>
+
+commit 7185e242ffaa8cd1b672fe4726502a196fd779c2
+Author: Sergei Trofimovich <slyfox@inbox.ru>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    rc-logger.c: fix crash on fclose(NULL) (#137)
+    
+    Only close the log if we successfully opened it.
+    
+    Reported-by: Brian Evans <grknight@gentoo.org>
+    Tested-by: Brian Evans <grknight@gentoo.org>
+    Signed-off-by: Sergei Trofimovich <slyfox@gentoo.org>
+
+commit ec27299f4b88daa80261298fafea76ae634744d9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+    
+    X-Gentoo-Bug: 618888
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=618888
+
+commit 1ece16bfcd0ab71d2f9fe17a75ee6184e0fa4828
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-shutdown: add dry-run option
+
+commit 0cfd0dd9ef580ed9dc563ccc164d70efe8f299db
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-shutdown: move to single user mode by default
+    
+    To be more compatible with sysvinit, move to single user mode if no
+    options are specified on the command line.
+
+commit a77ee2e94191ba1a286b8a6835f76556481566ba
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init: add ability to switch to single user mode
+
+commit 49b8a573a195f4b2cee992cd10678694da0a6f4f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add kill_all helper
+    
+    This is similar to the sysvinit killall5 utility.  It should only be used
+    in service scripts, so it will not be installed in the path.
+    
+    This closes #129.
+
+commit a2055af90054f5125cc07d4851b1dc9d16815e7c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc_status: calculate time differences in time_t and display seconds in uptime
+
+commit cbf96967f1b6dc72ae16203dfbbb844bd08e8b6b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: save start time and respawn count before dropping privs
+
+commit f1013037b47cdd6344f1b3ed92b7f84d7fcca01f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.27
+
+commit e4bfb4530a86a4ccdff312c857df37fa0da36fd6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 78e0042eccaf5a5554b195ad391b3ab0b8974cf6
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1393,89 +1584,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     increment version to 0.22
-
-commit 5bfb7d6c77ff533e34e2bbfe5b6e57410d961d70
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit 12c8248b5f53879935d4e62ef42023f703c7b636
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    update news for 0.21
-
-commit 820ef6dab674c2878d72edc8ea21e7250b1b5aec
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: clarify documentation about configuring daemon not to fork
-
-commit 87884db66767eba6317b506a4d7270dd22721831
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Make deprecation warnings for rc and runscript more visible
-    
-    These warnings were inserted in verbose only mode in OpenRC-0.13.A
-    Now, we are making them more visible in preparation for removing these
-    compatibility binaries in the future.
-
-commit 94077d264e14783e6ca5603d64e9d579fb206c20
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: log the exit code or signal when a child process dies
-
-commit 3351c8b4c3027f09003f8ba33e43f46762f5c453
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon.sh: add support for chroot variable
-
-commit a8214af2fe3aa91930e3270af99cf1d9b7ef5b0a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon.sh: fix regression in chroot support
-    
-    The support for the chroot variable was broken in 0.16, this fixes that
-    breakage.
-
-commit 9a372812c78ea8efc55b3dea6a39c2d0559bca45
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    guide.md: typo fix
-    
-    This fixes #86.
-
-commit 3fa9015b8e5610d38366f781a08789e34159b0dc
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-selinux: access check was backwards
-
-commit 3b5a8b331e81ecd9a9362553c16f4527291d5528
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: add pam service file
-
-commit b3a04e797e5e459842c2c239886ab6ea08a8dc29
-Author: Anthony G. Basile <blueness@gentoo.org>
-Commit: Anthony G. Basile <blueness@gentoo.org>
-
-    runlevels/Makefile: add support for runlevel ‘nonetwork’
-    
-    Traditional System V reserves runlevel 2 for multiuser with no
-    networking.  We add support for this which is already defined in
-    the inittab as
-    
-        l2:2:wait:/sbin/rc nonetwork
-    
-    X-Gentoo-Bug: 533828
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=533828
-    
-    Signed-off-by: Anthony G. Basile <blueness@gentoo.org>
