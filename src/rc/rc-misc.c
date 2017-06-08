@@ -420,6 +420,55 @@ bool _rc_can_find_pids(void)
 	return retval;
 }
 
+int putenvfile(char *envfile) {
+	/* Read environment variables from an EnvironmentFile according to
+	 * https://www.freedesktop.org/software/systemd/man/systemd.exec.html#EnvironmentFile=
+	 * See FIXMEs below */
+	FILE *fp;
+	int size;
+	char *buf;
+	char *line;
+	char *envfile_p = envfile;
+	bool ignore_errors = false;
+	const char delim[2] = "\n";
+	/* Do not fail if filepath is prefixed with "-" and remove the prefix */
+	if (envfile[0] == '-') {
+		envfile_p++;
+		ignore_errors = true;
+	}
+	fp = fopen(envfile_p, "r");
+	if (fp) {
+		fseek(fp, 0L, SEEK_END);
+		size = ftell(fp);
+		fseek(fp, 0L, SEEK_SET);
+		buf = (char *) malloc(size + 1);
+		if (fread(buf, 1, size, fp) != size) {
+			free(buf);
+			eerror("Envfile: Failure to read from %s", envfile_p);
+			exit(EXIT_FAILURE);
+		}
+		fclose(fp);
+		buf[size] = 0;
+		line = strtok(buf, delim);
+		while ( line != NULL ) {
+			/* Ignore comments, empty lines and lines without a variable
+			 * assignment */
+			if (line[0] != '#' && line[0] != ';' && line[0] != 0
+					&& strchr(line, '=') != 0) {
+				/* FIXME: Support multiline variable definitions
+				 * FIXME: Strip whitespaces unless double quoted */
+				putenv(line);
+			}
+			line = strtok(NULL, delim);
+		}
+	} else {
+		if (!ignore_errors) {
+			eerror("Envfile: Unable to open %s", envfile_p);
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
 static const struct {
 	const char * const name;
 	RC_SERVICE bit;
