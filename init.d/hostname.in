@@ -26,7 +26,7 @@ start()
 	else
 		# HOSTNAME variable used to be defined in caps in conf.d/hostname.
 		# It is also a magic variable in bash.
-		h=${hostname-${HOSTNAME}} # checkbashisms: false positive
+		h=${hostname:-${HOSTNAME}} # checkbashisms: false positive (HOSTNAME var)
 	fi
 	if [ -z "$h" ]; then
 		einfo "Using default system hostname"
