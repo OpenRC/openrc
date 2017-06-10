@@ -11,7 +11,8 @@
 
 description="Sets the hostname of the machine."
 
-depend() {
+depend()
+{
 	after clock
 	keyword -docker -lxc -prefix -systemd-nspawn
 }
@@ -20,12 +21,12 @@ start()
 {
 	local h source x
 	if [ -s @SYSCONFDIR@/hostname ] && [ -r @SYSCONFDIR@/hostname ]; then
-	read h x <@SYSCONFDIR@/hostname
-	source=" from @SYSCONFDIR@/hostname"
+		read h x <@SYSCONFDIR@/hostname
+		source="from @SYSCONFDIR@/hostname"
 	else
 		# HOSTNAME variable used to be defined in caps in conf.d/hostname.
 		# It is also a magic variable in bash.
-		h=${hostname-${HOSTNAME}} # checkbashisms: false positive
+		h=${hostname:-${HOSTNAME}} # checkbashisms: false positive (HOSTNAME var)
 	fi
 	if [ -z "$h" ]; then
 		einfo "Using default system hostname"
