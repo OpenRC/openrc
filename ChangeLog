@@ -1,3 +1,71 @@
+commit fe5567bb04b3bacfb473d707e3eb936571c06661
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix argument parsing for the sysvinit shutdown wrapper
+    
+    This fixes #140.
+
+commit 88e995482855356b79dc670420d31642162aaddb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts/shutdown: fix arguments to be sysvinit shutdown compatible
+    
+    This fixes #140.
+
+commit a4b9c972828089dccea16aa92371ccda02717fab
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix link to shutdown for MKSYSVINIT=yes
+
+commit d47288d838a45b89abf944f7ddf969372b54a8e1
+Author: udeved <artoo@manjaro.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts/Makefile: make symlinks absolute instead of relative
+    
+    This closes #142.
+
+commit 1cf0c98514c6b08dd56c363e89007e791dbc0589
+Author: udeved <artoo@manjaro.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts/Makefile: respect SBINDIR with MKSYSVINIT
+    
+    This is for #142.
+
+commit 0cded681e8759f05a22a60095353bf8b2196906f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.27.2
+
+commit 03e61ccd30122cb2be169335cb02c412ea56625f
+Author: Jory A. Pratt <anarchy@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    kill_all: include limits.h for PATH_MAX
+
+commit 7067f7670e96363530ce362974e1f1e31f66ef6e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix compile issue for musl
+
+commit 3c198185b25d1cb4528461f34a8f8b552f23331c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.27.1
+
+commit e84366fd232a41c3ba79ed351e93c74cef8d7c8d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit caacedc0a82285fb2d25c6d3473f154044c7ad66
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1564,23 +1632,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug:583634
     X-Gentoo-Bug-URL:https://bugs.gentoo.org/show_bug.cgi?id=583634
-
-commit b2c92b88cc6ce6d81444667efbc6d44542db1788
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fstabinfo/mountinfo: ensure /etc/fstab exists before calling setmntent
-    
-    This is based on a patch by A. Wilcox <awilfox.gentoo@foxkit.us>.
-    
-    X-Gentoo-Bug: 478226
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=478226
-    
-    X-Gentoo-Bug: 478226
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=478226
-
-commit 1b32af17225a4b18ced7f4326727cbe8265e7fd2
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    increment version to 0.22
