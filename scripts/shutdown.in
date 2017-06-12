@@ -1,8 +1,17 @@
 #!@SHELL@
 
-args="$@"
-case "$@" in
-	*--single*|*-s*) args="$@" ;;
-	*) args="--single $@";;
+args=
+for x; do
+	case "$x" in
+		-h) args=" ${args} --halt" ;;
+		*) args=" ${args} ${x} " ;;
+	esac
+done
+
+case "$args" in
+	*-h|--halt*) ;;
+	*-s|--single*) ;;
+	*) args=" --single ${args}" ;;
 esac
+
 exec @SBINDIR@/openrc-shutdown "$args"
