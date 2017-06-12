@@ -1,0 +1,19 @@
+language: c
+
+dist: trusty
+sudo: required
+
+compiler:
+  - gcc
+  - musl-gcc
+  - clang
+
+install:
+  # This ppa provides a more recent musl
+  - sudo add-apt-repository ppa:bortis/musl -y
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq musl-tools musl musl-dev
+
+script:
+  - make 
+  - make test
