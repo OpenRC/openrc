@@ -1,17 +1,21 @@
 #!@SHELL@
 
-args=
-for x; do
-	case "$x" in
-		-h) args=" ${args} --halt" ;;
-		*) args=" ${args} ${x} " ;;
+poweroff_arg=
+while getopts :HhPr opt; do
+	case "$opt" in
+		h|P) poweroff_arg=--poweroff ;;
+		H) poweroff_arg=--halt ;;
+		r) poweroff_arg=--reboot ;;
+		\?) printf "${0##*/}: invalid option ${optarg}\n" >&2
+		exit 1
+		;;
 	esac
 done
+shift $((OPTIND-1))
 
-case "$args" in
-	*-h|--halt*) ;;
-	*-s|--single*) ;;
-	*) args=" --single ${args}" ;;
-esac
+if [ -z "${poweroff_arg}" ]; then
+	poweroff_arg=--single
+fi
 
-exec @SBINDIR@/openrc-shutdown "$args"
+echo @SBINDIR@/openrc-shutdown ${poweroff_arg} ${@}
+exec @SBINDIR@/openrc-shutdown ${poweroff_arg} ${@}
