@@ -101,7 +101,7 @@ mount_misc()
 	if [ -d /sys/firmware/efi/efivars ] &&
 		! mountinfo -q /sys/firmware/efi/efivars; then
 		ebegin "Mounting efivarfs filesystem"
-		mount -n -t efivarfs -o ${sysfs_opts} \
+		mount -n -t efivarfs -o ro \
 			efivarfs /sys/firmware/efi/efivars 2> /dev/null
 		eend 0
 	fi

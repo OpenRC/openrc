@@ -3,6 +3,13 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC-0.28
+
+This version mounts efivars read only due to concerns about changes in
+this file system making systems unbootable.  If you need to change something
+in this path, you will need to re-mount it read-write, make the change
+and re-mount it read-only.
+
 ## OpenRC-0.25
 
 This version contains an OpenRC-specific implementation of init for
