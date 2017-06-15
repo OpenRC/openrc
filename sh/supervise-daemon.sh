@@ -18,7 +18,9 @@ supervise_start()
 		return 1
 	fi
 
-	ebegin "Starting ${name:-$RC_SVCNAME}"
+	if [ ! "${quiet}" == "YES" ]; then
+		ebegin "Starting ${name:-$RC_SVCNAME}"
+	fi
 	# The eval call is necessary for cases like:
 	# command_args="this \"is a\" test"
 	# to work properly.
@@ -37,7 +39,9 @@ supervise_start()
 		[ -n "${chroot}" ] && service_set_value "chroot" "${chroot}"
 		[ -n "${pidfile}" ] && service_set_value "pidfile" "${pidfile}"
 	fi
-	eend $rc "failed to start ${name:-$RC_SVCNAME}"
+	if [ ! "${quiet}" == "YES" ]; then
+		eend $rc "failed to start ${name:-$RC_SVCNAME}"
+	fi
 }
 
 supervise_stop()
@@ -47,12 +51,16 @@ supervise_stop()
 	chroot="${startchroot:-$chroot}"
 	pidfile="${startpidfile:-$pidfile}"
 	[ -n "$pidfile" ] || return 0
-	ebegin "Stopping ${name:-$RC_SVCNAME}"
+	if [ ! "${quiet}" == "YES" ]; then
+		ebegin "Stopping ${name:-$RC_SVCNAME}"
+	fi
 	supervise-daemon --stop \
 		${pidfile:+--pidfile} $chroot$pidfile \
 		${stopsig:+--signal} $stopsig
 
-	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
+	if [ ! "${quiet}" == "YES" ]; then
+		eend $? "Failed to stop ${name:-$RC_SVCNAME}"
+	fi
 }
 
 supervise_status()

@@ -6,3 +6,6 @@
 
 # extra options to pass to agetty for this port
 #agetty_options=""
+
+# make agetty service quiet
+#quiet="YES"

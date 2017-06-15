@@ -21,14 +21,20 @@ ssd_start()
 	fi
 
 	local _background=
-	ebegin "Starting ${name:-$RC_SVCNAME}"
+	if [ ! "${quiet}" == "YES" ]; then
+		ebegin "Starting ${name:-$RC_SVCNAME}"
+	fi
 	if yesno "${command_background}"; then
 		if [ -z "${pidfile}" ]; then
-			eend 1 "command_background option used but no pidfile specified"
+			if [ ! "${quiet}" == "YES" ]; then
+				eend 1 "command_background option used but no pidfile specified"
+			fi
 			return 1
 		fi
 		if [ -n "${command_args_background}" ]; then
-			eend 1 "command_background used with command_args_background"
+			if [ ! "${quiet}" == "YES" ]; then
+				eend 1 "command_background used with command_args_background"
+			fi
 			return 1
 		fi
 		_background="--background --make-pidfile"
@@ -49,7 +55,11 @@ ssd_start()
 		${command_user+--user} $command_user \
 		$_background $start_stop_daemon_args \
 		-- $command_args $command_args_background
-	if eend $? "Failed to start ${name:-$RC_SVCNAME}"; then
+	rc=$?
+	if [ ! "${quiet}" == "YES" ]; then
+		eend $rc "Failed to start ${name:-$RC_SVCNAME}"
+	fi
+	if [ $rc ]; then
 		service_set_value "command" "${command}"
 		[ -n "${chroot}" ] && service_set_value "chroot" "${chroot}"
 		[ -n "${pidfile}" ] && service_set_value "pidfile" "${pidfile}"
@@ -77,7 +87,9 @@ ssd_stop()
 	procname="${startprocname:-$procname}"
 	[ -n "$command" -o -n "$procname" -o -n "$pidfile" ] || return 0
 	yesno "${command_progress}" && _progress=--progress
-	ebegin "Stopping ${name:-$RC_SVCNAME}"
+	if [ ! "${quiet}" == "YES" ]; then
+		ebegin "Stopping ${name:-$RC_SVCNAME}"
+	fi
 	start-stop-daemon --stop \
 		${retry:+--retry} $retry \
 		${command:+--exec} $command \
@@ -86,7 +98,9 @@ ssd_stop()
 		${stopsig:+--signal} $stopsig \
 		${_progress}
 
-	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
+	if [ ! "${quiet}" == "YES" ]; then
+		eend $? "Failed to stop ${name:-$RC_SVCNAME}"
+	fi
 }
 
 ssd_status()
