@@ -16,6 +16,7 @@ term_type="${term_type:-linux}"
 command=/sbin/agetty
 command_args_foreground="${agetty_options} ${port} ${baud} ${term_type}"
 pidfile="/run/${RC_SVCNAME}.pid"
+export EINFO_QUIET="${quiet:-yes}"
 
 depend() {
 	after local
