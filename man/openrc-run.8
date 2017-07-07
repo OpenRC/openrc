@@ -412,25 +412,25 @@ If -d, -f or -p is specified, checkpath checks to see if the path
 exists, is the right type and has the correct owner and access modes. If
 any of these tests fail, the path is created and set up as specified. If
 more than one of -d, -f or -p are specified, the last one will be used.
-
+.Pp
 The argument to -m is a three or four digit octal number. If this option
 is not provided, the value defaults to 0644 for files and 0775 for
 directories.
-
+.Pp
 The argument to -o is a representation of the user and/or group which
 should own the path. The user and group can be represented numerically
 or with names, and are separated by a colon.
-
+.Pp
 The truncate options (-D and -F) cause the directory or file to be
 cleared of all contents.
-
+.Pp
 If -W is specified, checkpath checks to see if the first path given on
 the command line is writable.  This is different from how the test
 command in the shell works, because it also checks to make sure the file
 system is not read only.
-
+.Pp
 Also, the -d, -f or -p options should not be specified along with this option.
-
+.Pp
 The -q option suppresses all informational output. If it is specified
 twice, all error messages are suppressed as well.
 .It Ic yesno Ar value
