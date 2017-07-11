@@ -1,3 +1,141 @@
+commit e7807b3136d8993805082320784460f5059e6275
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix sysvinit compatibility for shutdown wrapper
+
+commit 03a461ac0ee34b7900868cdea624c6fd868b1656
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix sysvinit compatibility for reboot wrapper
+
+commit 7e0f76e0adc545c74a8332a6ef0811d2aa62cb81
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix sysvinit compatibility for poweroff wrapper
+
+commit 9812ce5b8dc22fe36cc7bf75cf6e62db204ece3d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix halt wrapper so it is sysvinit compatible
+    
+    This makes the halt wrapper sysvinit compatible. It ignores several
+    command line switches which are not currently implemented; however,
+    those can be implemented if we need to do so.
+    
+    This fixes https://github.com/openrc/openrc/issues/146.
+
+commit 12f75e4167f84a9a85f69924ebdb28ad36c085cb
+Author: Adam Borowski <kilobyte@angband.pl>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: fix an unclosed .Bl/.El warning
+    
+    This fixes #151.
+
+commit 260368e0103e95625c29760f2c2ec89143e5a233
+Author: Adam Borowski <kilobyte@angband.pl>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: fix missing .Pp warnings
+    
+    This fixes #151.
+
+commit f87a9eec3d23ea01578500972f1df993d5d24fba
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs: mount efivars read only
+    
+    This fixes #134.
+
+commit 1e837d596e483ceb5cec177a6c7faff24a42384b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix argument parsing for the sysvinit shutdown wrapper
+    
+    This fixes #140.
+
+commit dcc686e42b406d63d52ef75de9a326f67d0a06c9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts/shutdown: fix arguments to be sysvinit shutdown compatible
+    
+    This fixes #140.
+
+commit 2f81c100afdf45ebf787dfc5d3261aa6055640e4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix link to shutdown for MKSYSVINIT=yes
+
+commit a511a48d77b1dcb8a3fb0dd1abddb750a152869b
+Author: Nuno Silva <nuno.m.ribeiro.silva@tecnico.ulisboa.pt>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/hostname: fix default parameter syntax
+    
+    The syntax for expanding a variable with a default value is
+            ${parameter:-word}
+    not
+            ${parameter-word}
+    although the latter still works for a reason I could not explain.
+    
+    This fixes #143.
+
+commit 1e5322e5c55ec744a2cdcc3342ef6547eab7c46f
+Author: Nuno Silva <nuno.m.ribeiro.silva@tecnico.ulisboa.pt>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/hostname: fix indentation
+    
+    This is for #143.
+
+commit 199a210d2fbc524c9c400a06f832dabffd7ed1b3
+Author: udeved <artoo@manjaro.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts/Makefile: make symlinks absolute instead of relative
+    
+    This closes #142.
+
+commit 5b7667af32effddf867a5d021c66d43f0645d374
+Author: udeved <artoo@manjaro.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    scripts/Makefile: respect SBINDIR with MKSYSVINIT
+    
+    This is for #142.
+
+commit 11243f85b67e5f450ddf50346ffd4a1b2c6faeb5
+Author: Jory A. Pratt <anarchy@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    kill_all: include limits.h for PATH_MAX
+
+commit 3c40826d3466cdda1a46abcd5c86b661b8185f46
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.28
+
+commit 560d874d2fee63bf7ca11f17cf9933021b639a1d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix compile issue for musl
+
+commit e84366fd232a41c3ba79ed351e93c74cef8d7c8d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit caacedc0a82285fb2d25c6d3473f154044c7ad66
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1530,57 +1668,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     Build: fix hardcoded pkg-config invocation
     
     This fixes #89.
-
-commit ac8ad169ae59fece38066c2e08ff57d53d737edd
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    hwclock: always use --noadjfile if available
-    
-    When we use the --utc or --localtime switch, also use --noadjfile if it
-    is available. This means hwclock will not use a drift file.
-    
-    X-Gentoo-Bug: 584722
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=584722
-
-commit 553799400218903ab495d1154a41c6d8890cb752
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: Document the procname variable for openrc-run
-    
-    X-Gentoo-Bug: 586794
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/586794
-
-commit 5af5d12f3e56f9f2ff232d124d27c856fd66f551
-Author: Benda Xu <heroxbd@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix PATH for Prefix.
-    
-    1. remove default /bin:/sbin:/usr/bin:/usr/sbin
-    2. PKG_PREFIX should be defaulted to $(PREFIX)/usr
-    3. LOCAL_PREFIX should be defaulted to $(PREFIX)/usr/local
-    
-    X-Gentoo-Bug:583634
-    X-Gentoo-Bug-URL:https://bugs.gentoo.org/show_bug.cgi?id=583634
-
-commit b2c92b88cc6ce6d81444667efbc6d44542db1788
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fstabinfo/mountinfo: ensure /etc/fstab exists before calling setmntent
-    
-    This is based on a patch by A. Wilcox <awilfox.gentoo@foxkit.us>.
-    
-    X-Gentoo-Bug: 478226
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=478226
-    
-    X-Gentoo-Bug: 478226
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=478226
-
-commit 1b32af17225a4b18ced7f4326727cbe8265e7fd2
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    increment version to 0.22
