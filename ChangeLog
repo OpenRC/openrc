@@ -1,3 +1,21 @@
+commit b35099cb707e333b6b8d30d956ffa93bcd2da0ab
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add comment about overriding the default efivars mount in fstab to news
+
+commit 3fd3bfc76dccc3752f4af949ad4076dab26357fb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add link to efivars issue to news file
+
+commit 492a6303cb8314263bfd3631e3b0de5a9df178da
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit e7807b3136d8993805082320784460f5059e6275
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1652,19 +1670,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     make variable aflag a boolean show_all
-
-commit 7f84b5d741c150cd159d5a3cda3ef532f0381826
-Author: Jaromil <jaromil@dyne.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    libeinfo: document the x suffix on function names
-    
-    This fixes #88.
-
-commit 8bca2cd4b3c710809131ac036456b34c223e8d12
-Author: Julian Ospald <hasufell@posteo.de>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Build: fix hardcoded pkg-config invocation
-    
-    This fixes #89.
