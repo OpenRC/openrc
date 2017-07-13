@@ -10,7 +10,10 @@ this file system making systems unbootable.  If you need to change something
 in this path, you will need to re-mount it read-write, make the change
 and re-mount it read-only.
 
-For more information oon this issue, see the following url:
+Also, you can override this behavior by adding a line for efivars to
+fstab if you want efivars mounted read-write.
+
+For more information on this issue, see the following url:
 
 https://github.com/openrc/openrc/issues/134
 
