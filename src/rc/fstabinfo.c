@@ -35,11 +35,11 @@
 #  define GET_ENT getmntent (fp)
 #  define GET_ENT_FILE(_name) getmntfile (_name)
 #  define END_ENT endmntent (fp)
-#  define ENT_BLOCKDEVICE(_ent) ent->mnt_fsname
-#  define ENT_FILE(_ent) ent->mnt_dir
-#  define ENT_TYPE(_ent) ent->mnt_type
-#  define ENT_OPTS(_ent) ent->mnt_opts
-#  define ENT_PASS(_ent) ent->mnt_passno
+#  define ENT_BLOCKDEVICE(_ent) (_ent)->mnt_fsname
+#  define ENT_FILE(_ent) (_ent)->mnt_dir
+#  define ENT_TYPE(_ent) (_ent)->mnt_type
+#  define ENT_OPTS(_ent) (_ent)->mnt_opts
+#  define ENT_PASS(_ent) (_ent)->mnt_passno
 #else
 #  define HAVE_GETFSENT
 #  include <fstab.h>
@@ -48,11 +48,11 @@
 #  define GET_ENT getfsent ()
 #  define GET_ENT_FILE(_name) getfsfile (_name)
 #  define END_ENT endfsent ()
-#  define ENT_BLOCKDEVICE(_ent) ent->fs_spec
-#  define ENT_TYPE(_ent) ent->fs_vfstype
-#  define ENT_FILE(_ent) ent->fs_file
-#  define ENT_OPTS(_ent) ent->fs_mntops
-#  define ENT_PASS(_ent) ent->fs_passno
+#  define ENT_BLOCKDEVICE(_ent) (_ent)->fs_spec
+#  define ENT_TYPE(_ent) (_ent)->fs_vfstype
+#  define ENT_FILE(_ent) (_ent)->fs_file
+#  define ENT_OPTS(_ent) (_ent)->fs_mntops
+#  define ENT_PASS(_ent) (_ent)->fs_passno
 #endif
 
 #include "einfo.h"
@@ -114,24 +114,24 @@ do_mount(struct ENT *ent, bool remount)
 
 	argv[0] = UNCONST("mount");
 	argv[1] = UNCONST("-o");
-	argv[2] = ENT_OPTS(*ent);
+	argv[2] = ENT_OPTS(ent);
 	argv[3] = UNCONST("-t");
-	argv[4] = ENT_TYPE(*ent);
+	argv[4] = ENT_TYPE(ent);
 	if (!remount) {
-		argv[5] = ENT_BLOCKDEVICE(*ent);
-		argv[6] = ENT_FILE(*ent);
+		argv[5] = ENT_BLOCKDEVICE(ent);
+		argv[6] = ENT_FILE(ent);
 		argv[7] = NULL;
 	} else {
 #ifdef __linux__
 		argv[5] = UNCONST("-o");
 		argv[6] = UNCONST("remount");
-		argv[7] = ENT_BLOCKDEVICE(*ent);
-		argv[8] = ENT_FILE(*ent);
+		argv[7] = ENT_BLOCKDEVICE(ent);
+		argv[8] = ENT_FILE(ent);
 		argv[9] = NULL;
 #else
 		argv[5] = UNCONST("-u");
-		argv[6] = ENT_BLOCKDEVICE(*ent);
-		argv[7] = ENT_FILE(*ent);
+		argv[6] = ENT_BLOCKDEVICE(ent);
+		argv[7] = ENT_FILE(ent);
 		argv[8] = NULL;
 #endif
 	}
