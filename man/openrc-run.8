@@ -445,6 +445,42 @@ Also, the -d, -f or -p options should not be specified along with this option.
 .Pp
 The -q option suppresses all informational output. If it is specified
 twice, all error messages are suppressed as well.
+.Ic fstabinfo
+.Op Fl M , -mount
+.Op Fl R , -remount
+.Op Fl b , -blockdevice
+.Op Fl m , -mountargs
+.Op Fl o , -options
+.Op Fl p , -passno Ar passno
+.Op Fl t , -type Ar fstype
+.Ar path
+.Xc
+If -b, -m, -o, -p or -t is specified,the appropriate information is
+extracted from fstab. If -M or -R are given, file systems are mounted or
+remounted.
+.Pp
+The -q option suppresses all informational output. If it is specified
+twice, all error messages are suppressed as well.
+.Ic mountinfo
+.Op Fl f, -fstype-regex Ar regex
+.Op Fl F, -skip-fstype-regex Ar regex
+.Op Fl n, -node-regex Ar regex
+.Op Fl N, -skip-node-regex Ar regex
+.Op Fl o, -options-regex Ar regex
+.Op Fl O, -skip-options-regex Ar regex
+.Op Fl p, -point-regex Ar regex
+.Op Fl P, -skip-point-regex Ar regex
+.Op Fl e, -netdev
+.Op Fl E, -nonetdev
+.Op Fl i, -options
+.Op Fl s, -fstype
+.Op Fl t, -node
+  .Ar mount1 mount2 ...
+.Xc
+The f, F, n, N, o, O, p, P, e and E options specify what you want to
+search for or skip in the mounted file systems. The i, s and t options
+specify what you want to display. If no mount points are given, all
+mount points will be considered.
 .It Ic yesno Ar value
 If
 .Ar value
