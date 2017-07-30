@@ -452,6 +452,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 	pid_t pid = 0;
 	const char *const *p;
 	bool progressed = false;
+	struct stat pidfile_stat;
 
 	if (exec)
 		einfov("Will stop %s", exec);
@@ -475,6 +476,13 @@ run_stop_schedule(const char *exec, const char *const *argv,
 		pid = get_pid(pidfile);
 		if (pid == -1)
 			return 0;
+
+		if (stat(pidfile, &pidfile_stat) == 0) {
+			if (pidfile_stat.st_uid != 0 ||
+			    pidfile_stat.st_mode & (S_IWGRP | S_IWOTH)) {
+				ewarn("%s is writable by non-root, which poses a security risk", pidfile);
+			}
+		}
 	}
 
 	while (item) {
