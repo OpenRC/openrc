@@ -243,6 +243,9 @@ sourcex "@LIBEXECDIR@/sh/s6.sh"
 sourcex "@LIBEXECDIR@/sh/start-stop-daemon.sh"
 sourcex "@LIBEXECDIR@/sh/supervise-daemon.sh"
 
+# Load our script
+sourcex "$RC_SERVICE"
+
 # Set verbose mode
 if yesno "${rc_verbose:-$RC_VERBOSE}"; then
 	EINFO_VERBOSE=yes
@@ -271,9 +274,6 @@ for _cmd; do
 		break
 	fi
 done
-
-# Load our script
-sourcex "$RC_SERVICE"
 
 eval "printf '%s\n' $required_dirs" | while read _d; do
 	if [ -n "$_d" ] && [ ! -d "$_d" ]; then
