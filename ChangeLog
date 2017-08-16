@@ -1,3 +1,59 @@
+commit 66ed8082d0c865a0b4f4cc436cf9e13351e3d6fe
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/openrc-run: source service script before ulimit is processed
+    
+    This is needed to allow the service script author to set a default for
+    rc_ulimit inside the service script.
+
+commit c2d256bafb9d1dfafbfd0846c035c5d26f7449c8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/openrc-run.8: document fstabinfo and mountinfo
+    
+    X-Gentoo-Bug: 592374
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=592374
+
+commit f48d9c33a5c708c871d6657a39485d1c0c735548
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/openrc-run.8: document _pre and _post functions
+    
+    Fixes https://github.com/openrc/openrc/issues/155.
+
+commit 6d4e8433974fd8567885635ae0454031290f96b1
+Author: Jason Graham <jgraha8@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix ENT macro usage
+    
+    X-Gentoo-Bug: 624796
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=624796
+
+commit 0513cd3964a9564e0ba39b50aa8ebd3d7e9a3920
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.29
+
+commit 72bb2e57de935ab46ad000f97a5720265bed9342
+Author: John R. Graham <john_r_graham@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Typo fix
+    
+    X-Gentoo-Bug: 624908
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=624908
+
+commit 84c5da30695db89d686d3c28c7cacdf172cbf429
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit b35099cb707e333b6b8d30d956ffa93bcd2da0ab
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1456,217 +1512,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 342313
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=342313
-
-commit 1a55d46645b376cd27f394796934150120a08387
-Author: Raymond Jennings <shentino@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    local.d/README: typo fix
-    
-    X-Gentoo-Bug: 591258
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=591258
-
-commit cae3976ef1276ce33aa7e49474f13499a48a3fe6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d: Add runsvdir to ignore patterns
-
-commit da28a3d367b6078deda6bc205806b43b971e67a9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d: initial service adjustments for docker support
-    
-    Add -docker keyword to the same scripts that have -lxc keyword.
-
-commit ca8c29ee60b0e8ca89091aaf801725bd71e28001
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: fix Docker auto detection
-    
-    The original auto detection of Docker containers assumed the presence of
-    a container environment variable. However, Docker-1.12 does not
-    implement this, and I'm not sure which versions of docker implemented
-    it.
-    
-    The new test is for the presence of a file named .dockerenv in the
-    root directory.
-
-commit f62253b8334a85dac4671e42817b96a3bedd1881
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add support for runit
-    
-    X-Gentoo-Bug: 501364
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=501364
-
-commit f2c2e2dd5a5e0a22da4dcabea6615d0f4697a962
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysctl.in: typo fix
-
-commit 94b98430cb83a8f4e62d837100fc357e9eb12ca6
-Author: Kenneth Lakin <kennethlakin@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: Add SSD_IONICELEVEL
-    
-    This is the disk IO counterpart to SSD_NICELEVEL.
-    Modified by William Hubbs to add the variable to the start-stop-daemon
-    man page.
-    
-    This fixes #69.
-
-commit b19d0a40d7f20987323d5af91469c720ead39561
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/loopback: remove unnecessary stop function
-
-commit 0c229faf7e6a57bcff70f2143b83cb69a34c89f4
-Author: Martin Väth <martin@mvath.de>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles.sh: Support lines with q Q h H
-    
-    btrfs support is not implemented yet (for q Q v), but at least tmpfiles.sh
-    no longer chokes about tmpfiles.d lines of recent systemd versions
-    
-    This fixes #87.
-
-commit 3092e310acd376fc626cc051549e02bcd7697aed
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles: Accept filenames as command line arguments
-    
-    This brings us closer to being able to use tmpfiles.sh as a full
-    replacement for systemd-tmpfiles.
-    
-    This closes #83.
-
-commit 671911762d1bcd90c10d8ac0eb30fe10be4a65f6
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles: Process command line before gathering config files
-    
-    This is part of #83.
-
-commit 7d68839e9ea89b0a92aef69a9b4fd298554bb9b1
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    tmpfiles: Make unrecognized options fatal
-    
-    This is part of #83.
-
-commit 5341a925c15934674031aebb97533b0adcd10236
-Author: Jakub Jirutka <jakub@jirutka.cz>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    s6-guide: fix typo
-    
-    This fixes #92.
-
-commit 3adb8fb389caaafbed1be13c5ac4d96214c8eed3
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    rc-logger: refuse to cat TMPLOG into itself
-    
-    This prevents an infinite loop in case somebody decides to set
-    rc_log_path to match TMPLOG.
-
-commit 8927a37fb790e718c956376242a532ab9d1755e7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    etc: remove rc.conf.* file fragments
-
-commit b085b2cda58bc884acb959e48f14fb044c983042
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    etc: create default rc.conf
-    
-    Before now, /etc/rc.conf was created by the build system from multiple
-    rc.conf.* file fragments and there was no reason for this.
-
-commit daf93977641201f16c477b075ce9055a1da8f7b3
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d: combine sysctl scripts
-    
-    We had separate sysctl scripts for each operating system. However, there
-    is no need to do this since we can detect the operating system at
-    runtime with $RC_UNAME.
-
-commit 2984504c887afc9a36610eb7c20b097f7d1e70d0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    conf.d: remove staticroute file fragments
-
-commit 35e8386c24df6483f2918979dae150421f7151df
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    conf.d: makestaticroute file static
-
-commit 2108285d64e2ee8cc03fbe544efc3752fe349bdd
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    conf.d: remove network file fragnents
-
-commit a3133fec250eca3cdfb460c2ce26c707fd593c09
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    conf.d: make network file static
-
-commit 314ae3dc781d7ae8fc26c276a85b0dc6ab6bc326
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    modules: add support for FreeBSD
-    
-    This is based on a patch submitted by
-    Joe Maloney <pkgdemonteam@gmail.com>.
-    
-    This fixes #91.
-
-commit 695be59083cdf0d2ff9296f2c210e591c51bdf40
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-status: add -m/--manual  option to show manually started services
-    
-    X-Gentoo-Bug: 585906
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=585906
-
-commit c962678dd6ab1314b55c2a3bcdae03902bda39b8
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    rc: Rename some static variables to kill warnings
-
-commit 3a1262703fd20d2e8288d13d908fb282c77d1793
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove the DEBUG_MEMORY macro
-    
-    This fixes #43.
-
-commit 20035210bdf5d5729734457f35f5f32a53a5b3ad
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    make variable aflag a boolean show_all
