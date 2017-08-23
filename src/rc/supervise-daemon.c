@@ -147,30 +147,6 @@ static void cleanup(void)
 	free(changeuser);
 }
 
-static pid_t get_pid(const char *pidfile)
-{
-	FILE *fp;
-	pid_t pid;
-
-	if (! pidfile)
-		return -1;
-
-	if ((fp = fopen(pidfile, "r")) == NULL) {
-		ewarnv("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
-		return -1;
-	}
-
-	if (fscanf(fp, "%d", &pid) != 1) {
-		ewarnv("%s: no pid found in `%s'", applet, pidfile);
-		fclose(fp);
-		return -1;
-	}
-
-	fclose(fp);
-
-	return pid;
-}
-
 static void child_process(char *exec, char **argv, char *svcname,
 		int start_count)
 {
@@ -673,7 +649,7 @@ int main(int argc, char **argv)
 		    *exec_file ? exec_file : exec);
 
 	if (stop) {
-		pid = get_pid(pidfile);
+		pid = get_pid(applet, pidfile);
 		if (pid == -1)
 			i = pid;
 		else
@@ -697,7 +673,7 @@ int main(int argc, char **argv)
 		exit(EXIT_SUCCESS);
 	}
 
-	pid = get_pid(pidfile);
+	pid = get_pid(applet, pidfile);
 	if (pid != -1)
 		if (kill(pid, 0) == 0)
 			eerrorx("%s: %s is already running", applet, exec);

@@ -474,3 +474,27 @@ time_t to_time_t(char *timestring)
 	}
 	return result;
 }
+
+pid_t get_pid(const char *applet,const char *pidfile)
+{
+	FILE *fp;
+	pid_t pid;
+
+	if (! pidfile)
+		return -1;
+
+	if ((fp = fopen(pidfile, "r")) == NULL) {
+		ewarnv("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
+		return -1;
+	}
+
+	if (fscanf(fp, "%d", &pid) != 1) {
+		ewarnv("%s: no pid found in `%s'", applet, pidfile);
+		fclose(fp);
+		return -1;
+	}
+
+	fclose(fp);
+
+	return pid;
+}

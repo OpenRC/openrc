@@ -71,5 +71,6 @@ bool _rc_can_find_pids(void);
 RC_SERVICE lookup_service_state(const char *service);
 void from_time_t(char *time_string, time_t tv);
 time_t to_time_t(char *timestring);
+pid_t get_pid(const char *applet, const char *pidfile);
 
 #endif

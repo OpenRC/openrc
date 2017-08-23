@@ -368,31 +368,6 @@ parse_schedule(const char *string, int timeout)
 	return;
 }
 
-static pid_t
-get_pid(const char *pidfile)
-{
-	FILE *fp;
-	pid_t pid;
-
-	if (! pidfile)
-		return -1;
-
-	if ((fp = fopen(pidfile, "r")) == NULL) {
-		ewarnv("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
-		return -1;
-	}
-
-	if (fscanf(fp, "%d", &pid) != 1) {
-		ewarnv("%s: no pid found in `%s'", applet, pidfile);
-		fclose(fp);
-		return -1;
-	}
-
-	fclose(fp);
-
-	return pid;
-}
-
 /* return number of processed killed, -1 on error */
 static int
 do_stop(const char *exec, const char *const *argv,
@@ -472,7 +447,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 	}
 
 	if (pidfile) {
-		pid = get_pid(pidfile);
+		pid = get_pid(applet, pidfile);
 		if (pid == -1)
 			return 0;
 	}
@@ -1090,7 +1065,7 @@ int main(int argc, char **argv)
 	}
 
 	if (pidfile)
-		pid = get_pid(pidfile);
+		pid = get_pid(applet, pidfile);
 	else
 		pid = 0;
 
@@ -1365,7 +1340,7 @@ int main(int argc, char **argv)
 				alive = true;
 		} else {
 			if (pidfile) {
-				pid = get_pid(pidfile);
+				pid = get_pid(applet, pidfile);
 				if (pid == -1) {
 					eerrorx("%s: did not "
 					    "create a valid"
