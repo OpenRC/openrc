@@ -19,10 +19,6 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-/* nano seconds */
-#define POLL_INTERVAL   20000000
-#define WAIT_PIDFILE   500000000
-#define ONE_SECOND    1000000000
 #define ONE_MS           1000000
 
 #include <sys/types.h>
@@ -63,6 +59,7 @@ static struct pam_conv conv = { NULL, NULL};
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "rc-schedules.h"
 #include "_usage.h"
 #include "helpers.h"
 
@@ -130,20 +127,6 @@ const char * const longopts_help[] = {
 };
 const char *usagestring = NULL;
 
-typedef struct scheduleitem
-{
-	enum
-		{
-			SC_TIMEOUT,
-			SC_SIGNAL,
-			SC_GOTO,
-			SC_FOREVER
-		} type;
-	int value;
-	struct scheduleitem *gotoitem;
-	TAILQ_ENTRY(scheduleitem) entries;
-} SCHEDULEITEM;
-TAILQ_HEAD(, scheduleitem) schedule;
 static char **nav;
 
 static char *changeuser, *ch_root, *ch_dir;
@@ -167,379 +150,11 @@ static inline int ioprio_set(int which _unused,
 #endif
 
 static void
-free_schedulelist(void)
-{
-	SCHEDULEITEM *s1 = TAILQ_FIRST(&schedule);
-	SCHEDULEITEM *s2;
-
-	while (s1) {
-		s2 = TAILQ_NEXT(s1, entries);
-		free(s1);
-		s1 = s2;
-	}
-	TAILQ_INIT(&schedule);
-}
-
-static void
 cleanup(void)
 {
 	free(changeuser);
 	free(nav);
 	free_schedulelist();
-}
-
-static int
-parse_signal(const char *sig)
-{
-	typedef struct signalpair
-	{
-		const char *name;
-		int signal;
-	} SIGNALPAIR;
-
-#define signalpair_item(name) { #name, SIG##name },
-
-	static const SIGNALPAIR signallist[] = {
-		signalpair_item(HUP)
-		signalpair_item(INT)
-		signalpair_item(QUIT)
-		signalpair_item(ILL)
-		signalpair_item(TRAP)
-		signalpair_item(ABRT)
-		signalpair_item(BUS)
-		signalpair_item(FPE)
-		signalpair_item(KILL)
-		signalpair_item(USR1)
-		signalpair_item(SEGV)
-		signalpair_item(USR2)
-		signalpair_item(PIPE)
-		signalpair_item(ALRM)
-		signalpair_item(TERM)
-		signalpair_item(CHLD)
-		signalpair_item(CONT)
-		signalpair_item(STOP)
-		signalpair_item(TSTP)
-		signalpair_item(TTIN)
-		signalpair_item(TTOU)
-		signalpair_item(URG)
-		signalpair_item(XCPU)
-		signalpair_item(XFSZ)
-		signalpair_item(VTALRM)
-		signalpair_item(PROF)
-#ifdef SIGWINCH
-		signalpair_item(WINCH)
-#endif
-#ifdef SIGIO
-		signalpair_item(IO)
-#endif
-#ifdef SIGPWR
-		signalpair_item(PWR)
-#endif
-		signalpair_item(SYS)
-		{ "NULL",	0 },
-	};
-
-	unsigned int i = 0;
-	const char *s;
-
-	if (!sig || *sig == '\0')
-		return -1;
-
-	if (sscanf(sig, "%u", &i) == 1) {
-		if (i < NSIG)
-			return i;
-		eerrorx("%s: `%s' is not a valid signal", applet, sig);
-	}
-
-	if (strncmp(sig, "SIG", 3) == 0)
-		s = sig + 3;
-	else
-		s = NULL;
-
-	for (i = 0; i < ARRAY_SIZE(signallist); ++i)
-		if (strcmp(sig, signallist[i].name) == 0 ||
-		    (s && strcmp(s, signallist[i].name) == 0))
-			return signallist[i].signal;
-
-	eerrorx("%s: `%s' is not a valid signal", applet, sig);
-	/* NOTREACHED */
-}
-
-static SCHEDULEITEM *
-parse_schedule_item(const char *string)
-{
-	const char *after_hyph;
-	int sig;
-	SCHEDULEITEM *item = xmalloc(sizeof(*item));
-
-	item->value = 0;
-	item->gotoitem = NULL;
-	if (strcmp(string,"forever") == 0)
-		item->type = SC_FOREVER;
-	else if (isdigit((unsigned char)string[0])) {
-		item->type = SC_TIMEOUT;
-		errno = 0;
-		if (sscanf(string, "%d", &item->value) != 1)
-			eerrorx("%s: invalid timeout value in schedule `%s'",
-			    applet, string);
-	} else if ((after_hyph = string + (string[0] == '-')) &&
-	    ((sig = parse_signal(after_hyph)) != -1))
-	{
-		item->type = SC_SIGNAL;
-		item->value = (int)sig;
-	} else
-		eerrorx("%s: invalid schedule item `%s'", applet, string);
-
-	return item;
-}
-
-static void
-parse_schedule(const char *string, int timeout)
-{
-	char buffer[20];
-	const char *slash;
-	int count = 0;
-	SCHEDULEITEM *repeatat = NULL;
-	size_t len;
-	SCHEDULEITEM *item;
-
-	if (string)
-		for (slash = string; *slash; slash++)
-			if (*slash == '/')
-				count++;
-
-	free_schedulelist();
-
-	if (count == 0) {
-		item = xmalloc(sizeof(*item));
-		item->type = SC_SIGNAL;
-		item->value = timeout;
-		item->gotoitem = NULL;
-		TAILQ_INSERT_TAIL(&schedule, item, entries);
-
-		item = xmalloc(sizeof(*item));
-		item->type = SC_TIMEOUT;
-		item->gotoitem = NULL;
-		TAILQ_INSERT_TAIL(&schedule, item, entries);
-		if (string) {
-			if (sscanf(string, "%d", &item->value) != 1)
-				eerrorx("%s: invalid timeout in schedule",
-				    applet);
-		} else
-			item->value = 5;
-
-		return;
-	}
-
-	while (string != NULL) {
-		if ((slash = strchr(string, '/')))
-			len = slash - string;
-		else
-			len = strlen(string);
-
-		if (len >= (ptrdiff_t)sizeof(buffer))
-			eerrorx("%s: invalid schedule item, far too long",
-			    applet);
-
-		memcpy(buffer, string, len);
-		buffer[len] = 0;
-		string = slash ? slash + 1 : NULL;
-
-		item = parse_schedule_item(buffer);
-		TAILQ_INSERT_TAIL(&schedule, item, entries);
-		if (item->type == SC_FOREVER) {
-			if (repeatat)
-				eerrorx("%s: invalid schedule, `forever' "
-				    "appears more than once", applet);
-
-			repeatat = item;
-			continue;
-		}
-	}
-
-	if (repeatat) {
-		item = xmalloc(sizeof(*item));
-		item->type = SC_GOTO;
-		item->value = 0;
-		item->gotoitem = repeatat;
-		TAILQ_INSERT_TAIL(&schedule, item, entries);
-	}
-
-	return;
-}
-
-/* return number of processed killed, -1 on error */
-static int
-do_stop(const char *exec, const char *const *argv,
-    pid_t pid, uid_t uid,int sig, bool test)
-{
-	RC_PIDLIST *pids;
-	RC_PID *pi;
-	RC_PID *np;
-	bool killed;
-	int nkilled = 0;
-
-	if (pid)
-		pids = rc_find_pids(NULL, NULL, 0, pid);
-	else
-		pids = rc_find_pids(exec, argv, uid, pid);
-
-	if (!pids)
-		return 0;
-
-	LIST_FOREACH_SAFE(pi, pids, entries, np) {
-		if (test) {
-			einfo("Would send signal %d to PID %d", sig, pi->pid);
-			nkilled++;
-		} else {
-			ebeginv("Sending signal %d to PID %d", sig, pi->pid);
-			errno = 0;
-			killed = (kill(pi->pid, sig) == 0 ||
-			    errno == ESRCH ? true : false);
-			eendv(killed ? 0 : 1,
-				"%s: failed to send signal %d to PID %d: %s",
-				applet, sig, pi->pid, strerror(errno));
-			if (!killed) {
-				nkilled = -1;
-			} else {
-				if (nkilled != -1)
-					nkilled++;
-			}
-		}
-		free(pi);
-	}
-
-	free(pids);
-	return nkilled;
-}
-
-static int
-run_stop_schedule(const char *exec, const char *const *argv,
-    const char *pidfile, uid_t uid,
-    bool test, bool progress)
-{
-	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
-	int nkilled = 0;
-	int tkilled = 0;
-	int nrunning = 0;
-	long nloops, nsecs;
-	struct timespec ts;
-	pid_t pid = 0;
-	const char *const *p;
-	bool progressed = false;
-
-	if (exec)
-		einfov("Will stop %s", exec);
-	if (pidfile)
-		einfov("Will stop PID in pidfile `%s'", pidfile);
-	if (uid)
-		einfov("Will stop processes owned by UID %d", uid);
-	if (argv && *argv) {
-		einfovn("Will stop processes of `");
-		if (rc_yesno(getenv("EINFO_VERBOSE"))) {
-			for (p = argv; p && *p; p++) {
-				if (p != argv)
-					printf(" ");
-				printf("%s", *p);
-			}
-			printf("'\n");
-		}
-	}
-
-	if (pidfile) {
-		pid = get_pid(applet, pidfile);
-		if (pid == -1)
-			return 0;
-	}
-
-	while (item) {
-		switch (item->type) {
-		case SC_GOTO:
-			item = item->gotoitem;
-			continue;
-
-		case SC_SIGNAL:
-			nrunning = 0;
-			nkilled = do_stop(exec, argv, pid, uid, item->value, test);
-			if (nkilled == 0) {
-				if (tkilled == 0) {
-					if (progressed)
-						printf("\n");
-					eerror("%s: no matching processes found", applet);
-				}
-				return tkilled;
-			}
-			else if (nkilled == -1)
-				return 0;
-
-			tkilled += nkilled;
-			break;
-		case SC_TIMEOUT:
-			if (item->value < 1) {
-				item = NULL;
-				break;
-			}
-
-			ts.tv_sec = 0;
-			ts.tv_nsec = POLL_INTERVAL;
-
-			for (nsecs = 0; nsecs < item->value; nsecs++) {
-				for (nloops = 0;
-				     nloops < ONE_SECOND / POLL_INTERVAL;
-				     nloops++)
-				{
-					if ((nrunning = do_stop(exec, argv,
-						    pid, uid, 0, test)) == 0)
-						return 0;
-
-
-					if (nanosleep(&ts, NULL) == -1) {
-						if (progressed) {
-							printf("\n");
-							progressed = false;
-						}
-						if (errno == EINTR)
-							eerror("%s: caught an"
-							    " interrupt", applet);
-						else {
-							eerror("%s: nanosleep: %s",
-							    applet, strerror(errno));
-							return 0;
-						}
-					}
-				}
-				if (progress) {
-					printf(".");
-					fflush(stdout);
-					progressed = true;
-				}
-			}
-			break;
-		default:
-			if (progressed) {
-				printf("\n");
-				progressed = false;
-			}
-			eerror("%s: invalid schedule item `%d'",
-			    applet, item->type);
-			return 0;
-		}
-
-		if (item)
-			item = TAILQ_NEXT(item, entries);
-	}
-
-	if (test || (tkilled > 0 && nrunning == 0))
-		return nkilled;
-
-	if (progressed)
-		printf("\n");
-	if (nrunning == 1)
-		eerror("%s: %d process refused to stop", applet, nrunning);
-	else
-		eerror("%s: %d process(es) refused to stop", applet, nrunning);
-
-	return -nrunning;
 }
 
 static void
@@ -682,7 +297,6 @@ int main(int argc, char **argv)
 	unsigned int start_wait = 0;
 
 	applet = basename_c(argv[0]);
-	TAILQ_INIT(&schedule);
 	atexit(cleanup);
 
 	signal_setup(SIGINT, handle_signal);
@@ -851,7 +465,7 @@ int main(int argc, char **argv)
 			break;
 
 		case 's':  /* --signal <signal> */
-			sig = parse_signal(optarg);
+			sig = parse_signal(applet, optarg);
 			break;
 
 		case 't':  /* --test */
@@ -1037,12 +651,12 @@ int main(int argc, char **argv)
 		if (!stop)
 			oknodo = true;
 		if (retry)
-			parse_schedule(retry, sig);
+			parse_schedule(applet, retry, sig);
 		else if (test || oknodo)
-			parse_schedule("0", sig);
+			parse_schedule(applet, "0", sig);
 		else
-			parse_schedule(NULL, sig);
-		i = run_stop_schedule(exec, (const char *const *)margv,
+			parse_schedule(applet, NULL, sig);
+		i = run_stop_schedule(applet, exec, (const char *const *)margv,
 		    pidfile, uid, test, progress);
 
 		if (i < 0)
@@ -1069,7 +683,7 @@ int main(int argc, char **argv)
 	else
 		pid = 0;
 
-	if (do_stop(exec, (const char * const *)margv, pid, uid,
+	if (do_stop(applet, exec, (const char * const *)margv, pid, uid,
 		0, test) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
@@ -1349,7 +963,7 @@ int main(int argc, char **argv)
 				}
 			} else
 				pid = 0;
-			if (do_stop(exec, (const char *const *)margv,
+			if (do_stop(applet, exec, (const char *const *)margv,
 				pid, uid, 0, test) > 0)
 				alive = true;
 		}
