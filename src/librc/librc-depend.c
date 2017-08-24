@@ -542,52 +542,41 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 }
 librc_hidden_def(rc_deptree_order)
 
+
+/* Given a time, recurse the target path to find out if there are
+   any older (or newer) files.   If false, sets the time to the
+   oldest (or newest) found.
+*/
 static bool
-mtime_check(const char *source, const char *target, bool newer,
+deep_mtime_check(const char *target, bool newer,
 	    time_t *rel, char *file)
 {
 	struct stat buf;
-	time_t mtime;
 	bool retval = true;
 	DIR *dp;
 	struct dirent *d;
 	char path[PATH_MAX];
 	int serrno = errno;
 
-	/* We have to exist */
-	if (stat(source, &buf) != 0)
-		return false;
-	mtime = buf.st_mtime;
-
 	/* If target does not exist, return true to mimic shell test */
 	if (stat(target, &buf) != 0)
 		return true;
 
 	if (newer) {
-		if (mtime < buf.st_mtime) {
-			if (rel == NULL)
-				return false;
+		if (*rel < buf.st_mtime) {
 			retval = false;
-		}
-		if (rel != NULL) {
-			if (*rel < buf.st_mtime) {
-				if (file)
-					strlcpy(file, target, PATH_MAX);
-				*rel = buf.st_mtime;
-			}
+
+			if (file)
+				strlcpy(file, target, PATH_MAX);
+			*rel = buf.st_mtime;
 		}
 	} else {
-		if (mtime > buf.st_mtime) {
-			if (rel == NULL)
-				return false;
+		if (*rel > buf.st_mtime) {
 			retval = false;
-		}
-		if (rel != NULL) {
-			if (*rel > buf.st_mtime) {
-				if (file)
-					strlcpy(file, target, PATH_MAX);
-				*rel = buf.st_mtime;
-			}
+
+			if (file)
+				strlcpy(file, target, PATH_MAX);
+			*rel = buf.st_mtime;
 		}
 	}
 
@@ -602,14 +591,36 @@ mtime_check(const char *source, const char *target, bool newer,
 		if (d->d_name[0] == '.')
 			continue;
 		snprintf(path, sizeof(path), "%s/%s", target, d->d_name);
-		if (!mtime_check(source, path, newer, rel, file)) {
+		if (!deep_mtime_check(path, newer, rel, file)) {
 			retval = false;
-			if (rel == NULL)
-				break;
 		}
 	}
 	closedir(dp);
 	return retval;
+}
+
+/* Recursively check if target is older/newer than source.
+ * If false, return the filename and most different time (if
+ * the return value arguments are non-null).
+ */
+static bool
+mtime_check(const char *source, const char *target, bool newer,
+	    time_t *rel, char *file)
+{
+	struct stat buf;
+	time_t mtime;
+	bool retval = true;
+
+	/* We have to exist */
+	if (stat(source, &buf) != 0)
+		return false;
+	mtime = buf.st_mtime;
+
+    retval = deep_mtime_check(target,newer,&mtime,file);
+    if (rel) {
+        *rel = mtime;
+    }
+    return retval;
 }
 
 bool
@@ -670,6 +681,8 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	RC_STRINGLIST *config;
 	RC_STRING *s;
 	int i;
+	struct stat buf;
+	time_t mtime;
 
 	/* Create base directories if needed */
 	for (i = 0; depdirs[i]; i++)
@@ -677,42 +690,48 @@ rc_deptree_update_needed(time_t *newest, char *file)
 			fprintf(stderr, "mkdir `%s': %s\n", depdirs[i], strerror(errno));
 
 	/* Quick test to see if anything we use has changed and we have
-	 * data in our deptree */
-	if (!existss(RC_DEPTREE_CACHE))
-		return true;
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_INITDIR, newest, file))
-		return true;
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_CONFDIR, newest, file))
-		return true;
+	 * data in our deptree. */
+
+	if (stat(RC_DEPTREE_CACHE, &buf) == 0) {
+		mtime = buf.st_mtime;
+	} else {
+		/* No previous cache found.
+		 * We still run the scan, in case of clock skew; we still need to return
+		 * the newest time.
+		 */
+		newer = true;
+		mtime = time(NULL);
+	}
+
+	newer |= !deep_mtime_check(RC_INITDIR,true,&mtime,file);
+	newer |= !deep_mtime_check(RC_CONFDIR,true,&mtime,file);
 #ifdef RC_PKG_INITDIR
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_INITDIR, newest, file))
-		return true;
+    newer |= !deep_mtime_check(RC_PKG_INITDIR,true,&mtime,file);
 #endif
 #ifdef RC_PKG_CONFDIR
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_PKG_CONFDIR, newest, file))
-		return true;
+    newer |= !deep_mtime_check(RC_PKG_CONFDIR,true,&mtime,file);
 #endif
-#ifdef RC_LOCAL_INITDIR
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_INITDIR, newest, file))
-		return true;
+#ifdef RC_LOCAL_INITDIRs
+    newer |= !deep_mtime_check(RC_LOCAL_INITDIR,true,&mtime,file);
 #endif
 #ifdef RC_LOCAL_CONFDIR
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_LOCAL_CONFDIR, newest, file))
-		return true;
+    newer |= !deep_mtime_check(RC_LOCAL_CONFDIR,true,&mtime,file);
 #endif
-	if (!rc_newer_than(RC_DEPTREE_CACHE, RC_CONF, newest, file))
-		return true;
+    newer |= !deep_mtime_check(RC_CONF,true,&mtime,file);
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
 	config = rc_config_list(RC_DEPCONFIG);
 	TAILQ_FOREACH(s, config, entries) {
-		if (!rc_newer_than(RC_DEPTREE_CACHE, s->value, newest, file)) {
-			newer = true;
-			break;
-		}
+		newer |= !deep_mtime_check(s->value, true, &mtime, file);
 	}
 	rc_stringlist_free(config);
+
+	/* Return newest file time, if requested */
+	if ((newer) && (newest != NULL)) {
+	    *newest = mtime;
+	}
+
 	return newer;
 }
 librc_hidden_def(rc_deptree_update_needed)
