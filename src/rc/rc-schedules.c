@@ -297,7 +297,7 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 
 int run_stop_schedule(const char *applet,
 		const char *exec, const char *const *argv,
-		const char *pidfile, uid_t uid,
+		pid_t pid, uid_t uid,
     bool test, bool progress)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
@@ -306,14 +306,13 @@ int run_stop_schedule(const char *applet,
 	int nrunning = 0;
 	long nloops, nsecs;
 	struct timespec ts;
-	pid_t pid = 0;
 	const char *const *p;
 	bool progressed = false;
 
 	if (exec)
 		einfov("Will stop %s", exec);
-	if (pidfile)
-		einfov("Will stop PID in pidfile `%s'", pidfile);
+	if (pid > 0)
+		einfov("Will stop PID %d", pid);
 	if (uid)
 		einfov("Will stop processes owned by UID %d", uid);
 	if (argv && *argv) {
@@ -326,12 +325,6 @@ int run_stop_schedule(const char *applet,
 			}
 			printf("'\n");
 		}
-	}
-
-	if (pidfile) {
-		pid = get_pid(applet, pidfile);
-		if (pid == -1)
-			return 0;
 	}
 
 	while (item) {
