@@ -23,6 +23,7 @@ supervise_start()
 	# command_args="this \"is a\" test"
 	# to work properly.
 	eval supervise-daemon --start \
+		${retry:+--retry} $retry \
 		${chroot:+--chroot} $chroot \
 		${pidfile:+--pidfile} $pidfile \
 		${respawn_delay:+--respawn-delay} $respawn_delay \

@@ -61,12 +61,13 @@ static struct pam_conv conv = { NULL, NULL};
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "rc-schedules.h"
 #include "_usage.h"
 #include "helpers.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "D:d:e:g:I:Kk:m:N:p:r:Su:1:2:" \
+const char *getoptstring = "D:d:e:g:I:Kk:m:N:p:R:r:Su:1:2:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "respawn-delay",        1, NULL, 'D'},
@@ -80,6 +81,7 @@ const struct option longopts[] = {
 	{ "nicelevel",    1, NULL, 'N'},
 	{ "pidfile",      1, NULL, 'p'},
 	{ "respawn-period",        1, NULL, 'P'},
+	{ "retry",       1, NULL, 'R'},
 	{ "chroot",       1, NULL, 'r'},
 	{ "start",        0, NULL, 'S'},
 	{ "user",         1, NULL, 'u'},
@@ -99,6 +101,7 @@ const char * const longopts_help[] = {
 	"Set a nicelevel when starting",
 	"Match pid found in this file",
 	"Set respawn time period",
+	"Retry schedule to use when stopping",
 	"Chroot to this directory",
 	"Start daemon",
 	"Change the process user",
@@ -410,6 +413,9 @@ int main(int argc, char **argv)
 	bool stop = false;
 	char *exec = NULL;
 	char *pidfile = NULL;
+	char *retry = NULL;
+	int nkilled;
+	int sig = SIGTERM;
 	char *home = NULL;
 	int tid = 0;
 	pid_t child_pid, pid;
@@ -534,6 +540,9 @@ int main(int argc, char **argv)
 			pidfile = optarg;
 			break;
 
+		case 'R':  /* --retry <schedule>|timeout */
+			retry = optarg;
+			break;
 		case 'r':  /* --chroot /new/root */
 			ch_root = optarg;
 			break;
@@ -605,6 +614,10 @@ int main(int argc, char **argv)
 				"than %d to avoid infinite respawning", applet, 
 				respawn_delay * respawn_max);
 		}
+		if (retry)
+			parse_schedule(applet, retry, sig);
+		else
+			parse_schedule(applet, NULL, sig);
 	}
 
 	/* Expand ~ */
@@ -655,8 +668,12 @@ int main(int argc, char **argv)
 		else
 			i = kill(pid, SIGTERM);
 		if (i != 0)
-			/* We failed to stop something */
+			/* We failed to send the signal */
 			exit(EXIT_FAILURE);
+
+		/* wait for the supervisor to go down */
+		while (kill(pid, 0) == 0)
+			sleep(1);
 
 		/* Even if we have not actually killed anything, we should
 		 * remove information about it as it may have unexpectedly
@@ -737,7 +754,10 @@ int main(int argc, char **argv)
 			wait(&i);
 			if (exiting) {
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
-				kill(child_pid, SIGTERM);
+				nkilled = run_stop_schedule(applet, exec, NULL, child_pid,
+						0, false, false);
+				if (nkilled > 0)
+					syslog(LOG_INFO, "killed %d processes", nkilled);
 			} else {
 				sleep(respawn_delay);
 				if (respawn_max > 0 && respawn_period > 0) {
