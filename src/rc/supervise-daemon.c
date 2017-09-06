@@ -755,7 +755,7 @@ int main(int argc, char **argv)
 			if (exiting) {
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 				nkilled = run_stop_schedule(applet, exec, NULL, child_pid,
-						0, false, false);
+						0, false, false, true);
 				if (nkilled > 0)
 					syslog(LOG_INFO, "killed %d processes", nkilled);
 			} else {

@@ -657,7 +657,7 @@ int main(int argc, char **argv)
 		else
 			parse_schedule(applet, NULL, sig);
 		i = run_stop_schedule(applet, exec, (const char *const *)margv,
-		    get_pid(applet, pidfile), uid, test, progress);
+		    get_pid(applet, pidfile), uid, test, progress, false);
 
 		if (i < 0)
 			/* We failed to stop something */

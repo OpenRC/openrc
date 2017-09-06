@@ -22,6 +22,6 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 int run_stop_schedule(const char *applet,
 		const char *exec, const char *const *argv,
 		pid_t pid, uid_t uid,
-		bool test, bool progress);
+		bool test, bool progress, bool quiet);
 
 #endif

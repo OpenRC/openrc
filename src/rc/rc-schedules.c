@@ -298,7 +298,7 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 int run_stop_schedule(const char *applet,
 		const char *exec, const char *const *argv,
 		pid_t pid, uid_t uid,
-    bool test, bool progress)
+    bool test, bool progress, bool quiet)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
 	int nkilled = 0;
@@ -409,10 +409,11 @@ int run_stop_schedule(const char *applet,
 
 	if (progressed)
 		printf("\n");
-	if (nrunning == 1)
-		eerror("%s: %d process refused to stop", applet, nrunning);
-	else
-		eerror("%s: %d process(es) refused to stop", applet, nrunning);
+	if (! quiet)
+		if (nrunning == 1)
+			eerror("%s: %d process refused to stop", applet, nrunning);
+		else
+			eerror("%s: %d process(es) refused to stop", applet, nrunning);
 
 	return -nrunning;
 }
