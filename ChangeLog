@@ -1,3 +1,55 @@
+commit 382efdbfcb99703d03211efacd800c9575e64230
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add quiet parameter to run_stop_schedule
+
+commit 17b5cc78d35dc5fe4904e5951715c3e0d07d6343
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add retry option to supervise-daemon
+    
+    The --retry option for supervise-daemon defines how the supervisor will
+    attempt to stop the child process it is monitoring. It is defined when
+    the supervisor is started since stopping the supervisor just sends a
+    signal to the active supervisor.
+    
+    This fixes #160.
+
+commit 36a0ab9054512ade413226fb8e8b28060045e9a4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    make run_stop_schedule accept a pid instead of a pid file
+
+commit 27c2bd997d5173aa30844a16bc22dc8caab09f8c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.30
+
+commit d7938f54f29193251e083ad35a7d464949829096
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: move --retry processing code to a shared module
+    
+    This was part of start-stop-daemon; however, it needs to be shared in
+    order to be used by supervise-daemon.
+
+commit cfbe9c2ede24dac530ef58e5c35bd57f22a788a3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    move get_pid function to a shared file
+
+commit df28002b728b033c00c2da64dedf2bcd4ab5e11b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 66ed8082d0c865a0b4f4cc436cf9e13351e3d6fe
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1374,141 +1426,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     This reworks the logic so that the warning about configuring the
     binfmt_misc module is only displayed if the module actually has to be
     loaded.
-
-commit d4d559323819c8a5279bf197d8d3ff80f1e28cdc
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sh/openrc-run.sh: read global configuration settings first
-    
-    X-Gentoo-Bug: 503134
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=503134
-
-commit d5db5489be135ae9295e378e789b4b7b13367fdd
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/swap: do not unmount all tmpfs file systems
-    
-    X-Gentoo-Bug: 568162
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=568162
-
-commit d06db93d5954460668d09cf6ef2fc401ee9d981c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    remove swapfiles service
-    
-    The swapfiles service was basically a copy of the swap service, so this
-    commit consolidates the functionality into the swap service.
-    
-    X-Funtoo-Bug-URL: https://bugs.funtoo.org/browse/FL-2523
-    X-Gentoo-Bug: 568162
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=568162
-
-commit 8c14d0c476e06fff7598c526e26b6a13d53a4600
-Author: Martin Väth <martin@mvath.de>
-Commit: Martin Väth <martin@mvath.de>
-
-    Fix typo in RC_UNAME check of modules-load
-    
-    The $RC_UNAME "Linux" had been misspelled as "linux".
-    As a consequence, entries in e.g. /etc/modules-load.d failed to
-    load any module succesfully under Linux(!)
-
-commit 04debf6f25b3748a101b61cb85f78617dbe5be6e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    another news typo fix
-
-commit c289774b00d0d7dc38fdc1f0f623569bd184a4b1
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    modules-load: handle comments better
-    
-    This handles comments without a trailing space after the comment
-    character.
-    
-    Reported-By: josef64
-
-commit 9dd8ee330d8a4449c937bc95fc8393a55913c8d1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    typo fix
-
-commit 5d5856c193768d24f11d5f0533e48c39526aef5c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update news file
-    
-    Add information on modules-load service and more explanation about
-    dealing with the rc -> openrc and runscript -> openrc-run transitions.
-
-commit 686e172207ac9e23560da18a6f877be777ded935
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d: add modules-load to ignore patterns
-
-commit fef6268f8d03e3ab3e2564cbf3634d0db2bcd99e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    modules-load.d: cleanups
-    
-    Move list of directories to a local variable and create the fn variable
-    to use for an individual file name rather than using path.
-
-commit 556dbff99d53cdcc00e6b1ec67e1679f72b6f284
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add modules-load.d support
-
-commit 69ac78d76a31d843c004717eb6aa6a77bb4c9a8e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: make runscript warning respect quiet option
-    
-    X-Gentoo-Bug: 591414
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=591414
-
-commit 4018dfc8de4818101c336ff8bcf0f4762b318c6a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/hostname: do not use localhost as a default hostname
-    
-    This allows the operating system default hostname to be used if no
-    hostname is configured.
-
-commit 353bb9bc9a0ab3c6650d72d2ceb14c990762a2a0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/hostname: add support for /etc/hostname
-
-commit 73cdf10f1f513be7b5dec4f1cc91e0c68cda689b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Deprecate automatic loading of modules
-    
-    In the hwclock, procfs and sysfs service scripts, we automatically
-    attempt to load the kernel modules we need before we take any action. We
-    shouldn't do this, because there are systems which do not use kernel
-    modules and do not have the kmod package installed.
-    
-    With this change, we continue to load the modules ourselves, but we warn
-    the admin that they need to be added to /etc/conf.d/modules or built
-    into the kernel.
-    
-    In the future, this automatic loading will be dropped.
-    
-    X-Gentoo-Bug: 342313
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=342313
