@@ -684,7 +684,7 @@ int main(int argc, char **argv)
 		pid = 0;
 
 	if (do_stop(applet, exec, (const char * const *)margv, pid, uid,
-		0, test) > 0)
+		0, test, false) > 0)
 		eerrorx("%s: %s is already running", applet, exec);
 
 	if (test) {
@@ -964,7 +964,7 @@ int main(int argc, char **argv)
 			} else
 				pid = 0;
 			if (do_stop(applet, exec, (const char *const *)margv,
-				pid, uid, 0, test) > 0)
+				pid, uid, 0, test, false) > 0)
 				alive = true;
 		}
 

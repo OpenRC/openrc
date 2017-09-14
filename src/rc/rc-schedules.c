@@ -253,7 +253,7 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 
 /* return number of processes killed, -1 on error */
 int do_stop(const char *applet, const char *exec, const char *const *argv,
-    pid_t pid, uid_t uid,int sig, bool test)
+    pid_t pid, uid_t uid,int sig, bool test, bool quiet)
 {
 	RC_PIDLIST *pids;
 	RC_PID *pi;
@@ -274,11 +274,13 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 			einfo("Would send signal %d to PID %d", sig, pi->pid);
 			nkilled++;
 		} else {
-			ebeginv("Sending signal %d to PID %d", sig, pi->pid);
+			if (!quiet)
+				ebeginv("Sending signal %d to PID %d", sig, pi->pid);
 			errno = 0;
 			killed = (kill(pi->pid, sig) == 0 ||
 			    errno == ESRCH ? true : false);
-			eendv(killed ? 0 : 1,
+			if (! quiet)
+				eendv(killed ? 0 : 1,
 				"%s: failed to send signal %d to PID %d: %s",
 				applet, sig, pi->pid, strerror(errno));
 			if (!killed) {
@@ -335,7 +337,8 @@ int run_stop_schedule(const char *applet,
 
 		case SC_SIGNAL:
 			nrunning = 0;
-			nkilled = do_stop(applet, exec, argv, pid, uid, item->value, test);
+			nkilled = do_stop(applet, exec, argv, pid, uid, item->value, test,
+					quiet);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
 					if (progressed)
@@ -364,7 +367,7 @@ int run_stop_schedule(const char *applet,
 				     nloops++)
 				{
 					if ((nrunning = do_stop(applet, exec, argv,
-						    pid, uid, 0, test)) == 0)
+						    pid, uid, 0, test, quiet)) == 0)
 						return 0;
 
 

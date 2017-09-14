@@ -440,11 +440,6 @@ int main(int argc, char **argv)
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
 
-	signal_setup(SIGINT, handle_signal);
-	signal_setup(SIGQUIT, handle_signal);
-	signal_setup(SIGTERM, handle_signal);
-	openlog(applet, LOG_PID, LOG_DAEMON);
-
 	if ((tmp = getenv("SSD_NICELEVEL")))
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
 			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
@@ -729,6 +724,8 @@ int main(int argc, char **argv)
 	if (child_pid != 0) {
 		/* this is the supervisor */
 		umask(numask);
+		openlog(applet, LOG_PID, LOG_DAEMON);
+		signal_setup(SIGTERM, handle_signal);
 
 		fp = fopen(pidfile, "w");
 		if (! fp)
