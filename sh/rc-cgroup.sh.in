@@ -204,10 +204,13 @@ cgroup_cleanup()
 	local pids
 	pids="$(cgroup_get_pids)"
 	if [ -n "${pids}" ]; then
-		kill -s TERM "${pids}"
-		sleep 1
-		pids="$(cgroup_get_pids)"
-		[ -n "${pids}" ] &&
-			kill -s KILL "${pids}"
+		kill -s "${stopsig:-SIGTERM}" ${pids} 2> /dev/null
+		kill -s SIGCONT ${pids} 2> /dev/null
+		yesno "${rc_send_sighup:-no}" &&
+			kill -s SIGHUP ${pids} 2> /dev/null
+		sleep "${rc_timeout_stopsec:-90}"
+		yesno "${rc_send_sigkill:-yes}" &&
+			kill -s SIGKILL ${pids} 2> /dev/null
 	fi
+	eend 0
 }
