@@ -241,17 +241,36 @@ messages to a file), and a few others.
 
 # ulimit and CGroups
 
-Setting `ulimit` and `nice` values per service can be done through the `rc_ulimit`
-variable.
+Setting `ulimit` and `nice` values per service can be done through the
+`rc_ulimit` variable.
 
-Under Linux, OpenRC can optionally use CGroups for process management.
-By default each service script's processes are migrated to their own CGroup.
+Under Linux, OpenRC can use cgroups for process management as well. Once
+the kernel is configured appropriately, the `rc_cgroup_mode` setting in
+/etc/rc.conf should be used to control whether cgroups version one,,
+two, or both are used. The default is to use both if they are available.
 
-By changing certain values in the `conf.d` file limits can be enforced per 
-service. It is easy to find orphan processes of a service that persist after 
-`stop()`, but by default these will NOT be terminated.
-To change this add `rc_cgroup_cleanup="yes"` in the `conf.d` files for services 
-where you desire this functionality.
+By changing certain settings in the service's `conf.d` file limits can be
+enforced per service. These settings are documented in detail in the
+default /etc/rc.conf under `LINUX CGROUPS RESOURCE MANAGEMENT`.
+
+# Dealing with Orphaned Processes
+
+It is possible to get into a state where there are orphaned processes
+running which were part of a service. For example, if you are monitoring
+a service with supervise-daemon and supervise-daemon dies for an unknown
+reason. The way to deal with this will be different for each system.
+
+On Linux systems with cgroups enabled, the cgroup_cleanup command is
+added to all services. You can run it manually, when the service is
+stopped, by using:
+
+```
+# rc-service someservice cgroup_cleanup
+```
+
+The `rc_cgroup_cleanup` setting can be changed to yes to make this
+happen automatically when the service is stopped.
+
 
 # Caching
 
