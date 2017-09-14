@@ -152,3 +152,54 @@ cgroup_cleanup()
 	kill -9 $pids
 	eend $(cgroup_running && echo 1 || echo 0) "fail to stop all processes"
 }
+
+cgroup2_find_path()
+{
+	case "${rc_cgroup_mode:-hybrid}" in
+		hybrid) printf "/sys/fs/cgroup/unified" ;;
+		unified) printf "/sys/fs/cgroup" ;;
+		esac
+		return 0
+}
+
+cgroup2_remove()
+{
+	local cgroup_path="$(cgroup2_find_path)" rc_cgroup_path
+	[ -z "${cgroup_path}" ] && return 0
+	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
+	[ ! -d "${rc_cgroup_path}" ] ||
+		[ ! -e "${rc_cgroup_path}"/cgroup.events ] &&
+		return 0
+	grep -qx "$$" "${rc_cgroup_path}/cgroup.procs" &&
+		echo 0 > "${cgroup_path}/cgroup.procs"
+	local key populated vvalue
+	while read key value; do
+		case "${key}" in
+			populated) populated=${value} ;;
+			*) ;;
+		esac
+	done < "${rc_cgroup_path}/cgroup.events"
+	[ "${populated}" = 1 ] && return 0
+	rmdir "${rc_cgroup_path}"
+	return 0
+}
+
+cgroup2_set_limits()
+{
+	local cgroup_path="$(cgroup2_find_path)"
+	[ -z "${cgroup_path}" ] && return 0
+	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
+	local OIFS="$IFS"
+	IFS="
+"
+	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
+	echo 0 > "${rc_cgroup_path}/cgroup.procs"
+	echo "${rc_cgroup_settings}" | while IFS="$OIFS" read key value; do
+		[ -z "${key}" ] || [ -z "${value}" ] && continue
+		[ ! -e "${rc_cgroup_path}/${key}" ] && continue
+		veinfo "${RC_SVCNAME}: cgroups: ${key} ${value}"
+		echo "${value}" > "${rc_cgroup_path}/${key}"
+	done
+	IFS="$OIFS"
+	return 0
+}

@@ -107,19 +107,15 @@ mount_misc()
 	fi
 }
 
-mount_cgroups()
+cgroup1_base()
 {
-	# set up kernel support for cgroups
-	if [ -d /sys/fs/cgroup ] && ! mountinfo -q /sys/fs/cgroup; then
-		if grep -qs cgroup /proc/filesystems; then
-			ebegin "Mounting cgroup filesystem"
-			local opts="${sysfs_opts},mode=755,size=${rc_cgroupsize:-10m}"
-			mount -n -t tmpfs -o ${opts} cgroup_root /sys/fs/cgroup
-			eend $?
-		fi
+	grep -qw cgroup /proc/filesystems || return 0
+	if ! mountinfo -q /sys/fs/cgroup; then
+		ebegin "Mounting cgroup filesystem"
+		local opts="${sysfs_opts},mode=755,size=${rc_cgroupsize:-10m}"
+		mount -n -t tmpfs -o "${opts}" cgroup_root /sys/fs/cgroup
+		eend $?
 	fi
-
-	mountinfo -q /sys/fs/cgroup || return 0
 
 	if ! mountinfo -q /sys/fs/cgroup/openrc; then
 		local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
@@ -129,17 +125,87 @@ mount_cgroups()
 			openrc /sys/fs/cgroup/openrc
 		printf 1 > /sys/fs/cgroup/openrc/notify_on_release
 	fi
+	return 0
+}
 
-	yesno ${rc_controller_cgroups:-YES} && [ -e /proc/cgroups ] || return 0
-	while read name hier groups enabled rest; do
+cgroup1_controllers()
+{
+	yesno "${rc_controller_cgroups:-YES}" && [ -e /proc/cgroups ] || return 0
+	while read -r name _ _ enabled rest; do
 		case "${enabled}" in
-			1)	mountinfo -q /sys/fs/cgroup/${name} && continue
-				mkdir /sys/fs/cgroup/${name}
-				mount -n -t cgroup -o ${sysfs_opts},${name} \
-					${name} /sys/fs/cgroup/${name}
+			1)	mountinfo -q "/sys/fs/cgroup/${name}" && continue
+				local x
+				for x in $rc_cgroup_controllers; do
+				[ "${name}" = "blkio" ] && [ "${x}" = "io" ] &&
+					continue 2
+				[ "${name}" = "${x}" ] &&
+				continue 2
+				done
+				mkdir "/sys/fs/cgroup/${name}"
+				mount -n -t cgroup -o "${sysfs_opts},${name}" \
+					"${name}" "/sys/fs/cgroup/${name}"
 				;;
 		esac
 	done < /proc/cgroups
+	return 0
+}
+
+cgroup2_controllers()
+{
+	local active cgroup_path x y
+	cgroup_path="$(cgroup2_find_path)"
+	[ -z "${cgroup_path}" ] && return 0
+	[ -e "${cgroup_path}/cgroup.controllers" ] &&
+	read -r active < "${cgroup_path}/cgroup.controllers"
+	for x in ${rc_cgroup_controllers}; do
+		for y in ${active}; do
+		[ "$x" = "$y" ] &&
+			[ -e "${cgroup_path}/cgroup.subtree_control" ]&&
+			echo "+${x}"  > "${cgroup_path}/cgroup.subtree_control"
+		done
+	done
+	return 0
+}
+
+cgroups_hybrid()
+{
+	grep -qw cgroup /proc/filesystems &&
+		grep -qw cgroup2 /proc/filesystems ||
+		return 0
+	cgroup1_base
+	mkdir /sys/fs/cgroup/unified
+	mount -t cgroup2 none -o "${sysfs_opts},nsdelegate" /sys/fs/cgroup/unified
+	cgroup2_controllers
+	cgroup1_controllers
+	return 0
+}
+
+cgroups_legacy()
+{
+	grep -qw cgroup /proc/filesystems || return 0
+	cgroup1_base
+	cgroup1_controllers
+	return 0
+}
+
+cgroups_unified()
+{
+	grep -qw cgroup2 /proc/filesystems || return 0
+	mount -t cgroup2 none -o "${sysfs_opts},nsdelegate" /sys/fs/cgroup
+	return 0
+}
+
+mount_cgroups()
+{
+	# set up kernel support for cgroups
+	if [ -d /sys/fs/cgroup ]; then
+		case "${rc_cgroup_mode:-hybrid}" in
+		hybrid) cgroups_hybrid ;;
+		legacy) cgroups_legacy ;;
+		unified) cgroups_unified ;;
+		esac
+	fi
+	return 0
 }
 
 restorecon_sys()
