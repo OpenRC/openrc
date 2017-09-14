@@ -365,9 +365,9 @@ while [ -n "$1" ]; do
 				then
 					"$1"_post || exit $?
 				fi
-				[ "$(command -v cgroup_cleanup)" = "cgroup_cleanup" -a \
-				"$1" = "stop" ] && \
-				yesno "${rc_cgroup_cleanup}" && \
+				[ "$(command -v cgroup_cleanup)" = "cgroup_cleanup" ] &&
+					[ "$1" = "stop" ] &&
+					yesno "${rc_cgroup_cleanup}" && \
 					cgroup_cleanup
 				if [ "$(command -v cgroup2_remove)" = "cgroup2_remove" ]; then
 					[ "$1" = stop ] || [ -z "${command}" ] &&
