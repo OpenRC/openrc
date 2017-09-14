@@ -134,25 +134,6 @@ cgroup_set_limits()
 	return 0
 }
 
-cgroup_cleanup()
-{
-	cgroup_running || return 0
-	ebegin "starting cgroups cleanup"
-	for sig in TERM QUIT INT; do
-		cgroup_get_pids || { eend 0 "finished" ; return 0 ; }
-		for i in 0 1; do
-			kill -s $sig $pids
-			for j in 0 1 2; do
-				cgroup_get_pids || { eend 0 "finished" ; return 0 ; }
-				sleep 1
-			done
-		done 2>/dev/null
-	done
-	cgroup_get_pids || { eend 0 "finished" ; return 0; }
-	kill -9 $pids
-	eend $(cgroup_running && echo 1 || echo 0) "fail to stop all processes"
-}
-
 cgroup2_find_path()
 {
 	case "${rc_cgroup_mode:-hybrid}" in
@@ -202,4 +183,23 @@ cgroup2_set_limits()
 	done
 	IFS="$OIFS"
 	return 0
+}
+
+cgroup_cleanup()
+{
+	cgroup_running || return 0
+	ebegin "starting cgroups cleanup"
+	for sig in TERM QUIT INT; do
+		cgroup_get_pids || { eend 0 "finished" ; return 0 ; }
+		for i in 0 1; do
+			kill -s $sig $pids
+			for j in 0 1 2; do
+				cgroup_get_pids || { eend 0 "finished" ; return 0 ; }
+				sleep 1
+			done
+		done 2>/dev/null
+	done
+	cgroup_get_pids || { eend 0 "finished" ; return 0; }
+	kill -9 $pids
+	eend $(cgroup_running && echo 1 || echo 0) "fail to stop all processes"
 }
