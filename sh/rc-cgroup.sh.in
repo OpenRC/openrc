@@ -212,5 +212,7 @@ cgroup_cleanup()
 		yesno "${rc_send_sigkill:-yes}" &&
 			kill -s KILL ${pids} 2> /dev/null
 	fi
-	eend 0
+	[ -z "$(cgroup_get_pids)" ]
+	eend $? "Unable to stop all processes"
+	return 0
 }
