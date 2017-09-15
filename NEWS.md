@@ -3,6 +3,12 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.31
+
+This version adds support for Control Groups version 2, which is
+considered stable as of Linux-4.13. Please see /etc/rc.conf for
+documentation on how to configure control groups.
+
 ## OpenRC-0.28
 
 This version mounts efivars read only due to concerns about changes in
