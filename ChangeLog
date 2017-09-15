@@ -1,3 +1,102 @@
+commit 2f60a959b442866b0e879d83f2732c4fa3ed3f7d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update news file
+
+commit 25b45a5a239318fb57c405c3fe64e53b0738ad68
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    cgroup_cleanup: try to remove the cgroup version 2 cgroup
+    
+    If we were able to kill all the processes in the cgroup, it should be
+    removed.
+
+commit 4651b8c7e9e2ef9c1ea1fb8d174d1ca4693627af
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-cgroup.sh: cgroup_cleanup fix error handling
+    
+    cgroup_cleanup should warn if it is unable to clean up all processes in
+    the control group, but it will always return success.
+
+commit 50608b54ed98acb54fec5fe3323909ea684d3af9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-cgroup.sh: fix signal names
+    
+    The "SIG" prefix on signal names passed to kill -s isn't portable.
+
+commit b0a077a35f85e266fdb82a245dcbda18664a8567
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add quiet switch to do_stop in src-schedules.c
+    
+    This allows supervise-daemon to run this code without attempting to
+    print some status messages used by start-stop-daemon.
+
+commit 6a5ca2ab368d0a85f51bb559672dba2e3ffcc6be
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    make the procedure for killing child processes of services configurable
+
+commit 2b0345165e5af57ca61a4000c3671bbe6d677cf9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Make cgroup_cleanup send only one sigterm and sigkill
+    
+    Instead of looping and sending multiple signals to child processes in
+    cgroup_cleanup, we send sigterm followed by sleeping one second then
+    sigkill.
+    
+    This brings us more in line with systemd's "control group" killmode
+    setting.
+    
+    Also, this commit includes several shellcheck cleanups.
+
+commit 8885580986ab8adc951fe32b9323c8b16130fb4f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-cgroup.sh: move cgroup_cleanup to the end of the file
+
+commit 6d7713a758b7e78f05e6a3cc101f862d28d778ab
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    guide.md: clarify cgroups documentation
+    
+    Update the documentation to reflect cgroups version 2 support.
+    Also, add a section on dealing with orphaned service processes.
+    
+    This fixes #94.
+
+commit 457f928e793cb1f6ef254935ad07f58b8762c72f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add support for control groups version 2
+    
+    This is for #94.
+
+commit a71a461e452a98554346c47411e9c9012023c201
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.31
+
+commit a09b8af3f98c0700a9b838b7f3683ee58eecc912
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 382efdbfcb99703d03211efacd800c9575e64230
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1337,92 +1436,3 @@ Author: Doug Freed <dwfreed@mtu.edu>
 Commit: Doug Freed <dwfreed@mtu.edu>
 
     rc-misc: allow EINFO_VERBOSE through too
-
-commit 1edb5f6fd9c4827e5d4ed5c854bc322ba8a7df73
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    rc-misc: Allow EINFO_COLOR through env_filter()
-    
-    This allows rc-service -C <service> <action> to properly not print color
-    messages.
-    
-    Fixes #93
-
-commit c4d7e02abd7008b8e8ad16f62c2abbb60fab252b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix permission checks for cgroups
-    
-    This is needed because containers may give read access to cgroups but
-    not allow the settings to be changed.
-
-commit a4e0d675e13f07bf880da10a4d602983a556264d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc-run.8: update variable documentation
-    
-    - document command_args_background and command_user.r
-    - clarify documentation for command_background
-    
-    This fixes #78.
-
-commit 8a8032478a755f6e2ceaebc5425e61c6817df936
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Make use of name vs RC_SVCNAME consistent in supervisor scripts
-    
-    This fixes #79.
-
-commit ac53c9a658589456c678b6bfe674a66a3845e564
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sh/init.sh: fix the test for cache restoration
-    
-    This fixes the test for cache restoration since we are no longer caching
-    the dependency tree.
-
-commit b02ff466fa75cc4b5bcfaff3f2989cc65c823f43
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    savecache: stop saving the dependency tree
-    
-    This fixes #85.
-
-commit 6bd0f2d096f149906061a4ac7b66b7e85516784a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/procfs: typo fix
-
-commit 63f8ae466f046dcdbb0ba13ef96e63eeec86e6e6
-Author: frickler01 <frickler01@users.noreply.github.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Format code blocks and variable/path notations
-    
-    Add markdown backticks for commands, variable names and path as well
-    as code blocks for better readability.
-    
-    This fixes #97.
-
-commit 841b883825ddf9982a673b3964757f6df25acd46
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    hwclock: fix module load warning
-
-commit ba10793b0b85b11fae04e6526716c6f7976afde1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/procfs: fix binfmt_misc module load warning
-    
-    This reworks the logic so that the warning about configuring the
-    binfmt_misc module is only displayed if the module actually has to be
-    loaded.
