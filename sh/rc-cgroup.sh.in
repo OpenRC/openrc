@@ -146,10 +146,12 @@ cgroup_set_limits()
 
 cgroup2_find_path()
 {
-	case "${rc_cgroup_mode:-hybrid}" in
-		hybrid) printf "/sys/fs/cgroup/unified" ;;
-		unified) printf "/sys/fs/cgroup" ;;
+	if grep -qw cgroup2 /proc/filesystems; then
+		case "${rc_cgroup_mode:-hybrid}" in
+			hybrid) printf "/sys/fs/cgroup/unified" ;;
+			unified) printf "/sys/fs/cgroup" ;;
 		esac
+	fi
 		return 0
 }
 
@@ -180,7 +182,7 @@ cgroup2_set_limits()
 {
 	local cgroup_path
 	cgroup_path="$(cgroup2_find_path)"
-	[ -z "${cgroup_path}" ] && return 0
+	[ -d "${cgroup_path}" ] || return 0
 	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
 	local OIFS="$IFS"
 	IFS="
