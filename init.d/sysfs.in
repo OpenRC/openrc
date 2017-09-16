@@ -150,6 +150,16 @@ cgroup1_controllers()
 	return 0
 }
 
+cgroup2_base()
+{
+	local base
+	base="$(cgroup2_find_path)"
+	mkdir -p "${base}"
+	mount -t cgroup2 none -o "${sysfs_opts},nsdelegate" "${base}" 2> /dev/null ||
+		mount -t cgroup2 none -o "${sysfs_opts}" "${base}"
+	return 0
+}
+
 cgroup2_controllers()
 {
 	local active cgroup_path x y
@@ -169,13 +179,12 @@ cgroup2_controllers()
 
 cgroups_hybrid()
 {
-	grep -qw cgroup /proc/filesystems &&
-		grep -qw cgroup2 /proc/filesystems ||
-		return 0
+	grep -qw cgroup /proc/filesystems || return 0
 	cgroup1_base
-	mkdir /sys/fs/cgroup/unified
-	mount -t cgroup2 none -o "${sysfs_opts},nsdelegate" /sys/fs/cgroup/unified
-	cgroup2_controllers
+	if grep -qw cgroup2 /proc/filesystems; then
+		cgroup2_base
+		cgroup2_controllers
+	fi
 	cgroup1_controllers
 	return 0
 }
@@ -190,8 +199,8 @@ cgroups_legacy()
 
 cgroups_unified()
 {
-	grep -qw cgroup2 /proc/filesystems || return 0
-	mount -t cgroup2 none -o "${sysfs_opts},nsdelegate" /sys/fs/cgroup
+	cgroup2_base
+	cgroup2_controllers
 	return 0
 }
 
