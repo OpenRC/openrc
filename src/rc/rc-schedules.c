@@ -261,10 +261,10 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 	bool killed;
 	int nkilled = 0;
 
-	if (pid)
+	if (pid > 0)
 		pids = rc_find_pids(NULL, NULL, 0, pid);
 	else
-		pids = rc_find_pids(exec, argv, uid, pid);
+		pids = rc_find_pids(exec, argv, uid, 0);
 
 	if (!pids)
 		return 0;
