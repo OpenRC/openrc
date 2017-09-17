@@ -1,3 +1,34 @@
+commit 2a203b9b6e91e4ed140750eb9223012035870864
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sysfs: fix cgroup hybrid mode
+    
+    In hybrid mode, we should not try to mount cgroup2 if it is not
+    available in the kernel.
+    
+    This fixes #164.
+
+commit a769ea1b92f47254edf11458d2c8b79d3819e0e6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    cgroup2_find_path: use legacy mode if cgroup2 is not in the kernel
+    
+    This is related to #164.
+
+commit 6f564b59cc15e688b2fa0758fa9797632e0751d7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.31.1
+
+commit e312e569970c74cf52e255da67034391b68dafac
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 2f60a959b442866b0e879d83f2732c4fa3ed3f7d
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1421,18 +1452,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     now have a request to enable it.
     
     This fixes #24.
-
-commit c146b966913ae80652e3be925d3aba60ed82f14d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add command_progress variable
-    
-    If this is set to yes, 1, true, or on, start-stop-daemon will display a
-    progress meter while waiting for a daemon to stop.
-
-commit 6cabaf274defa11773094a2c85b3d0a9f0bd9b08
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    rc-misc: allow EINFO_VERBOSE through too
