@@ -39,7 +39,6 @@
 #include "rc-selinux.h"
 
 /* the context files for selinux */
-#define RUN_INIT_FILE "run_init_type"
 #define INITRC_FILE "initrc_context"
 
 #ifdef HAVE_AUDIT
@@ -299,6 +298,26 @@ static int read_context_file(const char *filename, char **context)
 	return ret;
 }
 
+static int read_run_init_context(char **context)
+{
+	int ret = -1;
+	RC_STRINGLIST *list;
+	char *value = NULL;
+
+	list = rc_config_list(selinux_openrc_contexts_path());
+	if (list == NULL)
+		return ret;
+
+	value = rc_config_value(list, "run_init");
+	if (value != NULL && strlen(value) > 0) {
+		*context = xstrdup(value);
+		ret = 0;
+	}
+
+	rc_stringlist_free(list);
+	return ret;
+}
+
 void selinux_setup(char **argv)
 {
 	char *new_context = NULL;
@@ -312,7 +331,7 @@ void selinux_setup(char **argv)
 		return;
 	}
 
-	if (read_context_file(RUN_INIT_FILE, &run_init_t) != 0) {
+	if (read_run_init_context(&run_init_t) != 0) {
 		/* assume a reasonable default, rather than bailing out */
 		run_init_t = xstrdup("run_init_t");
 		ewarn("Assuming SELinux run_init type is %s", run_init_t);
