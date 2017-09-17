@@ -478,9 +478,9 @@ run_stop_schedule(const char *exec, const char *const *argv,
 			return 0;
 
 		if (stat(pidfile, &pidfile_stat) == 0) {
-			if (pidfile_stat.st_uid != 0 ||
+			if (pidfile_stat.st_uid != geteuid() ||
 			    pidfile_stat.st_mode & (S_IWGRP | S_IWOTH)) {
-				ewarn("%s is writable by non-root, which poses a security risk", pidfile);
+				ewarn("%s is writable by someone other than the current user, which poses a security risk", pidfile);
 			}
 		}
 	}
