@@ -1,3 +1,79 @@
+commit 038cea416c0a4cda83872733ab660cf0bb2b5eaf
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    ignore sigchld when shutting down the supervised process
+    
+    We need to do this to skip the zombie state for the child process since
+    we are not easily able to wait() for it.
+
+commit e2bd550d13d23ce132650d7e3dc36dc512bf048e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+
+commit ac498146071636a3fbda4fb48ff64102c244415d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+
+commit 09fc8fe09c01a347666de66fb11e759de371a873
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: code cleanup
+    
+    Clean up the process for killing an active supervisor when stopping.
+
+commit 3a2774732aa629083bc6395c5c7a8a3040e64b60
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    initialize the stop schedule
+
+commit dec0722c30e41480d300549a69d3672c38e0c15d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-schedules.c: pass the correct pid to rc_find_pids
+    
+    This is for #163.
+
+commit 949daeb68b2a39fa1e64f2eb3fa72579f98df09e
+Author: Jason Zaman <jason@perfinion.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    selinux: fix const qualifier warning
+    
+    rc-selinux.c: In function ‘selinux_setup’:
+    rc-selinux.c:361:9: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+      curr_t = context_type_get(curr_con);
+             ^
+
+commit fbab2affd2d5309ed4b5416e0e239902d77b4232
+Author: Jason Zaman <jason@perfinion.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    selinux: use openrc contexts path to get contexts
+    
+    The minimum requirement for libselinux is now >=2.6
+    The refpolicy and the gentoo policy contain the
+    contexts since version 2.20170204-r4
+
+commit 28249059356d8b611a46c5493574abe9805ab48b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.31.2
+
+commit 60eadd5fa2ba2675caab4f977b8627bc07e39e8e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 2a203b9b6e91e4ed140750eb9223012035870864
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
