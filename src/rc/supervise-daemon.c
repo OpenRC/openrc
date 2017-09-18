@@ -666,7 +666,7 @@ int main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 
 			/* wait for the supervisor to go down */
-			while (kill(pid, 0) == 0)
+			while (kill(pid, 0) == 0) {
 				ts.tv_sec = 0;
 				ts.tv_nsec = 1;
 				nanosleep(&ts, NULL);
