@@ -432,6 +432,7 @@ int main(int argc, char **argv)
 	int respawn_period = 5;
 	time_t respawn_now= 0;
 	time_t first_spawn= 0;
+	struct timespec ts;
 	struct passwd *pw;
 	struct group *gr;
 	FILE *fp;
@@ -658,17 +659,18 @@ int main(int argc, char **argv)
 
 	if (stop) {
 		pid = get_pid(applet, pidfile);
-		if (pid == -1)
-			i = pid;
-		else
+		if (pid != -1) {
 			i = kill(pid, SIGTERM);
-		if (i != 0)
-			/* We failed to send the signal */
-			exit(EXIT_FAILURE);
+			if (i != 0)
+				/* We failed to send the signal */
+				exit(EXIT_FAILURE);
 
-		/* wait for the supervisor to go down */
-		while (kill(pid, 0) == 0)
-			sleep(1);
+			/* wait for the supervisor to go down */
+			while (kill(pid, 0) == 0)
+				ts.tv_sec = 0;
+				ts.tv_nsec = 1;
+				nanosleep(&ts, NULL);
+		}
 
 		/* Even if we have not actually killed anything, we should
 		 * remove information about it as it may have unexpectedly
