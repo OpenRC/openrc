@@ -753,6 +753,7 @@ int main(int argc, char **argv)
 		while (!exiting) {
 			wait(&i);
 			if (exiting) {
+				signal_setup(SIGCHLD, SIG_IGN);
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 				nkilled = run_stop_schedule(applet, exec, NULL, child_pid,
 						0, false, false, true);
