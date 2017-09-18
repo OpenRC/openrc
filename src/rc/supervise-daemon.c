@@ -670,6 +670,7 @@ int main(int argc, char **argv)
 				ts.tv_sec = 0;
 				ts.tv_nsec = 1;
 				nanosleep(&ts, NULL);
+			}
 		}
 
 		/* Even if we have not actually killed anything, we should
