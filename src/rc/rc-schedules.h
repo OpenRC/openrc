@@ -13,7 +13,6 @@
 #ifndef __RC_SCHEDULES_H
 #define __RC_SCHEDULES_H
 
-void initialize_schedulelist(void);
 void free_schedulelist(void);
 int parse_signal(const char *applet, const char *sig);
 void parse_schedule(const char *applet, const char *string, int timeout);

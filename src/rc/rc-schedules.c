@@ -56,11 +56,6 @@ typedef struct scheduleitem {
 
 static TAILQ_HEAD(, scheduleitem) schedule;
 
-void initialize_schedulelist(void)
-{
-	TAILQ_INIT(&schedule);
-}
-
 void free_schedulelist(void)
 {
 	SCHEDULEITEM *s1 = TAILQ_FIRST(&schedule);
@@ -186,6 +181,7 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 	size_t len;
 	SCHEDULEITEM *item;
 
+	TAILQ_INIT(&schedule);
 	if (string)
 		for (slash = string; *slash; slash++)
 			if (*slash == '/')
