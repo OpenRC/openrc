@@ -119,6 +119,13 @@ get_bootparam_value()
 	echo $result
 }
 
+need_if_exists()
+{
+	for x; do
+		rc-service --exists "${x}" && need "${x}"
+	done
+}
+
 # Called from openrc-run.sh or gendepends.sh
 _get_containers() {
 	local c
