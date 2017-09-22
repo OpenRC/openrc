@@ -217,8 +217,10 @@ that dependency type to the function, or prefix the names with ! to
 remove them from the dependencies.
 .Bl -tag -width "RC_DEFAULTLEVEL"
 .It Ic need
-The service will refuse to start until needed services have started and it
-will refuse to stop until any services that need it have stopped.
+The service will attempt to start any services it needs regardless of
+whether they have been added to the runlevel. It will refuse to start
+until all services it needs have started, and it will refuse to stop until all
+services that need it have stopped.
 .It Ic use
 The service will attempt to start any services it uses that have been added
 to the runlevel.
