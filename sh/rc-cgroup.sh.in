@@ -165,7 +165,7 @@ cgroup2_remove()
 		[ ! -e "${rc_cgroup_path}"/cgroup.events ] &&
 		return 0
 	grep -qx "$$" "${rc_cgroup_path}/cgroup.procs" &&
-		echo 0 > "${cgroup_path}/cgroup.procs"
+		printf "%d" 0 > "${cgroup_path}/cgroup.procs"
 	local key populated vvalue
 	while read -r key value; do
 		case "${key}" in
@@ -188,12 +188,12 @@ cgroup2_set_limits()
 	IFS="
 "
 	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
-	echo 0 > "${rc_cgroup_path}/cgroup.procs"
+	printf "%d" 0 > "${rc_cgroup_path}/cgroup.procs"
 	echo "${rc_cgroup_settings}" | while IFS="$OIFS" read -r key value; do
 		[ -z "${key}" ] || [ -z "${value}" ] && continue
 		[ ! -e "${rc_cgroup_path}/${key}" ] && continue
 		veinfo "${RC_SVCNAME}: cgroups: ${key} ${value}"
-		echo "${value}" > "${rc_cgroup_path}/${key}"
+		printf "%s" "${value}" > "${rc_cgroup_path}/${key}"
 	done
 	IFS="$OIFS"
 	return 0
