@@ -53,9 +53,6 @@ Calling `openrc` without any arguments will try to reset all services so
 that the current runlevel is satisfied; if you manually started apache it will be 
 stopped, and if squid died but is in the current runlevel it'll be restarted.
 
-There is a `service` helper that emulates the syntax seen on e.g. older Redhat
-and Ubuntu (`service nginx start` etc.)
-
 # Runlevels
 
 OpenRC has a concept of runlevels, similar to what sysvinit historically 

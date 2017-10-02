@@ -24,7 +24,7 @@ SBINDIR=	${PREFIX}/sbin
 LINKDIR=	${LIBEXECDIR}
 
 BINPROGS=	rc-status
-SBINPROGS = openrc openrc-run rc rc-service rc-update runscript service \
+SBINPROGS = openrc openrc-run rc rc-service rc-update runscript \
 			start-stop-daemon supervise-daemon
 RC_BINPROGS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 				eindent eoutdent esyslog eval_ecolors ewaitfile \
@@ -150,7 +150,7 @@ rc-depend: rc-depend.o _usage.o rc-misc.o
 rc-status: rc-status.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-rc-service service: rc-service.o _usage.o rc-misc.o
+rc-service: rc-service.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 rc-update: rc-update.o _usage.o rc-misc.o
