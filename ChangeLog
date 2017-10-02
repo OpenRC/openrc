@@ -1,3 +1,119 @@
+commit 7f3b41311119e3a96a15b0fb473b44f422e903e9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    use printf consistently in cgroups handling
+    
+    This makes the cgroups handling consistent between cgroups v1 and v2.
+    Also, it fixes #167.
+
+commit 1ccba056584ee1a8e09fb1d5eebd988b47912c06
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/rc-functions.sh: add need_if_exists convenience function
+
+commit c46adf14343df3a74aef7e4ae5be175ae5fa7a01
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/openrc-run.8: Clarify the explanation of the need dependency
+
+commit 1cac8b080c16f9aab19c7a3ae1ca155c20dfa14d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    ignore sigchld when shutting down the supervised process
+    
+    We need to do this to skip the zombie state for the child process since
+    we are not easily able to wait() for it.
+
+commit b58194ef63ec8c0a7e0ea3c291da9c19aa83cb1a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+
+commit b28c0d6f66e42b1e6d2a39c286a18c8d92881790
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+
+commit 3cf19b0f30a90157d23d09ded304439f1eb42d4a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: code cleanup
+    
+    Clean up the process for killing an active supervisor when stopping.
+
+commit 0eb47b9af340dd07209a3920944ed085fe7bd359
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    initialize the stop schedule
+
+commit 4ab60ff10935122277bbaed437f82a765279cd19
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-schedules.c: pass the correct pid to rc_find_pids
+    
+    This is for #163.
+
+commit db4a578273dbfa15b8b96686391bcc9ecc04b646
+Author: Jason Zaman <jason@perfinion.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    selinux: fix const qualifier warning
+    
+    rc-selinux.c: In function ‘selinux_setup’:
+    rc-selinux.c:361:9: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
+      curr_t = context_type_get(curr_con);
+             ^
+
+commit b1c3422f453921e838d419640fe39144dbf8d13d
+Author: Jason Zaman <jason@perfinion.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    selinux: use openrc contexts path to get contexts
+    
+    The minimum requirement for libselinux is now >=2.6
+    The refpolicy and the gentoo policy contain the
+    contexts since version 2.20170204-r4
+
+commit 3fafd7a76e6adf15ec72a7ba5f44583eff8fab7a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sysfs: fix cgroup hybrid mode
+    
+    In hybrid mode, we should not try to mount cgroup2 if it is not
+    available in the kernel.
+    
+    This fixes #164.
+
+commit cd5722aca50f0eaddde7ce04ee00da53c313ba7d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    cgroup2_find_path: use legacy mode if cgroup2 is not in the kernel
+    
+    This is related to #164.
+
+commit dcb4a4d2613a1fdf85651b32e5b7a87528f487bc
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.32
+
+commit e312e569970c74cf52e255da67034391b68dafac
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 2f60a959b442866b0e879d83f2732c4fa3ed3f7d
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1299,140 +1415,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 595836
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=595836
-
-commit 6710316a18c33601e780282e72c60f09b5175280
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    openrc-run: fix double free
-
-commit 61882821e0d6110a2ca2f67fad7c362983a85cf0
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    init.d: Clean up some bad ewarn output
-
-commit 969546bcf0203379db286be21c7f709d27cc73b0
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    typo fix
-    
-    X-Gentoo-Bug: 595306
-    X-Gentoo-Bug: https://bugs.gentoo.org/show_bug.cgi?id=595306
-
-commit d0ae7ffc2534fa65c2e8927931f5107ce4505ca6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.23
-
-commit b71bcc242202752bc74fce3a5c629f172b04fca5
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    update ChangeLog
-
-commit 24010dcb483cf7284cd8a5db111ae63f0d4e1038
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    dist: convert to tar.gz
-    
-    This allows the "make dist" target to be used as well as the github
-    archive generation.
-
-commit 0a76627345a173fc00be9864f3f3f5c3b15319cd
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/swap: remove the case for linux
-    
-    I am removing the separate case for Linux, because we are droppping the
-    "-e" switch.
-
-commit bbf98befb86337a36ef5af7f273e503a6de4b9bd
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sh/init.sh.Linux.in: update test for live /proc to use md5sum
-    
-    This allows us to avoid the warnings from bash-4.4 about null bytes in
-    command substitutions.
-    
-    If you have separate /usr, are not using an initramfs, and have a file
-    called /proc/self/environ on your root file system, this will break.
-    X-Gentoo-Bug: 594534
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=594534
-
-commit 316903fbf0da6edc067a98327c8c6cb2b3cdcf93
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc-run.8: typo fix
-
-commit 66a9788435e51e658e4ae9d3ce0d0e54ea53e4f9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc-run.8: Add note about eval usage
-    
-    This fixes #77.
-
-commit bf73363f220ff086d2559e7c2015801f80862749
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add --use-blacklist to modprobe calls in modules and modules-load
-    
-    This means that we will honor the modprobe black lists.
-    
-    X-Gentoo-Bug: 594012
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=594012
-
-commit d6c30ab12a3b335ac57cd1f0ac00231bb34fc0c4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "Remove eval calls from supervisor start functions"
-    
-    This reverts commit 0d1f1010c299a95332f224c3be9e8dfdd85eec54.
-    We need the eval in case someone uses something like:
-    command_args="this \"is a\" test"
-    
-    This is related to #77.
-
-commit 0d1f1010c299a95332f224c3be9e8dfdd85eec54
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove eval calls from supervisor start functions
-    
-    This fixes #77.
-
-commit 83bb827edf5b9be04a326d1970d6f55db239281f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "Disable parallel startup in interactive mode"
-    
-    This reverts commit 8b4fc05ff2645b2ecb0f153492f72dd8b39ba431.
-    The original commit did not explain why this feature was disabled, and I
-    now have a request to enable it.
-    
-    This fixes #24.
-
-commit c146b966913ae80652e3be925d3aba60ed82f14d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add command_progress variable
-    
-    If this is set to yes, 1, true, or on, start-stop-daemon will display a
-    progress meter while waiting for a daemon to stop.
-
-commit 6cabaf274defa11773094a2c85b3d0a9f0bd9b08
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    rc-misc: allow EINFO_VERBOSE through too
