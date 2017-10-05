@@ -408,11 +408,12 @@ int run_stop_schedule(const char *applet,
 
 	if (progressed)
 		printf("\n");
-	if (! quiet)
+	if (! quiet) {
 		if (nrunning == 1)
 			eerror("%s: %d process refused to stop", applet, nrunning);
 		else
 			eerror("%s: %d process(es) refused to stop", applet, nrunning);
+	}
 
 	return -nrunning;
 }
