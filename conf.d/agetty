@@ -1,3 +1,6 @@
+# make agetty quiet
+#quiet="yes"
+
 # Set the baud rate of the terminal line
 #baud=""
 
