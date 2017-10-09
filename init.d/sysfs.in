@@ -118,7 +118,7 @@ cgroup1_base()
 	fi
 
 	if ! mountinfo -q /sys/fs/cgroup/openrc; then
-		local agent="@LIBEXECDIR@/sh/cgroup-release-agent.sh"
+		local agent="${RC_LIBEXECDIR}/sh/cgroup-release-agent.sh"
 		mkdir /sys/fs/cgroup/openrc
 		mount -n -t cgroup \
 			-o none,${sysfs_opts},name=openrc,release_agent="$agent" \
