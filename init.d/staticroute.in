@@ -1,4 +1,4 @@
-S#!@BINDIR@/openrc-run
+#!@SBINDIR@/openrc-run
 # Copyright (c) 2009-2015 The OpenRC Authors.
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/master/AUTHORS
