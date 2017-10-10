@@ -1,3 +1,27 @@
+commit c0303de1923940cdf4ba5921c1ec128cb0748559
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+
+commit 5443196bcdcd7c995d13d6822bcee50d0ab5e1be
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix compiler warning
+
+commit df8a3008a1473ae7238483db7827cb63cfc39789
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.32.1
+
+commit 8e53a3fa8a33fb714064ddbe38bff2213fcf6837
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 7f3b41311119e3a96a15b0fb473b44f422e903e9
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1384,34 +1408,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     look for daemons by random index.
     
     This fixes #100.
-
-commit deaae7ab5c499191426cec81f6e803c972f0cca3
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: load efivarfs module when booting in efi mode:1
-    
-    The presence of /sys/firmware/efi is used to indicate that the system
-    was booted in efi mode.
-
-commit 3d2c2f0b871944492036d04b0c220ccba1fa2dd5
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: fix efivarfs module test
-
-commit 6a0c033a64ce18056625cd37a94b9810dc5784e3
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: fix efivarfs handling
-    
-    Separate loading the module, if it isn't built in or loaded, from
-    mounting the file system.
-    
-    This also makes sure the warning about configuring the module in
-    /etc/conf.d/modules or building it in is displayed only if it is loaded
-    successfully.
-    
-    X-Gentoo-Bug: 595836
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=595836
