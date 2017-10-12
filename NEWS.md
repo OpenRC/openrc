@@ -3,6 +3,15 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.33
+
+This version removes the "service" binary which was just a copy of
+"rc-service" provided for compatibility.
+
+If you still need the "service" binary, as opposed to "rc-service", it is
+recommended that you use something like Debian's init-system-helpers.
+Otherwise, just use "rc-service" in place of "service".
+
 ## OpenRC 0.31
 
 This version adds support for Control Groups version 2, which is
