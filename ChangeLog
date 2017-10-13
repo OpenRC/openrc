@@ -1,3 +1,68 @@
+commit 91109e31d81ecd48f5690ad6f63103fca545dec7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update news
+
+commit 2b6eeea01d1c64d58929788f4bfa0758393885bf
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: remove service(8) man page
+
+commit a15de23e5713d840d871c526b46050983dc6ea1e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    typo fix
+
+commit efa9ba485d9328f780f3e60dc18339c75974c6c6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/sysfs.in: fix reference to RC_LIBEXECDIR
+    
+    The sysfs init script referred to @LIBEXECDIR@ before this change, but
+    it is better to refer to RC_LIBEXECDIR so that we get rid of a sed
+    substitution.
+
+commit d4ddd72701ff5533a1ba07b1da60806859c63d88
+Author: Chris Cromer <chris@cromer.cl>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add option to make agetty startup quiet
+    
+    This fixes #150
+
+commit 1e9af2cd421423404ffe1491bd35af76c2885f1f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix compiler warning
+
+commit 3c05db74f6e733890e9035c183a774db3d512512
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    remove service binary
+    
+    The service binary was just a synonym for rc-service, so use rc-service
+    instead of service. If you want a "service" binary, it should be
+    something that can determine which service manager you are running and
+    run the appropriate service manager commands.
+
+commit edc54b03770d5f58d1a4969d06c28660003dfb04
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.33
+
+commit 8e53a3fa8a33fb714064ddbe38bff2213fcf6837
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 7f3b41311119e3a96a15b0fb473b44f422e903e9
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1373,45 +1438,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     init.d.misc/wpa_supplicant: find wireless interface for FreeBSD
     
     This fixes #101.
-
-commit 78146b0e14cb57dda8a3aed3d4f8d6b1db7a3c7e
-Author: Sven Wegener <swegener@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    do_service: Initialize idx to 0
-    
-    If index is not explicitly specified for service_started_daemon, it will
-    look for daemons by random index.
-    
-    This fixes #100.
-
-commit deaae7ab5c499191426cec81f6e803c972f0cca3
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: load efivarfs module when booting in efi mode:1
-    
-    The presence of /sys/firmware/efi is used to indicate that the system
-    was booted in efi mode.
-
-commit 3d2c2f0b871944492036d04b0c220ccba1fa2dd5
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: fix efivarfs module test
-
-commit 6a0c033a64ce18056625cd37a94b9810dc5784e3
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: fix efivarfs handling
-    
-    Separate loading the module, if it isn't built in or loaded, from
-    mounting the file system.
-    
-    This also makes sure the warning about configuring the module in
-    /etc/conf.d/modules or building it in is displayed only if it is loaded
-    successfully.
-    
-    X-Gentoo-Bug: 595836
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=595836
