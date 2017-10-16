@@ -732,9 +732,13 @@ int main(int argc, char **argv)
 
 #ifdef TIOCNOTTY
 		tty_fd = open("/dev/tty", O_RDWR);
+		if (tty_fd == -1)
+			eerrorx("%s: open `%s': %s", applet, "/dev/tty", strerror(errno));
 #endif
 
 		devnull_fd = open("/dev/null", O_RDWR);
+		if (devnull_fd == -1)
+			eerrorx("%s: open `%s': %s", applet, "/dev/null", strerror(errno));
 
 		if (nicelevel) {
 			if (setpriority(PRIO_PROCESS, mypid, nicelevel) == -1)
