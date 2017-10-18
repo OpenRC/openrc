@@ -771,17 +771,17 @@ int main(int argc, char **argv)
 					} else
 						respawn_count++;
 					if (respawn_count >= respawn_max) {
-						syslog(LOG_INFO, "respawned \"%s\" too many times, "
+						syslog(LOG_WARNING, "respawned \"%s\" too many times, "
 								"exiting", exec);
 						exiting = true;
 						continue;
 					}
 				}
 				if (WIFEXITED(i))
-					syslog(LOG_INFO, "%s, pid %d, exited with return code %d",
+					syslog(LOG_WARNING, "%s, pid %d, exited with return code %d",
 							exec, child_pid, WEXITSTATUS(i));
 				else if (WIFSIGNALED(i))
-					syslog(LOG_INFO, "%s, pid %d, terminated by signal %d",
+					syslog(LOG_WARNING, "%s, pid %d, terminated by signal %d",
 							exec, child_pid, WTERMSIG(i));
 				child_pid = fork();
 				if (child_pid == -1)
