@@ -1,3 +1,25 @@
+commit 8122e2d8f4fa8538e62f6a5e6b7306afcfc23c1c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: elevate some log messages to warnings
+    
+    Prior to this change, we were logging unexpected terminations of daemons
+    we were supervising at the info level. This change moves the logs to
+    warnings.
+
+commit ff07754be27e20a4d272661b071b63b435018b51
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.33.1
+
+commit acaed1f910a2a00fdd5b6aeab752c552075a7292
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 91109e31d81ecd48f5690ad6f63103fca545dec7
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1430,11 +1452,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 597390
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=597390
-
-commit c44c904a61418189c989e978b0237e5b161263ef
-Author: Joe Maloney <jpm820@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d.misc/wpa_supplicant: find wireless interface for FreeBSD
-    
-    This fixes #101.
