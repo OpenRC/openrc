@@ -1,3 +1,45 @@
+commit f5acc66db7d1a0bfad6a40eefc0240b80f52df94
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc_find_pids: ignore pids that are not in our pid namespace
+    
+    X-Gentoo-Bug: 634634
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=634634
+
+commit fdce4769f2e0f4175163ffa181c7b3b2192f7b22
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: multiple fixes
+    
+    - Harden against dying by handling all signals that would terminate the
+    program and adding --reexec support
+    - factor the supervisor into its own function
+    - fix test for whether we are already running
+
+commit 35b1996704f6635bb29ea3604410e133209e6432
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: elevate some log messages to warnings
+    
+    Prior to this change, we were logging unexpected terminations of daemons
+    we were supervising at the info level. This change moves the logs to
+    warnings.
+
+commit 3c8e7ed255edb8df0d548d6ce514544d5422cbf0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34
+
+commit acaed1f910a2a00fdd5b6aeab752c552075a7292
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 91109e31d81ecd48f5690ad6f63103fca545dec7
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1430,11 +1472,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 597390
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=597390
-
-commit c44c904a61418189c989e978b0237e5b161263ef
-Author: Joe Maloney <jpm820@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d.misc/wpa_supplicant: find wireless interface for FreeBSD
-    
-    This fixes #101.
