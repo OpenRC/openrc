@@ -447,7 +447,9 @@ static void supervisor(char *exec, char **argv)
 #endif
 	signal_setup_restart(SIGIO, handle_signal);
 	signal_setup_restart(SIGPWR, handle_signal);
+#ifdef SIGUNUSED
 	signal_setup_restart(SIGUNUSED, handle_signal);
+#endif
 #ifdef SIGRTMIN
 	for (i = SIGRTMIN; i <= SIGRTMAX; i++)
 		signal_setup_restart(i, handle_signal);
