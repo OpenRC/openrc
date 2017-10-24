@@ -80,9 +80,12 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	DIR *procdir;
 	struct dirent *entry;
 	FILE *fp;
+	int rc;
 	bool container_pid = false;
 	bool openvz_host = false;
 	char *line = NULL;
+	char my_ns[30];
+	char proc_ns[30];
 	size_t len = 0;
 	pid_t p;
 	char buffer[PATH_MAX];
@@ -131,12 +134,28 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		}
 	}
 
+	memset(my_ns, 0, sizeof(my_ns));
+	memset(proc_ns, 0, sizeof(proc_ns));
+	if (exists("/proc/self/ns/pid")) {
+		rc = readlink("/proc/self/ns/pid", my_ns, sizeof(my_ns));
+		if (rc <= 0)
+			my_ns[0] = '\0';
+	}
+
 	while ((entry = readdir(procdir)) != NULL) {
 		if (sscanf(entry->d_name, "%d", &p) != 1)
 			continue;
 		if (openrc_pid != 0 && openrc_pid == p)
 			continue;
 		if (pid != 0 && pid != p)
+			continue;
+		snprintf(buffer, sizeof(buffer), "/proc/%d/ns/pid", p);
+		if (exists(buffer)) {
+			rc = readlink(buffer, proc_ns, sizeof(proc_ns));
+			if (rc <= 0)
+				proc_ns[0] = '\0';
+		}
+		if (strcmp(my_ns, proc_ns))
 			continue;
 		if (uid) {
 			snprintf(buffer, sizeof(buffer), "/proc/%d", p);
