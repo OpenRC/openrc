@@ -56,7 +56,50 @@ supervise_stop()
 	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
 }
 
+_check_supervised()
+{
+	[ "$RC_UNAME" != Linux ] && return 0
+	local child_pid="$(service_get_value "child_pid")"
+	local pid="$(cat ${pidfile})"
+	if [ -n "${child_pid}" ]; then
+		if ! [ -e "/proc/${pid}" ] && [ -e "/proc/${child_pid}" ]; then
+			if [ -e "/proc/self/ns/pid" ] && [ -e "/proc/${child_pid}/ns/pid" ]; then
+				local n1 n2
+				n1=$(readlink "/proc/self/ns/pid")
+				n2=$(readlink "/proc/${child_pid}/ns/pid")
+				if [ "${n1}" = "${n2}" ]; then
+					return 1
+				fi
+			fi
+		fi
+	fi
+	return 0
+}
+
 supervise_status()
 {
-	_status
+	if service_stopping; then
+		ewarn "status: stopping"
+		return 4
+	elif service_starting; then
+		ewarn "status: starting"
+		return 8
+	elif service_inactive; then
+		ewarn "status: inactive"
+		return 16
+	elif service_started; then
+		if service_crashed; then
+			if ! _check_supervised; then
+				eerror "status: unsupervised"
+				return 64
+			fi
+			eerror "status: crashed"
+			return 32
+		fi
+		einfo "status: started"
+		return 0
+	else
+		einfo "status: stopped"
+		return 3
+	fi
 }
