@@ -1,3 +1,27 @@
+commit 934530914bd507476b428d3f6572bbb1c5bbfd16
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add "unsupervised" status and return code 64 to supervise-daemon status function
+    
+    This is to be used if the service is being supervised and the
+    supervisor is somehow killed.
+    
+    Currently, this is very linux specific, but I will expand to other
+    platforms, patches are welcome.
+
+commit b717625cd27950c3f00b5345bc1cee9700e79498
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.2
+
+commit b47539613431521e5e99bc388e6a9d8eb0e48801
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit e7b1d898ca7896d6443ba1e5167eb6bcf3f92929
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1469,18 +1493,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     src/rc/rc: do not try to start services if fork fails
-
-commit 003657c973ea338a19f2b7294190af9d76cf5cea
-Author: Robin H. Johnson <robbat2@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/loopback: drop scope on loopback
-    
-    Busybox does not support the 'scope' argument on 'ip address add' or 'ip
-    route add', this is documented in BUSYBOX.md, but is no longer actually
-    needed, as the kernel does get it right without manual specification,
-    and the ifconfig variant already relies on the kernel to get it right.
-    This is part of #103.
-    
-    X-Gentoo-Bug: 487208
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=487208
