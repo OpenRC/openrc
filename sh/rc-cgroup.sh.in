@@ -203,15 +203,21 @@ cgroup_cleanup()
 {
 	cgroup_running || return 0
 	ebegin "starting cgroups cleanup"
-	local pids
+	local pids loops=0
 	pids="$(cgroup_get_pids)"
 	if [ -n "${pids}" ]; then
-		kill -s "${stopsig:-TERM}" ${pids} 2> /dev/null
 		kill -s CONT ${pids} 2> /dev/null
+		kill -s "${stopsig:-TERM}" ${pids} 2> /dev/null
 		yesno "${rc_send_sighup:-no}" &&
 			kill -s HUP ${pids} 2> /dev/null
-		sleep "${rc_timeout_stopsec:-90}"
-		yesno "${rc_send_sigkill:-yes}" &&
+		kill -s "${stopsig:-TERM}" ${pids} 2> /dev/null
+		while [ -n "$(cgroup_get_pids)" ] &&
+			[ "${loops}" -lt "${rc_timeout_stopsec:-90}" ]; do
+			loops=$((loops+1))
+			sleep 1
+		done
+		pids="$(cgroup_get_pids)"
+		[ -n "${pids}" ] && yesno "${rc_send_sigkill:-yes}" &&
 			kill -s KILL ${pids} 2> /dev/null
 	fi
 	cgroup2_remove
