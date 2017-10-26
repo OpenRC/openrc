@@ -420,7 +420,6 @@ static void supervisor(char *exec, char **argv)
 	time_t respawn_now= 0;
 	time_t first_spawn= 0;
 
-	openlog(applet, LOG_PID, LOG_DAEMON);
 #ifndef RC_DEBUG
 	signal_setup_restart(SIGHUP, handle_signal);
 	signal_setup_restart(SIGINT, handle_signal);
@@ -561,6 +560,7 @@ int main(int argc, char **argv)
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
 	svcname = getenv("RC_SVCNAME");
+	openlog(svcname, LOG_PID, LOG_DAEMON);
 
 	if ((tmp = getenv("SSD_NICELEVEL")))
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
