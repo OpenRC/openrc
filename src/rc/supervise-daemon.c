@@ -556,6 +556,7 @@ int main(int argc, char **argv)
 	int child_argc = 0;
 	char **child_argv = NULL;
 	char *str = NULL;
+	char cmdline[PATH_MAX];
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -721,6 +722,13 @@ int main(int argc, char **argv)
 	if (!pidfile && !reexec)
 		eerrorx("%s: --pidfile must be specified", applet);
 
+	*cmdline = '\0';
+	c = argv;
+	while (c && *c) {
+		strcat(cmdline, *c);
+		strcat(cmdline, " ");
+		c++;
+	}
 	endpwent();
 	argc -= optind;
 	argv += optind;
@@ -818,6 +826,7 @@ int main(int argc, char **argv)
 			parse_schedule(applet, NULL, sig);
 
 		einfov("Detaching to start `%s'", exec);
+		syslog(LOG_INFO, "Running command line: %s", cmdline);
 
 		/* Remove existing pidfile */
 		if (pidfile)
