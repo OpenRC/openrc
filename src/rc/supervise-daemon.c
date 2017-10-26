@@ -523,6 +523,7 @@ static void supervisor(char *exec, char **argv)
 		rc_service_daemon_set(svcname, exec, (const char *const *)argv,
 				pidfile, false);
 		rc_service_mark(svcname, RC_SERVICE_STOPPED);
+		rc_service_value_set(svcname, "child_pid", NULL);
 	}
 	exit(EXIT_SUCCESS);
 }
