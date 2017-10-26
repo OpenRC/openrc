@@ -894,12 +894,15 @@ rc_service_value_set(const char *service, const char *option,
 		return false;
 
 	snprintf(p, sizeof(file) - (p - file), "/%s", option);
-	if (!(fp = fopen(file, "w")))
-		return false;
-	if (value)
+	if (value) {
+		if (!(fp = fopen(file, "w")))
+			return false;
 		fprintf(fp, "%s", value);
-	fclose(fp);
-	return true;
+		fclose(fp);
+	} else {
+		unlink(file);
+	}
+		return true;
 }
 librc_hidden_def(rc_service_value_set)
 
