@@ -1,3 +1,15 @@
+commit eecf868e3c4a763b08cd4b3803f4839e8e710413
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: clarify a log message
+
+commit a5cd486a7fbb5acf8e8f3085500fd86c23dd8641
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 6e6b4ac5fa935eb8052d293f2b8378e0395572e1
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
