@@ -826,7 +826,7 @@ int main(int argc, char **argv)
 			parse_schedule(applet, NULL, sig);
 
 		einfov("Detaching to start `%s'", exec);
-		syslog(LOG_INFO, "Running command line: %s", cmdline);
+		syslog(LOG_INFO, "Supervisor command line: %s", cmdline);
 
 		/* Remove existing pidfile */
 		if (pidfile)
