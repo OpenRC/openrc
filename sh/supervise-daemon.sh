@@ -70,6 +70,8 @@ _check_supervised()
 				if [ "${n1}" = "${n2}" ]; then
 					return 1
 				fi
+			else
+				return 1
 			fi
 		fi
 	fi
