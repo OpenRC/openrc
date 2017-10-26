@@ -1,3 +1,68 @@
+commit 6e6b4ac5fa935eb8052d293f2b8378e0395572e1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: log the command line we run to spawn the child process
+
+commit 558ff4d5fb90b751ebc2852ea907873af2c236fa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: log with the service name instead of "supervise-daemon"
+
+commit 490f855aef581a720c6c0be0d8407fe6d279f9f5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    implement "unsupervised" status
+    
+    The unsupervised status is to be used when a supervisor of a supervised
+    service dies but leaves the service daemon itself running.
+
+commit d1491e201d3ad364e25a55b29ff8035775a6acac
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: remove child_pid from saved options during shutdown
+    
+    This allows us to detect when the supervisor dies unexpectedly because
+    in that case child_pid will still exist.
+
+commit 3231af937590b1c00af1a459009472a371aeb04a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc_service_value_set: remove the option if NULL is the value
+    
+    This allows the equivalent of "unsetting" a value for a service.
+
+commit a5758e7aeffbeb9766ba3055a3fc347f0ccd3d35
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon.sh: fix status function with no namespaces
+
+commit 61a9393ce12fda412bdca4002ac71e7df82384df
+Author: Patrick McLean <chutzpah@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    cgroups_cleanup: clean up shutdown signaling
+    
+    - do not sleep for the full 90 seconds if processes are dead
+    - re-arrange the order of signals we attempt to send to the processes
+
+commit 161d22cb074ecef7003e19682d72a8ee61c14490
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.3
+
+commit 3a96ca1c966c3cc44a2e0e51b383ab47d078bcc1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 934530914bd507476b428d3f6572bbb1c5bbfd16
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
