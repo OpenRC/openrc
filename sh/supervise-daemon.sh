@@ -58,22 +58,11 @@ supervise_stop()
 
 _check_supervised()
 {
-	[ "$RC_UNAME" != Linux ] && return 0
-	local child_pid="$(service_get_value "child_pid")"
-	local pid="$(cat ${pidfile})"
-	if [ -n "${child_pid}" ]; then
-		if ! [ -e "/proc/${pid}" ] && [ -e "/proc/${child_pid}" ]; then
-			if [ -e "/proc/self/ns/pid" ] && [ -e "/proc/${child_pid}/ns/pid" ]; then
-				local n1 n2
-				n1=$(readlink "/proc/self/ns/pid")
-				n2=$(readlink "/proc/${child_pid}/ns/pid")
-				if [ "${n1}" = "${n2}" ]; then
-					return 1
-				fi
-			else
-				return 1
-			fi
-		fi
+	local child_pid start_time
+	child_pid="$(service_get_value "child_pid")"
+	start_time="$(service_get_value "start_time")"
+	if [ -n "${child_pid}" ] && [ -n "${start_time}" ]; then
+		return 1
 	fi
 	return 0
 }
