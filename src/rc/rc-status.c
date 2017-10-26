@@ -128,6 +128,8 @@ print_service(const char *service)
 {
 	char status[60];
 	char uptime [40];
+	char *child_pid = NULL;
+	char *start_time = NULL;
 	int cols =  printf(" %s", service);
 	const char *c = ecolor(ECOLOR_GOOD);
 	RC_SERVICE state = rc_service_state(service);
@@ -147,7 +149,14 @@ print_service(const char *service)
 		    rc_service_daemons_crashed(service) &&
 		    errno != EACCES)
 		{
-			snprintf(status, sizeof(status), " crashed ");
+			child_pid = rc_service_value_get(service, "child_pid");
+			start_time = rc_service_value_get(service, "start_time");
+			if (start_time && child_pid)
+				snprintf(status, sizeof(status), " unsupervised ");
+			else
+				snprintf(status, sizeof(status), " crashed ");
+			free(child_pid);
+			free(start_time);
 		} else {
 			get_uptime(service, uptime, 40);
 			snprintf(status, sizeof(status), " started %s", uptime);
