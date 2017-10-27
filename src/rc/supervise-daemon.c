@@ -161,7 +161,7 @@ static void cleanup(void)
 
 static void re_exec(void)
 {
-	syslog(LOG_WARNING, "Re-executing supervise-daemon");
+	syslog(LOG_WARNING, "Re-executing for %s", svcname);
 	execlp("supervise-daemon", "supervise-daemon", "--reexec", (char *) NULL);
 	syslog(LOG_ERR, "Unable to execute supervise-daemon: %s",
 			strerror(errno));
@@ -402,7 +402,7 @@ static void child_process(char *exec, char **argv)
 		strcat(cmdline, " ");
 		c++;
 	}
-	syslog(LOG_INFO, "Running command line: %s", cmdline);
+	syslog(LOG_INFO, "Child command line: %s", cmdline);
 	execvp(exec, argv);
 
 #ifdef HAVE_PAM
