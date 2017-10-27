@@ -561,7 +561,7 @@ int main(int argc, char **argv)
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
 	svcname = getenv("RC_SVCNAME");
-	openlog(svcname, LOG_PID, LOG_DAEMON);
+	openlog(applet, LOG_PID, LOG_DAEMON);
 
 	if ((tmp = getenv("SSD_NICELEVEL")))
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
