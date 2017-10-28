@@ -1,3 +1,35 @@
+commit b18be3f970eba04589977438faaa726b5c3a6cd2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: use RC_SVCNAME as the first argument to the daemon
+    
+    This makes ps show which service the supervisor is monitoring.
+
+commit 027438f7759dbbc19ac1bedeff3f502c891e4d4e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: fix logging for reexec and the child command line
+
+commit 93e159ae8541b82fd5e1843f60dce135e2eb5517
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    log as supervise-daemon not the service
+
+commit bcfcf50562a081088248f693dfab62d3eab04efa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.4
+
+commit d0097cc10f8701de1b6a5665c54abf909e897233
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit eecf868e3c4a763b08cd4b3803f4839e8e710413
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
