@@ -561,7 +561,12 @@ int main(int argc, char **argv)
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
 	svcname = getenv("RC_SVCNAME");
+	if (!svcname)
+		eerrorx("%s: The RC_SVCNAME environment variable is not set", applet);
 	openlog(applet, LOG_PID, LOG_DAEMON);
+
+	if (argc >= 1 && svcname && strcmp(argv[1], svcname))
+		eerrorx("%s: the first argument must be %s", applet, svcname);
 
 	if ((tmp = getenv("SSD_NICELEVEL")))
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
@@ -583,6 +588,17 @@ int main(int argc, char **argv)
 		}
 	}
 
+	*cmdline = '\0';
+	c = argv;
+	while (c && *c) {
+		strcat(cmdline, *c);
+		strcat(cmdline, " ");
+		c++;
+	}
+	if (svcname) {
+		argc--;
+		argv++;
+	}
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 		    (int *) 0)) != -1)
 		switch (opt) {
@@ -721,14 +737,6 @@ int main(int argc, char **argv)
 
 	if (!pidfile && !reexec)
 		eerrorx("%s: --pidfile must be specified", applet);
-
-	*cmdline = '\0';
-	c = argv;
-	while (c && *c) {
-		strcat(cmdline, *c);
-		strcat(cmdline, " ");
-		c++;
-	}
 	endpwent();
 	argc -= optind;
 	argv += optind;

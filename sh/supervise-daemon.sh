@@ -22,7 +22,7 @@ supervise_start()
 	# The eval call is necessary for cases like:
 	# command_args="this \"is a\" test"
 	# to work properly.
-	eval supervise-daemon --start \
+	eval supervise-daemon "${RC_SVCNAME}" --start \
 		${retry:+--retry} $retry \
 		${chroot:+--chroot} $chroot \
 		${pidfile:+--pidfile} $pidfile \
@@ -49,7 +49,7 @@ supervise_stop()
 	pidfile="${startpidfile:-$pidfile}"
 	[ -n "$pidfile" ] || return 0
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
-	supervise-daemon --stop \
+	supervise-daemon "${RC_SVCNAME}" --stop \
 		${pidfile:+--pidfile} $chroot$pidfile \
 		${stopsig:+--signal} $stopsig
 
