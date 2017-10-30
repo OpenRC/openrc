@@ -162,7 +162,8 @@ static void cleanup(void)
 static void re_exec(void)
 {
 	syslog(LOG_WARNING, "Re-executing for %s", svcname);
-	execlp("supervise-daemon", "supervise-daemon", "--reexec", (char *) NULL);
+	execlp("supervise-daemon", "supervise-daemon", svcname, "--reexec",
+			(char *) NULL);
 	syslog(LOG_ERR, "Unable to execute supervise-daemon: %s",
 			strerror(errno));
 	exit(EXIT_FAILURE);
