@@ -1,3 +1,21 @@
+commit 1936d73eb1aecf31029d53e75e6bb14e307f8e1c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix issue with --reexec call
+
+commit 58872fc090af5047547bc561a5e58c50be0fc235
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.5
+
+commit fc35eb90cab625966ca718a80dd0d38dfffe05b8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit b18be3f970eba04589977438faaa726b5c3a6cd2
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
