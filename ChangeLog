@@ -1,3 +1,24 @@
+commit d59197fafef164fe7319f9d87f544a8cc8e25044
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: do not use do_stop to verify whether a daemon is running
+    
+    X-Gentoo-Bug: 636574
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=636574
+
+commit b66c86c9ee6d34d0a9d77140b8e7612709ba19d1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.6
+
+commit f7eb236f6fd8c10af211c6667940e8e1650c12da
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 1936d73eb1aecf31029d53e75e6bb14e307f8e1c
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1580,43 +1601,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     selinux: fix SIGSEGV with invalid contexts
     
     Fixes: https://github.com/openrc/openrc/issues/104
-
-commit 4f9bd7e4db185ce6debbebb5242344d8ffadc3ae
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/loopback.in: drop the route to the loopback interface on Linux
-    
-    This is related to #103.
-
-commit bf539f2196290864ce5c5fd0d679b74ee016e2da
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/mount-ro: do not remount /usr read only if it is premounted
-    
-    X-Gentoo-Bug: 573760
-    X-Gentoo-Bug: https://bugs.gentoo.org/show_bug.cgi?id=573760
-
-commit 20b60ea904612669dfb744beffcd8e7e447f69ef
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    conf.d/net-online: clarify comment about interfaces setting
-    
-    This setting refers to all interfaces that support ethernet
-
-commit f53c8baef3a6215077c00901759cbbcbe8f10e9b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/net-online: remove interfaces and timeout from local declarations
-    
-    X-Gentoo-Bug:  598621
-    X-Gentoo-Bug-URL:  https://bugs.gentoo.org/show_bug.cgi?id=598621
-
-commit be06cd250e12e63b8eb704bb2508e06fb9791251
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/rc/rc: do not try to start services if fork fails
