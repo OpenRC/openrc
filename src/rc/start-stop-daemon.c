@@ -279,6 +279,7 @@ int main(int argc, char **argv)
 	int stdout_fd;
 	int stderr_fd;
 	pid_t pid, spid;
+	RC_PIDLIST *pids;
 	int i;
 	char *svcname = getenv("RC_SVCNAME");
 	RC_STRINGLIST *env_list;
@@ -683,10 +684,14 @@ int main(int argc, char **argv)
 	else
 		pid = 0;
 
-	if (do_stop(applet, exec, (const char * const *)margv, pid, uid,
-		0, test, false) > 0)
+	if (pid)
+		pids = rc_find_pids(NULL, NULL, 0, pid);
+	else
+		pids = rc_find_pids(exec, (const char * const *) argv, uid, 0);
+	if (pids)
 		eerrorx("%s: %s is already running", applet, exec);
 
+	free(pids);
 	if (test) {
 		if (rc_yesno(getenv("EINFO_QUIET")))
 			exit (EXIT_SUCCESS);
