@@ -155,7 +155,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 			if (rc <= 0)
 				proc_ns[0] = '\0';
 		}
-		if (strcmp(my_ns, proc_ns))
+		if (strlen(my_ns) && strlen (proc_ns) && strcmp(my_ns, proc_ns))
 			continue;
 		if (uid) {
 			snprintf(buffer, sizeof(buffer), "/proc/%d", p);
