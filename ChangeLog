@@ -1,3 +1,26 @@
+commit 65439ba023195786e71316f6638b52603e102f60
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc_find_pids: namespace fix
+    
+    Ignore namespaces if there are errors reading either the pid namespace
+    for the current process or the process we aare testing.
+    
+    This fixes https://github.com/openrc/openrc/issues/180.
+
+commit 86162f3f47c393fc173de0458eeeb322c0bb61f2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.7
+
+commit b98e83ee9195eb052fafebc440515f0b2d055a91
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit d59197fafef164fe7319f9d87f544a8cc8e25044
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
