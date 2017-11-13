@@ -481,7 +481,7 @@ static void supervisor(char *exec, char **argv)
 		if (exiting) {
 			signal_setup(SIGCHLD, SIG_IGN);
 			syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
-			nkilled = run_stop_schedule(applet, exec, NULL, child_pid, 0,
+			nkilled = run_stop_schedule(applet, exec, NULL, child_pid, 0, 0,
 					false, false, true);
 			if (nkilled > 0)
 				syslog(LOG_INFO, "killed %d processes", nkilled);
@@ -819,7 +819,7 @@ int main(int argc, char **argv)
 
 		pid = get_pid(applet, pidfile);
 		if (pid != -1)
-			if (do_stop(applet, exec, (const char * const *)argv, pid, uid,
+			if (do_stop(applet, exec, (const char * const *)argv, pid, uid, gid,
 						0, false, true) > 0)
 				eerrorx("%s: %s is already running", applet, exec);
 

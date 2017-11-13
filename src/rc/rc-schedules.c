@@ -249,16 +249,66 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 
 /* return number of processes killed, -1 on error */
 int do_stop(const char *applet, const char *exec, const char *const *argv,
-    pid_t pid, uid_t uid,int sig, bool test, bool quiet)
+    pid_t pid, uid_t uid, gid_t gid, int sig, bool test, bool quiet)
 {
 	RC_PIDLIST *pids;
 	RC_PID *pi;
 	RC_PID *np;
 	bool killed;
 	int nkilled = 0;
+	uid_t current_euid;
+	gid_t current_egid;
 
 	if (pid > 0)
+	{
+		/*
+		 * It may be necessary to change uid and gid to match process
+		 * See: https://github.com/OpenRC/openrc/issues/180
+		 */
+		if (gid != 0)
+		{
+			current_egid = getegid();
+
+			if (current_egid != gid)
+			{
+				if (setegid(gid) < 0)
+				{
+					eerrorx("%s: failed to change egid to %llu", applet, (unsigned long long) gid);
+				}
+			}
+		}
+
+		if (uid != 0)
+		{
+			current_euid = geteuid();
+
+			if (current_euid != uid)
+			{
+				if (seteuid(uid) < 0)
+				{
+					eerrorx("%s: failed to change euid to %llu", applet, (unsigned long long) uid);
+				}
+			}
+		}
+
 		pids = rc_find_pids(NULL, NULL, 0, pid);
+
+		if ((uid != 0) && (current_euid != uid))
+		{
+			if (seteuid(current_euid) < 0)
+			{
+				eerrorx("%s: failed to restore euid to %llu\n", applet, (unsigned long long) current_euid);
+			}
+		}
+
+		if ((gid != 0) && (current_egid != gid))
+		{
+			if (setegid(current_egid) < 0)
+			{
+				eerrorx("%s: failed to restore egid to %llu\n", applet, (unsigned long long) current_egid);
+			}
+		}
+	}
 	else
 		pids = rc_find_pids(exec, argv, uid, 0);
 
@@ -295,7 +345,7 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 
 int run_stop_schedule(const char *applet,
 		const char *exec, const char *const *argv,
-		pid_t pid, uid_t uid,
+		pid_t pid, uid_t uid, gid_t gid,
     bool test, bool progress, bool quiet)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
@@ -333,7 +383,7 @@ int run_stop_schedule(const char *applet,
 
 		case SC_SIGNAL:
 			nrunning = 0;
-			nkilled = do_stop(applet, exec, argv, pid, uid, item->value, test,
+			nkilled = do_stop(applet, exec, argv, pid, uid, gid, item->value, test,
 					quiet);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
@@ -363,7 +413,7 @@ int run_stop_schedule(const char *applet,
 				     nloops++)
 				{
 					if ((nrunning = do_stop(applet, exec, argv,
-						    pid, uid, 0, test, quiet)) == 0)
+						    pid, uid, gid, 0, test, quiet)) == 0)
 						return 0;
 
 

@@ -83,6 +83,7 @@ ssd_stop()
 		${command:+--exec} $command \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $chroot$pidfile \
+		${command_user+--user} $command_user \
 		${stopsig:+--signal} $stopsig \
 		${_progress}
 

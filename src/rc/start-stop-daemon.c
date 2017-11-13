@@ -658,7 +658,7 @@ int main(int argc, char **argv)
 		else
 			parse_schedule(applet, NULL, sig);
 		i = run_stop_schedule(applet, exec, (const char *const *)margv,
-		    get_pid(applet, pidfile), uid, test, progress, false);
+		    get_pid(applet, pidfile), uid, gid, test, progress, false);
 
 		if (i < 0)
 			/* We failed to stop something */
@@ -969,7 +969,7 @@ int main(int argc, char **argv)
 			} else
 				pid = 0;
 			if (do_stop(applet, exec, (const char *const *)margv,
-				pid, uid, 0, test, false) > 0)
+				pid, uid, gid, 0, test, false) > 0)
 				alive = true;
 		}
 
