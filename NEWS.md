@@ -3,6 +3,21 @@
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.35
+
+Consider this your second notification with regard to /etc/mtab being a
+file instead of a symbolic link.
+
+In this version, the mtab service will complain loudly if you have
+mtab_is_file set to yes and recommend that you change this to no and
+restart the mtab service to migrate /etc/mtab to a symbolic link.
+
+If there is a valid technical reason to keep /etc/mtab as a flat file
+instead of a symbolic link to /proc/self/mounts, we are interested and
+we will keep the support in that case. Please open an issue and let us
+know however. Otherwise, consider this your final notice that the mtab
+service will be removed in the future.
+
 ## OpenRC 0.33
 
 This version removes the "service" binary which was just a copy of

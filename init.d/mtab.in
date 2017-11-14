@@ -31,6 +31,10 @@ start()
 		einfo "Creating mtab symbolic link"
 		ln -snf /proc/self/mounts /etc/mtab
 	else
+		ewarn "The ${RC_SVCNAME} service will be removed in the future."
+		ewarn "Please change the mtab_is_file setting to no and run"
+		ewarn "# rc-service mtab restart"
+		ewarn "to create the mtab symbolic link."
 		[ -L /etc/mtab ] && ewarn "Removing /etc/mtab symbolic link"
 		rm -f /etc/mtab
 		einfo "Creating mtab file"
