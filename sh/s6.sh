@@ -12,6 +12,20 @@
 
 [ -z "${s6_service_path}" ] && s6_service_path="/var/svc.d/${RC_SVCNAME}"
 
+_s6_force_kill() {
+	local pid
+	s6_service_link="${RC_SVCDIR}/s6-scan/${s6_service_path##*/}"
+	pid="${3%)}"
+	[ -z "${pid}" ] && return 0
+	if kill -0 "${pid}" 2> /dev/null; then
+		ewarn "Sending DOWN & KILL for ${RC_SVCNAME}"
+		s6-svc -dk "${s6_service_link}"
+		sleep 1
+		kill -0 "${pid}" 2>/dev/null && return 1
+	fi
+	return 0
+}
+
 s6_start()
 {
 	if [ ! -d "${s6_service_path}" ]; then
@@ -41,7 +55,11 @@ s6_stop()
  fi
 	s6_service_link="${RC_SVCDIR}/s6-scan/${s6_service_path##*/}"
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
-	s6-svc -wD -d -T ${s6_service_timeout_stop:-10000} "${s6_service_link}"
+	s6-svc -d -wD -T ${s6_service_timeout_stop:-60000} "${s6_service_link}"
+	set -- $(s6-svstat "${s6_service_link}")
+	[ "$1" = "up" ] && 
+		yesno "${s6_force_kill:-yes}" &&
+			_s6_force_kill "$@"
 	set -- $(s6-svstat "${s6_service_link}")
 	[ "$1" = "down" ]
 	eend $? "Failed to stop ${name:-$RC_SVCNAME}"

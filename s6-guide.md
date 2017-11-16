@@ -39,6 +39,10 @@ s6_service_path - the path to the s6 service directory. The default is
 s6_svwait_options_start - the options to pass to s6-svwait when starting
 the service. If this is not set, s6-svwait will not be called.
 
+s6_force_kill - Should we try to force kill this service if the
+s6_service_timeout_stop timeout expires when shutting down this service?
+The default is yes.
+
 s6_service_timeout_stop - the amount of time, in milliseconds, s6-svc
 should wait for a service to go down when stopping.
 
