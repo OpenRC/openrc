@@ -1,3 +1,25 @@
+commit 00ad99a29223e1567752191e748822710e1042e6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    s6 supervisor fixes
+    
+    Add the ability to force-kill a service if it does not go down
+    successfully. Also, adjust the default wait time for an s6 service to go
+    down to 60 seconds.
+
+commit f026c2c541f43eadbaed51b93379fdf56e1f1d0a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.8
+
+commit 4d20309ffeb5f0211957bbbc5c875dab434b5079
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 65439ba023195786e71316f6638b52603e102f60
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
