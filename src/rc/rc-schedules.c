@@ -307,6 +307,9 @@ int run_stop_schedule(const char *applet,
 	const char *const *p;
 	bool progressed = false;
 
+	if (!(pid > 0 || exec || uid || (argv && *argv)))
+		return 0;
+
 	if (exec)
 		einfov("Will stop %s", exec);
 	if (pid > 0)
