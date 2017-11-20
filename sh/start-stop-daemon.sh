@@ -44,9 +44,13 @@ ssd_start()
 	eval start-stop-daemon --start \
 		--exec $command \
 		${chroot:+--chroot} $chroot \
+		${directory:+--chdir} $directory \
+		${output_log+--stdout} $output_log \
+		${error_log+--stderr} $error_log \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $pidfile \
 		${command_user+--user} $command_user \
+		${umask+--umask} $umask \
 		$_background $start_stop_daemon_args \
 		-- $command_args $command_args_background
 	if eend $? "Failed to start ${name:-$RC_SVCNAME}"; then

@@ -24,12 +24,16 @@ supervise_start()
 	# to work properly.
 	eval supervise-daemon "${RC_SVCNAME}" --start \
 		${retry:+--retry} $retry \
+		${directory:+--chdir} $directory  \
 		${chroot:+--chroot} $chroot \
+		${output_log+--stdout} ${output_log} \
+		${error_log+--stderr} $error_log \
 		${pidfile:+--pidfile} $pidfile \
 		${respawn_delay:+--respawn-delay} $respawn_delay \
 		${respawn_max:+--respawn-max} $respawn_max \
 		${respawn_period:+--respawn-period} $respawn_period \
 		${command_user+--user} $command_user \
+		${umask+--umask} $umask \
 		$supervise_daemon_args \
 		$command \
 		-- $command_args $command_args_foreground

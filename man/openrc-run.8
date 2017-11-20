@@ -157,6 +157,24 @@ use this to change the user id before
 or
 .Xr supervise-daemon 8
 launches the daemon
+.It Ar output_log
+This is the path to a file or named pipe where the standard output from
+the service will be redirected. If you are starting this service with
+.Xr start-stop-daemon 8 ,
+,  you must set
+.Pa command_background
+to true. Keep in mind that this path will be inside the chroot if the
+.Pa chroot
+variable is set.
+.It Ar error_log
+The same thing as
+.Pa output_log
+but for the standard error output.
+.It Ar directory
+.Xr start-stop-daemon 8
+and
+.Xr supervise-daemon 8
+will chdir to this directory before starting the daemon.
 .It Ar chroot
 .Xr start-stop-daemon 8
 and
@@ -201,6 +219,8 @@ used along with in_background_fake to support re-entrant services.
 .It Ar in_background_fake
 Space separated list of commands which should always succeed when
 in_background is yes.
+.It Ar umask
+Set the umask of the daemon.
 .Pp
 Keep in mind that eval is used to process chroot, command, command_args_*,
 command_user, pidfile and procname. This may affect how they are
