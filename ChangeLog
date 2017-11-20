@@ -1,3 +1,26 @@
+commit 1732c70fb5e6d75c0d104662d06169978c00a5e8
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-schedules: if given nothing to look for, stop
+    
+    This avoids trying to kill everything.
+    
+    X-Gentoo-Bug: 631958
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=631958
+
+commit 263dde90c28ccd5abb1a60b6ba1f5f8be508164a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.9
+
+commit 422795e2ceb723601e648f4f5cde55141c7e02f4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 00ad99a29223e1567752191e748822710e1042e6
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1638,11 +1661,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     The openntmpfiles package is designed so that it can be used on systems
     independently of whether openrc is used.
-
-commit 6414c3bc394f86a5d6a5f02c934469e21bbbc923
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    selinux: fix SIGSEGV with invalid contexts
-    
-    Fixes: https://github.com/openrc/openrc/issues/104
