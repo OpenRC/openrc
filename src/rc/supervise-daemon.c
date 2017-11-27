@@ -159,7 +159,7 @@ static void cleanup(void)
 	free(changeuser);
 }
 
-static void re_exec(void)
+static void re_exec_supervisor(void)
 {
 	syslog(LOG_WARNING, "Re-executing for %s", svcname);
 	execlp("supervise-daemon", "supervise-daemon", svcname, "--reexec",
@@ -180,7 +180,7 @@ static void handle_signal(int sig)
 	/* Restore errno */
 	errno = serrno;
 	if (! exiting)
-		re_exec();
+		re_exec_supervisor();
 }
 
 static char * expand_home(const char *home, const char *path)
@@ -435,7 +435,9 @@ static void supervisor(char *exec, char **argv)
 	signal_setup_restart(SIGUSR1, handle_signal);
 	signal_setup_restart(SIGUSR2, handle_signal);
 	signal_setup_restart(SIGBUS, handle_signal);
+#ifdef SIGPOLL
 	signal_setup_restart(SIGPOLL, handle_signal);
+#endif
 	signal_setup_restart(SIGPROF, handle_signal);
 	signal_setup_restart(SIGSYS, handle_signal);
 	signal_setup_restart(SIGTRAP, handle_signal);
@@ -446,7 +448,9 @@ static void supervisor(char *exec, char **argv)
 	signal_setup_restart(SIGEMT, handle_signal);
 #endif
 	signal_setup_restart(SIGIO, handle_signal);
+#ifdef SIGPWR
 	signal_setup_restart(SIGPWR, handle_signal);
+#endif
 #ifdef SIGUNUSED
 	signal_setup_restart(SIGUNUSED, handle_signal);
 #endif
