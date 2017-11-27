@@ -1,3 +1,23 @@
+commit bed1a4519295a86f7cc62a79604d73a8ae726103
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix FreeBSD build
+    
+    This is for #186.
+
+commit 34d9dbf1e305cad9ddde094dbc905e9024e94992
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.10
+
+commit 0287aa65884e30f81a92c58d911048b00c878034
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 1732c70fb5e6d75c0d104662d06169978c00a5e8
 Author: Doug Freed <dwfreed@mtu.edu>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
