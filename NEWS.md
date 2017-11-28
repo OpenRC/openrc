@@ -5,6 +5,23 @@ the information in this file is in reverse order.
 
 ## OpenRC 0.35
 
+In this version, the cgroups mounting logic has been moved from the
+sysfs service to the cgroups service. This was done so cgroups can be
+mounted inside an lxc/lxd container without using the other parts of the
+sysfs service.
+
+?As a result of this change, if you are upgrading, you need to add
+cgroups to your sysinit runlevel by running the following command as
+root:
+
+```
+# rc-update add cgroups sysinit
+```
+
+For more information, see the following issue:
+
+https://github.com/openrc/openrc/issues/187
+
 Consider this your second notification with regard to /etc/mtab being a
 file instead of a symbolic link.
 

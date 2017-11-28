@@ -38,7 +38,7 @@ BOOT-FreeBSD+=	adjkerntz dumpon syscons
 
 BOOT-Linux+=	binfmt hwclock keymaps modules mtab procfs termencoding
 SHUTDOWN-Linux=	killprocs mount-ro
-SYSINIT-Linux=	devfs dmesg sysfs
+SYSINIT-Linux=	devfs cgroups dmesg sysfs
 
 # Generic BSD stuff
 BOOT-NetBSD+=	hostid newsyslog savecore syslogd

@@ -1,5 +1,6 @@
 agetty
 binfmt
+cgroups
 modules-load
 bootmisc
 fsck
