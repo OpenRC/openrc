@@ -1,3 +1,24 @@
+commit 97a254f599db622d34a0c1bbd3057d1a7050a468
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: properly handle missing pidfile
+    
+    X-Gentoo-Bug: 639218
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/639218
+
+commit 1d20aa10e65c24f5b2d78a1b0a4ab77de5395aab
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.34.11
+
+commit e92e81d9fec6e07d68692e29839b169cbda19505
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit bed1a4519295a86f7cc62a79604d73a8ae726103
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
