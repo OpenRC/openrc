@@ -8,7 +8,7 @@
 .\" This file may not be copied, modified, propagated, or distributed
 .\"    except according to the terms contained in the LICENSE file.
 .\"
-.Dd December 31, 2011
+.Dd November 30, 2017
 .Dt openrc-run 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -152,11 +152,11 @@ Set this to "true", "yes" or "1" (case-insensitive) if you want
 to display a progress meter when waiting for a daemon to stop.
 .It Ar command_user
 If the daemon does not support changing to a different user id, you can
-use this to change the user id before
+use this to change the user id, and optionally group id,  before
 .Xr start-stop-daemon 8
 or
 .Xr supervise-daemon 8
-launches the daemon
+launches the daemon.
 .It Ar output_log
 This is the path to a file or named pipe where the standard output from
 the service will be redirected. If you are starting this service with
@@ -731,6 +731,8 @@ Users are encouraged to use the is_newer_than function which returns correctly.
 .Xr rc_plugin_hook 3 ,
 .Xr sh 1p ,
 .Xr start-stop-daemon 8 ,
+.Xr supervise-daemon 8 ,
 .Xr uname 1
 .Sh AUTHORS
 .An Roy Marples <roy@marples.name>
+.An William Hubbs <w.d.hubbs@gmail.com>
