@@ -264,8 +264,7 @@ for _cmd; do
 				eerror "No permission to apply cgroup settings"
 				break
 			fi
-			cgroup_add_service /sys/fs/cgroup/openrc
-			cgroup_add_service /sys/fs/cgroup/systemd/system
+			cgroup_add_service
 		fi
 		[ "$(command -v cgroup_set_limits)" = "cgroup_set_limits" ] &&
 			cgroup_set_limits
