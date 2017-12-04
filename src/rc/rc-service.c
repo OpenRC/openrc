@@ -29,9 +29,10 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "e:ilr:IN" getoptstring_COMMON;
+const char *getoptstring = "ce:ilr:IN" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "exists",   1, NULL, 'e' },
+	{ "ifcrashed", 0, NULL, 'c' },
 	{ "ifexists", 0, NULL, 'i' },
 	{ "ifinactive", 0, NULL, 'I' },
 	{ "ifnotstarted", 0, NULL, 'N' },
@@ -41,6 +42,7 @@ const struct option longopts[] = {
 };
 const char * const longopts_help[] = {
 	"tests if the service exists or not",
+	"if the service is crashed then run the command",
 	"if the service exists then run the command",
 	"if the service is inactive then run the command",
 	"if the service is not started then run the command",
@@ -61,6 +63,7 @@ int main(int argc, char **argv)
 	RC_STRINGLIST *list;
 	RC_STRING *s;
 	RC_SERVICE state;
+	bool if_crashed = false;
 	bool if_exists = false;
 	bool if_inactive = false;
 	bool if_notstarted = false;
@@ -79,6 +82,9 @@ int main(int argc, char **argv)
 			free(service);
 			return opt;
 			/* NOTREACHED */
+		case 'c':
+			if_crashed = true;
+			break;
 		case 'i':
 			if_exists = true;
 			break;
@@ -121,6 +127,8 @@ int main(int argc, char **argv)
 		eerrorx("%s: service `%s' does not exist", applet, *argv);
 	}
 	state = rc_service_state(*argv);
+	if (if_crashed &&  ! (rc_service_daemons_crashed(*argv) && errno != EACCES))
+		return 0;
 	if (if_inactive && ! (state & RC_SERVICE_INACTIVE))
 		return 0;
 	if (if_notstarted && (state & RC_SERVICE_STARTED))
