@@ -59,6 +59,8 @@ MANPREFIX?=		${UPREFIX}/share
 MANDIR?=		${MANPREFIX}/man
 MANMODE?=		0444
 
+BASHCOMPDIR?=		${UPREFIX}/share/bash-completion/completions
+
 DATADIR?=		${UPREFIX}/share/openrc
 DATAMODE?=		0644
 
