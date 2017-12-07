@@ -13,13 +13,24 @@ MK=			${TOP}/mk
 
 include ${TOP}/Makefile.inc
 
-SUBDIR=		bash-completion conf.d etc init.d local.d man scripts sh src \
-			support sysctl.d zsh-completion
+SUBDIR=		conf.d etc init.d local.d man scripts sh src support sysctl.d
+
+# Build bash completion or not
+MKBASHCOMP?=	no
+ifeq (${MKBASHCOMP},yes)
+SUBDIR+=	bash-completion
+endif
 
 # Build pkgconfig or not
 MKPKGCONFIG?=	yes
 ifeq (${MKPKGCONFIG},yes)
 SUBDIR+=	pkgconfig
+endif
+
+# Build zsh completion or not
+MKZSHCOMP?=	no
+ifeq (${MKZSHCOMP},yes)
+SUBDIR+=	zsh-completion
 endif
 
 # We need to ensure that runlevels is done last

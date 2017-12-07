@@ -22,6 +22,7 @@ below arguments to the make command
 PROGLDFLAGS=-static
 LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
+MKBASHCOMP=no
 MKNET=no
 MKPAM=pam
 MKPREFIX=yes
@@ -31,6 +32,7 @@ MKSTATICLIBS=no
 MKSYSVINIT=yes
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
+MKZSHCOMP=no
 PKG_PREFIX=/usr/pkg
 LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local
