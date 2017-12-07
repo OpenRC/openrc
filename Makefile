@@ -14,7 +14,7 @@ MK=			${TOP}/mk
 include ${TOP}/Makefile.inc
 
 SUBDIR=		bash-completion conf.d etc init.d local.d man scripts sh src \
-			support sysctl.d
+			support sysctl.d zsh-completion
 
 # Build pkgconfig or not
 MKPKGCONFIG?=	yes

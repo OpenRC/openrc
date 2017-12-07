@@ -34,6 +34,7 @@ PICFLAG?=		-fPIC
 SYSCONFDIR?=		${PREFIX}/etc
 INITDIR?=		${SYSCONFDIR}/init.d
 CONFDIR?=		${SYSCONFDIR}/conf.d
+CONFMODE?=		0644
 LOCALDIR?=		${SYSCONFDIR}/local.d
 SYSCTLDIR?=		${SYSCONFDIR}/sysctl.d
 
@@ -67,4 +68,4 @@ DATAMODE?=		0644
 DOCDIR?=		${UPREFIX}/share/doc
 DOCMODE?=		0644
 
-CONFMODE?=		0644
+ZSHCOMPDIR?=		${UPREFIX}/share/zsh/site-functions
