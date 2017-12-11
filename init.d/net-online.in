@@ -44,9 +44,13 @@ start ()
 	ifcount=0
  	for dev in ${interfaces}; do
 		: $((ifcount += 1))
-		read carrier < /sys/class/net/$dev/carrier 2> /dev/null
-		[ $carrier -eq 1 ] && : $((carriers += 1))
-		read operstate < /sys/class/net/$dev/operstate 2> /dev/null
+		carrier=
+		[ -e /sys/class/net/$dev/carrier ] &&
+			read carrier < /sys/class/net/$dev/carrier
+		[ "$carrier" = 1 ] && : $((carriers += 1))
+		operstate=
+		[ -e /sys/class/net/$dev/operstate ] &&
+			read operstate < /sys/class/net/$dev/operstate
 		[ "$operstate" = up ] && : $((configured += 1))
 	done
 	[ $configured -eq $ifcount ] && [ $carriers -ge 1 ] && break
