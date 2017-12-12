@@ -63,8 +63,12 @@ start ()
  if [ $rc -eq 0 ] && yesno ${include_ping_test:-no}; then
  	ping_test_host="${ping_test_host:-google.com}"
  	if [ -n "$ping_test_host" ]; then
-		ping -c 1 $ping_test_host > /dev/null 2>&1
-		rc=$?
+		while $infinite || [ $timeout -gt 0 ]; do
+			ping -c 1 $ping_test_host > /dev/null 2>&1
+			rc=$?
+			[ $rc -eq 0 ] && break
+			: $((timeout -= 1))
+		done
 	fi
  fi
  eend $rc "The network is offline"
