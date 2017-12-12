@@ -30,7 +30,7 @@ get_interfaces()
 
 start ()
 {
-	local carriers configured dev gateway ifcount infinite
+	local carriers configured hasaddress dev gateway ifcount infinite
 	local carrier operstate rc
 
 	ebegin "Checking to see if the network is online"
@@ -41,6 +41,7 @@ start ()
  while $infinite || [ $timeout -gt 0 ]; do
 	carriers=0
 	configured=0
+	hasaddress=0
 	ifcount=0
  	for dev in ${interfaces}; do
 		: $((ifcount += 1))
@@ -50,8 +51,18 @@ start ()
 		read operstate < /sys/class/net/$dev/operstate 2> /dev/null ||
 			operstate=
 		[ "$operstate" = up ] && : $((configured += 1))
+		if yesno ${wait_for_ipaddr:-no}; then
+			if [ -n "$(command -v ip)" ]; then
+				local ipaddr=`ip addr show dev $dev`
+				if [[ $ipaddr == *"inet"* ]]; then
+					: $((hasaddress += 1))
+				fi
+			fi
+		else
+			: $((hasaddress += 1))
+		fi
 	done
-	[ $configured -eq $ifcount ] && [ $carriers -ge 1 ] && break
+	[ $configured -eq $ifcount ] && [ $hasaddress -eq $ifcount ] && [ $carriers -ge 1 ] && break
 	sleep 1
 	: $((timeout -= 1))
  done
