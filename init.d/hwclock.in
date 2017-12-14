@@ -105,7 +105,7 @@ start()
 			done
 			[ -n "$modname" ] &&
 				ewarn "The $modname module needs to be configured in" \
-					"@SYSCONFDIR@/conf.d/modules or built in."
+					"${RC_SERVICE%/*/*}/conf.d/modules or built in."
 		fi
 	fi
 
