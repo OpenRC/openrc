@@ -21,7 +21,7 @@ BSD_sysctl()
 	[ -e /etc/sysctl.conf ] || return 0
 	local retval=0 var= comments= conf=
 	eindent
-	for conf in @SYSCONFDIR@/sysctl.conf @SYSCONFDIR@/sysctl.d/*.conf; do
+	for conf in /etc/sysctl.conf /etc/sysctl.d/*.conf; do
 		if [ -r "$conf" ]; then
 			vebegin "applying $conf"
 			while read var comments; do
