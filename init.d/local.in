@@ -9,7 +9,10 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
-description="Executes user programs in @SYSCONFDIR@/local.d"
+conf_d_dir="${RC_SERVICE%/*/*}/conf.d"
+local_d_dir="${RC_SERVICE%/*/*}/local.d"
+
+description="Executes user programs in ${local_d_dir}"
 
 depend()
 {
@@ -19,12 +22,12 @@ depend()
 
 start()
 {
-	ebegin "Starting local"
-
-	local file has_errors=0 redirect retval
+	local file has_errors redirect retval
+	has_errors=0
 	yesno $rc_verbose || redirect='> /dev/null 2>&1'
+	ebegin "Starting local"
 	eindent
-	for file in @SYSCONFDIR@/local.d/*.start; do
+	for file in "${local_d_dir}"/*.start; do
 		if [ -x "${file}" ]; then
 			vebegin "Executing \"${file}\""
 			eval "${file}" $redirect
@@ -38,32 +41,32 @@ start()
 	eoutdent
 
 	if command -v local_start >/dev/null 2>&1; then
-		ewarn "\"@SYSCONFDIR@/conf.d/local\" should be removed."
+		ewarn "\"${conf_d_dir}/local\" should be removed."
 		ewarn "Please move the code from the local_start function"
 		ewarn "to executable scripts with an .start extension"
-		ewarn "in \"@SYSCONFDIR@/local.d\""
+		ewarn "in \"${local_d_dir}\""
 		local_start
 	fi
 
 	eend ${has_errors}
 
 	# We have to end with a zero exit code, because a failed execution
-	# of an executable @SYSCONFDIR@/local.d/*.start file shouldn't result in
+	# of an executable ${local_d_dir}/*.start file shouldn't result in
 	# marking the local service as failed. Otherwise we are unable to
-	# execute any executable @SYSCONFDIR@/local.d/*.stop file, because a failed
+	# execute any executable ${local_d_dir}/*.stop file, because a failed
 	# marked service cannot be stopped (and the stop function would
-	# actually call the executable @SYSCONFDIR@/local.d/*.stop file(s)).
+	# actually call the executable ${local_d_dir}/*.stop file(s)).
 	return 0
 }
 
 stop()
 {
-	ebegin "Stopping local"
-
-	local file has_errors=0 redirect retval
+	local file has_errors redirect retval
+	has_errors=0
 	yesno $rc_verbose || redirect='> /dev/null 2>&1'
+	ebegin "Stopping local"
 	eindent
-	for file in @SYSCONFDIR@/local.d/*.stop; do
+	for file in "${local_d_dir}"/*.stop; do
 		if [ -x "${file}" ]; then
 			vebegin "Executing \"${file}\""
 			eval "${file}" $redirect
@@ -77,16 +80,16 @@ stop()
 	eoutdent
 
 	if command -v local_stop >/dev/null 2>&1; then
-		ewarn "\"@SYSCONFDIR@/conf.d/local\" should be removed."
+		ewarn "\"${conf_d_dir}/local\" should be removed."
 		ewarn "Please move the code from the local_stop function"
 		ewarn "to executable scripts with an .stop extension"
-		ewarn "in \"@SYSCONFDIR@/local.d\""
+		ewarn "in \"${local_d_dir}\""
 		local_stop
 	fi
 
 	eend ${has_errors}
 
-	# An executable @SYSCONFDIR@/local.d/*.stop file which failed with a
+	# An executable ${local_d_dir}/*.stop file which failed with a
 	# non-zero exit status is not a reason to mark this service
 	# as failed, therefore we have to end with a zero exit code.
 	return 0
