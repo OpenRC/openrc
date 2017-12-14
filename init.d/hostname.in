@@ -20,9 +20,9 @@ depend()
 start()
 {
 	local h source x
-	if [ -s @SYSCONFDIR@/hostname ] && [ -r @SYSCONFDIR@/hostname ]; then
-		read h x <@SYSCONFDIR@/hostname
-		source="from @SYSCONFDIR@/hostname"
+	if [ -s /etc/hostname ] && [ -r /etc/hostname ]; then
+		read h x </etc/hostname
+		source="from /etc/hostname"
 	else
 		# HOSTNAME variable used to be defined in caps in conf.d/hostname.
 		# It is also a magic variable in bash.
