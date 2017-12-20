@@ -10,7 +10,7 @@
 # except according to the terms contained in the LICENSE file.
 
 command=@PKG_PREFIX@/bin/dbus-daemon
-pidfile=@VARBASE@/run/dbus/pid
+pidfile=/var/run/dbus/pid
 command_args="${dbusd_args---system}"
 name="Message Bus Daemon"
 

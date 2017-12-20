@@ -11,7 +11,7 @@
 
 command=/usr/sbin/sshd
 command_args=$sshd_args
-pidfile=@VARBASE@/run/sshd.pid
+pidfile=/var/run/sshd.pid
 required_files=/etc/ssh/sshd_config
 
 depend()

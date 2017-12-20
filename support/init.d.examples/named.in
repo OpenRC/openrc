@@ -11,7 +11,7 @@
 
 command=/usr/sbin/named
 command_args=$named_args
-pidfile=@VARBASE@/run/named.pid
+pidfile=/var/run/named.pid
 name="Domain Name server"
 extra_started_commands="reload"
 
@@ -20,7 +20,7 @@ uid=named
 case "$RC_UNAME" in
 	FreeBSD)
 		uid=bind
-		pidfile=@VARBASE@/run/named/pid
+		pidfile=/var/run/named/pid
 		;;
 	Linux)
 		uid=bind

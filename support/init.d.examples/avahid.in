@@ -11,7 +11,7 @@
 
 command=@PKG_PREFIX@/sbin/avahi-daemon
 command_args="$avahid_args -D"
-pidfile=@VARBASE@/run/avahi-daemon/pid
+pidfile=/var/run/avahi-daemon/pid
 name="Avahi Service Advertisement Daemon"
 
 depend()

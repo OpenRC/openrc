@@ -10,7 +10,7 @@
 # except according to the terms contained in the LICENSE file.
 
 command=@PKG_PREFIX@/sbin/polkitd
-pidfile=@VARBASE@/run/polkitd/polkitd.pid
+pidfile=/var/run/polkitd/polkitd.pid
 command_args="$polkitd_args"
 name="PolicyKit Daemon"
 

@@ -14,7 +14,7 @@ name="OpenVPN"
 [ "$vpn" != openvpn ] && name="$name ($vpn)"
 command=@PKG_PREFIX@/sbin/openvpn
 
-pidfile=@VARBASE@/run/"$RC_SVCNAME".pid
+pidfile=/var/run/"$RC_SVCNAME".pid
 : ${openvpn_dir:=@PKG_PREFIX@/etc/openvpn}
 : ${openvpn_config:=$openvpn_dir/$vpn.conf}
 command_args="$openvpn_args --daemon --config $openvpn_config"

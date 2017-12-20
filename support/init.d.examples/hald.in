@@ -10,7 +10,7 @@
 # except according to the terms contained in the LICENSE file.
 
 command=@PKG_PREFIX@/sbin/hald
-pidfile=@VARBASE@/run/hald/hald.pid
+pidfile=/var/run/hald/hald.pid
 command_args=$hald_args
 name="Hardware Abstraction Layer Daemon"
 

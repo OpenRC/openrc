@@ -11,7 +11,7 @@
 
 command=@PKG_PREFIX@/sbin/dnsmasq
 command_args=$dnsmasq_args
-pidfile=@VARBASE@/run/dnsmasq.pid
+pidfile=/var/run/dnsmasq.pid
 required_files=/etc/dnsmasq.conf
 
 extra_started_commands="reload"
