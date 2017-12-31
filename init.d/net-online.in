@@ -22,7 +22,7 @@ depend()
 get_interfaces()
 {
 	local ifname iftype
-	for ifname in /sys/class/net/*; do
+	for ifname in $(find /sys/class/net -type l); do
 		read iftype < ${ifname}/type
 		[ "$iftype" = "1" ] && printf "%s " ${ifname##*/}
 	done
