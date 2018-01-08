@@ -1,4 +1,6 @@
-This document is aimed at upstream and distribution developers who
+# OpenRC Service Script Writing Guide
+
+This document is aimed at developers or packagers who
 write OpenRC service scripts, either for their own projects, or for
 the packages they maintain. It contains advice, suggestions, tips,
 tricks, hints, and counsel; cautions, warnings, heads-ups,
@@ -11,7 +13,7 @@ don't consider anything exotic, and assume that you will use
 start-stop-daemon to manage a fairly typical long-running UNIX
 process.
 
-# Don't write your own start/stop functions
+## Don't write your own start/stop functions
 
 OpenRC is capable of stopping and starting most daemons based on the
 information that you give it. For a well-behaved daemon that
@@ -113,7 +115,7 @@ To recap, in order of preference:
      to disable the daemon's PID file (or, to write it straight into the
      garbage), then do that, and use `command_background=true`.
 
-# Reloading your daemon's configuration
+## Reloading your daemon's configuration
 
 Many daemons will reload their configuration files in response to a
 signal. Suppose your daemon will reload its configuration in response
@@ -139,7 +141,7 @@ reload() {
 }
 ```
 
-# Don't restart/reload with a broken config
+## Don't restart/reload with a broken config
 
 Often, users will start a daemon, make some configuration change, and
 then attempt to restart the daemon. If the recent configuration change
@@ -187,7 +189,7 @@ reload() {
 }
 ```
 
-# PID files should be writable only by root
+## PID files should be writable only by root
 
 PID files must be writable only by *root*, which means additionally
 that they must live in a *root*-owned directory.
@@ -239,7 +241,7 @@ A decent example of this is the [Nagios core service
 script](https://github.com/NagiosEnterprises/nagioscore/blob/master/openrc-init.in),
 where the full path to the PID file is specified at build-time.
 
-# Don't let the user control the PID file location
+## Don't let the user control the PID file location
 
 It's usually a mistake to let the end user control the PID file
 location through a conf.d variable, for a few reasons:
@@ -267,7 +269,7 @@ pidfile="/run/${RC_SVCNAME}.pid"
 
 guarantees that your PID file has a unique name.
 
-# Upstream your service scripts (for distribution developers)
+## Upstream your service scripts (for packagers)
 
 The ideal place for an OpenRC service script is **upstream**. Much like
 systemd services, a well-crafted OpenRC service script should be
@@ -292,7 +294,7 @@ service script in your own distribution's repository, then you have to
 keep the command path and package synchronized yourself, and that's no
 fun.
 
-# Be wary of "need net" dependencies
+## Be wary of "need net" dependencies
 
 There are two things you need to know about "need net" dependencies:
 
@@ -310,7 +312,7 @@ interface. We'll consider the two most common users of "need net";
 network clients who access some network resource, and network servers
 who provide them.
 
-## Network clients
+### Network clients
 
 Network clients typically want the WAN interface to be up. That may
 tempt you to depend on the WAN interface; but first, you should ask
@@ -329,7 +331,7 @@ logged. The signature update service will not crash, and—perhaps more
 importantly—you don't want it to terminate if the administrator turns
 off the WAN interface for a second.
 
-## Network servers
+### Network servers
 
 Network servers are generally easier to handle than their client
 counterparts. Most server daemons listen on `0.0.0.0` (all addresses)
@@ -350,7 +352,7 @@ If your daemon can optionally be configured to listen on a particular
 interface, then please see the "Depending on a particular interface"
 section.
 
-## Depending on a particular interface
+### Depending on a particular interface
 
 If you need to depend on one particular interface, usually it's not
 easy to determine programmatically what that interface is. For
@@ -371,8 +373,8 @@ like the following in the service configuration file,
 ```sh
 # Specify the network service that corresponds to the "bind" setting
 # in your configuration file. For example, if you bind to 127.0.0.1,
-# this should be set to "net.lo" which provides the loopback interface.
-rc_need="net.lo"
+# this should be set to "loopback" which provides the loopback interface.
+rc_need="loopback"
 ```
 
 This is a sensible default for daemons that are happy with `0.0.0.0`,
