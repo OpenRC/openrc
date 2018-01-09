@@ -168,7 +168,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			return -1;
 		}
 		einfo("%s: correcting owner", path);
-		if (chown(path, uid, gid)) {
+		if (lchown(path, uid, gid)) {
 			eerror("%s: chown: %s", applet, strerror(errno));
 			return -1;
 		}
