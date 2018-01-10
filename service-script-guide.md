@@ -13,6 +13,115 @@ don't consider anything exotic, and assume that you will use
 start-stop-daemon to manage a fairly typical long-running UNIX
 process.
 
+## Syntax of Service Scripts
+
+Service scripts are shell scripts. OpenRC aims at using only the standardized 
+POSIX sh subset for portability reasons. The default interpreter (build-time 
+toggle) is `/bin/sh`, so using for example mksh is not a problem.
+
+OpenRC has been tested with busybox sh, ash, dash, bash, mksh, zsh and possibly 
+others. Using busybox sh has been difficult as it replaces commands with 
+builtins that don't offer the expected features.
+
+The interpreter for service scripts is `#!/sbin/openrc-run`.
+Not using this interpreter will break the use of dependencies and is not 
+supported. (iow: if you insist on using `#!/bin/sh` you're on your own)
+
+A `depend` function declares the dependencies of this service script.
+All scripts must have start/stop/status functions, but defaults are provided and should be used unless you have a very strong reason not to use them.
+
+Extra functions can be added easily:
+
+```
+extra_commands="checkconfig"
+checkconfig() {
+	doSomething
+}
+```
+
+This exports the checkconfig function so that `/etc/init.d/someservice 
+checkconfig` will be available, and it "just" runs this function.
+
+While commands defined in `extra_commands` are always available, commands
+defined in `extra_started_commands` will only work when the service is started
+and those defined in `extra_stopped_commands` will only work when the service is
+stopped. This can be used for implementing graceful reload and similar
+behaviour.
+
+Adding a restart function will not work, this is a design decision within 
+OpenRC. Since there may be dependencies involved (e.g. network -> apache) a 
+restart function is in general not going to work. 
+restart is internally mapped to `stop()` + `start()` (plus handling dependencies).
+If a service needs to behave differently when it is being restarted vs
+started or stopped, it should test the `$RC_CMD` variable, for example:
+
+```
+[ "$RC_CMD" = restart ] && do_something
+```
+
+## The Depend Function
+
+This function declares the dependencies for a service script. This
+determines the order the service scripts start.
+
+```
+depend() {
+	need net
+	use dns logger netmount
+	want coolservice
+}
+```
+
+`need` declares a hard dependency - net always needs to be started before this 
+	service does
+
+`use` is a soft dependency - if dns, logger or netmount is in this runlevel 
+	start it before, but we don't care if it's not in this runlevel.
+	`want` is between need and use - try to start coolservice if it is
+	installed on the system, regardless of whether it is in the
+	runlevel, but we don't care if it starts.
+
+`before` declares that we need to be started before another service
+
+`after` declares that we need to be started after another service, without 
+	creating a dependency (so on calling stop the two are independent)
+
+`provide` allows multiple implementations to provide one service type, e.g.:
+	`provide cron` is set in all cron-daemons, so any one of them started 
+	satisfies a cron dependency
+
+`keyword` allows platform-specific overrides, e.g. `keyword -lxc` makes this 
+	service script a noop in lxc containers. Useful for things like keymaps, 
+	module loading etc. that are either platform-specific or not available 
+	in containers/virtualization/...
+
+FIXME: Anything missing in this list?
+
+## The Default Functions
+
+All service scripts are assumed to have the following functions:
+
+```
+start()
+stop()
+status()
+```
+
+There are default implementations in `lib/rc/sh/openrc-run.sh` - this allows very 
+compact service scripts. These functions can be overridden per service script as 
+needed.
+
+The default functions assume the following variables to be set in the service 
+script:
+
+```
+command=
+command_args=
+pidfile=
+```
+
+Thus the 'smallest' service scripts can be half a dozen lines long
+
 ## Don't write your own start/stop functions
 
 OpenRC is capable of stopping and starting most daemons based on the
