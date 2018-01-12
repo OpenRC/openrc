@@ -1,4 +1,5 @@
-# Using S6 with OpenRC
+Using S6 with OpenRC
+====================
 
 Beginning with OpenRC-0.16, we support using the s6 supervision suite
 from Skarnet Software in place of start-stop-daemon for monitoring

@@ -1,4 +1,5 @@
-# Setting up the agetty service in OpenRC
+Setting up the agetty service in OpenRC
+=================================xxxxxx
 
 The agetty service is an OpenRC specific way to monitor and respawn a
 getty, using agetty, on Linux. To use this method, make sure you aren't

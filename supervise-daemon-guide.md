@@ -1,4 +1,5 @@
-# Using supervise-daemon
+Using supervise-daemon
+======================
 
 Beginning with OpenRC-0.21 we have our own daemon supervisor,
 supervise-daemon., which can start a daemon and restart it if it

@@ -1,4 +1,5 @@
-# OpenRC Style Guide
+OpenRC Coding Style Guide
+=========================
 
 This is the openrc style manual.  It governs the coding style of all code
 in this repository.  Follow it.  Contact openrc@gentoo.org for any questions

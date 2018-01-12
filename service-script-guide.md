@@ -1,4 +1,5 @@
-# OpenRC Service Script Writing Guide
+OpenRC Service Script Writing Guide
+===================================
 
 This document is aimed at developers or packagers who
 write OpenRC service scripts, either for their own projects, or for
@@ -13,7 +14,7 @@ don't consider anything exotic, and assume that you will use
 start-stop-daemon to manage a fairly typical long-running UNIX
 process.
 
-## Syntax of Service Scripts
+# Syntax of Service Scripts
 
 Service scripts are shell scripts. OpenRC aims at using only the standardized 
 POSIX sh subset for portability reasons. The default interpreter (build-time 
@@ -59,7 +60,7 @@ started or stopped, it should test the `$RC_CMD` variable, for example:
 [ "$RC_CMD" = restart ] && do_something
 ```
 
-## The Depend Function
+# The Depend Function
 
 This function declares the dependencies for a service script. This
 determines the order the service scripts start.
@@ -97,7 +98,7 @@ depend() {
 
 FIXME: Anything missing in this list?
 
-## The Default Functions
+# The Default Functions
 
 All service scripts are assumed to have the following functions:
 

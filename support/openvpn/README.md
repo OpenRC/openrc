@@ -1,3 +1,6 @@
+Example OpenVPN Scripts
+=======================
+
 These handy scripts setup any dns information that OpenVPN may push.
 They also handle the interaction with OpenRC so that the OpenVPN service
 can become "inactive". This means that when it starts, it goes inactive and

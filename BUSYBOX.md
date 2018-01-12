@@ -1,4 +1,5 @@
-# Using Busybox as your Default Shell with OpenRC
+Using Busybox as your Default Shell with OpenRC
+===============================================
 
 If you have/bin/sh linked to busybox, you need to be aware of several
 incompatibilities between busybox's applets and the standalone

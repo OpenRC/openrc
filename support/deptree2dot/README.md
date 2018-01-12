@@ -1,4 +1,5 @@
-# deptree2dot - Graph the OpenRC Dependency Tree
+deptree2dot - Graph the OpenRC Dependency Tree
+==============================================
 
 This utility can be used to graph the OpenRC dependency tree. It
 requires perl5.x and converts the tree to a .dot file which can be

@@ -1,4 +1,5 @@
-# OpenRC NEWS
+OpenRC NEWS
+===========
 
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.

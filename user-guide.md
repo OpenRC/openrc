@@ -1,3 +1,6 @@
+OpenRC Users Guide
+==================
+
 # Purpose and description
 
 OpenRC is an init system for Unixoid operating systems. It takes care of 

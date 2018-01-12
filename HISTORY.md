@@ -1,4 +1,5 @@
-# OpenRC History
+OpenRC History
+==============
 
 This history of OpenRC was written by Daniel Robbins, Roy Marples, William
 Hubbs and others.

@@ -1,4 +1,5 @@
-# Using runit with OpenRC
+Using runit with OpenRC
+=======================
 
 Beginning with OpenRC-0.21, we support using runit [1] in place of
 start-stop-daemon for monitoring and restarting daemons.
