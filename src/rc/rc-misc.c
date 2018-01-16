@@ -380,7 +380,10 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 		eend (retval, "Failed to update the dependency tree");
 
 		if (retval == 0) {
-			stat(RC_DEPTREE_CACHE, &st);
+			if (stat(RC_DEPTREE_CACHE, &st) != 0) {
+				eerror("stat(%s): %s", RC_DEPTREE_CACHE, strerror(errno));
+				return NULL;
+			}
 			if (st.st_mtime < t) {
 				eerror("Clock skew detected with `%s'", file);
 				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
