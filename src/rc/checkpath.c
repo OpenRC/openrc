@@ -73,25 +73,32 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool selinux_on)
 {
 	struct stat st;
-	int fd, flags;
+	int fd;
+	int flags;
 	int r;
+	int readfd;
+	int readflags;
 	int u;
 
 	memset(&st, 0, sizeof(st));
-	if (lstat(path, &st) || trunc) {
+	flags = O_CREAT|O_NDELAY|O_WRONLY|O_NOCTTY;
+	readflags = O_NDELAY|O_NOCTTY|O_RDONLY;
+#ifdef O_CLOEXEC
+	flags |= O_CLOEXEC;
+	readflags |= O_CLOEXEC;
+#endif
+#ifdef O_NOFOLLOW
+	flags |= O_NOFOLLOW;
+	readflags |= O_NOFOLLOW;
+#endif
+	if (trunc)
+		flags |= O_TRUNC;
+	readfd = open(path, readflags);
+	if (readfd == -1 || (type == inode_file && trunc)) {
 		if (type == inode_file) {
 			einfo("%s: creating file", path);
 			if (!mode) /* 664 */
 				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
-			flags = O_CREAT|O_NDELAY|O_WRONLY|O_NOCTTY;
-#ifdef O_CLOEXEC
-			flags |= O_CLOEXEC;
-#endif
-#ifdef O_NOFOLLOW
-			flags |= O_NOFOLLOW;
-#endif
-			if (trunc)
-				flags |= O_TRUNC;
 			u = umask(0);
 			fd = open(path, flags, mode);
 			umask(u);
@@ -99,7 +106,9 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
 			}
-			close (fd);
+			if (readfd != -1 && trunc)
+				close(readfd);
+			readfd = fd;
 		} else if (type == inode_dir) {
 			einfo("%s: creating directory", path);
 			if (!mode) /* 775 */
@@ -113,7 +122,12 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				    strerror (errno));
 				return -1;
 			}
-			mode = 0;
+			readfd = open(path, readflags);
+			if (readfd == -1) {
+				eerror("%s: unable to open directory: %s", applet,
+						strerror(errno));
+				return -1;
+			}
 		} else if (type == inode_fifo) {
 			einfo("%s: creating fifo", path);
 			if (!mode) /* 600 */
@@ -126,56 +140,76 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				    strerror (errno));
 				return -1;
 			}
+			readfd = open(path, readflags);
+			if (readfd == -1) {
+				eerror("%s: unable to open fifo: %s", applet,
+						strerror(errno));
+				return -1;
+			}
 		}
-	} else {
+	}
+	if (fstat(readfd, &st) != -1) {
 		if (type != inode_dir && S_ISDIR(st.st_mode)) {
 			eerror("%s: is a directory", path);
+			close(readfd);
 			return 1;
 		}
 		if (type != inode_file && S_ISREG(st.st_mode)) {
 			eerror("%s: is a file", path);
+			close(readfd);
 			return 1;
 		}
 		if (type != inode_fifo && S_ISFIFO(st.st_mode)) {
 			eerror("%s: is a fifo", path);
+			close(readfd);
 			return -1;
 		}
-	}
 
-	if (mode && (st.st_mode & 0777) != mode) {
-		if ((type != inode_dir) && (st.st_nlink > 1)) {
-			eerror("%s: chmod: %s %s", applet, "Too many hard links to", path);
-			return -1;
+		if (mode && (st.st_mode & 0777) != mode) {
+			if ((type != inode_dir) && (st.st_nlink > 1)) {
+				eerror("%s: chmod: %s %s", applet, "Too many hard links to", path);
+				close(readfd);
+				return -1;
+			}
+			if (S_ISLNK(st.st_mode)) {
+				eerror("%s: chmod: %s %s", applet, path, " is a symbolic link");
+				close(readfd);
+				return -1;
+			}
+			einfo("%s: correcting mode", path);
+			if (fchmod(readfd, mode)) {
+				eerror("%s: chmod: %s", applet, strerror(errno));
+				close(readfd);
+				return -1;
+			}
 		}
-		if (S_ISLNK(st.st_mode)) {
-			eerror("%s: chmod: %s %s", applet, path, " is a symbolic link");
-			return -1;
-		}
-		einfo("%s: correcting mode", path);
-		if (chmod(path, mode)) {
-			eerror("%s: chmod: %s", applet, strerror(errno));
-			return -1;
-		}
-	}
 
-	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
-		if ((type != inode_dir) && (st.st_nlink > 1)) {
-			eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
-			return -1;
+		if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
+			if ((type != inode_dir) && (st.st_nlink > 1)) {
+				eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
+				close(readfd);
+				return -1;
+			}
+			if (S_ISLNK(st.st_mode)) {
+				eerror("%s: chown: %s %s", applet, path, " is a symbolic link");
+				close(readfd);
+				return -1;
+			}
+			einfo("%s: correcting owner", path);
+			if (fchown(readfd, uid, gid)) {
+				eerror("%s: chown: %s", applet, strerror(errno));
+				close(readfd);
+				return -1;
+			}
 		}
-		if (S_ISLNK(st.st_mode)) {
-			eerror("%s: chown: %s %s", applet, path, " is a symbolic link");
-			return -1;
-		}
-		einfo("%s: correcting owner", path);
-		if (lchown(path, uid, gid)) {
-			eerror("%s: lchown: %s", applet, strerror(errno));
-			return -1;
-		}
+		if (selinux_on)
+			selinux_util_label(path);
+	} else {
+		eerror(fstat: %s: %s", path, strerror(errno));
+		close(readfd);
+		return -1;
 	}
-
-	if (selinux_on)
-		selinux_util_label(path);
+	close(readfd);
 
 	return 0;
 }
