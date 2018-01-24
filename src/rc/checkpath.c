@@ -205,7 +205,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 		if (selinux_on)
 			selinux_util_label(path);
 	} else {
-		eerror(fstat: %s: %s", path, strerror(errno));
+		eerror("fstat: %s: %s", path, strerror(errno));
 		close(readfd);
 		return -1;
 	}
