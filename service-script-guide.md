@@ -302,11 +302,12 @@ reload() {
 ## PID files should be writable only by root
 
 PID files must be writable only by *root*, which means additionally
-that they must live in a *root*-owned directory.
+that they must live in a *root*-owned directory. This directory is
+normally /run under Linux and /var/run under other operating systems.
 
 Some daemons run as an unprivileged user account, and create their PID
 files (as the unprivileged user) in a path like
-`/run/foo/foo.pid`. That can usually be exploited by the unprivileged
+`/var/run/foo/foo.pid`. That can usually be exploited by the unprivileged
 user to kill *root* processes, since when a service is stopped, *root*
 usually sends a SIGTERM to the contents of the PID file (which are
 controlled by the unprivileged user). The main warning sign for that
@@ -317,13 +318,13 @@ containing the PID file. For example,
 # BAD BAD BAD BAD BAD BAD BAD BAD
 start_pre() {
   # Ensure that the pidfile directory is writable by the foo user/group.
-  checkpath --directory --mode 0700 --owner foo:foo "/run/foo"
+  checkpath --directory --mode 0700 --owner foo:foo "/var/run/foo"
 }
 # BAD BAD BAD BAD BAD BAD BAD BAD
 ```
 
-If the *foo* user owns `/run/foo`, then he can put whatever he wants
-in the `/run/foo/foo.pid` file. Even if *root* owns the PID file, the
+If the *foo* user owns `/var/run/foo`, then he can put whatever he wants
+in the `/var/run/foo/foo.pid` file. Even if *root* owns the PID file, the
 *foo* user can delete it and replace it with his own. To avoid
 security concerns, the PID file must be created as *root* and live in
 a *root*-owned directory. If your daemon is responsible for forking
@@ -332,16 +333,15 @@ unprivileged runtime user, then you may have an upstream issue.
 
 Once the PID file is being created as *root* (before dropping
 privileges), it can be written directly to a *root*-owned
-directory. Typically this will be `/run` on Linux, and `/var/run`
-elsewhere. For example, the *foo* daemon might write
-`/run/foo.pid`. No calls to checkpath are needed. Note: there is
+directory.  For example, the *foo* daemon might write
+`/var/run/foo.pid`. No calls to checkpath are needed. Note: there is
 nothing technically wrong with using a directory structure like
-`/run/foo/foo.pid`, so long as *root* owns the PID file and the
+`/var/run/foo/foo.pid`, so long as *root* owns the PID file and the
 directory containing it.
 
 Ideally (see "Upstream your service scripts"), your service script
-will be integrated upstream and the build system will determine
-which of `/run` or `/var/run` is appropriate. For example,
+will be integrated upstream and the build system will determine the
+appropriate directory for the pid file. For example,
 
 ```sh
 pidfile="@piddir@/${RC_SVCNAME}.pid"
@@ -374,7 +374,7 @@ location through a conf.d variable, for a few reasons:
 Since OpenRC service names must be unique, a value of
 
 ```sh
-pidfile="/run/${RC_SVCNAME}.pid"
+pidfile="/var/run/${RC_SVCNAME}.pid"
 ```
 
 guarantees that your PID file has a unique name.
