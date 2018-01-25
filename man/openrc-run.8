@@ -470,6 +470,7 @@ Also, the -d, -f or -p options should not be specified along with this option.
 .Pp
 The -q option suppresses all informational output. If it is specified
 twice, all error messages are suppressed as well.
+.It Xo
 .Ic fstabinfo
 .Op Fl M , -mount
 .Op Fl R , -remount
@@ -486,6 +487,7 @@ remounted.
 .Pp
 The -q option suppresses all informational output. If it is specified
 twice, all error messages are suppressed as well.
+.It Xo
 .Ic mountinfo
 .Op Fl f, -fstype-regex Ar regex
 .Op Fl F, -skip-fstype-regex Ar regex
@@ -500,7 +502,7 @@ twice, all error messages are suppressed as well.
 .Op Fl i, -options
 .Op Fl s, -fstype
 .Op Fl t, -node
-  .Ar mount1 mount2 ...
+.Ar mount1 mount2 ...
 .Xc
 The f, F, n, N, o, O, p, P, e and E options specify what you want to
 search for or skip in the mounted file systems. The i, s and t options
