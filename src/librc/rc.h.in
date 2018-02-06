@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 #define RC_PREFIX "@PREFIX@"
+#define RC_SBINDIR		"@SBINDIR@"
 #define RC_SYSCONFDIR		"@SYSCONFDIR@"
 #define RC_LIBDIR               "@PREFIX@/@LIB@/rc"
 #define RC_LIBEXECDIR           "@LIBEXECDIR@"

@@ -35,6 +35,8 @@
 #include "rc-wtmp.h"
 #include "version.h"
 
+#define OPENRC RC_SBINDIR "/openrc"
+
 static const char *rc_default_runlevel = "default";
 
 static pid_t do_openrc(const char *runlevel)
@@ -53,7 +55,7 @@ static pid_t do_openrc(const char *runlevel)
 			sigemptyset(&signals);
 			sigprocmask(SIG_SETMASK, &signals, NULL);
 			printf("Starting %s runlevel\n", runlevel);
-			execl("/sbin/openrc", "/sbin/openrc", runlevel, NULL);
+			execl(OPENRC, OPENRC, runlevel, NULL);
 			perror("exec");
 			break;
 		default:

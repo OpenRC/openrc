@@ -78,8 +78,9 @@ const char *usagestring = ""					\
 #define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"
 
-#define SHUTDOWN                "/sbin/shutdown"
-#define SULOGIN                 "/sbin/sulogin"
+#define SHUTDOWN                RC_SBINDIR "/shutdown"
+#define SULOGIN                 RC_SBINDIR "/sulogin"
+#define HALT                    RC_SBINDIR "/halt"
 
 #define INTERACTIVE             RC_SVCDIR "/interactive"
 
@@ -288,8 +289,8 @@ open_shell(void)
 	/* VSERVER systems cannot really drop to shells */
 	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0)
 	{
-		execl("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
-		eerrorx("%s: unable to exec `/sbin/halt': %s",
+		execl(HALT, HALT, "-f", (char *) NULL);
+		eerrorx("%s: unable to exec `" HALT "': %s",
 		    applet, strerror(errno));
 	}
 #endif
