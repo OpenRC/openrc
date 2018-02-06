@@ -80,11 +80,13 @@ int main(int argc, char **argv)
 		if (stat(file, &sb) == -1) {
 			opt = open(file, O_WRONLY | O_CREAT, 0644);
 			if (opt == -1)
-				eerrorx("swclock: open: %s", strerror(errno));
+				eerrorx("swclock: open: %s: %s",
+					file, strerror(errno));
 			close(opt);
 		} else
 			if (utime(file, NULL) == -1)
-				eerrorx("swclock: utime: %s", strerror(errno));
+				eerrorx("swclock: utime: %s: %s",
+					file, strerror(errno));
 		return 0;
 	}
 

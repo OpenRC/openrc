@@ -816,7 +816,8 @@ int main(int argc, char **argv)
 			argv += optind - 1;
 			*argv = newlevel;
 			execv(*argv, argv);
-			eerrorx("%s: %s", applet, strerror(errno));
+			eerrorx("%s: exec %s: %s",
+				applet, *argv, strerror(errno));
 			/* NOTREACHED */
 		case 'S':
 			systype = rc_sys();

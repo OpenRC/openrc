@@ -103,7 +103,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			fd = open(path, flags, mode);
 			umask(u);
 			if (fd == -1) {
-				eerror("%s: open: %s", applet, strerror(errno));
+				eerror("%s: open: %s: %s", applet, path,
+					strerror(errno));
 				return -1;
 			}
 			if (readfd != -1 && trunc)
@@ -118,14 +119,14 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			r = mkdir(path, mode);
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
-				eerror("%s: mkdir: %s", applet,
+				eerror("%s: mkdir: %s: %s", applet, path,
 				    strerror (errno));
 				return -1;
 			}
 			readfd = open(path, readflags);
 			if (readfd == -1) {
-				eerror("%s: unable to open directory: %s", applet,
-						strerror(errno));
+				eerror("%s: unable to open directory: %s: %s",
+					applet, path, strerror(errno));
 				return -1;
 			}
 		} else if (type == inode_fifo) {
@@ -136,14 +137,14 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			r = mkfifo(path, mode);
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
-				eerror("%s: mkfifo: %s", applet,
+				eerror("%s: mkfifo: %s: %s", applet, path,
 				    strerror (errno));
 				return -1;
 			}
 			readfd = open(path, readflags);
 			if (readfd == -1) {
-				eerror("%s: unable to open fifo: %s", applet,
-						strerror(errno));
+				eerror("%s: unable to open fifo: %s: %s",
+					applet, path, strerror(errno));
 				return -1;
 			}
 		}
@@ -178,7 +179,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			}
 			einfo("%s: correcting mode", path);
 			if (fchmod(readfd, mode)) {
-				eerror("%s: chmod: %s", applet, strerror(errno));
+				eerror("%s: chmod: %s: %s",
+					applet, path, strerror(errno));
 				close(readfd);
 				return -1;
 			}
@@ -197,7 +199,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			}
 			einfo("%s: correcting owner", path);
 			if (fchown(readfd, uid, gid)) {
-				eerror("%s: chown: %s", applet, strerror(errno));
+				eerror("%s: chown: %s: %s",
+					applet, path, strerror(errno));
 				close(readfd);
 				return -1;
 			}

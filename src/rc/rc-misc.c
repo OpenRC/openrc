@@ -240,7 +240,7 @@ svc_lock(const char *applet)
 	if (fd == -1)
 		return -1;
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
-		eerror("Call to flock failed: %s", strerror(errno));
+		eerror("Call to flock(%s) failed: %s", file, strerror(errno));
 		close(fd);
 		return -1;
 	}

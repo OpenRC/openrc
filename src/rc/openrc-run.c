@@ -293,7 +293,8 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	if (lock_fd != -1) {
 		while (flock(lock_fd, LOCK_EX) != 0) {
 			if (errno != EINTR) {
-				ewarnv("flock() failed: %s", strerror(errno));
+				ewarnv("flock() `%s' failed: %s",
+					PREFIX_LOCK, strerror(errno));
 				break;
 			}
 		}
@@ -1135,7 +1136,8 @@ int main(int argc, char **argv)
 	 * to exist in the same directory as the master link.
 	 * Also, the master link as to be a real file in the init dir. */
 	if (!realpath(argv[1], path)) {
-		fprintf(stderr, "realpath: %s\n", strerror(errno));
+		fprintf(stderr, "realpath: %s: %s\n",
+			argv[1], strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 	memset(lnk, 0, sizeof(lnk));

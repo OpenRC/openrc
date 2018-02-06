@@ -325,7 +325,7 @@ find_mounts(struct args *args)
 	RC_STRINGLIST *list;
 
 	if ((fp = fopen(procmounts, "r")) == NULL)
-		eerrorx("getmntinfo: %s", strerror(errno));
+		eerrorx("fopen: %s: %s", procmounts, strerror(errno));
 
 	list = rc_stringlist_new();
 

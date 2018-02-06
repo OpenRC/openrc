@@ -56,7 +56,7 @@ static pid_t do_openrc(const char *runlevel)
 			sigprocmask(SIG_SETMASK, &signals, NULL);
 			printf("Starting %s runlevel\n", runlevel);
 			execl(OPENRC, OPENRC, runlevel, NULL);
-			perror("exec");
+			perror("exec: " OPENRC);
 			break;
 		default:
 			break;
@@ -189,14 +189,14 @@ int main(int argc, char **argv)
 		init(default_runlevel);
 
 	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)
-		perror("mkfifo");
+		perror("mkfifo: " RC_INIT_FIFO);
 
 	for (;;) {
 		/* This will block until a command is sent down the pipe... */
 		fifo = fopen(RC_INIT_FIFO, "r");
 		if (!fifo) {
 			if (errno != EINTR)
-				perror("fopen");
+				perror("fopen: " RC_INIT_FIFO);
 			continue;
 		}
 		count = fread(buf, 1, sizeof(buf) - 1, fifo);
