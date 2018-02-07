@@ -237,8 +237,9 @@ static void child_process(char *exec, char **argv)
 	char **c;
 	char cmdline[PATH_MAX];
 	time_t start_time;
-	char start_count_string[20];
-	char start_time_string[20];
+	size_t start_len = 20;
+	char start_count_string[start_len];
+	char start_time_string[start_len];
 
 #ifdef HAVE_PAM
 	pam_handle_t *pamh = NULL;
@@ -252,9 +253,9 @@ static void child_process(char *exec, char **argv)
 		start_time = time(NULL);
 		from_time_t(start_time_string, start_time);
 		rc_service_value_set(svcname, "start_time", start_time_string);
-		sprintf(start_count_string, "%i", respawn_count);
+		snprintf(start_count_string, start_len, "%i", respawn_count);
 		rc_service_value_set(svcname, "start_count", start_count_string);
-		sprintf(start_count_string, "%d", getpid());
+		snprintf(start_count_string, start_len, "%d", getpid());
 		rc_service_value_set(svcname, "child_pid", start_count_string);
 	}
 
@@ -399,8 +400,8 @@ static void child_process(char *exec, char **argv)
 	*cmdline = '\0';
 	c = argv;
 	while (c && *c) {
-		strcat(cmdline, *c);
-		strcat(cmdline, " ");
+		strncat(cmdline, *c, PATH_MAX-strlen(cmdline)-1);
+		strncat(cmdline, " ", PATH_MAX-strlen(cmdline)-1);
 		c++;
 	}
 	syslog(LOG_INFO, "Child command line: %s", cmdline);
@@ -596,8 +597,8 @@ int main(int argc, char **argv)
 	*cmdline = '\0';
 	c = argv;
 	while (c && *c) {
-		strcat(cmdline, *c);
-		strcat(cmdline, " ");
+		strncat(cmdline, *c, PATH_MAX-strlen(cmdline)-1);
+		strncat(cmdline, " ", PATH_MAX-strlen(cmdline)-1);
 		c++;
 	}
 	if (svcname) {
@@ -761,7 +762,7 @@ int main(int argc, char **argv)
 		child_argv = xmalloc((child_argc + 1) * sizeof(char *));
 		memset(child_argv, 0, (child_argc + 1) * sizeof(char *));
 		for (x = 0; x < child_argc; x++) {
-			sprintf(name, "argv_%d", x);
+			snprintf(name, PATH_MAX+1, "argv_%d", x);
 			str = rc_service_value_get(svcname, name);
 			child_argv[x] = str;
 		}
@@ -852,11 +853,11 @@ int main(int argc, char **argv)
 		fclose(fp);
 
 		rc_service_value_set(svcname, "pidfile", pidfile);
-		sprintf(name, "%i", respawn_delay);
+		snprintf(name, PATH_MAX+1, "%i", respawn_delay);
 		rc_service_value_set(svcname, "respawn_delay", name);
-		sprintf(name, "%i", respawn_max);
+		snprintf(name, PATH_MAX+1, "%i", respawn_max);
 		rc_service_value_set(svcname, "respawn_max", name);
-		sprintf(name, "%i", respawn_period);
+		snprintf(name, PATH_MAX+1, "%i", respawn_period);
 		rc_service_value_set(svcname, "respawn_period", name);
 		child_pid = fork();
 		if (child_pid == -1)
@@ -875,12 +876,12 @@ int main(int argc, char **argv)
 			c = argv;
 			x = 0;
 			while (c && *c) {
-				snprintf(name, sizeof(name), "argv_%-d",x);
+				snprintf(name, PATH_MAX+1, "argv_%-d",x);
 				rc_service_value_set(svcname, name, *c);
 				x++;
 				c++;
 			}
-			sprintf(name, "%d", x);
+			snprintf(name, PATH_MAX+1, "%d", x);
 				rc_service_value_set(svcname, "argc", name);
 			rc_service_value_set(svcname, "exec", exec);
 			supervisor(exec, argv);
