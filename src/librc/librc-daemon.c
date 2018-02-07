@@ -507,6 +507,7 @@ rc_service_daemons_crashed(const char *service)
 	char *exec = NULL;
 	char *name = NULL;
 	char *pidfile = NULL;
+	size_t pidfile_len = 0;
 	pid_t pid = 0;
 	RC_PIDLIST *pids;
 	RC_PID *p1;
@@ -517,6 +518,7 @@ rc_service_daemons_crashed(const char *service)
 	RC_STRINGLIST *list = NULL;
 	RC_STRING *s;
 	size_t i;
+	size_t ch_root_len = 0;
 	char *ch_root;
 	char *spidfile;
 
@@ -566,9 +568,11 @@ rc_service_daemons_crashed(const char *service)
 		ch_root = rc_service_value_get(basename_c(service), "chroot");
 		spidfile = pidfile;
 		if (ch_root && pidfile) {
-			spidfile = xmalloc(strlen(ch_root) + strlen(pidfile) + 1);
-			strcpy(spidfile, ch_root);
-			strcat(spidfile, pidfile);
+			ch_root_len = strlen(ch_root);
+			pidfile_len = strlen(pidfile);
+			spidfile = xmalloc(ch_root_len + pidfile_len + 1);
+			strncpy(spidfile, ch_root, ch_root_len + 1);
+			strncat(spidfile, pidfile, pidfile_len + 1);
 			free(pidfile);
 			pidfile = spidfile;
 		}
