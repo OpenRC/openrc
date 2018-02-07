@@ -351,7 +351,11 @@ static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
 			TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
 				if (! fname->value)
 					continue;
-				sprintf(path, "%s/%s", RC_CONF_D, fname->value);
+				snprintf(path,
+					strlen(RC_CONF_D) + strlen(fname->value) + 2,
+					"%s/%s",
+					RC_CONF_D,
+					fname->value);
 				rc_conf_d_list = rc_config_list(path);
 				TAILQ_FOREACH(line, rc_conf_d_list, entries)
 					if (line->value)
