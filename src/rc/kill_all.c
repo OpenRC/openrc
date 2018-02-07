@@ -170,7 +170,7 @@ static int signal_processes(int sig, RC_STRINGLIST *omits, bool dryrun)
 			continue;
 
 		/* Is this a process we have been requested to omit? */
-		sprintf(buf, "%d", pid);
+		snprintf(buf, sizeof(buf), "%d", pid);
 		if (rc_stringlist_find(omits, buf))
 			continue;
 
