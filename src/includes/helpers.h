@@ -96,8 +96,10 @@ _unused static char *xstrdup(const char *str)
 
 #undef ERRX
 
-/* basename_c never modifies the argument. As such, if there is a trailing
- * slash then an empty string is returned. */
+/*
+ * basename_c never modifies the argument. As such, if there is a trailing
+ * slash then an empty string is returned.
+ */
 _unused static const char *basename_c(const char *path)
 {
 	const char *slash = strrchr(path, '/');
