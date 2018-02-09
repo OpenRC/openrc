@@ -53,6 +53,7 @@
 	} while (/* CONSTCOND */ 0)
 #endif
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 
@@ -121,6 +122,54 @@ _unused static bool existss(const char *pathname)
 	struct stat buf;
 
 	return (stat(pathname, &buf) == 0 && buf.st_size != 0);
+}
+
+/*
+ * This is an OpenRC specific version of the asprintf() function.
+ * We do this to avoid defining the _GNU_SOURCE feature test macro on
+ * glibc systems and to insure that we have a consistent function across
+ * platforms. This also allows us to call our xmalloc and xrealloc
+ * functions to handle memory allocation.
+ * this function was originally written by Mike Frysinger.
+ */
+_unused static int xasprintf(char **strp, const char *fmt, ...)
+{
+	va_list ap;
+	int len;
+	int memlen;
+	char *ret;
+
+	/*
+	 * Start with a buffer size that should cover the vast majority of uses
+	 * (path construction).
+	 */
+	memlen = 4096;
+	ret = xmalloc(memlen);
+
+	va_start(ap, fmt);
+	len = vsnprintf(ret, memlen, fmt, ap);
+	va_end(ap);
+	if (len >= memlen) {
+		/*
+		 * Output was truncated, so increase buffer to exactly what we need.
+		 */
+		memlen = len + 1;
+		ret = xrealloc(ret, memlen);
+		va_start(ap, fmt);
+		len = vsnprintf(ret, len + 1, fmt, ap);
+		va_end(ap);
+		if (len >= memlen) {
+			/* Give up! */
+			free(ret);
+			return -1;
+		}
+	}
+	if (len < 0) {
+		free(ret);
+		return -1;
+	}
+	*strp = ret;
+	return len;
 }
 
 #endif
