@@ -28,9 +28,11 @@
 #if __GNUC__ > 2 || defined(__INTEL_COMPILER)
 # define _dead __attribute__((__noreturn__))
 # define _unused __attribute__((__unused__))
+# define _xasprintf(a, b)  __attribute__((__format__(__printf__, a, b)))
 #else
 # define _dead
 # define _unused
+# define _xasprintf(a, b)
 #endif
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -132,7 +134,7 @@ _unused static bool existss(const char *pathname)
  * functions to handle memory allocation.
  * this function was originally written by Mike Frysinger.
  */
-_unused static int xasprintf(char **strp, const char *fmt, ...)
+_unused _xasprintf(2,3) static int xasprintf(char **strp, const char *fmt, ...)
 {
 	va_list ap;
 	int len;
