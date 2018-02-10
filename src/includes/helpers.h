@@ -132,12 +132,11 @@ _unused static bool existss(const char *pathname)
  * functions to handle memory allocation.
  * this function was originally written by Mike Frysinger.
  */
-_unused static int xasprintf(char **strp, const char *fmt, ...)
+_unused static int xasprintf(char **strp, const char *fmt, va_list ap)
 {
-	va_list ap;
-	int len;
-	int memlen;
-	char *ret;
+	int len = 0;
+	int memlen = 0;
+	char *ret = NULL;
 
 	/*
 	 * Start with a buffer size that should cover the vast majority of uses
