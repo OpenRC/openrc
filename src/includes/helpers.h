@@ -158,15 +158,12 @@ _unused static int xasprintf(char **strp, const char *fmt, ...)
 		va_start(ap, fmt);
 		len = vsnprintf(ret, len + 1, fmt, ap);
 		va_end(ap);
-		if (len >= memlen) {
-			/* Give up! */
-			free(ret);
-			return -1;
-		}
 	}
-	if (len < 0) {
+	if (len < 0 || len >= memlen) {
+		/* Give up! */
+		fprintf(stderr, "xasprintf: unable to format a buffer\n");
 		free(ret);
-		return -1;
+		exit(1);
 	}
 	*strp = ret;
 	return len;
