@@ -89,7 +89,7 @@ static void send_cmd(const char *cmd)
 		log_wtmp("shutdown", "~~", 0, RUN_LVL, "~~");
 	fifo = fopen(RC_INIT_FIFO, "w");
 	if (!fifo) {
-		perror("fopen");
+		perror("fopen: " RC_INIT_FIFO);
 		return;
 	}
 

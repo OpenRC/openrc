@@ -402,11 +402,11 @@ void selinux_setup(char **argv)
 	 */
 	if (!access("/usr/sbin/open_init_pty", X_OK)) {
 		if (execvp("/usr/sbin/open_init_pty", argv)) {
-			perror("execvp");
+			perror("execvp: /usr/sbin/open_init_pty");
 			exit(-1);
 		}
 	} else if (execvp(argv[1], argv + 1)) {
-		perror("execvp");
+		fprintf(stderr, "execvp: %s: %s\n", argv[1], strerror(errno));
 		exit(-1);
 	}
 
