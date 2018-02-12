@@ -260,9 +260,12 @@ for _cmd; do
 		# Apply cgroups settings if defined
 		if [ "$(command -v cgroup_add_service)" = "cgroup_add_service" ]
 		then
-			if [ -d /sys/fs/cgroup -a ! -w /sys/fs/cgroup ]; then
-				eerror "No permission to apply cgroup settings"
-				break
+			if grep -qs /sys/fs/cgroup /proc/1/mountinfo
+			then
+				if [ -d /sys/fs/cgroup -a ! -w /sys/fs/cgroup ]; then
+					eerror "No permission to apply cgroup settings"
+					break
+				fi
 			fi
 			cgroup_add_service
 		fi
