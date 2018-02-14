@@ -248,7 +248,6 @@ find_mounts(struct args *args)
 	struct opt *o;
 	int netdev;
 	char *tmp;
-	size_t l;
 
 	if ((nmnts = getmntinfo(&mnts, MNT_NOWAIT)) == 0)
 		eerrorx("getmntinfo: %s", strerror (errno));
@@ -264,11 +263,7 @@ find_mounts(struct args *args)
 				if (! options)
 					options = xstrdup(o->o_name);
 				else {
-					l = strlen(options) +
-					    strlen(o->o_name) + 2;
-					tmp = xmalloc(sizeof (char) * l);
-					snprintf(tmp, l, "%s,%s", options,
-					    o->o_name);
+					xasprintf(&tmp, "%s,%s", options, o->o_name);
 					free(options);
 					options = tmp;
 				}
@@ -315,6 +310,7 @@ find_mounts(struct args *args)
 {
 	FILE *fp;
 	char *buffer;
+	size_t size;
 	char *p;
 	char *from;
 	char *to;
@@ -329,8 +325,8 @@ find_mounts(struct args *args)
 
 	list = rc_stringlist_new();
 
-	buffer = xmalloc(sizeof(char) * PATH_MAX * 3);
-	while (fgets(buffer, PATH_MAX * 3, fp)) {
+	buffer = NULL;
+	while (getline(&buffer, &size, fp) != -1) {
 		netdev = -1;
 		p = buffer;
 		from = strsep(&p, " ");
@@ -346,6 +342,8 @@ find_mounts(struct args *args)
 		}
 
 		process_mount(list, args, from, to, fst, opts, netdev);
+		free(buffer);
+		buffer = NULL;
 	}
 	free(buffer);
 	fclose(fp);
@@ -380,7 +378,7 @@ int main(int argc, char **argv)
 	regex_t *skip_point_regex = NULL;
 	RC_STRINGLIST *nodes;
 	RC_STRING *s;
-	char real_path[PATH_MAX + 1];
+	char *real_path = NULL;
 	int opt;
 	int result;
 	char *this_path;
@@ -450,9 +448,12 @@ int main(int argc, char **argv)
 			eerrorx("%s: `%s' is not a mount point",
 			    argv[0], argv[optind]);
 		this_path = argv[optind++];
-		if (realpath(this_path, real_path))
+		real_path = realpath(this_path, NULL);
+		if (real_path)
 			this_path = real_path;
 		rc_stringlist_add(args.mounts, this_path);
+		free(real_path);
+		real_path = NULL;
 	}
 	nodes = find_mounts(&args);
 	rc_stringlist_free(args.mounts);
