@@ -87,10 +87,11 @@ static int mount_proc(void)
 
 static bool is_user_process(pid_t pid)
 {
-	char buf[PATH_MAX+1];
+	char *buf = NULL;
 	FILE *fp;
-	char path[PATH_MAX+1];
+	char *path = NULL;
 	pid_t temp_pid;
+	size_t size;
 	bool user_process = true;
 
 	while (pid >0 && user_process) {
@@ -98,8 +99,9 @@ static bool is_user_process(pid_t pid)
 			user_process = false;
 			continue;
 		}
-		snprintf(path, sizeof(path), "/proc/%d/status", pid);
+		xasprintf(&path, "/proc/%d/status", pid);
 		fp = fopen(path, "r");
+		free(path);
 		/*
 		 * if we could not open the file, the process disappeared, which
 		 * leaves us no way to determine for sure whether it was a user
@@ -112,11 +114,14 @@ static bool is_user_process(pid_t pid)
 		}
 		temp_pid = -1;
 		while (! feof(fp)) {
-			buf[0] = 0;
-			if (fgets(buf, sizeof(buf), fp))
+			buf = NULL;
+			if (getline(&buf, &size, fp) != -1) {
 				sscanf(buf, "PPid: %d", &temp_pid);
-			else
+				free(buf);
+			} else {
+				free(buf);
 				break;
+			}
 		}
 		fclose(fp);
 		if (temp_pid == -1) {
@@ -135,7 +140,7 @@ static int signal_processes(int sig, RC_STRINGLIST *omits, bool dryrun)
 	sigset_t oldsigs;
 	DIR *dir;
 	struct dirent	*d;
-	char buf[PATH_MAX+1];
+	char *buf = NULL;
 	pid_t pid;
 	int sendcount = 0;
 
@@ -170,7 +175,11 @@ static int signal_processes(int sig, RC_STRINGLIST *omits, bool dryrun)
 			continue;
 
 		/* Is this a process we have been requested to omit? */
-		sprintf(buf, "%d", pid);
+		if (buf) {
+			free(buf);
+			buf = NULL;
+		}
+		xasprintf(&buf, "%d", pid);
 		if (rc_stringlist_find(omits, buf))
 			continue;
 
