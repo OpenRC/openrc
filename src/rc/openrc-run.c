@@ -109,7 +109,7 @@ static void
 handle_signal(int sig)
 {
 	int serrno = errno;
-	char signame[10] = { '\0' };
+	char *signame = NULL;
 	struct winsize ws;
 
 	switch (sig) {
@@ -134,20 +134,22 @@ handle_signal(int sig)
 		break;
 
 	case SIGINT:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGINT");
+		if (!signame)
+			xasprintf(&signame, "SIGINT");
 		/* FALLTHROUGH */
 	case SIGTERM:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGTERM");
+		if (!signame)
+			xasprintf(&signame, "SIGTERM");
 		/* FALLTHROUGH */
 	case SIGQUIT:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGQUIT");
+		if (!signame)
+			xasprintf(&signame, "SIGQUIT");
 		/* Send the signal to our children too */
 		if (service_pid > 0)
 			kill(service_pid, sig);
-		eerrorx("%s: caught %s, aborting", applet, signame);
+		eerror("%s: caught %s, aborting", applet, signame);
+		free(signame);
+		exit(EXIT_FAILURE);
 		/* NOTREACHED */
 
 	default:
@@ -161,11 +163,12 @@ handle_signal(int sig)
 static void
 unhotplug()
 {
-	char file[PATH_MAX];
+	char *file = NULL;
 
-	snprintf(file, sizeof(file), RC_SVCDIR "/hotplugged/%s", applet);
+	xasprintf(&file, RC_SVCDIR "/hotplugged/%s", applet);
 	if (exists(file) && unlink(file) != 0)
 		eerror("%s: unlink `%s': %s", applet, file, strerror(errno));
+	free(file);
 }
 
 static void
@@ -485,7 +488,7 @@ svc_exec(const char *arg1, const char *arg2)
 static bool
 svc_wait(const char *svc)
 {
-	char file[PATH_MAX];
+	char *file = NULL;
 	int fd;
 	bool forever = false;
 	RC_STRINGLIST *keywords;
@@ -498,8 +501,7 @@ svc_wait(const char *svc)
 		forever = true;
 	rc_stringlist_free(keywords);
 
-	snprintf(file, sizeof(file), RC_SVCDIR "/exclusive/%s",
-	    basename_c(svc));
+	xasprintf(&file, RC_SVCDIR "/exclusive/%s", basename_c(svc));
 
 	interval.tv_sec = 0;
 	interval.tv_nsec = WAIT_INTERVAL;
@@ -512,23 +514,29 @@ svc_wait(const char *svc)
 		if (fd != -1) {
 			if (flock(fd, LOCK_SH | LOCK_NB) == 0) {
 				close(fd);
+				free(file);
 				return true;
 			}
 			close(fd);
 		}
-		if (errno == ENOENT)
+		if (errno == ENOENT) {
+			free(file);
 			return true;
-		if (errno != EWOULDBLOCK)
-			eerrorx("%s: open `%s': %s", applet, file,
+		}
+		if (errno != EWOULDBLOCK) {
+			eerror("%s: open `%s': %s", applet, file,
 			    strerror(errno));
+			free(file);
+			exit(EXIT_FAILURE);
+		}
 		if (nanosleep(&interval, NULL) == -1) {
 			if (errno != EINTR)
-				return false;
+				goto finish;
 		}
 		if (!forever) {
 			timespecsub(&timeout, &interval, &timeout);
 			if (timeout.tv_sec <= 0)
-				return false;
+				goto finish;
 			timespecsub(&warn, &interval, &warn);
 			if (warn.tv_sec <= 0) {
 				ewarn("%s: waiting for %s (%d seconds)",
@@ -538,6 +546,8 @@ svc_wait(const char *svc)
 			}
 		}
 	}
+finish:
+	free(file);
 	return false;
 }
 
@@ -1105,9 +1115,10 @@ int main(int argc, char **argv)
 	bool runscript = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
-	char path[PATH_MAX], lnk[PATH_MAX];
+	char *path = NULL;
+	char *lnk = NULL;
 	char *dir, *save = NULL, *saveLnk = NULL;
-	char pidstr[10];
+	char *pidstr = NULL;
 	size_t l = 0, ll;
  	const char *file;
 	struct stat stbuf;
@@ -1134,10 +1145,12 @@ int main(int argc, char **argv)
 	 * This works fine, provided that we ONLY allow multiplexed services
 	 * to exist in the same directory as the master link.
 	 * Also, the master link as to be a real file in the init dir. */
-	if (!realpath(argv[1], path)) {
+	path = realpath(argv[1], NULL);
+	if (!path) {
 		fprintf(stderr, "realpath: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
+	lnk = xmalloc(4096);
 	memset(lnk, 0, sizeof(lnk));
 	if (readlink(argv[1], lnk, sizeof(lnk)-1)) {
 		dir = dirname(path);
@@ -1153,8 +1166,7 @@ int main(int argc, char **argv)
 		} else
 			file = basename_c(argv[1]);
 		ll = strlen(dir) + strlen(file) + 2;
-		service = xmalloc(ll);
-		snprintf(service, ll, "%s/%s", dir, file);
+		xasprintf(&service, "%s/%s", dir, file);
 		if (stat(service, &stbuf) != 0) {
 			free(service);
 			service = xstrdup(lnk);
@@ -1162,6 +1174,7 @@ int main(int argc, char **argv)
 		free(save);
 		free(saveLnk);
 	}
+	free(lnk);
 	if (!service)
 		service = xstrdup(path);
 	applet = basename_c(service);
@@ -1185,7 +1198,7 @@ int main(int argc, char **argv)
 	/* Set an env var so that we always know our pid regardless of any
 	   subshells the init script may create so that our mark_service_*
 	   functions can always instruct us of this change */
-	snprintf(pidstr, sizeof(pidstr), "%d", (int) getpid());
+	xasprintf(&pidstr, "%d", (int) getpid());
 	setenv("RC_OPENRC_PID", pidstr, 1);
 	/*
 	 * RC_RUNSCRIPT_PID is deprecated, but we will keep it for a while
