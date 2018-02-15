@@ -166,7 +166,7 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 	RC_STRING *runlevel;
 	RC_STRINGLIST *in;
 	bool inone;
-	char buffer[PATH_MAX];
+	char *buffer = NULL;
 	size_t l;
 
 	rc_stringlist_sort(&services);
@@ -182,9 +182,11 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 				inone = true;
 			} else {
 				l = strlen(runlevel->value);
+				buffer = xmalloc(l+1);
 				memset (buffer, ' ', l);
 				buffer[l] = 0;
 				rc_stringlist_add (in, buffer);
+				free(buffer);
 			}
 		}
 
