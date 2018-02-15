@@ -35,8 +35,8 @@ extern "C" {
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
 #endif
 #define RC_RUNLEVELDIR          RC_SYSCONFDIR "/runlevels"
-#define RC_INITDIR              RC_SYSCONFDIR "/init.d"
-#define RC_CONFDIR              RC_SYSCONFDIR "/conf.d"
+#define RC_INITDIR              RC_SYSCONFDIR "/@INITDIRNAME@"
+#define RC_CONFDIR              RC_SYSCONFDIR "/@CONFDIRNAME@"
 #define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
 #define RC_INIT_FIFO RC_SVCDIR"/init.ctl"
