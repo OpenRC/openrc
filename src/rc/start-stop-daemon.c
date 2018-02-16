@@ -254,6 +254,7 @@ int main(int argc, char **argv)
 #endif
 
 	int opt;
+	size_t size = 0;
 	bool start = false;
 	bool stop = false;
 	bool oknodo = false;
@@ -287,10 +288,10 @@ int main(int argc, char **argv)
 	char *tmp, *newpath, *np;
 	char *p;
 	char *token;
-	char exec_file[PATH_MAX];
+	char *exec_file = NULL;
 	struct passwd *pw;
 	struct group *gr;
-	char line[130];
+	char *line = NULL;
 	FILE *fp;
 	size_t len;
 	mode_t numask = 022;
@@ -577,26 +578,22 @@ int main(int argc, char **argv)
 		if (*exec == '/' || *exec == '.') {
 			/* Full or relative path */
 			if (ch_root)
-				snprintf(exec_file, sizeof(exec_file),
-				    "%s/%s", ch_root, exec);
+				xasprintf(&exec_file, "%s/%s", ch_root, exec);
 			else
-				snprintf(exec_file, sizeof(exec_file),
-				    "%s", exec);
+				xasprintf(&exec_file, "%s", exec);
 		} else {
 			/* Something in $PATH */
 			p = tmp = xstrdup(getenv("PATH"));
-			*exec_file = '\0';
+			exec_file = NULL;
 			while ((token = strsep(&p, ":"))) {
 				if (ch_root)
-					snprintf(exec_file, sizeof(exec_file),
-					    "%s/%s/%s",
-					    ch_root, token, exec);
+					xasprintf(&exec_file, "%s/%s/%s", ch_root, token, exec);
 				else
-					snprintf(exec_file, sizeof(exec_file),
-					    "%s/%s", token, exec);
-				if (exists(exec_file))
+					xasprintf(&exec_file, "%s/%s", token, exec);
+				if (exec_file && exists(exec_file))
 					break;
-				*exec_file = '\0';
+				free(exec_file);
+				exec_file = NULL;
 			}
 			free(tmp);
 		}
@@ -604,6 +601,7 @@ int main(int argc, char **argv)
 	if (start && !exists(exec_file)) {
 		eerror("%s: %s does not exist", applet,
 		    *exec_file ? exec_file : exec);
+		free(exec_file);
 		exit(EXIT_FAILURE);
 
 	}
@@ -617,7 +615,9 @@ int main(int argc, char **argv)
 	if (interpreted && !pidfile) {
 		fp = fopen(exec_file, "r");
 		if (fp) {
-			p = fgets(line, sizeof(line), fp);
+			line = NULL;
+			getline(&line, &size, fp);
+			p = line;
 			fclose(fp);
 			if (p != NULL && line[0] == '#' && line[1] == '!') {
 				p = line + 2;
@@ -629,7 +629,8 @@ int main(int argc, char **argv)
 				if (p[len] == '\n')
 					p[len] = '\0';
 				token = strsep(&p, " ");
-				strncpy(exec_file, token, sizeof(exec_file));
+				free(exec_file);
+				xasprintf(&exec_file, "%s", token);
 				opt = 0;
 				for (nav = argv; *nav; nav++)
 					opt++;
