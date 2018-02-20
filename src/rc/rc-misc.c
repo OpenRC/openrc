@@ -131,7 +131,8 @@ env_config(void)
 	char *npp;
 	char *tok;
 	const char *sys = rc_sys();
-	char buffer[PATH_MAX];
+	char *buffer = NULL;
+	size_t size = 0;
 
 	/* Ensure our PATH is prefixed with the system locations first
 	   for a little extra security */
@@ -170,8 +171,7 @@ env_config(void)
 	free(e);
 
 	if ((fp = fopen(RC_KRUNLEVEL, "r"))) {
-		memset(buffer, 0, sizeof (buffer));
-		if (fgets(buffer, sizeof (buffer), fp)) {
+		if (getline(&buffer, &size, fp) != -1) {
 			l = strlen (buffer) - 1;
 			if (buffer[l] == '\n')
 				buffer[l] = 0;
@@ -181,6 +181,7 @@ env_config(void)
 	} else
 		setenv("RC_DEFAULTLEVEL", RC_LEVEL_DEFAULT, 1);
 
+	free(buffer);
 	if (sys)
 		setenv("RC_SYS", sys, 1);
 
@@ -232,11 +233,12 @@ signal_setup_restart(int sig, void (*handler)(int))
 int
 svc_lock(const char *applet)
 {
-	char file[PATH_MAX];
+	char *file = NULL;
 	int fd;
 
-	snprintf(file, sizeof(file), RC_SVCDIR "/exclusive/%s", applet);
+	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
 	fd = open(file, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
+	free(file);
 	if (fd == -1)
 		return -1;
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
@@ -250,11 +252,12 @@ svc_lock(const char *applet)
 int
 svc_unlock(const char *applet, int fd)
 {
-	char file[PATH_MAX];
+	char *file = NULL;
 
-	snprintf(file, sizeof(file), RC_SVCDIR "/exclusive/%s", applet);
+	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
 	close(fd);
 	unlink(file);
+	free(file);
 	return -1;
 }
 
@@ -358,7 +361,7 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 	int serrno = errno;
 	int merrno;
 	time_t t;
-	char file[PATH_MAX];
+	char *file = NULL;
 	struct stat st;
 	struct utimbuf ut;
 	FILE *fp;
