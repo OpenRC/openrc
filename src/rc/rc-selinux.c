@@ -256,19 +256,19 @@ static int read_context_file(const char *filename, char **context)
 {
 	int ret = -1;
 	FILE *fp;
-	char filepath[PATH_MAX];
+	char *filepath = NULL;
 	char *line = NULL;
 	char *p;
 	char *p2;
 	size_t len = 0;
 	ssize_t read;
 
-	memset(filepath, '\0', PATH_MAX);
-	snprintf(filepath, PATH_MAX - 1, "%s/%s", selinux_contexts_path(), filename);
+	xasprintf(&filepath, "%s/%s", selinux_contexts_path(), filename);
 
 	fp = fopen(filepath, "r");
 	if (fp == NULL) {
 		eerror("Failed to open context file: %s", filename);
+		free(filepath);
 		return -1;
 	}
 
@@ -294,6 +294,7 @@ static int read_context_file(const char *filename, char **context)
 	}
 
 	free(line);
+	free(filepath);
 	fclose(fp);
 	return ret;
 }
