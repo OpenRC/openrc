@@ -68,7 +68,7 @@ rc_plugin_load(void)
 	DIR *dp;
 	struct dirent *d;
 	PLUGIN *plugin;
-	char file[PATH_MAX];
+	char *file = NULL;
 	void *h;
 	int (*fptr)(RC_HOOK, const char *);
 
@@ -85,8 +85,9 @@ rc_plugin_load(void)
 		if (d->d_name[0] == '.')
 			continue;
 
-		snprintf(file, sizeof(file), RC_PLUGINDIR "/%s",  d->d_name);
+		xasprintf(&file, RC_PLUGINDIR "/%s",  d->d_name);
 		h = dlopen(file, RTLD_LAZY);
+		free(file);
 		if (h == NULL) {
 			eerror("dlopen: %s", dlerror());
 			continue;
