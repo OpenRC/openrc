@@ -336,26 +336,26 @@ set_krunlevel(const char *level)
 	return true;
 }
 
-static size_t
-get_krunlevel(char *buffer, int buffer_len)
+static char *get_krunlevel(void)
 {
+	char *buffer = NULL;
 	FILE *fp;
 	size_t i = 0;
 
 	if (!exists(RC_KRUNLEVEL))
-		return 0;
+		return NULL;
 	if (!(fp = fopen(RC_KRUNLEVEL, "r"))) {
 		eerror("fopen `%s': %s", RC_KRUNLEVEL, strerror(errno));
-		return 0;
+		return NULL;
 	}
 
-	if (fgets(buffer, buffer_len, fp)) {
+	if (getline(&buffer, &i, fp) != -1) {
 		i = strlen(buffer);
 		if (buffer[i - 1] == '\n')
 			buffer[i - 1] = 0;
 	}
 	fclose(fp);
-	return i;
+	return buffer;
 }
 
 static void
@@ -743,7 +743,7 @@ int main(int argc, char **argv)
 	RC_STRING *service;
 	bool going_down = false;
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
-	char krunlevel [PATH_MAX];
+	char *krunlevel = NULL;
 	char pidstr[10];
 	int opt;
 	bool parallel;
@@ -892,7 +892,8 @@ int main(int argc, char **argv)
 		    (strcmp(newlevel, RC_LEVEL_SYSINIT) != 0 &&
 			strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0))
 		{
-			if (get_krunlevel(krunlevel, sizeof(krunlevel))) {
+			krunlevel = get_krunlevel();
+			if (krunlevel) {
 				newlevel = krunlevel;
 				set_krunlevel(NULL);
 			}
