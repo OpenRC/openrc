@@ -224,6 +224,22 @@ static char * expand_home(const char *home, const char *path)
 	return nh;
 }
 
+static char *make_cmdline(char **argv)
+{
+	char **c;
+	char *cmdline = NULL;
+	size_t len = 0;
+
+	for (c = argv; c && *c; c++)
+		len += (strlen(*c) + 1);
+	cmdline = xmalloc(len);
+	for (c = argv; c && *c; c++) {
+		strcat(cmdline, *c);
+		strcat(cmdline, " ");
+	}
+	return cmdline;
+}
+
 static void child_process(char *exec, char **argv)
 {
 	RC_STRINGLIST *env_list;
@@ -234,8 +250,7 @@ static void child_process(char *exec, char **argv)
 	size_t len;
 	char *newpath;
 	char *np;
-	char **c;
-	char cmdline[PATH_MAX];
+	char *cmdline = NULL;
 	time_t start_time;
 	char start_count_string[20];
 	char start_time_string[20];
@@ -395,15 +410,9 @@ static void child_process(char *exec, char **argv)
 
 	for (i = getdtablesize() - 1; i >= 3; --i)
 		fcntl(i, F_SETFD, FD_CLOEXEC);
-
-	*cmdline = '\0';
-	c = argv;
-	while (c && *c) {
-		strcat(cmdline, *c);
-		strcat(cmdline, " ");
-		c++;
-	}
+	cmdline = make_cmdline(argv);
 	syslog(LOG_INFO, "Child command line: %s", cmdline);
+	free(cmdline);
 	execvp(exec, argv);
 
 #ifdef HAVE_PAM
@@ -551,8 +560,8 @@ int main(int argc, char **argv)
 	char *token;
 	int i;
 	int n;
-	char exec_file[PATH_MAX];
-	char name[PATH_MAX];
+	char *exec_file = NULL;
+	char *varbuf = NULL;
 	struct timespec ts;
 	struct passwd *pw;
 	struct group *gr;
@@ -561,7 +570,7 @@ int main(int argc, char **argv)
 	int child_argc = 0;
 	char **child_argv = NULL;
 	char *str = NULL;
-	char cmdline[PATH_MAX];
+	char *cmdline = NULL;
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -593,13 +602,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	*cmdline = '\0';
-	c = argv;
-	while (c && *c) {
-		strcat(cmdline, *c);
-		strcat(cmdline, " ");
-		c++;
-	}
+	cmdline = make_cmdline(argv);
 	if (svcname) {
 		argc--;
 		argv++;
@@ -761,9 +764,11 @@ int main(int argc, char **argv)
 		child_argv = xmalloc((child_argc + 1) * sizeof(char *));
 		memset(child_argv, 0, (child_argc + 1) * sizeof(char *));
 		for (x = 0; x < child_argc; x++) {
-			sprintf(name, "argv_%d", x);
-			str = rc_service_value_get(svcname, name);
+			xasprintf(&varbuf, "argv_%d", x);
+			str = rc_service_value_get(svcname, varbuf);
 			child_argv[x] = str;
+			free(varbuf);
+			varbuf = NULL;
 		}
 		free(str);
 		str = rc_service_value_get(svcname, "child_pid");
@@ -792,32 +797,31 @@ int main(int argc, char **argv)
 			if (*exec == '/' || *exec == '.') {
 				/* Full or relative path */
 				if (ch_root)
-					snprintf(exec_file, sizeof(exec_file),
-				    	"%s/%s", ch_root, exec);
+					xasprintf(&exec_file, "%s/%s", ch_root, exec);
 				else
-					snprintf(exec_file, sizeof(exec_file),
-				    "%s", exec);
+					xasprintf(&exec_file, "%s", exec);
 			} else {
 				/* Something in $PATH */
 				p = tmp = xstrdup(getenv("PATH"));
-				*exec_file = '\0';
+				exec_file = NULL;
 				while ((token = strsep(&p, ":"))) {
 					if (ch_root)
-						snprintf(exec_file, sizeof(exec_file),
-					    	"%s/%s/%s",
-					    	ch_root, token, exec);
+						xasprintf(&exec_file, "%s/%s/%s", ch_root, token, exec);
 					else
-						snprintf(exec_file, sizeof(exec_file),
-					    	"%s/%s", token, exec);
-					if (exists(exec_file))
+						xasprintf(&exec_file, "%s/%s", token, exec);
+					if (exec_file && exists(exec_file))
 						break;
-					*exec_file = '\0';
+					free(exec_file);
+					exec_file = NULL;
 				}
 				free(tmp);
 			}
-			if ( !exists(exec_file))
-				eerrorx("%s: %s does not exist", applet,
+			if (!exists(exec_file)) {
+				eerror("%s: %s does not exist", applet,
 				    *exec_file ? exec_file : exec);
+				free(exec_file);
+				exit(EXIT_FAILURE);
+			}
 		} else
 			eerrorx("%s: nothing to start", applet);
 
@@ -840,6 +844,8 @@ int main(int argc, char **argv)
 
 		einfov("Detaching to start `%s'", exec);
 		syslog(LOG_INFO, "Supervisor command line: %s", cmdline);
+		free(cmdline);
+		cmdline = NULL;
 
 		/* Remove existing pidfile */
 		if (pidfile)
@@ -852,12 +858,13 @@ int main(int argc, char **argv)
 		fclose(fp);
 
 		rc_service_value_set(svcname, "pidfile", pidfile);
-		sprintf(name, "%i", respawn_delay);
-		rc_service_value_set(svcname, "respawn_delay", name);
-		sprintf(name, "%i", respawn_max);
-		rc_service_value_set(svcname, "respawn_max", name);
-		sprintf(name, "%i", respawn_period);
-		rc_service_value_set(svcname, "respawn_period", name);
+		varbuf = NULL;
+		xasprintf(&varbuf, "%i", respawn_delay);
+		rc_service_value_set(svcname, "respawn_delay", varbuf);
+		xasprintf(&varbuf, "%i", respawn_max);
+		rc_service_value_set(svcname, "respawn_max", varbuf);
+		xasprintf(&varbuf, "%i", respawn_period);
+		rc_service_value_set(svcname, "respawn_period", varbuf);
 		child_pid = fork();
 		if (child_pid == -1)
 			eerrorx("%s: fork: %s", applet, strerror(errno));
@@ -875,13 +882,16 @@ int main(int argc, char **argv)
 			c = argv;
 			x = 0;
 			while (c && *c) {
-				snprintf(name, sizeof(name), "argv_%-d",x);
-				rc_service_value_set(svcname, name, *c);
+				varbuf = NULL;
+				xasprintf(&varbuf, "argv_%-d",x);
+				rc_service_value_set(svcname, varbuf, *c);
+				free(varbuf);
+				varbuf = NULL;
 				x++;
 				c++;
 			}
-			sprintf(name, "%d", x);
-				rc_service_value_set(svcname, "argc", name);
+			xasprintf(&varbuf, "%d", x);
+				rc_service_value_set(svcname, "argc", varbuf);
 			rc_service_value_set(svcname, "exec", exec);
 			supervisor(exec, argv);
 		} else
