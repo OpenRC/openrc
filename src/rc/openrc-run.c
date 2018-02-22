@@ -1151,7 +1151,7 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 	lnk = xmalloc(4096);
-	memset(lnk, 0, sizeof(lnk));
+	memset(lnk, 0, 4096);
 	if (readlink(argv[1], lnk, sizeof(lnk)-1)) {
 		dir = dirname(path);
 		if (strchr(lnk, '/')) {
