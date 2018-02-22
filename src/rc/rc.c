@@ -505,6 +505,9 @@ do_sysinit()
 	 * sys */
 	if ((sys = rc_sys()))
 		setenv("RC_SYS", sys, 1);
+	/* force an update of the dependency tree */
+	if ((main_deptree = _rc_deptree_load(1, NULL)) == NULL)
+		eerrorx("failed to load deptree");
 }
 
 static bool
