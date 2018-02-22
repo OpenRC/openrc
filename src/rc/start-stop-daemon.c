@@ -616,7 +616,8 @@ int main(int argc, char **argv)
 		fp = fopen(exec_file, "r");
 		if (fp) {
 			line = NULL;
-			getline(&line, &size, fp);
+			if (getline(&line, &size, fp) == -1)
+				eerrorx("%s: %s", applet, strerror(errno));
 			p = line;
 			fclose(fp);
 			if (p != NULL && line[0] == '#' && line[1] == '!') {
