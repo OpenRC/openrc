@@ -65,7 +65,7 @@ static int mount_proc(void)
 			break;
 		case 0:
 			/* attempt to mount /proc */
-			execl("mount", "mount", "-t", "proc", "proc", "/proc", NULL);
+			execlp("mount", "mount", "-t", "proc", "proc", "/proc", NULL);
 			syslog(LOG_ERR, "Unable to execute mount");
 			exit(1);
 			break;
