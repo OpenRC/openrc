@@ -35,6 +35,7 @@
 #include "rc-wtmp.h"
 #include "version.h"
 
+static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
 
 static pid_t do_openrc(const char *runlevel)
@@ -182,6 +183,9 @@ int main(int argc, char **argv)
 	sigaction(SIGCHLD, &sa, NULL);
 	sigaction(SIGINT, &sa, NULL);
 	reboot(RB_DISABLE_CAD);
+
+	/* set default path */
+	setenv("PATH", path_default, 1);
 
 	if (! reexec)
 		init(default_runlevel);
