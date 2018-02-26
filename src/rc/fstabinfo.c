@@ -141,7 +141,7 @@ do_mount(struct ENT *ent, bool remount)
 		/* NOTREACHED */
 	case 0:
 		execvp(argv[0], argv);
-		eerror("%s: execv: %s", applet, strerror(errno));
+		eerror("%s: execvp: %s", applet, strerror(errno));
 		_exit(EXIT_FAILURE);
 		/* NOTREACHED */
 	default:
