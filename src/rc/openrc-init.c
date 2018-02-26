@@ -54,7 +54,7 @@ static pid_t do_openrc(const char *runlevel)
 			sigemptyset(&signals);
 			sigprocmask(SIG_SETMASK, &signals, NULL);
 			printf("Starting %s runlevel\n", runlevel);
-			execl("/sbin/openrc", "/sbin/openrc", runlevel, NULL);
+			execlp("openrc", "openrc", runlevel, NULL);
 			perror("exec");
 			break;
 		default:
@@ -89,7 +89,7 @@ static void init(const char *default_runlevel)
 
 static void handle_reexec(char *my_name)
 {
-	execl(my_name, my_name, "reexec", NULL);
+	execlp(my_name, my_name, "reexec", NULL);
 	return;
 }
 
