@@ -288,8 +288,8 @@ open_shell(void)
 	/* VSERVER systems cannot really drop to shells */
 	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0)
 	{
-		execl("/sbin/halt", "/sbin/halt", "-f", (char *) NULL);
-		eerrorx("%s: unable to exec `/sbin/halt': %s",
+		execlp("halt", "halt", "-f", (char *) NULL);
+		eerrorx("%s: unable to exec `halt -f': %s",
 		    applet, strerror(errno));
 	}
 #endif
