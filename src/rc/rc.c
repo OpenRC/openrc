@@ -78,9 +78,6 @@ const char *usagestring = ""					\
 #define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"
 
-#define SHUTDOWN                "/sbin/shutdown"
-#define SULOGIN                 "/sbin/sulogin"
-
 #define INTERACTIVE             RC_SVCDIR "/interactive"
 
 #define DEVBOOT			"/dev/.rcboot"
