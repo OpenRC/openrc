@@ -581,7 +581,8 @@ int main(int argc, char **argv)
 	openlog(applet, LOG_PID, LOG_DAEMON);
 
 	if (argc >= 1 && svcname && strcmp(argv[1], svcname))
-		eerrorx("%s: the first argument must be %s", applet, svcname);
+		eerrorx("%s: the first argument is %s and must be %s",
+				applet, argv[1], svcname);
 
 	if ((tmp = getenv("SSD_NICELEVEL")))
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
