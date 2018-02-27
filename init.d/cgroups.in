@@ -57,7 +57,7 @@ cgroup1_controllers()
 				mkdir "/sys/fs/cgroup/${name}"
 				mount -n -t cgroup -o "${cgroup_opts},${name}" \
 					"${name}" "/sys/fs/cgroup/${name}"
-					yesno "${rc_cgroup_memory_use_hierarchy:-no}" &&
+				yesno "${rc_cgroup_memory_use_hierarchy:-no}" &&
 					[ "${name}" = memory ] &&
 					echo 1 > /sys/fs/cgroup/memory/memory.use_hierarchy
 				;;
