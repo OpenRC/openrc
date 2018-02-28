@@ -83,6 +83,7 @@ elif ! mountinfo -q /run; then
 	fi
 fi
 
+[ -x /sbin/restorecon ] && /sbin/restorecon -rF /run
 checkpath -d $RC_SVCDIR
 checkpath -d -m 0775 -o root:uucp /run/lock
 
