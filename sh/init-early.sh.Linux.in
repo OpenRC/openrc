@@ -33,6 +33,9 @@ else
 	kmode="-a"
 fi
 
+# Set the SELinux label on console before everything so we dont lose output
+[ -x /sbin/restorecon ] && /sbin/restorecon -F /dev/console
+
 # Try and set a font and as early as we can
 if service_present "$RC_DEFAULTLEVEL" consolefont ||
    service_present "$RC_BOOTLEVEL" consolefont; then
