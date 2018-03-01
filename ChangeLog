@@ -1,3 +1,21 @@
+commit 0660d2455d461d648cf45076cf63b1c03e8e24c0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix build on FreeBSD
+
+commit 01c5b98d3842c8142891d4b88f21823f4042f594
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.35.1
+
+commit f62975a1f8c4d5d4abdf78d8cad5509216138f03
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 5bb6f9aa318a6d0507971b74d88c3fd2803bae4b
 Author: Jason Zaman <jason@perfinion.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1838,9 +1856,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     doesn't, the module should be built in or loaded from an initramfs.
     
     This fixes https://github.com/openrc/openrc/pulls/112.
-
-commit 4a269674b765e5267f024fa55c8644480a7304ea
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    make sure netmount and localmount start after root
