@@ -11,3 +11,5 @@
 # Generic definitions
 
 include ${MK}/os-BSD.mk
+
+CPPFLAGS+=	-D_WITH_GETLINE
