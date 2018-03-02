@@ -1,3 +1,23 @@
+commit 1b1a70ecca43034cb0770e18e287ccbca9f1eb52
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.35.2
+
+commit 05cfbb8348cf92bcc2edd922af1dc0a4c4c2e1f4
+Author: Chris Cromer <cromerc@users.noreply.github.com>
+Commit: Doug Freed <dwfreed@mtu.edu>
+
+    openrc-run: fix memory size (#213)
+    
+    Fixes #212
+
+commit a70b65f851c4f79e4fd43440d500d23cbf4b4a89
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 0660d2455d461d648cf45076cf63b1c03e8e24c0
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
