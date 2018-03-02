@@ -1152,7 +1152,7 @@ int main(int argc, char **argv)
 	}
 	lnk = xmalloc(4096);
 	memset(lnk, 0, 4096);
-	if (readlink(argv[1], lnk, sizeof(lnk)-1)) {
+	if (readlink(argv[1], lnk, 4096)) {
 		dir = dirname(path);
 		if (strchr(lnk, '/')) {
 			save = xstrdup(dir);
