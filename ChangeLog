@@ -1,3 +1,33 @@
+commit b731c02a389303dfba30a4b6c44efd0c2540bf66
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Clean up cgroups v2 code
+    
+    Remove the IFS manipulation and simplify the loop that processes the
+    settings.
+
+commit c42916ea199c0eab35c6c0a72d9a9f2a326144b0
+Author: Scall <Scall@users.noreply.github.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d: swap should always be started after root
+    
+    Otherwise if a swap file is being used, and swap is started before
+    root, swapon may fail because of a read-only filesystem.
+
+commit f973354ccdcf4d94b19f08c68a14b2a004668c72
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.35.3
+
+commit 69349f7b57116572b95874c754b2ef87c552cf0d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 1b1a70ecca43034cb0770e18e287ccbca9f1eb52
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1842,37 +1872,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     version 0.25
-
-commit fde3902d069dfdce9c59555186a5541d6d99c8aa
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    update ChangeLog
-
-commit d7bbb0f5830e1ec4df1ec52714d70ac6b0a81878
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add agetty service
-    
-    The agetty service is an alternate way to manage gettys with agetty
-    under Linux which is separate from an external init system.
-
-commit 21ca2b746cce67e2b3578fb7015c9d4c243e3a0c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: drop modules completely from the dependencies
-    
-    This is for #112.
-
-commit 6a79aef0159d7035778fd852b26ecfac903cd029
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: Do not load efivarfs module
-    
-    My understanding is that the kernel can autoload this module. If it
-    doesn't, the module should be built in or loaded from an initramfs.
-    
-    This fixes https://github.com/openrc/openrc/pulls/112.
