@@ -120,6 +120,7 @@ description of --respawn-max for more information.
 .It Fl R , -retry Ar timeout | Ar signal Ns / Ns Ar timeout
 The retry specification can be either a timeout in seconds or multiple
 signal/timeout pairs (like SIGTERM/5).
+If this option is not given, the default is SIGTERM/5.
 .It Fl r , -chroot Ar path
 chroot to this directory before starting the daemon. All other paths, such
 as the path to the daemon, chdir and pidfile, should be relative to the chroot.
