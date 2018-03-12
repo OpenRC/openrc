@@ -151,6 +151,7 @@ These options are only used for stopping daemons:
 .It Fl R , -retry Ar timeout | Ar signal Ns / Ns Ar timeout
 The retry specification can be either a timeout in seconds or multiple
 signal/timeout pairs (like SIGTERM/5).
+If this option is not given, the default is SIGTERM/5.
 .El
 .Sh ENVIRONMENT
 .Va SSD_IONICELEVEL
