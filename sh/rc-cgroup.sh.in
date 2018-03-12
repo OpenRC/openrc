@@ -184,18 +184,17 @@ cgroup2_set_limits()
 	cgroup_path="$(cgroup2_find_path)"
 	[ -d "${cgroup_path}" ] || return 0
 	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
-	local OIFS="$IFS"
-	IFS="
-"
 	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
-	printf "%d" 0 > "${rc_cgroup_path}/cgroup.procs"
-	echo "${rc_cgroup_settings}" | while IFS="$OIFS" read -r key value; do
-		[ -z "${key}" ] || [ -z "${value}" ] && continue
-		[ ! -e "${rc_cgroup_path}/${key}" ] && continue
-		veinfo "${RC_SVCNAME}: cgroups: ${key} ${value}"
-		printf "%s" "${value}" > "${rc_cgroup_path}/${key}"
+	[ -f "${rc_cgroup_path}"/cgroup.procs ] &&
+		printf 0 > "${rc_cgroup_path}"/cgroup.procs
+	[ -z "${rc_cgroup_settings}" ] && return 0
+	echo "${rc_cgroup_settings}" | while read -r key value; do
+		[ -z "${key}" ] && continue
+		[ -z "${value}" ] && continue
+		[ ! -f "${rc_cgroup_path}/${key}" ] && continue
+		veinfo "${RC_SVCNAME}: cgroups: setting ${key} to ${value}"
+		printf "%s\n" "${value}" > "${rc_cgroup_path}/${key}"
 	done
-	IFS="$OIFS"
 	return 0
 }
 
