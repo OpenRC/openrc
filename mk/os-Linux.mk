@@ -11,7 +11,7 @@
 SFX=		.Linux.in
 PKG_PREFIX?=	/usr
 
-CPPFLAGS+=	-D_DEFAULT_SOURCE -D_XOPEN_SOURCE=700
+CPPFLAGS+=	-D_DEFAULT_SOURCE
 LIBDL=		-Wl,-Bdynamic -ldl
 
 ifeq (${MKSELINUX},yes)
