@@ -1,3 +1,39 @@
+commit f1c98888d8429a484b4f37930998e82ef18e8657
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Use _BSD_SOURCE on FreeBSD
+
+commit c2a90b832685f9abdf710ab740181a8b935f862a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Remove _XOPEN_SOURCE macros from builds
+
+commit 53f5b6d894723d034ba520853a9e5484488a2294
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: document default retry specification for supervise-daemon
+
+commit 0a50cc494a6e743712102c705e404faffcbcb110
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man: document default retry sppecification for start-stop-daemon
+
+commit f2a9891d7f7f01cb9d9e9cffa36cdfc8116f8295
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.35.4
+
+commit 5df7ee056458f849626b7a2c30ad0e27e62d8d33
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit b731c02a389303dfba30a4b6c44efd0c2540bf66
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1854,21 +1890,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     All dependencies need to be explicit rather than implicit.
     
     This is the first stage of moving this direction.
-
-commit 5f5b1f7cbefd0bc14352e86a9c33260266f98d9b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs.in: efivarfs tweaks
-    
-    Since we check for /sys/firmware/efi/efivars, we do not need to check
-    for /sys/firmware/efi
-    
-    Since Failing to mount efivarfs is not critical, we silence the error
-    message from mount.
-
-commit cfdf56475e600f79a433cd721cadf39114c6c58d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.25
