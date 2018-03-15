@@ -16,7 +16,6 @@ term_type="${term_type:-linux}"
 command=/sbin/agetty
 command_args_foreground="${agetty_options} ${port} ${baud} ${term_type}"
 pidfile="/run/${RC_SVCNAME}.pid"
-export EINFO_QUIET="${quiet:-yes}"
 
 depend() {
 	after local
@@ -29,5 +28,12 @@ start_pre() {
 		eerror "symbolic links to it for the ports you want to start"
 		eerror "agetty on and add those to the appropriate runlevels."
 		return 1
+	else
+		export EINFO_QUIET="${quiet:-yes}"
 	fi
+}
+
+stop_pre()
+{
+	export EINFO_QUIET="${quiet:-yes}"
 }
