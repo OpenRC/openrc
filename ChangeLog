@@ -1,3 +1,27 @@
+commit d3f419900504b37aeda79b1bca68ac150d81efd6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    agetty.in: allow status to be displayed
+
+commit dc071dfacd23686dd3ae7168c60193618e36f0fa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: fix off-by-one error
+
+commit 42cd8115b94525cad2f70a14cc14862e88c779be
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.35.5
+
+commit d46beb28c4fec99253542442ecacf59499e3159f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit f1c98888d8429a484b4f37930998e82ef18e8657
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1878,15 +1902,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     update news file
-
-commit c333707cba356f4cacfd58a6fcc78f7c073dddcd
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove all occurances of 'before *' from dependencies
-    
-    Using wildcards in dependencies causes issues when rc_parallel is set to
-    yes because it can lead to deadlocks.
-    All dependencies need to be explicit rather than implicit.
-    
-    This is the first stage of moving this direction.
