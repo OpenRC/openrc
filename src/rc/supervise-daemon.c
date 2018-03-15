@@ -232,8 +232,8 @@ static char *make_cmdline(char **argv)
 
 	for (c = argv; c && *c; c++)
 		len += (strlen(*c) + 1);
-	cmdline = xmalloc(len);
-	memset(cmdline, 0, len);
+	cmdline = xmalloc(len+1);
+	memset(cmdline, 0, len+1);
 	for (c = argv; c && *c; c++) {
 		strcat(cmdline, *c);
 		strcat(cmdline, " ");
