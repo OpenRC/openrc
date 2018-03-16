@@ -4,6 +4,13 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.36
+
+In this release, the modules-load service has been combined into the
+modules service since there is no reason I know of to keep them
+separate. However, modules also provides modules-load in case you were
+using modules-load in  your dependencies.
+
 ## OpenRC 0.35
 
 In this version, the cgroups mounting logic has been moved from the
