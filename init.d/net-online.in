@@ -13,7 +13,7 @@ description="Delays until the network is online or a specific timeout"
 
 depend()
 {
-	after modules
+	after modules net
 	need sysfs
 	provide network-online
 	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -uml -vserver
