@@ -62,7 +62,7 @@ add(const char *runlevel, const char *service)
 
 	if (!rc_service_exists(service)) {
 		if (errno == ENOEXEC)
-			eerror("%s: service `%s' is not executeable",
+			eerror("%s: service `%s' is not executable",
 			    applet, service);
 		else
 			eerror("%s: service `%s' does not exist",
