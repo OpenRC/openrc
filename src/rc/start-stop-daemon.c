@@ -661,7 +661,7 @@ int main(int argc, char **argv)
 			parse_schedule(applet, NULL, sig);
 		if (pidfile) {
 			pid = get_pid(applet, pidfile);
-			if (pid == -1)
+			if (pid == -1 && errno != ENOENT)
 				exit(EXIT_FAILURE);
 		} else {
 			pid = 0;
