@@ -11,6 +11,13 @@ modules service since there is no reason I know of to keep them
 separate. However, modules also provides modules-load in case you were
 using modules-load in  your dependencies.
 
+The consolefont, keymaps, numlock and procfs service scripts no longer
+have a dependency on localmount.
+If you are a linux user and are still separaating / from /usr,
+you will need to add the following line to the appropriate conf.d files:
+
+rc_need="localmount"
+
 ## OpenRC 0.35
 
 In this version, the cgroups mounting logic has been moved from the
