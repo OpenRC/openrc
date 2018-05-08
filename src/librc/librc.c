@@ -1047,7 +1047,6 @@ rc_service_add(const char *runlevel, const char *service)
 	char *init;
 	char file[PATH_MAX];
 	char path[MAXPATHLEN] = { '\0' };
-	char *p = NULL;
 	char binit[PATH_MAX];
 	char *i;
 
@@ -1068,8 +1067,7 @@ rc_service_add(const char *runlevel, const char *service)
 	/* We need to ensure that only things in /etc/init.d are added
 	 * to the boot runlevel */
 	if (strcmp(runlevel, RC_LEVEL_BOOT) == 0) {
-		p = realpath(dirname(init), path);
-		if (!*p) {
+		if (realpath(dirname(init), path) == NULL) {
 			free(init);
 			return false;
 		}
