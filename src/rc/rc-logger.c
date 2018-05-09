@@ -87,8 +87,9 @@ write_log(int logfd, const char *buffer, size_t bytes)
 		}
 
 		if (!in_escape) {
-			if (write(logfd, p++, 1) == -1)
-				eerror("write: %s", strerror(errno));
+			if (isprint((unsigned char) *p) || *p == '\n')
+				if (write(logfd, p++, 1) == -1)
+					eerror("write: %s", strerror(errno));
 			continue;
 		}
 
