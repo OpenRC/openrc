@@ -45,20 +45,20 @@ SBINDIR?=		${PREFIX}/sbin
 SBINMODE?=		0755
 
 INCDIR?=		${UPREFIX}/include
-INCMODE?=		0444
+INCMODE?=		0644
 
 _LIBNAME_SH=		case `readlink /lib` in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
 _LIBNAME:=		$(shell ${_LIBNAME_SH})
 LIBNAME?=		${_LIBNAME}
 LIBDIR?=		${UPREFIX}/${LIBNAME}
-LIBMODE?=		0444
+LIBMODE?=		0644
 SHLIBDIR?=		${PREFIX}/${LIBNAME}
 
 LIBEXECDIR?=		${PREFIX}/libexec/rc
 
 MANPREFIX?=		${UPREFIX}/share
 MANDIR?=		${MANPREFIX}/man
-MANMODE?=		0444
+MANMODE?=		0644
 
 BASHCOMPDIR?=		${UPREFIX}/share/bash-completion/completions
 
