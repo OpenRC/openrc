@@ -1268,6 +1268,9 @@ int main(int argc, char **argv)
 		case_RC_COMMON_GETOPT
 		}
 
+	if (rc_yesno(getenv("RC_NODEPS")))
+		deps = false;
+
 	/* If we're changing runlevels and not called by rc then we cannot
 	   work with any dependencies */
 	if (deps && getenv("RC_PID") == NULL &&
