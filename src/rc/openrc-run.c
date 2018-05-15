@@ -1282,6 +1282,8 @@ int main(int argc, char **argv)
 		unsetenv("IN_BACKGROUND");
 	}
 
+	if (rc_yesno(getenv("IN_DRYRUN")))
+	dry_run = true;
 	if (rc_yesno(getenv("IN_HOTPLUG"))) {
 		if (!service_plugable())
 			eerrorx("%s: not allowed to be hotplugged", applet);
