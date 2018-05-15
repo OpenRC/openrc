@@ -29,8 +29,10 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "ce:ilr:INZ" getoptstring_COMMON;
+const char *getoptstring = "cdDe:ilr:INZ" getoptstring_COMMON;
 const struct option longopts[] = {
+	{ "debug",     0, NULL, 'd' },
+	{ "nodeps",     0, NULL, 'D' },
 	{ "exists",   1, NULL, 'e' },
 	{ "ifcrashed", 0, NULL, 'c' },
 	{ "ifexists", 0, NULL, 'i' },
@@ -42,6 +44,8 @@ const struct option longopts[] = {
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
+	"set xtrace when running the command",
+	"ignore dependencies",
 	"tests if the service exists or not",
 	"if the service is crashed then run the command",
 	"if the service exists then run the command",
@@ -78,6 +82,12 @@ int main(int argc, char **argv)
 		    longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
+		case 'd':
+			setenv("RC_DEBUG", "yes", 1);
+			break;
+		case 'D':
+			setenv("RC_NODEPS", "yes", 1);
+			break;
 		case 'e':
 			service = rc_service_resolve(optarg);
 			opt = service ? EXIT_SUCCESS : EXIT_FAILURE;

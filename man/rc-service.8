@@ -20,6 +20,14 @@
 .Ar service cmd
 .Op Ar ...
 .Nm
+.Fl d , -debug
+.Ar service cmd
+.Op Ar ...
+.Nm
+.Fl D , -nodeps
+.Ar service cmd
+.Op Ar ...
+.Nm
 .Op Fl i , -ifexists
 .Ar service cmd
 .Op Ar ...
@@ -71,6 +79,12 @@ return 0 if it can find
 otherwise -1.
 .Fl r , -resolve
 does the same and also prints the full path of the service to stdout.
+.Pp
+.Fl d , -debug
+sets -x when running the service script(s).
+.Pp
+.Fl D , -nodeps
+ignores dependencies when running the service.
 .Pp
 .Fl Z , -dry-run
 prints out the commands it would execute rather than executing them.
