@@ -44,7 +44,8 @@
 .Ar service
 .Nm
 .Fl Z , -dry-run
-.Ar service
+.Ar service cmd
+.Op Ar ...
 .Nm
 .Fl l , -list
 .Nm
@@ -87,7 +88,7 @@ sets -x when running the service script(s).
 ignores dependencies when running the service.
 .Pp
 .Fl Z , -dry-run
-prints out the commands it would execute rather than executing them.
+displays commands rather than executing them.
 .Sh SEE ALSO
 .Xr openrc 8 ,
 .Xr stdout 3
