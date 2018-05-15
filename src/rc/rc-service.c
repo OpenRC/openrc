@@ -29,7 +29,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "ce:ilr:IN" getoptstring_COMMON;
+const char *getoptstring = "ce:ilr:INZ" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "exists",   1, NULL, 'e' },
 	{ "ifcrashed", 0, NULL, 'c' },
@@ -38,6 +38,7 @@ const struct option longopts[] = {
 	{ "ifnotstarted", 0, NULL, 'N' },
 	{ "list",     0, NULL, 'l' },
 	{ "resolve",  1, NULL, 'r' },
+	{ "dry-run",     0, NULL, 'Z' },
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -48,6 +49,7 @@ const char * const longopts_help[] = {
 	"if the service is not started then run the command",
 	"list all available services",
 	"resolve the service name to an init script",
+	"dry run (show what would happen)",
 	longopts_help_COMMON
 };
 const char *usagestring = ""							\
@@ -112,6 +114,9 @@ int main(int argc, char **argv)
 			free(service);
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
+		case 'Z':
+			setenv("IN_DRYRUN", "yes", 1);
+			break;
 
 		case_RC_COMMON_GETOPT
 		}
