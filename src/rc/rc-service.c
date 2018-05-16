@@ -29,7 +29,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "cdDe:ilr:INZ" getoptstring_COMMON;
+const char *getoptstring = "cdDe:ilr:INsSZ" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "debug",     0, NULL, 'd' },
 	{ "nodeps",     0, NULL, 'D' },
@@ -38,6 +38,8 @@ const struct option longopts[] = {
 	{ "ifexists", 0, NULL, 'i' },
 	{ "ifinactive", 0, NULL, 'I' },
 	{ "ifnotstarted", 0, NULL, 'N' },
+	{ "ifstarted", 0, NULL, 's' },
+	{ "ifstopped", 0, NULL, 'S' },
 	{ "list",     0, NULL, 'l' },
 	{ "resolve",  1, NULL, 'r' },
 	{ "dry-run",     0, NULL, 'Z' },
@@ -73,6 +75,8 @@ int main(int argc, char **argv)
 	bool if_exists = false;
 	bool if_inactive = false;
 	bool if_notstarted = false;
+	bool if_started = false;
+	bool if_stopped = false;
 
 	applet = basename_c(argv[0]);
 	/* Ensure that we are only quiet when explicitly told to be */
@@ -124,6 +128,12 @@ int main(int argc, char **argv)
 			free(service);
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
+		case 's':
+			if_started = true;
+			break;
+		case 'S':
+			if_stopped = true;
+			break;
 		case 'Z':
 			setenv("IN_DRYRUN", "yes", 1);
 			break;
@@ -147,6 +157,10 @@ int main(int argc, char **argv)
 	if (if_inactive && ! (state & RC_SERVICE_INACTIVE))
 		return 0;
 	if (if_notstarted && (state & RC_SERVICE_STARTED))
+		return 0;
+	if (if_started && ! (state & RC_SERVICE_STARTED))
+		return 0;
+	if (if_stopped && ! (state & RC_SERVICE_STOPPED))
 		return 0;
 	*argv = service;
 	execv(*argv, argv);
