@@ -50,6 +50,7 @@ static const rc_service_state_name_t rc_service_state_names[] = {
 	{ RC_SERVICE_HOTPLUGGED,  "hotplugged" },
 	{ RC_SERVICE_FAILED,      "failed" },
 	{ RC_SERVICE_SCHEDULED,   "scheduled"},
+	{ RC_SERVICE_CRASHED,     "crashed"},
 	{ 0, NULL}
 };
 
