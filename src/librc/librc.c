@@ -849,6 +849,10 @@ rc_service_state(const char *service)
 		}
 	}
 
+	if (state & RC_SERVICE_STARTED) {
+		if (rc_service_daemons_crashed(service))
+			state |= RC_SERVICE_CRASHED;
+	}
 	if (state & RC_SERVICE_STOPPED) {
 		dirs = ls_dir(RC_SVCDIR "/scheduled", 0);
 		TAILQ_FOREACH(dir, dirs, entries) {
