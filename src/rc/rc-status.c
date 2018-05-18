@@ -54,7 +54,6 @@ const char *usagestring = ""						\
 	"Usage: rc-status [options] <runlevel>...\n"		\
 	"   or: rc-status [options] [-a | -c | -l | -m | -r | -s | -u]";
 
-static bool test_crashed = false;
 static RC_DEPTREE *deptree;
 static RC_STRINGLIST *types;
 
@@ -145,9 +144,7 @@ print_service(const char *service)
 		color = ECOLOR_WARN;
 	} else if (state & RC_SERVICE_STARTED) {
 		errno = 0;
-		if (test_crashed &&
-		    rc_service_daemons_crashed(service) &&
-		    errno != EACCES)
+		if (rc_service_daemons_crashed(service) && errno != EACCES)
 		{
 			child_pid = rc_service_value_get(service, "child_pid");
 			start_time = rc_service_value_get(service, "start_time");
@@ -239,8 +236,6 @@ int main(int argc, char **argv)
 	bool show_all = false;
 	char *p, *runlevel = NULL;
 	int opt, retval = 0;
-
-	test_crashed = _rc_can_find_pids();
 
 	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,

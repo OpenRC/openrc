@@ -411,34 +411,6 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 	return rc_deptree_load();
 }
 
-bool _rc_can_find_pids(void)
-{
-	RC_PIDLIST *pids;
-	RC_PID *pid;
-	RC_PID *pid2;
-	bool retval = false;
-
-	if (geteuid() == 0)
-		return true;
-
-	/* If we cannot see process 1, then we don't test to see if
-	 * services crashed or not */
-	pids = rc_find_pids(NULL, NULL, 0, 1);
-	if (pids) {
-		pid = LIST_FIRST(pids);
-		if (pid) {
-			retval = true;
-			while (pid) {
-				pid2 = LIST_NEXT(pid, entries);
-				free(pid);
-				pid = pid2;
-			}
-		}
-		free(pids);
-	}
-	return retval;
-}
-
 static const struct {
 	const char * const name;
 	RC_SERVICE bit;
