@@ -423,6 +423,7 @@ static const struct {
 	{ "service_hotplugged",  RC_SERVICE_HOTPLUGGED,  },
 	{ "service_wasinactive", RC_SERVICE_WASINACTIVE, },
 	{ "service_failed",      RC_SERVICE_FAILED,      },
+	{ "service_crashed",     RC_SERVICE_CRASHED,     },
 };
 
 RC_SERVICE lookup_service_state(const char *service)
