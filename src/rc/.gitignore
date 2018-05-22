@@ -56,6 +56,7 @@ mark_service_inactive
 mark_service_wasinactive
 mark_service_hotplugged
 mark_service_failed
+mark_service_crashed
 rc-abort
 rc
 openrc

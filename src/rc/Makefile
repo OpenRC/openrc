@@ -41,6 +41,7 @@ RC_SBINPROGS=	mark_service_starting mark_service_started \
 		mark_service_stopping mark_service_stopped \
 		mark_service_inactive mark_service_wasinactive \
 		mark_service_hotplugged mark_service_failed \
+		mark_service_crashed \
 		rc-abort swclock
 
 ifeq (${OS},Linux)
@@ -123,7 +124,8 @@ is_older_than: is_older_than.o rc-misc.o
 mark_service_starting mark_service_started \
 mark_service_stopping mark_service_stopped \
 mark_service_inactive mark_service_wasinactive \
-mark_service_hotplugged mark_service_failed: do_mark_service.o rc-misc.o
+mark_service_hotplugged mark_service_failed \
+mark_service_crashed: do_mark_service.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 mountinfo: mountinfo.o _usage.o rc-misc.o
