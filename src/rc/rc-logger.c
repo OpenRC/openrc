@@ -87,6 +87,8 @@ write_log(int logfd, const char *buffer, size_t bytes)
 		}
 
 		if (!in_escape) {
+			if (!isprint((int) *p) && *p != '\n')
+				goto cont;
 			if (write(logfd, p++, 1) == -1)
 				eerror("write: %s", strerror(errno));
 			continue;
