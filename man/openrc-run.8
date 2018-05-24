@@ -119,6 +119,9 @@ The amount of time, in milliseconds, s6-svc should wait for the service
 to go down when stopping the service. The default is 60000.
 .It Ar start_stop_daemon_args
 List of arguments passed to start-stop-daemon when starting the daemon.
+.It Ar supervise_daemon_args
+List of arguments passed to supervise-daemon when starting the daemon.
+If undefined, start_stop_daemon_args is used as a fallback.
 .It Ar command
 Daemon to start or stop via
 .Nm start-stop-daemon
