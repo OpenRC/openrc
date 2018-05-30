@@ -34,7 +34,7 @@ supervise_start()
 		${respawn_period:+--respawn-period} $respawn_period \
 		${command_user+--user} $command_user \
 		${umask+--umask} $umask \
-		$supervise_daemon_args \
+		${supervise_daemon_args:-${start_stop_daemon_args}} \
 		$command \
 		-- $command_args $command_args_foreground
 	rc=$?
