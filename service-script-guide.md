@@ -29,7 +29,9 @@ Not using this interpreter will break the use of dependencies and is not
 supported. (iow: if you insist on using `#!/bin/sh` you're on your own)
 
 A `depend` function declares the dependencies of this service script.
-All scripts must have start/stop/status functions, but defaults are provided and should be used unless you have a very strong reason not to use them.
+All scripts must have start/stop/status functions, but defaults are
+provided and should be used unless you have a very strong reason not to
+use them.
 
 Extra functions can be added easily:
 
