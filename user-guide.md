@@ -90,8 +90,8 @@ the service script by hand.
 
 FIXME: Document stacked runlevels
 
-The default startup uses the runlevels `boot`, `sysinit` and `default`, in that 
-order. Shutdown uses the `shutdown` runlevel.
+The default startup uses the runlevels `sysinit`, `boot`, and `default`,
+in that order. Shutdown uses the `shutdown` runlevel.
 
 # The Magic of `conf.d`
 
@@ -161,7 +161,6 @@ stopped, by using:
 
 The `rc_cgroup_cleanup` setting can be changed to yes to make this
 happen automatically when the service is stopped.
-
 
 # Caching
 
