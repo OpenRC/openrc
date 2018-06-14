@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "rc-pipe-command.h"
+#include "rc-pipes.h"
 
 static const int pipe_read_end = 0;
 static const int pipe_write_end = 1;
