@@ -1,3 +1,15 @@
+commit a097933edab9d7221df1831e098415d604437c98
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/start-stop-daemon.sh: fix processing of the logger arguments
+
+commit a6f5b1bb63070c24145df72040fa7b465948003c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit e6d01471fe2a8eb8a15bb906d7c91c11805d1bef
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
