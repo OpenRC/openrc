@@ -59,13 +59,14 @@ static struct pam_conv conv = { NULL, NULL};
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "rc-pipes.h"
 #include "rc-schedules.h"
 #include "_usage.h"
 #include "helpers.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:" \
+const char *getoptstring = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "ionice",       1, NULL, 'I'},
@@ -93,6 +94,8 @@ const struct option longopts[] = {
 	{ "exec",         1, NULL, 'x'},
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
+	{ "stdout-logger",1, NULL, '3'},
+	{ "stderr-logger",1, NULL, '4'},
 	{ "progress",     0, NULL, 'P'},
 	longopts_COMMON
 };
@@ -122,6 +125,8 @@ const char * const longopts_help[] = {
 	"Binary to start/stop",
 	"Redirect stdout to file",
 	"Redirect stderr to file",
+	"Redirect stdout to process",
+	"Redirect stderr to process",
 	"Print dots each second while waiting",
 	longopts_help_COMMON
 };
@@ -276,6 +281,8 @@ int main(int argc, char **argv)
 	int tid = 0;
 	char *redirect_stderr = NULL;
 	char *redirect_stdout = NULL;
+	char *stderr_process = NULL;
+	char *stdout_process = NULL;
 	int stdin_fd;
 	int stdout_fd;
 	int stderr_fd;
@@ -500,6 +507,14 @@ int main(int argc, char **argv)
 			redirect_stderr = optarg;
 			break;
 
+		case '3':   /* --stdout-logger "command to run for stdout logging" */
+			stdout_process = optarg;
+			break;
+
+		case '4':  /* --stderr-logger "command to run for stderr logging" */
+			stderr_process = optarg;
+			break;
+
 		case_RC_COMMON_GETOPT
 		}
 
@@ -551,6 +566,9 @@ int main(int argc, char **argv)
 		if (redirect_stdout || redirect_stderr)
 			eerrorx("%s: --stdout and --stderr are only relevant"
 			    " with --start", applet);
+		if (stdout_process || stderr_process)
+			eerrorx("%s: --stdout-logger and --stderr-logger are only relevant"
+			    " with --start", applet);
 		if (start_wait)
 			ewarn("using --wait with --stop has no effect,"
 			    " use --retry instead");
@@ -563,6 +581,15 @@ int main(int argc, char **argv)
 		if ((redirect_stdout || redirect_stderr) && !background)
 			eerrorx("%s: --stdout and --stderr are only relevant"
 			    " with --background", applet);
+		if ((stdout_process || stderr_process) && !background)
+			eerrorx("%s: --stdout-logger and --stderr-logger are only relevant"
+			    " with --background", applet);
+		if (redirect_stdout && stdout_process)
+			eerrorx("%s: do not use --stdout and --stdout-logger together",
+					applet);
+		if (redirect_stderr && stderr_process)
+			eerrorx("%s: do not use --stderr and --stderr-logger together",
+					applet);
 	}
 
 	/* Expand ~ */
@@ -603,7 +630,6 @@ int main(int argc, char **argv)
 		    *exec_file ? exec_file : exec);
 		free(exec_file);
 		exit(EXIT_FAILURE);
-
 	}
 	if (start && retry)
 		ewarn("using --retry with --start has no effect,"
@@ -886,6 +912,12 @@ int main(int argc, char **argv)
 				eerrorx("%s: unable to open the logfile"
 				    " for stdout `%s': %s",
 				    applet, redirect_stdout, strerror(errno));
+		}else if (stdout_process) {
+			stdout_fd = rc_pipe_command(stdout_process);
+			if (stdout_fd == -1)
+				eerrorx("%s: unable to open the logging process"
+				    " for stdout `%s': %s",
+				    applet, stdout_process, strerror(errno));
 		}
 		if (redirect_stderr) {
 			if ((stderr_fd = open(redirect_stderr,
@@ -894,13 +926,21 @@ int main(int argc, char **argv)
 				eerrorx("%s: unable to open the logfile"
 				    " for stderr `%s': %s",
 				    applet, redirect_stderr, strerror(errno));
+		}else if (stderr_process) {
+			stderr_fd = rc_pipe_command(stderr_process);
+			if (stderr_fd == -1)
+				eerrorx("%s: unable to open the logging process"
+				    " for stderr `%s': %s",
+				    applet, stderr_process, strerror(errno));
 		}
 
 		if (background)
 			dup2(stdin_fd, STDIN_FILENO);
-		if (background || redirect_stdout || rc_yesno(getenv("EINFO_QUIET")))
+		if (background || redirect_stdout || stdout_process
+				|| rc_yesno(getenv("EINFO_QUIET")))
 			dup2(stdout_fd, STDOUT_FILENO);
-		if (background || redirect_stderr || rc_yesno(getenv("EINFO_QUIET")))
+		if (background || redirect_stderr || stderr_process
+				|| rc_yesno(getenv("EINFO_QUIET")))
 			dup2(stderr_fd, STDERR_FILENO);
 
 		for (i = getdtablesize() - 1; i >= 3; --i)

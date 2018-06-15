@@ -158,7 +158,7 @@ rc-service: rc-service.o _usage.o rc-misc.o
 rc-update: rc-update.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-start-stop-daemon: start-stop-daemon.o _usage.o rc-misc.o rc-schedules.o
+start-stop-daemon: start-stop-daemon.o _usage.o rc-misc.o rc-pipes.o rc-schedules.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 supervise-daemon: supervise-daemon.o _usage.o rc-misc.o rc-schedules.o

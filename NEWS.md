@@ -4,6 +4,15 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.37
+
+start-stop-daemon now supports logging stdout and stderr of daemons to
+processes instead of files. These processes are defined by the
+output_logger and error_logger variables in standard service scripts, or
+by the  -3/--output-logger or -4/--error-logger switches if you use
+start-stop-daemon directly. For more information on this, see the
+start-stop-daemon man page.
+
 ## OpenRC 0.36
 
 In this release, the modules-load service has been combined into the

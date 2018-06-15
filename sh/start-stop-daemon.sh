@@ -47,6 +47,8 @@ ssd_start()
 		${directory:+--chdir} $directory \
 		${output_log+--stdout} $output_log \
 		${error_log+--stderr} $error_log \
+		${output_logger+--stdout-logger} \"$output_logger\" \
+		${error_logger+--stderr-logger} \"$error_logger\" \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $pidfile \
 		${command_user+--user} $command_user \

@@ -173,6 +173,23 @@ variable is set.
 The same thing as
 .Pa output_log
 but for the standard error output.
+.It Ar output_logger
+This is a process which will be used to log the standard output from the
+service.  If you are starting this service with
+.Xr start-stop-daemon 8 ,
+,  you must set
+.Pa command_background
+to true. Keep in mind that this command must be executable as a shell
+command inside the chroot if the
+.Pa chroot
+variable is set. Keep in mind also that this command works by accepting
+the stdout of the service on stdin.
+An example of a command that can be run this way is logger if you want
+your service output to go to syslog.
+.It Ar error_logger
+The same thing as
+.Pa output_logger
+but for the standard error output.
 .It Ar directory
 .Xr start-stop-daemon 8
 and

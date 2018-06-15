@@ -131,9 +131,34 @@ Modifies the scheduling priority of the daemon.
 .It Fl 1 , -stdout Ar logfile
 Redirect the standard output of the process to logfile when started with
 .Fl background .
-Must be an absolute pathname, but relative to the path optionally given with
+The logfile Must be an absolute pathname, but relative to the path
+optionally given with
 .Fl r , -chroot .
 The logfile can also be a named pipe.
+.It Fl 2 , -stderr Ar logfile
+Redirect the standard error of the process to logfile when started with
+.Fl background .
+The logfile must be an absolute pathname, but relative to the path
+optionally given with
+.Fl r , -chroot .
+The logfile can also be a named pipe.
+.It Fl 3 , -stdout-logger Ar cmd
+Run cmd as a child process redirecting the standard output to the
+standard input of cmd when started with
+.Fl background .
+Cmd must be an absolute pathname, but relative to the path optionally given with
+.Fl r , -chroot .
+This process must be prepared to accept input on stdin and be able to
+log it or send it to another location.
+.It Fl 4 , -stderr-logger Ar cmd
+Run cmd as a child process and 
+Redirect the standard error of the process to the standard input of cmd
+when started with
+.Fl background .
+Cmd must be an absolute pathname, but relative to the path optionally given with
+.Fl r , -chroot .
+This process must be prepared to accept input on stdin and be able to
+log it or send it to another location.
 .It Fl w , -wait Ar milliseconds
 Wait
 .Ar milliseconds
