@@ -1,3 +1,45 @@
+commit e6d01471fe2a8eb8a15bb906d7c91c11805d1bef
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: add ability to log stdout or stderr to processes
+
+commit d4501a9f06c807f87be04f128e535a74b370fdb4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix a typo
+
+commit ec8abea4605395a2a59b26906ce4677a578e3c60
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add helper to spawn process with stdin connected to a pipe
+
+commit e4ddfa38e0e0318abf442b7aa07e0d8206191dd7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    user-guide.md: small cleanups
+
+commit 21d30bc6d9caca31d007631717a480a552b89701
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    service-script-guide.md: small cleanups
+
+commit 2a1ff6e49c6603bb81eec3cafe2c587fa734289f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.37
+
+commit 6762cb875c9c039b79dcc447b9d0eb65356a7708
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 6edf516a1fe0ad4f4e8738f9fdd1bf0bc7718361
 Author: Austin English <austinenglish@gmail.com>
 Commit: Doug Freed <dwfreed@mtu.edu>
@@ -1589,140 +1631,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     man: fix missing .Pp warnings
     
     This fixes #151.
-
-commit f87a9eec3d23ea01578500972f1df993d5d24fba
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/sysfs: mount efivars read only
-    
-    This fixes #134.
-
-commit 1e837d596e483ceb5cec177a6c7faff24a42384b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix argument parsing for the sysvinit shutdown wrapper
-    
-    This fixes #140.
-
-commit dcc686e42b406d63d52ef75de9a326f67d0a06c9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    scripts/shutdown: fix arguments to be sysvinit shutdown compatible
-    
-    This fixes #140.
-
-commit 2f81c100afdf45ebf787dfc5d3261aa6055640e4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix link to shutdown for MKSYSVINIT=yes
-
-commit a511a48d77b1dcb8a3fb0dd1abddb750a152869b
-Author: Nuno Silva <nuno.m.ribeiro.silva@tecnico.ulisboa.pt>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/hostname: fix default parameter syntax
-    
-    The syntax for expanding a variable with a default value is
-            ${parameter:-word}
-    not
-            ${parameter-word}
-    although the latter still works for a reason I could not explain.
-    
-    This fixes #143.
-
-commit 1e5322e5c55ec744a2cdcc3342ef6547eab7c46f
-Author: Nuno Silva <nuno.m.ribeiro.silva@tecnico.ulisboa.pt>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/hostname: fix indentation
-    
-    This is for #143.
-
-commit 199a210d2fbc524c9c400a06f832dabffd7ed1b3
-Author: udeved <artoo@manjaro.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    scripts/Makefile: make symlinks absolute instead of relative
-    
-    This closes #142.
-
-commit 5b7667af32effddf867a5d021c66d43f0645d374
-Author: udeved <artoo@manjaro.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    scripts/Makefile: respect SBINDIR with MKSYSVINIT
-    
-    This is for #142.
-
-commit 11243f85b67e5f450ddf50346ffd4a1b2c6faeb5
-Author: Jory A. Pratt <anarchy@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    kill_all: include limits.h for PATH_MAX
-
-commit 3c40826d3466cdda1a46abcd5c86b661b8185f46
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.28
-
-commit 560d874d2fee63bf7ca11f17cf9933021b639a1d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix compile issue for musl
-
-commit e84366fd232a41c3ba79ed351e93c74cef8d7c8d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit caacedc0a82285fb2d25c6d3473f154044c7ad66
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: update openrc-shutdown man page
-    
-    Add the new wtmp options and fix some cross references.
-
-commit 84d140a1f6abf95a4170d13527152d3ab14e6613
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    scripts/shutdown: pass --single to openrc-shutdown
-    
-    Sysvinit shutdown has a default of single user mode, but openrc-shutdown
-    makes you choose a default action. Because of this, the shutdown wrapper
-    needs to pass --single to openrc-shutdown.
-
-commit ee886c44824b1dd892eaff2c6da666286e61bc73
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-shutdown: add --single option and clean up option processing
-
-commit 1801561c2d36c330df7fd02c7508f503a61ff5ba
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/bootmisc: use openrc-shutdown instead of halt to write halt record
-    
-    This fixes #139 and fixes #128.
-    and fixes #124.
-
-commit 7689106aa10f7852b707b4c21ec080ccb2767280
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add support for writing reboot and shutdown records to wtmp
-
-commit 1564e155b726308200ecd5df315c002bd8b16952
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-init: add optional sysvinit compatibility
