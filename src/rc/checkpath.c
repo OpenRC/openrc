@@ -269,11 +269,13 @@ int main(int argc, char **argv)
 		switch (opt) {
 		case 'D':
 			trunc = true;
+			/* falls through */
 		case 'd':
 			type = inode_dir;
 			break;
 		case 'F':
 			trunc = true;
+			/* falls through */
 		case 'f':
 			type = inode_file;
 			break;
