@@ -37,21 +37,20 @@ int rc_pipe_command(char *cmd)
 		return -1;
 
 	pid = fork();
-	if (pid < 0)
-		return -1;
-	else if (pid > 0) {
+	if (pid > 0) {
 		/* parent */
-		close(pfd[0]);
+		close(pfd[pipe_read_end]);
 		return pfd[pipe_write_end];
 	} else if (pid == 0) {
 		/* child */
 		close(pfd[pipe_write_end]);
-		if (pfd[0] != STDIN_FILENO) {
-			if (dup2(pfd[0], STDIN_FILENO) < 0)
+		if (pfd[pipe_read_end] != STDIN_FILENO) {
+			if (dup2(pfd[pipe_read_end], STDIN_FILENO) < 0)
 				exit(1);
-			close(pfd[0]);
+			close(pfd[pipe_read_end]);
 		}
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
 		exit(1);
 	}
+	return -1;
 }
