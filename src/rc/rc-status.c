@@ -126,7 +126,7 @@ static char *get_uptime(const char *service)
 static void
 print_service(const char *service)
 {
-	char status[60];
+	char *status = NULL;
 	char *uptime = NULL;
 	char *child_pid = NULL;
 	char *start_time = NULL;
@@ -136,12 +136,12 @@ print_service(const char *service)
 	ECOLOR color = ECOLOR_BAD;
 
 	if (state & RC_SERVICE_STOPPING)
-		snprintf(status, sizeof(status), "stopping ");
+		xasprintf(&status, "stopping ");
 	else if (state & RC_SERVICE_STARTING) {
-		snprintf(status, sizeof(status), "starting ");
+		xasprintf(&status, "starting ");
 		color = ECOLOR_WARN;
 	} else if (state & RC_SERVICE_INACTIVE) {
-		snprintf(status, sizeof(status), "inactive ");
+		xasprintf(&status, "inactive ");
 		color = ECOLOR_WARN;
 	} else if (state & RC_SERVICE_STARTED) {
 		errno = 0;
@@ -150,30 +150,31 @@ print_service(const char *service)
 			child_pid = rc_service_value_get(service, "child_pid");
 			start_time = rc_service_value_get(service, "start_time");
 			if (start_time && child_pid)
-				snprintf(status, sizeof(status), " unsupervised ");
+				xasprintf(&status, " unsupervised ");
 			else
-				snprintf(status, sizeof(status), " crashed ");
+				xasprintf(&status, " crashed ");
 			free(child_pid);
 			free(start_time);
 		} else {
 			uptime = get_uptime(service);
 			if (uptime) {
-				snprintf(status, sizeof(status), " started %s", uptime);
+				xasprintf(&status, " started %s", uptime);
 				free(uptime);
 			} else
-				snprintf(status, sizeof(status), " started ");
+				xasprintf(&status, " started ");
 			color = ECOLOR_GOOD;
 		}
 	} else if (state & RC_SERVICE_SCHEDULED) {
-		snprintf(status, sizeof(status), "scheduled");
+		xasprintf(&status, "scheduled");
 		color = ECOLOR_WARN;
 	} else
-		snprintf(status, sizeof(status), " stopped ");
+		xasprintf(&status, " stopped ");
 
 	errno = 0;
 	if (c && *c && isatty(fileno(stdout)))
 		printf("\n");
 	ebracket(cols, color, status);
+	free(status);
 }
 
 static void
