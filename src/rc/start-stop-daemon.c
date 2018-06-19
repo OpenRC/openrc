@@ -167,20 +167,20 @@ handle_signal(int sig)
 {
 	int status;
 	int serrno = errno;
-	char signame[10] = { '\0' };
+	char *signame = NULL;
 
 	switch (sig) {
 	case SIGINT:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGINT");
+		if (!signame)
+			xasprintf(&signame, "SIGINT");
 		/* FALLTHROUGH */
 	case SIGTERM:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGTERM");
+		if (!signame)
+			xasprintf(&signame, "SIGTERM");
 		/* FALLTHROUGH */
 	case SIGQUIT:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGQUIT");
+		if (!signame)
+			xasprintf(&signame, "SIGQUIT");
 		eerrorx("%s: caught %s, aborting", applet, signame);
 		/* NOTREACHED */
 
@@ -199,6 +199,9 @@ handle_signal(int sig)
 		eerror("%s: caught unknown signal %d", applet, sig);
 	}
 
+	/* free signame */
+	free(signame);
+
 	/* Restore errno */
 	errno = serrno;
 }
@@ -207,7 +210,6 @@ static char *
 expand_home(const char *home, const char *path)
 {
 	char *opath, *ppath, *p, *nh;
-	size_t len;
 	struct passwd *pw;
 
 	if (!path || *path != '~')
@@ -238,9 +240,7 @@ expand_home(const char *home, const char *path)
 		return xstrdup(home);
 	}
 
-	len = strlen(ppath) + strlen(home) + 1;
-	nh = xmalloc(len);
-	snprintf(nh, len, "%s%s", home, ppath);
+	xasprintf(&nh, "%s%s", home, ppath);
 	free(opath);
 	return nh;
 }
