@@ -883,7 +883,7 @@ eindent(void)
 {
 	char *env = getenv("EINFO_INDENT");
 	int amount = 0;
-	char num[10];
+	char *num;
 
 	if (env) {
 		errno = 0;
@@ -894,8 +894,9 @@ eindent(void)
 	amount += INDENT_WIDTH;
 	if (amount > INDENT_MAX)
 		amount = INDENT_MAX;
-	snprintf(num, 10, "%08d", amount);
+	xasprintf(&num, "%08d", amount);
 	setenv("EINFO_INDENT", num, 1);
+	free(num);
 }
 hidden_def(eindent)
 
