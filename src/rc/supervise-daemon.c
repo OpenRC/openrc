@@ -186,7 +186,6 @@ static void handle_signal(int sig)
 static char * expand_home(const char *home, const char *path)
 {
 	char *opath, *ppath, *p, *nh;
-	size_t len;
 	struct passwd *pw;
 
 	if (!path || *path != '~')
@@ -217,9 +216,7 @@ static char * expand_home(const char *home, const char *path)
 		return xstrdup(home);
 	}
 
-	len = strlen(ppath) + strlen(home) + 1;
-	nh = xmalloc(len);
-	snprintf(nh, len, "%s%s", home, ppath);
+	xasprintf(&nh, "%s%s", home, ppath);
 	free(opath);
 	return nh;
 }
