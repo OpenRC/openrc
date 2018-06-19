@@ -386,6 +386,7 @@ int main(int argc, char **argv)
 		case 'c':  /* --chuid <username>|<uid> */
 			/* DEPRECATED */
 			ewarn("WARNING: -c/--chuid is deprecated and will be removed in the future, please use -u/--user instead");
+			/* falls through */
 		case 'u':  /* --user <username>|<uid> */
 		{
 			p = optarg;
