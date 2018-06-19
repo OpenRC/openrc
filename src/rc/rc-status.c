@@ -75,7 +75,7 @@ print_level(const char *prefix, const char *level)
 		printf("%s\n", level);
 }
 
-static void get_uptime(const char *service, char *uptime, int uptime_size)
+static char *get_uptime(const char *service)
 {
 	RC_SERVICE state = rc_service_state(service);
 	char *start_count;
@@ -87,8 +87,8 @@ static void get_uptime(const char *service, char *uptime, int uptime_size)
 	time_t diff_hours = (time_t) 0;
 	time_t diff_mins = (time_t) 0;
 	time_t diff_secs = (time_t) 0;
+	char *uptime;
 
-	uptime[0] = '\0';
 	if (state & RC_SERVICE_STARTED) {
 		start_count = rc_service_value_get(service, "start_count");
 		start_time_string = rc_service_value_get(service, "start_time");
@@ -110,23 +110,24 @@ static void get_uptime(const char *service, char *uptime, int uptime_size)
 				diff_secs %= diff_mins * (time_t) 60;
 			}
 			if (diff_days > 0)
-				snprintf(uptime, uptime_size,
+				xasprintf(&uptime,
 						"%ld day(s) %02ld:%02ld:%02ld (%s)",
 						diff_days, diff_hours, diff_mins, diff_secs,
 						start_count);
 			else
-				snprintf(uptime, uptime_size,
+				xasprintf(&uptime,
 						"%02ld:%02ld:%02ld (%s)",
 						diff_hours, diff_mins, diff_secs, start_count);
 		}
 	}
+	return uptime;
 }
 
 static void
 print_service(const char *service)
 {
 	char status[60];
-	char uptime [40];
+	char *uptime = NULL;
 	char *child_pid = NULL;
 	char *start_time = NULL;
 	int cols =  printf(" %s", service);
@@ -155,8 +156,12 @@ print_service(const char *service)
 			free(child_pid);
 			free(start_time);
 		} else {
-			get_uptime(service, uptime, 40);
-			snprintf(status, sizeof(status), " started %s", uptime);
+			uptime = get_uptime(service);
+			if (uptime) {
+				snprintf(status, sizeof(status), " started %s", uptime);
+				free(uptime);
+			} else
+				snprintf(status, sizeof(status), " started ");
 			color = ECOLOR_GOOD;
 		}
 	} else if (state & RC_SERVICE_SCHEDULED) {
