@@ -904,7 +904,7 @@ void eoutdent(void)
 {
 	char *env = getenv("EINFO_INDENT");
 	int amount = 0;
-	char num[10];
+	char *num = NULL;
 	int serrno = errno;
 
 	if (!env)
@@ -918,8 +918,9 @@ void eoutdent(void)
 	if (amount <= 0)
 		unsetenv("EINFO_INDENT");
 	else {
-		snprintf(num, 10, "%08d", amount);
+		xasprintf(&num, "%08d", amount);
 		setenv("EINFO_INDENT", num, 1);
+		free(num);
 	}
 	errno = serrno;
 }
