@@ -101,7 +101,6 @@ clean_failed(void)
 {
 	DIR *dp;
 	struct dirent *d;
-	size_t l;
 	char *path;
 
 	/* Clean the failed services state dir now */
@@ -112,16 +111,11 @@ clean_failed(void)
 				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
-			l = strlen(RC_SVCDIR "/failed/") +
-			    strlen(d->d_name) + 1;
-			path = xmalloc(sizeof(char) * l);
-			snprintf(path, l, RC_SVCDIR "/failed/%s", d->d_name);
-			if (path) {
-				if (unlink(path))
-					eerror("%s: unlink `%s': %s",
-					    applet, path, strerror(errno));
-				free(path);
-			}
+			xasprintf(&path, RC_SVCDIR "/failed/%s", d->d_name);
+			if (unlink(path))
+				eerror("%s: unlink `%s': %s",
+				    applet, path, strerror(errno));
+			free(path);
 		}
 		closedir(dp);
 	}
@@ -391,7 +385,7 @@ static void
 handle_signal(int sig)
 {
 	int serrno = errno;
-	char signame[10] = { '\0' };
+	char *signame = NULL;
 	pid_t pid;
 	RC_PID *pi;
 	int status = 0;
@@ -422,16 +416,16 @@ handle_signal(int sig)
 		break;
 
 	case SIGINT:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGINT");
+		if (!signame)
+			xasprintf(&signame, "SIGINT");
 		/* FALLTHROUGH */
 	case SIGTERM:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGTERM");
+		if (!signame)
+			xasprintf(&signame, "SIGTERM");
 		/* FALLTHROUGH */
 	case SIGQUIT:
-		if (!signame[0])
-			snprintf(signame, sizeof(signame), "SIGQUIT");
+		if (!signame)
+			xasprintf(&signame, "SIGQUIT");
 		eerrorx("%s: caught %s, aborting", applet, signame);
 		/* NOTREACHED */
 	case SIGUSR1:
@@ -512,14 +506,11 @@ runlevel_config(const char *service, const char *level)
 {
 	char *init = rc_service_resolve(service);
 	char *conf, *dir;
-	size_t l;
 	bool retval;
 
 	dir = dirname(init);
 	dir = dirname(init);
-	l = strlen(dir) + strlen(level) + strlen(service) + 10;
-	conf = xmalloc(sizeof(char) * l);
-	snprintf(conf, l, "%s/conf.d/%s.%s", dir, service, level);
+	xasprintf(&conf, "%s/conf.d/%s.%s", dir, service, level);
 	retval = exists(conf);
 	free(conf);
 	free(init);
@@ -744,7 +735,7 @@ int main(int argc, char **argv)
 	bool going_down = false;
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	char *krunlevel = NULL;
-	char pidstr[10];
+	char *pidstr = NULL;
 	int opt;
 	bool parallel;
 	int regen = 0;
@@ -844,8 +835,9 @@ int main(int argc, char **argv)
 	setenv("EINFO_LOG", "openrc", 1);
 
 	/* Export our PID */
-	snprintf(pidstr, sizeof(pidstr), "%d", getpid());
+	xasprintf(&pidstr, "%d", getpid());
 	setenv("RC_PID", pidstr, 1);
+	free(pidstr);
 
 	/* Create a list of all services which should be started for the new or
 	* current runlevel including those in boot, sysinit and hotplugged
