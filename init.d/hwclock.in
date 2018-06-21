@@ -97,7 +97,6 @@ start()
 		return 0
 	fi
 
-	ebegin "Setting system clock using the hardware clock [$utc]"
 	if [ -e /proc/modules ]; then
 		if ! rtc_exists; then
 			for x in rtc-cmos rtc genrtc; do
@@ -108,6 +107,10 @@ start()
 					"${RC_SERVICE%/*/*}/conf.d/modules or built in."
 		fi
 	fi
+
+	rtc_exists || return 0
+
+	ebegin "Setting system clock using the hardware clock [$utc]"
 
 	# Always set the kernel's time zone.
 	_hwclock --systz $utc_cmd $(get_noadjfile) $clock_args
@@ -138,6 +141,8 @@ stop()
 	setupopts
 
 	[ -z "$utc_cmd" ] && return 0
+
+	rtc_exists || return 0
 
 	ebegin "Setting hardware clock using the system clock" "[$utc]"
 
