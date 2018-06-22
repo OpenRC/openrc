@@ -23,13 +23,13 @@
 static bool
 pid_is_exec(pid_t pid, const char *exec)
 {
-	char buffer[32];
+	char *buffer = NULL;
 	FILE *fp;
 	int c;
 	bool retval = false;
 
 	exec = basename_c(exec);
-	snprintf(buffer, sizeof(buffer), "/proc/%d/stat", pid);
+	xasprintf(&buffer, "/proc/%d/stat", pid);
 	if ((fp = fopen(buffer, "r"))) {
 		while ((c = getc(fp)) != EOF && c != '(')
 			;
@@ -41,23 +41,27 @@ pid_is_exec(pid_t pid, const char *exec)
 		}
 		fclose(fp);
 	}
+	free(buffer);
 	return retval;
 }
 
 static bool
 pid_is_argv(pid_t pid, const char *const *argv)
 {
-	char cmdline[32];
+	char *cmdline = NULL;
 	int fd;
 	char buffer[PATH_MAX];
 	char *p;
 	ssize_t bytes;
 
-	snprintf(cmdline, sizeof(cmdline), "/proc/%u/cmdline", pid);
-	if ((fd = open(cmdline, O_RDONLY)) < 0)
+	xasprintf(&cmdline, "/proc/%u/cmdline", pid);
+	if ((fd = open(cmdline, O_RDONLY)) < 0) {
+		free(cmdline);
 		return false;
+	}
 	bytes = read(fd, buffer, sizeof(buffer));
 	close(fd);
+	free(cmdline);
 	if (bytes == -1)
 		return false;
 
@@ -88,7 +92,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	char proc_ns[30];
 	size_t len = 0;
 	pid_t p;
-	char buffer[PATH_MAX];
+	char *buffer = NULL;
 	struct stat sb;
 	pid_t openrc_pid = 0;
 	char *pp;
@@ -149,18 +153,22 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 			continue;
 		if (pid != 0 && pid != p)
 			continue;
-		snprintf(buffer, sizeof(buffer), "/proc/%d/ns/pid", p);
+		xasprintf(&buffer, "/proc/%d/ns/pid", p);
 		if (exists(buffer)) {
 			rc = readlink(buffer, proc_ns, sizeof(proc_ns));
 			if (rc <= 0)
 				proc_ns[0] = '\0';
 		}
+		free(buffer);
 		if (strlen(my_ns) && strlen (proc_ns) && strcmp(my_ns, proc_ns))
 			continue;
 		if (uid) {
-			snprintf(buffer, sizeof(buffer), "/proc/%d", p);
-			if (stat(buffer, &sb) != 0 || sb.st_uid != uid)
+			xasprintf(&buffer, "/proc/%d", p);
+			if (stat(buffer, &sb) != 0 || sb.st_uid != uid) {
+				free(buffer);
 				continue;
+			}
+			free(buffer);
 		}
 		if (exec && !pid_is_exec(p, exec))
 			continue;
@@ -169,9 +177,10 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 			continue;
 		/* If this is an OpenVZ host, filter out container processes */
 		if (openvz_host) {
-			snprintf(buffer, sizeof(buffer), "/proc/%d/status", p);
+			xasprintf(&buffer, "/proc/%d/status", p);
 			if (exists(buffer)) {
 				fp = fopen(buffer, "r");
+				free(buffer);
 				if (! fp)
 					continue;
 				while (! feof(fp)) {
@@ -315,12 +324,13 @@ _match_daemon(const char *path, const char *file, RC_STRINGLIST *match)
 {
 	char *line = NULL;
 	size_t len = 0;
-	char ffile[PATH_MAX];
+	char *ffile = NULL;
 	FILE *fp;
 	RC_STRING *m;
 
-	snprintf(ffile, sizeof(ffile), "%s/%s", path, file);
+	xasprintf(&ffile, "%s/%s", path, file);
 	fp = fopen(ffile, "r");
+	free(ffile);
 
 	if (!fp)
 		return false;
@@ -346,29 +356,22 @@ _match_list(const char *exec, const char *const *argv, const char *pidfile)
 {
 	RC_STRINGLIST *match = rc_stringlist_new();
 	int i = 0;
-	size_t l;
 	char *m;
 
 	if (exec) {
-		l = strlen(exec) + 6;
-		m = xmalloc(sizeof(char) * l);
-		snprintf(m, l, "exec=%s", exec);
+		xasprintf(&m, "exec=%s", exec);
 		rc_stringlist_add(match, m);
 		free(m);
 	}
 
 	while (argv && argv[i]) {
-		l = strlen(*argv) + strlen("argv_=") + 16;
-		m = xmalloc(sizeof(char) * l);
-		snprintf(m, l, "argv_0=%s", argv[i++]);
+		xasprintf(&m, "argv_0=%s", argv[i++]);
 		rc_stringlist_add(match, m);
 		free(m);
 	}
 
 	if (pidfile) {
-		l = strlen(pidfile) + 9;
-		m = xmalloc(sizeof(char) * l);
-		snprintf(m, l, "pidfile=%s", pidfile);
+		xasprintf(&m, "pidfile=%s", pidfile);
 		rc_stringlist_add(match, m);
 		free(m);
 	}
@@ -381,8 +384,8 @@ rc_service_daemon_set(const char *service, const char *exec,
     const char *const *argv,
     const char *pidfile, bool started)
 {
-	char dirpath[PATH_MAX];
-	char file[PATH_MAX];
+	char *dirpath = NULL;
+	char *file = NULL;
 	int nfiles = 0;
 	char oldfile[PATH_MAX] = { '\0' };
 	bool retval = false;
@@ -397,8 +400,7 @@ rc_service_daemon_set(const char *service, const char *exec,
 		return false;
 	}
 
-	snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
-	    basename_c(service));
+	xasprintf(&dirpath, RC_SVCDIR "/daemons/%s", basename_c(service));
 
 	/* Regardless, erase any existing daemon info */
 	if ((dp = opendir(dirpath))) {
@@ -407,8 +409,7 @@ rc_service_daemon_set(const char *service, const char *exec,
 			if (d->d_name[0] == '.')
 				continue;
 
-			snprintf(file, sizeof(file), "%s/%s",
-			    dirpath, d->d_name);
+			xasprintf(&file, "%s/%s", dirpath, d->d_name);
 			nfiles++;
 
 			if (!*oldfile) {
@@ -429,8 +430,7 @@ rc_service_daemon_set(const char *service, const char *exec,
 	/* Now store our daemon info */
 	if (started) {
 		if (mkdir(dirpath, 0755) == 0 || errno == EEXIST) {
-			snprintf(file, sizeof(file), "%s/%03d",
-			    dirpath, nfiles + 1);
+			xasprintf(&file, "%s/%03d", dirpath, nfiles + 1);
 			if ((fp = fopen(file, "w"))) {
 				fprintf(fp, "exec=");
 				if (exec)
@@ -458,8 +458,8 @@ bool
 rc_service_started_daemon(const char *service,
     const char *exec, const char *const *argv, int indx)
 {
-	char dirpath[PATH_MAX];
-	char file[16];
+	char *dirpath = NULL;
+	char *file = NULL;
 	RC_STRINGLIST *match;
 	bool retval = false;
 	DIR *dp;
@@ -468,13 +468,13 @@ rc_service_started_daemon(const char *service,
 	if (!service || !exec)
 		return false;
 
-	snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
-	    basename_c(service));
+	xasprintf(&dirpath, RC_SVCDIR "/daemons/%s", basename_c(service));
 	match = _match_list(exec, argv, NULL);
 
 	if (indx > 0) {
-		snprintf(file, sizeof(file), "%03d", indx);
+		xasprintf(&file, "%03d", indx);
 		retval = _match_daemon(dirpath, file, match);
+		free(file);
 	} else {
 		if ((dp = opendir(dirpath))) {
 			while ((d = readdir(dp))) {
@@ -489,6 +489,7 @@ rc_service_started_daemon(const char *service,
 	}
 
 	rc_stringlist_free(match);
+	free(dirpath);
 	return retval;
 }
 librc_hidden_def(rc_service_started_daemon)
