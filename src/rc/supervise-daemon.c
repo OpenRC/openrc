@@ -860,10 +860,13 @@ int main(int argc, char **argv)
 		varbuf = NULL;
 		xasprintf(&varbuf, "%i", respawn_delay);
 		rc_service_value_set(svcname, "respawn_delay", varbuf);
+		free(varbuf);
 		xasprintf(&varbuf, "%i", respawn_max);
 		rc_service_value_set(svcname, "respawn_max", varbuf);
+		free(varbuf);
 		xasprintf(&varbuf, "%i", respawn_period);
 		rc_service_value_set(svcname, "respawn_period", varbuf);
+		free(varbuf);
 		child_pid = fork();
 		if (child_pid == -1)
 			eerrorx("%s: fork: %s", applet, strerror(errno));
@@ -891,6 +894,7 @@ int main(int argc, char **argv)
 			}
 			xasprintf(&varbuf, "%d", x);
 				rc_service_value_set(svcname, "argc", varbuf);
+				free(varbuf);
 			rc_service_value_set(svcname, "exec", exec);
 			supervisor(exec, argv);
 		} else
