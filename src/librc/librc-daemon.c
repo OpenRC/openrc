@@ -422,6 +422,7 @@ rc_service_daemon_set(const char *service, const char *exec,
 				rename(file, oldfile);
 				strlcpy(oldfile, file, sizeof(oldfile));
 			}
+			free(file);
 		}
 		closedir(dp);
 		rc_stringlist_free(match);
@@ -446,10 +447,12 @@ rc_service_daemon_set(const char *service, const char *exec,
 				fclose(fp);
 				retval = true;
 			}
+			free(file);
 		}
 	} else
 		retval = true;
 
+	free(dirpath);
 	return retval;
 }
 librc_hidden_def(rc_service_daemon_set)
