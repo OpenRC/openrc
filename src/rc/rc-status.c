@@ -87,7 +87,7 @@ static char *get_uptime(const char *service)
 	time_t diff_hours = (time_t) 0;
 	time_t diff_mins = (time_t) 0;
 	time_t diff_secs = (time_t) 0;
-	char *uptime;
+	char *uptime = NULL;
 
 	if (state & RC_SERVICE_STARTED) {
 		start_count = rc_service_value_get(service, "start_count");
