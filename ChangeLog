@@ -1,3 +1,99 @@
+commit 56ddda54b5aa01474bf563d5a662075c35152858
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon.c: clean up memory leaks
+
+commit 3a803b3135837665d51ef4dd7a8b913c78e71ff6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc-daemon.c: fix memory leaks
+
+commit 72df51e17ba0e1a0f94451b4bbfb338288c4625c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc-daemon: convert most snprintf calls to xasprintf
+
+commit b2f5531194e33c229462e9f52fa1d9388463f7b7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc-misc: convert snprintf calls to xasprintf
+
+commit 19bf49a710f27d4774ed4c6372d87d6ba15f189e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    libeinfo: convert remaining snprintf calls to xasprintf
+
+commit 64354831da2adeba5cb2f91a81fa0f56e1ce4ed9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc: convert snprintf calls to xasprintf
+
+commit e14edd765fdc4ed43356d2eef35fa99228e5d461
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: convert snprintf calls to xasprintf
+
+commit f9d41243d8499c5d7027177d5aa716d5b5859cd6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: convert snprintf calls to xasprintf
+
+commit be7ad06d4a0efce2a1144b2cf6f0cc361f2a81e4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: convert snprintf calls to xasprintf
+
+commit a6165168953b9c7a62c089ce946476b23b73fb12
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: fix gcc 7 warnings
+
+commit 04721ece03b15503aa220f60e7c6159d01ee75e1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    start-stop-daemon: fix gcc 7 warnings
+
+commit c7e8f1133a42152cc293e6b637985f81bcf8b310
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    checkpath: fix gcc 7 warnings
+
+commit 47e4bfae57402eedd017d6098b432c2c411cd374
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix gcc 7 warnings in pipe routines
+
+commit 8a945194afb106428bc700e751078ef9944ee617
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    libeinfo: clean up gcc 7 compiler warnings
+
+commit aa4a004c297ec7a1fb794ad2e53ef3ac8b3f4fd1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.38
+
+commit 9ec5d36bdddf5bb0e96b0c561bc5d013a8a2da2a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit a097933edab9d7221df1831e098415d604437c98
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
