@@ -1,3 +1,23 @@
+commit e36e9a30eb830ea27b467383fa2ae02cd2b0d9d4
+Author: Holger Hoffstätte <holger@applied-asynchrony.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: initialize uptime pointer to prevent memory corruption
+    
+    This fixes #231.
+
+commit 7da99d77b5bbd789cb84be347d8b8d96d21f85c4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.38.1
+
+commit 01c34c28e6d6d7bfecc0f88bdf1fb15e97ab8823
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 56ddda54b5aa01474bf563d5a662075c35152858
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
