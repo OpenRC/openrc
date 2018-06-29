@@ -103,7 +103,7 @@ Linux_modules()
 		x=${x%.*}
 	done
 
-	local list= x= xx= y= args= mpargs= a=
+	local list= x= xx= y= args=
 	for x in $kv_variant_list ; do
 		eval list=\$modules_$(shell_var "$x")
 		[ -n "$list" ] && break
@@ -112,24 +112,13 @@ Linux_modules()
 
 	[ -n "$list" ] && ebegin "Loading kernel modules"
 	for x in $list; do
-		a=${x#*:}
-		if [ "$a" = "$x" ]; then
-			unset mpargs
-		else
-			x=${x%%:*}
-			mpargs="-o $a"
-		fi
-		aa=$(shell_var "$a")
 		xx=$(shell_var "$x")
 		for y in $kv_variant_list ; do
-			eval args=\$module_${aa}_args_$(shell_var "$y")
-			[ -n "${args}" ] && break
 			eval args=\$module_${xx}_args_$(shell_var "$y")
 			[ -n "${args}" ] && break
 		done
-		[ -z "$args" ] && eval args=\$module_${aa}_args
 		[ -z "$args" ] && eval args=\$module_${xx}_args
-		eval modprobe --use-blacklist --verbose "$mpargs" "$x" "$args"
+		eval modprobe --use-blacklist --verbose "$x" "$args"
 	done
 	[ -n "$list" ] && eend
 }

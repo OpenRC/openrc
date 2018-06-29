@@ -8,11 +8,6 @@
 #modules_2="ipv6"
 #modules="ohci1394"
 
-# Linux users can give modules a different name when they load - the new name
-# will also be used to pick arguments below.
-# This is not supported on FreeBSD.
-#modules="dummy:dummy1"
-
 # Linux users can give the modules some arguments if needed, per version
 # if necessary.
 # Again, the most specific versioned variable will take precedence.
