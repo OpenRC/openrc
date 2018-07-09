@@ -1,6 +1,5 @@
 functions.sh
 gendepends.sh
-rc-functions.sh
 openrc-run.sh
 cgroup-release-agent.sh
 init.sh

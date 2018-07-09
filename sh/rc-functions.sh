@@ -2,42 +2,6 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-has_addon()
-{
-	[ -e /@LIB@/rc/addons/"$1".sh -o -e /@LIB@/rcscripts/addons/"$1".sh ]
-}
-
-_addon_warn()
-{
-	eindent
-	ewarn "$RC_SVCNAME uses addon code which is deprecated"
-	ewarn "and may not be available in the future."
-	eoutdent
-}
-
-import_addon()
-{
-	if [ -e /@LIB@/rc/addons/"$1".sh ]; then
-		_addon_warn
-		. /@LIB@/rc/addons/"$1".sh
-	elif [ -e /@LIB@/rcscripts/addons/"$1".sh ]; then
-		_addon_warn
-		. /@LIB@/rcscripts/addons/"$1".sh
-	else
-		return 1
-	fi
-}
-
-start_addon()
-{
-	( import_addon "$1-start" )
-}
-
-stop_addon()
-{
-	( import_addon "$1-stop" )
-}
-
 net_fs_list="afs ceph cifs coda davfs fuse fuse.sshfs gfs glusterfs lustre
 ncpfs nfs nfs4 ocfs2 shfs smbfs"
 is_net_fs()

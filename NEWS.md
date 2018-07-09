@@ -4,6 +4,13 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.39
+
+This version removes the support for addons.
+The only place I know that this was used was Gentoo Baselayout 1.x, so
+it shouldn't affect anyone since baselayout-1 has been dead for a few
+years.
+
 ## OpenRC 0.37
 
 start-stop-daemon now supports logging stdout and stderr of daemons to
