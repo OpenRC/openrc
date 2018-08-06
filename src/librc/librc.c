@@ -850,7 +850,7 @@ rc_service_state(const char *service)
 	}
 
 	if (state & RC_SERVICE_STARTED) {
-		if (rc_service_daemons_crashed(service))
+		if (rc_service_daemons_crashed(service) && errno != EACCES)
 			state |= RC_SERVICE_CRASHED;
 	}
 	if (state & RC_SERVICE_STOPPED) {
