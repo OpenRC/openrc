@@ -1,3 +1,26 @@
+commit ed6804200401861aa0b52f0feccb750aa496d34e
+Author: Zac Medico <zmedico@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: fix EACCES errno false-positive crash
+    
+    Use errno != EACCES to fix false-positive for non-root users
+    with grsecurity kernels.
+    
+    Fixes: 37e29442721a ("librc: Add check for crashed state")
+
+commit 7850e12071891321f6564979e4e574eb775bf102
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.38.2
+
+commit 11d3a8beadc4561e6b5d8f7fd86af39e4caf9d4f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit e36e9a30eb830ea27b467383fa2ae02cd2b0d9d4
 Author: Holger Hoffstätte <holger@applied-asynchrony.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1648,114 +1671,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     This is needed to allow the service script author to set a default for
     rc_ulimit inside the service script.
-
-commit c2d256bafb9d1dfafbfd0846c035c5d26f7449c8
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc-run.8: document fstabinfo and mountinfo
-    
-    X-Gentoo-Bug: 592374
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=592374
-
-commit f48d9c33a5c708c871d6657a39485d1c0c735548
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc-run.8: document _pre and _post functions
-    
-    Fixes https://github.com/openrc/openrc/issues/155.
-
-commit 6d4e8433974fd8567885635ae0454031290f96b1
-Author: Jason Graham <jgraha8@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix ENT macro usage
-    
-    X-Gentoo-Bug: 624796
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=624796
-
-commit 0513cd3964a9564e0ba39b50aa8ebd3d7e9a3920
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.29
-
-commit 72bb2e57de935ab46ad000f97a5720265bed9342
-Author: John R. Graham <john_r_graham@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Typo fix
-    
-    X-Gentoo-Bug: 624908
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=624908
-
-commit 84c5da30695db89d686d3c28c7cacdf172cbf429
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit b35099cb707e333b6b8d30d956ffa93bcd2da0ab
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add comment about overriding the default efivars mount in fstab to news
-
-commit 3fd3bfc76dccc3752f4af949ad4076dab26357fb
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add link to efivars issue to news file
-
-commit 492a6303cb8314263bfd3631e3b0de5a9df178da
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit e7807b3136d8993805082320784460f5059e6275
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix sysvinit compatibility for shutdown wrapper
-
-commit 03a461ac0ee34b7900868cdea624c6fd868b1656
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix sysvinit compatibility for reboot wrapper
-
-commit 7e0f76e0adc545c74a8332a6ef0811d2aa62cb81
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix sysvinit compatibility for poweroff wrapper
-
-commit 9812ce5b8dc22fe36cc7bf75cf6e62db204ece3d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix halt wrapper so it is sysvinit compatible
-    
-    This makes the halt wrapper sysvinit compatible. It ignores several
-    command line switches which are not currently implemented; however,
-    those can be implemented if we need to do so.
-    
-    This fixes https://github.com/openrc/openrc/issues/146.
-
-commit 12f75e4167f84a9a85f69924ebdb28ad36c085cb
-Author: Adam Borowski <kilobyte@angband.pl>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: fix an unclosed .Bl/.El warning
-    
-    This fixes #151.
-
-commit 260368e0103e95625c29760f2c2ec89143e5a233
-Author: Adam Borowski <kilobyte@angband.pl>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: fix missing .Pp warnings
-    
-    This fixes #151.
