@@ -11,6 +11,13 @@ The only place I know that this was used was Gentoo Baselayout 1.x, so
 it shouldn't affect anyone since baselayout-1 has been dead for a few
 years.
 
+Since all supported Linux kernel versions now make efivarfs immutable
+and all of the tools that access efivarfs are aware of this, we no
+longer mount efivarfs read-only. See the following github issue for more
+information:
+
+https://github.com/openrc/openrc/issues/238
+
 ## OpenRC 0.37
 
 start-stop-daemon now supports logging stdout and stderr of daemons to
