@@ -982,6 +982,9 @@ int main(int argc, char **argv)
 		tty_fd = open("/dev/tty", O_RDWR);
 #endif
 		devnull_fd = open("/dev/null", O_RDWR);
+		dup2(devnull_fd, STDIN_FILENO);
+		dup2(devnull_fd, STDOUT_FILENO);
+		dup2(devnull_fd, STDERR_FILENO);
 		child_pid = fork();
 		if (child_pid == -1)
 			eerrorx("%s: fork: %s", applet, strerror(errno));
