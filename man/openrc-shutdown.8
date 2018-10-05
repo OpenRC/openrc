@@ -16,6 +16,7 @@
 .Nd bring the system down
 .Sh SYNOPSIS
 .Nm
+.Op Fl c , -cancel
 .Op Fl d , -no-write
 .Op Fl D , -dry-run
 .Op Fl H , -halt
@@ -32,6 +33,8 @@ is the utility that communicates with
 to bring down the system or instruct openrc-init to re-execute itself.
 It supports the following options:
 .Bl -tag -width "poweroff"
+.It Fl c , -cancel
+Cancel a pending shutdown.
 .It Fl d , -no-write
 Do not write the wtmp boot record.
 .It Fl D , -dry-run
