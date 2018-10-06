@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -96,12 +97,15 @@ static void handle_reexec(char *my_name)
 static void handle_shutdown(const char *runlevel, int cmd)
 {
 	pid_t pid;
+	struct timespec ts;
 
 	pid = do_openrc(runlevel);
 	while (waitpid(pid, NULL, 0) != pid);
 	printf("Sending the final term signal\n");
 	kill(-1, SIGTERM);
-	sleep(3);
+	ts.tv_sec = 3;
+	ts.tv_nsec = 0;
+	nanosleep(&ts, NULL);
 	printf("Sending the final kill signal\n");
 	kill(-1, SIGKILL);
 	sync();
