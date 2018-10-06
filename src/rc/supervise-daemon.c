@@ -425,6 +425,7 @@ static void supervisor(char *exec, char **argv)
 	FILE *fp;
 	int i;
 	int nkilled;
+	struct timespec ts;
 	time_t respawn_now= 0;
 	time_t first_spawn= 0;
 
@@ -497,7 +498,9 @@ static void supervisor(char *exec, char **argv)
 			if (nkilled > 0)
 				syslog(LOG_INFO, "killed %d processes", nkilled);
 		} else {
-			sleep(respawn_delay);
+			ts.tv_sec = respawn_delay;
+			ts.tv_nsec = 0;
+			nanosleep(&ts, NULL);
 			if (respawn_max > 0 && respawn_period > 0) {
 				respawn_now = time(NULL);
 				if (first_spawn == 0)
