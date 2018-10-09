@@ -351,8 +351,9 @@ int run_stop_schedule(const char *applet,
 
 			tkilled += nkilled;
 			break;
+		case SC_FOREVER:
 		case SC_TIMEOUT:
-			if (item->value < 1) {
+			if (item->type == SC_TIMEOUT && item->value < 1) {
 				item = NULL;
 				break;
 			}
@@ -360,7 +361,7 @@ int run_stop_schedule(const char *applet,
 			ts.tv_sec = 0;
 			ts.tv_nsec = POLL_INTERVAL;
 
-			for (nsecs = 0; nsecs < item->value; nsecs++) {
+			for (nsecs = 0; item->type == SC_FOREVER || nsecs < item->value; nsecs++) {
 				for (nloops = 0;
 				     nloops < ONE_SECOND / POLL_INTERVAL;
 				     nloops++)
