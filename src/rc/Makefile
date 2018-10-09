@@ -161,7 +161,7 @@ rc-update: rc-update.o _usage.o rc-misc.o
 start-stop-daemon: start-stop-daemon.o _usage.o rc-misc.o rc-pipes.o rc-schedules.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-supervise-daemon: supervise-daemon.o _usage.o rc-misc.o rc-schedules.o
+supervise-daemon: supervise-daemon.o _usage.o rc-misc.o rc-plugin.o rc-schedules.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 service_get_value service_set_value get_options save_options: do_value.o rc-misc.o

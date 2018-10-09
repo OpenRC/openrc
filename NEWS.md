@@ -22,6 +22,10 @@ This version adds timed shutdown and cancelation of shutdown to
 openrc-shutdown. Shutdowns can now be delayed for a certain amount of
 time or scheduled for an exact time.
 
+supervise-daemon supports health checks, which are a periodic way to make sure a
+service is healthy. For more information on setting this up, please see
+supervise-daemon-guide.md.
+
 ## OpenRC 0.37
 
 start-stop-daemon now supports logging stdout and stderr of daemons to

@@ -22,6 +22,28 @@ The following is a brief guide on using this capability.
   instructs it not to fork to the command_args_foreground variable shown
   below.
 
+# Health Checks
+
+Health checks are a way to make sure a service monitored by
+supervise-daemon stays healthy. To configure a health check for a
+service, you need to write a healthcheck() function, and optionally an
+unhealthy() function in the service script. Also, you will need to set
+the healthcheck_timer and optionally healthcheck_delay variables.
+
+## healthcheck() function
+
+The healthcheck() function is run repeatedly based on the settings of
+the healthcheck_* variables. This function should return zero if the
+service is currently healthy or non-zero otherwise.
+
+## unhealthy() function
+
+If the healthcheck() function returns non-zero, the unhealthy() function
+is run, then the service is restarted. Since the service will be
+restarted by the supervisor, the unhealthy function should not try to
+restart it; the purpose of the function is to allow any cleanup tasks
+other than restarting the service to be run.
+
 # Variable Settings
 
 The most important setting is the supervisor variable. At the top of
@@ -51,6 +73,20 @@ command_args_foreground="arguments"
 This 	should be used if the daemon you want to monitor
 forks and goes to the background by default. This should be set to the
 command line option that instructs the daemon to stay in the foreground.
+
+``` sh
+healthcheck_delay=seconds
+```
+
+This is the delay, in seconds, before the first health check is run.
+If it is not set, we use the value of healthcheck_timer.
+
+``` sh
+healthcheck_timer=seconds
+```
+
+This is the  number of seconds between health checks. If it is not set,
+no health checks will be run.
 
 ``` sh
 respawn_delay

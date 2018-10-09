@@ -61,15 +61,18 @@ static struct pam_conv conv = { NULL, NULL};
 #include "queue.h"
 #include "rc.h"
 #include "rc-misc.h"
+#include "rc-plugin.h"
 #include "rc-schedules.h"
 #include "_usage.h"
 #include "helpers.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "D:d:e:g:I:Kk:m:N:p:R:r:Su:1:2:3" \
+const char *getoptstring = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:Su:1:2:3" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
+	{ "healthcheck-timer",        1, NULL, 'a'},
+	{ "healthcheck-delay",        1, NULL, 'A'},
 	{ "respawn-delay",        1, NULL, 'D'},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
@@ -91,6 +94,8 @@ const struct option longopts[] = {
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
+	"set an initial health check delay",
+	"set a health check timer",
 	"Set a respawn delay",
 	"Change the PWD",
 	"Set an environment string",
@@ -113,6 +118,9 @@ const char * const longopts_help[] = {
 };
 const char *usagestring = NULL;
 
+static int healthcheckdelay = 0;
+static int healthchecktimer = 0;
+static volatile sig_atomic_t do_healthcheck = 0;
 static int nicelevel = 0;
 static int ionicec = -1;
 static int ioniced = 0;
@@ -181,6 +189,12 @@ static void handle_signal(int sig)
 	errno = serrno;
 	if (! exiting)
 		re_exec_supervisor();
+}
+
+static void healthcheck(int sig)
+{
+	if (sig == SIGALRM)
+		do_healthcheck = 1;
 }
 
 static char * expand_home(const char *home, const char *path)
@@ -423,11 +437,14 @@ static void child_process(char *exec, char **argv)
 static void supervisor(char *exec, char **argv)
 {
 	FILE *fp;
+	pid_t wait_pid;
 	int i;
 	int nkilled;
 	struct timespec ts;
 	time_t respawn_now= 0;
 	time_t first_spawn= 0;
+	pid_t health_pid;
+	int health_status;
 
 #ifndef RC_DEBUG
 	signal_setup_restart(SIGHUP, handle_signal);
@@ -488,46 +505,88 @@ static void supervisor(char *exec, char **argv)
 	 * Supervisor main loop
 	 */
 	i = 0;
+	if (healthcheckdelay) {
+		signal_setup(SIGALRM, healthcheck);
+		alarm(healthcheckdelay);
+	} else if (healthchecktimer) {
+		signal_setup(SIGALRM, healthcheck);
+		alarm(healthchecktimer);
+	}
 	while (!exiting) {
-		wait(&i);
-		if (exiting) {
-			signal_setup(SIGCHLD, SIG_IGN);
-			syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
-			nkilled = run_stop_schedule(applet, exec, NULL, child_pid, 0,
-					false, false, true);
-			if (nkilled > 0)
-				syslog(LOG_INFO, "killed %d processes", nkilled);
-		} else {
-			ts.tv_sec = respawn_delay;
-			ts.tv_nsec = 0;
-			nanosleep(&ts, NULL);
-			if (respawn_max > 0 && respawn_period > 0) {
-				respawn_now = time(NULL);
-				if (first_spawn == 0)
-					first_spawn = respawn_now;
-				if (respawn_now - first_spawn > respawn_period) {
-					respawn_count = 0;
-					first_spawn = 0;
-				} else
-					respawn_count++;
-				if (respawn_count > respawn_max) {
-					syslog(LOG_WARNING,
-							"respawned \"%s\" too many times, exiting", exec);
-					exiting = true;
+		wait_pid = wait(&i);
+		if (wait_pid == -1) {
+			if (do_healthcheck) {
+				do_healthcheck = 0;
+				alarm(0);
+				syslog(LOG_DEBUG, "running health check for %s", svcname);
+				health_pid = exec_service(svcname, "healthcheck");
+				health_status = rc_waitpid(health_pid);
+				if (WIFEXITED(health_status) && !WEXITSTATUS(health_status)) {
+					alarm(healthchecktimer);
 					continue;
+				} else {
+					syslog(LOG_WARNING, "health check for %s failed", svcname);
+					health_pid = exec_service(svcname, "unhealthy");
+					rc_waitpid(health_pid);
+					syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
+					nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
+							false, false, true);
+					if (nkilled > 0)
+						syslog(LOG_INFO, "killed %d processes", nkilled);
+					else if (errno != 0)
+						syslog(LOG_INFO, "Unable to kill %d: %s",
+								child_pid, strerror(errno));
 				}
+			} else if (exiting ) {
+				alarm(0);
+				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
+				nkilled = run_stop_schedule(applet, exec, NULL, child_pid, 0,
+						false, false, true);
+				if (nkilled > 0)
+					syslog(LOG_INFO, "killed %d processes", nkilled);
+				continue;
 			}
+		} else if (wait_pid == child_pid) {
 			if (WIFEXITED(i))
 				syslog(LOG_WARNING, "%s, pid %d, exited with return code %d",
 						exec, child_pid, WEXITSTATUS(i));
 			else if (WIFSIGNALED(i))
 				syslog(LOG_WARNING, "%s, pid %d, terminated by signal %d",
 						exec, child_pid, WTERMSIG(i));
-			child_pid = fork();
-			if (child_pid == -1)
-				eerrorx("%s: fork: %s", applet, strerror(errno));
-			if (child_pid == 0)
-				child_process(exec, argv);
+		} else
+			continue;
+
+		ts.tv_sec = respawn_delay;
+		ts.tv_nsec = 0;
+		nanosleep(&ts, NULL);
+		if (respawn_max > 0 && respawn_period > 0) {
+			respawn_now = time(NULL);
+			if (first_spawn == 0)
+				first_spawn = respawn_now;
+			if (respawn_now - first_spawn > respawn_period) {
+				respawn_count = 0;
+				first_spawn = 0;
+			} else
+				respawn_count++;
+			if (respawn_count > respawn_max) {
+				syslog(LOG_WARNING,
+						"respawned \"%s\" too many times, exiting", exec);
+				exiting = true;
+				continue;
+			}
+		}
+		alarm(0);
+		child_pid = fork();
+		if (child_pid == -1)
+			eerrorx("%s: fork: %s", applet, strerror(errno));
+		if (child_pid == 0)
+			child_process(exec, argv);
+		if (healthcheckdelay) {
+			signal_setup(SIGALRM, healthcheck);
+			alarm(healthcheckdelay);
+		} else if (healthchecktimer) {
+			signal_setup(SIGALRM, healthcheck);
+			alarm(healthchecktimer);
 		}
 	}
 
@@ -612,6 +671,16 @@ int main(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 		    (int *) 0)) != -1)
 		switch (opt) {
+		case 'a':  /* --healthcheck-timer <time> */
+			if (sscanf(optarg, "%d", &healthchecktimer) != 1 || healthchecktimer < 1)
+				eerrorx("%s: invalid health check timer %s", applet, optarg);
+			break;
+
+		case 'A':  /* --healthcheck-delay <time> */
+			if (sscanf(optarg, "%d", &healthcheckdelay) != 1 || healthcheckdelay < 1)
+				eerrorx("%s: invalid health check delay %s", applet, optarg);
+			break;
+
 		case 'D':  /* --respawn-delay time */
 			n = sscanf(optarg, "%d", &respawn_delay);
 			if (n	!= 1 || respawn_delay < 1)
@@ -666,6 +735,11 @@ int main(int argc, char **argv)
 				eerrorx("%s: group `%s' not found",
 				    applet, optarg);
 			gid = gr->gr_gid;
+			break;
+
+		case 'H':  /* --healthcheck-timer <minutes> */
+			if (sscanf(optarg, "%d", &healthchecktimer) != 1 || healthchecktimer < 1)
+				eerrorx("%s: invalid health check timer %s", applet, optarg);
 			break;
 
 		case 'k':

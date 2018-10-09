@@ -10,6 +10,8 @@
 # This file may not be copied, modified, propagated, or distributed
 #    except according to the terms contained in the LICENSE file.
 
+extra_commands="healthcheck unhealthy ${extra_commands}"
+
 supervise_start()
 {
 	if [ -z "$command" ]; then
@@ -32,6 +34,8 @@ supervise_start()
 		${respawn_delay:+--respawn-delay} $respawn_delay \
 		${respawn_max:+--respawn-max} $respawn_max \
 		${respawn_period:+--respawn-period} $respawn_period \
+		${healthcheck_delay:+--healthcheck-delay} $healthcheck_delay \
+		${healthcheck_timer:+--healthcheck-timer} $healthcheck_timer \
 		${command_user+--user} $command_user \
 		${umask+--umask} $umask \
 		${supervise_daemon_args:-${start_stop_daemon_args}} \
@@ -97,4 +101,14 @@ supervise_status()
 		einfo "status: stopped"
 		return 3
 	fi
+}
+
+healthcheck()
+{
+	return 0
+}
+
+unhealthy()
+{
+	return 0
 }

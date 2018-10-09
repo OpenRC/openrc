@@ -16,6 +16,10 @@
 .Nd starts a daemon and restarts it if it crashes
 .Sh SYNOPSIS
 .Nm
+.Fl a , -healthcheck-timer
+.Ar seconds
+.Fl A , -healthcheck-delay
+.Ar seconds
 .Fl D , -respawn-delay
 .Ar seconds
 .Fl d , -chdir
@@ -90,6 +94,11 @@ Print the action(s) that are taken just before doing them.
 .Pp
 The options are as follows:
 .Bl -tag -width indent
+.Fl a , -healthcheck-timer Ar seconds
+Run the healthcheck() command, possibly followed by the unhealthy()
+command every time this number of seconds passes.
+.Fl A , -healthcheck-delay Ar seconds
+Wait this long before the first health check.
 .It Fl D , -respawn-delay Ar seconds
 wait this number of seconds before restarting a daemon after it crashes.
 The default is 0.
