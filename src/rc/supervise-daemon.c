@@ -835,7 +835,7 @@ int main(int argc, char **argv)
 
 		if (respawn_delay * respawn_max > respawn_period)
 			ewarn("%s: Please increase the value of --respawn-period to more "
-				"than %d to avoid infinite respawning", applet, 
+				"than %d to avoid infinite respawning", applet,
 				respawn_delay * respawn_max);
 
 		if (retry) {

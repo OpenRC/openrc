@@ -57,7 +57,7 @@ s6_stop()
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
 	s6-svc -d -wD -T ${s6_service_timeout_stop:-60000} "${s6_service_link}"
 	set -- $(s6-svstat "${s6_service_link}")
-	[ "$1" = "up" ] && 
+	[ "$1" = "up" ] &&
 		yesno "${s6_force_kill:-yes}" &&
 			_s6_force_kill "$@"
 	set -- $(s6-svstat "${s6_service_link}")

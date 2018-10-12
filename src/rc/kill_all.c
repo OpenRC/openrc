@@ -248,7 +248,7 @@ int main(int argc, char **argv)
 		usage(EXIT_FAILURE);
 	}
 	}
-	
+
 	openlog(applet, LOG_CONS|LOG_PID, LOG_DAEMON);
 	if (mount_proc() != 0) {
 		rc_stringlist_free(omits);
