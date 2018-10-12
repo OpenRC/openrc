@@ -62,7 +62,7 @@ cgroup_set_values()
 	while [ -n "$1" ] && [ "$controller" != "cpuacct" ]; do
 		case "$1" in
 			$controller.*)
-				if [ -n "${name}" ] && [ -w "${cgroup}/${name}" ] && 
+				if [ -n "${name}" ] && [ -w "${cgroup}/${name}" ] &&
 					[ -n "${val}" ]; then
 					veinfo "$RC_SVCNAME: Setting $cgroup/$name to $val"
 					printf "%s" "$val" > "$cgroup/$name"

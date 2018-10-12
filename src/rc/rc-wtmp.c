@@ -42,7 +42,7 @@ void log_wtmp(const char *user, const char *id, pid_t pid, int type,
 	strncpy(utmp.ut_name, user, sizeof(utmp.ut_name));
 	strncpy(utmp.ut_id  , id  , sizeof(utmp.ut_id  ));
 	strncpy(utmp.ut_line, line, sizeof(utmp.ut_line));
-        
+
         /* Put the OS version in place of the hostname */
         if (uname(&uname_buf) == 0)
 		strncpy(utmp.ut_host, uname_buf.release, sizeof(utmp.ut_host));

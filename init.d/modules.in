@@ -126,7 +126,7 @@ Linux_modules()
 start()
 {
 	case "$RC_UNAME" in
-		FreeBSD|Linux) 
+		FreeBSD|Linux)
 			modules_load_d
 			${RC_UNAME}_modules
 			;;
