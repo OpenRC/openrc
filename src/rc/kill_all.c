@@ -58,7 +58,7 @@ static int mount_proc(void)
 	if (exists("/proc/version"))
 		return 0;
 	pid = fork();
-	switch(pid) {
+	switch (pid) {
 		case -1:
 			syslog(LOG_ERR, "Unable to fork");
 			return -1;

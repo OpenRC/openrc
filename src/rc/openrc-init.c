@@ -45,7 +45,7 @@ static pid_t do_openrc(const char *runlevel)
 	sigset_t signals;
 
 	pid = fork();
-	switch(pid) {
+	switch (pid) {
 		case -1:
 			perror("fork");
 			break;
@@ -139,7 +139,7 @@ static void reap_zombies(void)
 
 static void signal_handler(int sig)
 {
-	switch(sig) {
+	switch (sig) {
 		case SIGINT:
 			handle_shutdown("reboot", RB_AUTOBOOT);
 			break;
