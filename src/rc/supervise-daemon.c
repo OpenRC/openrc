@@ -510,7 +510,7 @@ static void supervisor(char *exec, char **argv)
 					first_spawn = 0;
 				} else
 					respawn_count++;
-				if (respawn_count >= respawn_max) {
+				if (respawn_count > respawn_max) {
 					syslog(LOG_WARNING,
 							"respawned \"%s\" too many times, exiting", exec);
 					exiting = true;
