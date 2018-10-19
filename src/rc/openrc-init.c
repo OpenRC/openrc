@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-#endif  
+#endif
 
 	printf("OpenRC init version %s starting\n", VERSION);
 
