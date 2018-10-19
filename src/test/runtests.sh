@@ -20,6 +20,16 @@ checkit() {
 
 ret=0
 
+fail_on_out() {
+        # If FATAL_CHECKS is set, then fail when $out has output:
+        if [ -n "${FATAL_CHECKS}" ]; then
+                if [ -n "${out}" ]; then
+                        eerror "Last command failed and FATAL_CHECKS is set; failing"
+                        exit 1
+                fi
+        fi
+}
+
 ebegin "Checking exported symbols in libeinfo.so (data)"
 checkit einfo.data $(
 readelf -Ws ${libeinfo_builddir}/libeinfo.so \
@@ -74,6 +84,7 @@ out=$(cd ${top_srcdir}; find */ \
 	-exec grep -n -E '[[:space:]]+$' {} +)
 [ -z "${out}" ]
 eend $? "Trailing whitespace needs to be deleted:"$'\n'"${out}"
+fail_on_out
 
 ebegin "Checking trailing newlines in code"
 out=$(cd ${top_srcdir};
@@ -82,6 +93,7 @@ out=$(cd ${top_srcdir};
 	done)
 [ -z "${out}" ]
 eend $? "Trailing newlines need to be deleted:"$'\n'"${out}"
+fail_on_out
 
 ebegin "Checking for obsolete functions"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
@@ -89,6 +101,7 @@ out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
 	-exec grep -n -E '\<(malloc|memory|sys/(errno|fcntl|signal|stropts|termios|unistd))\.h\>' {} +)
 [ -z "${out}" ]
 eend $? "Avoid these obsolete functions:"$'\n'"${out}"
+fail_on_out
 
 ebegin "Checking for x* func usage"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
@@ -99,6 +112,7 @@ out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
 		-e src/libeinfo/libeinfo.c)
 [ -z "${out}" ]
 eend $? "These need to be using the x* variant:"$'\n'"${out}"
+fail_on_out
 
 ebegin "Checking spacing style"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
@@ -113,6 +127,7 @@ out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
 	{} +)
 [ -z "${out}" ]
 eend $? "These lines violate style rules:"$'\n'"${out}"
+fail_on_out
 
 einfo "Running unit tests"
 eindent
