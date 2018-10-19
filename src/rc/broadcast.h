@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Sony Interactive Entertainment Inc. 
+ * Copyright 2018 Sony Interactive Entertainment Inc.
  *
  * This file is part of OpenRC. It is subject to the license terms in
  * the LICENSE file found in the top-level directory of this

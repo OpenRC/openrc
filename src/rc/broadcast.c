@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright 2018 Sony Interactive Entertainment Inc. 
+ * Copyright 2018 Sony Interactive Entertainment Inc.
  *
  * This file is part of OpenRC. It is subject to the license terms in
  * the LICENSE file found in the top-level directory of this
@@ -153,7 +153,7 @@ void broadcast(char *text)
 	p = strchr(date, '\n');
 	if (p)
 		*p = 0;
-	
+
 	xasprintf(&line, "\007\r\nBroadcast message from %s@%s %s(%s):\r\n\r\n",
 			user, name.nodename, tty, date);
 
@@ -162,7 +162,7 @@ void broadcast(char *text)
 	 */
 	if (fork() != 0)
 		return;
-	
+
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = handler;
 	sigemptyset(&sa.sa_mask);
