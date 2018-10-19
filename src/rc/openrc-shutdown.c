@@ -154,7 +154,7 @@ static void sleep_no_interrupt(int seconds)
 	duration.tv_sec = seconds;
 	duration.tv_nsec = 0;
 
-	while(nanosleep(&duration, &remaining) < 0 && errno == EINTR)
+	while (nanosleep(&duration, &remaining) < 0 && errno == EINTR)
 		duration = remaining;
 }
 
