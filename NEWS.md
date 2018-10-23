@@ -26,6 +26,12 @@ supervise-daemon supports health checks, which are a periodic way to make sure a
 service is healthy. For more information on setting this up, please see
 supervise-daemon-guide.md.
 
+The --first-time switch has been added to all modprobe commands in the
+modules service. This means that, on Linux, you will see failures if a
+module was loaded by an initramfs or device manager before this service
+runs. These messages are harmless, but to clean them up, you should adjust your
+modules autoload configuration.
+
 ## OpenRC 0.37
 
 start-stop-daemon now supports logging stdout and stderr of daemons to
