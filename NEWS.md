@@ -18,6 +18,10 @@ information:
 
 https://github.com/openrc/openrc/issues/238
 
+This version adds timed shutdown and cancelation of shutdown to
+openrc-shutdown. Shutdowns can now be delayed for a certain amount of
+time or scheduled for an exact time.
+
 ## OpenRC 0.37
 
 start-stop-daemon now supports logging stdout and stderr of daemons to
