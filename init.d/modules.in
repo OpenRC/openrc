@@ -56,11 +56,12 @@ load_modules()
 		ebegin "Loading module $x"
 		case "$RC_UNAME" in
 			FreeBSD) kldload "$x"; rc=$? ;;
-			Linux) modprobe --use-blacklist -q "$x"; rc=$? ;;
+			Linux) modprobe --first-time -q --use-blacklist "$x"; rc=$? ;;
 			*) ;;
 		esac
 		eend $rc "Failed to load $x"
 	done
+	return 0
 }
 
 modules_load_d()
@@ -118,7 +119,7 @@ Linux_modules()
 			[ -n "${args}" ] && break
 		done
 		[ -z "$args" ] && eval args=\$module_${xx}_args
-		eval modprobe --use-blacklist --verbose "$x" "$args"
+		eval modprobe --first-time --use-blacklist --verbose "$x" "$args"
 	done
 	[ -n "$list" ] && eend
 }
