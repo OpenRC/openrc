@@ -250,6 +250,9 @@ int main(int argc, char **argv)
 	} else if (do_reexec) {
 		send_cmd("reexec");
 		exit(EXIT_SUCCESS);
+	} else if (do_wtmp_only) {
+		log_wtmp("shutdown", "~~", 0, RUN_LVL, "~~");
+		exit(EXIT_SUCCESS);
 	}
 
 	if (optind >= argc) {
@@ -329,7 +332,5 @@ int main(int argc, char **argv)
 		send_cmd("reboot");
 	else if (do_single)
 		send_cmd("single");
-		else if (do_wtmp_only)
-		log_wtmp("shutdown", "~~", 0, RUN_LVL, "~~");
 	return 0;
 }
