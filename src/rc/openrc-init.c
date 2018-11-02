@@ -31,6 +31,10 @@
 #include <sys/reboot.h>
 #include <sys/wait.h>
 
+#ifdef HAVE_SELINUX
+#  include <selinux/selinux.h>
+#endif
+
 #include "helpers.h"
 #include "rc.h"
 #include "rc-wtmp.h"
@@ -161,9 +165,35 @@ int main(int argc, char **argv)
 	bool reexec = false;
 	sigset_t signals;
 	struct sigaction sa;
+#ifdef HAVE_SELINUX
+	int			enforce = 0;
+#endif
 
 	if (getpid() != 1)
 		return 1;
+
+#ifdef HAVE_SELINUX
+	if (getenv("SELINUX_INIT") == NULL) {
+		if (is_selinux_enabled() != 1) {
+			if (selinux_init_load_policy(&enforce) == 0) {
+				putenv("SELINUX_INIT=YES");
+				execv(argv[0], argv);
+			} else {
+				if (enforce > 0) {
+					/*
+					 * SELinux in enforcing mode but load_policy failed
+					 * At this point, we probably can't open /dev/console,
+					 * so log() won't work
+					 */
+					fprintf(stderr,"Unable to load SELinux Policy.\n");
+					fprintf(stderr,"Machine is  in enforcing mode.\n");
+					fprintf(stderr,"Halting now.\n");
+					exit(1);
+				}
+			}
+		}
+	}
+#endif  
 
 	printf("OpenRC init version %s starting\n", VERSION);
 
