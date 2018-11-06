@@ -197,6 +197,16 @@ static void healthcheck(int sig)
 		do_healthcheck = 1;
 }
 
+static void reap_zombies(int sig)
+{
+	int serrno;
+	(void) sig;
+
+	serrno = errno;
+	while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
+	errno = serrno;
+}
+
 static char * expand_home(const char *home, const char *path)
 {
 	char *opath, *ppath, *p, *nh;
@@ -457,6 +467,7 @@ static void supervisor(char *exec, char **argv)
 	signal_setup_restart(SIGPIPE, handle_signal);
 	signal_setup_restart(SIGALRM, handle_signal);
 	signal_setup(SIGTERM, handle_signal);
+	signal_setup(SIGCHLD, reap_zombies);
 	signal_setup_restart(SIGUSR1, handle_signal);
 	signal_setup_restart(SIGUSR2, handle_signal);
 	signal_setup_restart(SIGBUS, handle_signal);
