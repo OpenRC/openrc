@@ -1,3 +1,33 @@
+commit d725410277c04a812bb9df6113c3f58176205f48
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: reap zombies
+    
+    We need to make sure to reap zombies so that we can shut down
+    successfully.
+    
+    Fixes #252.
+    Possibly related to #250.
+
+commit d78cd5ce928e30806d0566cdb905a34ebbc01450
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-service: fix help output
+
+commit 2a9c1a220d73359e69af08193d6d788125b136c4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.39.2
+
+commit 81ce908e420429b18cf31424ec4e4cf6549985e5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit aa867fd7e3d250aba6132b490350b1a6cb38bc34
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1318,115 +1348,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     X-Gentoo-Bug: 636574
     X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=636574
-
-commit a3d1c8a0e7d5586be13e2cd9b5029fd729bc1594
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix issue with --reexec call
-
-commit 913b2ca53771742385d5c69164aefcaab634f012
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: use RC_SVCNAME as the first argument to the daemon
-    
-    This makes ps show which service the supervisor is monitoring.
-
-commit 3fe99c8b8264269dd935d52a1a52581cc0f14e8e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: fix logging for reexec and the child command line
-
-commit 27b8183de2f2bfd7411c14c1ec28543ca8a36602
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    log as supervise-daemon not the service
-
-commit f32d8e1bfe16caf233d1180921f4aeed77d7476d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: clarify a log message
-
-commit d019f34a83b0ad5e890f685b1263b281ab54ce54
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: log the command line we run to spawn the child process
-
-commit bb9c481f02cb1843e00bf32e98caf18b6b56bb4d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: log with the service name instead of "supervise-daemon"
-
-commit 82da844b42ff83b2ebf944198e56ac2d81851897
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    implement "unsupervised" status
-    
-    The unsupervised status is to be used when a supervisor of a supervised
-    service dies but leaves the service daemon itself running.
-
-commit 667a09983ca5311824aa88c42d39a495c540fc4c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: remove child_pid from saved options during shutdown
-    
-    This allows us to detect when the supervisor dies unexpectedly because
-    in that case child_pid will still exist.
-
-commit cf429ee359356d736c818e8b35db8fca887e7332
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc_service_value_set: remove the option if NULL is the value
-    
-    This allows the equivalent of "unsetting" a value for a service.
-
-commit 6f3e2e2d7de61ab28cf03937ccf2e5f80b62190a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon.sh: fix status function with no namespaces
-
-commit 35b88fb42bb8e0a56cdc1947342f1b89c98658bc
-Author: Patrick McLean <chutzpah@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    cgroups_cleanup: clean up shutdown signaling
-    
-    - do not sleep for the full 90 seconds if processes are dead
-    - re-arrange the order of signals we attempt to send to the processes
-
-commit a428c325a902bba55a849a07a59c0c1567404db2
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add "unsupervised" status and return code 64 to supervise-daemon status function
-    
-    This is to be used if the service is being supervised and the
-    supervisor is somehow killed.
-    
-    Currently, this is very linux specific, but I will expand to other
-    platforms, patches are welcome.
-
-commit 3219ecd6085231d7cc1268323a5be6a69f8c9143
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: fix build issue for >=glibc-2.26
-    
-    X-Gentoo-Bug: 635334
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=635334
-
-commit 0d8dc4f798cc0d707fc64e8bffcba4fbceb32935
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.35
