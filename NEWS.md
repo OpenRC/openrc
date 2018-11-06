@@ -4,6 +4,19 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.40
+
+In this version, the keymaps and termencoding services on Linux needed
+to be modified so they do not write to the root file system. This was
+done so they can run earlier in the boot sequence. AS a result, you will
+need to add save-termencoding and save-keymaps to your boot runlevel.
+This can be done as follows:
+
+```
+# rc-update add save-keymaps boot
+# rc-update add save-termencoding boot
+```
+
 ## OpenRC 0.39
 
 This version removes the support for addons.

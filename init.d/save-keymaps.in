@@ -1,0 +1,28 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2018 Sony Interactive Entertainment, Inc.
+#
+# This file is part of OpenRC. It is subject to the license terms in
+# the LICENSE file found in the top-level directory of this
+# distribution and at https://github.com/OpenRC/openrc/blob/master/LICENSE
+# This file may not be copied, modified, propagated, or distributed
+# except according to the terms contained in the LICENSE file.
+
+description="Save the keymap for use as early as possible"
+
+depend()
+{
+	need termencoding
+	after bootmisc clock keymaps
+	keyword -docker -lxc -openvz -prefix -systemd-nspawn -uml -vserver -xenu
+}
+
+start()
+{
+	# Save the keymapping for use immediately at boot
+	ebegin "Saving key mapping"
+	if checkpath -W "$RC_LIBEXECDIR"; then
+		mkdir -p "$RC_LIBEXECDIR"/console
+		dumpkeys >"$RC_LIBEXECDIR"/console/keymap
+	fi
+	eend $? "Unable to save keymapping"
+}

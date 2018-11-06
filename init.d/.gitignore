@@ -41,6 +41,8 @@ rc-enabled
 rpcbind
 runsvdir
 savecore
+save-keymaps
+save-termencoding
 swap-blk
 swclock
 syslogd
