@@ -272,6 +272,9 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 		} else {
 			if (!quiet)
 				ebeginv("Sending signal %d to PID %d", sig, pi->pid);
+			if (sig == 0)
+				/* waitpid is needed for kill to fail for supervisor children */
+				waitpid(pi->pid, NULL, WNOHANG);
 			errno = 0;
 			killed = (kill(pi->pid, sig) == 0 ||
 			    errno == ESRCH ? true : false);
