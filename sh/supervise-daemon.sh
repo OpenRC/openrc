@@ -59,7 +59,6 @@ supervise_stop()
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
 	supervise-daemon "${RC_SVCNAME}" --stop \
 		${pidfile:+--pidfile} $chroot$pidfile \
-		${stopsig:+--signal} $stopsig
 
 	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
 }
