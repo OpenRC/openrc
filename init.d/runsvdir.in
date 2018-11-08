@@ -1,5 +1,5 @@
 #!@SBINDIR@/openrc-run
-# Copyright (c) 2016 The OpenRC Authors.
+# Copyright (c) 2016-2018 The OpenRC Authors.
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/master/AUTHORS
 #
@@ -9,9 +9,9 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
+supervisor=supervise-daemon
 command=/usr/bin/runsvdir
-command_background=yes
-pidfile=/var/run/runsvdir.pid
+pidfile="/run/${RC_SVCNAME}.pid"
 command_args="-P $RC_SVCDIR/sv 'log: ...........................................................................................................................................................................................................................................................................................................................................................................................................'"
 
 start_pre()
