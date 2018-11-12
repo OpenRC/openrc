@@ -22,6 +22,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <utmp.h>
 #include <utmpx.h>
 #include <pwd.h>
 #include <fcntl.h>
