@@ -376,10 +376,7 @@ int run_stop_schedule(const char *applet,
 							printf("\n");
 							progressed = false;
 						}
-						if (errno == EINTR)
-							eerror("%s: caught an"
-							    " interrupt", applet);
-						else {
+						if (errno != EINTR) {
 							eerror("%s: nanosleep: %s",
 							    applet, strerror(errno));
 							return 0;

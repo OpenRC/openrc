@@ -996,9 +996,7 @@ int main(int argc, char **argv)
 		ts.tv_sec = start_wait / 1000;
 		ts.tv_nsec = (start_wait % 1000) * ONE_MS;
 		if (nanosleep(&ts, NULL) == -1) {
-			if (errno == EINTR)
-				eerror("%s: caught an interrupt", applet);
-			else {
+			if (errno != EINTR) {
 				eerror("%s: nanosleep: %s",
 				    applet, strerror(errno));
 				return 0;
