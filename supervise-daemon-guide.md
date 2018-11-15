@@ -58,15 +58,6 @@ supervise-daemon. They are documented on the  openrc-run man page, but I
 will list them here for convenience:
 
 ``` sh
-pidfile=/pid/of/supervisor.pid
-```
-
-If you are using start-stop-daemon to monitor your scripts, the pidfile
-is the path to the pidfile the daemon creates. If, on the other hand,
-you are using supervise-daemon, this is the path to the pidfile the
-supervisor creates.
-
-``` sh
 command_args_foreground="arguments"
 ```
 

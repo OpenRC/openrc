@@ -36,8 +36,6 @@
 .Ar count
 .Fl N , -nicelevel
 .Ar level
-.Fl p , -pidfile
-.Ar pidfile
 .Fl P , -respawn-period
 .Ar seconds
 .Fl R , -retry
@@ -57,8 +55,6 @@
 .Nm
 .Fl K , -stop
 .Ar daemon
-.Fl p , -pidfile
-.Ar pidfile
 .Fl r , -chroot
 .Ar chrootpath
 .Sh DESCRIPTION
@@ -76,12 +72,6 @@ should not be the one the daemon writes.
 .Pp
 Here are the options to specify the daemon and how it should start or stop:
 .Bl -tag -width indent
-.It Fl p , -pidfile Ar pidfile
-When starting, we write a
-.Ar pidfile
-so we know which supervisor to stop.  When stopping we only stop the pid(s)
-listed in the
-.Ar pidfile .
 .It Fl u , -user Ar user Ns Op : Ns Ar group
 Start the daemon as the
 .Ar user
@@ -132,7 +122,7 @@ signal/timeout pairs (like SIGTERM/5).
 If this option is not given, the default is SIGTERM/5.
 .It Fl r , -chroot Ar path
 chroot to this directory before starting the daemon. All other paths, such
-as the path to the daemon, chdir and pidfile, should be relative to the chroot.
+as the path to the daemon and chdir should be relative to the chroot.
 .It Fl u , -user Ar user
 Start the daemon as the specified user.
 .It Fl 1 , -stdout Ar logfile
@@ -144,7 +134,6 @@ The logfile can also be a named pipe.
 The same thing as
 .Fl 1 , -stdout
 but with the standard error output.
-.El
 .El
 .Sh ENVIRONMENT
 .Va SSD_NICELEVEL
@@ -172,10 +161,6 @@ seconds.
 .Xr chroot 2 ,
 .Xr getopt 3 ,
 .Xr nice 2 ,
-.Xr rc_find_pids 3
-.Sh BUGS
-.Nm
-cannot stop an interpreted daemon that no longer exists without a pidfile.
 .Sh HISTORY
 .Nm
 first appeared in Debian.
