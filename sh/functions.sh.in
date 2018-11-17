@@ -46,7 +46,7 @@ yesno()
 	case "$value" in
 		[Yy][Ee][Ss]|[Tt][Rr][Uu][Ee]|[Oo][Nn]|1) return 0;;
 		[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|[Oo][Ff][Ff]|0) return 1;;
-		*) vewarn "\$$1 is not set properly"; return 1;;
+		*) vewarn "\$$1 is not set properly"; return 2;;
 	esac
 }
 
