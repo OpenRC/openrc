@@ -9,6 +9,12 @@ os:
 compiler:
   - gcc
   - clang
+  - musl-gcc
+
+addons:
+  apt:
+    packages:
+    - musl-tools
 
 notifications:
   irc:
