@@ -121,6 +121,7 @@ const char *usagestring = NULL;
 static int healthcheckdelay = 0;
 static int healthchecktimer = 0;
 static volatile sig_atomic_t do_healthcheck = 0;
+static volatile sig_atomic_t exiting = 0;
 static int nicelevel = 0;
 static int ionicec = -1;
 static int ioniced = 0;
@@ -133,7 +134,6 @@ static int stdout_fd;
 static int stderr_fd;
 static char *redirect_stderr = NULL;
 static char *redirect_stdout = NULL;
-static bool exiting = false;
 #ifdef TIOCNOTTY
 static int tty_fd = -1;
 #endif
@@ -184,7 +184,7 @@ static void handle_signal(int sig)
 	syslog(LOG_WARNING, "caught signal %d", sig);
 
 	if (sig == SIGTERM)
-		exiting = true;
+		exiting = 1;
 	/* Restore errno */
 	errno = serrno;
 	if (! exiting)
@@ -582,7 +582,7 @@ static void supervisor(char *exec, char **argv)
 			if (respawn_count > respawn_max) {
 				syslog(LOG_WARNING,
 						"respawned \"%s\" too many times, exiting", exec);
-				exiting = true;
+				exiting = 1;
 				continue;
 			}
 		}
