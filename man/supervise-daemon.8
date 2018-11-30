@@ -107,16 +107,19 @@ Data can be from 0 to 7 inclusive.
 .It Fl k , -umask Ar mode
 Set the umask of the daemon.
 .It Fl m , -respawn-max Ar count
-Sets the maximum number of times a daemon will be respawned during a
-respawn period. If a daemon dies more than this number of times during a
-respawn period,
+Sets the maximum number of times a daemon will be respawned. If a daemon
+crashes more than this number of times,
 .Nm
-will give up trying to respawn it and exit. The default is 10, and 0
-means unlimited.
+will give up and exit. The default is 10 and 0 means unlimited.
+.Pp
+If respawn-period is also set, more than respawn-max crashes must occur
+during respawn-period seconds to cause
+.Nm
+to give up and exit.
 .It Fl N , -nicelevel Ar level
 Modifies the scheduling priority of the daemon.
 .It Fl P , -respawn-period Ar seconds
-Sets the length of a respawn period. The default is 10 seconds. See the
+Sets the length of a respawn period. See the
 description of --respawn-max for more information.
 .It Fl R , -retry Ar timeout | Ar signal Ns / Ns Ar timeout
 The retry specification can be either a timeout in seconds or multiple

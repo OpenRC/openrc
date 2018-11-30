@@ -143,7 +143,7 @@ static pid_t child_pid;
 static int respawn_count = 0;
 static int respawn_delay = 0;
 static int respawn_max = 10;
-static int respawn_period = 5;
+static int respawn_period = 0;
 static char *fifopath = NULL;
 static int fifo_fd = 0;
 static char *pidfile = NULL;
@@ -563,23 +563,21 @@ static void supervisor(char *exec, char **argv)
 			do_healthcheck = 0;
 			healthcheck_respawn = 0;
 			alarm(0);
-			if (respawn_max > 0 && respawn_period > 0) {
-				respawn_now = time(NULL);
-				if (first_spawn == 0)
-					first_spawn = respawn_now;
-				if (respawn_now - first_spawn > respawn_period) {
-					respawn_count = 0;
-					first_spawn = 0;
-				} else
-					respawn_count++;
-				if (respawn_count > respawn_max) {
-					syslog(LOG_WARNING,
-							"respawned \"%s\" too many times, exiting", exec);
-					exiting = 1;
-					continue;
-				}
+			respawn_now = time(NULL);
+			if (first_spawn == 0)
+				first_spawn = respawn_now;
+			if ((respawn_period > 0)
+					&& (respawn_now - first_spawn > respawn_period)) {
+				respawn_count = 0;
+				first_spawn = 0;
+			} else
+				respawn_count++;
+			if (respawn_max > 0 && respawn_count > respawn_max) {
+				syslog(LOG_WARNING, "respawned \"%s\" too many times, exiting",
+						exec);
+				exiting = 1;
+				continue;
 			}
-			alarm(0);
 			ts.tv_sec = respawn_delay;
 			ts.tv_nsec = 0;
 			nanosleep(&ts, NULL);
@@ -930,7 +928,7 @@ int main(int argc, char **argv)
 						0, false, true) > 0)
 				eerrorx("%s: %s is already running", applet, exec);
 
-		if (respawn_delay * respawn_max > respawn_period)
+		if (respawn_period > 0 && respawn_delay * respawn_max > respawn_period)
 			ewarn("%s: Please increase the value of --respawn-period to more "
 				"than %d to avoid infinite respawning", applet,
 				respawn_delay * respawn_max);
