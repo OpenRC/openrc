@@ -181,29 +181,21 @@ static void handle_signal(int sig)
 {
 	int serrno = errno;
 
-	syslog(LOG_WARNING, "caught signal %d", sig);
-
-	if (sig == SIGTERM)
-		exiting = 1;
-	/* Restore errno */
-	errno = serrno;
-	if (! exiting)
-		re_exec_supervisor();
-}
-
-static void healthcheck(int sig)
-{
-	if (sig == SIGALRM)
+	switch(sig) {
+	case SIGALRM:
 		do_healthcheck = 1;
-}
-
-static void reap_zombies(int sig)
-{
-	int serrno;
-	(void) sig;
-
-	serrno = errno;
-	while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
+		break;
+	case SIGCHLD:
+		while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
+		break;
+	case SIGTERM:
+		exiting = 1;
+		break;
+	default:
+		syslog(LOG_WARNING, "caught signal %d", sig);
+		re_exec_supervisor();
+	}
+	/* Restore errno */
 	errno = serrno;
 }
 
@@ -447,54 +439,32 @@ static void child_process(char *exec, char **argv)
 static void supervisor(char *exec, char **argv)
 {
 	FILE *fp;
-	pid_t wait_pid;
+	int health_status;
+	int healthcheck_respawn;
 	int i;
 	int nkilled;
+	pid_t health_pid;
+	pid_t wait_pid;
+	sigset_t old_signals;
+	sigset_t signals;
+	struct sigaction sa;
 	struct timespec ts;
 	time_t respawn_now= 0;
 	time_t first_spawn= 0;
-	pid_t health_pid;
-	int health_status;
 
-#ifndef RC_DEBUG
-	signal_setup_restart(SIGHUP, handle_signal);
-	signal_setup_restart(SIGINT, handle_signal);
-	signal_setup_restart(SIGQUIT, handle_signal);
-	signal_setup_restart(SIGILL, handle_signal);
-	signal_setup_restart(SIGABRT, handle_signal);
-	signal_setup_restart(SIGFPE, handle_signal);
-	signal_setup_restart(SIGSEGV, handle_signal);
-	signal_setup_restart(SIGPIPE, handle_signal);
-	signal_setup_restart(SIGALRM, handle_signal);
-	signal_setup(SIGTERM, handle_signal);
-	signal_setup(SIGCHLD, reap_zombies);
-	signal_setup_restart(SIGUSR1, handle_signal);
-	signal_setup_restart(SIGUSR2, handle_signal);
-	signal_setup_restart(SIGBUS, handle_signal);
-#ifdef SIGPOLL
-	signal_setup_restart(SIGPOLL, handle_signal);
-#endif
-	signal_setup_restart(SIGPROF, handle_signal);
-	signal_setup_restart(SIGSYS, handle_signal);
-	signal_setup_restart(SIGTRAP, handle_signal);
-	signal_setup_restart(SIGVTALRM, handle_signal);
-	signal_setup_restart(SIGXCPU, handle_signal);
-	signal_setup_restart(SIGXFSZ, handle_signal);
-#ifdef SIGEMT
-	signal_setup_restart(SIGEMT, handle_signal);
-#endif
-	signal_setup_restart(SIGIO, handle_signal);
-#ifdef SIGPWR
-	signal_setup_restart(SIGPWR, handle_signal);
-#endif
-#ifdef SIGUNUSED
-	signal_setup_restart(SIGUNUSED, handle_signal);
-#endif
-#ifdef SIGRTMIN
-	for (i = SIGRTMIN; i <= SIGRTMAX; i++)
-		signal_setup_restart(i, handle_signal);
-#endif
-#endif
+	/* block all signals we do not handle */
+	sigfillset(&signals);
+	sigdelset(&signals, SIGALRM);
+	sigdelset(&signals, SIGCHLD);
+	sigdelset(&signals, SIGTERM);
+	sigprocmask(SIG_SETMASK, &signals, &old_signals);
+
+	/* install signal  handler */
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = handle_signal;
+	sigaction(SIGALRM, &sa, NULL);
+	sigaction(SIGCHLD, &sa, NULL);
+	sigaction(SIGTERM, &sa, NULL);
 
 	fp = fopen(pidfile, "w");
 	if (! fp)
@@ -515,89 +485,94 @@ static void supervisor(char *exec, char **argv)
 	/*
 	 * Supervisor main loop
 	 */
-	i = 0;
-	if (healthcheckdelay) {
-		signal_setup(SIGALRM, healthcheck);
+	if (healthcheckdelay)
 		alarm(healthcheckdelay);
-	} else if (healthchecktimer) {
-		signal_setup(SIGALRM, healthcheck);
+	else if (healthchecktimer)
 		alarm(healthchecktimer);
-	}
 	while (!exiting) {
-		wait_pid = wait(&i);
-		if (wait_pid == -1) {
-			if (do_healthcheck) {
-				do_healthcheck = 0;
-				alarm(0);
-				syslog(LOG_DEBUG, "running health check for %s", svcname);
-				health_pid = exec_service(svcname, "healthcheck");
-				health_status = rc_waitpid(health_pid);
-				if (WIFEXITED(health_status) && !WEXITSTATUS(health_status)) {
-					alarm(healthchecktimer);
-					continue;
-				} else {
-					syslog(LOG_WARNING, "health check for %s failed", svcname);
-					health_pid = exec_service(svcname, "unhealthy");
-					rc_waitpid(health_pid);
-					syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
-					nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
-							false, false, true);
-					if (nkilled > 0)
-						syslog(LOG_INFO, "killed %d processes", nkilled);
-					else if (errno != 0)
-						syslog(LOG_INFO, "Unable to kill %d: %s",
-								child_pid, strerror(errno));
-				}
-			} else if (exiting ) {
-				alarm(0);
+		healthcheck_respawn = 0;
+		wait_pid = waitpid(child_pid, &i, 0);
+		if (do_healthcheck) {
+			do_healthcheck = 0;
+			alarm(0);
+			syslog(LOG_DEBUG, "running health check for %s", svcname);
+			health_pid = exec_service(svcname, "healthcheck");
+			health_status = rc_waitpid(health_pid);
+			if (WIFEXITED(health_status) && WEXITSTATUS(health_status) == 0)
+				alarm(healthchecktimer);
+			else {
+				syslog(LOG_WARNING, "health check for %s failed", svcname);
+				health_pid = exec_service(svcname, "unhealthy");
+				rc_waitpid(health_pid);
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
-				nkilled = run_stop_schedule(applet, exec, NULL, child_pid, 0,
+				nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
 						false, false, true);
-				if (nkilled > 0)
-					syslog(LOG_INFO, "killed %d processes", nkilled);
-				continue;
+				if (nkilled < 0)
+					syslog(LOG_INFO, "Unable to kill %d: %s",
+							child_pid, strerror(errno));
+				else
+					healthcheck_respawn = 1;
 			}
-		} else if (wait_pid == child_pid) {
+		}
+		if (exiting ) {
+			alarm(0);
+			syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
+			nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
+					false, false, true);
+			if (nkilled > 0)
+				syslog(LOG_INFO, "killed %d processes", nkilled);
+			continue;
+		}
+		if (wait_pid == child_pid) {
 			if (WIFEXITED(i))
 				syslog(LOG_WARNING, "%s, pid %d, exited with return code %d",
 						exec, child_pid, WEXITSTATUS(i));
 			else if (WIFSIGNALED(i))
 				syslog(LOG_WARNING, "%s, pid %d, terminated by signal %d",
 						exec, child_pid, WTERMSIG(i));
-		} else
-			continue;
-
-		ts.tv_sec = respawn_delay;
-		ts.tv_nsec = 0;
-		nanosleep(&ts, NULL);
-		if (respawn_max > 0 && respawn_period > 0) {
-			respawn_now = time(NULL);
-			if (first_spawn == 0)
-				first_spawn = respawn_now;
-			if (respawn_now - first_spawn > respawn_period) {
-				respawn_count = 0;
-				first_spawn = 0;
-			} else
-				respawn_count++;
-			if (respawn_count > respawn_max) {
-				syslog(LOG_WARNING,
-						"respawned \"%s\" too many times, exiting", exec);
-				exiting = 1;
-				continue;
-			}
 		}
-		alarm(0);
-		child_pid = fork();
-		if (child_pid == -1)
-			eerrorx("%s: fork: %s", applet, strerror(errno));
-		if (child_pid == 0)
-			child_process(exec, argv);
-		if (healthcheckdelay) {
-			signal_setup(SIGALRM, healthcheck);
-			alarm(healthcheckdelay);
-		} else if (healthchecktimer) {
-			signal_setup(SIGALRM, healthcheck);
-			alarm(healthchecktimer);
+		if (wait_pid == child_pid || healthcheck_respawn) {
+			do_healthcheck = 0;
+			healthcheck_respawn = 0;
+			alarm(0);
+			if (respawn_max > 0 && respawn_period > 0) {
+				respawn_now = time(NULL);
+				if (first_spawn == 0)
+					first_spawn = respawn_now;
+				if (respawn_now - first_spawn > respawn_period) {
+					respawn_count = 0;
+					first_spawn = 0;
+				} else
+					respawn_count++;
+				if (respawn_count > respawn_max) {
+					syslog(LOG_WARNING,
+							"respawned \"%s\" too many times, exiting", exec);
+					exiting = 1;
+					continue;
+				}
+			}
+			alarm(0);
+			ts.tv_sec = respawn_delay;
+			ts.tv_nsec = 0;
+			nanosleep(&ts, NULL);
+			child_pid = fork();
+			if (child_pid == -1) {
+				syslog(LOG_ERR, "%s: fork: %s", applet, strerror(errno));
+				exit(EXIT_FAILURE);
+			}
+			if (child_pid == 0) {
+				sigprocmask(SIG_SETMASK, &old_signals, NULL);
+				memset(&sa, 0, sizeof(sa));
+				sa.sa_handler = SIG_DFL;
+				sigaction(SIGALRM, &sa, NULL);
+				sigaction(SIGCHLD, &sa, NULL);
+				sigaction(SIGTERM, &sa, NULL);
+				child_process(exec, argv);
+			}
+			if (healthcheckdelay)
+				alarm(healthcheckdelay);
+			else if (healthchecktimer)
+				alarm(healthchecktimer);
 		}
 	}
 
