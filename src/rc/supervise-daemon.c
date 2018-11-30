@@ -68,7 +68,7 @@ static struct pam_conv conv = { NULL, NULL};
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:Su:1:2:3" \
+const char *getoptstring = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "healthcheck-timer",        1, NULL, 'a'},
@@ -86,6 +86,7 @@ const struct option longopts[] = {
 	{ "respawn-period",        1, NULL, 'P'},
 	{ "retry",       1, NULL, 'R'},
 	{ "chroot",       1, NULL, 'r'},
+	{ "signal",       1, NULL, 's'},
 	{ "start",        0, NULL, 'S'},
 	{ "user",         1, NULL, 'u'},
 	{ "stdout",       1, NULL, '1'},
@@ -109,6 +110,7 @@ const char * const longopts_help[] = {
 	"Set respawn time period",
 	"Retry schedule to use when stopping",
 	"Chroot to this directory",
+	"Send a signal to the daemon",
 	"Start daemon",
 	"Change the process user",
 	"Redirect stdout to file",
@@ -142,6 +144,8 @@ static int respawn_count = 0;
 static int respawn_delay = 0;
 static int respawn_max = 10;
 static int respawn_period = 5;
+static char *fifopath = NULL;
+static int fifo_fd = 0;
 static char *pidfile = NULL;
 static char *svcname = NULL;
 
@@ -439,10 +443,14 @@ static void child_process(char *exec, char **argv)
 static void supervisor(char *exec, char **argv)
 {
 	FILE *fp;
+	char buf[2048];
+	char cmd[2048];
+	int count;
 	int health_status;
 	int healthcheck_respawn;
 	int i;
 	int nkilled;
+	int sig_send;
 	pid_t health_pid;
 	pid_t wait_pid;
 	sigset_t old_signals;
@@ -489,9 +497,29 @@ static void supervisor(char *exec, char **argv)
 		alarm(healthcheckdelay);
 	else if (healthchecktimer)
 		alarm(healthchecktimer);
+ fifo_fd = open(fifopath, O_RDONLY |O_NONBLOCK);
 	while (!exiting) {
 		healthcheck_respawn = 0;
-		wait_pid = waitpid(child_pid, &i, 0);
+		wait_pid = waitpid(child_pid, &i, WNOHANG);
+		memset(buf, 0, sizeof(buf));
+		if (fifo_fd >= 0) {
+			count = read(fifo_fd, buf, sizeof(buf) - 1);
+			if (count != -1)
+				buf[count] = 0;
+		}
+		if (strlen(buf) > 0) {
+			syslog(LOG_DEBUG, "Received %s from fifo", buf);
+			if (strncasecmp(buf, "sig", 3) == 0) {
+				if ((sscanf(buf, "%s %d", cmd, &sig_send) == 2)
+						&& (sig_send >= 0 && sig_send < NSIG)) {
+					syslog(LOG_INFO, "Sending signal %d to %d", sig_send,
+							child_pid);
+					if (kill(child_pid, sig_send) == -1)
+						syslog(LOG_ERR, "Unable to send signal %d to %d",
+								sig_send, child_pid);
+				}
+			}
+		}
 		if (do_healthcheck) {
 			do_healthcheck = 0;
 			alarm(0);
@@ -578,6 +606,8 @@ static void supervisor(char *exec, char **argv)
 
 	if (pidfile && exists(pidfile))
 		unlink(pidfile);
+	if (fifopath && exists(fifopath))
+		unlink(fifopath);
 	if (svcname) {
 		rc_service_daemon_set(svcname, exec, (const char *const *)argv,
 				pidfile, false);
@@ -595,6 +625,7 @@ int main(int argc, char **argv)
 	bool start = false;
 	bool stop = false;
 	bool reexec = false;
+	bool sendsig = false;
 	char *exec = NULL;
 	char *retry = NULL;
 	int sig = SIGTERM;
@@ -700,6 +731,10 @@ int main(int argc, char **argv)
 				eerrorx("Invalid respawn-period value '%s'", optarg);
 			break;
 
+		case 's':  /* --signal */
+			sig = parse_signal(applet, optarg);
+			sendsig = true;
+			break;
 		case 'S':  /* --start */
 			start = true;
 			break;
@@ -818,6 +853,10 @@ int main(int argc, char **argv)
 
 	umask(numask);
 	xasprintf(&pidfile, "/var/run/supervise-%s.pid", svcname);
+	xasprintf(&fifopath, "%s/supervise-%s.ctl", RC_SVCDIR, svcname);
+	if (mkfifo(fifopath, 0600) == -1 && errno != EEXIST)
+		eerrorx("%s: unable to create control fifo: %s",
+				applet, strerror(errno));
 
 	if (reexec) {
 		str = rc_service_value_get(svcname, "argc");
@@ -988,6 +1027,19 @@ int main(int argc, char **argv)
 			    pidfile, false);
 			rc_service_mark(svcname, RC_SERVICE_STOPPED);
 		}
+		exit(EXIT_SUCCESS);
+	} else if (sendsig) {
+		fifo_fd = open(fifopath, O_WRONLY |O_NONBLOCK);
+		if (fifo_fd < 0)
+			eerrorx("%s: unable to open control fifo %s", applet, strerror(errno));
+		xasprintf(&str, "sig %d", sig);
+		x = write(fifo_fd, str, strlen(str));
+		if (x == -1) {
+			free(tmp);
+			eerrorx("%s: error writing to control fifo: %s", applet,
+					strerror(errno));
+		}
+		free(tmp);
 		exit(EXIT_SUCCESS);
 	}
 }

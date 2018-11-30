@@ -57,6 +57,11 @@
 .Ar daemon
 .Fl r , -chroot
 .Ar chrootpath
+.Nm
+.Fl s , -signal
+.Ar signal
+.Fl r , -chroot
+.Ar chrootpath
 .Sh DESCRIPTION
 .Nm
 provides a consistent method of starting, stopping and restarting
@@ -64,11 +69,8 @@ daemons. If
 .Fl K , -stop
 is not provided, then we assume we are starting the daemon.
 .Nm
-only works with daemons which do not fork. Also, it uses its own pid
-file, so the daemon should not write a pid file, or the pid file passed
-to 
-.Nm
-should not be the one the daemon writes.
+only works with daemons which do not fork. If your daemon has options to
+tell it not to fork, it should be configured to not fork.
 .Pp
 Here are the options to specify the daemon and how it should start or stop:
 .Bl -tag -width indent
