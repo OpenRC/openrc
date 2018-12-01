@@ -446,6 +446,7 @@ static void supervisor(char *exec, char **argv)
 	char buf[2048];
 	char cmd[2048];
 	int count;
+	int failing;
 	int health_status;
 	int healthcheck_respawn;
 	int i;
@@ -498,6 +499,7 @@ static void supervisor(char *exec, char **argv)
 	else if (healthchecktimer)
 		alarm(healthchecktimer);
  fifo_fd = open(fifopath, O_RDONLY |O_NONBLOCK);
+ failing = 0;
 	while (!exiting) {
 		healthcheck_respawn = 0;
 		wait_pid = waitpid(child_pid, &i, WNOHANG);
@@ -576,6 +578,7 @@ static void supervisor(char *exec, char **argv)
 				syslog(LOG_WARNING, "respawned \"%s\" too many times, exiting",
 						exec);
 				exiting = 1;
+				failing = 1;
 				continue;
 			}
 			ts.tv_sec = respawn_delay;
@@ -602,16 +605,18 @@ static void supervisor(char *exec, char **argv)
 		}
 	}
 
+	if (svcname) {
+		rc_service_daemon_set(svcname, exec, (const char *const *)argv,
+				pidfile, false);
+		rc_service_value_set(svcname, "child_pid", NULL);
+		rc_service_mark(svcname, RC_SERVICE_STOPPED);
+		if (failing)
+			rc_service_mark(svcname, RC_SERVICE_FAILED);
+	}
 	if (pidfile && exists(pidfile))
 		unlink(pidfile);
 	if (fifopath && exists(fifopath))
 		unlink(fifopath);
-	if (svcname) {
-		rc_service_daemon_set(svcname, exec, (const char *const *)argv,
-				pidfile, false);
-		rc_service_mark(svcname, RC_SERVICE_STOPPED);
-		rc_service_value_set(svcname, "child_pid", NULL);
-	}
 	exit(EXIT_SUCCESS);
 }
 
