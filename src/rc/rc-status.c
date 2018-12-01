@@ -167,6 +167,9 @@ print_service(const char *service)
 	} else if (state & RC_SERVICE_SCHEDULED) {
 		xasprintf(&status, "scheduled");
 		color = ECOLOR_WARN;
+	} else if (state & RC_SERVICE_FAILED) {
+		xasprintf(&status, "failed");
+		color = ECOLOR_WARN;
 	} else
 		xasprintf(&status, " stopped ");
 
@@ -238,6 +241,7 @@ print_stacked_services(const char *runlevel)
 
 int main(int argc, char **argv)
 {
+	RC_SERVICE state;
     RC_STRING *s, *l, *t, *level;
 	bool show_all = false;
 	char *p, *runlevel = NULL;
@@ -373,11 +377,14 @@ int main(int argc, char **argv)
 			free(nservices);
 		}
 		TAILQ_FOREACH_SAFE(s, services, entries, t) {
+			state = rc_service_state(s->value);
 			if ((rc_stringlist_find(sservices, s->value) ||
-			    (rc_service_state(s->value) & ( RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED)))) {
-				TAILQ_REMOVE(services, s, entries);
-				free(s->value);
-				free(s);
+			    (state & ( RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED)))) {
+				if (! (state & RC_SERVICE_FAILED)) {
+					TAILQ_REMOVE(services, s, entries);
+					free(s->value);
+					free(s);
+				}
 			}
 		}
 		needsme = rc_stringlist_new();
