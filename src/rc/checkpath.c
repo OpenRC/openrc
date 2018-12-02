@@ -16,9 +16,11 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -69,6 +71,37 @@ const char * const longopts_help[] = {
 };
 const char *usagestring = NULL;
 
+/* On Linux, fchmod() returns EBADF when passed a file descriptor opened
+ * with O_PATH. Use chmod() on /proc/self/fd as a workaround. */
+static int fchmod_opath(int fd, mode_t mode)
+{
+#ifdef O_PATH
+	/* A 64-bit int will result in a maximum path length of 35 characters. */
+	char path[35];
+
+	/* Maybe we will have 128-bit ints someday. */
+	assert(sizeof(int) <= 8);
+
+	if (sprintf(path, "/proc/self/fd/%d", fd) < 0)
+		return -1;
+
+	return chmod(path, mode);
+#else
+	return fchmod(fd, mode);
+#endif
+}
+
+/* On Linux, fchown() returns EBADF when passed a file descriptor opened
+ * with O_PATH. fchownat() does not exhibit this flaw. */
+static int fchown_opath(int fd, uid_t uid, gid_t gid)
+{
+#ifdef O_PATH
+	return fchownat(fd, "", uid, gid, AT_EMPTY_PATH);
+#else
+	return fchown(fd, uid, gid);
+#endif
+}
+
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool selinux_on)
 {
@@ -82,7 +115,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 
 	memset(&st, 0, sizeof(st));
 	flags = O_CREAT|O_NDELAY|O_WRONLY|O_NOCTTY;
-	readflags = O_NDELAY|O_NOCTTY|O_RDONLY;
+	readflags = O_NDELAY|O_NOCTTY;
 #ifdef O_CLOEXEC
 	flags |= O_CLOEXEC;
 	readflags |= O_CLOEXEC;
@@ -90,6 +123,11 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 #ifdef O_NOFOLLOW
 	flags |= O_NOFOLLOW;
 	readflags |= O_NOFOLLOW;
+#endif
+#ifdef O_PATH
+	readflags |= O_PATH;
+#else
+	readflags |= O_RDONLY;
 #endif
 	if (trunc)
 		flags |= O_TRUNC;
@@ -177,7 +215,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				return -1;
 			}
 			einfo("%s: correcting mode", path);
-			if (fchmod(readfd, mode)) {
+			if (fchmod_opath(readfd, mode)) {
 				eerror("%s: chmod: %s", applet, strerror(errno));
 				close(readfd);
 				return -1;
@@ -196,7 +234,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				return -1;
 			}
 			einfo("%s: correcting owner", path);
-			if (fchown(readfd, uid, gid)) {
+			if (fchown_opath(readfd, uid, gid)) {
 				eerror("%s: chown: %s", applet, strerror(errno));
 				close(readfd);
 				return -1;
