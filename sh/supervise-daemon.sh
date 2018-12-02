@@ -30,6 +30,7 @@ supervise_start()
 		${chroot:+--chroot} $chroot \
 		${output_log+--stdout} ${output_log} \
 		${error_log+--stderr} $error_log \
+		${pidfile:+--pidfile} $pidfile \
 		${respawn_delay:+--respawn-delay} $respawn_delay \
 		${respawn_max:+--respawn-max} $respawn_max \
 		${respawn_period:+--respawn-period} $respawn_period \
@@ -43,6 +44,7 @@ supervise_start()
 	rc=$?
 	if [ $rc = 0 ]; then
 		[ -n "${chroot}" ] && service_set_value "chroot" "${chroot}"
+		[ -n "${pidfile}" ] && service_set_value "pidfile" "${pidfile}"
 	fi
 	eend $rc "failed to start ${name:-$RC_SVCNAME}"
 }
@@ -50,9 +52,13 @@ supervise_start()
 supervise_stop()
 {
 	local startchroot="$(service_get_value "chroot")"
+	local startpidfile="$(service_get_value "pidfile")"
 	chroot="${startchroot:-$chroot}"
+	pidfile="${startpidfile:-$pidfile}"
 	ebegin "Stopping ${name:-$RC_SVCNAME}"
 	supervise-daemon "${RC_SVCNAME}" --stop \
+		${pidfile:+--pidfile} $chroot$pidfile \
+		${stopsig:+--signal} $stopsig
 
 	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
 }

@@ -779,7 +779,7 @@ int main(int argc, char **argv)
 			break;
 
 		case 'p':  /* --pidfile <pid-file> */
-			ewarn("%s: --pidfile is deprecated and will be removed", applet);
+			pidfile = optarg;
 			break;
 
 		case 'R':  /* --retry <schedule>|timeout */
@@ -855,7 +855,8 @@ int main(int argc, char **argv)
 		ch_root = expand_home(home, ch_root);
 
 	umask(numask);
-	xasprintf(&pidfile, "/var/run/supervise-%s.pid", svcname);
+	if (!pidfile)
+		xasprintf(&pidfile, "/var/run/supervise-%s.pid", svcname);
 	xasprintf(&fifopath, "%s/supervise-%s.ctl", RC_SVCDIR, svcname);
 	if (mkfifo(fifopath, 0600) == -1 && errno != EEXIST)
 		eerrorx("%s: unable to create control fifo: %s",
@@ -878,6 +879,7 @@ int main(int argc, char **argv)
 		sscanf(str, "%d", &child_pid);
 		free(str);
 		exec = rc_service_value_get(svcname, "exec");
+		pidfile = rc_service_value_get(svcname, "pidfile");
 		retry = rc_service_value_get(svcname, "retry");
 		if (retry) {
 			parse_schedule(applet, retry, sig);
@@ -959,6 +961,7 @@ int main(int argc, char **argv)
 			eerrorx("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
 		fclose(fp);
 
+		rc_service_value_set(svcname, "pidfile", pidfile);
 		varbuf = NULL;
 		xasprintf(&varbuf, "%i", respawn_delay);
 		rc_service_value_set(svcname, "respawn_delay", varbuf);
