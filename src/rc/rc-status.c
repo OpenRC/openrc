@@ -29,7 +29,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "aclmrsu" getoptstring_COMMON;
+const char *getoptstring = "aclmrsSu" getoptstring_COMMON;
 const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
 	{"crashed",     0, NULL, 'c'},
@@ -37,6 +37,7 @@ const struct option longopts[] = {
 	{"manual",        0, NULL, 'm'},
 	{"runlevel",    0, NULL, 'r'},
 	{"servicelist", 0, NULL, 's'},
+	{"supervised", 0, NULL, 'S'},
 	{"unused",      0, NULL, 'u'},
 	longopts_COMMON
 };
@@ -47,6 +48,7 @@ const char * const longopts_help[] = {
 	"Show manually started services",
 	"Show the name of the current runlevel",
 	"Show service list",
+	"show supervised services",
 	"Show services not assigned to any runlevel",
 	longopts_help_COMMON
 };
@@ -294,6 +296,14 @@ int main(int argc, char **argv)
 		case 'r':
 			runlevel = rc_runlevel_get();
 			printf("%s\n", runlevel);
+			goto exit;
+			/* NOTREACHED */
+		case 'S':
+			services = rc_services_in_state(RC_SERVICE_STARTED);
+			TAILQ_FOREACH(s, services, entries)
+				if (rc_service_value_get(s->value, "child_pid")) {
+					printf("%s\n", s->value);
+				}
 			goto exit;
 			/* NOTREACHED */
 		case 's':
