@@ -300,10 +300,10 @@ int main(int argc, char **argv)
 			/* NOTREACHED */
 		case 'S':
 			services = rc_services_in_state(RC_SERVICE_STARTED);
-			TAILQ_FOREACH(s, services, entries)
-				if (rc_service_value_get(s->value, "child_pid")) {
-					printf("%s\n", s->value);
-				}
+			TAILQ_FOREACH_SAFE(s, services, entries, t)
+				if (!rc_service_value_get(s->value, "child_pid"))
+					TAILQ_REMOVE(services, s, entries);
+			print_services(NULL, services);
 			goto exit;
 			/* NOTREACHED */
 		case 's':
