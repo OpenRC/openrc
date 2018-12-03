@@ -1,3 +1,264 @@
+commit fb4dd351c7ef2614076309d630e163ff963ac8bf
+Author: Austin English <austinenglish@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    misc: make checks always fatal
+    
+    This fixes #263.
+
+commit 10dc65cc46e4f16f1b1f9822f3b687f2e58e4b40
+Author: Austin English <austinenglish@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    src/rc/supervise-daemon.c: fix style issue
+    
+    This is for #263.
+
+commit 9a2115f7620b33e03592fb1eabe5a613984a9894
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: show status for supervised services instead of a list
+
+commit eeba6df4761777be5af7f9a2876223155921ee37
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update supervise-daemon man page
+
+commit ac42e81a6419b281ed3f62900e29a5a802106dce
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon.sh: drop the unused stopsig variable
+
+commit af70862a7a115d6269affca663423e9340d6e929
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: use a default pid file if one is not specified
+    
+    Since the pid file is internal to us, start moving toward deprecating it
+    by not requiring the user to specify it.
+    In the next release, I plan on working on code to start phasing out the
+    use of a pid file if this is possible.
+
+commit fa6611b5af94548e901e587fcd36f4fb59124975
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: add --supervised option to show supervised services
+
+commit db01442580847d36f232527200e50091431c32b5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: show failed services as failed
+
+commit ebf79db79eaa2df0ceb62b4edbef94e68a28b612
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: mark a service failed if it respawns too many times
+
+commit 1b5a3b4ef4b2c3e20cfe4a71cf38c63279ed42d2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: make respawn-max and respawn-period independent settings
+
+commit 77262c359c4aaf15ba00b07cd51f3987ce514769
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: add support for a fifo
+    
+    This will allow us to signal the daemon we are supervising as well as
+    send other commands to the supervisor in the future.
+    
+    This fixes #227.
+
+commit 7f23e0461d6c6d24f5cfa39b9e404a7ec9cfd9c1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: rework signal handling and main loop
+    
+    This is needed in preparation for adding support for a fifo to allow us
+    to communicate with the supervisor to ask it to signal the child it is
+    supervising.
+
+commit ff4af908a58eedf9a165946f109f06add23fff9c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "checkpath: use O_PATH when available"
+    
+    This reverts commit 2af0cedd5952d7da71681b7a636dff3540e4295d.
+    
+    After speaking with Luis Ressel on the Gentoo selinux team, I am reverting
+    this commit for the following reasons:
+    
+    - Luis told me that he feels this is not the solution we need to address
+      the concern with checkpath; I will be working with him on another
+      solution.
+    
+    - There are concerns about the way the path variable was handled
+      and the assert() call.
+      The path variable should be dynamically allocated using xasprintf
+      instead of defining a length at compile time. This would eliminate the
+      need for the assert() call.
+    
+    - It introduces the definition of _GNU_SOURCE which makes it
+      easier to introduce portability concerns in the future (see #262).
+
+commit 2af0cedd5952d7da71681b7a636dff3540e4295d
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: Mike Frysinger <vapier@gmail.com>
+
+    checkpath: use O_PATH when available
+    
+    This avoids opening directories/files with read permission, which is
+    sometimes rejected by selinux policy.
+    
+    Bug: https://bugs.gentoo.org/667122
+
+commit ee41e444ad18192fa34f598464e3ac52f323e27e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc.conf: typo fix
+    
+    X-Gentoo-Bug: 670874
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=670874
+
+commit b7828651babd20fb6cc11aed91721e103ccbb3e1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: fix type of exiting flag
+
+commit e96f7d5658950ddee68e54fba4b6321b9a6a2ed8
+Author: Austin English <austinenglish@gmail.com>
+Commit: Mike Frysinger <vapier@gmail.com>
+
+    src/tests/runtests.sh: add a FATAL_CHECKS variable to make whitespace/etc. fatal
+
+commit 28b73fc524096d5b2205fea25943410725d6227f
+Author: Austin English <austinenglish@gmail.com>
+Commit: Mike Frysinger <vapier@gmail.com>
+
+    src/rc/openrc-shutdown.c: fix style
+
+commit 7a00c63420f81797b3e0cc402f756b63fe06f7d4
+Author: Austin English <austinenglish@gmail.com>
+Commit: Mike Frysinger <vapier@gmail.com>
+
+    fix misc whitespace issues
+
+commit f4597c546a998085e09880aa6663d1d6ee05fac4
+Author: Austin English <austinenglish@gmail.com>
+Commit: Mike Frysinger <vapier@gmail.com>
+
+    give TravisCI a try
+
+commit e10afc8e757fb914e632e9c40fc6e589e6d47580
+Author: Austin English <austinenglish@gmail.com>
+Commit: Mike Frysinger <vapier@gmail.com>
+
+    sh/functions.sh.in: return a different value for invalid input in yesno()
+
+commit 0f704402a236d385e8b30083ccf9aca327c0a57e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: make the pidfile an implementation detail
+    
+    The pidfile of the supervisor doesn't need to be adjustable by the
+    service script. It is only used so the supervisor can stop itself when
+    the --stop option is used.
+
+commit 2504a2c25bc0587b36d81a2d85c203b20e2d40cf
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Do not complain if interrupted by a signal
+    
+    In start-stop-daemon and rc-schedules, we were printing out a warning if
+    the nanosleep call was interrupted by a signal, but we did not treat
+    this as an error situation other than displaying the message, so there
+    is no need for the message.
+
+commit 7eb3975543eafd44c6946ca5a76812aa0d7a7303
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Create save-keymaps and save-ktermencoding services
+    
+    These services represent the parts of the keymaps and termencoding
+    services which saved the settings back to the root file system so they
+    can be loaded very early in the boot process.
+    These are needed to allow keymaps and termencoding to run earlier in the
+    boot sequence.
+    
+    X-Gentoo-Bug: 446018
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=446018
+
+commit 60e60dc9bbf0e3a18d897861367d9289ae8006d6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon.sh: drop invalid --signal switch
+    
+    This fixes #230.
+
+commit 008c9d0036e348242e323c0b5a66f3724b4a839d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: reap zombies
+    
+    We need to make sure to reap zombies so that we can shut down
+    successfully.
+    
+    Fixes #252.
+    Possibly related to #250.
+
+commit 025c9693ccab9c6220520ace47aa81553e7ea600
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-service: fix help output
+
+commit ee3c4afdb75b98cd472b7ffbb46adc9d8a1e1b15
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-init: add SELinux support
+    
+    This is for #173.
+
+commit e2416d089396e2b9a72cc56ef9f57886ffb0f1c8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-shutdown: do not require a time for -w switch
+    
+    X-Gentoo-Bug: 669500
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=669500
+
+commit a2bcfeb42882b40ca23ddfefca2a17a7988f8082
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.40
+
+commit 53f7afd3b3daf659d58d6545dc79cd45c4c54277
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 75e9b66f6ff36d06bf1f8bd4824000f9f26106e0
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1147,291 +1408,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     the command.
     
     This fixes #154.
-
-commit cee3919908c2d715fd75a796873e3308209a4c2e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Clean up the calls to group_add_service
-    
-    This function should only be called once and it does not take any
-    arguments.
-    
-    X-Gentoo-Bug: 639166
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=639166
-
-commit 0feadd2922484ec181c2ab86a5f7f8d6d37c5c77
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc-run.8: update documentation for command_user
-
-commit a7c99506d9de81b9a2a7547bd11715073de1ce95
-Author: Will Miles <wmiles@sgl.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix repeated dependency cache rebuild if clock skewed
-    
-    rc_deptree_update_needed would return early as soon as it found
-    any file newer than the existing dependency cache.  Unfortunately,
-    the first file found may not be the newest one there; so the
-    clock skew workaround in rc-misc:_rc_deptree_load would be given
-    a timestamp that was still too old.
-    
-    This fix forces a full scan of all relevant files, so as to
-    ensure that we return a timestamp that will allow the clock skew
-    fix to operate.   The runtime cost is no worse than the case where
-    the cache is up to date (ie. we must check every possible file).
-    
-    This fixes #161.
-
-commit f0129307759f1a5eb34b72589e8d48790c92b2db
-Author: Julien Reichardt <mi@jrei.ch>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc-run.8: remove white space
-    
-    This is for #184.
-
-commit ddbdb696582e9fd61995f15d6a3a53055a151e41
-Author: Julien Reichardt <mi@jrei.ch>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add more variables for start-stop-daemon and supervise-daemon options
-    
-    Add the following variables to expose more arguments that can be passed
-    to start-stop-daemon or supervise-daemon:
-    
-    - directory will be passed to --chdir
-    - error_log will be passed to --stderr
-    - output_log will be passed to --stdout
-    - umask will be passed to umask
-    
-    This is for #184.
-
-commit c84ebb94d19ca856fe064e15d2068d5671e360c9
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: GitHub <noreply@github.com>
-
-    start-stop-daemon: properly handle missing pidfile
-    
-    X-Gentoo-Bug: 639218
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/639218
-
-commit 3de6395ae3b8780ab501f3cf8688e1cb2a9f0243
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    split cgroups mounting out of sysfs
-    
-    This is neceessary to allow cgroups to be mounted in an lxc/lxd
-    container.
-    
-    Fixes https://github.com/openrc/openrc/issues/187
-
-commit 6bb7ebec483a96e258c64ea3fea18358d7893fee
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix FreeBSD build
-    
-    This is for #186.
-
-commit a192caf88f527e09508e32baa623ef85549612ae
-Author: Doug Freed <dwfreed@mtu.edu>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    rc-schedules: if given nothing to look for, stop
-    
-    This avoids trying to kill everything.
-    
-    X-Gentoo-Bug: 631958
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=631958
-
-commit e805c74d31113c75058d860588e83bca120decf6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    s6 supervisor fixes
-    
-    Add the ability to force-kill a service if it does not go down
-    successfully. Also, adjust the default wait time for an s6 service to go
-    down to 60 seconds.
-
-commit 318e87348168e37d78f433d3ff06288ad8ccf15c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    strongly encourage Linux users to not make  /etc/mtab a flat file
-    
-    The OpenRC team does not currently know of any modern linux tools that
-    require /etc/mtab to be a flat file, so this puts users on notice that
-    the mtab service will be removed in the future.
-
-commit 0d15898f58cc254d79777c791d4798a9b2542cf2
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    adjust mtab and localmount dependencies
-    
-    localmount had mtab in its "use" dependencies; however, it makes more
-    sense to add "before localmount" to the mtab service and remove
-    "use mtab" from the localmount service.
-
-commit 971e82784cd1ad8f9a286ee792e6417359972976
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc_find_pids: namespace fix
-    
-    Ignore namespaces if there are errors reading either the pid namespace
-    for the current process or the process we aare testing.
-    
-    This fixes https://github.com/openrc/openrc/issues/180.
-
-commit 90d9ea656ff7c6b5d618df4e4261ebfa4033f1a8
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: do not use do_stop to verify whether a daemon is running
-    
-    X-Gentoo-Bug: 636574
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=636574
-
-commit a3d1c8a0e7d5586be13e2cd9b5029fd729bc1594
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix issue with --reexec call
-
-commit 913b2ca53771742385d5c69164aefcaab634f012
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: use RC_SVCNAME as the first argument to the daemon
-    
-    This makes ps show which service the supervisor is monitoring.
-
-commit 3fe99c8b8264269dd935d52a1a52581cc0f14e8e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: fix logging for reexec and the child command line
-
-commit 27b8183de2f2bfd7411c14c1ec28543ca8a36602
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    log as supervise-daemon not the service
-
-commit f32d8e1bfe16caf233d1180921f4aeed77d7476d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: clarify a log message
-
-commit d019f34a83b0ad5e890f685b1263b281ab54ce54
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: log the command line we run to spawn the child process
-
-commit bb9c481f02cb1843e00bf32e98caf18b6b56bb4d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: log with the service name instead of "supervise-daemon"
-
-commit 82da844b42ff83b2ebf944198e56ac2d81851897
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    implement "unsupervised" status
-    
-    The unsupervised status is to be used when a supervisor of a supervised
-    service dies but leaves the service daemon itself running.
-
-commit 667a09983ca5311824aa88c42d39a495c540fc4c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: remove child_pid from saved options during shutdown
-    
-    This allows us to detect when the supervisor dies unexpectedly because
-    in that case child_pid will still exist.
-
-commit cf429ee359356d736c818e8b35db8fca887e7332
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc_service_value_set: remove the option if NULL is the value
-    
-    This allows the equivalent of "unsetting" a value for a service.
-
-commit 6f3e2e2d7de61ab28cf03937ccf2e5f80b62190a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon.sh: fix status function with no namespaces
-
-commit 35b88fb42bb8e0a56cdc1947342f1b89c98658bc
-Author: Patrick McLean <chutzpah@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    cgroups_cleanup: clean up shutdown signaling
-    
-    - do not sleep for the full 90 seconds if processes are dead
-    - re-arrange the order of signals we attempt to send to the processes
-
-commit a428c325a902bba55a849a07a59c0c1567404db2
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add "unsupervised" status and return code 64 to supervise-daemon status function
-    
-    This is to be used if the service is being supervised and the
-    supervisor is somehow killed.
-    
-    Currently, this is very linux specific, but I will expand to other
-    platforms, patches are welcome.
-
-commit 3219ecd6085231d7cc1268323a5be6a69f8c9143
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: fix build issue for >=glibc-2.26
-    
-    X-Gentoo-Bug: 635334
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=635334
-
-commit 0d8dc4f798cc0d707fc64e8bffcba4fbceb32935
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.35
-
-commit f3c70bf5b5aa18e8dc94d4949f05568e0741c5cb
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit f5acc66db7d1a0bfad6a40eefc0240b80f52df94
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc_find_pids: ignore pids that are not in our pid namespace
-    
-    X-Gentoo-Bug: 634634
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=634634
-
-commit fdce4769f2e0f4175163ffa181c7b3b2192f7b22
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: multiple fixes
-    
-    - Harden against dying by handling all signals that would terminate the
-    program and adding --reexec support
-    - factor the supervisor into its own function
-    - fix test for whether we are already running
