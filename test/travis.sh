@@ -20,6 +20,4 @@ cpus=$(getconf _NPROCESSORS_CONF || echo 1)
 # make on TravisCI doesn't support -O yet
 make -j"${cpus}"
 
-# This make whitespace/etc. checks fatal.
-export FATAL_CHECKS=1
 make test
