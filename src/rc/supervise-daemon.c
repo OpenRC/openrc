@@ -185,7 +185,7 @@ static void handle_signal(int sig)
 {
 	int serrno = errno;
 
-	switch(sig) {
+	switch (sig) {
 	case SIGALRM:
 		do_healthcheck = 1;
 		break;
