@@ -16,6 +16,7 @@
 .Nd starts a daemon and restarts it if it crashes
 .Sh SYNOPSIS
 .Nm
+servicename
 .Fl a , -healthcheck-timer
 .Ar seconds
 .Fl A , -healthcheck-delay
@@ -53,11 +54,13 @@
 .Op Fl -
 .Op Ar arguments
 .Nm
+servicename
 .Fl K , -stop
 .Ar daemon
 .Fl r , -chroot
 .Ar chrootpath
 .Nm
+servicename
 .Fl s , -signal
 .Ar signal
 .Fl r , -chroot
@@ -67,6 +70,8 @@
 provides a consistent method of starting, stopping and restarting
 daemons. If
 .Fl K , -stop
+or
+.Fl s , -signal
 is not provided, then we assume we are starting the daemon.
 .Nm
 only works with daemons which do not fork. If your daemon has options to
@@ -128,6 +133,10 @@ If this option is not given, the default is SIGTERM/5.
 .It Fl r , -chroot Ar path
 chroot to this directory before starting the daemon. All other paths, such
 as the path to the daemon and chdir should be relative to the chroot.
+.It Fl  , -signal Ar signal
+Instruct a supervisor to signal the process it is supervising. The
+process to communicate with is determined by the name of the service
+taken from the RC_SVCNAME environment variable.
 .It Fl u , -user Ar user
 Start the daemon as the specified user.
 .It Fl 1 , -stdout Ar logfile
@@ -161,6 +170,11 @@ make sure the settings mmake sense. For example, a respawn period of 5
 seconds with a respawn max of 10 and a respawn delay of 1 second leads
 to infinite respawning since there can never be 10 respawns within 5
 seconds.
+.Sh NOTE
+Invoking supervise-daemon requires both the RC_SVCNAME  environment
+variable to be set and the name of the service as the first argument on
+the command line, so it is best to invoke it inside a service script
+rather than manually.
 .Sh SEE ALSO
 .Xr chdir 2 ,
 .Xr chroot 2 ,
