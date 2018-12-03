@@ -21,13 +21,10 @@ checkit() {
 ret=0
 
 fail_on_out() {
-        # If FATAL_CHECKS is set, then fail when $out has output:
-        if [ -n "${FATAL_CHECKS}" ]; then
-                if [ -n "${out}" ]; then
-                        eerror "Last command failed and FATAL_CHECKS is set; failing"
-                        exit 1
-                fi
-        fi
+	if [ -n "${out}" ]; then
+		eerror "Last command failed; failing"
+		exit 1
+	fi
 }
 
 ebegin "Checking exported symbols in libeinfo.so (data)"
