@@ -1,3 +1,23 @@
+commit 69fbd129938522cdd9b82fea2b83c857796a32af
+Author: Alexander Zubkov <green@msu.ru>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: redirect std{in,out,err} to /dev/null after demonizing
+    
+    This fixes #239.
+
+commit 4aa5686d9037132b27d7554436738fa98e8e9057
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.40.1
+
+commit ab6c8d56f155564f56d61553c4b1af9e7f63a9d2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit fb4dd351c7ef2614076309d630e163ff963ac8bf
 Author: Austin English <austinenglish@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1397,14 +1417,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     add bash completion support
     
     This fixes #188.
-
-commit a2447dfb420cbd97a65cc085404c031d42cb3dfb
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-service: add --ifcrashed option
-    
-    This works like the other --if options. If the service is crashed, run
-    the command.
-    
-    This fixes #154.
