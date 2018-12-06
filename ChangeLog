@@ -1,3 +1,37 @@
+commit b8e57c693a973528799c9a5fdf86135b658dcce2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/agetty: set default respawn period to 60 seconds
+    
+    Without a respawn period setting, the supervisor will give up on
+    respawning agetty after it is respawned respawn_max times. For most
+    daemons giving up like this is reasonable, but not for agettys. Agettys
+    should always be respawned unless they are respawning too fafst,.
+    
+    If an agetty is respawning faster than 10 times in 60 seconds, this
+    seems to be too fast.
+
+commit 5df12e24146cd091de71c77737c07eed5a14101f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: fix busy loop
+    
+    This fixes #264.
+
+commit 461df0c78b1b8a58bb272958dce4af39fc2549c0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.40.2
+
+commit cefae65392568afac83f64773b6ad33462791c38
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 69fbd129938522cdd9b82fea2b83c857796a32af
 Author: Alexander Zubkov <green@msu.ru>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1409,11 +1443,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     Add zsh-completion support
-
-commit d220fc272337b216bff6ac781a7b6be4e6f3caee
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    add bash completion support
-    
-    This fixes #188.
