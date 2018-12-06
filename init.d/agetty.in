@@ -12,6 +12,7 @@
 description="start agetty on a terminal line"
 supervisor=supervise-daemon
 port="${RC_SVCNAME#*.}"
+respawn_period="${respawn_period:-60}"
 term_type="${term_type:-linux}"
 command=/sbin/agetty
 command_args_foreground="${agetty_options} ${port} ${baud} ${term_type}"
