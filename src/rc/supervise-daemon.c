@@ -184,13 +184,22 @@ static void re_exec_supervisor(void)
 static void handle_signal(int sig)
 {
 	int serrno = errno;
+	pid_t pid;
 
 	switch (sig) {
 	case SIGALRM:
 		do_healthcheck = 1;
 		break;
 	case SIGCHLD:
-		while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
+		if (exiting)
+			while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
+		else {
+			while ((pid = waitpid((pid_t)(-1), NULL, WNOHANG|WNOWAIT)) > 0) {
+				if (pid == child_pid)
+					break;
+				pid = waitpid(pid, NULL, WNOHANG);
+			}
+		}
 		break;
 	case SIGTERM:
 		exiting = 1;
@@ -451,6 +460,7 @@ static void supervisor(char *exec, char **argv)
 	int healthcheck_respawn;
 	int i;
 	int nkilled;
+	int ready;
 	int sig_send;
 	pid_t health_pid;
 	pid_t wait_pid;
@@ -498,18 +508,18 @@ static void supervisor(char *exec, char **argv)
 		alarm(healthcheckdelay);
 	else if (healthchecktimer)
 		alarm(healthchecktimer);
- fifo_fd = open(fifopath, O_RDONLY |O_NONBLOCK);
  failing = 0;
 	while (!exiting) {
 		healthcheck_respawn = 0;
-		wait_pid = waitpid(child_pid, &i, WNOHANG);
-		memset(buf, 0, sizeof(buf));
-		if (fifo_fd >= 0) {
+ 	fifo_fd = open(fifopath, O_RDONLY);
+		if (fifo_fd > 0) {
+			memset(buf, 0, sizeof(buf));
 			count = read(fifo_fd, buf, sizeof(buf) - 1);
+			close(fifo_fd);
 			if (count != -1)
 				buf[count] = 0;
-		}
-		if (strlen(buf) > 0) {
+			if (count == 0)
+				continue;
 			syslog(LOG_DEBUG, "Received %s from fifo", buf);
 			if (strncasecmp(buf, "sig", 3) == 0) {
 				if ((sscanf(buf, "%s %d", cmd, &sig_send) == 2)
@@ -521,6 +531,7 @@ static void supervisor(char *exec, char **argv)
 								sig_send, child_pid);
 				}
 			}
+			continue;
 		}
 		if (do_healthcheck) {
 			do_healthcheck = 0;
@@ -553,6 +564,7 @@ static void supervisor(char *exec, char **argv)
 				syslog(LOG_INFO, "killed %d processes", nkilled);
 			continue;
 		}
+		wait_pid = waitpid(child_pid, &i, WNOHANG);
 		if (wait_pid == child_pid) {
 			if (WIFEXITED(i))
 				syslog(LOG_WARNING, "%s, pid %d, exited with return code %d",
