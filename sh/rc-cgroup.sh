@@ -1,4 +1,3 @@
-#!@SHELL@
 # Copyright (c) 2012-2015 The OpenRC Authors.
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/master/AUTHORS
