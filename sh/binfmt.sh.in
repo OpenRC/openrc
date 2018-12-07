@@ -1,4 +1,4 @@
-#!@SHELL@
+#!/bin/sh
 # This is a reimplementation of the systemd binfmt.d code to register
 # misc binary formats with the kernel.
 #

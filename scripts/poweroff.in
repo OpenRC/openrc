@@ -1,4 +1,4 @@
-#!@SHELL@
+#!/bin/sh
 
 option_arg=
 poweroff_arg=
