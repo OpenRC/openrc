@@ -21,4 +21,9 @@ if [ -z "${poweroff_arg}" ]; then
 	poweroff_arg=--poweroff
 fi
 
-exec @SBINDIR@/openrc-shutdown ${option_arg} ${poweroff_arg} "$@"
+script_args="$@"
+if [ -z "${script_args}" ]; then
+	script_args=now
+fi
+
+exec @SBINDIR@/openrc-shutdown ${option_arg} ${poweroff_arg} "${script_args}"
