@@ -25,5 +25,10 @@ if [ -z "${shutdown_arg}" ]; then
 	shutdown_arg=--single
 fi
 
-echo @SBINDIR@/openrc-shutdown ${shutdown_arg} "$@"
-exec @SBINDIR@/openrc-shutdown ${shutdown_arg} "$@"
+script_args="$@"
+if [ -z "${script_args}" ]; then
+	script_args=now
+fi
+
+echo @SBINDIR@/openrc-shutdown ${shutdown_arg} "${script_args}"
+exec @SBINDIR@/openrc-shutdown ${shutdown_arg} "${script_args}"
