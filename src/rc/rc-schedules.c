@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syslog.h>
 #include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -270,8 +271,11 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 			einfo("Would send signal %d to PID %d", sig, pi->pid);
 			nkilled++;
 		} else {
-			if (!quiet)
-				ebeginv("Sending signal %d to PID %d", sig, pi->pid);
+			if (sig) {
+				syslog(LOG_DEBUG, "Sending signal %d to PID %d", sig, pi->pid);
+				if (!quiet)
+					ebeginv("Sending signal %d to PID %d", sig, pi->pid);
+			}
 			errno = 0;
 			killed = (kill(pi->pid, sig) == 0 ||
 			    errno == ESRCH ? true : false);
@@ -279,6 +283,9 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 				eendv(killed ? 0 : 1,
 				"%s: failed to send signal %d to PID %d: %s",
 				applet, sig, pi->pid, strerror(errno));
+			else if (!killed)
+				syslog(LOG_ERR, "Failed to send signal %d to PID %d: %s",
+						sig, pi->pid, strerror(errno));
 			if (!killed) {
 				nkilled = -1;
 			} else {
@@ -310,12 +317,18 @@ int run_stop_schedule(const char *applet,
 	if (!(pid > 0 || exec || uid || (argv && *argv)))
 		return 0;
 
-	if (exec)
+	if (exec) {
 		einfov("Will stop %s", exec);
-	if (pid > 0)
+		syslog(LOG_DEBUG, "Will stop %s", exec);
+	}
+	if (pid > 0) {
 		einfov("Will stop PID %d", pid);
-	if (uid)
+		syslog(LOG_DEBUG, "Will stop PID %d", pid);
+	}
+	if (uid) {
 		einfov("Will stop processes owned by UID %d", uid);
+		syslog(LOG_DEBUG, "Will stop processes owned by UID %d", uid);
+	}
 	if (argv && *argv) {
 		einfovn("Will stop processes of `");
 		if (rc_yesno(getenv("EINFO_VERBOSE"))) {
