@@ -48,34 +48,39 @@ pid_is_exec(pid_t pid, const char *exec)
 static bool
 pid_is_argv(pid_t pid, const char *const *argv)
 {
-	char *cmdline = NULL;
-	int fd;
-	char buffer[PATH_MAX];
+	char *buffer = NULL, *cmdline = NULL;
 	char *p;
-	ssize_t bytes;
+	size_t bytes;
+	int rc;
 
 	xasprintf(&cmdline, "/proc/%u/cmdline", pid);
-	if ((fd = open(cmdline, O_RDONLY)) < 0) {
+	if (!rc_getfile(cmdline, &buffer, &bytes)) {
 		free(cmdline);
 		return false;
 	}
-	bytes = read(fd, buffer, sizeof(buffer));
-	close(fd);
 	free(cmdline);
-	if (bytes == -1)
+	if (bytes <= 0) {
+		if (buffer)
+			free(buffer);
 		return false;
-
-	buffer[bytes] = '\0';
+	}
 	p = buffer;
+	rc = true;
 	while (*argv) {
-		if (strcmp(*argv, p) != 0)
-			return false;
+		if (strcmp(*argv, p) != 0) {
+			rc = false;
+			break;
+		}
+
 		argv++;
 		p += strlen(p) + 1;
-		if ((unsigned)(p - buffer) > sizeof(buffer))
-			return false;
+		if ((unsigned)(p - buffer) >= bytes) {
+			rc = false;
+			break;
+		}
 	}
-	return true;
+	free(buffer);
+	return rc;
 }
 
 RC_PIDLIST *
