@@ -558,7 +558,7 @@ rc_service_resolve(const char *service)
 
 	if (*file) {
 		memset(buffer, 0, sizeof(buffer));
-		r = readlink(file, buffer, sizeof(buffer));
+		r = readlink(file, buffer, sizeof(buffer)-1);
 		if (r > 0)
 			return xstrdup(buffer);
 	}

@@ -147,7 +147,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	memset(my_ns, 0, sizeof(my_ns));
 	memset(proc_ns, 0, sizeof(proc_ns));
 	if (exists("/proc/self/ns/pid")) {
-		rc = readlink("/proc/self/ns/pid", my_ns, sizeof(my_ns));
+		rc = readlink("/proc/self/ns/pid", my_ns, sizeof(my_ns)-1);
 		if (rc <= 0)
 			my_ns[0] = '\0';
 	}
@@ -161,7 +161,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 			continue;
 		xasprintf(&buffer, "/proc/%d/ns/pid", p);
 		if (exists(buffer)) {
-			rc = readlink(buffer, proc_ns, sizeof(proc_ns));
+			rc = readlink(buffer, proc_ns, sizeof(proc_ns)-1);
 			if (rc <= 0)
 				proc_ns[0] = '\0';
 		}
