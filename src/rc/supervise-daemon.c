@@ -267,6 +267,56 @@ static char *make_cmdline(char **argv)
 	return cmdline;
 }
 
+static pid_t exec_command(char *cmd)
+{
+	char *file;
+	pid_t pid = -1;
+	sigset_t full;
+	sigset_t old;
+	struct sigaction sa;
+
+	file = rc_service_resolve(svcname);
+	if (!exists(file)) {
+		free(file);
+		return 0;
+	}
+
+	/* We need to block signals until we have forked */
+	memset(&sa, 0, sizeof (sa));
+	sa.sa_handler = SIG_DFL;
+	sigemptyset(&sa.sa_mask);
+	sigfillset(&full);
+	sigprocmask(SIG_SETMASK, &full, &old);
+
+	pid = fork();
+	if (pid == 0) {
+		/* Restore default handlers */
+		sigaction(SIGCHLD, &sa, NULL);
+		sigaction(SIGHUP, &sa, NULL);
+		sigaction(SIGINT, &sa, NULL);
+		sigaction(SIGQUIT, &sa, NULL);
+		sigaction(SIGTERM, &sa, NULL);
+		sigaction(SIGUSR1, &sa, NULL);
+		sigaction(SIGWINCH, &sa, NULL);
+
+		/* Unmask signals */
+		sigprocmask(SIG_SETMASK, &old, NULL);
+
+		/* Safe to run now */
+		execl(file, file, cmd, (char *) NULL);
+		syslog(LOG_ERR, "unable to exec `%s': %s\n",
+		    file, strerror(errno));
+		_exit(EXIT_FAILURE);
+	}
+
+	if (pid == -1)
+		syslog(LOG_ERR, "fork: %s\n",strerror (errno));
+
+	sigprocmask(SIG_SETMASK, &old, NULL);
+	free(file);
+	return pid;
+}
+
 static void child_process(char *exec, char **argv)
 {
 	RC_STRINGLIST *env_list;
@@ -537,13 +587,13 @@ static void supervisor(char *exec, char **argv)
 			do_healthcheck = 0;
 			alarm(0);
 			syslog(LOG_DEBUG, "running health check for %s", svcname);
-			health_pid = exec_service(svcname, "healthcheck");
+			health_pid = exec_command("healthcheck");
 			health_status = rc_waitpid(health_pid);
 			if (WIFEXITED(health_status) && WEXITSTATUS(health_status) == 0)
 				alarm(healthchecktimer);
 			else {
 				syslog(LOG_WARNING, "health check for %s failed", svcname);
-				health_pid = exec_service(svcname, "unhealthy");
+				health_pid = exec_command("unhealthy");
 				rc_waitpid(health_pid);
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 				nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
