@@ -133,7 +133,7 @@ void broadcast(char *text)
 	char *p;
 	char *line = NULL;
 	struct sigaction sa;
-	int fd;
+	volatile int fd;
 	FILE *tp;
 	int	flags;
 	char *term = NULL;

@@ -277,7 +277,6 @@ static RC_STRINGLIST *rc_config_kcl(RC_STRINGLIST *config)
 	char *tmp = NULL;
 	char *value = NULL;
 	size_t varlen = 0;
-	size_t len = 0;
 
 	overrides = rc_stringlist_new();
 
@@ -295,7 +294,6 @@ static RC_STRINGLIST *rc_config_kcl(RC_STRINGLIST *config)
 		}
 
 		if (value != NULL) {
-			len = varlen + strlen(value) + 2;
 			xasprintf(&tmp, "%s=%s", override->value, value);
 		}
 

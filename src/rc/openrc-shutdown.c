@@ -160,9 +160,7 @@ static void sleep_no_interrupt(int seconds)
 
 static void stop_shutdown(int sig)
 {
-	/* use the sig parameter so the compiler will not complain */
-	if (sig == SIGINT)
-		;
+	(void) sig;
 	unlink(nologin_file);
 	unlink(shutdown_pid);
 einfo("Shutdown canceled");

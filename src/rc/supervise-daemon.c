@@ -267,7 +267,7 @@ static char *make_cmdline(char **argv)
 	return cmdline;
 }
 
-static pid_t exec_command(char *cmd)
+static pid_t exec_command(const char *cmd)
 {
 	char *file;
 	pid_t pid = -1;
@@ -510,7 +510,6 @@ static void supervisor(char *exec, char **argv)
 	int healthcheck_respawn;
 	int i;
 	int nkilled;
-	int ready;
 	int sig_send;
 	pid_t health_pid;
 	pid_t wait_pid;
