@@ -1,3 +1,43 @@
+commit 63e40f31bfc7d8908fee8059ea383038832dd84f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix compiler warnings
+
+commit e43ee29eb4310ff23c438d1877ef79c56539b002
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: do not use the exec_service() function
+    
+    In order to run healthcheck() and the unhealthy() function, add an
+    exec_command call to the supervisor.
+    Another difference is This function also logs errors instead of
+    attempting to display them.
+    
+    This is for #271.
+
+commit a3555b144291b7d32f7c14fd9bd0dbe3ee6e33f9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add debug logging to start-stop-daemon and rc-supervisor
+    
+    This will make it easier to track down why the supervisor intermittently
+    hangs after it runs for a long time.
+
+commit eb863156fbcbce236c60dec0e90338edbd9de686
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.40.3
+
+commit ac76b24b85d3767a9561b76ac0fee5569383a63a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit b8e57c693a973528799c9a5fdf86135b658dcce2
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1324,122 +1364,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     This fixes #196.
     
     [1] https://elkano.org/blog/manage-interface-bondings-sysfs-interface/
-
-commit 7affff568a0aa83d732757c4699d4b94b7e3a9aa
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d.examples: pid files always go in /var
-    
-    This removes the @VARBASE@ substitution since it is always translated to
-    /var.
-
-commit 4f750933fd8ef944be58bfeef071a8e35fc0c606
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    procfs: remove the @sysconfdir@ reference
-
-commit 50b69d564a8f89b8137bb6d9d53aac1e44f6c23c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    hostname: replace @SYSCONFDIR@ references with /etc
-    
-    I do not know of any situation where /etc/hostname is at any other
-    location. Also, this does not run on prefix.
-
-commit eb18f4f3483b99705f944c7274b4a6b451716df7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    hwclock: use shell variables for configuration file path
-    
-    This removes a reference to @SYSCONFDIR@.
-
-commit d5f3fe52c87928095bd2659823b985d231f0718c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sysctl: hard code paths for sysctl files on *bsd
-    
-    For *BSD,the sysctl*.conf files are always in /etc.
-
-commit bb1bc6eeb73b3483a1ebdfc142a11240b58588cf
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    local: misc cleanups
-    
-    Remove references to @SYSCONFDIR@ since these can be calculated at
-    runtime.
-    Also style fixes.
-
-commit 53844fd0dcd9741b5f19dee7c00787be7e904c3c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    devfs: cleanup
-    
-    clean up local definitions. Also remove @SYSCONFDIR@ substitutions since
-    they can be calculated at runtime.
-
-commit 14938c29cefe869872b987f8e606da72024fa8bb
-Author: bell07 <web.alexander@web.de>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    net-online: wait for ping_test_host
-    
-    The script should wait till the ping host is available or timeout reached
-    Closes : #179
-    Closes : #191
-
-commit 8bf501aaf2cb60b8ddf1b2fa2d1ba0ef970fb790
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    network: use 'command -v ip' to test for the ip executable
-    
-    This is an improved test because it doesn't require the ip executable to be
-    in a specific path.
-
-commit 9d05f68b51d7b31634cde30a482ec0e3da3b1c21
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Do not use file tests in net-online
-    
-    https://unix.stackexchange.com/questions/252002/help-testing-special-file-in-sys-class-net
-    
-    This is for #189
-
-commit ee2524cd1d0305e207f7dfac52742a1d5e77ea4a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    net-online: clean up quoting and test for existence
-    
-    This is for #178.
-
-commit 5c81661d4758dea039860ae2481476a70e78ac47
-Author: Marcel Greter <marcel.greter@ocbnet.ch>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Gracefully handle unreadable /sys/class/net/dev/ nodes
-    
-    Fixes https://bugs.gentoo.org/629228
-    Fixes #189
-    Fixes #185
-    Fixes #178
-
-commit fb96c9c127dcfa932460b0e8a977ba5f7d26a418
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Make bash-completion and zsh-completion optional
-
-commit 6c456f9383ab0000527b4363bc82fc17850aba18
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add zsh-completion support
