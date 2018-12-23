@@ -168,7 +168,6 @@ static inline int ioprio_set(int which _unused, int who _unused,
 
 static void cleanup(void)
 {
-	free(changeuser);
 }
 
 static void re_exec_supervisor(void)
