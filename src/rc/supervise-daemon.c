@@ -460,7 +460,6 @@ static void supervisor(char *exec, char **argv)
 	int healthcheck_respawn;
 	int i;
 	int nkilled;
-	int ready;
 	int sig_send;
 	pid_t health_pid;
 	pid_t wait_pid;
