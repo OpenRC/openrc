@@ -237,7 +237,7 @@ static char * expand_home(const char *home, const char *path)
 		ppath++;
 
 	if (!home) {
-	free(opath);
+		free(opath);
 		return xstrdup(path);
 	}
 	if (!ppath) {
@@ -486,7 +486,7 @@ static void supervisor(char *exec, char **argv)
 	sigaction(SIGTERM, &sa, NULL);
 
 	fp = fopen(pidfile, "w");
-	if (! fp)
+	if (!fp)
 		eerrorx("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
 	fprintf(fp, "%d\n", getpid());
 	fclose(fp);
@@ -508,10 +508,10 @@ static void supervisor(char *exec, char **argv)
 		alarm(healthcheckdelay);
 	else if (healthchecktimer)
 		alarm(healthchecktimer);
- failing = 0;
+	failing = 0;
 	while (!exiting) {
 		healthcheck_respawn = 0;
- 	fifo_fd = open(fifopath, O_RDONLY);
+		fifo_fd = open(fifopath, O_RDONLY);
 		if (fifo_fd > 0) {
 			memset(buf, 0, sizeof(buf));
 			count = read(fifo_fd, buf, sizeof(buf) - 1);
@@ -555,7 +555,7 @@ static void supervisor(char *exec, char **argv)
 					healthcheck_respawn = 1;
 			}
 		}
-		if (exiting ) {
+		if (exiting) {
 			alarm(0);
 			syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 			nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
@@ -1013,8 +1013,8 @@ int main(int argc, char **argv)
 				c++;
 			}
 			xasprintf(&varbuf, "%d", x);
-				rc_service_value_set(svcname, "argc", varbuf);
-				free(varbuf);
+			rc_service_value_set(svcname, "argc", varbuf);
+			free(varbuf);
 			rc_service_value_set(svcname, "exec", exec);
 			supervisor(exec, argv);
 		} else
