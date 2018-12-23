@@ -1223,7 +1223,6 @@ int main(int argc, char **argv)
 
 		/* Make our prefix string */
 		prefix = xmalloc(sizeof(char) * l + 1);
-		ll = strlen(applet);
 		memcpy(prefix, applet, ll);
 		memset(prefix + ll, ' ', l - ll);
 		memset(prefix + l, 0, 1);
