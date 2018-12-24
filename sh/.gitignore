@@ -4,5 +4,4 @@ openrc-run.sh
 cgroup-release-agent.sh
 init.sh
 init-early.sh
-migrate-to-run.sh
 binfmt.sh
