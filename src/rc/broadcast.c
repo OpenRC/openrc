@@ -37,10 +37,6 @@
 # define _PATH_DEV	"/dev/"
 #endif
 
-#ifndef UT_LINESIZE
-#define UT_LINESIZE __UT_LINESIZE
-#endif
-
 static sigjmp_buf jbuf;
 
 /*
@@ -62,7 +58,7 @@ static void getuidtty(char **userp, char **ttyp)
 	uid_t			uid;
 	char			*tty;
 	static char		uidbuf[32];
-	static char		ttynm[UT_LINESIZE + 4];
+	char		*ttynm = NULL;
 
 	uid = getuid();
 	if ((pwd = getpwuid(uid)) != NULL) {
@@ -82,10 +78,8 @@ static void getuidtty(char **userp, char **ttyp)
 			if (tty[0] == '/')
 				tty++;
 		}
-		snprintf(ttynm, sizeof(ttynm), "(%.*s) ",
-				 UT_LINESIZE, tty);
-	} else
-		ttynm[0] = 0;
+		xasprintf(&ttynm, "(%s) ", tty);
+	}
 
 	*userp = uidbuf;
 	*ttyp  = ttynm;
@@ -156,6 +150,7 @@ void broadcast(char *text)
 
 	xasprintf(&line, "\007\r\nBroadcast message from %s@%s %s(%s):\r\n\r\n",
 			user, name.nodename, tty, date);
+	free(tty);
 
 	/*
 	 *	Fork to avoid hanging in a write()
