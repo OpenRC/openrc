@@ -91,11 +91,14 @@ _rc_service()
 			done))
 			return 0
 		elif [[ ${COMP_CWORD} -eq 2 ]] && [[ ${prev} != -* ]]; then # if second word typed and we didn't type in a function
-			filename=$(rc-service --resolve ${prev})
-			opts=$(cat ${filename} | grep "^\w*()" | sed "s/().*$//")	# Greps the functions included in the init script
-			if [[ "x${opts}" == "x" ]] ; then			   # if no options found loosen the grep algorhythm
-				opts=$(cat ${filename} | grep "\w*()" | sed "s/().*$//")
-			fi
+			rc-service --exists "$prev" || return
+			shopt -s extglob
+			while read -r _ line; do
+				if [[ $line == +([[:alnum:]_]):* ]]; then
+					opts+="${line%%:*} "
+				fi
+			done < <(rc-service "$prev" describe 2>&1)
+			shopt -u extglob
 			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 			return 0
 		fi
