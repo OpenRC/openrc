@@ -547,7 +547,7 @@ int main(int argc, char **argv)
 	} else if (name) {
 		*--argv = name;
 		++argc;
-    } else if (exec) {
+	} else if (exec) {
 		*--argv = exec;
 		++argc;
 	};

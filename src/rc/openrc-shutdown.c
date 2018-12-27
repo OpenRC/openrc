@@ -111,8 +111,8 @@ static void create_nologin(int mins)
 	t += 60 * mins;
 
 	if ((fp = fopen(nologin_file, "w")) != NULL) {
-  		fprintf(fp, "\rThe system is going down on %s\r\n", ctime(&t));
-  		fclose(fp);
+		fprintf(fp, "\rThe system is going down on %s\r\n", ctime(&t));
+		fclose(fp);
 	}
 }
 
@@ -122,7 +122,7 @@ static void create_nologin(int mins)
 static void send_cmd(const char *cmd)
 {
 	FILE *fifo;
- 	size_t ignored;
+	size_t ignored;
 
 	if (do_dryrun) {
 		einfo("Would send %s to init", cmd);

@@ -1120,7 +1120,7 @@ int main(int argc, char **argv)
 	char *dir, *save = NULL, *saveLnk = NULL;
 	char *pidstr = NULL;
 	size_t l = 0, ll;
- 	const char *file;
+	const char *file;
 	struct stat stbuf;
 
 	/* Show help if insufficient args */
