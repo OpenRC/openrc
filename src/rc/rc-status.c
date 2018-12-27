@@ -244,7 +244,7 @@ print_stacked_services(const char *runlevel)
 int main(int argc, char **argv)
 {
 	RC_SERVICE state;
-    RC_STRING *s, *l, *t, *level;
+	RC_STRING *s, *l, *t, *level;
 	bool show_all = false;
 	char *p, *runlevel = NULL;
 	int opt, retval = 0;

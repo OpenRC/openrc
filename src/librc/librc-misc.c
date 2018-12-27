@@ -423,7 +423,7 @@ rc_conf_value(const char *setting)
 		}
 
 		rc_conf = rc_config_directory(rc_conf);
-	rc_conf = rc_config_kcl(rc_conf);
+		rc_conf = rc_config_kcl(rc_conf);
 
 		/* Convert old uppercase to lowercase */
 		TAILQ_FOREACH(s, rc_conf, entries) {

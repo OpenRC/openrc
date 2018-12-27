@@ -616,11 +616,11 @@ mtime_check(const char *source, const char *target, bool newer,
 		return false;
 	mtime = buf.st_mtime;
 
-    retval = deep_mtime_check(target,newer,&mtime,file);
-    if (rel) {
-        *rel = mtime;
-    }
-    return retval;
+	retval = deep_mtime_check(target,newer,&mtime,file);
+	if (rel) {
+		*rel = mtime;
+	}
+	return retval;
 }
 
 bool
