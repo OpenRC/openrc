@@ -492,7 +492,7 @@ int main(int argc, char **argv)
 			startas = optarg;
 			break;
 		case 'w':
-			if (sscanf(optarg, "%d", &start_wait) != 1)
+			if (sscanf(optarg, "%u", &start_wait) != 1)
 				eerrorx("%s: `%s' not a number",
 				    applet, optarg);
 			break;
