@@ -9,7 +9,7 @@
 .\"    except according to the terms contained in the LICENSE file.
 .\"
 .Dd April 27, 2016
-.Dt supervise-DAEMON 8 SMM
+.Dt SUPERVISE-DAEMON 8 SMM
 .Os OpenRC
 .Sh NAME
 .Nm supervise-daemon
@@ -88,16 +88,17 @@ owned by the user. You can optionally append a
 name here also.
 .It Fl v , -verbose
 Print the action(s) that are taken just before doing them.
+.El
 .Pp
 The options are as follows:
 .Bl -tag -width indent
-.Fl a , -healthcheck-timer Ar seconds
+.It Fl a , -healthcheck-timer Ar seconds
 Run the healthcheck() command, possibly followed by the unhealthy()
 command every time this number of seconds passes.
-.Fl A , -healthcheck-delay Ar seconds
+.It Fl A , -healthcheck-delay Ar seconds
 Wait this long before the first health check.
 .It Fl D , -respawn-delay Ar seconds
-wait this number of seconds before restarting a daemon after it crashes.
+Wait this number of seconds before restarting a daemon after it crashes.
 The default is 0.
 .It Fl d , -chdir Ar path
 chdir to this directory before starting the daemon.
