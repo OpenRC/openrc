@@ -14,7 +14,12 @@ _rc_actions() {
   if [[ -n "${opt_args[(i)-e|--exists|-r|--resolve]}" ]] || ! $(rc-service -e $service) ; then
     _nothing
   else
-      _values 'action' stop start restart describe zap
+    local -a actions=(${(f)"$(rc-service -C $service describe 2>&1)"})
+    shift actions
+    actions=(${actions# \* })
+    actions=(${actions/:*})
+    actions=(stop start restart describe zap ${actions[@]})
+    _describe -V 'action' actions
   fi
 
 }
