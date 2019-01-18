@@ -1,27 +1,32 @@
 #compdef rc-service
 
-if (( CURRENT == 2 )); then
-  _arguments -s \
-    '(-e --exists)'{-e,--exists}"[tests if the service exists or not]" \
-    '(-l --list)'{-l,--list}'[list all available services]' \
-    '(-r --resolve)'{-r,--resolve}'[resolve the service name to an init script]' \
-    '(-C --nocolor)'{-C,--nocolor}'[Disable color output]' \
-    '(-v --verbose)'{-v,--verbose}'[Run verbosely]' \
-    '(-q --quiet)'{-q,--quiet}'[Run quietly]'
-  _values "service" $(rc-service --list)
-else
-  case $words[2] in
-    -e|--exists|-r|--resolve)
-      (( CURRENT > 3 )) && return 0
-	  _values "service" $(rc-service --list)
-      ;;
-    -*)
-          return 0
-          ;;
-    *)
-      _values "action" stop start restart describe zap
-  ;;
-  esac
-fi
+_rc_services() {
+  if [[ -n "${opt_args[(i)-l|--list]}" ]]; then
+    _nothing
+  else
+    _values 'service' $(rc-service -l)
+  fi
+}
+
+_rc_actions() {
+  local service="${line[1]}"
+
+  if [[ -n "${opt_args[(i)-e|--exists|-r|--resolve]}" ]] || ! $(rc-service -e $service) ; then
+    _nothing
+  else
+      _values 'action' stop start restart describe zap
+  fi
+
+}
+
+_arguments -C -s \
+  '(-e --exists)'{-e,--exists}'[tests if the service exists or not]' \
+  '(-l --list)'{-l,--list}'[list all available services]' \
+  '(-r --resolve)'{-r,--resolve}'[resolve the service name to an init script]' \
+  '(-C --nocolor)'{-C,--nocolor}'[Disable color output]' \
+  '(-v --verbose)'{-v,--verbose}'[Run verbosely]' \
+  '(-q --quiet)'{-q,--quiet}'[Run quietly]' \
+  '1:service:_rc_services' \
+  '2:action:_rc_actions'
 
 # vim: set et sw=2 ts=2 ft=zsh:
