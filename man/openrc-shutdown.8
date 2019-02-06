@@ -17,15 +17,35 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl c , -cancel
+.Nm
+.Op Fl R , -reexec
+.Nm
+.Op Fl w , -write-only
+.Nm
 .Op Fl d , -no-write
 .Op Fl D , -dry-run
 .Op Fl H , -halt
+time
+.Nm
+.Op Fl d , -no-write
+.Op Fl D , -dry-run
 .Op Fl k , -kexec
+time
+.Nm
+.Op Fl d , -no-write
+.Op Fl D , -dry-run
 .Op Fl p , -poweroff
-.Op Fl R , -reexec
+time
+.Nm
+.Op Fl d , -no-write
+.Op Fl D , -dry-run
 .Op Fl r , -reboot
+time
+.Nm
+.Op Fl d , -no-write
+.Op Fl D , -dry-run
 .Op Fl s , -single
-.Op Fl w , -write-only
+time
 .Sh DESCRIPTION
 .Nm
 is the utility that communicates with
@@ -56,7 +76,7 @@ Stop all services, kill all processes and reboot the system.
 .It Fl s , -single
 Stop all services, kill all processes and move to single user mode.
 .It Fl w , -write-only
-Stop all services, kill all processes and move to single user mode.
+Wrrite a wtmp shutdown record and do nothing else.
 .El
 .Sh SEE ALSO
 .Xr openrc-init 8 ,
