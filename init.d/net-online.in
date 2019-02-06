@@ -65,6 +65,7 @@ start ()
  	ping_test_host="${ping_test_host:-google.com}"
  	if [ -n "$ping_test_host" ]; then
 		while $infinite || [ $timeout -gt 0 ]; do
+			sleep 1
 			ping -c 1 $ping_test_host > /dev/null 2>&1
 			rc=$?
 			[ $rc -eq 0 ] && break
