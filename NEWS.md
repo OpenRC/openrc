@@ -4,6 +4,13 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.41.
+
+This version adds an experimental build time switch to allow setting the
+default shell to use for service scripts.
+By default, this is set to /bin/sh if it is changed, the new shell must
+be able to understand posix-compatible syntax.
+
 ## OpenRC 0.40
 
 In this version, the keymaps and termencoding services on Linux needed

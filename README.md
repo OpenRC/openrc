@@ -38,6 +38,7 @@ PKG_PREFIX=/usr/pkg
 LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local
 BRANDING=\"Gentoo/$(uname -s)\"
+SH=/bin/sh
 ```
 
 ## Notes
