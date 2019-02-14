@@ -62,8 +62,7 @@ static RC_STRINGLIST *types;
 static RC_STRINGLIST *levels, *services, *tmp, *alist;
 static RC_STRINGLIST *sservices, *nservices, *needsme;
 
-static void
-print_level(const char *prefix, const char *level)
+static void print_level(const char *prefix, const char *level)
 {
 	if (prefix)
 		printf("%s ", prefix);
@@ -125,8 +124,7 @@ static char *get_uptime(const char *service)
 	return uptime;
 }
 
-static void
-print_service(const char *service)
+static void print_service(const char *service)
 {
 	char *status = NULL;
 	char *uptime = NULL;
@@ -182,8 +180,7 @@ print_service(const char *service)
 	free(status);
 }
 
-static void
-print_services(const char *runlevel, RC_STRINGLIST *svcs)
+static void print_services(const char *runlevel, RC_STRINGLIST *svcs)
 {
 	RC_STRINGLIST *l = NULL;
 	RC_STRING *s;
@@ -222,8 +219,7 @@ print_services(const char *runlevel, RC_STRINGLIST *svcs)
 	rc_stringlist_free(l);
 }
 
-static void
-print_stacked_services(const char *runlevel)
+static void print_stacked_services(const char *runlevel)
 {
 	RC_STRINGLIST *stackedlevels, *servicelist;
 	RC_STRING *stackedlevel;
