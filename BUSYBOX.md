@@ -23,8 +23,5 @@ or recognize the nofail option in fstab.
 
 CONFIG_SETFONT -- The setfont applet does not support the -u option from kbd.
 
-CONFIG_BB_SYSCTL -- The sysctl applet does not support the --system command
-line switch.
-
 There is work to get most of these supported by busybox, so this file
 will be updated as things change.

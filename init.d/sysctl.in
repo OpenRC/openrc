@@ -24,12 +24,12 @@ BSD_sysctl()
 	for conf in /etc/sysctl.conf /etc/sysctl.d/*.conf; do
 		if [ -r "$conf" ]; then
 			vebegin "applying $conf"
-			while read var comments; do
+			sed 's/ = /=/' "$conf" | while read var comments; do
 				case "$var" in
 				""|"#"*) continue;;
 				esac
 				sysctl -w "$var" >/dev/null || retval=1
-			done < "$conf"
+			done
 			veend $retval
 		fi
 	done
@@ -52,7 +52,12 @@ start()
 	ebegin "Configuring kernel parameters"
 	case "$RC_UNAME" in
 	*BSD|GNU) BSD_sysctl; rc=$? ;;
-	Linux) Linux_sysctl; rc=$? ;;
+	Linux)
+		if sysctl -V > /dev/null 2>&1; then # procps-ng
+			Linux_sysctl; rc=$?
+		else # busybox
+			BSD_sysctl; rc=$?
+		fi ;;
 	esac
 	eend $rc "Unable to configure some kernel parameters"
 }
