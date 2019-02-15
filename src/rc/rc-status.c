@@ -27,12 +27,18 @@
 #include "rc-misc.h"
 #include "_usage.h"
 
+enum format_t {
+	FORMAT_DEFAULT,
+	FORMAT_INI,
+};
+
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "aclmrsSu" getoptstring_COMMON;
+const char *getoptstring = "acf:lmrsSu" getoptstring_COMMON;
 const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
 	{"crashed",     0, NULL, 'c'},
+	{"format",     1, NULL, 'f'},
 	{"list",        0, NULL, 'l'},
 	{"manual",        0, NULL, 'm'},
 	{"runlevel",    0, NULL, 'r'},
@@ -44,6 +50,7 @@ const struct option longopts[] = {
 const char * const longopts_help[] = {
 	"Show services from all run levels",
 	"Show crashed services",
+	"format status to be parsable (currently arg must be ini)",
 	"Show list of run levels",
 	"Show manually started services",
 	"Show the name of the current runlevel",
@@ -53,7 +60,7 @@ const char * const longopts_help[] = {
 	longopts_help_COMMON
 };
 const char *usagestring = ""						\
-	"Usage: rc-status [options] <runlevel>...\n"		\
+	"Usage: rc-status [options] -f ini <runlevel>...\n"		\
 	"   or: rc-status [options] [-a | -c | -l | -m | -r | -s | -u]";
 
 static RC_DEPTREE *deptree;
@@ -62,18 +69,27 @@ static RC_STRINGLIST *types;
 static RC_STRINGLIST *levels, *services, *tmp, *alist;
 static RC_STRINGLIST *sservices, *nservices, *needsme;
 
-static void print_level(const char *prefix, const char *level)
+static void print_level(const char *prefix, const char *level,
+		enum format_t format)
 {
-	if (prefix)
-		printf("%s ", prefix);
-	printf ("Runlevel: ");
-	if (isatty(fileno(stdout)))
-		printf("%s%s%s\n",
-		       ecolor(ECOLOR_HILITE),
-		       level,
-		       ecolor(ECOLOR_NORMAL));
-	else
-		printf("%s\n", level);
+	switch (format) {
+	case FORMAT_DEFAULT:
+		if (prefix)
+			printf("%s ", prefix);
+		printf ("Runlevel: ");
+		if (isatty(fileno(stdout)))
+			printf("%s%s%s\n",
+					ecolor(ECOLOR_HILITE), level, ecolor(ECOLOR_NORMAL));
+		else 
+			printf("%s\n", level);
+		break;
+	case FORMAT_INI:
+		printf("%s", "[");
+		if (prefix)
+			printf("%s ", prefix);
+		printf("%s]\n", level);
+		break;
+	}
 }
 
 static char *get_uptime(const char *service)
@@ -124,13 +140,13 @@ static char *get_uptime(const char *service)
 	return uptime;
 }
 
-static void print_service(const char *service)
+static void print_service(const char *service, enum format_t format)
 {
 	char *status = NULL;
 	char *uptime = NULL;
 	char *child_pid = NULL;
 	char *start_time = NULL;
-	int cols =  printf(" %s", service);
+	int cols;
 	const char *c = ecolor(ECOLOR_GOOD);
 	RC_SERVICE state = rc_service_state(service);
 	ECOLOR color = ECOLOR_BAD;
@@ -174,13 +190,22 @@ static void print_service(const char *service)
 		xasprintf(&status, " stopped ");
 
 	errno = 0;
-	if (c && *c && isatty(fileno(stdout)))
-		printf("\n");
-	ebracket(cols, color, status);
+	switch(format) {
+	case FORMAT_DEFAULT:
+		cols =  printf(" %s", service);
+		if (c && *c && isatty(fileno(stdout)))
+			printf("\n");
+		ebracket(cols, color, status);
+		break;
+	case FORMAT_INI:
+		printf("%s = %s\n", service, status);
+		break;
+	}
 	free(status);
 }
 
-static void print_services(const char *runlevel, RC_STRINGLIST *svcs)
+static void print_services(const char *runlevel, RC_STRINGLIST *svcs,
+		enum format_t format)
 {
 	RC_STRINGLIST *l = NULL;
 	RC_STRING *s;
@@ -194,7 +219,7 @@ static void print_services(const char *runlevel, RC_STRINGLIST *svcs)
 		TAILQ_FOREACH(s, svcs, entries)
 			if (!runlevel ||
 			    rc_service_in_runlevel(s->value, runlevel))
-				print_service(s->value);
+				print_service(s->value, format);
 		return;
 	}
 	if (!types) {
@@ -214,12 +239,12 @@ static void print_services(const char *runlevel, RC_STRINGLIST *svcs)
 		if (!rc_stringlist_find(svcs, s->value))
 			continue;
 		if (!runlevel || rc_service_in_runlevel(s->value, runlevel))
-			print_service(s->value);
+			print_service(s->value, format);
 	}
 	rc_stringlist_free(l);
 }
 
-static void print_stacked_services(const char *runlevel)
+static void print_stacked_services(const char *runlevel, enum format_t format)
 {
 	RC_STRINGLIST *stackedlevels, *servicelist;
 	RC_STRING *stackedlevel;
@@ -228,9 +253,9 @@ static void print_stacked_services(const char *runlevel)
 	TAILQ_FOREACH(stackedlevel, stackedlevels, entries) {
 		if (rc_stringlist_find(levels, stackedlevel->value) != NULL)
 			continue;
-		print_level("Stacked", stackedlevel->value);
+		print_level("Stacked", stackedlevel->value, format);
 		servicelist = rc_services_in_runlevel(stackedlevel->value);
-		print_services(stackedlevel->value, servicelist);
+		print_services(stackedlevel->value, servicelist, format);
 		rc_stringlist_free(servicelist);
 	}
 	rc_stringlist_free(stackedlevels);
@@ -241,6 +266,8 @@ int main(int argc, char **argv)
 {
 	RC_SERVICE state;
 	RC_STRING *s, *l, *t, *level;
+	enum format_t format = FORMAT_DEFAULT;
+	bool levels_given = false;
 	bool show_all = false;
 	char *p, *runlevel = NULL;
 	int opt, retval = 0;
@@ -263,6 +290,12 @@ int main(int argc, char **argv)
 				}
 			goto exit;
 			/* NOTREACHED */
+		case 'f':
+			if (strcasecmp(optarg, "ini") == 0)
+				format = FORMAT_INI;
+			else
+				eerrorx("%s: invalid argument to --format switch\n", applet);
+			break;
 		case 'l':
 			levels = rc_runlevel_list();
 			TAILQ_FOREACH(l, levels, entries)
@@ -287,7 +320,7 @@ int main(int argc, char **argv)
 					free(s->value);
 					free(s);
 				}
-			print_services(NULL, services);
+			print_services(NULL, services, FORMAT_DEFAULT);
 			goto exit;
 		case 'r':
 			runlevel = rc_runlevel_get();
@@ -299,12 +332,12 @@ int main(int argc, char **argv)
 			TAILQ_FOREACH_SAFE(s, services, entries, t)
 				if (!rc_service_value_get(s->value, "child_pid"))
 					TAILQ_REMOVE(services, s, entries);
-			print_services(NULL, services);
+			print_services(NULL, services, FORMAT_DEFAULT);
 			goto exit;
 			/* NOTREACHED */
 		case 's':
 			services = rc_services_in_runlevel(NULL);
-			print_services(NULL, services);
+			print_services(NULL, services, FORMAT_DEFAULT);
 			goto exit;
 			/* NOTREACHED */
 		case 'u':
@@ -319,7 +352,7 @@ int main(int argc, char **argv)
 						break;
 					}
 			}
-			print_services(NULL, services);
+			print_services(NULL, services, FORMAT_DEFAULT);
 			goto exit;
 			/* NOTREACHED */
 
@@ -331,6 +364,7 @@ int main(int argc, char **argv)
 	opt = (optind < argc) ? 0 : 1;
 	while (optind < argc) {
 		if (rc_runlevel_exists(argv[optind])) {
+			levels_given = true;
 			rc_stringlist_add(levels, argv[optind++]);
 			opt++;
 		} else
@@ -347,21 +381,21 @@ int main(int argc, char **argv)
 	deptree = _rc_deptree_load(0, NULL);
 
 	TAILQ_FOREACH(l, levels, entries) {
-		print_level(NULL, l->value);
+		print_level(NULL, l->value, format);
 		services = rc_services_in_runlevel(l->value);
-		print_services(l->value, services);
-		print_stacked_services(l->value);
+		print_services(l->value, services, format);
+		print_stacked_services(l->value, format);
 		rc_stringlist_free(nservices);
 		nservices = NULL;
 		rc_stringlist_free(services);
 		services = NULL;
 	}
 
-	if (show_all || argc < 2) {
+	if (show_all || !levels_given) {
 		/* Show hotplugged services */
-		print_level("Dynamic", "hotplugged");
+		print_level("Dynamic", "hotplugged", format);
 		services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
-		print_services(NULL, services);
+		print_services(NULL, services, format);
 		rc_stringlist_free(services);
 		services = NULL;
 
@@ -418,10 +452,10 @@ int main(int argc, char **argv)
 		 * be added to the list
 		 */
 		unsetenv("RC_SVCNAME");
-		print_level("Dynamic", "needed/wanted");
-		print_services(NULL, nservices);
-		print_level("Dynamic", "manual");
-		print_services(NULL, services);
+		print_level("Dynamic", "needed/wanted", format);
+		print_services(NULL, nservices, format);
+		print_level("Dynamic", "manual", format);
+		print_services(NULL, services, format);
 	}
 
 exit:

@@ -6,6 +6,11 @@ the information in this file is in reverse order.
 
 ## OpenRC 0.41.
 
+This version adds the ability to format the output of rc-status when
+showing the status of services in a runlevel so that it may be parsed.
+Currently, the -f switch only accepts ini as an argument which
+causes the output to be in the .ini format.
+
 This version adds an experimental build time switch to allow setting the
 default shell to use for service scripts.
 By default, this is set to /bin/sh if it is changed, the new shell must
