@@ -80,7 +80,7 @@ static void print_level(const char *prefix, const char *level,
 		if (isatty(fileno(stdout)))
 			printf("%s%s%s\n",
 					ecolor(ECOLOR_HILITE), level, ecolor(ECOLOR_NORMAL));
-		else 
+		else
 			printf("%s\n", level);
 		break;
 	case FORMAT_INI:
@@ -190,7 +190,7 @@ static void print_service(const char *service, enum format_t format)
 		xasprintf(&status, " stopped ");
 
 	errno = 0;
-	switch(format) {
+	switch (format) {
 	case FORMAT_DEFAULT:
 		cols =  printf(" %s", service);
 		if (c && *c && isatty(fileno(stdout)))
