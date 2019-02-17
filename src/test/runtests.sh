@@ -27,53 +27,6 @@ fail_on_out() {
 	fi
 }
 
-ebegin "Checking exported symbols in libeinfo.so (data)"
-checkit einfo.data $(
-readelf -Ws ${libeinfo_builddir}/libeinfo.so \
-	| awk '$4 == "OBJECT" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
-	| LC_ALL=C sort -u
-)
-
-ebegin "Checking exported symbols in libeinfo.so (functions)"
-checkit einfo.funcs $(
-readelf -Ws ${libeinfo_builddir}/libeinfo.so \
-	| awk '$4 == "FUNC" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
-	| LC_ALL=C sort -u \
-	| egrep -v \
-		-e '^_(init|fini)$'
-)
-
-ebegin "Checking exported symbols in librc.so (data)"
-checkit rc.data $(
-readelf -Ws ${librc_builddir}/librc.so \
-	| awk '$4 == "OBJECT" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
-	| LC_ALL=C sort -u
-)
-
-ebegin "Checking exported symbols in librc.so (functions)"
-checkit rc.funcs $(
-readelf -Ws ${librc_builddir}/librc.so \
-	| awk '$4 == "FUNC" && $5 == "GLOBAL" && $7 != "UND" {print $NF}' \
-	| LC_ALL=C sort -u \
-	| egrep -v \
-		-e '^_(init|fini)$'
-)
-
-ebegin "Checking hidden functions in librc.so"
-sed -n '/^librc_hidden_proto/s:.*(\(.*\))$:\1:p' ${librc_srcdir}/librc.h \
-	| LC_ALL=C sort -u \
-	> librc.funcs.hidden.list
-readelf -Wr $(grep -l '#include[[:space:]]"librc\.h"' ${librc_srcdir}/*.c | sed 's:\.c$:.o:') \
-	| egrep -v -e 'R_PARISC_(DP|SEG)REL' \
-	| awk '$5 ~ /^rc_/ {print $5}' \
-	| LC_ALL=C sort -u \
-	| egrep -v '^rc_environ_fd$' \
-	> librc.funcs.hidden.out
-syms=$(diff -u librc.funcs.hidden.list librc.funcs.hidden.out | sed -n '/^+[^+]/s:^+::p')
-[ -z "${syms}" ]
-eend $? "Missing hidden defs:"$'\n'"${syms}"
-: $(( ret += $? ))
-
 ebegin "Checking trailing whitespace in code"
 # XXX: Should we check man pages too ?
 out=$(cd ${top_srcdir}; find */ \
