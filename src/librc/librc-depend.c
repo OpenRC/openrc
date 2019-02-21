@@ -84,10 +84,11 @@ static RC_DEPINFO *
 get_depinfo(const RC_DEPTREE *deptree, const char *service)
 {
 	RC_DEPINFO *di;
-
-	TAILQ_FOREACH(di, deptree, entries)
-		if (strcmp(di->service, service) == 0)
-			return di;
+	if (deptree) {
+		TAILQ_FOREACH(di, deptree, entries)
+			if (strcmp(di->service, service) == 0)
+				return di;
+	}
 	return NULL;
 }
 
@@ -96,9 +97,11 @@ get_deptype(const RC_DEPINFO *depinfo, const char *type)
 {
 	RC_DEPTYPE *dt;
 
-	TAILQ_FOREACH(dt, &depinfo->depends, entries)
-		if (strcmp(dt->type, type) == 0)
-			return dt;
+	if (depinfo) {
+		TAILQ_FOREACH(dt, &depinfo->depends, entries)
+			if (strcmp(dt->type, type) == 0)
+				return dt;
+	}
 	return NULL;
 }
 
