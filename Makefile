@@ -33,8 +33,9 @@ ifeq (${MKZSHCOMP},yes)
 SUBDIR+=	zsh-completion
 endif
 
-# We need to ensure that runlevels is done last
+# We need to ensure that runlevels is done last other than test
 SUBDIR+=	runlevels
+SUBDIR+=	test
 
 INSTALLAFTER=	_installafter
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-top_srcdir=${top_srcdir:-../..}
+top_srcdir=${top_srcdir:-..}
 . ${top_srcdir}/test/setup_env.sh
 
 libeinfo_srcdir="${srcdir}/../libeinfo"
