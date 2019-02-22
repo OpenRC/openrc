@@ -31,4 +31,3 @@ _installafter:
 	ln -snf ${LIBEXECDIR}/sh/functions.sh ${DESTDIR}/${INITDIR} || exit $$?
 
 check test::
-	./runtests.sh
