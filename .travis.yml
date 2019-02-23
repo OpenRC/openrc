@@ -25,4 +25,4 @@ notifications:
     on_start: false     # default: false
 
 script:
-  - ./test/travis.sh
+  - ./ci/travis.sh

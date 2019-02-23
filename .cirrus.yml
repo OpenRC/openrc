@@ -12,4 +12,4 @@ test_task:
     [ -f /proc/curproc ] || mount -t procfs proc /proc
   pkg_install_script: pkg install -y bash gawk gmake gsed
   gsed_hack_script: rm /usr/bin/sed && ln -s /usr/local/bin/gsed /usr/bin/sed
-  test_script: bash test/cirrus.sh
+  test_script: bash ci/cirrus.sh
