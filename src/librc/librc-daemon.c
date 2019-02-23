@@ -59,7 +59,7 @@ pid_is_argv(pid_t pid, const char *const *argv)
 		free(cmdline);
 		return false;
 	}
-	bytes = read(fd, buffer, sizeof(buffer));
+	bytes = read(fd, buffer, sizeof(buffer) - 1);
 	close(fd);
 	free(cmdline);
 	if (bytes == -1)
