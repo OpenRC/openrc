@@ -1,3 +1,89 @@
+commit 067088bbff42ca2fb9106acf309f1d9ce3e78ada
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    move ci scripts to their own directory
+    
+    This fixes #296.
+
+commit 52d4e566743f57b9de81c77fdb605c171c02eacb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    combine test directories
+    
+    This fixes #295.
+
+commit 6e6902c28b715826fdfc7b42a592db88459b9a57
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    remove unused test ignore patterns
+
+commit 084823182aec4aef6fb880d642bba2d0ef91a3ad
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    remove unused test data files
+
+commit 7478c104fc479067d71d191dccfa4cbf541311d8
+Author: Georgy Yakovlev <gyakovlev@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc/librc-depend.c: fix NULL pointer dereference
+    
+    In some cases deptree or depinfo can be NULL, check
+    before dereferencing.
+    
+    Fixes https://github.com/OpenRC/openrc/issues/293
+    Fixes https://github.com/OpenRC/openrc/pulls/294
+    X-Gentoo-Bug: 659906
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/659906
+
+commit 065b7ecc0d4ddd046cc235d60de20140db1a6fe8
+Author: Georgy Yakovlev <gyakovlev@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    use cirrus-ci for FreeBSD builds
+    
+    This fixes #265.
+
+commit b054aca50b31fc46fc736a542ec2719de2d23d30
+Author: Sergei Trofimovich <slyfox@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    src/test/runtests.sh: drop 'readelf'-based tests
+    
+    The 'readelf'-based tests cover a few situations:
+    1. undefined symbols in shared libraries
+    2. unexpected exports in shared libraries
+    
+    Bug #575958 shows that [2.] implementation is too simplistic
+    in assuming that presence of relocation equals to export presence.
+    
+    It is incorrect for PLT stubs and local symbols.
+    Let's just drop these tests.
+    
+    If one needs to cover [1.] it is better to use LDFLAGS=-Wl,--no-undefined.
+    
+    This closes #292.
+    
+    X-Reported-by: Benda Xu
+    X-Gentoo-Bug: https://bugs.gentoo.org/575958
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/575958
+
+commit f9e7a00ba9c9b179c697fc0af83a19e923c831b0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: style fixes
+
+commit f1f48011acb266db309922f145653b86f11e0baf
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 427a1ce2995b376ed6d112c5c5b422217f815fbb
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1386,72 +1472,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     make the base/controller functions return successfully if cgroups v1/v2
     are not configured in the kernel
-
-commit aa7d3a7911b658c550e7ce76cd6d7d46541fc323
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc: force deptree update for sysinit runlevel
-
-commit 98262647a9d2f3c65a7ceb1aaa81095522c1ef06
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: zero out the cmdline buffer when it is allocated
-
-commit 5868abe97babcc287794dcb36ad8e77989b6ddcf
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: compiler warning cleanup
-
-commit 71aad16256604e0e9e146221957a9b00cfe67b99
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: clean up a compiler warning
-
-commit e275da84de1589253da5ff6a7c272cf1c82f8567
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: remove references to PATH_MAX
-
-commit a6cc7f06cf3807a0e0590697e1f14e6ab9055271
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc.c: remove PATH_MAX references
-
-commit c1178c8eebb92c9f3702e981cd4af9ef41f51884
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-selinux.c: remove references to path_max
-
-commit 3c031ca9780c555817fe9ccb8b23ceb231129724
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-plubin.c: remove references to PATH_MAX
-
-commit 8e02406d8fbf92167c30431987d5de8de72cd7df
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-misc.c: remove references to PATH_MAX
-
-commit 8dbdabcc5e0df8ac36722a4ba7bfe30664cc9919
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: clean up string handling
-
-commit 488d8989c518d9256f183899aac02024c679b93e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: clean up string handling
-    
-    - remove references to PATH_MAX
-    - use xasprintf to create strings
