@@ -1,3 +1,30 @@
+commit d818be6e2bc00c790f6f4aeb2670f007951b2ab3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: fix potential buffer overflow in pid_is_argv
+    
+    This fixes #299.
+
+commit b812524303ae42bf7f61a642c45e8be39aa222e5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "src/librc/librc-daemon.c: fix buffer overrun in pid_is_argv"
+    
+    This reverts commit 084877eb52971faf8f52c780ddd08ed9af140eb6.
+    The mentioned commit caused some systems to have some services reported
+    as crashed.
+    
+    This fixes #297.
+    This fixes #298.
+
+commit 56c006ebd68d572e303c01c38291a1f5f4fc1c30
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 067088bbff42ca2fb9106acf309f1d9ce3e78ada
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1443,32 +1470,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     The default path provided by the system if one isn't set only includes
     "/bin:/usr/bin". This adds the default path setting from sysvinit.
-
-commit 16ff3cd8df6169f73e3d7cf00758a4703f62cbf0
-Author: Christian Brauner <christian.brauner@ubuntu.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    check whether /sys/fs/cgroup is a mountpoint
-    
-    The current check only tries to detect whether /sys/fs/cgroup exists and
-    whether it is writable or not. But when the init system doesn't mount
-    cgroups then /sys/fs/cgroup will just be an empty directory. When paired
-    with unprivileged containers that mount sysfs this will cause misleading
-    errors to be printed since /sys/fs/cgroup will be owned by user
-    nobody:nogroup in this case. Independent of this specific problem this
-    check will also be misleading when the /sys/fs/cgroup exists and is in
-    fact writable by the init system but isn't actually a mountpoint.
-    
-    Note from William. "grep -qs" doesn't need to redirect output to
-    /dev/null since it is completely silent.
-    
-    This fixes #209.
-
-commit 38032626a6c2f8e869197999f32ac3634667cc86
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    improve cgroup configuration checks
-    
-    make the base/controller functions return successfully if cgroups v1/v2
-    are not configured in the kernel
