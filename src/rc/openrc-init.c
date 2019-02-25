@@ -43,40 +43,45 @@
 static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
 
-static pid_t do_openrc(const char *runlevel)
+static void do_openrc(const char *runlevel)
 {
 	pid_t pid;
-	sigset_t signals;
+	sigset_t all_signals;
+	sigset_t our_signals;
 
+	sigfillset(&all_signals);
+	/* block all signals */
+	sigprocmask(SIG_BLOCK, &all_signals, &our_signals);
 	pid = fork();
 	switch (pid) {
 		case -1:
 			perror("fork");
+			exit(1);
 			break;
 		case 0:
 			setsid();
 			/* unblock all signals */
-			sigemptyset(&signals);
-			sigprocmask(SIG_SETMASK, &signals, NULL);
+			sigprocmask(SIG_UNBLOCK, &all_signals, NULL);
 			printf("Starting %s runlevel\n", runlevel);
 			execlp("openrc", "openrc", runlevel, NULL);
 			perror("exec");
+			exit(1);
 			break;
 		default:
+			/* restore our signal mask */
+			sigprocmask(SIG_SETMASK, &our_signals, NULL);
+			while (waitpid(pid, NULL, 0) != pid)
+				if (errno == ECHILD)
+					break;
 			break;
 	}
-	return pid;
 }
 
 static void init(const char *default_runlevel)
 {
 	const char *runlevel = NULL;
-	pid_t pid;
-
-	pid = do_openrc("sysinit");
-	waitpid(pid, NULL, 0);
-	pid = do_openrc("boot");
-	waitpid(pid, NULL, 0);
+	do_openrc("sysinit");
+	do_openrc("boot");
 	if (default_runlevel)
 		runlevel = default_runlevel;
 	else
@@ -87,8 +92,7 @@ static void init(const char *default_runlevel)
 		printf("%s is an invalid runlevel\n", runlevel);
 		runlevel = rc_default_runlevel;
 	}
-	pid = do_openrc(runlevel);
-	waitpid(pid, NULL, 0);
+	do_openrc(runlevel);
 	log_wtmp("reboot", "~~", 0, RUN_LVL, "~~");
 }
 
@@ -100,11 +104,9 @@ static void handle_reexec(char *my_name)
 
 static void handle_shutdown(const char *runlevel, int cmd)
 {
-	pid_t pid;
 	struct timespec ts;
 
-	pid = do_openrc(runlevel);
-	while (waitpid(pid, NULL, 0) != pid);
+	do_openrc(runlevel);
 	printf("Sending the final term signal\n");
 	kill(-1, SIGTERM);
 	ts.tv_sec = 3;
@@ -118,10 +120,7 @@ static void handle_shutdown(const char *runlevel, int cmd)
 
 static void handle_single(void)
 {
-	pid_t pid;
-
-	pid = do_openrc("single");
-	while (waitpid(pid, NULL, 0) != pid);
+	do_openrc("single");
 }
 
 static void reap_zombies(void)
