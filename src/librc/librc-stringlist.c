@@ -25,7 +25,6 @@ rc_stringlist_new(void)
 	TAILQ_INIT(l);
 	return l;
 }
-librc_hidden_def(rc_stringlist_new)
 
 RC_STRING *
 rc_stringlist_add(RC_STRINGLIST *list, const char *value)
@@ -36,7 +35,6 @@ rc_stringlist_add(RC_STRINGLIST *list, const char *value)
 	TAILQ_INSERT_TAIL(list, s, entries);
 	return s;
 }
-librc_hidden_def(rc_stringlist_add)
 
 RC_STRING *
 rc_stringlist_addu(RC_STRINGLIST *list, const char *value)
@@ -51,7 +49,6 @@ rc_stringlist_addu(RC_STRINGLIST *list, const char *value)
 
 	return rc_stringlist_add(list, value);
 }
-librc_hidden_def(rc_stringlist_addu)
 
 bool
 rc_stringlist_delete(RC_STRINGLIST *list, const char *value)
@@ -69,7 +66,6 @@ rc_stringlist_delete(RC_STRINGLIST *list, const char *value)
 	errno = EEXIST;
 	return false;
 }
-librc_hidden_def(rc_stringlist_delete)
 
 RC_STRING *
 rc_stringlist_find(RC_STRINGLIST *list, const char *value)
@@ -83,7 +79,6 @@ rc_stringlist_find(RC_STRINGLIST *list, const char *value)
 	}
 	return NULL;
 }
-librc_hidden_def(rc_stringlist_find)
 
 RC_STRINGLIST *
 rc_stringlist_split(const char *value, const char *sep)
@@ -98,7 +93,6 @@ rc_stringlist_split(const char *value, const char *sep)
 
 	return list;
 }
-librc_hidden_def(rc_stringlist_split)
 
 void
 rc_stringlist_sort(RC_STRINGLIST **list)
@@ -128,7 +122,6 @@ rc_stringlist_sort(RC_STRINGLIST **list)
 	free(l);
 	*list = new;
 }
-librc_hidden_def(rc_stringlist_sort)
 
 void
 rc_stringlist_free(RC_STRINGLIST *list)
@@ -148,4 +141,3 @@ rc_stringlist_free(RC_STRINGLIST *list)
 	}
 	free(list);
 }
-librc_hidden_def(rc_stringlist_free)

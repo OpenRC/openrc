@@ -208,7 +208,6 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	closedir(procdir);
 	return pids;
 }
-librc_hidden_def(rc_find_pids)
 
 #elif BSD
 
@@ -313,7 +312,6 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 
 	return pids;
 }
-librc_hidden_def(rc_find_pids)
 
 #else
 #  error "Platform not supported!"
@@ -455,7 +453,6 @@ rc_service_daemon_set(const char *service, const char *exec,
 	free(dirpath);
 	return retval;
 }
-librc_hidden_def(rc_service_daemon_set)
 
 bool
 rc_service_started_daemon(const char *service,
@@ -495,7 +492,6 @@ rc_service_started_daemon(const char *service,
 	free(dirpath);
 	return retval;
 }
-librc_hidden_def(rc_service_started_daemon)
 
 bool
 rc_service_daemons_crashed(const char *service)
@@ -653,4 +649,3 @@ rc_service_daemons_crashed(const char *service)
 
 	return retval;
 }
-librc_hidden_def(rc_service_daemons_crashed)

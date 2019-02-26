@@ -43,7 +43,6 @@ rc_yesno(const char *value)
 
 	return false;
 }
-librc_hidden_def(rc_yesno)
 
 
 /**
@@ -91,7 +90,6 @@ rc_getfile(const char *file, char **buffer, size_t *len)
 	fclose(fp);
 	return ret;
 }
-librc_hidden_def(rc_getfile)
 
 ssize_t
 rc_getline(char **line, size_t *len, FILE *fp)
@@ -116,7 +114,6 @@ rc_getline(char **line, size_t *len, FILE *fp)
 	}
 	return last;
 }
-librc_hidden_def(rc_getline)
 
 char *
 rc_proc_getent(const char *ent _unused)
@@ -163,7 +160,6 @@ rc_proc_getent(const char *ent _unused)
 	return NULL;
 #endif
 }
-librc_hidden_def(rc_proc_getent)
 
 RC_STRINGLIST *
 rc_config_list(const char *file)
@@ -202,7 +198,6 @@ rc_config_list(const char *file)
 
 	return list;
 }
-librc_hidden_def(rc_config_list)
 
 static void rc_config_set_value(RC_STRINGLIST *config, char *value)
 {
@@ -373,7 +368,6 @@ rc_config_load(const char *file)
 
 	return config;
 }
-librc_hidden_def(rc_config_load)
 
 char *
 rc_config_value(RC_STRINGLIST *list, const char *entry)
@@ -392,7 +386,6 @@ rc_config_value(RC_STRINGLIST *list, const char *entry)
 	}
 	return NULL;
 }
-librc_hidden_def(rc_config_value)
 
 /* Global for caching the strings loaded from rc.conf to avoid reparsing for
  * each rc_conf_value call */
@@ -438,4 +431,3 @@ rc_conf_value(const char *setting)
 
 	return rc_config_value(rc_conf, setting);
 }
-librc_hidden_def(rc_conf_value)
