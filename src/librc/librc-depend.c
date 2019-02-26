@@ -78,7 +78,6 @@ rc_deptree_free(RC_DEPTREE *deptree)
 	}
 	free(deptree);
 }
-librc_hidden_def(rc_deptree_free)
 
 static RC_DEPINFO *
 get_depinfo(const RC_DEPTREE *deptree, const char *service)
@@ -109,7 +108,6 @@ RC_DEPTREE *
 rc_deptree_load(void) {
 	return rc_deptree_load_file(RC_DEPTREE_CACHE);
 }
-librc_hidden_def(rc_deptree_load)
 
 RC_DEPTREE *
 rc_deptree_load_file(const char *deptree_file)
@@ -173,7 +171,6 @@ rc_deptree_load_file(const char *deptree_file)
 
 	return deptree;
 }
-librc_hidden_def(rc_deptree_load_file)
 
 static bool
 valid_service(const char *runlevel, const char *service, const char *type)
@@ -459,7 +456,6 @@ rc_deptree_depend(const RC_DEPTREE *deptree,
 		rc_stringlist_add(svcs, svc->value);
 	return svcs;
 }
-librc_hidden_def(rc_deptree_depend)
 
 RC_STRINGLIST *
 rc_deptree_depends(const RC_DEPTREE *deptree,
@@ -487,7 +483,6 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 	rc_stringlist_free(visited);
 	return sorted;
 }
-librc_hidden_def(rc_deptree_depends)
 
 RC_STRINGLIST *
 rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
@@ -543,7 +538,6 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 	rc_stringlist_free(types);
 	return services;
 }
-librc_hidden_def(rc_deptree_order)
 
 
 /* Given a time, recurse the target path to find out if there are
@@ -633,7 +627,6 @@ rc_newer_than(const char *source, const char *target,
 
 	return mtime_check(source, target, true, newest, file);
 }
-librc_hidden_def(rc_newer_than)
 
 bool
 rc_older_than(const char *source, const char *target,
@@ -641,7 +634,6 @@ rc_older_than(const char *source, const char *target,
 {
 	return mtime_check(source, target, false, oldest, file);
 }
-librc_hidden_def(rc_older_than)
 
 typedef struct deppair
 {
@@ -737,7 +729,6 @@ rc_deptree_update_needed(time_t *newest, char *file)
 
 	return newer;
 }
-librc_hidden_def(rc_deptree_update_needed)
 
 /* This is a 7 phase operation
    Phase 1 is a shell script which loads each init script and config in turn
@@ -1084,4 +1075,3 @@ rc_deptree_update(void)
 	rc_deptree_free(deptree);
 	return retval;
 }
-librc_hidden_def(rc_deptree_update)

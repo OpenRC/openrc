@@ -351,7 +351,6 @@ rc_sys(void)
 
 	return sys;
 }
-librc_hidden_def(rc_sys)
 
 static const char *
 rc_parse_service_state(RC_SERVICE state)
@@ -426,20 +425,17 @@ rc_runlevel_starting(void)
 {
 	return exists(RC_STARTING);
 }
-librc_hidden_def(rc_runlevel_starting)
 
 bool
 rc_runlevel_stopping(void)
 {
 	return exists(RC_STOPPING);
 }
-librc_hidden_def(rc_runlevel_stopping)
 
 RC_STRINGLIST *rc_runlevel_list(void)
 {
 	return ls_dir(RC_RUNLEVELDIR, LS_DIR);
 }
-librc_hidden_def(rc_runlevel_list)
 
 char *
 rc_runlevel_get(void)
@@ -466,7 +462,6 @@ rc_runlevel_get(void)
 
 	return runlevel;
 }
-librc_hidden_def(rc_runlevel_get)
 
 bool
 rc_runlevel_set(const char *runlevel)
@@ -479,7 +474,6 @@ rc_runlevel_set(const char *runlevel)
 	fclose(fp);
 	return true;
 }
-librc_hidden_def(rc_runlevel_set)
 
 bool
 rc_runlevel_exists(const char *runlevel)
@@ -494,7 +488,6 @@ rc_runlevel_exists(const char *runlevel)
 		return true;
 	return false;
 }
-librc_hidden_def(rc_runlevel_exists)
 
 bool
 rc_runlevel_stack(const char *dst, const char *src)
@@ -507,7 +500,6 @@ rc_runlevel_stack(const char *dst, const char *src)
 	snprintf(d, sizeof(s), "%s/%s/%s", RC_RUNLEVELDIR, dst, src);
 	return (symlink(s, d) == 0 ? true : false);
 }
-librc_hidden_def(rc_runlevel_stack)
 
 bool
 rc_runlevel_unstack(const char *dst, const char *src)
@@ -517,7 +509,6 @@ rc_runlevel_unstack(const char *dst, const char *src)
 	snprintf(path, sizeof(path), "%s/%s/%s", RC_RUNLEVELDIR, dst, src);
 	return (unlink(path) == 0 ? true : false);
 }
-librc_hidden_def(rc_runlevel_unstack)
 
 RC_STRINGLIST *
 rc_runlevel_stacks(const char *runlevel)
@@ -530,7 +521,6 @@ rc_runlevel_stacks(const char *runlevel)
 	rc_stringlist_free(ancestor_list);
 	return stack;
 }
-librc_hidden_def(rc_runlevel_stacks)
 
 /* Resolve a service name to its full path */
 char *
@@ -584,7 +574,6 @@ rc_service_resolve(const char *service)
 
 	return NULL;
 }
-librc_hidden_def(rc_service_resolve)
 
 bool
 rc_service_exists(const char *service)
@@ -623,7 +612,6 @@ rc_service_exists(const char *service)
 	free(file);
 	return retval;
 }
-librc_hidden_def(rc_service_exists)
 
 #define OPTSTR \
 ". '%s'; echo $extra_commands $extra_started_commands $extra_stopped_commands"
@@ -665,7 +653,6 @@ rc_service_extra_commands(const char *service)
 	free(cmd);
 	return commands;
 }
-librc_hidden_def(rc_service_extra_commands)
 
 #define DESCSTR ". '%s'; echo \"${description%s%s}\""
 char *
@@ -695,7 +682,6 @@ rc_service_description(const char *service, const char *option)
 	free(cmd);
 	return desc;
 }
-librc_hidden_def(rc_service_description)
 
 bool
 rc_service_in_runlevel(const char *service, const char *runlevel)
@@ -706,7 +692,6 @@ rc_service_in_runlevel(const char *service, const char *runlevel)
 	    runlevel, basename_c(service));
 	return exists(file);
 }
-librc_hidden_def(rc_service_in_runlevel)
 
 bool
 rc_service_mark(const char *service, const RC_SERVICE state)
@@ -826,7 +811,6 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 	free(init);
 	return true;
 }
-librc_hidden_def(rc_service_mark)
 
 RC_SERVICE
 rc_service_state(const char *service)
@@ -869,7 +853,6 @@ rc_service_state(const char *service)
 
 	return state;
 }
-librc_hidden_def(rc_service_state)
 
 char *
 rc_service_value_get(const char *service, const char *option)
@@ -884,7 +867,6 @@ rc_service_value_get(const char *service, const char *option)
 
 	return buffer;
 }
-librc_hidden_def(rc_service_value_get)
 
 bool
 rc_service_value_set(const char *service, const char *option,
@@ -909,7 +891,6 @@ rc_service_value_set(const char *service, const char *option,
 	}
 		return true;
 }
-librc_hidden_def(rc_service_value_set)
 
 
 bool
@@ -936,7 +917,6 @@ rc_service_schedule_start(const char *service, const char *service_to_start)
 	free(init);
 	return retval;
 }
-librc_hidden_def(rc_service_schedule_start)
 
 bool
 rc_service_schedule_clear(const char *service)
@@ -949,7 +929,6 @@ rc_service_schedule_clear(const char *service)
 		return true;
 	return false;
 }
-librc_hidden_def(rc_service_schedule_clear)
 
 RC_STRINGLIST *
 rc_services_in_runlevel(const char *runlevel)
@@ -987,7 +966,6 @@ rc_services_in_runlevel(const char *runlevel)
 		list = rc_stringlist_new();
 	return list;
 }
-librc_hidden_def(rc_services_in_runlevel)
 
 RC_STRINGLIST *
 rc_services_in_runlevel_stacked(const char *runlevel)
@@ -1004,7 +982,6 @@ rc_services_in_runlevel_stacked(const char *runlevel)
 	}
 	return list;
 }
-librc_hidden_def(rc_services_in_runlevel_stacked)
 
 RC_STRINGLIST *
 rc_services_in_state(RC_SERVICE state)
@@ -1038,7 +1015,6 @@ rc_services_in_state(RC_SERVICE state)
 	rc_stringlist_free(dirs);
 	return list;
 }
-librc_hidden_def(rc_services_in_state)
 
 bool
 rc_service_add(const char *runlevel, const char *service)
@@ -1084,7 +1060,6 @@ rc_service_add(const char *runlevel, const char *service)
 	free(init);
 	return retval;
 }
-librc_hidden_def(rc_service_add)
 
 bool
 rc_service_delete(const char *runlevel, const char *service)
@@ -1097,7 +1072,6 @@ rc_service_delete(const char *runlevel, const char *service)
 		return true;
 	return false;
 }
-librc_hidden_def(rc_service_delete)
 
 RC_STRINGLIST *
 rc_services_scheduled_by(const char *service)
@@ -1116,7 +1090,6 @@ rc_services_scheduled_by(const char *service)
 	rc_stringlist_free(dirs);
 	return list;
 }
-librc_hidden_def(rc_services_scheduled_by)
 
 RC_STRINGLIST *
 rc_services_scheduled(const char *service)
@@ -1127,4 +1100,3 @@ rc_services_scheduled(const char *service)
 	    basename_c(service));
 	return ls_dir(dir, LS_INITD);
 }
-librc_hidden_def(rc_services_scheduled)
