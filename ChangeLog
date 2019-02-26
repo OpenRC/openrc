@@ -1,3 +1,29 @@
+commit 238042d28b85277a4b5f19c3d13c4331b1325662
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-init: fix waitpid checks
+    
+    The do_openrc() function was not waiting properly for the child process
+    which started the runlevel to return. We need to repeatedly call
+    waitpid() until its return value matches the pid of the child process or
+    the child process does not exist.
+    
+    This fixes #216.
+    This fixes #300.
+
+commit 8d6370d4693f6f8397b808059e5fe436c8dc8993
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.41.1
+
+commit 75ce3addd2be964ce271858af08e7f750365916a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit d818be6e2bc00c790f6f4aeb2670f007951b2ab3
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1455,18 +1481,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     openrc-init: convert execl calls to execlp
-
-commit f383fd87b121492a04362ca9041f686d981718f1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    kill_all: change execl call to execlp
-
-commit cfded513cd9b7febe4b7cf39a80411e4303f0655
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-init: set a default path
-    
-    The default path provided by the system if one isn't set only includes
-    "/bin:/usr/bin". This adds the default path setting from sysvinit.
