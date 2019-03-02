@@ -60,9 +60,6 @@ fi
 RC_SERVICE="$1" ; export RC_SERVICE
 shift
 
-# Compat
-SVCNAME=$RC_SVCNAME ; export SVCNAME
-
 # Dependency function
 config() {
 	[ -n "$*" ] && echo "config $*"
