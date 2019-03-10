@@ -6,6 +6,8 @@ SRCS=	bootmisc.in fsck.in hostname.in local.in localmount.in loopback.in \
 	sysctl.in runsvdir.in urandom.in s6-svscan.in ${SRCS-${OS}}
 BIN=	${OBJS}
 
+INSTALLAFTER=	_installafter
+
 # Are we installing our network scripts?
 ifeq (${MKNET},yes)
 SRCS+= network.in staticroute.in
@@ -34,4 +36,9 @@ SRCS-NetBSD+=	devdb.in swap-blk.in ttys.in wscons.in
 
 include ${MK}/scripts.mk
 
-_installafter_: realinstall
+_installafter: realinstall
+ifeq (${OS},Linux)
+	ln -snf modules ${DESTDIR}/${DIR}/modules-late || exit $$?
+else ifeq (${OS},FreeBSD)
+	ln -snf modules ${DESTDIR}/${DIR}/modules-late || exit $$?
+endif

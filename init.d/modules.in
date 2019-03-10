@@ -9,12 +9,20 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
+[ "$RC_SVCNAME" = "modules-late" ] && MOD_LATE="YES" || MOD_LATE="NO"
+
 description="Loads a user defined list of kernel modules."
+yesno ${MOD_LATE} && description="${description} (late version)"
 
 depend()
 {
-	use isapnp
-	provide modules-load
+	if ! yesno ${MOD_LATE}; then
+		use isapnp
+		provide modules-load
+	else
+		before *
+	fi
+
 	keyword -docker -lxc -openvz -prefix -systemd-nspawn -vserver
 }
 
@@ -91,7 +99,7 @@ Linux_modules()
 	# support compiled in ...
 	[ ! -f /proc/modules ] && return 0
 
-	local KV x y kv_variant_list
+	local KV x y kv_variant_list msg
 	KV=$(uname -r)
 	# full $KV
 	kv_variant_list="${KV}"
@@ -111,7 +119,9 @@ Linux_modules()
 	done
 	[ -z "$list" ] && list=$modules
 
-	[ -n "$list" ] && ebegin "Loading kernel modules"
+	yesno ${MOD_LATE} && msg="Loading late kernel modules" ||
+		msg="Loading kernel modules"
+	[ -n "$list" ] && ebegin "${msg}"
 	for x in $list; do
 		xx=$(shell_var "$x")
 		for y in $kv_variant_list ; do
@@ -128,7 +138,7 @@ start()
 {
 	case "$RC_UNAME" in
 		FreeBSD|Linux)
-			modules_load_d
+			yesno ${MOD_LATE} || modules_load_d
 			${RC_UNAME}_modules
 			;;
 		*) ;;
