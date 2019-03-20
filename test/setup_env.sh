@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# shellcheck disable=SC2154
 if [ -z "${top_srcdir}" ] ; then
 	echo "You must set top_srcdir before sourcing this file" 1>&2
 	exit 1
@@ -13,10 +14,11 @@ LD_LIBRARY_PATH=${top_builddir}/src/libeinfo:${top_builddir}/src/librc:${LD_LIBR
 PATH=${top_builddir}/src/rc:${PATH}
 export LD_LIBRARY_PATH PATH
 
-if [ ! -f ${top_srcdir}/sh/functions.sh ] ; then
+# shellcheck disable=SC2154
+if [ ! -f "${top_srcdir}/sh/functions.sh" ] ; then
 	echo "functions.sh not yet created !?" 1>&2
 	exit 1
-elif ! . ${top_srcdir}/sh/functions.sh; then
+elif ! . "${top_srcdir}/sh/functions.sh"; then
 	echo "Sourcing functions.sh failed !?" 1>&2
 	exit 1
 fi
