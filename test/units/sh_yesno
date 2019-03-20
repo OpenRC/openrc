@@ -9,8 +9,8 @@
 # This file may not be copied, modified, propagated, or distributed
 #    except according to the terms contained in the LICENSE file.
 
-: ${top_srcdir:=..}
-. $top_srcdir/test/setup_env.sh
+: "${top_srcdir:=..}"
+. "$top_srcdir/test/setup_env.sh"
 
 ret=0
 
@@ -27,7 +27,7 @@ for f in no NO No false FALSE False 0 ; do
 		echo "!$f!"
 	fi
 done
-: $(( ret += $tret ))
+: $(( ret += tret ))
 
 eend $ret
 exit $ret
