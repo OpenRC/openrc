@@ -15,7 +15,7 @@ IN_HOTPLUG=yes
 export IN_BACKGROUND IN_HOTPLUG
 
 getmedia() {
-	ifconfig "$1" | while read line; do
+	ifconfig "$1" | while read -r line; do
 		case "${line}" in
 			media:" "*) echo "${line}"; return;;
 		esac
@@ -23,14 +23,14 @@ getmedia() {
 }
 
 # Try and create an init script for network interfaces
-if [ ! -e /etc/init.d/"$1" -a ! -e /usr/local/init.d/"$1" ]; then
+if [ ! -e /etc/init.d/"$1" ] && [ ! -e /usr/local/init.d/"$1" ]; then
 	base=${1%%.*}
 	if [ "${base}" = "net" ]; then
 		# We only create links for pyhsical interfaces
-		[ -n "$(getmedia ${1#*.})" ] || exit 1
+		[ -n "$(getmedia "${1#*.}")" ] || exit 1
 		base="net.lo0"
 	fi
-	if [ -e /etc/init.d/"${base}" -a "${base}" != "$1" ]; then
+	if [ -e /etc/init.d/"${base}" ] && [ "${base}" != "$1" ]; then
 		ln -s "${base}" /etc/init.d/"$1"
 	fi
 fi
