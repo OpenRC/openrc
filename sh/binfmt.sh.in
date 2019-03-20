@@ -32,11 +32,11 @@ apply_file() {
 		echo "${line}" > /proc/sys/fs/binfmt_misc/register
 		rc=$?
 		if [ $rc -ne 0 ]; then
-			printf "binfmt: invalid entry on line %d of \`%s'\n" \
+			printf "binfmt: invalid entry on line %d of \`%s'\\n" \
 				"$LINENUM" "$FILE" >&2
 			error=1
 		fi
-	done <$FILE
+	done < "$FILE"
 	return $rc
 }
 
@@ -60,14 +60,14 @@ else
 	# `/run/binfmt.d/foo.conf' supersedes `/usr/lib/binfmt.d/foo.conf'.
 	# `/run/binfmt.d/foo.conf' will always be read after `/etc/binfmt.d/bar.conf'
 	for d in ${binfmt_dirs} ; do
-		[ -d $d ] && for f in ${d}/*.conf ; do
+		[ -d "$d" ] && for f in "${d}"/*.conf ; do
 			case "${f##*/}" in
 				systemd.conf|systemd-*.conf) continue;;
 			esac
-			[ -e $f ] && binfmt_basenames="${binfmt_basenames}\n${f##*/}"
+			[ -e "$f" ] && binfmt_basenames="${binfmt_basenames}\\n${f##*/}"
 		done # for f in ${d}
 	done # for d in ${binfmt_dirs}
-	binfmt_basenames="$(printf "${binfmt_basenames}\n" | sort -u )"
+	binfmt_basenames="$(printf "%b" "${binfmt_basenames}\\n" | sort -u )"
 
 	for b in $binfmt_basenames ; do
 		real_f=''
