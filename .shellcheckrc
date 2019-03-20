@@ -1,0 +1,11 @@
+# Shellcheck configuration file
+
+# SC1090: Can't follow non-constant source. Use a directive to specify location.
+# Ignore until https://github.com/koalaman/shellcheck/issues/769 is fixed upstream.
+disable=SC1090
+
+# SC2039: In POSIX sh, local is undefined.
+# OpenRC allows local, which isn't POSIX.
+# Note: this disables all SC2039 checks, not just for local.
+# See https://github.com/koalaman/shellcheck/issues/1341 for more details.
+disable=SC2039
