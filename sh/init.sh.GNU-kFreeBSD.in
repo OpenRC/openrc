@@ -15,8 +15,8 @@ if [ ! -d /run ]; then
     eend $?
 fi
 
-if [ -L $RC_SVCDIR ]; then
-    rm $RC_SVCDIR
+if [ -L "$RC_SVCDIR" ]; then
+    rm "$RC_SVCDIR"
 fi
 
 ebegin "Mounting /run"
@@ -31,7 +31,7 @@ fi
 eend
 
 ebegin "Creating $RC_SVCDIR"
-mkdir -p $RC_SVCDIR
+mkdir -p "$RC_SVCDIR"
 eend $?
 
 if [ -e "$RC_LIBEXECDIR"/cache/softlevel ]; then
