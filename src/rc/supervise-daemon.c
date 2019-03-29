@@ -835,7 +835,7 @@ int main(int argc, char **argv)
 
 		case 'm':  /* --respawn-max count */
 			n = sscanf(optarg, "%d", &respawn_max);
-			if (n	!= 1 || respawn_max < 1)
+			if (n	!= 1 || respawn_max < 0)
 				eerrorx("Invalid respawn-max value '%s'", optarg);
 			break;
 
