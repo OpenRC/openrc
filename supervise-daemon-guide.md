@@ -92,7 +92,8 @@ respawn_max=x
 ```
 
 This is the maximum number of times to respawn a supervised process
-during the given respawn period. The default is unlimited.
+during the given respawn period.
+The default is 10. 0 means unlimited.
 
 ``` sh
 respawn_period=seconds
@@ -101,6 +102,10 @@ respawn_period=seconds
 This works in conjunction with respawn_max and respawn_delay above to
 decide if a process should not be respawned for some reason.
 
-For example, if respawn_period is 60, respawn_max is 2 and respawn_delay
-is 3 and a process dies more than 4 times, the process will not be
-respawned and the supervisor will terminate.
+For example, if respawn period is 10 and respawn_max is 2, the process
+would need to die 3 times within 10 seconds to no longer be respawned.
+Note that respawn_delay will delay all of this, so in the above scenario
+a respawn_delay of greater than 5 will cause infinite respawns.
+
+By default, this is unset and respawn_max applies to the entire lifetime
+of the service.
