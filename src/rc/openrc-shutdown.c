@@ -35,8 +35,9 @@
 #include "rc.h"
 #include "helpers.h"
 #include "rc-misc.h"
-#include "_usage.h"
+#include "rc-sysvinit.h"
 #include "rc-wtmp.h"
+#include "_usage.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
@@ -328,15 +329,17 @@ int main(int argc, char **argv)
 	syslog(LOG_NOTICE, "The system will %s now", state);
 	unlink(nologin_file);
 	unlink(shutdown_pid);
-	if (do_halt)
+	if (do_halt) {
+		sysvinit_runlevel('0');
 		send_cmd("halt");
-	else if (do_kexec)
+	} else if (do_kexec)
 		send_cmd("kexec");
 	else if (do_poweroff)
 		send_cmd("poweroff");
-	else if (do_reboot)
-		send_cmd("reboot");
-	else if (do_single)
+	else if (do_reboot) {
+		sysvinit_runlevel('6');
+			send_cmd("reboot");
+	} else if (do_single)
 		send_cmd("single");
 	return 0;
 }
