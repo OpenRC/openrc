@@ -14,7 +14,8 @@ SRCS+=		rc-selinux.c
 endif
 
 ifeq (${OS},Linux)
-SRCS+=		kill_all.c openrc-init.c openrc-shutdown.c broadcast.c rc-wtmp.c
+SRCS+=		kill_all.c openrc-init.c openrc-shutdown.c rc-sysvinit.c broadcast.c \
+			rc-wtmp.c
 endif
 
 CLEANFILES=	version.h rc-selinux.o
@@ -134,7 +135,7 @@ mountinfo: mountinfo.o _usage.o rc-misc.o
 openrc rc: rc.o rc-logger.o rc-misc.o rc-plugin.o _usage.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-openrc-shutdown: openrc-shutdown.o rc-misc.o _usage.o broadcast.o rc-wtmp.o
+openrc-shutdown: openrc-shutdown.o rc-misc.o _usage.o broadcast.o rc-wtmp.o rc-sysvinit.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 openrc-run runscript: openrc-run.o _usage.o rc-misc.o rc-plugin.o
