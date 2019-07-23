@@ -669,7 +669,7 @@ int main(int argc, char **argv)
 					nav[len++] = p;
 				for (i = 0; i < opt; i++)
 					nav[i + len] = argv[i];
-				nav[i + len] = '\0';
+				nav[i + len] = NULL;
 			}
 		}
 	}
