@@ -35,9 +35,9 @@
 
 const char *applet = NULL;
 
-static int syslog_decode(char *name, CODE *codetab)
+static int syslog_decode(char *name, const CODE *codetab)
 {
-	CODE *c;
+	const CODE *c;
 
 	if (isdigit((unsigned char)*name))
 		return atoi(name);

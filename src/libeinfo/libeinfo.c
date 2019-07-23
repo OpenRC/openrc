@@ -15,7 +15,7 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-const char libeinfo_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
+static const char libeinfo_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include <sys/types.h>
 #include <sys/ioctl.h>

@@ -611,7 +611,7 @@ rc_service_daemons_crashed(const char *service)
 				i = 0;
 				TAILQ_FOREACH(s, list, entries)
 				    argv[i++] = s->value;
-				argv[i] = '\0';
+				argv[i] = NULL;
 			}
 		}
 

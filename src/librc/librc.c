@@ -15,7 +15,7 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
+static const char librc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 
 #include "queue.h"
 #include "librc.h"
