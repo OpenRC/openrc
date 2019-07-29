@@ -13,6 +13,7 @@ BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 NONETWORKDIR=	${LEVELDIR}/nonetwork
 SHUTDOWNDIR=	${LEVELDIR}/shutdown
+SINGLEDIR=	${LEVELDIR}/single
 
 ifeq (${MKNET},yes)
 BOOT+= network staticroute
@@ -89,6 +90,9 @@ install:
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${SHUTDOWNDIR}/"$$x" || exit $$?; done \
+	fi
+	if ! test -d "${SINGLEDIR}"; then \
+		${INSTALL} -d ${SINGLEDIR} || exit $$?; \
 	fi
 
 check test::
