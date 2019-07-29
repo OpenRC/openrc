@@ -94,6 +94,15 @@ install:
 	if ! test -d "${SINGLEDIR}"; then \
 		${INSTALL} -d ${SINGLEDIR} || exit $$?; \
 	fi
+	if test "${MKSYSVINIT}" = yes && test "${OS}" = Linux; then \
+		for x in tty1 tty2 tty3 tty4 tty5 tty6; do \
+			ln -snf ${INITDIR}/agetty ${DESTDIR}/${INITDIR}/"agetty.$$x" || exit $$?; \
+		done; \
+		for x in tty1 tty2 tty3 tty4 tty5 tty6; do \
+			ln -snf ${INITDIR}/agetty.$$x ${DEFAULTDIR}/"agetty.$$x" || exit $$?; \
+		done; \
+		ln -snf ${INITDIR}/agetty.tty1 ${SINGLEDIR}/agetty.tty1 || exit $$?; \
+	fi
 
 check test::
 
