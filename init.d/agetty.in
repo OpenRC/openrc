@@ -21,6 +21,7 @@ pidfile="/run/${RC_SVCNAME}.pid"
 depend() {
 	after local
 	keyword -prefix
+	provide getty
 }
 
 start_pre() {
