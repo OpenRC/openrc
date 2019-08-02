@@ -4,6 +4,13 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.42
+
+openrc-shutdown now has the ability to shut down sysvinit-based systems.
+
+A guide has been added for migrating systems using another init system
+to openrc-init.
+
 ## OpenRC 0.41.
 
 This version adds the ability to format the output of rc-status when
