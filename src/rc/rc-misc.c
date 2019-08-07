@@ -55,6 +55,7 @@ static const char *const env_whitelist[] = {
 	"RC_DEBUG", "RC_NODEPS",
 	"LANG", "LC_MESSAGES", "TERM",
 	"EINFO_COLOR", "EINFO_VERBOSE",
+	"INIT_HALT",
 	NULL
 };
 

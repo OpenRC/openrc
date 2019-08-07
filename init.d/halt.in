@@ -1,0 +1,30 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2019 The OpenRC Authors.
+# See the Authors file at the top-level directory of this distribution and
+# https://github.com/OpenRC/openrc/blob/master/AUTHORS
+#
+# This file is part of OpenRC. It is subject to the license terms in
+# the LICENSE file found in the top-level directory of this
+# distribution and at https://github.com/OpenRC/openrc/blob/master/LICENSE
+# This file may not be copied, modified, propagated, or distributed
+# except according to the terms contained in the LICENSE file.
+
+description="Halt or Poweroff"
+
+depend()
+{
+	after killprocs savecache mount-ro
+}
+
+start()
+{
+	if [ "$INIT_HALT" = HALT ]; then
+		ebegin "Halting system"
+		halt -dhn
+		eend $?
+	elif [ "$INIT_HALT" = POWEROFF ]; then
+		ebegin "Powering off system"
+		poweroff -dhn
+		eend $?
+	fi
+}
