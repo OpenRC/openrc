@@ -25,7 +25,7 @@ depend() {
 }
 
 start_pre() {
-	if [ -z "$port" ]; then
+	if [ "$port" = "$RC_SVCNAME" ]; then
 		eerror "${RC_SVCNAME} cannot be started directly. You must create"
 		eerror "symbolic links to it for the ports you want to start"
 		eerror "agetty on and add those to the appropriate runlevels."
