@@ -19,6 +19,7 @@
  */
 
 #include <errno.h>
+#include <pwd.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -37,6 +38,7 @@
 
 #include "helpers.h"
 #include "rc.h"
+#include "rc-plugin.h"
 #include "rc-wtmp.h"
 #include "version.h"
 
@@ -116,6 +118,65 @@ static void handle_shutdown(const char *runlevel, int cmd)
 	kill(-1, SIGKILL);
 	sync();
 	reboot(cmd);
+}
+
+static void run_program(const char *prog)
+{
+	sigset_t full;
+	sigset_t old;
+	pid_t pid;
+
+	/* We need to block signals until we have forked */
+	sigfillset(&full);
+	sigprocmask(SIG_SETMASK, &full, &old);
+	pid = fork();
+	if (pid == -1) {
+		perror("init");
+		return;
+	}
+	if (pid == 0) {
+		/* Unmask signals */
+		sigprocmask(SIG_SETMASK, &old, NULL);
+		execl(prog, prog, (char *)NULL);
+		perror("init");
+		exit(1);
+	}
+	/* Unmask signals and wait for child */
+	sigprocmask(SIG_SETMASK, &old, NULL);
+	if (rc_waitpid(pid) == -1)
+		perror("init");
+}
+
+static void open_shell(void)
+{
+	const char *shell;
+	struct passwd *pw;
+
+#ifdef __linux__
+	const char *sys = rc_sys();
+
+	/* VSERVER systems cannot really drop to shells */
+	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0)
+	{
+		execlp("halt", "halt", "-f", (char *) NULL);
+		perror("init");
+		return;
+	}
+#endif
+
+	shell = rc_conf_value("rc_shell");
+	/* No shell set, so obey env, then passwd, then default to /bin/sh */
+	if (!shell) {
+		shell = getenv("SHELL");
+		if (!shell) {
+			pw = getpwuid(getuid());
+			if (pw)
+				shell = pw->pw_shell;
+			if (!shell)
+				shell = "/bin/sh";
+		}
+	}
+	run_program(shell);
 }
 
 static void handle_single(void)
@@ -248,8 +309,11 @@ int main(int argc, char **argv)
 			handle_shutdown("reboot", RB_AUTOBOOT);
 		else if (strcmp(buf, "reexec") == 0)
 			handle_reexec(argv[0]);
-		else if (strcmp(buf, "single") == 0)
+		else if (strcmp(buf, "single") == 0) {
 			handle_single();
+			open_shell();
+			init(default_runlevel);
+		}
 	}
 	return 0;
 }

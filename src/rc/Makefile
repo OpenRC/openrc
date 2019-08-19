@@ -113,7 +113,7 @@ veinfo vewarn vebegin veend vewend veindent veoutdent: do_e.o rc-misc.o
 fstabinfo: fstabinfo.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-openrc-init: openrc-init.o rc-wtmp.o
+openrc-init: openrc-init.o rc-plugin.o rc-wtmp.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
 is_newer_than: is_newer_than.o rc-misc.o
