@@ -67,6 +67,6 @@ struct init_request {
 };
 
 void sysvinit_runlevel(char rl);
-void sysvinit_setenv(char *name, char *value);
+void sysvinit_setenv(const char *name, const char *value);
 
 #endif
