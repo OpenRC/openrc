@@ -1,3 +1,162 @@
+commit ed24d281631d564321d099a0d5e78be232d7de78
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    update sysvinit support files
+
+commit 1bc96141e6846a5f9b3cf2c2bcaf53f2ed9ca33d
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    fix single user mode
+
+commit c7000aeaabf34262375a2a96b5d5b8f7fcd8a793
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    optimize loops for installing gettys
+
+commit 5c5129b534bd8a0ebd0e525c87241d6c6ef0ec8c
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    Remove "single" runlevel directory
+    
+    Single user mode should be handled in the init process directly.
+
+commit 0dabda6f6ff3744c6f1b1d2afd57845554384977
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    fix sysvinit compatibility
+    
+    This allows openrc to direct sysvinit to shut down the system by setting
+    the INIT_HALT environment variable appropriately. Also, we do not try to
+    communicate with sysvinit if its fifo does not exist.
+
+commit 92de9a693b0e4156e404bc69ab230fe2355c22ca
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    Add documentation for openrc-init and update the NEWS file
+
+commit a71aebcae123d2684c4a326559749bc94b2796be
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    init.d/agetty: provide the getty virtual service
+
+commit 61596b16d228c15888033da3b4138c1e405e1cb9
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    Install gettys if the MKSYSVINIT switch is set to yes
+    
+    The default is to put one getty in the "single" runlevel and 6 in the
+    "default" runlevel.
+
+commit 104eb3420b9332b441ce9965ef69ba5b099519ae
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    Add the "single" runlevel
+
+commit 70b8df3e9c7fed156e1a81ee7efe8a51c1010cb6
+Author: Chloe Kudryavtsev <toast@toast.cafe>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    clarify supervise-daemon-guide
+    
+    1. The given default for respawn_max is wrong.
+    2. The example for respawn_period is nonsensical.
+    
+    This fixes #311.
+
+commit cac41092e4180a8d16edacab0c8552585d94328b
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    add ability for openrc-shutdown to communicate with sysvinit
+    
+    This fixes #315.
+
+commit 7ddc281ab6fd11b63f41059818b0de4748e2821f
+Author: Martin Wilke <miwi@ixsystems.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    Fix  build with Clang
+    
+    This fixes #313.
+
+commit c092ff6da174c12b913027ffa33d32622d39b9a0
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Add Sony Interactive Entertainment as an author
+
+commit 54780a45826f789f1291742eb2c99be369bfe64c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: allow --respawn-max to be zero
+
+commit 44f5a72d1aeb131cc2cb464a53809a5a8d90c46e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    remove hidden-visibility.h
+    
+    I am removing this on the advice of a member of the Gentoo toolchain
+    team. It was explained to me that this doesn't offer any significant
+    benefits to OpenRC.
+    
+    If anyone ffeels differently, please open a pull request reverting
+    this and adding an explanation of what it does and how to know which
+    functions to mark hidden in the future.
+    
+    This fixes #301.
+
+commit 0d378974bfbd69c5427d44c0a43a9f36389aa235
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-init: fix waitpid checks
+    
+    The do_openrc() function was not waiting properly for the child process
+    which started the runlevel to return. We need to repeatedly call
+    waitpid() until its return value matches the pid of the child process or
+    the child process does not exist.
+    
+    This fixes #216.
+    This fixes #300.
+
+commit 028da5c2e37d81d4e242a546eb48a20eafe0cc56
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: fix potential buffer overflow in pid_is_argv
+    
+    This fixes #299.
+
+commit d8dbb890aaca34fc9b342772de0f23a7ea3efaaa
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "src/librc/librc-daemon.c: fix buffer overrun in pid_is_argv"
+    
+    This reverts commit 084877eb52971faf8f52c780ddd08ed9af140eb6.
+    The mentioned commit caused some systems to have some services reported
+    as crashed.
+    
+    This fixes #297.
+    This fixes #298.
+
+commit 56c006ebd68d572e303c01c38291a1f5f4fc1c30
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Update ChangeLog
+
 commit 067088bbff42ca2fb9106acf309f1d9ce3e78ada
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -825,650 +984,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     Nanosleep is the safer call to use in case we need to use alarms
     eventually.
-
-commit 7cb8d943236fe651ac54c64f8167f7c4369f649c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Stop mounting efivarfs read-only
-    
-    We do not need to do this any longer since all supported linux kernels
-    make efivarfs immutable and the tools that manipulate it are aware of
-    this feature.
-    
-    This fixes https://github.com/openrc/openrc/issues/238.
-
-commit 84ed570eaefcbb55b99ba425030bf7d1d1d46137
-Author: Zac Medico <zmedico@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: fix EACCES errno false-positive crash
-    
-    Use errno != EACCES to fix false-positive for non-root users
-    with grsecurity kernels.
-    
-    Fixes: 37e29442721a ("librc: Add check for crashed state")
-    This fixes #237
-
-commit 2eea73bfd5ce2f9993d52293fe7d25c0c804d592
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-functions.sh: Remove addon support
-    
-    This is an old relic from Gentoo baselayout-1.x which should not be used
-    any longer.
-
-commit a571a42421b337380b6f5751635c55906bb8b508
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    modules: remove the ability to rename modules on the fly
-    
-    Kmod doesn't support the -o switch, so if you have been using this your
-    module loads have been failing.
-
-commit 79648ac1c6355975abca6acf6076e7022037523f
-Author: Holger Hoffstätte <holger@applied-asynchrony.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-status: initialize uptime pointer to prevent memory corruption
-    
-    This fixes #231.
-
-commit 02af762e83640ec23bf64c5b814f0d3424d90e10
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.39
-
-commit 01c34c28e6d6d7bfecc0f88bdf1fb15e97ab8823
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit 56ddda54b5aa01474bf563d5a662075c35152858
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon.c: clean up memory leaks
-
-commit 3a803b3135837665d51ef4dd7a8b913c78e71ff6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc-daemon.c: fix memory leaks
-
-commit 72df51e17ba0e1a0f94451b4bbfb338288c4625c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc-daemon: convert most snprintf calls to xasprintf
-
-commit b2f5531194e33c229462e9f52fa1d9388463f7b7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc-misc: convert snprintf calls to xasprintf
-
-commit 19bf49a710f27d4774ed4c6372d87d6ba15f189e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    libeinfo: convert remaining snprintf calls to xasprintf
-
-commit 64354831da2adeba5cb2f91a81fa0f56e1ce4ed9
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc: convert snprintf calls to xasprintf
-
-commit e14edd765fdc4ed43356d2eef35fa99228e5d461
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: convert snprintf calls to xasprintf
-
-commit f9d41243d8499c5d7027177d5aa716d5b5859cd6
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: convert snprintf calls to xasprintf
-
-commit be7ad06d4a0efce2a1144b2cf6f0cc361f2a81e4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-status: convert snprintf calls to xasprintf
-
-commit a6165168953b9c7a62c089ce946476b23b73fb12
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-status: fix gcc 7 warnings
-
-commit 04721ece03b15503aa220f60e7c6159d01ee75e1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: fix gcc 7 warnings
-
-commit c7e8f1133a42152cc293e6b637985f81bcf8b310
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: fix gcc 7 warnings
-
-commit 47e4bfae57402eedd017d6098b432c2c411cd374
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix gcc 7 warnings in pipe routines
-
-commit 8a945194afb106428bc700e751078ef9944ee617
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    libeinfo: clean up gcc 7 compiler warnings
-
-commit aa4a004c297ec7a1fb794ad2e53ef3ac8b3f4fd1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.38
-
-commit 9ec5d36bdddf5bb0e96b0c561bc5d013a8a2da2a
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit a097933edab9d7221df1831e098415d604437c98
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    sh/start-stop-daemon.sh: fix processing of the logger arguments
-
-commit a6f5b1bb63070c24145df72040fa7b465948003c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit e6d01471fe2a8eb8a15bb906d7c91c11805d1bef
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: add ability to log stdout or stderr to processes
-
-commit d4501a9f06c807f87be04f128e535a74b370fdb4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix a typo
-
-commit ec8abea4605395a2a59b26906ce4677a578e3c60
-Author: Mike Gilbert <floppym@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add helper to spawn process with stdin connected to a pipe
-
-commit e4ddfa38e0e0318abf442b7aa07e0d8206191dd7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    user-guide.md: small cleanups
-
-commit 21d30bc6d9caca31d007631717a480a552b89701
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    service-script-guide.md: small cleanups
-
-commit 2a1ff6e49c6603bb81eec3cafe2c587fa734289f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.37
-
-commit 6762cb875c9c039b79dcc447b9d0eb65356a7708
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit 6edf516a1fe0ad4f4e8738f9fdd1bf0bc7718361
-Author: Austin English <austinenglish@gmail.com>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    sh/supervise-daemon.sh: use start_stop_daemon_args if supervise_daemon_args is undefined
-
-commit 7e56a49e23c810673b83e48eb9ca36229bb4016e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Logger: only log printable characters and newlines
-    
-    X-Gentoo-Bug: 651412
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=651412
-
-commit fa5aea80c50fb724d2c98a6542307adbafd0e62d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run.sh: move crashed test outside started test
-    
-    This is handled inside librc, so we don't need the nesting in this
-    script.
-
-commit 0f4fa41574a4ebf8117493e5411f8ab522010467
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add mark_service_crashed binary
-
-commit 5d6dd97bba3559b57fb1c1de35e644c6dbd6baa7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-misc: add the crashed state
-
-commit 37e29442721af0dc3846e87ef2b85a474af3cf2b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: Add check for crashed state
-    
-    In rc_service_state,, call rc_service_daemons_crashed to check for
-    a crashed daemon if the service is started.
-
-commit 4e0eace837287845504c9895429dc9f64872d075
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    librc: Add crashed state
-
-commit faa8318b3ba278544413a39d4a5ae4457711793f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove the _rc_can_find_pids function
-    
-    This test to find if we could see pid 1 was being used inconsistently in
-    rc-status and mark_service_crashed to decide whether we could test to
-    see if the daemon for the service was crashed, and it was not part of
-    the librc library.
-    
-    I am removing it from the executables because of inconsistent usage. I
-    will add it to the library if it is needed there.
-
-commit 08da36149c0b41c64a09369c3eef5e2f5a6fa39c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-service: add --ifstarted and --ifstopped options
-
-commit 56870d0db18209396f8276bdc05d413fe4dd7a88
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Man: rc-service man page cleanups
-
-commit 4d47ce440c3e8f193cff82a77e6691ee6e7fac33
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-service: add -d/--debug and -D/--nodeps options
-
-commit 958f57d895b6573b39e62097e5e9881f16174715
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: respect the RC_NODEPS environment variable
-
-commit 04886efd85328988657c34440da9ba6aa2841cfd
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add RC_DEBUG and RC_NODEPS to environment whitelist
-    
-    These are needed so rc-service can pass debug and nodeps options to
-    openrc-run.
-
-commit d980798d6444bbfc508796a233e962bf4dd61275
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-run: respect the IN_DRYRUN environment variable
-    
-    This allows rc-service to pass the tryrun option to openrc-run.
-    
-    This is for #225.
-
-commit 414a9aae6ce066d2a6ad42e7e24d1c12a7b46409
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-misc.c: Add IN_DRYRUN to environment whitelist
-    
-    This allows rc-service to pass the dryrun option to openrc-run.
-    
-    This is for #225.
-
-commit a7f475ca04856ef8232364c5b0c3191566b0696c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-service: add a --dry-run option
-    
-    This is for #225.
-
-commit 3c53680018c1799d0d804e241a9fa4d3b9423896
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    build: standardize installation modes
-    
-    Gentoo was changing some of our installation modes from 0444 to 0644.
-    There isn't a reason to install things 0444, so we are switching these
-    to 0644 so the Gentoo ebuild doesn't need this extra step.
-
-commit f0ad647303daca528cb9b75f9a07d422318635c2
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "savecache: stop saving the dependency tree"
-    
-    It is safe to save the deptree, but we also need to regenerate it at
-    boot time.
-
-commit b35e03b6b1acc841ac33f601dd39c1152523621e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Revert "Logger: only log printable characters and newlines"
-    
-    This reverts commit 2b1392af2fe9e5dfc8eda2f19d896efdc41840bf.
-    This seems to create issues shutting down, so I need to look into it
-    further.
-
-commit 2b1392af2fe9e5dfc8eda2f19d896efdc41840bf
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Logger: only log printable characters and newlines
-    
-    X-Gentoo-Bug: 651412
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=651412
-
-commit a3d0e293eebcb92564c473e61ca42724844fb279
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove localmount from dependencies for linux-only services
-    
-    This removes localmount from the dependencies of the consolefont,
-    keymaps, numlock and procfs services.
-    
-    These services are Linux only and the default modern linux system has /
-    and /usr on the same file system.
-    
-    This also fixes the following issue.
-    
-    X-Gentoo-Bug: 651998
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=651998
-
-commit 0200002b8cbd061ac79b6aed4024220cd0386d2c
-Author: Andrey Utkin <andrey_utkin@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: don't fail stopping if pidfile is gone
-    
-    If pidfile does not exist when we are stopping the daemon, assume it is
-    already stopped, and report success.
-    
-    hostapd is an example of a daemon which removes its pidfile when it is
-    exiting. If this daemon terminates prematurely, that is, without s-s-d
-    involvement, then openrc fails to restart it, because s-s-d "stop"
-    command fails when pidfile is missing.
-    
-    X-Gentoo-Bug: 646274
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/646274
-
-commit f4e2142089487b7f5c99da949d7bf8d038724df7
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add _POSIX_C_SOURCE definition to Linux build
-    
-    We need this to allow builds on uclibc-ng based systems.
-    
-    X-Gentoo-Bug: 650908
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=650908
-
-commit 49a90f27a848ba02a363fc0c844d6284728bdd73
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    typo fix
-
-commit 2ae60ca0419d60c86904a8e15e71e902549e18d4
-Author: Scall <Scall@users.noreply.github.com>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    rc-update: fix typo
-
-commit 6b475ab26992f1dd8815700828df46abc4b71d27
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.d/modules: add code from modules-load service
-    
-    There is no reason for these to be separate services. I did add a
-    provide so that we don't break backward compatibility.
-
-commit b302b0c094c2c99b810aec9c8877adcd1effabac
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    net-online: always start after net
-    
-    X-Gentoo-Bug: 650600
-    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=650600
-
-commit 40aa69cf3a99fa080375a702631da4d2311ebf3e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    agetty.in: allow status to be displayed
-
-commit 5346fbf2c90b33b3abc01588e4727d4402f8db62
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: fix off-by-one error
-
-commit 92e6bdee12fa9d87a2535446ceccee261305e87c
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Use _BSD_SOURCE on FreeBSD
-
-commit 71f275b2aa04d9a9323a49d1421796c4d50b1436
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    typo fix
-
-commit 6dc0d0af333592203fabd4746279bb15d2801c0b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove _XOPEN_SOURCE macros from builds
-
-commit 59a9e53378891be7b12ed304ccb609e27da70751
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Add _POSIX_C_SOURCE macro to FreeBSD build
-
-commit 122768d339175c925a1a228792f4725b7c802f46
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: document default retry specification for supervise-daemon
-
-commit fa3c60c0d8fd2267be5c1b156530b136a2503088
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man: document default retry sppecification for start-stop-daemon
-
-commit 61905bfcf560219939c902dbb8fe9bc5088a42cf
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Clean up cgroups v2 code
-    
-    Remove the IFS manipulation and simplify the loop that processes the
-    settings.
-
-commit 3e68013631765e00eddf118bc24e38254e7f6d64
-Author: Scall <Scall@users.noreply.github.com>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    init.d: swap should always be started after root
-    
-    Otherwise if a swap file is being used, and swap is started before
-    root, swapon may fail because of a read-only filesystem.
-
-commit b46123f2e19a5eb8dc02b898e8c20a2ccc211615
-Author: Chris Cromer <cromerc@users.noreply.github.com>
-Commit: Doug Freed <dwfreed@mtu.edu>
-
-    openrc-run: fix memory size (#213)
-    
-    Fixes #212
-
-commit 109869641f7b58d07819f6b65d7b085abf75083b
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fix build on FreeBSD
-
-commit e8a2305de0320dc98bf187bb97f936e2dc4a4554
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    version 0.36
-
-commit f62975a1f8c4d5d4abdf78d8cad5509216138f03
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update ChangeLog
-
-commit 5bb6f9aa318a6d0507971b74d88c3fd2803bae4b
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init.sh: apply SELinux label for /run early in boot
-    
-    Some initramfs mount /run which then ends up with the wrong labels.
-    Force relabel all of /run right after its mounted to fix.
-
-commit 1ab8541a6ccb9d72c6faeaf2d616fc49f6cdfaf6
-Author: Jason Zaman <jason@perfinion.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    init-early.sh.Linux.in: apply the selinux label to /dev/console early
-    
-    /dev/console is relabelled later in the devfs init script, but by then we
-    have already missed some of the messages, so fix that label early.
-
-commit 038c03bef315314ddb1e460c67d29b2599b494ad
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: make an error message more verbose
-
-commit e51dc29e2f3b2718a62347e8588115e786a9f3c8
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    cgroups: fix indentation
-
-commit c6047f887a362cb8d96624fbd73484ca703acf53
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    cgroups: add rc_cgroup_memory_use_hierarchy setting for cgroups v1
-
-commit 0506d68427e342366d826aae4bfbbc6cc0adecc2
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    fstabinfo: fix an error message
-
-commit c3d666acaf51c771671b0fa54bd8ec0f5d29859e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc: remove unused #define's.
-
-commit e93b1d76d150c4477015052fc3df9b94647e5b5d
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc: convert another execl() call to execlp()
-
-commit acf1e43f815898c4a4957db352f71f3fb629edf3
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-init: convert execl calls to execlp
-
-commit f383fd87b121492a04362ca9041f686d981718f1
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    kill_all: change execl call to execlp
-
-commit cfded513cd9b7febe4b7cf39a80411e4303f0655
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    openrc-init: set a default path
-    
-    The default path provided by the system if one isn't set only includes
-    "/bin:/usr/bin". This adds the default path setting from sysvinit.
-
-commit 16ff3cd8df6169f73e3d7cf00758a4703f62cbf0
-Author: Christian Brauner <christian.brauner@ubuntu.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    check whether /sys/fs/cgroup is a mountpoint
-    
-    The current check only tries to detect whether /sys/fs/cgroup exists and
-    whether it is writable or not. But when the init system doesn't mount
-    cgroups then /sys/fs/cgroup will just be an empty directory. When paired
-    with unprivileged containers that mount sysfs this will cause misleading
-    errors to be printed since /sys/fs/cgroup will be owned by user
-    nobody:nogroup in this case. Independent of this specific problem this
-    check will also be misleading when the /sys/fs/cgroup exists and is in
-    fact writable by the init system but isn't actually a mountpoint.
-    
-    Note from William. "grep -qs" doesn't need to redirect output to
-    /dev/null since it is completely silent.
-    
-    This fixes #209.
-
-commit 38032626a6c2f8e869197999f32ac3634667cc86
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    improve cgroup configuration checks
-    
-    make the base/controller functions return successfully if cgroups v1/v2
-    are not configured in the kernel
