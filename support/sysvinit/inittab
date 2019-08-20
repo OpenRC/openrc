@@ -10,13 +10,15 @@ si::sysinit:/sbin/openrc sysinit
 # Further system initialization, brings up the boot runlevel.
 rc::bootwait:/sbin/openrc boot
 
+l0u:0:wait:/sbin/telinit u
 l0:0:wait:/sbin/openrc shutdown
-l0s:0:wait:/sbin/halt -dhip
+l0s:0:wait:/sbin/halt.sh
 l1:S1:wait:/sbin/openrc single
 l2:2:wait:/sbin/openrc nonetwork
 l3:3:wait:/sbin/openrc default
 l4:4:wait:/sbin/openrc default
 l5:5:wait:/sbin/openrc default
+l6u:6:wait:/sbin/telinit u
 l6:6:wait:/sbin/openrc reboot
 l6r:6:wait:/sbin/reboot -d
 #z6:6:respawn:/sbin/sulogin
@@ -34,8 +36,8 @@ c5:2345:respawn:/sbin/agetty 38400 tty5 linux
 c6:2345:respawn:/sbin/agetty 38400 tty6 linux
 
 # SERIAL CONSOLES
-#s0:12345:respawn:/sbin/agetty 9600 ttyS0 vt100
-#s1:12345:respawn:/sbin/agetty 9600 ttyS1 vt100
+#s0:12345:respawn:/sbin/agetty -L 9600 ttyS0 vt100
+#s1:12345:respawn:/sbin/agetty -L 9600 ttyS1 vt100
 
 # What to do at the "Three Finger Salute".
 ca:12345:ctrlaltdel:/sbin/shutdown -r now

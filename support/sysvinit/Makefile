@@ -2,7 +2,7 @@ MK=	../../mk
 include ${MK}/os.mk
 
 DIR=	${DATADIR}/support/sysvinit
-INC=	inittab README.md
+INC=	halt.sh inittab README.md
 
 
 include ${MK}/scripts.mk
