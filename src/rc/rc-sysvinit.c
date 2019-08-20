@@ -74,7 +74,7 @@ void sysvinit_runlevel(char rl)
 /*
  *	Set environment variables in the init process.
  */
-void sysvinit_setenv(char *name, char *value)
+void sysvinit_setenv(const char *name, const char *value)
 {
 	struct init_request	request;
 	size_t nl;
@@ -90,7 +90,7 @@ else
 		vl = 0;
 
 	if (nl + vl + 3 >= (int)sizeof(request.i.data))
-		return -1;
+		return;
 
 	memcpy(request.i.data, name, nl);
 	if (value) {
@@ -98,5 +98,5 @@ else
 		memcpy(request.i.data + nl + 1, value, vl);
 	}
 	sysvinit_send_cmd(&request);
-	return 0;
+	return;
 }
