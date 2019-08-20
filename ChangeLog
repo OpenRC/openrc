@@ -1,3 +1,21 @@
+commit a31008d19726a6c659a4bdc693a3496ae1208448
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    fix clang build
+
+commit a177d15641b438fc9998642df9dc81c67babe62e
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    version 0.42
+
+commit 2b4c4860432d07015358bff895cd14c35618ba03
+Author: William Hubbs <william.hubbs@sony.com>
+Commit: William Hubbs <william.hubbs@sony.com>
+
+    Update ChangeLog
+
 commit ed24d281631d564321d099a0d5e78be232d7de78
 Author: William Hubbs <william.hubbs@sony.com>
 Commit: William Hubbs <william.hubbs@sony.com>
