@@ -181,7 +181,7 @@ cgroup2_set_limits()
 {
 	local cgroup_path
 	cgroup_path="$(cgroup2_find_path)"
-	[ -d "${cgroup_path}" ] || return 0
+	mountinfo -q "${cgroup_path}"|| return 0
 	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
 	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
 	[ -f "${rc_cgroup_path}"/cgroup.procs ] &&
