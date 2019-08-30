@@ -20,8 +20,6 @@ runit_start()
 	service_link="${RC_SVCDIR}/sv/${service_path##*/}"
 	ebegin "Starting ${name:-$RC_SVCNAME}"
 	ln -snf "${service_path}" "${service_link}"
-	sv start "${service_link}" > /dev/null 2>&1
-	eend $? "Failed to start ${name:-$RC_SVCNAME}"
 }
 
 runit_stop()
