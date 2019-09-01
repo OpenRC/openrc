@@ -29,6 +29,10 @@ runit_start()
 		fi
 		sleep 1 && i=$(expr $i + 1)
 	done
+	if [ $retval -eq 1 ]; then
+		# clean up the link else sv will keep on trying
+		rm "${service_link}"
+	fi
 	eend $retval "Failed to start ${name:-$RC_SVCNAME}"
 }
 
