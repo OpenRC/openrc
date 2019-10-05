@@ -29,6 +29,9 @@ apply_file() {
 			\;*) continue ;;
 		esac
 
+		local reg=${line#*:}
+		[ -e /proc/sys/fs/binfmt_misc/${reg%%:*} ] && echo -1 > /proc/sys/fs/binfmt_misc/${reg%%:*}
+
 		echo "${line}" > /proc/sys/fs/binfmt_misc/register
 		rc=$?
 		if [ $rc -ne 0 ]; then
