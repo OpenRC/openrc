@@ -16,6 +16,14 @@ set -x
 # These are steps to run on TravisCI under a containerized Ubuntu system.
 # See $TOP/.travis.yml for more info about the TravisCI setup.
 
+# Run shellcheck, but don't fail (yet):
+files_to_check="$(git ls-files | xargs file | grep -e 'POSIX shell script' | cut -d : -f1)"
+
+for shellscript in $files_to_check; do
+    echo "Checking ${shellscript} with shellcheck:"
+    shellcheck -s sh "${shellscript}" || true
+done
+
 cpus=$(getconf _NPROCESSORS_CONF || echo 1)
 # make on TravisCI doesn't support -O yet
 make -j"${cpus}"
