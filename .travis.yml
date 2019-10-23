@@ -24,5 +24,9 @@ notifications:
     on_failure: always  # options: [always|never|change] default: always
     on_start: false     # default: false
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y shellcheck
+
 script:
   - ./ci/travis.sh
