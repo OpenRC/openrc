@@ -51,7 +51,7 @@ If you are building OpenRC for a Gentoo Prefix installation, add `MKPREFIX=yes`.
 
 `PKG_PREFIX` should be set to where packages install to by default.
 
-`LOCAL_PREFIX` should be set when to where user maintained packages are.
+`LOCAL_PREFIX` should be set to where user maintained packages are.
 Only set `LOCAL_PREFIX` if different from `PKG_PREFIX`.
 
 `PREFIX` should be set when OpenRC is not installed to /.
