@@ -72,7 +72,7 @@ const char *usagestring = "" \
 						   "Usage: openrc-shutdown -c | --cancel\n" \
 						   "   or: openrc-shutdown -R | --reexec\n" \
 						   "   or: openrc-shutdown -w | --write-only\n" \
-						   "   or: openmrc-shutdown -H | --halt time\n" \
+						   "   or: openrc-shutdown -H | --halt time\n" \
 						   "   or: openrc-shutdown -K | --kexec time\n" \
 						   "   or: openrc-shutdown -p | --poweroff time\n" \
 						   "   or: openrc-shutdown -r | --reboot time\n" \
