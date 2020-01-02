@@ -20,7 +20,7 @@ service_present()
 	# succeed if $RC_SYS empty, can't check further, assume script will run
 	[ -z "$RC_SYS" ] && return 0
 	# fail if file contains "-$RC_SYS", because then it won't run
-	egrep -qi "^[[:space:]]*keyword[[:space:]].*-$RC_SYS\>" "$p" && return 1
+	grep -Eqi "^[[:space:]]*keyword[[:space:]].*-$RC_SYS([[:space:]]|$)" "$p" && return 1
 	# succeed otherwise
 	return 0
 }
