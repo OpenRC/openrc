@@ -45,6 +45,3 @@ If you want this functionality on a live system, you should first
 migrate the system to openrc-init, remove sysvinit, then rebuild and
 install this package with MKSYSVINIT=yes.
 
-package.
-migrating your system to openrc-init.
-
