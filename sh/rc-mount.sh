@@ -48,7 +48,7 @@ do_unmount()
 		retry=4 # Effectively TERM, sleep 1, TERM, sleep 1, KILL, sleep 1
 		while ! LC_ALL=C $cmd "$mnt" 2>/dev/null; do
 			if command -v fuser >/dev/null 2>&1; then
-				pids="$(timeout -k 10 -s KILL "${rc_fuser_timeout:-60}" \
+				pids="$(timeout -s KILL "${rc_fuser_timeout:-60}" \
 					fuser $f_opts "$mnt" 2>/dev/null)"
 			fi
 			case " $pids " in
