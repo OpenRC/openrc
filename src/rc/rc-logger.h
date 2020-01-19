@@ -13,8 +13,8 @@
 #ifndef RC_LOGGER_H
 #define RC_LOGGER_H
 
-pid_t rc_logger_pid;
-int rc_logger_tty;
+extern pid_t rc_logger_pid;
+extern int rc_logger_tty;
 extern bool rc_in_logger;
 
 void rc_logger_open(const char *runlevel);
