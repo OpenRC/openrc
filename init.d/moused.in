@@ -67,3 +67,25 @@ start()
 
 	eend $retval "Failed to start moused"
 }
+
+stop()
+{
+        if [ -z "$moused_device" ]; then
+                # Loop through and stop all sub-services
+                for dev in /dev/psm[0-9]* /dev/ums[0-9]*; do
+                        [ -c "$dev" ] || continue
+                        [ -e /var/run/moused-"${dev##*/}".pid ] || continue
+                        sh /etc/rc.devd moused.${dev##*/} stop
+                done
+                return 0
+        fi
+
+        if [ -z "$OPENRC_SILENT" ] ; then
+                ebegin "Stopping $name"
+        fi
+        start-stop-daemon --stop --exec /usr/sbin/moused \
+                -p $pidfile
+        if [ -z "$OPENRC_SILENT" ] ; then
+                eend $?
+        fi
+}
