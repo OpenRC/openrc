@@ -24,6 +24,7 @@ depend()
 	need localmount
 	after bootmisc
 	keyword -jail -prefix -stop -shutdown
+	provide mouse
 }
 
 start()
