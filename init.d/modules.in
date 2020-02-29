@@ -11,6 +11,16 @@
 
 description="Loads a user defined list of kernel modules."
 
+if [ "$RC_UNAME" = Linux ]; then
+	# Check if modprobe is provided by kmod or BusyBox. The BusyBox one
+	# does not recognize "--first-time". Blacklist support is not always
+	# available and its option is "-b", not "--use-blacklist". The kmod
+	# one also accepts "-b", so the short option works in both cases.
+	eval $(modprobe --help 2>&1 | sed -n \
+		's/^[[:space:]]*-\<b\>.*/use_blacklist="-b";/p;\
+		 s/^[[:space:]]*--\<first-time\>.*/first_time="--first-time";/p')
+fi
+
 depend()
 {
 	use isapnp
@@ -56,7 +66,7 @@ load_modules()
 		ebegin "Loading module $x"
 		case "$RC_UNAME" in
 			FreeBSD) kldload "$x"; rc=$? ;;
-			Linux) modprobe --first-time -q --use-blacklist "$x"; rc=$? ;;
+			Linux) eval modprobe "$first_time" "$use_blacklist" -q "$x"; rc=$? ;;
 			*) ;;
 		esac
 		eend $rc "Failed to load $x"
@@ -119,7 +129,7 @@ Linux_modules()
 			[ -n "${args}" ] && break
 		done
 		[ -z "$args" ] && eval args=\$module_${xx}_args
-		eval modprobe --first-time --use-blacklist --verbose "$x" "$args"
+		eval modprobe "$first_time" "$use_blacklist" -v "$x" "$args"
 	done
 	[ -n "$list" ] && eend
 }
