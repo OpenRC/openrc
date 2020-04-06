@@ -2,8 +2,7 @@ OpenRC README
 =============
 
 OpenRC is a dependency-based init system that works with the
-system-provided init program, normally `/sbin/init`. Currently, it does
-not have an init program of its own.
+system-provided init program, normally `/sbin/init`.
 
 ## Installation
 
