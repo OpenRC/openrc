@@ -421,8 +421,8 @@ static void child_process(char *exec, char **argv)
 
 	TAILQ_FOREACH(env, env_list, entries) {
 		if ((strncmp(env->value, "RC_", 3) == 0 &&
-			strncmp(env->value, "RC_SERVICE=", 10) != 0 &&
-			strncmp(env->value, "RC_SVCNAME=", 10) != 0) ||
+			strncmp(env->value, "RC_SERVICE=", 11) != 0 &&
+			strncmp(env->value, "RC_SVCNAME=", 11) != 0) ||
 		    strncmp(env->value, "SSD_NICELEVEL=", 14) == 0)
 		{
 			p = strchr(env->value, '=');
