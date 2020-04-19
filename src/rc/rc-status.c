@@ -291,9 +291,10 @@ int main(int argc, char **argv)
 			goto exit;
 			/* NOTREACHED */
 		case 'f':
-			if (strcasecmp(optarg, "ini") == 0)
+			if (strcasecmp(optarg, "ini") == 0) {
 				format = FORMAT_INI;
-			else
+				setenv("EINFO_QUIET", "YES", 1);
+			} else
 				eerrorx("%s: invalid argument to --format switch\n", applet);
 			break;
 		case 'l':
