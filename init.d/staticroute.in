@@ -85,7 +85,7 @@ do_routes()
 				if [ "$RC_UNAME" = Linux ]; then
 					case "$args" in
    					*:*) family="-A inet6";argprefix=;;
-					net*|host*) family=;argprefix="-";;
+					"net "*|"host "*) family=;argprefix="-";;
 					*) family=;argprefix=;;
 					esac
 				fi
