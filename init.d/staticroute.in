@@ -57,7 +57,7 @@ dump_args()
 
 do_routes()
 {
-	local xtra= family=
+	local xtra= family= argprefix=
 	[ "$RC_UNAME" != Linux ] && xtra=-q
 
 	ebegin "$1 static routes"
@@ -84,11 +84,12 @@ do_routes()
 				# Linux route does cannot work it out ...
 				if [ "$RC_UNAME" = Linux ]; then
 					case "$args" in
-					*:*) family="-A inet6";;
-					*) family=;;
+   					*:*) family="-A inet6";argprefix=;;
+					net*|host*) family=;argprefix="-";;
+					*) family=;argprefix=;;
 					esac
 				fi
-				route $family $xtra $2 -$args
+				route $family $xtra $2 $argprefix$args
 				;;
 			esac
 			veend $?
