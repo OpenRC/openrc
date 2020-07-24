@@ -645,7 +645,7 @@ static void supervisor(char *exec, char **argv)
 			ts.tv_sec = respawn_delay;
 			ts.tv_nsec = 0;
 			nanosleep(&ts, NULL);
-			if(!exiting) {
+			if (!exiting) {
 				child_pid = fork();
 				if (child_pid == -1) {
 					syslog(LOG_ERR, "%s: fork: %s", applet, strerror(errno));
