@@ -645,24 +645,26 @@ static void supervisor(char *exec, char **argv)
 			ts.tv_sec = respawn_delay;
 			ts.tv_nsec = 0;
 			nanosleep(&ts, NULL);
-			child_pid = fork();
-			if (child_pid == -1) {
-				syslog(LOG_ERR, "%s: fork: %s", applet, strerror(errno));
-				exit(EXIT_FAILURE);
+			if(!exiting) {
+				child_pid = fork();
+				if (child_pid == -1) {
+					syslog(LOG_ERR, "%s: fork: %s", applet, strerror(errno));
+					exit(EXIT_FAILURE);
+				}
+				if (child_pid == 0) {
+					sigprocmask(SIG_SETMASK, &old_signals, NULL);
+					memset(&sa, 0, sizeof(sa));
+					sa.sa_handler = SIG_DFL;
+					sigaction(SIGALRM, &sa, NULL);
+					sigaction(SIGCHLD, &sa, NULL);
+					sigaction(SIGTERM, &sa, NULL);
+					child_process(exec, argv);
+				}
+				if (healthcheckdelay)
+					alarm(healthcheckdelay);
+				else if (healthchecktimer)
+					alarm(healthchecktimer);
 			}
-			if (child_pid == 0) {
-				sigprocmask(SIG_SETMASK, &old_signals, NULL);
-				memset(&sa, 0, sizeof(sa));
-				sa.sa_handler = SIG_DFL;
-				sigaction(SIGALRM, &sa, NULL);
-				sigaction(SIGCHLD, &sa, NULL);
-				sigaction(SIGTERM, &sa, NULL);
-				child_process(exec, argv);
-			}
-			if (healthcheckdelay)
-				alarm(healthcheckdelay);
-			else if (healthchecktimer)
-				alarm(healthchecktimer);
 		}
 	}
 
