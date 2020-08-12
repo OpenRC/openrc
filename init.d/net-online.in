@@ -62,7 +62,7 @@ start ()
  ewarn "ping_default_gateway is deprecated, please use include_ping_test"
  fi
  if [ $rc -eq 0 ] && yesno ${include_ping_test:-no}; then
- 	ping_test_host="${ping_test_host:-gentoo.org}"
+ 	ping_test_host="${ping_test_host:-www.w3.org}"
  	if [ -n "$ping_test_host" ]; then
 		while $infinite || [ $timeout -gt 0 ]; do
 			ping -c 1 $ping_test_host > /dev/null 2>&1
