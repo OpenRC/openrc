@@ -8,7 +8,7 @@
 #include_ping_test=no
 
 # This setting is the host to attempt to ping if the above is yes.
-# The default is google.com.
+# The default is www.w3.org.
 #ping_test_host=some.host.name
 
 # The timeout setting controls how long the net-online service waits
