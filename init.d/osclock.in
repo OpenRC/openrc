@@ -17,3 +17,15 @@ depend()
 {
 	provide clock
 }
+
+start()
+{
+	# This stub function is required to avoid OpenRC warning at boot:
+	#
+	#  * The command variable is undefined.
+	#  * There is nothing for osclock to start.
+	#  * If this is what you intend, please write a start function.
+	#  * This will become a failure in a future release.
+	#
+	return 0
+}
