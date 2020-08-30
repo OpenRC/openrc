@@ -65,6 +65,29 @@ Instead you should use
 and
 .Xr shutdown 8
 and let them call these special runlevels.
+.Sh OPTIONS
+.Pp
+.Bl -tag -width "-o , --override"
+.It Fl n , -no-stop
+Do not stop any services.
+.It Fl o , -override
+Override the next runlevel to change into when leaving single user or boot
+runlevels
+.It Fl s , -service
+Run the service specified with the rest of the arguments.
+.It Fl S , -sys
+Output the RC system type, if any.
+.It Fl h , -help
+Display usage information and exit.
+.It Fl C , -nocolor
+Disable color output.
+.It Fl V , -version
+Display software version.
+.It Fl v , -verbose
+Run verbosely.
+.It Fl q , -quiet
+Run quietly (repeat to suppress errors).
+.El
 .Sh SEE ALSO
 .Xr openrc-run 8 ,
 .Xr rc-status 8 ,
