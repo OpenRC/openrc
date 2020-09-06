@@ -855,10 +855,11 @@ int main(int argc, char **argv)
 
 		case 'u':  /* --user <username>|<uid> */
 		{
+			char dummy[2];
 			p = optarg;
 			tmp = strsep(&p, ":");
 			changeuser = xstrdup(tmp);
-			if (sscanf(tmp, "%d", &tid) != 1)
+			if (sscanf(tmp, "%d%1s", &tid, dummy) != 1)
 				pw = getpwnam(tmp);
 			else
 				pw = getpwuid((uid_t)tid);
@@ -879,7 +880,7 @@ int main(int argc, char **argv)
 
 			if (p) {
 				tmp = strsep (&p, ":");
-				if (sscanf(tmp, "%d", &tid) != 1)
+				if (sscanf(tmp, "%d%1s", &tid, dummy) != 1)
 					gr = getgrnam(tmp);
 				else
 					gr = getgrgid((gid_t) tid);
