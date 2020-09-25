@@ -4,6 +4,13 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.43
+
+Meson is now supported as a build tool.
+Currently this is in the testing phase, but the plan is to move
+exclusively to meson in the future, so please test and report bugs
+with the meson build.
+
 ## OpenRC 0.42
 
 openrc-shutdown now has the ability to shut down sysvinit-based systems.

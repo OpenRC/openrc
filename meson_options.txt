@@ -1,0 +1,64 @@
+option('audit',
+  description : 'enable libaudit support',
+  type : 'feature',
+  value : 'auto')
+option('branding',
+  description : 'Add branding to OpenRC',
+  type : 'string',
+  value : '')
+option('local_prefix',
+  description : 'default location of user maintained packages',
+  type : 'string',
+  value : '/usr/local')
+option('newnet',
+  description : 'build and install our networking scripts',
+  type : 'boolean',
+  value : true)
+option('os',
+  description : 'Operating System (autodetected if not specified)',
+  type : 'combo',
+  choices : [
+    '',
+    'DragonFly',
+    'FreeBSD',
+    'GNU',
+    'GNU-kFreeBSD',
+    'Linux',
+    'NetBSD',
+  ])
+option('pam',
+  description : 'enable PAM support',
+  type : 'boolean',
+  value : 'true')
+option('pkg_prefix',
+  description : 'default location where packages are installed',
+  type : 'string',
+  value : '')
+option('pkgconfig',
+  description : 'build PKGConfig files',
+  type : 'boolean',
+  value : true)
+option('root_prefix',
+  description : 'default path of root directory',
+  type : 'string',
+  value : '')
+option('selinux',
+  description : 'enable SELinux support',
+  type : 'feature',
+  value : 'auto')
+option('shell',
+  description : 'Default posix compatible shell',
+  type : 'string',
+  value : '/bin/sh')
+option('sysvinit',
+  description : 'enable SysVinit compatibility (linux only)',
+  type : 'boolean',
+  value : false)
+option('termcap',
+  description : 'the termcap library to use',
+  type : 'combo',
+  choices : [
+    '',
+    'ncurses',
+    'termcap',
+  ])
