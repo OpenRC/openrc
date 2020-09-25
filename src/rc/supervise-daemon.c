@@ -148,6 +148,7 @@ static char *fifopath = NULL;
 static int fifo_fd = 0;
 static char *pidfile = NULL;
 static char *svcname = NULL;
+static bool verbose = false;
 
 extern char **environ;
 
@@ -569,7 +570,8 @@ static void supervisor(char *exec, char **argv)
 				buf[count] = 0;
 			if (count == 0)
 				continue;
-			syslog(LOG_DEBUG, "Received %s from fifo", buf);
+			if (verbose)
+				syslog(LOG_DEBUG, "Received %s from fifo", buf);
 			if (strncasecmp(buf, "sig", 3) == 0) {
 				if ((sscanf(buf, "%s %d", cmd, &sig_send) == 2)
 						&& (sig_send >= 0 && sig_send < NSIG)) {
@@ -585,7 +587,8 @@ static void supervisor(char *exec, char **argv)
 		if (do_healthcheck) {
 			do_healthcheck = 0;
 			alarm(0);
-			syslog(LOG_DEBUG, "running health check for %s", svcname);
+			if (verbose)
+				syslog(LOG_DEBUG, "running health check for %s", svcname);
 			health_pid = exec_command("healthcheck");
 			health_status = rc_waitpid(health_pid);
 			if (WIFEXITED(health_status) && WEXITSTATUS(health_status) == 0)
@@ -904,6 +907,7 @@ int main(int argc, char **argv)
 		case_RC_COMMON_GETOPT
 		}
 
+	verbose = rc_yesno(getenv ("EINFO_VERBOSE"));
 	endpwent();
 	argc -= optind;
 	argv += optind;
