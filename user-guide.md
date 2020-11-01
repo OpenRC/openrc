@@ -107,7 +107,7 @@ START_OPTS="--extraparameter sausage"
 
 init.d/foo:
 start() {
-	/usr/sbin/foo-daemon ${STARTOPTS}
+	/usr/sbin/foo-daemon ${START_OPTS}
 }
 ```
 
