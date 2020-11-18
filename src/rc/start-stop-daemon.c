@@ -628,7 +628,7 @@ int main(int argc, char **argv)
 	}
 	if (start && !exists(exec_file)) {
 		eerror("%s: %s does not exist", applet,
-		    *exec_file ? exec_file : exec);
+		    exec_file ? exec_file : exec);
 		free(exec_file);
 		exit(EXIT_FAILURE);
 	}
