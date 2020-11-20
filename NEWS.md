@@ -4,6 +4,16 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.43
+
+This version changes the behavior of the checkpath helper to address
+CVE-2018-21269. on Linux systems, We require  non-terminal symbolic links
+to be owned by root. Since we can't do this on non-linux xystems, we do
+not dereference non-terminal symbolic links by default. If you need them
+dereferenced, you should add the "-s" switch to the appropriate
+checkpath calls.
+For more information, see http://github.com/openrc/openrc/issues/201.
+
 ## OpenRC 0.42
 
 openrc-shutdown now has the ability to shut down sysvinit-based systems.
