@@ -461,6 +461,7 @@ Mark the service as inactive.
 .Op Fl p , -pipe
 .Op Fl m , -mode Ar mode
 .Op Fl o , -owner Ar owner
+.Op Fl s , -symlinks
 .Op Fl W , -writable
 .Op Fl q , -quiet
 .Ar path ...
@@ -480,6 +481,11 @@ or with names, and are separated by a colon.
 .Pp
 The truncate options (-D and -F) cause the directory or file to be
 cleared of all contents.
+.Pp
+If -s is not specified on a non-linux platform, checkpath will refuse to
+allow non-terminal symbolic links to exist in the path. This is for
+security reasons so that a non-root user can't create a symbolic link to
+a root-owned file and take ownership of that file.
 .Pp
 If -W is specified, checkpath checks to see if the first path given on
 the command line is writable.  This is different from how the test

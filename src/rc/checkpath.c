@@ -16,6 +16,7 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -23,6 +24,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <grp.h>
+#include <libgen.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +46,7 @@ typedef enum {
 
 const char *applet = NULL;
 const char *extraopts ="path1 [path2] [...]";
-const char *getoptstring = "dDfFpm:o:W" getoptstring_COMMON;
+const char *getoptstring = "dDfFpm:o:sW" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "directory",          0, NULL, 'd'},
 	{ "directory-truncate", 0, NULL, 'D'},
@@ -53,6 +55,7 @@ const struct option longopts[] = {
 	{ "pipe",               0, NULL, 'p'},
 	{ "mode",               1, NULL, 'm'},
 	{ "owner",              1, NULL, 'o'},
+	{ "symlinks",           0, NULL, 's'},
 	{ "writable",           0, NULL, 'W'},
 	longopts_COMMON
 };
@@ -64,15 +67,92 @@ const char * const longopts_help[] = {
 	"Create a named pipe (FIFO) if not exists",
 	"Mode to check",
 	"Owner to check (user:group)",
+	"follow symbolic links (irrelivent on linux)",
 	"Check whether the path is writable or not",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
 
+static int get_dirfd(char *path, bool symlinks) {
+	char *ch;
+	char *item;
+	char *linkpath = NULL;
+	char *path_dupe;
+	char *str;
+	int components = 0;
+	int dirfd;
+	int flags = 0;
+	int new_dirfd;
+	struct stat st;
+	ssize_t linksize;
+
+	if (!path || *path != '/')
+		eerrorx("%s: empty or relative path", applet);
+	dirfd = openat(dirfd, "/", O_RDONLY);
+	if (dirfd == -1)
+		eerrorx("%s: unable to open the root directory: %s",
+				applet, strerror(errno));
+	path_dupe = xstrdup(path);
+	ch = path_dupe;
+	while (*ch) {
+		if (*ch == '/')
+			components++;
+		ch++;
+	}
+	item = strtok(path_dupe, "/");
+#ifdef O_PATH
+	flags |= O_PATH;
+#endif
+	if (!symlinks)
+		flags |= O_NOFOLLOW;
+	flags |= O_RDONLY;
+	while (dirfd > 0 && item && components > 1) {
+		str = xstrdup(linkpath ? linkpath : item);
+		new_dirfd = openat(dirfd, str, flags);
+		if (new_dirfd == -1)
+			eerrorx("%s: %s: could not open %s: %s", applet, path, str,
+					strerror(errno));
+		if (fstat(new_dirfd, &st) == -1)
+			eerrorx("%s: %s: unable to stat %s: %s", applet, path, item,
+					strerror(errno));
+		if (S_ISLNK(st.st_mode) ) {
+			if (st.st_uid != 0)
+				eerrorx("%s: %s: synbolic link %s not owned by root",
+						applet, path, str);
+			linksize = st.st_size+1;
+			if (linkpath)
+				free(linkpath);
+			linkpath = xmalloc(linksize);
+			memset(linkpath, 0, linksize);
+			if (readlinkat(new_dirfd, "", linkpath, linksize) != st.st_size)
+				eerrorx("%s: symbolic link destination changed", applet);
+			/*
+			 * now follow the symlink.
+			 */
+			close(new_dirfd);
+		} else {
+			close(dirfd);
+			dirfd = new_dirfd;
+			free(linkpath);
+			linkpath = NULL;
+			item = strtok(NULL, "/");
+			components--;
+		}
+	}
+	free(path_dupe);
+	if (linkpath) {
+		free(linkpath);
+		linkpath = NULL;
+	}
+	return dirfd;
+}
+
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
-	inode_t type, bool trunc, bool chowner, bool selinux_on)
+	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
 {
 	struct stat st;
+	char *name = NULL;
+	int dirfd;
 	int fd;
 	int flags;
 	int r;
@@ -93,14 +173,16 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 #endif
 	if (trunc)
 		flags |= O_TRUNC;
-	readfd = open(path, readflags);
+	xasprintf(&name, "%s", basename_c(path));
+	dirfd = get_dirfd(path, symlinks);
+	readfd = openat(dirfd, name, readflags);
 	if (readfd == -1 || (type == inode_file && trunc)) {
 		if (type == inode_file) {
 			einfo("%s: creating file", path);
 			if (!mode) /* 664 */
 				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 			u = umask(0);
-			fd = open(path, flags, mode);
+			fd = openat(dirfd, name, flags, mode);
 			umask(u);
 			if (fd == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
@@ -122,7 +204,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				    strerror (errno));
 				return -1;
 			}
-			readfd = open(path, readflags);
+			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
 				eerror("%s: unable to open directory: %s", applet,
 						strerror(errno));
@@ -140,7 +222,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				    strerror (errno));
 				return -1;
 			}
-			readfd = open(path, readflags);
+			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
 				eerror("%s: unable to open fifo: %s", applet,
 						strerror(errno));
@@ -259,6 +341,7 @@ int main(int argc, char **argv)
 	int retval = EXIT_SUCCESS;
 	bool trunc = false;
 	bool chowner = false;
+	bool symlinks = false;
 	bool writable = false;
 	bool selinux_on = false;
 
@@ -293,6 +376,11 @@ int main(int argc, char **argv)
 				eerrorx("%s: owner `%s' not found",
 				    applet, optarg);
 			break;
+		case 's':
+#ifndef O_PATH
+			symlinks = true;
+#endif
+			break;
 		case 'W':
 			writable = true;
 			break;
@@ -320,7 +408,8 @@ int main(int argc, char **argv)
 	while (optind < argc) {
 		if (writable)
 			exit(!is_writable(argv[optind]));
-		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner, selinux_on))
+		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner,
+					symlinks, selinux_on))
 			retval = EXIT_FAILURE;
 		optind++;
 	}
