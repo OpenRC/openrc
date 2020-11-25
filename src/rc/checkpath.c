@@ -117,7 +117,7 @@ static int get_dirfd(char *path, bool symlinks) {
 					strerror(errno));
 		if (S_ISLNK(st.st_mode) ) {
 			if (st.st_uid != 0)
-				eerrorx("%s: %s: synbolic link %s not owned by root",
+				eerrorx("%s: %s: symbolic link %s not owned by root",
 						applet, path, str);
 			linksize = st.st_size+1;
 			if (linkpath)
