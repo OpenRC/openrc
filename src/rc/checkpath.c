@@ -197,10 +197,10 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
 			u = umask(0);
 			/* We do not recursively create parents */
-			r = mkdir(path, mode);
+			r = mkdirat(dirfd, name, mode);
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
-				eerror("%s: mkdir: %s", applet,
+				eerror("%s: mkdirat: %s", applet,
 				    strerror (errno));
 				return -1;
 			}
