@@ -21,8 +21,8 @@ SRCS-FreeBSD=	hostid.in modules.in moused.in newsyslog.in pf.in rarpd.in \
 SRCS-FreeBSD+=	adjkerntz.in devd.in dumpon.in encswap.in ipfw.in \
 		mixer.in nscd.in powerd.in syscons.in
 
-SRCS-Linux=	agetty.in binfmt.in devfs.in cgroups.in dmesg.in hwclock.in \
-	consolefont.in keymaps.in killprocs.in modules.in \
+SRCS-Linux=	agetty.in backlight.in binfmt.in devfs.in cgroups.in dmesg.in \
+        hwclock.in consolefont.in keymaps.in killprocs.in modules.in \
 	mount-ro.in mtab.in numlock.in procfs.in net-online.in save-keymaps.in \
 	save-termencoding.in sysfs.in termencoding.in
 
