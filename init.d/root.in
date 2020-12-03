@@ -15,7 +15,7 @@ depend()
 {
 	after clock
 	need fsck
-	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -vserver
+	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -vserver -zone
 }
 
 start()

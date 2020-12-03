@@ -125,7 +125,7 @@ migrate_to_run()
 
 clean_run()
 {
-	[ "$RC_SYS" = VSERVER -o "$RC_SYS" = LXC ] && return 0
+	[ "$RC_SYS" = VSERVER -o "$RC_SYS" = LXC -o "$RC_SYS" = ZONE ] && return 0
 	local dir
 	# If / is still read-only due to a problem, this will fail!
 	if ! checkpath -W /; then

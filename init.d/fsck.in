@@ -17,7 +17,7 @@ depend()
 {
 	after clock
 	use dev clock modules
-	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -timeout -vserver -uml
+	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -timeout -vserver -uml -zone
 }
 
 _abort() {

@@ -98,7 +98,7 @@ _get_containers() {
 		c="-jail"
 		;;
 	Linux)
-		c="-docker -lxc -openvz -rkt -systemd-nspawn -uml -vserver"
+		c="-docker -lxc -openvz -rkt -systemd-nspawn -uml -vserver -zone"
 		;;
 	esac
 	echo $c
