@@ -137,7 +137,7 @@ Setting `ulimit` and `nice` values per service can be done through the
 
 Under Linux, OpenRC can use cgroups for process management as well. Once
 the kernel is configured appropriately, the `rc_cgroup_mode` setting in
-/etc/rc.conf should be used to control whether cgroups version one,,
+/etc/rc.conf should be used to control whether cgroups version one,
 two, or both are used. The default is to use both if they are available.
 
 By changing certain settings in the service's `conf.d` file limits can be
