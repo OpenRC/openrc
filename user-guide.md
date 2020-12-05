@@ -85,8 +85,8 @@ runlevel; this will start and stop services as needed.
 Managing runlevels is usually done through the `rc-update` helper, but could of 
 course be done by hand if desired.
 e.g. `rc-update add nginx default` - add nginx to the default runlevel
-Note: This will not auto-start nginx! You'd still have to trigger `rc` or run 
-the service script by hand.
+Note: `rc-update` will not start nginx! You'd still have to trigger `rc`, or run
+the service script by hand, or start it with `rc-service nginx start`.
 
 FIXME: Document stacked runlevels
 
