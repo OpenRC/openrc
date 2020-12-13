@@ -23,7 +23,7 @@ get_interfaces()
 {
 	local ifname iftype
 	for ifname in /sys/class/net/*; do
-		[ -h "${ifname}" ] && continue
+		[ -h "${ifname}" ] || continue
 		read iftype < ${ifname}/type
 		[ "$iftype" = "1" ] && printf "%s " ${ifname##*/}
 	done
