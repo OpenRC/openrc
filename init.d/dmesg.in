@@ -14,7 +14,7 @@ description="Set the dmesg level for a cleaner boot"
 depend()
 {
 	before dev modules
-	keyword -docker -lxc -prefix -systemd-nspawn -vserver
+	keyword -docker -lxc -prefix -systemd-nspawn -vserver -zone
 }
 
 start()

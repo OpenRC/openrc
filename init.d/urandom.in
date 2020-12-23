@@ -16,7 +16,7 @@ depend()
 {
 	after clock
 	need localmount
-	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn
+	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -zone
 }
 
 save_seed()

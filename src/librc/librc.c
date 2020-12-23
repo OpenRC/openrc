@@ -270,6 +270,8 @@ detect_container(const char *systype _unused)
 				return RC_SYS_SYSTEMD_NSPAWN;
 		if (strcmp(systype, RC_SYS_DOCKER) == 0)
 				return RC_SYS_DOCKER;
+		if (strcmp(systype, RC_SYS_ZONE) == 0)
+				return RC_SYS_ZONE;
 	}
 	if (file_regex("/proc/cpuinfo", "UML"))
 		return RC_SYS_UML;
@@ -287,6 +289,8 @@ detect_container(const char *systype _unused)
 		return RC_SYS_RKT;
 	else if (file_regex("/proc/1/environ", "container=systemd-nspawn"))
 		return RC_SYS_SYSTEMD_NSPAWN;
+	else if (file_regex("/proc/1/environ", "container=zone"))
+		return RC_SYS_ZONE;
 	else if (exists("/.dockerenv"))
 		return RC_SYS_DOCKER;
 	/* old test, I'm not sure when this was valid. */
