@@ -10,7 +10,7 @@
 # except according to the terms contained in the LICENSE file.
 
 name="Packet Filter"
-: ${pf_conf:=${pf_rules:-/etc/pf.conf}}
+: ${pf_conf:=${pf_rules:-/etc/conf.d/pf.conf}}
 required_files=$pf_conf
 
 extra_commands="checkconfig showstatus"
