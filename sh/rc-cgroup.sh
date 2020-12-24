@@ -33,7 +33,7 @@ cgroup_get_pids()
 		cgroup_procs="/sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks"
 	[ -f "${cgroup_procs}" ] || return 0
 	while read -r p; do
-		[ "$p" -eq $$ ] || pids="${pids} ${p}"
+		[ "$p" -eq $$ ] || [ "$p" -eq "$BASHPID" ] || pids="${pids} ${p}"
 	done < "${cgroup_procs}"
 	printf "%s" "${pids}"
 	return 0
