@@ -26,14 +26,15 @@ cgroup_find_path()
 
 cgroup_get_pids()
 {
-	local cgroup_procs p pids
+	local cgroup_procs p pids subpid
 	cgroup_procs="$(cgroup2_find_path)"
 	[ -n "${cgroup_procs}" ] &&
 		cgroup_procs="${cgroup_procs}/${RC_SVCNAME}/cgroup.procs" ||
 		cgroup_procs="/sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks"
 	[ -f "${cgroup_procs}" ] || return 0
+	subpid=$(exec sh -c 'echo "$PPID"')
 	while read -r p; do
-		[ "$p" -eq $$ ] || [ "$p" -eq "$BASHPID" ] || pids="${pids} ${p}"
+		[ "$p" -eq $$ ] || [ "$p" -eq "$subpid" ] || pids="${pids} ${p}"
 	done < "${cgroup_procs}"
 	printf "%s" "${pids}"
 	return 0
