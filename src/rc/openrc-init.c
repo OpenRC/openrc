@@ -207,6 +207,12 @@ static void signal_handler(int sig)
 		case SIGINT:
 			handle_shutdown("reboot", RB_AUTOBOOT);
 			break;
+		case SIGTERM:
+#ifdef SIGPWR
+		case SIGPWR:
+#endif
+			handle_shutdown("shutdown", RB_HALT_SYSTEM);
+			break;
 		case SIGCHLD:
 			reap_zombies();
 			break;
@@ -269,6 +275,10 @@ int main(int argc, char **argv)
 	sigfillset(&signals);
 	sigdelset(&signals, SIGCHLD);
 	sigdelset(&signals, SIGINT);
+	sigdelset(&signals, SIGTERM);
+#ifdef SIGPWR
+	sigdelset(&signals, SIGPWR);
+#endif
 	sigprocmask(SIG_SETMASK, &signals, NULL);
 
 	/* install signal  handler */
@@ -276,6 +286,10 @@ int main(int argc, char **argv)
 	sa.sa_handler = signal_handler;
 	sigaction(SIGCHLD, &sa, NULL);
 	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGTERM, &sa, NULL);
+#ifdef SIGPWR
+	sigaction(SIGPWR, &sa, NULL);
+#endif
 	reboot(RB_DISABLE_CAD);
 
 	/* set default path */
