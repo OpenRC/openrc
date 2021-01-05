@@ -256,7 +256,7 @@ for _cmd; do
 		# Apply any ulimit defined
 		if [ -n "${rc_ulimit:-$RC_ULIMIT}" ]; then
 			if ! ulimit ${rc_ulimit:-$RC_ULIMIT}; then
-				eerror "${RC_SVCNAME: unable to apply RC_ULIMIT settings"
+				eerror "${RC_SVCNAME}: unable to apply RC_ULIMIT settings"
 			fi
 		fi
 		# Apply cgroups settings if defined
