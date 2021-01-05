@@ -254,8 +254,11 @@ fi
 for _cmd; do
 	if [ "$_cmd" != status -a "$_cmd" != describe ]; then
 		# Apply any ulimit defined
-		[ -n "${rc_ulimit:-$RC_ULIMIT}" ] && \
-			ulimit ${rc_ulimit:-$RC_ULIMIT}
+		if [ -n "${rc_ulimit:-$RC_ULIMIT}" ]; then
+			if ! ulimit ${rc_ulimit:-$RC_ULIMIT}; then
+				eerror "${RC_SVCNAME: unable to apply RC_ULIMIT settings"
+			fi
+		fi
 		# Apply cgroups settings if defined
 		if [ "$(command -v cgroup_add_service)" = "cgroup_add_service" ]
 		then
