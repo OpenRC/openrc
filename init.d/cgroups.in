@@ -83,14 +83,22 @@ cgroup2_controllers()
 	local active cgroup_path x y
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
-	[ -e "${cgroup_path}/cgroup.controllers" ] &&
+	[ ! -e "${cgroup_path}/cgroup.controllers" ] && return 0
+	[ ! -e "${cgroup_path}/cgroup.subtree_control" ]&& return 0
 	read -r active < "${cgroup_path}/cgroup.controllers"
-	for x in ${rc_cgroup_controllers}; do
-		for y in ${active}; do
-		[ "$x" = "$y" ] &&
-			[ -e "${cgroup_path}/cgroup.subtree_control" ]&&
+	for x in ${active}; do
+	case "$rc_cgroup_mode" in
+		unified)
 			echo "+${x}"  > "${cgroup_path}/cgroup.subtree_control"
-		done
+			;;
+		hybrid)
+			for y in ${rc_cgroup_controllers}; do
+				if [ "$x" = "$y" ]; then
+					echo "+${x}"  > "${cgroup_path}/cgroup.subtree_control"
+				fi
+			done
+			;;
+		esac
 	done
 	return 0
 }
