@@ -24,18 +24,26 @@ cgroup_find_path()
 	printf "%s" "${result}"
 }
 
+# This extracts all pids in a cgroup and puts them in the cgroup_pids
+# variable.
+# It is done this way to avoid subshells so we don't have to worry about
+# locating the pid of the subshell in the cgroup.
+# https://github.com/openrc/openrc/issues/396
 cgroup_get_pids()
 {
-	local cgroup_procs p pids
+	local cgroup_procs p
+	cgroup_pids=
 	cgroup_procs="$(cgroup2_find_path)"
-	[ -n "${cgroup_procs}" ] &&
-		cgroup_procs="${cgroup_procs}/${RC_SVCNAME}/cgroup.procs" ||
+	if [ -n "${cgroup_procs}" ]; then
+		cgroup_procs="${cgroup_procs}/${RC_SVCNAME}/cgroup.procs"
+	else
 		cgroup_procs="/sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks"
+	fi
 	[ -f "${cgroup_procs}" ] || return 0
 	while read -r p; do
-		[ "$p" -eq $$ ] || pids="${pids} ${p}"
+		[ "$p" -eq $$ ] && continue
+		cgroup_pids="${cgroup_pids} ${p}"
 	done < "${cgroup_procs}"
-	printf "%s" "${pids}"
 	return 0
 }
 
@@ -201,25 +209,28 @@ cgroup_cleanup()
 {
 	cgroup_running || return 0
 	ebegin "starting cgroups cleanup"
-	local pids loops=0
-	pids="$(cgroup_get_pids)"
-	if [ -n "${pids}" ]; then
-		kill -s CONT ${pids} 2> /dev/null
-		kill -s "${stopsig:-TERM}" ${pids} 2> /dev/null
+	local loops=0
+	cgroup_get_pids
+	if [ -n "${cgroup_pids}" ]; then
+		kill -s CONT ${cgroup_pids} 2> /dev/null
+		kill -s "${stopsig:-TERM}" ${cgroup_pids} 2> /dev/null
 		yesno "${rc_send_sighup:-no}" &&
-			kill -s HUP ${pids} 2> /dev/null
-		kill -s "${stopsig:-TERM}" ${pids} 2> /dev/null
-		while [ -n "$(cgroup_get_pids)" ] &&
+			kill -s HUP ${cgroup_pids} 2> /dev/null
+		kill -s "${stopsig:-TERM}" ${cgroup_pids} 2> /dev/null
+		cgroup_get_pids
+		while [ -n "$(cgroup_pids)" ] &&
 			[ "${loops}" -lt "${rc_timeout_stopsec:-90}" ]; do
 			loops=$((loops+1))
 			sleep 1
+			cgroup_get_pids
 		done
-		pids="$(cgroup_get_pids)"
-		[ -n "${pids}" ] && yesno "${rc_send_sigkill:-yes}" &&
-			kill -s KILL ${pids} 2> /dev/null
+		if [ -n "${cgroup_pids}" ] && yesno "${rc_send_sigkill:-yes}"; then
+			kill -s KILL ${cgroup_pids} 2> /dev/null
+		fi
 	fi
 	cgroup2_remove
-	[ -z "$(cgroup_get_pids)" ]
+	cgroup_get_pids
+	[ -z "${cgroup_pids}" ]
 	eend $? "Unable to stop all processes"
 	return 0
 }
