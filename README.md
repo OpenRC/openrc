@@ -11,7 +11,7 @@ OpenRC requires GNU make.
 Once you have GNU Make installed, the default OpenRC installation can be
 executed using this command:
 
-make install
+`make install`
 
 ## Configuration
 
