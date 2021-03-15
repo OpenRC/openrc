@@ -200,7 +200,7 @@ cgroup2_set_limits()
 		[ -z "${value}" ] && continue
 		[ ! -f "${rc_cgroup_path}/${key}" ] && continue
 		veinfo "${RC_SVCNAME}: cgroups: setting ${key} to ${value}"
-		printf "%s\n" "${value}" > "${rc_cgroup_path}/${key}"
+		printf "%s" "${value}" > "${rc_cgroup_path}/${key}"
 	done
 	return 0
 }
