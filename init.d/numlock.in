@@ -42,6 +42,8 @@ start()
 
 stop()
 {
+	yesno $RC_GOINGDOWN && return 0
+
 	ebegin "Disabling numlock on ttys"
 	_setleds -
 	eend $? "Failed to disable numlock"
