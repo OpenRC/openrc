@@ -1,4 +1,4 @@
-DIR=	${LIBDIR}/pkgconfig
+DIR=	${PKGCONFIGDIR}
 SRCS=	einfo.pc.in openrc.pc.in
 INC=	einfo.pc openrc.pc
 
