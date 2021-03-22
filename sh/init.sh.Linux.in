@@ -71,20 +71,17 @@ if [ "$sys" = VSERVER ]; then
 	rm -rf /run/*
 elif ! mountinfo -q /run; then
 	ebegin "Mounting /run"
-	rc=0
+	run_mount_opts="mode=0755,nosuid,nodev,nr_inodes=800k,size=20%,strictatime"
 	if ! fstabinfo --mount /run; then
-		mount -t tmpfs -o mode=0755,nodev,size=10% tmpfs /run
-		rc=$?
-	fi
-	if [ $rc != 0 ]; then
-		eerror "Unable to mount tmpfs on /run."
-		eerror "Can't continue."
-		exit 1
+		if ! mount -t tmpfs -o ${run_mount_opts} tmpfs /run; then
+			eerror "Unable to mount tmpfs on /run."
+			eerror "Can't continue."
+			exit 1
+		fi
 	fi
 fi
 
-[ -x /sbin/restorecon ] && /sbin/restorecon -rF /run
-checkpath -d $RC_SVCDIR
+checkpath -d "$RC_SVCDIR"
 checkpath -d -m 0775 -o root:uucp /run/lock
 
 # Try to mount xenfs as early as possible, otherwise rc_sys() will always
@@ -102,4 +99,5 @@ if [ -e "$RC_LIBEXECDIR"/cache/softlevel ]; then
 fi
 
 echo sysinit >"$RC_SVCDIR"/softlevel
+[ -x /sbin/restorecon ] && /sbin/restorecon -rF /run
 exit 0
