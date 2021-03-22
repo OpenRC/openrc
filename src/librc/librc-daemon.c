@@ -160,7 +160,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 				proc_ns[0] = '\0';
 		}
 		free(buffer);
-		if (strlen(my_ns) && strlen (proc_ns) && strcmp(my_ns, proc_ns))
+		if (pid == 0 && strlen(my_ns) && strlen (proc_ns) && strcmp(my_ns, proc_ns))
 			continue;
 		if (uid) {
 			xasprintf(&buffer, "/proc/%d", p);
