@@ -78,18 +78,15 @@ remove them and then install so that the OS hooks into OpenRC.
 
 ## Reporting Bugs
 
-If you are using Gentoo Linux, bugs can be filed on their bugzilla under
-the `gentoo hosted projects` product and the `openrc` component [1].
-Otherwise, you can report issues on our github [2].
+Please report issues on our github bug tracker [1].
 
 Better yet, if you can contribute code, please feel free to submit pull
-requests [3].
+requests [2].
 
 ## IRC Channel
 
 We have an official irc channel, #openrc on freenode, feel free to join
 us there.
 
-[1]	https://bugs.gentoo.org/
-[2]	https://github.com/openrc/openrc/issues
-[3]	https://github.com/openrc/openrc/pulls
+[1]	https://github.com/openrc/openrc/issues
+[2]	https://github.com/openrc/openrc/pulls
