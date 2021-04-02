@@ -14,6 +14,11 @@ dereferenced, you should add the "-s" switch to the appropriate
 checkpath calls.
 For more information, see http://github.com/openrc/openrc/issues/201.
 
+The SHLIBDIR variable has been removed from the makefiles to make them
+more consistent with most common makefiles. All libraries are now in
+LIBDIR, so if you need to put them in /, override the LIBDIR variable
+when you run make.
+
 ## OpenRC 0.42
 
 openrc-shutdown now has the ability to shut down sysvinit-based systems.
