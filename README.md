@@ -89,4 +89,5 @@ We have an official irc channel, #openrc on freenode, feel free to join
 us there.
 
 [1]	https://github.com/openrc/openrc/issues
+
 [2]	https://github.com/openrc/openrc/pulls
