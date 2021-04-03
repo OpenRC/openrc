@@ -1,5 +1,5 @@
 OpenRC Network Ideals
----------------------
+=====================
 
 The new style networking for OpenRC is very simplistic - provide a basic means
 of configuring static interface address and routes whilst allowing the
