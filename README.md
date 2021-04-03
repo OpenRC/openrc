@@ -78,16 +78,12 @@ remove them and then install so that the OS hooks into OpenRC.
 
 ## Reporting Bugs
 
-Please report issues on our github bug tracker [1].
+Please report bugs on our [bug tracker](http://github.com/OpenRC/openrc/issues).
 
-Better yet, if you can contribute code, please feel free to submit pull
-requests [2].
+If you can contribute code , please feel free to do so by opening
+[pull requests](https://github.com/OpenRC/openrc/pulls).
 
 ## IRC Channel
 
 We have an official irc channel, #openrc on freenode, feel free to join
 us there.
-
-[1]	https://github.com/openrc/openrc/issues
-
-[2]	https://github.com/openrc/openrc/pulls
