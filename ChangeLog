@@ -1,3 +1,25 @@
+commit 99565e359f3081e053573d10756e1a756c56342b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    cgroup2_set_limits: fix harmless error message
+    
+    In legacy cgroups mode, we were running `mountinfo -q ""` which was
+    generating an error message. If we return immediately when
+    cgroup2_find_path returns an empty value, we avoid this message.
+
+commit ee05403c501b5f0c0a955b1f8d67b2d88f0ede7a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.43
+
+commit c1558abb0f1e0fe2d1a2c42a536de335a1cd8de9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 901b752463eb37784fcebe5a3b5648b4bfbd9371
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -409,131 +431,3 @@ Commit: Manuel Rüger <manuel@rueg.eu>
     .cirrus.yml: Update FreeBSD releases
     
     Signed-off-by: Manuel Rüger <manuel@rueg.eu>
-
-commit 229692cc3424e95d8185e6c681b76c0dc88899f9
-Author: Austin English <austinenglish@gmail.com>
-Commit: Mike Frysinger <vapier@gmail.com>
-
-    man/openrc-run.8: fix a typo
-
-commit 375ef42393f3dc6edbaa2cb70c79b2366072db38
-Author: Sergei Trofimovich <slyfox@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/rc/rc-logger.h: fix build failure against gcc-10
-    
-    On gcc-10 (and gcc-9 -fno-common) build fails as:
-    
-    ```
-    cc  -L../librc -L../libeinfo -O2 -g -std=c99 -Wall -Wextra -Wimplicit -Wshadow \
-      -Wformat=2 -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn \
-      -Wmissing-format-attribute -Wnested-externs -Winline -Wwrite-strings \
-      -Wcast-align -Wcast-qual -Wpointer-arith -Wdeclaration-after-statement \
-      -Wsequence-point -Werror=implicit-function-declaration    \
-      -Wl,-rpath=/lib   -o openrc rc.o rc-logger.o rc-misc.o rc-plugin.o _usage.o -lutil -lrc -leinfo -Wl,-Bdynamic -ldl
-    ld: rc-logger.o:/home/slyfox/dev/git/openrc/src/rc/rc-logger.h:16:
-      multiple definition of `rc_logger_pid'; rc.o:openrc/src/rc/rc-logger.h:16: first defined here
-    ld: rc-logger.o:/home/slyfox/dev/git/openrc/src/rc/rc-logger.h:17:
-      multiple definition of `rc_logger_tty'; rc.o:openrc/src/rc/rc-logger.h:17: first defined here
-    ```
-    
-    gcc-10 will change the default from -fcommon to fno-common:
-    https://gcc.gnu.org/PR85678.
-    
-    The error also happens if CFLAGS=-fno-common passed explicitly.
-    
-    This fixes #348.
-
-commit 6deda13754f1b60245945e953cce8d97e40e86fc
-Author: Wolf <wolf@wolfsden.cz>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: Fix segfault when executable does not exist
-    
-    When executable is provided just by name (and therefore searched in a
-    path), exec_file is reset to NULL every time. exists() handles it being
-    NULL just fine, but dereferencing it in eerror does not work.
-    
-    Fixes #326
-    Fixes #327
-
-commit eb610859519292c6164c4ba601d22e642c306beb
-Author: artoo <artoo@artixlinux.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    binfmt: ensure a file is ungegistered before registering
-    
-    This fixes #328
-
-commit 039845b742e40752b05ef9393d5a6959d55fe0b6
-Author: Andrew Scheller <github@loowis.durge.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix typo in README
-    
-    This fixes #338
-
-commit a7e7fd2b37a7666f26c2d4de9386b2d04f583b41
-Author: Ethan Sommer <e5ten.arch@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    make grep usage POSIX compliant
-    
-    use grep -E instead of egrep
-    check for space or end of line instead of GNU-specific word boundary
-    
-    This fixes #345
-
-commit 12e147a107c6e27172734c660624343a3c092437
-Author: Jason Bowen <jbowen@infinitecactus.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Delete stray text.
-    
-    It looks like some stray text was left at the bottom of the file:
-    ```
-    package.
-    migrating your system to openrc-init.
-    ```
-    There's a subsection on migrating a system to `openrc-ini`; perhaps this was
-    an embryonic section title?
-    
-    This fixes #347.
-
-commit fd852865e06a74ecf8b77ff534fa8053e020160f
-Author: William Hubbs <william.hubbs@sony.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    openrc-shutdown.c: typo fix
-
-commit 35ec935741ffb571cacf763dcca98661c0cfb296
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    ci/travis.sh: run shellcheck on shell scripts
-
-commit 19cfd82dadf2e52299cf3752deb04562be52145c
-Author: Austin English <austinenglish@gmail.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    .travis.yml: install shellcheck
-
-commit 87cfad3d6cd619c6090e8209092448ae68279b0c
-Author: E5ten <ethancsommer@gmail.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    cgroup2_set_limits: verify that the cgroup2 path is a mount point
-    
-    prior to cgroups getting mounted, /sys/fs/cgroup will still exist,
-    but attempts to make directories in it will fail, change cgroup2_set_limits() to
-    verify that cgroups are mounted instead of just checking that /sys/fs/cgroup
-    exists.
-    
-    This fixes #307.
-    This fixes #321.
-
-commit 8e31614c4b6679fc1bc1f1d1e0779dcedd066a5a
-Author: William Hubbs <william.hubbs@sony.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    fix clang build
