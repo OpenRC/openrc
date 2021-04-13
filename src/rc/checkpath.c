@@ -92,13 +92,13 @@ static int get_dirfd(char *path, bool symlinks) {
 	if (dirfd == -1)
 		eerrorx("%s: unable to open the root directory: %s",
 				applet, strerror(errno));
-	path_dupe = xstrdup(path);
-	ch = path_dupe;
+	ch = path;
 	while (*ch) {
 		if (*ch == '/')
 			components++;
 		ch++;
 	}
+	path_dupe = xstrdup(path);
 	item = strtok(path_dupe, "/");
 #ifdef O_PATH
 	flags |= O_PATH;
@@ -135,16 +135,42 @@ static int get_dirfd(char *path, bool symlinks) {
 			dirfd = new_dirfd;
 			free(linkpath);
 			linkpath = NULL;
-			item = strtok(NULL, "/");
-			components--;
 		}
+		item = strtok(NULL, "/");
+		components--;
 	}
 	free(path_dupe);
-	if (linkpath) {
-		free(linkpath);
-		linkpath = NULL;
-	}
+	free(linkpath);
 	return dirfd;
+}
+
+static char *clean_path(char *path)
+{
+	char *ch;
+	char *ch2;
+	char *str;
+	str = xmalloc(strlen(path));
+	ch = path;
+	ch2 = str;
+	while (true) {
+		*ch2 = *ch;
+		ch++;
+		ch2++;
+		if (!*(ch-1))
+			break;
+		while (*(ch - 1) == '/' && *ch == '/')
+			ch++;
+	}
+	/* get rid of trailing / characters */
+	while ((ch = strrchr(str, '/'))) {
+		if (ch == str)
+			break;
+		if (!*(ch+1))
+			*ch = 0;
+		else
+			break;
+	}
+	return str;
 }
 
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
@@ -344,6 +370,7 @@ int main(int argc, char **argv)
 	bool symlinks = false;
 	bool writable = false;
 	bool selinux_on = false;
+	char *path = NULL;
 
 	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring,
@@ -406,12 +433,14 @@ int main(int argc, char **argv)
 		selinux_on = true;
 
 	while (optind < argc) {
+		path = clean_path(argv[optind]);
 		if (writable)
-			exit(!is_writable(argv[optind]));
-		if (do_check(argv[optind], uid, gid, mode, type, trunc, chowner,
+			exit(!is_writable(path));
+		if (do_check(path, uid, gid, mode, type, trunc, chowner,
 					symlinks, selinux_on))
 			retval = EXIT_FAILURE;
 		optind++;
+		free(path);
 	}
 
 	if (selinux_on)
