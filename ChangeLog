@@ -1,3 +1,23 @@
+commit 6219d87071d07acf4d6b3e99ec58134acf129d8e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    checkpath: remove extra slashes from paths
+    
+    This fixes #418.
+
+commit 72b5c7429011e0d20c450fe06dc4b645e36eecb0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.43.1
+
+commit aad77d0267426edef6a568e26c9bae11c2367db4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 99565e359f3081e053573d10756e1a756c56342b
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
