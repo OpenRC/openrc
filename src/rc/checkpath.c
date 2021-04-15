@@ -132,13 +132,14 @@ static int get_dirfd(char *path, bool symlinks)
 			 */
 			close(new_dirfd);
 		} else {
+			/* now walk down the directory path */
 			close(dirfd);
 			dirfd = new_dirfd;
 			free(linkpath);
 			linkpath = NULL;
+			item = strtok(NULL, "/");
+			components--;
 		}
-		item = strtok(NULL, "/");
-		components--;
 	}
 	free(path_dupe);
 	free(linkpath);
