@@ -1,3 +1,24 @@
+commit 55ceac775c388191090fe37aef489d721ee9299d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    checkpath: fix code to walk the directory path
+    
+    X-Gentoo-Bug: 782808
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/782808
+
+commit 7b07c55c86cf356a832fe2975c9f8e164bcb2b7b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.43.2
+
+commit 793673df3ca3ad8692e135bd5c77b21bae3ebbe2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 6219d87071d07acf4d6b3e99ec58134acf129d8e
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
