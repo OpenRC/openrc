@@ -85,5 +85,7 @@ If you can contribute code , please feel free to do so by opening
 
 ## IRC Channel
 
-We have an official irc channel, #openrc on freenode, feel free to join
-us there.
+We have an official irc channel, #openrc on the libera network.
+Please connect your irc client to irc.libera.chat and join #openrc on
+that network.
+
