@@ -68,6 +68,7 @@ start ()
 			ping -c 1 $ping_test_host > /dev/null 2>&1
 			rc=$?
 			[ $rc -eq 0 ] && break
+			sleep 1
 			: $((timeout -= 1))
 		done
 	fi
