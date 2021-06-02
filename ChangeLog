@@ -1,3 +1,47 @@
+commit 32a8a202d0728e3e550050069da3e27de2d98d7f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    move the irc channel to the libera network
+
+commit 803ed1badddb3edfc78f4346d8d059253a334cd9
+Author: Lars Wendler <polynomial-c@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/modules.in: Avoid loading modules twice in Linux with dash shell
+    
+    Since commit 6b475ab26992f1dd8815700828df46abc4b71d27, openrc tries to load
+    modules twice which have been defined in /etc/conf.d/modules via modules=
+    variable when /bin/sh points to dash shell.
+    The reason is that when the "modules-load" service was merged into "modules"
+    service, the "modules" variable name got used in both, load_modules()
+    function and in Linux_modules() function which both get called when modules
+    service is started. Although "modules" variable is marked as local in
+    load_modules(), dash simply ignores this.
+    
+    Avoid the issue by renaming "modules" variable to "_modules" in
+    load_modules() function.
+    
+    This fixes #419.
+
+commit 8a6f9d943bf7256630a37ea9e3a8421e079f05b9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    README: convert references to markdown links
+
+commit ee8c0c1cc1edb4959845e5bc487ce6e83ad9f2b3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.43.3
+
+commit f61e44d110d3ceb96c06bf7dbdd07b8ab85166e3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 55ceac775c388191090fe37aef489d721ee9299d
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -464,11 +508,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     supervise-daemon: only log debug logs when verbose mode is active
-
-commit fbec1eed51c85c53b39f97a213479caa0a2b75ab
-Author: Manuel Rüger <manuel@rueg.eu>
-Commit: Manuel Rüger <manuel@rueg.eu>
-
-    .cirrus.yml: Update FreeBSD releases
-    
-    Signed-off-by: Manuel Rüger <manuel@rueg.eu>
