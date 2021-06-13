@@ -55,6 +55,10 @@
 static struct pam_conv conv = { NULL, NULL};
 #endif
 
+#ifdef HAVE_CAP
+#include <sys/capability.h>
+#endif
+
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
@@ -66,8 +70,13 @@ static struct pam_conv conv = { NULL, NULL};
 
 const char *applet = NULL;
 const char *extraopts = NULL;
+#ifdef HAVE_CAP
+const char *getoptstring = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:A:" \
+	getoptstring_COMMON;
+#else
 const char *getoptstring = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:" \
 	getoptstring_COMMON;
+#endif
 const struct option longopts[] = {
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
@@ -96,6 +105,9 @@ const struct option longopts[] = {
 	{ "stderr",       1, NULL, '2'},
 	{ "stdout-logger",1, NULL, '3'},
 	{ "stderr-logger",1, NULL, '4'},
+#ifdef HAVE_CAP
+	{ "capabilities", 1, NULL, 'A'},
+#endif
 	{ "progress",     0, NULL, 'P'},
 	longopts_COMMON
 };
@@ -127,6 +139,9 @@ const char * const longopts_help[] = {
 	"Redirect stderr to file",
 	"Redirect stdout to process",
 	"Redirect stderr to process",
+#ifdef HAVE_CAP
+	"Set the inheritable, ambient and bounding capabilities",
+#endif
 	"Print dots each second while waiting",
 	longopts_help_COMMON
 };
@@ -304,6 +319,9 @@ int main(int argc, char **argv)
 	mode_t numask = 022;
 	char **margv;
 	unsigned int start_wait = 0;
+#ifdef HAVE_CAP
+	cap_iab_t cap_iab = NULL;
+#endif
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -517,6 +535,14 @@ int main(int argc, char **argv)
 			stderr_process = optarg;
 			break;
 
+#ifdef HAVE_CAP
+		case 'A':
+			cap_iab = cap_iab_from_text(optarg);
+			if (cap_iab == NULL)
+				eerrorx("Could not parse iab: %s", strerror(errno));
+			break;
+
+#endif
 		case_RC_COMMON_GETOPT
 		}
 
@@ -828,12 +854,28 @@ int main(int argc, char **argv)
 		if (changeuser && initgroups(changeuser, gid))
 			eerrorx("%s: initgroups (%s, %d)",
 			    applet, changeuser, gid);
+#ifdef HAVE_CAP
+		if (uid && cap_setuid(uid))
+#else
 		if (uid && setuid(uid))
+#endif
 			eerrorx ("%s: unable to set userid to %d",
 			    applet, uid);
 
 		/* Close any fd's to the passwd database */
 		endpwent();
+
+#ifdef HAVE_CAP
+		if (cap_iab != NULL) {
+			i = cap_iab_set_proc(cap_iab);
+
+			if (cap_free(cap_iab) != 0)
+				eerrorx("Could not releasable memory: %s", strerror(errno));
+
+			if (i != 0)
+				eerrorx("Could not set iab: %s", strerror(errno));
+		}
+#endif
 
 #ifdef TIOCNOTTY
 		ioctl(tty_fd, TIOCNOTTY, 0);
