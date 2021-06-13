@@ -57,6 +57,10 @@
 static struct pam_conv conv = { NULL, NULL};
 #endif
 
+#ifdef HAVE_CAP
+#include <sys/capability.h>
+#endif
+
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
@@ -73,6 +77,7 @@ const char getoptstring[] = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3" \
 const struct option longopts[] = {
 	{ "healthcheck-timer",        1, NULL, 'a'},
 	{ "healthcheck-delay",        1, NULL, 'A'},
+	{ "capabilities", 1, NULL, 0x100},
 	{ "respawn-delay",        1, NULL, 'D'},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
@@ -98,6 +103,7 @@ const struct option longopts[] = {
 const char * const longopts_help[] = {
 	"set an initial health check delay",
 	"set a health check timer",
+	"Set the inheritable, ambient and bounding capabilities",
 	"Set a respawn delay",
 	"Change the PWD",
 	"Set an environment string",
@@ -152,6 +158,9 @@ static int fifo_fd = 0;
 static char *pidfile = NULL;
 static char *svcname = NULL;
 static bool verbose = false;
+#ifdef HAVE_CAP
+static cap_iab_t cap_iab = NULL;
+#endif
 
 extern char **environ;
 
@@ -398,11 +407,27 @@ static void child_process(char *exec, char **argv)
 		eerrorx("%s: unable to set groupid to %d", applet, gid);
 	if (changeuser && initgroups(changeuser, gid))
 		eerrorx("%s: initgroups (%s, %d)", applet, changeuser, gid);
+#ifdef HAVE_CAP
+	if (uid && cap_setuid(uid))
+#else
 	if (uid && setuid(uid))
+#endif
 		eerrorx ("%s: unable to set userid to %d", applet, uid);
 
 	/* Close any fd's to the passwd database */
 	endpwent();
+
+#ifdef HAVE_CAP
+	if (cap_iab != NULL) {
+		i = cap_iab_set_proc(cap_iab);
+
+		if (cap_free(cap_iab) != 0)
+			eerrorx("Could not releasable memory: %s", strerror(errno));
+
+		if (i != 0)
+			eerrorx("Could not set iab: %s", strerror(errno));
+	}
+#endif
 
 	/* remove the controlling tty */
 #ifdef TIOCNOTTY
@@ -795,6 +820,16 @@ int main(int argc, char **argv)
 		case 'A':  /* --healthcheck-delay <time> */
 			if (sscanf(optarg, "%d", &healthcheckdelay) != 1 || healthcheckdelay < 1)
 				eerrorx("%s: invalid health check delay %s", applet, optarg);
+			break;
+
+		case 0x100:
+#ifdef HAVE_CAP
+			cap_iab = cap_iab_from_text(optarg);
+			if (cap_iab == NULL)
+				eerrorx("Could not parse iab: %s", strerror(errno));
+#else
+			eerrorx("Capabilities support not enabled");
+#endif
 			break;
 
 		case 'D':  /* --respawn-delay time */

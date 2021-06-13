@@ -161,6 +161,9 @@ Cmd must be an absolute pathname, but relative to the path optionally given with
 .Fl r , -chroot .
 This process must be prepared to accept input on stdin and be able to
 log it or send it to another location.
+.It Fl -capabilities Ar cap-list
+Start the daemon with the listed inheritable, ambient and bounding capabilities.
+The format is the same as in cap_iab(3).
 .It Fl w , -wait Ar milliseconds
 Wait
 .Ar milliseconds

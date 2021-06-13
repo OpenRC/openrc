@@ -158,6 +158,9 @@ The logfile can also be a named pipe.
 The same thing as
 .Fl 1 , -stdout
 but with the standard error output.
+.It Fl -capabilities Ar cap-list
+Start the daemon with the listed inheritable, ambient and bounding capabilities.
+The format is the same as in cap_iab(3).
 .El
 .Sh ENVIRONMENT
 .Va SSD_IONICELEVEL
