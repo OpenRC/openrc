@@ -34,6 +34,7 @@ DESTDIR=/tmp/openrc-image
 MKBASHCOMP=no
 MKNET=no
 MKPAM=pam
+MKCAP=yes
 MKPREFIX=yes
 MKPKGCONFIG=no
 MKSELINUX=yes

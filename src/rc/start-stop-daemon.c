@@ -55,6 +55,10 @@
 static struct pam_conv conv = { NULL, NULL};
 #endif
 
+#ifdef HAVE_CAP
+#include <sys/capability.h>
+#endif
+
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
@@ -69,6 +73,7 @@ const char *extraopts = NULL;
 const char *getoptstring = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
+	{ "capabilities", 1, NULL, 0x100},
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
@@ -100,6 +105,7 @@ const struct option longopts[] = {
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
+	"Set the inheritable, ambient and bounding capabilities",
 	"Set an ionice class:data when starting",
 	"Stop daemon",
 	"Set a nicelevel when starting",
@@ -304,6 +310,9 @@ int main(int argc, char **argv)
 	mode_t numask = 022;
 	char **margv;
 	unsigned int start_wait = 0;
+#ifdef HAVE_CAP
+	cap_iab_t cap_iab = NULL;
+#endif
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -346,6 +355,16 @@ int main(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 		    (int *) 0)) != -1)
 		switch (opt) {
+		case 0x100:
+#ifdef HAVE_CAP
+			cap_iab = cap_iab_from_text(optarg);
+			if (cap_iab == NULL)
+				eerrorx("Could not parse iab: %s", strerror(errno));
+#else
+			eerrorx("Capabilities support not enabled");
+#endif
+			break;
+
 		case 'I': /* --ionice */
 			if (sscanf(optarg, "%d:%d", &ionicec, &ioniced) == 0)
 				eerrorx("%s: invalid ionice `%s'",
@@ -828,12 +847,28 @@ int main(int argc, char **argv)
 		if (changeuser && initgroups(changeuser, gid))
 			eerrorx("%s: initgroups (%s, %d)",
 			    applet, changeuser, gid);
+#ifdef HAVE_CAP
+		if (uid && cap_setuid(uid))
+#else
 		if (uid && setuid(uid))
+#endif
 			eerrorx ("%s: unable to set userid to %d",
 			    applet, uid);
 
 		/* Close any fd's to the passwd database */
 		endpwent();
+
+#ifdef HAVE_CAP
+		if (cap_iab != NULL) {
+			i = cap_iab_set_proc(cap_iab);
+
+			if (cap_free(cap_iab) != 0)
+				eerrorx("Could not releasable memory: %s", strerror(errno));
+
+			if (i != 0)
+				eerrorx("Could not set iab: %s", strerror(errno));
+		}
+#endif
 
 #ifdef TIOCNOTTY
 		ioctl(tty_fd, TIOCNOTTY, 0);

@@ -14,6 +14,8 @@ option('os', type : 'combo',
   description : 'Operating System (autodetected if not specified)')
 option('pam', type : 'boolean',
   description : 'enable PAM support')
+option('capabilities', type : 'feature', value: 'auto',
+  description : 'enable capabilities support')
 option('pkg_prefix', type : 'string',
   description : 'default location where packages are installed')
 option('pkgconfig', type : 'boolean',

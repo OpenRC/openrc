@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: sudo apt-get update -q
-    - run: sudo apt-get install -q -y build-essential libpam-dev meson
+    - run: sudo apt-get install -q -y build-essential libpam-dev meson libcap-dev
     - run: meson setup builddir/
       env:
         CC: gcc
@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: sudo apt-get update -q
-    - run: sudo apt-get install -q -y build-essential clang libpam-dev meson
+    - run: sudo apt-get install -q -y build-essential clang libpam-dev meson libcap-dev
     - run: meson setup builddir/
       env:
         CC: clang

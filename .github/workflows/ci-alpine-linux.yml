@@ -15,7 +15,9 @@ jobs:
             meson \
             pkgconf \
             linux-pam \
-            linux-pam-dev
+            linux-pam-dev \
+            libcap \
+            libcap-dev
       - name: checkout
         uses: actions/checkout@v2
       - run: meson setup builddir/

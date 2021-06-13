@@ -57,6 +57,13 @@ if not pam_dep.found() and get_option('pam')
   error('Pam was requested but could not be located')
   endif
 
+cap_dep = dependency('libcap', version: '>=2.33', required : get_option('capabilities'))
+if cap_dep.found()
+  cc_cap_flags = '-DHAVE_CAP'
+else
+  cc_cap_flags = []
+endif
+
 option_pkg_prefix = get_option('pkg_prefix')
 if option_pkg_prefix == ''
   if os == 'Dragonfly' or os == 'FreeBSD'
