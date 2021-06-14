@@ -24,7 +24,7 @@ supervise_start()
 	# The eval call is necessary for cases like:
 	# command_args="this \"is a\" test"
 	# to work properly.
-	eval supervise-daemon "${RC_SVCNAME}" --start \
+	eval ${RC_VRF_EXEC} supervise-daemon "${RC_SVCNAME}" --start \
 		${retry:+--retry} $retry \
 		${directory:+--chdir} $directory  \
 		${chroot:+--chroot} $chroot \

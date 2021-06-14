@@ -236,6 +236,12 @@ if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
 fi
 unset _conf_d
 
+# If we are configured to run in a VRF, provide a hint for that
+RC_VRF_EXEC=""
+if [ -n "$vrf" ]; then
+	RC_VRF_EXEC="/sbin/ip vrf exec $vrf"
+fi
+
 # load service supervisor functions
 sourcex "@LIBEXECDIR@/sh/runit.sh"
 sourcex "@LIBEXECDIR@/sh/s6.sh"

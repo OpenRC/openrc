@@ -45,7 +45,7 @@ ssd_start()
 	#the eval call is necessary for cases like:
 	# command_args="this \"is a\" test"
 	# to work properly.
-	eval start-stop-daemon --start \
+	eval ${RC_VRF_EXEC} start-stop-daemon --start \
 		--exec $command \
 		${chroot:+--chroot} $chroot \
 		${directory:+--chdir} $directory \

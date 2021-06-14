@@ -37,7 +37,7 @@ s6_start()
 	ln -sf "${s6_service_path}" "${s6_service_link}"
 	s6-svscanctl -na "${RC_SVCDIR}"/s6-scan
 	sleep 1.5
-	s6-svc -u "${s6_service_link}"
+	${RC_VRF_EXEC} s6-svc -u "${s6_service_link}"
 	if [ -n "$s6_svwait_options_start" ]; then
 		s6-svwait ${s6_svwait_options_start} "${s6_service_link}"
 	fi
