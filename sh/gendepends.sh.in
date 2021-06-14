@@ -94,9 +94,6 @@ do
 
 		RC_SVCNAME=${RC_SERVICE##*/} ; export RC_SVCNAME
 
-		# Compat
-		SVCNAME=$RC_SVCNAME ; export SVCNAME
-
 		(
 		# Save stdout in fd3, then remap it to stderr
 		exec 3>&1 1>&2
