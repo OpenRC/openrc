@@ -20,8 +20,20 @@ runit_start()
 	service_link="${RC_SVCDIR}/sv/${service_path##*/}"
 	ebegin "Starting ${name:-$RC_SVCNAME}"
 	ln -snf "${service_path}" "${service_link}"
-	sv start "${service_link}" > /dev/null 2>&1
-	eend $? "Failed to start ${name:-$RC_SVCNAME}"
+	local i=0 retval=1
+	# it can take upto 5 seconds for runsv to start
+	while [ $i -lt 6 ] ; do
+		if sv start "${service_link}" > /dev/null 2>&1; then
+			retval=0
+			break
+		fi
+		sleep 1 && i=$(expr $i + 1)
+	done
+	if [ $retval -eq 1 ]; then
+		# clean up the link else sv will keep on trying
+		rm "${service_link}"
+	fi
+	eend $retval "Failed to start ${name:-$RC_SVCNAME}"
 }
 
 runit_stop()
