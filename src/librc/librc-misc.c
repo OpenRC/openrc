@@ -131,7 +131,7 @@ rc_proc_getent(const char *ent _unused)
 
 	proc = NULL;
 	i = 0;
-	if (rc_getline(&proc, &i, fp) == -1 || proc == NULL)
+	if (getline(&proc, &i, fp) == -1 || proc == NULL)
 		return NULL;
 
 	if (proc != NULL) {
@@ -174,7 +174,7 @@ rc_config_list(const char *file)
 	if (!(fp = fopen(file, "r")))
 		return list;
 
-	while ((rc_getline(&buffer, &len, fp))) {
+	while ((getline(&buffer, &len, fp) > 0)) {
 		p = buffer;
 		/* Strip leading spaces/tabs */
 		while ((*p == ' ') || (*p == '\t'))
