@@ -2,7 +2,7 @@ include ../mk/net.mk
 
 BOOT=		bootmisc fsck hostname localmount loopback \
 		root swap sysctl urandom ${BOOT-${OS}}
-DEFAULT=	local netmount
+DEFAULT=	local netmount ${DEFAULT-${OS}}
 NONETWORK=	local
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
 SYSINIT=	${SYSINIT-${OS}}
@@ -26,6 +26,7 @@ include ${MK}/os.mk
 include ${MK}/gitignore.mk
 
 BOOT-${OS}=
+DEFAULT-${OS}=
 SHUTDOWN-${OS}=
 SYSINIT-${OS}=
 
@@ -35,9 +36,11 @@ BOOT-BSD=	hostid newsyslog savecore syslogd swap-blk
 BOOT-FreeBSD+=	hostid modules newsyslog savecore syslogd
 # FreeBSD specific stuff
 BOOT-FreeBSD+=	adjkerntz dumpon syscons
+DEFAULT-FreeBSD+=	modules-late
 
 BOOT-Linux+=	binfmt hwclock keymaps modules mtab procfs save-keymaps \
 	save-termencoding termencoding
+DEFAULT-Linux+=	modules-late
 SHUTDOWN-Linux=	killprocs mount-ro
 SYSINIT-Linux=	devfs cgroups dmesg sysfs
 
