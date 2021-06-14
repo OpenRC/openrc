@@ -1,3 +1,4 @@
+include ../mk/getty.mk
 include ../mk/net.mk
 
 BOOT=		bootmisc fsck hostname localmount loopback \
@@ -90,10 +91,10 @@ install:
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${SHUTDOWNDIR}/"$$x" || exit $$?; done \
 	fi
-	if test "${MKSYSVINIT}" = yes && test "${OS}" = Linux; then \
-		for x in tty1 tty2 tty3 tty4 tty5 tty6; do \
-			ln -snf ${INITDIR}/agetty ${DESTDIR}/${INITDIR}/"agetty.$$x" || exit $$?; \
-			ln -snf ${INITDIR}/agetty.$$x ${DEFAULTDIR}/"agetty.$$x" || exit $$?; \
+	if test "0${MKGETTYS}" -gt 0 && test "${OS}" = Linux; then \
+		for x in $$(seq 1 ${MKGETTYS}); do \
+			ln -snf ${INITDIR}/agetty ${DESTDIR}/${INITDIR}/"agetty.tty$$x" || exit $$?; \
+			ln -snf ${INITDIR}/agetty.tty$$x ${DEFAULTDIR}/"agetty.tty$$x" || exit $$?; \
 		done; \
 	fi
 

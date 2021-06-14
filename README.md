@@ -23,6 +23,7 @@ PROGLDFLAGS=-static
 LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
 MKBASHCOMP=no
+MKGETTYS=6
 MKNET=no
 MKPAM=pam
 MKPREFIX=yes
