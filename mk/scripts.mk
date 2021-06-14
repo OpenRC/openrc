@@ -19,7 +19,17 @@ _PKG_SED:=		$(shell ${_PKG_SED_SH})
 _LCL_SED_SH=		if test "${PREFIX}" = "${LOCAL_PREFIX}"; then echo "-e 's:@LOCAL_PREFIX@::g'"; else echo "-e 's:@LOCAL_PREFIX@:${LOCAL_PREFIX}:g'"; fi
 _LCL_SED:=		$(shell ${_LCL_SED_SH})
 
-SED_REPLACE=		-e 's:@SHELL@:${SH}:' -e 's:@LIB@:${LIBNAME}:g' -e 's:@SYSCONFDIR@:${SYSCONFDIR}:g' -e 's:@LIBEXECDIR@:${LIBEXECDIR}:g' -e 's:@PREFIX@:${PREFIX}:g' -e 's:@BINDIR@:${BINDIR}:g' -e 's:@SBINDIR@:${SBINDIR}:g' ${_PKG_SED} ${_LCL_SED}
+SED_REPLACE=	-e 's:@SHELL@:${SH}:'
+SED_REPLACE+=	-e 's:@LIB@:${LIBNAME}:g'
+SED_REPLACE+=	-e 's:@SYSCONFDIR@:${SYSCONFDIR}:g'
+SED_REPLACE+=	-e 's:@INITDIRNAME@:${INITDIRNAME}:g'
+SED_REPLACE+=	-e 's:@CONFDIRNAME@:${CONFDIRNAME}:g'
+SED_REPLACE+=	-e 's:@LIBEXECDIR@:${LIBEXECDIR}:g'
+SED_REPLACE+=	-e 's:@PREFIX@:${PREFIX}:g'
+SED_REPLACE+=	-e 's:@BINDIR@:${BINDIR}:g'
+SED_REPLACE+=	-e 's:@SBINDIR@:${SBINDIR}:g'
+SED_REPLACE+=	${_PKG_SED}
+SED_REPLACE+=	${_LCL_SED}
 
 # Tweak our shell scripts
 %.sh: %.sh.in
