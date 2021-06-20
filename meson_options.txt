@@ -1,0 +1,55 @@
+# Copyright (c) 2007-2017 The OpenRC Authors.
+# See the Authors file at the top-level directory of this distribution and
+# https://github.com/OpenRC/openrc/blob/master/AUTHORS
+#
+# This file is part of OpenRC. It is subject to the license terms in
+# the LICENSE file found in the top-level directory of this
+# distribution and at https://github.com/OpenRC/openrc/blob/master/LICENSE
+# This file may not be copied, modified, propagated, or distributed
+# except according to the terms contained in the LICENSE file.
+
+option('mk-prefix', type : 'boolean', value : false,
+       description : '''Does /bin, /sbin are symlinks into /usr?''')
+option('rc-prefix', type : 'string',
+       description : '''Override the root prefix''')
+option('rc-libname', type : 'string',
+       description : '''lib directory name''')
+option('rc-sysconfdir', type : 'string',
+       description : '''Where sysconf files are installed''')
+option('rc-libexecdir', type : 'string',
+       description : '''Where libexec files are installed''')
+option('rc-pkg-prefix', type : 'string',
+       description : '''Where packages are installed''')
+option('rc-local-prefix', type : 'string',
+       description : '''Where user maintained packages are installed''')
+option('rc-var-prefix', type : 'string',
+       description : '''Where user maintained packages are installed''')
+option('pkgconfig', type : 'boolean', value : true,
+       description : 'Build pkgconfig or not')
+option('net', type : 'boolean', value : true,
+       description : 'Install network or not')
+option('pam', type : 'combo', choices : ['auto', 'true', 'false'],
+       value: 'false',
+       description : 'PAM support')
+option('selinux', type : 'combo', choices : ['auto', 'true', 'false'],
+       value: 'false',
+       description : 'SELinux support')
+option('audit', type : 'combo', choices : ['auto', 'true', 'false'],
+       value: 'false',
+       description : 'libaudit support')
+option('sysvinit', type : 'boolean', value : false,
+       description : 'support sysvinit or not')
+option('termcap', type : 'combo', choices : ['ncurses', 'termcap', 'false'],
+       value : 'false',
+       description : 'termcap')
+option('os', type : 'combo', choices : ['Linux',
+                                        'FreeBSD',
+                                        'NetBSD',
+                                        'DragonFly',
+                                        'GNU-kFreeBSD',
+                                        'GNU'
+                                       ],
+       value : 'Linux',
+       description : 'host OS')
+option('branding', type : 'string',
+       description : '''set branding''')
