@@ -18,9 +18,10 @@ if [ -f /proc/acpi/ac_adapter/*/state ]; then
 		"state:"*"off-line") exit 128;;
 		esac
 	done
-elif [ -f /sys/class/power_supply/*/online ]; then
-	cat /sys/class/power_supply/*/online | while read line; do
-		[ "${line}" = 0 ] && exit 128
+elif [ -d /sys/class/power_supply ]; then
+	for dir in /sys/class/power_supply/*/; do
+		[ "$(cat "${dir}/type")" != "Mains" ] && continue
+		[ "$(cat "${dir}/online")" = 0 ] && exit 128
 	done
 elif [ -f /proc/pmu/info ]; then
 	cat /proc/pmu/info | while read line; do
