@@ -145,6 +145,9 @@ Redirect the standard output of the process to logfile.
 Must be an absolute pathname, but relative to the path optionally given with
 .Fl r , -chroot .
 The logfile can also be a named pipe.
+.It Fl B , -capabilities Ar cap-list
+Start the daemon with the listed inheritable, ambient and bounding capabilities.
+The format is the same as in cap_iab(3).
 .It Fl 2 , -stderr Ar logfile
 The same thing as
 .Fl 1 , -stdout

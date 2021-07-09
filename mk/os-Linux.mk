@@ -27,6 +27,12 @@ endif
 
 endif
 
+ifeq (${MKCAP},yes)
+CPPFLAGS+= -DHAVE_CAP
+LIBCAP?= -lcap
+LDADD += $(LIBCAP)
+endif
+
 ifeq (${MKAUDIT},yes)
 LIBAUDIT?=	-laudit
 CPPFLAGS+=	-DHAVE_AUDIT

@@ -187,6 +187,21 @@ with
 
   * command_user="user:group"
 
+If your daemon should run with specific inheritable, ambient and
+bounding capabilities, then you can tell start-stop-daemon to launch
+it with
+
+  * capabilities="cap-list"
+
+The format is the same as in cap_iab(3). (Only on Linux)
+
+For example, to start the daemon with ambient and inheritable
+`cap_chown`, but without `cap_setpcap` in the bounding set, use
+the following value:
+```sh
+capabilities="^cap_chown,!cap_setpcap"
+```
+
 Finally, if your daemon always forks into the background but fails to
 create a PID file, then your only option is to use
 

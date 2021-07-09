@@ -57,6 +57,10 @@
 static struct pam_conv conv = { NULL, NULL};
 #endif
 
+#ifdef HAVE_CAP
+#include <sys/capability.h>
+#endif
+
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
@@ -68,8 +72,13 @@ static struct pam_conv conv = { NULL, NULL};
 
 const char *applet = NULL;
 const char *extraopts = NULL;
+#ifdef HAVE_CAP
+const char *getoptstring = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3:B" \
+	getoptstring_COMMON;
+#else
 const char *getoptstring = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3" \
 	getoptstring_COMMON;
+#endif
 const struct option longopts[] = {
 	{ "healthcheck-timer",        1, NULL, 'a'},
 	{ "healthcheck-delay",        1, NULL, 'A'},
@@ -92,6 +101,9 @@ const struct option longopts[] = {
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
 	{ "reexec",       0, NULL, '3'},
+#ifdef HAVE_CAP
+	{ "capabilities", 1, NULL, 'B'},
+#endif
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -116,6 +128,9 @@ const char * const longopts_help[] = {
 	"Redirect stdout to file",
 	"Redirect stderr to file",
 	"reexec (used internally)",
+#ifdef HAVE_CAP
+	"Set the inheritable, ambient and bounding capabilities",
+#endif
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
@@ -149,6 +164,9 @@ static int fifo_fd = 0;
 static char *pidfile = NULL;
 static char *svcname = NULL;
 static bool verbose = false;
+#ifdef HAVE_CAP
+static cap_iab_t cap_iab = NULL;
+#endif
 
 extern char **environ;
 
@@ -385,11 +403,27 @@ static void child_process(char *exec, char **argv)
 		eerrorx("%s: unable to set groupid to %d", applet, gid);
 	if (changeuser && initgroups(changeuser, gid))
 		eerrorx("%s: initgroups (%s, %d)", applet, changeuser, gid);
+#ifdef HAVE_CAP
+	if (uid && cap_setuid(uid))
+#else
 	if (uid && setuid(uid))
+#endif
 		eerrorx ("%s: unable to set userid to %d", applet, uid);
 
 	/* Close any fd's to the passwd database */
 	endpwent();
+
+#ifdef HAVE_CAP
+	if (cap_iab != NULL) {
+		i = cap_iab_set_proc(cap_iab);
+
+		if (cap_free(cap_iab) != 0)
+			eerrorx("Could not releasable memory: %s", strerror(errno));
+
+		if (i != 0)
+			eerrorx("Could not set iab: %s", strerror(errno));
+	}
+#endif
 
 	/* remove the controlling tty */
 #ifdef TIOCNOTTY
@@ -907,6 +941,14 @@ int main(int argc, char **argv)
 			reexec = true;
 			break;
 
+#ifdef HAVE_CAP
+		case 'B':
+			cap_iab = cap_iab_from_text(optarg);
+			if (cap_iab == NULL)
+				eerrorx("Could not parse iab: %s", strerror(errno));
+			break;
+
+#endif
 		case_RC_COMMON_GETOPT
 		}
 
