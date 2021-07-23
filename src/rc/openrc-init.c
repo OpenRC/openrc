@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 
 	printf("OpenRC init version %s starting\n", VERSION);
 
-	if (argc > 1)
+	if (argc > 1 && argv[1][0] != '\0')
 		default_runlevel = argv[1];
 	else
 		default_runlevel = NULL;
