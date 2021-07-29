@@ -1,2 +1,2 @@
-# Set to the hostname of this machine
+# Hostname fallback if /etc/hostname does not exist
 hostname="localhost"
