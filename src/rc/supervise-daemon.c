@@ -82,6 +82,7 @@ const struct option longopts[] = {
 	{ "umask",        1, NULL, 'k'},
 	{ "respawn-max",    1, NULL, 'm'},
 	{ "nicelevel",    1, NULL, 'N'},
+	{ "oom-score-adj",1, NULL,0x80},
 	{ "pidfile",      1, NULL, 'p'},
 	{ "respawn-period",        1, NULL, 'P'},
 	{ "retry",       1, NULL, 'R'},
@@ -106,6 +107,7 @@ const char * const longopts_help[] = {
 	"Set the umask for the daemon",
 	"set maximum number of respawn attempts",
 	"Set a nicelevel when starting",
+	"Set OOM score adjustment when starting",
 	"Match pid found in this file",
 	"Set respawn time period",
 	"Retry schedule to use when stopping",
@@ -124,9 +126,10 @@ static int healthcheckdelay = 0;
 static int healthchecktimer = 0;
 static volatile sig_atomic_t do_healthcheck = 0;
 static volatile sig_atomic_t exiting = 0;
-static int nicelevel = 0;
+static int nicelevel = INT_MIN;
 static int ionicec = -1;
 static int ioniced = 0;
+static int oom_score_adj = INT_MIN;
 static char *changeuser, *ch_root, *ch_dir;
 static uid_t uid = 0;
 static gid_t gid = 0;
@@ -332,6 +335,7 @@ static void child_process(char *exec, char **argv)
 	time_t start_time;
 	char start_count_string[20];
 	char start_time_string[20];
+	FILE *fp;
 
 #ifdef HAVE_PAM
 	pam_handle_t *pamh = NULL;
@@ -351,7 +355,7 @@ static void child_process(char *exec, char **argv)
 		rc_service_value_set(svcname, "child_pid", start_count_string);
 	}
 
-	if (nicelevel) {
+	if (nicelevel != INT_MIN) {
 		if (setpriority(PRIO_PROCESS, getpid(), nicelevel) == -1)
 			eerrorx("%s: setpriority %d: %s", applet, nicelevel,
 					strerror(errno));
@@ -360,6 +364,15 @@ static void child_process(char *exec, char **argv)
 	if (ionicec != -1 && ioprio_set(1, getpid(), ionicec | ioniced) == -1)
 		eerrorx("%s: ioprio_set %d %d: %s", applet, ionicec, ioniced,
 				strerror(errno));
+
+	if (oom_score_adj != INT_MIN) {
+		fp = fopen("/proc/self/oom_score_adj", "w");
+		if (!fp)
+			eerrorx("%s: oom_score_adj %d: %s", applet,
+			    oom_score_adj, strerror(errno));
+		fprintf(fp, "%d\n", oom_score_adj);
+		fclose(fp);
+	}
 
 	if (ch_root && chroot(ch_root) < 0)
 		eerrorx("%s: chroot `%s': %s", applet, ch_root, strerror(errno));
@@ -424,7 +437,8 @@ static void child_process(char *exec, char **argv)
 			strncmp(env->value, "RC_SERVICE=", 11) != 0 &&
 			strncmp(env->value, "RC_SVCNAME=", 11) != 0) ||
 		    strncmp(env->value, "SSD_NICELEVEL=", 14) == 0 ||
-		    strncmp(env->value, "SSD_IONICELEVEL=", 16) == 0)
+		    strncmp(env->value, "SSD_IONICELEVEL=", 16) == 0 ||
+		    strncmp(env->value, "SSD_OOMSCOREADJ=", 16) == 0)
 		{
 			p = strchr(env->value, '=');
 			*p = '\0';
@@ -745,6 +759,10 @@ int main(int argc, char **argv)
 			ioniced = 7;
 		ionicec <<= 13; /* class shift */
 	}
+	if ((tmp = getenv("SSD_OOMSCOREADJ")))
+		if (sscanf(tmp, "%d", &oom_score_adj) != 1)
+			eerror("%s: invalid oom_score_adj `%s' (SSD_OOMSCOREADJ)",
+			    applet, tmp);
 
 	/* Get our user name and initial dir */
 	p = getenv("USER");
@@ -803,6 +821,12 @@ int main(int argc, char **argv)
 		case 'N':  /* --nice */
 			if (sscanf(optarg, "%d", &nicelevel) != 1)
 				eerrorx("%s: invalid nice level `%s'",
+				    applet, optarg);
+			break;
+
+		case 0x80: /* --oom-score-adj */
+			if (sscanf(optarg, "%d", &oom_score_adj) != 1)
+				eerrorx("%s: invalid oom-score-adj `%s'",
 				    applet, optarg);
 			break;
 

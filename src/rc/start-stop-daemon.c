@@ -72,6 +72,7 @@ const struct option longopts[] = {
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
+	{ "oom-score-adj",1, NULL,0x80},
 	{ "retry",        1, NULL, 'R'},
 	{ "start",        0, NULL, 'S'},
 	{ "startas",      1, NULL, 'a'},
@@ -103,6 +104,7 @@ const char * const longopts_help[] = {
 	"Set an ionice class:data when starting",
 	"Stop daemon",
 	"Set a nicelevel when starting",
+	"Set OOM score adjustment when starting",
 	"Retry schedule to use when stopping",
 	"Start daemon",
 	"deprecated, use --exec or --name",
@@ -270,7 +272,8 @@ int main(int argc, char **argv)
 	char *pidfile = NULL;
 	char *retry = NULL;
 	int sig = -1;
-	int nicelevel = 0, ionicec = -1, ioniced = 0;
+	int nicelevel = INT_MIN, ionicec = -1, ioniced = 0;
+	int oom_score_adj = INT_MIN;
 	bool background = false;
 	bool makepidfile = false;
 	bool interpreted = false;
@@ -327,6 +330,10 @@ int main(int argc, char **argv)
 			ioniced = 7;
 		ionicec <<= 13; /* class shift */
 	}
+	if ((tmp = getenv("SSD_OOMSCOREADJ")))
+		if (sscanf(tmp, "%d", &oom_score_adj) != 1)
+			eerror("%s: invalid oom_score_adj `%s' (SSD_OOMSCOREADJ)",
+			    applet, tmp);
 
 	/* Get our user name and initial dir */
 	p = getenv("USER");
@@ -364,6 +371,12 @@ int main(int argc, char **argv)
 		case 'N':  /* --nice */
 			if (sscanf(optarg, "%d", &nicelevel) != 1)
 				eerrorx("%s: invalid nice level `%s'",
+				    applet, optarg);
+			break;
+
+		case 0x80: /* --oom-score-adj */
+			if (sscanf(optarg, "%d", &oom_score_adj) != 1)
+				eerrorx("%s: invalid oom-score-adj `%s'",
 				    applet, optarg);
 			break;
 
@@ -778,7 +791,7 @@ int main(int argc, char **argv)
 
 		devnull_fd = open("/dev/null", O_RDWR);
 
-		if (nicelevel) {
+		if (nicelevel != INT_MIN) {
 			if (setpriority(PRIO_PROCESS, mypid, nicelevel) == -1)
 				eerrorx("%s: setpriority %d: %s",
 				    applet, nicelevel,
@@ -789,6 +802,15 @@ int main(int argc, char **argv)
 		    ioprio_set(1, mypid, ionicec | ioniced) == -1)
 			eerrorx("%s: ioprio_set %d %d: %s", applet,
 			    ionicec, ioniced, strerror(errno));
+
+		if (oom_score_adj != INT_MIN) {
+			fp = fopen("/proc/self/oom_score_adj", "w");
+			if (!fp)
+				eerrorx("%s: oom_score_adj %d: %s", applet,
+				    oom_score_adj, strerror(errno));
+			fprintf(fp, "%d\n", oom_score_adj);
+			fclose(fp);
+		}
 
 		if (ch_root && chroot(ch_root) < 0)
 			eerrorx("%s: chroot `%s': %s",
@@ -867,7 +889,8 @@ int main(int argc, char **argv)
 				strncmp(env->value, "RC_SERVICE=", 11) != 0 &&
 				strncmp(env->value, "RC_SVCNAME=", 11) != 0) ||
 				strncmp(env->value, "SSD_NICELEVEL=", 14) == 0 ||
-				strncmp(env->value, "SSD_IONICELEVEL=", 16) == 0)
+				strncmp(env->value, "SSD_IONICELEVEL=", 16) == 0 ||
+				strncmp(env->value, "SSD_OOMSCOREADJ=", 16) == 0)
 			{
 				p = strchr(env->value, '=');
 				*p = '\0';
