@@ -37,6 +37,8 @@ servicename
 .Ar count
 .Fl N , -nicelevel
 .Ar level
+.Fl -oom-score-adj
+.Ar adj
 .Fl p , -pidfile
 .Ar supervisorpidfile
 .Fl P , -respawn-period
@@ -129,6 +131,8 @@ Sets a path for the supervisor's pid file. Note that this is not the pid
 file of the process that is being supervised.
 .It Fl N , -nicelevel Ar level
 Modifies the scheduling priority of the daemon.
+.It Fl -oom-score-adj Ar adj
+Modifies the OOM score adjustment of the daemon.
 .It Fl P , -respawn-period Ar seconds
 Sets the length of a respawn period. See the
 description of --respawn-max for more information.
@@ -162,6 +166,10 @@ option takes precedence.
 .Pp
 .Va SSD_NICELEVEL
 can also set the scheduling priority of the daemon, but the command line
+option takes precedence.
+.Pp
+.Va SSD_OOM_SCORE_ADJ
+can also set the OOM score adjustment of the daemon, but the command line
 option takes precedence.
 .Sh NOTE
 .Nm
