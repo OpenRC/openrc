@@ -423,7 +423,8 @@ static void child_process(char *exec, char **argv)
 		if ((strncmp(env->value, "RC_", 3) == 0 &&
 			strncmp(env->value, "RC_SERVICE=", 11) != 0 &&
 			strncmp(env->value, "RC_SVCNAME=", 11) != 0) ||
-		    strncmp(env->value, "SSD_NICELEVEL=", 14) == 0)
+		    strncmp(env->value, "SSD_NICELEVEL=", 14) == 0 ||
+		    strncmp(env->value, "SSD_IONICELEVEL=", 16) == 0)
 		{
 			p = strchr(env->value, '=');
 			*p = '\0';
@@ -733,6 +734,17 @@ int main(int argc, char **argv)
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
 			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
 			    applet, tmp);
+	if ((tmp = getenv("SSD_IONICELEVEL"))) {
+		int n = sscanf(tmp, "%d:%d", &ionicec, &ioniced);
+		if (n != 1 && n != 2)
+			eerror("%s: invalid ionice level `%s' (SSD_IONICELEVEL)",
+			    applet, tmp);
+		if (ionicec == 0)
+			ioniced = 0;
+		else if (ionicec == 3)
+			ioniced = 7;
+		ionicec <<= 13; /* class shift */
+	}
 
 	/* Get our user name and initial dir */
 	p = getenv("USER");
