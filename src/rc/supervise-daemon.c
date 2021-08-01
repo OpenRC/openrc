@@ -1,6 +1,6 @@
 /*
  * supervise-daemon
- * This is an experimental supervisor for daemons.
+ * This is a supervisor for daemons.
  * It will start a deamon and make sure it restarts if it crashes.
  */
 
