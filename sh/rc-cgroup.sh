@@ -209,7 +209,7 @@ cgroup2_set_limits()
 cgroup_cleanup()
 {
 	cgroup_running || return 0
-	ebegin "starting cgroups cleanup"
+	ebegin "Starting cgroups cleanup"
 	local loops=0
 	cgroup_get_pids
 	if [ -n "${cgroup_pids}" ]; then
