@@ -219,7 +219,7 @@ cgroup_cleanup()
 			kill -s HUP ${cgroup_pids} 2> /dev/null
 		kill -s "${stopsig:-TERM}" ${cgroup_pids} 2> /dev/null
 		cgroup_get_pids
-		while [ -n "$(cgroup_pids)" ] &&
+		while [ -n "${cgroup_pids}" ] &&
 			[ "${loops}" -lt "${rc_timeout_stopsec:-90}" ]; do
 			loops=$((loops+1))
 			sleep 1
