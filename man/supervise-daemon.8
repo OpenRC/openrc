@@ -37,6 +37,8 @@ servicename
 .Ar count
 .Fl N , -nicelevel
 .Ar level
+.Fl p , -pidfile
+.Ar supervisorpidfile
 .Fl P , -respawn-period
 .Ar seconds
 .Fl R , -retry
@@ -122,6 +124,9 @@ If respawn-period is also set, more than respawn-max crashes must occur
 during respawn-period seconds to cause
 .Nm
 to give up and exit.
+.It Fl p , -pidfile Ar supervisorpidfile
+Sets a path for the supervisor's pid file. Note that this is not the pid
+file of the process that is being supervised.
 .It Fl N , -nicelevel Ar level
 Modifies the scheduling priority of the daemon.
 .It Fl P , -respawn-period Ar seconds
