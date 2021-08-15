@@ -1,3 +1,120 @@
+commit 2ac620cf53fbbd201927055b771d59f16086ddc4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update travis ci irc notifications
+    
+    - move to libera network
+    - always notify on successful build
+
+commit e9fb5f81cc862001bcc10a4ce0f18a7cd6cd6df3
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/supervise-daemon.8: document --pidfile option
+
+commit 67dfdec43ffe9160f4d63394c6334fc10c6992c8
+Author: Sven Wegener <sven.wegener@stealer.net>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    on_ac_power: support multiple power_supply devices in sysfs
+    
+    Newer devices have multiple power_supply devices in sysfs:
+    
+    $ grep ^ /sys/class/power_supply/*/type
+    /sys/class/power_supply/AC/type:Mains
+    /sys/class/power_supply/BAT0/type:Battery
+    /sys/class/power_supply/ucsi-source-psy-USBC000:001/type:USB
+    /sys/class/power_supply/ucsi-source-psy-USBC000:002/type:USB
+    
+    There are two "USB" Type-C ports than can supply power and both are
+    aggregated into the "Mains" power supply by the firmware. The "Battery"
+    also counts as a power supply, but is missing the online attribute.
+    
+    The -f check with a wildcard pattern results in an error, when multiple
+    devices are present:
+    
+    /lib/rc/bin/on_ac_power: line 21: [: too many arguments
+    
+    When the power_supply class is registered, check for a "Mains" device.
+    
+    Fixes #427.
+
+commit fa88750060effe4a23a14d7e70517e475fd11b39
+Author: Alex Xu <351006+Hello71@users.noreply.github.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    conf.d/hostname: clarify hostname variable usage
+    
+    https://gitlab.alpinelinux.org/alpine/aports/-/issues/9744
+    
+    This fixes #433.
+
+commit 223550f6765a89254f978c2007612e5be7d308a6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "openrc-init: ignore an empty string in argv[1]"
+    
+    This reverts commit 7a1532382284d9d3d0f1e31d89ff1ca0d3199cb5.
+        This check is no longer needed since rc_runlevel_exists() is fixed.
+    
+            X-Gentoo-Bug: 803536
+            X-Gentoo-Bug-URL: https://bugs.gentoo.org/803536
+            Closes: https://github.com/OpenRC/openrc/pull/431
+
+commit d6295768eaa886d7cf296e5d7f94711ec1f08038
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: fix rc_runlevel_exists return for empty string
+    
+    This function should return false if the runlevel is an empty string.
+    
+        X-Gentoo-Bug: 803536
+        X-Gentoo-Bug-URL: https://bugs.gentoo.org/803536
+        Closes: https://github.com/OpenRC/openrc/pull/431
+
+commit 7a1532382284d9d3d0f1e31d89ff1ca0d3199cb5
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-init: ignore an empty string in argv[1]
+    
+    X-Gentoo-Bug: 803536
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/803536
+    Closes: https://github.com/OpenRC/openrc/pull/431
+
+commit edb07278af2f5e05873da99d4a80bfbb6f08812b
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/rc-cgroup.sh: fix case in starting message
+    
+    X-Gentoo-Bug: 804193
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=804193
+
+commit d07d896aa82a789c558876ee3257b785df1e7946
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/rc-cgroup.sh: fix cgroup_cleanup
+    
+    X-Gentoo-Bug: 804193
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=804193
+
+commit 80955a691bfb151b92d04c12b5d138bafdedf532
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.43.4
+
+commit 2413f487e2d556a657bca8c873828873c650f995
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 32a8a202d0728e3e550050069da3e27de2d98d7f
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
