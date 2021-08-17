@@ -780,7 +780,7 @@ int main(int argc, char **argv)
 
 		if (nicelevel) {
 			if (setpriority(PRIO_PROCESS, mypid, nicelevel) == -1)
-				eerrorx("%s: setpritory %d: %s",
+				eerrorx("%s: setpriority %d: %s",
 				    applet, nicelevel,
 				    strerror(errno));
 		}
