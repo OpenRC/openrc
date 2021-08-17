@@ -152,7 +152,7 @@ static const char *const color_terms[] = {
 
 /* strlcat and strlcpy are nice, shame glibc does not define them */
 #ifdef __GLIBC__
-#  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
+#  if !defined (__UCLIBC__) && !defined (__dietlibc__)
 static size_t
 strlcat(char *dst, const char *src, size_t size)
 {

@@ -279,7 +279,7 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 			errno = 0;
 			killed = (kill(pi->pid, sig) == 0 ||
 			    errno == ESRCH ? true : false);
-			if (! quiet)
+			if (!quiet)
 				eendv(killed ? 0 : 1,
 				"%s: failed to send signal %d to PID %d: %s",
 				applet, sig, pi->pid, strerror(errno));
@@ -422,7 +422,7 @@ int run_stop_schedule(const char *applet,
 
 	if (progressed)
 		printf("\n");
-	if (! quiet) {
+	if (!quiet) {
 		if (nrunning == 1)
 			eerror("%s: %d process refused to stop", applet, nrunning);
 		else

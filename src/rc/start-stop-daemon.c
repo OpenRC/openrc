@@ -800,7 +800,7 @@ int main(int argc, char **argv)
 
 		if (makepidfile && pidfile) {
 			fp = fopen(pidfile, "w");
-			if (! fp)
+			if (!fp)
 				eerrorx("%s: fopen `%s': %s", applet, pidfile,
 				    strerror(errno));
 			fprintf(fp, "%d\n", mypid);

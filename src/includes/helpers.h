@@ -38,7 +38,7 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 #ifdef __GLIBC__
-#  if ! defined (__UCLIBC__) && ! defined (__dietlibc__)
+#  if !defined (__UCLIBC__) && !defined (__dietlibc__)
 #    define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
 #  endif
 #endif
@@ -85,7 +85,7 @@ _unused static char *xstrdup(const char *str)
 {
 	char *value;
 
-	if (! str)
+	if (!str)
 		return (NULL);
 
 	value = strdup(str);

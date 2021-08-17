@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 	if (service == NULL)
 		eerrorx("%s: no service specified", applet);
 
-	if (argc < 2 || ! argv[1] || *argv[1] == '\0')
+	if (argc < 2 || !argv[1] || *argv[1] == '\0')
 		eerrorx("%s: no option specified", applet);
 
 	if (strcmp(applet, "service_get_value") == 0 ||

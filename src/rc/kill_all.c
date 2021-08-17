@@ -78,7 +78,7 @@ static int mount_proc(void)
 				syslog(LOG_ERR, "mount returned non-zero exit status");
 			break;
 	}
-	if (! exists("/proc/version")) {
+	if (!exists("/proc/version")) {
 		syslog(LOG_ERR, "Could not mount /proc");
 		return -1;
 	}
@@ -113,7 +113,7 @@ static bool is_user_process(pid_t pid)
 			continue;
 		}
 		temp_pid = -1;
-		while (! feof(fp)) {
+		while (!feof(fp)) {
 			buf = NULL;
 			if (getline(&buf, &size, fp) != -1) {
 				sscanf(buf, "PPid: %d", &temp_pid);

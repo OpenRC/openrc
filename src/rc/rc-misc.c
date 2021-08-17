@@ -138,7 +138,7 @@ env_config(void)
 	/* Ensure our PATH is prefixed with the system locations first
 	   for a little extra security */
 	path = getenv("PATH");
-	if (! path)
+	if (!path)
 		setenv("PATH", RC_PATH_PREFIX, 1);
 	else if (strncmp (RC_PATH_PREFIX, path, pplen) != 0) {
 		l = strlen(path) + pplen + 3;
@@ -152,7 +152,7 @@ env_config(void)
 			while ((tok = strsep(&npp, ":")))
 				if (strcmp(tok, token) == 0)
 					break;
-			if (! tok)
+			if (!tok)
 				p += snprintf(p, l - (p - e), ":%s", token);
 			free (np);
 		}
@@ -203,7 +203,7 @@ env_config(void)
 		setenv("EINFO_VERBOSE", "YES", 1);
 
 	errno = 0;
-	if ((! rc_conf_yesno("rc_color") && errno == 0) ||
+	if ((!rc_conf_yesno("rc_color") && errno == 0) ||
 	    rc_conf_yesno("rc_nocolor"))
 		setenv("EINFO_COLOR", "NO", 1);
 }
@@ -472,7 +472,7 @@ pid_t get_pid(const char *applet,const char *pidfile)
 	FILE *fp;
 	pid_t pid;
 
-	if (! pidfile)
+	if (!pidfile)
 		return -1;
 
 	if ((fp = fopen(pidfile, "r")) == NULL) {

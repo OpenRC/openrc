@@ -1037,7 +1037,7 @@ int main(int argc, char **argv)
 
 		/* Make sure we can write a pid file */
 		fp = fopen(pidfile, "w");
-		if (! fp)
+		if (!fp)
 			eerrorx("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
 		fclose(fp);
 

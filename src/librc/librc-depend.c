@@ -32,7 +32,7 @@ get_shell_value(char *string)
 	char *p = string;
 	char *e;
 
-	if (! string)
+	if (!string)
 		return NULL;
 
 	if (*p == '\'')
@@ -142,7 +142,7 @@ rc_deptree_load_file(const char *deptree_file)
 		if (strcmp(type, "service") == 0) {
 			/* Sanity */
 			e = get_shell_value(p);
-			if (! e || *e == '\0')
+			if (!e || *e == '\0')
 				continue;
 			depinfo = xmalloc(sizeof(*depinfo));
 			TAILQ_INIT(&depinfo->depends);
@@ -493,7 +493,7 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 	RC_STRINGLIST *services;
 
 	bootlevel = getenv("RC_BOOTLEVEL");
-	if (! bootlevel)
+	if (!bootlevel)
 		bootlevel = RC_LEVEL_BOOT;
 
 	/* When shutting down, list all running services */

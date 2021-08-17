@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 			putchar(' ');
 		while (*p) {
 			c = (unsigned char)*p++;
-			if (! isalnum(c))
+			if (!isalnum(c))
 				c = '_';
 			putchar(c);
 		}

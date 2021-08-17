@@ -161,7 +161,7 @@ process_mount(RC_STRINGLIST *list, struct args *args,
 		TAILQ_FOREACH(s, args->mounts, entries)
 		    if (strcmp(s->value, to) == 0)
 			    break;
-		if (! s)
+		if (!s)
 			return -1;
 	}
 
@@ -260,7 +260,7 @@ find_mounts(struct args *args)
 			if (flags & o->o_opt) {
 				if (o->o_opt == MNT_LOCAL)
 					netdev = 1;
-				if (! options)
+				if (!options)
 					options = xstrdup(o->o_name);
 				else {
 					xasprintf(&tmp, "%s,%s", options, o->o_name);
@@ -475,7 +475,7 @@ int main(int argc, char **argv)
 		if (skip_point_regex &&
 		    regexec(skip_point_regex, s->value, 0, NULL, 0) == 0)
 			continue;
-		if (! rc_yesno(getenv("EINFO_QUIET")))
+		if (!rc_yesno(getenv("EINFO_QUIET")))
 			printf("%s\n", s->value);
 		result = EXIT_SUCCESS;
 	}

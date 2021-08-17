@@ -154,15 +154,15 @@ int main(int argc, char **argv)
 		eerrorx("%s: service `%s' does not exist", applet, *argv);
 	}
 	state = rc_service_state(*argv);
-	if (if_crashed &&  ! (rc_service_daemons_crashed(*argv) && errno != EACCES))
+	if (if_crashed &&  !(rc_service_daemons_crashed(*argv) && errno != EACCES))
 		return 0;
-	if (if_inactive && ! (state & RC_SERVICE_INACTIVE))
+	if (if_inactive && !(state & RC_SERVICE_INACTIVE))
 		return 0;
 	if (if_notstarted && (state & RC_SERVICE_STARTED))
 		return 0;
-	if (if_started && ! (state & RC_SERVICE_STARTED))
+	if (if_started && !(state & RC_SERVICE_STARTED))
 		return 0;
-	if (if_stopped && ! (state & RC_SERVICE_STOPPED))
+	if (if_stopped && !(state & RC_SERVICE_STOPPED))
 		return 0;
 	*argv = service;
 	execv(*argv, argv);

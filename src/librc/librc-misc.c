@@ -210,11 +210,11 @@ static void rc_config_set_value(RC_STRINGLIST *config, char *value)
 	bool replaced;
 	char *token;
 
-	if (! p)
+	if (!p)
 		return;
 	if (strncmp(p, "export ", 7) == 0)
 		p += 7;
-	if (! (token = strsep(&p, "=")))
+	if (!(token = strsep(&p, "=")))
 		return;
 
 	entry = xstrdup(token);
@@ -338,7 +338,7 @@ static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
 		if (rc_conf_d_files) {
 			rc_stringlist_sort(&rc_conf_d_files);
 			TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
-				if (! fname->value)
+				if (!fname->value)
 					continue;
 				sprintf(path, "%s/%s", RC_CONF_D, fname->value);
 				rc_conf_d_list = rc_config_list(path);
@@ -405,7 +405,7 @@ rc_conf_value(const char *setting)
 	RC_STRING *s;
 	char *p;
 
-	if (! rc_conf) {
+	if (!rc_conf) {
 		rc_conf = rc_config_load(RC_CONF);
 		atexit(_free_rc_conf);
 

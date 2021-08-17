@@ -538,10 +538,10 @@ rc_service_resolve(const char *service)
 
 	/* First check started services */
 	snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s", "started", service);
-	if (lstat(file, &buf) || ! S_ISLNK(buf.st_mode)) {
+	if (lstat(file, &buf) || !S_ISLNK(buf.st_mode)) {
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
 		    "inactive", service);
-		if (lstat(file, &buf) || ! S_ISLNK(buf.st_mode))
+		if (lstat(file, &buf) || !S_ISLNK(buf.st_mode))
 			*file = '\0';
 	}
 
@@ -742,7 +742,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 			s != RC_SERVICE_STOPPED &&
 			s != RC_SERVICE_HOTPLUGGED &&
 			s != RC_SERVICE_SCHEDULED) &&
-		    (! skip_wasinactive || s != RC_SERVICE_WASINACTIVE))
+		    (!skip_wasinactive || s != RC_SERVICE_WASINACTIVE))
 		{
 			snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
 			    rc_service_state_names[i].name, base);
@@ -901,7 +901,7 @@ rc_service_schedule_start(const char *service, const char *service_to_start)
 	bool retval;
 
 	/* service may be a provided service, like net */
-	if (! service || ! rc_service_exists(service_to_start))
+	if (!service || !rc_service_exists(service_to_start))
 		return false;
 
 	p += snprintf(file, sizeof(file), RC_SVCDIR "/scheduled/%s",
@@ -1000,7 +1000,7 @@ rc_services_in_state(RC_SERVICE state)
 
 	dirs = ls_dir(dir, 0);
 	list = rc_stringlist_new();
-	if (! dirs)
+	if (!dirs)
 		return list;
 
 	TAILQ_FOREACH(d, dirs, entries) {

@@ -43,7 +43,7 @@ static int syslog_decode(char *name, const CODE *codetab)
 		return atoi(name);
 
 	for (c = codetab; c->c_name; c++)
-		if (! strcasecmp(name, c->c_name))
+		if (!strcasecmp(name, c->c_name))
 			return c->c_val;
 
 	return -1;

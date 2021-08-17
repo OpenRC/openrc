@@ -295,7 +295,7 @@ int main(int argc, char **argv)
 	/* set default path */
 	setenv("PATH", path_default, 1);
 
-	if (! reexec)
+	if (!reexec)
 		init(default_runlevel);
 
 	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)

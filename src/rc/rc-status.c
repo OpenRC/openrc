@@ -412,7 +412,7 @@ int main(int argc, char **argv)
 			state = rc_service_state(s->value);
 			if ((rc_stringlist_find(sservices, s->value) ||
 			    (state & ( RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED)))) {
-				if (! (state & RC_SERVICE_FAILED)) {
+				if (!(state & RC_SERVICE_FAILED)) {
 					TAILQ_REMOVE(services, s, entries);
 					free(s->value);
 					free(s);
