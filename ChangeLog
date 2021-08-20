@@ -1,3 +1,20 @@
+commit 291cddb72b1e00c0708e2b4c2278f9fbd0db007e
+Author: Matt Whitlock <gentoo@mattwhitlock.name>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    supervise-daemon: implement SSD_IONICELEVEL
+    
+    supervise-daemon was apparently overlooked when support for the
+    SSD_IONICELEVEL environment variable was added. This commit brings
+    supervise-daemon up to parity with start-stop-daemon with respect to
+    this environment variable.
+
+commit 002e25a74ac8eff31f9aa804fbda77b97f2ef944
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 2ac620cf53fbbd201927055b771d59f16086ddc4
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
