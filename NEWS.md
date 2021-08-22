@@ -4,6 +4,12 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.44
+
+This version is the first to use a meson-based build system.
+I will keep the makefiles for the 0.44 branch, but meson will be the
+only build system supported in the future.
+
 ## OpenRC 0.43
 
 This version changes the behavior of the checkpath helper to address

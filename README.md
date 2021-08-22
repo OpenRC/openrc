@@ -4,7 +4,16 @@ OpenRC README
 OpenRC is a dependency-based init system that works with the
 system-provided init program, normally `/sbin/init`.
 
-## Installation
+## building and installing
+
+OpenRC uses the  [meson](http://mesonbuild.com) build system, so use the
+usual methods for this build system to build and install.
+
+The old build system is still available for the 0.44.x branch, but it
+will be removed for the next release. The previous documentation is
+below.
+
+## Installation (historical)
 
 OpenRC requires GNU make.
 
@@ -13,7 +22,7 @@ executed using this command:
 
 `make install`
 
-## Configuration
+## Configuration (historical)
 
 You may wish to configure the installation by passing one or more of the
 below arguments to the make command
