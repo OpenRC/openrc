@@ -50,7 +50,7 @@ INCMODE?=		0644
 _LIBNAME_SH=		case `readlink /lib` in /lib64|lib64) echo "lib64";; *) echo "lib";; esac
 _LIBNAME:=		$(shell ${_LIBNAME_SH})
 LIBNAME?=		${_LIBNAME}
-LIBDIR?=		${UPREFIX}/${LIBNAME}
+LIBDIR?=		${PREFIX}/${LIBNAME}
 LIBMODE?=		0644
 
 LIBEXECDIR?=		${PREFIX}/libexec/rc
