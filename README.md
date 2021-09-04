@@ -76,6 +76,11 @@ Obviously, if you're installing this onto a system that does not use
 OpenRC by default then you may wish to backup the above listed files,
 remove them and then install so that the OS hooks into OpenRC.
 
+## Discussions
+
+We are testing [discussions](https://github.com/OpenRC/openrc/discussions), so
+feel free to open topics there.
+
 ## Reporting Bugs
 
 Please report bugs on our [bug tracker](http://github.com/OpenRC/openrc/issues).
