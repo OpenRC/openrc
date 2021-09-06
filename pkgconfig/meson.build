@@ -1,8 +1,8 @@
 pkgconfig_dir =	get_option('libdir') / 'pkgconfig'
 
 pkgconfig_conf_data = configuration_data()
-if root_prefix != '/'
-  pkgconfig_conf_data.set('PREFIX', root_prefix)
+if rootprefix != '/'
+  pkgconfig_conf_data.set('PREFIX', rootprefix)
 else
   pkgconfig_conf_data.set('PREFIX', '')
 endif

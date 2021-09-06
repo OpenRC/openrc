@@ -66,15 +66,15 @@ else
   pkg_prefix = option_pkg_prefix
 endif
 
-root_prefix = get_option('root_prefix')
-if root_prefix == ''
-  root_prefix = '/'
+rootprefix = get_option('rootprefix')
+if rootprefix == ''
+  rootprefix = '/'
 endif
-bindir = root_prefix / get_option('bindir')
-libdir = root_prefix / get_option('libdir')
-libexecdir = root_prefix / get_option('libexecdir')
+bindir = rootprefix / get_option('bindir')
+libdir = rootprefix / get_option('libdir')
+libexecdir = rootprefix / get_option('libexecdir')
 rc_libexecdir = libexecdir / 'rc'
-sbindir = root_prefix / get_option('sbindir')
+sbindir = rootprefix / get_option('sbindir')
 
 selinux_dep = dependency('libselinux', required : get_option('selinux'))
 if selinux_dep.found()

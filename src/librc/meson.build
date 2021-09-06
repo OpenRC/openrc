@@ -1,8 +1,8 @@
 rc_h_conf_data = configuration_data()
-if root_prefix == '/'
+if rootprefix == '/'
   rc_h_conf_data.set('PREFIX', '')
   else
-  rc_h_conf_data.set('PREFIX', root_prefix)
+  rc_h_conf_data.set('PREFIX', rootprefix)
 	endif
 rc_h_conf_data.set('LIB', libname)
 rc_h_conf_data.set('LIBEXECDIR', rc_libexecdir)
