@@ -72,7 +72,7 @@ else
   split_usr = get_option('split-usr') == 'true'
 endif
 
-rootprefix_default = split_usr ? '/' : '/usr'A
+rootprefix_default = split_usr ? '/' : '/usr'
 rootprefix_path = get_option('rootprefix')
 rootprefix = rootprefix_path != '' ? rootprefix_path : rootprefix_default
 
