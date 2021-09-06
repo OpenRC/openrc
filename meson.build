@@ -78,7 +78,13 @@ rootprefix = rootprefix_path != '' ? rootprefix_path : rootprefix_default
 
 bindir = rootprefix / get_option('bindir')
 libdir = rootprefix / get_option('libdir')
-libexecdir = rootprefix / get_option('libexecdir')
+if os == 'Linux' and split_usr
+  libexecpath = 'lib'
+else
+  libexecpath = get_option('libexecdir')
+endif
+libexecdir = split_usr ? rootprefix / libexecpath :
+  get_option('prefix') / libexecpath
 rc_libexecdir = libexecdir / 'rc'
 sbindir = rootprefix / get_option('sbindir')
 
