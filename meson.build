@@ -66,10 +66,16 @@ else
   pkg_prefix = option_pkg_prefix
 endif
 
-rootprefix = get_option('rootprefix')
-if rootprefix == ''
-  rootprefix = '/'
+if get_option('split-usr') == 'auto'
+  split_usr = run_command('test', '-L', '/bin').returncode() != 0
+else
+  split_usr = get_option('split-usr') == 'true'
 endif
+
+rootprefix_default = split_usr ? '/' : '/usr'A
+rootprefix_path = get_option('rootprefix')
+rootprefix = rootprefix_path != '' ? rootprefix_path : rootprefix_default
+
 bindir = rootprefix / get_option('bindir')
 libdir = rootprefix / get_option('libdir')
 libexecdir = rootprefix / get_option('libexecdir')
