@@ -1,5 +1,7 @@
 option('audit', type : 'feature', value : 'auto',
   description : 'enable libaudit support')
+option('bash-completions', type : 'boolean',
+  description : 'install bash completions')
 option('branding', type : 'string',
   description : 'Add branding to OpenRC')
 option('local_prefix', type : 'string', value : '/usr/local',
@@ -31,3 +33,5 @@ option('termcap', type : 'combo',
   choices :
     [ '', 'ncurses', 'termcap' ],
   description : 'the termcap library to use')
+option('zsh-completions', type : 'boolean',
+  description : 'install zsh completions')
