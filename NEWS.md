@@ -10,6 +10,9 @@ This version is the first to use a meson-based build system.
 The gnu make build system should now be considered deprecated; it will
 be removed sometime after 0.44.x.
 
+I have opened a [discussion](https://github.com/OpenRC/openrc/discussions/441)
+where you can voice concerns about removing it.
+
 ## OpenRC 0.43
 
 This version changes the behavior of the checkpath helper to address
