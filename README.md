@@ -9,8 +9,8 @@ system-provided init program, normally `/sbin/init`.
 OpenRC uses the  [meson](http://mesonbuild.com) build system, so use the
 usual methods for this build system to build and install.
 
-The old build system is still available for the 0.44.x branch, but it
-will be removed for the next release. The previous documentation is
+The old build system is still available for the 0.44.x branch, but it is
+considered deprecated and will be removed. The previous documentation is
 below.
 
 ## Installation (historical)
@@ -53,9 +53,11 @@ SH=/bin/sh
 
 We don't support building a static OpenRC with PAM.
 
-You may need to use `PROGLDFLAGS=-Wl,-Bstatic` on glibc instead of just `-static`.
+You may need to use `PROGLDFLAGS=-Wl,-Bstatic` on glibc instead of just `-static`
+(This is now handled by the meson build system).
 
-If you are building OpenRC for a Gentoo Prefix installation, add `MKPREFIX=yes`.
+If you are building OpenRC for a Gentoo Prefix installation, add `MKPREFIX=yes`
+(this is not supported in the meson build currently, but patches are welcome).
 
 `PKG_PREFIX` should be set to where packages install to by default.
 
