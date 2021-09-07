@@ -7,8 +7,8 @@ the information in this file is in reverse order.
 ## OpenRC 0.44
 
 This version is the first to use a meson-based build system.
-I will keep the makefiles for the 0.44 branch, but meson will be the
-only build system supported in the future.
+The gnu make build system should now be considered deprecated; it will
+be removed sometime after 0.44.x.
 
 ## OpenRC 0.43
 
