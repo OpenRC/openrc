@@ -1,3 +1,305 @@
+commit c9b64b64fa9b2d2ee31684e8d35375f4c5bddba1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update README
+
+commit 9cce9f8ce8d2624ac5fa1cf12d0b4b00de5bcde2
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    news typo fix
+
+commit 5a41f1ef201def94392f06d3b294e5e0c2c8432f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add discussion about removing old build system to NEWS
+
+commit 6e3afc29f3005bca7c86e3faa7b8b2d9ede08efb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update NEWS
+
+commit 7c29fbd36f87426b78fe4baa6eb1a68661fc1374
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: install bash and zsh completions
+
+commit 593be166d16e371837d85ff4e963cf8c71b569c7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: fix libexecdir
+
+commit ca0270967c880ef87dbaea04c267c5c463377b2e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    tools/meson_final.sh: typo fix
+
+commit 3a187f88f47517b1fb0ee1247c79ab06899928f6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: typo fix
+
+commit f2362cc277023550b2482215b4a1cd7142639427
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: add split-usr option
+
+commit 444e44eb9da303c6614034a3558daceca15e0315
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: change root_prefix to rootprefix
+
+commit c0f8313164fb60fcf41313b273b21f3079e93c1e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sync meson build version with makefiles
+
+commit d6622a1156929294b909d08273fd227c7d817bb9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add meson build files
+    
+    Closes #116.
+    Closes #171.
+    Closes #172.
+    Closes #175.
+
+commit 92004a2ed65045b7ca79063dda8fc5b4ac761606
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    README: add note about github discussions
+
+commit 5f6d7ac028b4e3c208a74465c54f235d5bf34a93
+Author: Matt Whitlock <gentoo@mattwhitlock.name>
+Commit: Mike Frysinger <vapier@gmail.com>
+
+    supervise-daemon: implement SSD_IONICELEVEL
+    
+    supervise-daemon was apparently overlooked when support for the
+    SSD_IONICELEVEL environment variable was added. This commit brings
+    supervise-daemon up to parity with start-stop-daemon with respect to
+    this environment variable.
+
+commit 7cedc4942b8e52d9bab6f4aa7bb595c53aa6fdb1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update travis ci irc notifications
+    
+    - move to libera network
+    - always notify on successful build
+
+commit 091cd8015f25d283760c39dcb9bd7e9d56eef7c4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    man/supervise-daemon.8: document --pidfile option
+
+commit 63955056ecb98faa1a02d90d5a4742515f0299c8
+Author: Sven Wegener <sven.wegener@stealer.net>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    on_ac_power: support multiple power_supply devices in sysfs
+    
+    Newer devices have multiple power_supply devices in sysfs:
+    
+    $ grep ^ /sys/class/power_supply/*/type
+    /sys/class/power_supply/AC/type:Mains
+    /sys/class/power_supply/BAT0/type:Battery
+    /sys/class/power_supply/ucsi-source-psy-USBC000:001/type:USB
+    /sys/class/power_supply/ucsi-source-psy-USBC000:002/type:USB
+    
+    There are two "USB" Type-C ports than can supply power and both are
+    aggregated into the "Mains" power supply by the firmware. The "Battery"
+    also counts as a power supply, but is missing the online attribute.
+    
+    The -f check with a wildcard pattern results in an error, when multiple
+    devices are present:
+    
+    /lib/rc/bin/on_ac_power: line 21: [: too many arguments
+    
+    When the power_supply class is registered, check for a "Mains" device.
+    
+    Fixes #427.
+
+commit 1e975be89670f53db47aeef3dbb3361166517c26
+Author: Alex Xu <351006+Hello71@users.noreply.github.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    conf.d/hostname: clarify hostname variable usage
+    
+    https://gitlab.alpinelinux.org/alpine/aports/-/issues/9744
+    
+    This fixes #433.
+
+commit 18e53f7fed1a92dd6dc91e79ab620d22fee1e195
+Author: kyoreln <57618278+kyoreln@users.noreply.github.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    move supervise-daemon out of experimental status
+    
+    supervise-daemon is no longer experimental so remove the statements to
+    that affect.
+    
+    This fixes #434.
+
+commit b5e4c2c2db3d32dcc70426e058132c52e32603f1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Revert "openrc-init: ignore an empty string in argv[1]"
+    
+    This reverts commit dec9ef200b0d7e96993e2725792a9e7abe9c5f1f.
+    This check is no longer needed since rc_runlevel_exists() is fixed.
+    
+        X-Gentoo-Bug: 803536
+        X-Gentoo-Bug-URL: https://bugs.gentoo.org/803536
+        Closes: https://github.com/OpenRC/openrc/pull/431
+
+commit 0a97bad6c9ba77285477aef8713e088eea4ab106
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    librc: fix rc_runlevel_exists return for empty string
+    
+    This function should return false if the runlevel is an empty string.
+    
+        X-Gentoo-Bug: 803536
+        X-Gentoo-Bug-URL: https://bugs.gentoo.org/803536
+        Closes: https://github.com/OpenRC/openrc/pull/431
+
+commit dec9ef200b0d7e96993e2725792a9e7abe9c5f1f
+Author: Mike Gilbert <floppym@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-init: ignore an empty string in argv[1]
+    
+    X-Gentoo-Bug: 803536
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/803536
+    Closes: https://github.com/OpenRC/openrc/pull/431
+
+commit 7f47539fb1992fa4f1c9ae7d039d21404d2eae71
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/rc-cgroup.sh: fix case in starting message
+    
+    X-Gentoo-Bug: 804193
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=804193
+
+commit 9c7bedca9e0a51343058b9e44ed8e3b5b9d337be
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    sh/rc-cgroup.sh: fix cgroup_cleanup
+    
+    X-Gentoo-Bug: 804193
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=804193
+
+commit 1d282ddc80b2dcd9adbff7d662822fcd7e0c10e5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    move the irc channel to the libera network
+
+commit 0d86c4903bdc68d2d4704ab6c2d4fc8f2c054276
+Author: Lars Wendler <polynomial-c@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/modules.in: Avoid loading modules twice in Linux with dash shell
+    
+    Since commit 6b475ab26992f1dd8815700828df46abc4b71d27, openrc tries to load
+    modules twice which have been defined in /etc/conf.d/modules via modules=
+    variable when /bin/sh points to dash shell.
+    The reason is that when the "modules-load" service was merged into "modules"
+    service, the "modules" variable name got used in both, load_modules()
+    function and in Linux_modules() function which both get called when modules
+    service is started. Although "modules" variable is marked as local in
+    load_modules(), dash simply ignores this.
+    
+    Avoid the issue by renaming "modules" variable to "_modules" in
+    load_modules() function.
+    
+    This fixes #419.
+
+commit 791322d7fa9d5bbceed558258baeff51a39787c5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    checkpath: fix code to walk the directory path
+    
+    X-Gentoo-Bug: 782808
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/782808
+
+commit 63db2d99e730547339d1bdd28e8437999c380cae
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    checkpath: remove extra slashes from paths
+    
+    This fixes #418.
+
+commit 8400e7d3025a2957960e3f4ee3cb37a376235886
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    style fix
+
+commit 533a8c70b3b757d2ca06de7392805ab5d1698a53
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    cgroup2_set_limits: fix harmless error message
+    
+    In legacy cgroups mode, we were running `mountinfo -q ""` which was
+    generating an error message. If we return immediately when
+    cgroup2_find_path returns an empty value, we avoid this message.
+
+commit 852a3c86f66829864d5c0b7d0bd88841ac6b23a8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    NEWNET.md: fix the title
+
+commit b3e8072403759d6cf0d89acc41443ea9ab6bd908
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rename README.newnet to a markdown file
+    
+    All of our documentation is in markdown, so rename this file to be
+    consistent.
+
+commit b7c03dea27bc0a4474702f2c7fedd753c560ae2e
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    README: convert references to markdown links
+
+commit ee05403c501b5f0c0a955b1f8d67b2d88f0ede7a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.43
+
+commit c1558abb0f1e0fe2d1a2c42a536de335a1cd8de9
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 901b752463eb37784fcebe5a3b5648b4bfbd9371
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -401,139 +703,3 @@ Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
     supervise-daemon: only log debug logs when verbose mode is active
-
-commit fbec1eed51c85c53b39f97a213479caa0a2b75ab
-Author: Manuel Rüger <manuel@rueg.eu>
-Commit: Manuel Rüger <manuel@rueg.eu>
-
-    .cirrus.yml: Update FreeBSD releases
-    
-    Signed-off-by: Manuel Rüger <manuel@rueg.eu>
-
-commit 229692cc3424e95d8185e6c681b76c0dc88899f9
-Author: Austin English <austinenglish@gmail.com>
-Commit: Mike Frysinger <vapier@gmail.com>
-
-    man/openrc-run.8: fix a typo
-
-commit 375ef42393f3dc6edbaa2cb70c79b2366072db38
-Author: Sergei Trofimovich <slyfox@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/rc/rc-logger.h: fix build failure against gcc-10
-    
-    On gcc-10 (and gcc-9 -fno-common) build fails as:
-    
-    ```
-    cc  -L../librc -L../libeinfo -O2 -g -std=c99 -Wall -Wextra -Wimplicit -Wshadow \
-      -Wformat=2 -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn \
-      -Wmissing-format-attribute -Wnested-externs -Winline -Wwrite-strings \
-      -Wcast-align -Wcast-qual -Wpointer-arith -Wdeclaration-after-statement \
-      -Wsequence-point -Werror=implicit-function-declaration    \
-      -Wl,-rpath=/lib   -o openrc rc.o rc-logger.o rc-misc.o rc-plugin.o _usage.o -lutil -lrc -leinfo -Wl,-Bdynamic -ldl
-    ld: rc-logger.o:/home/slyfox/dev/git/openrc/src/rc/rc-logger.h:16:
-      multiple definition of `rc_logger_pid'; rc.o:openrc/src/rc/rc-logger.h:16: first defined here
-    ld: rc-logger.o:/home/slyfox/dev/git/openrc/src/rc/rc-logger.h:17:
-      multiple definition of `rc_logger_tty'; rc.o:openrc/src/rc/rc-logger.h:17: first defined here
-    ```
-    
-    gcc-10 will change the default from -fcommon to fno-common:
-    https://gcc.gnu.org/PR85678.
-    
-    The error also happens if CFLAGS=-fno-common passed explicitly.
-    
-    This fixes #348.
-
-commit 6deda13754f1b60245945e953cce8d97e40e86fc
-Author: Wolf <wolf@wolfsden.cz>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: Fix segfault when executable does not exist
-    
-    When executable is provided just by name (and therefore searched in a
-    path), exec_file is reset to NULL every time. exists() handles it being
-    NULL just fine, but dereferencing it in eerror does not work.
-    
-    Fixes #326
-    Fixes #327
-
-commit eb610859519292c6164c4ba601d22e642c306beb
-Author: artoo <artoo@artixlinux.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    binfmt: ensure a file is ungegistered before registering
-    
-    This fixes #328
-
-commit 039845b742e40752b05ef9393d5a6959d55fe0b6
-Author: Andrew Scheller <github@loowis.durge.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Fix typo in README
-    
-    This fixes #338
-
-commit a7e7fd2b37a7666f26c2d4de9386b2d04f583b41
-Author: Ethan Sommer <e5ten.arch@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    make grep usage POSIX compliant
-    
-    use grep -E instead of egrep
-    check for space or end of line instead of GNU-specific word boundary
-    
-    This fixes #345
-
-commit 12e147a107c6e27172734c660624343a3c092437
-Author: Jason Bowen <jbowen@infinitecactus.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Delete stray text.
-    
-    It looks like some stray text was left at the bottom of the file:
-    ```
-    package.
-    migrating your system to openrc-init.
-    ```
-    There's a subsection on migrating a system to `openrc-ini`; perhaps this was
-    an embryonic section title?
-    
-    This fixes #347.
-
-commit fd852865e06a74ecf8b77ff534fa8053e020160f
-Author: William Hubbs <william.hubbs@sony.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    openrc-shutdown.c: typo fix
-
-commit 35ec935741ffb571cacf763dcca98661c0cfb296
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    ci/travis.sh: run shellcheck on shell scripts
-
-commit 19cfd82dadf2e52299cf3752deb04562be52145c
-Author: Austin English <austinenglish@gmail.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    .travis.yml: install shellcheck
-
-commit 87cfad3d6cd619c6090e8209092448ae68279b0c
-Author: E5ten <ethancsommer@gmail.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    cgroup2_set_limits: verify that the cgroup2 path is a mount point
-    
-    prior to cgroups getting mounted, /sys/fs/cgroup will still exist,
-    but attempts to make directories in it will fail, change cgroup2_set_limits() to
-    verify that cgroups are mounted instead of just checking that /sys/fs/cgroup
-    exists.
-    
-    This fixes #307.
-    This fixes #321.
-
-commit 8e31614c4b6679fc1bc1f1d1e0779dcedd066a5a
-Author: William Hubbs <william.hubbs@sony.com>
-Commit: William Hubbs <william.hubbs@sony.com>
-
-    fix clang build
