@@ -17,7 +17,7 @@ where you can voice concerns about removing it.
 
 This version changes the behavior of the checkpath helper to address
 CVE-2018-21269. on Linux systems, We require  non-terminal symbolic links
-to be owned by root. Since we can't do this on non-linux xystems, we do
+to be owned by root. Since we can't do this on non-linux systems, we do
 not dereference non-terminal symbolic links by default. If you need them
 dereferenced, you should add the "-s" switch to the appropriate
 checkpath calls.
