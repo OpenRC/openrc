@@ -180,7 +180,8 @@ meson.add_install_script('tools/meson_runlevels.sh',
   os,
   get_option('newnet') ? 'yes' : 'no',
   rc_libexecdir,
-  get_option('sysconfdir'))
+  get_option('sysconfdir'),
+  get_option('sysvinit') ? 'yes' : 'no')
 meson.add_install_script('tools/meson_final.sh',
   rc_libexecdir,
   os)

@@ -12,3 +12,8 @@ for f in $binaries; do
 			"${DESTDIR}${sbindir}/${f}"
 	fi
 done
+# sysvinit is active when halt exits
+if [ -x "${DESTDIR}${rc_libexecdir}/bin/halt"  ]; then
+	ln -snf "${DESTDIR}${sbindir}/openrc-init" \
+		"${DESTDIR}${sbindir}/init"
+fi
