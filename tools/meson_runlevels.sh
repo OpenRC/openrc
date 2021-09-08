@@ -7,6 +7,7 @@ os="$1"
 net="$2"
 rc_libexecdir="$3"
 sysconfdir="$4"
+sysvinit="$5"
 
 init_d_dir="${sysconfdir}/init.d"
 leveldir="${sysconfdir}/runlevels"
@@ -89,6 +90,12 @@ if ! test -d "${DESTDIR}${shutdowndir}"; then
 	for x in ${shutdown}; do
 		ln -snf "${init_d_dir}/$x" "${DESTDIR}${shutdowndir}/$x"
 	done
+fi
+if test "${sysvinit}" = yes && test "${os}" = Linux; then \
+	for x in tty1 tty2 tty3 tty4 tty5 tty6; do
+		ln -snf "${init_d_dir}/agetty" "${DESTDIR}/${init_d_dir}/agetty.$x"
+		ln -snf "${init_d_dir}/agetty.$x" "${DESTDIR}/${defaultdir}/agetty.$x"
+	done;
 fi
 
 ln -snf "${rc_libexecdir}"/sh/functions.sh "${DESTDIR}/${init_d_dir}"
