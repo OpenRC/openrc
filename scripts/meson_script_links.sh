@@ -8,12 +8,12 @@ sbindir="$2"
 binaries=" halt poweroff rc-sstat reboot shutdown"
 for f in $binaries; do
 	if [ -x "${DESTDIR}${rc_libexecdir}/bin/${f}"  ]; then
-		ln -snf "${DESTDIR}${rc_libexecdir}/bin/${f}" \
+		ln -snf "${rc_libexecdir}/bin/${f}" \
 			"${DESTDIR}${sbindir}/${f}"
 	fi
 done
 # sysvinit is active when halt exits
 if [ -x "${DESTDIR}${rc_libexecdir}/bin/halt"  ]; then
-	ln -snf "${DESTDIR}${sbindir}/openrc-init" \
+	ln -snf "${sbindir}/openrc-init" \
 		"${DESTDIR}${sbindir}/init"
 fi
