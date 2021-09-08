@@ -53,7 +53,7 @@ nonetwork="local"
 shutdown="savecache"
 case "${os}" in
 	Linux)
-		shutdown="${shutdown} killprocs mount-ro" 
+		shutdown="${shutdown} killprocs mount-ro"
 		;;
 esac
 
