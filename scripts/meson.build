@@ -12,10 +12,10 @@ scripts_Linux = [
   ]
 
 scripts_sysvinit = [
-  'halt',
-  'poweroff',
-  'shutdown',
-  'reboot',
+  'halt.in',
+  'poweroff.in',
+  'shutdown.in',
+  'reboot.in',
   ]
 
 install_data(scripts_internal,
