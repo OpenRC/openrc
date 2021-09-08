@@ -2,7 +2,7 @@ rc_misc_c = files([
   'rc-misc.c',
   ])
 
-rc_plugin_c = ([
+rc_plugin_c = files([
   'rc-plugin.c',
   ])
 
