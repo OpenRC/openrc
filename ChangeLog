@@ -1,3 +1,27 @@
+commit 0d00b8d8abe33c4d824446ed989e8cc3166590b4
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: fix sysvinit script installation
+
+commit 551bdff2fbe61452187d5d492377b876e868a9fb
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: fix symlinks
+
+commit 803aa1c637c42352c05a520dbb02bee6c03ccf75
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44
+
+commit fb186a38673201a7a25d6a7c1516fcb734020ee1
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit c9b64b64fa9b2d2ee31684e8d35375f4c5bddba1
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
