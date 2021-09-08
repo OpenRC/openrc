@@ -1,3 +1,27 @@
+commit 12cd7ce9dea73926c203c5d64e425d51e209425a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: install pam files
+
+commit 167acac1407782d454be2cc413431c00498e94ed
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    meson: typo fix
+
+commit f839ba27c5e52990ca9c6431bba4455a1124f81d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.1
+
+commit 80dd6aac5fcb1f17b86d35db2babe487b90d7081
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 0d00b8d8abe33c4d824446ed989e8cc3166590b4
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
