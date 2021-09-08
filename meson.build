@@ -85,7 +85,7 @@ else
 endif
 libexecdir = split_usr ? rootprefix / libexecpath :
   get_option('prefix') / libexecpath
-rc_libexecdir = libexecdir / 'rc'
+rc_libexecdir = libexecdir / get_option('librcdir')
 sbindir = rootprefix / get_option('sbindir')
 
 selinux_dep = dependency('libselinux', required : get_option('selinux'))

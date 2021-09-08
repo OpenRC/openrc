@@ -35,3 +35,5 @@ option('termcap', type : 'combo',
   description : 'the termcap library to use')
 option('zsh-completions', type : 'boolean',
   description : 'install zsh completions')
+option('librcdir', type : 'string', value : 'rc',
+  description : 'default location of rc libexec dir')
