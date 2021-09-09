@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 #include "einfo.h"
 #include "queue.h"
@@ -128,12 +129,12 @@ static char *get_uptime(const char *service)
 			}
 			if (diff_days > 0)
 				xasprintf(&uptime,
-						"%ld day(s) %02ld:%02ld:%02ld (%s)",
+						"%"PRId64" day(s) %02"PRId64":%02"PRId64":%02"PRId64" (%s)",
 						diff_days, diff_hours, diff_mins, diff_secs,
 						start_count);
 			else
 				xasprintf(&uptime,
-						"%02ld:%02ld:%02ld (%s)",
+						"%02"PRId64":%02"PRId64":%02"PRId64" (%s)",
 						diff_hours, diff_mins, diff_secs, start_count);
 		}
 	}
