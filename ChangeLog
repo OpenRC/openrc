@@ -1,3 +1,39 @@
+commit 321bb2cd90cf673d03175c56bf1cecfcef02bd49
+Author: Ariadne Conill <ariadne@dereferenced.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix build under musl 1.2 on 32 bit systems
+    
+    Since musl 1.2 time_t is a 64 bit value, even on 32 bit systems. A
+    hotfix for printing the value is simply using PRIu64 from inttypes.h
+    in the format string.
+    
+    This fixes #446.
+
+commit 8c99d817d48bc879504b8973d868e1718f4e7d12
+Author: Ariadne Conill <ariadne@dereferenced.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix trailing whitespace in tools/meson_runlevels.sh
+
+commit 2e1fb4d02b1ad294394107642aed07f057e6a8b9
+Author: artoo <artoo@artixlinux.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    meson: fix symlinks with sysvinit
+
+commit a2f0afb8bcb024c8d532d8be8b855d72f999aab8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.2
+
+commit 430fa132f2596de126f8461f361333c89b794945
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 12cd7ce9dea73926c203c5d64e425d51e209425a
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
