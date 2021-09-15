@@ -206,10 +206,20 @@ cgroup2_set_limits()
 	return 0
 }
 
-cgroup_cleanup()
-{
-	cgroup_running || return 0
-	ebegin "Starting cgroups cleanup"
+cgroup2_kill_cgroup() {
+	local cgroup_path
+	cgroup_path="$(cgroup2_find_path)"
+	[ -z "${cgroup_path}" ] && return 1
+	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
+	if [ -f "${rc_cgroup_path}"/cgroup.kill ]; then
+		printf "%d" 1 > "${rc_cgroup_path}"/cgroup.kill
+		return $?
+	fi
+	return 1
+}
+
+cgroup_fallback_cleanup() {
+	ebegin "Starting fallback cgroups cleanup"
 	local loops=0
 	cgroup_get_pids
 	if [ -n "${cgroup_pids}" ]; then
@@ -229,6 +239,14 @@ cgroup_cleanup()
 			kill -s KILL ${cgroup_pids} 2> /dev/null
 		fi
 	fi
+	eend $?
+}
+
+cgroup_cleanup()
+{
+	cgroup_running || return 0
+	ebegin "Starting cgroups cleanup"
+	! cgroup2_kill_cgroup && cgroup_fallback_cleanup
 	cgroup2_remove
 	cgroup_get_pids
 	[ -z "${cgroup_pids}" ]
