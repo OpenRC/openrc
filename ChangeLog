@@ -1,3 +1,93 @@
+commit c300c180a2a7dbefb46272c2acac6462372b8eb0
+Author: Natanael Copa <ncopa@alpinelinux.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    hide error when migrating /var/run to /run
+    
+    The script tries to copy non-existing files. We simply hide the error
+    
+    http://bugs.alpinelinux.org/issues/3160
+    This fixes #451.
+
+commit be8d2ee6e35a6ea504e6a3cf725b8804dd2da617
+Author: Natanael Copa <ncopa@alpinelinux.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    force root to be rw before localmount
+    
+    The original service that pulled in root remount was mtab which
+    is not part of OpenRC.
+    
+    This fixes #449.
+
+commit d9ef1bb6355c62e335a972f203806210de68912f
+Author: Aaditya Bagga <aaditya_gnulinux@zoho.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    [runit integration] give a bit of time to start the service
+    
+    Currently, we run sv start immediately after linking the service.
+    The runsv process may not be up at the moment, as a result of which
+    openrc will mark the service as stopped, even though it may be brought up
+    by runit at the next scan.
+    
+    This is documented in the gentoo wiki:
+    https://wiki.gentoo.org/wiki/Runit#OpenRC.27s_runit_integration_feature
+    
+    This PR adds a timeout so that correct process state can be reported.
+    
+    Before:
+     * Starting netdata-runit ...
+    fail: /run/openrc/sv/netdata: runsv not running
+     * Failed to start netdata-runit
+    
+    After:
+     * Starting netdata-runit ...
+    fail: /run/openrc/sv/netdata: runsv not running
+    ok: run: /run/openrc/sv/netdata: (pid 9042) 0s
+    
+    This fixes #253.
+
+commit cfc699121960a8298c8e9519239c149f31a35ef0
+Author: Jakub Jirutka <jakub@jirutka.cz>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    Fix undeclared UT_LINESIZE
+    
+    Fix the following error:
+    
+            broadcast.c:41:21: error: '__UT_LINESIZE' undeclared (first use in this function); did you mean 'UT_LINESIZE'?
+             #define UT_LINESIZE __UT_LINESIZE
+                              ^~~~~~~~~~
+    
+    Constant UT_LINESIZE is defined in <utmp.h> provided by musl.
+
+commit 97ae5af2017df2667e0c79d7dac3706b3a93c6cc
+Author: Sören Tempel <soeren+git@soeren-tempel.net>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-mount: make timeout invocation compatible with busybox timeout
+    
+    Busybox timeout does not support the `-k` flag. As such, invoking fuser
+    from do_unmount never worked without this patch. This went unnoticed as
+    standard error is redirected to /dev/null. This patch fixes this by
+    simply removing the incompatible `-k` flag.
+    
+    [Ariadne: the `-k` is redundant anyway, since we are sending the KILL
+     signal to begin with.]
+
+commit 4c820a0e48301f997911a196d6159670dad68296
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.3
+
+commit 9c39b381a5185325dc1359b6001f00e60732ec71
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 321bb2cd90cf673d03175c56bf1cecfcef02bd49
 Author: Ariadne Conill <ariadne@dereferenced.org>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
