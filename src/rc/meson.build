@@ -53,7 +53,7 @@ executable('openrc-run',
   rc_selinux_c, version_h],
   c_args : [cc_audit_flags, cc_branding_flags, cc_pam_flags, cc_selinux_flags],
   link_with: [libeinfo, librc],
-  dependencies: [dl_dep, libpam, selinux_dep, util_dep],
+  dependencies: [audit_dep, dl_dep, libpam, libpam_misc, selinux_dep, util_dep],
   include_directories: [incdir, einfo_incdir, rc_incdir],
   install: true,
   install_dir: sbindir)
