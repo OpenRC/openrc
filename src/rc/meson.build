@@ -88,7 +88,7 @@ executable('runscript',
     rc_selinux_c, version_h],
   c_args : [cc_audit_flags, cc_branding_flags, cc_pam_flags, cc_selinux_flags],
   link_with: [libeinfo, librc],
-  dependencies: [dl_dep, libpam, util_dep, selinux_dep],
+  dependencies: [audit_dep, dl_dep, libpam, util_dep, selinux_dep],
   include_directories: [incdir, einfo_incdir, rc_incdir],
   install: true,
   install_dir: sbindir)
