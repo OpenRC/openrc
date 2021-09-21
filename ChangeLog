@@ -1,3 +1,35 @@
+commit aa69e48125df7684ab3b77eaf9013f8c126b1fca
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: fix rootprefix
+    
+    This fixes #438.
+
+commit 4ba10f1d5074a45b4ddd96d2d404842fa3b38e63
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    link runscript with audit
+
+commit 38a9e2ff630b0e0bd261afb2e66072f904b5d608
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    link openrc-run with audit and libpam_misc
+
+commit 783af5abac209c7745fd5c06dc89b2f5dfa3b313
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.4
+
+commit 75c3b53e3195f2d3541a7d83920667d1c4b14337
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit c300c180a2a7dbefb46272c2acac6462372b8eb0
 Author: Natanael Copa <ncopa@alpinelinux.org>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
