@@ -26,9 +26,6 @@ rc_wtmp_c = files([
   'rc-wtmp.c',
   ])
 
-rc_bindir = rc_libexecdir / 'bin'
-rc_sbindir = rc_libexecdir / 'sbin'
-
 executable('rc-status',
   ['rc-status.c', rc_misc_c, usage_c, version_h],
   c_args : cc_branding_flags,

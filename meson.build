@@ -86,6 +86,8 @@ if os == 'Linux' and libexecdir == 'libexec'
 endif
 libexecdir = rootprefix / libexecdir
 rc_libexecdir = libexecdir / 'rc'
+rc_bindir = rc_libexecdir / 'bin'
+rc_sbindir = rc_libexecdir / 'sbin'
 sbindir = rootprefix / get_option('sbindir')
 
 selinux_dep = dependency('libselinux', required : get_option('selinux'))
