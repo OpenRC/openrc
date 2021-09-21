@@ -72,19 +72,19 @@ else
   split_usr = get_option('split-usr') == 'true'
 endif
 
-rootprefix_default = split_usr ? '/' : '/usr'
-rootprefix_path = get_option('rootprefix')
-rootprefix = rootprefix_path != '' ? rootprefix_path : rootprefix_default
+rootprefix = get_option('rootprefix')
+rootprefix_default = '/'
+if rootprefix == ''
+rootprefix = rootprefix_default
+endif
 
 bindir = rootprefix / get_option('bindir')
 libdir = rootprefix / get_option('libdir')
-if os == 'Linux' and split_usr
-  libexecpath = 'lib'
-else
-  libexecpath = get_option('libexecdir')
+libexecdir = get_option('libexecdir')
+if os == 'Linux' and libexecdir == 'libexec'
+  libexecdir = 'lib'
 endif
-libexecdir = split_usr ? rootprefix / libexecpath :
-  get_option('prefix') / libexecpath
+libexecdir = rootprefix / libexecdir
 rc_libexecdir = libexecdir / 'rc'
 sbindir = rootprefix / get_option('sbindir')
 
