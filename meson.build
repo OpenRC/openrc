@@ -42,14 +42,10 @@ else
   os = option_os
 endif
 
-pam = get_option('pam')
-if pam
-  libpam = cc.find_library('pam')
-  libpam_misc = cc.find_library('pam_misc')
+pam_dep = dependency('pam', required : get_option('pam'))
+if pam_dep.found()
   cc_pam_flags = '-DHAVE_PAM'
 else
-  libpam = []
-  libpam_misc = []
   cc_pam_flags = []
 endif
 
@@ -93,8 +89,12 @@ sbindir = rootprefix / get_option('sbindir')
 selinux_dep = dependency('libselinux', required : get_option('selinux'))
 if selinux_dep.found()
   cc_selinux_flags = '-DHAVE_SELINUX'
-  else
+  if pam_dep.found()
+    pam_misc_dep = dependency('pam_misc', required : get_option('pam'))
+  endif
+else
   cc_selinux_flags = []
+  pam_misc_dep = []
 endif
 
 termcap = get_option('termcap')
