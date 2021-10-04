@@ -1,3 +1,26 @@
+commit c7fde9a3dab01d30d16f9907f7cce00799f92821
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix build for selinux
+    
+    I would like to thank jpds@protonmail.com for the patch.
+    
+    X-Gentoo-Bug: 815847
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=815847
+
+commit ffededbf955e39add0fbbacc22f2c0d7a8901b35
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.5
+
+commit b0efb663f9ed84627c302a2d051fc5a74fb0c2b6
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit aa69e48125df7684ab3b77eaf9013f8c126b1fca
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -903,9 +926,3 @@ Commit: Mike Frysinger <vapier@gmail.com>
     Update user-guide.md
     
     Add missing underscore.
-
-commit 2355f1a3f2a4fd62cac6d9af0e94c8731acd4c0f
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: only log debug logs when verbose mode is active
