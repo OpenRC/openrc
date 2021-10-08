@@ -42,15 +42,19 @@ else
   os = option_os
 endif
 
-pam_dep = dependency('pam', required : get_option('pam'))
+pam_dep = dependency('pam', required: false)
 if not pam_dep.found()
-  pam_dep = cc.find_library('pam', required : get_option('pam'))
+  pam_dep = cc.find_library('pam', required: false)
 endif
 if pam_dep.found()
   cc_pam_flags = '-DHAVE_PAM'
 else
   cc_pam_flags = []
 endif
+
+if not pam_dep.found() and get_option('pam')
+  error('Pam was requested but could not be located')
+  endif
 
 option_pkg_prefix = get_option('pkg_prefix')
 if option_pkg_prefix == ''
@@ -92,10 +96,13 @@ sbindir = rootprefix / get_option('sbindir')
 selinux_dep = dependency('libselinux', required : get_option('selinux'))
 if selinux_dep.found()
   cc_selinux_flags = '-DHAVE_SELINUX'
-  if pam_dep.found()
-    pam_misc_dep = dependency('pam_misc', required : get_option('pam'))
+  if pam_dep.found() and get_option('pam')
+    pam_misc_dep = dependency('pam_misc', required: false)
     if not pam_misc_dep.found()
-      pam_misc_dep = cc.find_library('pam_misc', required : get_option('pam'))
+      pam_misc_dep = cc.find_library('pam_misc', required: false)
+    endif
+    if not pam_misc_dep.found() and get_option('pam')
+      error('Pam was requested but could not be located')
     endif
   endif
 else
