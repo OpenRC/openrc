@@ -43,6 +43,9 @@ else
 endif
 
 pam_dep = dependency('pam', required : get_option('pam'))
+if not pam_dep.found()
+  pam_dep = cc.find_library('pam', required : get_option('pam'))
+endif
 if pam_dep.found()
   cc_pam_flags = '-DHAVE_PAM'
 else
@@ -91,6 +94,9 @@ if selinux_dep.found()
   cc_selinux_flags = '-DHAVE_SELINUX'
   if pam_dep.found()
     pam_misc_dep = dependency('pam_misc', required : get_option('pam'))
+    if not pam_misc_dep.found()
+      pam_misc_dep = cc.find_library('pam_misc', required : get_option('pam'))
+    endif
   endif
 else
   cc_selinux_flags = []
