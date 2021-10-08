@@ -151,7 +151,7 @@ static char *clean_path(char *path)
 	char *ch;
 	char *ch2;
 	char *str;
-	str = xmalloc(strlen(path));
+	str = xmalloc(strlen(path) + 1);
 	ch = path;
 	ch2 = str;
 	while (true) {
