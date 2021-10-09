@@ -14,7 +14,7 @@ usage_c = files([
   '_usage.c',
   ])
 
-if get_option('selinux').enabled()
+if selinux_dep.found()
   rc_selinux_c = files([
     'rc-selinux.c',
     ])
