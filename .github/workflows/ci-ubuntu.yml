@@ -1,0 +1,32 @@
+name: ci_ubuntu
+
+on: [push, pull_request]
+
+jobs:
+
+  gcc-glibc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: sudo apt-get update -q
+    - run: sudo apt-get install -q -y build-essential libpam-dev meson
+    - run: meson setup builddir/
+      env:
+        CC: gcc
+    - run: ninja -C builddir
+      env:
+        CC: gcc
+
+
+  clang-glibc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: sudo apt-get update -q
+    - run: sudo apt-get install -q -y build-essential clang libpam-dev meson
+    - run: meson setup builddir/
+      env:
+        CC: clang
+    - run: ninja -C builddir
+      env:
+        CC: clang
