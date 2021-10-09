@@ -1,0 +1,26 @@
+name: ci_alpine_linux
+
+on: [push, pull_request]
+
+jobs:
+
+  gcc-musl:
+    runs-on: ubuntu-latest
+    container: alpine:latest
+    steps:
+      - name: install deps
+        run: >-
+          apk --no-cache add \
+            build-base \
+            meson \
+            pkgconf \
+            linux-pam \
+            linux-pam-dev
+      - name: checkout
+        uses: actions/checkout@v2
+      - run: meson setup builddir/
+        env:
+          CC: gcc
+      - run: ninja -C builddir
+        env:
+          CC: gcc
