@@ -21,9 +21,13 @@ depend()
 
 start_pre()
 {
-	einfo "Creating s6 scan directory"
-	checkpath -d -m 0755 "$RC_SVCDIR"/s6-scan
-	return $?
+	if [ ! -e "$command" ]; then
+		eerror "$command is missing (please install s6)"
+	else
+		einfo "Creating s6 scan directory"
+		checkpath -d -m 0755 "$RC_SVCDIR"/s6-scan
+	fi
+	return
 }
 
 stop_post()
