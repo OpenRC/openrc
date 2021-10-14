@@ -34,7 +34,8 @@ cleanup_tmp_dir()
 	if yesno $wipe_tmp; then
 		ebegin "Wiping $dir directory"
 
-		find "${dir}" -xdev -maxdepth 1 -name '[!ajlq\.]*' -exec rm -rf -- {} +
+		find "${dir}" -depth -xdev ! -type d -exec rm -- {} +
+		find "${dir}" -depth -xdev -type d -empty -exec rmdir -- {} +
 
 		# pam_mktemp creates a .private directory within which
 		# each user gets a private directory with immutable
@@ -42,16 +43,6 @@ cleanup_tmp_dir()
 		# remove it.
 		[ -d /tmp/.private ] && chattr -R -a /tmp/.private 2> /dev/null
 
-		# Prune the paths that are left
-		find "${dir}" -xdev -maxdepth 1 \
-			! -name . \
-			! -name lost+found \
-			! -name quota.user \
-			! -name aquota.user \
-			! -name quota.group \
-			! -name aquota.group \
-			! -name journal \
-			-exec rm -rf -- {} +
 		eend 0
 	else
 		ebegin "Cleaning $dir directory"
