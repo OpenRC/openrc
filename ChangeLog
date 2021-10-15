@@ -1,3 +1,109 @@
+commit 3a276728e079aa9f44ab19cf5858e1eac2670462
+Author: Kerin Millar <kfm@plushkava.net>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    init.d/s6-svscan.in: make sure $command exists
+    
+    While the s6-svscan runscript belongs to OpenRC, the user is required to
+    install s6 before it can actually be used, potentially leading to
+    confusion. Check for the existence of $command in start_pre and, if it does not
+    exist, bail out with an error that makes this observation.
+    
+    X-Gentoo-Bug: 816978
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=816978
+
+commit 29d3e0bde237e13f8c5083d2f0db50652061bf2c
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    selinux build fix
+
+commit 969a0362252a7f9459337ac564ebf5f0c2c74476
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix bug in pam build tests
+
+commit 9767d24510e1d52b86a2051c25af2fa5928e7319
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    support older pam versions
+    
+    Some distros are still using versions of pam which do not create
+    *.pc files, so we need fallback logic for that situation.
+
+commit c73284ef963cd6b3c47dd007a45f5c13c5dafcb0
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: fix pam and pam_misc dependencies
+    
+    Pam generates pkgconfig files now, so meson can use them to find the pam
+    dependencies.
+
+commit 0657bf0d25a460b4b56579984eb326302f3bf121
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    separate github actions based on OS
+    
+    This fixes #466.
+
+commit 80aad11b02d575d5a949914bb6942b92fc15e834
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    add github action to build on several linux platforms
+    
+    This github action runs a build on each of the following platforms on a
+    push or pull request.
+    
+    - Ubuntu LTS with gcc and glibc
+    - Ubuntu LTS with clang and glibc
+    - Alpine with gcc and musl
+    
+    This fixes #463.
+
+commit 2d9dc654b58c4a523b01097369ce94708c8cf43a
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    .cirrus.yml: update FreeBSD images
+
+commit f46cc83ef7100ce713c4e616524e63371825e153
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    move rc_bindir and rc_sbindir definitions to the top level
+
+commit cc45b55f895d0c21b5ac3e5a65b0bf00f76adeb7
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    checkpath: fix allocation size of path buffer
+    
+    strlen's return value isn't enough to be used
+    directly for (x)malloc; it doesn't include
+    the null byte at the end of the string.
+    
+    X-Gentoo-Bug: 816900
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/816900
+    Fixes: #459
+    Fixes: #462
+
+commit 930e69017f95766c662763c2445e2827eb037fd7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.6
+
+commit 44912434cfe139a1953bbd3b2cde7e0b2bce0ae7
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit c7fde9a3dab01d30d16f9907f7cce00799f92821
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
