@@ -66,7 +66,7 @@ const struct option longopts[] = {
 };
 const char * const longopts_help[] = {
 	"do not stop any services",
-	"override the next runlevel to change into\n"
+	"override the next runlevel to change into\n",
 	"when leaving single user or boot runlevels",
 	"runs the service specified with the rest\nof the arguments",
 	"output the RC system type, if any",
