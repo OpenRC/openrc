@@ -46,7 +46,7 @@ pam_dep = dependency('pam', required: false)
 if not pam_dep.found()
   pam_dep = cc.find_library('pam', required: false)
 endif
-if pam_dep.found()
+if pam_dep.found() and get_option('pam')
   cc_pam_flags = '-DHAVE_PAM'
 else
   cc_pam_flags = []
