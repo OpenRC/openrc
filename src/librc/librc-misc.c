@@ -16,6 +16,7 @@
  */
 
 #include <fnmatch.h>
+#include <stdio.h>
 
 #include "queue.h"
 #include "librc.h"
