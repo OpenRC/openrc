@@ -15,6 +15,8 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#include <signal.h>
+
 #include "queue.h"
 #include "librc.h"
 
