@@ -1,3 +1,42 @@
+commit a850651f5ce29a37574f7d76ae40ef9e1d2d4a62
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    openrc-init: fix build for selinux
+    
+    X-Gentoo-Bug: 821520
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=821520
+
+commit b0a80a042d20d3d0ee4d204c5c96e1538a65575f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    build: pam fix
+    
+    Set the HAVE_PAM option if the dependency is found *and* pam is
+    requested.
+    
+    X-Gentoo-Bug: 821211
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/show_bug.cgi?id=821211
+
+commit 49620e95ec8ecd5d91c554d8e50cdf65df1920b5
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    fix permission of installed version file
+
+commit b4789b99104f08136ad160920388b8d4df000508
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.7
+
+commit d5ae8a2ad1b66f4f20609b3eadf9968b36133f7a
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit 3a276728e079aa9f44ab19cf5858e1eac2670462
 Author: Kerin Millar <kfm@plushkava.net>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -1024,11 +1063,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     command line, but keep in mind that this is not secure.
     
     This fixes #201.
-
-commit aac1734a70b60da97d4d24930f1902ca46894b44
-Author: Julien Surloppe <julien@surloppe.fr>
-Commit: Mike Frysinger <vapier@gmail.com>
-
-    Update user-guide.md
-    
-    Add missing underscore.
