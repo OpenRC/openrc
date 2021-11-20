@@ -93,6 +93,8 @@ rc_bindir = rc_libexecdir / 'bin'
 rc_sbindir = rc_libexecdir / 'sbin'
 sbindir = rootprefix / get_option('sbindir')
 
+crypt_dep = dependency('libcrypt', required : not get_option('pam'))
+
 selinux_dep = dependency('libselinux', required : get_option('selinux'))
 pam_misc_dep = []
 if selinux_dep.found()
