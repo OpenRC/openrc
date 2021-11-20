@@ -94,6 +94,7 @@ rc_sbindir = rc_libexecdir / 'sbin'
 sbindir = rootprefix / get_option('sbindir')
 
 selinux_dep = dependency('libselinux', required : get_option('selinux'))
+pam_misc_dep = []
 if selinux_dep.found()
   cc_selinux_flags = '-DHAVE_SELINUX'
   if pam_dep.found() and get_option('pam')
@@ -107,7 +108,6 @@ if selinux_dep.found()
   endif
 else
   cc_selinux_flags = []
-  pam_misc_dep = []
 endif
 
 termcap = get_option('termcap')
