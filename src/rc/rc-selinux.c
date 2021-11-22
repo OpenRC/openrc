@@ -66,7 +66,7 @@ int selinux_util_label(const char *path)
 	int retval = 0;
 	int enforce;
 	struct stat st;
-	security_context_t con;
+	char *con;
 
 	enforce = security_getenforce();
 	if (retval < 0)
