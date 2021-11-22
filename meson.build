@@ -93,7 +93,7 @@ rc_bindir = rc_libexecdir / 'bin'
 rc_sbindir = rc_libexecdir / 'sbin'
 sbindir = rootprefix / get_option('sbindir')
 
-crypt_dep = dependency('libcrypt', required : not get_option('pam'))
+crypt_dep = []
 
 selinux_dep = dependency('libselinux', required : get_option('selinux'))
 pam_misc_dep = []
@@ -107,6 +107,8 @@ if selinux_dep.found()
     if not pam_misc_dep.found() and get_option('pam')
       error('Pam was requested but could not be located')
     endif
+  else
+    crypt_dep = dependency('libcrypt', required : not get_option('pam'))
   endif
 else
   cc_selinux_flags = []
