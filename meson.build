@@ -108,7 +108,10 @@ if selinux_dep.found()
       error('Pam was requested but could not be located')
     endif
   else
-    crypt_dep = dependency('libcrypt', required : not get_option('pam'))
+    crypt_dep = dependency('libcrypt', required : false)
+    if not crypt_dep.found()
+      crypt_dep = cc.find_library('crypt', required : true)
+    endif
   endif
 else
   cc_selinux_flags = []
