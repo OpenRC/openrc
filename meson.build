@@ -6,9 +6,10 @@ project('OpenRC', 'c',
 	'prefix=/usr',
     'warning_level=3',
     ],
-  meson_version : '>=0.49.0')
+  meson_version : '>=0.53.0')
 
 cc = meson.get_compiler('c')
+fs = import('fs')
 
 audit_dep = dependency('audit', required : get_option('audit'))
 if audit_dep.found()
@@ -76,7 +77,7 @@ else
 endif
 
 rootprefix = get_option('rootprefix')
-rootprefix_default = '/'
+rootprefix_default = fs.is_symlink('/bin') ? '/usr' : '/'
 if rootprefix == ''
 rootprefix = rootprefix_default
 endif
