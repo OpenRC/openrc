@@ -1,3 +1,114 @@
+commit eca4c2d31efc29ed653dbcfc3a3cc043d24bd08d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    support/init.d.examples: Do not use @PKG_PREFIX@ in service examples
+    
+    I can't think of a reason to do this since these scripts are just
+    examples.
+    
+    This is for #474.
+
+commit 6a91444bd9f7f122f580d1297f33d58d5b518359
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    meson: fallback to libcrypt detection outside of pkg-config
+    
+    Much like PAM, not all implementations of libcrypt provide a pkg-config
+    file, and hence we can't find it using the old logic.
+    
+    Let's fall back to the standard AC_SEARCH_LIBS-style check if the pkg-config-style
+    detection fails.
+    
+    This fixes finding e.g. musl's libcrypt.
+    
+    X-Gentoo-Bug: 827074
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/827074
+
+commit 075fb7c6465824b51881fa47c6419650011f4e0f
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    src/rc/rc-selinux.c: fix use of deprecated security_context_t
+    
+    It's only a char* and has been deprecated upstream [0].
+    
+    [0] https://github.com/SELinuxProject/selinux/commit/7a124ca27581
+    
+    Fixes: #478
+
+commit 7f597d024af1612d8a104ed6fe591aae71105220
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    meson: only find libcrypt if SELinux and no PAM
+    
+    We only need libcrypt if we're building _with_ SELinux and
+    _without_ PAM. We don't use libcrypt for general SELinux
+    with PAM.
+    
+    This is mostly a correctness change as libcrypt should
+    generally be available (as opposed to the previous
+    change which fixed some real-world cases).
+    
+    Fixes: f3f0fde861b438c80f99afdd49fe175e9d0a68ca
+    Fixes: #478
+
+commit 27219666abf15117c8722dcd716681f7e6e957bf
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    meson: link against libcrypt for SELinux if no PAM
+    
+    We use libcrypt's crypt() if we're _not_ using PAM
+    in the SELinux code (rc-selinux, specifically).
+    
+    X-Gentoo-Bug: 824954
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/824954
+    Fixes: https://github.com/openrc/openrc/pull/477
+
+commit 76022cba36a5281f1da227a40f7fe7d805b85426
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    meson: fix pam_misc_dep definition
+    
+    X-Gentoo-Bug: 824954
+    X-Gentoo-Bug-URL: https://bugs.gentoo.org/824954
+    Fixes: https://github.com/OpenRC/openrc/issues/470
+    Fixes: https://github.com/OpenRC/openrc/pull/477
+
+commit 792dc7f6e8f31acace120b9e562412517ccea9d8
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    src/librc/librc-daemon.c: add missing include for kill (fix uclibc)
+    
+    Fixes: #471
+    Fixes: #473
+
+commit b5d576255bbe7ca3175046540a28d9613d40f9eb
+Author: Sam James <sam@gentoo.org>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    src/librc/librc-misc.c: add missing include for fileno (fix uclibc)
+    
+    Fixes: #471
+    Fixes: #473
+
+commit 45d1494b5d741d1f061c5a28e2ef8b506d36249d
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.8
+
+commit 20856a14e9e045fc2ab3d87a2a7f5e1408d1914f
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit a850651f5ce29a37574f7d76ae40ef9e1d2d4a62
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -925,141 +1036,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     
     This fixes #375 and allows us to not add another level of indentation in
     the supervisor loop.
-
-commit 57d9528a0bc64366ea3e0fbbb21b1282ce5c1212
-Author: Dermot Bradley <dermot_bradley@yahoo.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Remove warning when osclock init.d script runs
-    
-    Currently when osclock is enabled as a init.d service the following
-    messages appear during boot when osclock starts:
-    
-      * The command variable is undefined.
-      * There is nothing for osclock to start.
-      * If this is what you intend, please write a start function.
-      * This will become a failure in a future release.
-    
-    osclock is activated whenever a machine's system clock is automatically
-    configured from a RTC by the kernel and the osclock's only purpose is to
-    satisfy the "clock" dependency defined by other init.d services.
-    
-    Adding a stub start() function prevents OpenRC from showing warnings but
-    continues to ensure that the osclock service still does not actually do
-    anything.
-    
-    This fixes #377.
-
-commit 6ce48f124aea593b77163d6f198d18bbe9093068
-Author: Calvin Montgomery <calzoneman@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    man/openrc.8: populate OPTIONS from --help output
-    
-    This fixes #378.
-
-commit 00ea2166081856774f24f7243126f701c7fe6db9
-Author: Michael Orlitzky <michael@orlitzky.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/rc/checkpath.c: replace mkdir() with mkdirat().
-    
-    The do_check() function recently gained some defenses against symlink
-    replacement attacks that involve the use of *at functions in place of
-    their vanilla counterparts; openat() instead of open(), for example.
-    One opportunity to replace mkdir() with mkdirat() was missed, however,
-    and this commit replaces it.
-    
-    This fixes #386.
-
-commit ac7ca6d901d72b1bc4ed13be5438e825c07fc0da
-Author: Michael Orlitzky <michael@orlitzky.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    src/rc/checkpath.c: fix typo "synbolic" -> "symbolic".
-
-commit 47819f004cec3cc3e911ba69003b8b52bacbebef
-Author: Johannes Heimansberg <git@jhe.dedyn.io>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon, supervise-daemon: fix parsing of usernames passed via --user that start with a number
-    
-    start-stop-daemon and supervise-daemon parse usernames and group names
-    passed via the --user argument as numeric UID/GID if they start with a
-    number (e.g. user "4foo" will be treated as UID 4). This results in the
-    process that is being started to run under a totally unexpected user if
-    that UID exists.
-    
-    Even though the result of the sscanf calls are tested for a result of
-    exactly 1, which means exactly one value was extracted, because sscanf's
-    format string only contains only one placeholder, it will never return
-    a value greater than 1, even if there are still characters left to be
-    parsed. This causes start-stop-daemon and supervise-daemon to assume
-    that usernames starting with a number are just that number. Adding a
-    second placeholder "%1s" to the format string, which matches a string of
-    length 1, makes sure that sscanf can distinguish between pure numbers
-    (in which case it will return 1) and strings either starting with a
-    number (in which case it will return 2) and any other string (in which
-    case it will return 0).
-    
-    This fixes #379.
-    This fixes #380.
-
-commit 0fab3e837b45021fdcc02a71873c3c245ce96080
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    bootmisc: allow sysvinit compatibility  during shutdown
-    
-    Use "halt -w" to write the halt record if it exists.
-    Otherwise use openrc-shutdown.
-    
-    This fixes #336.
-
-commit 38aaba28ee86602e29d8a31f155dfa72f5481e68
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    scripts/shutdown.in: fix sysvinit compatible shutdown
-    
-    X-Gentoo-Bug: https://bugs.gentoo.org/755422
-
-commit 3ed4126a31406124ae8042fc3d4c0bf963d6961e
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    update news for 0.43 with info on checkpath fix
-
-commit aa0fdf6d08b987dfcabebf5b8d05beff015ad8f4
-Author: Lars Wendler <polynomial-c@gentoo.org>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    start-stop-daemon: Don't segfault if --exec was given a non-existing file name
-    
-      Starting program: /sbin/start-stop-daemon --start --exec i-dont-exist
-    
-      Program received signal SIGSEGV, Segmentation fault.
-      0x0000555555559053 in main (argc=1, argv=0x7fffffffdc20)
-          at start-stop-daemon.c:631
-      631                         *exec_file ? exec_file : exec);
-    
-    This fixes #385.
-
-commit b6fef599bf8493480664b766040fa9b0d4b1e335
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    checkpath: fix CVE-2018-21269
-    
-    This walks the directory path to the file we are going to manipulate to make
-    sure that when we create the file and change the ownership and permissions
-    we are working on the same file.
-    Also, all non-terminal symbolic links must be owned by root. This will
-    keep a non-root user from making a symbolic link as described in the
-    bug. If root creates the symbolic link, it is assumed to be trusted.
-    
-    On non-linux platforms, we no longer follow non-terminal symbolic links
-    by default. If you need to do that, add the -s option on the checkpath
-    command line, but keep in mind that this is not secure.
-    
-    This fixes #201.
