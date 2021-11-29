@@ -9,7 +9,7 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
-command=@PKG_PREFIX@/sbin/polkitd
+command=/sbin/polkitd
 pidfile=/var/run/polkitd/polkitd.pid
 command_args="$polkitd_args"
 name="PolicyKit Daemon"

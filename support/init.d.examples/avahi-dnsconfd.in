@@ -9,7 +9,7 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
-command=@PKG_PREFIX@/sbin/avahi-dnsconfd
+command=/sbin/avahi-dnsconfd
 command_args="$avahi_dnsconfd_args -D"
 pidfile=/var/run/avahi-dnsconfd.pid
 name="Avahi DNS Configuration Daemon"

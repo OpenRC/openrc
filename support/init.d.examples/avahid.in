@@ -9,7 +9,7 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
-command=@PKG_PREFIX@/sbin/avahi-daemon
+command=/sbin/avahi-daemon
 command_args="$avahid_args -D"
 pidfile=/var/run/avahi-daemon/pid
 name="Avahi Service Advertisement Daemon"
