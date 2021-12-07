@@ -4,3 +4,8 @@
 # The setting is called killall5_opts because the options here are meant
 # to be identical to those you could pass to killall5.
 killall5_opts=""
+
+# If you need to delay after each kill attempt during shutdown, set the amount
+# of time you need to delay here. This gets passed directly to sleep in
+# the shell.
+# kill_delay=0

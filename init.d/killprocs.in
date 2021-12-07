@@ -20,8 +20,10 @@ start()
 {
 	ebegin "Terminating remaining processes"
 	kill_all 15 ${killall5_opts}
+	sleep ${kill_delay:-0}
 	eend 0
 	ebegin "Killing remaining processes"
+	sleep ${kill_delay:-0}
 	kill_all 9 ${killall5_opts}
 	eend 0
 }
