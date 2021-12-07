@@ -1,5 +1,5 @@
 project('OpenRC', 'c',
-  version : '0.44.8',
+  version : '0.44.9',
   license: 'BSD-2',
   default_options : [
     'c_std=c99',
