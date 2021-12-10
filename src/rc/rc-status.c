@@ -130,12 +130,12 @@ static char *get_uptime(const char *service)
 			if (diff_days > 0)
 				xasprintf(&uptime,
 						"%"PRId64" day(s) %02"PRId64":%02"PRId64":%02"PRId64" (%s)",
-						diff_days, diff_hours, diff_mins, diff_secs,
+						(long long) diff_days, (long long) diff_hours, (long long) diff_mins, (long long) diff_secs,
 						start_count);
 			else
 				xasprintf(&uptime,
 						"%02"PRId64":%02"PRId64":%02"PRId64" (%s)",
-						diff_hours, diff_mins, diff_secs, start_count);
+						(long long) diff_hours, (long long) diff_mins, (long long) diff_secs, start_count);
 		}
 	}
 	return uptime;
