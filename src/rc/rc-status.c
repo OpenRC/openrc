@@ -97,14 +97,12 @@ static char *get_uptime(const char *service)
 {
 	RC_SERVICE state = rc_service_state(service);
 	char *start_count;
-	time_t now;
 	char *start_time_string;
 	time_t start_time;
-	time_t time_diff;
-	time_t diff_days = (time_t) 0;
-	time_t diff_hours = (time_t) 0;
-	time_t diff_mins = (time_t) 0;
-	time_t diff_secs = (time_t) 0;
+	int64_t diff_days;
+	int64_t diff_hours;
+	int64_t diff_mins;
+	int64_t diff_secs;
 	char *uptime = NULL;
 
 	if (state & RC_SERVICE_STARTED) {
@@ -112,21 +110,13 @@ static char *get_uptime(const char *service)
 		start_time_string = rc_service_value_get(service, "start_time");
 		if (start_count && start_time_string) {
 			start_time = to_time_t(start_time_string);
-			now = time(NULL);
-			time_diff = (time_t) difftime(now, start_time);
-			diff_secs = time_diff;
-			if (diff_secs > (time_t) 86400) {
-				diff_days = diff_secs / (time_t) 86400;
-				diff_secs %= diff_days * (time_t) 86400;
-			}
-			if (diff_secs > (time_t) 3600) {
-				diff_hours = diff_secs / (time_t) 3600;
-				diff_secs %= diff_hours * (time_t) 3600;
-			}
-			if (diff_secs > (time_t) 60) {
-				diff_mins = diff_secs / (time_t) 60;
-				diff_secs %= diff_mins * (time_t) 60;
-			}
+			diff_secs = (int64_t) difftime(time(NULL), start_time);
+			diff_days = diff_secs / 86400;
+			diff_secs = diff_secs % 86400;
+			diff_hours = diff_secs / 3600;
+			diff_secs = diff_secs % 3600;
+			diff_mins = diff_secs / 60;
+			diff_secs = diff_secs % 60;
 			if (diff_days > 0)
 				xasprintf(&uptime,
 						"%"PRId64" day(s) %02"PRId64":%02"PRId64":%02"PRId64" (%s)",
