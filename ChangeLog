@@ -1,3 +1,26 @@
+commit 7d46c8ca6e8271aa1c9bc1e5247fd1f861f68153
+Author: Doug Freed <dwfreed@mtu.edu>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    rc-status: fix uptime types and simplify
+    
+    This fixes #484.
+    This fixes #483.
+
+commit 20f049b0e94c0ef386b65a9a786fe24c51877ba8
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    version 0.44.9
+    
+    This will need to be bumped again if we do 0.44.10
+
+commit d0160dd96e92d0aadc531d4c06b010ee2ef72955
+Author: William Hubbs <w.d.hubbs@gmail.com>
+Commit: William Hubbs <w.d.hubbs@gmail.com>
+
+    update ChangeLog
+
 commit eca4c2d31efc29ed653dbcfc3a3cc043d24bd08d
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
@@ -982,57 +1005,3 @@ Commit: William Hubbs <w.d.hubbs@gmail.com>
     remove statement about not providing an init
     
     This fixes #359.
-
-commit 4b2a61f1b8b786600e39ba1a223ff8d9b389b275
-Author: Manuel Rüger <manuel@rueg.eu>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    rc-status: Remove noise from ini-formatted output
-    
-    Otherwise this would create the following output:
-    
-    rc-status -f ini
-     * Caching service dependencies ...        [ ok ]
-    [default]
-    dbus =  started
-    NetworkManager =  started
-    syslog-ng =  started
-    ...
-    
-    This fixes #364.
-
-commit 62bc463c63a3beeeead0b6fb164f7c7e9b917849
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    update freebsd 11.x image on cirrus ci
-
-commit 7019bfad3b4cf6eff31d967f6f4e0960f67858fb
-Author: Clayton Craft <clayton@craftyguy.net>
-Commit: Luca Barbato <luca.barbato@gmail.com>
-
-    user-guide: clarify note for Runlevels/rc-update usage
-    
-    I found the original note a little confusing, since using rc-update will
-    add it to a runlevel so it *is* auto-started when the system reaches
-    that runlevel again, but I don't think that was the intended meaning of
-    'auto-start', so hopefully this makes it a little more clear.
-
-commit 8346c985d598385e760375a8adf69c986bb4a350
-Author: lishuxiang <GoldenMean58@outlook.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    Update user-guide.md
-    
-    fix a typo
-    
-    This fixes #389.
-
-commit da30767353eb1cc13826176bf19308a05c7bade4
-Author: William Hubbs <w.d.hubbs@gmail.com>
-Commit: William Hubbs <w.d.hubbs@gmail.com>
-
-    supervise-daemon: do not spawn a process if we are exiting
-    
-    This fixes #375 and allows us to not add another level of indentation in
-    the supervisor loop.
