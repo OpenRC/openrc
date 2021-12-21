@@ -1,3 +1,3 @@
 NAME=		openrc
-VERSION=	0.44.9
+VERSION=	0.44.10
 PKG=		${NAME}-${VERSION}
