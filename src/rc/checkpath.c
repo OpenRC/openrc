@@ -46,7 +46,7 @@ typedef enum {
 
 const char *applet = NULL;
 const char *extraopts ="path1 [path2] [...]";
-const char *getoptstring = "dDfFpm:o:sW" getoptstring_COMMON;
+const char getoptstring[] = "dDfFpm:o:sW" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "directory",          0, NULL, 'd'},
 	{ "directory-truncate", 0, NULL, 'D'},

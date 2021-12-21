@@ -38,7 +38,7 @@
 
 const char *applet = NULL;
 const char *extraopts = "file";
-const char *getoptstring = "sw" getoptstring_COMMON;
+const char getoptstring[] = "sw" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "save", 0, NULL, 's' },
 	{ "warn", 0, NULL, 'w' },

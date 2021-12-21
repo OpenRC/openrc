@@ -35,7 +35,7 @@ enum format_t {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "acf:lmrsSu" getoptstring_COMMON;
+const char getoptstring[] = "acf:lmrsSu" getoptstring_COMMON;
 const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
 	{"crashed",     0, NULL, 'c'},

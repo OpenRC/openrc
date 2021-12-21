@@ -63,7 +63,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "MRbmop:t:" getoptstring_COMMON;
+const char getoptstring[] = "MRbmop:t:" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "mount",          0, NULL, 'M' },
 	{ "remount",        0, NULL, 'R' },

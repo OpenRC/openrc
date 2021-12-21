@@ -29,7 +29,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "cdDe:ilr:INsSZ" getoptstring_COMMON;
+const char getoptstring[] = "cdDe:ilr:INsSZ" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "debug",     0, NULL, 'd' },
 	{ "nodeps",     0, NULL, 'D' },

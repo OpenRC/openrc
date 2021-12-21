@@ -36,7 +36,7 @@ const char *usagestring = ""							\
 	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
 	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
 	"   or: rc-update [options] [show [<runlevel>...]]";
-const char *getoptstring = "asu" getoptstring_COMMON;
+const char getoptstring[] = "asu" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "all",             0, NULL, 'a' },
 	{ "stack",           0, NULL, 's' },

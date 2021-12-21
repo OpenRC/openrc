@@ -36,7 +36,7 @@
 
 const char *applet = NULL;
 const char *extraopts = "[signal number]";
-const char *getoptstring = "do:" getoptstring_COMMON;
+const char getoptstring[] = "do:" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "dry-run",        0, NULL, 'd' },
 	{ "omit",        1, NULL, 'o' },

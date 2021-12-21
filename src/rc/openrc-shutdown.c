@@ -41,7 +41,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "cdDfFHKpRrsw" getoptstring_COMMON;
+const char getoptstring[] = "cdDfFHKpRrsw" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "cancel",        no_argument, NULL, 'c'},
 	{ "no-write",        no_argument, NULL, 'd'},

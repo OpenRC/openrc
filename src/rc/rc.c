@@ -56,7 +56,7 @@ static const char rc_copyright[] = "Copyright (c) 2007-2008 Roy Marples";
 #include "_usage.h"
 
 const char *extraopts = NULL;
-const char *getoptstring = "a:no:s:S" getoptstring_COMMON;
+const char getoptstring[] = "a:no:s:S" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "no-stop", 0, NULL, 'n' },
 	{ "override",    1, NULL, 'o' },

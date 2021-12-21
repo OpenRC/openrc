@@ -46,7 +46,7 @@
 
 extern const char *applet;
 extern const char *extraopts;
-extern const char *getoptstring;
+extern const char getoptstring[];
 extern const struct option longopts[];
 extern const char * const longopts_help[];
 extern const char *usagestring;

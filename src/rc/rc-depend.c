@@ -39,7 +39,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *getoptstring = "aot:suTF:" getoptstring_COMMON;
+const char getoptstring[] = "aot:suTF:" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "starting", 0, NULL, 'a'},
 	{ "stopping", 0, NULL, 'o'},

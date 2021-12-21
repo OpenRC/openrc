@@ -48,7 +48,7 @@
 const char *applet = NULL;
 const char *procmounts = "/proc/mounts";
 const char *extraopts = "[mount1] [mount2] ...";
-const char *getoptstring = "f:F:n:N:o:O:p:P:iste:E:" getoptstring_COMMON;
+const char getoptstring[] = "f:F:n:N:o:O:p:P:iste:E:" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "fstype-regex",        1, NULL, 'f'},
 	{ "skip-fstype-regex",   1, NULL, 'F'},
