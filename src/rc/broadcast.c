@@ -117,6 +117,8 @@ static int file_isatty(const char *fname)
 
 /*
  *	broadcast function.
+ *
+ *	NB: Not multithread safe.
  */
 void broadcast(char *text)
 {
@@ -128,11 +130,15 @@ void broadcast(char *text)
 	char *p;
 	char *line = NULL;
 	struct sigaction sa;
-	volatile int fd;
-	FILE *tp;
 	int	flags;
 	char *term = NULL;
 	struct utmpx *utmp;
+	/*
+	 * These are set across the sigsetjmp call, so they can't be stored on
+	 * the stack, otherwise they might be clobbered.
+	 */
+	static int fd;
+	static FILE *tp;
 
 	getuidtty(&user, &tty);
 
