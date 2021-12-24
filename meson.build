@@ -14,9 +14,9 @@ fs = import('fs')
 audit_dep = dependency('audit', required : get_option('audit'))
 if audit_dep.found()
   cc_audit_flags = '-DHAVE_AUDIT'
-  else
+else
   cc_audit_flags = []
-  endif
+endif
 
 if get_option('branding') != ''
   cc_branding_flags = '-DBRANDING=' + get_option('branding')
@@ -61,7 +61,7 @@ endif
 
 if not pam_dep.found() and get_option('pam')
   error('Pam was requested but could not be located')
-  endif
+endif
 
 cap_dep = dependency('libcap', version: '>=2.33', required : get_option('capabilities'))
 if cap_dep.found()
@@ -154,7 +154,7 @@ elif os == 'FreeBSD'
   cc_os_flags = ['-D_BSD_SOURCE']
 elif os == 'GNU'
   cc_os_flags = ['-D_DEFAULT_SOURCE', '-DMAXPATHLEN=4096', '-DPATH_MAX=4096']
-  endif
+endif
 
 # Try and use some good cc flags if we're building from git. We don't use
 # -pedantic as it will warn about our perfectly valid use of %m in our logger.
