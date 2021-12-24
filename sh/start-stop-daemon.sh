@@ -38,10 +38,6 @@ ssd_start()
 		service_inactive && _inactive=true
 		mark_service_inactive
 	fi
-	[ -n "$output_logger" ] &&
-		output_logger_arg="--stdout-logger \"$output_logger\""
-	[ -n "$error_logger" ] &&
-		error_logger_arg="--stderr-logger \"$error_logger\""
 	#the eval call is necessary for cases like:
 	# command_args="this \"is a\" test"
 	# to work properly.
@@ -51,8 +47,8 @@ ssd_start()
 		${directory:+--chdir} $directory \
 		${output_log+--stdout} $output_log \
 		${error_log+--stderr} $error_log \
-		${output_logger_arg} \
-		${error_logger_arg} \
+		${output_logger:+--stdout-logger} "$output_logger" \
+		${error_logger:+--stderr-logger} "$error_logger" \
 		${capabilities+--capabilities} "$capabilities" \
 		${secbits:+--secbits} "$secbits" \
 		${no_new_privs:+--no-new-privs} \
