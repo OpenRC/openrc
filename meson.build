@@ -99,6 +99,7 @@ libexecdir = rootprefix / libexecdir
 rc_libexecdir = libexecdir / 'rc'
 rc_bindir = rc_libexecdir / 'bin'
 rc_sbindir = rc_libexecdir / 'sbin'
+rc_shdir = rc_libexecdir / 'sh'
 sbindir = rootprefix / get_option('sbindir')
 
 crypt_dep = []

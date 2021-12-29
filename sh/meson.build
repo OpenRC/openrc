@@ -12,8 +12,6 @@ sh_conf_data.set('SBINDIR', sbindir)
 sh_conf_data.set('SHELL', get_option('shell'))
 sh_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
 
-sh_dir = rc_libexecdir / 'sh'
-
 sh = [
   'rc-functions.sh',
   'rc-mount.sh',
@@ -59,19 +57,19 @@ else
 endif
 
 install_data(sh,
-  install_dir : sh_dir)
+  install_dir : rc_shdir)
 foreach file : sh_config
   configure_file(input : file,
     output : '@BASENAME@',
     configuration : sh_conf_data,
-    install_dir : sh_dir)
+    install_dir : rc_shdir)
 endforeach
 
 foreach file : scripts_config
   configure_file(input : file,
     output : '@BASENAME@',
     configuration : sh_conf_data,
-    install_dir : sh_dir,
+    install_dir : rc_shdir,
     install_mode : 'rwxr-xr-x')
 endforeach
 
@@ -79,6 +77,6 @@ foreach file : scripts_config_os
   configure_file(input : file.get(0),
     output : file.get(1),
     configuration : sh_conf_data,
-    install_dir : sh_dir,
+    install_dir : rc_shdir,
     install_mode : 'rwxr-xr-x')
 endforeach
