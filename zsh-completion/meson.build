@@ -1,3 +1,4 @@
+if get_option('zsh-completions')
 zsh_completions = [
   '_openrc',
   '_rc-service',
@@ -7,3 +8,4 @@ zsh_completions = [
 
 install_data(zsh_completions,
   install_dir : get_option('datadir') / 'zsh/site-functions')
+endif

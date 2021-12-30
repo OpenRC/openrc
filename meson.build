@@ -187,25 +187,19 @@ init_d_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
 dl_dep = cc.find_library('dl', required: false)
 util_dep = cc.find_library('util', required: false)
 
-if get_option('bash-completions')
-  subdir('bash-completion')
-endif
+subdir('bash-completion')
 subdir('conf.d')
 subdir('etc')
 subdir('init.d')
 subdir('local.d')
 subdir('man')
-if get_option('pkgconfig')
 subdir('pkgconfig')
-  endif
 subdir('scripts')
 subdir('sh')
 subdir('src')
 subdir('support')
 subdir('sysctl.d')
-if get_option('zsh-completions')
-  subdir('zsh-completion')
-endif
+subdir('zsh-completion')
 
 meson.add_install_script('tools/meson_runlevels.sh',
   os,

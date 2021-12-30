@@ -1,3 +1,4 @@
+if get_option('pkgconfig')
 pkgconfig_dir =	get_option('libdir') / 'pkgconfig'
 
 pkgconfig_conf_data = configuration_data()
@@ -20,3 +21,4 @@ foreach file : pkgconfig_files
     configuration : pkgconfig_conf_data,
     install_dir : pkgconfig_dir)
 endforeach
+endif
