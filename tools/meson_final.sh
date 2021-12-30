@@ -10,4 +10,4 @@ if [ ${os} != Linux ]; then
 	install -d "${DESTDIR}/${rc_libexecdir}"/init.d
 fi
 install -d "${DESTDIR}/${rc_libexecdir}"/tmp
-install -m 644 "${MESON_BUILD_ROOT}/src/common/version" "${DESTDIR}/${rc_libexecdir}"
+install -m 644 "${MESON_BUILD_ROOT}/src/shared/version" "${DESTDIR}/${rc_libexecdir}"

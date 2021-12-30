@@ -9,8 +9,4 @@ core
 .gdb_history
 .gdbinit
 
-.depend
-*.a
-*.o
-*.So
-lib*.so
+build

@@ -4,6 +4,10 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.45
+
+The old make-based build system is removed in this release.
+
 ## OpenRC 0.44
 
 This version is the first to use a meson-based build system.
