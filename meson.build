@@ -195,9 +195,6 @@ subdir('etc')
 subdir('init.d')
 subdir('local.d')
 subdir('man')
-if get_option('pam')
-subdir('pam')
-  endif
 if get_option('pkgconfig')
 subdir('pkgconfig')
   endif

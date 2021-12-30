@@ -100,6 +100,14 @@ executable('start-stop-daemon',
   install: true,
   install_dir: sbindir)
 
+if get_option('pam')
+  pam_dir =	get_option('sysconfdir') / 'pam.d'
+
+  install_data('start-stop-daemon.pam',
+    rename : 'start-stop-daemon',
+    install_dir : pam_dir)
+endif
+  
 executable('supervise-daemon',
   ['supervise-daemon.c', rc_misc_c, rc_plugin_c, rc_schedules_c,
     usage_c, version_h],
@@ -110,6 +118,14 @@ executable('supervise-daemon',
   install: true,
   install_dir: sbindir)
 
+if get_option('pam')
+  pam_dir =	get_option('sysconfdir') / 'pam.d'
+
+  install_data('supervise-daemon.pam',
+    rename : 'supervise-daemon',
+    install_dir : pam_dir)
+endif
+  
 if os == 'Linux'
   executable('openrc-init',
     ['openrc-init.c', rc_plugin_c, rc_wtmp_c, version_h],
