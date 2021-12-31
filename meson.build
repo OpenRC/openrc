@@ -107,6 +107,7 @@ rc_bindir = rc_libexecdir / 'bin'
 rc_sbindir = rc_libexecdir / 'sbin'
 rc_shdir = rc_libexecdir / 'sh'
 sbindir = rootprefix / get_option('sbindir')
+pamdir = get_option('sysconfdir') / 'pam.d'
 
 crypt_dep = []
 

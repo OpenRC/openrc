@@ -101,11 +101,9 @@ executable('start-stop-daemon',
   install_dir: sbindir)
 
 if get_option('pam')
-  pam_dir =	get_option('sysconfdir') / 'pam.d'
-
   install_data('start-stop-daemon.pam',
     rename : 'start-stop-daemon',
-    install_dir : pam_dir)
+    install_dir : pamdir)
 endif
   
 executable('supervise-daemon',
@@ -119,11 +117,9 @@ executable('supervise-daemon',
   install_dir: sbindir)
 
 if get_option('pam')
-  pam_dir =	get_option('sysconfdir') / 'pam.d'
-
   install_data('supervise-daemon.pam',
     rename : 'supervise-daemon',
-    install_dir : pam_dir)
+    install_dir : pamdir)
 endif
   
 if os == 'Linux'
