@@ -43,6 +43,12 @@ else
   os = option_os
 endif
 
+if os != 'Linux'
+  kvm_dep = cc.find_library('kvm', required: true)
+else
+  kvm_dep = []
+endif
+
 pam_dep = dependency('pam', required: false)
 if not pam_dep.found()
   pam_dep = cc.find_library('pam', required: false)

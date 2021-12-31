@@ -24,6 +24,7 @@ rc_h = configure_file(input : 'rc.h.in', output : 'rc.h',
   configuration : rc_h_conf_data)
 
 librc = library('rc', librc_sources,
+  dependencies: kvm_dep,
   include_directories : [incdir, einfo_incdir],
   link_depends : 'rc.map',
   version : librc_version,
