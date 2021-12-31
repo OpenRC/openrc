@@ -16,6 +16,6 @@ set -x
 # These are steps to run on Cirrus CI under a jailed FreeBSD system.
 # See $TOP/.cirrus.yml for more info about the Cirrus CI setup.
 
-cpus=$(getconf NPROCESSORS_CONF || echo 1)
-gmake -j"${cpus}" -O
-gmake test
+meson build
+meson compile -C build
+# gmake test
