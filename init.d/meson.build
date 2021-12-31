@@ -62,7 +62,7 @@ init_BSD =  [
 
 init_FreeBSD =  [
   'adjkerntz.in',
-  'devd .in',
+  'devd.in',
   'dumpon.in',
   'encswap.in',
   'ipfw.in',
