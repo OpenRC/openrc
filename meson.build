@@ -3,7 +3,7 @@ project('OpenRC', 'c',
   license: 'BSD-2',
   default_options : [
     'c_std=c99',
-	'prefix=/usr',
+    'prefix=/usr',
     'warning_level=3',
     ],
   meson_version : '>=0.53.0')
