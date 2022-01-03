@@ -74,6 +74,7 @@ const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "capabilities", 1, NULL, 0x100},
+	{ "secbits",      1, NULL, 0x101},
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
@@ -107,6 +108,7 @@ const struct option longopts[] = {
 };
 const char * const longopts_help[] = {
 	"Set the inheritable, ambient and bounding capabilities",
+	"Set the security-bits for the program",
 	"Set an ionice class:data when starting",
 	"Stop daemon",
 	"Set a nicelevel when starting",
@@ -315,6 +317,7 @@ int main(int argc, char **argv)
 	unsigned int start_wait = 0;
 #ifdef HAVE_CAP
 	cap_iab_t cap_iab = NULL;
+	unsigned secbits = 0;
 #endif
 
 	applet = basename_c(argv[0]);
@@ -371,6 +374,21 @@ int main(int argc, char **argv)
 			eerrorx("Capabilities support not enabled");
 #endif
 			break;
+
+		case 0x101:
+#ifdef HAVE_CAP
+			if (*optarg == '\0')
+				eerrorx("Secbits are empty");
+
+			tmp = NULL;
+			secbits = strtoul(optarg, &tmp, 0);
+			if (*tmp != '\0')
+				eerrorx("Could not parse secbits: invalid char %c", *tmp);
+#else
+			eerrorx("Capabilities support not enabled");
+#endif
+			break;
+
 
 		case 'I': /* --ionice */
 			if (sscanf(optarg, "%d:%d", &ionicec, &ioniced) == 0)
@@ -889,6 +907,11 @@ int main(int argc, char **argv)
 
 			if (i != 0)
 				eerrorx("Could not set iab: %s", strerror(errno));
+		}
+
+		if (secbits != 0) {
+			if (cap_set_secbits(secbits) < 0)
+				eerrorx("Could not set securebits to 0x%x: %s", secbits, strerror(errno));
 		}
 #endif
 
