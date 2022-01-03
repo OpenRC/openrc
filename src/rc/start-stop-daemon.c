@@ -31,6 +31,7 @@
 
 #ifdef __linux__
 #include <sys/syscall.h> /* For io priority */
+#include <sys/prctl.h> /* For prctl */
 #endif
 
 #include <ctype.h>
@@ -75,6 +76,7 @@ const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:" \
 const struct option longopts[] = {
 	{ "capabilities", 1, NULL, 0x100},
 	{ "secbits",      1, NULL, 0x101},
+	{ "no-new-privs", 0, NULL, 0x102},
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
@@ -109,6 +111,7 @@ const struct option longopts[] = {
 const char * const longopts_help[] = {
 	"Set the inheritable, ambient and bounding capabilities",
 	"Set the security-bits for the program",
+	"Set the No New Privs flag for the program",
 	"Set an ionice class:data when starting",
 	"Stop daemon",
 	"Set a nicelevel when starting",
@@ -319,6 +322,9 @@ int main(int argc, char **argv)
 	cap_iab_t cap_iab = NULL;
 	unsigned secbits = 0;
 #endif
+#ifdef PR_SET_NO_NEW_PRIVS
+	bool no_new_privs = false;
+#endif
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -389,6 +395,13 @@ int main(int argc, char **argv)
 #endif
 			break;
 
+		case 0x102:
+#ifdef PR_SET_NO_NEW_PRIVS
+			no_new_privs = true;
+#else
+			eerrorx("The No New Privs flag is only supported by Linux (since 3.5)");
+#endif
+			break;
 
 		case 'I': /* --ionice */
 			if (sscanf(optarg, "%d:%d", &ionicec, &ioniced) == 0)
@@ -914,6 +927,14 @@ int main(int argc, char **argv)
 				eerrorx("Could not set securebits to 0x%x: %s", secbits, strerror(errno));
 		}
 #endif
+
+#ifdef PR_SET_NO_NEW_PRIVS
+		if (no_new_privs) {
+			if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == -1)
+				eerrorx("Could not set No New Privs flag: %s", strerror(errno));
+		}
+#endif
+
 
 #ifdef TIOCNOTTY
 		ioctl(tty_fd, TIOCNOTTY, 0);

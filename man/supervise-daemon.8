@@ -165,6 +165,8 @@ The format is the same as in cap_iab(3).
 Set the security-bits for the program.
 The numeric value of the security-bits can be found in <sys/secbits.h> header file.
 The format is the same as in strtoul(3).
+.It Fl -no-new-privs
+Set the No New Privs flag for the program. See PR_SET_NO_NEW_PRIVS prctl(2).
 .El
 .Sh ENVIRONMENT
 .Va SSD_IONICELEVEL
