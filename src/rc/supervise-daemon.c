@@ -78,6 +78,7 @@ const struct option longopts[] = {
 	{ "healthcheck-timer",        1, NULL, 'a'},
 	{ "healthcheck-delay",        1, NULL, 'A'},
 	{ "capabilities", 1, NULL, 0x100},
+	{ "secbits", 1, NULL, 0x101},
 	{ "respawn-delay",        1, NULL, 'D'},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
@@ -104,6 +105,7 @@ const char * const longopts_help[] = {
 	"set an initial health check delay",
 	"set a health check timer",
 	"Set the inheritable, ambient and bounding capabilities",
+	"Set the security-bits for the program",
 	"Set a respawn delay",
 	"Change the PWD",
 	"Set an environment string",
@@ -160,6 +162,7 @@ static char *svcname = NULL;
 static bool verbose = false;
 #ifdef HAVE_CAP
 static cap_iab_t cap_iab = NULL;
+static unsigned secbits = 0;
 #endif
 
 extern char **environ;
@@ -426,6 +429,11 @@ static void child_process(char *exec, char **argv)
 
 		if (i != 0)
 			eerrorx("Could not set iab: %s", strerror(errno));
+	}
+
+	if (secbits != 0) {
+		if (cap_set_secbits(secbits) < 0)
+			eerrorx("Could not set securebits to 0x%x: %s", secbits, strerror(errno));
 	}
 #endif
 
@@ -827,6 +835,20 @@ int main(int argc, char **argv)
 			cap_iab = cap_iab_from_text(optarg);
 			if (cap_iab == NULL)
 				eerrorx("Could not parse iab: %s", strerror(errno));
+#else
+			eerrorx("Capabilities support not enabled");
+#endif
+			break;
+
+        case 0x101:
+#ifdef HAVE_CAP
+			if (*optarg == '\0')
+				eerrorx("Secbits are empty");
+
+			tmp = NULL;
+			secbits = strtoul(optarg, &tmp, 0);
+			if (*tmp != '\0')
+				eerrorx("Could not parse secbits: invalid char %c", *tmp);
 #else
 			eerrorx("Capabilities support not enabled");
 #endif

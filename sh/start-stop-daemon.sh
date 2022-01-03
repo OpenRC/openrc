@@ -54,6 +54,7 @@ ssd_start()
 		${output_logger_arg} \
 		${error_logger_arg} \
 		${capabilities+--capabilities} "$capabilities" \
+		${secbits:+--secbits} "$secbits" \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $pidfile \
 		${command_user+--user} $command_user \
