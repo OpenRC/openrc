@@ -32,6 +32,7 @@
 
 #ifdef __linux__
 #include <sys/syscall.h> /* For io priority */
+#include <sys/prctl.h> /* For prctl */
 #endif
 
 #include <ctype.h>
@@ -79,6 +80,7 @@ const struct option longopts[] = {
 	{ "healthcheck-delay",        1, NULL, 'A'},
 	{ "capabilities", 1, NULL, 0x100},
 	{ "secbits", 1, NULL, 0x101},
+	{ "no-new-privs", 0, NULL, 0x102},
 	{ "respawn-delay",        1, NULL, 'D'},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
@@ -106,6 +108,7 @@ const char * const longopts_help[] = {
 	"set a health check timer",
 	"Set the inheritable, ambient and bounding capabilities",
 	"Set the security-bits for the program",
+	"Set the No New Privs flag for the program",
 	"Set a respawn delay",
 	"Change the PWD",
 	"Set an environment string",
@@ -163,6 +166,9 @@ static bool verbose = false;
 #ifdef HAVE_CAP
 static cap_iab_t cap_iab = NULL;
 static unsigned secbits = 0;
+#endif
+#ifdef PR_SET_NO_NEW_PRIVS
+static bool no_new_privs = false;
 #endif
 
 extern char **environ;
@@ -434,6 +440,13 @@ static void child_process(char *exec, char **argv)
 	if (secbits != 0) {
 		if (cap_set_secbits(secbits) < 0)
 			eerrorx("Could not set securebits to 0x%x: %s", secbits, strerror(errno));
+	}
+#endif
+
+#ifdef PR_SET_NO_NEW_PRIVS
+	if (no_new_privs) {
+		if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == -1)
+			eerrorx("Could not set No New Privs flag: %s", strerror(errno));
 	}
 #endif
 
@@ -851,6 +864,14 @@ int main(int argc, char **argv)
 				eerrorx("Could not parse secbits: invalid char %c", *tmp);
 #else
 			eerrorx("Capabilities support not enabled");
+#endif
+			break;
+
+		case 0x102:
+#ifdef PR_SET_NO_NEW_PRIVS
+			no_new_privs = true;
+#else
+			eerrorx("The No New Privs flag is only supported by Linux (since 3.5)");
 #endif
 			break;
 
