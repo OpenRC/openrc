@@ -11,6 +11,17 @@
 extra_stopped_commands="${extra_stopped_commands} cgroup_cleanup"
 description_cgroup_cleanup="Kill all processes in the cgroup"
 
+cgroup_name()
+{
+	if [ -z "${rc_cgroup_name}" ]; then
+		rc_cgroup_name="openrc_${RC_SVCNAME}"
+		[ -n "${rc_cgroup_name_prefix}" ] &&
+			rc_cgroup_name="${rc_cgroup_name_prefix}/${rc_cgroup_name}"
+	fi
+
+	printf "%s" "${rc_cgroup_name}"
+}
+
 cgroup_find_path()
 {
 	local OIFS name dir result
@@ -35,7 +46,7 @@ cgroup_get_pids()
 	cgroup_pids=
 	cgroup_procs="$(cgroup2_find_path)"
 	if [ -n "${cgroup_procs}" ]; then
-		cgroup_procs="${cgroup_procs}/${RC_SVCNAME}/cgroup.procs"
+		cgroup_procs="${cgroup_procs}/$(cgroup_name)/cgroup.procs"
 	else
 		cgroup_procs="/sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks"
 	fi
@@ -49,8 +60,8 @@ cgroup_get_pids()
 
 cgroup_running()
 {
-	[ -d "/sys/fs/cgroup/unified/${RC_SVCNAME}" ] ||
-			[ -d "/sys/fs/cgroup/${RC_SVCNAME}" ] ||
+	[ -d "/sys/fs/cgroup/unified/$(cgroup_name)" ] ||
+			[ -d "/sys/fs/cgroup/$(cgroup_name)" ] ||
 			[ -d "/sys/fs/cgroup/openrc/${RC_SVCNAME}" ]
 }
 
@@ -61,8 +72,15 @@ cgroup_set_values()
 	local controller h
 	controller="$1"
 	h=$(cgroup_find_path "$1")
-	cgroup="/sys/fs/cgroup/${1}${h}openrc_${RC_SVCNAME}"
+	cgroup="/sys/fs/cgroup/${1}${h}$(cgroup_name)"
 	[ -d "$cgroup" ] || mkdir -p "$cgroup"
+
+	if [ -w "$cgroup/tasks" ]; then
+		veinfo "$RC_SVCNAME: adding to $cgroup/tasks"
+		printf "%d" 0 > "$cgroup/tasks"
+	fi
+
+	[ "$2" = "add" ] && return 0
 
 	set -- $2
 	local name val
@@ -88,11 +106,6 @@ cgroup_set_values()
 	if [ -n "${name}" ] && [ -w "${cgroup}/${name}" ] && [ -n "${val}" ]; then
 		veinfo "$RC_SVCNAME: Setting $cgroup/$name to $val"
 		printf "%s" "$val" > "$cgroup/$name"
-	fi
-
-	if [ -w "$cgroup/tasks" ]; then
-		veinfo "$RC_SVCNAME: adding to $cgroup/tasks"
-		printf "%d" 0 > "$cgroup/tasks"
 	fi
 
 	return 0
@@ -164,10 +177,12 @@ cgroup2_find_path()
 
 cgroup2_remove()
 {
+	yesno "${rc_cgroup_keep:-no}" && return 0
+
 	local cgroup_path rc_cgroup_path
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
-	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
+	rc_cgroup_path="${cgroup_path}/$(cgroup_name)"
 	[ ! -d "${rc_cgroup_path}" ] ||
 		[ ! -e "${rc_cgroup_path}"/cgroup.events ] &&
 		return 0
@@ -191,8 +206,8 @@ cgroup2_set_limits()
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
 	mountinfo -q "${cgroup_path}"|| return 0
-	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
-	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
+	rc_cgroup_path="${cgroup_path}/$(cgroup_name)"
+	[ ! -d "${rc_cgroup_path}" ] && mkdir -p "${rc_cgroup_path}"
 	[ -f "${rc_cgroup_path}"/cgroup.procs ] &&
 		printf 0 > "${rc_cgroup_path}"/cgroup.procs
 	[ -z "${rc_cgroup_settings}" ] && return 0
@@ -210,7 +225,7 @@ cgroup2_kill_cgroup() {
 	local cgroup_path
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 1
-	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
+	rc_cgroup_path="${cgroup_path}/$(cgroup_name)"
 	if [ -f "${rc_cgroup_path}"/cgroup.kill ]; then
 		printf "%d" 1 > "${rc_cgroup_path}"/cgroup.kill
 	fi
