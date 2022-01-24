@@ -362,7 +362,7 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 	int serrno = errno;
 	int merrno;
 	time_t t;
-	char *file = NULL;
+	char file[PATH_MAX];
 	struct stat st;
 	struct utimbuf ut;
 	FILE *fp;
