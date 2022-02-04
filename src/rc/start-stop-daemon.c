@@ -1031,6 +1031,7 @@ int main(int argc, char **argv)
 		if (sched_setscheduler(mypid,scheduler,sched))
 			eerror("Failed to set scheduler: %s",strerror(errno));
 		}
+		free(sched);
 #endif
 		setsid();
 		execvp(exec, argv);
