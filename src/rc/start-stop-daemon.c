@@ -1026,12 +1026,12 @@ int main(int argc, char **argv)
 			close(i);
 #ifdef HAVE_SCHED
 		if (scheduler != -1){
-		sched = malloc(sizeof(sched));
+			sched = malloc(sizeof(sched));
 			sched->sched_priority = sched_prio;
-		if (sched_setscheduler(mypid,scheduler,sched))
-			eerror("Failed to set scheduler: %s",strerror(errno));
+			if (sched_setscheduler(mypid,scheduler,sched))
+				eerror("Failed to set scheduler: %s",strerror(errno));
+			free(sched);
 		}
-		free(sched);
 #endif
 		setsid();
 		execvp(exec, argv);
