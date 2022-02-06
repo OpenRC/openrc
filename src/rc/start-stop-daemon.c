@@ -643,6 +643,9 @@ int main(int argc, char **argv)
 		if (redirect_stderr && stderr_process)
 			eerrorx("%s: do not use --stderr and --stderr-logger together",
 					applet);
+		if ((sched_prio != -1) && (!scheduler))
+			eerrorx("%s: --scheduler-priority is only relevant"
+			    " with --background", applet);
 	}
 
 	/* Expand ~ */
