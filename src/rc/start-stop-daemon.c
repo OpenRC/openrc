@@ -319,7 +319,6 @@ int main(int argc, char **argv)
 	unsigned int start_wait = 0;
 	int scheduler = -1;
 	int sched_prio = -1;
-	struct sched_param *sched;
 #ifdef HAVE_CAP
 	cap_iab_t cap_iab = NULL;
 #endif
@@ -1018,11 +1017,9 @@ int main(int argc, char **argv)
 			close(i);
 
 		if (scheduler != -1) {
-			sched = malloc(sizeof(sched));
-			sched->sched_priority = sched_prio;
-			if (sched_setscheduler(mypid, scheduler, sched))
+			struct sched_param sched = {.sched_priority = sched_prio};
+			if (sched_setscheduler(mypid, scheduler, &sched))
 				eerror("Failed to set scheduler: %s", strerror(errno));
-			free(sched);
 		}
 
 		setsid();
