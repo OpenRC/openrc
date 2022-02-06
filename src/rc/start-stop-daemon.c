@@ -560,11 +560,11 @@ int main(int argc, char **argv)
 			stderr_process = optarg;
 			break;
 
-		case 0x81: /* --scheduler "Process scheduler priority" */
+		case 0x81: /* --scheduler "Process scheduler policy" */
 			scheduler = optarg;
 			break;
 
-		case 0x82: /* --scheduler "Process scheduler priority" */
+		case 0x82: /* --scheduler-priority "Process scheduler priority" */
 			sscanf(optarg, "%d", &sched_prio);
 			break;
 
