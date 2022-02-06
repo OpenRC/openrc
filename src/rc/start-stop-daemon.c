@@ -1028,25 +1028,25 @@ int main(int argc, char **argv)
 		if (scheduler != NULL) {
 			int scheduler_index;
 			struct sched_param sched =  {.sched_priority = sched_prio};
-			if (strcmp(scheduler,"fifo") == 0)
+			if (strcmp(scheduler, "fifo") == 0)
 				scheduler_index = SCHED_FIFO;
-			else if (strcmp(scheduler,"rr") == 0)
+			else if (strcmp(scheduler, "rr") == 0)
 				scheduler_index = SCHED_RR;
-			else if (strcmp(scheduler,"other") == 0)
+			else if (strcmp(scheduler, "other") == 0)
 				scheduler_index = SCHED_OTHER;
 #ifdef __linux__
-			else if (strcmp(scheduler,"batch") == 0)
+			else if (strcmp(scheduler, "batch") == 0)
 				scheduler_index = SCHED_BATCH;
-			else if (strcmp(scheduler,"idle") == 0)
+			else if (strcmp(scheduler, "idle") == 0)
 				scheduler_index = SCHED_IDLE;
 #endif
-			if (sched_prio == -1){
+			if (sched_prio == -1) {
 				sched.sched_priority = sched_get_priority_min(scheduler_index);
 			}
 
 			if (sched_setscheduler(mypid, scheduler_index, &sched))
 				eerror("Failed to set scheduler: %s", strerror(errno));
-		} else if ( sched_prio != -1) {
+		} else if (sched_prio != -1) {
 			const struct sched_param sched =  {.sched_priority = sched_prio};
 			if (sched_setparam(mypid, &sched))
 				eerror("Failed to set scheduler parameters: %s", strerror(errno));
