@@ -59,12 +59,6 @@ else
   cc_pam_flags = []
 endif
 
-if get_option('sched')
-  cc_sched_flags = '-DHAVE_SCHED'
-else
-  cc_sched_flags = []
-endif
-
 if not pam_dep.found() and get_option('pam')
   error('Pam was requested but could not be located')
   endif
