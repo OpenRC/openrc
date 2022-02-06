@@ -59,9 +59,7 @@ static struct pam_conv conv = { NULL, NULL};
 #include <sys/capability.h>
 #endif
 
-#ifdef HAVE_SCHED
 #include <sched.h>
-#endif
 
 #include "einfo.h"
 #include "queue.h"
@@ -319,11 +317,9 @@ int main(int argc, char **argv)
 	mode_t numask = 022;
 	char **margv;
 	unsigned int start_wait = 0;
-#ifdef HAVE_SCHED
 	int scheduler = -1;
 	int sched_prio = -1;
 	struct sched_param *sched;
-#endif
 #ifdef HAVE_CAP
 	cap_iab_t cap_iab = NULL;
 #endif
@@ -561,11 +557,7 @@ int main(int argc, char **argv)
 			break;
 
 		case 0x81: /* --scheduler "Linux Process scheduler index" */
-#ifdef HAVE_SCHED
 			sscanf(optarg, "%d:%d", &scheduler, &sched_prio);
-#else
-			eerrorx("Scheduling support not enabled");
-#endif
 			break;
 
 		case_RC_COMMON_GETOPT
@@ -1024,7 +1016,7 @@ int main(int argc, char **argv)
 
 		for (i = getdtablesize() - 1; i >= 3; --i)
 			close(i);
-#ifdef HAVE_SCHED
+
 		if (scheduler != -1){
 			sched = malloc(sizeof(sched));
 			sched->sched_priority = sched_prio;
@@ -1032,7 +1024,7 @@ int main(int argc, char **argv)
 				eerror("Failed to set scheduler: %s",strerror(errno));
 			free(sched);
 		}
-#endif
+
 		setsid();
 		execvp(exec, argv);
 #ifdef HAVE_PAM
