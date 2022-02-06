@@ -59,6 +59,9 @@ static struct pam_conv conv = { NULL, NULL};
 #include <sys/capability.h>
 #endif
 
+#ifdef __linux__
+#include <linux/sched.h>
+#endif
 #include <sched.h>
 
 #include "einfo.h"
@@ -106,6 +109,7 @@ const struct option longopts[] = {
 	{ "stderr-logger",1, NULL, '4'},
 	{ "progress",     0, NULL, 'P'},
 	{ "scheduler",    1, NULL, 0x81},
+	{ "scheduler-priority",    1, NULL, 0x82},
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -140,6 +144,7 @@ const char * const longopts_help[] = {
 	"Redirect stderr to process",
 	"Print dots each second while waiting",
 	"Set process scheduler",
+	"Set process scheduler priority",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
@@ -317,7 +322,7 @@ int main(int argc, char **argv)
 	mode_t numask = 022;
 	char **margv;
 	unsigned int start_wait = 0;
-	int scheduler = -1;
+	char *scheduler = NULL;
 	int sched_prio = -1;
 #ifdef HAVE_CAP
 	cap_iab_t cap_iab = NULL;
@@ -555,8 +560,12 @@ int main(int argc, char **argv)
 			stderr_process = optarg;
 			break;
 
-		case 0x81: /* --scheduler "Linux Process scheduler index" */
-			sscanf(optarg, "%d:%d", &scheduler, &sched_prio);
+		case 0x81: /* --scheduler "Process scheduler priority" */
+			scheduler = optarg;
+			break;
+
+		case 0x82: /* --scheduler "Process scheduler priority" */
+			sscanf(optarg, "%d", &sched_prio);
 			break;
 
 		case_RC_COMMON_GETOPT
@@ -1016,9 +1025,27 @@ int main(int argc, char **argv)
 		for (i = getdtablesize() - 1; i >= 3; --i)
 			close(i);
 
-		if (scheduler != -1) {
-			struct sched_param sched = {.sched_priority = sched_prio};
-			if (sched_setscheduler(mypid, scheduler, &sched))
+		if (scheduler != NULL) {
+			int scheduler_index;
+			struct sched_param sched =  {.sched_priority = sched_prio};
+			if (strcmp(scheduler,"fifo") == 0)
+				scheduler_index = SCHED_FIFO;
+			else if (strcmp(scheduler,"rr") == 0)
+				scheduler_index = SCHED_RR;
+			else if (strcmp(scheduler,"other") == 0)
+				scheduler_index = SCHED_OTHER;
+#ifdef __linux__
+			else if (strcmp(scheduler,"batch") == 0)
+				scheduler_index = SCHED_BATCH;
+			else if (strcmp(scheduler,"idle") == 0)
+				scheduler_index = SCHED_IDLE;
+#endif
+			if (sched_prio == -1){
+				sched_prio = sched_get_priority_min(scheduler_index);
+				sched.sched_priority = sched_prio;
+			}
+
+			if (sched_setscheduler(mypid, scheduler_index, &sched))
 				eerror("Failed to set scheduler: %s", strerror(errno));
 		}
 
