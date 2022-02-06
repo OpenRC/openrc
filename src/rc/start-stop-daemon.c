@@ -1017,11 +1017,11 @@ int main(int argc, char **argv)
 		for (i = getdtablesize() - 1; i >= 3; --i)
 			close(i);
 
-		if (scheduler != -1){
+		if (scheduler != -1) {
 			sched = malloc(sizeof(sched));
 			sched->sched_priority = sched_prio;
-			if (sched_setscheduler(mypid,scheduler,sched))
-				eerror("Failed to set scheduler: %s",strerror(errno));
+			if (sched_setscheduler(mypid, scheduler, sched))
+				eerror("Failed to set scheduler: %s", strerror(errno));
 			free(sched);
 		}
 
