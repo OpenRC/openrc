@@ -645,7 +645,7 @@ int main(int argc, char **argv)
 					applet);
 		if ((sched_prio != -1) && (!scheduler))
 			eerrorx("%s: --scheduler-priority is only relevant"
-			    " with --background", applet);
+			    " with --scheduler", applet);
 	}
 
 	/* Expand ~ */
