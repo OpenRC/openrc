@@ -1041,8 +1041,7 @@ int main(int argc, char **argv)
 				scheduler_index = SCHED_IDLE;
 #endif
 			if (sched_prio == -1){
-				sched_prio = sched_get_priority_min(scheduler_index);
-				sched.sched_priority = sched_prio;
+				sched.sched_priority = sched_get_priority_min(scheduler_index);
 			}
 
 			if (sched_setscheduler(mypid, scheduler_index, &sched))
