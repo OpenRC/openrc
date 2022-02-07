@@ -1040,6 +1040,9 @@ int main(int argc, char **argv)
 			else if (strcmp(scheduler, "idle") == 0)
 				scheduler_index = SCHED_IDLE;
 #endif
+			else if (sscanf(scheduler, "%d", &scheduler_index) != 1)
+				eerrorx("Unknown scheduler: %s", scheduler);
+
 			if (sched_prio == -1) {
 				sched.sched_priority = sched_get_priority_min(scheduler_index);
 			}
