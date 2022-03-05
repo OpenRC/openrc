@@ -90,7 +90,7 @@ const struct option longopts[] = {
 	{ "umask",        1, NULL, 'k'},
 	{ "respawn-max",    1, NULL, 'm'},
 	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL,0x80},
+	{ "oom-score-adj",1, NULL, 0x103},
 	{ "pidfile",      1, NULL, 'p'},
 	{ "respawn-period",        1, NULL, 'P'},
 	{ "retry",       1, NULL, 'R'},
@@ -902,7 +902,7 @@ int main(int argc, char **argv)
 				    applet, optarg);
 			break;
 
-		case 0x80: /* --oom-score-adj */
+		case 0x103: /* --oom-score-adj */
 			if (sscanf(optarg, "%d", &oom_score_adj) != 1)
 				eerrorx("%s: invalid oom-score-adj `%s'",
 				    applet, optarg);

@@ -80,7 +80,7 @@ const struct option longopts[] = {
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL,0x80},
+	{ "oom-score-adj",1, NULL, 0x103},
 	{ "retry",        1, NULL, 'R'},
 	{ "start",        0, NULL, 'S'},
 	{ "startas",      1, NULL, 'a'},
@@ -424,7 +424,7 @@ int main(int argc, char **argv)
 				    applet, optarg);
 			break;
 
-		case 0x80: /* --oom-score-adj */
+		case 0x103: /* --oom-score-adj */
 			if (sscanf(optarg, "%d", &oom_score_adj) != 1)
 				eerrorx("%s: invalid oom-score-adj `%s'",
 				    applet, optarg);
