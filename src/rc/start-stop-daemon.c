@@ -86,6 +86,8 @@ enum {
   LONGOPT_OOM_SCORE_ADJ,
   LONGOPT_NO_NEW_PRIVS,
   LONGOPT_SECBITS,
+  LONGOPT_SCHEDULER,
+  LONGOPT_SCHEDULER_PRIO,
 };
 
 const char *applet = NULL;
@@ -125,8 +127,8 @@ const struct option longopts[] = {
 	{ "stdout-logger",1, NULL, '3'},
 	{ "stderr-logger",1, NULL, '4'},
 	{ "progress",     0, NULL, 'P'},
-	{ "scheduler",    1, NULL, 0x81},
-	{ "scheduler-priority",    1, NULL, 0x82},
+	{ "scheduler",    1, NULL, LONGOPT_SCHEDULER},
+	{ "scheduler-priority",    1, NULL, LONGOPT_SCHEDULER_PRIO},
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -605,11 +607,11 @@ int main(int argc, char **argv)
 			stderr_process = optarg;
 			break;
 
-		case 0x81: /* --scheduler "Process scheduler policy" */
+		case LONGOPT_SCHEDULER: /* --scheduler "Process scheduler policy" */
 			scheduler = optarg;
 			break;
 
-		case 0x82: /* --scheduler-priority "Process scheduler priority" */
+		case LONGOPT_SCHEDULER_PRIO: /* --scheduler-priority "Process scheduler priority" */
 			sscanf(optarg, "%d", &sched_prio);
 			break;
 
