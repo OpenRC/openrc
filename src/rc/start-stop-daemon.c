@@ -1094,9 +1094,11 @@ int main(int argc, char **argv)
 				scheduler_index = SCHED_RR;
 			else if (strcmp(scheduler, "other") == 0)
 				scheduler_index = SCHED_OTHER;
-#ifdef __linux__
+#ifdef SCHED_BATCH
 			else if (strcmp(scheduler, "batch") == 0)
 				scheduler_index = SCHED_BATCH;
+#endif
+#ifdef SCHED_IDLE
 			else if (strcmp(scheduler, "idle") == 0)
 				scheduler_index = SCHED_IDLE;
 #endif
