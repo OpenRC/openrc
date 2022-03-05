@@ -343,7 +343,7 @@ int main(int argc, char **argv)
 	mode_t numask = 022;
 	char **margv;
 	unsigned int start_wait = 0;
-	char *scheduler = NULL;
+	const char *scheduler = NULL;
 	int sched_prio = -1;
 #ifdef HAVE_CAP
 	cap_iab_t cap_iab = NULL;
