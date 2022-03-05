@@ -80,7 +80,8 @@ depend() {
 
 `use` is a soft dependency - if dns, logger or netmount is in this runlevel 
 	start it before, but we don't care if it's not in this runlevel.
-	`want` is between need and use - try to start coolservice if it is
+	
+`want` is between need and use - try to start coolservice if it is
 	installed on the system, regardless of whether it is in the
 	runlevel, but we don't care if it starts.
 

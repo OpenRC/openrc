@@ -31,6 +31,7 @@
 
 #ifdef __linux__
 #include <sys/syscall.h> /* For io priority */
+#include <sys/prctl.h> /* For prctl */
 #endif
 
 #include <ctype.h>
@@ -73,16 +74,32 @@ static struct pam_conv conv = { NULL, NULL};
 #include "_usage.h"
 #include "helpers.h"
 
+/* Use long option value that is out of range for 8 bit getopt values.
+ * The exact enum value is internal and can freely change, so we keep the
+ * options sorted.
+ */
+enum {
+  /* This has to come first so following values stay in the 0x100+ range. */
+  LONGOPT_BASE = 0x100,
+
+  LONGOPT_CAPABILITIES,
+  LONGOPT_OOM_SCORE_ADJ,
+  LONGOPT_NO_NEW_PRIVS,
+  LONGOPT_SECBITS,
+};
+
 const char *applet = NULL;
 const char *extraopts = NULL;
 const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "capabilities", 1, NULL, 0x100},
+	{ "capabilities", 1, NULL, LONGOPT_CAPABILITIES},
+	{ "secbits",      1, NULL, LONGOPT_SECBITS},
+	{ "no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL,0x80},
+	{ "oom-score-adj",1, NULL, LONGOPT_OOM_SCORE_ADJ},
 	{ "retry",        1, NULL, 'R'},
 	{ "start",        0, NULL, 'S'},
 	{ "startas",      1, NULL, 'a'},
@@ -114,6 +131,8 @@ const struct option longopts[] = {
 };
 const char * const longopts_help[] = {
 	"Set the inheritable, ambient and bounding capabilities",
+	"Set the security-bits for the program",
+	"Set the No New Privs flag for the program",
 	"Set an ionice class:data when starting",
 	"Stop daemon",
 	"Set a nicelevel when starting",
@@ -326,6 +345,10 @@ int main(int argc, char **argv)
 	int sched_prio = -1;
 #ifdef HAVE_CAP
 	cap_iab_t cap_iab = NULL;
+	unsigned secbits = 0;
+#endif
+#ifdef PR_SET_NO_NEW_PRIVS
+	bool no_new_privs = false;
 #endif
 
 	applet = basename_c(argv[0]);
@@ -373,13 +396,35 @@ int main(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 		    (int *) 0)) != -1)
 		switch (opt) {
-		case 0x100:
+		case LONGOPT_CAPABILITIES:
 #ifdef HAVE_CAP
 			cap_iab = cap_iab_from_text(optarg);
 			if (cap_iab == NULL)
 				eerrorx("Could not parse iab: %s", strerror(errno));
 #else
 			eerrorx("Capabilities support not enabled");
+#endif
+			break;
+
+		case LONGOPT_SECBITS:
+#ifdef HAVE_CAP
+			if (*optarg == '\0')
+				eerrorx("Secbits are empty");
+
+			tmp = NULL;
+			secbits = strtoul(optarg, &tmp, 0);
+			if (*tmp != '\0')
+				eerrorx("Could not parse secbits: invalid char %c", *tmp);
+#else
+			eerrorx("Capabilities support not enabled");
+#endif
+			break;
+
+		case LONGOPT_NO_NEW_PRIVS:
+#ifdef PR_SET_NO_NEW_PRIVS
+			no_new_privs = true;
+#else
+			eerrorx("The No New Privs flag is only supported by Linux (since 3.5)");
 #endif
 			break;
 
@@ -404,7 +449,7 @@ int main(int argc, char **argv)
 				    applet, optarg);
 			break;
 
-		case 0x80: /* --oom-score-adj */
+		case LONGOPT_OOM_SCORE_ADJ: /* --oom-score-adj */
 			if (sscanf(optarg, "%d", &oom_score_adj) != 1)
 				eerrorx("%s: invalid oom-score-adj `%s'",
 				    applet, optarg);
@@ -909,7 +954,20 @@ int main(int argc, char **argv)
 			if (i != 0)
 				eerrorx("Could not set iab: %s", strerror(errno));
 		}
+
+		if (secbits != 0) {
+			if (cap_set_secbits(secbits) < 0)
+				eerrorx("Could not set securebits to 0x%x: %s", secbits, strerror(errno));
+		}
 #endif
+
+#ifdef PR_SET_NO_NEW_PRIVS
+		if (no_new_privs) {
+			if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == -1)
+				eerrorx("Could not set No New Privs flag: %s", strerror(errno));
+		}
+#endif
+
 
 #ifdef TIOCNOTTY
 		ioctl(tty_fd, TIOCNOTTY, 0);

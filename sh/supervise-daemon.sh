@@ -37,6 +37,8 @@ supervise_start()
 		${healthcheck_delay:+--healthcheck-delay} $healthcheck_delay \
 		${healthcheck_timer:+--healthcheck-timer} $healthcheck_timer \
 		${capabilities+--capabilities} "$capabilities" \
+		${secbits:+--secbits} "$secbits" \
+		${no_new_privs:+--no_new_privs} \
 		${command_user+--user} $command_user \
 		${umask+--umask} $umask \
 		${supervise_daemon_args:-${start_stop_daemon_args}} \

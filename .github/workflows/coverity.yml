@@ -1,0 +1,25 @@
+# GitHub actions workflow.
+# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+
+# https://scan.coverity.com/projects/openrc-openrc
+name: Coverity Scan
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  coverity:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: sudo apt-get update -q
+    - run: sudo apt-get install -q -y build-essential libpam-dev meson libcap-dev
+    - run: meson setup builddir/
+      env:
+        CC: gcc
+    - uses: vapier/coverity-scan-action@v1
+      with:
+        command: ninja -C builddir
+        email: ${{ secrets.COVERITY_SCAN_EMAIL }}
+        token: ${{ secrets.COVERITY_SCAN_TOKEN }}
