@@ -21,6 +21,11 @@
 
 #define ONE_MS           1000000
 
+#ifdef __linux__
+/* For extra SCHED_* defines. */
+# define _GNU_SOURCE
+#endif
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
@@ -60,9 +65,6 @@ static struct pam_conv conv = { NULL, NULL};
 #include <sys/capability.h>
 #endif
 
-#ifdef __linux__
-#include <linux/sched.h>
-#endif
 #include <sched.h>
 
 #include "einfo.h"
