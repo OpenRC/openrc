@@ -71,6 +71,20 @@ static struct pam_conv conv = { NULL, NULL};
 #include "_usage.h"
 #include "helpers.h"
 
+/* Use long option value that is out of range for 8 bit getopt values.
+ * The exact enum value is internal and can freely change, so we keep the
+ * options sorted.
+ */
+enum {
+  /* This has to come first so following values stay in the 0x100+ range. */
+  LONGOPT_BASE = 0x100,
+
+  LONGOPT_CAPABILITIES,
+  LONGOPT_OOM_SCORE_ADJ,
+  LONGOPT_NO_NEW_PRIVS,
+  LONGOPT_SECBITS,
+};
+
 const char *applet = NULL;
 const char *extraopts = NULL;
 const char getoptstring[] = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3" \
@@ -78,9 +92,9 @@ const char getoptstring[] = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3" \
 const struct option longopts[] = {
 	{ "healthcheck-timer",        1, NULL, 'a'},
 	{ "healthcheck-delay",        1, NULL, 'A'},
-	{ "capabilities", 1, NULL, 0x100},
-	{ "secbits", 1, NULL, 0x101},
-	{ "no-new-privs", 0, NULL, 0x102},
+	{ "capabilities", 1, NULL, LONGOPT_CAPABILITIES},
+	{ "secbits",      1, NULL, LONGOPT_SECBITS},
+	{ "no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
 	{ "respawn-delay",        1, NULL, 'D'},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
@@ -90,7 +104,7 @@ const struct option longopts[] = {
 	{ "umask",        1, NULL, 'k'},
 	{ "respawn-max",    1, NULL, 'm'},
 	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL, 0x103},
+	{ "oom-score-adj",1, NULL, LONGOPT_OOM_SCORE_ADJ},
 	{ "pidfile",      1, NULL, 'p'},
 	{ "respawn-period",        1, NULL, 'P'},
 	{ "retry",       1, NULL, 'R'},
@@ -843,7 +857,7 @@ int main(int argc, char **argv)
 				eerrorx("%s: invalid health check delay %s", applet, optarg);
 			break;
 
-		case 0x100:
+		case LONGOPT_CAPABILITIES:
 #ifdef HAVE_CAP
 			cap_iab = cap_iab_from_text(optarg);
 			if (cap_iab == NULL)
@@ -853,7 +867,7 @@ int main(int argc, char **argv)
 #endif
 			break;
 
-        case 0x101:
+        case LONGOPT_SECBITS:
 #ifdef HAVE_CAP
 			if (*optarg == '\0')
 				eerrorx("Secbits are empty");
@@ -867,7 +881,7 @@ int main(int argc, char **argv)
 #endif
 			break;
 
-		case 0x102:
+		case LONGOPT_NO_NEW_PRIVS:
 #ifdef PR_SET_NO_NEW_PRIVS
 			no_new_privs = true;
 #else
@@ -902,7 +916,7 @@ int main(int argc, char **argv)
 				    applet, optarg);
 			break;
 
-		case 0x103: /* --oom-score-adj */
+		case LONGOPT_OOM_SCORE_ADJ: /* --oom-score-adj */
 			if (sscanf(optarg, "%d", &oom_score_adj) != 1)
 				eerrorx("%s: invalid oom-score-adj `%s'",
 				    applet, optarg);

@@ -69,18 +69,32 @@ static struct pam_conv conv = { NULL, NULL};
 #include "_usage.h"
 #include "helpers.h"
 
+/* Use long option value that is out of range for 8 bit getopt values.
+ * The exact enum value is internal and can freely change, so we keep the
+ * options sorted.
+ */
+enum {
+  /* This has to come first so following values stay in the 0x100+ range. */
+  LONGOPT_BASE = 0x100,
+
+  LONGOPT_CAPABILITIES,
+  LONGOPT_OOM_SCORE_ADJ,
+  LONGOPT_NO_NEW_PRIVS,
+  LONGOPT_SECBITS,
+};
+
 const char *applet = NULL;
 const char *extraopts = NULL;
 const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "capabilities", 1, NULL, 0x100},
-	{ "secbits",      1, NULL, 0x101},
-	{ "no-new-privs", 0, NULL, 0x102},
+	{ "capabilities", 1, NULL, LONGOPT_CAPABILITIES},
+	{ "secbits",      1, NULL, LONGOPT_SECBITS},
+	{ "no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL, 0x103},
+	{ "oom-score-adj",1, NULL, LONGOPT_OOM_SCORE_ADJ},
 	{ "retry",        1, NULL, 'R'},
 	{ "start",        0, NULL, 'S'},
 	{ "startas",      1, NULL, 'a'},
@@ -371,7 +385,7 @@ int main(int argc, char **argv)
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
 		    (int *) 0)) != -1)
 		switch (opt) {
-		case 0x100:
+		case LONGOPT_CAPABILITIES:
 #ifdef HAVE_CAP
 			cap_iab = cap_iab_from_text(optarg);
 			if (cap_iab == NULL)
@@ -381,7 +395,7 @@ int main(int argc, char **argv)
 #endif
 			break;
 
-		case 0x101:
+		case LONGOPT_SECBITS:
 #ifdef HAVE_CAP
 			if (*optarg == '\0')
 				eerrorx("Secbits are empty");
@@ -395,7 +409,7 @@ int main(int argc, char **argv)
 #endif
 			break;
 
-		case 0x102:
+		case LONGOPT_NO_NEW_PRIVS:
 #ifdef PR_SET_NO_NEW_PRIVS
 			no_new_privs = true;
 #else
@@ -424,7 +438,7 @@ int main(int argc, char **argv)
 				    applet, optarg);
 			break;
 
-		case 0x103: /* --oom-score-adj */
+		case LONGOPT_OOM_SCORE_ADJ: /* --oom-score-adj */
 			if (sscanf(optarg, "%d", &oom_score_adj) != 1)
 				eerrorx("%s: invalid oom-score-adj `%s'",
 				    applet, optarg);
