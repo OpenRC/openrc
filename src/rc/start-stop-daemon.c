@@ -1106,11 +1106,11 @@ int main(int argc, char **argv)
 			}
 
 			if (sched_setscheduler(mypid, scheduler_index, &sched))
-				eerror("Failed to set scheduler: %s", strerror(errno));
+				eerrorx("Failed to set scheduler: %s", strerror(errno));
 		} else if (sched_prio != -1) {
 			const struct sched_param sched =  {.sched_priority = sched_prio};
 			if (sched_setparam(mypid, &sched))
-				eerror("Failed to set scheduler parameters: %s", strerror(errno));
+				eerrorx("Failed to set scheduler parameters: %s", strerror(errno));
 		}
 
 		setsid();
