@@ -21,6 +21,11 @@
 
 #define ONE_MS           1000000
 
+#ifdef __linux__
+/* For extra SCHED_* defines. */
+# define _GNU_SOURCE
+#endif
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
@@ -60,6 +65,8 @@ static struct pam_conv conv = { NULL, NULL};
 #include <sys/capability.h>
 #endif
 
+#include <sched.h>
+
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
@@ -80,6 +87,8 @@ enum {
   LONGOPT_CAPABILITIES,
   LONGOPT_OOM_SCORE_ADJ,
   LONGOPT_NO_NEW_PRIVS,
+  LONGOPT_SCHEDULER,
+  LONGOPT_SCHEDULER_PRIO,
   LONGOPT_SECBITS,
 };
 
@@ -120,6 +129,8 @@ const struct option longopts[] = {
 	{ "stdout-logger",1, NULL, '3'},
 	{ "stderr-logger",1, NULL, '4'},
 	{ "progress",     0, NULL, 'P'},
+	{ "scheduler",    1, NULL, LONGOPT_SCHEDULER},
+	{ "scheduler-priority",    1, NULL, LONGOPT_SCHEDULER_PRIO},
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -155,6 +166,8 @@ const char * const longopts_help[] = {
 	"Redirect stdout to process",
 	"Redirect stderr to process",
 	"Print dots each second while waiting",
+	"Set process scheduler",
+	"Set process scheduler priority",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
@@ -332,6 +345,8 @@ int main(int argc, char **argv)
 	mode_t numask = 022;
 	char **margv;
 	unsigned int start_wait = 0;
+	const char *scheduler = NULL;
+	int sched_prio = -1;
 #ifdef HAVE_CAP
 	cap_iab_t cap_iab = NULL;
 	unsigned secbits = 0;
@@ -592,6 +607,14 @@ int main(int argc, char **argv)
 
 		case '4':  /* --stderr-logger "command to run for stderr logging" */
 			stderr_process = optarg;
+			break;
+
+		case LONGOPT_SCHEDULER: /* --scheduler "Process scheduler policy" */
+			scheduler = optarg;
+			break;
+
+		case LONGOPT_SCHEDULER_PRIO: /* --scheduler-priority "Process scheduler priority" */
+			sscanf(optarg, "%d", &sched_prio);
 			break;
 
 		case_RC_COMMON_GETOPT
@@ -1063,6 +1086,37 @@ int main(int argc, char **argv)
 
 		for (i = getdtablesize() - 1; i >= 3; --i)
 			close(i);
+
+		if (scheduler != NULL) {
+			int scheduler_index;
+			struct sched_param sched =  {.sched_priority = sched_prio};
+			if (strcmp(scheduler, "fifo") == 0)
+				scheduler_index = SCHED_FIFO;
+			else if (strcmp(scheduler, "rr") == 0)
+				scheduler_index = SCHED_RR;
+			else if (strcmp(scheduler, "other") == 0)
+				scheduler_index = SCHED_OTHER;
+#ifdef SCHED_BATCH
+			else if (strcmp(scheduler, "batch") == 0)
+				scheduler_index = SCHED_BATCH;
+#endif
+#ifdef SCHED_IDLE
+			else if (strcmp(scheduler, "idle") == 0)
+				scheduler_index = SCHED_IDLE;
+#endif
+			else if (sscanf(scheduler, "%d", &scheduler_index) != 1)
+				eerrorx("Unknown scheduler: %s", scheduler);
+
+			if (sched_prio == -1)
+				sched.sched_priority = sched_get_priority_min(scheduler_index);
+
+			if (sched_setscheduler(mypid, scheduler_index, &sched))
+				eerrorx("Failed to set scheduler: %s", strerror(errno));
+		} else if (sched_prio != -1) {
+			const struct sched_param sched =  {.sched_priority = sched_prio};
+			if (sched_setparam(mypid, &sched))
+				eerrorx("Failed to set scheduler parameters: %s", strerror(errno));
+		}
 
 		setsid();
 		execvp(exec, argv);

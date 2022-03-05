@@ -130,6 +130,13 @@ Data can be from 0 to 7 inclusive.
 Modifies the scheduling priority of the daemon.
 .It Fl -oom-score-adj Ar adj
 Modifies the OOM score adjustment of the daemon.
+.It Fl -scheduler Ar policy
+Sets the scheduling policy of the daemon. Possible values are other, fifo and rr
+on POSIX systems and, additionally, batch and idle on Linux. If
+.Ar policy 
+is an integer, it is passed directly to sched_setscheduler(2).
+.It Fl -scheduler-priority Ar priority
+Sets the priority parameter of the scheduling policy of the daemon. See sched(7) for details.
 .It Fl 1 , -stdout Ar logfile
 Redirect the standard output of the process to logfile when started with
 .Fl background .
