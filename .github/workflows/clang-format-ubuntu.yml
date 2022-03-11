@@ -1,0 +1,14 @@
+name: clang_format_ubuntu
+
+on: [push, pull_request]
+
+jobs:
+
+  clang-format-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: RafikFarhad/clang-format-github-action@master
+      with:
+        sources: "src/**/*.h,src/**/*.h.in,src/**/*.c"
+        style: file
