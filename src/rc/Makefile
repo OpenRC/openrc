@@ -15,7 +15,7 @@ endif
 
 ifeq (${OS},Linux)
 SRCS+=		kill_all.c openrc-init.c openrc-shutdown.c rc-sysvinit.c broadcast.c \
-			rc-wtmp.c
+			rc-wtmp.c seedrng.c
 endif
 
 CLEANFILES=	version.h rc-selinux.o
@@ -47,6 +47,7 @@ RC_SBINPROGS=	mark_service_starting mark_service_started \
 
 ifeq (${OS},Linux)
 RC_BINPROGS+= kill_all
+RC_SBINPROGS+= seedrng
 SBINPROGS+= openrc-init openrc-shutdown
 endif
 
@@ -179,4 +180,7 @@ shell_var: shell_var.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^
 
 swclock: swclock.o _usage.o rc-misc.o
+	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
+
+seedrng: seedrng.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
