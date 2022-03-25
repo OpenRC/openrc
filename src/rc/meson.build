@@ -268,7 +268,15 @@ if os == 'Linux'
     link_with: [libeinfo,librc],
     install: true,
     install_dir: rc_bindir)
-  endif
+
+  executable('seedrng',
+    ['seedrng.c'],
+    c_args : cc_branding_flags,
+    include_directories: [incdir, einfo_incdir, rc_incdir],
+    link_with: [libeinfo, librc],
+    install: true,
+    install_dir: rc_sbindir)
+endif
 
 executable('shell_var',
   ['shell_var.c'],
