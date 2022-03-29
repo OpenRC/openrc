@@ -977,7 +977,7 @@ rc_services_in_runlevel_stacked(const char *runlevel)
 	TAILQ_FOREACH(stack, stacks, entries) {
 		sl = rc_services_in_runlevel(stack->value);
 		TAILQ_CONCAT(list, sl, entries);
-		free(sl);
+		rc_stringlist_free(sl);
 	}
 	rc_stringlist_free(stacks);
 	return list;
