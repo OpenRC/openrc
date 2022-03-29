@@ -406,7 +406,7 @@ int main(int argc, char **argv)
 		TAILQ_FOREACH(l, levels, entries) {
 			nservices = rc_services_in_runlevel_stacked(l->value);
 			TAILQ_CONCAT(sservices, nservices, entries);
-			free(nservices);
+			rc_stringlist_free(nservices);
 		}
 		TAILQ_FOREACH_SAFE(s, services, entries, t) {
 			state = rc_service_state(s->value);
