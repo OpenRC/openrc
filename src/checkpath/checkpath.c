@@ -140,6 +140,8 @@ static int get_dirfd(char *path, bool symlinks)
 			item = strtok(NULL, "/");
 			components--;
 		}
+
+		free(str);
 	}
 	free(path_dupe);
 	free(linkpath);
