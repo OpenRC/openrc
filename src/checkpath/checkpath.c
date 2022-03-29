@@ -215,6 +215,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			fd = openat(dirfd, name, flags, mode);
 			umask(u);
 			if (fd == -1) {
+				free(name);
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
 			}
@@ -230,12 +231,14 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			r = mkdirat(dirfd, name, mode);
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
+				free(name);
 				eerror("%s: mkdirat: %s", applet,
 				    strerror (errno));
 				return -1;
 			}
 			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
+				free(name);
 				eerror("%s: unable to open directory: %s", applet,
 						strerror(errno));
 				return -1;
@@ -248,18 +251,23 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			r = mkfifo(path, mode);
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
+				free(name);
 				eerror("%s: mkfifo: %s", applet,
 				    strerror (errno));
 				return -1;
 			}
 			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
+				free(name);
 				eerror("%s: unable to open fifo: %s", applet,
 						strerror(errno));
 				return -1;
 			}
 		}
 	}
+
+	free(name);
+
 	if (fstat(readfd, &st) != -1) {
 		if (type != inode_dir && S_ISDIR(st.st_mode)) {
 			eerror("%s: is a directory", path);
