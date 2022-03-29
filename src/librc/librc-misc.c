@@ -413,7 +413,7 @@ rc_conf_value(const char *setting)
 		if (exists(RC_CONF_OLD)) {
 			old = rc_config_load(RC_CONF_OLD);
 			TAILQ_CONCAT(rc_conf, old, entries);
-			free(old);
+			rc_stringlist_free(old);
 		}
 
 		rc_conf = rc_config_directory(rc_conf);
