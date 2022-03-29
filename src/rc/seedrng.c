@@ -385,7 +385,7 @@ int main(int argc _unused, char *argv[] _unused)
 {
 	static const char seedrng_prefix[] = "SeedRNG v1 Old+New Prefix";
 	static const char seedrng_failure[] = "SeedRNG v1 No New Seed Failure";
-	int ret, fd, lock, program_ret = 0;
+	int ret, fd = -1, lock, program_ret = 0;
 	uint8_t new_seed[MAX_SEED_LEN];
 	size_t new_seed_len;
 	bool new_seed_creditable;
@@ -408,8 +408,11 @@ int main(int argc _unused, char *argv[] _unused)
 		eerrorx("Unable to create \"%s\" directory: %s", SEED_DIR, strerror(errno));
 
 	lock = open(LOCK_FILE, O_WRONLY | O_CREAT, 0000);
-	if (lock < 0 || flock(lock, LOCK_EX) < 0)
-		eerrorx("Unable to open lock file: %s", strerror(errno));
+	if (lock < 0 || flock(lock, LOCK_EX) < 0) {
+		eerror("Unable to open lock file: %s", strerror(errno));
+		program_ret = 1;
+		goto out;
+	}
 
 	ret = seed_from_file_if_exists(NON_CREDITABLE_SEED, false, &hash);
 	if (ret < 0)
@@ -447,7 +450,9 @@ int main(int argc _unused, char *argv[] _unused)
 		program_ret |= 1 << 6;
 	}
 out:
-	close(fd);
-	close(lock);
+	if (fd >= 0)
+		close(fd);
+	if (lock >= 0)
+		close(lock);
 	return program_ret;
 }
