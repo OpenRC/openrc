@@ -2,11 +2,4 @@
 # (say for crypt swap), so you will need to customize this
 # behavior.  If you have /var on a separate partition, then
 # make sure this path lives on your root device somewhere.
-seed_dir="/var/lib/seedrng"
-lock_file="/var/run/seedrng.lock"
-
-# Set this to true if you do not want seed files to actually
-# credit the RNG. Set this if you plan to replicate this
-# file system image and do not have the wherewithal to first
-# delete the contents of /var/lib/seedrng.
-skip_credit="false"
+urandom_seed="/var/lib/misc/random-seed"

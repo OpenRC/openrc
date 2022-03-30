@@ -24,11 +24,11 @@ case "${os}" in
 		;;
 esac
 
-boot="bootmisc fsck hostname localmount loopback root swap sysctl urandom"
+boot="bootmisc fsck hostname localmount loopback root swap sysctl"
 if [ "${net}" = yes ]; then
 	boot="${boot} network staticroute"
 fi
-boot_BSD="hostid newsyslog savecore syslogd"
+boot_BSD="hostid newsyslog savecore syslogd urandom"
 
 case "${os}" in
 	DragonFly)
@@ -39,7 +39,7 @@ case "${os}" in
 		;;
 	Linux)
 		boot="${boot} binfmt hwclock keymaps modules mtab procfs
-		save-keymaps save-termencoding termencoding"
+		save-keymaps save-termencoding seedrng termencoding"
 		;;
 	NetBSD)
 		boot="${boot} ${boot_BSD} devdb swap-blk tys wscons"
