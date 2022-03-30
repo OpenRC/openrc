@@ -182,5 +182,5 @@ shell_var: shell_var.o
 swclock: swclock.o _usage.o rc-misc.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
 
-seedrng: seedrng.o
+seedrng: seedrng.o _usage.o
 	${CC} ${LOCAL_CFLAGS} ${LOCAL_LDFLAGS} ${CFLAGS} ${LDFLAGS} -o $@ $^ ${LDADD}
