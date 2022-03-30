@@ -270,7 +270,7 @@ if os == 'Linux'
     install_dir: rc_bindir)
 
   executable('seedrng',
-    ['seedrng.c'],
+    ['seedrng.c', usage_c, version_h],
     c_args : cc_branding_flags,
     include_directories: [incdir, einfo_incdir, rc_incdir],
     link_with: [libeinfo, librc],
