@@ -7,7 +7,6 @@ conf_common = [
   'localmount',
   'netmount',
   'swap',
-  'urandom',
   ]
 
 conf_net = [
@@ -23,6 +22,7 @@ conf_FreeBSD = [
   'rarpd',
   'savecore',
   'syscons',
+  'urandom',
   ]
 
 conf_Linux = [
@@ -36,12 +36,14 @@ conf_Linux = [
   'modules',
   'mtab',
   'net-online',
+  'seedrng',
   ]
 
 conf_NetBSD =  [
   'moused',
   'rarpd',
   'savecore',
+  'urandom',
   ]
 
 conf_data = conf_common

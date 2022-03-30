@@ -15,7 +15,6 @@ init_common =  [
   'swclock.in',
   'sysctl.in',
   'runsvdir.in',
-  'urandom.in',
   's6-svscan.in',
   ]
 
@@ -44,6 +43,7 @@ init_Linux =  [
   'net-online.in',
   'save-keymaps.in',
   'save-termencoding.in',
+  'seedrng.in',
   'sysfs.in',
   'termencoding.in',
   ]
@@ -58,6 +58,7 @@ init_BSD =  [
   'rpcbind.in',
   'savecore.in',
   'syslogd.in',
+  'urandom.in',
   ]
 
 init_FreeBSD =  [
