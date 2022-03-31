@@ -76,6 +76,8 @@ rc_deptree_free(RC_DEPTREE *deptree)
 		free(di);
 		di = di2;
 	}
+
+	/* Use free() here since rc_deptree_free should not call itself */
 	free(deptree);
 }
 
