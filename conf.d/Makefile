@@ -10,10 +10,11 @@ endif
 MK=	../mk
 include ${MK}/os.mk
 
-CONF-FreeBSD=	ipfw modules moused powerd rarpd savecore syscons
+CONF-FreeBSD=	ipfw modules modules-late moused powerd rarpd savecore \
+	syscons
 
 CONF-Linux=	agetty consolefont devfs dmesg hwclock keymaps killprocs modules \
-	mtab net-online
+	modules-late mtab net-online
 
 CONF-NetBSD=	moused rarpd savecore
 

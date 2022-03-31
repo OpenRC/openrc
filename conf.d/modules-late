@@ -1,0 +1,7 @@
+# This file has the same syntax as /etc/conf.d/modules, just it is for modules
+# that should be loaded late (at the beginning of the default runlevel) - it
+# can be used, for example, for modules that trigger hotplugging of services
+# that in turn need other services from the default runlevel (like dbus) or
+# which need mounted local filesystems (including the root fs mounted rw).
+
+modules=""
