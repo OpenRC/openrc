@@ -25,7 +25,7 @@ seedrng_options()
 		echo "--lock-file \"${lock_file}\""
 	[ -n "${seed_dir}" ] &&
 		echo "--seed-dir \"${seed_dir}\""
-	rc_yesno "${skip_credit}" &&
+	yesno "${skip_credit}" &&
 		echo "--skip-credit"
 }
 
