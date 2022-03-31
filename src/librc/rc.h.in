@@ -537,6 +537,7 @@ void rc_stringlist_free(RC_STRINGLIST *);
 #ifdef HAVE_MALLOC_EXTENDED_ATTRIBUTE
 __attribute__ ((malloc (rc_stringlist_free, 1)))
 #endif
+__attribute__ ((warn_unused_result))
 RC_STRINGLIST *rc_stringlist_new(void);
 
 /*! Duplicate the item, add it to end of the list and return a pointer to it.
@@ -568,6 +569,7 @@ RC_STRING *rc_stringlist_find(RC_STRINGLIST *, const char *);
  * @param string to split
  * @param separator
  * @return new list */
+__attribute__ ((warn_unused_result))
 RC_STRINGLIST *rc_stringlist_split(const char *, const char *);
 
 
