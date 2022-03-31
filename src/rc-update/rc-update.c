@@ -288,7 +288,7 @@ int main(int argc, char **argv)
 		if (service)
 			rc_stringlist_add(runlevels, service);
 		if (!TAILQ_FIRST(runlevels)) {
-			free(runlevels);
+			rc_stringlist_free(runlevels);
 			runlevels = rc_runlevel_list();
 		}
 
