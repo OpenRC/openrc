@@ -1009,7 +1009,6 @@ rc_services_in_state(RC_SERVICE state)
 		services = ls_dir(dir, LS_INITD);
 		if (services) {
 			TAILQ_CONCAT(list, services, entries);
-			free(services);
 		}
 	}
 	rc_stringlist_free(dirs);
