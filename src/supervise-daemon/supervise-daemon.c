@@ -809,7 +809,7 @@ int main(int argc, char **argv)
 			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
 			    applet, tmp);
 	if ((tmp = getenv("SSD_IONICELEVEL"))) {
-		int n = sscanf(tmp, "%d:%d", &ionicec, &ioniced);
+		n = sscanf(tmp, "%d:%d", &ionicec, &ioniced);
 		if (n != 1 && n != 2)
 			eerror("%s: invalid ionice level `%s' (SSD_IONICELEVEL)",
 			    applet, tmp);
