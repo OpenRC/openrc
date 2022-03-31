@@ -947,11 +947,9 @@ rc_services_in_runlevel(const char *runlevel)
 
 #ifdef RC_PKG_INITDIR
 		TAILQ_CONCAT(list, pkg, entries);
-		free(pkg);
 #endif
 #ifdef RC_LOCAL_INITDIR
 		TAILQ_CONCAT(list, local, entries);
-		free(local);
 #endif
 		return list;
 	}
