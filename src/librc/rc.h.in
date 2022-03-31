@@ -407,6 +407,10 @@ bool rc_older_than(const char *, const char *, time_t *, char *);
  * @return pointer to the value, otherwise NULL */
 char *rc_proc_getent(const char *);
 
+/*! Free a deptree and its information
+ * @param deptree to free */
+void rc_deptree_free(RC_DEPTREE *);
+
 /*! Update the cached dependency tree if it's older than any init script,
  * its configuration file or an external configuration file the init script
  * has specified.
@@ -426,11 +430,17 @@ bool rc_deptree_update_needed(time_t *, char *);
 /*! Load the cached dependency tree and return a pointer to it.
  * This pointer should be freed with rc_deptree_free when done.
  * @return pointer to the dependency tree */
+#ifdef HAVE_MALLOC_EXTENDED_ATTRIBUTE
+__attribute__ ((malloc (rc_deptree_free, 1)))
+#endif
 RC_DEPTREE *rc_deptree_load(void);
 
 /*! Load a cached dependency tree from the specified file and return a pointer
  * to it.  This pointer should be freed with rc_deptree_free when done.
  * @return pointer to the dependency tree */
+#ifdef HAVE_MALLOC_EXTENDED_ATTRIBUTE
+__attribute__ ((malloc (rc_deptree_free, 1)))
+#endif
 RC_DEPTREE *rc_deptree_load_file(const char *);
 
 /*! List the depend for the type of service
@@ -458,10 +468,6 @@ RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *, const RC_STRINGLIST *,
  * @param options to pass
  * @return NULL terminated list of services in order */
 RC_STRINGLIST *rc_deptree_order(const RC_DEPTREE *, const char *, int);
-
-/*! Free a deptree and its information
- * @param deptree to free */
-void rc_deptree_free(RC_DEPTREE *);
 
 /*! @name Plugins
  * For each plugin loaded we will call rc_plugin_hook with the below
