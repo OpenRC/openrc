@@ -183,9 +183,9 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 			} else {
 				l = strlen(runlevel->value);
 				buffer = xmalloc(l+1);
-				memset (buffer, ' ', l);
+				memset(buffer, ' ', l);
 				buffer[l] = 0;
-				rc_stringlist_add (in, buffer);
+				rc_stringlist_add(in, buffer);
 				free(buffer);
 			}
 		}
@@ -194,12 +194,12 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 			printf(" %20s |", service->value);
 			TAILQ_FOREACH(runlevel, in, entries)
 			    printf (" %s", runlevel->value);
-			printf ("\n");
+			printf("\n");
 		}
 		rc_stringlist_free(in);
 	}
 
-	rc_stringlist_free (services);
+	rc_stringlist_free(services);
 }
 
 #define DOADD    (1 << 1)
