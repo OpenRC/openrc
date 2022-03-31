@@ -182,6 +182,16 @@ cc_warning_flags = cc.get_supported_arguments(cc_warning_flags_test)
 cc_flags = [cc_debug_flags, cc_os_flags, cc_warning_flags]
 add_project_arguments(cc_flags, language : 'c')
 
+# Meson's has_function_attribute doesn't know about GCC's extended
+# version (with arguments), so we have to build a test program instead.
+malloc_attribute_test = '''#include<stdlib.h>
+__attribute__ ((malloc (free, 1)))
+int func() { return 0; }
+'''
+if cc.compiles(malloc_attribute_test, name : 'malloc attribute with arguments')
+  add_project_arguments('-DHAVE_MALLOC_EXTENDED_ATTRIBUTE', language: 'c')
+endif
+
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
 rc_incdir = include_directories('src/librc')

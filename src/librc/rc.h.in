@@ -528,8 +528,15 @@ bool rc_yesno(const char *);
 /*! @name String List functions
  * Every string list should be released with a call to rc_stringlist_free. */
 
-/*! Create a new stringlist
+/*! Frees each item on the list and the list itself.
+ * @param list to free */
+void rc_stringlist_free(RC_STRINGLIST *);
+
+/*! Create a new stringlinst
  * @return pointer to new list */
+#ifdef HAVE_MALLOC_EXTENDED_ATTRIBUTE
+__attribute__ ((malloc (rc_stringlist_free, 1)))
+#endif
 RC_STRINGLIST *rc_stringlist_new(void);
 
 /*! Duplicate the item, add it to end of the list and return a pointer to it.
@@ -567,10 +574,6 @@ RC_STRINGLIST *rc_stringlist_split(const char *, const char *);
 /*! Sort the list according to C locale
  * @param list to sort */
 void rc_stringlist_sort(RC_STRINGLIST **);
-
-/*! Frees each item on the list and the list itself.
- * @param list to free */
-void rc_stringlist_free(RC_STRINGLIST *);
 
 typedef struct rc_pid
 {
