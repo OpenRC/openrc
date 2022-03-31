@@ -77,7 +77,6 @@ static char *lock_file = NULL;
 static char *seed_dir = NULL;
 static char *creditable_seed = NULL;
 static char *non_creditable_seed = NULL;
-static bool skip_credit = false;
 
 enum blake2s_lengths {
 	BLAKE2S_BLOCK_LEN = 64,
@@ -405,20 +404,10 @@ static int seed_from_file_if_exists(const char *filename, bool credit, struct bl
 
 static void populate_global_paths(void)
 {
-	if (!lock_file) {
-		lock_file = xstrdup(getenv("SEEDRNG_LOCK_FILE"));
-		if (!lock_file || !*lock_file) {
-			free(lock_file);
-			lock_file = xstrdup("/var/run/seedrng.lock");
-		}
-	}
-	if (!seed_dir) {
-		seed_dir = xstrdup(getenv("SEEDRNG_SEED_DIR"));
-		if (!seed_dir || !*seed_dir) {
-			free(seed_dir);
-			seed_dir = xstrdup("/var/lib/seedrng");
-		}
-	}
+	if (!lock_file)
+		lock_file = xstrdup("/var/run/seedrng.lock");
+	if (!seed_dir)
+		seed_dir = xstrdup("/var/lib/seedrng");
 	xasprintf(&creditable_seed, "%s/seed.credit", seed_dir);
 	xasprintf(&non_creditable_seed, "%s/seed.no-credit", seed_dir);
 }
@@ -442,6 +431,7 @@ int main(int argc, char **argv)
 	bool new_seed_creditable;
 	struct timespec realtime = { 0 }, boottime = { 0 };
 	struct blake2s_state hash;
+	bool skip_credit = false;
 
 	atexit(cleanup);
 	applet = basename_c(argv[0]);
@@ -489,9 +479,7 @@ int main(int argc, char **argv)
 	ret = seed_from_file_if_exists(non_creditable_seed, false, &hash);
 	if (ret < 0)
 		program_ret |= 1 << 1;
-	ret = seed_from_file_if_exists(creditable_seed,
-		skip_credit ? !skip_credit : !rc_yesno(getenv("SEEDRNG_SKIP_CREDIT")),
-		&hash);
+	ret = seed_from_file_if_exists(creditable_seed, !skip_credit, &hash);
 	if (ret < 0)
 		program_ret |= 1 << 2;
 
