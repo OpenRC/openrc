@@ -22,13 +22,17 @@ tty1-tty6.
 
 ```
 # cd /etc/init.d
-# for x in tty1 tty2 tty3 tty4 tty5 tty6; do
-  ln -snf agetty agetty.$x
+# for x in 1 2 3 4 5 6; do
+  ln -snf agetty agetty.tty$x
   done
 ```
 
 Once this is done, use ```rc-update``` as normal to install the agetty
 services in the appropriate runlevels.
+
+This can be done at build time by passing MKGETTYS=n, with n > 0. By default
+OpenRC is built with MKGETTYS=6. If you set it to zero no agetty.tty$x symlink
+will be installed.
 
 * Reboot your system.
 
