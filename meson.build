@@ -182,7 +182,7 @@ cc_warning_flags = cc.get_supported_arguments(cc_warning_flags_test)
 cc_flags = [cc_debug_flags, cc_os_flags, cc_warning_flags]
 add_project_arguments(cc_flags, language : 'c')
 
-incdir = include_directories('src/includes')
+incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
 rc_incdir = include_directories('src/librc')
 
@@ -201,7 +201,6 @@ subdir('init.d')
 subdir('local.d')
 subdir('man')
 subdir('pkgconfig')
-subdir('scripts')
 subdir('sh')
 subdir('src')
 subdir('support')

@@ -54,6 +54,6 @@
 #endif
 
 #include "rc.h"
-#include "rc-misc.h"
+#include "misc.h"
 
 #endif
