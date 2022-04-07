@@ -1,5 +1,5 @@
 /*
- * rc-pipes.c
+ * pipes.c
  * Helper to handle spawning processes and connecting them to pipes.
  */
 
@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "rc-pipes.h"
+#include "pipes.h"
 
 static const int pipe_read_end = 0;
 static const int pipe_write_end = 1;
