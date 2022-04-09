@@ -27,6 +27,7 @@ apply_file() {
 		case $line in
 			\#*) continue ;;
 			\;*) continue ;;
+			'')  continue ;;
 		esac
 
 		local reg=${line#*:}
