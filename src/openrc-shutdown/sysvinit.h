@@ -1,5 +1,5 @@
 /*
- * rc-sysvinit.h	- Interface to communicate with sysvinit via /run/initctl.
+ * sysvinit.h	- Interface to communicate with sysvinit via /run/initctl.
  */
 
 /*

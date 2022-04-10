@@ -1,5 +1,5 @@
 /*
- * rc-sysvinit.c
+ * sysvinit.c
  * Helper to send a runlevel change to sysvinit
  */
 
@@ -24,7 +24,7 @@
 #include <sys/types.h>
 
 #include "einfo.h"
-#include "rc-sysvinit.h"
+#include "sysvinit.h"
 
 static void sysvinit_send_cmd(struct init_request *request)
 {

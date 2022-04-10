@@ -35,7 +35,7 @@
 #include "rc.h"
 #include "helpers.h"
 #include "misc.h"
-#include "rc-sysvinit.h"
+#include "sysvinit.h"
 #include "wtmp.h"
 #include "_usage.h"
 
