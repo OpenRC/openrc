@@ -877,7 +877,7 @@ int main(int argc, char **argv)
 		setenv("RC_RUNLEVEL", newlevel, 1);
 		setenv("RC_GOINGDOWN", "YES", 1);
 	} else {
-		/* We should not use krunevel in sysinit or boot runlevels */
+		/* We should not use krunlevel in sysinit or boot runlevels */
 		if (!newlevel ||
 		    (strcmp(newlevel, RC_LEVEL_SYSINIT) != 0 &&
 			strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0))
