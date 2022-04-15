@@ -122,7 +122,7 @@ start() {
 		ipfw add deny { tcp or udp } from any to any $p in
 	done
 
-	# Broadcasts and muticasts
+	# Broadcasts and multicasts
 	ipfw add deny ip from any to 255.255.255.255
 	ipfw add deny ip from any to 224.0.0.0/24
 
