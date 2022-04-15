@@ -913,7 +913,7 @@ int main(int argc, char **argv)
 #ifdef __FreeBSD__
 		/* FIXME: we shouldn't have todo this */
 		/* For some reason, wait_for_services waits for the logger
-		 * proccess to finish as well, but only on FreeBSD.
+		 * process to finish as well, but only on FreeBSD.
 		 * We cannot allow this so we stop logging now. */
 		rc_logger_close();
 #endif
