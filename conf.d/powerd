@@ -3,5 +3,5 @@
 powerd_ac_mode="maximum"
 #powerd_battery_mode="minimum"
 
-# Addiditonal arguments for powerd - see the man page for details
+# Additional arguments for powerd - see the man page for details
 powerd_args=""
