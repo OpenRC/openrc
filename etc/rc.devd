@@ -26,7 +26,7 @@ getmedia() {
 if [ ! -e /etc/init.d/"$1" -a ! -e /usr/local/init.d/"$1" ]; then
 	base=${1%%.*}
 	if [ "${base}" = "net" ]; then
-		# We only create links for pyhsical interfaces
+		# We only create links for physical interfaces
 		[ -n "$(getmedia ${1#*.})" ] || exit 1
 		base="net.lo0"
 	fi
