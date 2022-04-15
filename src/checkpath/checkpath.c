@@ -1,6 +1,6 @@
 /*
  * checkpath.c
- * Checks for the existance of a file or directory and creates it
+ * Checks for the existence of a file or directory and creates it
  * if necessary. It can also correct its ownership.
  */
 
@@ -67,7 +67,7 @@ const char * const longopts_help[] = {
 	"Create a named pipe (FIFO) if not exists",
 	"Mode to check",
 	"Owner to check (user:group)",
-	"follow symbolic links (irrelivent on linux)",
+	"follow symbolic links (irrelevant on linux)",
 	"Check whether the path is writable or not",
 	longopts_help_COMMON
 };

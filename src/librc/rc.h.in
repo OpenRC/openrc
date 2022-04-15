@@ -201,7 +201,7 @@ bool rc_service_add(const char *, const char *);
 /*! Remove the service from the runlevel
  * @param runlevel to remove from
  * @param service to remove
- * @return true if sucessful, otherwise false */
+ * @return true if successful, otherwise false */
 bool rc_service_delete(const char *, const char *);
 
 /*! Save the arguments to find a running daemon
@@ -304,7 +304,7 @@ RC_STRINGLIST *rc_services_in_runlevel_stacked(const char *);
  * @return NULL terminated list of services */
 RC_STRINGLIST *rc_services_in_state(RC_SERVICE);
 
-/*! List the services shceduled to start when this one does
+/*! List the services scheduled to start when this one does
  * @param service to check
  * @return  NULL terminated list of services */
 RC_STRINGLIST *rc_services_scheduled(const char *);
@@ -450,9 +450,9 @@ RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *, const char *, const char *)
 RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *, const RC_STRINGLIST *,
 				  const RC_STRINGLIST *, const char *, int);
 
-/*! List all the services that should be stoppned and then started, in order,
+/*! List all the services that should be stopped and then started, in order,
  * for the given runlevel, including sysinit and boot services where
- * approriate.
+ * appropriate.
  * @param deptree to search
  * @param runlevel to change into
  * @param options to pass
@@ -528,7 +528,7 @@ bool rc_yesno(const char *);
 /*! @name String List functions
  * Every string list should be released with a call to rc_stringlist_free. */
 
-/*! Create a new stringlinst
+/*! Create a new stringlist
  * @return pointer to new list */
 RC_STRINGLIST *rc_stringlist_new(void);
 

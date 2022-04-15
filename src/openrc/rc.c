@@ -562,7 +562,7 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 			continue;
 		}
 
-		/* If the service has crashed, skip futher checks and just stop
+		/* If the service has crashed, skip further checks and just stop
 		   it */
 		if (crashed &&
 		    rc_service_daemons_crashed(service->value))
@@ -584,7 +584,7 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 				continue;
 		}
 
-		/* We got this far. Last check is to see if any any service
+		/* We got this far. Last check is to see if any service
 		 * that going to be started depends on us */
 		if (!svc1) {
 			tmplist = rc_stringlist_new();
@@ -877,7 +877,7 @@ int main(int argc, char **argv)
 		setenv("RC_RUNLEVEL", newlevel, 1);
 		setenv("RC_GOINGDOWN", "YES", 1);
 	} else {
-		/* We should not use krunevel in sysinit or boot runlevels */
+		/* We should not use krunlevel in sysinit or boot runlevels */
 		if (!newlevel ||
 		    (strcmp(newlevel, RC_LEVEL_SYSINIT) != 0 &&
 			strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0))
@@ -913,7 +913,7 @@ int main(int argc, char **argv)
 #ifdef __FreeBSD__
 		/* FIXME: we shouldn't have todo this */
 		/* For some reason, wait_for_services waits for the logger
-		 * proccess to finish as well, but only on FreeBSD.
+		 * process to finish as well, but only on FreeBSD.
 		 * We cannot allow this so we stop logging now. */
 		rc_logger_close();
 #endif

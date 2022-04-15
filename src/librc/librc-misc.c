@@ -186,7 +186,7 @@ rc_config_list(const char *file)
 		if (token && (strlen(token) > 1)) {
 			/* If not variable assignment then skip */
 			if (strchr(token, '=')) {
-				/* Stip the newline if present */
+				/* Strip the newline if present */
 				if (token[strlen(token) - 1] == '\n')
 					token[strlen(token) - 1] = 0;
 

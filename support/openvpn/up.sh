@@ -15,7 +15,7 @@
 # we're using a decent dns cache/forwarder like dnsmasq and NOT nscd/libc.
 # nscd/libc users will get the VPN nameservers before their other ones
 # and will use the first one that responds - maybe the LAN ones?
-# non resolvconf users just the the VPN resolv.conf
+# non resolvconf users just the VPN resolv.conf
 
 # FIXME:- if we have >1 domain, then we have to use search :/
 # We need to add a flag to resolvconf to say

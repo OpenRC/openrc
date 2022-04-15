@@ -110,7 +110,7 @@ using modules-load in  your dependencies.
 
 The consolefont, keymaps, numlock and procfs service scripts no longer
 have a dependency on localmount.
-If you are a linux user and are still separaating / from /usr,
+If you are a linux user and are still separating / from /usr,
 you will need to add the following line to the appropriate conf.d files:
 
 rc_need="localmount"

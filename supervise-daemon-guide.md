@@ -13,7 +13,7 @@ The following is a brief guide on using this capability.
   functions.
 
 * Daemons must not fork
-  Any deamon that you would like to have monitored by supervise-daemon
+  Any daemon that you would like to have monitored by supervise-daemon
   must not fork. Instead, it must stay in the foreground. If the daemon
   forks, the supervisor will be unable to monitor it.
 

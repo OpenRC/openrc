@@ -363,7 +363,7 @@ svc_exec(const char *arg1, const char *arg2)
 	 * We do this instead of mapping pipes to stdout, stderr so that
 	 * programs can tell if they're attached to a tty or not.
 	 * The only loss is that we can no longer tell the difference
-	 * between the childs stdout or stderr */
+	 * between the child's stdout or stderr */
 	master_tty = slave_tty = -1;
 	if (prefix && isatty(fdout)) {
 		tcgetattr(fdout, &tt);
@@ -1045,7 +1045,7 @@ svc_stop(void)
 static void
 svc_restart(void)
 {
-	/* This is hairly and a better way needs to be found I think!
+	/* This is hairy and a better way needs to be found I think!
 	 * The issue is this - openvpn need net and dns. net can restart
 	 * dns via resolvconf, so you could have openvpn trying to restart
 	 * dnsmasq which in turn is waiting on net which in turn is waiting

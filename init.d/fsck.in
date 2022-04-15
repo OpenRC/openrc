@@ -106,7 +106,7 @@ start()
 			_abort
 		fi;;
 	4)	if [ "$RC_UNAME" = Linux ]; then
-			ewend 1 "Fileystem errors left uncorrected, aborting"
+			ewend 1 "Filesystem errors left uncorrected, aborting"
 			_abort
 		else
 		 	ewend 1 "Filesystems repaired, but reboot needed"

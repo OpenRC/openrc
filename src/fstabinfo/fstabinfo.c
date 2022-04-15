@@ -75,7 +75,7 @@ const struct option longopts[] = {
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
-	"Mounts the filesytem from the mountpoint",
+	"Mounts the filesystem from the mountpoint",
 	"Remounts the filesystem based on the information in fstab",
 	"Extract the block device",
 	"Show arguments needed to mount the entry",

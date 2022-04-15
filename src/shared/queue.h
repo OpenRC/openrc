@@ -664,7 +664,7 @@ struct {								\
  */
 
 /*
- * __launder_type():  We use this ugly hack to work around the the compiler
+ * __launder_type():  We use this ugly hack to work around the compiler
  * noticing that two types may not alias each other and elide tests in code.
  * We hit this in the CIRCLEQ macros when comparing 'struct name *' and
  * 'struct type *' (see CIRCLEQ_HEAD()).  Modern compilers (such as GCC
@@ -675,7 +675,7 @@ struct {								\
  * Do not use for assignment.
  *
  * If we ever choose to change the ABI of the CIRCLEQ macros, we could fix
- * this by changing the head/tail sentinal values, but see the note above
+ * this by changing the head/tail sentinel values, but see the note above
  * this one.
  */
 static __inline const void * __launder_type(const void *);

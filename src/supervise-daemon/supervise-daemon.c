@@ -1,7 +1,7 @@
 /*
  * supervise-daemon
  * This is a supervisor for daemons.
- * It will start a deamon and make sure it restarts if it crashes.
+ * It will start a daemon and make sure it restarts if it crashes.
  */
 
 /*
