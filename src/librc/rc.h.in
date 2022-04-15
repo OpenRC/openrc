@@ -201,7 +201,7 @@ bool rc_service_add(const char *, const char *);
 /*! Remove the service from the runlevel
  * @param runlevel to remove from
  * @param service to remove
- * @return true if sucessful, otherwise false */
+ * @return true if successful, otherwise false */
 bool rc_service_delete(const char *, const char *);
 
 /*! Save the arguments to find a running daemon
