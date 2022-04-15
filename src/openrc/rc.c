@@ -584,7 +584,7 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 				continue;
 		}
 
-		/* We got this far. Last check is to see if any any service
+		/* We got this far. Last check is to see if any service
 		 * that going to be started depends on us */
 		if (!svc1) {
 			tmplist = rc_stringlist_new();
