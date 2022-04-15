@@ -450,7 +450,7 @@ RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *, const char *, const char *)
 RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *, const RC_STRINGLIST *,
 				  const RC_STRINGLIST *, const char *, int);
 
-/*! List all the services that should be stoppned and then started, in order,
+/*! List all the services that should be stopped and then started, in order,
  * for the given runlevel, including sysinit and boot services where
  * appropriate.
  * @param deptree to search
