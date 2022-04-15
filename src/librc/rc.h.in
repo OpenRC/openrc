@@ -528,7 +528,7 @@ bool rc_yesno(const char *);
 /*! @name String List functions
  * Every string list should be released with a call to rc_stringlist_free. */
 
-/*! Create a new stringlinst
+/*! Create a new stringlist
  * @return pointer to new list */
 RC_STRINGLIST *rc_stringlist_new(void);
 
