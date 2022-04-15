@@ -108,7 +108,7 @@ int ebegin(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
  * eend places [ ok ] or [ !! ] at the end of the terminal line depending on
  * retval (0 or ok, anything else for !!)
  *
- * ebracket allows you to specifiy the position, color and message */
+ * ebracket allows you to specify the position, color and message */
 /*@{*/
 int eend(int, const char * EINFO_RESTRICT, ...) EINFO_PRINTF(2, 3);
 int ewend(int, const char * EINFO_RESTRICT, ...) EINFO_PRINTF(2, 3);
