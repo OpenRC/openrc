@@ -675,7 +675,7 @@ struct {								\
  * Do not use for assignment.
  *
  * If we ever choose to change the ABI of the CIRCLEQ macros, we could fix
- * this by changing the head/tail sentinal values, but see the note above
+ * this by changing the head/tail sentinel values, but see the note above
  * this one.
  */
 static __inline const void * __launder_type(const void *);
