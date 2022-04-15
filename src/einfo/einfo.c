@@ -30,7 +30,7 @@
 #include "einfo.h"
 #include "helpers.h"
 
-/* usecs to wait while we poll the file existance  */
+/* usecs to wait while we poll the file existence  */
 #define WAIT_INTERVAL	20000000
 
 const char *applet = NULL;

@@ -1,6 +1,6 @@
 /*
  * checkpath.c
- * Checks for the existance of a file or directory and creates it
+ * Checks for the existence of a file or directory and creates it
  * if necessary. It can also correct its ownership.
  */
 
