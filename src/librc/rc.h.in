@@ -304,7 +304,7 @@ RC_STRINGLIST *rc_services_in_runlevel_stacked(const char *);
  * @return NULL terminated list of services */
 RC_STRINGLIST *rc_services_in_state(RC_SERVICE);
 
-/*! List the services shceduled to start when this one does
+/*! List the services scheduled to start when this one does
  * @param service to check
  * @return  NULL terminated list of services */
 RC_STRINGLIST *rc_services_scheduled(const char *);
