@@ -326,7 +326,7 @@ commit 5f890ee8ab94f8760f4840d280feb7eced999068
 Author: William Hubbs <w.d.hubbs@gmail.com>
 Commit: William Hubbs <w.d.hubbs@gmail.com>
 
-    init.sh: rework the /run setup for linux xystems
+    init.sh: rework the /run setup for linux systems
     
     - fix mount options for /run.
     - run restorecon after everything is set up.
