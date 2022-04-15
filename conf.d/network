@@ -1,5 +1,5 @@
 # Assign static IP addresses and run custom scripts per interface.
-# Seperate commands with ;
+# Separate commands with ;
 # Prefix with ! to run a shell script.
 # Use \$int to represent the interface
 #ifconfig_eth0="192.168.0.10 netmask 255.255.255.0"
