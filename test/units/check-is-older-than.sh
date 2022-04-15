@@ -12,7 +12,7 @@ TMPDIR="${BUILD_ROOT}"/tmp-"$(basename "$0")"
 
 # Please note that we added this unit test because the function
 # should really be called is_newer_than as it's what it's really testing.
-# Or more perversly, returning 0 on failure and 1 and success.
+# Or more perversely, returning 0 on failure and 1 and success.
 
 # bool is_older_than(reference, files/dirs to check)
 #
