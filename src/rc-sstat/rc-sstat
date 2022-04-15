@@ -72,7 +72,7 @@ if [ -z "$services" ]; then
 fi
 
 # Gather status for each service from s6-svstat
-# write to tmp file in memory for non I/O bound repeatative access
+# write to tmp file in memory for non I/O bound repetitive access
 rm -f $statfile 2>/dev/null
 for service in $services ; do
 	echo "$service $(s6-svstat ${scandir}/${service})" >> $statfile
