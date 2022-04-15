@@ -664,7 +664,7 @@ struct {								\
  */
 
 /*
- * __launder_type():  We use this ugly hack to work around the the compiler
+ * __launder_type():  We use this ugly hack to work around the compiler
  * noticing that two types may not alias each other and elide tests in code.
  * We hit this in the CIRCLEQ macros when comparing 'struct name *' and
  * 'struct type *' (see CIRCLEQ_HEAD()).  Modern compilers (such as GCC
