@@ -562,7 +562,7 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 			continue;
 		}
 
-		/* If the service has crashed, skip futher checks and just stop
+		/* If the service has crashed, skip further checks and just stop
 		   it */
 		if (crashed &&
 		    rc_service_daemons_crashed(service->value))
