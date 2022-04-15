@@ -8,7 +8,7 @@
 # We can also specify the passno in /etc/fstab to check
 # If you multiplex fsck (ie ln -s fsck /etc/init.d/fsck.late) then you can
 # do an fsck outside of the normal scope, say for /home.
-# Here are some exampes:-
+# Here are some examples:-
 #fsck_passno="=1 =2"
 #fsck_passno=">1"
 #fsck_passno="<2"
