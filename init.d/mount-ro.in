@@ -9,7 +9,7 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
-description="Re-mount filesytems read-only for a clean reboot."
+description="Re-mount filesystems read-only for a clean reboot."
 
 depend()
 {
