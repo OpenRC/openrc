@@ -64,7 +64,7 @@ if [ -z $TERM -o $TERM = "dumb" ]; then
 fi
 
 # Gather list of candidate services s6-supervise may be supervising
-# filter for folders and symlinks at /run/openrc/s6-scan/* ommiting output starting with '.'
+# filter for folders and symlinks at /run/openrc/s6-scan/* omitting output starting with '.'
 services="$(find $scandir -maxdepth 1 -mindepth 1 \( -type d -or -type l \) | awk -F'/' '{ if ( $NF !~ "^\\." ) print $NF}')"
 if [ -z "$services" ]; then
 	printf "s6 found no services configured for supervision\n"
