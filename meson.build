@@ -6,7 +6,7 @@ project('OpenRC', 'c',
     'prefix=/usr',
     'warning_level=3',
     ],
-  meson_version : '>=0.53.0')
+  meson_version : '>=0.53.2')
 
 cc = meson.get_compiler('c')
 fs = import('fs')
@@ -205,6 +205,7 @@ subdir('sh')
 subdir('src')
 subdir('support')
 subdir('sysctl.d')
+subdir('test')
 subdir('zsh-completion')
 
 meson.add_install_script('tools/meson_runlevels.sh',

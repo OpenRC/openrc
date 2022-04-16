@@ -9,7 +9,7 @@
 # This file may not be copied, modified, propagated, or distributed
 #    except according to the terms contained in the LICENSE file.
 
-: ${top_srcdir:=..}
+top_srcdir=${SOURCE_ROOT:-..}
 . $top_srcdir/test/setup_env.sh
 
 ret=0

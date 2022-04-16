@@ -2,7 +2,13 @@
 # unit test for is_older_than code of baselayout (2008/06/19)
 # Author: Matthias Schwarzott <zzam@gentoo.org>
 
-TMPDIR=tmp-"$(basename "$0")"
+if [ -z "${BUILD_ROOT}" ]; then
+	printf "%s\n" "BUILD_ROOT must be defined" >&2
+	exit 1
+fi
+PATH="${BUILD_ROOT}"/src/is_older_than:${PATH}
+
+TMPDIR="${BUILD_ROOT}"/tmp-"$(basename "$0")"
 
 # Please note that we added this unit test because the function
 # should really be called is_newer_than as it's what it's really testing.
@@ -37,13 +43,14 @@ do_test()
 	is_older_than "$@"
 	r2=$?
 
-	[ -n "${VERBOSE}" ] && echo "reference = $r1  |  OpenRC = $r2"
+	[ -n "${VERBOSE}" ] &&
+		printf "reference = %s  |  OpenRC = %s\n" "$r1" "$r2"
 	[ $r1 = $r2 ]
 }
 
 echo_cmd()
 {
-	[ -n "${VERBOSE}" ] && echo "$@"
+	[ -n "${VERBOSE}" ] && printf "%s\n" "$@"
 	"$@"
 }
 
