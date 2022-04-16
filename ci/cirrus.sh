@@ -18,4 +18,4 @@ set -x
 
 meson build
 meson compile -C build
-# gmake test
+meson test --verbose -C build
