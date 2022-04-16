@@ -23,6 +23,9 @@ jobs:
       - run: meson setup builddir/
         env:
           CC: gcc
-      - run: ninja -C builddir
+      - run: meson compile -C builddir
+        env:
+          CC: gcc
+      - run: meson test --verbose -C builddir
         env:
           CC: gcc

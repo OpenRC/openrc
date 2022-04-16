@@ -16,6 +16,9 @@ jobs:
     - run: ninja -C builddir
       env:
         CC: gcc
+    - run: ninja test --verbose -C builddir
+      env:
+        CC: gcc
 
 
   clang-glibc:
@@ -28,5 +31,8 @@ jobs:
       env:
         CC: clang
     - run: ninja -C builddir
+      env:
+        CC: clang
+    - run: ninja test --verbose -C builddir
       env:
         CC: clang
