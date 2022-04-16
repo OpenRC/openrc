@@ -4,12 +4,19 @@ on: [push, pull_request]
 
 jobs:
 
-  gcc-musl:
+  alpine:
+    name: Alpine Linux
     runs-on: ubuntu-latest
     container: alpine:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc
+    env:
+      CC: ${{ matrix.compiler }}
     steps:
-      - name: install deps
-        run: >-
+      - run: >-
           apk --no-cache add \
             build-base \
             meson \
@@ -18,14 +25,7 @@ jobs:
             linux-pam-dev \
             libcap \
             libcap-dev
-      - name: checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - run: meson setup builddir/
-        env:
-          CC: gcc
       - run: meson compile -C builddir
-        env:
-          CC: gcc
       - run: meson test --verbose -C builddir
-        env:
-          CC: gcc
