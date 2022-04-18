@@ -94,43 +94,47 @@ enum {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:" \
+const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:1:2:3:4:5:6:7:8:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "capabilities", 1, NULL, LONGOPT_CAPABILITIES},
-	{ "secbits",      1, NULL, LONGOPT_SECBITS},
-	{ "no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
-	{ "ionice",       1, NULL, 'I'},
-	{ "stop",         0, NULL, 'K'},
-	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL, LONGOPT_OOM_SCORE_ADJ},
-	{ "retry",        1, NULL, 'R'},
-	{ "start",        0, NULL, 'S'},
-	{ "startas",      1, NULL, 'a'},
-	{ "background",   0, NULL, 'b'},
-	{ "chuid",        1, NULL, 'c'},
-	{ "chdir",        1, NULL, 'd'},
-	{ "env",          1, NULL, 'e'},
-	{ "umask",        1, NULL, 'k'},
-	{ "group",        1, NULL, 'g'},
-	{ "interpreted",  0, NULL, 'i'},
-	{ "make-pidfile", 0, NULL, 'm'},
-	{ "name",         1, NULL, 'n'},
-	{ "oknodo",       0, NULL, 'o'},
-	{ "pidfile",      1, NULL, 'p'},
-	{ "signal",       1, NULL, 's'},
-	{ "test",         0, NULL, 't'},
-	{ "user",         1, NULL, 'u'},
-	{ "chroot",       1, NULL, 'r'},
-	{ "wait",         1, NULL, 'w'},
-	{ "exec",         1, NULL, 'x'},
-	{ "stdout",       1, NULL, '1'},
-	{ "stderr",       1, NULL, '2'},
-	{ "stdout-logger",1, NULL, '3'},
-	{ "stderr-logger",1, NULL, '4'},
-	{ "progress",     0, NULL, 'P'},
-	{ "scheduler",    1, NULL, LONGOPT_SCHEDULER},
-	{ "scheduler-priority",    1, NULL, LONGOPT_SCHEDULER_PRIO},
+	{ "capabilities",                1, NULL, LONGOPT_CAPABILITIES},
+	{ "secbits",                     1, NULL, LONGOPT_SECBITS},
+	{ "no-new-privs",                0, NULL, LONGOPT_NO_NEW_PRIVS},
+	{ "ionice",                      1, NULL, 'I'},
+	{ "stop",                        0, NULL, 'K'},
+	{ "nicelevel",                   1, NULL, 'N'},
+	{ "oom-score-adj",               1, NULL, LONGOPT_OOM_SCORE_ADJ},
+	{ "retry",                       1, NULL, 'R'},
+	{ "start",                       0, NULL, 'S'},
+	{ "startas",                     1, NULL, 'a'},
+	{ "background",                  0, NULL, 'b'},
+	{ "chuid",                       1, NULL, 'c'},
+	{ "chdir",                       1, NULL, 'd'},
+	{ "env",                         1, NULL, 'e'},
+	{ "umask",                       1, NULL, 'k'},
+	{ "group",                       1, NULL, 'g'},
+	{ "interpreted",                 0, NULL, 'i'},
+	{ "make-pidfile",                0, NULL, 'm'},
+	{ "name",                        1, NULL, 'n'},
+	{ "oknodo",                      0, NULL, 'o'},
+	{ "pidfile",                     1, NULL, 'p'},
+	{ "signal",                      1, NULL, 's'},
+	{ "test",                        0, NULL, 't'},
+	{ "user",                        1, NULL, 'u'},
+	{ "chroot",                      1, NULL, 'r'},
+	{ "wait",                        1, NULL, 'w'},
+	{ "exec",                        1, NULL, 'x'},
+	{ "stdout",                      1, NULL, '1'},
+	{ "stderr",                      1, NULL, '2'},
+	{ "stdout-logger",               1, NULL, '3'},
+	{ "stderr-logger",               1, NULL, '4'},
+	{ "stdout-before-chroot",        1, NULL, '5'},
+	{ "stderr-before-chroot",        1, NULL, '6'},
+	{ "stdout-logger-before-chroot", 1, NULL, '7'},
+	{ "stderr-logger-before-chroot", 1, NULL, '8'},
+	{ "progress",                    0, NULL, 'P'},
+	{ "scheduler",                   1, NULL, LONGOPT_SCHEDULER},
+	{ "scheduler-priority",          1, NULL, LONGOPT_SCHEDULER_PRIO},
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -165,6 +169,10 @@ const char * const longopts_help[] = {
 	"Redirect stderr to file",
 	"Redirect stdout to process",
 	"Redirect stderr to process",
+	"Redirect stdout to file, opened before chrooting",
+	"Redirect stderr to file, opened before chrooting",
+	"Redirect stdout to process, executed before chrooting",
+	"Redirect stderr to process, ecxcuted before chrooting",
 	"Print dots each second while waiting",
 	"Set process scheduler",
 	"Set process scheduler priority",
@@ -320,10 +328,14 @@ int main(int argc, char **argv)
 	gid_t gid = 0;
 	char *home = NULL;
 	int tid = 0;
-	char *redirect_stderr = NULL;
 	char *redirect_stdout = NULL;
-	char *stderr_process = NULL;
+	char *redirect_stderr = NULL;
 	char *stdout_process = NULL;
+	char *stderr_process = NULL;
+	char *redirect_stdout_before_chroot = NULL;
+	char *redirect_stderr_before_chroot = NULL;
+	char *stdout_process_before_chroot = NULL;
+	char *stderr_process_before_chroot = NULL;
 	int stdin_fd;
 	int stdout_fd;
 	int stderr_fd;
@@ -609,6 +621,22 @@ int main(int argc, char **argv)
 			stderr_process = optarg;
 			break;
 
+		case '5':  /* --stdout-before-chroot /path/to/stdout.logfile */
+			redirect_stdout_before_chroot = optarg;
+			break;
+
+		case '6':  /* --stderr-before-chroot /path/to/stderr.logfile */
+			redirect_stderr_before_chroot = optarg;
+			break;
+
+		case '7':  /* --stdout-logger-before-chroot "command outside of chroot to run for stdout logging" */
+			stdout_process_before_chroot = optarg;
+			break;
+
+		case '8':  /* --stderr-logger-before-chroot "command outside of chroot to run for stderr logging" */
+			stderr_process_before_chroot = optarg;
+			break;
+
 		case LONGOPT_SCHEDULER: /* --scheduler "Process scheduler policy" */
 			scheduler = optarg;
 			break;
@@ -652,6 +680,13 @@ int main(int argc, char **argv)
 		*--argv = exec;
 		++argc;
 	};
+
+	if ((redirect_stdout_before_chroot && redirect_stdout)
+			|| (redirect_stderr_before_chroot && redirect_stderr)
+			|| (stdout_process_before_chroot && stdout_process)
+			|| (stderr_process_before_chroot && stderr_process))
+		eerrorx("%s: stream redirection and logging options can't be used together with"
+				" their before-chroot variants", applet);
 
 	if (stop || sig != -1) {
 		if (sig == -1)
@@ -899,6 +934,60 @@ int main(int argc, char **argv)
 			fclose(fp);
 		}
 
+#ifdef HAVE_PAM
+		if (changeuser != NULL) {
+			pamr = pam_start("start-stop-daemon",
+			    changeuser, &conv, &pamh);
+
+			if (pamr == PAM_SUCCESS)
+				pamr = pam_acct_mgmt(pamh, PAM_SILENT);
+			if (pamr == PAM_SUCCESS)
+				pamr = pam_open_session(pamh, PAM_SILENT);
+			if (pamr != PAM_SUCCESS)
+				eerrorx("%s: pam error: %s",
+					applet, pam_strerror(pamh, pamr));
+		}
+#endif
+
+		stdin_fd = devnull_fd;
+		stdout_fd = devnull_fd;
+		stderr_fd = devnull_fd;
+
+#define log_redirection(redirect_stdout,redirect_stderr,stdout_process,stderr_process)	\
+		if (redirect_stdout) {							\
+			if ((stdout_fd = open(redirect_stdout,				\
+				    O_WRONLY | O_CREAT | O_APPEND,			\
+				    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) == -1)	\
+				eerrorx("%s: unable to open the logfile"		\
+				    " for stdout `%s': %s",				\
+				    applet, redirect_stdout, strerror(errno));		\
+		}else if (stdout_process) {						\
+			stdout_fd = rc_pipe_command(stdout_process);			\
+			if (stdout_fd == -1)						\
+				eerrorx("%s: unable to open the logging process"	\
+				    " for stdout `%s': %s",				\
+				    applet, stdout_process, strerror(errno));		\
+		}									\
+		if (redirect_stderr) {							\
+			if ((stderr_fd = open(redirect_stderr,				\
+				    O_WRONLY | O_CREAT | O_APPEND,			\
+				    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) == -1)	\
+				eerrorx("%s: unable to open the logfile"		\
+				    " for stderr `%s': %s",				\
+				    applet, redirect_stderr, strerror(errno));		\
+		}else if (stderr_process) {						\
+			stderr_fd = rc_pipe_command(stderr_process);			\
+			if (stderr_fd == -1)						\
+				eerrorx("%s: unable to open the logging process"	\
+				    " for stderr `%s': %s",				\
+				    applet, stderr_process, strerror(errno));		\
+		}
+
+		log_redirection(redirect_stdout_before_chroot,
+				redirect_stderr_before_chroot,
+				stdout_process_before_chroot,
+				stderr_process_before_chroot)
+
 		if (ch_root && chroot(ch_root) < 0)
 			eerrorx("%s: chroot `%s': %s",
 			    applet, ch_root, strerror(errno));
@@ -915,21 +1004,6 @@ int main(int argc, char **argv)
 			fprintf(fp, "%d\n", mypid);
 			fclose(fp);
 		}
-
-#ifdef HAVE_PAM
-		if (changeuser != NULL) {
-			pamr = pam_start("start-stop-daemon",
-			    changeuser, &conv, &pamh);
-
-			if (pamr == PAM_SUCCESS)
-				pamr = pam_acct_mgmt(pamh, PAM_SILENT);
-			if (pamr == PAM_SUCCESS)
-				pamr = pam_open_session(pamh, PAM_SILENT);
-			if (pamr != PAM_SUCCESS)
-				eerrorx("%s: pam error: %s",
-					applet, pam_strerror(pamh, pamr));
-		}
-#endif
 
 		if (gid && setgid(gid))
 			eerrorx("%s: unable to set groupid to %d",
@@ -1043,37 +1117,10 @@ int main(int argc, char **argv)
 			setenv("PATH", newpath, 1);
 		}
 
-		stdin_fd = devnull_fd;
-		stdout_fd = devnull_fd;
-		stderr_fd = devnull_fd;
-		if (redirect_stdout) {
-			if ((stdout_fd = open(redirect_stdout,
-				    O_WRONLY | O_CREAT | O_APPEND,
-				    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) == -1)
-				eerrorx("%s: unable to open the logfile"
-				    " for stdout `%s': %s",
-				    applet, redirect_stdout, strerror(errno));
-		}else if (stdout_process) {
-			stdout_fd = rc_pipe_command(stdout_process);
-			if (stdout_fd == -1)
-				eerrorx("%s: unable to open the logging process"
-				    " for stdout `%s': %s",
-				    applet, stdout_process, strerror(errno));
-		}
-		if (redirect_stderr) {
-			if ((stderr_fd = open(redirect_stderr,
-				    O_WRONLY | O_CREAT | O_APPEND,
-				    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) == -1)
-				eerrorx("%s: unable to open the logfile"
-				    " for stderr `%s': %s",
-				    applet, redirect_stderr, strerror(errno));
-		}else if (stderr_process) {
-			stderr_fd = rc_pipe_command(stderr_process);
-			if (stderr_fd == -1)
-				eerrorx("%s: unable to open the logging process"
-				    " for stderr `%s': %s",
-				    applet, stderr_process, strerror(errno));
-		}
+		log_redirection(redirect_stdout,
+				redirect_stderr,
+				stdout_process,
+				stderr_process)
 
 		if (background)
 			dup2(stdin_fd, STDIN_FILENO);

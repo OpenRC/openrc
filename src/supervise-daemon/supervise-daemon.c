@@ -406,12 +406,6 @@ static void child_process(char *exec, char **argv)
 		fclose(fp);
 	}
 
-	if (ch_root && chroot(ch_root) < 0)
-		eerrorx("%s: chroot `%s': %s", applet, ch_root, strerror(errno));
-
-	if (ch_dir && chdir(ch_dir) < 0)
-		eerrorx("%s: chdir `%s': %s", applet, ch_dir, strerror(errno));
-
 #ifdef HAVE_PAM
 	if (changeuser != NULL) {
 		pamr = pam_start("supervise-daemon",
@@ -425,6 +419,12 @@ static void child_process(char *exec, char **argv)
 			eerrorx("%s: pam error: %s", applet, pam_strerror(pamh, pamr));
 	}
 #endif
+
+	if (ch_root && chroot(ch_root) < 0)
+		eerrorx("%s: chroot `%s': %s", applet, ch_root, strerror(errno));
+
+	if (ch_dir && chdir(ch_dir) < 0)
+		eerrorx("%s: chdir `%s': %s", applet, ch_dir, strerror(errno));
 
 	if (gid && setgid(gid))
 		eerrorx("%s: unable to set groupid to %d", applet, gid);

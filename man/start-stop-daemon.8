@@ -139,14 +139,14 @@ is an integer, it is passed directly to sched_setscheduler(2).
 Sets the priority parameter of the scheduling policy of the daemon. See sched(7) for details.
 .It Fl 1 , -stdout Ar logfile
 Redirect the standard output of the process to logfile when started with
-.Fl background .
+.Fl -background .
 The logfile Must be an absolute pathname, but relative to the path
 optionally given with
 .Fl r , -chroot .
 The logfile can also be a named pipe.
 .It Fl 2 , -stderr Ar logfile
 Redirect the standard error of the process to logfile when started with
-.Fl background .
+.Fl -background .
 The logfile must be an absolute pathname, but relative to the path
 optionally given with
 .Fl r , -chroot .
@@ -154,7 +154,7 @@ The logfile can also be a named pipe.
 .It Fl 3 , -stdout-logger Ar cmd
 Run cmd as a child process redirecting the standard output to the
 standard input of cmd when started with
-.Fl background .
+.Fl -background .
 Cmd must be an absolute pathname, but relative to the path optionally given with
 .Fl r , -chroot .
 This process must be prepared to accept input on stdin and be able to
@@ -163,11 +163,35 @@ log it or send it to another location.
 Run cmd as a child process and 
 Redirect the standard error of the process to the standard input of cmd
 when started with
-.Fl background .
+.Fl -background .
 Cmd must be an absolute pathname, but relative to the path optionally given with
 .Fl r , -chroot .
 This process must be prepared to accept input on stdin and be able to
 log it or send it to another location.
+.It Fl 5 , -stdout-before-chroot Ar logfile
+Same as
+.Fl -stdout ,
+except that
+.Ar logfile
+is opened before entering the chroot.
+.It Fl 6 , -stderr-before-chroot Ar logfile
+Same as
+.Fl -stderr ,
+except that
+.Ar logfile
+is opened before entering the chroot.
+.It Fl 7 , -stdout-logger-before-chroot Ar cmd
+Same as
+.Fl -stdout-logger ,
+except that
+.Ar cmd
+is executed before entering the chroot.
+.It Fl 8 , -stderr-logger-before-chroot Ar cmd
+Same as
+.Fl -stderr-logger ,
+except that
+.Ar cmd
+is executed before entering the chroot.
 .It Fl -capabilities Ar cap-list
 Start the daemon with the listed inheritable, ambient and bounding capabilities.
 The format is the same as in cap_iab(3).
@@ -183,10 +207,6 @@ Wait
 after starting and check that daemon is still running.
 Useful for daemons that check configuration after forking or stopping race
 conditions where the pidfile is written out after forking.
-.It Fl 2 , -stderr Ar logfile
-The same thing as
-.Fl 1 , -stdout
-but with the standard error output.
 .El
 .Pp
 These options are only used for stopping daemons:
