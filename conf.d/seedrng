@@ -1,17 +1,14 @@
-# The convention in this file is to show the default settings
-# commented out.
+# The convention in this file is to show the default settings commented out.
 #
-# Sometimes you want to have urandom start before "localmount"
-# (say for crypt swap), so you will need to customize this
-# behavior.  If you have /var on a separate partition, make sure paths
-# under /var are adjusted to point to locations on your
-# root device.
+# Sometimes you want to have urandom start before "localmount" (say for crypt
+# swap), so you will need to customize this behavior.  If you have /var on a
+# separate partition, make sure paths under /var are adjusted to point to
+# locations on your root device.
 #
-# Set skip_credit to yes or true if  you do not want seed files to
-# actually credit the random number generator.
-# For example, you should set this if you plan to replicate the file
-# system image without removing the contents of ${seed_dir}.
+# Set skip_credit to yes or true if you do not want seed files to actually
+# credit the random number generator. For example, you should set this if you
+# plan to replicate the file system image without removing the contents of
+# ${seed_dir}.
 #
-# lock_file=/var/run/seedrng.lock
 # seed_dir=/var/lib/seedrng
 # skip_credit=no

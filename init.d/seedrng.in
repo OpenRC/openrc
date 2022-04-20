@@ -21,8 +21,6 @@ depend()
 
 seedrng_options()
 {
-	[ -n "${lock_file}" ] &&
-		echo "--lock-file \"${lock_file}\""
 	[ -n "${seed_dir}" ] &&
 		echo "--seed-dir \"${seed_dir}\""
 	yesno "${skip_credit}" &&
