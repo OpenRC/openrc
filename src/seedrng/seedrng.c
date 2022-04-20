@@ -44,39 +44,35 @@
 #define GRND_INSECURE 0x0004 /* Apparently some headers don't ship with this yet. */
 #endif
 
+#define DEFAULT_SEED_DIR "/var/lib/seedrng"
+#define CREDITABLE_SEED "seed.credit"
+#define NON_CREDITABLE_SEED "seed.no-credit"
+
 /* Use long option value that is out of range for 8 bit getopt values.
  * The exact enum value is internal and can freely change, so we keep the
  * options sorted.
  */
 enum long_opts {
-  /* This has to come first so following values stay in the 0x100+ range. */
-  LONGOPT_BASE = 0x100,
-  LONGOPT_LOCK_FILE,
-  LONGOPT_SEED_DIR,
-  LONGOPT_SKIP_CREDIT,
+	/* This has to come first so following values stay in the 0x100+ range. */
+	LONGOPT_BASE = 0x100,
+	LONGOPT_SEED_DIR,
+	LONGOPT_SKIP_CREDIT,
 };
 
 const char *applet = NULL;
-const char *extraopts =NULL;
+const char *extraopts = NULL;
 const char getoptstring[] = getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "lock-file", 1, NULL, LONGOPT_LOCK_FILE },
 	{ "seed-dir", 1, NULL, LONGOPT_SEED_DIR },
 	{ "skip-credit", 0, NULL, LONGOPT_SKIP_CREDIT },
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
-	"lock file",
-	"directory for seed files",
-	"skip credit",
+	"Directory for seed files (default: " DEFAULT_SEED_DIR ")",
+	"Skip crediting entropy of seeds",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
-
-static char *lock_file = NULL;
-static char *seed_dir = NULL;
-static char *creditable_seed = NULL;
-static char *non_creditable_seed = NULL;
 
 enum blake2s_lengths {
 	BLAKE2S_BLOCK_LEN = 64,
@@ -109,7 +105,7 @@ struct blake2s_state {
 
 static inline void cpu_to_le32_array(uint32_t *buf, unsigned int words)
 {
-        while (words--) {
+	while (words--) {
 		*buf = cpu_to_le32(*buf);
 		++buf;
 	}
@@ -117,10 +113,10 @@ static inline void cpu_to_le32_array(uint32_t *buf, unsigned int words)
 
 static inline void le32_to_cpu_array(uint32_t *buf, unsigned int words)
 {
-        while (words--) {
+	while (words--) {
 		*buf = le32_to_cpup(buf);
 		++buf;
-        }
+	}
 }
 
 static inline uint32_t ror32(uint32_t word, unsigned int shift)
@@ -269,15 +265,71 @@ static void blake2s_final(struct blake2s_state *state, uint8_t *out)
 	memcpy(out, state->h, state->outlen);
 }
 
+static ssize_t getrandom_full(void *buf, size_t count, unsigned int flags)
+{
+	ssize_t ret, total = 0;
+	uint8_t *p = buf;
+
+	do {
+		ret = getrandom(p, count, flags);
+		if (ret < 0 && errno == EINTR)
+			continue;
+		else if (ret < 0)
+			return ret;
+		total += ret;
+		p += ret;
+		count -= ret;
+	} while (count);
+	return total;
+}
+
+static ssize_t read_full(int fd, void *buf, size_t count)
+{
+	ssize_t ret, total = 0;
+	uint8_t *p = buf;
+
+	do {
+		ret = read(fd, p, count);
+		if (ret < 0 && errno == EINTR)
+			continue;
+		else if (ret < 0)
+			return ret;
+		else if (ret == 0)
+			break;
+		total += ret;
+		p += ret;
+		count -= ret;
+	} while (count);
+	return total;
+}
+
+static ssize_t write_full(int fd, const void *buf, size_t count)
+{
+	ssize_t ret, total = 0;
+	const uint8_t *p = buf;
+
+	do {
+		ret = write(fd, p, count);
+		if (ret < 0 && errno == EINTR)
+			continue;
+		else if (ret < 0)
+			return ret;
+		total += ret;
+		p += ret;
+		count -= ret;
+	} while (count);
+	return total;
+}
+
 static size_t determine_optimal_seed_len(void)
 {
 	size_t ret = 0;
 	char poolsize_str[11] = { 0 };
 	int fd = open("/proc/sys/kernel/random/poolsize", O_RDONLY);
 
-	if (fd < 0 || read(fd, poolsize_str, sizeof(poolsize_str) - 1) < 0) {
+	if (fd < 0 || read_full(fd, poolsize_str, sizeof(poolsize_str) - 1) < 0) {
 		ewarn("%s: Unable to determine pool size, falling back to %u bits: %s",
-			applet, MIN_SEED_LEN * 8, strerror(errno));
+		      applet, MIN_SEED_LEN * 8, strerror(errno));
 		ret = MIN_SEED_LEN;
 	} else
 		ret = DIV_ROUND_UP(strtoul(poolsize_str, NULL, 10), 8);
@@ -296,12 +348,11 @@ static int read_new_seed(uint8_t *seed, size_t len, bool *is_creditable)
 	int urandom_fd;
 
 	*is_creditable = false;
-	ret = getrandom(seed, len, GRND_NONBLOCK);
+	ret = getrandom_full(seed, len, GRND_NONBLOCK);
 	if (ret == (ssize_t)len) {
 		*is_creditable = true;
 		return 0;
-	}
-	if (ret == -1 && errno == ENOSYS) {
+	} else if (ret < 0 && errno == ENOSYS) {
 		struct pollfd random_fd = {
 			.fd = open("/dev/random", O_RDONLY),
 			.events = POLLIN
@@ -310,18 +361,19 @@ static int read_new_seed(uint8_t *seed, size_t len, bool *is_creditable)
 			return -errno;
 		*is_creditable = poll(&random_fd, 1, 0) == 1;
 		close(random_fd.fd);
-	} else if (getrandom(seed, len, GRND_INSECURE) == (ssize_t)len)
+	} else if (getrandom_full(seed, len, GRND_INSECURE) == (ssize_t)len)
 		return 0;
 	urandom_fd = open("/dev/urandom", O_RDONLY);
 	if (urandom_fd < 0)
-		return -errno;
-	ret = read(urandom_fd, seed, len);
+		return -1;
+	ret = read_full(urandom_fd, seed, len);
 	if (ret == (ssize_t)len)
 		ret = 0;
 	else
 		ret = -errno ? -errno : -EIO;
 	close(urandom_fd);
-	return ret;
+	errno = -ret;
+	return ret ? -1 : 0;
 }
 
 static int seed_rng(uint8_t *seed, size_t len, bool credit)
@@ -336,96 +388,74 @@ static int seed_rng(uint8_t *seed, size_t len, bool credit)
 	};
 	int random_fd, ret;
 
-	if (len > sizeof(req.buffer))
-		return -EFBIG;
+	if (len > sizeof(req.buffer)) {
+		errno = EFBIG;
+		return -1;
+	}
 	memcpy(req.buffer, seed, len);
 
-	random_fd = open("/dev/random", O_RDWR);
+	random_fd = open("/dev/urandom", O_RDONLY);
 	if (random_fd < 0)
-		return -errno;
+		return -1;
 	ret = ioctl(random_fd, RNDADDENTROPY, &req);
 	if (ret)
 		ret = -errno ? -errno : -EIO;
 	close(random_fd);
-	return ret;
+	errno = -ret;
+	return ret ? -1 : 0;
 }
 
-static int seed_from_file_if_exists(const char *filename, bool credit, struct blake2s_state *hash)
+static int seed_from_file_if_exists(const char *filename, int dfd, bool credit, struct blake2s_state *hash)
 {
 	uint8_t seed[MAX_SEED_LEN];
 	ssize_t seed_len;
-	int fd, dfd, ret = 0;
+	int fd = -1, ret = 0;
 
-	fd = open(filename, O_RDONLY);
+	fd = openat(dfd, filename, O_RDONLY);
 	if (fd < 0 && errno == ENOENT)
 		return 0;
 	else if (fd < 0) {
 		ret = -errno;
 		eerror("%s: Unable to open seed file: %s", applet, strerror(errno));
-		return ret;
+		goto out;
 	}
-	dfd = open(seed_dir, O_DIRECTORY | O_RDONLY);
-	if (dfd < 0) {
-		ret = -errno;
-		close(fd);
-		eerror("%s: Unable to open seed directory: %s", applet, strerror(errno));
-		return ret;
-	}
-	seed_len = read(fd, seed, sizeof(seed));
+	seed_len = read_full(fd, seed, sizeof(seed));
 	if (seed_len < 0) {
 		ret = -errno;
 		eerror("%s: Unable to read seed file: %s", applet, strerror(errno));
+		goto out;
 	}
-	close(fd);
-	if (ret) {
-		close(dfd);
-		return ret;
-	}
-	if ((unlink(filename) < 0 || fsync(dfd) < 0) && seed_len) {
+	if ((unlinkat(dfd, filename, 0) < 0 || fsync(dfd) < 0) && seed_len) {
 		ret = -errno;
 		eerror("%s: Unable to remove seed after reading, so not seeding: %s",
-			applet, strerror(errno));
+		       applet, strerror(errno));
+		goto out;
 	}
-	close(dfd);
-	if (ret)
-		return ret;
 	if (!seed_len)
-		return 0;
+		goto out;
 
 	blake2s_update(hash, &seed_len, sizeof(seed_len));
 	blake2s_update(hash, seed, seed_len);
 
 	einfo("Seeding %zd bits %s crediting", seed_len * 8, credit ? "and" : "without");
-	ret = seed_rng(seed, seed_len, credit);
-	if (ret < 0)
-		eerror("%s: Unable to seed: %s", applet, strerror(-ret));
-	return ret;
-}
+	if (seed_rng(seed, seed_len, credit) < 0) {
+		ret = -errno;
+		eerror("%s: Unable to seed: %s", applet, strerror(errno));
+	}
 
-static void populate_global_paths(void)
-{
-	if (!lock_file)
-		lock_file = xstrdup("/var/run/seedrng.lock");
-	if (!seed_dir)
-		seed_dir = xstrdup("/var/lib/seedrng");
-	xasprintf(&creditable_seed, "%s/seed.credit", seed_dir);
-	xasprintf(&non_creditable_seed, "%s/seed.no-credit", seed_dir);
-}
-
-static void cleanup(void)
-{
-	free(lock_file);
-	free(seed_dir);
-	free(creditable_seed);
-	free(non_creditable_seed);
+out:
+	if (fd >= 0)
+		close(fd);
+	errno = -ret;
+	return ret ? -1 : 0;
 }
 
 int main(int argc, char **argv)
 {
-	int opt;
 	static const char seedrng_prefix[] = "SeedRNG v1 Old+New Prefix";
 	static const char seedrng_failure[] = "SeedRNG v1 No New Seed Failure";
-	int ret, fd = -1, lock, program_ret = 0;
+	int opt, fd = -1, dfd = -1, program_ret = 0;
+	char *seed_dir = NULL;
 	uint8_t new_seed[MAX_SEED_LEN];
 	size_t new_seed_len;
 	bool new_seed_creditable;
@@ -433,20 +463,11 @@ int main(int argc, char **argv)
 	struct blake2s_state hash;
 	bool skip_credit = false;
 
-	atexit(cleanup);
 	applet = basename_c(argv[0]);
-	if (geteuid())
-		eerrorx("%s: superuser access is required", applet);
-	umask(0077);
 
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts, (int *) 0)) != -1)
 	{
 		switch (opt) {
-			case LONGOPT_LOCK_FILE:
-			if (!lock_file)
-				lock_file = xstrdup(optarg);
-			break;
 		case LONGOPT_SEED_DIR:
 			if (!seed_dir)
 				seed_dir = xstrdup(optarg);
@@ -457,7 +478,15 @@ int main(int argc, char **argv)
 		case_RC_COMMON_GETOPT
 		}
 	}
-	populate_global_paths();
+	if (!seed_dir)
+		seed_dir = xstrdup(DEFAULT_SEED_DIR);
+	if (getuid()) {
+		eerror("%s: superuser access is required", applet);
+		program_ret = 1;
+		goto out;
+	}
+	umask(0077);
+
 	blake2s_init(&hash, BLAKE2S_HASH_LEN);
 	blake2s_update(&hash, seedrng_prefix, strlen(seedrng_prefix));
 	clock_gettime(CLOCK_REALTIME, &realtime);
@@ -465,28 +494,27 @@ int main(int argc, char **argv)
 	blake2s_update(&hash, &realtime, sizeof(realtime));
 	blake2s_update(&hash, &boottime, sizeof(boottime));
 
-	if (mkdir(seed_dir, 0700) < 0 && errno != EEXIST)
-		eerrorx("%s: Unable to create \"%s\" directory: %s",
-				applet, seed_dir, strerror(errno));
-
-	lock = open(lock_file, O_WRONLY | O_CREAT, 0000);
-	if (lock < 0 || flock(lock, LOCK_EX) < 0) {
-		eerror("%s: Unable to open lock file: %s", applet, strerror(errno));
+	if (mkdir(seed_dir, 0700) < 0 && errno != EEXIST) {
+		eerror("%s: Unable to create seed directory: %s", applet, strerror(errno));
 		program_ret = 1;
 		goto out;
 	}
 
-	ret = seed_from_file_if_exists(non_creditable_seed, false, &hash);
-	if (ret < 0)
+	dfd = open(seed_dir, O_DIRECTORY | O_RDONLY);
+	if (dfd < 0 || flock(dfd, LOCK_EX) < 0) {
+		eerror("%s: Unable to lock seed directory: %s", applet, strerror(errno));
+		program_ret = 1;
+		goto out;
+	}
+
+	if (seed_from_file_if_exists(NON_CREDITABLE_SEED, dfd, false, &hash) < 0)
 		program_ret |= 1 << 1;
-	ret = seed_from_file_if_exists(creditable_seed, !skip_credit, &hash);
-	if (ret < 0)
+	if (seed_from_file_if_exists(CREDITABLE_SEED, dfd, !skip_credit, &hash) < 0)
 		program_ret |= 1 << 2;
 
 	new_seed_len = determine_optimal_seed_len();
-	ret = read_new_seed(new_seed, new_seed_len, &new_seed_creditable);
-	if (ret < 0) {
-		eerror("%s: Unable to read new seed: %s", applet, strerror(-ret));
+	if (read_new_seed(new_seed, new_seed_len, &new_seed_creditable) < 0) {
+		eerror("%s: Unable to read new seed: %s", applet, strerror(errno));
 		new_seed_len = BLAKE2S_HASH_LEN;
 		strncpy((char *)new_seed, seedrng_failure, new_seed_len);
 		program_ret |= 1 << 3;
@@ -496,27 +524,26 @@ int main(int argc, char **argv)
 	blake2s_final(&hash, new_seed + new_seed_len - BLAKE2S_HASH_LEN);
 
 	einfo("Saving %zu bits of %s seed for next boot", new_seed_len * 8, new_seed_creditable ? "creditable" : "non-creditable");
-	fd = open(non_creditable_seed, O_WRONLY | O_CREAT | O_TRUNC, 0400);
+	fd = openat(dfd, NON_CREDITABLE_SEED, O_WRONLY | O_CREAT | O_TRUNC, 0400);
 	if (fd < 0) {
-		eerror("%s: Unable to open seed file for writing: %s",
-			applet, strerror(errno));
+		eerror("%s: Unable to open seed file for writing: %s", applet, strerror(errno));
 		program_ret |= 1 << 4;
 		goto out;
 	}
-	if (write(fd, new_seed, new_seed_len) != (ssize_t)new_seed_len || fsync(fd) < 0) {
+	if (write_full(fd, new_seed, new_seed_len) != (ssize_t)new_seed_len || fsync(fd) < 0) {
 		eerror("%s: Unable to write seed file: %s", applet, strerror(errno));
 		program_ret |= 1 << 5;
 		goto out;
 	}
-	if (new_seed_creditable && rename(non_creditable_seed, creditable_seed) < 0) {
-		ewarn("%s: Unable to make new seed creditable: %s",
-			applet, strerror(errno));
+	if (new_seed_creditable && renameat(dfd, NON_CREDITABLE_SEED, dfd, CREDITABLE_SEED) < 0) {
+		ewarn("%s: Unable to make new seed creditable: %s", applet, strerror(errno));
 		program_ret |= 1 << 6;
 	}
 out:
 	if (fd >= 0)
 		close(fd);
-	if (lock >= 0)
-		close(lock);
+	if (dfd >= 0)
+		close(dfd);
+	free(seed_dir);
 	return program_ret;
 }
