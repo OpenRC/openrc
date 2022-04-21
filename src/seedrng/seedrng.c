@@ -454,8 +454,8 @@ int main(int argc, char **argv)
 {
 	static const char seedrng_prefix[] = "SeedRNG v1 Old+New Prefix";
 	static const char seedrng_failure[] = "SeedRNG v1 No New Seed Failure";
-	int opt, fd = -1, dfd = -1, program_ret = 0;
-	char *seed_dir = NULL;
+	int opt, fd, dfd, program_ret = 0;
+	char *seed_dir;
 	uint8_t new_seed[MAX_SEED_LEN];
 	size_t new_seed_len;
 	bool new_seed_creditable;
@@ -480,11 +480,8 @@ int main(int argc, char **argv)
 	}
 	if (!seed_dir)
 		seed_dir = xstrdup(DEFAULT_SEED_DIR);
-	if (getuid()) {
-		eerror("%s: superuser access is required", applet);
-		program_ret = 1;
-		goto out;
-	}
+	if (getuid())
+		eerrorx("%s: superuser access is required", applet);
 	umask(0077);
 
 	blake2s_init(&hash, BLAKE2S_HASH_LEN);
@@ -494,18 +491,12 @@ int main(int argc, char **argv)
 	blake2s_update(&hash, &realtime, sizeof(realtime));
 	blake2s_update(&hash, &boottime, sizeof(boottime));
 
-	if (mkdir(seed_dir, 0700) < 0 && errno != EEXIST) {
-		eerror("%s: Unable to create seed directory: %s", applet, strerror(errno));
-		program_ret = 1;
-		goto out;
-	}
+	if (mkdir(seed_dir, 0700) < 0 && errno != EEXIST)
+		eerrorx("%s: Unable to create seed directory: %s", applet, strerror(errno));
 
 	dfd = open(seed_dir, O_DIRECTORY | O_RDONLY);
-	if (dfd < 0 || flock(dfd, LOCK_EX) < 0) {
-		eerror("%s: Unable to lock seed directory: %s", applet, strerror(errno));
-		program_ret = 1;
-		goto out;
-	}
+	if (dfd < 0 || flock(dfd, LOCK_EX) < 0)
+		eerrorx("%s: Unable to lock seed directory: %s", applet, strerror(errno));
 
 	if (seed_from_file_if_exists(NON_CREDITABLE_SEED, dfd, false, &hash) < 0)
 		program_ret |= 1 << 1;
@@ -527,23 +518,15 @@ int main(int argc, char **argv)
 	fd = openat(dfd, NON_CREDITABLE_SEED, O_WRONLY | O_CREAT | O_TRUNC, 0400);
 	if (fd < 0) {
 		eerror("%s: Unable to open seed file for writing: %s", applet, strerror(errno));
-		program_ret |= 1 << 4;
-		goto out;
+		return program_ret | (1 << 4);
 	}
 	if (write_full(fd, new_seed, new_seed_len) != (ssize_t)new_seed_len || fsync(fd) < 0) {
 		eerror("%s: Unable to write seed file: %s", applet, strerror(errno));
-		program_ret |= 1 << 5;
-		goto out;
+		return program_ret | (1 << 5);
 	}
 	if (new_seed_creditable && renameat(dfd, NON_CREDITABLE_SEED, dfd, CREDITABLE_SEED) < 0) {
 		ewarn("%s: Unable to make new seed creditable: %s", applet, strerror(errno));
-		program_ret |= 1 << 6;
+		return program_ret | (1 << 6);
 	}
-out:
-	if (fd >= 0)
-		close(fd);
-	if (dfd >= 0)
-		close(dfd);
-	free(seed_dir);
 	return program_ret;
 }
