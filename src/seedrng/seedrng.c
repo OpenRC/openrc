@@ -455,7 +455,7 @@ int main(int argc, char **argv)
 	static const char seedrng_prefix[] = "SeedRNG v1 Old+New Prefix";
 	static const char seedrng_failure[] = "SeedRNG v1 No New Seed Failure";
 	int opt, fd, dfd, program_ret = 0;
-	char *seed_dir;
+	char *seed_dir = NULL;
 	uint8_t new_seed[MAX_SEED_LEN];
 	size_t new_seed_len;
 	bool new_seed_creditable;
