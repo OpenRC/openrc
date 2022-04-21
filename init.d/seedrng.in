@@ -19,18 +19,18 @@ depend()
 	provide urandom
 }
 
-seedrng_options()
+seedrng_with_options()
 {
-	[ -n "${seed_dir}" ] &&
-		echo "--seed-dir \"${seed_dir}\""
-	yesno "${skip_credit}" &&
-		echo "--skip-credit"
+	set --
+	[ -n "${seed_dir}" ] && set -- "$@" --seed-dir "${seed_dir}"
+	yesno "${skip_credit}" && set -- "$@" --skip-credit
+	seedrng "$@"
 }
 
 start()
 {
 	ebegin "Seeding random number generator"
-	seedrng $(seedrng_options)
+	seedrng_with_options
 	eend $? "Error seeding random number generator"
 	return 0
 }
@@ -38,7 +38,7 @@ start()
 stop()
 {
 	ebegin "Saving random number generator seed"
-	seedrng $(seedrng_options)
+	seedrng_with_options
 	eend $? "Error saving random number generator seed"
 	return 0
 }
