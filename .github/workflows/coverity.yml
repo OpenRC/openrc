@@ -18,7 +18,7 @@ jobs:
     - run: meson setup builddir/
       env:
         CC: gcc
-    - uses: vapier/coverity-scan-action@v1
+    - uses: OpenRC/coverity-scan-action@v1
       with:
         command: ninja -C builddir
         email: ${{ secrets.COVERITY_SCAN_EMAIL }}
