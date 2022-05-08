@@ -5,8 +5,7 @@ test_task:
   freebsd_instance:
     matrix:
       image: freebsd-13-0-release-amd64
-      image: freebsd-12-2-release-amd64
-      image: freebsd-11-4-release-amd64
+      image: freebsd-12-3-release-amd64
   env:
     OS: FreeBSD
   procfs_script: >
