@@ -947,9 +947,11 @@ rc_services_in_runlevel(const char *runlevel)
 
 #ifdef RC_PKG_INITDIR
 		TAILQ_CONCAT(list, pkg, entries);
+		rc_stringlist_free(pkg);
 #endif
 #ifdef RC_LOCAL_INITDIR
 		TAILQ_CONCAT(list, local, entries);
+		rc_stringlist_free(local);
 #endif
 		return list;
 	}
@@ -1007,6 +1009,7 @@ rc_services_in_state(RC_SERVICE state)
 		services = ls_dir(dir, LS_INITD);
 		if (services) {
 			TAILQ_CONCAT(list, services, entries);
+			rc_stringlist_free(services);
 		}
 	}
 	rc_stringlist_free(dirs);
