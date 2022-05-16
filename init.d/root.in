@@ -45,6 +45,21 @@ start()
 		;;
 	esac
 
+	case ",$(fstabinfo -o /)," in
+		*,shared,*)
+			ebegin "Making root filesystem shared"
+			case "$RC_UNAME" in
+				Linux)
+					mount --make-rshared /
+				;;
+				*)
+					ewarn "Ignoring 'shared' option for / on non-linux"
+				;;
+			esac
+			eend $? "Root filesystem could not be mounted read/write"
+		;;
+	esac
+
 	ebegin "Remounting filesystems"
 	local mountpoint
 	for mountpoint in $(fstabinfo); do
