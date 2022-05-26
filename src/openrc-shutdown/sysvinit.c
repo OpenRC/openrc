@@ -19,9 +19,9 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "einfo.h"
 #include "sysvinit.h"
@@ -33,20 +33,22 @@ static void sysvinit_send_cmd(struct init_request *request)
 	size_t bytes;
 	ssize_t r;
 
-	fd = open("/run/initctl", O_WRONLY|O_NONBLOCK|O_CLOEXEC|O_NOCTTY);
+	fd = open("/run/initctl", O_WRONLY | O_NONBLOCK | O_CLOEXEC | O_NOCTTY);
 	if (fd < 0) {
 		if (errno != ENOENT)
-			eerror("Failed to open initctl fifo: %s", strerror(errno));
+			eerror("Failed to open initctl fifo: %s",
+			       strerror(errno));
 		return;
 	}
-	p = (char *) request;
+	p = (char *)request;
 	bytes = sizeof(*request);
 	do {
 		r = write(fd, p, bytes);
 		if (r < 0) {
 			if ((errno == EAGAIN) || (errno == EINTR))
 				continue;
-			eerror("Failed to write to /run/initctl: %s", strerror(errno));
+			eerror("Failed to write to /run/initctl: %s",
+			       strerror(errno));
 			return;
 		}
 		p += r;
@@ -61,14 +63,14 @@ void sysvinit_runlevel(char rl)
 	if (!rl)
 		return;
 
-	request = (struct init_request) {
+	request = (struct init_request){
 		.magic = INIT_MAGIC,
 		.sleeptime = 0,
 		.cmd = INIT_CMD_RUNLVL,
 		.runlevel = rl,
 	};
 	sysvinit_send_cmd(&request);
-		return;
+	return;
 }
 
 /*
@@ -76,7 +78,7 @@ void sysvinit_runlevel(char rl)
  */
 void sysvinit_setenv(const char *name, const char *value)
 {
-	struct init_request	request;
+	struct init_request request;
 	size_t nl;
 	size_t vl;
 
@@ -86,7 +88,7 @@ void sysvinit_setenv(const char *name, const char *value)
 	nl = strlen(name);
 	if (value)
 		vl = strlen(value);
-else
+	else
 		vl = 0;
 
 	if (nl + vl + 3 >= (int)sizeof(request.i.data))

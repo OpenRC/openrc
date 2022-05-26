@@ -16,17 +16,17 @@
  */
 
 #include <getopt.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <inttypes.h>
 
+#include "_usage.h"
 #include "einfo.h"
+#include "misc.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
-#include "_usage.h"
 
 enum format_t {
 	FORMAT_DEFAULT,
@@ -37,18 +37,12 @@ const char *applet = NULL;
 const char *extraopts = NULL;
 const char getoptstring[] = "acf:lmrsSu" getoptstring_COMMON;
 const struct option longopts[] = {
-	{"all",         0, NULL, 'a'},
-	{"crashed",     0, NULL, 'c'},
-	{"format",     1, NULL, 'f'},
-	{"list",        0, NULL, 'l'},
-	{"manual",        0, NULL, 'm'},
-	{"runlevel",    0, NULL, 'r'},
-	{"servicelist", 0, NULL, 's'},
-	{"supervised", 0, NULL, 'S'},
-	{"unused",      0, NULL, 'u'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
+	{"all", 0, NULL, 'a'},	       {"crashed", 0, NULL, 'c'},
+	{"format", 1, NULL, 'f'},      {"list", 0, NULL, 'l'},
+	{"manual", 0, NULL, 'm'},      {"runlevel", 0, NULL, 'r'},
+	{"servicelist", 0, NULL, 's'}, {"supervised", 0, NULL, 'S'},
+	{"unused", 0, NULL, 'u'},      longopts_COMMON};
+const char *const longopts_help[] = {
 	"Show services from all run levels",
 	"Show crashed services",
 	"format status to be parsable (currently arg must be ini)",
@@ -58,10 +52,10 @@ const char * const longopts_help[] = {
 	"Show service list",
 	"show supervised services",
 	"Show services not assigned to any runlevel",
-	longopts_help_COMMON
-};
-const char *usagestring = ""						\
-	"Usage: rc-status [options] -f ini <runlevel>...\n"		\
+	longopts_help_COMMON};
+const char *usagestring =
+	""
+	"Usage: rc-status [options] -f ini <runlevel>...\n"
 	"   or: rc-status [options] [-a | -c | -l | -m | -r | -s | -u]";
 
 static RC_DEPTREE *deptree;
@@ -71,16 +65,16 @@ static RC_STRINGLIST *levels, *services, *tmp, *alist;
 static RC_STRINGLIST *sservices, *nservices, *needsme;
 
 static void print_level(const char *prefix, const char *level,
-		enum format_t format)
+			enum format_t format)
 {
 	switch (format) {
 	case FORMAT_DEFAULT:
 		if (prefix)
 			printf("%s ", prefix);
-		printf ("Runlevel: ");
+		printf("Runlevel: ");
 		if (isatty(fileno(stdout)))
-			printf("%s%s%s\n",
-					ecolor(ECOLOR_HILITE), level, ecolor(ECOLOR_NORMAL));
+			printf("%s%s%s\n", ecolor(ECOLOR_HILITE), level,
+			       ecolor(ECOLOR_NORMAL));
 		else
 			printf("%s\n", level);
 		break;
@@ -110,7 +104,7 @@ static char *get_uptime(const char *service)
 		start_time_string = rc_service_value_get(service, "start_time");
 		if (start_count && start_time_string) {
 			start_time = to_time_t(start_time_string);
-			diff_secs = (int64_t) difftime(time(NULL), start_time);
+			diff_secs = (int64_t)difftime(time(NULL), start_time);
 			diff_days = diff_secs / 86400;
 			diff_secs = diff_secs % 86400;
 			diff_hours = diff_secs / 3600;
@@ -119,13 +113,16 @@ static char *get_uptime(const char *service)
 			diff_secs = diff_secs % 60;
 			if (diff_days > 0)
 				xasprintf(&uptime,
-						"%"PRId64" day(s) %02"PRId64":%02"PRId64":%02"PRId64" (%s)",
-						diff_days, diff_hours, diff_mins, diff_secs,
-						start_count);
+					  "%" PRId64 " day(s) %02" PRId64
+					  ":%02" PRId64 ":%02" PRId64 " (%s)",
+					  diff_days, diff_hours, diff_mins,
+					  diff_secs, start_count);
 			else
 				xasprintf(&uptime,
-						"%02"PRId64":%02"PRId64":%02"PRId64" (%s)",
-						diff_hours, diff_mins, diff_secs, start_count);
+					  "%02" PRId64 ":%02" PRId64
+					  ":%02" PRId64 " (%s)",
+					  diff_hours, diff_mins, diff_secs,
+					  start_count);
 		}
 	}
 	return uptime;
@@ -152,10 +149,10 @@ static void print_service(const char *service, enum format_t format)
 		color = ECOLOR_WARN;
 	} else if (state & RC_SERVICE_STARTED) {
 		errno = 0;
-		if (rc_service_daemons_crashed(service) && errno != EACCES)
-		{
+		if (rc_service_daemons_crashed(service) && errno != EACCES) {
 			child_pid = rc_service_value_get(service, "child_pid");
-			start_time = rc_service_value_get(service, "start_time");
+			start_time =
+				rc_service_value_get(service, "start_time");
 			if (start_time && child_pid)
 				xasprintf(&status, " unsupervised ");
 			else
@@ -183,7 +180,7 @@ static void print_service(const char *service, enum format_t format)
 	errno = 0;
 	switch (format) {
 	case FORMAT_DEFAULT:
-		cols =  printf(" %s", service);
+		cols = printf(" %s", service);
 		if (c && *c && isatty(fileno(stdout)))
 			printf("\n");
 		ebracket(cols, color, status);
@@ -196,7 +193,7 @@ static void print_service(const char *service, enum format_t format)
 }
 
 static void print_services(const char *runlevel, RC_STRINGLIST *svcs,
-		enum format_t format)
+			   enum format_t format)
 {
 	RC_STRINGLIST *l = NULL;
 	RC_STRING *s;
@@ -265,7 +262,7 @@ int main(int argc, char **argv)
 
 	applet = basename_c(argv[0]);
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
-				  (int *) 0)) != -1)
+				  (int *)0)) != -1)
 		switch (opt) {
 		case 'a':
 			show_all = true;
@@ -286,7 +283,8 @@ int main(int argc, char **argv)
 				format = FORMAT_INI;
 				setenv("EINFO_QUIET", "YES", 1);
 			} else
-				eerrorx("%s: invalid argument to --format switch\n", applet);
+				eerrorx("%s: invalid argument to --format switch\n",
+					applet);
 			break;
 		case 'l':
 			levels = rc_runlevel_list();
@@ -298,8 +296,10 @@ int main(int argc, char **argv)
 			levels = rc_runlevel_list();
 			TAILQ_FOREACH_SAFE(s, services, entries, t) {
 				TAILQ_FOREACH(l, levels, entries)
-					if (rc_service_in_runlevel(s->value, l->value)) {
-						TAILQ_REMOVE(services, s, entries);
+					if (rc_service_in_runlevel(s->value,
+								   l->value)) {
+						TAILQ_REMOVE(services, s,
+							     entries);
 						free(s->value);
 						free(s);
 						break;
@@ -307,7 +307,8 @@ int main(int argc, char **argv)
 			}
 			TAILQ_FOREACH_SAFE(s, services, entries, t)
 				if (rc_service_state(s->value) &
-					(RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED)) {
+				    (RC_SERVICE_STOPPED |
+				     RC_SERVICE_HOTPLUGGED)) {
 					TAILQ_REMOVE(services, s, entries);
 					free(s->value);
 					free(s);
@@ -322,7 +323,8 @@ int main(int argc, char **argv)
 		case 'S':
 			services = rc_services_in_state(RC_SERVICE_STARTED);
 			TAILQ_FOREACH_SAFE(s, services, entries, t)
-				if (!rc_service_value_get(s->value, "child_pid"))
+				if (!rc_service_value_get(s->value,
+							  "child_pid"))
 					TAILQ_REMOVE(services, s, entries);
 			print_services(NULL, services, FORMAT_DEFAULT);
 			goto exit;
@@ -337,8 +339,10 @@ int main(int argc, char **argv)
 			levels = rc_runlevel_list();
 			TAILQ_FOREACH_SAFE(s, services, entries, t) {
 				TAILQ_FOREACH(l, levels, entries)
-					if (rc_service_in_runlevel(s->value, l->value)) {
-						TAILQ_REMOVE(services, s, entries);
+					if (rc_service_in_runlevel(s->value,
+								   l->value)) {
+						TAILQ_REMOVE(services, s,
+							     entries);
 						free(s->value);
 						free(s);
 						break;
@@ -348,7 +352,7 @@ int main(int argc, char **argv)
 			goto exit;
 			/* NOTREACHED */
 
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 
 	if (!levels)
@@ -411,7 +415,8 @@ int main(int argc, char **argv)
 		TAILQ_FOREACH_SAFE(s, services, entries, t) {
 			state = rc_service_state(s->value);
 			if ((rc_stringlist_find(sservices, s->value) ||
-			    (state & ( RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED)))) {
+			     (state &
+			      (RC_SERVICE_STOPPED | RC_SERVICE_HOTPLUGGED)))) {
 				if (!(state & RC_SERVICE_FAILED)) {
 					TAILQ_REMOVE(services, s, entries);
 					free(s->value);
@@ -430,10 +435,13 @@ int main(int argc, char **argv)
 			TAILQ_FOREACH_SAFE(s, services, entries, t) {
 				l->value = s->value;
 				setenv("RC_SVCNAME", l->value, 1);
-				tmp = rc_deptree_depends(deptree, needsme, alist, level->value, RC_DEP_TRACE);
+				tmp = rc_deptree_depends(deptree, needsme,
+							 alist, level->value,
+							 RC_DEP_TRACE);
 				if (TAILQ_FIRST(tmp)) {
 					TAILQ_REMOVE(services, s, entries);
-					TAILQ_INSERT_TAIL(nservices, s, entries);
+					TAILQ_INSERT_TAIL(nservices, s,
+							  entries);
 				}
 				rc_stringlist_free(tmp);
 			}

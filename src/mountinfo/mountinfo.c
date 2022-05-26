@@ -15,20 +15,21 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
+#include <sys/types.h>
 
 #if defined(__DragonFly__) || defined(__FreeBSD__)
-#  include <sys/ucred.h>
-#  include <sys/mount.h>
-#  define F_FLAGS f_flags
+#include <sys/mount.h>
+#include <sys/ucred.h>
+#define F_FLAGS f_flags
 #elif defined(BSD) && !defined(__GNU__)
-#  include <sys/statvfs.h>
-#  define statfs statvfs
-#  define F_FLAGS f_flag
-#elif defined(__linux__) || (defined(__FreeBSD_kernel__) && \
-	defined(__GLIBC__)) || defined(__GNU__)
-#  include <mntent.h>
+#include <sys/statvfs.h>
+#define statfs statvfs
+#define F_FLAGS f_flag
+#elif defined(__linux__) ||                                    \
+	(defined(__FreeBSD_kernel__) && defined(__GLIBC__)) || \
+	defined(__GNU__)
+#include <mntent.h>
 #endif
 
 #include <errno.h>
@@ -39,62 +40,43 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "_usage.h"
 #include "einfo.h"
+#include "misc.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
-#include "_usage.h"
 
 const char *applet = NULL;
 const char *procmounts = "/proc/mounts";
 const char *extraopts = "[mount1] [mount2] ...";
 const char getoptstring[] = "f:F:n:N:o:O:p:P:iste:E:" getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "fstype-regex",        1, NULL, 'f'},
-	{ "skip-fstype-regex",   1, NULL, 'F'},
-	{ "node-regex",          1, NULL, 'n'},
-	{ "skip-node-regex",     1, NULL, 'N'},
-	{ "options-regex",       1, NULL, 'o'},
-	{ "skip-options-regex",  1, NULL, 'O'},
-	{ "point-regex",         1, NULL, 'p'},
-	{ "skip-point-regex",    1, NULL, 'P'},
-	{ "options",             0, NULL, 'i'},
-	{ "fstype",              0, NULL, 's'},
-	{ "node",                0, NULL, 't'},
-	{ "netdev",              0, NULL, 'e'},
-	{ "nonetdev",            0, NULL, 'E'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"fstype regex to find",
-	"fstype regex to skip",
-	"node regex to find",
-	"node regex to skip",
-	"options regex to find",
-	"options regex to skip",
-	"point regex to find",
-	"point regex to skip",
-	"print options",
-	"print fstype",
-	"print node",
-	"is it a network device",
-	"is it not a network device",
-	longopts_help_COMMON
-};
+	{"fstype-regex", 1, NULL, 'f'},	 {"skip-fstype-regex", 1, NULL, 'F'},
+	{"node-regex", 1, NULL, 'n'},	 {"skip-node-regex", 1, NULL, 'N'},
+	{"options-regex", 1, NULL, 'o'}, {"skip-options-regex", 1, NULL, 'O'},
+	{"point-regex", 1, NULL, 'p'},	 {"skip-point-regex", 1, NULL, 'P'},
+	{"options", 0, NULL, 'i'},	 {"fstype", 0, NULL, 's'},
+	{"node", 0, NULL, 't'},		 {"netdev", 0, NULL, 'e'},
+	{"nonetdev", 0, NULL, 'E'},	 longopts_COMMON};
+const char *const longopts_help[] = {"fstype regex to find",
+				     "fstype regex to skip",
+				     "node regex to find",
+				     "node regex to skip",
+				     "options regex to find",
+				     "options regex to skip",
+				     "point regex to find",
+				     "point regex to skip",
+				     "print options",
+				     "print fstype",
+				     "print node",
+				     "is it a network device",
+				     "is it not a network device",
+				     longopts_help_COMMON};
 const char *usagestring = NULL;
 
-typedef enum {
-	mount_from,
-	mount_to,
-	mount_fstype,
-	mount_options
-} mount_type;
+typedef enum { mount_from, mount_to, mount_fstype, mount_options } mount_type;
 
-typedef enum {
-	net_ignore,
-	net_yes,
-	net_no
-} net_opts;
+typedef enum { net_ignore, net_yes, net_no } net_opts;
 
 struct args {
 	regex_t *node_regex;
@@ -108,10 +90,8 @@ struct args {
 	net_opts netdev;
 };
 
-static int
-process_mount(RC_STRINGLIST *list, struct args *args,
-    char *from, char *to, char *fstype, char *options,
-    int netdev)
+static int process_mount(RC_STRINGLIST *list, struct args *args, char *from,
+			 char *to, char *fstype, char *options, int netdev)
 {
 	char *p;
 	RC_STRING *s;
@@ -125,13 +105,11 @@ process_mount(RC_STRINGLIST *list, struct args *args,
 #endif
 
 	if (args->netdev == net_yes &&
-	    (netdev != -1 || TAILQ_FIRST(args->mounts)))
-	{
+	    (netdev != -1 || TAILQ_FIRST(args->mounts))) {
 		if (netdev != 0)
 			return 1;
 	} else if (args->netdev == net_no &&
-	    (netdev != -1 || TAILQ_FIRST(args->mounts)))
-	{
+		   (netdev != -1 || TAILQ_FIRST(args->mounts))) {
 		if (netdev != 1)
 			return 1;
 	} else {
@@ -159,8 +137,8 @@ process_mount(RC_STRINGLIST *list, struct args *args,
 
 	if (TAILQ_FIRST(args->mounts)) {
 		TAILQ_FOREACH(s, args->mounts, entries)
-		    if (strcmp(s->value, to) == 0)
-			    break;
+			if (strcmp(s->value, to) == 0)
+				break;
 		if (!s)
 			return -1;
 	}
@@ -200,44 +178,41 @@ process_mount(RC_STRINGLIST *list, struct args *args,
 static struct opt {
 	int o_opt;
 	const char *o_name;
-} optnames[] = {
-	{ MNT_ASYNC,        "asynchronous" },
-	{ MNT_EXPORTED,     "NFS exported" },
-	{ MNT_LOCAL,        "local" },
-	{ MNT_NOATIME,      "noatime" },
-	{ MNT_NOEXEC,       "noexec" },
-	{ MNT_NOSUID,       "nosuid" },
+} optnames[] = {{MNT_ASYNC, "asynchronous"},
+		{MNT_EXPORTED, "NFS exported"},
+		{MNT_LOCAL, "local"},
+		{MNT_NOATIME, "noatime"},
+		{MNT_NOEXEC, "noexec"},
+		{MNT_NOSUID, "nosuid"},
 #ifdef MNT_NOSYMFOLLOW
-	{ MNT_NOSYMFOLLOW,  "nosymfollow" },
+		{MNT_NOSYMFOLLOW, "nosymfollow"},
 #endif
-	{ MNT_QUOTA,        "with quotas" },
-	{ MNT_RDONLY,       "read-only" },
-	{ MNT_SYNCHRONOUS,  "synchronous" },
-	{ MNT_UNION,        "union" },
+		{MNT_QUOTA, "with quotas"},
+		{MNT_RDONLY, "read-only"},
+		{MNT_SYNCHRONOUS, "synchronous"},
+		{MNT_UNION, "union"},
 #ifdef MNT_NOCLUSTERR
-	{ MNT_NOCLUSTERR,   "noclusterr" },
+		{MNT_NOCLUSTERR, "noclusterr"},
 #endif
 #ifdef MNT_NOCLUSTERW
-	{ MNT_NOCLUSTERW,   "noclusterw" },
+		{MNT_NOCLUSTERW, "noclusterw"},
 #endif
 #ifdef MNT_SUIDDIR
-	{ MNT_SUIDDIR,      "suiddir" },
+		{MNT_SUIDDIR, "suiddir"},
 #endif
-	{ MNT_SOFTDEP,      "soft-updates" },
+		{MNT_SOFTDEP, "soft-updates"},
 #ifdef MNT_MULTILABEL
-	{ MNT_MULTILABEL,   "multilabel" },
+		{MNT_MULTILABEL, "multilabel"},
 #endif
 #ifdef MNT_ACLS
-	{ MNT_ACLS,         "acls" },
+		{MNT_ACLS, "acls"},
 #endif
 #ifdef MNT_GJOURNAL
-	{ MNT_GJOURNAL,     "gjournal" },
+		{MNT_GJOURNAL, "gjournal"},
 #endif
-	{ 0, NULL }
-};
+		{0, NULL}};
 
-static RC_STRINGLIST *
-find_mounts(struct args *args)
+static RC_STRINGLIST *find_mounts(struct args *args)
 {
 	struct statfs *mnts;
 	int nmnts;
@@ -250,7 +225,7 @@ find_mounts(struct args *args)
 	char *tmp;
 
 	if ((nmnts = getmntinfo(&mnts, MNT_NOWAIT)) == 0)
-		eerrorx("getmntinfo: %s", strerror (errno));
+		eerrorx("getmntinfo: %s", strerror(errno));
 
 	list = rc_stringlist_new();
 	for (i = 0; i < nmnts; i++) {
@@ -263,7 +238,8 @@ find_mounts(struct args *args)
 				if (!options)
 					options = xstrdup(o->o_name);
 				else {
-					xasprintf(&tmp, "%s,%s", options, o->o_name);
+					xasprintf(&tmp, "%s,%s", options,
+						  o->o_name);
 					free(options);
 					options = tmp;
 				}
@@ -271,12 +247,9 @@ find_mounts(struct args *args)
 			flags &= ~o->o_opt;
 		}
 
-		process_mount(list, args,
-		    mnts[i].f_mntfromname,
-		    mnts[i].f_mntonname,
-		    mnts[i].f_fstypename,
-		    options,
-		    netdev);
+		process_mount(list, args, mnts[i].f_mntfromname,
+			      mnts[i].f_mntonname, mnts[i].f_fstypename,
+			      options, netdev);
 
 		free(options);
 		options = NULL;
@@ -285,10 +258,10 @@ find_mounts(struct args *args)
 	return list;
 }
 
-#elif defined(__linux__) || (defined(__FreeBSD_kernel__) && \
-	defined(__GLIBC__)) || defined(__GNU__)
-static struct mntent *
-getmntfile(const char *file)
+#elif defined(__linux__) ||                                    \
+	(defined(__FreeBSD_kernel__) && defined(__GLIBC__)) || \
+	defined(__GNU__)
+static struct mntent *getmntfile(const char *file)
 {
 	struct mntent *ent = NULL;
 	FILE *fp;
@@ -305,8 +278,7 @@ getmntfile(const char *file)
 	return ent;
 }
 
-static RC_STRINGLIST *
-find_mounts(struct args *args)
+static RC_STRINGLIST *find_mounts(struct args *args)
 {
 	FILE *fp;
 	char *buffer;
@@ -352,18 +324,16 @@ find_mounts(struct args *args)
 }
 
 #else
-#  error "Operating system not supported!"
+#error "Operating system not supported!"
 #endif
 
-static regex_t *
-get_regex(const char *string)
+static regex_t *get_regex(const char *string)
 {
-	regex_t *reg = xmalloc(sizeof (*reg));
+	regex_t *reg = xmalloc(sizeof(*reg));
 	int result;
 	char buffer[256];
 
-	if ((result = regcomp(reg, string, REG_EXTENDED | REG_NOSUB)) != 0)
-	{
+	if ((result = regcomp(reg, string, REG_EXTENDED | REG_NOSUB)) != 0) {
 		regerror(result, reg, buffer, sizeof(buffer));
 		eerrorx("%s: invalid regex `%s'", applet, buffer);
 	}
@@ -383,21 +353,24 @@ int main(int argc, char **argv)
 	int result;
 	char *this_path;
 
-#define DO_REG(_var)							      \
-	if (_var) free(_var);						      \
+#define DO_REG(_var)        \
+	if (_var)           \
+		free(_var); \
 	_var = get_regex(optarg);
-#define REG_FREE(_var)							      \
-	if (_var) { regfree(_var); free(_var); }
+#define REG_FREE(_var)         \
+	if (_var) {            \
+		regfree(_var); \
+		free(_var);    \
+	}
 
 	applet = basename_c(argv[0]);
-	memset (&args, 0, sizeof(args));
+	memset(&args, 0, sizeof(args));
 	args.mount_type = mount_to;
 	args.netdev = net_ignore;
 	args.mounts = rc_stringlist_new();
 
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
-	{
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *)0)) != -1) {
 		switch (opt) {
 		case 'e':
 			args.netdev = net_yes;
@@ -439,14 +412,14 @@ int main(int argc, char **argv)
 			args.mount_type = mount_from;
 			break;
 
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 	}
 
 	while (optind < argc) {
 		if (argv[optind][0] != '/')
-			eerrorx("%s: `%s' is not a mount point",
-			    argv[0], argv[optind]);
+			eerrorx("%s: `%s' is not a mount point", argv[0],
+				argv[optind]);
 		this_path = argv[optind++];
 		real_path = realpath(this_path, NULL);
 		if (real_path)

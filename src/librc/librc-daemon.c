@@ -17,13 +17,13 @@
 
 #include <signal.h>
 
-#include "queue.h"
 #include "librc.h"
+#include "queue.h"
 
-#if defined(__linux__) || (defined (__FreeBSD_kernel__) && defined(__GLIBC__)) \
-	|| defined(__GNU__)
-static bool
-pid_is_exec(pid_t pid, const char *exec)
+#if defined(__linux__) ||                                      \
+	(defined(__FreeBSD_kernel__) && defined(__GLIBC__)) || \
+	defined(__GNU__)
+static bool pid_is_exec(pid_t pid, const char *exec)
 {
 	char *buffer = NULL;
 	FILE *fp;
@@ -47,8 +47,7 @@ pid_is_exec(pid_t pid, const char *exec)
 	return retval;
 }
 
-static bool
-pid_is_argv(pid_t pid, const char *const *argv)
+static bool pid_is_argv(pid_t pid, const char *const *argv)
 {
 	char *cmdline = NULL;
 	int fd;
@@ -80,8 +79,8 @@ pid_is_argv(pid_t pid, const char *const *argv)
 	return true;
 }
 
-RC_PIDLIST *
-rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
+RC_PIDLIST *rc_find_pids(const char *exec, const char *const *argv, uid_t uid,
+			 pid_t pid)
 {
 	DIR *procdir;
 	struct dirent *entry;
@@ -143,7 +142,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	memset(my_ns, 0, sizeof(my_ns));
 	memset(proc_ns, 0, sizeof(proc_ns));
 	if (exists("/proc/self/ns/pid")) {
-		rc = readlink("/proc/self/ns/pid", my_ns, sizeof(my_ns)-1);
+		rc = readlink("/proc/self/ns/pid", my_ns, sizeof(my_ns) - 1);
 		if (rc <= 0)
 			my_ns[0] = '\0';
 	}
@@ -157,12 +156,13 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 			continue;
 		xasprintf(&buffer, "/proc/%d/ns/pid", p);
 		if (exists(buffer)) {
-			rc = readlink(buffer, proc_ns, sizeof(proc_ns)-1);
+			rc = readlink(buffer, proc_ns, sizeof(proc_ns) - 1);
 			if (rc <= 0)
 				proc_ns[0] = '\0';
 		}
 		free(buffer);
-		if (pid == 0 && strlen(my_ns) && strlen (proc_ns) && strcmp(my_ns, proc_ns))
+		if (pid == 0 && strlen(my_ns) && strlen(proc_ns) &&
+		    strcmp(my_ns, proc_ns))
 			continue;
 		if (uid) {
 			xasprintf(&buffer, "/proc/%d", p);
@@ -174,8 +174,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		}
 		if (exec && !pid_is_exec(p, exec))
 			continue;
-		if (argv &&
-		    !pid_is_argv(p, (const char *const *)argv))
+		if (argv && !pid_is_argv(p, (const char *const *)argv))
 			continue;
 		/* If this is an OpenVZ host, filter out container processes */
 		if (openvz_host) {
@@ -188,7 +187,10 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 				while (!feof(fp)) {
 					rc_getline(&line, &len, fp);
 					if (strncmp(line, "envID:", 6) == 0) {
-						container_pid = !(strncmp(line, "envID:\t0", 8) == 0);
+						container_pid =
+							!(strncmp(line,
+								  "envID:\t0",
+								  8) == 0);
 						break;
 					}
 				}
@@ -213,36 +215,36 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 
 #elif BSD
 
-# if defined(__NetBSD__) || defined(__OpenBSD__)
-#  define _KVM_GETPROC2
-#  define _KINFO_PROC kinfo_proc2
-#  define _KVM_GETARGV kvm_getargv2
-#  define _GET_KINFO_UID(kp) (kp.p_ruid)
-#  define _GET_KINFO_COMM(kp) (kp.p_comm)
-#  define _GET_KINFO_PID(kp) (kp.p_pid)
-#  define _KVM_PATH NULL
-#  define _KVM_FLAGS KVM_NO_FILES
-# else
-#  ifndef KERN_PROC_PROC
-#    define KERN_PROC_PROC KERN_PROC_ALL
-#  endif
-#  define _KINFO_PROC kinfo_proc
-#  define _KVM_GETARGV kvm_getargv
-#  if defined(__DragonFly__)
-#    define _GET_KINFO_UID(kp) (kp.kp_ruid)
-#    define _GET_KINFO_COMM(kp) (kp.kp_comm)
-#    define _GET_KINFO_PID(kp) (kp.kp_pid)
-#  else
-#    define _GET_KINFO_UID(kp) (kp.ki_ruid)
-#    define _GET_KINFO_COMM(kp) (kp.ki_comm)
-#    define _GET_KINFO_PID(kp) (kp.ki_pid)
-#  endif
-#  define _KVM_PATH _PATH_DEVNULL
-#  define _KVM_FLAGS O_RDONLY
-# endif
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+#define _KVM_GETPROC2
+#define _KINFO_PROC kinfo_proc2
+#define _KVM_GETARGV kvm_getargv2
+#define _GET_KINFO_UID(kp) (kp.p_ruid)
+#define _GET_KINFO_COMM(kp) (kp.p_comm)
+#define _GET_KINFO_PID(kp) (kp.p_pid)
+#define _KVM_PATH NULL
+#define _KVM_FLAGS KVM_NO_FILES
+#else
+#ifndef KERN_PROC_PROC
+#define KERN_PROC_PROC KERN_PROC_ALL
+#endif
+#define _KINFO_PROC kinfo_proc
+#define _KVM_GETARGV kvm_getargv
+#if defined(__DragonFly__)
+#define _GET_KINFO_UID(kp) (kp.kp_ruid)
+#define _GET_KINFO_COMM(kp) (kp.kp_comm)
+#define _GET_KINFO_PID(kp) (kp.kp_pid)
+#else
+#define _GET_KINFO_UID(kp) (kp.ki_ruid)
+#define _GET_KINFO_COMM(kp) (kp.ki_comm)
+#define _GET_KINFO_PID(kp) (kp.ki_pid)
+#endif
+#define _KVM_PATH _PATH_DEVNULL
+#define _KVM_FLAGS O_RDONLY
+#endif
 
-RC_PIDLIST *
-rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
+RC_PIDLIST *rc_find_pids(const char *exec, const char *const *argv, uid_t uid,
+			 pid_t pid)
 {
 	static kvm_t *kd = NULL;
 	char errbuf[_POSIX2_LINE_MAX];
@@ -257,9 +259,8 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	const char *const *arg;
 	int match;
 
-	if ((kd = kvm_openfiles(_KVM_PATH, _KVM_PATH,
-		    NULL, _KVM_FLAGS, errbuf)) == NULL)
-	{
+	if ((kd = kvm_openfiles(_KVM_PATH, _KVM_PATH, NULL, _KVM_FLAGS,
+				errbuf)) == NULL) {
 		fprintf(stderr, "kvm_open: %s\n", errbuf);
 		return NULL;
 	}
@@ -316,11 +317,11 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 }
 
 #else
-#  error "Platform not supported!"
+#error "Platform not supported!"
 #endif
 
-static bool
-_match_daemon(const char *path, const char *file, RC_STRINGLIST *match)
+static bool _match_daemon(const char *path, const char *file,
+			  RC_STRINGLIST *match)
 {
 	char *line = NULL;
 	size_t len = 0;
@@ -337,10 +338,10 @@ _match_daemon(const char *path, const char *file, RC_STRINGLIST *match)
 
 	while ((rc_getline(&line, &len, fp))) {
 		TAILQ_FOREACH(m, match, entries)
-		    if (strcmp(line, m->value) == 0) {
-			    TAILQ_REMOVE(match, m, entries);
-			    break;
-		    }
+			if (strcmp(line, m->value) == 0) {
+				TAILQ_REMOVE(match, m, entries);
+				break;
+			}
 		if (!TAILQ_FIRST(match))
 			break;
 	}
@@ -351,8 +352,8 @@ _match_daemon(const char *path, const char *file, RC_STRINGLIST *match)
 	return true;
 }
 
-static RC_STRINGLIST *
-_match_list(const char *exec, const char *const *argv, const char *pidfile)
+static RC_STRINGLIST *_match_list(const char *exec, const char *const *argv,
+				  const char *pidfile)
 {
 	RC_STRINGLIST *match = rc_stringlist_new();
 	int i = 0;
@@ -379,15 +380,14 @@ _match_list(const char *exec, const char *const *argv, const char *pidfile)
 	return match;
 }
 
-bool
-rc_service_daemon_set(const char *service, const char *exec,
-    const char *const *argv,
-    const char *pidfile, bool started)
+bool rc_service_daemon_set(const char *service, const char *exec,
+			   const char *const *argv, const char *pidfile,
+			   bool started)
 {
 	char *dirpath = NULL;
 	char *file = NULL;
 	int nfiles = 0;
-	char oldfile[PATH_MAX] = { '\0' };
+	char oldfile[PATH_MAX] = {'\0'};
 	bool retval = false;
 	DIR *dp;
 	struct dirent *d;
@@ -456,9 +456,8 @@ rc_service_daemon_set(const char *service, const char *exec,
 	return retval;
 }
 
-bool
-rc_service_started_daemon(const char *service,
-    const char *exec, const char *const *argv, int indx)
+bool rc_service_started_daemon(const char *service, const char *exec,
+			       const char *const *argv, int indx)
 {
 	char *dirpath = NULL;
 	char *file = NULL;
@@ -482,7 +481,8 @@ rc_service_started_daemon(const char *service,
 			while ((d = readdir(dp))) {
 				if (d->d_name[0] == '.')
 					continue;
-				retval = _match_daemon(dirpath, d->d_name, match);
+				retval = _match_daemon(dirpath, d->d_name,
+						       match);
 				if (retval)
 					break;
 			}
@@ -495,8 +495,7 @@ rc_service_started_daemon(const char *service,
 	return retval;
 }
 
-bool
-rc_service_daemons_crashed(const char *service)
+bool rc_service_daemons_crashed(const char *service)
 {
 	char dirpath[PATH_MAX];
 	DIR *dp;
@@ -523,7 +522,7 @@ rc_service_daemons_crashed(const char *service)
 	char *spidfile;
 
 	path += snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
-	    basename_c(service));
+			 basename_c(service));
 
 	if (!(dp = opendir(dirpath)))
 		return false;
@@ -533,7 +532,7 @@ rc_service_daemons_crashed(const char *service)
 			continue;
 
 		snprintf(path, sizeof(dirpath) - (path - dirpath), "/%s",
-		    d->d_name);
+			 d->d_name);
 		fp = fopen(dirpath, "r");
 		if (!fp)
 			break;
@@ -568,7 +567,8 @@ rc_service_daemons_crashed(const char *service)
 		ch_root = rc_service_value_get(basename_c(service), "chroot");
 		spidfile = pidfile;
 		if (ch_root && pidfile) {
-			spidfile = xmalloc(strlen(ch_root) + strlen(pidfile) + 1);
+			spidfile =
+				xmalloc(strlen(ch_root) + strlen(pidfile) + 1);
 			strcpy(spidfile, ch_root);
 			strcat(spidfile, pidfile);
 			free(pidfile);
@@ -608,11 +608,11 @@ rc_service_daemons_crashed(const char *service)
 				   into an array */
 				i = 0;
 				TAILQ_FOREACH(s, list, entries)
-				    i++;
+					i++;
 				argv = xmalloc(sizeof(char *) * (i + 1));
 				i = 0;
 				TAILQ_FOREACH(s, list, entries)
-				    argv[i++] = s->value;
+					argv[i++] = s->value;
 				argv[i] = NULL;
 			}
 		}
@@ -621,10 +621,9 @@ rc_service_daemons_crashed(const char *service)
 			if (pid != 0) {
 				if (kill(pid, 0) == -1 && errno == ESRCH)
 					retval = true;
-			} else if ((pids = rc_find_pids(exec,
-				    (const char *const *)argv,
-				    0, pid)))
-			{
+			} else if ((pids = rc_find_pids(
+					    exec, (const char *const *)argv, 0,
+					    pid))) {
 				p1 = LIST_FIRST(pids);
 				while (p1) {
 					p2 = LIST_NEXT(p1, entries);

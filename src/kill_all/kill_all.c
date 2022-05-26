@@ -15,7 +15,6 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-
 #include <dirent.h>
 #include <errno.h>
 #include <getopt.h>
@@ -24,29 +23,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <syslog.h>
+#include <unistd.h>
 
-#include "einfo.h"
-#include "rc.h"
-#include "misc.h"
 #include "_usage.h"
+#include "einfo.h"
+#include "misc.h"
+#include "rc.h"
 
 const char *applet = NULL;
 const char *extraopts = "[signal number]";
 const char getoptstring[] = "do:" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "dry-run",        0, NULL, 'd' },
-	{ "omit",        1, NULL, 'o' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"print what would be done",
-	"omit this pid (can be repeated)",
-	longopts_help_COMMON
-};
+const struct option longopts[] = {{"dry-run", 0, NULL, 'd'},
+				  {"omit", 1, NULL, 'o'},
+				  longopts_COMMON};
+const char *const longopts_help[] = {"print what would be done",
+				     "omit this pid (can be repeated)",
+				     longopts_help_COMMON};
 const char *usagestring = NULL;
 
 static int mount_proc(void)
@@ -59,24 +54,24 @@ static int mount_proc(void)
 		return 0;
 	pid = fork();
 	switch (pid) {
-		case -1:
-			syslog(LOG_ERR, "Unable to fork");
-			return -1;
-			break;
-		case 0:
-			/* attempt to mount /proc */
-			execlp("mount", "mount", "-t", "proc", "proc", "/proc", NULL);
-			syslog(LOG_ERR, "Unable to execute mount");
-			exit(1);
-			break;
-		default:
-			/* wait for child process */
-			while ((rc = wait(&status)) != pid)
-				if (rc < 0 && errno == ECHILD)
-					break;
-			if (rc != pid || WEXITSTATUS(status) != 0)
-				syslog(LOG_ERR, "mount returned non-zero exit status");
-			break;
+	case -1:
+		syslog(LOG_ERR, "Unable to fork");
+		return -1;
+		break;
+	case 0:
+		/* attempt to mount /proc */
+		execlp("mount", "mount", "-t", "proc", "proc", "/proc", NULL);
+		syslog(LOG_ERR, "Unable to execute mount");
+		exit(1);
+		break;
+	default:
+		/* wait for child process */
+		while ((rc = wait(&status)) != pid)
+			if (rc < 0 && errno == ECHILD)
+				break;
+		if (rc != pid || WEXITSTATUS(status) != 0)
+			syslog(LOG_ERR, "mount returned non-zero exit status");
+		break;
 	}
 	if (!exists("/proc/version")) {
 		syslog(LOG_ERR, "Could not mount /proc");
@@ -94,7 +89,7 @@ static bool is_user_process(pid_t pid)
 	size_t size;
 	bool user_process = true;
 
-	while (pid >0 && user_process) {
+	while (pid > 0 && user_process) {
 		if (pid == 2) {
 			user_process = false;
 			continue;
@@ -125,7 +120,8 @@ static bool is_user_process(pid_t pid)
 		}
 		fclose(fp);
 		if (temp_pid == -1) {
-			syslog(LOG_ERR, "Unable to read pid from /proc/%d/status", pid);
+			syslog(LOG_ERR,
+			       "Unable to read pid from /proc/%d/status", pid);
 			user_process = false;
 			continue;
 		}
@@ -139,7 +135,7 @@ static int signal_processes(int sig, RC_STRINGLIST *omits, bool dryrun)
 	sigset_t signals;
 	sigset_t oldsigs;
 	DIR *dir;
-	struct dirent	*d;
+	struct dirent *d;
 	char *buf = NULL;
 	pid_t pid;
 	int sendcount = 0;
@@ -170,7 +166,7 @@ static int signal_processes(int sig, RC_STRINGLIST *omits, bool dryrun)
 	/* Walk through the directory. */
 	while ((d = readdir(dir)) != NULL) {
 		/* Is this a process? */
-		pid = (pid_t) atoi(d->d_name);
+		pid = (pid_t)atoi(d->d_name);
 		if (pid == 0)
 			continue;
 
@@ -217,39 +213,39 @@ int main(int argc, char **argv)
 
 	applet = basename_c(argv[0]);
 	rc_stringlist_addu(omits, "1");
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
-	{
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *)0)) != -1) {
 		switch (opt) {
-			case 'd':
-				dryrun = true;
-				break;
-			case 'o':
-				here = optarg;
-				while ((token = strsep(&here, ",;:"))) {
-					if ((pid_t) atoi(token) > 0)
-						rc_stringlist_addu(omits, token);
-					else {
-						eerror("Invalid omit pid value %s", token);
-						usage(EXIT_FAILURE);
-					}
+		case 'd':
+			dryrun = true;
+			break;
+		case 'o':
+			here = optarg;
+			while ((token = strsep(&here, ",;:"))) {
+				if ((pid_t)atoi(token) > 0)
+					rc_stringlist_addu(omits, token);
+				else {
+					eerror("Invalid omit pid value %s",
+					       token);
+					usage(EXIT_FAILURE);
 				}
-				break;
+			}
+			break;
 			case_RC_COMMON_GETOPT
 		}
 	}
 
 	if (argc > optind) {
-	arg = argv[optind];
-	sig = atoi(arg);
-	if (sig <= 0 || sig > 31) {
-		rc_stringlist_free(omits);
-		eerror("Invalid signal %s", arg);
-		usage(EXIT_FAILURE);
-	}
+		arg = argv[optind];
+		sig = atoi(arg);
+		if (sig <= 0 || sig > 31) {
+			rc_stringlist_free(omits);
+			eerror("Invalid signal %s", arg);
+			usage(EXIT_FAILURE);
+		}
 	}
 
-	openlog(applet, LOG_CONS|LOG_PID, LOG_DAEMON);
+	openlog(applet, LOG_CONS | LOG_PID, LOG_DAEMON);
 	if (mount_proc() != 0) {
 		rc_stringlist_free(omits);
 		eerrorx("Unable to mount /proc file system");

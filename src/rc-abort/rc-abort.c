@@ -10,16 +10,16 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
-#include <errno.h>
 #include <ctype.h>
+#include <errno.h>
 #include <inttypes.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
@@ -34,8 +34,8 @@ int main(void)
 
 	if (p && sscanf(p, "%d", &pid) == 1) {
 		if (kill(pid, SIGUSR1) != 0)
-			eerrorx("rc-abort: failed to signal parent %d: %s",
-			    pid, strerror(errno));
+			eerrorx("rc-abort: failed to signal parent %d: %s", pid,
+				strerror(errno));
 		return EXIT_SUCCESS;
 	}
 

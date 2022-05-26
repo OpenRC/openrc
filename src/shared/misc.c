@@ -20,10 +20,9 @@
 #include <sys/utsname.h>
 
 #ifdef __linux__
-#  include <sys/sysinfo.h>
+#include <sys/sysinfo.h>
 #endif
 
-#include <sys/time.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -31,35 +30,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 #include <utime.h>
 
 #include "einfo.h"
+#include "misc.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
 #include "version.h"
 
 extern char **environ;
 
-bool
-rc_conf_yesno(const char *setting)
+bool rc_conf_yesno(const char *setting)
 {
-	return rc_yesno(rc_conf_value (setting));
+	return rc_yesno(rc_conf_value(setting));
 }
 
-static const char *const env_whitelist[] = {
-	"EERROR_QUIET", "EINFO_QUIET",
-	"IN_BACKGROUND", "IN_DRYRUN", "IN_HOTPLUG",
-	"RC_DEBUG", "RC_NODEPS",
-	"LANG", "LC_MESSAGES", "TERM",
-	"EINFO_COLOR", "EINFO_VERBOSE",
-	NULL
-};
+static const char *const env_whitelist[] = {"EERROR_QUIET",
+					    "EINFO_QUIET",
+					    "IN_BACKGROUND",
+					    "IN_DRYRUN",
+					    "IN_HOTPLUG",
+					    "RC_DEBUG",
+					    "RC_NODEPS",
+					    "LANG",
+					    "LC_MESSAGES",
+					    "TERM",
+					    "EINFO_COLOR",
+					    "EINFO_VERBOSE",
+					    NULL};
 
-void
-env_filter(void)
+void env_filter(void)
 {
 	RC_STRINGLIST *env_allow;
 	RC_STRINGLIST *profile;
@@ -119,8 +122,7 @@ env_filter(void)
 	rc_stringlist_free(profile);
 }
 
-void
-env_config(void)
+void env_config(void)
 {
 	size_t pplen = strlen(RC_PATH_PREFIX);
 	char *path;
@@ -142,7 +144,7 @@ env_config(void)
 	path = getenv("PATH");
 	if (!path)
 		setenv("PATH", RC_PATH_PREFIX, 1);
-	else if (strncmp (RC_PATH_PREFIX, path, pplen) != 0) {
+	else if (strncmp(RC_PATH_PREFIX, path, pplen) != 0) {
 		l = strlen(path) + pplen + 3;
 		e = p = xmalloc(sizeof(char) * l);
 		p += snprintf(p, l, "%s", RC_PATH_PREFIX);
@@ -156,7 +158,7 @@ env_config(void)
 					break;
 			if (!tok)
 				p += snprintf(p, l - (p - e), ":%s", token);
-			free (np);
+			free(np);
 		}
 		*p++ = '\0';
 		unsetenv("PATH");
@@ -175,7 +177,7 @@ env_config(void)
 
 	if ((fp = fopen(RC_KRUNLEVEL, "r"))) {
 		if (getline(&buffer, &size, fp) != -1) {
-			l = strlen (buffer) - 1;
+			l = strlen(buffer) - 1;
 			if (buffer[l] == '\n')
 				buffer[l] = 0;
 			setenv("RC_DEFAULTLEVEL", buffer, 1);
@@ -210,31 +212,28 @@ env_config(void)
 		setenv("EINFO_COLOR", "NO", 1);
 }
 
-int
-signal_setup(int sig, void (*handler)(int))
+int signal_setup(int sig, void (*handler)(int))
 {
 	struct sigaction sa;
 
-	memset(&sa, 0, sizeof (sa));
+	memset(&sa, 0, sizeof(sa));
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = handler;
 	return sigaction(sig, &sa, NULL);
 }
 
-int
-signal_setup_restart(int sig, void (*handler)(int))
+int signal_setup_restart(int sig, void (*handler)(int))
 {
 	struct sigaction sa;
 
-	memset(&sa, 0, sizeof (sa));
+	memset(&sa, 0, sizeof(sa));
 	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = handler;
 	sa.sa_flags = SA_RESTART;
 	return sigaction(sig, &sa, NULL);
 }
 
-int
-svc_lock(const char *applet)
+int svc_lock(const char *applet)
 {
 	char *file = NULL;
 	int fd;
@@ -252,8 +251,7 @@ svc_lock(const char *applet)
 	return fd;
 }
 
-int
-svc_unlock(const char *applet, int fd)
+int svc_unlock(const char *applet, int fd)
 {
 	char *file = NULL;
 
@@ -264,8 +262,7 @@ svc_unlock(const char *applet, int fd)
 	return -1;
 }
 
-pid_t
-exec_service(const char *service, const char *arg)
+pid_t exec_service(const char *service, const char *arg)
 {
 	char *file, sfd[32];
 	int fd;
@@ -288,7 +285,7 @@ exec_service(const char *service, const char *arg)
 	snprintf(sfd, sizeof(sfd), "%d", fd);
 
 	/* We need to block signals until we have forked */
-	memset(&sa, 0, sizeof (sa));
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_DFL;
 	sigemptyset(&sa.sa_mask);
 	sigfillset(&full);
@@ -308,15 +305,15 @@ exec_service(const char *service, const char *arg)
 		sigprocmask(SIG_SETMASK, &old, NULL);
 
 		/* Safe to run now */
-		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
-		fprintf(stderr, "unable to exec `%s': %s\n",
-		    file, strerror(errno));
+		execl(file, file, "--lockfd", sfd, arg, (char *)NULL);
+		fprintf(stderr, "unable to exec `%s': %s\n", file,
+			strerror(errno));
 		svc_unlock(basename_c(service), fd);
 		_exit(EXIT_FAILURE);
 	}
 
 	if (pid == -1) {
-		fprintf(stderr, "fork: %s\n",strerror (errno));
+		fprintf(stderr, "fork: %s\n", strerror(errno));
 		svc_unlock(basename_c(service), fd);
 	} else
 		fcntl(fd, F_SETFD, fcntl(fd, F_GETFD, 0) | FD_CLOEXEC);
@@ -326,8 +323,7 @@ exec_service(const char *service, const char *arg)
 	return pid;
 }
 
-int
-parse_mode(mode_t *mode, char *text)
+int parse_mode(mode_t *mode, char *text)
 {
 	char *p;
 	unsigned long l;
@@ -339,7 +335,7 @@ parse_mode(mode_t *mode, char *text)
 			errno = EINVAL;
 			return -1;
 		}
-		*mode = (mode_t) l;
+		*mode = (mode_t)l;
 		return 0;
 	}
 
@@ -348,8 +344,7 @@ parse_mode(mode_t *mode, char *text)
 	return -1;
 }
 
-int
-is_writable(const char *path)
+int is_writable(const char *path)
 {
 	if (access(path, W_OK) == 0)
 		return 1;
@@ -357,7 +352,7 @@ is_writable(const char *path)
 	return 0;
 }
 
-RC_DEPTREE * _rc_deptree_load(int force, int *regen)
+RC_DEPTREE *_rc_deptree_load(int force, int *regen)
 {
 	int fd;
 	int retval;
@@ -383,17 +378,19 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 			*regen = 1;
 		ebegin("Caching service dependencies");
 		retval = rc_deptree_update() ? 0 : -1;
-		eend (retval, "Failed to update the dependency tree");
+		eend(retval, "Failed to update the dependency tree");
 
 		if (retval == 0) {
 			if (stat(RC_DEPTREE_CACHE, &st) != 0) {
-				eerror("stat(%s): %s", RC_DEPTREE_CACHE, strerror(errno));
+				eerror("stat(%s): %s", RC_DEPTREE_CACHE,
+				       strerror(errno));
 				return NULL;
 			}
 			if (st.st_mtime < t) {
 				eerror("Clock skew detected with `%s'", file);
 				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
-				    "' to %s", ctime(&t));
+					"' to %s",
+					ctime(&t));
 				fp = fopen(RC_DEPTREE_SKEWED, "w");
 				if (fp != NULL) {
 					fprintf(fp, "%s\n", file);
@@ -414,18 +411,45 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 }
 
 static const struct {
-	const char * const name;
+	const char *const name;
 	RC_SERVICE bit;
 } service_bits[] = {
-	{ "service_started",     RC_SERVICE_STARTED,     },
-	{ "service_stopped",     RC_SERVICE_STOPPED,     },
-	{ "service_inactive",    RC_SERVICE_INACTIVE,    },
-	{ "service_starting",    RC_SERVICE_STARTING,    },
-	{ "service_stopping",    RC_SERVICE_STOPPING,    },
-	{ "service_hotplugged",  RC_SERVICE_HOTPLUGGED,  },
-	{ "service_wasinactive", RC_SERVICE_WASINACTIVE, },
-	{ "service_failed",      RC_SERVICE_FAILED,      },
-	{ "service_crashed",     RC_SERVICE_CRASHED,     },
+	{
+		"service_started",
+		RC_SERVICE_STARTED,
+	},
+	{
+		"service_stopped",
+		RC_SERVICE_STOPPED,
+	},
+	{
+		"service_inactive",
+		RC_SERVICE_INACTIVE,
+	},
+	{
+		"service_starting",
+		RC_SERVICE_STARTING,
+	},
+	{
+		"service_stopping",
+		RC_SERVICE_STOPPING,
+	},
+	{
+		"service_hotplugged",
+		RC_SERVICE_HOTPLUGGED,
+	},
+	{
+		"service_wasinactive",
+		RC_SERVICE_WASINACTIVE,
+	},
+	{
+		"service_failed",
+		RC_SERVICE_FAILED,
+	},
+	{
+		"service_crashed",
+		RC_SERVICE_CRASHED,
+	},
 };
 
 RC_SERVICE lookup_service_state(const char *service)
@@ -454,8 +478,8 @@ time_t to_time_t(char *timestring)
 	struct tm breakdown = {0};
 	time_t result = -1;
 
-	check = sscanf(timestring, "%4d-%2d-%2d %2d:%2d:%2d",
-			&year, &month, &day, &hour, &min, &sec);
+	check = sscanf(timestring, "%4d-%2d-%2d %2d:%2d:%2d", &year, &month,
+		       &day, &hour, &min, &sec);
 	if (check == 6) {
 		breakdown.tm_year = year - 1900; /* years since 1900 */
 		breakdown.tm_mon = month - 1;
@@ -469,7 +493,7 @@ time_t to_time_t(char *timestring)
 	return result;
 }
 
-pid_t get_pid(const char *applet,const char *pidfile)
+pid_t get_pid(const char *applet, const char *pidfile)
 {
 	FILE *fp;
 	pid_t pid;

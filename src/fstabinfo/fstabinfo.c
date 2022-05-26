@@ -28,53 +28,48 @@
    Okay, we could use getfsent but the man page says use getmntent instead
    AND we don't have getfsent on uclibc or dietlibc for some odd reason. */
 #ifdef __linux__
-#  define HAVE_GETMNTENT
-#  include <mntent.h>
-#  define ENT mntent
-#  define START_ENT fp = setmntent ("/etc/fstab", "r");
-#  define GET_ENT getmntent (fp)
-#  define GET_ENT_FILE(_name) getmntfile (_name)
-#  define END_ENT endmntent (fp)
-#  define ENT_BLOCKDEVICE(_ent) (_ent)->mnt_fsname
-#  define ENT_FILE(_ent) (_ent)->mnt_dir
-#  define ENT_TYPE(_ent) (_ent)->mnt_type
-#  define ENT_OPTS(_ent) (_ent)->mnt_opts
-#  define ENT_PASS(_ent) (_ent)->mnt_passno
+#define HAVE_GETMNTENT
+#include <mntent.h>
+#define ENT mntent
+#define START_ENT fp = setmntent("/etc/fstab", "r");
+#define GET_ENT getmntent(fp)
+#define GET_ENT_FILE(_name) getmntfile(_name)
+#define END_ENT endmntent(fp)
+#define ENT_BLOCKDEVICE(_ent) (_ent)->mnt_fsname
+#define ENT_FILE(_ent) (_ent)->mnt_dir
+#define ENT_TYPE(_ent) (_ent)->mnt_type
+#define ENT_OPTS(_ent) (_ent)->mnt_opts
+#define ENT_PASS(_ent) (_ent)->mnt_passno
 #else
-#  define HAVE_GETFSENT
-#  include <fstab.h>
-#  define ENT fstab
-#  define START_ENT
-#  define GET_ENT getfsent ()
-#  define GET_ENT_FILE(_name) getfsfile (_name)
-#  define END_ENT endfsent ()
-#  define ENT_BLOCKDEVICE(_ent) (_ent)->fs_spec
-#  define ENT_TYPE(_ent) (_ent)->fs_vfstype
-#  define ENT_FILE(_ent) (_ent)->fs_file
-#  define ENT_OPTS(_ent) (_ent)->fs_mntops
-#  define ENT_PASS(_ent) (_ent)->fs_passno
+#define HAVE_GETFSENT
+#include <fstab.h>
+#define ENT fstab
+#define START_ENT
+#define GET_ENT getfsent()
+#define GET_ENT_FILE(_name) getfsfile(_name)
+#define END_ENT endfsent()
+#define ENT_BLOCKDEVICE(_ent) (_ent)->fs_spec
+#define ENT_TYPE(_ent) (_ent)->fs_vfstype
+#define ENT_FILE(_ent) (_ent)->fs_file
+#define ENT_OPTS(_ent) (_ent)->fs_mntops
+#define ENT_PASS(_ent) (_ent)->fs_passno
 #endif
 
+#include "_usage.h"
 #include "einfo.h"
+#include "misc.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
-#include "_usage.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
 const char getoptstring[] = "MRbmop:t:" getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "mount",          0, NULL, 'M' },
-	{ "remount",        0, NULL, 'R' },
-	{ "blockdevice",    0, NULL, 'b' },
-	{ "mountargs",      0, NULL, 'm' },
-	{ "options",        0, NULL, 'o' },
-	{ "passno",         1, NULL, 'p' },
-	{ "fstype",         1, NULL, 't' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
+	{"mount", 0, NULL, 'M'},       {"remount", 0, NULL, 'R'},
+	{"blockdevice", 0, NULL, 'b'}, {"mountargs", 0, NULL, 'm'},
+	{"options", 0, NULL, 'o'},     {"passno", 1, NULL, 'p'},
+	{"fstype", 1, NULL, 't'},      longopts_COMMON};
+const char *const longopts_help[] = {
 	"Mounts the filesystem from the mountpoint",
 	"Remounts the filesystem based on the information in fstab",
 	"Extract the block device",
@@ -82,13 +77,11 @@ const char * const longopts_help[] = {
 	"Extract the options field",
 	"Extract or query the pass number field",
 	"List entries with matching file system type",
-	longopts_help_COMMON
-};
+	longopts_help_COMMON};
 const char *usagestring = NULL;
 
 #ifdef HAVE_GETMNTENT
-static struct mntent *
-getmntfile(const char *file)
+static struct mntent *getmntfile(const char *file)
 {
 	struct mntent *ent;
 	FILE *fp;
@@ -105,8 +98,7 @@ getmntfile(const char *file)
 
 extern const char *applet;
 
-static int
-do_mount(struct ENT *ent, bool remount)
+static int do_mount(struct ENT *ent, bool remount)
 {
 	char *argv[10];
 	pid_t pid;
@@ -154,13 +146,13 @@ do_mount(struct ENT *ent, bool remount)
 	}
 }
 
-#define OUTPUT_FILE      (1 << 1)
+#define OUTPUT_FILE (1 << 1)
 #define OUTPUT_MOUNTARGS (1 << 2)
-#define OUTPUT_OPTIONS   (1 << 3)
-#define OUTPUT_PASSNO    (1 << 4)
-#define OUTPUT_BLOCKDEV  (1 << 5)
-#define OUTPUT_MOUNT     (1 << 6)
-#define OUTPUT_REMOUNT   (1 << 7)
+#define OUTPUT_OPTIONS (1 << 3)
+#define OUTPUT_PASSNO (1 << 4)
+#define OUTPUT_BLOCKDEV (1 << 5)
+#define OUTPUT_MOUNT (1 << 6)
+#define OUTPUT_REMOUNT (1 << 7)
 
 int main(int argc, char **argv)
 {
@@ -185,9 +177,8 @@ int main(int argc, char **argv)
 	unsetenv("EINFO_QUIET");
 
 	applet = basename_c(argv[0]);
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
-	{
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *)0)) != -1) {
 		switch (opt) {
 		case 'M':
 			output = OUTPUT_MOUNT;
@@ -212,7 +203,7 @@ int main(int argc, char **argv)
 			case '>':
 				if (sscanf(optarg + 1, "%d", &i) != 1)
 					eerrorx("%s: invalid passno %s",
-					    argv[0], optarg + 1);
+						argv[0], optarg + 1);
 
 				filtered = true;
 				opt = optarg[0];
@@ -224,8 +215,8 @@ int main(int argc, char **argv)
 					if ((opt == '=' && i == p) ||
 					    (opt == '<' && i > p && p != 0) ||
 					    (opt == '>' && i < p && p != 0))
-						rc_stringlist_add(files,
-						    ENT_FILE(ent));
+						rc_stringlist_add(
+							files, ENT_FILE(ent));
 				}
 				END_ENT;
 				break;
@@ -243,13 +234,13 @@ int main(int argc, char **argv)
 				START_ENT;
 				while ((ent = GET_ENT))
 					if (strcmp(token, ENT_TYPE(ent)) == 0)
-						rc_stringlist_add(files,
-						    ENT_FILE(ent));
+						rc_stringlist_add(
+							files, ENT_FILE(ent));
 				END_ENT;
 			}
 			break;
 
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 	}
 
@@ -261,7 +252,7 @@ int main(int argc, char **argv)
 						break;
 				if (i >= argc)
 					rc_stringlist_delete(files,
-					    file->value);
+							     file->value);
 			}
 		} else {
 			while (optind < argc)
@@ -311,11 +302,9 @@ int main(int argc, char **argv)
 			break;
 
 		case OUTPUT_MOUNTARGS:
-			printf("-o %s -t %s %s %s\n",
-			    ENT_OPTS(ent),
-			    ENT_TYPE(ent),
-			    ENT_BLOCKDEVICE(ent),
-			    file->value);
+			printf("-o %s -t %s %s %s\n", ENT_OPTS(ent),
+			       ENT_TYPE(ent), ENT_BLOCKDEVICE(ent),
+			       file->value);
 			break;
 
 		case OUTPUT_OPTIONS:

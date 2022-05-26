@@ -18,29 +18,30 @@
 #ifndef __RC_MISC_H__
 #define __RC_MISC_H__
 
-#include <sys/stat.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "helpers.h"
+#include "rc.h"
 
-#define RC_LEVEL_BOOT           "boot"
-#define RC_LEVEL_DEFAULT        "default"
+#define RC_LEVEL_BOOT "boot"
+#define RC_LEVEL_DEFAULT "default"
 
-#define RC_DEPTREE_CACHE        RC_SVCDIR "/deptree"
-#define RC_DEPTREE_SKEWED	RC_SVCDIR "/clock-skewed"
-#define RC_KRUNLEVEL            RC_SVCDIR "/krunlevel"
-#define RC_STARTING             RC_SVCDIR "/rc.starting"
-#define RC_STOPPING             RC_SVCDIR "/rc.stopping"
+#define RC_DEPTREE_CACHE RC_SVCDIR "/deptree"
+#define RC_DEPTREE_SKEWED RC_SVCDIR "/clock-skewed"
+#define RC_KRUNLEVEL RC_SVCDIR "/krunlevel"
+#define RC_STARTING RC_SVCDIR "/rc.starting"
+#define RC_STOPPING RC_SVCDIR "/rc.stopping"
 
-#define RC_SVCDIR_STARTING      RC_SVCDIR "/starting"
-#define RC_SVCDIR_INACTIVE      RC_SVCDIR "/inactive"
-#define RC_SVCDIR_STARTED       RC_SVCDIR "/started"
-#define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "/coldplugged"
+#define RC_SVCDIR_STARTING RC_SVCDIR "/starting"
+#define RC_SVCDIR_INACTIVE RC_SVCDIR "/inactive"
+#define RC_SVCDIR_STARTED RC_SVCDIR "/started"
+#define RC_SVCDIR_COLDPLUGGED RC_SVCDIR "/coldplugged"
 
 char *rc_conf_value(const char *var);
 bool rc_conf_yesno(const char *var);
@@ -59,12 +60,12 @@ pid_t exec_service(const char *, const char *);
 int is_writable(const char *);
 
 #define service_start(service) exec_service(service, "start");
-#define service_stop(service)  exec_service(service, "stop");
+#define service_stop(service) exec_service(service, "stop");
 
 int parse_mode(mode_t *, char *);
 
 /* Handy function so we can wrap einfo around our deptree */
-RC_DEPTREE *_rc_deptree_load (int, int *);
+RC_DEPTREE *_rc_deptree_load(int, int *);
 
 RC_SERVICE lookup_service_state(const char *service);
 void from_time_t(char *time_string, time_t tv);

@@ -20,65 +20,62 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
 #include <sys/wait.h>
 
-#include <errno.h>
-#include <dirent.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
 #include <getopt.h>
 #include <libgen.h>
 #include <limits.h>
 #include <pwd.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <string.h>
 #include <strings.h>
 #include <termios.h>
 #include <unistd.h>
 
 #include "einfo.h"
-#include "queue.h"
-#include "rc.h"
-#include "rc-logger.h"
 #include "misc.h"
 #include "plugin.h"
+#include "queue.h"
+#include "rc-logger.h"
+#include "rc.h"
 
-#include "version.h"
 #include "_usage.h"
+#include "version.h"
 
 const char *extraopts = NULL;
 const char getoptstring[] = "a:no:s:S" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "no-stop", 0, NULL, 'n' },
-	{ "override",    1, NULL, 'o' },
-	{ "service",     1, NULL, 's' },
-	{ "sys",         0, NULL, 'S' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
+const struct option longopts[] = {{"no-stop", 0, NULL, 'n'},
+				  {"override", 1, NULL, 'o'},
+				  {"service", 1, NULL, 's'},
+				  {"sys", 0, NULL, 'S'},
+				  longopts_COMMON};
+const char *const longopts_help[] = {
 	"do not stop any services",
 	"override the next runlevel to change into\n",
 	"when leaving single user or boot runlevels",
 	"runs the service specified with the rest\nof the arguments",
 	"output the RC system type, if any",
-	longopts_help_COMMON
-};
-const char *usagestring = ""					\
-    "Usage: openrc [options] [<runlevel>]";
+	longopts_help_COMMON};
+const char *usagestring = ""
+			  "Usage: openrc [options] [<runlevel>]";
 
-#define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
-#define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"
+#define INITSH RC_LIBEXECDIR "/sh/init.sh"
+#define INITEARLYSH RC_LIBEXECDIR "/sh/init-early.sh"
 
-#define INTERACTIVE             RC_SVCDIR "/interactive"
+#define INTERACTIVE RC_SVCDIR "/interactive"
 
-#define DEVBOOT			"/dev/.rcboot"
+#define DEVBOOT "/dev/.rcboot"
 
 const char *applet = NULL;
 static RC_STRINGLIST *main_hotplugged_services;
@@ -94,8 +91,7 @@ struct termios *termios_orig = NULL;
 
 RC_PIDLIST service_pids;
 
-static void
-clean_failed(void)
+static void clean_failed(void)
 {
 	DIR *dp;
 	struct dirent *d;
@@ -106,28 +102,26 @@ clean_failed(void)
 		while ((d = readdir(dp))) {
 			if (d->d_name[0] == '.' &&
 			    (d->d_name[1] == '\0' ||
-				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
+			     (d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
 			xasprintf(&path, RC_SVCDIR "/failed/%s", d->d_name);
 			if (unlink(path))
-				eerror("%s: unlink `%s': %s",
-				    applet, path, strerror(errno));
+				eerror("%s: unlink `%s': %s", applet, path,
+				       strerror(errno));
 			free(path);
 		}
 		closedir(dp);
 	}
 }
 
-static void
-cleanup(void)
+static void cleanup(void)
 {
 	RC_PID *p1 = LIST_FIRST(&service_pids);
 	RC_PID *p2;
 
-	if (!rc_in_logger && !rc_in_plugin &&
-	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
-	{
+	if (!rc_in_logger && !rc_in_plugin && applet &&
+	    (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0)) {
 		if (hook_out)
 			rc_plugin_run(hook_out, runlevel);
 
@@ -160,8 +154,7 @@ cleanup(void)
 	free(runlevel);
 }
 
-static char
-read_key(bool block)
+static char read_key(bool block)
 {
 	struct termios termios;
 	char c = 0;
@@ -192,8 +185,7 @@ read_key(bool block)
 	return c;
 }
 
-static bool
-want_interactive(void)
+static bool want_interactive(void)
 {
 	char c;
 	static bool gotinteractive;
@@ -211,16 +203,14 @@ want_interactive(void)
 	return (c == 'I' || c == 'i') ? true : false;
 }
 
-static void
-mark_interactive(void)
+static void mark_interactive(void)
 {
 	FILE *fp = fopen(INTERACTIVE, "w");
 	if (fp)
 		fclose(fp);
 }
 
-static void
-run_program(const char *prog)
+static void run_program(const char *prog)
 {
 	struct sigaction sa;
 	sigset_t full;
@@ -255,7 +245,7 @@ run_program(const char *prog)
 
 		execl(prog, prog, (char *)NULL);
 		eerror("%s: unable to exec `%s': %s", applet, prog,
-		    strerror(errno));
+		       strerror(errno));
 		_exit(EXIT_FAILURE);
 	}
 
@@ -265,8 +255,7 @@ run_program(const char *prog)
 		eerrorx("%s: failed to exec `%s'", applet, prog);
 }
 
-static void
-open_shell(void)
+static void open_shell(void)
 {
 	const char *shell;
 	struct passwd *pw;
@@ -275,11 +264,10 @@ open_shell(void)
 	const char *sys = rc_sys();
 
 	/* VSERVER systems cannot really drop to shells */
-	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0)
-	{
-		execlp("halt", "halt", "-f", (char *) NULL);
-		eerrorx("%s: unable to exec `halt -f': %s",
-		    applet, strerror(errno));
+	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0) {
+		execlp("halt", "halt", "-f", (char *)NULL);
+		eerrorx("%s: unable to exec `halt -f': %s", applet,
+			strerror(errno));
 	}
 #endif
 
@@ -298,20 +286,16 @@ open_shell(void)
 	run_program(shell);
 }
 
-static bool
-set_krunlevel(const char *level)
+static bool set_krunlevel(const char *level)
 {
 	FILE *fp;
 
-	if (!level ||
-	    strcmp(level, getenv ("RC_BOOTLEVEL")) == 0 ||
+	if (!level || strcmp(level, getenv("RC_BOOTLEVEL")) == 0 ||
 	    strcmp(level, RC_LEVEL_SINGLE) == 0 ||
-	    strcmp(level, RC_LEVEL_SYSINIT) == 0)
-	{
-		if (exists(RC_KRUNLEVEL) &&
-		    unlink(RC_KRUNLEVEL) != 0)
+	    strcmp(level, RC_LEVEL_SYSINIT) == 0) {
+		if (exists(RC_KRUNLEVEL) && unlink(RC_KRUNLEVEL) != 0)
 			eerror("unlink `%s': %s", RC_KRUNLEVEL,
-			    strerror(errno));
+			       strerror(errno));
 		return false;
 	}
 
@@ -347,29 +331,26 @@ static char *get_krunlevel(void)
 	return buffer;
 }
 
-static void
-add_pid(pid_t pid)
+static void add_pid(pid_t pid)
 {
 	RC_PID *p = xmalloc(sizeof(*p));
 	p->pid = pid;
 	LIST_INSERT_HEAD(&service_pids, p, entries);
 }
 
-static void
-remove_pid(pid_t pid)
+static void remove_pid(pid_t pid)
 {
 	RC_PID *p;
 
 	LIST_FOREACH(p, &service_pids, entries)
-	    if (p->pid == pid) {
-		    LIST_REMOVE(p, entries);
-		    free(p);
-		    return;
-	    }
+		if (p->pid == pid) {
+			LIST_REMOVE(p, entries);
+			free(p);
+			return;
+		}
 }
 
-static void
-wait_for_services(void)
+static void wait_for_services(void)
 {
 	for (;;) {
 		while (waitpid(0, 0, 0) != -1)
@@ -379,8 +360,7 @@ wait_for_services(void)
 	}
 }
 
-static void
-handle_signal(int sig)
+static void handle_signal(int sig)
 {
 	int serrno = errno;
 	char *signame = NULL;
@@ -436,7 +416,7 @@ handle_signal(int sig)
 
 		/* Kill any running services we have started */
 		LIST_FOREACH(pi, &service_pids, entries)
-		    kill(pi->pid, SIGTERM);
+			kill(pi->pid, SIGTERM);
 
 		/* Notify plugins we are aborting */
 		rc_plugin_run(RC_HOOK_ABORT, NULL);
@@ -452,8 +432,7 @@ handle_signal(int sig)
 	errno = serrno;
 }
 
-static void
-do_sysinit()
+static void do_sysinit()
 {
 	struct utsname uts;
 	const char *sys;
@@ -466,15 +445,12 @@ do_sysinit()
 
 	uname(&uts);
 	printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
-	    ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
-	    ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
+	       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
+	       ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
 #ifdef BRANDING
 	printf(BRANDING " (%s)", uts.machine);
 #else
-	printf("%s %s (%s)",
-	    uts.sysname,
-	    uts.release,
-	    uts.machine);
+	printf("%s %s (%s)", uts.sysname, uts.release, uts.machine);
 #endif
 
 	if ((sys = rc_sys()))
@@ -482,10 +458,9 @@ do_sysinit()
 
 	printf("%s\n\n", ecolor(ECOLOR_NORMAL));
 
-	if (!rc_yesno(getenv ("EINFO_QUIET")) &&
-	    rc_conf_yesno("rc_interactive"))
+	if (!rc_yesno(getenv("EINFO_QUIET")) && rc_conf_yesno("rc_interactive"))
 		printf("Press %sI%s to enter interactive boot mode\n\n",
-		    ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
+		       ecolor(ECOLOR_GOOD), ecolor(ECOLOR_NORMAL));
 
 	setenv("RC_RUNLEVEL", RC_LEVEL_SYSINIT, 1);
 	run_program(INITSH);
@@ -499,8 +474,7 @@ do_sysinit()
 		eerrorx("failed to load deptree");
 }
 
-static bool
-runlevel_config(const char *service, const char *level)
+static bool runlevel_config(const char *service, const char *level)
 {
 	char *init = rc_service_resolve(service);
 	char *conf, *dir;
@@ -515,10 +489,11 @@ runlevel_config(const char *service, const char *level)
 	return retval;
 }
 
-static void
-do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
-				 const RC_STRINGLIST *stop_services, const RC_DEPTREE *deptree,
-				 const char *newlevel, bool parallel, bool going_down)
+static void do_stop_services(RC_STRINGLIST *types_nw,
+			     RC_STRINGLIST *start_services,
+			     const RC_STRINGLIST *stop_services,
+			     const RC_DEPTREE *deptree, const char *newlevel,
+			     bool parallel, bool going_down)
 {
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
@@ -536,8 +511,7 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 	crashed = rc_conf_yesno("rc_crashed_stop");
 
 	nostop = rc_stringlist_split(rc_conf_value("rc_nostop"), " ");
-	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries)
-	{
+	TAILQ_FOREACH_REVERSE(service, stop_services, rc_stringlist, entries) {
 		state = rc_service_state(service->value);
 		if (state & RC_SERVICE_STOPPED || state & RC_SERVICE_FAILED)
 			continue;
@@ -550,9 +524,8 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 		kwords = rc_deptree_depend(deptree, service->value, "keyword");
 		if (rc_stringlist_find(kwords, "-stop") ||
 		    rc_stringlist_find(kwords, "nostop") ||
-		    (going_down &&
-			(rc_stringlist_find(kwords, "-shutdown") ||
-			    rc_stringlist_find(kwords, "noshutdown"))))
+		    (going_down && (rc_stringlist_find(kwords, "-shutdown") ||
+				    rc_stringlist_find(kwords, "noshutdown"))))
 			nstop = true;
 		else
 			nstop = false;
@@ -564,8 +537,7 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 
 		/* If the service has crashed, skip further checks and just stop
 		   it */
-		if (crashed &&
-		    rc_service_daemons_crashed(service->value))
+		if (crashed && rc_service_daemons_crashed(service->value))
 			goto stop;
 
 		/* If we're in the start list then don't bother stopping us */
@@ -576,11 +548,11 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 				 * be stopped if we have a runlevel
 				 * configuration file for either the current
 				 * or next so we use the correct one. */
-				if (!runlevel_config(service->value,runlevel) &&
-				    !runlevel_config(service->value,newlevel))
+				if (!runlevel_config(service->value,
+						     runlevel) &&
+				    !runlevel_config(service->value, newlevel))
 					continue;
-			}
-			else
+			} else
 				continue;
 		}
 
@@ -589,14 +561,15 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 		if (!svc1) {
 			tmplist = rc_stringlist_new();
 			rc_stringlist_add(tmplist, service->value);
-			deporder = rc_deptree_depends(deptree, types_nw,
-			    tmplist, newlevel ? newlevel : runlevel,
-			    RC_DEP_STRICT | RC_DEP_TRACE);
+			deporder = rc_deptree_depends(
+				deptree, types_nw, tmplist,
+				newlevel ? newlevel : runlevel,
+				RC_DEP_STRICT | RC_DEP_TRACE);
 			rc_stringlist_free(tmplist);
 			svc2 = NULL;
 			TAILQ_FOREACH(svc1, deporder, entries) {
 				svc2 = rc_stringlist_find(start_services,
-				    svc1->value);
+							  svc1->value);
 				if (svc2)
 					break;
 			}
@@ -621,8 +594,8 @@ stop:
 	rc_stringlist_free(nostop);
 }
 
-static void
-do_start_services(const RC_STRINGLIST *start_services, bool parallel)
+static void do_start_services(const RC_STRINGLIST *start_services,
+			      bool parallel)
 {
 	RC_STRING *service;
 	pid_t pid;
@@ -645,29 +618,35 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 			if (crashed &&
 			    rc_service_daemons_crashed(service->value))
 				rc_service_mark(service->value,
-				    RC_SERVICE_STOPPED);
+						RC_SERVICE_STOPPED);
 			else
-			    continue;
+				continue;
 		}
 		if (!interactive)
 			interactive = want_interactive();
 
 		if (interactive) {
-	interactive_retry:
+interactive_retry:
 			printf("\n");
-			einfo("About to start the service %s",
-			    service->value);
+			einfo("About to start the service %s", service->value);
 			eindent();
 			einfo("1) Start the service\t\t2) Skip the service");
 			einfo("3) Continue boot process\t\t4) Exit to shell");
 			eoutdent();
-	interactive_option:
+interactive_option:
 			switch (read_key(true)) {
-			case '1': break;
-			case '2': continue;
-			case '3': interactive = false; break;
-			case '4': open_shell(); goto interactive_retry;
-			default: goto interactive_option;
+			case '1':
+				break;
+			case '2':
+				continue;
+			case '3':
+				interactive = false;
+				break;
+			case '4':
+				open_shell();
+				goto interactive_retry;
+			default:
+				goto interactive_option;
 			}
 		}
 
@@ -685,20 +664,17 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 	}
 
 	/* Store our interactive status for boot */
-	if (interactive &&
-	    (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0 ||
-		strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0))
+	if (interactive && (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0 ||
+			    strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0))
 		mark_interactive();
 	else {
 		if (exists(INTERACTIVE))
 			unlink(INTERACTIVE);
 	}
-
 }
 
 #ifdef RC_DEBUG
-static void
-handle_bad_signal(int sig)
+static void handle_bad_signal(int sig)
 {
 	char pid[10];
 	int status;
@@ -711,8 +687,8 @@ handle_bad_signal(int sig)
 	case 0:
 		sprintf(pid, "%i", crashed_pid);
 		printf("\nAuto launching gdb!\n\n");
-		_exit(execlp("gdb", "gdb", "--quiet", "--pid", pid,
-			"-ex", "bt full", NULL));
+		_exit(execlp("gdb", "gdb", "--quiet", "--pid", pid, "-ex",
+			     "bt full", NULL));
 		/* NOTREACHED */
 	default:
 		wait(&status);
@@ -771,15 +747,15 @@ int main(int argc, char **argv)
 	/* complain about old configuration settings if they exist */
 	if (exists(RC_CONF_OLD)) {
 		ewarn("%s still exists on your system and should be removed.",
-				RC_CONF_OLD);
-		ewarn("Please migrate to the appropriate settings in %s", RC_CONF);
+		      RC_CONF_OLD);
+		ewarn("Please migrate to the appropriate settings in %s",
+		      RC_CONF);
 	}
 
 	argc++;
 	argv--;
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
-	{
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *)0)) != -1) {
 		switch (opt) {
 		case 'n':
 			nostop = true;
@@ -800,7 +776,7 @@ int main(int argc, char **argv)
 			newlevel = rc_service_resolve(optarg);
 			if (!newlevel)
 				eerrorx("%s: service `%s' does not exist",
-				    applet, optarg);
+					applet, optarg);
 			argv += optind - 1;
 			*argv = newlevel;
 			execv(*argv, argv);
@@ -812,7 +788,7 @@ int main(int argc, char **argv)
 				printf("%s\n", systype);
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 	}
 
@@ -866,10 +842,8 @@ int main(int argc, char **argv)
 	/* Now we start handling our children */
 	signal_setup(SIGCHLD, handle_signal);
 
-	if (newlevel &&
-	    (strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-		strcmp(newlevel, RC_LEVEL_SINGLE) == 0))
-	{
+	if (newlevel && (strcmp(newlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+			 strcmp(newlevel, RC_LEVEL_SINGLE) == 0)) {
 		going_down = true;
 		if (!exists(RC_KRUNLEVEL))
 			set_krunlevel(runlevel);
@@ -880,8 +854,7 @@ int main(int argc, char **argv)
 		/* We should not use krunlevel in sysinit or boot runlevels */
 		if (!newlevel ||
 		    (strcmp(newlevel, RC_LEVEL_SYSINIT) != 0 &&
-			strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0))
-		{
+		     strcmp(newlevel, getenv("RC_BOOTLEVEL")) != 0)) {
 			krunlevel = get_krunlevel();
 			if (krunlevel) {
 				newlevel = krunlevel;
@@ -942,8 +915,8 @@ int main(int argc, char **argv)
 	if (mkdir(RC_STOPPING, 0755) != 0) {
 		if (errno == EACCES)
 			eerrorx("%s: superuser access required", applet);
-		eerrorx("%s: failed to create stopping dir `%s': %s",
-		    applet, RC_STOPPING, strerror(errno));
+		eerrorx("%s: failed to create stopping dir `%s': %s", applet,
+			RC_STOPPING, strerror(errno));
 	}
 
 	/* Create a list of all services which we could stop (assuming
@@ -970,8 +943,9 @@ int main(int argc, char **argv)
 	rc_stringlist_add(main_types_nwua, "iafter");
 
 	if (main_stop_services) {
-		tmplist = rc_deptree_depends(main_deptree, main_types_nwua, main_stop_services,
-		    runlevel, depoptions | RC_DEP_STOP);
+		tmplist = rc_deptree_depends(main_deptree, main_types_nwua,
+					     main_stop_services, runlevel,
+					     depoptions | RC_DEP_STOP);
 		rc_stringlist_free(main_stop_services);
 		main_stop_services = tmplist;
 	}
@@ -982,31 +956,29 @@ int main(int argc, char **argv)
 	 * won't actually be starting them all.
 	 */
 	main_hotplugged_services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
-	main_start_services = rc_services_in_runlevel_stacked(newlevel ?
-	    newlevel : runlevel);
+	main_start_services =
+		rc_services_in_runlevel_stacked(newlevel ? newlevel : runlevel);
 	if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SHUTDOWN) != 0 &&
-	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT) != 0)
-	{
+	    strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SYSINIT) != 0) {
 		tmplist = rc_services_in_runlevel(RC_LEVEL_SYSINIT);
 		TAILQ_CONCAT(main_start_services, tmplist, entries);
 		free(tmplist);
 		/* If we are NOT headed for the single-user runlevel... */
-		if (strcmp(newlevel ? newlevel : runlevel,
-			RC_LEVEL_SINGLE) != 0)
-		{
+		if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) !=
+		    0) {
 			/* If we are NOT headed for the boot runlevel... */
-			if (strcmp(newlevel ? newlevel : runlevel,
-				bootlevel) != 0)
-			{
+			if (strcmp(newlevel ? newlevel : runlevel, bootlevel) !=
+			    0) {
 				tmplist = rc_services_in_runlevel(bootlevel);
-				TAILQ_CONCAT(main_start_services, tmplist, entries);
+				TAILQ_CONCAT(main_start_services, tmplist,
+					     entries);
 				free(tmplist);
 			}
 			if (main_hotplugged_services) {
 				TAILQ_FOREACH(service, main_hotplugged_services,
-				    entries)
-				    rc_stringlist_addu(main_start_services,
-					service->value);
+					      entries)
+					rc_stringlist_addu(main_start_services,
+							   service->value);
 			}
 		}
 	}
@@ -1015,14 +987,16 @@ int main(int argc, char **argv)
 
 	/* Now stop the services that shouldn't be running */
 	if (main_stop_services && !nostop)
-		do_stop_services(main_types_nw, main_start_services, main_stop_services, main_deptree, newlevel, parallel, going_down);
+		do_stop_services(main_types_nw, main_start_services,
+				 main_stop_services, main_deptree, newlevel,
+				 parallel, going_down);
 
 	/* Wait for our services to finish */
 	wait_for_services();
 
 	/* Notify the plugins we have finished */
 	rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_OUT,
-	    going_down ? newlevel : runlevel);
+		      going_down ? newlevel : runlevel);
 	hook_out = 0;
 
 	rmdir(RC_STOPPING);
@@ -1049,7 +1023,7 @@ int main(int argc, char **argv)
 	/* Re-add our hotplugged services if they stopped */
 	if (main_hotplugged_services)
 		TAILQ_FOREACH(service, main_hotplugged_services, entries)
-		    rc_service_mark(service->value, RC_SERVICE_HOTPLUGGED);
+			rc_service_mark(service->value, RC_SERVICE_HOTPLUGGED);
 
 #ifdef __linux__
 	/* If the "noinit" parameter was passed on the kernel command line then
@@ -1070,14 +1044,17 @@ int main(int argc, char **argv)
 
 		/* Loop through them in reverse order. */
 		RC_STRING *rlevel;
-		TAILQ_FOREACH_REVERSE(rlevel, runlevel_chain, rc_stringlist, entries)
-		{
+		TAILQ_FOREACH_REVERSE(rlevel, runlevel_chain, rc_stringlist,
+				      entries) {
 			/* Get a list of all the services in that runlevel */
-			RC_STRINGLIST *run_services = rc_services_in_runlevel(rlevel->value);
+			RC_STRINGLIST *run_services =
+				rc_services_in_runlevel(rlevel->value);
 
 			/* Start those services. */
 			rc_stringlist_sort(&run_services);
-			deporder = rc_deptree_depends(main_deptree, main_types_nwua, run_services, rlevel->value, depoptions | RC_DEP_START);
+			deporder = rc_deptree_depends(
+				main_deptree, main_types_nwua, run_services,
+				rlevel->value, depoptions | RC_DEP_START);
 			rc_stringlist_free(run_services);
 			run_services = deporder;
 			do_start_services(run_services, parallel);
