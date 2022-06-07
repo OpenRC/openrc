@@ -31,6 +31,16 @@ A no-new-privs option has been added to start-stop-daemon and
 supervise-daemon. This sets the NO_NEW_PRIVS flag to apply to the
 daemon.
 
+On Linux, the service that seeds the random number generator has been
+renamed from urandom to seedrng. This means that when  you upgrade to
+this version, if urandom is in your boot runlevel, you must add seedrng.
+This can be done by issuing the following commands:
+
+```
+# rc-update add seedrng boot
+# rc-update del urandom boot
+```
+
 ## OpenRC 0.44
 
 This version is the first to use a meson-based build system.
