@@ -8,6 +8,29 @@ the information in this file is in reverse order.
 
 The old make-based build system is removed in this release.
 
+The killprocs service now has a KILL_DELAY setting to allow OpenRC based
+containers to close all TCP/IP connections before they are shut down.
+
+The --oom-score-adj option has been added to start-stop-daemon and
+supervise-daemon. This sets the appropriate setting for the Linux
+kernel. for more info, see the man pages.
+
+Support for Linux capabilities has been added to both supervise-daemon
+and start-stop-daemon using the --capabilities option.
+As a result, the user can specify the inheritable, ambient and bounding set
+by defining capabilities in the service script.
+
+noexec has been added to the default mount options for /dev. If you need
+to remove this option, add an entry to fstab.
+
+A --secbits option has been added to start-stop-daemon and
+supervise-daemon. This sets the security bits option which should be
+applied to the daemon.
+
+A no-new-privs option has been added to start-stop-daemon and
+supervise-daemon. This sets the NO_NEW_PRIVS flag to apply to the
+daemon.
+
 ## OpenRC 0.44
 
 This version is the first to use a meson-based build system.
