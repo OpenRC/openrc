@@ -19,20 +19,18 @@ depend()
 
 start()
 {
-	local h source x
-	if [ -s /etc/hostname ] && [ -r /etc/hostname ]; then
-		read h x </etc/hostname
-		source="from /etc/hostname"
-	else
-		# HOSTNAME variable used to be defined in caps in conf.d/hostname.
-		# It is also a magic variable in bash.
-		h=${hostname:-${HOSTNAME}} # checkbashisms: false positive (HOSTNAME var)
+	local h source
+	if read -r h _ 2> /dev/null < @SYSCONFDIR@/hostname; then
+		source="@SYSCONFDIR@/hostname"
+	elif [ -n "${hostname}" ]; then
+		h=${hostname}
+		source="@SYSCONFDIR@/conf.d/${RC_SVCNAME}"
 	fi
 	if [ -z "$h" ]; then
 		einfo "Using default system hostname"
 		return 0
 	fi
-	ebegin "Setting hostname to $h $source"
+	ebegin "Setting hostname to $h from $source"
 	hostname "$h"
 	eend $? "Failed to set the hostname"
 }
