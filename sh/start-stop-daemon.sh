@@ -47,8 +47,8 @@ ssd_start()
 		${directory:+--chdir} $directory \
 		${output_log+--stdout} $output_log \
 		${error_log+--stderr} $error_log \
-		${output_logger:+--stdout-logger} "$output_logger" \
-		${error_logger:+--stderr-logger} "$error_logger" \
+		${output_logger:+--stdout-logger \"$output_logger\"} \
+		${error_logger:+--stderr-logger \"$error_logger\"} \
 		${capabilities+--capabilities} "$capabilities" \
 		${secbits:+--secbits} "$secbits" \
 		${no_new_privs:+--no-new-privs} \
