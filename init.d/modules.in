@@ -56,10 +56,10 @@ load_modules()
 		ebegin "Loading module $x"
 		case "$RC_UNAME" in
 			FreeBSD) kldload "$x"; rc=$? ;;
-			Linux) modprobe --first-time -q --use-blacklist "$x"; rc=$? ;;
+			Linux) modprobe --first-time --use-blacklist --verbose "$x"; rc=$? ;;
 			*) ;;
 		esac
-		eend $rc "Failed to load $x"
+		eend 
 	done
 	return 0
 }
@@ -80,9 +80,10 @@ FreeBSD_modules()
 	for x in $modules; do
 		ebegin "Loading module $x"
 		kldload "$x"
-		eend $? "Failed to load $x" && : $(( cnt += 1 ))
+		eend && : $(( cnt += 1 ))
 	done
 	einfo "Autoloaded $cnt module(s)"
+	return 0
 }
 
 Linux_modules()
@@ -122,6 +123,7 @@ Linux_modules()
 		eval modprobe --first-time --use-blacklist --verbose "$x" "$args"
 	done
 	[ -n "$list" ] && eend
+	return 0
 }
 
 start()
