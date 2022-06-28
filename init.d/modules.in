@@ -59,7 +59,7 @@ load_modules()
 			Linux) modprobe --first-time --use-blacklist --verbose "$x"; rc=$? ;;
 			*) ;;
 		esac
-		eend 
+		eend
 	done
 	return 0
 }
