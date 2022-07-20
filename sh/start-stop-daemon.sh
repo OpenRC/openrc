@@ -54,7 +54,7 @@ ssd_start()
 		${no_new_privs:+--no-new-privs} \
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $pidfile \
-		${command_user+--user} $command_user \
+		${command_user+--chuid} $command_user \
 		${umask+--umask} $umask \
 		$_background $start_stop_daemon_args \
 		-- $command_args $command_args_background
