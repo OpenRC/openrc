@@ -878,11 +878,23 @@ int main(int argc, char **argv)
 
 		devnull_fd = open("/dev/null", O_RDWR);
 
+		/* Must call setsid() before setting autogroup nicelevel
+		 * but after opening tty_fd. */
+		setsid();
+
 		if (nicelevel != INT_MIN) {
 			if (setpriority(PRIO_PROCESS, mypid, nicelevel) == -1)
 				eerrorx("%s: setpriority %d: %s",
 				    applet, nicelevel,
 				    strerror(errno));
+			/* Open in "r+" mode to avoid creating if non-existent. */
+			fp = fopen("/proc/self/autogroup", "r+");
+			if (fp) {
+				fprintf(fp, "%d\n", nicelevel);
+				fclose(fp);
+			} else if (errno != ENOENT)
+				eerrorx("%s: autogroup nice %d: %s", applet,
+				    nicelevel, strerror(errno));
 		}
 
 		if (ionicec != -1 &&
@@ -1118,7 +1130,6 @@ int main(int argc, char **argv)
 				eerrorx("Failed to set scheduler parameters: %s", strerror(errno));
 		}
 
-		setsid();
 		execvp(exec, argv);
 #ifdef HAVE_PAM
 		if (changeuser != NULL && pamr == PAM_SUCCESS)

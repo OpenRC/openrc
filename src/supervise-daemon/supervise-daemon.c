@@ -391,6 +391,14 @@ static void child_process(char *exec, char **argv)
 		if (setpriority(PRIO_PROCESS, getpid(), nicelevel) == -1)
 			eerrorx("%s: setpriority %d: %s", applet, nicelevel,
 					strerror(errno));
+		/* Open in "r+" mode to avoid creating if non-existent. */
+		fp = fopen("/proc/self/autogroup", "r+");
+		if (fp) {
+			fprintf(fp, "%d\n", nicelevel);
+			fclose(fp);
+		} else if (errno != ENOENT)
+			eerrorx("%s: autogroup nice %d: %s", applet,
+			    nicelevel, strerror(errno));
 	}
 
 	if (ionicec != -1 && ioprio_set(1, getpid(), ionicec | ioniced) == -1)
