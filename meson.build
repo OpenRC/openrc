@@ -192,6 +192,14 @@ if cc.compiles(malloc_attribute_test, name : 'malloc attribute with arguments')
   add_project_arguments('-DHAVE_MALLOC_EXTENDED_ATTRIBUTE', language: 'c')
 endif
 
+if cc.has_function('closefrom', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
+  add_project_arguments('-DHAVE_CLOSEFROM', language: 'c')
+endif
+if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>') and \
+    cc.has_header_symbol('unistd.h', 'CLOSE_RANGE_CLOEXEC', prefix: '#define _GNU_SOURCE')
+  add_project_arguments('-DHAVE_CLOSE_RANGE_CLOEXEC', language: 'c')
+endif
+
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
 rc_incdir = include_directories('src/librc')
