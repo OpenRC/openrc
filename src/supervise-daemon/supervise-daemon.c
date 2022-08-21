@@ -22,6 +22,11 @@
 #define ONE_SECOND    1000000000
 #define ONE_MS           1000000
 
+#ifdef HAVE_CLOSE_RANGE_CLOEXEC
+/* For close_range() */
+# define _GNU_SOURCE
+#endif
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
@@ -569,8 +574,11 @@ static void child_process(char *exec, char **argv)
 	if (redirect_stderr || rc_yesno(getenv("EINFO_QUIET")))
 		dup2(stderr_fd, STDERR_FILENO);
 
-	for (i = getdtablesize() - 1; i >= 3; --i)
-		fcntl(i, F_SETFD, FD_CLOEXEC);
+#ifdef HAVE_CLOSE_RANGE_CLOEXEC
+	if (close_range(3, UINT_MAX, CLOSE_RANGE_CLOEXEC) < 0)
+#endif
+		for (i = getdtablesize() - 1; i >= 3; --i)
+			fcntl(i, F_SETFD, FD_CLOEXEC);
 	cmdline = make_cmdline(argv);
 	syslog(LOG_INFO, "Child command line: %s", cmdline);
 	free(cmdline);
