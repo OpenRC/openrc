@@ -48,8 +48,12 @@ start()
 	ebegin "Remounting filesystems"
 	local mountpoint
 	for mountpoint in $(fstabinfo); do
-		mountinfo -q "${mountpoint}" && \
-			fstabinfo --remount "${mountpoint}"
+		case "${mountpoint}" in
+			/*) # Don't remount swap etc.
+				mountinfo -q "${mountpoint}" && \
+					fstabinfo --remount "${mountpoint}"
+			;;
+		esac
 	done
 	eend 0
 }
