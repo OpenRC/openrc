@@ -10,24 +10,24 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
-#include <errno.h>
 #include <ctype.h>
+#include <errno.h>
 #include <inttypes.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "einfo.h"
-#include "rc.h"
 #include "misc.h"
+#include "rc.h"
 
 const char *applet = NULL;
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 		ok = rc_service_started_daemon(service, exec, NULL, idx);
 
 	} else if (strcmp(applet, "service_crashed") == 0) {
-		ok = ( rc_service_daemons_crashed(service) && errno != EACCES);
+		ok = (rc_service_daemons_crashed(service) && errno != EACCES);
 	} else
 		eerrorx("%s: unknown applet", applet);
 

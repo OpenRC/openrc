@@ -15,11 +15,11 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
-#include <sys/ioctl.h>
 #include <sys/file.h>
+#include <sys/ioctl.h>
 #include <sys/param.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 
 #include <ctype.h>
@@ -38,50 +38,47 @@
 #include <time.h>
 #include <unistd.h>
 
-#if defined(__linux__) || (defined(__FreeBSD_kernel__) && defined(__GLIBC__)) \
-	|| defined(__GNU__)
-#  include <pty.h>
+#if defined(__linux__) ||                                      \
+	(defined(__FreeBSD_kernel__) && defined(__GLIBC__)) || \
+	defined(__GNU__)
+#include <pty.h>
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
-#  include <util.h>
+#include <util.h>
 #else
-#  include <libutil.h>
+#include <libutil.h>
 #endif
 
+#include "_usage.h"
 #include "einfo.h"
-#include "queue.h"
-#include "rc.h"
 #include "misc.h"
 #include "plugin.h"
+#include "queue.h"
+#include "rc.h"
 #include "selinux.h"
-#include "_usage.h"
 
-#define PREFIX_LOCK	RC_SVCDIR "/prefix.lock"
+#define PREFIX_LOCK RC_SVCDIR "/prefix.lock"
 
-#define WAIT_INTERVAL	20000000	/* usecs to poll the lock file */
-#define WAIT_TIMEOUT	60		/* seconds until we timeout */
-#define WARN_TIMEOUT	10		/* warn about this every N seconds */
+#define WAIT_INTERVAL 20000000 /* usecs to poll the lock file */
+#define WAIT_TIMEOUT 60 /* seconds until we timeout */
+#define WARN_TIMEOUT 10 /* warn about this every N seconds */
 
 const char *applet = NULL;
 const char *extraopts = "stop | start | restart | describe | zap";
 const char getoptstring[] = "dDsSvl:Z" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "debug",      0, NULL, 'd'},
-	{ "dry-run",    0, NULL, 'Z'},
-	{ "ifstarted",  0, NULL, 's'},
-	{ "ifstopped",  0, NULL, 'S'},
-	{ "nodeps",     0, NULL, 'D'},
-	{ "lockfd",     1, NULL, 'l'},
-	longopts_COMMON
-};
-const char *const longopts_help[] = {
-	"set xtrace when running the script",
-	"show what would be done",
-	"only run commands when started",
-	"only run commands when stopped",
-	"ignore dependencies",
-	"fd of the exclusive lock from rc",
-	longopts_help_COMMON
-};
+const struct option longopts[] = {{"debug", 0, NULL, 'd'},
+				  {"dry-run", 0, NULL, 'Z'},
+				  {"ifstarted", 0, NULL, 's'},
+				  {"ifstopped", 0, NULL, 'S'},
+				  {"nodeps", 0, NULL, 'D'},
+				  {"lockfd", 1, NULL, 'l'},
+				  longopts_COMMON};
+const char *const longopts_help[] = {"set xtrace when running the script",
+				     "show what would be done",
+				     "only run commands when started",
+				     "only run commands when stopped",
+				     "ignore dependencies",
+				     "fd of the exclusive lock from rc",
+				     longopts_help_COMMON};
 const char *usagestring = NULL;
 
 static char *service, *runlevel, *ibsave, *prefix;
@@ -95,18 +92,17 @@ static RC_HOOK hook_out;
 static int exclusive_fd = -1, master_tty = -1;
 static bool sighup, in_background, deps, dry_run;
 static pid_t service_pid;
-static int signal_pipe[2] = { -1, -1 };
+static int signal_pipe[2] = {-1, -1};
 
-static RC_STRINGLIST *deptypes_b;	/* broken deps */
-static RC_STRINGLIST *deptypes_n;	/* needed deps */
-static RC_STRINGLIST *deptypes_nw;	/* need+want deps */
-static RC_STRINGLIST *deptypes_nwu;	/* need+want+use deps */
-static RC_STRINGLIST *deptypes_nwua;	/* need+want+use+after deps */
-static RC_STRINGLIST *deptypes_m;	/* needed deps for stopping */
-static RC_STRINGLIST *deptypes_mwua;	/* need+want+use+after deps for stopping */
+static RC_STRINGLIST *deptypes_b; /* broken deps */
+static RC_STRINGLIST *deptypes_n; /* needed deps */
+static RC_STRINGLIST *deptypes_nw; /* need+want deps */
+static RC_STRINGLIST *deptypes_nwu; /* need+want+use deps */
+static RC_STRINGLIST *deptypes_nwua; /* need+want+use+after deps */
+static RC_STRINGLIST *deptypes_m; /* needed deps for stopping */
+static RC_STRINGLIST *deptypes_mwua; /* need+want+use+after deps for stopping */
 
-static void
-handle_signal(int sig)
+static void handle_signal(int sig)
 {
 	int serrno = errno;
 	char *signame = NULL;
@@ -120,8 +116,8 @@ handle_signal(int sig)
 	case SIGCHLD:
 		if (signal_pipe[1] > -1) {
 			if (write(signal_pipe[1], &sig, sizeof(sig)) == -1)
-				eerror("%s: send: %s",
-				    service, strerror(errno));
+				eerror("%s: send: %s", service,
+				       strerror(errno));
 		} else
 			rc_waitpid(-1);
 		break;
@@ -160,8 +156,7 @@ handle_signal(int sig)
 	errno = serrno;
 }
 
-static void
-unhotplug()
+static void unhotplug()
 {
 	char *file = NULL;
 
@@ -171,39 +166,32 @@ unhotplug()
 	free(file);
 }
 
-static void
-start_services(RC_STRINGLIST *list)
+static void start_services(RC_STRINGLIST *list)
 {
 	RC_STRING *svc;
-	RC_SERVICE state = rc_service_state (service);
+	RC_SERVICE state = rc_service_state(service);
 
 	if (!list)
 		return;
 
-	if (state & RC_SERVICE_INACTIVE ||
-	    state & RC_SERVICE_WASINACTIVE ||
-	    state & RC_SERVICE_STARTING ||
-	    state & RC_SERVICE_STARTED)
-	{
+	if (state & RC_SERVICE_INACTIVE || state & RC_SERVICE_WASINACTIVE ||
+	    state & RC_SERVICE_STARTING || state & RC_SERVICE_STARTED) {
 		TAILQ_FOREACH(svc, list, entries) {
 			if (!(rc_service_state(svc->value) &
-				RC_SERVICE_STOPPED))
+			      RC_SERVICE_STOPPED))
 				continue;
 			if (state & RC_SERVICE_INACTIVE ||
-			    state & RC_SERVICE_WASINACTIVE)
-			{
-				rc_service_schedule_start(service,
-				    svc->value);
+			    state & RC_SERVICE_WASINACTIVE) {
+				rc_service_schedule_start(service, svc->value);
 				ewarn("WARNING: %s will start when %s has started",
-				    svc->value, applet);
+				      svc->value, applet);
 			} else
 				service_start(svc->value);
 		}
 	}
 }
 
-static void
-restore_state(void)
+static void restore_state(void)
 {
 	RC_SERVICE state;
 
@@ -228,8 +216,7 @@ restore_state(void)
 	exclusive_fd = svc_unlock(applet, exclusive_fd);
 }
 
-static void
-cleanup(void)
+static void cleanup(void)
 {
 	restore_state();
 
@@ -238,10 +225,9 @@ cleanup(void)
 			rc_plugin_run(hook_out, applet);
 			if (hook_out == RC_HOOK_SERVICE_START_DONE)
 				rc_plugin_run(RC_HOOK_SERVICE_START_OUT,
-				    applet);
+					      applet);
 			else if (hook_out == RC_HOOK_SERVICE_STOP_DONE)
-				rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT,
-				    applet);
+				rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
 		}
 
 		if (restart_services)
@@ -278,8 +264,7 @@ cleanup(void)
  * Why don't we use (f)printf, as it is thread-safe through POSIX already?
  * Bug: 360013
  */
-static int
-write_prefix(const char *buffer, size_t bytes, bool *prefixed)
+static int write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 {
 	size_t i, j;
 	const char *ec = ecolor(ECOLOR_HILITE);
@@ -300,8 +285,7 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 				break;
 			}
 		}
-	}
-	else
+	} else
 		ewarnv("Couldn't open the prefix lock, please make sure you have enough permissions");
 
 	for (i = 0; i < bytes; i++) {
@@ -334,8 +318,7 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	return ret;
 }
 
-static int
-svc_exec(const char *arg1, const char *arg2)
+static int svc_exec(const char *arg1, const char *arg2)
 {
 	int ret, fdout = fileno(stdout);
 	struct termios tt;
@@ -356,7 +339,8 @@ svc_exec(const char *arg1, const char *arg2)
 		eerrorx("%s: pipe: %s", service, applet);
 	for (i = 0; i < 2; i++)
 		if ((flags = fcntl(signal_pipe[i], F_GETFD, 0) == -1 ||
-			fcntl(signal_pipe[i], F_SETFD, flags | FD_CLOEXEC) == -1))
+			     fcntl(signal_pipe[i], F_SETFD,
+				   flags | FD_CLOEXEC) == -1))
 			eerrorx("%s: fcntl: %s", service, strerror(errno));
 
 	/* Open a pty for our prefixed output
@@ -376,7 +360,7 @@ svc_exec(const char *arg1, const char *arg2)
 		    (flags = fcntl(master_tty, F_GETFD, 0)) == 0)
 			fcntl(master_tty, F_SETFD, flags | FD_CLOEXEC);
 
-		if (slave_tty >=0 &&
+		if (slave_tty >= 0 &&
 		    (flags = fcntl(slave_tty, F_GETFD, 0)) == 0)
 			fcntl(slave_tty, F_SETFD, flags | FD_CLOEXEC);
 	}
@@ -393,34 +377,37 @@ svc_exec(const char *arg1, const char *arg2)
 		if (exists(RC_SVCDIR "/openrc-run.sh")) {
 			if (arg2)
 				einfov("Executing: %s %s %s %s %s",
-					RC_SVCDIR "/openrc-run.sh", RC_SVCDIR "/openrc-run.sh",
-					service, arg1, arg2);
+				       RC_SVCDIR "/openrc-run.sh",
+				       RC_SVCDIR "/openrc-run.sh", service,
+				       arg1, arg2);
 			else
 				einfov("Executing: %s %s %s %s",
-					RC_SVCDIR "/openrc-run.sh", RC_SVCDIR "/openrc-run.sh",
-					service, arg1);
+				       RC_SVCDIR "/openrc-run.sh",
+				       RC_SVCDIR "/openrc-run.sh", service,
+				       arg1);
 			execl(RC_SVCDIR "/openrc-run.sh",
-			    RC_SVCDIR "/openrc-run.sh",
-			    service, arg1, arg2, (char *) NULL);
+			      RC_SVCDIR "/openrc-run.sh", service, arg1, arg2,
+			      (char *)NULL);
 			eerror("%s: exec `" RC_SVCDIR "/openrc-run.sh': %s",
-			    service, strerror(errno));
+			       service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		} else {
 			if (arg2)
 				einfov("Executing: %s %s %s %s %s",
-					RC_LIBEXECDIR "/sh/openrc-run.sh",
-					RC_LIBEXECDIR "/sh/openrc-run.sh",
-			    	service, arg1, arg2);
+				       RC_LIBEXECDIR "/sh/openrc-run.sh",
+				       RC_LIBEXECDIR "/sh/openrc-run.sh",
+				       service, arg1, arg2);
 			else
 				einfov("Executing: %s %s %s %s",
-					RC_LIBEXECDIR "/sh/openrc-run.sh",
-					RC_LIBEXECDIR "/sh/openrc-run.sh",
-			    	service, arg1);
+				       RC_LIBEXECDIR "/sh/openrc-run.sh",
+				       RC_LIBEXECDIR "/sh/openrc-run.sh",
+				       service, arg1);
 			execl(RC_LIBEXECDIR "/sh/openrc-run.sh",
-			    RC_LIBEXECDIR "/sh/openrc-run.sh",
-			    service, arg1, arg2, (char *) NULL);
-			eerror("%s: exec `" RC_LIBEXECDIR "/sh/openrc-run.sh': %s",
-			    service, strerror(errno));
+			      RC_LIBEXECDIR "/sh/openrc-run.sh", service, arg1,
+			      arg2, (char *)NULL);
+			eerror("%s: exec `" RC_LIBEXECDIR
+			       "/sh/openrc-run.sh': %s",
+			       service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		}
 	}
@@ -438,8 +425,8 @@ svc_exec(const char *arg1, const char *arg2)
 	for (;;) {
 		if ((s = poll(fd, master_tty >= 0 ? 2 : 1, -1)) == -1) {
 			if (errno != EINTR) {
-				eerror("%s: poll: %s",
-				    service, strerror(errno));
+				eerror("%s: poll: %s", service,
+				       strerror(errno));
 				break;
 			}
 		}
@@ -458,15 +445,15 @@ svc_exec(const char *arg1, const char *arg2)
 
 	free(buffer);
 
-	sigemptyset (&sigchldmask);
-	sigaddset (&sigchldmask, SIGCHLD);
-	sigprocmask (SIG_BLOCK, &sigchldmask, &oldmask);
+	sigemptyset(&sigchldmask);
+	sigaddset(&sigchldmask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &sigchldmask, &oldmask);
 
 	close(signal_pipe[0]);
 	close(signal_pipe[1]);
 	signal_pipe[0] = signal_pipe[1] = -1;
 
-	sigprocmask (SIG_SETMASK, &oldmask, NULL);
+	sigprocmask(SIG_SETMASK, &oldmask, NULL);
 
 	if (master_tty >= 0) {
 		/* Why did we do this? */
@@ -485,8 +472,7 @@ svc_exec(const char *arg1, const char *arg2)
 	return ret;
 }
 
-static bool
-svc_wait(const char *svc)
+static bool svc_wait(const char *svc)
 {
 	char *file = NULL;
 	int fd;
@@ -525,7 +511,7 @@ svc_wait(const char *svc)
 		}
 		if (errno != EWOULDBLOCK) {
 			eerror("%s: open `%s': %s", applet, file,
-			    strerror(errno));
+			       strerror(errno));
 			free(file);
 			exit(EXIT_FAILURE);
 		}
@@ -539,8 +525,8 @@ svc_wait(const char *svc)
 				goto finish;
 			timespecsub(&warn, &interval, &warn);
 			if (warn.tv_sec <= 0) {
-				ewarn("%s: waiting for %s (%d seconds)",
-				    applet, svc, (int)timeout.tv_sec);
+				ewarn("%s: waiting for %s (%d seconds)", applet,
+				      svc, (int)timeout.tv_sec);
 				warn.tv_sec = WARN_TIMEOUT;
 				warn.tv_nsec = 0;
 			}
@@ -551,8 +537,7 @@ finish:
 	return false;
 }
 
-static void
-get_started_services(void)
+static void get_started_services(void)
 {
 	RC_STRINGLIST *tmp = rc_services_in_state(RC_SERVICE_INACTIVE);
 
@@ -562,8 +547,7 @@ get_started_services(void)
 	free(tmp);
 }
 
-static void
-setup_deptypes(void)
+static void setup_deptypes(void)
 {
 	deptypes_b = rc_stringlist_new();
 	rc_stringlist_add(deptypes_b, "broken");
@@ -596,8 +580,7 @@ setup_deptypes(void)
 	rc_stringlist_add(deptypes_mwua, "beforeme");
 }
 
-static void
-svc_start_check(void)
+static void svc_start_check(void)
 {
 	RC_SERVICE state;
 
@@ -610,7 +593,8 @@ svc_start_check(void)
 			rc_service_mark(service, RC_SERVICE_HOTPLUGGED);
 		if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0)
 			ewarnx("WARNING: %s will be started in the"
-			    " next runlevel", applet);
+			       " next runlevel",
+			       applet);
 	}
 
 	if (exclusive_fd == -1)
@@ -624,23 +608,21 @@ svc_start_check(void)
 			ewarnx("WARNING: %s is already starting", applet);
 	}
 	fcntl(exclusive_fd, F_SETFD,
-	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
+	      fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 
 	if (state & RC_SERVICE_STARTED) {
 		ewarn("WARNING: %s has already been started", applet);
 		exit(EXIT_SUCCESS);
-	}
-	else if (state & RC_SERVICE_INACTIVE && !in_background)
+	} else if (state & RC_SERVICE_INACTIVE && !in_background)
 		ewarnx("WARNING: %s has already started, but is inactive",
-		    applet);
+		       applet);
 
 	rc_service_mark(service, RC_SERVICE_STARTING);
 	hook_out = RC_HOOK_SERVICE_START_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_START_IN, applet);
 }
 
-static void
-svc_start_deps(void)
+static void svc_start_deps(void)
 {
 	bool first;
 	RC_STRING *svc, *svc2;
@@ -660,7 +642,7 @@ svc_start_deps(void)
 		setup_deptypes();
 
 	services = rc_deptree_depends(deptree, deptypes_b, applet_list,
-	    runlevel, 0);
+				      runlevel, 0);
 	if (TAILQ_FIRST(services)) {
 		eerrorn("ERROR: %s needs service(s) ", applet);
 		first = true;
@@ -677,12 +659,12 @@ svc_start_deps(void)
 	rc_stringlist_free(services);
 	services = NULL;
 
-	need_services = rc_deptree_depends(deptree, deptypes_n,
-	    applet_list, runlevel, depoptions);
-	want_services = rc_deptree_depends(deptree, deptypes_nw,
-	    applet_list, runlevel, depoptions);
-	use_services = rc_deptree_depends(deptree, deptypes_nwu,
-	    applet_list, runlevel, depoptions);
+	need_services = rc_deptree_depends(deptree, deptypes_n, applet_list,
+					   runlevel, depoptions);
+	want_services = rc_deptree_depends(deptree, deptypes_nw, applet_list,
+					   runlevel, depoptions);
+	use_services = rc_deptree_depends(deptree, deptypes_nwu, applet_list,
+					  runlevel, depoptions);
 
 	if (!rc_runlevel_starting()) {
 		TAILQ_FOREACH(svc, use_services, entries) {
@@ -690,8 +672,7 @@ svc_start_deps(void)
 			/* Don't stop failed services again.
 			 * If you remove this check, ensure that the
 			 * exclusive file isn't created. */
-			if (state & RC_SERVICE_FAILED &&
-			    rc_runlevel_starting())
+			if (state & RC_SERVICE_FAILED && rc_runlevel_starting())
 				continue;
 			if (state & RC_SERVICE_STOPPED) {
 				if (dry_run) {
@@ -710,7 +691,7 @@ svc_start_deps(void)
 
 	/* Now wait for them to start */
 	services = rc_deptree_depends(deptree, deptypes_nwua, applet_list,
-	    runlevel, depoptions);
+				      runlevel, depoptions);
 	/* We use tmplist to hold our scheduled by list */
 	tmplist = rc_stringlist_new();
 	TAILQ_FOREACH(svc, services, entries) {
@@ -721,8 +702,7 @@ svc_start_deps(void)
 		/* Don't wait for services which went inactive but are
 		 * now in starting state which we are after */
 		if (state & RC_SERVICE_STARTING &&
-		    state & RC_SERVICE_WASINACTIVE)
-		{
+		    state & RC_SERVICE_WASINACTIVE) {
 			if (!rc_stringlist_find(need_services, svc->value) &&
 			    !rc_stringlist_find(want_services, svc->value) &&
 			    !rc_stringlist_find(use_services, svc->value))
@@ -730,20 +710,19 @@ svc_start_deps(void)
 		}
 
 		if (!svc_wait(svc->value))
-			eerror("%s: timed out waiting for %s",
-			    applet, svc->value);
+			eerror("%s: timed out waiting for %s", applet,
+			       svc->value);
 		state = rc_service_state(svc->value);
 		if (state & RC_SERVICE_STARTED)
 			continue;
 		if (rc_stringlist_find(need_services, svc->value)) {
 			if (state & RC_SERVICE_INACTIVE ||
-			    state & RC_SERVICE_WASINACTIVE)
-			{
+			    state & RC_SERVICE_WASINACTIVE) {
 				rc_stringlist_add(tmplist, svc->value);
 			} else if (!TAILQ_FIRST(tmplist))
 				eerrorx("ERROR: cannot start %s as"
-				    " %s would not start",
-				    applet, svc->value);
+					" %s would not start",
+					applet, svc->value);
 		}
 	}
 
@@ -758,10 +737,10 @@ svc_start_deps(void)
 		n = 0;
 		TAILQ_FOREACH(svc, tmplist, entries) {
 			rc_service_schedule_start(svc->value, service);
-			use_services = rc_deptree_depend(deptree,
-			    "iprovide", svc->value);
+			use_services = rc_deptree_depend(deptree, "iprovide",
+							 svc->value);
 			TAILQ_FOREACH(svc2, use_services, entries)
-			    rc_service_schedule_start(svc2->value, service);
+				rc_service_schedule_start(svc2->value, service);
 			rc_stringlist_free(use_services);
 			use_services = NULL;
 			len += strlen(svc->value) + 2;
@@ -773,12 +752,12 @@ svc_start_deps(void)
 		TAILQ_FOREACH(svc, tmplist, entries) {
 			if (p != tmp)
 				p += snprintf(p, len, ", ");
-			p += snprintf(p, len - (p - tmp),
-			    "%s", svc->value);
+			p += snprintf(p, len - (p - tmp), "%s", svc->value);
 		}
 		rc_stringlist_free(tmplist);
 		tmplist = NULL;
-		ewarnx("WARNING: %s will start when %s has started", applet, tmp);
+		ewarnx("WARNING: %s will start when %s has started", applet,
+		       tmp);
 		free(tmp);
 	}
 
@@ -814,8 +793,8 @@ static void svc_start_real()
 	/* Now start any scheduled services */
 	services = rc_services_scheduled(service);
 	TAILQ_FOREACH(svc, services, entries)
-	    if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
-		    service_start(svc->value);
+		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+			service_start(svc->value);
 	rc_stringlist_free(services);
 	services = NULL;
 
@@ -825,9 +804,9 @@ static void svc_start_real()
 		TAILQ_FOREACH(svc, tmplist, entries) {
 			services = rc_services_scheduled(svc->value);
 			TAILQ_FOREACH(svc2, services, entries)
-			    if (rc_service_state(svc2->value) &
-				RC_SERVICE_STOPPED)
-				    service_start(svc2->value);
+				if (rc_service_state(svc2->value) &
+				    RC_SERVICE_STOPPED)
+					service_start(svc2->value);
 			rc_stringlist_free(services);
 			services = NULL;
 		}
@@ -839,8 +818,7 @@ static void svc_start_real()
 	rc_plugin_run(RC_HOOK_SERVICE_START_OUT, applet);
 }
 
-static void
-svc_start(void)
+static void svc_start(void)
 {
 	if (dry_run)
 		einfon("start:");
@@ -854,16 +832,14 @@ svc_start(void)
 		svc_start_real();
 }
 
-static int
-svc_stop_check(RC_SERVICE *state)
+static int svc_stop_check(RC_SERVICE *state)
 {
 	*state = rc_service_state(service);
 
 	if (rc_runlevel_stopping() && *state & RC_SERVICE_FAILED)
 		exit(EXIT_FAILURE);
 
-	if (in_background &&
-	    !(*state & RC_SERVICE_STARTED) &&
+	if (in_background && !(*state & RC_SERVICE_STARTED) &&
 	    !(*state & RC_SERVICE_INACTIVE))
 		exit(EXIT_FAILURE);
 
@@ -877,7 +853,7 @@ svc_stop_check(RC_SERVICE *state)
 		eerrorx("ERROR: %s stopped by something else", applet);
 	}
 	fcntl(exclusive_fd, F_SETFD,
-	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
+	      fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 
 	if (*state & RC_SERVICE_STOPPED) {
 		ewarn("WARNING: %s is already stopped", applet);
@@ -898,8 +874,7 @@ svc_stop_check(RC_SERVICE *state)
 	return 0;
 }
 
-static void
-svc_stop_deps(RC_SERVICE state)
+static void svc_stop_deps(RC_SERVICE state)
 {
 	int depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
@@ -919,19 +894,16 @@ svc_stop_deps(RC_SERVICE state)
 		setup_deptypes();
 
 	services = rc_deptree_depends(deptree, deptypes_m, applet_list,
-	    runlevel, depoptions);
+				      runlevel, depoptions);
 	tmplist = rc_stringlist_new();
 	TAILQ_FOREACH_REVERSE(svc, services, rc_stringlist, entries) {
 		state = rc_service_state(svc->value);
 		/* Don't stop failed services again.
 		 * If you remove this check, ensure that the
 		 * exclusive file isn't created. */
-		if (state & RC_SERVICE_FAILED &&
-		    rc_runlevel_stopping())
+		if (state & RC_SERVICE_FAILED && rc_runlevel_stopping())
 			continue;
-		if (state & RC_SERVICE_STARTED ||
-		    state & RC_SERVICE_INACTIVE)
-		{
+		if (state & RC_SERVICE_STARTED || state & RC_SERVICE_INACTIVE) {
 			if (dry_run) {
 				printf(" %s", svc->value);
 				continue;
@@ -939,8 +911,7 @@ svc_stop_deps(RC_SERVICE state)
 			svc_wait(svc->value);
 			state = rc_service_state(svc->value);
 			if (state & RC_SERVICE_STARTED ||
-			    state & RC_SERVICE_INACTIVE)
-			{
+			    state & RC_SERVICE_INACTIVE) {
 				pid = service_stop(svc->value);
 				if (!rc_conf_yesno("rc_parallel"))
 					rc_waitpid(pid);
@@ -963,15 +934,14 @@ svc_stop_deps(RC_SERVICE state)
 			/* If shutting down, we should stop even
 			 * if a dependant failed */
 			if (runlevel &&
-			    (strcmp(runlevel,
-				RC_LEVEL_SHUTDOWN) == 0 ||
-				strcmp(runlevel,
-				    RC_LEVEL_SINGLE) == 0))
+			    (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
+			     strcmp(runlevel, RC_LEVEL_SINGLE) == 0))
 				continue;
 			rc_service_mark(service, RC_SERVICE_FAILED);
 		}
 		eerrorx("ERROR: cannot stop %s as %s "
-		    "is still up", applet, svc->value);
+			"is still up",
+			applet, svc->value);
 	}
 	rc_stringlist_free(tmplist);
 	tmplist = NULL;
@@ -979,7 +949,7 @@ svc_stop_deps(RC_SERVICE state)
 	/* We now wait for other services that may use us and are
 	 * stopping. This is important when a runlevel stops */
 	services = rc_deptree_depends(deptree, deptypes_mwua, applet_list,
-	    runlevel, depoptions);
+				      runlevel, depoptions);
 	TAILQ_FOREACH(svc, services, entries) {
 		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
 			continue;
@@ -989,8 +959,7 @@ svc_stop_deps(RC_SERVICE state)
 	services = NULL;
 }
 
-static void
-svc_stop_real(void)
+static void svc_stop_real(void)
 {
 	bool stopped;
 
@@ -1021,17 +990,15 @@ svc_stop_real(void)
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
 }
 
-static int
-svc_stop(void)
+static int svc_stop(void)
 {
 	RC_SERVICE state;
 
 	state = 0;
 	if (dry_run)
 		einfon("stop:");
-	else
-		if (svc_stop_check(&state) == 1)
-			return 1; /* Service has been stopped already */
+	else if (svc_stop_check(&state) == 1)
+		return 1; /* Service has been stopped already */
 	if (deps)
 		svc_stop_deps(state);
 	if (dry_run)
@@ -1042,8 +1009,7 @@ svc_stop(void)
 	return 0;
 }
 
-static void
-svc_restart(void)
+static void svc_restart(void)
 {
 	/* This is hairy and a better way needs to be found I think!
 	 * The issue is this - openvpn need net and dns. net can restart
@@ -1070,7 +1036,7 @@ svc_restart(void)
 		svc_stop();
 		if (dry_run)
 			ewarn("Cannot calculate restart start dependencies"
-			    " on a dry-run");
+			      " on a dry-run");
 	}
 
 	svc_start();
@@ -1079,8 +1045,7 @@ svc_restart(void)
 	restart_services = NULL;
 }
 
-static bool
-service_plugable(void)
+static bool service_plugable(void)
 {
 	char *list, *p, *token;
 	bool allow = true, truefalse;
@@ -1134,8 +1099,8 @@ int main(int argc, char **argv)
 		runscript = true;
 
 	if (stat(argv[1], &stbuf) != 0) {
-		fprintf(stderr, "openrc-run `%s': %s\n",
-		    argv[1], strerror(errno));
+		fprintf(stderr, "openrc-run `%s': %s\n", argv[1],
+			strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -1152,7 +1117,7 @@ int main(int argc, char **argv)
 	}
 	lnk = xmalloc(4096);
 	memset(lnk, 0, 4096);
-	if (readlink(argv[1], lnk, 4096-1)) {
+	if (readlink(argv[1], lnk, 4096 - 1)) {
 		dir = dirname(path);
 		if (strchr(lnk, '/')) {
 			save = xstrdup(dir);
@@ -1198,7 +1163,7 @@ int main(int argc, char **argv)
 	/* Set an env var so that we always know our pid regardless of any
 	   subshells the init script may create so that our mark_service_*
 	   functions can always instruct us of this change */
-	xasprintf(&pidstr, "%d", (int) getpid());
+	xasprintf(&pidstr, "%d", (int)getpid());
 	setenv("RC_OPENRC_PID", pidstr, 1);
 	/*
 	 * RC_RUNSCRIPT_PID is deprecated, but we will keep it for a while
@@ -1239,8 +1204,8 @@ int main(int argc, char **argv)
 	argv++;
 
 	/* Right then, parse any options there may be */
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *)0)) != -1)
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *)0)) != -1)
 		switch (opt) {
 		case 'd':
 			setenv("RC_DEBUG", "YES", 1);
@@ -1248,7 +1213,7 @@ int main(int argc, char **argv)
 		case 'l':
 			exclusive_fd = atoi(optarg);
 			fcntl(exclusive_fd, F_SETFD,
-			    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
+			      fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 			break;
 		case 's':
 			if (!(rc_service_state(service) & RC_SERVICE_STARTED))
@@ -1264,7 +1229,7 @@ int main(int argc, char **argv)
 		case 'Z':
 			dry_run = true;
 			break;
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 
 	if (rc_yesno(getenv("RC_NODEPS")))
@@ -1285,7 +1250,7 @@ int main(int argc, char **argv)
 	}
 
 	if (rc_yesno(getenv("IN_DRYRUN")))
-	dry_run = true;
+		dry_run = true;
 	if (rc_yesno(getenv("IN_HOTPLUG"))) {
 		if (!service_plugable())
 			eerrorx("%s: not allowed to be hotplugged", applet);
@@ -1306,7 +1271,8 @@ int main(int argc, char **argv)
 	rc_stringlist_add(applet_list, applet);
 
 	if (runscript)
-		ewarn("%s uses runscript, please convert to openrc-run.", service);
+		ewarn("%s uses runscript, please convert to openrc-run.",
+		      service);
 
 	/* Now run each option */
 	retval = EXIT_SUCCESS;
@@ -1315,7 +1281,7 @@ int main(int argc, char **argv)
 
 		/* Abort on a sighup here */
 		if (sighup)
-			exit (EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 
 		/* Export the command we're running.
 		   This is important as we stamp on the restart function now but
@@ -1328,8 +1294,7 @@ int main(int argc, char **argv)
 
 		if (strcmp(optarg, "describe") == 0 ||
 		    strcmp(optarg, "help") == 0 ||
-		    strcmp(optarg, "depend") == 0)
-		{
+		    strcmp(optarg, "depend") == 0) {
 			save = prefix;
 			eprefix(NULL);
 			prefix = NULL;
@@ -1337,15 +1302,14 @@ int main(int argc, char **argv)
 			eprefix(save);
 			prefix = save;
 		} else if (strcmp(optarg, "ineed") == 0 ||
-		    strcmp(optarg, "iuse") == 0 ||
-		    strcmp(optarg, "iwant") == 0 ||
-		    strcmp(optarg, "needsme") == 0 ||
-		    strcmp(optarg, "usesme") == 0 ||
-		    strcmp(optarg, "wantsme") == 0 ||
-		    strcmp(optarg, "iafter") == 0 ||
-		    strcmp(optarg, "ibefore") == 0 ||
-		    strcmp(optarg, "iprovide") == 0)
-		{
+			   strcmp(optarg, "iuse") == 0 ||
+			   strcmp(optarg, "iwant") == 0 ||
+			   strcmp(optarg, "needsme") == 0 ||
+			   strcmp(optarg, "usesme") == 0 ||
+			   strcmp(optarg, "wantsme") == 0 ||
+			   strcmp(optarg, "iafter") == 0 ||
+			   strcmp(optarg, "ibefore") == 0 ||
+			   strcmp(optarg, "iprovide") == 0) {
 			errno = 0;
 			if (rc_conf_yesno("rc_depend_strict") ||
 			    errno == ENOENT)
@@ -1358,24 +1322,23 @@ int main(int argc, char **argv)
 			tmplist = rc_stringlist_new();
 			rc_stringlist_add(tmplist, optarg);
 			services = rc_deptree_depends(deptree, tmplist,
-			    applet_list,
-			    runlevel, depoptions);
+						      applet_list, runlevel,
+						      depoptions);
 			rc_stringlist_free(tmplist);
 			tmplist = NULL;
 			TAILQ_FOREACH(svc, services, entries)
-			    printf("%s ", svc->value);
-			printf ("\n");
+				printf("%s ", svc->value);
+			printf("\n");
 			rc_stringlist_free(services);
 			services = NULL;
-		} else if (strcmp (optarg, "status") == 0) {
+		} else if (strcmp(optarg, "status") == 0) {
 			save = prefix;
 			eprefix(NULL);
 			prefix = NULL;
 			retval = svc_exec("status", NULL);
 		} else {
 			if (strcmp(optarg, "conditionalrestart") == 0 ||
-			    strcmp(optarg, "condrestart") == 0)
-			{
+			    strcmp(optarg, "condrestart") == 0) {
 				if (rc_service_state(service) &
 				    RC_SERVICE_STARTED)
 					svc_restart();
@@ -1383,7 +1346,8 @@ int main(int argc, char **argv)
 				svc_restart();
 			} else if (strcmp(optarg, "start") == 0) {
 				svc_start();
-			} else if (strcmp(optarg, "stop") == 0 || strcmp(optarg, "pause") == 0) {
+			} else if (strcmp(optarg, "stop") == 0 ||
+				   strcmp(optarg, "pause") == 0) {
 				if (strcmp(optarg, "pause") == 0) {
 					ewarn("WARNING: 'pause' is deprecated; please use '--nodeps stop'");
 					deps = false;
@@ -1396,28 +1360,30 @@ int main(int argc, char **argv)
 					if (!in_background &&
 					    !rc_runlevel_stopping() &&
 					    rc_service_state(service) &
-					    RC_SERVICE_STOPPED)
+						    RC_SERVICE_STOPPED)
 						unhotplug();
 
 					if (in_background &&
 					    rc_service_state(service) &
-					    RC_SERVICE_INACTIVE)
-					{
+						    RC_SERVICE_INACTIVE) {
 						TAILQ_FOREACH(svc,
-						    restart_services,
-						    entries)
-						    if (rc_service_state(svc->value) &
-							RC_SERVICE_STOPPED)
-							    rc_service_schedule_start(service, svc->value);
+							      restart_services,
+							      entries)
+							if (rc_service_state(
+								    svc->value) &
+							    RC_SERVICE_STOPPED)
+								rc_service_schedule_start(
+									service,
+									svc->value);
 					}
 				}
 			} else if (strcmp(optarg, "zap") == 0) {
 				einfo("Manually resetting %s to stopped state",
-				    applet);
+				      applet);
 				if (!rc_service_mark(applet,
-					RC_SERVICE_STOPPED))
+						     RC_SERVICE_STOPPED))
 					eerrorx("rc_service_mark: %s",
-					    strerror(errno));
+						strerror(errno));
 				unhotplug();
 			} else
 				retval = svc_exec(optarg, NULL);

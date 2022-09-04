@@ -18,48 +18,53 @@
 #ifndef __HELPERS_H__
 #define __HELPERS_H__
 
-#define ERRX fprintf (stderr, "out of memory\n"); exit (1)
+#define ERRX                                \
+	fprintf(stderr, "out of memory\n"); \
+	exit(1)
 
-#define UNCONST(a)		((void *)(unsigned long)(const void *)(a))
+#define UNCONST(a) ((void *)(unsigned long)(const void *)(a))
 
 #ifdef lint
-# define _unused
+#define _unused
 #endif
 #if __GNUC__ > 2 || defined(__INTEL_COMPILER)
-# define _dead __attribute__((__noreturn__))
-# define _unused __attribute__((__unused__))
-# define _xasprintf(a, b)  __attribute__((__format__(__printf__, a, b)))
+#define _dead __attribute__((__noreturn__))
+#define _unused __attribute__((__unused__))
+#define _xasprintf(a, b) __attribute__((__format__(__printf__, a, b)))
 #else
-# define _dead
-# define _unused
-# define _xasprintf(a, b)
+#define _dead
+#define _unused
+#define _xasprintf(a, b)
 #endif
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 #ifdef __GLIBC__
-#  if !defined (__UCLIBC__) && !defined (__dietlibc__)
-#    define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
-#  endif
+#if !defined(__UCLIBC__) && !defined(__dietlibc__)
+#define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
+#endif
 #endif
 
 #ifndef timespecsub
-#define	timespecsub(tsp, usp, vsp)					      \
-	do {								      \
-		(vsp)->tv_sec = (tsp)->tv_sec - (usp)->tv_sec;		      \
-		(vsp)->tv_nsec = (tsp)->tv_nsec - (usp)->tv_nsec;	      \
-		if ((vsp)->tv_nsec < 0) {				      \
-			(vsp)->tv_sec--;				      \
-			(vsp)->tv_nsec += 1000000000L;			      \
-		}							      \
+#define timespecsub(tsp, usp, vsp)                                \
+	do {                                                      \
+		(vsp)->tv_sec = (tsp)->tv_sec - (usp)->tv_sec;    \
+		(vsp)->tv_nsec = (tsp)->tv_nsec - (usp)->tv_nsec; \
+		if ((vsp)->tv_nsec < 0) {                         \
+			(vsp)->tv_sec--;                          \
+			(vsp)->tv_nsec += 1000000000L;            \
+		}                                                 \
 	} while (/* CONSTCOND */ 0)
 #endif
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 
-_unused static void *xmalloc (size_t size)
+_unused static void *xmalloc(size_t size)
 {
 	void *value = malloc(size);
 
@@ -134,7 +139,7 @@ _unused static bool existss(const char *pathname)
  * functions to handle memory allocation.
  * this function was originally written by Mike Frysinger.
  */
-_unused _xasprintf(2,3) static int xasprintf(char **strp, const char *fmt, ...)
+_unused _xasprintf(2, 3) static int xasprintf(char **strp, const char *fmt, ...)
 {
 	va_list ap;
 	int len;

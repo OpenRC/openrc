@@ -25,12 +25,17 @@ void selinux_setup(char **argv);
 
 /* always return false for selinux_util_open() */
 #define selinux_util_open() (0)
-#define selinux_util_label(x) do { } while (0)
-#define selinux_util_close() do { } while (0)
+#define selinux_util_label(x) \
+	do {                  \
+	} while (0)
+#define selinux_util_close() \
+	do {                 \
+	} while (0)
 
-#define selinux_setup(x) do { } while (0)
+#define selinux_setup(x) \
+	do {             \
+	} while (0)
 
 #endif
-
 
 #endif

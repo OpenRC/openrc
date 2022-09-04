@@ -25,62 +25,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
+#include <syslog.h>
+#include <unistd.h>
 
+#include "_usage.h"
 #include "broadcast.h"
 #include "einfo.h"
-#include "rc.h"
 #include "helpers.h"
 #include "misc.h"
+#include "rc.h"
 #include "sysvinit.h"
 #include "wtmp.h"
-#include "_usage.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
 const char getoptstring[] = "cdDfFHKpRrsw" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "cancel",        no_argument, NULL, 'c'},
-	{ "no-write",        no_argument, NULL, 'd'},
-	{ "dry-run",        no_argument, NULL, 'D'},
-	{ "halt",        no_argument, NULL, 'H'},
-	{ "kexec",        no_argument, NULL, 'K'},
-	{ "poweroff",        no_argument, NULL, 'p'},
-	{ "reexec",        no_argument, NULL, 'R'},
-	{ "reboot",        no_argument, NULL, 'r'},
-	{ "single",        no_argument, NULL, 's'},
-	{ "write-only",        no_argument, NULL, 'w'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"cancel a pending shutdown",
-	"do not write wtmp record",
-	"print actions instead of executing them",
-	"halt the system",
-	"reboot the system using kexec",
-	"power off the system",
-	"re-execute init (use after upgrading)",
-	"reboot the system",
-	"single user mode",
-	"write wtmp boot record and exit",
-	longopts_help_COMMON
-};
-const char *usagestring = "" \
-						   "Usage: openrc-shutdown -c | --cancel\n" \
-						   "   or: openrc-shutdown -R | --reexec\n" \
-						   "   or: openrc-shutdown -w | --write-only\n" \
-						   "   or: openrc-shutdown -H | --halt time\n" \
-						   "   or: openrc-shutdown -K | --kexec time\n" \
-						   "   or: openrc-shutdown -p | --poweroff time\n" \
-						   "   or: openrc-shutdown -r | --reboot time\n" \
-						   "   or: openrc-shutdown -s | --single time";
-const char *exclusive = "Select one of "
+const struct option longopts[] = {{"cancel", no_argument, NULL, 'c'},
+				  {"no-write", no_argument, NULL, 'd'},
+				  {"dry-run", no_argument, NULL, 'D'},
+				  {"halt", no_argument, NULL, 'H'},
+				  {"kexec", no_argument, NULL, 'K'},
+				  {"poweroff", no_argument, NULL, 'p'},
+				  {"reexec", no_argument, NULL, 'R'},
+				  {"reboot", no_argument, NULL, 'r'},
+				  {"single", no_argument, NULL, 's'},
+				  {"write-only", no_argument, NULL, 'w'},
+				  longopts_COMMON};
+const char *const longopts_help[] = {"cancel a pending shutdown",
+				     "do not write wtmp record",
+				     "print actions instead of executing them",
+				     "halt the system",
+				     "reboot the system using kexec",
+				     "power off the system",
+				     "re-execute init (use after upgrading)",
+				     "reboot the system",
+				     "single user mode",
+				     "write wtmp boot record and exit",
+				     longopts_help_COMMON};
+const char *usagestring = ""
+			  "Usage: openrc-shutdown -c | --cancel\n"
+			  "   or: openrc-shutdown -R | --reexec\n"
+			  "   or: openrc-shutdown -w | --write-only\n"
+			  "   or: openrc-shutdown -H | --halt time\n"
+			  "   or: openrc-shutdown -K | --kexec time\n"
+			  "   or: openrc-shutdown -p | --poweroff time\n"
+			  "   or: openrc-shutdown -r | --reboot time\n"
+			  "   or: openrc-shutdown -s | --single time";
+const char *exclusive =
+	"Select one of "
 	"--cancel, --halt, --kexec, --poweroff, --reexec, --reboot, --single or \n"
 	"--write-only";
-const char *nologin_file = RC_SYSCONFDIR"/nologin";
+const char *nologin_file = RC_SYSCONFDIR "/nologin";
 const char *shutdown_pid = "/run/openrc-shutdown.pid";
 
 static bool do_cancel = false;
@@ -169,11 +166,11 @@ static void sleep_no_interrupt(int seconds)
 
 static void stop_shutdown(int sig)
 {
-	(void) sig;
+	(void)sig;
 	unlink(nologin_file);
 	unlink(shutdown_pid);
-einfo("Shutdown canceled");
-exit(0);
+	einfo("Shutdown canceled");
+	exit(0);
 }
 
 int main(int argc, char **argv)
@@ -194,17 +191,16 @@ int main(int argc, char **argv)
 	FILE *fp;
 
 	applet = basename_c(argv[0]);
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
-	{
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *)0)) != -1) {
 		switch (opt) {
-			case 'c':
-				do_cancel = true;
+		case 'c':
+			do_cancel = true;
 			cmd_count++;
-				break;
-			case 'd':
-				do_wtmp = false;
-				break;
+			break;
+		case 'd':
+			do_wtmp = false;
+			break;
 		case 'D':
 			do_dryrun = true;
 			break;
@@ -241,7 +237,7 @@ int main(int argc, char **argv)
 			do_wtmp_only = true;
 			cmd_count++;
 			break;
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 	}
 	if (geteuid() != 0)
@@ -271,20 +267,21 @@ int main(int argc, char **argv)
 		time_arg++;
 	if (strcasecmp(time_arg, "now") == 0)
 		strcpy(time_arg, "0");
-	for (ch=time_arg; *ch; ch++)
+	for (ch = time_arg; *ch; ch++)
 		if ((*ch < '0' || *ch > '9') && *ch != ':') {
 			eerror("%s: invalid time %s", applet, time_arg);
 			usage(EXIT_FAILURE);
 		}
 	if (strchr(time_arg, ':')) {
 		if ((sscanf(time_arg, "%2d:%2d", &hour, &min) != 2) ||
-				(hour > 23) || (min > 59)) {
+		    (hour > 23) || (min > 59)) {
 			eerror("%s: invalid time %s", applet, time_arg);
 			usage(EXIT_FAILURE);
 		}
 		time(&tv);
 		lt = localtime(&tv);
-		shutdown_delay = (hour * 60 + min) - (lt->tm_hour * 60 + lt->tm_min);
+		shutdown_delay =
+			(hour * 60 + min) - (lt->tm_hour * 60 + lt->tm_min);
 		if (shutdown_delay < 0)
 			shutdown_delay += 1440;
 	} else {
@@ -293,7 +290,8 @@ int main(int argc, char **argv)
 
 	fp = fopen(shutdown_pid, "w");
 	if (!fp)
-		eerrorx("%s: fopen `%s': %s", applet, shutdown_pid, strerror(errno));
+		eerrorx("%s: fopen `%s': %s", applet, shutdown_pid,
+			strerror(errno));
 	fprintf(fp, "%d\n", getpid());
 	fclose(fp);
 
@@ -309,15 +307,16 @@ int main(int argc, char **argv)
 			need_warning = (shutdown_delay % 60 == 0);
 		else if (shutdown_delay > 60)
 			need_warning = (shutdown_delay % 30 == 0);
-		else if	(shutdown_delay > 10)
+		else if (shutdown_delay > 10)
 			need_warning = (shutdown_delay % 15 == 0);
 		else
 			need_warning = true;
 		if (shutdown_delay <= 5)
 			create_nologin(shutdown_delay);
 		if (need_warning) {
-		xasprintf(&msg, "\rThe system will %s in %d minutes\r\n",
-		          state, shutdown_delay);
+			xasprintf(&msg,
+				  "\rThe system will %s in %d minutes\r\n",
+				  state, shutdown_delay);
 			broadcast(msg);
 			free(msg);
 		}

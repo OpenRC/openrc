@@ -20,10 +20,10 @@
 
 #define _IN_LIBRC
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 
 #include <ctype.h>
@@ -45,15 +45,15 @@
 #include <unistd.h>
 
 #if defined(BSD) && !defined(__GNU__)
-#include <sys/param.h>
-#include <sys/user.h>
-#include <sys/sysctl.h>
 #include <kvm.h>
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#include <sys/user.h>
 #else
 #include <sys/param.h>
 #endif
 
-#include "rc.h"
 #include "misc.h"
+#include "rc.h"
 
 #endif

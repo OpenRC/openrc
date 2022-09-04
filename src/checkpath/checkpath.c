@@ -17,8 +17,8 @@
  */
 
 #define _GNU_SOURCE
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -31,11 +31,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "einfo.h"
-#include "rc.h"
-#include "misc.h"
-#include "selinux.h"
 #include "_usage.h"
+#include "einfo.h"
+#include "misc.h"
+#include "rc.h"
+#include "selinux.h"
 
 typedef enum {
 	inode_unknown = 0,
@@ -45,21 +45,15 @@ typedef enum {
 } inode_t;
 
 const char *applet = NULL;
-const char *extraopts ="path1 [path2] [...]";
+const char *extraopts = "path1 [path2] [...]";
 const char getoptstring[] = "dDfFpm:o:sW" getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "directory",          0, NULL, 'd'},
-	{ "directory-truncate", 0, NULL, 'D'},
-	{ "file",               0, NULL, 'f'},
-	{ "file-truncate",      0, NULL, 'F'},
-	{ "pipe",               0, NULL, 'p'},
-	{ "mode",               1, NULL, 'm'},
-	{ "owner",              1, NULL, 'o'},
-	{ "symlinks",           0, NULL, 's'},
-	{ "writable",           0, NULL, 'W'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
+	{"directory", 0, NULL, 'd'}, {"directory-truncate", 0, NULL, 'D'},
+	{"file", 0, NULL, 'f'},	     {"file-truncate", 0, NULL, 'F'},
+	{"pipe", 0, NULL, 'p'},	     {"mode", 1, NULL, 'm'},
+	{"owner", 1, NULL, 'o'},     {"symlinks", 0, NULL, 's'},
+	{"writable", 0, NULL, 'W'},  longopts_COMMON};
+const char *const longopts_help[] = {
 	"Create a directory if not exists",
 	"Create/empty directory",
 	"Create a file if not exists",
@@ -69,8 +63,7 @@ const char * const longopts_help[] = {
 	"Owner to check (user:group)",
 	"follow symbolic links (irrelevant on linux)",
 	"Check whether the path is writable or not",
-	longopts_help_COMMON
-};
+	longopts_help_COMMON};
 const char *usagestring = NULL;
 
 static int get_dirfd(char *path, bool symlinks)
@@ -91,8 +84,8 @@ static int get_dirfd(char *path, bool symlinks)
 		eerrorx("%s: empty or relative path", applet);
 	dirfd = openat(dirfd, "/", O_RDONLY);
 	if (dirfd == -1)
-		eerrorx("%s: unable to open the root directory: %s",
-				applet, strerror(errno));
+		eerrorx("%s: unable to open the root directory: %s", applet,
+			strerror(errno));
 	ch = path;
 	while (*ch) {
 		if (*ch == '/')
@@ -111,22 +104,24 @@ static int get_dirfd(char *path, bool symlinks)
 		str = xstrdup(linkpath ? linkpath : item);
 		new_dirfd = openat(dirfd, str, flags);
 		if (new_dirfd == -1)
-			eerrorx("%s: %s: could not open %s: %s", applet, path, str,
-					strerror(errno));
+			eerrorx("%s: %s: could not open %s: %s", applet, path,
+				str, strerror(errno));
 		if (fstat(new_dirfd, &st) == -1)
-			eerrorx("%s: %s: unable to stat %s: %s", applet, path, item,
-					strerror(errno));
-		if (S_ISLNK(st.st_mode) ) {
+			eerrorx("%s: %s: unable to stat %s: %s", applet, path,
+				item, strerror(errno));
+		if (S_ISLNK(st.st_mode)) {
 			if (st.st_uid != 0)
 				eerrorx("%s: %s: symbolic link %s not owned by root",
-						applet, path, str);
-			linksize = st.st_size+1;
+					applet, path, str);
+			linksize = st.st_size + 1;
 			if (linkpath)
 				free(linkpath);
 			linkpath = xmalloc(linksize);
 			memset(linkpath, 0, linksize);
-			if (readlinkat(new_dirfd, "", linkpath, linksize) != st.st_size)
-				eerrorx("%s: symbolic link destination changed", applet);
+			if (readlinkat(new_dirfd, "", linkpath, linksize) !=
+			    st.st_size)
+				eerrorx("%s: symbolic link destination changed",
+					applet);
 			/*
 			 * now follow the symlink.
 			 */
@@ -160,7 +155,7 @@ static char *clean_path(char *path)
 		*ch2 = *ch;
 		ch++;
 		ch2++;
-		if (!*(ch-1))
+		if (!*(ch - 1))
 			break;
 		while (*(ch - 1) == '/' && *ch == '/')
 			ch++;
@@ -169,7 +164,7 @@ static char *clean_path(char *path)
 	while ((ch = strrchr(str, '/'))) {
 		if (ch == str)
 			break;
-		if (!*(ch+1))
+		if (!*(ch + 1))
 			*ch = 0;
 		else
 			break;
@@ -177,8 +172,8 @@ static char *clean_path(char *path)
 	return str;
 }
 
-static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
-	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
+static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
+		    bool trunc, bool chowner, bool symlinks, bool selinux_on)
 {
 	struct stat st;
 	char *name = NULL;
@@ -191,8 +186,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	int u;
 
 	memset(&st, 0, sizeof(st));
-	flags = O_CREAT|O_NDELAY|O_WRONLY|O_NOCTTY;
-	readflags = O_NDELAY|O_NOCTTY|O_RDONLY;
+	flags = O_CREAT | O_NDELAY | O_WRONLY | O_NOCTTY;
+	readflags = O_NDELAY | O_NOCTTY | O_RDONLY;
 #ifdef O_CLOEXEC
 	flags |= O_CLOEXEC;
 	readflags |= O_CLOEXEC;
@@ -210,7 +205,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 		if (type == inode_file) {
 			einfo("%s: creating file", path);
 			if (!mode) /* 664 */
-				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |
+				       S_IROTH;
 			u = umask(0);
 			fd = openat(dirfd, name, flags, mode);
 			umask(u);
@@ -233,14 +229,14 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			if (r == -1 && errno != EEXIST) {
 				free(name);
 				eerror("%s: mkdirat: %s", applet,
-				    strerror (errno));
+				       strerror(errno));
 				return -1;
 			}
 			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
 				free(name);
-				eerror("%s: unable to open directory: %s", applet,
-						strerror(errno));
+				eerror("%s: unable to open directory: %s",
+				       applet, strerror(errno));
 				return -1;
 			}
 		} else if (type == inode_fifo) {
@@ -253,14 +249,14 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			if (r == -1 && errno != EEXIST) {
 				free(name);
 				eerror("%s: mkfifo: %s", applet,
-				    strerror (errno));
+				       strerror(errno));
 				return -1;
 			}
 			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
 				free(name);
 				eerror("%s: unable to open fifo: %s", applet,
-						strerror(errno));
+				       strerror(errno));
 				return -1;
 			}
 		}
@@ -287,18 +283,21 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 
 		if (mode && (st.st_mode & 0777) != mode) {
 			if ((type != inode_dir) && (st.st_nlink > 1)) {
-				eerror("%s: chmod: Too many hard links to %s", applet, path);
+				eerror("%s: chmod: Too many hard links to %s",
+				       applet, path);
 				close(readfd);
 				return -1;
 			}
 			if (S_ISLNK(st.st_mode)) {
-				eerror("%s: chmod: %s %s", applet, path, " is a symbolic link");
+				eerror("%s: chmod: %s %s", applet, path,
+				       " is a symbolic link");
 				close(readfd);
 				return -1;
 			}
 			einfo("%s: correcting mode", path);
 			if (fchmod(readfd, mode)) {
-				eerror("%s: chmod: %s", applet, strerror(errno));
+				eerror("%s: chmod: %s", applet,
+				       strerror(errno));
 				close(readfd);
 				return -1;
 			}
@@ -306,18 +305,21 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 
 		if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
 			if ((type != inode_dir) && (st.st_nlink > 1)) {
-				eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
+				eerror("%s: chown: %s %s", applet,
+				       "Too many hard links to", path);
 				close(readfd);
 				return -1;
 			}
 			if (S_ISLNK(st.st_mode)) {
-				eerror("%s: chown: %s %s", applet, path, " is a symbolic link");
+				eerror("%s: chown: %s %s", applet, path,
+				       " is a symbolic link");
 				close(readfd);
 				return -1;
 			}
 			einfo("%s: correcting owner", path);
 			if (fchown(readfd, uid, gid)) {
-				eerror("%s: chown: %s", applet, strerror(errno));
+				eerror("%s: chown: %s", applet,
+				       strerror(errno));
 				close(readfd);
 				return -1;
 			}
@@ -335,10 +337,10 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 }
 
 static int parse_owner(struct passwd **user, struct group **group,
-	const char *owner)
+		       const char *owner)
 {
-	char *u = xstrdup (owner);
-	char *g = strchr (u, ':');
+	char *u = xstrdup(owner);
+	char *g = strchr(u, ':');
 	int id = 0;
 	int retval = 0;
 
@@ -347,7 +349,7 @@ static int parse_owner(struct passwd **user, struct group **group,
 
 	if (user && *u) {
 		if (sscanf(u, "%d", &id) == 1)
-			*user = getpwuid((uid_t) id);
+			*user = getpwuid((uid_t)id);
 		else
 			*user = getpwnam(u);
 		if (*user == NULL)
@@ -356,7 +358,7 @@ static int parse_owner(struct passwd **user, struct group **group,
 
 	if (group && g && *g) {
 		if (sscanf(g, "%d", &id) == 1)
-			*group = getgrgid((gid_t) id);
+			*group = getgrgid((gid_t)id);
 		else
 			*group = getgrnam(g);
 		if (*group == NULL)
@@ -385,9 +387,8 @@ int main(int argc, char **argv)
 	char *path = NULL;
 
 	applet = basename_c(argv[0]);
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
-	{
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *)0)) != -1) {
 		switch (opt) {
 		case 'D':
 			trunc = true;
@@ -406,14 +407,14 @@ int main(int argc, char **argv)
 			break;
 		case 'm':
 			if (parse_mode(&mode, optarg) != 0)
-				eerrorx("%s: invalid mode `%s'",
-				    applet, optarg);
+				eerrorx("%s: invalid mode `%s'", applet,
+					optarg);
 			break;
 		case 'o':
 			chowner = true;
 			if (parse_owner(&pw, &gr, optarg) != 0)
-				eerrorx("%s: owner `%s' not found",
-				    applet, optarg);
+				eerrorx("%s: owner `%s' not found", applet,
+					optarg);
 			break;
 		case 's':
 #ifndef O_PATH
@@ -424,7 +425,7 @@ int main(int argc, char **argv)
 			writable = true;
 			break;
 
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 	}
 
@@ -432,7 +433,8 @@ int main(int argc, char **argv)
 		usage(EXIT_FAILURE);
 
 	if (writable && type != inode_unknown)
-		eerrorx("%s: -W cannot be specified along with -d, -f or -p", applet);
+		eerrorx("%s: -W cannot be specified along with -d, -f or -p",
+			applet);
 
 	if (pw) {
 		uid = pw->pw_uid;
@@ -449,7 +451,7 @@ int main(int argc, char **argv)
 		if (writable)
 			exit(!is_writable(path));
 		if (do_check(path, uid, gid, mode, type, trunc, chowner,
-					symlinks, selinux_on))
+			     symlinks, selinux_on))
 			retval = EXIT_FAILURE;
 		optind++;
 		free(path);

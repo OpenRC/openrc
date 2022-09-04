@@ -21,6 +21,6 @@
 #include <utmp.h>
 
 void log_wtmp(const char *user, const char *id, pid_t pid, int type,
-		const char *line);
+	      const char *line);
 
 #endif

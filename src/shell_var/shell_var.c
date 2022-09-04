@@ -10,8 +10,8 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <errno.h>
 #include <ctype.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

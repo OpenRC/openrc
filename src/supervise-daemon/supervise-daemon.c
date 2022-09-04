@@ -17,30 +17,30 @@
  */
 
 /* nano seconds */
-#define POLL_INTERVAL   20000000
-#define WAIT_PIDFILE   500000000
-#define ONE_SECOND    1000000000
-#define ONE_MS           1000000
+#define POLL_INTERVAL 20000000
+#define WAIT_PIDFILE 500000000
+#define ONE_SECOND 1000000000
+#define ONE_MS 1000000
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
-#include <termios.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <termios.h>
 
 #ifdef __linux__
-#include <sys/syscall.h> /* For io priority */
 #include <sys/prctl.h> /* For prctl */
+#include <sys/syscall.h> /* For io priority */
 #endif
 
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
-#include <limits.h>
 #include <grp.h>
+#include <limits.h>
 #include <pwd.h>
 #include <signal.h>
 #include <stddef.h>
@@ -55,69 +55,68 @@
 #include <security/pam_appl.h>
 
 /* We are not supporting authentication conversations */
-static struct pam_conv conv = { NULL, NULL};
+static struct pam_conv conv = {NULL, NULL};
 #endif
 
 #ifdef HAVE_CAP
 #include <sys/capability.h>
 #endif
 
+#include "_usage.h"
 #include "einfo.h"
-#include "queue.h"
-#include "rc.h"
+#include "helpers.h"
 #include "misc.h"
 #include "plugin.h"
+#include "queue.h"
+#include "rc.h"
 #include "schedules.h"
-#include "_usage.h"
-#include "helpers.h"
 
 /* Use long option value that is out of range for 8 bit getopt values.
  * The exact enum value is internal and can freely change, so we keep the
  * options sorted.
  */
 enum {
-  /* This has to come first so following values stay in the 0x100+ range. */
-  LONGOPT_BASE = 0x100,
+	/* This has to come first so following values stay in the 0x100+ range. */
+	LONGOPT_BASE = 0x100,
 
-  LONGOPT_CAPABILITIES,
-  LONGOPT_OOM_SCORE_ADJ,
-  LONGOPT_NO_NEW_PRIVS,
-  LONGOPT_SECBITS,
+	LONGOPT_CAPABILITIES,
+	LONGOPT_OOM_SCORE_ADJ,
+	LONGOPT_NO_NEW_PRIVS,
+	LONGOPT_SECBITS,
 };
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3" \
-	getoptstring_COMMON;
+const char getoptstring[] =
+	"A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3" getoptstring_COMMON;
 const struct option longopts[] = {
-	{ "healthcheck-timer",        1, NULL, 'a'},
-	{ "healthcheck-delay",        1, NULL, 'A'},
-	{ "capabilities", 1, NULL, LONGOPT_CAPABILITIES},
-	{ "secbits",      1, NULL, LONGOPT_SECBITS},
-	{ "no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
-	{ "respawn-delay",        1, NULL, 'D'},
-	{ "chdir",        1, NULL, 'd'},
-	{ "env",          1, NULL, 'e'},
-	{ "group",        1, NULL, 'g'},
-	{ "ionice",       1, NULL, 'I'},
-	{ "stop",         0, NULL, 'K'},
-	{ "umask",        1, NULL, 'k'},
-	{ "respawn-max",    1, NULL, 'm'},
-	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL, LONGOPT_OOM_SCORE_ADJ},
-	{ "pidfile",      1, NULL, 'p'},
-	{ "respawn-period",        1, NULL, 'P'},
-	{ "retry",       1, NULL, 'R'},
-	{ "chroot",       1, NULL, 'r'},
-	{ "signal",       1, NULL, 's'},
-	{ "start",        0, NULL, 'S'},
-	{ "user",         1, NULL, 'u'},
-	{ "stdout",       1, NULL, '1'},
-	{ "stderr",       1, NULL, '2'},
-	{ "reexec",       0, NULL, '3'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
+	{"healthcheck-timer", 1, NULL, 'a'},
+	{"healthcheck-delay", 1, NULL, 'A'},
+	{"capabilities", 1, NULL, LONGOPT_CAPABILITIES},
+	{"secbits", 1, NULL, LONGOPT_SECBITS},
+	{"no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
+	{"respawn-delay", 1, NULL, 'D'},
+	{"chdir", 1, NULL, 'd'},
+	{"env", 1, NULL, 'e'},
+	{"group", 1, NULL, 'g'},
+	{"ionice", 1, NULL, 'I'},
+	{"stop", 0, NULL, 'K'},
+	{"umask", 1, NULL, 'k'},
+	{"respawn-max", 1, NULL, 'm'},
+	{"nicelevel", 1, NULL, 'N'},
+	{"oom-score-adj", 1, NULL, LONGOPT_OOM_SCORE_ADJ},
+	{"pidfile", 1, NULL, 'p'},
+	{"respawn-period", 1, NULL, 'P'},
+	{"retry", 1, NULL, 'R'},
+	{"chroot", 1, NULL, 'r'},
+	{"signal", 1, NULL, 's'},
+	{"start", 0, NULL, 'S'},
+	{"user", 1, NULL, 'u'},
+	{"stdout", 1, NULL, '1'},
+	{"stderr", 1, NULL, '2'},
+	{"reexec", 0, NULL, '3'},
+	longopts_COMMON};
+const char *const longopts_help[] = {
 	"set an initial health check delay",
 	"set a health check timer",
 	"Set the inheritable, ambient and bounding capabilities",
@@ -143,8 +142,7 @@ const char * const longopts_help[] = {
 	"Redirect stdout to file",
 	"Redirect stderr to file",
 	"reexec (used internally)",
-	longopts_help_COMMON
-};
+	longopts_help_COMMON};
 const char *usagestring = NULL;
 
 static int healthcheckdelay = 0;
@@ -188,7 +186,7 @@ static bool no_new_privs = false;
 extern char **environ;
 
 #if !defined(SYS_ioprio_set) && defined(__NR_ioprio_set)
-# define SYS_ioprio_set __NR_ioprio_set
+#define SYS_ioprio_set __NR_ioprio_set
 #endif
 #if !defined(__DragonFly__)
 static inline int ioprio_set(int which _unused, int who _unused,
@@ -211,9 +209,9 @@ static void re_exec_supervisor(void)
 {
 	syslog(LOG_WARNING, "Re-executing for %s", svcname);
 	execlp("supervise-daemon", "supervise-daemon", svcname, "--reexec",
-			(char *) NULL);
+	       (char *)NULL);
 	syslog(LOG_ERR, "Unable to execute supervise-daemon: %s",
-			strerror(errno));
+	       strerror(errno));
 	exit(EXIT_FAILURE);
 }
 
@@ -228,9 +226,11 @@ static void handle_signal(int sig)
 		break;
 	case SIGCHLD:
 		if (exiting)
-			while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
+			while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {
+			}
 		else {
-			while ((pid = waitpid((pid_t)(-1), NULL, WNOHANG|WNOWAIT)) > 0) {
+			while ((pid = waitpid((pid_t)(-1), NULL,
+					      WNOHANG | WNOWAIT)) > 0) {
 				if (pid == child_pid)
 					break;
 				pid = waitpid(pid, NULL, WNOHANG);
@@ -248,7 +248,7 @@ static void handle_signal(int sig)
 	errno = serrno;
 }
 
-static char * expand_home(const char *home, const char *path)
+static char *expand_home(const char *home, const char *path)
 {
 	char *opath, *ppath, *p, *nh;
 	struct passwd *pw;
@@ -294,8 +294,8 @@ static char *make_cmdline(char **argv)
 
 	for (c = argv; c && *c; c++)
 		len += (strlen(*c) + 1);
-	cmdline = xmalloc(len+1);
-	memset(cmdline, 0, len+1);
+	cmdline = xmalloc(len + 1);
+	memset(cmdline, 0, len + 1);
 	for (c = argv; c && *c; c++) {
 		strcat(cmdline, *c);
 		strcat(cmdline, " ");
@@ -318,7 +318,7 @@ static pid_t exec_command(const char *cmd)
 	}
 
 	/* We need to block signals until we have forked */
-	memset(&sa, 0, sizeof (sa));
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_DFL;
 	sigemptyset(&sa.sa_mask);
 	sigfillset(&full);
@@ -339,14 +339,14 @@ static pid_t exec_command(const char *cmd)
 		sigprocmask(SIG_SETMASK, &old, NULL);
 
 		/* Safe to run now */
-		execl(file, file, cmd, (char *) NULL);
-		syslog(LOG_ERR, "unable to exec `%s': %s\n",
-		    file, strerror(errno));
+		execl(file, file, cmd, (char *)NULL);
+		syslog(LOG_ERR, "unable to exec `%s': %s\n", file,
+		       strerror(errno));
 		_exit(EXIT_FAILURE);
 	}
 
 	if (pid == -1)
-		syslog(LOG_ERR, "fork: %s\n",strerror (errno));
+		syslog(LOG_ERR, "fork: %s\n", strerror(errno));
 
 	sigprocmask(SIG_SETMASK, &old, NULL);
 	free(file);
@@ -382,7 +382,8 @@ static void child_process(char *exec, char **argv)
 		from_time_t(start_time_string, start_time);
 		rc_service_value_set(svcname, "start_time", start_time_string);
 		sprintf(start_count_string, "%i", respawn_count);
-		rc_service_value_set(svcname, "start_count", start_count_string);
+		rc_service_value_set(svcname, "start_count",
+				     start_count_string);
 		sprintf(start_count_string, "%d", getpid());
 		rc_service_value_set(svcname, "child_pid", start_count_string);
 	}
@@ -390,39 +391,40 @@ static void child_process(char *exec, char **argv)
 	if (nicelevel != INT_MIN) {
 		if (setpriority(PRIO_PROCESS, getpid(), nicelevel) == -1)
 			eerrorx("%s: setpriority %d: %s", applet, nicelevel,
-					strerror(errno));
+				strerror(errno));
 	}
 
 	if (ionicec != -1 && ioprio_set(1, getpid(), ionicec | ioniced) == -1)
 		eerrorx("%s: ioprio_set %d %d: %s", applet, ionicec, ioniced,
-				strerror(errno));
+			strerror(errno));
 
 	if (oom_score_adj != INT_MIN) {
 		fp = fopen("/proc/self/oom_score_adj", "w");
 		if (!fp)
 			eerrorx("%s: oom_score_adj %d: %s", applet,
-			    oom_score_adj, strerror(errno));
+				oom_score_adj, strerror(errno));
 		fprintf(fp, "%d\n", oom_score_adj);
 		fclose(fp);
 	}
 
 	if (ch_root && chroot(ch_root) < 0)
-		eerrorx("%s: chroot `%s': %s", applet, ch_root, strerror(errno));
+		eerrorx("%s: chroot `%s': %s", applet, ch_root,
+			strerror(errno));
 
 	if (ch_dir && chdir(ch_dir) < 0)
 		eerrorx("%s: chdir `%s': %s", applet, ch_dir, strerror(errno));
 
 #ifdef HAVE_PAM
 	if (changeuser != NULL) {
-		pamr = pam_start("supervise-daemon",
-		    changeuser, &conv, &pamh);
+		pamr = pam_start("supervise-daemon", changeuser, &conv, &pamh);
 
 		if (pamr == PAM_SUCCESS)
 			pamr = pam_acct_mgmt(pamh, PAM_SILENT);
 		if (pamr == PAM_SUCCESS)
 			pamr = pam_open_session(pamh, PAM_SILENT);
 		if (pamr != PAM_SUCCESS)
-			eerrorx("%s: pam error: %s", applet, pam_strerror(pamh, pamr));
+			eerrorx("%s: pam error: %s", applet,
+				pam_strerror(pamh, pamr));
 	}
 #endif
 
@@ -435,7 +437,7 @@ static void child_process(char *exec, char **argv)
 #else
 	if (uid && setuid(uid))
 #endif
-		eerrorx ("%s: unable to set userid to %d", applet, uid);
+		eerrorx("%s: unable to set userid to %d", applet, uid);
 
 	/* Close any fd's to the passwd database */
 	endpwent();
@@ -445,7 +447,8 @@ static void child_process(char *exec, char **argv)
 		i = cap_iab_set_proc(cap_iab);
 
 		if (cap_free(cap_iab) != 0)
-			eerrorx("Could not releasable memory: %s", strerror(errno));
+			eerrorx("Could not releasable memory: %s",
+				strerror(errno));
 
 		if (i != 0)
 			eerrorx("Could not set iab: %s", strerror(errno));
@@ -453,14 +456,16 @@ static void child_process(char *exec, char **argv)
 
 	if (secbits != 0) {
 		if (cap_set_secbits(secbits) < 0)
-			eerrorx("Could not set securebits to 0x%x: %s", secbits, strerror(errno));
+			eerrorx("Could not set securebits to 0x%x: %s", secbits,
+				strerror(errno));
 	}
 #endif
 
 #ifdef PR_SET_NO_NEW_PRIVS
 	if (no_new_privs) {
 		if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == -1)
-			eerrorx("Could not set No New Privs flag: %s", strerror(errno));
+			eerrorx("Could not set No New Privs flag: %s",
+				strerror(errno));
 	}
 #endif
 
@@ -494,12 +499,11 @@ static void child_process(char *exec, char **argv)
 
 	TAILQ_FOREACH(env, env_list, entries) {
 		if ((strncmp(env->value, "RC_", 3) == 0 &&
-			strncmp(env->value, "RC_SERVICE=", 11) != 0 &&
-			strncmp(env->value, "RC_SVCNAME=", 11) != 0) ||
+		     strncmp(env->value, "RC_SERVICE=", 11) != 0 &&
+		     strncmp(env->value, "RC_SVCNAME=", 11) != 0) ||
 		    strncmp(env->value, "SSD_NICELEVEL=", 14) == 0 ||
 		    strncmp(env->value, "SSD_IONICELEVEL=", 16) == 0 ||
-		    strncmp(env->value, "SSD_OOM_SCORE_ADJ=", 18) == 0)
-		{
+		    strncmp(env->value, "SSD_OOM_SCORE_ADJ=", 18) == 0) {
 			p = strchr(env->value, '=');
 			*p = '\0';
 			unsetenv(env->value);
@@ -520,14 +524,13 @@ static void child_process(char *exec, char **argv)
 					p++;
 			}
 			if (strcmp(token, RC_LIBEXECDIR "/bin") != 0 &&
-			    strcmp(token, RC_LIBEXECDIR "/sbin") != 0)
-			{
+			    strcmp(token, RC_LIBEXECDIR "/sbin") != 0) {
 				len = strlen(token);
 				if (np != newpath)
 					*np++ = ':';
 				memcpy(np, token, len);
 				np += len;
-				}
+			}
 			token = p;
 		}
 		*np = '\0';
@@ -540,19 +543,19 @@ static void child_process(char *exec, char **argv)
 	stderr_fd = devnull_fd;
 	if (redirect_stdout) {
 		if ((stdout_fd = open(redirect_stdout,
-			    O_WRONLY | O_CREAT | O_APPEND,
-			    S_IRUSR | S_IWUSR)) == -1)
+				      O_WRONLY | O_CREAT | O_APPEND,
+				      S_IRUSR | S_IWUSR)) == -1)
 			eerrorx("%s: unable to open the logfile"
-				    " for stdout `%s': %s",
-				    applet, redirect_stdout, strerror(errno));
+				" for stdout `%s': %s",
+				applet, redirect_stdout, strerror(errno));
 	}
 	if (redirect_stderr) {
 		if ((stderr_fd = open(redirect_stderr,
-			    O_WRONLY | O_CREAT | O_APPEND,
-			    S_IRUSR | S_IWUSR)) == -1)
+				      O_WRONLY | O_CREAT | O_APPEND,
+				      S_IRUSR | S_IWUSR)) == -1)
 			eerrorx("%s: unable to open the logfile"
-			    " for stderr `%s': %s",
-			    applet, redirect_stderr, strerror(errno));
+				" for stderr `%s': %s",
+				applet, redirect_stderr, strerror(errno));
 	}
 
 	dup2(stdin_fd, STDIN_FILENO);
@@ -572,7 +575,7 @@ static void child_process(char *exec, char **argv)
 	if (changeuser != NULL && pamr == PAM_SUCCESS)
 		pam_close_session(pamh, PAM_SILENT);
 #endif
-	eerrorx("%s: failed to exec `%s': %s", applet, exec,strerror(errno));
+	eerrorx("%s: failed to exec `%s': %s", applet, exec, strerror(errno));
 }
 
 static void supervisor(char *exec, char **argv)
@@ -593,8 +596,8 @@ static void supervisor(char *exec, char **argv)
 	sigset_t signals;
 	struct sigaction sa;
 	struct timespec ts;
-	time_t respawn_now= 0;
-	time_t first_spawn= 0;
+	time_t respawn_now = 0;
+	time_t first_spawn = 0;
 
 	/* block all signals we do not handle */
 	sigfillset(&signals);
@@ -617,10 +620,10 @@ static void supervisor(char *exec, char **argv)
 	fclose(fp);
 
 	if (svcname)
-		rc_service_daemon_set(svcname, exec, (const char * const *) argv,
-				pidfile, true);
+		rc_service_daemon_set(svcname, exec, (const char *const *)argv,
+				      pidfile, true);
 
-	/* remove the controlling tty */
+		/* remove the controlling tty */
 #ifdef TIOCNOTTY
 	ioctl(tty_fd, TIOCNOTTY, 0);
 	close(tty_fd);
@@ -648,13 +651,16 @@ static void supervisor(char *exec, char **argv)
 			if (verbose)
 				syslog(LOG_DEBUG, "Received %s from fifo", buf);
 			if (strncasecmp(buf, "sig", 3) == 0) {
-				if ((sscanf(buf, "%s %d", cmd, &sig_send) == 2)
-						&& (sig_send >= 0 && sig_send < NSIG)) {
-					syslog(LOG_INFO, "Sending signal %d to %d", sig_send,
-							child_pid);
+				if ((sscanf(buf, "%s %d", cmd, &sig_send) ==
+				     2) &&
+				    (sig_send >= 0 && sig_send < NSIG)) {
+					syslog(LOG_INFO,
+					       "Sending signal %d to %d",
+					       sig_send, child_pid);
 					if (kill(child_pid, sig_send) == -1)
-						syslog(LOG_ERR, "Unable to send signal %d to %d",
-								sig_send, child_pid);
+						syslog(LOG_ERR,
+						       "Unable to send signal %d to %d",
+						       sig_send, child_pid);
 				}
 			}
 			continue;
@@ -663,42 +669,53 @@ static void supervisor(char *exec, char **argv)
 			do_healthcheck = 0;
 			alarm(0);
 			if (verbose)
-				syslog(LOG_DEBUG, "running health check for %s", svcname);
+				syslog(LOG_DEBUG, "running health check for %s",
+				       svcname);
 			health_pid = exec_command("healthcheck");
 			health_status = rc_waitpid(health_pid);
-			if (WIFEXITED(health_status) && WEXITSTATUS(health_status) == 0)
+			if (WIFEXITED(health_status) &&
+			    WEXITSTATUS(health_status) == 0)
 				alarm(healthchecktimer);
 			else {
-				syslog(LOG_WARNING, "health check for %s failed", svcname);
+				syslog(LOG_WARNING,
+				       "health check for %s failed", svcname);
 				health_pid = exec_command("unhealthy");
 				rc_waitpid(health_pid);
-				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
-				nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
-						false, false, true);
+				syslog(LOG_INFO, "stopping %s, pid %d", exec,
+				       child_pid);
+				nkilled = run_stop_schedule(applet, NULL, NULL,
+							    child_pid, 0, false,
+							    false, true);
 				if (nkilled < 0)
-					syslog(LOG_INFO, "Unable to kill %d: %s",
-							child_pid, strerror(errno));
+					syslog(LOG_INFO,
+					       "Unable to kill %d: %s",
+					       child_pid, strerror(errno));
 				else
 					healthcheck_respawn = 1;
 			}
 		}
 		if (exiting) {
 			alarm(0);
-			syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
-			nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
-					false, false, true);
+			syslog(LOG_INFO, "stopping %s, pid %d", exec,
+			       child_pid);
+			nkilled = run_stop_schedule(applet, NULL, NULL,
+						    child_pid, 0, false, false,
+						    true);
 			if (nkilled > 0)
-				syslog(LOG_INFO, "killed %d processes", nkilled);
+				syslog(LOG_INFO, "killed %d processes",
+				       nkilled);
 			continue;
 		}
 		wait_pid = waitpid(child_pid, &i, WNOHANG);
 		if (wait_pid == child_pid) {
 			if (WIFEXITED(i))
-				syslog(LOG_WARNING, "%s, pid %d, exited with return code %d",
-						exec, child_pid, WEXITSTATUS(i));
+				syslog(LOG_WARNING,
+				       "%s, pid %d, exited with return code %d",
+				       exec, child_pid, WEXITSTATUS(i));
 			else if (WIFSIGNALED(i))
-				syslog(LOG_WARNING, "%s, pid %d, terminated by signal %d",
-						exec, child_pid, WTERMSIG(i));
+				syslog(LOG_WARNING,
+				       "%s, pid %d, terminated by signal %d",
+				       exec, child_pid, WTERMSIG(i));
 		}
 		if (wait_pid == child_pid || healthcheck_respawn) {
 			do_healthcheck = 0;
@@ -707,15 +724,16 @@ static void supervisor(char *exec, char **argv)
 			respawn_now = time(NULL);
 			if (first_spawn == 0)
 				first_spawn = respawn_now;
-			if ((respawn_period > 0)
-					&& (respawn_now - first_spawn > respawn_period)) {
+			if ((respawn_period > 0) &&
+			    (respawn_now - first_spawn > respawn_period)) {
 				respawn_count = 0;
 				first_spawn = 0;
 			} else
 				respawn_count++;
 			if (respawn_max > 0 && respawn_count > respawn_max) {
-				syslog(LOG_WARNING, "respawned \"%s\" too many times, exiting",
-						exec);
+				syslog(LOG_WARNING,
+				       "respawned \"%s\" too many times, exiting",
+				       exec);
 				exiting = 1;
 				failing = 1;
 				continue;
@@ -727,7 +745,8 @@ static void supervisor(char *exec, char **argv)
 				continue;
 			child_pid = fork();
 			if (child_pid == -1) {
-				syslog(LOG_ERR, "%s: fork: %s", applet, strerror(errno));
+				syslog(LOG_ERR, "%s: fork: %s", applet,
+				       strerror(errno));
 				exit(EXIT_FAILURE);
 			}
 			if (child_pid == 0) {
@@ -748,7 +767,7 @@ static void supervisor(char *exec, char **argv)
 
 	if (svcname) {
 		rc_service_daemon_set(svcname, exec, (const char *const *)argv,
-				pidfile, false);
+				      pidfile, false);
 		rc_service_value_set(svcname, "child_pid", NULL);
 		rc_service_mark(svcname, RC_SERVICE_STOPPED);
 		if (failing)
@@ -797,22 +816,23 @@ int main(int argc, char **argv)
 	atexit(cleanup);
 	svcname = getenv("RC_SVCNAME");
 	if (!svcname)
-		eerrorx("%s: The RC_SVCNAME environment variable is not set", applet);
+		eerrorx("%s: The RC_SVCNAME environment variable is not set",
+			applet);
 	openlog(applet, LOG_PID, LOG_DAEMON);
 
 	if (argc <= 1 || strcmp(argv[1], svcname))
-		eerrorx("%s: the first argument is %s and must be %s",
-				applet, argv[1], svcname);
+		eerrorx("%s: the first argument is %s and must be %s", applet,
+			argv[1], svcname);
 
 	if ((tmp = getenv("SSD_NICELEVEL")))
 		if (sscanf(tmp, "%d", &nicelevel) != 1)
 			eerror("%s: invalid nice level `%s' (SSD_NICELEVEL)",
-			    applet, tmp);
+			       applet, tmp);
 	if ((tmp = getenv("SSD_IONICELEVEL"))) {
 		n = sscanf(tmp, "%d:%d", &ionicec, &ioniced);
 		if (n != 1 && n != 2)
 			eerror("%s: invalid ionice level `%s' (SSD_IONICELEVEL)",
-			    applet, tmp);
+			       applet, tmp);
 		if (ionicec == 0)
 			ioniced = 0;
 		else if (ionicec == 3)
@@ -822,7 +842,7 @@ int main(int argc, char **argv)
 	if ((tmp = getenv("SSD_OOM_SCORE_ADJ")))
 		if (sscanf(tmp, "%d", &oom_score_adj) != 1)
 			eerror("%s: invalid oom_score_adj `%s' (SSD_OOM_SCORE_ADJ)",
-			    applet, tmp);
+			       applet, tmp);
 
 	/* Get our user name and initial dir */
 	p = getenv("USER");
@@ -845,29 +865,34 @@ int main(int argc, char **argv)
 		argv++;
 	}
 	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
-		    (int *) 0)) != -1)
+				  (int *)0)) != -1)
 		switch (opt) {
-		case 'a':  /* --healthcheck-timer <time> */
-			if (sscanf(optarg, "%d", &healthchecktimer) != 1 || healthchecktimer < 1)
-				eerrorx("%s: invalid health check timer %s", applet, optarg);
+		case 'a': /* --healthcheck-timer <time> */
+			if (sscanf(optarg, "%d", &healthchecktimer) != 1 ||
+			    healthchecktimer < 1)
+				eerrorx("%s: invalid health check timer %s",
+					applet, optarg);
 			break;
 
-		case 'A':  /* --healthcheck-delay <time> */
-			if (sscanf(optarg, "%d", &healthcheckdelay) != 1 || healthcheckdelay < 1)
-				eerrorx("%s: invalid health check delay %s", applet, optarg);
+		case 'A': /* --healthcheck-delay <time> */
+			if (sscanf(optarg, "%d", &healthcheckdelay) != 1 ||
+			    healthcheckdelay < 1)
+				eerrorx("%s: invalid health check delay %s",
+					applet, optarg);
 			break;
 
 		case LONGOPT_CAPABILITIES:
 #ifdef HAVE_CAP
 			cap_iab = cap_iab_from_text(optarg);
 			if (cap_iab == NULL)
-				eerrorx("Could not parse iab: %s", strerror(errno));
+				eerrorx("Could not parse iab: %s",
+					strerror(errno));
 #else
 			eerrorx("Capabilities support not enabled");
 #endif
 			break;
 
-        case LONGOPT_SECBITS:
+		case LONGOPT_SECBITS:
 #ifdef HAVE_CAP
 			if (*optarg == '\0')
 				eerrorx("Secbits are empty");
@@ -875,7 +900,8 @@ int main(int argc, char **argv)
 			tmp = NULL;
 			secbits = strtoul(optarg, &tmp, 0);
 			if (*tmp != '\0')
-				eerrorx("Could not parse secbits: invalid char %c", *tmp);
+				eerrorx("Could not parse secbits: invalid char %c",
+					*tmp);
 #else
 			eerrorx("Capabilities support not enabled");
 #endif
@@ -889,16 +915,17 @@ int main(int argc, char **argv)
 #endif
 			break;
 
-		case 'D':  /* --respawn-delay time */
+		case 'D': /* --respawn-delay time */
 			n = sscanf(optarg, "%d", &respawn_delay);
-			if (n	!= 1 || respawn_delay < 1)
-				eerrorx("Invalid respawn-delay value '%s'", optarg);
+			if (n != 1 || respawn_delay < 1)
+				eerrorx("Invalid respawn-delay value '%s'",
+					optarg);
 			break;
 
 		case 'I': /* --ionice */
 			if (sscanf(optarg, "%d:%d", &ionicec, &ioniced) == 0)
-				eerrorx("%s: invalid ionice `%s'",
-				    applet, optarg);
+				eerrorx("%s: invalid ionice `%s'", applet,
+					optarg);
 			if (ionicec == 0)
 				ioniced = 0;
 			else if (ionicec == 3)
@@ -906,37 +933,38 @@ int main(int argc, char **argv)
 			ionicec <<= 13; /* class shift */
 			break;
 
-		case 'K':  /* --stop */
+		case 'K': /* --stop */
 			stop = true;
 			break;
 
-		case 'N':  /* --nice */
+		case 'N': /* --nice */
 			if (sscanf(optarg, "%d", &nicelevel) != 1)
-				eerrorx("%s: invalid nice level `%s'",
-				    applet, optarg);
+				eerrorx("%s: invalid nice level `%s'", applet,
+					optarg);
 			break;
 
 		case LONGOPT_OOM_SCORE_ADJ: /* --oom-score-adj */
 			if (sscanf(optarg, "%d", &oom_score_adj) != 1)
 				eerrorx("%s: invalid oom-score-adj `%s'",
-				    applet, optarg);
+					applet, optarg);
 			break;
 
-		case 'P':  /* --respawn-period time */
+		case 'P': /* --respawn-period time */
 			n = sscanf(optarg, "%d", &respawn_period);
-			if (n	!= 1 || respawn_period < 1)
-				eerrorx("Invalid respawn-period value '%s'", optarg);
+			if (n != 1 || respawn_period < 1)
+				eerrorx("Invalid respawn-period value '%s'",
+					optarg);
 			break;
 
-		case 's':  /* --signal */
+		case 's': /* --signal */
 			sig = parse_signal(applet, optarg);
 			sendsig = true;
 			break;
-		case 'S':  /* --start */
+		case 'S': /* --start */
 			start = true;
 			break;
 
-		case 'd':  /* --chdir /new/dir */
+		case 'd': /* --chdir /new/dir */
 			ch_dir = optarg;
 			break;
 
@@ -944,46 +972,49 @@ int main(int argc, char **argv)
 			putenv(optarg);
 			break;
 
-		case 'g':  /* --group <group>|<gid> */
+		case 'g': /* --group <group>|<gid> */
 			if (sscanf(optarg, "%d", &tid) != 1)
 				gr = getgrnam(optarg);
 			else
 				gr = getgrgid((gid_t)tid);
 			if (gr == NULL)
-				eerrorx("%s: group `%s' not found",
-				    applet, optarg);
+				eerrorx("%s: group `%s' not found", applet,
+					optarg);
 			gid = gr->gr_gid;
 			break;
 
-		case 'H':  /* --healthcheck-timer <minutes> */
-			if (sscanf(optarg, "%d", &healthchecktimer) != 1 || healthchecktimer < 1)
-				eerrorx("%s: invalid health check timer %s", applet, optarg);
+		case 'H': /* --healthcheck-timer <minutes> */
+			if (sscanf(optarg, "%d", &healthchecktimer) != 1 ||
+			    healthchecktimer < 1)
+				eerrorx("%s: invalid health check timer %s",
+					applet, optarg);
 			break;
 
 		case 'k':
 			if (parse_mode(&numask, optarg))
-				eerrorx("%s: invalid mode `%s'",
-				    applet, optarg);
+				eerrorx("%s: invalid mode `%s'", applet,
+					optarg);
 			break;
 
-		case 'm':  /* --respawn-max count */
+		case 'm': /* --respawn-max count */
 			n = sscanf(optarg, "%d", &respawn_max);
-			if (n	!= 1 || respawn_max < 0)
-				eerrorx("Invalid respawn-max value '%s'", optarg);
+			if (n != 1 || respawn_max < 0)
+				eerrorx("Invalid respawn-max value '%s'",
+					optarg);
 			break;
 
-		case 'p':  /* --pidfile <pid-file> */
+		case 'p': /* --pidfile <pid-file> */
 			pidfile = optarg;
 			break;
 
-		case 'R':  /* --retry <schedule>|timeout */
+		case 'R': /* --retry <schedule>|timeout */
 			retry = optarg;
 			break;
-		case 'r':  /* --chroot /new/root */
+		case 'r': /* --chroot /new/root */
 			ch_root = optarg;
 			break;
 
-		case 'u':  /* --user <username>|<uid> */
+		case 'u': /* --user <username>|<uid> */
 		{
 			char dummy[2];
 			p = optarg;
@@ -995,8 +1026,7 @@ int main(int argc, char **argv)
 				pw = getpwuid((uid_t)tid);
 
 			if (pw == NULL)
-				eerrorx("%s: user `%s' not found",
-				    applet, tmp);
+				eerrorx("%s: user `%s' not found", applet, tmp);
 			uid = pw->pw_uid;
 			home = pw->pw_dir;
 			unsetenv("HOME");
@@ -1009,36 +1039,35 @@ int main(int argc, char **argv)
 				gid = pw->pw_gid;
 
 			if (p) {
-				tmp = strsep (&p, ":");
+				tmp = strsep(&p, ":");
 				if (sscanf(tmp, "%d%1s", &tid, dummy) != 1)
 					gr = getgrnam(tmp);
 				else
-					gr = getgrgid((gid_t) tid);
+					gr = getgrgid((gid_t)tid);
 
 				if (gr == NULL)
 					eerrorx("%s: group `%s'"
-					    " not found",
-					    applet, tmp);
+						" not found",
+						applet, tmp);
 				gid = gr->gr_gid;
 			}
-		}
-		break;
+		} break;
 
-		case '1':   /* --stdout /path/to/stdout.lgfile */
+		case '1': /* --stdout /path/to/stdout.lgfile */
 			redirect_stdout = optarg;
 			break;
 
-		case '2':  /* --stderr /path/to/stderr.logfile */
+		case '2': /* --stderr /path/to/stderr.logfile */
 			redirect_stderr = optarg;
 			break;
-		case '3':  /* --reexec */
+		case '3': /* --reexec */
 			reexec = true;
 			break;
 
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 
-	verbose = rc_yesno(getenv ("EINFO_VERBOSE"));
+	verbose = rc_yesno(getenv("EINFO_VERBOSE"));
 	endpwent();
 	argc -= optind;
 	argv += optind;
@@ -1055,8 +1084,8 @@ int main(int argc, char **argv)
 		xasprintf(&pidfile, "/var/run/supervise-%s.pid", svcname);
 	xasprintf(&fifopath, "%s/supervise-%s.ctl", RC_SVCDIR, svcname);
 	if (mkfifo(fifopath, 0600) == -1 && errno != EEXIST)
-		eerrorx("%s: unable to create control fifo: %s",
-				applet, strerror(errno));
+		eerrorx("%s: unable to create control fifo: %s", applet,
+			strerror(errno));
 
 	if (reexec) {
 		str = rc_service_value_get(svcname, "argc");
@@ -1097,7 +1126,8 @@ int main(int argc, char **argv)
 			if (*exec == '/' || *exec == '.') {
 				/* Full or relative path */
 				if (ch_root)
-					xasprintf(&exec_file, "%s/%s", ch_root, exec);
+					xasprintf(&exec_file, "%s/%s", ch_root,
+						  exec);
 				else
 					xasprintf(&exec_file, "%s", exec);
 			} else {
@@ -1106,9 +1136,12 @@ int main(int argc, char **argv)
 				exec_file = NULL;
 				while ((token = strsep(&p, ":"))) {
 					if (ch_root)
-						xasprintf(&exec_file, "%s/%s/%s", ch_root, token, exec);
+						xasprintf(&exec_file,
+							  "%s/%s/%s", ch_root,
+							  token, exec);
 					else
-						xasprintf(&exec_file, "%s/%s", token, exec);
+						xasprintf(&exec_file, "%s/%s",
+							  token, exec);
 					if (exec_file && exists(exec_file))
 						break;
 					free(exec_file);
@@ -1118,7 +1151,7 @@ int main(int argc, char **argv)
 			}
 			if (!exists(exec_file)) {
 				eerror("%s: %s does not exist", applet,
-				    exec_file ? exec_file : exec);
+				       exec_file ? exec_file : exec);
 				free(exec_file);
 				exit(EXIT_FAILURE);
 			}
@@ -1127,14 +1160,16 @@ int main(int argc, char **argv)
 
 		pid = get_pid(applet, pidfile);
 		if (pid != -1)
-			if (do_stop(applet, exec, (const char * const *)argv, pid, uid,
-						0, false, true) > 0)
-				eerrorx("%s: %s is already running", applet, exec);
+			if (do_stop(applet, exec, (const char *const *)argv,
+				    pid, uid, 0, false, true) > 0)
+				eerrorx("%s: %s is already running", applet,
+					exec);
 
-		if (respawn_period > 0 && respawn_delay * respawn_max > respawn_period)
+		if (respawn_period > 0 &&
+		    respawn_delay * respawn_max > respawn_period)
 			ewarn("%s: Please increase the value of --respawn-period to more "
-				"than %d to avoid infinite respawning", applet,
-				respawn_delay * respawn_max);
+			      "than %d to avoid infinite respawning",
+			      applet, respawn_delay * respawn_max);
 
 		if (retry) {
 			parse_schedule(applet, retry, sig);
@@ -1154,7 +1189,8 @@ int main(int argc, char **argv)
 		/* Make sure we can write a pid file */
 		fp = fopen(pidfile, "w");
 		if (!fp)
-			eerrorx("%s: fopen `%s': %s", applet, pidfile, strerror(errno));
+			eerrorx("%s: fopen `%s': %s", applet, pidfile,
+				strerror(errno));
 		fclose(fp);
 
 		rc_service_value_set(svcname, "pidfile", pidfile);
@@ -1189,7 +1225,7 @@ int main(int argc, char **argv)
 			x = 0;
 			while (c && *c) {
 				varbuf = NULL;
-				xasprintf(&varbuf, "argv_%-d",x);
+				xasprintf(&varbuf, "argv_%-d", x);
 				rc_service_value_set(svcname, varbuf, *c);
 				free(varbuf);
 				varbuf = NULL;
@@ -1228,21 +1264,22 @@ int main(int argc, char **argv)
 			unlink(pidfile);
 		if (svcname) {
 			rc_service_daemon_set(svcname, exec,
-			    (const char *const *)argv,
-			    pidfile, false);
+					      (const char *const *)argv,
+					      pidfile, false);
 			rc_service_mark(svcname, RC_SERVICE_STOPPED);
 		}
 		exit(EXIT_SUCCESS);
 	} else if (sendsig) {
-		fifo_fd = open(fifopath, O_WRONLY |O_NONBLOCK);
+		fifo_fd = open(fifopath, O_WRONLY | O_NONBLOCK);
 		if (fifo_fd < 0)
-			eerrorx("%s: unable to open control fifo %s", applet, strerror(errno));
+			eerrorx("%s: unable to open control fifo %s", applet,
+				strerror(errno));
 		xasprintf(&str, "sig %d", sig);
 		x = write(fifo_fd, str, strlen(str));
 		if (x == -1) {
 			free(tmp);
 			eerrorx("%s: error writing to control fifo: %s", applet,
-					strerror(errno));
+				strerror(errno));
 		}
 		free(tmp);
 		exit(EXIT_SUCCESS);

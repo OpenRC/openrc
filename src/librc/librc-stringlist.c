@@ -15,19 +15,17 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include "queue.h"
 #include "librc.h"
+#include "queue.h"
 
-RC_STRINGLIST *
-rc_stringlist_new(void)
+RC_STRINGLIST *rc_stringlist_new(void)
 {
 	RC_STRINGLIST *l = xmalloc(sizeof(*l));
 	TAILQ_INIT(l);
 	return l;
 }
 
-RC_STRING *
-rc_stringlist_add(RC_STRINGLIST *list, const char *value)
+RC_STRING *rc_stringlist_add(RC_STRINGLIST *list, const char *value)
 {
 	RC_STRING *s = xmalloc(sizeof(*s));
 
@@ -36,52 +34,48 @@ rc_stringlist_add(RC_STRINGLIST *list, const char *value)
 	return s;
 }
 
-RC_STRING *
-rc_stringlist_addu(RC_STRINGLIST *list, const char *value)
+RC_STRING *rc_stringlist_addu(RC_STRINGLIST *list, const char *value)
 {
 	RC_STRING *s;
 
 	TAILQ_FOREACH(s, list, entries)
-	    if (strcmp(s->value, value) == 0) {
-		    errno = EEXIST;
-		    return NULL;
-	    }
+		if (strcmp(s->value, value) == 0) {
+			errno = EEXIST;
+			return NULL;
+		}
 
 	return rc_stringlist_add(list, value);
 }
 
-bool
-rc_stringlist_delete(RC_STRINGLIST *list, const char *value)
+bool rc_stringlist_delete(RC_STRINGLIST *list, const char *value)
 {
 	RC_STRING *s;
 
 	TAILQ_FOREACH(s, list, entries)
-	    if (strcmp(s->value, value) == 0) {
-		    TAILQ_REMOVE(list, s, entries);
-		    free(s->value);
-		    free(s);
-		    return true;
-	    }
+		if (strcmp(s->value, value) == 0) {
+			TAILQ_REMOVE(list, s, entries);
+			free(s->value);
+			free(s);
+			return true;
+		}
 
 	errno = EEXIST;
 	return false;
 }
 
-RC_STRING *
-rc_stringlist_find(RC_STRINGLIST *list, const char *value)
+RC_STRING *rc_stringlist_find(RC_STRINGLIST *list, const char *value)
 {
 	RC_STRING *s;
 
 	if (list) {
 		TAILQ_FOREACH(s, list, entries)
-		    if (strcmp(s->value, value) == 0)
-			    return s;
+			if (strcmp(s->value, value) == 0)
+				return s;
 	}
 	return NULL;
 }
 
-RC_STRINGLIST *
-rc_stringlist_split(const char *value, const char *sep)
+RC_STRINGLIST *rc_stringlist_split(const char *value, const char *sep)
 {
 	RC_STRINGLIST *list = rc_stringlist_new();
 	char *d = xstrdup(value);
@@ -94,8 +88,7 @@ rc_stringlist_split(const char *value, const char *sep)
 	return list;
 }
 
-void
-rc_stringlist_sort(RC_STRINGLIST **list)
+void rc_stringlist_sort(RC_STRINGLIST **list)
 {
 	RC_STRINGLIST *l = *list;
 	RC_STRINGLIST *new = rc_stringlist_new();
@@ -123,8 +116,7 @@ rc_stringlist_sort(RC_STRINGLIST **list)
 	*list = new;
 }
 
-void
-rc_stringlist_free(RC_STRINGLIST *list)
+void rc_stringlist_free(RC_STRINGLIST *list)
 {
 	RC_STRING *s1;
 	RC_STRING *s2;

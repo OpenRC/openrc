@@ -10,24 +10,24 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
-#include <errno.h>
 #include <ctype.h>
+#include <errno.h>
 #include <inttypes.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "einfo.h"
-#include "rc.h"
 #include "misc.h"
+#include "rc.h"
 
 const char *applet = NULL;
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv)
 		if (openrc_pid && sscanf(openrc_pid, "%d", &pid) == 1)
 			if (kill(pid, SIGHUP) != 0)
 				eerror("%s: failed to signal parent %d: %s",
-				    applet, pid, strerror(errno));
+				       applet, pid, strerror(errno));
 
 		/* Remove the exclusive time test. This ensures that it's not
 		   in control as well */

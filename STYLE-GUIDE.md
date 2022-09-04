@@ -7,32 +7,10 @@ or fixes you might notice.
 
 ## C CODE
 
-The BSD Kernel Normal Form (KNF) style is used [1]. Basically, it is like
-K&R/LKML, but wrapped lines that are indented use 4 spaces. Here are the
-highlights.
-
-- no trailing whitespace
-- indented code use tabs (not line wrapped)
-- cuddle the braces (except for functions)
-- space after native statements and before paren (for/if/while/...)
-- no space between function and paren
-- pointer asterisk cuddles the variable, not the type
-
-```
-void foo(int c)
-{
-	int ret = 0;
-
-	if (c > 1000)
-		return;
-
-	while (c--) {
-		bar(c);
-		ret++;
-	}
-
-	return ret;
-}
+This project uses clang format to define the code style. To format code
+automatically, run the following command:
+```bash
+$ clang-format --style=file -i path/of/source/file
 ```
 
 ## COMMIT MESSAGES

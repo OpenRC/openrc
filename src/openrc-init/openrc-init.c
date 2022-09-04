@@ -25,22 +25,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/reboot.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/reboot.h>
-#include <sys/wait.h>
 
 #ifdef HAVE_SELINUX
-#  include <selinux/selinux.h>
+#include <selinux/selinux.h>
 #endif
 
 #include "helpers.h"
-#include "rc.h"
 #include "plugin.h"
-#include "wtmp.h"
+#include "rc.h"
 #include "version.h"
+#include "wtmp.h"
 
 static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
@@ -56,26 +56,26 @@ static void do_openrc(const char *runlevel)
 	sigprocmask(SIG_BLOCK, &all_signals, &our_signals);
 	pid = fork();
 	switch (pid) {
-		case -1:
-			perror("fork");
-			exit(1);
-			break;
-		case 0:
-			setsid();
-			/* unblock all signals */
-			sigprocmask(SIG_UNBLOCK, &all_signals, NULL);
-			printf("Starting %s runlevel\n", runlevel);
-			execlp("openrc", "openrc", runlevel, NULL);
-			perror("exec");
-			exit(1);
-			break;
-		default:
-			/* restore our signal mask */
-			sigprocmask(SIG_SETMASK, &our_signals, NULL);
-			while (waitpid(pid, NULL, 0) != pid)
-				if (errno == ECHILD)
-					break;
-			break;
+	case -1:
+		perror("fork");
+		exit(1);
+		break;
+	case 0:
+		setsid();
+		/* unblock all signals */
+		sigprocmask(SIG_UNBLOCK, &all_signals, NULL);
+		printf("Starting %s runlevel\n", runlevel);
+		execlp("openrc", "openrc", runlevel, NULL);
+		perror("exec");
+		exit(1);
+		break;
+	default:
+		/* restore our signal mask */
+		sigprocmask(SIG_SETMASK, &our_signals, NULL);
+		while (waitpid(pid, NULL, 0) != pid)
+			if (errno == ECHILD)
+				break;
+		break;
 	}
 }
 
@@ -156,9 +156,8 @@ static void open_shell(void)
 	const char *sys = rc_sys();
 
 	/* VSERVER systems cannot really drop to shells */
-	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0)
-	{
-		execlp("halt", "halt", "-f", (char *) NULL);
+	if (sys && strcmp(sys, RC_SYS_VSERVER) == 0) {
+		execlp("halt", "halt", "-f", (char *)NULL);
 		perror("init");
 		return;
 	}
@@ -204,21 +203,21 @@ static void reap_zombies(void)
 static void signal_handler(int sig)
 {
 	switch (sig) {
-		case SIGINT:
-			handle_shutdown("reboot", RB_AUTOBOOT);
-			break;
-		case SIGTERM:
+	case SIGINT:
+		handle_shutdown("reboot", RB_AUTOBOOT);
+		break;
+	case SIGTERM:
 #ifdef SIGPWR
-		case SIGPWR:
+	case SIGPWR:
 #endif
-			handle_shutdown("shutdown", RB_HALT_SYSTEM);
-			break;
-		case SIGCHLD:
-			reap_zombies();
-			break;
-		default:
-			printf("Unknown signal received, %d\n", sig);
-			break;
+		handle_shutdown("shutdown", RB_HALT_SYSTEM);
+		break;
+	case SIGCHLD:
+		reap_zombies();
+		break;
+	default:
+		printf("Unknown signal received, %d\n", sig);
+		break;
 	}
 }
 
@@ -232,7 +231,7 @@ int main(int argc, char **argv)
 	sigset_t signals;
 	struct sigaction sa;
 #ifdef HAVE_SELINUX
-	int			enforce = 0;
+	int enforce = 0;
 #endif
 
 	if (getpid() != 1)
@@ -251,9 +250,11 @@ int main(int argc, char **argv)
 					 * At this point, we probably can't open /dev/console,
 					 * so log() won't work
 					 */
-					fprintf(stderr,"Unable to load SELinux Policy.\n");
-					fprintf(stderr,"Machine is  in enforcing mode.\n");
-					fprintf(stderr,"Halting now.\n");
+					fprintf(stderr,
+						"Unable to load SELinux Policy.\n");
+					fprintf(stderr,
+						"Machine is  in enforcing mode.\n");
+					fprintf(stderr, "Halting now.\n");
 					exit(1);
 				}
 			}

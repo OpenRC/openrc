@@ -15,27 +15,27 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <stddef.h>
-#include <errno.h>
-#include <dlfcn.h>
 #include <ctype.h>
+#include <dlfcn.h>
+#include <errno.h>
 #include <limits.h>
 #include <pwd.h>
+#include <stddef.h>
 #include <unistd.h>
 
-#include <selinux/selinux.h>
-#include <selinux/label.h>
-#include <selinux/get_default_type.h>
 #include <selinux/context.h>
+#include <selinux/get_default_type.h>
+#include <selinux/label.h>
+#include <selinux/selinux.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include "einfo.h"
-#include "queue.h"
-#include "rc.h"
 #include "misc.h"
 #include "plugin.h"
+#include "queue.h"
+#include "rc.h"
 #include "selinux.h"
 
 /* the context files for selinux */
@@ -47,16 +47,15 @@
 
 /* PAM or shadow for authentication */
 #ifdef HAVE_PAM
-#    define PAM_SERVICE_NAME "run_init" /* the name of this program for PAM */
-#    include <security/pam_appl.h>
-#    include <security/pam_misc.h>
+#define PAM_SERVICE_NAME "run_init" /* the name of this program for PAM */
+#include <security/pam_appl.h>
+#include <security/pam_misc.h>
 #else
-#    define PASSWORD_PROMPT "Password:"
-#    include <crypt.h>
-#    include <shadow.h>
-#    include <string.h>
+#define PASSWORD_PROMPT "Password:"
+#include <crypt.h>
+#include <shadow.h>
+#include <string.h>
 #endif
-
 
 /* The handle for the fcontext lookups */
 static struct selabel_handle *hnd = NULL;
@@ -155,10 +154,7 @@ static int check_password(char *username)
 #ifdef HAVE_PAM
 	pam_handle_t *pamh;
 	int pam_err = 0;
-	const struct pam_conv pconv = {
-		misc_conv,
-		NULL
-	};
+	const struct pam_conv pconv = {misc_conv, NULL};
 
 	pam_err = pam_start(PAM_SERVICE_NAME, username, &pconv, &pamh);
 	if (pam_err != PAM_SUCCESS) {
@@ -226,7 +222,7 @@ static int check_auth()
 
 #ifdef HAVE_AUDIT
 	uid = audit_getloginuid();
-	if (uid == (uid_t) -1)
+	if (uid == (uid_t)-1)
 		uid = getuid();
 #else
 	uid = getuid();
@@ -391,7 +387,8 @@ void selinux_setup(char **argv)
 
 	/* Set the new context */
 	if (setexeccon(new_context) < 0) {
-		eerrorx("Could not set SELinux exec context to %s.", new_context);
+		eerrorx("Could not set SELinux exec context to %s.",
+			new_context);
 	}
 
 	free(new_context);

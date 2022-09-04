@@ -15,17 +15,17 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include "queue.h"
 #include "librc.h"
+#include "queue.h"
 #include <helpers.h>
 #ifdef __FreeBSD__
-#  include <sys/sysctl.h>
+#include <sys/sysctl.h>
 #endif
 
-#define RC_RUNLEVEL	RC_SVCDIR "/softlevel"
+#define RC_RUNLEVEL RC_SVCDIR "/softlevel"
 
 #ifndef S_IXUGO
-#  define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
+#define S_IXUGO (S_IXUSR | S_IXGRP | S_IXOTH)
 #endif
 
 /* File stream used for plugins to write environ vars to */
@@ -39,23 +39,21 @@ typedef struct rc_service_state_name {
 /* We MUST list the states below 0x10 first
  * The rest can be in any order */
 static const rc_service_state_name_t rc_service_state_names[] = {
-	{ RC_SERVICE_STARTED,     "started" },
-	{ RC_SERVICE_STOPPED,     "stopped" },
-	{ RC_SERVICE_STARTING,    "starting" },
-	{ RC_SERVICE_STOPPING,    "stopping" },
-	{ RC_SERVICE_INACTIVE,    "inactive" },
-	{ RC_SERVICE_WASINACTIVE, "wasinactive" },
-	{ RC_SERVICE_HOTPLUGGED,  "hotplugged" },
-	{ RC_SERVICE_FAILED,      "failed" },
-	{ RC_SERVICE_SCHEDULED,   "scheduled"},
-	{ RC_SERVICE_CRASHED,     "crashed"},
-	{ 0, NULL}
-};
+	{RC_SERVICE_STARTED, "started"},
+	{RC_SERVICE_STOPPED, "stopped"},
+	{RC_SERVICE_STARTING, "starting"},
+	{RC_SERVICE_STOPPING, "stopping"},
+	{RC_SERVICE_INACTIVE, "inactive"},
+	{RC_SERVICE_WASINACTIVE, "wasinactive"},
+	{RC_SERVICE_HOTPLUGGED, "hotplugged"},
+	{RC_SERVICE_FAILED, "failed"},
+	{RC_SERVICE_SCHEDULED, "scheduled"},
+	{RC_SERVICE_CRASHED, "crashed"},
+	{0, NULL}};
 
-#define LS_INITD	0x01
-#define LS_DIR		0x02
-static RC_STRINGLIST *
-ls_dir(const char *dir, int options)
+#define LS_INITD 0x01
+#define LS_DIR 0x02
+static RC_STRINGLIST *ls_dir(const char *dir, int options)
 {
 	DIR *dp;
 	struct dirent *d;
@@ -74,8 +72,8 @@ ls_dir(const char *dir, int options)
 				/* Check that our file really exists.
 				 * This is important as a service maybe in a
 				 * runlevel, but could have been removed. */
-				snprintf(file, sizeof(file), "%s/%s",
-				    dir, d->d_name);
+				snprintf(file, sizeof(file), "%s/%s", dir,
+					 d->d_name);
 				r = stat(file, &buf);
 				if (r != 0)
 					continue;
@@ -88,8 +86,8 @@ ls_dir(const char *dir, int options)
 					continue;
 			}
 			if (options & LS_DIR) {
-				snprintf(file, sizeof(file), "%s/%s",
-				    dir, d->d_name);
+				snprintf(file, sizeof(file), "%s/%s", dir,
+					 d->d_name);
 				if (stat(file, &buf) != 0 ||
 				    !S_ISDIR(buf.st_mode))
 					continue;
@@ -101,8 +99,7 @@ ls_dir(const char *dir, int options)
 	return list;
 }
 
-static bool
-rm_dir(const char *pathname, bool top)
+static bool rm_dir(const char *pathname, bool top)
 {
 	DIR *dp;
 	struct dirent *d;
@@ -116,17 +113,15 @@ rm_dir(const char *pathname, bool top)
 	errno = 0;
 	while (((d = readdir(dp)) != NULL) && errno == 0) {
 		if (strcmp(d->d_name, ".") != 0 &&
-		    strcmp(d->d_name, "..") != 0)
-		{
-			snprintf(file, sizeof(file),
-			    "%s/%s", pathname, d->d_name);
+		    strcmp(d->d_name, "..") != 0) {
+			snprintf(file, sizeof(file), "%s/%s", pathname,
+				 d->d_name);
 			if (stat(file, &s) != 0) {
 				retval = false;
 				break;
 			}
 			if (S_ISDIR(s.st_mode)) {
-				if (!rm_dir(file, true))
-				{
+				if (!rm_dir(file, true)) {
 					retval = false;
 					break;
 				}
@@ -151,8 +146,7 @@ rm_dir(const char *pathname, bool top)
 
 /* Other systems may need this at some point, but for now it's Linux only */
 #ifdef __linux__
-static bool
-file_regex(const char *file, const char *regex)
+static bool file_regex(const char *file, const char *regex)
 {
 	FILE *fp;
 	char *line = NULL;
@@ -197,25 +191,22 @@ found:
 }
 #endif
 
-
-static const char *
-get_systype(void)
+static const char *get_systype(void)
 {
 	char *systype = rc_conf_value("rc_sys");
 	if (systype) {
 		char *s = systype;
 		/* Convert to uppercase */
 		while (s && *s) {
-			if (islower((unsigned char) *s))
-				*s = toupper((unsigned char) *s);
+			if (islower((unsigned char)*s))
+				*s = toupper((unsigned char)*s);
 			s++;
 		}
 	}
 	return systype;
 }
 
-static const char *
-detect_prefix(const char *systype)
+static const char *detect_prefix(const char *systype)
 {
 #ifdef PREFIX
 	return RC_SYS_PREFIX;
@@ -231,13 +222,12 @@ detect_prefix(const char *systype)
 #endif
 }
 
-static const char *
-detect_container(const char *systype _unused)
+static const char *detect_container(const char *systype _unused)
 {
 #ifdef __FreeBSD__
 	if (systype) {
 		if (strcmp(systype, RC_SYS_NONE) == 0)
-		       return NULL;
+			return NULL;
 		if (strcmp(systype, RC_SYS_JAIL) == 0)
 			return RC_SYS_JAIL;
 	}
@@ -263,21 +253,20 @@ detect_container(const char *systype _unused)
 		if (strcmp(systype, RC_SYS_LXC) == 0)
 			return RC_SYS_LXC;
 		if (strcmp(systype, RC_SYS_RKT) == 0)
-				return RC_SYS_RKT;
+			return RC_SYS_RKT;
 		if (strcmp(systype, RC_SYS_SYSTEMD_NSPAWN) == 0)
-				return RC_SYS_SYSTEMD_NSPAWN;
+			return RC_SYS_SYSTEMD_NSPAWN;
 		if (strcmp(systype, RC_SYS_DOCKER) == 0)
-				return RC_SYS_DOCKER;
+			return RC_SYS_DOCKER;
 	}
 	if (file_regex("/proc/cpuinfo", "UML"))
 		return RC_SYS_UML;
 	else if (file_regex("/proc/self/status",
-		"(s_context|VxID):[[:space:]]*[1-9]"))
+			    "(s_context|VxID):[[:space:]]*[1-9]"))
 		return RC_SYS_VSERVER;
 	else if (exists("/proc/vz/veinfo") && !exists("/proc/vz/version"))
 		return RC_SYS_OPENVZ;
-	else if (file_regex("/proc/self/status",
-		"envID:[[:space:]]*[1-9]"))
+	else if (file_regex("/proc/self/status", "envID:[[:space:]]*[1-9]"))
 		return RC_SYS_OPENVZ; /* old test */
 	else if (file_regex("/proc/1/environ", "container=lxc"))
 		return RC_SYS_LXC;
@@ -295,8 +284,7 @@ detect_container(const char *systype _unused)
 	return NULL;
 }
 
-static const char *
-detect_vm(const char *systype _unused)
+static const char *detect_vm(const char *systype _unused)
 {
 #ifdef __NetBSD__
 	if (systype) {
@@ -332,8 +320,7 @@ detect_vm(const char *systype _unused)
 	return NULL;
 }
 
-const char *
-rc_sys(void)
+const char *rc_sys(void)
 {
 	const char *systype;
 	const char *sys;
@@ -350,8 +337,7 @@ rc_sys(void)
 	return sys;
 }
 
-static const char *
-rc_parse_service_state(RC_SERVICE state)
+static const char *rc_parse_service_state(RC_SERVICE state)
 {
 	int i;
 
@@ -365,8 +351,8 @@ rc_parse_service_state(RC_SERVICE state)
 /* Returns a list of all the chained runlevels used by the
  * specified runlevel in dependency order, including the
  * specified runlevel. */
-static void
-get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list, RC_STRINGLIST *ancestor_list)
+static void get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list,
+			       RC_STRINGLIST *ancestor_list)
 {
 	char path[PATH_MAX];
 	RC_STRINGLIST *dirs;
@@ -400,8 +386,9 @@ get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list, RC_STRINGLIS
 
 		/* Check for loop */
 		if (rc_stringlist_find(ancestor_list, nextlevel)) {
-			fprintf(stderr, "Loop detected in stacked runlevels attempting to enter runlevel %s!\n",
-			    nextlevel);
+			fprintf(stderr,
+				"Loop detected in stacked runlevels attempting to enter runlevel %s!\n",
+				nextlevel);
 			fprintf(stderr, "Ancestors:\n");
 			TAILQ_FOREACH(parent, ancestor_list, entries)
 				fprintf(stderr, "\t%s\n", parent->value);
@@ -418,14 +405,12 @@ get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list, RC_STRINGLIS
 	rc_stringlist_free(dirs);
 }
 
-bool
-rc_runlevel_starting(void)
+bool rc_runlevel_starting(void)
 {
 	return exists(RC_STARTING);
 }
 
-bool
-rc_runlevel_stopping(void)
+bool rc_runlevel_stopping(void)
 {
 	return exists(RC_STOPPING);
 }
@@ -435,8 +420,7 @@ RC_STRINGLIST *rc_runlevel_list(void)
 	return ls_dir(RC_RUNLEVELDIR, LS_DIR);
 }
 
-char *
-rc_runlevel_get(void)
+char *rc_runlevel_get(void)
 {
 	FILE *fp;
 	char *runlevel = NULL;
@@ -461,8 +445,7 @@ rc_runlevel_get(void)
 	return runlevel;
 }
 
-bool
-rc_runlevel_set(const char *runlevel)
+bool rc_runlevel_set(const char *runlevel)
 {
 	FILE *fp = fopen(RC_RUNLEVEL, "w");
 
@@ -473,14 +456,13 @@ rc_runlevel_set(const char *runlevel)
 	return true;
 }
 
-bool
-rc_runlevel_exists(const char *runlevel)
+bool rc_runlevel_exists(const char *runlevel)
 {
 	char path[PATH_MAX];
 	struct stat buf;
 
-	if (!runlevel || strcmp(runlevel, "") == 0 || strcmp(runlevel, ".") == 0 ||
-		strcmp(runlevel, "..") == 0)
+	if (!runlevel || strcmp(runlevel, "") == 0 ||
+	    strcmp(runlevel, ".") == 0 || strcmp(runlevel, "..") == 0)
 		return false;
 	snprintf(path, sizeof(path), "%s/%s", RC_RUNLEVELDIR, runlevel);
 	if (stat(path, &buf) == 0 && S_ISDIR(buf.st_mode))
@@ -488,8 +470,7 @@ rc_runlevel_exists(const char *runlevel)
 	return false;
 }
 
-bool
-rc_runlevel_stack(const char *dst, const char *src)
+bool rc_runlevel_stack(const char *dst, const char *src)
 {
 	char d[PATH_MAX], s[PATH_MAX];
 
@@ -500,8 +481,7 @@ rc_runlevel_stack(const char *dst, const char *src)
 	return (symlink(s, d) == 0 ? true : false);
 }
 
-bool
-rc_runlevel_unstack(const char *dst, const char *src)
+bool rc_runlevel_unstack(const char *dst, const char *src)
 {
 	char path[PATH_MAX];
 
@@ -509,8 +489,7 @@ rc_runlevel_unstack(const char *dst, const char *src)
 	return (unlink(path) == 0 ? true : false);
 }
 
-RC_STRINGLIST *
-rc_runlevel_stacks(const char *runlevel)
+RC_STRINGLIST *rc_runlevel_stacks(const char *runlevel)
 {
 	RC_STRINGLIST *stack, *ancestor_list;
 	stack = rc_stringlist_new();
@@ -522,8 +501,7 @@ rc_runlevel_stacks(const char *runlevel)
 }
 
 /* Resolve a service name to its full path */
-char *
-rc_service_resolve(const char *service)
+char *rc_service_resolve(const char *service)
 {
 	char buffer[PATH_MAX];
 	char file[PATH_MAX];
@@ -539,15 +517,15 @@ rc_service_resolve(const char *service)
 	/* First check started services */
 	snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s", "started", service);
 	if (lstat(file, &buf) || !S_ISLNK(buf.st_mode)) {
-		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-		    "inactive", service);
+		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s", "inactive",
+			 service);
 		if (lstat(file, &buf) || !S_ISLNK(buf.st_mode))
 			*file = '\0';
 	}
 
 	if (*file) {
 		memset(buffer, 0, sizeof(buffer));
-		r = readlink(file, buffer, sizeof(buffer)-1);
+		r = readlink(file, buffer, sizeof(buffer) - 1);
 		if (r > 0)
 			return xstrdup(buffer);
 	}
@@ -574,8 +552,7 @@ rc_service_resolve(const char *service)
 	return NULL;
 }
 
-bool
-rc_service_exists(const char *service)
+bool rc_service_exists(const char *service)
 {
 	char *file;
 	bool retval = false;
@@ -590,8 +567,7 @@ rc_service_exists(const char *service)
 	len = strlen(service);
 
 	/* .sh files are not init scripts */
-	if (len > 2 && service[len - 3] == '.' &&
-	    service[len - 2] == 's' &&
+	if (len > 2 && service[len - 3] == '.' && service[len - 2] == 's' &&
 	    service[len - 1] == 'h') {
 		errno = EINVAL;
 		return false;
@@ -613,10 +589,9 @@ rc_service_exists(const char *service)
 }
 
 #define OPTSTR \
-". '%s'; echo $extra_commands $extra_started_commands $extra_stopped_commands"
+	". '%s'; echo $extra_commands $extra_started_commands $extra_stopped_commands"
 
-RC_STRINGLIST *
-rc_service_extra_commands(const char *service)
+RC_STRINGLIST *rc_service_extra_commands(const char *service)
 {
 	char *svc;
 	char *cmd = NULL;
@@ -654,8 +629,7 @@ rc_service_extra_commands(const char *service)
 }
 
 #define DESCSTR ". '%s'; echo \"${description%s%s}\""
-char *
-rc_service_description(const char *service, const char *option)
+char *rc_service_description(const char *service, const char *option)
 {
 	char *svc;
 	char *cmd;
@@ -682,18 +656,16 @@ rc_service_description(const char *service, const char *option)
 	return desc;
 }
 
-bool
-rc_service_in_runlevel(const char *service, const char *runlevel)
+bool rc_service_in_runlevel(const char *service, const char *runlevel)
 {
 	char file[PATH_MAX];
 
-	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s",
-	    runlevel, basename_c(service));
+	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s", runlevel,
+		 basename_c(service));
 	return exists(file);
 }
 
-bool
-rc_service_mark(const char *service, const RC_SERVICE state)
+bool rc_service_mark(const char *service, const RC_SERVICE state)
 {
 	char file[PATH_MAX];
 	int i = 0;
@@ -718,7 +690,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 		}
 
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-		    rc_parse_service_state(state), base);
+			 rc_parse_service_state(state), base);
 		if (exists(file))
 			unlink(file);
 		i = symlink(init, file);
@@ -738,23 +710,21 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 	for (i = 0; rc_service_state_names[i].name; i++) {
 		s = rc_service_state_names[i].state;
 
-		if ((s != skip_state &&
-			s != RC_SERVICE_STOPPED &&
-			s != RC_SERVICE_HOTPLUGGED &&
-			s != RC_SERVICE_SCHEDULED) &&
-		    (!skip_wasinactive || s != RC_SERVICE_WASINACTIVE))
-		{
+		if ((s != skip_state && s != RC_SERVICE_STOPPED &&
+		     s != RC_SERVICE_HOTPLUGGED && s != RC_SERVICE_SCHEDULED) &&
+		    (!skip_wasinactive || s != RC_SERVICE_WASINACTIVE)) {
 			snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-			    rc_service_state_names[i].name, base);
+				 rc_service_state_names[i].name, base);
 			if (exists(file)) {
 				if ((state == RC_SERVICE_STARTING ||
-					state == RC_SERVICE_STOPPING) &&
-				    s == RC_SERVICE_INACTIVE)
-				{
-					snprintf(was, sizeof(was),
-					    RC_SVCDIR "/%s/%s",
-					    rc_parse_service_state(RC_SERVICE_WASINACTIVE),
-					    base);
+				     state == RC_SERVICE_STOPPING) &&
+				    s == RC_SERVICE_INACTIVE) {
+					snprintf(
+						was, sizeof(was),
+						RC_SVCDIR "/%s/%s",
+						rc_parse_service_state(
+							RC_SERVICE_WASINACTIVE),
+						base);
 					if (symlink(init, was) == -1)
 						return false;
 					skip_wasinactive = true;
@@ -768,23 +738,21 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 	}
 
 	/* Remove the exclusive state if we're inactive */
-	if (state == RC_SERVICE_STARTED ||
-	    state == RC_SERVICE_STOPPED ||
-	    state == RC_SERVICE_INACTIVE)
-	{
-		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-		    "exclusive", base);
+	if (state == RC_SERVICE_STARTED || state == RC_SERVICE_STOPPED ||
+	    state == RC_SERVICE_INACTIVE) {
+		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s", "exclusive",
+			 base);
 		unlink(file);
 	}
 
 	/* Remove any options and daemons the service may have stored */
 	if (state == RC_SERVICE_STOPPED) {
-		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-		    "options", base);
+		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s", "options",
+			 base);
 		rm_dir(file, true);
 
-		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-		    "daemons", base);
+		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s", "daemons",
+			 base);
 		rm_dir(file, true);
 
 		rc_service_schedule_clear(service);
@@ -795,8 +763,8 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s", "scheduled");
 		dirs = ls_dir(file, 0);
 		TAILQ_FOREACH(dir, dirs, entries) {
-			snprintf(was, sizeof(was), "%s/%s/%s",
-			    file, dir->value, base);
+			snprintf(was, sizeof(was), "%s/%s/%s", file, dir->value,
+				 base);
 			unlink(was);
 
 			/* Try and remove the dir; we don't care about errors */
@@ -823,7 +791,7 @@ rc_service_state(const char *service)
 
 	for (i = 0; rc_service_state_names[i].name; i++) {
 		snprintf(file, sizeof(file), RC_SVCDIR "/%s/%s",
-		    rc_service_state_names[i].name, base);
+			 rc_service_state_names[i].name, base);
 		if (exists(file)) {
 			if (rc_service_state_names[i].state <= 0x10)
 				state = rc_service_state_names[i].state;
@@ -840,8 +808,8 @@ rc_service_state(const char *service)
 		dirs = ls_dir(RC_SVCDIR "/scheduled", 0);
 		TAILQ_FOREACH(dir, dirs, entries) {
 			snprintf(file, sizeof(file),
-			    RC_SVCDIR "/scheduled/%s/%s",
-			    dir->value, service);
+				 RC_SVCDIR "/scheduled/%s/%s", dir->value,
+				 service);
 			if (exists(file)) {
 				state |= RC_SERVICE_SCHEDULED;
 				break;
@@ -853,23 +821,21 @@ rc_service_state(const char *service)
 	return state;
 }
 
-char *
-rc_service_value_get(const char *service, const char *option)
+char *rc_service_value_get(const char *service, const char *option)
 {
 	char *buffer = NULL;
 	size_t len = 0;
 	char file[PATH_MAX];
 
-	snprintf(file, sizeof(file), RC_SVCDIR "/options/%s/%s",
-	    service, option);
+	snprintf(file, sizeof(file), RC_SVCDIR "/options/%s/%s", service,
+		 option);
 	rc_getfile(file, &buffer, &len);
 
 	return buffer;
 }
 
-bool
-rc_service_value_set(const char *service, const char *option,
-    const char *value)
+bool rc_service_value_set(const char *service, const char *option,
+			  const char *value)
 {
 	FILE *fp;
 	char file[PATH_MAX];
@@ -888,12 +854,11 @@ rc_service_value_set(const char *service, const char *option,
 	} else {
 		unlink(file);
 	}
-		return true;
+	return true;
 }
 
-
-bool
-rc_service_schedule_start(const char *service, const char *service_to_start)
+bool rc_service_schedule_start(const char *service,
+			       const char *service_to_start)
 {
 	char file[PATH_MAX];
 	char *p = file;
@@ -905,32 +870,30 @@ rc_service_schedule_start(const char *service, const char *service_to_start)
 		return false;
 
 	p += snprintf(file, sizeof(file), RC_SVCDIR "/scheduled/%s",
-	    basename_c(service));
+		      basename_c(service));
 	if (mkdir(file, 0755) != 0 && errno != EEXIST)
 		return false;
 
 	init = rc_service_resolve(service_to_start);
-	snprintf(p, sizeof(file) - (p - file),
-	    "/%s", basename_c(service_to_start));
+	snprintf(p, sizeof(file) - (p - file), "/%s",
+		 basename_c(service_to_start));
 	retval = (exists(file) || symlink(init, file) == 0);
 	free(init);
 	return retval;
 }
 
-bool
-rc_service_schedule_clear(const char *service)
+bool rc_service_schedule_clear(const char *service)
 {
 	char dir[PATH_MAX];
 
 	snprintf(dir, sizeof(dir), RC_SVCDIR "/scheduled/%s",
-	    basename_c(service));
+		 basename_c(service));
 	if (!rm_dir(dir, true) && errno == ENOENT)
 		return true;
 	return false;
 }
 
-RC_STRINGLIST *
-rc_services_in_runlevel(const char *runlevel)
+RC_STRINGLIST *rc_services_in_runlevel(const char *runlevel)
 {
 	char dir[PATH_MAX];
 	RC_STRINGLIST *list = NULL;
@@ -966,8 +929,7 @@ rc_services_in_runlevel(const char *runlevel)
 	return list;
 }
 
-RC_STRINGLIST *
-rc_services_in_runlevel_stacked(const char *runlevel)
+RC_STRINGLIST *rc_services_in_runlevel_stacked(const char *runlevel)
 {
 	RC_STRINGLIST *list, *stacks, *sl;
 	RC_STRING *stack;
@@ -983,8 +945,7 @@ rc_services_in_runlevel_stacked(const char *runlevel)
 	return list;
 }
 
-RC_STRINGLIST *
-rc_services_in_state(RC_SERVICE state)
+RC_STRINGLIST *rc_services_in_state(RC_SERVICE state)
 {
 	RC_STRINGLIST *services;
 	RC_STRINGLIST *list;
@@ -994,7 +955,7 @@ rc_services_in_state(RC_SERVICE state)
 	char *p = dir;
 
 	p += snprintf(dir, sizeof(dir), RC_SVCDIR "/%s",
-	    rc_parse_service_state(state));
+		      rc_parse_service_state(state));
 
 	if (state != RC_SERVICE_SCHEDULED)
 		return ls_dir(dir, LS_INITD);
@@ -1016,13 +977,12 @@ rc_services_in_state(RC_SERVICE state)
 	return list;
 }
 
-bool
-rc_service_add(const char *runlevel, const char *service)
+bool rc_service_add(const char *runlevel, const char *service)
 {
 	bool retval;
 	char *init;
 	char file[PATH_MAX];
-	char path[MAXPATHLEN] = { '\0' };
+	char path[MAXPATHLEN] = {'\0'};
 	char binit[PATH_MAX];
 	char *i;
 
@@ -1037,8 +997,8 @@ rc_service_add(const char *runlevel, const char *service)
 	}
 
 	i = init = rc_service_resolve(service);
-	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s",
-	    runlevel, basename_c(service));
+	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s", runlevel,
+		 basename_c(service));
 
 	/* We need to ensure that only things in /etc/init.d are added
 	 * to the boot runlevel */
@@ -1061,20 +1021,18 @@ rc_service_add(const char *runlevel, const char *service)
 	return retval;
 }
 
-bool
-rc_service_delete(const char *runlevel, const char *service)
+bool rc_service_delete(const char *runlevel, const char *service)
 {
 	char file[PATH_MAX];
 
-	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s",
-	    runlevel, basename_c(service));
+	snprintf(file, sizeof(file), RC_RUNLEVELDIR "/%s/%s", runlevel,
+		 basename_c(service));
 	if (unlink(file) == 0)
 		return true;
 	return false;
 }
 
-RC_STRINGLIST *
-rc_services_scheduled_by(const char *service)
+RC_STRINGLIST *rc_services_scheduled_by(const char *service)
 {
 	RC_STRINGLIST *dirs = ls_dir(RC_SVCDIR "/scheduled", 0);
 	RC_STRINGLIST *list = rc_stringlist_new();
@@ -1083,7 +1041,7 @@ rc_services_scheduled_by(const char *service)
 
 	TAILQ_FOREACH(dir, dirs, entries) {
 		snprintf(file, sizeof(file), RC_SVCDIR "/scheduled/%s/%s",
-		    dir->value, service);
+			 dir->value, service);
 		if (exists(file))
 			rc_stringlist_add(list, file);
 	}
@@ -1091,12 +1049,11 @@ rc_services_scheduled_by(const char *service)
 	return list;
 }
 
-RC_STRINGLIST *
-rc_services_scheduled(const char *service)
+RC_STRINGLIST *rc_services_scheduled(const char *service)
 {
 	char dir[PATH_MAX];
 
 	snprintf(dir, sizeof(dir), RC_SVCDIR "/scheduled/%s",
-	    basename_c(service));
+		 basename_c(service));
 	return ls_dir(dir, LS_INITD);
 }

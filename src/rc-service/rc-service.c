@@ -21,31 +21,29 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "_usage.h"
 #include "einfo.h"
+#include "misc.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
-#include "_usage.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
 const char getoptstring[] = "cdDe:ilr:INsSZ" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "debug",     0, NULL, 'd' },
-	{ "nodeps",     0, NULL, 'D' },
-	{ "exists",   1, NULL, 'e' },
-	{ "ifcrashed", 0, NULL, 'c' },
-	{ "ifexists", 0, NULL, 'i' },
-	{ "ifinactive", 0, NULL, 'I' },
-	{ "ifnotstarted", 0, NULL, 'N' },
-	{ "ifstarted", 0, NULL, 's' },
-	{ "ifstopped", 0, NULL, 'S' },
-	{ "list",     0, NULL, 'l' },
-	{ "resolve",  1, NULL, 'r' },
-	{ "dry-run",     0, NULL, 'Z' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
+const struct option longopts[] = {{"debug", 0, NULL, 'd'},
+				  {"nodeps", 0, NULL, 'D'},
+				  {"exists", 1, NULL, 'e'},
+				  {"ifcrashed", 0, NULL, 'c'},
+				  {"ifexists", 0, NULL, 'i'},
+				  {"ifinactive", 0, NULL, 'I'},
+				  {"ifnotstarted", 0, NULL, 'N'},
+				  {"ifstarted", 0, NULL, 's'},
+				  {"ifstopped", 0, NULL, 'S'},
+				  {"list", 0, NULL, 'l'},
+				  {"resolve", 1, NULL, 'r'},
+				  {"dry-run", 0, NULL, 'Z'},
+				  longopts_COMMON};
+const char *const longopts_help[] = {
 	"set xtrace when running the command",
 	"ignore dependencies",
 	"tests if the service exists or not",
@@ -58,12 +56,12 @@ const char * const longopts_help[] = {
 	"list all available services",
 	"resolve the service name to an init script",
 	"dry run (show what would happen)",
-	longopts_help_COMMON
-};
-const char *usagestring = ""							\
-	"Usage: rc-service [options] [-i] <service> <cmd>...\n"		\
-	"   or: rc-service [options] -e <service>\n"			\
-	"   or: rc-service [options] -l\n"				\
+	longopts_help_COMMON};
+const char *usagestring =
+	""
+	"Usage: rc-service [options] [-i] <service> <cmd>...\n"
+	"   or: rc-service [options] -e <service>\n"
+	"   or: rc-service [options] -l\n"
 	"   or: rc-service [options] -r <service>";
 
 int main(int argc, char **argv)
@@ -84,9 +82,8 @@ int main(int argc, char **argv)
 	/* Ensure that we are only quiet when explicitly told to be */
 	unsetenv("EINFO_QUIET");
 
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
-	{
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts,
+				  (int *)0)) != -1) {
 		switch (opt) {
 		case 'd':
 			setenv("RC_DEBUG", "yes", 1);
@@ -118,7 +115,7 @@ int main(int argc, char **argv)
 				return EXIT_FAILURE;
 			rc_stringlist_sort(&list);
 			TAILQ_FOREACH(s, list, entries)
-			    printf("%s\n", s->value);
+				printf("%s\n", s->value);
 			rc_stringlist_free(list);
 			return EXIT_SUCCESS;
 			/* NOTREACHED */
@@ -140,7 +137,7 @@ int main(int argc, char **argv)
 			setenv("IN_DRYRUN", "yes", 1);
 			break;
 
-		case_RC_COMMON_GETOPT
+			case_RC_COMMON_GETOPT
 		}
 	}
 
@@ -154,7 +151,8 @@ int main(int argc, char **argv)
 		eerrorx("%s: service `%s' does not exist", applet, *argv);
 	}
 	state = rc_service_state(*argv);
-	if (if_crashed &&  !(rc_service_daemons_crashed(*argv) && errno != EACCES))
+	if (if_crashed &&
+	    !(rc_service_daemons_crashed(*argv) && errno != EACCES))
 		return 0;
 	if (if_inactive && !(state & RC_SERVICE_INACTIVE))
 		return 0;

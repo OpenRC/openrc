@@ -16,10 +16,10 @@
  */
 
 /* nano seconds */
-#define POLL_INTERVAL   20000000
-#define WAIT_PIDFILE   500000000
-#define ONE_SECOND    1000000000
-#define ONE_MS           1000000
+#define POLL_INTERVAL 20000000
+#define WAIT_PIDFILE 500000000
+#define ONE_SECOND 1000000000
+#define ONE_MS 1000000
 
 #include <ctype.h>
 #include <errno.h>
@@ -28,20 +28,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
-#include <time.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <syslog.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "einfo.h"
+#include "helpers.h"
+#include "misc.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
 #include "schedules.h"
-#include "helpers.h"
 
 typedef struct scheduleitem {
 	enum {
@@ -72,52 +72,39 @@ void free_schedulelist(void)
 
 int parse_signal(const char *applet, const char *sig)
 {
-	typedef struct signalpair
-	{
+	typedef struct signalpair {
 		const char *name;
 		int signal;
 	} SIGNALPAIR;
 
-#define signalpair_item(name) { #name, SIG##name },
+#define signalpair_item(name) {#name, SIG##name},
 
 	static const SIGNALPAIR signallist[] = {
-		signalpair_item(HUP)
-		signalpair_item(INT)
-		signalpair_item(QUIT)
-		signalpair_item(ILL)
-		signalpair_item(TRAP)
-		signalpair_item(ABRT)
-		signalpair_item(BUS)
-		signalpair_item(FPE)
-		signalpair_item(KILL)
-		signalpair_item(USR1)
-		signalpair_item(SEGV)
-		signalpair_item(USR2)
-		signalpair_item(PIPE)
-		signalpair_item(ALRM)
-		signalpair_item(TERM)
-		signalpair_item(CHLD)
-		signalpair_item(CONT)
-		signalpair_item(STOP)
-		signalpair_item(TSTP)
-		signalpair_item(TTIN)
-		signalpair_item(TTOU)
-		signalpair_item(URG)
-		signalpair_item(XCPU)
-		signalpair_item(XFSZ)
-		signalpair_item(VTALRM)
-		signalpair_item(PROF)
+		signalpair_item(HUP) signalpair_item(INT) signalpair_item(QUIT) signalpair_item(
+			ILL) signalpair_item(TRAP) signalpair_item(ABRT) signalpair_item(BUS)
+			signalpair_item(FPE) signalpair_item(KILL) signalpair_item(USR1) signalpair_item(
+				SEGV) signalpair_item(USR2) signalpair_item(PIPE)
+				signalpair_item(ALRM) signalpair_item(TERM) signalpair_item(
+					CHLD) signalpair_item(CONT) signalpair_item(STOP)
+					signalpair_item(TSTP) signalpair_item(TTIN) signalpair_item(
+						TTOU) signalpair_item(URG) signalpair_item(XCPU)
+						signalpair_item(XFSZ) signalpair_item(
+							VTALRM) signalpair_item(PROF)
 #ifdef SIGWINCH
-		signalpair_item(WINCH)
+							signalpair_item(WINCH)
 #endif
 #ifdef SIGIO
-		signalpair_item(IO)
+								signalpair_item(
+									IO)
 #endif
 #ifdef SIGPWR
-		signalpair_item(PWR)
+									signalpair_item(
+										PWR)
 #endif
-		signalpair_item(SYS)
-		{ "NULL",	0 },
+										signalpair_item(
+											SYS){
+											"NULL",
+											0},
 	};
 
 	unsigned int i = 0;
@@ -154,17 +141,16 @@ static SCHEDULEITEM *parse_schedule_item(const char *applet, const char *string)
 
 	item->value = 0;
 	item->gotoitem = NULL;
-	if (strcmp(string,"forever") == 0)
+	if (strcmp(string, "forever") == 0)
 		item->type = SC_FOREVER;
 	else if (isdigit((unsigned char)string[0])) {
 		item->type = SC_TIMEOUT;
 		errno = 0;
 		if (sscanf(string, "%d", &item->value) != 1)
 			eerrorx("%s: invalid timeout value in schedule `%s'",
-			    applet, string);
+				applet, string);
 	} else if ((after_hyph = string + (string[0] == '-')) &&
-	    ((sig = parse_signal(applet, after_hyph)) != -1))
-	{
+		   ((sig = parse_signal(applet, after_hyph)) != -1)) {
 		item->type = SC_SIGNAL;
 		item->value = (int)sig;
 	} else
@@ -204,7 +190,7 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 		if (string) {
 			if (sscanf(string, "%d", &item->value) != 1)
 				eerrorx("%s: invalid timeout in schedule",
-				    applet);
+					applet);
 		} else
 			item->value = 5;
 
@@ -219,7 +205,7 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 
 		if (len >= (ptrdiff_t)sizeof(buffer))
 			eerrorx("%s: invalid schedule item, far too long",
-			    applet);
+				applet);
 
 		memcpy(buffer, string, len);
 		buffer[len] = 0;
@@ -230,7 +216,8 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 		if (item->type == SC_FOREVER) {
 			if (repeatat)
 				eerrorx("%s: invalid schedule, `forever' "
-				    "appears more than once", applet);
+					"appears more than once",
+					applet);
 
 			repeatat = item;
 			continue;
@@ -250,7 +237,7 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 
 /* return number of processes killed, -1 on error */
 int do_stop(const char *applet, const char *exec, const char *const *argv,
-    pid_t pid, uid_t uid,int sig, bool test, bool quiet)
+	    pid_t pid, uid_t uid, int sig, bool test, bool quiet)
 {
 	RC_PIDLIST *pids;
 	RC_PID *pi;
@@ -272,20 +259,24 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 			nkilled++;
 		} else {
 			if (sig) {
-				syslog(LOG_DEBUG, "Sending signal %d to PID %d", sig, pi->pid);
+				syslog(LOG_DEBUG, "Sending signal %d to PID %d",
+				       sig, pi->pid);
 				if (!quiet)
-					ebeginv("Sending signal %d to PID %d", sig, pi->pid);
+					ebeginv("Sending signal %d to PID %d",
+						sig, pi->pid);
 			}
 			errno = 0;
-			killed = (kill(pi->pid, sig) == 0 ||
-			    errno == ESRCH ? true : false);
+			killed = (kill(pi->pid, sig) == 0 || errno == ESRCH ?
+					  true :
+					  false);
 			if (!quiet)
 				eendv(killed ? 0 : 1,
-				"%s: failed to send signal %d to PID %d: %s",
-				applet, sig, pi->pid, strerror(errno));
+				      "%s: failed to send signal %d to PID %d: %s",
+				      applet, sig, pi->pid, strerror(errno));
 			else if (!killed)
-				syslog(LOG_ERR, "Failed to send signal %d to PID %d: %s",
-						sig, pi->pid, strerror(errno));
+				syslog(LOG_ERR,
+				       "Failed to send signal %d to PID %d: %s",
+				       sig, pi->pid, strerror(errno));
 			if (!killed) {
 				nkilled = -1;
 			} else {
@@ -300,10 +291,9 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 	return nkilled;
 }
 
-int run_stop_schedule(const char *applet,
-		const char *exec, const char *const *argv,
-		pid_t pid, uid_t uid,
-    bool test, bool progress, bool quiet)
+int run_stop_schedule(const char *applet, const char *exec,
+		      const char *const *argv, pid_t pid, uid_t uid, bool test,
+		      bool progress, bool quiet)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
 	int nkilled = 0;
@@ -349,17 +339,17 @@ int run_stop_schedule(const char *applet,
 
 		case SC_SIGNAL:
 			nrunning = 0;
-			nkilled = do_stop(applet, exec, argv, pid, uid, item->value, test,
-					quiet);
+			nkilled = do_stop(applet, exec, argv, pid, uid,
+					  item->value, test, quiet);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
 					if (progressed)
 						printf("\n");
-					eerror("%s: no matching processes found", applet);
+					eerror("%s: no matching processes found",
+					       applet);
 				}
 				return tkilled;
-			}
-			else if (nkilled == -1)
+			} else if (nkilled == -1)
 				return 0;
 
 			tkilled += nkilled;
@@ -374,15 +364,16 @@ int run_stop_schedule(const char *applet,
 			ts.tv_sec = 0;
 			ts.tv_nsec = POLL_INTERVAL;
 
-			for (nsecs = 0; item->type == SC_FOREVER || nsecs < item->value; nsecs++) {
+			for (nsecs = 0;
+			     item->type == SC_FOREVER || nsecs < item->value;
+			     nsecs++) {
 				for (nloops = 0;
 				     nloops < ONE_SECOND / POLL_INTERVAL;
-				     nloops++)
-				{
-					if ((nrunning = do_stop(applet, exec, argv,
-						    pid, uid, 0, test, quiet)) == 0)
+				     nloops++) {
+					if ((nrunning = do_stop(
+						     applet, exec, argv, pid,
+						     uid, 0, test, quiet)) == 0)
 						return 0;
-
 
 					if (nanosleep(&ts, NULL) == -1) {
 						if (progressed) {
@@ -391,7 +382,8 @@ int run_stop_schedule(const char *applet,
 						}
 						if (errno != EINTR) {
 							eerror("%s: nanosleep: %s",
-							    applet, strerror(errno));
+							       applet,
+							       strerror(errno));
 							return 0;
 						}
 					}
@@ -408,8 +400,8 @@ int run_stop_schedule(const char *applet,
 				printf("\n");
 				progressed = false;
 			}
-			eerror("%s: invalid schedule item `%d'",
-			    applet, item->type);
+			eerror("%s: invalid schedule item `%d'", applet,
+			       item->type);
 			return 0;
 		}
 
@@ -424,9 +416,11 @@ int run_stop_schedule(const char *applet,
 		printf("\n");
 	if (!quiet) {
 		if (nrunning == 1)
-			eerror("%s: %d process refused to stop", applet, nrunning);
+			eerror("%s: %d process refused to stop", applet,
+			       nrunning);
 		else
-			eerror("%s: %d process(es) refused to stop", applet, nrunning);
+			eerror("%s: %d process(es) refused to stop", applet,
+			       nrunning);
 	}
 
 	return -nrunning;
