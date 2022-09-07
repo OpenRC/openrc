@@ -72,7 +72,7 @@ get_noadjfile()
 {
 	if ! yesno $clock_adjfile; then
 		# Some implementations don't handle adjustments
-		if LC_ALL=C hwclock --help 2>&1 | grep -q "\-\-noadjfile"; then
+		if LC_ALL=C hwclock --help 2>&1 | grep -q -e "--noadjfile"; then
 			echo --noadjfile
 		fi
 	fi
