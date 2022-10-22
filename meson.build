@@ -36,7 +36,7 @@ endif
 option_os = get_option('os')
 if option_os == ''
   uname = find_program('uname')
-  r = run_command(uname, '-s')
+  r = run_command(uname, '-s', check: true)
   os = r.stdout().strip()
   os = '-'.join(os.split('/'))
 else
@@ -84,7 +84,7 @@ else
 endif
 
 if get_option('split-usr') == 'auto'
-  split_usr = run_command('test', '-L', '/bin').returncode() != 0
+  split_usr = run_command('test', '-L', '/bin', check: false).returncode() != 0
 else
   split_usr = get_option('split-usr') == 'true'
 endif
