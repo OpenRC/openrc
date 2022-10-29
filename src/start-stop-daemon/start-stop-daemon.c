@@ -356,6 +356,7 @@ int main(int argc, char **argv)
 #endif
 	int pipefd[2];
 	char readbuf[1];
+	ssize_t ss;
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -1153,7 +1154,8 @@ int main(int argc, char **argv)
 
 	/* The child never writes to the pipe, so this read will block until
 	 * the child calls exec or exits. */
-	if (read(pipefd[0], readbuf, 1) == -1)
+	while ((ss = read(pipefd[0], readbuf, 1)) == -1 && errno == EINTR);
+	if (ss == -1)
 		eerrorx("%s: failed to read from pipe: %s",
 			applet, strerror(errno));
 
