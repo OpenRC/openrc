@@ -354,6 +354,9 @@ int main(int argc, char **argv)
 #ifdef PR_SET_NO_NEW_PRIVS
 	bool no_new_privs = false;
 #endif
+	int pipefd[2];
+	char readbuf[1];
+	ssize_t ss;
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -864,12 +867,17 @@ int main(int argc, char **argv)
 	if (background)
 		signal_setup(SIGCHLD, handle_signal);
 
+	/* Use a pipe to sync the parent/child processes. */
+	if (pipe2(pipefd, O_CLOEXEC) == -1)
+		eerrorx("%s: pipe2: %s", applet, strerror(errno));
+
 	if ((pid = fork()) == -1)
 		eerrorx("%s: fork: %s", applet, strerror(errno));
 
 	/* Child process - lets go! */
 	if (pid == 0) {
 		pid_t mypid = getpid();
+		close(pipefd[0]); /* Close the read end of the pipe. */
 		umask(numask);
 
 #ifdef TIOCNOTTY
@@ -1097,7 +1105,8 @@ int main(int argc, char **argv)
 			dup2(stderr_fd, STDERR_FILENO);
 
 		for (i = getdtablesize() - 1; i >= 3; --i)
-			close(i);
+			if (i != pipefd[1])
+				close(i);
 
 		if (scheduler != NULL) {
 			int scheduler_index;
@@ -1140,6 +1149,18 @@ int main(int argc, char **argv)
 	}
 
 	/* Parent process */
+
+	close(pipefd[1]); /* Close the write end of the pipe. */
+
+	/* The child never writes to the pipe, so this read will block until
+	 * the child calls exec or exits. */
+	while ((ss = read(pipefd[0], readbuf, 1)) == -1 && errno == EINTR);
+	if (ss == -1)
+		eerrorx("%s: failed to read from pipe: %s",
+			applet, strerror(errno));
+
+	close(pipefd[0]);
+
 	if (!background) {
 		/* As we're not backgrounding the process, wait for our pid
 		 * to return */
