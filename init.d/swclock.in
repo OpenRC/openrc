@@ -31,6 +31,6 @@ start()
 stop()
 {
 	ebegin "Saving the shutdown time"
-	swclock --save
+	swclock --save @SBINDIR@/openrc-run
 	eend $?
 }
