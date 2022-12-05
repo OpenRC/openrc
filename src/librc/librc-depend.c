@@ -1074,6 +1074,6 @@ rc_deptree_update(void)
 	}
 
 	rc_stringlist_free(config);
-	rc_deptree_free(deptree);
+	free(deptree);
 	return retval;
 }
