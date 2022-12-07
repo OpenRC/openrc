@@ -34,7 +34,6 @@
 #include "misc.h"
 #include "_usage.h"
 
-#define RC_SHUTDOWNTIME    RC_SVCDIR "/shutdowntime"
 
 const char *applet = NULL;
 const char *extraopts = "file";
@@ -54,7 +53,7 @@ const char *usagestring = NULL;
 int main(int argc, char **argv)
 {
 	int opt, sflag = 0, wflag = 0;
-	const char *file = RC_SHUTDOWNTIME;
+	const char *file = NULL;
 	struct stat sb;
 	struct timeval tv;
 
@@ -75,6 +74,8 @@ int main(int argc, char **argv)
 
 	if (optind < argc)
 		file = argv[optind++];
+	else
+		eerrorx("swclock: Reference file was not specified");
 
 	if (sflag) {
 		if (stat(file, &sb) == -1) {
