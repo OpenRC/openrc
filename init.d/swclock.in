@@ -10,6 +10,7 @@
 # except according to the terms contained in the LICENSE file.
 
 description="Sets the local clock to the mtime of a given file."
+swclock_file="${swclock_file:-/var/lib/misc/openrc-shutdowntime}"
 
 depend()
 {
@@ -22,7 +23,7 @@ depend()
 start()
 {
 	ebegin "Setting the local clock based on last shutdown time"
-	if ! swclock 2> /dev/null; then
+	if ! swclock "${swclock_file}" 2> /dev/null; then
 	swclock --warn @SBINDIR@/openrc-run
 	fi
 	eend $?
@@ -31,6 +32,6 @@ start()
 stop()
 {
 	ebegin "Saving the shutdown time"
-	swclock --save
+	swclock --save "${swclock_file}"
 	eend $?
 }
