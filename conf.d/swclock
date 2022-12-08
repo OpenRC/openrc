@@ -1,0 +1,6 @@
+# This is the location of the reference file swclock uses to set the
+# system date and time.
+# This is the default path. If you are using it, you do not need to
+# uncomment it. If you are using the default and have /var on its own
+# file system, you need to add the appropriate rc_after setting.
+# swclock_file=/var/lib/misc/openrc-shutdowntime

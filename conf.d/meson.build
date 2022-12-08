@@ -7,6 +7,7 @@ conf_common = [
   'localmount',
   'netmount',
   'swap',
+  'swclock',
   ]
 
 conf_net = [
