@@ -1105,8 +1105,7 @@ int main(int argc, char **argv)
 			dup2(stderr_fd, STDERR_FILENO);
 
 		for (i = getdtablesize() - 1; i >= 3; --i)
-			if (i != pipefd[1])
-				close(i);
+			close(i);
 
 		if (scheduler != NULL) {
 			int scheduler_index;
