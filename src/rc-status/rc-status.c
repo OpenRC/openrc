@@ -293,6 +293,7 @@ int main(int argc, char **argv)
 			TAILQ_FOREACH(l, levels, entries)
 				printf("%s\n", l->value);
 			goto exit;
+			/* NOTREACHED */
 		case 'm':
 			services = rc_services_in_runlevel(NULL);
 			levels = rc_runlevel_list();
@@ -314,6 +315,7 @@ int main(int argc, char **argv)
 				}
 			print_services(NULL, services, format);
 			goto exit;
+			/* NOTREACHED */
 		case 'r':
 			runlevel = rc_runlevel_get();
 			printf("%s\n", runlevel);
@@ -444,6 +446,7 @@ int main(int argc, char **argv)
 		 * be added to the list
 		 */
 		unsetenv("RC_SVCNAME");
+
 		print_level("Dynamic", "needed/wanted", format);
 		print_services(NULL, nservices, format);
 		print_level("Dynamic", "manual", format);
