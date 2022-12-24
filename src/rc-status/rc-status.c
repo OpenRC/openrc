@@ -61,8 +61,8 @@ const char * const longopts_help[] = {
 	longopts_help_COMMON
 };
 const char *usagestring = ""						\
-	"Usage: rc-status [options] -f ini <runlevel>...\n"		\
-	"   or: rc-status [options] [-a | -c | -l | -m | -r | -s | -u]";
+	"Usage: rc-status [options] [-f ini] <runlevel>...\n"		\
+	"   or: rc-status [options] [-f ini] [-a | -c | -l | -m | -r | -s | -u]";
 
 static RC_DEPTREE *deptree;
 static RC_STRINGLIST *types;
@@ -312,7 +312,7 @@ int main(int argc, char **argv)
 					free(s->value);
 					free(s);
 				}
-			print_services(NULL, services, FORMAT_DEFAULT);
+			print_services(NULL, services, format);
 			goto exit;
 		case 'r':
 			runlevel = rc_runlevel_get();
@@ -324,12 +324,12 @@ int main(int argc, char **argv)
 			TAILQ_FOREACH_SAFE(s, services, entries, t)
 				if (!rc_service_value_get(s->value, "child_pid"))
 					TAILQ_REMOVE(services, s, entries);
-			print_services(NULL, services, FORMAT_DEFAULT);
+			print_services(NULL, services, format);
 			goto exit;
 			/* NOTREACHED */
 		case 's':
 			services = rc_services_in_runlevel(NULL);
-			print_services(NULL, services, FORMAT_DEFAULT);
+			print_services(NULL, services, format);
 			goto exit;
 			/* NOTREACHED */
 		case 'u':
@@ -344,7 +344,7 @@ int main(int argc, char **argv)
 						break;
 					}
 			}
-			print_services(NULL, services, FORMAT_DEFAULT);
+			print_services(NULL, services, format);
 			goto exit;
 			/* NOTREACHED */
 
