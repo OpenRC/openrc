@@ -4,6 +4,27 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.46
+
+The path for the reference file for the swclock service is now
+configurable in conf.d/swclock.
+
+In the past, if supervise_daemon_args was not set *or empty*, it defaulted to
+`start_stop_daemon_args`. This was bad because supervise-daemon doesn't
+accept the same options as `start-stop-daemon`. So if we set e.g.
+`start_stop_daemon_args="--wait 50"`, but not `supervise_daemon_args`,
+and the user adds `supervisor=supervise-daemon` to the corresponding
+conf.d/<service> file, the service will fail to start due to
+unrecognized option "wait".
+It would be best to remove this fallback, but that might break some
+existing scripts that depend on it. So we are changing it to
+use `start_stop_daemon_args` as the default for `supervise_daemon_args`
+only if `supervise_daemon_args` is not set at all, but not if it's
+empty.
+
+This fallback will be dropped in a future release.
+
+
 ## OpenRC 0.45
 
 The old make-based build system is removed in this release.
