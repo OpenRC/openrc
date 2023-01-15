@@ -89,7 +89,7 @@ static int get_dirfd(char *path, bool symlinks)
 
 	if (!path || *path != '/')
 		eerrorx("%s: empty or relative path", applet);
-	dirfd = openat(dirfd, "/", O_RDONLY);
+	dirfd = openat(AT_FDCWD, "/", O_RDONLY);
 	if (dirfd == -1)
 		eerrorx("%s: unable to open the root directory: %s",
 				applet, strerror(errno));
