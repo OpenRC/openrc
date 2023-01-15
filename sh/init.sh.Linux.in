@@ -79,6 +79,7 @@ elif ! mountinfo -q /run; then
 			exit 1
 		fi
 	fi
+	eend
 fi
 
 checkpath -d "$RC_SVCDIR"
