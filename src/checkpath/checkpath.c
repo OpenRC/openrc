@@ -285,7 +285,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			return -1;
 		}
 
-		if (mode && (st.st_mode & 0777) != mode) {
+		if (mode && (st.st_mode & 07777) != mode) {
 			if ((type != inode_dir) && (st.st_nlink > 1)) {
 				eerror("%s: chmod: Too many hard links to %s", applet, path);
 				close(readfd);
