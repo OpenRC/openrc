@@ -37,11 +37,11 @@ Brings up any system specific stuff such as
 and optionally
 .Pa /sys
 for Linux based systems. It also mounts
-.Pa /lib/rc/init.d
+.Pa /run/openrc
 as a ramdisk using tmpfs where available unless / is mounted rw at boot.
 .Nm
 uses
-.Pa /lib/rc/init.d
+.Pa /run/openrc
 to hold state information about the services it runs.
 sysinit always runs when the host first starts should not be run again.
 .It Ar boot
