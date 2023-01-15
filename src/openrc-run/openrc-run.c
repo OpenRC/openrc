@@ -62,7 +62,7 @@
 #define WARN_TIMEOUT	10		/* warn about this every N seconds */
 
 const char *applet = NULL;
-const char *extraopts = "stop | start | restart | describe | zap";
+const char *extraopts = "stop | start | restart | status | describe | zap";
 const char getoptstring[] = "dDsSvl:Z" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "debug",      0, NULL, 'd'},
