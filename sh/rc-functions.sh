@@ -2,8 +2,10 @@
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
-net_fs_list="afs ceph cifs coda davfs fuse fuse.sshfs gfs glusterfs lustre
-ncpfs nfs nfs4 ocfs2 shfs smbfs"
+net_fs_list="
+	afs ceph cifs coda davfs fuse fuse.glusterfs fuse.sshfs gfs glusterfs lustre
+	ncpfs nfs nfs4 ocfs2 shfs smbfs
+"
 is_net_fs()
 {
 	[ -z "$1" ] && return 1
