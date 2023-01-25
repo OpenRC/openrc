@@ -167,13 +167,13 @@ static void sleep_no_interrupt(int seconds)
 		duration = remaining;
 }
 
-static void stop_shutdown(int sig)
+_noreturn static void stop_shutdown(int sig)
 {
 	(void) sig;
 	unlink(nologin_file);
 	unlink(shutdown_pid);
-einfo("Shutdown canceled");
-exit(0);
+	einfo("Shutdown cancelled");
+	exit(0);
 }
 
 int main(int argc, char **argv)
