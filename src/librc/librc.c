@@ -755,8 +755,10 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 					    RC_SVCDIR "/%s/%s",
 					    rc_parse_service_state(RC_SERVICE_WASINACTIVE),
 					    base);
-					if (symlink(init, was) == -1)
+					if (symlink(init, was) == -1) {
+						free(init);
 						return false;
+					}
 					skip_wasinactive = true;
 				}
 				if (unlink(file) == -1) {
