@@ -677,15 +677,14 @@ ewarn(const char *EINFO_RESTRICT fmt, ...)
 void
 ewarnx(const char *EINFO_RESTRICT fmt, ...)
 {
-	int retval;
 	va_list ap;
 
 	if (fmt && !is_quiet()) {
 		va_start(ap, fmt);
 		elogv(LOG_WARNING, fmt, ap);
-		retval = _ewarnvn(fmt, ap);
+		_ewarnvn(fmt, ap);
 		va_end(ap);
-		retval += fprintf(stderr, "\n");
+		fprintf(stderr, "\n");
 	}
 	exit(EXIT_FAILURE);
 }
