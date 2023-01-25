@@ -645,7 +645,7 @@ svc_start_deps(void)
 	bool first;
 	RC_STRING *svc, *svc2;
 	RC_SERVICE state;
-	int depoptions = RC_DEP_TRACE, n;
+	int depoptions = RC_DEP_TRACE;
 	size_t len;
 	char *p, *tmp;
 	pid_t pid;
@@ -755,7 +755,6 @@ svc_start_deps(void)
 		rc_stringlist_free(use_services);
 		use_services = NULL;
 		len = 0;
-		n = 0;
 		TAILQ_FOREACH(svc, tmplist, entries) {
 			rc_service_schedule_start(svc->value, service);
 			use_services = rc_deptree_depend(deptree,
@@ -765,7 +764,6 @@ svc_start_deps(void)
 			rc_stringlist_free(use_services);
 			use_services = NULL;
 			len += strlen(svc->value) + 2;
-			n++;
 		}
 
 		len += 5;
