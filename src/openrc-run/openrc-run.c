@@ -1163,7 +1163,6 @@ int main(int argc, char **argv)
 			dir = save;
 		} else
 			file = basename_c(argv[1]);
-		ll = strlen(dir) + strlen(file) + 2;
 		xasprintf(&service, "%s/%s", dir, file);
 		if (stat(service, &stbuf) != 0) {
 			free(service);
