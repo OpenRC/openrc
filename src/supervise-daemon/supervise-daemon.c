@@ -212,7 +212,7 @@ static void cleanup(void)
 	free(changeuser);
 }
 
-static void re_exec_supervisor(void)
+_noreturn static void re_exec_supervisor(void)
 {
 	syslog(LOG_WARNING, "Re-executing for %s", svcname);
 	execlp("supervise-daemon", "supervise-daemon", svcname, "--reexec",
@@ -358,7 +358,7 @@ static pid_t exec_command(const char *cmd)
 	return pid;
 }
 
-static void child_process(char *exec, char **argv)
+_noreturn static void child_process(char *exec, char **argv)
 {
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
@@ -591,7 +591,7 @@ static void child_process(char *exec, char **argv)
 	eerrorx("%s: failed to exec `%s': %s", applet, exec,strerror(errno));
 }
 
-static void supervisor(char *exec, char **argv)
+_noreturn static void supervisor(char *exec, char **argv)
 {
 	FILE *fp;
 	char buf[2048];
