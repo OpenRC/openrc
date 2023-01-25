@@ -304,7 +304,6 @@ int main(int argc, char **argv)
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
 	while (shutdown_delay > 0) {
-		need_warning = false;
 		if (shutdown_delay > 180)
 			need_warning = (shutdown_delay % 60 == 0);
 		else if (shutdown_delay > 60)
@@ -313,11 +312,12 @@ int main(int argc, char **argv)
 			need_warning = (shutdown_delay % 15 == 0);
 		else
 			need_warning = true;
+
 		if (shutdown_delay <= 5)
 			create_nologin(shutdown_delay);
 		if (need_warning) {
-		xasprintf(&msg, "\rThe system will %s in %d minutes\r\n",
-		          state, shutdown_delay);
+			xasprintf(&msg, "\rThe system will %s in %d minutes\r\n",
+			          state, shutdown_delay);
 			broadcast(msg);
 			free(msg);
 		}
