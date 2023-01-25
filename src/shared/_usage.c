@@ -18,14 +18,6 @@
 #include "_usage.h"
 #include "version.h"
 
-#if lint
-#  define _noreturn
-#endif
-#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
-#  define _noreturn __attribute__ ((__noreturn__))
-#else
-#  define _noreturn
-#endif
 
 void set_quiet_options(void)
 {

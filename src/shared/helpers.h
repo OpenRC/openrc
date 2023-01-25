@@ -27,10 +27,12 @@
 #endif
 #if __GNUC__ > 2 || defined(__INTEL_COMPILER)
 # define _dead __attribute__((__noreturn__))
+# define _noreturn __attribute__ ((__noreturn__))
 # define _unused __attribute__((__unused__))
 # define _xasprintf(a, b)  __attribute__((__format__(__printf__, a, b)))
 #else
 # define _dead
+# define _noreturn
 # define _unused
 # define _xasprintf(a, b)
 #endif
