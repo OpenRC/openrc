@@ -161,7 +161,7 @@ handle_signal(int sig)
 }
 
 static void
-unhotplug()
+unhotplug(void)
 {
 	char *file = NULL;
 
@@ -788,7 +788,7 @@ svc_start_deps(void)
 	services = NULL;
 }
 
-static void svc_start_real()
+static void svc_start_real(void)
 {
 	bool started;
 	RC_STRING *svc, *svc2;

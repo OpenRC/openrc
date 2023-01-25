@@ -452,7 +452,7 @@ handle_signal(int sig)
 }
 
 static void
-do_sysinit()
+do_sysinit(void)
 {
 	struct utsname uts;
 	const char *sys;
