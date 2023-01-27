@@ -382,7 +382,7 @@ static void
 handle_signal(int sig)
 {
 	int serrno = errno;
-	char *signame = NULL;
+	const char *signame = NULL;
 	pid_t pid;
 	RC_PID *pi;
 	int status = 0;
@@ -414,15 +414,15 @@ handle_signal(int sig)
 
 	case SIGINT:
 		if (!signame)
-			xasprintf(&signame, "SIGINT");
+			signame = "SIGINT";
 		/* FALLTHROUGH */
 	case SIGTERM:
 		if (!signame)
-			xasprintf(&signame, "SIGTERM");
+			signame = "SIGTERM";
 		/* FALLTHROUGH */
 	case SIGQUIT:
 		if (!signame)
-			xasprintf(&signame, "SIGQUIT");
+			signame = "SIGQUIT";
 		eerrorx("%s: caught %s, aborting", applet, signame);
 		/* NOTREACHED */
 	case SIGUSR1:
