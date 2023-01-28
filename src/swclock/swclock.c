@@ -78,14 +78,12 @@ int main(int argc, char **argv)
 		eerrorx("swclock: Reference file was not specified");
 
 	if (sflag) {
-		if (stat(file, &sb) == -1) {
-			opt = open(file, O_WRONLY | O_CREAT, 0644);
-			if (opt == -1)
-				eerrorx("swclock: open: %s", strerror(errno));
-			close(opt);
-		} else
-			if (utime(file, NULL) == -1)
-				eerrorx("swclock: utime: %s", strerror(errno));
+		int fd = open(file, O_WRONLY | O_CREAT, 0644);
+		if (fd == -1)
+			eerrorx("swclock: open: %s", strerror(errno));
+		if (futimens(fd, NULL) == -1)
+			eerrorx("swclock: futimens: %s", strerror(errno));
+		close(fd);
 		return 0;
 	}
 
