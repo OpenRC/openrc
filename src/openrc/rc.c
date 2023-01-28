@@ -87,6 +87,7 @@ static RC_HOOK hook_out;
 struct termios *termios_orig = NULL;
 
 RC_PIDLIST service_pids;
+RC_PIDLIST free_these_pids;
 
 static void
 clean_failed(void)
@@ -140,6 +141,12 @@ cleanup(void)
 	}
 
 	while (p1) {
+		p2 = LIST_NEXT(p1, entries);
+		free(p1);
+		p1 = p2;
+	}
+
+	for (p1 = LIST_FIRST(&free_these_pids); p1; /* no-op */) {
 		p2 = LIST_NEXT(p1, entries);
 		free(p1);
 		p1 = p2;
@@ -350,16 +357,24 @@ add_pid(pid_t pid)
 }
 
 static void
-remove_pid(pid_t pid)
+remove_pid(pid_t pid, bool inside_signal)
 {
-	RC_PID *p;
+	RC_PID *p, *tmp;
 
-	LIST_FOREACH(p, &service_pids, entries)
-	    if (p->pid == pid) {
-		    LIST_REMOVE(p, entries);
-		    free(p);
-		    return;
-	    }
+	LIST_FOREACH(p, &service_pids, entries) {
+		if (p->pid == pid) {
+			LIST_REMOVE(p, entries);
+			LIST_INSERT_HEAD(&free_these_pids, p, entries);
+			break;
+		}
+	}
+	/* only call free if we're not inside a signal handler */
+	if (!inside_signal) {
+		LIST_FOREACH_SAFE(p, &free_these_pids, entries, tmp) {
+			LIST_REMOVE(p, entries);
+			free(p);
+		}
+	}
 }
 
 static void
@@ -397,7 +412,7 @@ handle_signal(int sig)
 
 		/* Remove that pid from our list */
 		if (pid > 0)
-			remove_pid(pid);
+			remove_pid(pid, true);
 		break;
 
 	case SIGWINCH:
@@ -606,7 +621,7 @@ stop:
 			add_pid(pid);
 			if (!parallel) {
 				rc_waitpid(pid);
-				remove_pid(pid);
+				remove_pid(pid, false);
 			}
 		}
 	}
@@ -672,7 +687,7 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 			add_pid(pid);
 			if (!parallel) {
 				rc_waitpid(pid);
-				remove_pid(pid);
+				remove_pid(pid, false);
 			}
 		}
 	}
@@ -745,6 +760,7 @@ int main(int argc, char **argv)
 
 	applet = basename_c(argv[0]);
 	LIST_INIT(&service_pids);
+	LIST_INIT(&free_these_pids);
 	atexit(cleanup);
 	if (!applet)
 		eerrorx("arguments required");
