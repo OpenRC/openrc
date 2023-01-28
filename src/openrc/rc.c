@@ -351,16 +351,31 @@ static char *get_krunlevel(void)
 static void
 add_pid(pid_t pid)
 {
+	sigset_t sset, old;
 	RC_PID *p = xmalloc(sizeof(*p));
 	p->pid = pid;
+
+	/* this list will be accessed inside the SIGCHLD signal handler.
+	 * so we need to ensure that the SIGCHLD handler doesn't get invoked
+	 * while the list is at an inconsistent state.
+	 */
+	sigemptyset(&sset);
+	sigaddset(&sset, SIGCHLD);
+	sigprocmask(SIG_SETMASK, &sset, &old);
 	LIST_INSERT_HEAD(&service_pids, p, entries);
+	sigprocmask(SIG_SETMASK, &old, NULL);
 }
 
 static void
 remove_pid(pid_t pid, bool inside_signal)
 {
+	sigset_t sset, old;
 	RC_PID *p, *tmp;
 
+	/* same rationale for blocking SIGCHLD as add_pid() */
+	sigemptyset(&sset);
+	sigaddset(&sset, SIGCHLD);
+	sigprocmask(SIG_SETMASK, &sset, &old);
 	LIST_FOREACH(p, &service_pids, entries) {
 		if (p->pid == pid) {
 			LIST_REMOVE(p, entries);
@@ -375,6 +390,7 @@ remove_pid(pid_t pid, bool inside_signal)
 			free(p);
 		}
 	}
+	sigprocmask(SIG_SETMASK, &old, NULL);
 }
 
 static void
