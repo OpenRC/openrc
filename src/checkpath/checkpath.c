@@ -17,25 +17,24 @@
  */
 
 #define _GNU_SOURCE
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <grp.h>
-#include <libgen.h>
 #include <pwd.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "einfo.h"
-#include "rc.h"
 #include "misc.h"
 #include "selinux.h"
 #include "_usage.h"
+#include "helpers.h"
 
 typedef enum {
 	inode_unknown = 0,
