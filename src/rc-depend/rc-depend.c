@@ -15,27 +15,20 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
-
 #include <errno.h>
-#include <fcntl.h>
 #include <getopt.h>
-#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
-#include <utime.h>
 
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "misc.h"
 #include "_usage.h"
+#include "helpers.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
