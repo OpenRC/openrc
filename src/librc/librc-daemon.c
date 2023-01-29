@@ -15,10 +15,21 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#include <errno.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <limits.h>
 #include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "queue.h"
 #include "librc.h"
+#include "helpers.h"
 
 #if defined(__linux__) || (defined (__FreeBSD_kernel__) && defined(__GLIBC__)) \
 	|| defined(__GNU__)
