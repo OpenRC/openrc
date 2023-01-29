@@ -15,15 +15,14 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
-#include <sys/param.h>
-
 #if defined(__DragonFly__) || defined(__FreeBSD__)
 #  include <sys/ucred.h>
 #  include <sys/mount.h>
+
 #  define F_FLAGS f_flags
 #elif defined(BSD) && !defined(__GNU__)
 #  include <sys/statvfs.h>
+
 #  define statfs statvfs
 #  define F_FLAGS f_flag
 #elif defined(__linux__) || (defined(__FreeBSD_kernel__) && \
@@ -33,17 +32,19 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <limits.h>
 #include <regex.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
 #include "_usage.h"
+#include "helpers.h"
 
 const char *applet = NULL;
 const char *procmounts = "/proc/mounts";
