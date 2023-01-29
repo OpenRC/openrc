@@ -30,12 +30,12 @@
 #include <errno.h>
 #include <endian.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "rc.h"
 #include "einfo.h"
 #include "helpers.h"
 #include "_usage.h"
