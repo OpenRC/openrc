@@ -13,6 +13,9 @@
 #ifndef __RC_SCHEDULES_H
 #define __RC_SCHEDULES_H
 
+#include <stdbool.h>
+#include <sys/types.h>
+
 void free_schedulelist(void);
 int parse_signal(const char *applet, const char *sig);
 void parse_schedule(const char *applet, const char *string, int timeout);
