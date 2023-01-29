@@ -18,9 +18,13 @@
 #ifndef __HELPERS_H__
 #define __HELPERS_H__
 
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #define ERRX fprintf (stderr, "out of memory\n"); exit (1)
 
@@ -60,10 +64,6 @@
 		}							      \
 	} while (/* CONSTCOND */ 0)
 #endif
-
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/stat.h>
 
 _unused static void *xmalloc (size_t size)
 {
@@ -135,7 +135,7 @@ _unused static bool existss(const char *pathname)
 /*
  * This is an OpenRC specific version of the asprintf() function.
  * We do this to avoid defining the _GNU_SOURCE feature test macro on
- * glibc systems and to insure that we have a consistent function across
+ * glibc systems and to ensure that we have a consistent function across
  * platforms. This also allows us to call our xmalloc and xrealloc
  * functions to handle memory allocation.
  * this function was originally written by Mike Frysinger.

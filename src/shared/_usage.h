@@ -11,6 +11,7 @@
  */
 
 #include <getopt.h>
+#include <stdlib.h>
 
 #define getoptstring_COMMON "ChqVv"
 

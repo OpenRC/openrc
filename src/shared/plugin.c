@@ -17,12 +17,10 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
-
 #include <dirent.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <limits.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,8 +30,8 @@
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
 #include "plugin.h"
+#include "helpers.h"
 
 #define RC_PLUGIN_HOOK "rc_plugin_hook"
 
