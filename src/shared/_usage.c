@@ -13,10 +13,12 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "rc.h"
-#include "misc.h"
 #include "_usage.h"
 #include "version.h"
+#include "helpers.h"
 
 
 void set_quiet_options(void)

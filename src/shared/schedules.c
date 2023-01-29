@@ -30,16 +30,11 @@
 #include <string.h>
 #include <syslog.h>
 #include <time.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/time.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
 #include "schedules.h"
 #include "helpers.h"
 

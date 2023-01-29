@@ -19,6 +19,7 @@
 #define __RC_MISC_H__
 
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>

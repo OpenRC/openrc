@@ -15,14 +15,12 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
+#include <utmp.h>
 
 #include "wtmp.h"
 
