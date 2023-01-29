@@ -16,13 +16,13 @@
  */
 
 #include <sys/wait.h>
-
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 /* Yay for linux and its non liking of POSIX functions.
    Okay, we could use getfsent but the man page says use getmntent instead
@@ -30,6 +30,7 @@
 #ifdef __linux__
 #  define HAVE_GETMNTENT
 #  include <mntent.h>
+
 #  define ENT mntent
 #  define START_ENT fp = setmntent ("/etc/fstab", "r");
 #  define GET_ENT getmntent (fp)
@@ -43,6 +44,7 @@
 #else
 #  define HAVE_GETFSENT
 #  include <fstab.h>
+
 #  define ENT fstab
 #  define START_ENT
 #  define GET_ENT getfsent ()
@@ -58,8 +60,8 @@
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
-#include "misc.h"
 #include "_usage.h"
+#include "helpers.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
