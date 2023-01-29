@@ -19,6 +19,7 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#include <errno.h>
 #include <getopt.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -26,9 +27,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
-#include <unistd.h>
 #include <sys/types.h>
-#include <sys/utsname.h>
+#include <strings.h>
+#include <unistd.h>
+#include <time.h>
+#include <utmp.h>
 
 #include "broadcast.h"
 #include "einfo.h"

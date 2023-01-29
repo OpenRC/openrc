@@ -17,11 +17,10 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/stat.h>
-#include <sys/types.h>
+#include <unistd.h>
 
 #include "einfo.h"
 #include "sysvinit.h"
