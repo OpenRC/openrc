@@ -27,16 +27,16 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/reboot.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <utmp.h>
 
 #ifdef HAVE_SELINUX
 #  include <selinux/selinux.h>
 #endif
 
-#include "helpers.h"
 #include "rc.h"
 #include "plugin.h"
 #include "wtmp.h"
