@@ -19,20 +19,17 @@
  */
 
 #include <sys/time.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <utime.h>
+#include <string.h>
 
 #include "einfo.h"
-#include "rc.h"
-#include "misc.h"
 #include "_usage.h"
+#include "helpers.h"
 
 
 const char *applet = NULL;
