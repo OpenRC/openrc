@@ -20,26 +20,21 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/utsname.h>
-#include <sys/wait.h>
-
 #include <errno.h>
 #include <dirent.h>
-#include <ctype.h>
 #include <getopt.h>
 #include <libgen.h>
-#include <limits.h>
 #include <pwd.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
-#include <strings.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/utsname.h>
+#include <sys/wait.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -49,9 +44,9 @@
 #include "rc-logger.h"
 #include "misc.h"
 #include "plugin.h"
-
 #include "version.h"
 #include "_usage.h"
+#include "helpers.h"
 
 const char *extraopts = NULL;
 const char getoptstring[] = "a:no:s:S" getoptstring_COMMON;
