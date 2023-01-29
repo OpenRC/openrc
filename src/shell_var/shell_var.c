@@ -10,14 +10,9 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <errno.h>
 #include <ctype.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
 
 int main(int argc, char **argv)
 {
