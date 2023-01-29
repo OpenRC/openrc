@@ -16,17 +16,21 @@
  */
 
 #include <getopt.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <errno.h>
+#include <time.h>
 
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
 #include "misc.h"
 #include "_usage.h"
+#include "helpers.h"
 
 enum format_t {
 	FORMAT_DEFAULT,
