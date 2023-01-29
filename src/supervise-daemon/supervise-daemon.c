@@ -27,20 +27,6 @@
 # define _GNU_SOURCE
 #endif
 
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/resource.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-
-#ifdef __linux__
-#include <sys/syscall.h> /* For io priority */
-#include <sys/prctl.h> /* For prctl */
-#endif
-
-#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -52,7 +38,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include <strings.h>
+#ifdef __linux__
+# include <sys/syscall.h> /* For io priority */
+# include <sys/prctl.h> /* For prctl */
+#endif
 #include <syslog.h>
+#include <sys/ioctl.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
