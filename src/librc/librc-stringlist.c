@@ -15,8 +15,14 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#include <errno.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "queue.h"
 #include "librc.h"
+#include "helpers.h"
 
 RC_STRINGLIST *
 rc_stringlist_new(void)

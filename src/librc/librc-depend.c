@@ -16,9 +16,22 @@
  */
 
 #include <sys/utsname.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "queue.h"
 #include "librc.h"
+#include "helpers.h"
+#include "misc.h"
 
 #define GENDEP          RC_LIBEXECDIR "/sh/gendepends.sh"
 
