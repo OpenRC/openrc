@@ -17,7 +17,6 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +28,7 @@
 #include "rc.h"
 #include "misc.h"
 #include "_usage.h"
+#include "helpers.h"
 
 const char *applet = NULL;
 const char *extraopts = NULL;
