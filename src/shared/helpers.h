@@ -18,6 +18,10 @@
 #ifndef __HELPERS_H__
 #define __HELPERS_H__
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define ERRX fprintf (stderr, "out of memory\n"); exit (1)
 
 #define UNCONST(a)		((void *)(unsigned long)(const void *)(a))
