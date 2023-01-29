@@ -16,10 +16,7 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-
+#include <errno.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <poll.h>
@@ -27,6 +24,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
@@ -42,9 +42,9 @@
 
 #include "einfo.h"
 #include "rc-logger.h"
-#include "queue.h"
 #include "rc.h"
 #include "misc.h"
+#include "helpers.h"
 
 #define TMPLOG RC_SVCDIR "/rc.log"
 #define DEFAULTLOG "/var/log/rc.log"
