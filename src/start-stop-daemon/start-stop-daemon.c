@@ -26,46 +26,43 @@
 # define _GNU_SOURCE
 #endif
 
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/resource.h>
-#include <sys/stat.h>
-#include <termios.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-
-#ifdef __linux__
-#include <sys/syscall.h> /* For io priority */
-#include <sys/prctl.h> /* For prctl */
-#endif
-
-#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <limits.h>
 #include <grp.h>
 #include <pwd.h>
+#include <sched.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#ifdef __linux__
+# include <sys/syscall.h> /* For io priority */
+# include <sys/prctl.h> /* For prctl */
+#endif
+#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 
 #ifdef HAVE_PAM
-#include <security/pam_appl.h>
+# include <security/pam_appl.h>
 
 /* We are not supporting authentication conversations */
 static struct pam_conv conv = { NULL, NULL};
 #endif
 
 #ifdef HAVE_CAP
-#include <sys/capability.h>
+# include <sys/capability.h>
 #endif
-
-#include <sched.h>
 
 #include "einfo.h"
 #include "queue.h"
