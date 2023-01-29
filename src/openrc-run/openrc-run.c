@@ -15,28 +15,26 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/file.h>
-#include <sys/param.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <fnmatch.h>
 #include <getopt.h>
 #include <libgen.h>
-#include <limits.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #if defined(__linux__) || (defined(__FreeBSD_kernel__) && defined(__GLIBC__)) \
 	|| defined(__GNU__)
@@ -54,6 +52,7 @@
 #include "plugin.h"
 #include "selinux.h"
 #include "_usage.h"
+#include "helpers.h"
 
 #define PREFIX_LOCK	RC_SVCDIR "/prefix.lock"
 
