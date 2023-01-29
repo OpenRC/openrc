@@ -19,7 +19,6 @@
 #include <dirent.h>
 #include <errno.h>
 #include <getopt.h>
-#include <limits.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,11 +27,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <stdbool.h>
 
 #include "einfo.h"
 #include "rc.h"
-#include "misc.h"
 #include "_usage.h"
+#include "helpers.h"
 
 const char *applet = NULL;
 const char *extraopts = "[signal number]";
