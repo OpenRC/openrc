@@ -23,6 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <spawn.h>
 
 /* Yay for linux and its non liking of POSIX functions.
    Okay, we could use getfsent but the man page says use getmntent instead
@@ -62,6 +63,8 @@
 #include "rc.h"
 #include "_usage.h"
 #include "helpers.h"
+
+extern char **environ;
 
 const char *applet = NULL;
 const char *extraopts = NULL;
@@ -112,7 +115,7 @@ do_mount(struct ENT *ent, bool remount)
 {
 	char *argv[10];
 	pid_t pid;
-	int status;
+	int status, err;
 
 	argv[0] = UNCONST("mount");
 	argv[1] = UNCONST("-o");
@@ -137,23 +140,14 @@ do_mount(struct ENT *ent, bool remount)
 		argv[8] = NULL;
 #endif
 	}
-	switch (pid = vfork()) {
-	case -1:
-		eerrorx("%s: vfork: %s", applet, strerror(errno));
-		/* NOTREACHED */
-	case 0:
-		execvp(argv[0], argv);
-		eerror("%s: execvp: %s", applet, strerror(errno));
-		_exit(EXIT_FAILURE);
-		/* NOTREACHED */
-	default:
-		waitpid(pid, &status, 0);
-		if (WIFEXITED(status))
-			return WEXITSTATUS(status);
-		else
-			return -1;
-		/* NOTREACHED */
-	}
+	err = posix_spawnp(&pid, argv[0], NULL, NULL, argv, environ);
+	if (err)
+		eerrorx("%s: posix_spawnp: %s", applet, strerror(err));
+	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		return WEXITSTATUS(status);
+	else
+		return -1;
 }
 
 #define OUTPUT_FILE      (1 << 1)
