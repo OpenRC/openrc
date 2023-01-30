@@ -143,7 +143,7 @@ do_mount(struct ENT *ent, bool remount)
 	err = posix_spawnp(&pid, argv[0], NULL, NULL, argv, environ);
 	if (err)
 		eerrorx("%s: posix_spawnp: %s", applet, strerror(err));
-	waitpid(pid, &status, 0);
+	while (waitpid(pid, &status, 0) < 0 && errno == EINTR);
 	if (WIFEXITED(status))
 		return WEXITSTATUS(status);
 	else
