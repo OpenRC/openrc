@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2022 The OpenRC Authors.
+ * Copyright (c) 2023 The OpenRC Authors.
  * See the Authors file at the top-level directory of this distribution and
  * https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
  *
@@ -455,7 +455,7 @@ int main(int argc, char **argv)
 	static const char seedrng_prefix[] = "SeedRNG v1 Old+New Prefix";
 	static const char seedrng_failure[] = "SeedRNG v1 No New Seed Failure";
 	int opt, fd, dfd, program_ret = 0;
-	char *seed_dir = NULL;
+	const char *seed_dir = NULL;
 	uint8_t new_seed[MAX_SEED_LEN];
 	size_t new_seed_len;
 	bool new_seed_creditable;
@@ -470,7 +470,7 @@ int main(int argc, char **argv)
 		switch (opt) {
 		case LONGOPT_SEED_DIR:
 			if (!seed_dir)
-				seed_dir = xstrdup(optarg);
+				seed_dir = optarg;
 			break;
 		case LONGOPT_SKIP_CREDIT:
 			skip_credit = true;
@@ -479,7 +479,7 @@ int main(int argc, char **argv)
 		}
 	}
 	if (!seed_dir)
-		seed_dir = xstrdup(DEFAULT_SEED_DIR);
+		seed_dir = DEFAULT_SEED_DIR;
 	if (getuid())
 		eerrorx("%s: superuser access is required", applet);
 	umask(0077);
