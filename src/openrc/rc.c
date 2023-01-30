@@ -117,8 +117,7 @@ clean_failed(void)
 static void
 cleanup(void)
 {
-	RC_PID *p1 = LIST_FIRST(&service_pids);
-	RC_PID *p2;
+	RC_PID *p, *tmp;
 
 	if (!rc_in_logger && !rc_in_plugin &&
 	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
@@ -140,16 +139,13 @@ cleanup(void)
 		rc_logger_close();
 	}
 
-	while (p1) {
-		p2 = LIST_NEXT(p1, entries);
-		free(p1);
-		p1 = p2;
+	LIST_FOREACH_SAFE(p, &service_pids, entries, tmp) {
+		LIST_REMOVE(p, entries);
+		free(p);
 	}
-
-	for (p1 = LIST_FIRST(&free_these_pids); p1; /* no-op */) {
-		p2 = LIST_NEXT(p1, entries);
-		free(p1);
-		p1 = p2;
+	LIST_FOREACH_SAFE(p, &free_these_pids, entries, tmp) {
+		LIST_REMOVE(p, entries);
+		free(p);
 	}
 
 	rc_stringlist_free(main_hotplugged_services);
