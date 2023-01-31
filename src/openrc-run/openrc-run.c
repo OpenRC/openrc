@@ -108,7 +108,7 @@ static void
 handle_signal(int sig)
 {
 	int serrno = errno;
-	char *signame = NULL;
+	const char *signame = NULL;
 	struct winsize ws;
 
 	switch (sig) {
@@ -134,20 +134,19 @@ handle_signal(int sig)
 
 	case SIGINT:
 		if (!signame)
-			xasprintf(&signame, "SIGINT");
+			signame = "SIGINT";
 		/* FALLTHROUGH */
 	case SIGTERM:
 		if (!signame)
-			xasprintf(&signame, "SIGTERM");
+			signame = "SIGTERM";
 		/* FALLTHROUGH */
 	case SIGQUIT:
 		if (!signame)
-			xasprintf(&signame, "SIGQUIT");
+			signame = "SIGQUIT";
 		/* Send the signal to our children too */
 		if (service_pid > 0)
 			kill(service_pid, sig);
 		eerror("%s: caught %s, aborting", applet, signame);
-		free(signame);
 		exit(EXIT_FAILURE);
 		/* NOTREACHED */
 
