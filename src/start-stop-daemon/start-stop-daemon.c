@@ -204,20 +204,20 @@ handle_signal(int sig)
 {
 	int status;
 	int serrno = errno;
-	char *signame = NULL;
+	const char *signame = NULL;
 
 	switch (sig) {
 	case SIGINT:
 		if (!signame)
-			xasprintf(&signame, "SIGINT");
+			signame = "SIGINT";
 		/* FALLTHROUGH */
 	case SIGTERM:
 		if (!signame)
-			xasprintf(&signame, "SIGTERM");
+			signame = "SIGTERM";
 		/* FALLTHROUGH */
 	case SIGQUIT:
 		if (!signame)
-			xasprintf(&signame, "SIGQUIT");
+			signame = "SIGQUIT";
 		eerrorx("%s: caught %s, aborting", applet, signame);
 		/* NOTREACHED */
 
@@ -235,9 +235,6 @@ handle_signal(int sig)
 	default:
 		eerror("%s: caught unknown signal %d", applet, sig);
 	}
-
-	/* free signame */
-	free(signame);
 
 	/* Restore errno */
 	errno = serrno;
