@@ -85,9 +85,9 @@ _rc_service()
 	else
 		# no option was typed
 		if [[ ${COMP_CWORD} -eq 1 ]]; then			  # if first word typed
-			words="$(rc-service --list | grep ^${cur})"		  # complete for init scripts
-			COMPREPLY=($(for i in ${words} ; do \
-			[[ ${i} == ${cur}* ]] && echo ${i} ; \
+			# complete for init scripts
+			COMPREPLY=($(for i in $(rc-service --list) ; do \
+				[[ ${i} == "${cur}"* ]] && echo ${i} ; \
 			done))
 			return 0
 		elif [[ ${COMP_CWORD} -eq 2 ]] && [[ ${prev} != -* ]]; then # if second word typed and we didn't type in a function
@@ -105,9 +105,8 @@ _rc_service()
 	fi
 	if [[ ${action} == '--exists' ]] || [[ ${action} == '-e' ]] || \
 		[[ ${action} == '--resolve' ]]  || [[ ${action} == '-r' ]]; then
-		words="$(rc-service --list | grep ^${cur})"
-		COMPREPLY=($(for i in ${words} ; do \
-			[[ ${i} == ${cur}* ]] && echo ${i} ; \
+		COMPREPLY=($(for i in $(rc-service --list) ; do \
+			[[ ${i} == "${cur}"* ]] && echo ${i} ; \
 		done))
 		return 0
 	fi
