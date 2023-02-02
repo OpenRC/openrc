@@ -50,7 +50,7 @@ void env_filter(void);
 void env_config(void);
 int signal_setup(int sig, void (*handler)(int));
 int signal_setup_restart(int sig, void (*handler)(int));
-int svc_lock(const char *);
+int svc_lock(const char *, bool);
 int svc_unlock(const char *, int);
 pid_t exec_service(const char *, const char *);
 

@@ -612,7 +612,7 @@ svc_start_check(void)
 	}
 
 	if (exclusive_fd == -1)
-		exclusive_fd = svc_lock(applet);
+		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
 		if (errno == EACCES)
 			eerrorx("%s: superuser access required", applet);
@@ -864,7 +864,7 @@ svc_stop_check(RC_SERVICE *state)
 		exit(EXIT_FAILURE);
 
 	if (exclusive_fd == -1)
-		exclusive_fd = svc_lock(applet);
+		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
 		if (errno == EACCES)
 			eerrorx("%s: superuser access required", applet);
