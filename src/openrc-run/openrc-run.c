@@ -107,7 +107,8 @@ static RC_STRINGLIST *deptypes_mwua;	/* need+want+use+after deps for stopping */
 static void
 handle_signal(int sig)
 {
-	int serrno = errno;
+	int serrno = errno, status;
+	pid_t pid;
 	const char *signame = NULL;
 	struct winsize ws;
 
@@ -117,12 +118,13 @@ handle_signal(int sig)
 		break;
 
 	case SIGCHLD:
-		if (signal_pipe[1] > -1) {
-			if (write(signal_pipe[1], &sig, sizeof(sig)) == -1)
-				eerror("%s: send: %s",
-				    service, strerror(errno));
-		} else
-			rc_waitpid(-1);
+		while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+			if (signal_pipe[1] > -1 && pid == service_pid) {
+				if (write(signal_pipe[1], &status, sizeof(status)) == -1)
+					eerror("%s: send: %s",
+					    service, strerror(errno));
+			}
+		}
 		break;
 
 	case SIGWINCH:
@@ -438,6 +440,7 @@ svc_exec(const char *arg1, const char *arg2)
 			if (errno != EINTR) {
 				eerror("%s: poll: %s",
 				    service, strerror(errno));
+				ret = -1;
 				break;
 			}
 		}
@@ -448,9 +451,20 @@ svc_exec(const char *arg1, const char *arg2)
 				write_prefix(buffer, bytes, &prefixed);
 			}
 
-			/* Only SIGCHLD signals come down this pipe */
-			if (fd[0].revents & (POLLIN | POLLHUP))
+			/* signal_pipe receives service_pid's exit status */
+			if (fd[0].revents & (POLLIN | POLLHUP)) {
+				if ((s = read(signal_pipe[0], &ret, sizeof(ret))) != sizeof(ret)) {
+					eerror("%s: receive failed: %s", service,
+						s < 0 ? strerror(errno) : "short read");
+					ret = -1;
+					break;
+				}
+				ret = WEXITSTATUS(ret);
+				if (ret != 0 && errno == ECHILD)
+					/* killall5 -9 could cause this */
+					ret = 0;
 				break;
+			}
 		}
 	}
 
@@ -473,11 +487,6 @@ svc_exec(const char *arg1, const char *arg2)
 		master_tty = -1;
 	}
 
-	ret = rc_waitpid(service_pid);
-	ret = WEXITSTATUS(ret);
-	if (ret != 0 && errno == ECHILD)
-		/* killall5 -9 could cause this */
-		ret = 0;
 	service_pid = 0;
 
 	return ret;
