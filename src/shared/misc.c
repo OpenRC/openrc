@@ -234,7 +234,7 @@ signal_setup_restart(int sig, void (*handler)(int))
 }
 
 int
-svc_lock(const char *applet)
+svc_lock(const char *applet, bool ignore_lock_failure)
 {
 	char *file = NULL;
 	int fd;
@@ -245,6 +245,14 @@ svc_lock(const char *applet)
 	if (fd == -1)
 		return -1;
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
+		if (ignore_lock_failure) {
+			/* Two services with a need b, and b's start()
+			 * calling restart --no-deps on a would cause
+			 * harmless errors: just ignore them.
+			 * See https://github.com/OpenRC/openrc/issues/224
+			 */
+			exit(EXIT_SUCCESS);
+		}
 		eerror("Call to flock failed: %s", strerror(errno));
 		close(fd);
 		return -1;
@@ -274,7 +282,7 @@ exec_service(const char *service, const char *arg)
 	sigset_t old;
 	struct sigaction sa;
 
-	fd = svc_lock(basename_c(service));
+	fd = svc_lock(basename_c(service), false);
 	if (fd == -1)
 		return -1;
 
