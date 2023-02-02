@@ -1041,26 +1041,6 @@ svc_stop(void)
 static void
 svc_restart(void)
 {
-	/* This is hairy and a better way needs to be found I think!
-	 * The issue is this - openvpn need net and dns. net can restart
-	 * dns via resolvconf, so you could have openvpn trying to restart
-	 * dnsmasq which in turn is waiting on net which in turn is waiting
-	 * on dnsmasq.
-	 * The work around is for resolvconf to restart its services with
-	 * --nodeps which means just that.
-	 * The downside is that there is a small window when our status is
-	 * invalid.
-	 * One workaround would be to introduce a new status,
-	 * or status locking. */
-	if (!deps) {
-		RC_SERVICE state = rc_service_state(service);
-		if (state & RC_SERVICE_STARTED || state & RC_SERVICE_INACTIVE)
-			svc_exec("stop", "start");
-		else
-			svc_exec("start", NULL);
-		return;
-	}
-
 	if (!(rc_service_state(service) & RC_SERVICE_STOPPED)) {
 		get_started_services();
 		svc_stop();
