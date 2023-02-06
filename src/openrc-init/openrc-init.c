@@ -46,6 +46,7 @@
 
 static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
+static int sigpipe[2] = { -1, -1 };
 
 static void do_openrc(const char *runlevel)
 {
@@ -186,9 +187,21 @@ static void handle_single(void)
 	do_openrc("single");
 }
 
-static void reap_zombies(void)
+static void signal_handler(int sig)
 {
+	int saved_errno = errno;
+	write(sigpipe[1], &sig, sizeof(sig));
+	/* ensure the errno doesn't get clobbered in the rare (impossible?)
+	 * case that the write above fails */
+	errno = saved_errno;
+}
+
+static void reap_zombies(int sig)
+{
+	char errmsg[] = "waitpid() failed\n";
+	int saved_errno = errno;
 	pid_t pid;
+	(void)sig; /* unused */
 
 	for (;;) {
 		pid = waitpid(-1, NULL, WNOHANG);
@@ -197,38 +210,18 @@ static void reap_zombies(void)
 		else if (pid == -1) {
 			if (errno == ECHILD)
 				break;
-			perror("waitpid");
+			write(STDERR_FILENO, errmsg, sizeof(errmsg) - 1);
 			continue;
 		}
 	}
-}
-
-static void signal_handler(int sig)
-{
-	switch (sig) {
-		case SIGINT:
-			handle_shutdown("reboot", RB_AUTOBOOT);
-			break;
-		case SIGTERM:
-#ifdef SIGPWR
-		case SIGPWR:
-#endif
-			handle_shutdown("shutdown", RB_HALT_SYSTEM);
-			break;
-		case SIGCHLD:
-			reap_zombies();
-			break;
-		default:
-			printf("Unknown signal received, %d\n", sig);
-			break;
-	}
+	errno = saved_errno;
 }
 
 int main(int argc, char **argv)
 {
 	char *default_runlevel;
 	char buf[2048];
-	int count, fifo;
+	int count, fifo, sig;
 	bool reexec = false;
 	sigset_t signals;
 	struct sigaction sa;
@@ -272,6 +265,19 @@ int main(int argc, char **argv)
 	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
 		reexec = true;
 
+
+	/* NOTE(NRK): consider using pipe2 maybe... */
+	if (pipe(sigpipe) == -1) {
+		perror("pipe");
+		return 1;
+	}
+	if (fcntl(sigpipe[0], F_SETFD, O_NONBLOCK | FD_CLOEXEC) == -1 ||
+	    fcntl(sigpipe[1], F_SETFD, O_NONBLOCK | FD_CLOEXEC) == -1)
+	{
+		perror("fcntl");
+		return 1;
+	}
+
 	/* block all signals we do not handle */
 	sigfillset(&signals);
 	sigdelset(&signals, SIGCHLD);
@@ -284,8 +290,9 @@ int main(int argc, char **argv)
 
 	/* install signal  handler */
 	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = signal_handler;
+	sa.sa_handler = reap_zombies;
 	sigaction(SIGCHLD, &sa, NULL);
+	sa.sa_handler = signal_handler;
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
 #ifdef SIGPWR
@@ -306,12 +313,35 @@ int main(int argc, char **argv)
 		perror("open");
 
 	for (;;) {
-		enum { FD_FIFO, FD_COUNT };
+		enum { FD_FIFO, FD_SIG, FD_COUNT };
 		struct pollfd pfd[] = {
 			[FD_FIFO] = { .fd = fifo, .events = POLLIN },
+			[FD_SIG] = { .fd = sigpipe[0], .events = POLLIN },
 		};
 
 		poll(pfd, FD_COUNT, -1);
+
+		if (pfd[FD_SIG].revents & POLLIN) { /* handle signals first */
+			if (read(sigpipe[0], &sig, sizeof(sig)) != sizeof(sig)) {
+				/* shouldn't happen */
+				perror("read(sigpipe)");
+				continue;
+			}
+			switch (sig) {
+				case SIGINT:
+					handle_shutdown("reboot", RB_AUTOBOOT);
+					break;
+				case SIGTERM:
+#ifdef SIGPWR
+				case SIGPWR:
+#endif
+					handle_shutdown("shutdown", RB_HALT_SYSTEM);
+					break;
+				default:
+					printf("Unknown signal received, %d\n", sig);
+					break;
+			}
+		}
 
 		if (pfd[FD_FIFO].revents & POLLIN) {
 			count = read(fifo, buf, sizeof(buf) - 1);
