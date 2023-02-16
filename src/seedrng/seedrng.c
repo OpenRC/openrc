@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2023 The OpenRC Authors.
+ * Copyright (c) 2022-2023 The OpenRC Authors.
  * See the Authors file at the top-level directory of this distribution and
  * https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
  *
