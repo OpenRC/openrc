@@ -459,17 +459,19 @@ do_sysinit(void)
 		run_program(INITEARLYSH);
 
 	uname(&uts);
-	printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
-	    ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
-	    ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
-#ifdef BRANDING
-	printf(BRANDING " (%s)", uts.machine);
-#else
-	printf("%s %s (%s)",
-	    uts.sysname,
-	    uts.release,
-	    uts.machine);
-#endif
+	if (!rc_yesno(getenv ("EINFO_QUIET")) {
+		printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
+		    ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
+	    	    ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
+	#ifdef BRANDING
+		printf(BRANDING " (%s)", uts.machine);
+	#else
+		printf("%s %s (%s)",
+	    	    uts.sysname,
+	    	    uts.release,
+	    	    uts.machine);
+	#endif
+	}
 
 	if ((sys = rc_sys()))
 		printf(" [%s]", sys);
