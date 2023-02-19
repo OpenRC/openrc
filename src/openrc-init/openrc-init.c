@@ -231,7 +231,7 @@ int main(int argc, char **argv)
 	bool reexec = false;
 	sigset_t signals;
 	int opt;
-    bool isquiet;
+	bool isquiet;
 	struct sigaction sa;
 #ifdef HAVE_SELINUX
 	int			enforce = 0;
@@ -265,18 +265,18 @@ int main(int argc, char **argv)
 	
 	default_runlevel = NULL;
 
-    while ((opt = getopt(argc, argv, "r:q")) != -1) {
-    	switch (opt) {
-    		case 'r':
-    			default_runlevel = optarg;
-    		case 'q':
-                isquiet = true;  
-    	}
-    }
+	while ((opt = getopt(argc, argv, "r:q")) != -1) {
+		switch (opt) {
+			case 'r':
+				default_runlevel = optarg;
+			case 'q':
+				isquiet = true;  
+		}
+	}
 
-    if (!isquiet) {
-	    printf("OpenRC init version %s starting\n", VERSION);
-    }
+	if (!isquiet) {
+		printf("OpenRC init version %s starting\n", VERSION);
+	}
 
 	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
 		reexec = true;
