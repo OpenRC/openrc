@@ -270,7 +270,7 @@ int main(int argc, char **argv)
 			case 'r':
 				default_runlevel = optarg;
 			case 'q':
-				isquiet = true;  
+				isquiet = true;
 		}
 	}
 
