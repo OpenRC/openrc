@@ -262,7 +262,7 @@ int main(int argc, char **argv)
 		}
 	}
 #endif
-	
+
 	default_runlevel = NULL;
 
 	while ((opt = getopt(argc, argv, "r:q")) != -1) {
@@ -270,7 +270,7 @@ int main(int argc, char **argv)
 			case 'r':
 				default_runlevel = optarg;
 			case 'q':
-				isquiet = true;  
+				isquiet = true;
 		}
 	}
 
