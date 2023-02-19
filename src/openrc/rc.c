@@ -459,7 +459,7 @@ do_sysinit(void)
 		run_program(INITEARLYSH);
 
 	uname(&uts);
-	if (!rc_yesno(getenv ("EINFO_QUIET")) {
+	if (!rc_yesno(getenv ("EINFO_QUIET"))) {
 		printf("\n   %sOpenRC %s" VERSION "%s is starting up %s",
 		    ecolor(ECOLOR_GOOD), ecolor(ECOLOR_HILITE),
 	    	    ecolor(ECOLOR_NORMAL), ecolor(ECOLOR_BRACKET));
