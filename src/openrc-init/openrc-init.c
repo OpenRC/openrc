@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 	FILE *fifo;
 	bool reexec = false;
 	sigset_t signals;
-	bool isquiet;
+	bool isquiet = false;
 	struct sigaction sa;
 #ifdef HAVE_SELINUX
 	int			enforce = 0;
@@ -262,10 +262,8 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	default_runlevel = NULL;
-
 	if (getopt(argc, argv, "q") == 'q')
-				isquiet = true;
+		isquiet = true;
 
 	if (!isquiet)
 		printf("OpenRC init version %s starting\n", VERSION);
