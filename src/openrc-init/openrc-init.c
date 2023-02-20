@@ -272,8 +272,10 @@ int main(int argc, char **argv)
 
 	if (argc > 1)
 		default_runlevel = argv[optind];
+	else
+		default_runlevel = NULL;
 
-    if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
+	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
 		reexec = true;
 
 	/* block all signals we do not handle */
