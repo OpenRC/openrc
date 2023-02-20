@@ -230,7 +230,6 @@ int main(int argc, char **argv)
 	FILE *fifo;
 	bool reexec = false;
 	sigset_t signals;
-	int opt;
 	bool isquiet;
 	struct sigaction sa;
 #ifdef HAVE_SELINUX
@@ -265,18 +264,16 @@ int main(int argc, char **argv)
 
 	default_runlevel = NULL;
 
-	while ((opt = getopt(argc, argv, "r:q")) != -1) {
-		switch (opt) {
-			case 'r':
-				default_runlevel = optarg;
-			case 'q':
+	if (getopt(argc, argv, "q") == 'q')
 				isquiet = true;
-		}
-	}
 
-	if (!isquiet) {
+	if (!isquiet)
 		printf("OpenRC init version %s starting\n", VERSION);
-	}
+
+	if (argc > 1)
+		default_runlevel = argv[optind];
+
+    printf("The current runlevel is %s\n", default_runlevel);
 
 	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
 		reexec = true;
