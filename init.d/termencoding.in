@@ -28,7 +28,7 @@ start()
 	# Set terminal encoding to either ASCII or UNICODE.
 	# See utf-8(7) for more information.
 	local termencoding="%@" termmsg="ASCII"
-	if yesno ${unicode}; then
+	if yesno ${unicode:-yes}; then
 		termencoding="%G"
 		termmsg="UTF-8"
 	fi
@@ -43,7 +43,7 @@ start()
 	# Save the encoding for use immediately at boot
 	if checkpath -W "$RC_LIBEXECDIR"; then
 		mkdir -p "$RC_LIBEXECDIR"/console
-		if yesno ${unicode:-${UNICODE}}; then
+		if yesno ${unicode:-yes}; then
 			echo "" > "$RC_LIBEXECDIR"/console/unicode
 		else
 			rm -f "$RC_LIBEXECDIR"/console/unicode

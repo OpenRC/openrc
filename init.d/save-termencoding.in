@@ -25,7 +25,7 @@ start()
 	# Save the encoding for use immediately at boot
 	if checkpath -W "$RC_LIBEXECDIR"; then
 		mkdir -p "$RC_LIBEXECDIR"/console
-		if yesno ${unicode:-${UNICODE}}; then
+		if yesno ${unicode:-yes}; then
 			echo "" > "$RC_LIBEXECDIR"/console/unicode
 		else
 			rm -f "$RC_LIBEXECDIR"/console/unicode

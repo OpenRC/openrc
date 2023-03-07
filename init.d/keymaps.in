@@ -42,7 +42,7 @@ start()
 	fi
 
 	local wkeys= kmode="-a" msg="ASCII"
-	if yesno $unicode; then
+	if yesno ${unicode:-yes}; then
 		kmode="-u"
 		msg="UTF-8"
 	fi
