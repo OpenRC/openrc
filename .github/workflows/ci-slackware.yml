@@ -1,0 +1,23 @@
+name: ci_slackware_linux
+
+on: [push, pull_request]
+
+jobs:
+
+  slackware:
+    name: Slackware Linux
+    runs-on: ubuntu-latest
+    container: andy5995/slackware-build-essential:15.0
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - gcc
+          - clang
+    env:
+      CC: ${{ matrix.compiler }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: meson setup builddir/
+      - run: meson compile -C builddir
+      - run: meson test --verbose -C builddir
