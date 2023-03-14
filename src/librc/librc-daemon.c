@@ -405,13 +405,26 @@ rc_service_daemon_set(const char *service, const char *exec,
 	RC_STRINGLIST *match;
 	int i = 0;
 	FILE *fp;
+	char *svcdir = RC_SVCDIR;
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		svcdir = rc_user_svcdir();
+	}
+#endif
+
 
 	if (!exec && !pidfile) {
 		errno = EINVAL;
 		return false;
 	}
 
-	xasprintf(&dirpath, RC_SVCDIR "/daemons/%s", basename_c(service));
+	xasprintf(&dirpath, "%s/daemons/%s", svcdir, basename_c(service));
+
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(svcdir);
+	}
+#endif
 
 	/* Regardless, erase any existing daemon info */
 	if ((dp = opendir(dirpath))) {
@@ -477,12 +490,24 @@ rc_service_started_daemon(const char *service,
 	bool retval = false;
 	DIR *dp;
 	struct dirent *d;
+	char *svcdir = RC_SVCDIR;
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		svcdir = rc_user_svcdir();
+	}
+#endif
 
 	if (!service || !exec)
 		return false;
 
-	xasprintf(&dirpath, RC_SVCDIR "/daemons/%s", basename_c(service));
+	xasprintf(&dirpath, "%s/daemons/%s", svcdir, basename_c(service));
 	match = _match_list(exec, argv, NULL);
+
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(svcdir);
+	}
+#endif
 
 	if (indx > 0) {
 		xasprintf(&file, "%03d", indx);
@@ -532,9 +557,21 @@ rc_service_daemons_crashed(const char *service)
 	size_t i;
 	char *ch_root;
 	char *spidfile;
+	char *svcdir = RC_SVCDIR;
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		svcdir = rc_user_svcdir();
+	}
+#endif
 
-	path += snprintf(dirpath, sizeof(dirpath), RC_SVCDIR "/daemons/%s",
-	    basename_c(service));
+	path += snprintf(dirpath, sizeof(dirpath), "%s/daemons/%s",
+	    svcdir, basename_c(service));
+
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(svcdir);
+	}
+#endif
 
 	if (!(dp = opendir(dirpath)))
 		return false;

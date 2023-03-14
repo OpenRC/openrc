@@ -33,11 +33,15 @@
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
 
-#define RC_DEPTREE_CACHE        RC_SVCDIR "/deptree"
-#define RC_DEPTREE_SKEWED	RC_SVCDIR "/clock-skewed"
+#define RC_DEPTREE_CACHE_FILE   "/deptree"
+#define RC_DEPTREE_CACHE        RC_SVCDIR RC_DEPTREE_CACHE_FILE
+#define RC_DEPTREE_SKEWED_FILE  "/clock-skewed"
+#define RC_DEPTREE_SKEWED       RC_SVCDIR RC_DEPTREE_SKEWED_FILE
 #define RC_KRUNLEVEL            RC_SVCDIR "/krunlevel"
-#define RC_STARTING             RC_SVCDIR "/rc.starting"
-#define RC_STOPPING             RC_SVCDIR "/rc.stopping"
+#define RC_STARTING_FOLDER      "/rc.starting"
+#define RC_STARTING             RC_SVCDIR RC_STARTING_FOLDER
+#define RC_STOPPING_FOLDER      "/rc.stopping"
+#define RC_STOPPING             RC_SVCDIR RC_STOPPING_FOLDER
 
 #define RC_SVCDIR_STARTING      RC_SVCDIR "/starting"
 #define RC_SVCDIR_INACTIVE      RC_SVCDIR "/inactive"

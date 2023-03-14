@@ -49,12 +49,20 @@
 #include "helpers.h"
 
 const char *extraopts = NULL;
-const char getoptstring[] = "a:no:s:S" getoptstring_COMMON;
+const char getoptstring[] = "a:no:s:S" getoptstring_COMMON
+#ifdef RC_USER_SERVICES
+getoptstring_USER_SERVICES
+#endif
+;
+
 const struct option longopts[] = {
 	{ "no-stop", 0, NULL, 'n' },
 	{ "override",    1, NULL, 'o' },
 	{ "service",     1, NULL, 's' },
 	{ "sys",         0, NULL, 'S' },
+#ifdef RC_USER_SERVICES
+	longopts_USER_SERVICES
+#endif
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -62,6 +70,9 @@ const char * const longopts_help[] = {
 	"override the next runlevel to change into\nwhen leaving single user or boot runlevels",
 	"runs the service specified with the rest\nof the arguments",
 	"output the RC system type, if any",
+#ifdef RC_USER_SERVICES
+	longopts_help_USER_SERVICES
+#endif
 	longopts_help_COMMON
 };
 const char *usagestring = ""					\
@@ -70,7 +81,8 @@ const char *usagestring = ""					\
 #define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"
 
-#define INTERACTIVE             RC_SVCDIR "/interactive"
+#define INTERACTIVE_FILE        "/interactive"
+#define INTERACTIVE             RC_SVCDIR INTERACTIVE_FILE
 
 #define DEVBOOT			"/dev/.rcboot"
 
@@ -95,16 +107,24 @@ clean_failed(void)
 	DIR *dp;
 	struct dirent *d;
 	char *path;
+	char *svcdir = RC_SVCDIR;
+	char *failed_path;
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		svcdir = rc_user_svcdir();
+	}
+#endif
+	xasprintf(&failed_path, "%s/%s", svcdir, "/failed");
 
 	/* Clean the failed services state dir now */
-	if ((dp = opendir(RC_SVCDIR "/failed"))) {
+	if ((dp = opendir(failed_path))) {
 		while ((d = readdir(dp))) {
 			if (d->d_name[0] == '.' &&
 			    (d->d_name[1] == '\0' ||
 				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
-			xasprintf(&path, RC_SVCDIR "/failed/%s", d->d_name);
+			xasprintf(&path, "%s/%s", failed_path, d->d_name);
 			if (unlink(path))
 				eerror("%s: unlink `%s': %s",
 				    applet, path, strerror(errno));
@@ -112,12 +132,24 @@ clean_failed(void)
 		}
 		closedir(dp);
 	}
+	free(failed_path);
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(svcdir);
+	}
+#endif
 }
 
 static void
 cleanup(void)
 {
 	RC_PID *p, *tmp;
+	char *rc_starting = RC_STARTING;
+	char *rc_stopping = RC_STOPPING;
+
+#ifdef RC_USER_SERVICES
+	char *user_svcdir;
+#endif
 
 	if (!rc_in_logger && !rc_in_plugin &&
 	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
@@ -132,11 +164,27 @@ cleanup(void)
 			free(termios_orig);
 		}
 
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		user_svcdir = rc_user_svcdir();
+		xasprintf(&rc_starting, "%s/%s", user_svcdir, RC_STARTING_FOLDER);
+		xasprintf(&rc_stopping, "%s/%s", user_svcdir, RC_STOPPING_FOLDER);
+		free(user_svcdir);
+	}
+#endif
+
 		/* Clean runlevel start, stop markers */
-		rmdir(RC_STARTING);
-		rmdir(RC_STOPPING);
+		rmdir(rc_starting);
+		rmdir(rc_stopping);
 		clean_failed();
 		rc_logger_close();
+
+#ifdef RC_USER_SERVICES
+		if (rc_is_user()) {
+			free(rc_starting);
+			free(rc_stopping);
+		}
+#endif
 	}
 
 	LIST_FOREACH_SAFE(p, &service_pids, entries, tmp) {
@@ -211,9 +259,24 @@ want_interactive(void)
 static void
 mark_interactive(void)
 {
-	FILE *fp = fopen(INTERACTIVE, "w");
+	FILE *fp;
+	char *interactive_path = INTERACTIVE;
+#ifdef RC_USER_SERVICES
+	char *svcdir;
+	if (rc_is_user()) {
+		svcdir = rc_user_svcdir();
+		xasprintf(&interactive_path, "%s/%s", svcdir, INTERACTIVE_FILE);
+		free(svcdir);
+	}
+#endif
+	fp = fopen(interactive_path, "w");
 	if (fp)
 		fclose(fp);
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(interactive_path);
+	}
+#endif
 }
 
 static void
@@ -649,9 +712,18 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 	bool interactive = false;
 	RC_SERVICE state;
 	bool crashed = false;
+	char *interactive_path = INTERACTIVE;
+#ifdef RC_USER_SERVICES
+	char *svcdir;
+	if (rc_is_user()) {
+		svcdir = rc_user_svcdir();
+		xasprintf(&interactive_path, "%s/%s", svcdir, INTERACTIVE_FILE);
+		free(svcdir);
+	}
+#endif
 
 	if (!rc_yesno(getenv("EINFO_QUIET")))
-		interactive = exists(INTERACTIVE);
+		interactive = exists(interactive_path);
 	errno = 0;
 	crashed = rc_conf_yesno("rc_crashed_start");
 	if (errno == ENOENT)
@@ -710,10 +782,15 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 		strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0))
 		mark_interactive();
 	else {
-		if (exists(INTERACTIVE))
-			unlink(INTERACTIVE);
+		if (exists(interactive_path))
+			unlink(interactive_path);
 	}
 
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(interactive_path);
+	}
+#endif
 }
 
 #ifdef RC_DEBUG
@@ -754,10 +831,16 @@ int main(int argc, char **argv)
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	char *krunlevel = NULL;
 	char *pidstr = NULL;
+	char *rc_starting = RC_STARTING;
+	char *rc_stopping = RC_STOPPING;
 	int opt;
 	bool parallel;
 	int regen = 0;
 	bool nostop = false;
+#ifdef RC_USER_SERVICES
+	char *user_svcdir = NULL;
+	char *user_sysconfdir = NULL;
+#endif
 #ifdef __linux__
 	char *proc;
 	char *p;
@@ -783,11 +866,6 @@ int main(int argc, char **argv)
 	/* Change dir to / to ensure all scripts don't use stuff in pwd */
 	if (chdir("/") == -1)
 		eerror("chdir: %s", strerror(errno));
-
-	/* Ensure our environment is pure
-	 * Also, add our configuration to it */
-	env_filter();
-	env_config();
 
 	/* complain about old configuration settings if they exist */
 	if (exists(RC_CONF_OLD)) {
@@ -833,9 +911,17 @@ int main(int argc, char **argv)
 				printf("%s\n", systype);
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
+#ifdef RC_USER_SERVICES
+		case_RC_USER_SERVICES
+#endif
 		case_RC_COMMON_GETOPT
 		}
 	}
+
+	/* Ensure our environment is pure
+	 * Also, add our configuration to it */
+	env_filter();
+	env_config();
 
 	if (strcmp(applet, "rc") == 0)
 		ewarn("rc is deprecated, please use openrc instead.");
@@ -857,6 +943,15 @@ int main(int argc, char **argv)
 	xasprintf(&pidstr, "%d", getpid());
 	setenv("RC_PID", pidstr, 1);
 	free(pidstr);
+
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		user_svcdir = rc_user_svcdir();
+		xasprintf(&rc_stopping, "%s/%s", user_svcdir, RC_STOPPING_FOLDER);
+		xasprintf(&rc_starting, "%s/%s", user_svcdir, RC_STARTING_FOLDER);
+		free(user_svcdir);
+	}
+#endif
 
 	/* Create a list of all services which should be started for the new or
 	* current runlevel including those in boot, sysinit and hotplugged
@@ -960,7 +1055,7 @@ int main(int argc, char **argv)
 	/* Clean the failed services state dir */
 	clean_failed();
 
-	if (mkdir(RC_STOPPING, 0755) != 0) {
+	if (mkdir(rc_stopping, 0755) != 0) {
 		if (errno == EACCES)
 			eerrorx("%s: superuser access required", applet);
 		eerrorx("%s: failed to create stopping dir `%s': %s",
@@ -1046,7 +1141,7 @@ int main(int argc, char **argv)
 	    going_down ? newlevel : runlevel);
 	hook_out = 0;
 
-	rmdir(RC_STOPPING);
+	rmdir(rc_stopping);
 
 	/* Store the new runlevel */
 	if (newlevel) {
@@ -1063,7 +1158,7 @@ int main(int argc, char **argv)
 		rc_logger_close();
 #endif
 
-	mkdir(RC_STARTING, 0755);
+	mkdir(rc_starting, 0755);
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, runlevel);
 	hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 
@@ -1111,6 +1206,12 @@ int main(int argc, char **argv)
 		}
 		rc_stringlist_free(runlevel_chain);
 	}
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(rc_stopping);
+		free(rc_starting);
+	}
+#endif
 
 #ifdef __linux__
 	/* If the "noinit" parameter was passed on the kernel command line then

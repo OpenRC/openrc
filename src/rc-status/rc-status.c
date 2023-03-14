@@ -39,7 +39,11 @@ enum format_t {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
+#ifdef RC_USER_SERVICES
+const char getoptstring[] = "acf:lmrsSu" getoptstring_COMMON getoptstring_USER_SERVICES;
+#else
 const char getoptstring[] = "acf:lmrsSu" getoptstring_COMMON;
+#endif
 const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
 	{"crashed",     0, NULL, 'c'},
@@ -50,6 +54,9 @@ const struct option longopts[] = {
 	{"servicelist", 0, NULL, 's'},
 	{"supervised", 0, NULL, 'S'},
 	{"unused",      0, NULL, 'u'},
+#ifdef RC_USER_SERVICES
+	longopts_USER_SERVICES
+#endif
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -62,6 +69,9 @@ const char * const longopts_help[] = {
 	"Show service list",
 	"show supervised services",
 	"Show services not assigned to any runlevel",
+#ifdef RC_USER_SERVICES
+	longopts_help_USER_SERVICES
+#endif
 	longopts_help_COMMON
 };
 const char *usagestring = ""						\
@@ -354,6 +364,9 @@ int main(int argc, char **argv)
 			goto exit;
 			/* NOTREACHED */
 
+#ifdef RC_USER_SERVICES
+		case_RC_USER_SERVICES
+#endif
 		case_RC_COMMON_GETOPT
 		}
 

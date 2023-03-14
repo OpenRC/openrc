@@ -70,6 +70,16 @@ env_filter(void)
 
 	/* Add the user defined list of vars */
 	env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
+
+#ifdef RC_USER_SERVICES
+	/* Needed for local user services to be found */
+	if (rc_is_user()) {
+		rc_stringlist_addu(env_allow, "HOME");
+		rc_stringlist_addu(env_allow, "XDG_RUNTIME_DIR");
+		rc_stringlist_addu(env_allow, "XDG_CONFIG_HOME");
+		rc_stringlist_addu(env_allow, "RC_USER_SERVICES");
+	}
+#endif
 	/*
 	 * If '*' is an entry in rc_env_allow, do nothing as we are to pass
 	 * through all environment variables.
@@ -238,8 +248,22 @@ svc_lock(const char *applet, bool ignore_lock_failure)
 {
 	char *file = NULL;
 	int fd;
+	char *svcdir = RC_SVCDIR;
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		svcdir = rc_user_svcdir();
+	}
+#endif
+
+	xasprintf(&file, "%s/exclusive/%s", svcdir, applet);
+
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(svcdir);
+	}
+#endif
+
 	fd = open(file, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
 	free(file);
 	if (fd == -1)
@@ -264,8 +288,22 @@ int
 svc_unlock(const char *applet, int fd)
 {
 	char *file = NULL;
+	char *svcdir = RC_SVCDIR;
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		svcdir = rc_user_svcdir();
+	}
+#endif
+
+	xasprintf(&file, "%s/exclusive/%s", svcdir, applet);
+
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(svcdir);
+	}
+#endif
+
 	close(fd);
 	unlink(file);
 	free(file);
@@ -376,15 +414,33 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 	struct stat st;
 	struct utimbuf ut;
 	FILE *fp;
+	char *cache = RC_DEPTREE_CACHE;
+	char *skew = RC_DEPTREE_SKEWED;
+#ifdef RC_USER_SERVICES
+	char *user_svcdir;
+	if (rc_is_user()) {
+		user_svcdir = rc_user_svcdir();
+		xasprintf(&cache, "%s%s", user_svcdir, RC_DEPTREE_CACHE_FILE);
+		xasprintf(&skew, "%s%s", user_svcdir, RC_DEPTREE_SKEWED_FILE);
+		free(user_svcdir);
+	}
+#endif
 
 	t = 0;
 	if (rc_deptree_update_needed(&t, file) || force != 0) {
 		/* Test if we have permission to update the deptree */
-		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
+		fd = open(cache, O_WRONLY);
 		merrno = errno;
 		errno = serrno;
-		if (fd == -1 && merrno == EACCES)
+		if (fd == -1 && merrno == EACCES) {
+#ifdef RC_USER_SERVICES
+			if (rc_is_user()) {
+				free(cache);
+				free(skew);
+			}
+#endif
 			return rc_deptree_load();
+		}
 		close(fd);
 
 		if (regen)
@@ -394,30 +450,41 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 		eend (retval, "Failed to update the dependency tree");
 
 		if (retval == 0) {
-			if (stat(RC_DEPTREE_CACHE, &st) != 0) {
-				eerror("stat(%s): %s", RC_DEPTREE_CACHE, strerror(errno));
+			if (stat(cache, &st) != 0) {
+				eerror("stat(%s): %s", cache, strerror(errno));
+#ifdef RC_USER_SERVICES
+				if (rc_is_user()) {
+					free(cache);
+					free(skew);
+				}
+#endif
 				return NULL;
 			}
 			if (st.st_mtime < t) {
 				eerror("Clock skew detected with `%s'", file);
-				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
-				    "' to %s", ctime(&t));
-				fp = fopen(RC_DEPTREE_SKEWED, "w");
+				eerrorn("Adjusting mtime of '%s' to %s", cache, ctime(&t));
+				fp = fopen(skew, "w");
 				if (fp != NULL) {
 					fprintf(fp, "%s\n", file);
 					fclose(fp);
 				}
 				ut.actime = t;
 				ut.modtime = t;
-				utime(RC_DEPTREE_CACHE, &ut);
+				utime(cache, &ut);
 			} else {
-				if (exists(RC_DEPTREE_SKEWED))
-					unlink(RC_DEPTREE_SKEWED);
+				if (exists(skew))
+					unlink(skew);
 			}
 		}
 		if (force == -1 && regen != NULL)
 			*regen = retval;
 	}
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(cache);
+		free(skew);
+	}
+#endif
 	return rc_deptree_load();
 }
 
