@@ -222,8 +222,14 @@ fi
 
 _conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
+# In the case of user services, the local config has priority
 _c=${RC_SVCNAME%%.*}
 if [ -n "$_c" -a "$_c" != "$RC_SVCNAME" ]; then
+	if [ "${RC_USER_SERVICE}" = "YES" ]; then
+		if ! sourcex -e "@SYSCONFDIR@/conf.d/user.d/$_c.$RC_RUNLEVEL"; then
+			sourcex -e "@SYSCONFDIR@/conf.d/user.d/$_c"
+		fi
+	fi
 	if ! sourcex -e "$_conf_d/$_c.$RC_RUNLEVEL"; then
 		sourcex -e "$_conf_d/$_c"
 	fi
@@ -231,6 +237,11 @@ fi
 unset _c
 
 # Overlay with our specific config
+if [ "${RC_USER_SERVICE}" = "YES" ]; then
+	if ! sourcex -e "@SYSCONFDIR@/conf.d/user.d/$RC_SVCNAME.$RC_RUNLEVEL"; then
+		sourcex -e "@SYSCONFDIR@/conf.d/user.d/$RC_SVCNAME"
+	fi
+fi
 if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
 	sourcex -e "$_conf_d/$RC_SVCNAME"
 fi
