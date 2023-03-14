@@ -33,6 +33,7 @@
 
 #include "queue.h"
 #include "librc.h"
+#include "einfo.h"
 #include "misc.h"
 #include "rc.h"
 #ifdef __FreeBSD__
@@ -348,6 +349,93 @@ detect_vm(const char *systype RC_UNUSED)
 
 	return NULL;
 }
+
+#ifdef RC_USER_SERVICES
+
+bool
+rc_is_user(void)
+{
+	char *env;
+	if ((env = getenv("RC_USER_SERVICES"))) {
+		return (strcmp(env, "YES") == 0);
+	}
+	return false;
+}
+
+void
+rc_set_user(void)
+{
+	char *path, *tmp;
+
+	/* Setting the sysconf path to XDG_CONFIG_HOME, or ~/.config/, so subdirectories would go:
+	* ~/.config/init.d
+	* ~/.config/conf.d
+	* ~/.config/runlevels
+	* ~/.config/rc.conf */
+	path = rc_user_sysconfdir();
+	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
+		eerrorx("mkdir: %s", strerror(errno));
+	}
+	xasprintf(&tmp, "%s/%s", path, RC_USER_INITDIR_FOLDER);
+	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
+		eerrorx("mkdir: %s", strerror(errno));
+	}
+	free(tmp);
+	xasprintf(&tmp, "%s/%s", path, RC_USER_CONFDIR_FOLDER);
+	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
+		eerrorx("mkdir: %s", strerror(errno));
+	}
+	free(tmp);
+	xasprintf(&tmp, "%s/%s", path, RC_USER_RUNLEVELS_FOLDER);
+	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
+		eerrorx("mkdir: %s", strerror(errno));
+	}
+	free(tmp);
+	xasprintf(&tmp, "%s/%s/%s", path, RC_USER_RUNLEVELS_FOLDER, RC_LEVEL_DEFAULT);
+	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
+		eerrorx("mkdir: %s", strerror(errno));
+	}
+	free(tmp);
+	free(path);
+
+	path = rc_user_svcdir();
+	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
+		eerrorx("mkdir: %s", strerror(errno));
+	}
+	free(path);
+
+	setenv("RC_USER_SERVICES", "YES", 1);
+}
+
+char *
+rc_user_sysconfdir(void)
+{
+	char *env, *path = NULL;
+	if ((env = getenv("XDG_CONFIG_HOME"))) {
+		xasprintf(&path, "%s", env);
+	} else if ((env = getenv("HOME"))) {
+		xasprintf(&path, "%s/.config/", env);
+	} else {
+		eerrorx("Both XDG_CONFIG_HOME and HOME unset.");
+	}
+	return path;
+}
+
+char *
+rc_user_svcdir(void)
+{
+	char *env, *path = NULL;
+	uid_t id;
+	if ((env = getenv("XDG_RUNTIME_DIR"))) {
+		xasprintf(&path, "%s%s", env, RC_USER_RUNTIME_FOLDER);
+	} else {
+		id = getuid();
+		xasprintf(&path, "/tmp%s/%d/", RC_USER_RUNTIME_FOLDER, id);
+	}
+	return path;
+}
+
+#endif
 
 const char *
 rc_sys(void)

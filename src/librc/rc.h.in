@@ -47,6 +47,25 @@ extern "C" {
 #define RC_CONF_D         RC_SYSCONFDIR "/rc.conf.d"
 #define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
 
+#ifdef RC_USER_SERVICES
+
+#define RC_SYS_USER_INITDIR              RC_INITDIR "/user.d"
+#define RC_SYS_USER_CONFDIR              RC_CONFDIR "/user.d"
+#define RC_USER_INITDIR_FOLDER           "/init.d"
+#define RC_USER_CONFDIR_FOLDER           "/conf.d"
+#define RC_USER_RUNLEVELS_FOLDER         "/runlevels"
+#define RC_USER_RUNTIME_FOLDER           "/openrc"
+
+/*! Is openrc being ran in usermode?
+ * @return true if yes, otherwise false */
+bool rc_is_user(void);
+
+void rc_set_user(void);
+
+char *rc_user_sysconfdir(void);
+char *rc_user_svcdir(void);
+#endif
+
 #define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 
 /* PKG_PREFIX is where packages are installed if different from the base OS
