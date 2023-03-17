@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <libgen.h>
 #include <limits.h>
+#include <pwd.h>
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -412,12 +413,17 @@ char *
 rc_user_sysconfdir(void)
 {
 	char *env, *path = NULL;
+	struct passwd *user_passwd = NULL;
+
 	if ((env = getenv("XDG_CONFIG_HOME"))) {
 		xasprintf(&path, "%s", env);
-	} else if ((env = getenv("HOME"))) {
-		xasprintf(&path, "%s/.config/", env);
 	} else {
-		eerrorx("Both XDG_CONFIG_HOME and HOME unset.");
+		errno = 0;
+		user_passwd = getpwuid(getuid());
+		if (!user_passwd) {
+			eerrorx("getpwuid: Failed to get user's passwd: %s", strerror(errno));
+		}
+		xasprintf(&path, "%s/.config/", user_passwd->pw_dir);
 	}
 	return path;
 }
@@ -426,12 +432,10 @@ char *
 rc_user_svcdir(void)
 {
 	char *env, *path = NULL;
-	uid_t id;
 	if ((env = getenv("XDG_RUNTIME_DIR"))) {
 		xasprintf(&path, "%s%s", env, RC_USER_RUNTIME_FOLDER);
 	} else {
-		id = getuid();
-		xasprintf(&path, "/tmp%s/%d/", RC_USER_RUNTIME_FOLDER, id);
+		xasprintf(&path, "/tmp%s/%d/", RC_USER_RUNTIME_FOLDER, getuid());
 	}
 	return path;
 }
