@@ -364,6 +364,52 @@ static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
 	return config;
 }
 
+#ifdef RC_USER_SERVICES
+static RC_STRINGLIST * rc_user_config_directory(RC_STRINGLIST *config)
+{
+	DIR *dp;
+	struct dirent *d;
+	RC_STRINGLIST *rc_conf_d_files = rc_stringlist_new();
+	RC_STRING *fname;
+	RC_STRINGLIST *rc_conf_d_list;
+	char path[PATH_MAX];
+	RC_STRING *line;
+	char *sysconf = rc_user_sysconfdir();
+	char *user_conf_d;
+
+	xasprintf(&user_conf_d, "%s/%s", sysconf, RC_USER_CONF_D);
+
+	if ((dp = opendir(user_conf_d)) != NULL) {
+		while ((d = readdir(dp)) != NULL) {
+			if (fnmatch("*.conf", d->d_name, FNM_PATHNAME) == 0) {
+				rc_stringlist_addu(rc_conf_d_files, d->d_name);
+			}
+		}
+		closedir(dp);
+
+		if (rc_conf_d_files) {
+			rc_stringlist_sort(&rc_conf_d_files);
+			TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
+				if (!fname->value)
+					continue;
+				sprintf(path, "%s/%s", user_conf_d, fname->value);
+				rc_conf_d_list = rc_config_list(path);
+				TAILQ_FOREACH(line, rc_conf_d_list, entries)
+					if (line->value)
+						rc_config_set_value(config, line->value);
+				rc_stringlist_free(rc_conf_d_list);
+			}
+			rc_stringlist_free(rc_conf_d_files);
+		}
+	}
+
+	free(sysconf);
+	free(user_conf_d);
+	return config;
+}
+
+#endif
+
 RC_STRINGLIST *
 rc_config_load(const char *file)
 {
@@ -412,12 +458,37 @@ _free_rc_conf(void)
 char *
 rc_conf_value(const char *setting)
 {
-	RC_STRINGLIST *old;
+	RC_STRINGLIST *system, *old;
 	RC_STRING *s;
 	char *p;
+#ifdef RC_USER_SERVICES
+	RC_STRINGLIST *user;
+	char *userconf, *user_sysconf;
+#endif
 
 	if (!rc_conf) {
-		rc_conf = rc_config_load(RC_CONF);
+		rc_conf = rc_stringlist_new();
+
+#ifdef RC_USER_SERVICES
+		if (rc_is_user()) {
+			user_sysconf = rc_user_sysconfdir();
+			xasprintf(&userconf, "%s/%s", user_sysconf, RC_USER_CONF);
+
+			user = rc_config_load(userconf);
+			TAILQ_CONCAT(rc_conf, user, entries);
+			rc_stringlist_free(user);
+
+			free(userconf);
+			free(user_sysconf);
+
+			rc_user_config_directory(rc_conf);
+		}
+#endif
+
+		system = rc_config_load(RC_CONF);
+		TAILQ_CONCAT(rc_conf, system, entries);
+		rc_stringlist_free(system);
+
 		atexit(_free_rc_conf);
 
 		/* Support old configs. */

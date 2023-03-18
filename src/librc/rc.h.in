@@ -56,6 +56,10 @@ extern "C" {
 #define RC_USER_RUNLEVELS_FOLDER         "/runlevels"
 #define RC_USER_RUNTIME_FOLDER           "/openrc"
 
+
+#define RC_USER_CONF                     "/rc.conf"
+#define RC_USER_CONF_D                   "/rc.conf.d"
+
 /*! Is openrc being ran in usermode?
  * @return true if yes, otherwise false */
 bool rc_is_user(void);
