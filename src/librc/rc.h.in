@@ -66,8 +66,10 @@ bool rc_is_user(void);
 
 void rc_set_user(void);
 
+const char *rc_user_home(void);
 char *rc_user_sysconfdir(void);
 char *rc_user_svcdir(void);
+char *rc_user_datadir(void);
 #endif
 
 #define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"

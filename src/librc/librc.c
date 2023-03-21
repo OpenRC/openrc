@@ -370,10 +370,12 @@ rc_set_user(void)
 	char *path, *tmp;
 
 	/* Setting the sysconf path to XDG_CONFIG_HOME, or ~/.config/, so subdirectories would go:
-	* ~/.config/init.d
-	* ~/.config/conf.d
-	* ~/.config/runlevels
-	* ~/.config/rc.conf */
+	* ~/.config/openrc/init.d
+	* ~/.config/openrc/conf.d
+	* ~/.config/openrc/runlevels
+	* ~/.config/openrc/rc.conf
+	* ~/.lcaol/share/openrc/
+	* */
 	path = rc_user_sysconfdir();
 	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
 		eerrorx("mkdir: %s", strerror(errno));
@@ -400,6 +402,12 @@ rc_set_user(void)
 	free(tmp);
 	free(path);
 
+	path = rc_user_datadir();
+	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
+		eerrorx("mkdir: %s", strerror(errno));
+	}
+	free(path);
+
 	path = rc_user_svcdir();
 	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
 		eerrorx("mkdir: %s", strerror(errno));
@@ -409,21 +417,41 @@ rc_set_user(void)
 	setenv("RC_USER_SERVICES", "YES", 1);
 }
 
+const char *
+rc_user_home(void)
+{
+	struct passwd *user_passwd;
+
+	errno = 0;
+	user_passwd = getpwuid(getuid());
+	if (!user_passwd) {
+		eerrorx("getpwuid: Failed to get user's passwd: %s", strerror(errno));
+	}
+	return user_passwd->pw_dir;
+}
+
 char *
 rc_user_sysconfdir(void)
 {
 	char *env, *path = NULL;
-	struct passwd *user_passwd = NULL;
 
 	if ((env = getenv("XDG_CONFIG_HOME"))) {
-		xasprintf(&path, "%s", env);
+		xasprintf(&path, "%s/openrc", env);
 	} else {
-		errno = 0;
-		user_passwd = getpwuid(getuid());
-		if (!user_passwd) {
-			eerrorx("getpwuid: Failed to get user's passwd: %s", strerror(errno));
-		}
-		xasprintf(&path, "%s/.config/", user_passwd->pw_dir);
+		xasprintf(&path, "%s/.config/openrc", rc_user_home());
+	}
+	return path;
+}
+
+char *
+rc_user_datadir(void)
+{
+	char *env, *path = NULL;
+
+	if ((env = getenv("XDG_DATA_HOME"))) {
+		xasprintf(&path, "%s/openrc", env);
+	} else {
+		xasprintf(&path, "%s/.local/share/openrc", rc_user_home());
 	}
 	return path;
 }
@@ -433,9 +461,9 @@ rc_user_svcdir(void)
 {
 	char *env, *path = NULL;
 	if ((env = getenv("XDG_RUNTIME_DIR"))) {
-		xasprintf(&path, "%s%s", env, RC_USER_RUNTIME_FOLDER);
+		xasprintf(&path, "%s/%s", env, RC_USER_RUNTIME_FOLDER);
 	} else {
-		xasprintf(&path, "/tmp%s/%d/", RC_USER_RUNTIME_FOLDER, getuid());
+		xasprintf(&path, "/tmp/%s/%d/", RC_USER_RUNTIME_FOLDER, getuid());
 	}
 	return path;
 }
