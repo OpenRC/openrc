@@ -4,6 +4,11 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.47
+
+This release is primarily an internal cleanup release.
+The only user-visible difference is that unicode is now on by default.
+
 ## OpenRC 0.46
 
 The path for the reference file for the swclock service is now
