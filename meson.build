@@ -176,7 +176,10 @@ cc_warning_flags_test = [
   '-Wsequence-point',
   '-Wshadow',
   '-Wwrite-strings',
+  '-Werror=implicit-int',
   '-Werror=implicit-function-declaration',
+  '-Werror=int-conversion',
+  '-Werror=incompatible-function-pointer-types',
   ]
 cc_warning_flags = cc.get_supported_arguments(cc_warning_flags_test)
 cc_flags = [cc_debug_flags, cc_os_flags, cc_warning_flags]
