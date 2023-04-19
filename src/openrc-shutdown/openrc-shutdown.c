@@ -170,7 +170,7 @@ static void sleep_no_interrupt(int seconds)
 		duration = remaining;
 }
 
-_noreturn static void stop_shutdown(int sig)
+RC_NORETURN static void stop_shutdown(int sig)
 {
 	(void) sig;
 	unlink(nologin_file);

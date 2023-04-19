@@ -127,7 +127,7 @@ rc_getline(char **line, size_t *len, FILE *fp)
 }
 
 char *
-rc_proc_getent(const char *ent _unused)
+rc_proc_getent(const char *ent RC_UNUSED)
 {
 #ifdef __linux__
 	FILE *fp;

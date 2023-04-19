@@ -42,8 +42,7 @@ static sigjmp_buf jbuf;
 /*
  *	Alarm handler
  */
-/*ARGSUSED*/
-_noreturn static void handler(int arg _unused)
+RC_NORETURN static void handler(int arg RC_UNUSED)
 {
 	siglongjmp(jbuf, 1);
 }
