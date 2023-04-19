@@ -36,7 +36,7 @@ void set_quiet_options(void)
 	}
 }
 
-_noreturn void show_version(void)
+RC_NORETURN void show_version(void)
 {
 	const char *systype = NULL;
 
@@ -51,7 +51,7 @@ _noreturn void show_version(void)
 	exit(EXIT_SUCCESS);
 }
 
-_noreturn void usage(int exit_status)
+RC_NORETURN void usage(int exit_status)
 {
 	const char * const has_arg[] = { "", "<arg>", "[arg]" };
 	int i;

@@ -192,8 +192,8 @@ extern char **environ;
 # define SYS_ioprio_set __NR_ioprio_set
 #endif
 #if !defined(__DragonFly__)
-static inline int ioprio_set(int which _unused, int who _unused,
-			     int ioprio _unused)
+static inline int ioprio_set(int which RC_UNUSED, int who RC_UNUSED,
+			     int ioprio RC_UNUSED)
 {
 #ifdef SYS_ioprio_set
 	return syscall(SYS_ioprio_set, which, who, ioprio);
@@ -208,7 +208,7 @@ static void cleanup(void)
 	free(changeuser);
 }
 
-_noreturn static void re_exec_supervisor(void)
+RC_NORETURN static void re_exec_supervisor(void)
 {
 	syslog(LOG_WARNING, "Re-executing for %s", svcname);
 	execlp("supervise-daemon", "supervise-daemon", svcname, "--reexec",
@@ -354,7 +354,7 @@ static pid_t exec_command(const char *cmd)
 	return pid;
 }
 
-_noreturn static void child_process(char *exec, char **argv)
+RC_NORETURN static void child_process(char *exec, char **argv)
 {
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
@@ -587,7 +587,7 @@ _noreturn static void child_process(char *exec, char **argv)
 	eerrorx("%s: failed to exec `%s': %s", applet, exec,strerror(errno));
 }
 
-_noreturn static void supervisor(char *exec, char **argv)
+RC_NORETURN static void supervisor(char *exec, char **argv)
 {
 	FILE *fp;
 	char buf[2048];
