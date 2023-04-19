@@ -690,7 +690,7 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 }
 
 #ifdef RC_DEBUG
-_noreturn static void
+RC_NORETURN static void
 handle_bad_signal(int sig)
 {
 	char pid[10];

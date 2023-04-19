@@ -30,20 +30,9 @@
 
 #define UNCONST(a)		((void *)(unsigned long)(const void *)(a))
 
-#ifdef lint
-# define _unused
-#endif
-#if __GNUC__ > 2 || defined(__INTEL_COMPILER)
-# define _dead __attribute__((__noreturn__))
-# define _noreturn __attribute__ ((__noreturn__))
-# define _unused __attribute__((__unused__))
-# define _xasprintf(a, b)  __attribute__((__format__(__printf__, a, b)))
-#else
-# define _dead
-# define _noreturn
-# define _unused
-# define _xasprintf(a, b)
-#endif
+#define RC_UNUSED __attribute__((__unused__))
+#define RC_NORETURN __attribute__((__noreturn__))
+#define RC_PRINTF(a, b)  __attribute__((__format__(__printf__, a, b)))
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -65,7 +54,7 @@
 	} while (/* CONSTCOND */ 0)
 #endif
 
-_unused static void *xmalloc (size_t size)
+RC_UNUSED static void *xmalloc (size_t size)
 {
 	void *value = malloc(size);
 
@@ -76,7 +65,7 @@ _unused static void *xmalloc (size_t size)
 	/* NOTREACHED */
 }
 
-_unused static void *xrealloc(void *ptr, size_t size)
+RC_UNUSED static void *xrealloc(void *ptr, size_t size)
 {
 	void *value = realloc(ptr, size);
 
@@ -87,7 +76,7 @@ _unused static void *xrealloc(void *ptr, size_t size)
 	/* NOTREACHED */
 }
 
-_unused static char *xstrdup(const char *str)
+RC_UNUSED static char *xstrdup(const char *str)
 {
 	char *value;
 
@@ -109,7 +98,7 @@ _unused static char *xstrdup(const char *str)
  * basename_c never modifies the argument. As such, if there is a trailing
  * slash then an empty string is returned.
  */
-_unused static const char *basename_c(const char *path)
+RC_UNUSED static const char *basename_c(const char *path)
 {
 	const char *slash = strrchr(path, '/');
 
@@ -118,14 +107,14 @@ _unused static const char *basename_c(const char *path)
 	return (path);
 }
 
-_unused static bool exists(const char *pathname)
+RC_UNUSED static bool exists(const char *pathname)
 {
 	struct stat buf;
 
 	return (stat(pathname, &buf) == 0);
 }
 
-_unused static bool existss(const char *pathname)
+RC_UNUSED static bool existss(const char *pathname)
 {
 	struct stat buf;
 
@@ -140,7 +129,7 @@ _unused static bool existss(const char *pathname)
  * functions to handle memory allocation.
  * this function was originally written by Mike Frysinger.
  */
-_unused _xasprintf(2,3) static int xasprintf(char **strp, const char *fmt, ...)
+RC_UNUSED RC_PRINTF(2,3) static int xasprintf(char **strp, const char *fmt, ...)
 {
 	va_list ap;
 	int len;

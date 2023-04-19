@@ -249,7 +249,7 @@ detect_prefix(const char *systype)
 }
 
 static const char *
-detect_container(const char *systype _unused)
+detect_container(const char *systype RC_UNUSED)
 {
 #ifdef __FreeBSD__
 	if (systype) {
@@ -313,7 +313,7 @@ detect_container(const char *systype _unused)
 }
 
 static const char *
-detect_vm(const char *systype _unused)
+detect_vm(const char *systype RC_UNUSED)
 {
 #ifdef __NetBSD__
 	if (systype) {

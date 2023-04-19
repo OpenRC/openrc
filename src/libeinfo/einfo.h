@@ -13,13 +13,8 @@
 #ifndef __EINFO_H__
 #define __EINFO_H__
 
-#if defined(__GNUC__)
-# define EINFO_PRINTF(a, b)  __attribute__((__format__(__printf__, a, b)))
-# define EINFO_XPRINTF(a, b) __attribute__((__noreturn__,__format__(__printf__, a, b)))
-#else
-# define EINFO_PRINTF(a, b)
-# define EINFO_XPRINTF(a, b)
-#endif
+#define EINFO_PRINTF(a, b)  __attribute__((__format__(__printf__, a, b)))
+#define EINFO_XPRINTF(a, b) __attribute__((__noreturn__, __format__(__printf__, a, b)))
 
 #include <sys/types.h>
 #include <stdbool.h>

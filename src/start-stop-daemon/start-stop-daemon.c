@@ -179,9 +179,9 @@ extern char **environ;
 # define SYS_ioprio_set __NR_ioprio_set
 #endif
 #if !defined(__DragonFly__)
-static inline int ioprio_set(int which _unused,
-			     int who _unused,
-			     int ioprio _unused)
+static inline int ioprio_set(int which RC_UNUSED,
+			     int who RC_UNUSED,
+			     int ioprio RC_UNUSED)
 {
 #ifdef SYS_ioprio_set
 	return syscall(SYS_ioprio_set, which, who, ioprio);
