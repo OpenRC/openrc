@@ -21,6 +21,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +29,7 @@
 
 #define ERRX fprintf (stderr, "out of memory\n"); exit (1)
 
-#define UNCONST(a)		((void *)(unsigned long)(const void *)(a))
+#define UNCONST(a)		((void *)(uintptr_t)(const void *)(a))
 
 #define RC_UNUSED __attribute__((__unused__))
 #define RC_NORETURN __attribute__((__noreturn__))
