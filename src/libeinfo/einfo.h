@@ -69,22 +69,22 @@ void elog(int, const char * EINFO_RESTRICT, ...) EINFO_PRINTF(2, 3);
  * The x suffix means function will exit() returning failure.
  */
 /*@{*/
-int einfon(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-int ewarnn(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-int eerrorn(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-int einfo(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-int ewarn(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-void ewarnx(const char * __EINFO_RESTRICT, ...) EINFO_XPRINTF(1, 2);
-int eerror(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-void eerrorx(const char * __EINFO_RESTRICT, ...) EINFO_XPRINTF(1, 2);
+int einfon(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int ewarnn(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int eerrorn(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int einfo(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int ewarn(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+void ewarnx(const char * EINFO_RESTRICT, ...) EINFO_XPRINTF(1, 2);
+int eerror(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+void eerrorx(const char * EINFO_RESTRICT, ...) EINFO_XPRINTF(1, 2);
 
-int einfovn(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-int ewarnvn(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-int ebeginvn(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-int eendvn(int, const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(2, 3);
-int ewendvn(int, const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(2, 3);
-int einfov(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
-int ewarnv(const char * __EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int einfovn(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int ewarnvn(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int ebeginvn(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int eendvn(int, const char * EINFO_RESTRICT, ...) EINFO_PRINTF(2, 3);
+int ewendvn(int, const char * EINFO_RESTRICT, ...) EINFO_PRINTF(2, 3);
+int einfov(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
+int ewarnv(const char * EINFO_RESTRICT, ...) EINFO_PRINTF(1, 2);
 /*@}*/
 
 /*! @ingroup ebegin
