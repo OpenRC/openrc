@@ -47,6 +47,7 @@ typedef enum
 } ECOLOR;
 
 /*! @brief Returns the ASCII code for the color */
+__attribute__((__deprecated__("this shit is gone yo")))
 const char *ecolor(ECOLOR);
 
 /*! @brief Writes to syslog. */
@@ -132,3 +133,6 @@ void eprefix(const char * EINFO_RESTRICT);
 #endif
 
 #endif
+
+/* TODO: remove */
+/* vim: set tabstop=8 noexpandtab: */

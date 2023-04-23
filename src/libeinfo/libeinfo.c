@@ -993,3 +993,6 @@ eoutdentv(void)
 	if (is_verbose())
 		eoutdent();
 }
+
+/* TODO: remove */
+/* vim: set tabstop=8 noexpandtab: */

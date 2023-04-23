@@ -133,13 +133,11 @@ else
   cc_selinux_flags = []
 endif
 
-termcap = get_option('termcap')
-if termcap != ''
-  termcap_dep = dependency(termcap)
-  termcap_flags = '-DHAVE_TERMCAP'
-  else
-  termcap_dep = []
-  termcap_flags = []
+curses_dep = dependency('ncurses', required : get_option('curses'))
+if curses_dep.found()
+  curses_flags = ['-DHAVE_CURSES']
+else
+  curses_flags = []
 endif
 
 if get_option('buildtype').startswith('debug')

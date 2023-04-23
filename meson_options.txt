@@ -4,6 +4,8 @@ option('bash-completions', type : 'boolean',
   description : 'install bash completions')
 option('branding', type : 'string',
   description : 'Add branding to OpenRC')
+option('curses', type : 'feature', value : 'auto',
+  description : 'use curses for color output')
 option('local_prefix', type : 'string', value : '/usr/local',
   description : 'default location of user maintained packages')
 option('newnet', type : 'boolean',
@@ -31,9 +33,5 @@ option('split-usr', type : 'combo',
   description : '''/bin, /sbin aren't symlinks into /usr''')
 option('sysvinit', type : 'boolean', value : false,
   description : 'enable SysVinit compatibility (linux only)')
-option('termcap', type : 'combo',
-  choices :
-    [ '', 'ncurses', 'termcap' ],
-  description : 'the termcap library to use')
 option('zsh-completions', type : 'boolean',
   description : 'install zsh completions')
