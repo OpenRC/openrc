@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 		if (strcmp(applet, "eend") == 0 ||
 		    strcmp(applet, "ewend") == 0 ||
 		    strcmp(applet, "veend") == 0 ||
-		    strcmp(applet, "vweend") == 0 ||
+		    strcmp(applet, "vewend") == 0 ||
 		    strcmp(applet, "ewaitfile") == 0)
 		{
 			errno = 0;
