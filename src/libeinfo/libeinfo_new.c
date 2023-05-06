@@ -2,9 +2,12 @@
  * TODO:
  * 	- handle the fancy env vars
  */
+#include <errno.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h> /* for strcasecmp(3) */
 #include <syslog.h>
 
 #ifdef HAVE_CURSES
@@ -34,6 +37,20 @@ struct einfo_term {
 	TERMINAL *term;
 	/* Is the terminal ready for use */
 	bool is_set_up;
+};
+
+/* Used to pick the final color for output */
+struct color_map {
+	int good;
+	bool good_bold;
+	int warn;
+	bool warn_bold;
+	int bad;
+	bool bad_bold;
+	int hilite;
+	bool hilite_bold;
+	int bracket;
+	bool bracket_bold;
 };
 
 static struct einfo_term stdout_term = {
@@ -89,18 +106,55 @@ static void _cleanupterm(void)
 	}
 }
 
-/* TODO: implement for realsies */
+/*
+ * Checks the truthyness of a string.
+ *
+ * yes/y/true/on/1
+ * no/n/false/off/0
+ *
+ * NULL is false + ENOENT
+ * other strings are false + EINVAL
+ */
+static bool yesno(const char *str)
+{
+	/* Ensure a "true" false does not have a bad errno value */
+	errno = 0;
+
+	if (str == NULL) {
+		errno = ENOENT;
+		return false;
+	}
+
+	if (strcasecmp(str, "yes") == 0
+		|| strcasecmp(str, "y") == 0
+		|| strcasecmp(str, "true") == 0
+		|| strcasecmp(str, "on") == 0
+		|| strcasecmp(str, "1") == 0) {
+		return true;
+	}
+
+	if (strcasecmp(str, "no") != 0
+		&& strcasecmp(str, "n") != 0
+		&& strcasecmp(str, "false") != 0
+		&& strcasecmp(str, "off") != 0
+		&& strcasecmp(str, "0") != 0) {
+		errno = EINVAL;
+	}
+
+	return false;
+}
+
 static bool is_quiet(void)
 {
-	return false;
+	return yesno(getenv("EINFO_QUIET"));
 }
 static bool is_really_quiet(void)
 {
-	return false;
+	return yesno(getenv("EERROR_QUIET"));
 }
 static bool is_verbose(void)
 {
-	return true;
+	return yesno(getenv("EINFO_VERBOSE"));
 }
 
 /* putchar(3)-like for use with tputs */
@@ -110,44 +164,225 @@ static int _putc(int c)
 }
 
 /*
+ * Like strtoul(3), but with a maximum returned value. Invalid strings are
+ * silently turned into 0.
+ *
+ * str: string to intify (must be checked by caller for NULL)
+ * max: values larger than this get chomped (including overflow)
+ *
+ * return: the value of str as ulong, or max
+ *         set errno to EINVAL on invalid strings
+ *         set errno to ERANGE if max < str <= ULONG_MAX (no overflow)
+ */
+EINFO_NONNULL
+static unsigned long chomp_strtoul(const char *str, unsigned long max)
+{
+	unsigned long ret = 0;
+	/* Mildly gross, but not truly used while uninitialized */
+	char *endptr;
+
+	errno = 0;
+	ret = strtoul(str, &endptr, 0);
+
+	/* No valid digits */
+	if (endptr == str) {
+		ret = 0;
+		errno = EINVAL;
+	}
+	/* String not completely valid */
+	else if (str[0] != '\0' && endptr[0] != '\0') {
+		ret = 0;
+		errno = EINVAL;
+	}
+	/* ulong overflow */
+	else if (errno == ERANGE) {
+		ret = max;
+	}
+	else if (ret > max) {
+		ret = max;
+		errno = ERANGE;
+	}
+
+	return ret;
+}
+
+/*
+ * Translate EINFO_COLOR env var into a set of colors. Assumes defaults unless
+ * otherwise specified.
+ *
+ * The colors are stored in the env var as "name=color;bold:", for example:
+ *
+ *     EINFO_COLOR="good=1;0:warn=6;1:"
+ *
+ * which sets "good" messages to non-bold red and "warn" messages to bold cyan
+ * assuming 1 and 6 correspond with red and cyan in curses.h, respectively.
+ *
+ * env: the env var itself, must be copied because getenv(3) explicitly warns
+ *      about not modifying the string
+ *
+ * return: the (possibly) modified set of colors
+ *
+ * TODO:
+ * 	- support named colors? (green, green-bold)
+ */
+static struct color_map env_colors(const char *env)
+{
+	char *color_env;
+	char *env_saveptr = NULL;
+	char *entry;
+	char *entry_saveptr = NULL;
+	char *name;
+	char *color;
+	unsigned long parsed_color;
+	char *bold;
+	unsigned long parsed_bold;
+	struct color_map colors = {
+		.good		= COLOR_GREEN,
+		.good_bold	= true,
+		.warn		= COLOR_YELLOW,
+		.warn_bold	= true,
+		.bad		= COLOR_RED,
+		.bad_bold	= true,
+		.hilite		= COLOR_CYAN,
+		.hilite_bold	= true,
+		.bracket	= COLOR_BLUE,
+		.bracket_bold	= true,
+	};
+	int xlat_color [] = {
+		/* I do not expect many people to use black tho */
+		COLOR_BLACK,
+		COLOR_RED,
+		COLOR_GREEN,
+		COLOR_YELLOW,
+		COLOR_BLUE,
+		COLOR_MAGENTA,
+		COLOR_CYAN,
+		COLOR_WHITE,
+	};
+
+	/* No env var, "", and "yes" all mean default colors */
+	if (env == NULL || env[0] == '\0' || yesno(env)) {
+		return colors;
+	}
+
+	color_env = strdup(env);
+
+	/* Go through each entry in the env var, skip malformed ones */
+	for (entry = strtok_r(color_env, ":", &env_saveptr);
+		entry != NULL;
+		entry = strtok_r(NULL, ":", &env_saveptr)) {
+		/*
+		 * The saveptr used for parsing an entry should be reset, see
+		 * NOTES in strtok_r(3)
+		 */
+		entry_saveptr = NULL;
+
+		name = strtok_r(entry, "=", &entry_saveptr);
+		if (name == NULL) {
+			continue;
+		}
+		color = strtok_r(NULL, ";", &entry_saveptr);
+		if (color == NULL) {
+			continue;
+		}
+		bold = strtok_r(NULL, ";", &entry_saveptr);
+		if (bold == NULL) {
+			continue;
+		}
+		/* Only 8 colors are defined by curses */
+		parsed_color = chomp_strtoul(color, 7);
+		if (errno != 0) {
+			continue;
+		}
+		parsed_color = xlat_color[parsed_color];
+		parsed_bold = chomp_strtoul(bold, 1);
+		if (errno != 0) {
+			continue;
+		}
+
+		if (strcasecmp(name, "good") == 0) {
+			colors.good = parsed_color;
+			colors.good_bold = parsed_bold;
+		} else if (strcasecmp(name, "warn") == 0) {
+			colors.warn = parsed_color;
+			colors.warn_bold = parsed_bold;
+		} else if (strcasecmp(name, "bad") == 0) {
+			colors.bad = parsed_color;
+			colors.bad_bold = parsed_bold;
+		} else if (strcasecmp(name, "hilite") == 0) {
+			colors.hilite = parsed_color;
+			colors.hilite_bold = parsed_bold;
+		} else if (strcasecmp(name, "bracket") == 0) {
+			colors.bracket = parsed_color;
+			colors.bracket_bold = parsed_bold;
+		}
+		/* Just for symmetry */
+		else {
+			continue;
+		}
+	}
+
+	free(color_env);
+	return colors;
+}
+
+/*
  * Set the output color mode
  *
  * t: the terminal to set the color for
  * color: the color to being using
  *
  * TODO:
- * 	- actual color stuff (including EINFO_COLOR)
  * 	- check errors
  * 	- proper string concatenation
  */
 EINFO_NONNULL
 static void _ecolor(struct einfo_term *t, ECOLOR color)
 {
+	const char *env_temp = NULL;
+	struct color_map colors;
+	int target_color;
+	bool target_bold;
 	char color_str [100] = { 0 };
 
 	_setupterm();
 	set_curterm(t->term);
 	einfo_cur_term = t;
 
-	if (color != ECOLOR_NORMAL) {
-		strcat(color_str, tiparm(enter_bold_mode));
-	} else {
-		strcat(color_str, tiparm(exit_attribute_mode));
+	env_temp = getenv("EINFO_COLOR");
+	if (!yesno(env_temp)) {
+		/* Only skip colors on a true "no" */
+		if (errno == 0) {
+			return;
+		}
 	}
+	colors = env_colors(env_temp);
 
-	if (color == ECOLOR_GOOD) {
-		strcat(color_str, tiparm(set_a_foreground, COLOR_GREEN));
-	} else if (color == ECOLOR_WARN) {
-		strcat(color_str, tiparm(set_a_foreground, COLOR_YELLOW));
-	} else if (color == ECOLOR_BAD) {
-		strcat(color_str, tiparm(set_a_foreground, COLOR_RED));
-	} else if (color == ECOLOR_HILITE) {
-		strcat(color_str, tiparm(set_a_foreground, COLOR_CYAN));
-	} else if (color == ECOLOR_BRACKET) {
-		strcat(color_str, tiparm(set_a_foreground, COLOR_BLUE));
+	if (color != ECOLOR_NORMAL) {
+		if (color == ECOLOR_GOOD) {
+			target_bold = colors.good_bold;
+			target_color = colors.good;
+		} else if (color == ECOLOR_WARN) {
+			target_bold = colors.warn_bold;
+			target_color = colors.warn;
+		} else if (color == ECOLOR_BAD) {
+			target_bold = colors.bad_bold;
+			target_color = colors.bad;
+		} else if (color == ECOLOR_HILITE) {
+			target_bold = colors.hilite_bold;
+			target_color = colors.hilite;
+		} else if (color == ECOLOR_BRACKET) {
+			target_bold = colors.bracket_bold;
+			target_color = colors.bracket;
+		}
+		strcat(color_str, tiparm(target_bold
+			? enter_bold_mode
+			: exit_attribute_mode));
+		strcat(color_str, tiparm(set_a_foreground, target_color));
 	}
 	/* ECOLOR_NORMAL */
 	else {
+		strcat(color_str, tiparm(exit_attribute_mode));
 		strcat(color_str, tiparm(orig_pair));
 	}
 
@@ -215,21 +450,33 @@ static void _move_col(struct einfo_term *t, int col)
  * f: the file that is indented into
  *
  * return: like fprintf(3)
- *
- * TODO:
- * 	- read env value?
- * 	- use cursor controls?
  */
 EINFO_NONNULL
 static int _eindent(FILE *f)
 {
 	/* Pre-terminated :) */
 	char indent [INDENT_MAX + 1] = { 0 };
+	const char *env_level_str = getenv("EINFO_INDENT");
+	size_t env_level = 0;
 
 	/*
-	 * The bounds are checked in eindent()/eoutdent(), this is just to skip
-	 * unneeded work. Will need to be re-checked once reading EINFO_INDENT
-	 * env var is implemented.
+	 * Use the indent level from the env if it exists and is valid. Given as
+	 * a count of spaces.
+	 */
+	if (env_level_str != NULL) {
+		env_level = chomp_strtoul(env_level_str, INDENT_MAX);
+
+		if (env_level == 0 && errno == 0) {
+			return 0;
+		} else if (errno != EINVAL) {
+			memset(indent, ' ', env_level);
+			return fprintf(f, "%s", indent);
+		}
+	}
+
+	/*
+	 * The indent_level bounds are checked in eindent()/eoutdent(), this is
+	 * just to skip unneeded work.
 	 */
 	if (indent_level > 0) {
 		memset(indent, ' ', indent_level * INDENT_WIDTH);
@@ -325,7 +572,6 @@ static int _eend_message(
  * msg: message to include in the brackets
  *
  * TODO:
- * 	- cursor placement
  * 	- do something different on empty message
  */
 EINFO_NONNULL
@@ -367,13 +613,12 @@ static int _eend_status(
  * va: the args to feed vsyslog(3)
  *
  * TODO:
- * 	- get the log id from the env
  * 	- can this be nonnull?
  */
 EINFO_PRINTF(2, 0)
 static void _elog(int level, const char *EINFO_RESTRICT fmt, va_list va)
 {
-	const char *id = "elog";
+	const char *id = getenv("EINFO_LOG");
 
 	va_list ap;
 
@@ -423,6 +668,7 @@ int einfon(const char * EINFO_RESTRICT fmt, ...)
 	LASTCMD(__func__);
 	return ret;
 }
+/* TODO: why is this not sent to syslog? */
 int ewarnn(const char * EINFO_RESTRICT fmt, ...)
 {
 	int ret;
@@ -440,6 +686,7 @@ int ewarnn(const char * EINFO_RESTRICT fmt, ...)
 	LASTCMD(__func__);
 	return ret;
 }
+/* TODO: why is this not sent to syslog? */
 int eerrorn(const char * EINFO_RESTRICT fmt, ...)
 {
 	int ret;
@@ -475,7 +722,6 @@ int einfo(const char * EINFO_RESTRICT fmt, ...)
 	LASTCMD(__func__);
 	return ret;
 }
-/* TODO: apparently this is supposed to go to syslog too? */
 int ewarn(const char * EINFO_RESTRICT fmt, ...)
 {
 	int ret;
@@ -487,6 +733,7 @@ int ewarn(const char * EINFO_RESTRICT fmt, ...)
 
 	va_start(ap, fmt);
 
+	_elog(LOG_WARNING, fmt, ap);
 	ret = _einfo(&stderr_term, ECOLOR_WARN, fmt, ap);
 	ret += fprintf(stderr_term.file, "\n");
 
@@ -494,7 +741,6 @@ int ewarn(const char * EINFO_RESTRICT fmt, ...)
 	LASTCMD(__func__);
 	return ret;
 }
-/* TODO: apparently this is supposed to go to syslog too? */
 void ewarnx(const char * EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
@@ -502,6 +748,7 @@ void ewarnx(const char * EINFO_RESTRICT fmt, ...)
 	if (fmt && !is_quiet()) {
 		va_start(ap, fmt);
 
+		_elog(LOG_WARNING, fmt, ap);
 		_einfo(&stderr_term, ECOLOR_WARN, fmt, ap);
 		fprintf(stderr_term.file, "\n");
 
@@ -510,7 +757,6 @@ void ewarnx(const char * EINFO_RESTRICT fmt, ...)
 
 	exit(EXIT_FAILURE);
 }
-/* TODO: apparently this is supposed to go to syslog too? */
 int eerror(const char * EINFO_RESTRICT fmt, ...)
 {
 	int ret;
@@ -522,6 +768,7 @@ int eerror(const char * EINFO_RESTRICT fmt, ...)
 
 	va_start(ap, fmt);
 
+	_elog(LOG_ERR, fmt, ap);
 	ret = _einfo(&stderr_term, ECOLOR_BAD, fmt, ap);
 	ret += fprintf(stderr_term.file, "\n");
 
@@ -529,7 +776,6 @@ int eerror(const char * EINFO_RESTRICT fmt, ...)
 	LASTCMD(__func__);
 	return ret;
 }
-/* TODO: apparently this is supposed to go to syslog too? */
 void eerrorx(const char * EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
@@ -537,6 +783,7 @@ void eerrorx(const char * EINFO_RESTRICT fmt, ...)
 	if (fmt && !is_really_quiet()) {
 		va_start(ap, fmt);
 
+		_elog(LOG_ERR, fmt, ap);
 		_einfo(&stderr_term, ECOLOR_BAD, fmt, ap);
 		fprintf(stderr_term.file, "\n");
 
@@ -563,6 +810,7 @@ int einfovn(const char * EINFO_RESTRICT fmt, ...)
 	LASTCMD(__func__);
 	return ret;
 }
+/* TODO: why is this not sent to syslog? */
 int ewarnvn(const char * EINFO_RESTRICT fmt, ...)
 {
 	int ret;
@@ -617,6 +865,7 @@ int einfov(const char * EINFO_RESTRICT fmt, ...)
 	LASTCMD(__func__);
 	return ret;
 }
+/* TODO: why is this not sent to syslog? */
 int ewarnv(const char * EINFO_RESTRICT fmt, ...)
 {
 	int ret;
@@ -814,7 +1063,6 @@ int ewendv(int retval, const char * EINFO_RESTRICT fmt, ...)
 /*
  * TODO:
  * 	- proper test progs
- * 	- env shit (only read, no point in setting it?)
  */
 void eindent(void)
 {
