@@ -287,6 +287,7 @@ static RC_STRINGLIST *rc_config_kcl(RC_STRINGLIST *config)
 	overrides = rc_stringlist_new();
 
 	/* A list of variables which may be overridden on the kernel command line */
+	rc_stringlist_add(overrides, "rc_interactive");
 	rc_stringlist_add(overrides, "rc_parallel");
 
 	TAILQ_FOREACH(override, overrides, entries) {
