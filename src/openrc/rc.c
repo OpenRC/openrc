@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -819,6 +820,60 @@ handle_bad_signal(int sig)
 }
 #endif
 
+#ifdef RC_USER_SERVICES
+
+static int
+inc_dec_lockfile(int val)
+{
+	char *svcdir = NULL;
+	char *lockfile_path = NULL;
+	FILE *lockfile = NULL;
+
+	int locknum = 0;
+
+	einfov("locking lockfile");
+
+	svcdir = rc_user_svcdir();
+
+	if (mkdir(svcdir, 0700) != 0 && errno != EEXIST)
+		eerrorx("mkdir: %s, %s", svcdir, strerror(errno));
+
+	xasprintf(&lockfile_path, "%s/%s", svcdir, "lock");
+	lockfile = fopen(lockfile_path, "r+");
+	if (!lockfile) {
+		lockfile = fopen(lockfile_path, "w+");
+		if (!lockfile)
+			eerrorx("fopen: failed to open file %s, %s", lockfile_path, strerror(errno));
+		if (flock(fileno(lockfile), LOCK_EX) != 0) {
+			eerrorx("flock: %s", strerror(errno));
+		}
+		locknum = 1;
+	} else {
+		if (flock(fileno(lockfile), LOCK_EX) != 0) {
+			eerrorx("flock: %s", strerror(errno));
+		}
+		fscanf(lockfile, "%d", &locknum);
+		locknum += val;
+		rewind(lockfile);
+	}
+
+	free(lockfile_path);
+	free(svcdir);
+
+	fprintf(lockfile, "%d", locknum);
+
+	if (flock(fileno(lockfile), LOCK_UN)) {
+		eerrorx("flock: %s", strerror(errno));
+	}
+	fclose(lockfile);
+
+	einfov("unlocking lockfile");
+
+	return locknum;
+}
+
+#endif
+
 int main(int argc, char **argv)
 {
 	const char *bootlevel = NULL;
@@ -839,7 +894,7 @@ int main(int argc, char **argv)
 	bool nostop = false;
 #ifdef RC_USER_SERVICES
 	char *user_svcdir = NULL;
-	char *user_sysconfdir = NULL;
+	int locknum = 0;
 #endif
 #ifdef __linux__
 	char *proc;
@@ -946,6 +1001,18 @@ int main(int argc, char **argv)
 
 #ifdef RC_USER_SERVICES
 	if (rc_is_user()) {
+		if (rc_yesno(getenv("RC_PAM_STARTING"))) {
+			/* the lockfile count -1 because we don't want to count ourselves */
+			locknum = inc_dec_lockfile(1) - 1;
+		} else if (rc_yesno(getenv("RC_PAM_STOPPING"))) {
+			locknum = inc_dec_lockfile(-1);
+		}
+
+		if (locknum > 0) {
+			einfov("lock set, skipping");
+			return EXIT_SUCCESS;
+		}
+
 		user_svcdir = rc_user_svcdir();
 		xasprintf(&rc_stopping, "%s/%s", user_svcdir, RC_STOPPING_FOLDER);
 		xasprintf(&rc_starting, "%s/%s", user_svcdir, RC_STARTING_FOLDER);
