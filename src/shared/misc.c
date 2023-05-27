@@ -78,6 +78,8 @@ env_filter(void)
 		rc_stringlist_addu(env_allow, "XDG_RUNTIME_DIR");
 		rc_stringlist_addu(env_allow, "XDG_CONFIG_HOME");
 		rc_stringlist_addu(env_allow, "RC_USER_SERVICES");
+		rc_stringlist_addu(env_allow, "RC_PAM_STARTING");
+		rc_stringlist_addu(env_allow, "RC_PAM_STOPPING");
 	}
 #endif
 	/*
