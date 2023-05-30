@@ -35,6 +35,8 @@ struct einfo_term {
 	FILE *file;
 	/* Terminal used for color stuff */
 	TERMINAL *term;
+	/* Is the terminal good for curses use */
+	bool is_good;
 	/* Is the terminal ready for use */
 	bool is_set_up;
 };
@@ -56,11 +58,13 @@ struct color_map {
 static struct einfo_term stdout_term = {
 	.file = NULL,
 	.term = NULL,
+	.is_good = false,
 	.is_set_up = false
 };
 static struct einfo_term stderr_term = {
 	.file = NULL,
 	.term = NULL,
+	.is_good = false,
 	.is_set_up = false
 };
 static struct einfo_term *einfo_cur_term = NULL;
@@ -73,17 +77,26 @@ static const char *prefix = NULL;
 /* Set up the terminals, if needed */
 static void _setupterm(void)
 {
-	/* TODO: check the errors from setupterm and stuff */
+	/*
+	 * This var is needed for setupterm() to return an error instead of
+	 * exiting with an error
+	 */
+	int err;
+
 	if (!stdout_term.is_set_up) {
 		stdout_term.file = stdout;
-		setupterm(NULL, fileno(stdout), NULL);
-		stdout_term.term = cur_term;
+		if (setupterm(NULL, fileno(stdout), &err) != ERR) {
+			stdout_term.term = cur_term;
+			stdout_term.is_good = true;
+		}
 		stdout_term.is_set_up = true;
 	}
 	if (!stderr_term.is_set_up) {
 		stderr_term.file = stderr;
-		setupterm(NULL, fileno(stderr), NULL);
-		stderr_term.term = cur_term;
+		if (setupterm(NULL, fileno(stderr), &err) != ERR) {
+			stderr_term.term = cur_term;
+			stderr_term.is_good = true;
+		}
 		stderr_term.is_set_up = true;
 	}
 }
@@ -104,6 +117,28 @@ static void _cleanupterm(void)
 		/* printf("cleaning up stderr_term\n"); */
 		del_curterm(stderr_term.term);
 	}
+}
+
+/*
+ * Combination of setupterm() and set_curterm(). MUST be called at the start of
+ * a function before any fancy curses stuff is done in order to allow an early
+ * exit if needed.
+ *
+ * t: the target terminal
+ *
+ * return: true if the target terminal is ready for fancy stuff
+ *         false otherwise
+ */
+EINFO_NONNULL
+static bool prepare_term(struct einfo_term *t)
+{
+	_setupterm();
+	if (t->is_good) {
+		set_curterm(t->term);
+	}
+	einfo_cur_term = t;
+
+	return t->is_good;
 }
 
 /*
@@ -345,9 +380,9 @@ static void _ecolor(struct einfo_term *t, ECOLOR color)
 	bool target_bold;
 	char color_str [100] = { 0 };
 
-	_setupterm();
-	set_curterm(t->term);
-	einfo_cur_term = t;
+	if (!prepare_term(t)) {
+		return;
+	}
 
 	env_temp = getenv("EINFO_COLOR");
 	if (!yesno(env_temp)) {
@@ -404,9 +439,9 @@ static void _move_up(struct einfo_term *t)
 {
 	const char *move_str = "";
 
-	_setupterm();
-	set_curterm(t->term);
-	einfo_cur_term = t;
+	if (!prepare_term(t)) {
+		return;
+	}
 
 	move_str = tiparm(cursor_up);
 	tputs(move_str, 1, _putc);
@@ -430,9 +465,9 @@ static void _move_col(struct einfo_term *t, int col)
 {
 	const char *move_str = "";
 
-	_setupterm();
-	set_curterm(t->term);
-	einfo_cur_term = t;
+	if (!prepare_term(t)) {
+		return;
+	}
 
 	if (col == 0) {
 		return;
@@ -498,6 +533,9 @@ static int _eindent(FILE *f)
  *
  * TODO:
  * 	- handle the EINFO_LASTCMD stuff
+ * 	  - why does upstream only print a newline on non-color terms in the
+ * 	    case where EINFO_LASTCMD env var exists and is one of the *n funcs
+ * 	    (that is not ewarn)
  */
 EINFO_NONNULL
 EINFO_PRINTF(3, 0)
