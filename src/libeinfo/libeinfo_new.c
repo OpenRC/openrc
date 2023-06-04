@@ -369,7 +369,6 @@ static struct color_map env_colors(const char *env)
  *
  * TODO:
  * 	- check errors
- * 	- proper string concatenation
  */
 EINFO_NONNULL
 static void _ecolor(struct einfo_term *t, ECOLOR color)
@@ -378,7 +377,7 @@ static void _ecolor(struct einfo_term *t, ECOLOR color)
 	struct color_map colors;
 	int target_color;
 	bool target_bold;
-	char color_str [100] = { 0 };
+	const char *color_str [] = { NULL, NULL };
 
 	if (!prepare_term(t)) {
 		return;
@@ -410,19 +409,22 @@ static void _ecolor(struct einfo_term *t, ECOLOR color)
 			target_bold = colors.bracket_bold;
 			target_color = colors.bracket;
 		}
-		strcat(color_str, tiparm(target_bold
+		color_str[0] = target_bold
 			? enter_bold_mode
-			: exit_attribute_mode));
-		strcat(color_str, tiparm(set_a_foreground, target_color));
+			: exit_attribute_mode;
+		color_str[1] = tiparm(set_a_foreground, target_color);
 	}
 	/* ECOLOR_NORMAL */
 	else {
-		strcat(color_str, tiparm(exit_attribute_mode));
-		strcat(color_str, tiparm(orig_pair));
+		color_str[0] = tiparm(orig_pair);
+		color_str[1] = tiparm(exit_attribute_mode);
 	}
 
-	if (color_str[0] != '\0') {
-		tputs(color_str, 1, _putc);
+	if (color_str[0] != NULL) {
+		tputs(color_str[0], 1, _putc);
+	}
+	if (color_str[1] != NULL) {
+		tputs(color_str[1], 1, _putc);
 	}
 }
 
