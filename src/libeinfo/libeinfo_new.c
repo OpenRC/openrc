@@ -366,9 +366,6 @@ static struct color_map env_colors(const char *env)
  *
  * t: the terminal to set the color for
  * color: the color to being using
- *
- * TODO:
- * 	- check errors
  */
 EINFO_NONNULL
 static void _ecolor(struct einfo_term *t, ECOLOR color)
@@ -420,21 +417,14 @@ static void _ecolor(struct einfo_term *t, ECOLOR color)
 		color_str[1] = tiparm(exit_attribute_mode);
 	}
 
-	if (color_str[0] != NULL) {
-		tputs(color_str[0], 1, _putc);
-	}
-	if (color_str[1] != NULL) {
-		tputs(color_str[1], 1, _putc);
-	}
+	tputs(color_str[0], 1, _putc);
+	tputs(color_str[1], 1, _putc);
 }
 
 /*
  * Move up one row
  *
  * t: terminal to move in
- *
- * TODO:
- * 	- check errors
  */
 EINFO_NONNULL
 static void _move_up(struct einfo_term *t)
@@ -456,11 +446,6 @@ static void _move_up(struct einfo_term *t)
  * col: column to move to
  *      >0 is counting from the left edge
  *      <0 is counting from the right edge
- *      values that would "overflow" get chomped
- *
- * TODO:
- * 	- check errors
- * 	- chomp
  */
 EINFO_NONNULL
 static void _move_col(struct einfo_term *t, int col)
