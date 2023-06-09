@@ -148,12 +148,10 @@ rc_logger_open(const char *level)
 	FILE *plog = NULL;
 	const char *logfile;
 	int log_error = 0;
-	char *tmplog = TMPLOG;
-	char *defaultlog = DEFAULTLOG;
-#ifdef RC_USER_SERVICES
-	char *user_svcdir;
-	char *user_datadir;
-#endif
+	char *tmplog = NULL;
+	char *defaultlog = NULL;
+	char *svcdir;
+	char *cachedir;
 
 	if (!rc_conf_yesno("rc_logger"))
 		return;
@@ -180,17 +178,17 @@ rc_logger_open(const char *level)
 	if ((s = fcntl(slave_tty, F_GETFD, 0)) == 0)
 		fcntl(slave_tty, F_SETFD, s | FD_CLOEXEC);
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		user_svcdir = rc_user_svcdir();
-		xasprintf(&tmplog, "%s/%s", user_svcdir, LOGFILE);
-		free(user_svcdir);
+	svcdir = rc_svcdir();
+	xasprintf(&tmplog, "%s/%s", svcdir, LOGFILE);
+	free(svcdir);
 
-		user_datadir = rc_user_datadir();
-		xasprintf(&defaultlog, "%s/%s", user_datadir, LOGFILE);
-		free(user_datadir);
-	}
-#endif
+	cachedir = rc_cachedir();
+	if (cachedir)
+		xasprintf(&defaultlog, "%s/%s", cachedir, LOGFILE);
+	else
+		defaultlog = xstrdup(DEFAULTLOG);
+
+	free(cachedir);
 
 	rc_logger_pid = fork();
 	switch (rc_logger_pid) {
@@ -331,11 +329,7 @@ rc_logger_open(const char *level)
 		break;
 	}
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(tmplog);
-		free(defaultlog);
-	}
-#endif
+	free(tmplog);
+	free(defaultlog);
 
 }

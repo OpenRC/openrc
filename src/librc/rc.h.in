@@ -34,42 +34,38 @@ extern "C" {
 #else
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
 #endif
-#define RC_RUNLEVELDIR          RC_SYSCONFDIR "/runlevels"
-#define RC_INITDIR              RC_SYSCONFDIR "/init.d"
-#define RC_CONFDIR              RC_SYSCONFDIR "/conf.d"
+#define RC_RUNLEVELDIR_FOLDER   "/runlevels"
+#define RC_RUNLEVELDIR          RC_SYSCONFDIR RC_RUNLEVELDIR_FOLDER
+#define RC_INITDIR_FOLDER      "/init.d"
+#define RC_INITDIR              RC_SYSCONFDIR RC_INITDIR_FOLDER
+#define RC_CONFDIR_FOLDER       "/conf.d"
+#define RC_CONFDIR              RC_SYSCONFDIR RC_CONFDIR_FOLDER
 #define RC_PLUGINDIR            RC_LIBDIR "/plugins"
 
-#define RC_INIT_FIFO RC_SVCDIR"/init.ctl"
+#define RC_INIT_FIFO       RC_SVCDIR"/init.ctl"
 #define RC_PROFILE_ENV     RC_SYSCONFDIR "/profile.env"
 #define RC_SYS_WHITELIST   RC_LIBEXECDIR "/conf.d/env_whitelist"
 #define RC_USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"
-#define RC_CONF         RC_SYSCONFDIR "/rc.conf"
-#define RC_CONF_D         RC_SYSCONFDIR "/rc.conf.d"
-#define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
+#define RC_CONF_FILE       "/rc.conf"
+#define RC_CONF            RC_SYSCONFDIR RC_CONF_FILE
+#define RC_CONF_D_FOLDER   "/rc.conf.d"
+#define RC_CONF_D          RC_SYSCONFDIR RC_CONF_D_FOLDER
+#define RC_CONF_OLD        RC_SYSCONFDIR "/conf.d/rc"
 
 #ifdef RC_USER_SERVICES
 
 #define RC_SYS_USER_INITDIR              RC_INITDIR "/user.d"
 #define RC_SYS_USER_CONFDIR              RC_CONFDIR "/user.d"
-#define RC_USER_INITDIR_FOLDER           "/init.d"
-#define RC_USER_CONFDIR_FOLDER           "/conf.d"
-#define RC_USER_RUNLEVELS_FOLDER         "/runlevels"
-#define RC_USER_RUNTIME_FOLDER           "/openrc"
+#define RC_USER_CONF_FOLDER              "/openrc"
 
-
-#define RC_USER_CONF                     "/rc.conf"
-#define RC_USER_CONF_D                   "/rc.conf.d"
+/*! @name Reserved runlevel names */
+#define RC_LEVEL_USERNONE    "none"
 
 /*! Is openrc being ran in usermode?
  * @return true if yes, otherwise false */
 bool rc_is_user(void);
 
 void rc_set_user(void);
-
-const char *rc_user_home(void);
-char *rc_user_sysconfdir(void);
-char *rc_user_svcdir(void);
-char *rc_user_datadir(void);
 #endif
 
 #define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
@@ -339,6 +335,18 @@ RC_STRINGLIST *rc_services_scheduled(const char *);
  * @param service to check
  * @return true if all daemons started are still running, otherwise false */
 bool rc_service_daemons_crashed(const char *);
+
+/*! Returns the system config directory, in either system or user mode
+ * @return allocated path string */
+char *rc_sysconfdir(void);
+
+/*! Returns the services directory, in either system or user mode
+ * @return allocated path string */
+char *rc_svcdir(void);
+
+/*! Returns the cache directory, in either system or user mode
+ * @return allocated path string */
+char *rc_cachedir(void);
 
 /*! @name System types
  * OpenRC can support some special sub system types, normally virtualization.

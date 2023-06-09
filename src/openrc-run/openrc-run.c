@@ -164,20 +164,11 @@ static void
 unhotplug(void)
 {
 	char *file = NULL;
-	char *svcdir = RC_SVCDIR;
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-	}
-#endif
+	char *svcdir = rc_svcdir();
 
 	xasprintf(&file, "%s/hotplugged/%s", svcdir, applet);
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(svcdir);
-	}
-#endif
+	free(svcdir);
 
 	if (exists(file) && unlink(file) != 0)
 		eerror("%s: unlink `%s': %s", applet, file, strerror(errno));
@@ -299,25 +290,18 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	const char *ec_normal = ecolor(ECOLOR_NORMAL);
 	ssize_t ret = 0;
 	int fd = fileno(stdout), lock_fd = -1;
-	char *prefix_lock = RC_SVCDIR PREFIX_LOCK_FILE;
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		char *svcdir = rc_user_svcdir();
-		xasprintf(&prefix_lock, "%s/%s", svcdir, PREFIX_LOCK_FILE);
-		free(svcdir);
-	}
-#endif
+	char *prefix_lock = NULL;
+
+	char *svcdir = rc_svcdir();
+	xasprintf(&prefix_lock, "%s/%s", svcdir, PREFIX_LOCK_FILE);
+	free(svcdir);
 
 	/*
 	 * Lock the prefix.
 	 */
 	lock_fd = open(prefix_lock, O_WRONLY | O_CREAT, 0664);
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(prefix_lock);
-	}
-#endif
+	free(prefix_lock);
 
 	if (lock_fd != -1) {
 		while (flock(lock_fd, LOCK_EX) != 0) {
@@ -377,12 +361,7 @@ svc_exec(const char *arg1, const char *arg2)
 	sigset_t sigchldmask;
 	sigset_t oldmask;
 	char *runsh;
-	char *svcdir = RC_SVCDIR;
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-	}
-#endif
+	char *svcdir = rc_svcdir();
 
 	/* Setup our signal pipe */
 	if (pipe(signal_pipe) == -1)
@@ -458,11 +437,7 @@ svc_exec(const char *arg1, const char *arg2)
 		free(runsh);
 	}
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(svcdir);
-	}
-#endif
+	free(svcdir);
 
 	buffer = xmalloc(sizeof(char) * BUFSIZ);
 	fd[0].fd = signal_pipe[0];
@@ -539,12 +514,7 @@ svc_wait(const char *svc)
 	bool forever = false;
 	RC_STRINGLIST *keywords;
 	struct timespec interval, timeout, warn;
-	char *svcdir = RC_SVCDIR;
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-	}
-#endif
+	char *svcdir = rc_svcdir();
 
 	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend(deptree, svc, "keyword");
@@ -555,11 +525,7 @@ svc_wait(const char *svc)
 
 	xasprintf(&file, "%s/exclusive/%s", svcdir, basename_c(svc));
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(svcdir);
-	}
-#endif
+	free(svcdir);
 
 	interval.tv_sec = 0;
 	interval.tv_nsec = WAIT_INTERVAL;

@@ -250,21 +250,11 @@ svc_lock(const char *applet, bool ignore_lock_failure)
 {
 	char *file = NULL;
 	int fd;
-	char *svcdir = RC_SVCDIR;
-
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-	}
-#endif
+	char *svcdir = rc_svcdir();
 
 	xasprintf(&file, "%s/exclusive/%s", svcdir, applet);
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(svcdir);
-	}
-#endif
+	free(svcdir);
 
 	fd = open(file, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
 	free(file);
@@ -290,21 +280,11 @@ int
 svc_unlock(const char *applet, int fd)
 {
 	char *file = NULL;
-	char *svcdir = RC_SVCDIR;
-
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-	}
-#endif
+	char *svcdir = rc_svcdir();
 
 	xasprintf(&file, "%s/exclusive/%s", svcdir, applet);
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(svcdir);
-	}
-#endif
+	free(svcdir);
 
 	close(fd);
 	unlink(file);
@@ -416,17 +396,14 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 	struct stat st;
 	struct utimbuf ut;
 	FILE *fp;
-	char *cache = RC_DEPTREE_CACHE;
-	char *skew = RC_DEPTREE_SKEWED;
-#ifdef RC_USER_SERVICES
-	char *user_svcdir;
-	if (rc_is_user()) {
-		user_svcdir = rc_user_svcdir();
-		xasprintf(&cache, "%s%s", user_svcdir, RC_DEPTREE_CACHE_FILE);
-		xasprintf(&skew, "%s%s", user_svcdir, RC_DEPTREE_SKEWED_FILE);
-		free(user_svcdir);
-	}
-#endif
+	char *cache = NULL;
+	char *skew = NULL;
+	char *svcdir = rc_svcdir();
+
+	xasprintf(&cache, "%s%s", svcdir, RC_DEPTREE_CACHE_FILE);
+	xasprintf(&skew, "%s%s", svcdir, RC_DEPTREE_SKEWED_FILE);
+
+	free(svcdir);
 
 	t = 0;
 	if (rc_deptree_update_needed(&t, file) || force != 0) {

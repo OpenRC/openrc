@@ -123,25 +123,19 @@ get_deptype(const RC_DEPINFO *depinfo, const char *type)
 RC_DEPTREE *
 rc_deptree_load(void) {
 
-	char *cache = RC_DEPTREE_CACHE;
-#ifdef RC_USER_SERVICES
-	char *user_svcdir;
+	char *cache = NULL;
+	char *svcdir;
 	RC_DEPTREE *tree;
 
-	if (rc_is_user()) {
-		user_svcdir = rc_user_svcdir();
-		xasprintf(&cache, "%s/%s", user_svcdir, RC_DEPTREE_CACHE_FILE);
+	svcdir = rc_svcdir();
+	xasprintf(&cache, "%s/%s", svcdir, RC_DEPTREE_CACHE_FILE);
 
-		tree = rc_deptree_load_file(cache);
+	tree = rc_deptree_load_file(cache);
 
-		free(cache);
-		free(user_svcdir);
+	free(cache);
+	free(svcdir);
 
-		return tree;
-	}
-#endif
-
-	return rc_deptree_load_file(cache);
+	return tree;
 }
 
 RC_DEPTREE *
@@ -713,18 +707,15 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	int i;
 	struct stat buf;
 	time_t mtime;
-	char *depconfig = RC_DEPCONFIG, *cache = RC_DEPTREE_CACHE;
+	char *depconfig = NULL;
+	char *cache = NULL;
 	char *depdir = NULL;
-	char *svcdir = RC_SVCDIR;
-#ifdef RC_USER_SERVICES
-	char *user_sysconfdir, *tmp;
+	char *svcdir = NULL;
+	char *sysconfdir, *tmp;
 
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-		user_sysconfdir = rc_user_sysconfdir();
-		xasprintf(&cache, "%s/%s", svcdir, RC_DEPTREE_CACHE_FILE);
-	}
-#endif
+	svcdir = rc_svcdir();
+	sysconfdir = rc_sysconfdir();
+	xasprintf(&cache, "%s/%s", svcdir, RC_DEPTREE_CACHE_FILE);
 
 	/* Create base directories if needed */
 	for (i = 0; depdirs[i]; i++) {
@@ -767,33 +758,28 @@ rc_deptree_update_needed(time_t *newest, char *file)
 		newer |= !deep_mtime_check(RC_SYS_USER_INITDIR,true,&mtime,file);
 		newer |= !deep_mtime_check(RC_SYS_USER_CONFDIR,true,&mtime,file);
 
-		xasprintf(&tmp, "%s/%s", user_sysconfdir, RC_USER_INITDIR_FOLDER);
+		xasprintf(&tmp, "%s/%s", sysconfdir, RC_INITDIR_FOLDER);
 		newer |= !deep_mtime_check(tmp,true,&mtime,file);
 		free(tmp);
 
-		xasprintf(&tmp, "%s/%s", user_sysconfdir, RC_USER_CONFDIR_FOLDER);
+		xasprintf(&tmp, "%s/%s", sysconfdir, RC_CONFDIR_FOLDER);
 		newer |= !deep_mtime_check(tmp,true,&mtime,file);
 		free(tmp);
 
-		free(user_sysconfdir);
+		free(sysconfdir);
 	}
 #endif
     newer |= !deep_mtime_check(RC_CONF,true,&mtime,file);
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		xasprintf(&depconfig, "%s/%s", svcdir, RC_DEPCONFIG_FILE);
-		free(svcdir);
-	}
-#endif
+	xasprintf(&depconfig, "%s/%s", svcdir, RC_DEPCONFIG_FILE);
+	free(svcdir);
+
 	config = rc_config_list(depconfig);
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(depconfig);
-	}
-#endif
+
+	free(depconfig);
+
 	TAILQ_FOREACH(s, config, entries) {
 		newer |= !deep_mtime_check(s->value, true, &mtime, file);
 	}
@@ -830,11 +816,10 @@ rc_deptree_update(void)
 	char *line = NULL;
 	size_t len = 0;
 	char *depend, *depends, *service, *type, *nosys, *onosys;
-	char *cache = RC_DEPTREE_CACHE;
-	char *depconfig = RC_DEPCONFIG;
-#ifdef RC_USER_SERVICES
-	char *user_svcdir;
-#endif
+	char *cache = NULL;
+	char *depconfig = NULL;
+	char *svcdir = NULL;
+
 	size_t i, k, l;
 	bool retval = true;
 	const char *sys = rc_sys();
@@ -1116,14 +1101,11 @@ rc_deptree_update(void)
 	   names don't have any non shell variable characters in
 	   */
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		user_svcdir = rc_user_svcdir();
-		xasprintf(&cache, "%s/%s", user_svcdir, RC_DEPTREE_CACHE_FILE);
-		xasprintf(&depconfig, "%s/%s", user_svcdir, RC_DEPCONFIG_FILE);
-		free(user_svcdir);
-	}
-#endif
+	svcdir = rc_svcdir();
+	xasprintf(&cache, "%s/%s", svcdir, RC_DEPTREE_CACHE_FILE);
+	xasprintf(&depconfig, "%s/%s", svcdir, RC_DEPCONFIG_FILE);
+	free(svcdir);
+
 	if ((fp = fopen(cache, "w"))) {
 		i = 0;
 		TAILQ_FOREACH(depinfo, deptree, entries) {
@@ -1162,12 +1144,8 @@ rc_deptree_update(void)
 		unlink(depconfig);
 	}
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(cache);
-		free(depconfig);
-	}
-#endif
+	free(cache);
+	free(depconfig);
 
 	rc_stringlist_free(config);
 	free(deptree);

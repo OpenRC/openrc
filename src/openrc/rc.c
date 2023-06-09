@@ -108,13 +108,9 @@ clean_failed(void)
 	DIR *dp;
 	struct dirent *d;
 	char *path;
-	char *svcdir = RC_SVCDIR;
+	char *svcdir = rc_svcdir();
 	char *failed_path;
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-	}
-#endif
+
 	xasprintf(&failed_path, "%s/%s", svcdir, "/failed");
 
 	/* Clean the failed services state dir now */
@@ -134,23 +130,16 @@ clean_failed(void)
 		closedir(dp);
 	}
 	free(failed_path);
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(svcdir);
-	}
-#endif
+	free(svcdir);
 }
 
 static void
 cleanup(void)
 {
 	RC_PID *p, *tmp;
-	char *rc_starting = RC_STARTING;
-	char *rc_stopping = RC_STOPPING;
-
-#ifdef RC_USER_SERVICES
-	char *user_svcdir;
-#endif
+	char *rc_starting = NULL;
+	char *rc_stopping = NULL;
+	char *svcdir = rc_svcdir();
 
 	if (!rc_in_logger && !rc_in_plugin &&
 	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
@@ -165,14 +154,10 @@ cleanup(void)
 			free(termios_orig);
 		}
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		user_svcdir = rc_user_svcdir();
-		xasprintf(&rc_starting, "%s/%s", user_svcdir, RC_STARTING_FOLDER);
-		xasprintf(&rc_stopping, "%s/%s", user_svcdir, RC_STOPPING_FOLDER);
-		free(user_svcdir);
-	}
-#endif
+		xasprintf(&rc_starting, "%s/%s", svcdir, RC_STARTING_FOLDER);
+		xasprintf(&rc_stopping, "%s/%s", svcdir, RC_STOPPING_FOLDER);
+
+		free(svcdir);
 
 		/* Clean runlevel start, stop markers */
 		rmdir(rc_starting);
@@ -180,12 +165,8 @@ cleanup(void)
 		clean_failed();
 		rc_logger_close();
 
-#ifdef RC_USER_SERVICES
-		if (rc_is_user()) {
-			free(rc_starting);
-			free(rc_stopping);
-		}
-#endif
+		free(rc_starting);
+		free(rc_stopping);
 	}
 
 	LIST_FOREACH_SAFE(p, &service_pids, entries, tmp) {
@@ -261,23 +242,15 @@ static void
 mark_interactive(void)
 {
 	FILE *fp;
-	char *interactive_path = INTERACTIVE;
-#ifdef RC_USER_SERVICES
-	char *svcdir;
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-		xasprintf(&interactive_path, "%s/%s", svcdir, INTERACTIVE_FILE);
-		free(svcdir);
-	}
-#endif
+	char *interactive_path = NULL;
+	char *svcdir = rc_svcdir();
+	xasprintf(&interactive_path, "%s/%s", svcdir, INTERACTIVE_FILE);
+	free(svcdir);
+
 	fp = fopen(interactive_path, "w");
 	if (fp)
 		fclose(fp);
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(interactive_path);
-	}
-#endif
+	free(interactive_path);
 }
 
 static void
@@ -713,15 +686,10 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 	bool interactive = false;
 	RC_SERVICE state;
 	bool crashed = false;
-	char *interactive_path = INTERACTIVE;
-#ifdef RC_USER_SERVICES
-	char *svcdir;
-	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
-		xasprintf(&interactive_path, "%s/%s", svcdir, INTERACTIVE_FILE);
-		free(svcdir);
-	}
-#endif
+	char *interactive_path = NULL;
+	char *svcdir = rc_svcdir();
+	xasprintf(&interactive_path, "%s/%s", svcdir, INTERACTIVE_FILE);
+	free(svcdir);
 
 	if (!rc_yesno(getenv("EINFO_QUIET")))
 		interactive = exists(interactive_path);
@@ -787,11 +755,7 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 			unlink(interactive_path);
 	}
 
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(interactive_path);
-	}
-#endif
+	free(interactive_path);
 }
 
 #ifdef RC_DEBUG
@@ -833,7 +797,7 @@ inc_dec_lockfile(int val)
 
 	einfov("locking lockfile");
 
-	svcdir = rc_user_svcdir();
+	svcdir = rc_svcdir();
 
 	if (mkdir(svcdir, 0700) != 0 && errno != EEXIST)
 		eerrorx("mkdir: %s, %s", svcdir, strerror(errno));
@@ -886,14 +850,14 @@ int main(int argc, char **argv)
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	char *krunlevel = NULL;
 	char *pidstr = NULL;
-	char *rc_starting = RC_STARTING;
-	char *rc_stopping = RC_STOPPING;
+	char *rc_starting = NULL;
+	char *rc_stopping = NULL;
 	int opt;
 	bool parallel;
 	int regen = 0;
 	bool nostop = false;
+	char *svcdir = NULL;
 #ifdef RC_USER_SERVICES
-	char *user_svcdir = NULL;
 	int locknum = 0;
 #endif
 #ifdef __linux__
@@ -1012,13 +976,13 @@ int main(int argc, char **argv)
 			einfov("lock set, skipping");
 			return EXIT_SUCCESS;
 		}
-
-		user_svcdir = rc_user_svcdir();
-		xasprintf(&rc_stopping, "%s/%s", user_svcdir, RC_STOPPING_FOLDER);
-		xasprintf(&rc_starting, "%s/%s", user_svcdir, RC_STARTING_FOLDER);
-		free(user_svcdir);
 	}
 #endif
+
+	svcdir = rc_svcdir();
+	xasprintf(&rc_stopping, "%s/%s", svcdir, RC_STOPPING_FOLDER);
+	xasprintf(&rc_starting, "%s/%s", svcdir, RC_STARTING_FOLDER);
+	free(svcdir);
 
 	/* Create a list of all services which should be started for the new or
 	* current runlevel including those in boot, sysinit and hotplugged

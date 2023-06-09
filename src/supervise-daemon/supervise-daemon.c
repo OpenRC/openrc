@@ -804,12 +804,12 @@ int main(int argc, char **argv)
 	char **child_argv = NULL;
 	char *str = NULL;
 	char *cmdline = NULL;
-	char *svcdir = RC_SVCDIR;
-	char *pidfile_path = "/var/run";
+	char *svcdir = rc_svcdir();
+	char *pidfile_path = xstrdup("/var/run");
 #ifdef RC_USER_SERVICES
 	char *env;
 	if (rc_is_user()) {
-		svcdir = rc_user_svcdir();
+		free(pidfile_path);
 		if ((env = getenv("XDG_RUNTIME_DIR"))) {
 			pidfile_path = env;
 		} else {
@@ -1079,11 +1079,8 @@ int main(int argc, char **argv)
 	if (!pidfile)
 		xasprintf(&pidfile, "%s/supervise-%s.pid", pidfile_path, svcname);
 	xasprintf(&fifopath, "%s/supervise-%s.ctl", svcdir, svcname);
-#ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		free(svcdir);
-	}
-#endif
+	free(svcdir);
+	free(pidfile_path);
 
 	if (mkfifo(fifopath, 0600) == -1 && errno != EEXIST)
 		eerrorx("%s: unable to create control fifo: %s",

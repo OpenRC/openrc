@@ -374,10 +374,10 @@ static RC_STRINGLIST * rc_user_config_directory(RC_STRINGLIST *config)
 	RC_STRINGLIST *rc_conf_d_list;
 	char path[PATH_MAX];
 	RC_STRING *line;
-	char *sysconf = rc_user_sysconfdir();
+	char *sysconf = rc_sysconfdir();
 	char *user_conf_d;
 
-	xasprintf(&user_conf_d, "%s/%s", sysconf, RC_USER_CONF_D);
+	xasprintf(&user_conf_d, "%s/%s", sysconf, RC_CONF_D);
 
 	if ((dp = opendir(user_conf_d)) != NULL) {
 		while ((d = readdir(dp)) != NULL) {
@@ -471,8 +471,8 @@ rc_conf_value(const char *setting)
 
 #ifdef RC_USER_SERVICES
 		if (rc_is_user()) {
-			user_sysconf = rc_user_sysconfdir();
-			xasprintf(&userconf, "%s/%s", user_sysconf, RC_USER_CONF);
+			user_sysconf = rc_sysconfdir();
+			xasprintf(&userconf, "%s/%s", user_sysconf, RC_CONF_FILE);
 
 			user = rc_config_load(userconf);
 			TAILQ_CONCAT(rc_conf, user, entries);
