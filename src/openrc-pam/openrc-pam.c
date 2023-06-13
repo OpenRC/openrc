@@ -9,6 +9,8 @@
 #include <security/pam_appl.h>
 #endif
 
+#include "einfo.h"
+
 static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
 	char *cmd = NULL;
 	const char *username;
@@ -19,6 +21,8 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
 	pw = getpwnam(username);
 	if (!pw)
 		return false;
+
+	elog(LOG_INFO, "Executing %s runlevel for user %s", runlevel, username);
 
 	xasprintf(&cmd, "openrc --user %s", runlevel);
 	switch (fork()) {
@@ -46,12 +50,19 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
 	(void)argc;
 	(void)argv;
 
+	setenv("EINFO_LOG", "openrc-pam", 1);
+	elog(LOG_INFO, "Opening openrc session");
+
 	setenv("RC_PAM_STARTING", "YES", true);
 	if (exec_openrc(pamh, "default")) {
+		elog(LOG_INFO, "Openrc session opened");
 		unsetenv("RC_PAM_STARTING");
+		unsetenv("EINFO_LOG");
 		return PAM_SUCCESS;
 	} else {
+		elog(LOG_ERR, "Failed to open session");
 		unsetenv("RC_PAM_STARTING");
+		unsetenv("EINFO_LOG");
 		return PAM_SESSION_ERR;
 	}
 }
@@ -61,12 +72,19 @@ PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, con
 	(void)argc;
 	(void)argv;
 
+	setenv("EINFO_LOG", "openrc-pam", 1);
+	elog(LOG_INFO, "Closing openrc session");
+
 	setenv("RC_PAM_STOPPING", "YES", true);
 	if (exec_openrc(pamh, "none")) {
+		elog(LOG_INFO, "Openrc session closed");
 		unsetenv("RC_PAM_STOPPING");
+		unsetenv("EINFO_LOG");
 		return PAM_SUCCESS;
 	} else {
+		elog(LOG_ERR, "Failed to close session");
 		unsetenv("RC_PAM_STOPPING");
+		unsetenv("EINFO_LOG");
 		return PAM_SESSION_ERR;
 	}
 }
