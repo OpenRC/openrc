@@ -1,13 +1,11 @@
-#include <stdio.h>
-#include <pwd.h>
-#include <security/pam_modules.h>
-#include <unistd.h>
 #include <librc.h>
-#include <stdbool.h>
-#include <syslog.h>
-#ifdef __FreeBSD__
+#include <pwd.h>
 #include <security/pam_appl.h>
-#endif
+#include <security/pam_modules.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <syslog.h>
+#include <unistd.h>
 
 #include "einfo.h"
 
@@ -15,6 +13,10 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
 	char *cmd = NULL;
 	const char *username;
 	struct passwd *pw = NULL;
+	const char *env = NULL;
+
+	if ((env = pam_getenv(pamh, "XDG_RUNTIME_DIR")) != NULL)
+		setenv("XDG_RUNTIME_DIR", env, 0);
 
 	if (pam_get_user(pamh, &username, "username:") != PAM_SUCCESS)
 		return false;
