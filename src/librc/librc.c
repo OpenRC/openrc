@@ -380,44 +380,44 @@ rc_set_user(void)
 	* */
 	path = rc_sysconfdir();
 	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s", strerror(errno));
+		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	xasprintf(&tmp, "%s/%s", path, RC_INITDIR_FOLDER);
 	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s", strerror(errno));
+		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	xasprintf(&tmp, "%s/%s", path, RC_CONFDIR_FOLDER);
 	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s", strerror(errno));
+		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	xasprintf(&tmp, "%s/%s", path, RC_RUNLEVELDIR_FOLDER);
 	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s", strerror(errno));
+		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	xasprintf(&tmp, "%s/%s/%s", path, RC_RUNLEVELDIR_FOLDER, RC_LEVEL_DEFAULT);
 	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s", strerror(errno));
+		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	xasprintf(&tmp, "%s/%s/%s", path, RC_RUNLEVELDIR_FOLDER, RC_LEVEL_USERNONE);
 	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s", strerror(errno));
+		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	free(path);
 
 	path = rc_cachedir();
 	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s", strerror(errno));
+		eerrorx("mkdir: %s, %s", path, strerror(errno));
 	}
 	free(path);
 
 	path = rc_svcdir();
 	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s", strerror(errno));
+		eerrorx("mkdir: %s, %s", path, strerror(errno));
 	}
 	free(path);
 }
