@@ -369,6 +369,9 @@ rc_set_user(void)
 {
 	char *path, *tmp;
 
+	if (getuid() == 0)
+		eerrorx("Attempted to run user scripts as root.");
+
 	setenv("RC_USER_SERVICES", "YES", 1);
 
 	/* Setting the sysconf path to XDG_CONFIG_HOME, or ~/.config/, so subdirectories would go:
