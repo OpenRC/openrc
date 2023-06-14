@@ -1,6 +1,6 @@
 /*
  * TODO:
- * 	- handle the fancy env vars
+ * 	- code style (eg, wrapped lines to spaces instead of tabs)
  */
 #include <errno.h>
 #include <stdarg.h>
@@ -22,8 +22,15 @@
 #define EINFO_NONNULL		__attribute__((__nonnull__))
 #define EINFO_NONNULL_POS(X)	__attribute__((__nonnull__(X)))
 
-/* TODO: implement for realsies */
-#define LASTCMD(X)
+#define LASTCMD_ENV	"EINFO_LASTCMD"
+/*
+ * As soon as the last command run is set from within our code, the env var
+ * becomes useless since it's no longer consistent.
+ */
+#define LASTCMD(X)	do {	\
+	last = (X);		\
+	unsetenv(LASTCMD_ENV);	\
+} while (false)
 
 /* Spaces per indent */
 #define INDENT_WIDTH	2
@@ -71,6 +78,8 @@ static struct einfo_term *einfo_cur_term = NULL;
 
 static size_t indent_level = 0;
 
+/* Track the last command run */
+static const char *last = NULL;
 /* Prefixed to messages as "prefix| * msg" */
 static const char *prefix = NULL;
 
@@ -517,12 +526,6 @@ static int _eindent(FILE *f)
  * va: the args to feed vfprintf(3)
  *
  * return: like the printf-family of functions
- *
- * TODO:
- * 	- handle the EINFO_LASTCMD stuff
- * 	  - why does upstream only print a newline on non-color terms in the
- * 	    case where EINFO_LASTCMD env var exists and is one of the *n funcs
- * 	    (that is not ewarn)
  */
 EINFO_NONNULL
 EINFO_PRINTF(3, 0)
@@ -532,10 +535,28 @@ static int _einfo(
 	const char *EINFO_RESTRICT fmt,
 	va_list va)
 {
+	const char *last_env = getenv(LASTCMD_ENV);
+
 	int ret = 0;
 	va_list ap;
 
 	va_copy(ap, va);
+
+	/* Let's assume the env var is "more correct" */
+	if (last_env != NULL) {
+		last = last_env;
+	}
+
+	/*
+	 * Print a newline on non-curses terms if the last command is a
+	 * "no newline" variant. Why only non-curses? IDFK.
+	 */
+	if (!prepare_term(t)
+		&& last != NULL
+		&& last[strlen(last) - 1] == 'n'
+		&& strcmp(last, "ewarn") != 0) {
+		fprintf(t->file, "\n");
+	}
 
 	if (prefix) {
 		_ecolor(t, color);
@@ -548,6 +569,12 @@ static int _einfo(
 	_ecolor(t, ECOLOR_NORMAL);
 	ret += _eindent(t->file);
 	ret += vfprintf(t->file, fmt, ap);
+
+	if (last_env != NULL) {
+		/* The env var has served its purpose */
+		unsetenv(LASTCMD_ENV);
+	}
+	last = NULL;
 
 	va_end(ap);
 	return ret;
