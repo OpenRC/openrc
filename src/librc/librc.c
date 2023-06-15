@@ -121,6 +121,43 @@ ls_dir(const char *dir, int options)
 	return list;
 }
 
+static int
+recursive_mkdir(const char *pathname, int mode)
+{
+	char *dir = xstrdup(pathname);
+	char *p;
+	struct stat sb;
+
+	if (stat (dir, &sb) == 0 && S_ISDIR (sb.st_mode)) {
+		free(dir);
+		return 0;
+	}
+
+	for (p = dir + 1; p; p++) {
+		if (*p == '/') {
+			*p = '\0';
+			if (mkdir(dir, mode) != 0 && errno != EEXIST) {
+				free(dir);
+				return -1;
+			}
+			*p = '/';
+		}
+	}
+
+	if (stat(dir, &sb) != 0) {
+		if (mkdir(dir, mode) != 0) {
+			free(dir);
+			return -1;
+		}
+	} else if (!S_ISDIR(sb.st_mode)) {
+		errno = ENOTDIR;
+		free(dir);
+		return -1;
+	}
+
+	return 0;
+}
+
 static bool
 rm_dir(const char *pathname, bool top)
 {
@@ -382,44 +419,36 @@ rc_set_user(void)
 	* ~/.lcaol/share/openrc/
 	* */
 	path = rc_sysconfdir();
-	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
-	}
 	xasprintf(&tmp, "%s/%s", path, RC_INITDIR_FOLDER);
-	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
+	if (recursive_mkdir(tmp, 0755) != 0 && errno != EEXIST) {
 		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	xasprintf(&tmp, "%s/%s", path, RC_CONFDIR_FOLDER);
-	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
-		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
-	}
-	free(tmp);
-	xasprintf(&tmp, "%s/%s", path, RC_RUNLEVELDIR_FOLDER);
-	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
+	if (recursive_mkdir(tmp, 0755) != 0 && errno != EEXIST) {
 		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	xasprintf(&tmp, "%s/%s/%s", path, RC_RUNLEVELDIR_FOLDER, RC_LEVEL_DEFAULT);
-	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
+	if (recursive_mkdir(tmp, 0755) != 0 && errno != EEXIST) {
 		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	xasprintf(&tmp, "%s/%s/%s", path, RC_RUNLEVELDIR_FOLDER, RC_LEVEL_USERNONE);
-	if (mkdir(tmp, 0700) != 0 && errno != EEXIST) {
+	if (recursive_mkdir(tmp, 0755) != 0 && errno != EEXIST) {
 		eerrorx("mkdir: %s, %s", tmp, strerror(errno));
 	}
 	free(tmp);
 	free(path);
 
 	path = rc_cachedir();
-	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
+	if (recursive_mkdir(path, 0700) != 0 && errno != EEXIST) {
 		eerrorx("mkdir: %s, %s", path, strerror(errno));
 	}
 	free(path);
 
 	path = rc_svcdir();
-	if (mkdir(path, 0700) != 0 && errno != EEXIST) {
+	if (recursive_mkdir(path, 0700) != 0 && errno != EEXIST) {
 		eerrorx("mkdir: %s, %s", path, strerror(errno));
 	}
 	free(path);
