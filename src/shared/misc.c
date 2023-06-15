@@ -138,6 +138,7 @@ env_config(void)
 	char *path;
 	char *p;
 	char *e;
+	char *svcdir;
 	size_t l;
 	struct utsname uts;
 	FILE *fp;
@@ -178,8 +179,12 @@ env_config(void)
 
 	setenv("RC_VERSION", VERSION, 1);
 	setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 1);
-	setenv("RC_SVCDIR", RC_SVCDIR, 1);
-	setenv("RC_TMPDIR", RC_SVCDIR "/tmp", 1);
+	svcdir = rc_svcdir();
+	setenv("RC_SVCDIR", svcdir, 1);
+	xasprintf(&e, "%s/%s", svcdir, "/tmp");
+	setenv("RC_TMPDIR", e, 1);
+	free(e);
+	free(svcdir);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);
 	e = rc_runlevel_get();
 	setenv("RC_RUNLEVEL", e, 1);
