@@ -48,15 +48,14 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
 }
 
 PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
+	const char *runlevel = argc > 0 ? runlevel = argv[0] : "default";
 	(void)flags;
-	(void)argc;
-	(void)argv;
 
 	setenv("EINFO_LOG", "openrc-pam", 1);
 	elog(LOG_INFO, "Opening openrc session");
 
 	setenv("RC_PAM_STARTING", "YES", true);
-	if (exec_openrc(pamh, "default")) {
+	if (exec_openrc(pamh, runlevel)) {
 		elog(LOG_INFO, "Openrc session opened");
 		unsetenv("RC_PAM_STARTING");
 		unsetenv("EINFO_LOG");
@@ -70,15 +69,14 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
 }
 
 PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
+	const char *runlevel = argc > 1 ? argv[1] : "none";
 	(void)flags;
-	(void)argc;
-	(void)argv;
 
 	setenv("EINFO_LOG", "openrc-pam", 1);
 	elog(LOG_INFO, "Closing openrc session");
 
 	setenv("RC_PAM_STOPPING", "YES", true);
-	if (exec_openrc(pamh, "none")) {
+	if (exec_openrc(pamh, runlevel)) {
 		elog(LOG_INFO, "Openrc session closed");
 		unsetenv("RC_PAM_STOPPING");
 		unsetenv("EINFO_LOG");
