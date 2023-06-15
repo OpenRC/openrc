@@ -13,10 +13,10 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
 	char *cmd = NULL;
 	const char *username;
 	struct passwd *pw = NULL;
-	const char *env = NULL;
+	char **envlist;
+	char **env;
 
-	if ((env = pam_getenv(pamh, "XDG_RUNTIME_DIR")) != NULL)
-		setenv("XDG_RUNTIME_DIR", env, 0);
+	envlist = pam_getenvlist(pamh);
 
 	if (pam_get_user(pamh, &username, "username:") != PAM_SUCCESS)
 		return false;
@@ -32,7 +32,7 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
 			setgid(pw->pw_gid);
 			setuid(pw->pw_uid);
 
-			execl(pw->pw_shell, "-", "-c", cmd, NULL);
+			execle(pw->pw_shell, "-", "-c", cmd, NULL, envlist);
 
 			free(cmd);
 			return false;
@@ -43,6 +43,10 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
 			break;
 	}
 	wait(NULL);
+
+	for (env = envlist; *env; env++)
+		free(*env);
+	free(envlist);
 	free(cmd);
 	return true;
 }
