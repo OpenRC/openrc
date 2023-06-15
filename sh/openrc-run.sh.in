@@ -149,6 +149,11 @@ _status()
 # supervisor modules
 default_start()
 {
+	if yesno "${RC_USER_SERVICES}"; then
+		load_variables
+		save_variables
+	fi
+
 	local func=ssd_start
 	case "$supervisor" in
 		runit) func=runit_start ;;
