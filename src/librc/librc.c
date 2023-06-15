@@ -454,7 +454,7 @@ rc_set_user(void)
 	free(path);
 }
 
-static const char *
+const char *
 rc_user_home(void)
 {
 	struct passwd *user_passwd;

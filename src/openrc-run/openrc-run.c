@@ -1123,6 +1123,7 @@ int main(int argc, char **argv)
 	char *pidstr = NULL;
 	size_t l = 0, ll;
 	const char *file;
+	const char *changedir = "/";
 	struct stat stbuf;
 
 	/* Show help if insufficient args */
@@ -1183,8 +1184,12 @@ int main(int argc, char **argv)
 	if (argc < 3)
 		usage(EXIT_FAILURE);
 
-	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
-	if (chdir("/") == -1)
+	/* Change dir to / to ensure all init scripts don't use stuff in pwd
+	 * In user scripts mode, we change to the homefolder of the user instead */
+	if (rc_is_user())
+		changedir = rc_user_home();
+
+	if (chdir(changedir) == -1)
 		eerror("chdir: %s", strerror(errno));
 
 	if ((runlevel = xstrdup(getenv("RC_RUNLEVEL"))) == NULL) {

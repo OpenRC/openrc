@@ -66,6 +66,8 @@ extern "C" {
 bool rc_is_user(void);
 
 void rc_set_user(void);
+
+const char *rc_user_home(void);
 #endif
 
 #define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
