@@ -50,7 +50,7 @@
 #include "helpers.h"
 
 const char *extraopts = NULL;
-const char getoptstring[] = "a:no:s:S" getoptstring_COMMON
+const char getoptstring[] = "a:no:s:Slu" getoptstring_COMMON
 #ifdef RC_USER_SERVICES
 getoptstring_USER_SERVICES
 #endif
@@ -61,6 +61,8 @@ const struct option longopts[] = {
 	{ "override",    1, NULL, 'o' },
 	{ "service",     1, NULL, 's' },
 	{ "sys",         0, NULL, 'S' },
+	{ "lock",        0, NULL, 'l' },
+	{ "unlock",      0, NULL, 'u' },
 #ifdef RC_USER_SERVICES
 	longopts_USER_SERVICES
 #endif
@@ -859,6 +861,8 @@ int main(int argc, char **argv)
 	char *svcdir = NULL;
 #ifdef RC_USER_SERVICES
 	int locknum = 0;
+	int lockval = 0;
+	bool lock = false;
 #endif
 #ifdef __linux__
 	char *proc;
@@ -930,6 +934,14 @@ int main(int argc, char **argv)
 				printf("%s\n", systype);
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
+		case 'l':
+			lock = true;
+			lockval = 1;
+			break;
+		case 'u':
+			lock = true;
+			lockval = -1;
+			break;
 #ifdef RC_USER_SERVICES
 		case_RC_USER_SERVICES
 #endif
@@ -964,16 +976,13 @@ int main(int argc, char **argv)
 	free(pidstr);
 
 #ifdef RC_USER_SERVICES
-	if (rc_is_user()) {
-		if (rc_yesno(getenv("RC_PAM_STARTING"))) {
-			/* the lockfile count -1 because we don't want to count ourselves */
-			locknum = inc_dec_lockfile(1) - 1;
-		} else if (rc_yesno(getenv("RC_PAM_STOPPING"))) {
-			locknum = inc_dec_lockfile(-1);
-		}
+	if (rc_is_user() && lock) {
+		/* if we are locking, reduce the count by 1,
+		 * because we don't want to count ourselves */
+		locknum = inc_dec_lockfile(lockval) - lockval > 0 ? 1 : 0;
 
 		if (locknum > 0) {
-			einfov("lock set, skipping");
+			einfov("Lock set, skipping");
 			return EXIT_SUCCESS;
 		}
 	}

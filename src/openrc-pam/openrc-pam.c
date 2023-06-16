@@ -9,7 +9,7 @@
 
 #include "einfo.h"
 
-static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
+static bool exec_openrc(pam_handle_t *pamh, const char *runlevel, bool lock) {
 	char *cmd = NULL;
 	const char *username;
 	struct passwd *pw = NULL;
@@ -26,7 +26,7 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel) {
 
 	elog(LOG_INFO, "Executing %s runlevel for user %s", runlevel, username);
 
-	xasprintf(&cmd, "openrc --user %s", runlevel);
+	xasprintf(&cmd, "openrc --user %s %s", lock ? "--lock" : "--unlock", runlevel);
 	switch (fork()) {
 		case 0:
 			setgid(pw->pw_gid);
@@ -58,8 +58,7 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
 	setenv("EINFO_LOG", "openrc-pam", 1);
 	elog(LOG_INFO, "Opening openrc session");
 
-	setenv("RC_PAM_STARTING", "YES", true);
-	if (exec_openrc(pamh, runlevel)) {
+	if (exec_openrc(pamh, runlevel, true)) {
 		elog(LOG_INFO, "Openrc session opened");
 		unsetenv("RC_PAM_STARTING");
 		unsetenv("EINFO_LOG");
@@ -79,8 +78,7 @@ PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, con
 	setenv("EINFO_LOG", "openrc-pam", 1);
 	elog(LOG_INFO, "Closing openrc session");
 
-	setenv("RC_PAM_STOPPING", "YES", true);
-	if (exec_openrc(pamh, runlevel)) {
+	if (exec_openrc(pamh, runlevel, false)) {
 		elog(LOG_INFO, "Openrc session closed");
 		unsetenv("RC_PAM_STOPPING");
 		unsetenv("EINFO_LOG");

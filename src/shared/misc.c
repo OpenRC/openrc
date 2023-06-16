@@ -66,8 +66,6 @@ static const char *const userenv_whitelist[] = {
 	"XDG_CONFIG_HOME",
 	"XDG_CACHE_HOME",
 	"RC_USER_SERVICES",
-	"RC_PAM_STARTING",
-	"RC_PAM_STOPPING",
 };
 #endif
 
