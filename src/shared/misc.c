@@ -58,6 +58,19 @@ static const char *const env_whitelist[] = {
 	NULL
 };
 
+#ifdef RC_USER_SERVICES
+/* Needed for local user services to be found */
+static const char *const userenv_whitelist[] = {
+	"HOME",
+	"XDG_RUNTIME_DIR",
+	"XDG_CONFIG_HOME",
+	"XDG_CACHE_HOME",
+	"RC_USER_SERVICES",
+	"RC_PAM_STARTING",
+	"RC_PAM_STOPPING",
+};
+#endif
+
 void
 env_filter(void)
 {
@@ -71,17 +84,6 @@ env_filter(void)
 	/* Add the user defined list of vars */
 	env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
 
-#ifdef RC_USER_SERVICES
-	/* Needed for local user services to be found */
-	if (rc_is_user()) {
-		rc_stringlist_addu(env_allow, "HOME");
-		rc_stringlist_addu(env_allow, "XDG_RUNTIME_DIR");
-		rc_stringlist_addu(env_allow, "XDG_CONFIG_HOME");
-		rc_stringlist_addu(env_allow, "RC_USER_SERVICES");
-		rc_stringlist_addu(env_allow, "RC_PAM_STARTING");
-		rc_stringlist_addu(env_allow, "RC_PAM_STOPPING");
-	}
-#endif
 	/*
 	 * If '*' is an entry in rc_env_allow, do nothing as we are to pass
 	 * through all environment variables.
@@ -109,6 +111,18 @@ env_filter(void)
 		}
 		if (env_whitelist[i])
 			continue;
+
+#ifdef RC_USER_SERVICES
+		if (rc_is_user() ) {
+			for (i = 0; userenv_whitelist[i]; i++) {
+				if (strcmp(userenv_whitelist[i], env->value) == 0)
+					break;
+			}
+
+			if (env_whitelist[i])
+				continue;
+		}
+#endif
 
 		/* Check our user defined list */
 		if (rc_stringlist_find(env_allow, env->value))
