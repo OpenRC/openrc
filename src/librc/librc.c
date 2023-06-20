@@ -1477,7 +1477,7 @@ rc_svcdir(void)
 		if ((env = getenv("XDG_RUNTIME_DIR"))) {
 			xasprintf(&path, "%s/%s", env, RC_USER_CONF_FOLDER);
 		} else {
-			xasprintf(&path, "/tmp/%s/%d/", RC_USER_CONF_FOLDER, getuid());
+			eerrorx("XDG_RUNTIME_DIR not set in user mode");
 		}
 	} else {
 #endif
