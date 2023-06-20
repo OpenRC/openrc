@@ -6,11 +6,55 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <syslog.h>
+#include <sys/file.h>
 #include <unistd.h>
 #include <string.h>
 
 #include "einfo.h"
 #include "queue.h"
+
+static int
+inc_dec_lockfile(pam_handle_t *pamh, int val)
+{
+	char *lockfile_path = NULL;
+	FILE *lockfile = NULL;
+
+	int locknum = 0;
+
+	pam_syslog(pamh, LOG_INFO, "locking lockfile");
+
+	xasprintf(&lockfile_path, "%s/openrc/%s", pam_getenv(pamh, "XDG_RUNTIME_DIR"), "lock");
+	lockfile = fopen(lockfile_path, "r+");
+	if (!lockfile) {
+		lockfile = fopen(lockfile_path, "w+");
+		if (!lockfile)
+			eerrorx("fopen: failed to open file %s, %s", lockfile_path, strerror(errno));
+		if (flock(fileno(lockfile), LOCK_EX) != 0) {
+			eerrorx("flock: %s", strerror(errno));
+		}
+		locknum = 1;
+	} else {
+		if (flock(fileno(lockfile), LOCK_EX) != 0) {
+			eerrorx("flock: %s", strerror(errno));
+		}
+		fscanf(lockfile, "%d", &locknum);
+		locknum += val;
+		rewind(lockfile);
+	}
+
+	free(lockfile_path);
+
+	fprintf(lockfile, "%d", locknum);
+
+	if (flock(fileno(lockfile), LOCK_UN)) {
+		eerrorx("flock: %s", strerror(errno));
+	}
+	fclose(lockfile);
+
+	pam_syslog(pamh, LOG_INFO, "unlocking lockfile");
+
+	return locknum;
+}
 
 static void load_envs_from_file(const char *path, RC_STRINGLIST *out) {
 	FILE *fp = NULL;
@@ -151,6 +195,7 @@ static char *create_xdg_runtime_dir(struct passwd *pw) {
 }
 
 static bool exec_openrc(pam_handle_t *pamh, const char *runlevel, bool lock) {
+	int lockval;
 	char *cmd = NULL;
 	const char *username;
 	struct passwd *pw = NULL;
@@ -182,11 +227,21 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel, bool lock) {
 
 	envlist = pam_getenvlist(pamh);
 
-	xasprintf(&cmd, "openrc --user %s %s", lock ? "--lock" : "--unlock", runlevel);
-	pam_syslog(pamh, LOG_INFO, "Executing %s for user %s", cmd, username);
-	exec_user_cmd(pw, cmd, envlist);
+	xasprintf(&cmd, "openrc --user %s", runlevel);
 
-	set_user_env(pamh);
+	/* if we are locking, reduce the count by 1,
+	 * because we don't want to count ourselves */
+	lockval = inc_dec_lockfile(pamh, lock ? 1 : -1) - lock == true ? 1 : 0;
+
+	if (lockval == 0) {
+		pam_syslog(pamh, LOG_INFO, "Executing %s for user %s", cmd, username);
+		exec_user_cmd(pw, cmd, envlist);
+	}
+
+	if (lock) {
+		pam_syslog(pamh, LOG_INFO, "Setting the user's environment");
+		set_user_env(pamh);
+	}
 
 	for (env = envlist; *env; env++)
 		free(*env);

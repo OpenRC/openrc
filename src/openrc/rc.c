@@ -50,7 +50,7 @@
 #include "helpers.h"
 
 const char *extraopts = NULL;
-const char getoptstring[] = "a:no:s:Slu" getoptstring_COMMON
+const char getoptstring[] = "a:no:s:S" getoptstring_COMMON
 #ifdef RC_USER_SERVICES
 getoptstring_USER_SERVICES
 #endif
@@ -61,8 +61,6 @@ const struct option longopts[] = {
 	{ "override",    1, NULL, 'o' },
 	{ "service",     1, NULL, 's' },
 	{ "sys",         0, NULL, 'S' },
-	{ "lock",        0, NULL, 'l' },
-	{ "unlock",      0, NULL, 'u' },
 #ifdef RC_USER_SERVICES
 	longopts_USER_SERVICES
 #endif
@@ -786,60 +784,6 @@ handle_bad_signal(int sig)
 }
 #endif
 
-#ifdef RC_USER_SERVICES
-
-static int
-inc_dec_lockfile(int val)
-{
-	char *svcdir = NULL;
-	char *lockfile_path = NULL;
-	FILE *lockfile = NULL;
-
-	int locknum = 0;
-
-	einfov("locking lockfile");
-
-	svcdir = rc_svcdir();
-
-	if (mkdir(svcdir, 0700) != 0 && errno != EEXIST)
-		eerrorx("mkdir: %s, %s", svcdir, strerror(errno));
-
-	xasprintf(&lockfile_path, "%s/%s", svcdir, "lock");
-	lockfile = fopen(lockfile_path, "r+");
-	if (!lockfile) {
-		lockfile = fopen(lockfile_path, "w+");
-		if (!lockfile)
-			eerrorx("fopen: failed to open file %s, %s", lockfile_path, strerror(errno));
-		if (flock(fileno(lockfile), LOCK_EX) != 0) {
-			eerrorx("flock: %s", strerror(errno));
-		}
-		locknum = 1;
-	} else {
-		if (flock(fileno(lockfile), LOCK_EX) != 0) {
-			eerrorx("flock: %s", strerror(errno));
-		}
-		fscanf(lockfile, "%d", &locknum);
-		locknum += val;
-		rewind(lockfile);
-	}
-
-	free(lockfile_path);
-	free(svcdir);
-
-	fprintf(lockfile, "%d", locknum);
-
-	if (flock(fileno(lockfile), LOCK_UN)) {
-		eerrorx("flock: %s", strerror(errno));
-	}
-	fclose(lockfile);
-
-	einfov("unlocking lockfile");
-
-	return locknum;
-}
-
-#endif
-
 int main(int argc, char **argv)
 {
 	const char *bootlevel = NULL;
@@ -859,11 +803,6 @@ int main(int argc, char **argv)
 	int regen = 0;
 	bool nostop = false;
 	char *svcdir = NULL;
-#ifdef RC_USER_SERVICES
-	int locknum = 0;
-	int lockval = 0;
-	bool lock = false;
-#endif
 #ifdef __linux__
 	char *proc;
 	char *p;
@@ -934,14 +873,6 @@ int main(int argc, char **argv)
 				printf("%s\n", systype);
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
-		case 'l':
-			lock = true;
-			lockval = 1;
-			break;
-		case 'u':
-			lock = true;
-			lockval = -1;
-			break;
 #ifdef RC_USER_SERVICES
 		case_RC_USER_SERVICES
 #endif
@@ -974,19 +905,6 @@ int main(int argc, char **argv)
 	xasprintf(&pidstr, "%d", getpid());
 	setenv("RC_PID", pidstr, 1);
 	free(pidstr);
-
-#ifdef RC_USER_SERVICES
-	if (rc_is_user() && lock) {
-		/* if we are locking, reduce the count by 1,
-		 * because we don't want to count ourselves */
-		locknum = inc_dec_lockfile(lockval) - lockval > 0 ? 1 : 0;
-
-		if (locknum > 0) {
-			einfov("Lock set, skipping");
-			return EXIT_SUCCESS;
-		}
-	}
-#endif
 
 	svcdir = rc_svcdir();
 	xasprintf(&rc_stopping, "%s/%s", svcdir, RC_STOPPING_FOLDER);
