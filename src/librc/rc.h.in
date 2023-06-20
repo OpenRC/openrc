@@ -61,6 +61,9 @@ extern "C" {
 /*! @name Reserved runlevel names */
 #define RC_LEVEL_USERNONE    "none"
 
+#define RC_USER_ENV_WHITELIST RC_SYS_USER_CONFDIR "/env_whitelist"
+#define RC_USER_ENV_WHITELIST_D RC_SYS_USER_CONFDIR "/env_whitelist.d"
+
 /*! Is openrc being ran in usermode?
  * @return true if yes, otherwise false */
 bool rc_is_user(void);
