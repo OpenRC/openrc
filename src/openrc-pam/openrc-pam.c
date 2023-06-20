@@ -1,7 +1,6 @@
 #include <librc.h>
 #include <pwd.h>
 #include <security/pam_appl.h>
-#include <security/pam_ext.h>
 #include <security/pam_modules.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -21,7 +20,7 @@ inc_dec_lockfile(pam_handle_t *pamh, int val)
 
 	int locknum = 0;
 
-	pam_syslog(pamh, LOG_INFO, "locking lockfile");
+	elog(LOG_INFO, "locking lockfile");
 
 	xasprintf(&lockfile_path, "%s/openrc/%s", pam_getenv(pamh, "XDG_RUNTIME_DIR"), "lock");
 	lockfile = fopen(lockfile_path, "r+");
@@ -51,7 +50,7 @@ inc_dec_lockfile(pam_handle_t *pamh, int val)
 	}
 	fclose(lockfile);
 
-	pam_syslog(pamh, LOG_INFO, "unlocking lockfile");
+	elog(LOG_INFO, "unlocking lockfile");
 
 	return locknum;
 }
@@ -100,26 +99,26 @@ static void set_user_env(pam_handle_t *pamh) {
 	char *p;
 	char *user_env_path;
 
-	pam_syslog(pamh, LOG_INFO, "Loading allowed envs in %s", RC_USER_ENV_WHITELIST_D);
+	elog(LOG_INFO, "Loading allowed envs in %s", RC_USER_ENV_WHITELIST_D);
 	allowed_env = load_dir(RC_USER_ENV_WHITELIST_D);
 
-	pam_syslog(pamh, LOG_INFO, "Loading allowed envs in %s", RC_USER_ENV_WHITELIST);
+	elog(LOG_INFO, "Loading allowed envs in %s", RC_USER_ENV_WHITELIST);
 	load_envs_from_file(RC_USER_ENV_WHITELIST, allowed_env);
 
 	xasprintf(&user_env_path, "%s/openrc/env", pam_getenv(pamh, "XDG_RUNTIME_DIR"));
 
-	pam_syslog(pamh, LOG_INFO, "Loading user envs in %s", user_env_path);
+	elog(LOG_INFO, "Loading user envs in %s", user_env_path);
 	user_env = load_dir(user_env_path);
 
 	TAILQ_FOREACH(env, allowed_env, entries) {
-		pam_syslog(pamh, LOG_INFO, "allowed env %s", env->value);
+		elog(LOG_INFO, "allowed env %s", env->value);
 		TAILQ_FOREACH(uenv, user_env, entries) {
 			p = strchr(uenv->value, '=');
 			if (p) {
 				*p = '\0';
 				if (strcmp(env->value, uenv->value) == 0) {
 					*p = '=';
-					pam_syslog(pamh, LOG_INFO, "Exporting: %s", uenv->value);
+					elog(LOG_INFO, "Exporting: %s", uenv->value);
 					pam_putenv(pamh, uenv->value);
 				} else {
 					*p = '=';
@@ -128,7 +127,7 @@ static void set_user_env(pam_handle_t *pamh) {
 		}
 	}
 
-	pam_syslog(pamh, LOG_INFO, "Finished loading user environment");
+	elog(LOG_INFO, "Finished loading user environment");
 
 	rc_stringlist_free(allowed_env);
 	rc_stringlist_free(user_env);
@@ -220,7 +219,7 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel, bool lock) {
 
 		xasprintf(&xdg_runtime_dir_env, "XDG_RUNTIME_DIR=%s", xdg_runtime_dir);
 		pam_putenv(pamh, xdg_runtime_dir_env);
-		pam_syslog(pamh, LOG_INFO, "exporting: %s", xdg_runtime_dir_env);
+		elog(LOG_INFO, "exporting: %s", xdg_runtime_dir_env);
 		free(xdg_runtime_dir);
 		free(xdg_runtime_dir_env);
 	}
@@ -234,12 +233,12 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel, bool lock) {
 	lockval = inc_dec_lockfile(pamh, lock ? 1 : -1) - lock == true ? 1 : 0;
 
 	if (lockval == 0) {
-		pam_syslog(pamh, LOG_INFO, "Executing %s for user %s", cmd, username);
+		elog(LOG_INFO, "Executing %s for user %s", cmd, username);
 		exec_user_cmd(pw, cmd, envlist);
 	}
 
 	if (lock) {
-		pam_syslog(pamh, LOG_INFO, "Setting the user's environment");
+		elog(LOG_INFO, "Setting the user's environment");
 		set_user_env(pamh);
 	}
 
@@ -254,13 +253,16 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
 	const char *runlevel = argc > 0 ? runlevel = argv[0] : "default";
 	(void)flags;
 
-	pam_syslog(pamh, LOG_INFO, "Opening openrc session");
+	setenv("EINFO_LOG", "openrc-pam", 1);
+	elog(LOG_INFO, "Opening openrc session");
 
 	if (exec_openrc(pamh, runlevel, true)) {
-		pam_syslog(pamh, LOG_INFO, "Openrc session opened");
+		elog(LOG_INFO, "Openrc session opened");
+		unsetenv("EINFO_LOG");
 		return PAM_SUCCESS;
 	} else {
-		pam_syslog(pamh, LOG_ERR, "Failed to open session");
+		elog(LOG_ERR, "Failed to open session");
+		unsetenv("EINFO_LOG");
 		return PAM_SESSION_ERR;
 	}
 }
@@ -269,13 +271,16 @@ PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, con
 	const char *runlevel = argc > 1 ? argv[1] : "none";
 	(void)flags;
 
-	pam_syslog(pamh, LOG_INFO, "Closing openrc session");
+	setenv("EINFO_LOG", "openrc-pam", 1);
+	elog(LOG_INFO, "Closing openrc session");
 
 	if (exec_openrc(pamh, runlevel, false)) {
-		pam_syslog(pamh, LOG_INFO, "Openrc session closed");
+		elog(LOG_INFO, "Openrc session closed");
+		unsetenv("EINFO_LOG");
 		return PAM_SUCCESS;
 	} else {
-		pam_syslog(pamh, LOG_ERR, "Failed to close session");
+		elog(LOG_ERR, "Failed to close session");
+		unsetenv("EINFO_LOG");
 		return PAM_SESSION_ERR;
 	}
 }
