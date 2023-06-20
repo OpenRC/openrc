@@ -133,15 +133,13 @@ recursive_mkdir(const char *pathname, int mode)
 		return 0;
 	}
 
-	for (p = dir + 1; p; p++) {
-		if (*p == '/') {
-			*p = '\0';
-			if (mkdir(dir, mode) != 0 && errno != EEXIST) {
-				free(dir);
-				return -1;
-			}
-			*p = '/';
+	for (p = strchr(dir + 1, '/'); p; p = strchr(p + 1, '/')) {
+		*p = '\0';
+		if (mkdir(dir, mode) != 0 && errno != EEXIST) {
+			free(dir);
+			return -1;
 		}
+		*p = '/';
 	}
 
 	if (stat(dir, &sb) != 0) {
