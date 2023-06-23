@@ -26,15 +26,21 @@ inc_dec_lockfile(pam_handle_t *pamh, int val)
 	lockfile = fopen(lockfile_path, "r+");
 	if (!lockfile) {
 		lockfile = fopen(lockfile_path, "w+");
-		if (!lockfile)
-			eerrorx("fopen: failed to open file %s, %s", lockfile_path, strerror(errno));
+		if (!lockfile) {
+			eerror("fopen: failed to open file %s, %s", lockfile_path, strerror(errno));
+			return -1;
+		}
 		if (flock(fileno(lockfile), LOCK_EX) != 0) {
-			eerrorx("flock: %s", strerror(errno));
+			eerror("flock: %s", strerror(errno));
+			fclose(lockfile);
+			return -1;
 		}
 		locknum = 1;
 	} else {
 		if (flock(fileno(lockfile), LOCK_EX) != 0) {
-			eerrorx("flock: %s", strerror(errno));
+			eerror("flock: %s", strerror(errno));
+			fclose(lockfile);
+			return -1;
 		}
 		fscanf(lockfile, "%d", &locknum);
 		locknum += val;
@@ -46,7 +52,7 @@ inc_dec_lockfile(pam_handle_t *pamh, int val)
 	fprintf(lockfile, "%d", locknum);
 
 	if (flock(fileno(lockfile), LOCK_UN)) {
-		eerrorx("flock: %s", strerror(errno));
+		eerror("flock: %s", strerror(errno));
 	}
 	fclose(lockfile);
 
