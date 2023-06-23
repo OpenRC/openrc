@@ -140,7 +140,7 @@ save_variables() {
 	local _envname
 
 	if [ -n "${export_vars}" ]; then
-		rm "${RC_SVCDIR}/env/${RC_SVCNAME}"
+		[ -e "${RC_SVCDIR}/env/${RC_SVCNAME}" ] && rm "${RC_SVCDIR}/env/${RC_SVCNAME}"
 		for _envname in ${export_vars}; do
 			eval echo "${_envname}=\$${_envname}" >> "${RC_SVCDIR}/env/${RC_SVCNAME}"
 		done
