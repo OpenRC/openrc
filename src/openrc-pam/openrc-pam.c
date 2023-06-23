@@ -165,7 +165,6 @@ exec_user_cmd(struct passwd *pw, char *cmd, char **envlist)
 
 static char *create_xdg_runtime_dir(struct passwd *pw) {
 	char *path = NULL;
-	char *openrc_path = NULL;
 
 	if (mkdir("/run/user", 0755) != 0 && errno != EEXIST)
 		return NULL;
@@ -182,20 +181,6 @@ static char *create_xdg_runtime_dir(struct passwd *pw) {
 		return NULL;
 	}
 
-	xasprintf(&openrc_path, "%s/%s", path, "openrc");
-
-	if (mkdir(openrc_path, 0700) != 0 && errno != EEXIST) {
-		free(openrc_path);
-		free(path);
-		return NULL;
-	}
-
-	if (chown(openrc_path, pw->pw_uid, pw->pw_gid) != 0) {
-		free(openrc_path);
-		free(path);
-		return NULL;
-	}
-
 	return path;
 }
 
@@ -206,6 +191,7 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel, bool lock) {
 	struct passwd *pw = NULL;
 	char *xdg_runtime_dir;
 	char *xdg_runtime_dir_env;
+	char *openrc_runtime_dir;
 	char **envlist;
 	char **env;
 
@@ -230,6 +216,18 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel, bool lock) {
 		free(xdg_runtime_dir_env);
 	}
 
+	xasprintf(&openrc_runtime_dir, "%s/%s", pam_getenv(pamh, "XDG_RUNTIME_DIR"), "openrc");
+
+	if (mkdir(openrc_runtime_dir, 0700) != 0 && errno != EEXIST) {
+		free(openrc_runtime_dir);
+		return false;
+	}
+
+	if (chown(openrc_runtime_dir, pw->pw_uid, pw->pw_gid) != 0) {
+		free(openrc_runtime_dir);
+		return false;
+	}
+
 	envlist = pam_getenvlist(pamh);
 
 	xasprintf(&cmd, "openrc --user %s", runlevel);
@@ -250,6 +248,7 @@ static bool exec_openrc(pam_handle_t *pamh, const char *runlevel, bool lock) {
 
 	for (env = envlist; *env; env++)
 		free(*env);
+	free(openrc_runtime_dir);
 	free(envlist);
 	free(cmd);
 	return true;
