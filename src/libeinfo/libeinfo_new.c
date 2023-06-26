@@ -660,10 +660,8 @@ static int _eend_status(
  * level: log level, see syslog(3)
  * fmt: the printf-style format for the message
  * va: the args to feed vsyslog(3)
- *
- * TODO:
- * 	- can this be nonnull?
  */
+EINFO_NONNULL
 EINFO_PRINTF(2, 0)
 static void _elog(int level, const char *EINFO_RESTRICT fmt, va_list va)
 {
@@ -671,7 +669,7 @@ static void _elog(int level, const char *EINFO_RESTRICT fmt, va_list va)
 
 	va_list ap;
 
-	if (fmt && id) {
+	if (id) {
 		va_copy(ap, va);
 
 		openlog(id, LOG_PID, LOG_DAEMON);
@@ -692,6 +690,10 @@ const char *ecolor(ECOLOR color)
 void elog(int level, const char * EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
+
+	if (!fmt) {
+		return;
+	}
 
 	va_start(ap, fmt);
 
