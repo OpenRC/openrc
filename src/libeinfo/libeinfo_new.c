@@ -622,9 +622,6 @@ static int _eend_message(
  *      -1 to align at the right edge of the terminal
  * color: the color to print with
  * msg: message to include in the brackets
- *
- * TODO:
- * 	- do something different on empty message
  */
 EINFO_NONNULL
 static int _eend_status(
@@ -636,7 +633,7 @@ static int _eend_status(
 	int ret;
 
 	if (msg[0] == '\0') {
-		return 0;
+		msg = "...";
 	}
 
 	if (col == -1) {
