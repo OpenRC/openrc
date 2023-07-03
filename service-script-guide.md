@@ -366,7 +366,7 @@ pidfile="@piddir@/${RC_SVCNAME}.pid"
 ```
 
 A decent example of this is the [Nagios core service
-script](https://github.com/NagiosEnterprises/nagioscore/blob/HEAD/openrc-init.in),
+script](https://github.com/NagiosEnterprises/nagioscore/blob/HEAD/startup/openrc-init.in),
 where the full path to the PID file is specified at build-time.
 
 ## Don't let the user control the PID file location
