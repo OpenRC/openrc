@@ -4,6 +4,10 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.48
+
+This release is a maintenance release; it has no user-facing changes.
+
 ## OpenRC 0.47
 
 This release is primarily an internal cleanup release.
