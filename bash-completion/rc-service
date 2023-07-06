@@ -92,13 +92,11 @@ _rc_service()
 			return 0
 		elif [[ ${COMP_CWORD} -eq 2 ]] && [[ ${prev} != -* ]]; then # if second word typed and we didn't type in a function
 			rc-service --exists "$prev" || return
-			shopt -s extglob
 			while read -r _ line; do
 				if [[ $line == +([[:alnum:]_]):* ]]; then
 					opts+="${line%%:*} "
 				fi
 			done < <(rc-service "$prev" describe 2>&1)
-			shopt -u extglob
 			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 			return 0
 		fi
