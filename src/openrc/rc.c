@@ -527,7 +527,7 @@ runlevel_config(const char *service, const char *level)
 	char *conf, *dir;
 	bool retval;
 
-	dir = dirname(init);
+	dir = dirname(dirname(init));
 	xasprintf(&conf, "%s/conf.d/%s.%s", dir, service, level);
 	retval = exists(conf);
 	free(conf);
