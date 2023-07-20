@@ -1,20 +1,17 @@
-/*
- * TODO:
- * 	- code style (eg, wrapped lines to spaces instead of tabs)
- */
 #include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h> /* for strcasecmp(3) */
 #include <syslog.h>
 
 #ifdef HAVE_CURSES
-# include <curses.h>
-# include <term.h>
+#include <curses.h>
+#include <term.h>
 #else
-# warning "no curses found"
+#error "no curses found"
 #endif
 
 #include "einfo.h"
@@ -40,7 +37,7 @@
 struct einfo_term {
 	/* Where to actualy write stuff to */
 	FILE *file;
-	/* Terminal used for color stuff */
+	/* Terminal used for curses stuff */
 	TERMINAL *term;
 	/* Is the terminal good for curses use */
 	bool is_good;
@@ -115,15 +112,12 @@ static void _setupterm(void)
  * freed up on program exit, but let's try to do it right anyway ;)
  */
 __attribute__((__destructor__))
-static void _cleanupterm(void)
+static void cleanupterm(void)
 {
-	/* printf("\ndestructor called\n"); */
 	if (stdout_term.is_set_up && stdout_term.term != NULL) {
-		/* printf("cleaning up stdout_term\n"); */
 		del_curterm(stdout_term.term);
 	}
 	if (stderr_term.is_set_up && stderr_term.term != NULL) {
-		/* printf("cleaning up stderr_term\n"); */
 		del_curterm(stderr_term.term);
 	}
 }
@@ -170,18 +164,18 @@ static bool yesno(const char *str)
 	}
 
 	if (strcasecmp(str, "yes") == 0
-		|| strcasecmp(str, "y") == 0
-		|| strcasecmp(str, "true") == 0
-		|| strcasecmp(str, "on") == 0
-		|| strcasecmp(str, "1") == 0) {
+	    || strcasecmp(str, "y") == 0
+	    || strcasecmp(str, "true") == 0
+	    || strcasecmp(str, "on") == 0
+	    || strcasecmp(str, "1") == 0) {
 		return true;
 	}
 
 	if (strcasecmp(str, "no") != 0
-		&& strcasecmp(str, "n") != 0
-		&& strcasecmp(str, "false") != 0
-		&& strcasecmp(str, "off") != 0
-		&& strcasecmp(str, "0") != 0) {
+	    && strcasecmp(str, "n") != 0
+	    && strcasecmp(str, "false") != 0
+	    && strcasecmp(str, "off") != 0
+	    && strcasecmp(str, "0") != 0) {
 		errno = EINVAL;
 	}
 
@@ -313,8 +307,8 @@ static struct color_map env_colors(const char *env)
 
 	/* Go through each entry in the env var, skip malformed ones */
 	for (entry = strtok_r(color_env, ":", &env_saveptr);
-		entry != NULL;
-		entry = strtok_r(NULL, ":", &env_saveptr)) {
+	    entry != NULL;
+	    entry = strtok_r(NULL, ":", &env_saveptr)) {
 		/*
 		 * The saveptr used for parsing an entry should be reset, see
 		 * NOTES in strtok_r(3)
@@ -416,8 +410,8 @@ static void _ecolor(struct einfo_term *t, ECOLOR color)
 			target_color = colors.bracket;
 		}
 		color_str[0] = target_bold
-			? enter_bold_mode
-			: exit_attribute_mode;
+		    ? enter_bold_mode
+		    : exit_attribute_mode;
 		color_str[1] = tiparm(set_a_foreground, target_color);
 	}
 	/* ECOLOR_NORMAL */
@@ -436,7 +430,7 @@ static void _ecolor(struct einfo_term *t, ECOLOR color)
  * t: terminal to move in
  */
 EINFO_NONNULL
-static void _move_up(struct einfo_term *t)
+static void move_up(struct einfo_term *t)
 {
 	const char *move_str = "";
 
@@ -457,7 +451,7 @@ static void _move_up(struct einfo_term *t)
  *      <0 is counting from the right edge
  */
 EINFO_NONNULL
-static void _move_col(struct einfo_term *t, int col)
+static void move_col(struct einfo_term *t, int col)
 {
 	const char *move_str = "";
 
@@ -530,10 +524,10 @@ static int _eindent(FILE *f)
 EINFO_NONNULL
 EINFO_PRINTF(3, 0)
 static int _einfo(
-	struct einfo_term *t,
-	ECOLOR color,
-	const char *EINFO_RESTRICT fmt,
-	va_list va)
+    struct einfo_term *t,
+    ECOLOR color,
+    const char *EINFO_RESTRICT fmt,
+    va_list va)
 {
 	const char *last_env = getenv(LASTCMD_ENV);
 
@@ -552,9 +546,9 @@ static int _einfo(
 	 * "no newline" variant. Why only non-curses? IDFK.
 	 */
 	if (!prepare_term(t)
-		&& last != NULL
-		&& last[strlen(last) - 1] == 'n'
-		&& strcmp(last, "ewarn") != 0) {
+	    && last != NULL
+	    && last[strlen(last) - 1] == 'n'
+	    && strcmp(last, "ewarn") != 0) {
 		fprintf(t->file, "\n");
 	}
 
@@ -591,11 +585,11 @@ static int _einfo(
 EINFO_NONNULL_POS(1)
 EINFO_PRINTF(4, 0)
 static int _eend_message(
-	struct einfo_term *t,
-	int retval,
-	ECOLOR color,
-	const char *EINFO_RESTRICT fmt,
-	va_list va)
+    struct einfo_term *t,
+    int retval,
+    ECOLOR color,
+    const char *EINFO_RESTRICT fmt,
+    va_list va)
 {
 	int ret;
 	va_list ap;
@@ -625,10 +619,10 @@ static int _eend_message(
  */
 EINFO_NONNULL
 static int _eend_status(
-	struct einfo_term *t,
-	int col,
-	ECOLOR color,
-	const char *EINFO_RESTRICT msg)
+    struct einfo_term *t,
+    int col,
+    ECOLOR color,
+    const char *EINFO_RESTRICT msg)
 {
 	int ret;
 
@@ -640,8 +634,8 @@ static int _eend_status(
 		col = -(strlen(msg) + 5);
 	}
 
-	_move_up(t);
-	_move_col(t, col);
+	move_up(t);
+	move_col(t, col);
 	_ecolor(t, ECOLOR_BRACKET);
 	ret = fprintf(t->file, " [ ");
 	_ecolor(t, color);
@@ -879,7 +873,7 @@ int ewarnvn(const char * EINFO_RESTRICT fmt, ...)
 	LASTCMD(__func__);
 	return ret;
 }
-/* Not implemented originally? */
+/* XXX: Not implemented originally? */
 int ebeginvn(const char * EINFO_RESTRICT fmt, ...)
 {
 	(void)fmt;
@@ -897,7 +891,7 @@ int ewendvn(int n, const char * EINFO_RESTRICT fmt, ...)
 	(void)fmt;
 	return 0;
 }
-/* End not implemented */
+/* XXX: End not implemented */
 int einfov(const char * EINFO_RESTRICT fmt, ...)
 {
 	int ret;
