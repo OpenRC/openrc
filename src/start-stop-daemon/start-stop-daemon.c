@@ -1098,12 +1098,7 @@ int main(int argc, char **argv)
 				|| rc_yesno(getenv("EINFO_QUIET")))
 			dup2(stderr_fd, STDERR_FILENO);
 
-#ifdef HAVE_CLOSEFROM
-		closefrom(3);
-#else
-		for (i = getdtablesize() - 1; i >= 3; --i)
-			close(i);
-#endif
+		cloexec_fds_from(3);
 
 		if (scheduler != NULL) {
 			int scheduler_index;
