@@ -22,7 +22,7 @@
 #define ONE_SECOND    1000000000
 #define ONE_MS           1000000
 
-#ifdef HAVE_CLOSE_RANGE_CLOEXEC
+#ifdef HAVE_CLOSE_RANGE
 /* For close_range() */
 # define _GNU_SOURCE
 #endif
@@ -200,6 +200,18 @@ static inline int ioprio_set(int which RC_UNUSED, int who RC_UNUSED,
 #else
 	return 0;
 #endif
+}
+#endif
+
+#ifndef CLOSE_RANGE_CLOEXEC
+# define CLOSE_RANGE_CLOEXEC	(1U << 2)
+#endif
+#ifndef HAVE_CLOSE_RANGE
+static inline int close_range(int first RC_UNUSED,
+			      int last RC_UNUSED,
+			      unsigned int flags RC_UNUSED)
+{
+	return -1;
 }
 #endif
 
@@ -570,9 +582,7 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	if (redirect_stderr || rc_yesno(getenv("EINFO_QUIET")))
 		dup2(stderr_fd, STDERR_FILENO);
 
-#ifdef HAVE_CLOSE_RANGE_CLOEXEC
 	if (close_range(3, UINT_MAX, CLOSE_RANGE_CLOEXEC) < 0)
-#endif
 		for (i = getdtablesize() - 1; i >= 3; --i)
 			fcntl(i, F_SETFD, FD_CLOEXEC);
 	cmdline = make_cmdline(argv);
