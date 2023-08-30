@@ -197,6 +197,8 @@ endif
 
 if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
   add_project_arguments('-DHAVE_CLOSE_RANGE', language: 'c')
+elif cc.has_header('linux/close_range.h')
+  add_project_arguments('-DHAVE_LINUX_CLOSE_RANGE_H', language: 'c')
 endif
 
 if cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>')
