@@ -24,6 +24,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#ifdef HAVE_LINUX_CLOSE_RANGE_H
+#  include <linux/close_range.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +34,7 @@
 #include <sys/file.h>
 #include <sys/time.h>
 #ifdef __linux__
+#  include <sys/syscall.h> /* for close_range */
 #  include <sys/sysinfo.h>
 #endif
 #include <sys/types.h>
@@ -511,7 +515,12 @@ static inline int close_range(int first RC_UNUSED,
 			      int last RC_UNUSED,
 			      unsigned int flags RC_UNUSED)
 {
+#ifdef SYS_close_range
+	return syscall(SYS_close_range, first, last, flags);
+#else
+	errno = ENOSYS;
 	return -1;
+#endif
 }
 #endif
 #ifndef CLOSE_RANGE_CLOEXEC
