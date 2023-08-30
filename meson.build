@@ -198,9 +198,8 @@ endif
 if cc.has_function('closefrom', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
   add_project_arguments('-DHAVE_CLOSEFROM', language: 'c')
 endif
-if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>') and \
-    cc.has_header_symbol('unistd.h', 'CLOSE_RANGE_CLOEXEC', prefix: '#define _GNU_SOURCE')
-  add_project_arguments('-DHAVE_CLOSE_RANGE_CLOEXEC', language: 'c')
+if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
+  add_project_arguments('-DHAVE_CLOSE_RANGE', language: 'c')
 endif
 
 if cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>')
