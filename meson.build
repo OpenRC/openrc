@@ -203,6 +203,10 @@ if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd
   add_project_arguments('-DHAVE_CLOSE_RANGE_CLOEXEC', language: 'c')
 endif
 
+if cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>')
+  add_project_arguments('-DHAVE_STRLCPY', language: 'c')
+endif
+
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
 rc_incdir = include_directories('src/librc')
