@@ -680,7 +680,6 @@ static const char *const depdirs[] =
 	RC_SVCDIR "/options",
 	RC_SVCDIR "/exclusive",
 	RC_SVCDIR "/scheduled",
-	RC_SVCDIR "/tmp",
 	NULL
 };
 
