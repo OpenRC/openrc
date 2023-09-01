@@ -20,18 +20,18 @@ start()
 			return 1
 		fi
 	fi
-	if [ ! -d "$RC_LIBEXECDIR"/cache ]; then
-		if ! checkpath -W "$RC_LIBEXECDIR"; then
-			eerror "${RC_LIBEXECDIR} is not writable!"
+	if [ ! -d "$RC_CACHEDIR" ]; then
+		if ! checkpath -W "$RC_CACHEDIR"; then
+			eerror "${RC_CACHEDIR} is not writable!"
 			eerror "Unable to save dependency cache"
 			if yesno "${RC_GOINGDOWN}"; then
 				return 0
 			fi
 			return 1
 		fi
-		rm -rf "$RC_LIBEXECDIR"/cache
-		if ! mkdir -p "$RC_LIBEXECDIR"/cache; then
-			eerror "Unable to create $RC_LIBEXECDIR/cache"
+		rm -rf "$RC_CACHEDIR"
+		if ! mkdir -p "$RC_CACHEDIR"; then
+			eerror "Unable to create $RC_CACHEDIR"
 			eerror "Unable to save dependency cache"
 			if yesno "${RC_GOINGDOWN}"; then
 				return 0
@@ -39,8 +39,8 @@ start()
 			return 1
 		fi
 	fi
-	if ! checkpath -W "$RC_LIBEXECDIR"/cache; then
-		eerror "${RC_LIBEXECDIR}/cache is not writable!"
+	if ! checkpath -W "$RC_CACHEDIR"; then
+		eerror "${RC_CACHEDIR} is not writable!"
 		eerror "Unable to save dependency cache"
 		if yesno "${RC_GOINGDOWN}"; then
 			return 0
@@ -53,7 +53,7 @@ start()
 		[ -e "$RC_SVCDIR/$x" ] && save="$save $RC_SVCDIR/$x"
 	done
 	if [ -n "$save" ]; then
-		cp -p $save "$RC_LIBEXECDIR"/cache
+		cp -p $save "$RC_CACHEDIR"
 		rc=$?
 	fi
 	if yesno "${RC_GOINGDOWN}"; then

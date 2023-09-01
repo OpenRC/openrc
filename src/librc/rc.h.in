@@ -28,11 +28,14 @@ extern "C" {
 #define RC_LIBEXECDIR           "@LIBEXECDIR@"
 #if defined(PREFIX)
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
+#define RC_CACHEDIR				RC_LIBEXECDIR "/cache"
 #elif defined(__linux__) || (defined(__FreeBSD_kernel__) && \
 		defined(__GLIBC__)) || defined(__GNU__)
 #define RC_SVCDIR               "/run/openrc"
+#define RC_CACHEDIR				"/var/cache/openrc"
 #else
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
+#define RC_CACHEDIR				RC_LIBEXECDIR "/cache"
 #endif
 #define RC_RUNLEVELDIR          RC_SYSCONFDIR "/runlevels"
 #define RC_INITDIR              RC_SYSCONFDIR "/init.d"

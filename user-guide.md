@@ -165,7 +165,7 @@ happen automatically when the service is stopped.
 # Caching
 
 For performance reasons OpenRC keeps a cache of pre-parsed service metadata
-(e.g. `depend`). The default location for this is `/${RC_SVCDIR}/cache`.
+(e.g. `depend`). The default location for this is `${RC_CACHEDIR}`.
 
 The cache uses `mtime` to check for file staleness. Should any service script
 change it'll re-source the relevant files and update the cache
