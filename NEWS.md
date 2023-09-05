@@ -4,6 +4,13 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.49
+
+This release adds support for glibc's builtin 
+strlcpy, strlcat etc functions, which will be in posix next.
+Also, it fixes completions.
+
+
 ## OpenRC 0.48
 
 This release is a maintenance release; it has no user-facing changes.

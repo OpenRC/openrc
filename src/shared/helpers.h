@@ -37,10 +37,8 @@
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
-#ifdef __GLIBC__
-#  if !defined (__UCLIBC__) && !defined (__dietlibc__)
+#ifndef HAVE_STRLCPY
 #    define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
-#  endif
 #endif
 
 #ifndef timespecsub

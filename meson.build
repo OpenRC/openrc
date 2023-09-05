@@ -1,5 +1,5 @@
 project('OpenRC', 'c',
-  version : '0.48',
+  version : '0.49',
   license: 'BSD-2',
   default_options : [
     'c_std=c99',
@@ -201,6 +201,10 @@ endif
 if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>') and \
     cc.has_header_symbol('unistd.h', 'CLOSE_RANGE_CLOEXEC', prefix: '#define _GNU_SOURCE')
   add_project_arguments('-DHAVE_CLOSE_RANGE_CLOEXEC', language: 'c')
+endif
+
+if cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>')
+  add_project_arguments('-DHAVE_STRLCPY', language: 'c')
 endif
 
 incdir = include_directories('src/shared')

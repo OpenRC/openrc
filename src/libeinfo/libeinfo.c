@@ -146,9 +146,7 @@ static const char *const color_terms[] = {
 };
 #endif
 
-/* strlcat and strlcpy are nice, shame glibc does not define them */
-#ifdef __GLIBC__
-#  if !defined (__UCLIBC__) && !defined (__dietlibc__)
+#ifndef HAVE_STRLCPY
 static size_t
 strlcat(char *dst, const char *src, size_t size)
 {
@@ -176,7 +174,6 @@ strlcat(char *dst, const char *src, size_t size)
 
 	return dst_n + (s - src);
 }
-#  endif
 #endif
 
 static bool
