@@ -1,6 +1,6 @@
 libeinfo_version = '1'
 
-libeinfo = library('einfo', ['libeinfo_new.c'],
+libeinfo = library('einfo', ['libeinfo.c'],
   # TODO: remove -Werror
   c_args : [curses_flags, '-Werror'],
   include_directories : incdir,
