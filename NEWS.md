@@ -4,6 +4,11 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.50
+
+This is a bug fix release which fixes a significant performance issue on
+musl libc systems.
+
 ## OpenRC 0.49
 
 This release adds support for glibc's builtin 
