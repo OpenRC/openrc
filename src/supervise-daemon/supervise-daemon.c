@@ -62,6 +62,7 @@ static struct pam_conv conv = { NULL, NULL};
 #include "queue.h"
 #include "rc.h"
 #include "misc.h"
+#include "../start-stop-daemon/pipes.h"
 #include "plugin.h"
 #include "schedules.h"
 #include "_usage.h"
@@ -79,6 +80,8 @@ enum {
   LONGOPT_OOM_SCORE_ADJ,
   LONGOPT_NO_NEW_PRIVS,
   LONGOPT_SECBITS,
+  LONGOPT_STDERR_LOGGER,
+  LONGOPT_STDOUT_LOGGER,
 };
 
 const char *applet = NULL;
@@ -110,6 +113,8 @@ const struct option longopts[] = {
 	{ "user",         1, NULL, 'u'},
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
+	{ "stdout-logger",1, NULL, LONGOPT_STDOUT_LOGGER},
+	{ "stderr-logger",1, NULL, LONGOPT_STDERR_LOGGER},
 	{ "reexec",       0, NULL, '3'},
 	longopts_COMMON
 };
@@ -138,6 +143,8 @@ const char * const longopts_help[] = {
 	"Change the process user",
 	"Redirect stdout to file",
 	"Redirect stderr to file",
+	"Redirect stdout to process",
+	"Redirect stderr to process",
 	"reexec (used internally)",
 	longopts_help_COMMON
 };
@@ -160,6 +167,8 @@ static int stdout_fd;
 static int stderr_fd;
 static char *redirect_stderr = NULL;
 static char *redirect_stdout = NULL;
+static char *stderr_process = NULL;
+static char *stdout_process = NULL;
 #ifdef TIOCNOTTY
 static int tty_fd = -1;
 #endif
@@ -549,6 +558,12 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 			eerrorx("%s: unable to open the logfile"
 				    " for stdout `%s': %s",
 				    applet, redirect_stdout, strerror(errno));
+	} else if (stdout_process) {
+		stdout_fd = rc_pipe_command(stdout_process);
+		if (stdout_fd == -1)
+			eerrorx("%s: unable to open the logging process"
+			    " for stdout `%s': %s",
+			    applet, stdout_process, strerror(errno));
 	}
 	if (redirect_stderr) {
 		if ((stderr_fd = open(redirect_stderr,
@@ -557,12 +572,18 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 			eerrorx("%s: unable to open the logfile"
 			    " for stderr `%s': %s",
 			    applet, redirect_stderr, strerror(errno));
+	} else if (stderr_process) {
+		stderr_fd = rc_pipe_command(stderr_process);
+		if (stderr_fd == -1)
+			eerrorx("%s: unable to open the logging process"
+			    " for stderr `%s': %s",
+			    applet, stderr_process, strerror(errno));
 	}
 
 	dup2(stdin_fd, STDIN_FILENO);
-	if (redirect_stdout || rc_yesno(getenv("EINFO_QUIET")))
+	if (redirect_stdout || stdout_process || rc_yesno(getenv("EINFO_QUIET")))
 		dup2(stdout_fd, STDOUT_FILENO);
-	if (redirect_stderr || rc_yesno(getenv("EINFO_QUIET")))
+	if (redirect_stderr || stderr_process || rc_yesno(getenv("EINFO_QUIET")))
 		dup2(stderr_fd, STDERR_FILENO);
 
 	cloexec_fds_from(3);
@@ -1037,6 +1058,14 @@ int main(int argc, char **argv)
 			break;
 		case '3':  /* --reexec */
 			reexec = true;
+			break;
+
+		case LONGOPT_STDOUT_LOGGER:   /* --stdout-logger "command to run for stdout logging" */
+			stdout_process = optarg;
+			break;
+
+		case LONGOPT_STDERR_LOGGER:  /* --stderr-logger "command to run for stderr logging" */
+			stderr_process = optarg;
 			break;
 
 		case_RC_COMMON_GETOPT
