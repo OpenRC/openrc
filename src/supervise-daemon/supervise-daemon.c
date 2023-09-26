@@ -62,7 +62,7 @@ static struct pam_conv conv = { NULL, NULL};
 #include "queue.h"
 #include "rc.h"
 #include "misc.h"
-#include "../start-stop-daemon/pipes.h"
+#include "pipes.h"
 #include "plugin.h"
 #include "schedules.h"
 #include "_usage.h"

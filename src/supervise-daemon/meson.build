@@ -1,5 +1,5 @@
 executable('supervise-daemon',
-  ['supervise-daemon.c', '../start-stop-daemon/pipes.c', misc_c, plugin_c, schedules_c, usage_c, version_h],
+  ['supervise-daemon.c', pipes_c, misc_c, plugin_c, schedules_c, usage_c, version_h],
   c_args : [cc_branding_flags, cc_pam_flags, cc_cap_flags, cc_selinux_flags],
   link_with: [libeinfo, librc],
   dependencies: [dl_dep, pam_dep, cap_dep, util_dep, selinux_dep],
