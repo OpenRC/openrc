@@ -4,6 +4,16 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.51
+
+The default RC_CGROUP_MODE has been updated to unified.
+This benefits users since it will assign each service to its own cgroup,
+making resource nanagement better over all.
+
+OUTPUT_LOGGER and ERROR_LOGGER have been implemented for
+supervise-daemon. For mor einformation on these settings, please check
+the man page.
+
 ## OpenRC 0.50
 
 This is a bug fix release which fixes a significant performance issue on
