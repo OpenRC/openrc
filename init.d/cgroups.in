@@ -128,7 +128,7 @@ cgroups_unified()
 
 mount_cgroups()
 {
-	case "${rc_cgroup_mode:-hybrid}" in
+	case "${rc_cgroup_mode:-unified}" in
 	hybrid) cgroups_hybrid ;;
 	legacy) cgroups_legacy ;;
 	unified) cgroups_unified ;;
