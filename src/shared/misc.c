@@ -67,6 +67,17 @@ static const char *const env_whitelist[] = {
 	NULL
 };
 
+#ifdef RC_USER_SERVICES
+/* Needed for local user services to be found */
+static const char *const userenv_whitelist[] = {
+	"HOME",
+	"XDG_RUNTIME_DIR",
+	"XDG_CONFIG_HOME",
+	"XDG_CACHE_HOME",
+	"RC_USER_SERVICES",
+};
+#endif
+
 void
 env_filter(void)
 {
@@ -79,6 +90,7 @@ env_filter(void)
 
 	/* Add the user defined list of vars */
 	env_allow = rc_stringlist_split(rc_conf_value("rc_env_allow"), " ");
+
 	/*
 	 * If '*' is an entry in rc_env_allow, do nothing as we are to pass
 	 * through all environment variables.
@@ -106,6 +118,18 @@ env_filter(void)
 		}
 		if (env_whitelist[i])
 			continue;
+
+#ifdef RC_USER_SERVICES
+		if (rc_is_user() ) {
+			for (i = 0; userenv_whitelist[i]; i++) {
+				if (strcmp(userenv_whitelist[i], env->value) == 0)
+					break;
+			}
+
+			if (env_whitelist[i])
+				continue;
+		}
+#endif
 
 		/* Check our user defined list */
 		if (rc_stringlist_find(env_allow, env->value))
@@ -135,6 +159,7 @@ env_config(void)
 	char *path;
 	char *p;
 	char *e;
+	char *svcdir;
 	size_t l;
 	struct utsname uts;
 	FILE *fp;
@@ -175,8 +200,12 @@ env_config(void)
 
 	setenv("RC_VERSION", VERSION, 1);
 	setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 1);
-	setenv("RC_SVCDIR", RC_SVCDIR, 1);
-	setenv("RC_TMPDIR", RC_SVCDIR "/tmp", 1);
+	svcdir = rc_svcdir();
+	setenv("RC_SVCDIR", svcdir, 1);
+	xasprintf(&e, "%s/%s", svcdir, "/tmp");
+	setenv("RC_TMPDIR", e, 1);
+	free(e);
+	free(svcdir);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);
 	e = rc_runlevel_get();
 	setenv("RC_RUNLEVEL", e, 1);
@@ -247,8 +276,12 @@ svc_lock(const char *applet, bool ignore_lock_failure)
 {
 	char *file = NULL;
 	int fd;
+	char *svcdir = rc_svcdir();
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
+	xasprintf(&file, "%s/exclusive/%s", svcdir, applet);
+
+	free(svcdir);
+
 	fd = open(file, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
 	free(file);
 	if (fd == -1)
@@ -273,8 +306,12 @@ int
 svc_unlock(const char *applet, int fd)
 {
 	char *file = NULL;
+	char *svcdir = rc_svcdir();
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
+	xasprintf(&file, "%s/exclusive/%s", svcdir, applet);
+
+	free(svcdir);
+
 	close(fd);
 	unlink(file);
 	free(file);
@@ -385,15 +422,30 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 	struct stat st;
 	struct utimbuf ut;
 	FILE *fp;
+	char *cache = NULL;
+	char *skew = NULL;
+	char *svcdir = rc_svcdir();
+
+	xasprintf(&cache, "%s%s", svcdir, RC_DEPTREE_CACHE_FILE);
+	xasprintf(&skew, "%s%s", svcdir, RC_DEPTREE_SKEWED_FILE);
+
+	free(svcdir);
 
 	t = 0;
 	if (rc_deptree_update_needed(&t, file) || force != 0) {
 		/* Test if we have permission to update the deptree */
-		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
+		fd = open(cache, O_WRONLY);
 		merrno = errno;
 		errno = serrno;
-		if (fd == -1 && merrno == EACCES)
+		if (fd == -1 && merrno == EACCES) {
+#ifdef RC_USER_SERVICES
+			if (rc_is_user()) {
+				free(cache);
+				free(skew);
+			}
+#endif
 			return rc_deptree_load();
+		}
 		close(fd);
 
 		if (regen)
@@ -403,30 +455,41 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 		eend (retval, "Failed to update the dependency tree");
 
 		if (retval == 0) {
-			if (stat(RC_DEPTREE_CACHE, &st) != 0) {
-				eerror("stat(%s): %s", RC_DEPTREE_CACHE, strerror(errno));
+			if (stat(cache, &st) != 0) {
+				eerror("stat(%s): %s", cache, strerror(errno));
+#ifdef RC_USER_SERVICES
+				if (rc_is_user()) {
+					free(cache);
+					free(skew);
+				}
+#endif
 				return NULL;
 			}
 			if (st.st_mtime < t) {
 				eerror("Clock skew detected with `%s'", file);
-				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
-				    "' to %s", ctime(&t));
-				fp = fopen(RC_DEPTREE_SKEWED, "w");
+				eerrorn("Adjusting mtime of '%s' to %s", cache, ctime(&t));
+				fp = fopen(skew, "w");
 				if (fp != NULL) {
 					fprintf(fp, "%s\n", file);
 					fclose(fp);
 				}
 				ut.actime = t;
 				ut.modtime = t;
-				utime(RC_DEPTREE_CACHE, &ut);
+				utime(cache, &ut);
 			} else {
-				if (exists(RC_DEPTREE_SKEWED))
-					unlink(RC_DEPTREE_SKEWED);
+				if (exists(skew))
+					unlink(skew);
 			}
 		}
 		if (force == -1 && regen != NULL)
 			*regen = retval;
 	}
+#ifdef RC_USER_SERVICES
+	if (rc_is_user()) {
+		free(cache);
+		free(skew);
+	}
+#endif
 	return rc_deptree_load();
 }
 

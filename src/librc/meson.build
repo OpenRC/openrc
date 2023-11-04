@@ -25,8 +25,10 @@ rc_h = configure_file(input : 'rc.h.in', output : 'rc.h',
 
 librc = library('rc', librc_sources,
   dependencies: kvm_dep,
+  c_args : cc_user_services_flags,
   include_directories : [incdir, einfo_incdir],
   link_depends : 'rc.map',
+  link_with: libeinfo,
   version : librc_version,
   install : true,
   install_dir : libdir)

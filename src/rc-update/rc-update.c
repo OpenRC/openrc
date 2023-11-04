@@ -36,17 +36,27 @@ const char *usagestring = ""							\
 	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
 	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
 	"   or: rc-update [options] [show [<runlevel>...]]";
-const char getoptstring[] = "asu" getoptstring_COMMON;
+const char getoptstring[] = "asu" getoptstring_COMMON
+#ifdef RC_USER_SERVICES
+getoptstring_USER_SERVICES
+#endif
+;
 const struct option longopts[] = {
 	{ "all",             0, NULL, 'a' },
 	{ "stack",           0, NULL, 's' },
 	{ "update",          0, NULL, 'u' },
+#ifdef RC_USER_SERVICES
+	longopts_USER_SERVICES
+#endif
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
 	"Process all runlevels",
 	"Stack a runlevel instead of a service",
 	"Force an update of the dependency tree",
+#ifdef RC_USER_SERVICES
+	longopts_help_USER_SERVICES
+#endif
 	longopts_help_COMMON
 };
 
@@ -236,6 +246,9 @@ int main(int argc, char **argv)
 			if (deptree)
 				rc_deptree_free(deptree);
 			return ret;
+#ifdef RC_USER_SERVICES
+		case_RC_USER_SERVICES
+#endif
 		case_RC_COMMON_GETOPT
 		}
 

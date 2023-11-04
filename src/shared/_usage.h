@@ -45,6 +45,16 @@
 	case 'q': case_RC_COMMON_getopt_case_q; break;			      \
 	default:  case_RC_COMMON_getopt_default; break;
 
+#ifdef RC_USER_SERVICES
+#define case_RC_USER_SERVICES \
+	case 'U': rc_set_user(); break;
+#define getoptstring_USER_SERVICES "U"
+#define longopts_USER_SERVICES \
+	{ "user",          0, NULL, 'U'},
+#define longopts_help_USER_SERVICES \
+	"use user facing services",
+#endif
+
 extern const char *applet;
 extern const char *extraopts;
 extern const char getoptstring[];

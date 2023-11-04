@@ -54,7 +54,7 @@
 #include "_usage.h"
 #include "helpers.h"
 
-#define PREFIX_LOCK	RC_SVCDIR "/prefix.lock"
+#define PREFIX_LOCK_FILE "/prefix.lock"
 
 #define WAIT_INTERVAL	20000000	/* usecs to poll the lock file */
 #define WAIT_TIMEOUT	60		/* seconds until we timeout */
@@ -164,8 +164,12 @@ static void
 unhotplug(void)
 {
 	char *file = NULL;
+	char *svcdir = rc_svcdir();
 
-	xasprintf(&file, RC_SVCDIR "/hotplugged/%s", applet);
+	xasprintf(&file, "%s/hotplugged/%s", svcdir, applet);
+
+	free(svcdir);
+
 	if (exists(file) && unlink(file) != 0)
 		eerror("%s: unlink `%s': %s", applet, file, strerror(errno));
 	free(file);
@@ -286,12 +290,18 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	const char *ec_normal = ecolor(ECOLOR_NORMAL);
 	ssize_t ret = 0;
 	int fd = fileno(stdout), lock_fd = -1;
+	char *prefix_lock = NULL;
+
+	char *svcdir = rc_svcdir();
+	xasprintf(&prefix_lock, "%s/%s", svcdir, PREFIX_LOCK_FILE);
+	free(svcdir);
 
 	/*
 	 * Lock the prefix.
-	 * open() may fail here when running as user, as RC_SVCDIR may not be writable.
 	 */
-	lock_fd = open(PREFIX_LOCK, O_WRONLY | O_CREAT, 0664);
+	lock_fd = open(prefix_lock, O_WRONLY | O_CREAT, 0664);
+
+	free(prefix_lock);
 
 	if (lock_fd != -1) {
 		while (flock(lock_fd, LOCK_EX) != 0) {
@@ -350,6 +360,8 @@ svc_exec(const char *arg1, const char *arg2)
 	int slave_tty;
 	sigset_t sigchldmask;
 	sigset_t oldmask;
+	char *runsh;
+	char *svcdir = rc_svcdir();
 
 	/* Setup our signal pipe */
 	if (pipe(signal_pipe) == -1)
@@ -390,20 +402,19 @@ svc_exec(const char *arg1, const char *arg2)
 			dup2(slave_tty, STDERR_FILENO);
 		}
 
-		if (exists(RC_SVCDIR "/openrc-run.sh")) {
+		xasprintf(&runsh, "%s/%s", svcdir, "openrc-run.sh");
+		if (exists(runsh)) {
 			if (arg2)
 				einfov("Executing: %s %s %s %s %s",
-					RC_SVCDIR "/openrc-run.sh", RC_SVCDIR "/openrc-run.sh",
+					runsh, runsh,
 					service, arg1, arg2);
 			else
 				einfov("Executing: %s %s %s %s",
-					RC_SVCDIR "/openrc-run.sh", RC_SVCDIR "/openrc-run.sh",
+					runsh, runsh,
 					service, arg1);
-			execl(RC_SVCDIR "/openrc-run.sh",
-			    RC_SVCDIR "/openrc-run.sh",
-			    service, arg1, arg2, (char *) NULL);
-			eerror("%s: exec `" RC_SVCDIR "/openrc-run.sh': %s",
-			    service, strerror(errno));
+			execl(runsh, runsh, service, arg1, arg2, (char *) NULL);
+			eerror("%s: exec '%s': %s",
+			    service, runsh, strerror(errno));
 			_exit(EXIT_FAILURE);
 		} else {
 			if (arg2)
@@ -423,7 +434,10 @@ svc_exec(const char *arg1, const char *arg2)
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		}
+		free(runsh);
 	}
+
+	free(svcdir);
 
 	buffer = xmalloc(sizeof(char) * BUFSIZ);
 	fd[0].fd = signal_pipe[0];
@@ -500,6 +514,7 @@ svc_wait(const char *svc)
 	bool forever = false;
 	RC_STRINGLIST *keywords;
 	struct timespec interval, timeout, warn;
+	char *svcdir = rc_svcdir();
 
 	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend(deptree, svc, "keyword");
@@ -508,7 +523,9 @@ svc_wait(const char *svc)
 		forever = true;
 	rc_stringlist_free(keywords);
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", basename_c(svc));
+	xasprintf(&file, "%s/exclusive/%s", svcdir, basename_c(svc));
+
+	free(svcdir);
 
 	interval.tv_sec = 0;
 	interval.tv_nsec = WAIT_INTERVAL;
@@ -1106,6 +1123,7 @@ int main(int argc, char **argv)
 	char *pidstr = NULL;
 	size_t l = 0, ll;
 	const char *file;
+	const char *changedir = "/";
 	struct stat stbuf;
 
 	/* Show help if insufficient args */
@@ -1166,8 +1184,12 @@ int main(int argc, char **argv)
 	if (argc < 3)
 		usage(EXIT_FAILURE);
 
-	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
-	if (chdir("/") == -1)
+	/* Change dir to / to ensure all init scripts don't use stuff in pwd
+	 * In user scripts mode, we change to the homefolder of the user instead */
+	if (rc_is_user())
+		changedir = rc_user_home();
+
+	if (chdir(changedir) == -1)
 		eerror("chdir: %s", strerror(errno));
 
 	if ((runlevel = xstrdup(getenv("RC_RUNLEVEL"))) == NULL) {

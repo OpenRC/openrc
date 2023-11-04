@@ -59,6 +59,12 @@ else
   cc_pam_flags = []
 endif
 
+if get_option('user_services')
+  cc_user_services_flags = '-DRC_USER_SERVICES'
+else
+  cc_user_services_flags = []
+endif
+
 if not pam_dep.found() and get_option('pam')
   error('Pam was requested but could not be located')
 endif

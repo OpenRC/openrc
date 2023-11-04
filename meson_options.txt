@@ -35,5 +35,7 @@ option('termcap', type : 'combo',
   choices :
     [ '', 'ncurses', 'termcap' ],
   description : 'the termcap library to use')
+option('user_services', type : 'boolean',
+  description : 'enable user services' )
 option('zsh-completions', type : 'boolean',
   description : 'install zsh completions')

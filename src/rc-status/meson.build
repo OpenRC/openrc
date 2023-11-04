@@ -1,6 +1,6 @@
 executable('rc-status',
   ['rc-status.c', misc_c, usage_c, version_h],
-  c_args : cc_branding_flags,
+  c_args : [cc_branding_flags, cc_user_services_flags],
   link_with: [libeinfo, librc],
   dependencies: [util_dep],
   include_directories: [incdir, einfo_incdir, rc_incdir],

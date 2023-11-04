@@ -134,6 +134,23 @@ _depend() {
 	done
 }
 
+save_variables() {
+	mkdir -p "${RC_SVCDIR}"/env/
+
+	local _envname
+
+	if [ -n "${export_vars}" ]; then
+		[ -e "${RC_SVCDIR}/env/${RC_SVCNAME}" ] && rm "${RC_SVCDIR}/env/${RC_SVCNAME}"
+		for _envname in ${export_vars}; do
+			eval echo "${_envname}=\$${_envname}" >> "${RC_SVCDIR}/env/${RC_SVCNAME}"
+		done
+	fi
+}
+
+load_variables() {
+	sourcex -e "${RC_SVCDIR}/env/*"
+}
+
 # Add our sbin to $PATH
 case "$PATH" in
 	"$RC_LIBEXECDIR"/sbin|"$RC_LIBEXECDIR"/sbin:*);;
