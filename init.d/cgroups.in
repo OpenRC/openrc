@@ -87,7 +87,7 @@ cgroup2_controllers()
 	[ ! -e "${cgroup_path}/cgroup.subtree_control" ]&& return 0
 	read -r active < "${cgroup_path}/cgroup.controllers"
 	for x in ${active}; do
-	case "$rc_cgroup_mode" in
+	case "${rc_cgroup_mode:-unified}" in
 		unified)
 			echo "+${x}"  > "${cgroup_path}/cgroup.subtree_control"
 			;;
