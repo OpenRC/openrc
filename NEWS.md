@@ -4,6 +4,18 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.52
+
+This release drops the "runscript" and "rc" binaries.
+These binaries have been deprecated for multiple years, so it should be
+fine to remove them at this point.
+
+There was an issue before this release with the default setting for
+cgroups being inconsistent. This is fixed.
+
+Start-stop-daemon did not work correctly on Linux 6.6 systems.
+This has been fixed in this release as well.
+
 ## OpenRC 0.51
 
 The default RC_CGROUP_MODE has been updated to unified.
