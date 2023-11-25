@@ -205,6 +205,10 @@ if cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>'
   add_project_arguments('-DHAVE_STRLCPY', language: 'c')
 endif
 
+if rootprefix != ''
+  add_project_arguments('-DPREFIX', language: 'c')
+endif
+
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
 rc_incdir = include_directories('src/librc')
