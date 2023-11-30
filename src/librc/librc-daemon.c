@@ -402,7 +402,7 @@ rc_service_daemon_set(const char *service, const char *exec,
 	bool retval = false;
 	DIR *dp;
 	struct dirent *d;
-	RC_STRINGLIST *match;
+	RC_STRINGLIST *match, *renamelist;
 	int i = 0;
 	FILE *fp;
 
@@ -416,11 +416,17 @@ rc_service_daemon_set(const char *service, const char *exec,
 	/* Regardless, erase any existing daemon info */
 	if ((dp = opendir(dirpath))) {
 		match = _match_list(exec, argv, pidfile);
+		renamelist = rc_stringlist_new();
 		while ((d = readdir(dp))) {
 			if (d->d_name[0] == '.')
 				continue;
 
 			xasprintf(&file, "%s/%s", dirpath, d->d_name);
+			if (rc_stringlist_find(renamelist, file)) {
+				free(file);
+				continue;
+			}
+
 			nfiles++;
 
 			if (!*oldfile) {
@@ -432,11 +438,15 @@ rc_service_daemon_set(const char *service, const char *exec,
 			} else {
 				rename(file, oldfile);
 				strlcpy(oldfile, file, sizeof(oldfile));
+				/* Add renamed file to renamelist, as this new file name could
+				 * be read again from readdir() */
+				rc_stringlist_add(renamelist, oldfile);
 			}
 			free(file);
 		}
 		closedir(dp);
 		rc_stringlist_free(match);
+		rc_stringlist_free(renamelist);
 	}
 
 	/* Now store our daemon info */

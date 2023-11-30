@@ -15,10 +15,18 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#ifdef HAVE_CLOSE_RANGE
+/* For close_range() */
+# define _GNU_SOURCE
+#endif
+
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#ifdef HAVE_LINUX_CLOSE_RANGE_H
+#  include <linux/close_range.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +34,7 @@
 #include <sys/file.h>
 #include <sys/time.h>
 #ifdef __linux__
+#  include <sys/syscall.h> /* for close_range */
 #  include <sys/sysinfo.h>
 #endif
 #include <sys/types.h>
@@ -499,4 +508,31 @@ pid_t get_pid(const char *applet,const char *pidfile)
 	fclose(fp);
 
 	return pid;
+}
+
+#ifndef HAVE_CLOSE_RANGE
+static inline int close_range(int first RC_UNUSED,
+			      int last RC_UNUSED,
+			      unsigned int flags RC_UNUSED)
+{
+#ifdef SYS_close_range
+	return syscall(SYS_close_range, first, last, flags);
+#else
+	errno = ENOSYS;
+	return -1;
+#endif
+}
+#endif
+#ifndef CLOSE_RANGE_CLOEXEC
+# define CLOSE_RANGE_CLOEXEC	(1U << 2)
+#endif
+
+void
+cloexec_fds_from(int first)
+{
+	int i;
+	if (close_range(first, UINT_MAX, CLOSE_RANGE_CLOEXEC) < 0) {
+		for (i = getdtablesize() - 1; i >= first; --i)
+			fcntl(i, F_SETFD, FD_CLOEXEC);
+	}
 }

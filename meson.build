@@ -1,5 +1,5 @@
 project('OpenRC', 'c',
-  version : '0.49',
+  version : '0.51',
   license: 'BSD-2',
   default_options : [
     'c_std=c99',
@@ -195,12 +195,10 @@ if cc.compiles(malloc_attribute_test, name : 'malloc attribute with arguments')
   add_project_arguments('-DHAVE_MALLOC_EXTENDED_ATTRIBUTE', language: 'c')
 endif
 
-if cc.has_function('closefrom', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
-  add_project_arguments('-DHAVE_CLOSEFROM', language: 'c')
-endif
-if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>') and \
-    cc.has_header_symbol('unistd.h', 'CLOSE_RANGE_CLOEXEC', prefix: '#define _GNU_SOURCE')
-  add_project_arguments('-DHAVE_CLOSE_RANGE_CLOEXEC', language: 'c')
+if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
+  add_project_arguments('-DHAVE_CLOSE_RANGE', language: 'c')
+elif cc.has_header('linux/close_range.h')
+  add_project_arguments('-DHAVE_LINUX_CLOSE_RANGE_H', language: 'c')
 endif
 
 if cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>')

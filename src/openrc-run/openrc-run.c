@@ -1097,7 +1097,6 @@ service_plugable(void)
 int main(int argc, char **argv)
 {
 	bool doneone = false;
-	bool runscript = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
 	char *path = NULL;
@@ -1115,8 +1114,6 @@ int main(int argc, char **argv)
 	}
 
 	applet = basename_c(argv[0]);
-	if (strcmp(applet, "runscript") == 0)
-		runscript = true;
 
 	if (stat(argv[1], &stbuf) != 0) {
 		fprintf(stderr, "openrc-run `%s': %s\n",
@@ -1288,9 +1285,6 @@ int main(int argc, char **argv)
 
 	applet_list = rc_stringlist_new();
 	rc_stringlist_add(applet_list, applet);
-
-	if (runscript)
-		ewarn("%s uses runscript, please convert to openrc-run.", service);
 
 	/* Now run each option */
 	retval = EXIT_SUCCESS;

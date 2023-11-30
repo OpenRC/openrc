@@ -30,6 +30,8 @@ supervise_start()
 		${chroot:+--chroot} $chroot \
 		${output_log+--stdout} ${output_log} \
 		${error_log+--stderr} $error_log \
+		${output_logger:+--stdout-logger \"$output_logger\"} \
+		${error_logger:+--stderr-logger \"$error_logger\"} \
 		${pidfile:+--pidfile} $pidfile \
 		${respawn_delay:+--respawn-delay} $respawn_delay \
 		${respawn_max:+--respawn-max} $respawn_max \
@@ -38,7 +40,7 @@ supervise_start()
 		${healthcheck_timer:+--healthcheck-timer} $healthcheck_timer \
 		${capabilities+--capabilities} "$capabilities" \
 		${secbits:+--secbits} "$secbits" \
-		${no_new_privs:+--no_new_privs} \
+		${no_new_privs:+--no-new-privs} \
 		${command_user+--user} $command_user \
 		${umask+--umask} $umask \
 		${supervise_daemon_args-${start_stop_daemon_args}} \

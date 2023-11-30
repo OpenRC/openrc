@@ -154,7 +154,7 @@ cgroup_set_limits()
 cgroup2_find_path()
 {
 	if grep -qw cgroup2 /proc/filesystems; then
-		case "${rc_cgroup_mode:-hybrid}" in
+		case "${rc_cgroup_mode:-unified}" in
 			hybrid) printf "/sys/fs/cgroup/unified" ;;
 			unified) printf "/sys/fs/cgroup" ;;
 		esac
