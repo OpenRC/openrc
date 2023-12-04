@@ -88,7 +88,7 @@ delete(const char *runlevel, const char *service)
 
 	errno = 0;
 	if (rc_service_delete(runlevel, service)) {
-		einfo("service %s removed from runlevel %s",
+		einfo("service %s deleted from runlevel %s",
 		    service, runlevel);
 		return 1;
 	}
@@ -97,7 +97,7 @@ delete(const char *runlevel, const char *service)
 		eerror("%s: service `%s' is not in the runlevel `%s'",
 		    applet, service, runlevel);
 	else
-		eerror("%s: failed to remove service `%s' from runlevel `%s': %s",
+		eerror("%s: failed to delete service `%s' from runlevel `%s': %s",
 		    applet, service, runlevel, strerror (errno));
 
 	return retval;
@@ -144,7 +144,7 @@ static int
 delstack(const char *runlevel, const char *stack)
 {
 	if (rc_runlevel_unstack(runlevel, stack)) {
-		einfo("runlevel %s removed from runlevel %s", stack, runlevel);
+		einfo("runlevel %s deleted from runlevel %s", stack, runlevel);
 		return 1;
 	}
 
@@ -152,7 +152,7 @@ delstack(const char *runlevel, const char *stack)
 		eerror("%s: runlevel `%s' is not in the runlevel `%s'",
 		    applet, stack, runlevel);
 	else
-		eerror("%s: failed to remove runlevel `%s' from runlevel `%s': %s",
+		eerror("%s: failed to delete runlevel `%s' from runlevel `%s': %s",
 		    applet, stack, runlevel, strerror (errno));
 
 	return -1;
