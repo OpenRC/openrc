@@ -149,7 +149,7 @@ else
 endif
 
 if os == 'Linux' or os == 'GNU-kFreeBSD'
-  cc_os_flags = ['-D_DEFAULT_SOURCE']
+  cc_os_flags = ['-D_DEFAULT_SOURCE', '-D_GNU_SOURCE']
 elif os == 'FreeBSD'
   cc_os_flags = ['-D_BSD_SOURCE']
 elif os == 'GNU'
