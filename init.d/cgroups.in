@@ -11,7 +11,8 @@
 
 description="Mount the control groups."
 
-cgroup_opts=nodev,noexec,nosuid
+# default mount options can be overriden in conf.d
+: "${cgroup_opts:="nodev,noexec,nosuid"}"
 
 depend()
 {
