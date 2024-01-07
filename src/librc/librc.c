@@ -235,9 +235,6 @@ get_systype(void)
 static const char *
 detect_prefix(const char *systype)
 {
-#ifdef PREFIX
-	return RC_SYS_PREFIX;
-#else
 	if (systype) {
 		if (strcmp(systype, RC_SYS_NONE) == 0)
 			return NULL;
@@ -246,7 +243,6 @@ detect_prefix(const char *systype)
 	}
 
 	return NULL;
-#endif
 }
 
 static const char *
