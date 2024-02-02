@@ -31,6 +31,7 @@
 #include <getopt.h>
 #include <limits.h>
 #include <grp.h>
+#include <pthread.h>
 #include <pwd.h>
 #include <sched.h>
 #include <signal.h>
@@ -1126,7 +1127,7 @@ int main(int argc, char **argv)
 			if (sched_prio == -1)
 				sched.sched_priority = sched_get_priority_min(scheduler_index);
 
-			if (sched_setscheduler(mypid, scheduler_index, &sched))
+			if (pthread_setschedparam(pthread_self(), scheduler_index, &sched))
 				eerrorx("Failed to set scheduler: %s", strerror(errno));
 		} else if (sched_prio != -1) {
 			const struct sched_param sched =  {.sched_priority = sched_prio};
