@@ -37,28 +37,28 @@
 
 bool rc_in_plugin = false;
 
+typedef int (*rc_hook_t)(RC_HOOK, const char *);
+
 typedef struct plugin
 {
 	char *name;
 	void *handle;
-	int (*hook)(RC_HOOK, const char *);
+	rc_hook_t hook;
 	TAILQ_ENTRY(plugin) entries;
 } PLUGIN;
 TAILQ_HEAD(, plugin) plugins;
 
-#ifndef __FreeBSD__
-dlfunc_t
-dlfunc(void * __restrict handle, const char * __restrict symbol)
+static rc_hook_t
+rc_get_hook(void * __restrict handle)
 {
 	union {
 		void *d;
-		dlfunc_t f;
+		rc_hook_t f;
 	} rv;
 
-	rv.d = dlsym(handle, symbol);
+	rv.d = dlsym(handle, RC_PLUGIN_HOOK);
 	return rv.f;
 }
-#endif
 
 void
 rc_plugin_load(void)
@@ -68,7 +68,7 @@ rc_plugin_load(void)
 	PLUGIN *plugin;
 	char *file = NULL;
 	void *h;
-	int (*fptr)(RC_HOOK, const char *);
+	rc_hook_t fptr;
 
 	/* Don't load plugins if we're in one */
 	if (rc_in_plugin)
@@ -91,8 +91,7 @@ rc_plugin_load(void)
 			continue;
 		}
 
-		fptr = (int (*)(RC_HOOK, const char *))
-		    dlfunc(h, RC_PLUGIN_HOOK);
+		fptr = rc_get_hook(h);
 		if (fptr == NULL) {
 			eerror("%s: cannot find symbol `%s'",
 			    d->d_name, RC_PLUGIN_HOOK);
