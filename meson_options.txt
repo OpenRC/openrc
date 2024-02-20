@@ -31,9 +31,5 @@ option('split-usr', type : 'combo',
   description : '''/bin, /sbin aren't symlinks into /usr''')
 option('sysvinit', type : 'boolean', value : false,
   description : 'enable SysVinit compatibility (linux only)')
-option('termcap', type : 'combo',
-  choices :
-    [ '', 'ncurses', 'termcap' ],
-  description : 'the termcap library to use')
 option('zsh-completions', type : 'boolean',
   description : 'install zsh completions')
