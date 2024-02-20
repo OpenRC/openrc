@@ -4,7 +4,7 @@
 */
 
 /*
- * Copyright (c) 2007-2015 The OpenRC Authors.
+ * Copyright (c) 2007-2024 The OpenRC Authors.
  * See the Authors file at the top-level directory of this distribution and
  * https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
  *
@@ -26,9 +26,6 @@
 #include <string.h>
 #include <strings.h>
 #include <syslog.h>
-#ifdef HAVE_TERMCAP
-# include <termcap.h>
-#endif
 #include <unistd.h>
 
 #include "einfo.h"
@@ -97,12 +94,6 @@ static char *goto_column = NULL;
 static const char *term = NULL;
 static bool term_is_cons25 = false;
 
-/* Termcap buffers and pointers
- * Static buffers suck hard, but some termcap implementations require them */
-#ifdef HAVE_TERMCAP
-static char termcapbuf[2048];
-static char tcapbuf[512];
-#else
 /* No curses support, so we hardcode a list of colour capable terms
  * Only terminals without "color" in the name need to be explicitly listed */
 static const char *const color_terms[] = {
@@ -144,7 +135,6 @@ static const char *const color_terms[] = {
 	"xterm-debian",
 	NULL
 };
-#endif
 
 #ifndef HAVE_STRLCPY
 static size_t
@@ -236,7 +226,6 @@ is_verbose(void)
 }
 
 /* Fake tgoto call - very crapy, but works for our needs */
-#ifndef HAVE_TERMCAP
 static char *
 tgoto(const char *cap, int col, int line)
 {
@@ -299,7 +288,6 @@ tgoto(const char *cap, int col, int line)
 	*p = '\0';
 	return buf;
 }
-#endif
 
 static bool
 colour_terminal(FILE * EINFO_RESTRICT f)
@@ -312,9 +300,6 @@ colour_terminal(FILE * EINFO_RESTRICT f)
 	const char *bold;
 	char tmp[100];
 	unsigned int i = 0;
-#ifdef HAVE_TERMCAP
-	char *bp;
-#endif
 
 	if (f && !isatty(fileno(f)))
 		return false;
@@ -336,65 +321,33 @@ colour_terminal(FILE * EINFO_RESTRICT f)
 	if (strcmp(term, "cons25") == 0)
 		term_is_cons25 = true;
 
-#ifdef HAVE_TERMCAP
-	/* Check termcap to see if we can do colour or not */
-	if (tgetent(termcapbuf, term) == 1) {
-		bp = tcapbuf;
-		_af = tgetstr("AF", &bp);
-		_ce = tgetstr("ce", &bp);
-		_ch = tgetstr("ch", &bp);
-		/* Our ch use also works with RI .... for now */
-		if (!_ch)
-			_ch = tgetstr("RI", &bp);
-		_md = tgetstr("md", &bp);
-		_me = tgetstr("me", &bp);
-		_up = tgetstr("up", &bp);
-	}
+	if (strstr(term, "color"))
+		in_colour = 1;
 
-	/* Cheat here as vanilla BSD has the whole termcap info in /usr
-	 * which is not available to us when we boot */
-	if (term_is_cons25 || strcmp(term, "wsvt25") == 0) {
-#else
-		if (strstr(term, "color"))
+	while (color_terms[i] && in_colour != 1) {
+		if (strcmp(color_terms[i], term) == 0) {
 			in_colour = 1;
-
-		while (color_terms[i] && in_colour != 1) {
-			if (strcmp(color_terms[i], term) == 0) {
-				in_colour = 1;
-			}
-			i++;
 		}
-
-		if (in_colour != 1) {
-			in_colour = 0;
-			return false;
-		}
-#endif
-		if (!_af)
-			_af = AF;
-		if (!_ce)
-			_ce = CE;
-		if (!_ch)
-			_ch = CH;
-		if (!_md)
-			_md = MD;
-		if (!_me)
-			_me = ME;
-		if (!_up)
-			_up = UP;
-#ifdef HAVE_TERMCAP
+		i++;
 	}
 
-	if (!_af || !_ce || !_me || !_md || !_up) {
+	if (in_colour != 1) {
 		in_colour = 0;
 		return false;
 	}
 
-	/* Many termcap databases don't have ch or RI even though they
-	 * do work */
+	if (!_af)
+		_af = AF;
+	if (!_ce)
+		_ce = CE;
 	if (!_ch)
 		_ch = CH;
-#endif
+	if (!_md)
+		_md = MD;
+	if (!_me)
+		_me = ME;
+	if (!_up)
+		_up = UP;
 
 	/* Now setup our colours */
 	p = ebuffer;
