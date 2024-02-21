@@ -158,13 +158,6 @@ is true.
 prefixes the string
 .Fa prefix
 to the above functions.
-.Sh IMPLEMENTATION NOTES
-einfo can optionally be linked against the
-.Lb libtermcap
-so that we can correctly query the connected console for our color and
-cursor escape codes.
-If not, then we have a hard coded list of terminals we know about that support
-the commonly used codes for color and cursor position.
 .Sh ENVIRONMENT
 .Va EINFO_QUIET
 when set to true makes the

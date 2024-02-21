@@ -50,8 +50,7 @@
 #define HILITE                  6
 #define BRACKET                 4
 
-/* We fallback to these escape codes if termcap isn't available
- * like say /usr isn't mounted */
+/* ANSI escape codes which mimic termcap */
 #define AF "\033[3%dm"
 #define CE "\033[K"
 #define CH "\033[%dC"
@@ -94,7 +93,7 @@ static char *goto_column = NULL;
 static const char *term = NULL;
 static bool term_is_cons25 = false;
 
-/* No curses support, so we hardcode a list of colour capable terms
+/* Hardcoded list of colour capable terms
  * Only terminals without "color" in the name need to be explicitly listed */
 static const char *const color_terms[] = {
 	"Eterm",
