@@ -54,7 +54,8 @@
 #include "_usage.h"
 #include "helpers.h"
 
-#define PREFIX_LOCK	RC_SVCDIR "/prefix.lock"
+#define PREFIX_LOCK_FILE	"prefix.lock"
+#define OPENRC_SH_FILE		"openrc-run.sh"
 
 #define WAIT_INTERVAL	20000000	/* usecs to poll the lock file */
 #define WAIT_TIMEOUT	60		/* seconds until we timeout */
@@ -165,7 +166,7 @@ unhotplug(void)
 {
 	char *file = NULL;
 
-	xasprintf(&file, RC_SVCDIR "/hotplugged/%s", applet);
+	xasprintf(&file, "%s/hotplugged/%s", rc_service_dir(), applet);
 	if (exists(file) && unlink(file) != 0)
 		eerror("%s: unlink `%s': %s", applet, file, strerror(errno));
 	free(file);
@@ -175,7 +176,7 @@ static void
 start_services(RC_STRINGLIST *list)
 {
 	RC_STRING *svc;
-	RC_SERVICE state = rc_service_state (service);
+	RC_SERVICE state = rc_service_state(service);
 
 	if (!list)
 		return;
@@ -286,12 +287,16 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	const char *ec_normal = ecolor(ECOLOR_NORMAL);
 	ssize_t ret = 0;
 	int fd = fileno(stdout), lock_fd = -1;
+	char *prefix_lock;
+
 
 	/*
 	 * Lock the prefix.
-	 * open() may fail here when running as user, as RC_SVCDIR may not be writable.
+	 * open() may fail here when running as user, as RC_SVCDIR may not be writable. FIXME: Inaccurate comment?
 	 */
-	lock_fd = open(PREFIX_LOCK, O_WRONLY | O_CREAT, 0664);
+	xasprintf(&prefix_lock, "%s/%s", rc_service_dir(), PREFIX_LOCK_FILE);
+	lock_fd = open(prefix_lock, O_WRONLY | O_CREAT, 0664);
+	free(prefix_lock);
 
 	if (lock_fd != -1) {
 		while (flock(lock_fd, LOCK_EX) != 0) {
@@ -385,25 +390,24 @@ svc_exec(const char *arg1, const char *arg2)
 	if (service_pid == -1)
 		eerrorx("%s: fork: %s", service, strerror(errno));
 	if (service_pid == 0) {
+		char *openrc_sh_path;
+		xasprintf(&openrc_sh_path, "%s/%s", rc_service_dir(), OPENRC_SH_FILE);
 		if (slave_tty >= 0) {
 			dup2(slave_tty, STDOUT_FILENO);
 			dup2(slave_tty, STDERR_FILENO);
 		}
 
-		if (exists(RC_SVCDIR "/openrc-run.sh")) {
+		if (exists(openrc_sh_path)) {
 			if (arg2)
 				einfov("Executing: %s %s %s %s %s",
-					RC_SVCDIR "/openrc-run.sh", RC_SVCDIR "/openrc-run.sh",
+					openrc_sh_path, openrc_sh_path,
 					service, arg1, arg2);
 			else
 				einfov("Executing: %s %s %s %s",
-					RC_SVCDIR "/openrc-run.sh", RC_SVCDIR "/openrc-run.sh",
+					openrc_sh_path, openrc_sh_path,
 					service, arg1);
-			execl(RC_SVCDIR "/openrc-run.sh",
-			    RC_SVCDIR "/openrc-run.sh",
-			    service, arg1, arg2, (char *) NULL);
-			eerror("%s: exec `" RC_SVCDIR "/openrc-run.sh': %s",
-			    service, strerror(errno));
+			execl(openrc_sh_path, openrc_sh_path, service, arg1, arg2, (char *) NULL);
+			eerror("%s: exec %s: %s", openrc_sh_path, service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		} else {
 			if (arg2)
@@ -423,6 +427,7 @@ svc_exec(const char *arg1, const char *arg2)
 			    service, strerror(errno));
 			_exit(EXIT_FAILURE);
 		}
+		free(openrc_sh_path); /* UNREACHED: only for safe keeping */
 	}
 
 	buffer = xmalloc(sizeof(char) * BUFSIZ);
@@ -508,7 +513,7 @@ svc_wait(const char *svc)
 		forever = true;
 	rc_stringlist_free(keywords);
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", basename_c(svc));
+	xasprintf(&file, "%s/exclusive/%s", rc_service_dir(), basename_c(svc));
 
 	interval.tv_sec = 0;
 	interval.tv_nsec = WAIT_INTERVAL;
@@ -1114,6 +1119,9 @@ int main(int argc, char **argv)
 	}
 
 	applet = basename_c(argv[0]);
+
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
 
 	if (stat(argv[1], &stbuf) != 0) {
 		fprintf(stderr, "openrc-run `%s': %s\n",

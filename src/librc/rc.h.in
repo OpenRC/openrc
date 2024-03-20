@@ -34,18 +34,27 @@ extern "C" {
 #else
 #define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
 #endif
-#define RC_RUNLEVELDIR          RC_SYSCONFDIR "/runlevels"
-#define RC_INITDIR              RC_SYSCONFDIR "/init.d"
-#define RC_CONFDIR              RC_SYSCONFDIR "/conf.d"
+
+#define RC_RUNLEVEL_SUBDIR      "runlevels"
+#define RC_INIT_SUBDIR          "init.d"
+#define RC_CONF_SUBDIR          "conf.d"
+#define RC_USER_SUBDIR          "user.d"
+
+#define RC_RUNLEVELDIR          RC_SYSCONFDIR "/" RC_RUNLEVEL_SUBDIR
+#define RC_INITDIR              RC_SYSCONFDIR "/" RC_INIT_SUBDIR
+#define RC_CONFDIR              RC_SYSCONFDIR "/" RC_CONF_SUBDIR
 #define RC_PLUGINDIR            RC_LIBDIR "/plugins"
+
+#define RC_CONF_FILE   "rc.conf"
+#define RC_CONF_D_SUBDIR "rc.conf.d"
 
 #define RC_INIT_FIFO RC_SVCDIR"/init.ctl"
 #define RC_PROFILE_ENV     RC_SYSCONFDIR "/profile.env"
 #define RC_SYS_WHITELIST   RC_LIBEXECDIR "/conf.d/env_whitelist"
 #define RC_USR_WHITELIST   RC_SYSCONFDIR "/conf.d/env_whitelist"
-#define RC_CONF         RC_SYSCONFDIR "/rc.conf"
-#define RC_CONF_D         RC_SYSCONFDIR "/rc.conf.d"
-#define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
+#define RC_CONF            RC_SYSCONFDIR "/" RC_CONF_FILE
+#define RC_CONF_D          RC_SYSCONFDIR "/" RC_CONF_D_SUBDIR
+#define RC_CONF_OLD        RC_SYSCONFDIR "/conf.d/rc"
 
 #define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
 
@@ -123,6 +132,10 @@ typedef TAILQ_HEAD(rc_stringlist, rc_string) RC_STRINGLIST;
 #define RC_LEVEL_SINGLE     "single"
 #define RC_LEVEL_SHUTDOWN   "shutdown"
 
+/* !TODO: documentation */
+void rc_set_user(void);
+bool rc_is_user(void);
+
 /*! Return the current runlevel.
  * @return the current runlevel */
 char *rc_runlevel_get(void);
@@ -191,6 +204,22 @@ typedef enum
 	RC_SERVICE_WASINACTIVE = 0x0800,
 	RC_SERVICE_CRASHED     = 0x1000,
 } RC_SERVICE;
+
+/*! Returns a path to the system configuration directory
+ * @return path string */
+const char *rc_sysconf_dir(void);
+
+/*! Returns a path to the current user's configuration directory
+ * @return path string */
+const char *rc_userconf_dir(void);
+
+/*! Returns a path to the runlevel directory, systemwide or for the current user
+ * @return path string */
+const char *rc_runlevel_dir(void);
+
+/*! Returns a path to the services directory, systemwide or for the current user
+ * @return path string */
+const char *rc_service_dir(void);
 
 /*! Add the service to the runlevel
  * @param runlevel to add to
