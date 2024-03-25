@@ -126,15 +126,6 @@ else
   cc_selinux_flags = []
 endif
 
-termcap = get_option('termcap')
-if termcap != ''
-  termcap_dep = dependency(termcap)
-  termcap_flags = '-DHAVE_TERMCAP'
-  else
-  termcap_dep = []
-  termcap_flags = []
-endif
-
 if get_option('buildtype').startswith('debug')
   cc_debug_flags = ['-DRC_DEBUG']
 else

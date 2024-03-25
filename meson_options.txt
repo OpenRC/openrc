@@ -28,9 +28,5 @@ option('shell', type : 'string', value : '/bin/sh',
   description : 'Default posix compatible shell')
 option('sysvinit', type : 'boolean', value : false,
   description : 'enable SysVinit compatibility (linux only)')
-option('termcap', type : 'combo',
-  choices :
-    [ '', 'ncurses', 'termcap' ],
-  description : 'the termcap library to use')
 option('zsh-completions', type : 'boolean',
   description : 'install zsh completions')
