@@ -379,6 +379,19 @@ int main(int argc, char **argv)
 			eerror("%s: invalid oom_score_adj `%s' (SSD_OOM_SCORE_ADJ)",
 			    applet, tmp);
 
+	// Handle SSD_CPUSCHEDULER for scheduler type
+	if ((tmp = getenv("SSD_CPUSCHEDULER"))) {
+		scheduler = strdup(tmp); 
+	}
+	
+	// Handle SSD_CPUSCHEDULER_PRIO for scheduler priority
+	if ((tmp = getenv("SSD_CPUSCHEDULER_PRIO"))) {
+		if (sscanf(tmp, "%d", &sched_prio) != 1) {
+			eerror("%s: invalid scheduler priority `%s' (SSD_CPUSCHEDULER_PRIO)",
+						applet, tmp);
+		}
+	}
+
 	/* Get our user name and initial dir */
 	p = getenv("USER");
 	home = getenv("HOME");
