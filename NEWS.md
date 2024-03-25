@@ -4,6 +4,28 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.53.1
+
+This is a bug-fix release to drop the broken split-usr handling.
+    
+    * The 'split-usr' meson option wasn't doing anything, it tried to check
+      if /bin was a symlink, but nothing acted on this information.
+    
+    * The actual rootprefix default was decided based on whether /bin was a symlink
+      which is flaky if e.g. building on a merged-usr system for use on a non-merged-usr
+      system.
+    
+    People can set -Drootprefix=/usr if they wish.
+    
+    There's no real advantage to installing to /usr over / as the compat. symlinks
+    are really here to stay. If someone really does care about this, they can bring
+    it back and do it properly, but it doesn't seem worth it to me at all.
+    
+    Bug: https://bugs.gentoo.org/927776
+    Fixes: cc0037e9caaee05af0fdedafc5798c2a7aa9bdb8
+    Fixes: f2362cc277023550b2482215b4a1cd7142639427
+    Fixes: #696
+
 ## OpenRC 0.53
 
 The names of cgroups for services started by OpenRC are now prefixed by
