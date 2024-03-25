@@ -16,7 +16,7 @@ depend()
 	after clock
 	before localmount
 	need root
-	keyword -prefix -systemd-nspawn
+	keyword -systemd-nspawn
 }
 
 start()

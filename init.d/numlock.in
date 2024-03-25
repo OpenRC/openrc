@@ -15,7 +15,7 @@ ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
 
 depend()
 {
-	keyword -docker -lxc -openvz -prefix -systemd-nspawn -vserver
+	keyword -docker -lxc -openvz -systemd-nspawn -vserver
 }
 
 _setleds()

@@ -13,7 +13,6 @@ depend()
 {
 	after clock
 	need localmount
-	keyword -prefix
 }
 
 start()

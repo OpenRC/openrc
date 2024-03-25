@@ -18,7 +18,7 @@ extra_started_commands="reload"
 
 depend() {
 	need localmount
-	keyword -jail -prefix
+	keyword -jail
 }
 
 start()

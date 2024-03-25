@@ -14,7 +14,7 @@ description="Configures a specific kernel dump device."
 depend() {
 	after clock
 	need swap
-	keyword -jail -prefix
+	keyword -jail
 }
 
 start() {

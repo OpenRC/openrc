@@ -304,8 +304,6 @@ in
 Same as -jail, but for Linux Resource Containers (LXC).
 .It Dv -openvz
 Same as -jail, but for OpenVZ systems.
-.It Dv -prefix
-Same as -jail, but for Prefix systems.
 .It Dv -rkt
 Same as -jail, but for RKT systems.
 .It Dv -uml
@@ -615,10 +613,8 @@ rc_provide_tap1="!net"
 # To put in in /etc/rc.conf you would do it like this
 rc_net_tap1_provide="!net"
 
-# It's also possible to negate keywords. This is mainly useful for prefix
-# users testing OpenRC.
-rc_keyword="!-prefix"
-# This can also be used to block a script from running in all
+# It's also possible to negate keywords.
+# This can be used to block a script from running in all
 # containers except one or two
 rc_keyword="!-containers !-docker"
 .Ed
