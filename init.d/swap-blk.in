@@ -13,7 +13,7 @@ depend()
 {
 	after clock
 	before fsck
-	keyword -jail -prefix
+	keyword -jail
 }
 
 start()

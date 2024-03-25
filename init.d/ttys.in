@@ -12,7 +12,6 @@
 depend()
 {
 	after clock fsck
-	keyword -prefix
 }
 
 start()

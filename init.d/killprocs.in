@@ -13,7 +13,6 @@ description="Kill all processes so we can unmount disks cleanly."
 
 depend()
 {
-	keyword -prefix
 }
 
 start()
