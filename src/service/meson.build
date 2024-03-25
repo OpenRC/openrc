@@ -1,5 +1,4 @@
 service_execs = [
-  'service_starting',
   'service_started',
   'service_stopping',
   'service_stopped',
@@ -10,11 +9,19 @@ service_execs = [
   'service_crashed',
   ]
 
-foreach exec : service_execs
-  executable(exec,
+executable('service_starting',
     ['service.c', misc_c, version_h],
     include_directories: [incdir, einfo_incdir, rc_incdir],
     link_with: [libeinfo, librc],
+    install: true,
+    install_dir: rc_bindir)
+
+foreach exec : service_execs
+  custom_target(exec,
+    output: exec,
+    command: ['ln', '-sf', 'service_starting', '@OUTPUT@'],
+    build_always_stale: true,
+    build_by_default: true,
     install: true,
     install_dir: rc_bindir)
 endforeach
