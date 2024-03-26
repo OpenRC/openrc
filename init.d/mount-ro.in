@@ -25,8 +25,7 @@ start()
 	sync
 
 	ebegin "Remounting remaining filesystems read-only"
-	# We need the do_unmount function
-	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
+
 	eindent
 
 	# Bug 381783
