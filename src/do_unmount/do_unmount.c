@@ -73,7 +73,7 @@ popen_vec(const char *command, int argc, char **argv)
     length = strlen(command) + 1; /* +1 for the null terminator */
     for (i = 0; i < argc; i++)
         length += strlen(argv[i]) + 3; /* +3 for the quotes and space */
-    
+
     /* Allocate memory for the command */
     cmd = xmalloc(length * sizeof(char));
     sprintf(cmd, "%s", command);
@@ -86,13 +86,13 @@ popen_vec(const char *command, int argc, char **argv)
     }
 
     /* Open the command, free memory and return output file pointer for reading */
-    fp = popen(cmd, "r");;
+    fp = popen(cmd, "r");
     free(cmd);
     return fp;
 }
 
 /* Populate the list of shared mounts in the system */
-static void 
+static void
 populate_shared_list(RC_STRINGLIST **list)
 {
     FILE *fp;               // file pointer to the mountinfo file
@@ -137,7 +137,7 @@ populate_shared_list(RC_STRINGLIST **list)
 }
 
 /* Pass arguments to mountinfo and store output in a list of paths to unmount */
-static int 
+static int
 populate_unmount_list(RC_STRINGLIST **list, int argc, char **argv)
 {
     int size = 0;       // number of paths to unmount
@@ -170,7 +170,7 @@ populate_unmount_list(RC_STRINGLIST **list, int argc, char **argv)
 }
 
 /* If unmount command fails terminate the programs using it and retry */
-static int 
+static int
 unmount_with_retries(char *command, char *mount_point)
 {
     int retry = 4;                                      // effectively TERM, sleep 1, TERM, sleep 1, KILL, sleep 1
@@ -237,7 +237,7 @@ unmount_with_retries(char *command, char *mount_point)
         free(pids);
     free(fuser_command);
     free(kill_command);
-    
+
     return retVal;
 }
 
