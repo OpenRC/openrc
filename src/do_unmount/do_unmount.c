@@ -23,7 +23,7 @@
 
 /* Provide a different failure message for each possible outcome */
 const char *failure_messages[] = {
-    "",                                     // Placeholder for outcome = SUCCESS
+    "",                                     // Placeholder for SUCCESS outcome
     "failed because we are using",          // THIS
     "in use but fuser finds nothing",       // UNKNOWN
     "in use but fuser command failed",      // FUSER
