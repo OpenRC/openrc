@@ -129,9 +129,9 @@ populate_shared_list(RC_STRINGLIST **list)
 
     /* Close file and free memory */
     fclose(fp);
-    if(line)
+    if (line)
         free(line);
-    if(path)
+    if (path)
         free(path);
     #endif
 }
@@ -157,14 +157,14 @@ populate_unmount_list(RC_STRINGLIST **list, int argc, char **argv)
     /* Read the output a line at a time */
     while (getline(&path, &len, fp) != -1) {
         path[strlen(path) - 1] = '\0'; /* Remove trailing '\n' */
-        if(strstr(path, "/proc") == NULL) {
+        if (strstr(path, "/proc") == NULL) {
         rc_stringlist_add(*list, path);
         size++;
         }
     }
 
     pclose(fp);
-    if(path)
+    if (path)
         free(path);
     return size;
 }
@@ -191,7 +191,7 @@ unmount_with_retries(char *command, char *mount_point)
     #endif
 
     /* Default timeout value if environment variable is not set */
-    if(timeout == NULL)
+    if (timeout == NULL)
         timeout = "60";
 
     /* Allocate memory for the commands */
@@ -199,31 +199,31 @@ unmount_with_retries(char *command, char *mount_point)
     xasprintf(&kill_command, "fuser %sTERM -k %s \"%s\" >/dev/null 2>&1", f_kill, f_opts, mount_point);
 
     /* Execute the unmount command, send term/kill signal and retry if it fails */
-    while(system(command) != 0) {
+    while (system(command) != 0) {
         fp = popen(fuser_command, "r");
-        if(fp == NULL) {
+        if (fp == NULL) {
             retVal = FUSER;
             break;
         }
-        if(getline(&pids, &len, fp) == -1) {
+        if (getline(&pids, &len, fp) == -1) {
             retVal = UNKNOWN;
             break;
         }
         fclose(fp);
         fp = NULL;
         sprintf(pidString, "%d", getpid());
-        if(strstr(pids, pidString) != NULL) {   /* Check if the current process is using the mount point */
+        if (strstr(pids, pidString) != NULL) {   /* Check if the current process is using the mount point */
             retVal = THIS;
             break;
         }
         retry--;
-        if(retry <= 0) {     /* After 4 retries, return error */
+        if (retry <= 0) {     /* After 4 retries, return error */
             retVal = ERROR;
             break;
         }
-        if(retry == 1)                                                                                          /* Kill processes if it's the last retry */
+        if (retry == 1)                                                                                          /* Kill processes if it's the last retry */
             sprintf(kill_command, "fuser %sKILL -k %s \"%s\" >/dev/null 2>&1", f_kill, f_opts, mount_point);    /* No need to reallocate since length is the same */
-        if(system(kill_command) != 0 && retry == 1) {   /* If the kill command fails, return error */
+        if (system(kill_command) != 0 && retry == 1) {   /* If the kill command fails, return error */
             retVal = KILL;
             break;
         }
@@ -231,7 +231,7 @@ unmount_with_retries(char *command, char *mount_point)
     }
 
     /* Free memory and close file */
-    if(fp)
+    if (fp)
         fclose(fp);
     if (pids)
         free(pids);
@@ -273,12 +273,12 @@ unmount_one(void *input)
     xasprintf(&command, "%s %s 2>/dev/null", args->global_args->command, args->path->value);
 
     /* If is a shared mount, avoid any other shared mount concurrency */
-    if(rc_stringlist_find(args->global_args->shared, args->path->value)) {
+    if (rc_stringlist_find(args->global_args->shared, args->path->value)) {
         /* Allocate memory and compose the check command */
         xasprintf(&check_command, "mountinfo --quiet %s", args->path->value);
         pthread_mutex_lock(&args->global_args->shared_lock);
         /* Unmount only if is still mounted */
-        if(system(check_command) == 0)
+        if (system(check_command) == 0)
             *pRetval = unmount_with_retries(command, args->path->value);
         pthread_mutex_unlock(&args->global_args->shared_lock);
     }
@@ -312,13 +312,13 @@ int main(int argc, char **argv)
     outcome_t *pOutcome;        // return value of the umount operation
 
     /* Check first argument provided */
-    if(argc < 2) {
+    if (argc < 2) {
         printf("No unmounting command provided!\n");
         exit(1);
     }
 
     /* Check if fuser is available in PATH */
-    if(system("command -v fuser >/dev/null 2>&1")) {
+    if (system("command -v fuser >/dev/null 2>&1")) {
         printf("fuser is not installed, can't unmount anything!\n");
         exit(1);
     }
