@@ -23,12 +23,12 @@
 
 /* Provide a different failure message for each possible outcome */
 const char *failure_messages[] = {
-    "",                                     // Placeholder for SUCCESS outcome
-    "failed because we are using",          // THIS
-    "in use but fuser finds nothing",       // UNKNOWN
-    "in use but fuser command failed",      // FUSER
-    "in use but failed to kill process",    // KILL
-    "failed",                               // ERROR
+    "",                                     /* Placeholder for SUCCESS outcome */
+    "failed because we are using",          /* THIS */
+    "in use but fuser finds nothing",       /* UNKNOWN */
+    "in use but fuser command failed",      /* FUSER */
+    "in use but failed to kill process",    /* KILL */
+    "failed",                               /* ERROR */
 };
 
 /* Forward declaration to solve circular dependency */
@@ -36,38 +36,38 @@ struct t_args_t;
 
 /* Contains parameters shared among all threads */
 typedef struct {
-    char* command;                // unmounting command to execute
-    RC_STRINGLIST *shared;        // list of shared paths in the system
-    pthread_mutex_t shared_lock;  // mutex to lock shared mount operations
-    struct t_args_t *args_array;  // array of all parameters of all threads
+    char* command;                /* Unmounting command to execute */
+    RC_STRINGLIST *shared;        /* List of shared paths in the system */
+    pthread_mutex_t shared_lock;  /* Mutex to lock shared mount operations */
+    struct t_args_t *args_array;  /* Array of all parameters of all threads */
 } global_args_t;
 
 /* Enumerate all the possible outcomes of the unmount procedure */
 typedef enum {
-    SUCCESS,  // unmounting was successful
-    THIS,     // the mount point is being used by this process
-    UNKNOWN,  // the mount point is being used but processes can't be found
-    FUSER,    // fuser command failed
-    KILL,     // the mount point is being used by other processes but the kill command failed
-    ERROR,    // unknown error
+    SUCCESS,  /* Unmounting was successful */
+    THIS,     /* The mount point is being used by this process */
+    UNKNOWN,  /* The mount point is being used but processes can't be found */
+    FUSER,    /* fuser command failed */
+    KILL,     /* The mount point is being used by other processes but the kill command failed */
+    ERROR,    /* Unknown error */
 } outcome_t;
 
 /* Contains all parameters passed to unmount_one() function */
 typedef struct t_args_t {
-    int index;                    // index of the path in the list
-    RC_STRING *path;              // path to unmount
-    pthread_mutex_t unmounting;   // mutex locked until the path is unmounted
-    global_args_t *global_args;   // parameters shared among all threads
+    int index;                    /* Index of the path in the list */
+    RC_STRING *path;              /* Path to unmount */
+    pthread_mutex_t unmounting;   /* Mutex locked until the path is unmounted */
+    global_args_t *global_args;   /* Parameters shared among all threads */
 } thread_args_t;
 
 /* Pass arguments as vector of string to a command and open standard output as readable file */
 static FILE *
 popen_vec(const char *command, int argc, char **argv)
 {
-    FILE *fp;   // file pointer to program output
-    char *cmd;  // command with all arguments
-    int length; // length of the command with all arguments
-    int i;      // iterator
+    FILE *fp;   /* File pointer to program output */
+    char *cmd;  /* Command with all arguments */
+    int length; /* Length of the command with all arguments */
+    int i;      /* Iterator */
 
     /* Calculate the length of the command */
     length = strlen(command) + 1; /* +1 for the null terminator */
@@ -95,12 +95,12 @@ popen_vec(const char *command, int argc, char **argv)
 static void
 populate_shared_list(RC_STRINGLIST **list)
 {
-    FILE *fp;               // file pointer to the mountinfo file
-    size_t len = 0;         // length of the line read
-    char *line = NULL;      // line read from the mountinfo file
-    char *token = NULL;     // token of the current line, no need to free this since is pointing to the original string
-    char *path = NULL;      // path to relative to the current line
-    int i;                  // fields iterator
+    FILE *fp;               /* File pointer to the mountinfo file */
+    size_t len = 0;         /* Length of the line read */
+    char *line = NULL;      /* Line read from the mountinfo file */
+    char *token = NULL;     /* Token of the current line, no need to free this since is pointing to the original string */
+    char *path = NULL;      /* Path to relative to the current line */
+    int i;                  /* Fields iterator */
 
     /* Initialize list */
     *list = rc_stringlist_new();
@@ -140,10 +140,10 @@ populate_shared_list(RC_STRINGLIST **list)
 static int
 populate_unmount_list(RC_STRINGLIST **list, int argc, char **argv)
 {
-    int size = 0;       // number of paths to unmount
-    FILE *fp;           // file pointer to the output of the command
-    char *path = NULL;  // path to add to the list
-    size_t len = 0;     // length of the line read
+    int size = 0;       /* Number of paths to unmount */
+    FILE *fp;           /* File pointer to the output of the command */
+    char *path = NULL;  /* Path to add to the list */
+    size_t len = 0;     /* Length of the line read */
 
 
     /* Open the command for reading */
@@ -173,17 +173,17 @@ populate_unmount_list(RC_STRINGLIST **list, int argc, char **argv)
 static int
 unmount_with_retries(char *command, char *mount_point)
 {
-    int retry = 4;                                      // effectively TERM, sleep 1, TERM, sleep 1, KILL, sleep 1
-    size_t len = 0;                                     // length of the line read
-    char *pids = NULL;                                  // line read from the fuser command
-    FILE *fp = NULL;                                    // file pointer to the output of the command
-    char *fuser_command;                                // command to execute fuser and find the pids of the processes that use the mount point
-    char *kill_command;                                 // command to kill the processes that use the mount point
-    char pidString[8];                                  // string to store the pid (max value is 4194304 source https://unix.stackexchange.com/questions/16883/what-is-the-maximum-value-of-the-process-id)
-    outcome_t retVal = SUCCESS;                         // return value of the function
-    const char *f_opts = "-m -c";                       // fuser options
-    const char *f_kill = "-s ";                         // fuser kill options
-    const char* timeout = getenv("rc_fuser_timeout");   // fuser timeout
+    int retry = 4;                                      /* Effectively TERM, sleep 1, TERM, sleep 1, KILL, sleep 1 */
+    size_t len = 0;                                     /* Length of the line read */
+    char *pids = NULL;                                  /* Line read from the fuser command */
+    FILE *fp = NULL;                                    /* File pointer to the output of the command */
+    char *fuser_command;                                /* Command to execute fuser and find the pids of the processes that use the mount point */
+    char *kill_command;                                 /* Command to kill the processes that use the mount point */
+    char pidString[8];                                  /* String to store the pid (max value is 4194304 source https://unix.stackexchange.com/questions/16883/what-is-the-maximum-value-of-the-process-id) */
+    outcome_t retVal = SUCCESS;                         /* Return value of the function */
+    const char *f_opts = "-m -c";                       /* fuser options */
+    const char *f_kill = "-s ";                         /* fuser kill options */
+    const char* timeout = getenv("rc_fuser_timeout");   /* fuser timeout */
 
     #ifdef __linux__
     f_opts = "-m";
@@ -245,12 +245,12 @@ unmount_with_retries(char *command, char *mount_point)
 static void *
 unmount_one(void *input)
 {
-    thread_args_t *args = (thread_args_t *)input;  // arguments passed to the thread
-    RC_STRING *prev;                               // backwards iterator in the paths list
-    char *command;                                 // command to execute
-    char *check_command;                           // command to check mountpoint existence
-    int i, j;                                      // iterators
-    outcome_t* pRetval;                            // return value of the unmount with retries phase
+    thread_args_t *args = (thread_args_t *)input;  /* Arguments passed to the thread */
+    RC_STRING *prev;                               /* Backwards iterator in the paths list */
+    char *command;                                 /* Command to execute */
+    char *check_command;                           /* Command to check mountpoint existence */
+    int i, j;                                      /* Iterators */
+    outcome_t* pRetval;                            /* Return value of the unmount with retries phase */
 
     /* Allocate and initialize return value */
     pRetval = xmalloc(sizeof(outcome_t));
@@ -302,14 +302,14 @@ unmount_one(void *input)
 */
 int main(int argc, char **argv)
 {
-    RC_STRINGLIST *to_unmount;  // list of paths to unmount
-    RC_STRING *path;            // path to unmount
-    int size, i;                // size of the list and iterator
-    pthread_t *threads;         // array of threads
-    global_args_t global_args;  // arguments shared among all threads
-    thread_args_t *args_array;  // array of arguments for each thread
-    int exitCode = 0;           // return value of the main function
-    outcome_t *pOutcome;        // return value of the umount operation
+    RC_STRINGLIST *to_unmount;  /* List of paths to unmount */
+    RC_STRING *path;            /* Path to unmount */
+    int size, i;                /* Size of the list and iterator */
+    pthread_t *threads;         /* Array of threads */
+    global_args_t global_args;  /* Arguments shared among all threads */
+    thread_args_t *args_array;  /* Array of arguments for each thread */
+    int exitCode = 0;           /* Return value of the main function */
+    outcome_t *pOutcome;        /* Return value of the umount operation */
 
     /* Check first argument provided */
     if (argc < 2) {
