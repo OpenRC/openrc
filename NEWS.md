@@ -4,6 +4,12 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.54
+
+This release drops the support for split-usr.
+Also, it drops the support for ncurses/termcap and uses ansi codes
+directly for color support on terminals that support them.
+
 ## OpenRC 0.53
 
 The names of cgroups for services started by OpenRC are now prefixed by
