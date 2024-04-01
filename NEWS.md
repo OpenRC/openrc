@@ -6,7 +6,7 @@ the information in this file is in reverse order.
 
 ## OpenRC 0.54
 
-This release drops the support for split-usr.
+This release drops the support for the split-usr build option.
 Also, it drops the support for ncurses/termcap and uses ansi codes
 directly for color support on terminals that support them.
 
