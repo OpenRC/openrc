@@ -83,16 +83,9 @@ else
   pkg_prefix = option_pkg_prefix
 endif
 
-if get_option('split-usr') == 'auto'
-  split_usr = run_command('test', '-L', '/bin', check: false).returncode() != 0
-else
-  split_usr = get_option('split-usr') == 'true'
-endif
-
 rootprefix = get_option('rootprefix')
-rootprefix_default = fs.is_symlink('/bin') ? '/usr' : '/'
 if rootprefix == ''
-rootprefix = rootprefix_default
+rootprefix = '/'
 endif
 
 bindir = rootprefix / get_option('bindir')
