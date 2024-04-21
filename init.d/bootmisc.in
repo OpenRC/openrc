@@ -171,8 +171,11 @@ start()
 		if [ ! -d /run ]; then
 			extra="/var/run $extra"
 		fi
+		if [ ! -d /run/user ]; then
+			extra="/run/user $extra"
+		fi
 	else
-		extra=/var/run
+		extra="/var/run /var/run/user"
 	fi
 	for x in /var/log /tmp $extra; do
 		if ! [ -d $x ]; then

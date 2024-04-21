@@ -71,6 +71,7 @@ void from_time_t(char *time_string, time_t tv);
 time_t to_time_t(char *timestring);
 pid_t get_pid(const char *applet, const char *pidfile);
 RC_STRINGLIST *ls_dir(const char *dir, int options);
+bool rm_dir(const char *pathname, bool top);
 
 void cloexec_fds_from(int);
 

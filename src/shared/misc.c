@@ -574,6 +574,54 @@ ls_dir(const char *dir, int options)
 	return list;
 }
 
+bool
+rm_dir(const char *pathname, bool top)
+{
+	DIR *dp;
+	struct dirent *d;
+	char file[PATH_MAX];
+	struct stat s;
+	bool retval = true;
+
+	if ((dp = opendir(pathname)) == NULL)
+		return false;
+
+	errno = 0;
+	while (((d = readdir(dp)) != NULL) && errno == 0) {
+		if (strcmp(d->d_name, ".") != 0 &&
+		    strcmp(d->d_name, "..") != 0)
+		{
+			snprintf(file, sizeof(file),
+			    "%s/%s", pathname, d->d_name);
+			if (stat(file, &s) != 0) {
+				retval = false;
+				break;
+			}
+			if (S_ISDIR(s.st_mode)) {
+				if (!rm_dir(file, true))
+				{
+					retval = false;
+					break;
+				}
+			} else {
+				if (unlink(file)) {
+					retval = false;
+					break;
+				}
+			}
+		}
+	}
+	closedir(dp);
+
+	if (!retval)
+		return false;
+
+	if (top && rmdir(pathname) != 0)
+		return false;
+
+	return true;
+}
+
 #ifndef HAVE_CLOSE_RANGE
 static inline int close_range(int first RC_UNUSED,
 			      int last RC_UNUSED,
