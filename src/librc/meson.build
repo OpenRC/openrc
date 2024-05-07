@@ -16,8 +16,11 @@ librc_sources = [
   'librc.c',
   'librc-daemon.c',
   'librc-depend.c',
+  'librc-user.c',
   'librc-misc.c',
   'librc-stringlist.c',
+  misc_c,
+  version_h
   ]
 
 rc_h = configure_file(input : 'rc.h.in', output : 'rc.h',

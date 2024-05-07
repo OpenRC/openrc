@@ -136,6 +136,11 @@ typedef TAILQ_HEAD(rc_stringlist, rc_string) RC_STRINGLIST;
 void rc_set_user(void);
 bool rc_is_user(void);
 
+char *rc_user_value_get(const char *, const char *);
+bool rc_user_value_set(const char *, const char *, const char *);
+
+RC_STRINGLIST *rc_users_list(void);
+
 /*! Return the current runlevel.
  * @return the current runlevel */
 char *rc_runlevel_get(void);

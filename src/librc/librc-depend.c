@@ -715,6 +715,14 @@ rc_deptree_update_needed(time_t *newest, char *file)
 		free(dir);
 	}
 
+	/* Users directory is system-wide only */
+	if (!rc_is_user()) {
+		xasprintf(&dir, "%s/users", service_dir);
+		if (mkdir(dir, 0755) != 0 && errno != EEXIST)
+			fprintf(stderr, "mkdir '%s': %s\n", dir, strerror(errno));
+		free(dir);
+	}
+
 	/* Quick test to see if anything we use has changed and we have
 	 * data in our deptree. */
 	xasprintf(&deptree_cache, "%s/%s", service_dir, RC_DEPTREE_CACHE);

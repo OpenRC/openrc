@@ -58,6 +58,9 @@ int is_writable(const char *);
 #define service_start(service) exec_service(service, "start");
 #define service_stop(service)  exec_service(service, "stop");
 
+#define LS_INITD	0x01
+#define LS_DIR		0x02
+
 int parse_mode(mode_t *, char *);
 
 /* Handy function so we can wrap einfo around our deptree */
@@ -67,6 +70,7 @@ RC_SERVICE lookup_service_state(const char *service);
 void from_time_t(char *time_string, time_t tv);
 time_t to_time_t(char *timestring);
 pid_t get_pid(const char *applet, const char *pidfile);
+RC_STRINGLIST *ls_dir(const char *dir, int options);
 
 void cloexec_fds_from(int);
 

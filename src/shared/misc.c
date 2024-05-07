@@ -21,6 +21,7 @@
 #endif
 
 #include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -524,6 +525,53 @@ pid_t get_pid(const char *applet,const char *pidfile)
 	fclose(fp);
 
 	return pid;
+}
+
+RC_STRINGLIST *
+ls_dir(const char *dir, int options)
+{
+	DIR *dp;
+	struct dirent *d;
+	RC_STRINGLIST *list = NULL;
+	struct stat buf;
+	size_t l;
+	char file[PATH_MAX];
+	int r;
+
+	list = rc_stringlist_new();
+	if ((dp = opendir(dir)) == NULL)
+		return list;
+	while (((d = readdir(dp)) != NULL)) {
+		if (d->d_name[0] != '.') {
+			if (options & LS_INITD) {
+				/* Check that our file really exists.
+				 * This is important as a service maybe in a
+				 * runlevel, but could have been removed. */
+				snprintf(file, sizeof(file), "%s/%s",
+				    dir, d->d_name);
+				r = stat(file, &buf);
+				if (r != 0)
+					continue;
+
+				/* .sh files are not init scripts */
+				l = strlen(d->d_name);
+				if (l > 2 && d->d_name[l - 3] == '.' &&
+				    d->d_name[l - 2] == 's' &&
+				    d->d_name[l - 1] == 'h')
+					continue;
+			}
+			if (options & LS_DIR) {
+				snprintf(file, sizeof(file), "%s/%s",
+				    dir, d->d_name);
+				if (stat(file, &buf) != 0 ||
+				    !S_ISDIR(buf.st_mode))
+					continue;
+			}
+			rc_stringlist_add(list, d->d_name);
+		}
+	}
+	closedir(dp);
+	return list;
 }
 
 #ifndef HAVE_CLOSE_RANGE
