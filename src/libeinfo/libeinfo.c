@@ -112,6 +112,7 @@ static const char *const color_terms[] = {
 	"console",
 	"cygwin",
 	"dtterm",
+	"foot",
 	"gnome",
 	"konsole",
 	"kterm",
