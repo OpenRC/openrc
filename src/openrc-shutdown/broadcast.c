@@ -131,8 +131,8 @@ void broadcast(char *text)
 	 * These are set across the sigsetjmp call, so they can't be stored on
 	 * the stack, otherwise they might be clobbered.
 	 */
-	static int fd;
-	static FILE *tp;
+	static int fd = -1;
+	static FILE *tp = NULL;
 
 	getuidtty(&user, &tty);
 
@@ -193,10 +193,19 @@ void broadcast(char *text)
 			}
 		}
 		alarm(0);
-		if (fd >= 0)
+		/*
+		 * It is possible we got here because fputs or fflush got
+		 * interrupted by SIGALARM. Close the file descriptor first to
+		 * avoid blocking in fclose.
+		 */
+		if (fd >= 0) {
 			close(fd);
-		if (tp != NULL)
+			fd = -1;
+		}
+		if (tp != NULL) {
 			fclose(tp);
+			tp = NULL;
+		}
 		free(term);
 	}
 	endutxent();
