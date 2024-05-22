@@ -15,7 +15,7 @@ description="Mount the control groups."
 
 depend()
 {
-	keyword -docker -prefix -systemd-nspawn -vserver
+	keyword -docker -podman -prefix -systemd-nspawn -vserver
 	after sysfs
 }
 
