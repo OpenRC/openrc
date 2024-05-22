@@ -287,6 +287,8 @@ detect_container(const char *systype RC_UNUSED)
 				return RC_SYS_SYSTEMD_NSPAWN;
 		if (strcmp(systype, RC_SYS_DOCKER) == 0)
 				return RC_SYS_DOCKER;
+		if (strcmp(systype, RC_SYS_PODMAN) == 0)
+			return RC_SYS_PODMAN;
 	}
 	if (file_regex("/proc/cpuinfo", "UML"))
 		return RC_SYS_UML;
@@ -306,6 +308,8 @@ detect_container(const char *systype RC_UNUSED)
 		return RC_SYS_SYSTEMD_NSPAWN;
 	else if (exists("/.dockerenv"))
 		return RC_SYS_DOCKER;
+	else if (exists("/run/.containerenv"))
+		return RC_SYS_PODMAN;
 	/* old test, I'm not sure when this was valid. */
 	else if (file_regex("/proc/1/environ", "container=docker"))
 		return RC_SYS_DOCKER;

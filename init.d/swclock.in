@@ -15,7 +15,7 @@ swclock_file="${swclock_file:-/var/lib/misc/openrc-shutdowntime}"
 depend()
 {
 	provide clock
-	keyword -docker -lxc -openvz -prefix -systemd-nspawn -uml -vserver -xenu
+	keyword -docker -podman -lxc -openvz -prefix -systemd-nspawn -uml -vserver -xenu
 }
 
 # swclock is an OpenRC built in
