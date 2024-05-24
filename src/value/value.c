@@ -30,6 +30,9 @@ int main(int argc, char **argv)
 	char *option;
 
 	applet = basename_c(argv[0]);
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
+
 	if (service == NULL)
 		eerrorx("%s: no service specified", applet);
 

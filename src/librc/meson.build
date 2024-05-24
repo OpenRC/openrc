@@ -16,8 +16,11 @@ librc_sources = [
   'librc.c',
   'librc-daemon.c',
   'librc-depend.c',
+  'librc-user.c',
   'librc-misc.c',
   'librc-stringlist.c',
+  misc_c,
+  version_h
   ]
 
 rc_h = configure_file(input : 'rc.h.in', output : 'rc.h',
@@ -27,6 +30,7 @@ librc = library('rc', librc_sources,
   dependencies: kvm_dep,
   include_directories : [incdir, einfo_incdir],
   link_depends : 'rc.map',
+  link_with : libeinfo,
   version : librc_version,
   install : true,
   install_dir : libdir)

@@ -21,6 +21,7 @@
 #endif
 
 #include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -64,6 +65,8 @@ static const char *const env_whitelist[] = {
 	"RC_DEBUG", "RC_NODEPS",
 	"LANG", "LC_MESSAGES", "TERM",
 	"EINFO_COLOR", "EINFO_VERBOSE",
+	"RC_USER_SERVICES", "HOME",
+	"XDG_RUNTIME_DIR", "XDG_CONFIG_HOME",
 	NULL
 };
 
@@ -142,9 +145,11 @@ env_config(void)
 	char *np;
 	char *npp;
 	char *tok;
+	char *dir;
 	const char *sys = rc_sys();
 	char *buffer = NULL;
 	size_t size = 0;
+	const char *svc_dir = rc_service_dir();
 
 	/* Ensure our PATH is prefixed with the system locations first
 	   for a little extra security */
@@ -175,8 +180,10 @@ env_config(void)
 
 	setenv("RC_VERSION", VERSION, 1);
 	setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 1);
-	setenv("RC_SVCDIR", RC_SVCDIR, 1);
-	setenv("RC_TMPDIR", RC_SVCDIR "/tmp", 1);
+	setenv("RC_SVCDIR", svc_dir, 1);
+	xasprintf(&dir, "%s/tmp", svc_dir);
+	setenv("RC_TMPDIR", dir, 1);
+	free(dir);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);
 	e = rc_runlevel_get();
 	setenv("RC_RUNLEVEL", e, 1);
@@ -248,7 +255,7 @@ svc_lock(const char *applet, bool ignore_lock_failure)
 	char *file = NULL;
 	int fd;
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
+	xasprintf(&file, "%s/exclusive/%s", rc_service_dir(), applet);
 	fd = open(file, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
 	free(file);
 	if (fd == -1)
@@ -274,10 +281,11 @@ svc_unlock(const char *applet, int fd)
 {
 	char *file = NULL;
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
+	xasprintf(&file, "%s/exclusive/%s", rc_service_dir(), applet);
 	close(fd);
 	unlink(file);
 	free(file);
+
 	return -1;
 }
 
@@ -388,12 +396,16 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 
 	t = 0;
 	if (rc_deptree_update_needed(&t, file) || force != 0) {
+		char *deptree_cache;
+		xasprintf(&deptree_cache, "%s/%s", rc_service_dir(), RC_DEPTREE_CACHE);
 		/* Test if we have permission to update the deptree */
-		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
+		fd = open(deptree_cache, O_WRONLY);
 		merrno = errno;
 		errno = serrno;
-		if (fd == -1 && merrno == EACCES)
+		if (fd == -1 && merrno == EACCES) {
+			free(deptree_cache);
 			return rc_deptree_load();
+		}
 		close(fd);
 
 		if (regen)
@@ -403,29 +415,34 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 		eend (retval, "Failed to update the dependency tree");
 
 		if (retval == 0) {
-			if (stat(RC_DEPTREE_CACHE, &st) != 0) {
-				eerror("stat(%s): %s", RC_DEPTREE_CACHE, strerror(errno));
+			char *deptree_skewed;
+			if (stat(deptree_cache, &st) != 0) {
+				eerror("stat(%s): %s", deptree_cache, strerror(errno));
+				free(deptree_cache);
 				return NULL;
 			}
+
+			xasprintf(&deptree_skewed, "%s/%s", rc_service_dir(), RC_DEPTREE_SKEWED);
 			if (st.st_mtime < t) {
 				eerror("Clock skew detected with `%s'", file);
-				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
-				    "' to %s", ctime(&t));
-				fp = fopen(RC_DEPTREE_SKEWED, "w");
+				eerrorn("Adjusting mtime of %s to %s", deptree_cache, ctime(&t));
+				fp = fopen(deptree_skewed, "w");
 				if (fp != NULL) {
 					fprintf(fp, "%s\n", file);
 					fclose(fp);
 				}
 				ut.actime = t;
 				ut.modtime = t;
-				utime(RC_DEPTREE_CACHE, &ut);
+				utime(deptree_cache, &ut);
 			} else {
-				if (exists(RC_DEPTREE_SKEWED))
-					unlink(RC_DEPTREE_SKEWED);
+				if (exists(deptree_skewed))
+					unlink(deptree_skewed);
 			}
+			free(deptree_skewed);
 		}
 		if (force == -1 && regen != NULL)
 			*regen = retval;
+		free(deptree_cache);
 	}
 	return rc_deptree_load();
 }
@@ -508,6 +525,101 @@ pid_t get_pid(const char *applet,const char *pidfile)
 	fclose(fp);
 
 	return pid;
+}
+
+RC_STRINGLIST *
+ls_dir(const char *dir, int options)
+{
+	DIR *dp;
+	struct dirent *d;
+	RC_STRINGLIST *list = NULL;
+	struct stat buf;
+	size_t l;
+	char file[PATH_MAX];
+	int r;
+
+	list = rc_stringlist_new();
+	if ((dp = opendir(dir)) == NULL)
+		return list;
+	while (((d = readdir(dp)) != NULL)) {
+		if (d->d_name[0] != '.') {
+			if (options & LS_INITD) {
+				/* Check that our file really exists.
+				 * This is important as a service maybe in a
+				 * runlevel, but could have been removed. */
+				snprintf(file, sizeof(file), "%s/%s",
+				    dir, d->d_name);
+				r = stat(file, &buf);
+				if (r != 0)
+					continue;
+
+				/* .sh files are not init scripts */
+				l = strlen(d->d_name);
+				if (l > 2 && d->d_name[l - 3] == '.' &&
+				    d->d_name[l - 2] == 's' &&
+				    d->d_name[l - 1] == 'h')
+					continue;
+			}
+			if (options & LS_DIR) {
+				snprintf(file, sizeof(file), "%s/%s",
+				    dir, d->d_name);
+				if (stat(file, &buf) != 0 ||
+				    !S_ISDIR(buf.st_mode))
+					continue;
+			}
+			rc_stringlist_add(list, d->d_name);
+		}
+	}
+	closedir(dp);
+	return list;
+}
+
+bool
+rm_dir(const char *pathname, bool top)
+{
+	DIR *dp;
+	struct dirent *d;
+	char file[PATH_MAX];
+	struct stat s;
+	bool retval = true;
+
+	if ((dp = opendir(pathname)) == NULL)
+		return false;
+
+	errno = 0;
+	while (((d = readdir(dp)) != NULL) && errno == 0) {
+		if (strcmp(d->d_name, ".") != 0 &&
+		    strcmp(d->d_name, "..") != 0)
+		{
+			snprintf(file, sizeof(file),
+			    "%s/%s", pathname, d->d_name);
+			if (stat(file, &s) != 0) {
+				retval = false;
+				break;
+			}
+			if (S_ISDIR(s.st_mode)) {
+				if (!rm_dir(file, true))
+				{
+					retval = false;
+					break;
+				}
+			} else {
+				if (unlink(file)) {
+					retval = false;
+					break;
+				}
+			}
+		}
+	}
+	closedir(dp);
+
+	if (!retval)
+		return false;
+
+	if (top && rmdir(pathname) != 0)
+		return false;
+
+	return true;
 }
 
 #ifndef HAVE_CLOSE_RANGE

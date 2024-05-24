@@ -33,16 +33,11 @@
 #define RC_LEVEL_BOOT           "boot"
 #define RC_LEVEL_DEFAULT        "default"
 
-#define RC_DEPTREE_CACHE        RC_SVCDIR "/deptree"
-#define RC_DEPTREE_SKEWED	RC_SVCDIR "/clock-skewed"
+#define RC_DEPTREE_CACHE        "deptree"
+#define RC_DEPTREE_SKEWED       "clock-skewed"
 #define RC_KRUNLEVEL            RC_SVCDIR "/krunlevel"
-#define RC_STARTING             RC_SVCDIR "/rc.starting"
-#define RC_STOPPING             RC_SVCDIR "/rc.stopping"
-
-#define RC_SVCDIR_STARTING      RC_SVCDIR "/starting"
-#define RC_SVCDIR_INACTIVE      RC_SVCDIR "/inactive"
-#define RC_SVCDIR_STARTED       RC_SVCDIR "/started"
-#define RC_SVCDIR_COLDPLUGGED	RC_SVCDIR "/coldplugged"
+#define RC_STARTING             "rc.starting"
+#define RC_STOPPING             "rc.stopping"
 
 char *rc_conf_value(const char *var);
 bool rc_conf_yesno(const char *var);
@@ -63,6 +58,9 @@ int is_writable(const char *);
 #define service_start(service) exec_service(service, "start");
 #define service_stop(service)  exec_service(service, "stop");
 
+#define LS_INITD	0x01
+#define LS_DIR		0x02
+
 int parse_mode(mode_t *, char *);
 
 /* Handy function so we can wrap einfo around our deptree */
@@ -72,6 +70,8 @@ RC_SERVICE lookup_service_state(const char *service);
 void from_time_t(char *time_string, time_t tv);
 time_t to_time_t(char *timestring);
 pid_t get_pid(const char *applet, const char *pidfile);
+RC_STRINGLIST *ls_dir(const char *dir, int options);
+bool rm_dir(const char *pathname, bool top);
 
 void cloexec_fds_from(int);
 
