@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -44,8 +45,10 @@
 #include "wtmp.h"
 #include "version.h"
 
+static const char *default_runlevel = NULL;
+static const char *my_name = "openrc-init";
 static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
-static const char *rc_default_runlevel = "default";
+static const char * const rc_default_runlevel = "default";
 
 /* wait for children until a signal occurs or we run out of children */
 static pid_t wait_children(int options)
@@ -99,7 +102,7 @@ static void do_openrc(const char *runlevel)
 	}
 }
 
-static void init(const char *default_runlevel)
+static void init()
 {
 	const char *runlevel = NULL;
 	do_openrc("sysinit");
@@ -118,7 +121,7 @@ static void init(const char *default_runlevel)
 	log_wtmp("reboot", "~~", 0, RUN_LVL, "~~");
 }
 
-static void handle_reexec(char *my_name)
+static void handle_reexec()
 {
 	execlp(my_name, my_name, "reexec", NULL);
 	return;
@@ -315,12 +318,62 @@ static void process_signals()
 		wait_children(WNOHANG);
 }
 
+static void read_fifo()
+{
+	static int fifo = -1;
+	ssize_t count;
+	char buf[10];
+
+	if (fifo < 0)
+		/* This will block until a process opens the fifo for writing */
+		fifo = open(RC_INIT_FIFO, O_RDONLY|O_CLOEXEC);
+
+	if (fifo < 0) {
+		if (errno != EINTR)
+			fprintf(stderr, "%s: open(%s): %s\n", my_name,
+				RC_INIT_FIFO, strerror(errno));
+		return;
+	}
+
+	count = read(fifo, buf, sizeof(buf) - 1);
+
+	if (count < 0) {
+		if (errno != EINTR)
+			fprintf(stderr, "%s: read(%s): %s\n", my_name,
+				RC_INIT_FIFO, strerror(errno));
+		/* Keep the fifo open to avoid sending SIGPIPE to the writer */
+		return;
+	}
+
+	buf[count] = 0;
+
+	close(fifo);
+	fifo = -1;
+
+	if (count == 0)
+		/* Another process opened the fifo without writing anything */
+		return;
+
+	printf("PID1: Received \"%s\" from FIFO...\n", buf);
+	if (strcmp(buf, "halt") == 0)
+		handle_shutdown("shutdown", RB_HALT_SYSTEM);
+	else if (strcmp(buf, "kexec") == 0)
+		handle_shutdown("reboot", RB_KEXEC);
+	else if (strcmp(buf, "poweroff") == 0)
+		handle_shutdown("shutdown", RB_POWER_OFF);
+	else if (strcmp(buf, "reboot") == 0)
+		handle_shutdown("reboot", RB_AUTOBOOT);
+	else if (strcmp(buf, "reexec") == 0)
+		handle_reexec();
+	else if (strcmp(buf, "single") == 0) {
+		handle_single();
+		open_shell();
+		init();
+	}
+}
+
 int main(int argc, char **argv)
 {
-	char *default_runlevel;
-	char buf[2048];
-	size_t count;
-	FILE *fifo;
 	bool reexec = false;
 #ifdef HAVE_SELINUX
 	int			enforce = 0;
@@ -354,10 +407,11 @@ int main(int argc, char **argv)
 
 	printf("OpenRC init version %s starting\n", VERSION);
 
+	if (argc > 0)
+		my_name = argv[0];
+
 	if (argc > 1)
 		default_runlevel = argv[1];
-	else
-		default_runlevel = NULL;
 
 	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
 		reexec = true;
@@ -370,45 +424,14 @@ int main(int argc, char **argv)
 	setenv("PATH", path_default, 1);
 
 	if (!reexec)
-		init(default_runlevel);
+		init();
 
 	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)
 		perror("mkfifo");
 
 	for (;;) {
 		process_signals();
-
-		/* This will block until a command is sent down the pipe... */
-		fifo = fopen(RC_INIT_FIFO, "r");
-		if (!fifo) {
-			if (errno != EINTR)
-				perror("fopen");
-			continue;
-		}
-
-		do {
-			count = fread(buf, 1, sizeof(buf) - 1, fifo);
-		} while (count == 0 && ferror(fifo) && errno == EINTR);
-
-		buf[count] = 0;
-		fclose(fifo);
-
-		printf("PID1: Received \"%s\" from FIFO...\n", buf);
-		if (strcmp(buf, "halt") == 0)
-			handle_shutdown("shutdown", RB_HALT_SYSTEM);
-		else if (strcmp(buf, "kexec") == 0)
-			handle_shutdown("reboot", RB_KEXEC);
-		else if (strcmp(buf, "poweroff") == 0)
-			handle_shutdown("shutdown", RB_POWER_OFF);
-		else if (strcmp(buf, "reboot") == 0)
-			handle_shutdown("reboot", RB_AUTOBOOT);
-		else if (strcmp(buf, "reexec") == 0)
-			handle_reexec(argv[0]);
-		else if (strcmp(buf, "single") == 0) {
-			handle_single();
-			open_shell();
-			init(default_runlevel);
-		}
+		read_fifo();
 	}
 	return 0;
 }
