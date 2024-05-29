@@ -202,6 +202,8 @@ init_d_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
 dl_dep = cc.find_library('dl', required: false)
 util_dep = cc.find_library('util', required: false)
 
+install_hardlinks = files('tools' / 'meson_install_hardlinks.sh')
+
 subdir('bash-completion')
 subdir('conf.d')
 subdir('etc')

@@ -1,6 +1,5 @@
 einfo_execs = [
   'einfon',
-  'einfo',
   'ewarnn',
   'ewarn',
   'eerrorn',
@@ -22,11 +21,21 @@ einfo_execs = [
   'veoutdent',
   ]
 
+einfo = executable('einfo',
+  ['einfo.c', version_h],
+  include_directories: [incdir, einfo_incdir, rc_incdir],
+  link_with: [libeinfo, librc],
+  install: true,
+  install_dir: rc_bindir)
+
 foreach exec: einfo_execs
-  executable(exec,
-    ['einfo.c', version_h],
-    include_directories: [incdir, einfo_incdir, rc_incdir],
-    link_with: [libeinfo, librc],
-    install: true,
-    install_dir: rc_bindir)
+  custom_target(exec,
+    build_by_default: true,
+    command: ['ln', '-fn', einfo, '@OUTPUT@'],
+    output: exec)
 endforeach
+
+meson.add_install_script(install_hardlinks,
+  rc_bindir,
+  'einfo',
+  einfo_execs)
