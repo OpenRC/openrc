@@ -6,7 +6,7 @@ project('OpenRC', 'c',
     'prefix=/usr',
     'warning_level=3',
     ],
-  meson_version : '>=0.53.2')
+  meson_version : '>=0.57.0')
 
 cc = meson.get_compiler('c')
 fs = import('fs')
@@ -200,6 +200,8 @@ init_d_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
 
 dl_dep = cc.find_library('dl', required: false)
 util_dep = cc.find_library('util', required: false)
+
+install_hardlinks = files('tools' / 'meson_install_hardlinks.sh')
 
 subdir('bash-completion')
 subdir('conf.d')
