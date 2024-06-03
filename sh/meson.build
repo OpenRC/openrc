@@ -9,7 +9,6 @@ sh_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
 
 sh = [
   'rc-functions.sh',
-  'rc-mount.sh',
   'runit.sh',
   's6.sh',
   'start-stop-daemon.sh',
