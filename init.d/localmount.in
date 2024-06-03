@@ -80,8 +80,6 @@ stop()
 	# Flush all pending disk writes now
 	sync
 
-	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
-
 	if [ "$RC_UNAME" = Linux ] && [ -d /sys/fs/aufs ] ; then
 		#if / is aufs we remount it noxino during shutdown
 		if mountinfo -q -f '^aufs$' / ; then
