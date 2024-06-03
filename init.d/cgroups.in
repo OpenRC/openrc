@@ -11,7 +11,7 @@
 
 description="Mount the control groups."
 
-cgroup_opts=nodev,noexec,nosuid
+: "${cgroup_opts:="nodev,noexec,nosuid"}"
 
 depend()
 {

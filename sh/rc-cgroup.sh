@@ -35,7 +35,7 @@ cgroup_get_pids()
 	cgroup_pids=
 	cgroup_procs="$(cgroup2_find_path)"
 	if [ -n "${cgroup_procs}" ]; then
-		cgroup_procs="${cgroup_procs}/${RC_SVCNAME}/cgroup.procs"
+		cgroup_procs="${cgroup_procs}/openrc.${RC_SVCNAME}/cgroup.procs"
 	else
 		cgroup_procs="/sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks"
 	fi
@@ -167,7 +167,7 @@ cgroup2_remove()
 	local cgroup_path rc_cgroup_path
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
-	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
+	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
 	[ ! -d "${rc_cgroup_path}" ] ||
 		[ ! -e "${rc_cgroup_path}"/cgroup.events ] &&
 		return 0
@@ -191,7 +191,7 @@ cgroup2_set_limits()
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
 	mountinfo -q "${cgroup_path}"|| return 0
-	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
+	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
 	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
 	[ -f "${rc_cgroup_path}"/cgroup.procs ] &&
 		printf 0 > "${rc_cgroup_path}"/cgroup.procs
@@ -210,7 +210,7 @@ cgroup2_kill_cgroup() {
 	local cgroup_path
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 1
-	rc_cgroup_path="${cgroup_path}/${RC_SVCNAME}"
+	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
 	if [ -f "${rc_cgroup_path}"/cgroup.kill ]; then
 		printf "%d" 1 > "${rc_cgroup_path}"/cgroup.kill
 	fi

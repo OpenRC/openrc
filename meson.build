@@ -1,5 +1,5 @@
 project('OpenRC', 'c',
-  version : '0.51',
+  version : '0.54',
   license: 'BSD-2',
   default_options : [
     'c_std=c99',
@@ -83,16 +83,9 @@ else
   pkg_prefix = option_pkg_prefix
 endif
 
-if get_option('split-usr') == 'auto'
-  split_usr = run_command('test', '-L', '/bin', check: false).returncode() != 0
-else
-  split_usr = get_option('split-usr') == 'true'
-endif
-
 rootprefix = get_option('rootprefix')
-rootprefix_default = fs.is_symlink('/bin') ? '/usr' : '/'
 if rootprefix == ''
-rootprefix = rootprefix_default
+rootprefix = '/'
 endif
 
 bindir = rootprefix / get_option('bindir')
@@ -131,15 +124,6 @@ if selinux_dep.found()
   endif
 else
   cc_selinux_flags = []
-endif
-
-termcap = get_option('termcap')
-if termcap != ''
-  termcap_dep = dependency(termcap)
-  termcap_flags = '-DHAVE_TERMCAP'
-  else
-  termcap_dep = []
-  termcap_flags = []
 endif
 
 if get_option('buildtype').startswith('debug')

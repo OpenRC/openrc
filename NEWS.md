@@ -4,6 +4,20 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.54
+
+This release drops the support for the split-usr build option.
+Also, it drops the support for ncurses/termcap and uses ansi codes
+directly for color support on terminals that support them.
+
+## OpenRC 0.53
+
+The names of cgroups for services started by OpenRC are now prefixed by
+"openrc." This is done because some services, like docker, create their
+own cgroups.
+
+It is now possible to override the mount options used to mount the
+cgroups filesystems.
 ## OpenRC 0.52
 
 This release drops the "runscript" and "rc" binaries.
