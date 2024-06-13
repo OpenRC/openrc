@@ -143,7 +143,7 @@ rc_deptree_load_file(const char *deptree_file)
 
 	deptree = xmalloc(sizeof(*deptree));
 	TAILQ_INIT(deptree);
-	while ((rc_getline(&line, &len, fp)))
+	while ((getline(&line, &len, fp) > 0))
 	{
 		p = line;
 		e = strsep(&p, "_");
@@ -788,7 +788,7 @@ rc_deptree_update(void)
 	deptree = xmalloc(sizeof(*deptree));
 	TAILQ_INIT(deptree);
 	config = rc_stringlist_new();
-	while ((rc_getline(&line, &len, fp)))
+	while ((getline(&line, &len, fp) > 0))
 	{
 		depends = line;
 		service = strsep(&depends, " ");
