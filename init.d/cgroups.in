@@ -72,8 +72,8 @@ cgroup2_base()
 	local base
 	base="$(cgroup2_find_path)"
 	mkdir -p "${base}"
-	mount -t cgroup2 none -o "${cgroup_opts},nsdelegate" "${base}" 2> /dev/null ||
-		mount -t cgroup2 none -o "${cgroup_opts}" "${base}"
+	mount -t cgroup2 cgroup2 -o "${cgroup_opts},nsdelegate" "${base}" 2> /dev/null ||
+		mount -t cgroup2 cgroup2 -o "${cgroup_opts}" "${base}"
 	return 0
 }
 
