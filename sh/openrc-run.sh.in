@@ -244,6 +244,8 @@ sourcex "@LIBEXECDIR@/sh/supervise-daemon.sh"
 
 # Load our script
 sourcex "$RC_SERVICE"
+# May be RC_DEBUG is set inside $RC_SERVICE?
+yesno $RC_DEBUG && set -x
 
 # Set verbose mode
 if yesno "${rc_verbose:-$RC_VERBOSE}"; then
