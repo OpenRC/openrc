@@ -17,8 +17,6 @@
 #include <fcntl.h>
 #include <paths.h>
 #include <pwd.h>
-#include <signal.h>
-#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,15 +35,6 @@
 # define _PATH_DEV	"/dev/"
 #endif
 
-static sigjmp_buf jbuf;
-
-/*
- *	Alarm handler
- */
-RC_NORETURN static void handler(int arg RC_UNUSED)
-{
-	siglongjmp(jbuf, 1);
-}
 
 static void getuidtty(char **userp, char **ttyp)
 {
@@ -120,19 +109,13 @@ void broadcast(char *text)
 	char *user;
 	struct utsname name;
 	time_t t;
-	char	*date;
+	char *date;
 	char *p;
 	char *line = NULL;
-	struct sigaction sa;
-	int	flags;
+	int len;
+	int fd;
 	char *term = NULL;
 	struct utmpx *utmp;
-	/*
-	 * These are set across the sigsetjmp call, so they can't be stored on
-	 * the stack, otherwise they might be clobbered.
-	 */
-	static int fd;
-	static FILE *tp;
 
 	getuidtty(&user, &tty);
 
@@ -149,8 +132,8 @@ void broadcast(char *text)
 	if (p)
 		*p = 0;
 
-	xasprintf(&line, "\007\r\nBroadcast message from %s@%s %s(%s):\r\n\r\n",
-			user, name.nodename, tty, date);
+	len = xasprintf(&line, "\007\r\nBroadcast message from %s@%s %s(%s):\r\n\r\n%s",
+			user, name.nodename, tty, date, text);
 	free(tty);
 
 	/*
@@ -158,11 +141,6 @@ void broadcast(char *text)
 	 */
 	if (fork() != 0)
 		return;
-
-	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = handler;
-	sigemptyset(&sa.sa_mask);
-	sigaction(SIGALRM, &sa, NULL);
 
 	setutxent();
 
@@ -178,25 +156,12 @@ void broadcast(char *text)
 			continue;
 		}
 
-		/*
-		 *	Open it non-delay
-		 */
-		if (sigsetjmp(jbuf, 1) == 0) {
-			alarm(2);
-			flags = O_WRONLY|O_NDELAY|O_NOCTTY;
-			if (file_isatty(term) && (fd = open(term, flags)) >= 0) {
-				if (isatty(fd) && (tp = fdopen(fd, "w")) != NULL) {
-					fputs(line, tp);
-					fputs(text, tp);
-					fflush(tp);
-				}
-			}
-		}
-		alarm(0);
-		if (fd >= 0)
+		/* Open it non-delay */
+		if (file_isatty(term) && (fd = open(term, O_WRONLY|O_NDELAY|O_NOCTTY)) >= 0) {
+			if (isatty(fd))
+				write(fd, line, len);
 			close(fd);
-		if (tp != NULL)
-			fclose(tp);
+		}
 		free(term);
 	}
 	endutxent();
