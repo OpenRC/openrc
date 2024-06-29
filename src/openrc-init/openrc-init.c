@@ -42,7 +42,7 @@
 #include "wtmp.h"
 #include "version.h"
 
-static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
+static const char *path_default = "/usr/sbin:/sbin:/usr/bin:/bin";
 static const char *rc_default_runlevel = "default";
 
 static void do_openrc(const char *runlevel)
