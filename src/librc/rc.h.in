@@ -319,6 +319,7 @@ bool rc_service_daemons_crashed(const char *);
  * OpenRC can support some special sub system types, normally virtualization.
  * Some services cannot work in these systems, or we do something else. */
 #define RC_SYS_DOCKER  "DOCKER"
+#define RC_SYS_PODMAN  "PODMAN"
 #define RC_SYS_JAIL    "JAIL"
 #define RC_SYS_NONE    ""
 #define RC_SYS_OPENVZ  "OPENVZ"

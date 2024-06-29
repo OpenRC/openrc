@@ -16,7 +16,7 @@ depend()
 	after modules net
 	need sysfs
 	provide network-online
-	keyword -docker -jail -lxc -openvz -prefix -systemd-nspawn -uml -vserver
+	keyword -docker -podman -jail -lxc -openvz -prefix -systemd-nspawn -uml -vserver
 }
 
 get_interfaces()

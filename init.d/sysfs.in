@@ -15,7 +15,7 @@ sysfs_opts=nodev,noexec,nosuid
 
 depend()
 {
-	keyword -docker -lxc -prefix -systemd-nspawn -vserver
+	keyword -docker -podman -lxc -prefix -systemd-nspawn -vserver
 }
 
 mount_sys()

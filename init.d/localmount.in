@@ -16,7 +16,7 @@ depend()
 	need fsck root
 	use lvm modules
 	after clock lvm modules
-	keyword -docker -jail -lxc -prefix -systemd-nspawn -vserver
+	keyword -docker -podman -jail -lxc -prefix -systemd-nspawn -vserver
 }
 
 start()
