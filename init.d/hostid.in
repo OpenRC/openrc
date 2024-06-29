@@ -17,7 +17,7 @@ depend()
 	use root
 	after clock
 	before devd net
-	keyword -jail -prefix
+	keyword -jail
 }
 
 _set()
