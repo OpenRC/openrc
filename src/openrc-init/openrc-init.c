@@ -242,7 +242,7 @@ int main(int argc, char **argv)
 	if (getenv("SELINUX_INIT") == NULL) {
 		if (is_selinux_enabled() != 1) {
 			if (selinux_init_load_policy(&enforce) == 0) {
-				putenv("SELINUX_INIT=YES");
+				setenv("SELINUX_INIT", "YES", 1);
 				execv(argv[0], argv);
 			} else {
 				if (enforce > 0) {
