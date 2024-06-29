@@ -21,10 +21,8 @@
 
 #define ONE_MS           1000000
 
-#ifdef __linux__
-/* For extra SCHED_* defines. */
-# define _GNU_SOURCE
-#endif
+/* For extra SCHED_* defines and pipe2. */
+#define _GNU_SOURCE
 
 #include <errno.h>
 #include <fcntl.h>

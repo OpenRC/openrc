@@ -43,7 +43,7 @@ else
   os = option_os
 endif
 
-if os != 'Linux'
+if os == 'Dragonfly' or os == 'FreeBSD' or os == 'NetBSD' or os == 'OpenBSD'
   kvm_dep = cc.find_library('kvm', required: true)
 else
   kvm_dep = []
