@@ -169,10 +169,12 @@ start()
 		# Satisfy Linux FHS
 		extra=/var/lib/misc
 		if [ ! -d /run ]; then
-			extra="/var/run $extra"
+			extra="/var/run /var/run/user $extra"
+		elif [ ! -d /run/user ]; then
+			extra="/run/user $extra"
 		fi
 	else
-		extra=/var/run
+		extra="/var/run /var/run/user"
 	fi
 	for x in /var/log /tmp $extra; do
 		if ! [ -d $x ]; then
