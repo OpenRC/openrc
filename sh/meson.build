@@ -28,6 +28,7 @@ sh_config = [
 scripts_config = [
   'gendepends.sh.in',
   'openrc-run.sh.in',
+  'user-init.sh.in',
   ]
 
 if os == 'Linux'
