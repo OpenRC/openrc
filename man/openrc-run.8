@@ -547,6 +547,9 @@ sets the following environment variables for use in the service scripts:
 Name of the service.
 .It Va RC_SERVICE
 Full path to the service.
+.It Va RC_SCRIPTDIR
+Full path to the system directory the service lives in. For multiplexed
+services, it is the directory the main service live in.
 .It Va RC_RUNLEVEL
 Current runlevel that OpenRC is in. Note that, in OpenRC, the reboot
 runlevel is mapped to the shutdown runlevel. This was done because most
@@ -584,14 +587,14 @@ should not be unmounted.
 .El
 .Sh FILES
 .Pp
-Configuration files, relative to the location of the service.
+Configuration files, relative to RC_SYSCONFDIR.
 If a file ending with .${RC_RUNLEVEL} exists then we use that instead.
 .Bl -ohang
-.It Pa ../conf.d/${RC_SVCNAME%%.*}
+.It Pa ${RC_SCRIPTDIR}/conf.d/${RC_SVCNAME%%.*}
 multiplexed configuration file.
 Example: if ${RC_SVCNAME} is net.eth1 then look for
-.Pa ../conf.d/net .
-.It Pa ../conf.d/${RC_SVCNAME}
+.Pa ${RC_SCRIPTDIR}/conf.d/net .
+.It Pa ${RC_SCRIPTDIR}/conf.d/${RC_SVCNAME}
 service configuration file.
 .It Pa /etc/rc.conf
 host configuration file.
