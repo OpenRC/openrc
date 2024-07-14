@@ -210,21 +210,21 @@ restore_state(void)
 
 	if (rc_in_plugin || exclusive_fd == -1)
 		return;
-	state = rc_service_state(applet);
+	state = rc_service_state(service);
 	if (state & RC_SERVICE_STOPPING) {
 		if (state & RC_SERVICE_WASINACTIVE)
-			rc_service_mark(applet, RC_SERVICE_INACTIVE);
+			rc_service_mark(service, RC_SERVICE_INACTIVE);
 		else
-			rc_service_mark(applet, RC_SERVICE_STARTED);
+			rc_service_mark(service, RC_SERVICE_STARTED);
 		if (rc_runlevel_stopping())
-			rc_service_mark(applet, RC_SERVICE_FAILED);
+			rc_service_mark(service, RC_SERVICE_FAILED);
 	} else if (state & RC_SERVICE_STARTING) {
 		if (state & RC_SERVICE_WASINACTIVE)
-			rc_service_mark(applet, RC_SERVICE_INACTIVE);
+			rc_service_mark(service, RC_SERVICE_INACTIVE);
 		else
-			rc_service_mark(applet, RC_SERVICE_STOPPED);
+			rc_service_mark(service, RC_SERVICE_STOPPED);
 		if (rc_runlevel_starting())
-			rc_service_mark(applet, RC_SERVICE_FAILED);
+			rc_service_mark(service, RC_SERVICE_FAILED);
 	}
 	exclusive_fd = svc_unlock(applet, exclusive_fd);
 }
@@ -1099,17 +1099,72 @@ service_plugable(void)
 	return allow;
 }
 
+static char *
+normalize_path(const char *src)
+{
+	char *path;
+	size_t path_len;
+	size_t src_len = strlen(src);
+
+	if (src_len == 0 || src[0] != '/') {
+		char pwd[PATH_MAX];
+		size_t pwd_len;
+
+		if (getcwd(pwd, sizeof(pwd)) == NULL)
+			return NULL;
+
+		pwd_len = strlen(pwd);
+		path = xmalloc(pwd_len + 1 + src_len + 1);
+		memcpy(path, pwd, pwd_len);
+		path_len = pwd_len;
+	} else {
+		path = xmalloc((src_len > 0 ? src_len : 1) + 1);
+		path_len = 0;
+	}
+
+	for (const char *ptr = src, *next; ptr < src + src_len; ptr = next + 1) {
+		size_t len;
+		next = strchr(ptr, '/');
+		if (!next)
+			next = src + src_len;
+		len = next - ptr;
+		switch (len) {
+			case 2:
+				if (ptr[0] == '.' && ptr[1] == '.') {
+					const char *slash = strrchr(path, '/');
+					if (slash)
+						path_len = slash - path;
+					continue;
+				}
+				break;
+			case 1:
+				if (ptr[0] == '.')
+					continue;
+				break;
+			case 0:
+				continue;
+		}
+		path[path_len++] = '/';
+		memcpy(&path[path_len], ptr, len);
+		path_len += len;
+	}
+
+	if (path_len == 0)
+		path[path_len++] = '/';
+
+	path[path_len] = '\0';
+	return path;
+}
+
 int main(int argc, char **argv)
 {
 	bool doneone = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
 	char *path = NULL;
-	char *lnk = NULL;
-	char *dir, *save = NULL, *saveLnk = NULL;
+	char *dir, *save = NULL;
 	char *pidstr = NULL;
 	size_t l = 0, ll;
-	const char *file;
 	struct stat stbuf;
 
 	/* Show help if insufficient args */
@@ -1117,8 +1172,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "openrc-run should not be run directly\n");
 		exit(EXIT_FAILURE);
 	}
-
-	applet = basename_c(argv[0]);
 
 	if (rc_yesno(getenv("RC_USER_SERVICES")))
 		rc_set_user();
@@ -1129,44 +1182,28 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	atexit(cleanup);
-
 	/* We need to work out the real full path to our service.
-	 * This works fine, provided that we ONLY allow multiplexed services
-	 * to exist in the same directory as the master link.
-	 * Also, the master link as to be a real file in the init dir. */
+	 * multiplexed services must point to a target in a init dir. */
 	path = realpath(argv[1], NULL);
 	if (!path) {
 		fprintf(stderr, "realpath: %s\n", strerror(errno));
 		exit(EXIT_FAILURE);
 	}
-	lnk = xmalloc(4096);
-	memset(lnk, 0, 4096);
-	if (readlink(argv[1], lnk, 4096-1)) {
-		dir = dirname(path);
-		if (strchr(lnk, '/')) {
-			save = xstrdup(dir);
-			saveLnk = xstrdup(lnk);
-			dir = dirname(saveLnk);
-			if (strcmp(dir, save) == 0)
-				file = basename_c(argv[1]);
-			else
-				file = basename_c(lnk);
-			dir = save;
-		} else
-			file = basename_c(argv[1]);
-		xasprintf(&service, "%s/%s", dir, file);
-		if (stat(service, &stbuf) != 0) {
-			free(service);
-			service = xstrdup(lnk);
-		}
-		free(save);
-		free(saveLnk);
+	save = dirname(path);
+	dir = strrchr(save, '/');
+	if (!dir || strcmp(dir, "/init.d") != 0) {
+		fprintf(stderr, "%s is not an init dir", path);
+		exit(EXIT_FAILURE);
 	}
-	free(lnk);
-	if (!service)
-		service = xstrdup(path);
+	*dir = '\0';
+
+	setenv("RC_SYSCONF_DIR", save, true);
+	free(path);
+
+	service = normalize_path(argv[1]);
 	applet = basename_c(service);
+
+	atexit(cleanup);
 
 	if (argc < 3)
 		usage(EXIT_FAILURE);
@@ -1400,7 +1437,7 @@ int main(int argc, char **argv)
 			} else if (strcmp(optarg, "zap") == 0) {
 				einfo("Manually resetting %s to stopped state",
 				    applet);
-				if (!rc_service_mark(applet,
+				if (!rc_service_mark(service,
 					RC_SERVICE_STOPPED))
 					eerrorx("rc_service_mark: %s",
 					    strerror(errno));

@@ -220,7 +220,7 @@ if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
 	done
 fi
 
-_conf_d=${RC_SERVICE%/*}/../conf.d
+_conf_d="${RC_SYSCONF_DIR}/conf.d"
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${RC_SVCNAME%%.*}
 if [ -n "$_c" -a "$_c" != "$RC_SVCNAME" ]; then
