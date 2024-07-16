@@ -6,7 +6,8 @@ project('OpenRC', 'c',
     'prefix=/usr',
     'warning_level=3',
     ],
-  meson_version : '>=0.53.2')
+  meson_version : '>=0.56.0' # pkgconfig dict support
+)
 
 cc = meson.get_compiler('c')
 fs = import('fs')
@@ -207,13 +208,35 @@ subdir('etc')
 subdir('init.d')
 subdir('local.d')
 subdir('man')
-subdir('pkgconfig')
 subdir('sh')
 subdir('src')
 subdir('support')
 subdir('sysctl.d')
 subdir('test')
 subdir('zsh-completion')
+
+if get_option('pkgconfig')
+  pkg = import('pkgconfig')
+
+  einfo_pkgconf = pkg.generate(
+    name : 'einfo',
+    description : 'Pretty console informational display',
+    version : meson.project_version(),
+    libraries : libeinfo,
+    subdirs : ['einfo'],
+  )
+
+  openrc_pkgconf = pkg.generate(
+    name : 'OpenRC',
+    description : 'Universal init system',
+    version : meson.project_version(),
+    libraries : librc,
+    subdirs : ['openrc'],
+    variables: {
+      'rc_path': rc_libexecdir,
+    }
+  )
+endif
 
 meson.add_install_script('tools/meson_runlevels.sh',
   os,
