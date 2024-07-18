@@ -67,27 +67,23 @@ void
 rc_deptree_free(RC_DEPTREE *deptree)
 {
 	RC_DEPINFO *di;
-	RC_DEPINFO *di2;
+	RC_DEPINFO *di_save;
 	RC_DEPTYPE *dt;
-	RC_DEPTYPE *dt2;
+	RC_DEPTYPE *dt_save;
 
 	if (!deptree)
 		return;
 
-	di = TAILQ_FIRST(deptree);
-	while (di) {
-		di2 = TAILQ_NEXT(di, entries);
-		dt = TAILQ_FIRST(&di->depends);
-		while (dt) {
-			dt2 = TAILQ_NEXT(dt, entries);
+	TAILQ_FOREACH_SAFE(di, deptree, entries, di_save) {
+		TAILQ_FOREACH_SAFE(dt, &di->depends, entries, dt_save) {
+			TAILQ_REMOVE(&di->depends, dt, entries);
 			rc_stringlist_free(dt->services);
 			free(dt->type);
 			free(dt);
-			dt = dt2;
 		}
+		TAILQ_REMOVE(deptree, di, entries);
 		free(di->service);
 		free(di);
-		di = di2;
 	}
 
 	/* Use free() here since rc_deptree_free should not call itself */
@@ -106,6 +102,17 @@ get_depinfo(const RC_DEPTREE *deptree, const char *service)
 	return NULL;
 }
 
+static RC_DEPINFO *
+make_depinfo(RC_DEPTREE *deptree, const char *service)
+{
+	RC_DEPINFO *depinfo = xmalloc(sizeof(*depinfo));
+	TAILQ_INIT(&depinfo->depends);
+	depinfo->service = xstrdup(service);
+	TAILQ_INSERT_TAIL(deptree, depinfo, entries);
+
+	return depinfo;
+}
+
 static RC_DEPTYPE *
 get_deptype(const RC_DEPINFO *depinfo, const char *type)
 {
@@ -117,6 +124,17 @@ get_deptype(const RC_DEPINFO *depinfo, const char *type)
 				return dt;
 	}
 	return NULL;
+}
+
+static RC_DEPTYPE *
+make_deptype(RC_DEPINFO *depinfo, const char *type)
+{
+	RC_DEPTYPE *deptype = xmalloc(sizeof(*deptype));
+	deptype->type = xstrdup(type);
+	deptype->services = rc_stringlist_new();
+	TAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
+
+	return deptype;
 }
 
 RC_DEPTREE *
@@ -141,6 +159,7 @@ rc_deptree_load_file(const char *deptree_file)
 	RC_DEPTYPE *deptype = NULL;
 	char *line = NULL;
 	size_t len = 0;
+	ssize_t size;
 	char *type;
 	char *p;
 	char *e;
@@ -151,8 +170,8 @@ rc_deptree_load_file(const char *deptree_file)
 
 	deptree = xmalloc(sizeof(*deptree));
 	TAILQ_INIT(deptree);
-	while ((rc_getline(&line, &len, fp)))
-	{
+	while ((size = getline(&line, &len, fp)) != -1) {
+		line[size - 1] = '\0';
 		p = line;
 		e = strsep(&p, "_");
 		if (!e || strcmp(e, "depinfo") != 0)
@@ -167,10 +186,7 @@ rc_deptree_load_file(const char *deptree_file)
 			e = get_shell_value(p);
 			if (!e || *e == '\0')
 				continue;
-			depinfo = xmalloc(sizeof(*depinfo));
-			TAILQ_INIT(&depinfo->depends);
-			depinfo->service = xstrdup(e);
-			TAILQ_INSERT_TAIL(deptree, depinfo, entries);
+			depinfo = make_depinfo(deptree, e);
 			deptype = NULL;
 			continue;
 		}
@@ -181,12 +197,8 @@ rc_deptree_load_file(const char *deptree_file)
 		e = get_shell_value(p);
 		if (!e || *e == '\0')
 			continue;
-		if (!deptype || strcmp(deptype->type, type) != 0) {
-			deptype = xmalloc(sizeof(*deptype));
-			deptype->services = rc_stringlist_new();
-			deptype->type = xstrdup(type);
-			TAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
-		}
+		if (!deptype || strcmp(deptype->type, type) != 0)
+			deptype = make_deptype(depinfo, type);
 		rc_stringlist_add(deptype->services, e);
 	}
 	fclose(fp);
@@ -793,6 +805,7 @@ rc_deptree_update_needed(time_t *newest, char *file)
 bool
 rc_deptree_update(void)
 {
+
 	FILE *fp;
 	RC_DEPTREE *deptree, *providers;
 	RC_DEPINFO *depinfo = NULL, *depinfo_np, *di;
@@ -801,10 +814,11 @@ rc_deptree_update(void)
 	RC_STRING *s, *s2, *s2_np, *s3, *s4;
 	char *line = NULL;
 	size_t len = 0;
-	char *depend, *depends, *service, *type, *nosys, *onosys;
+	ssize_t size;
+	char *depend, *depends, *service, *type;
 	char *deptree_cache;
 	char *depconfig;
-	size_t i, k, l;
+	size_t i, l;
 	bool retval = true;
 	const char *sys = rc_sys();
 	struct utsname uts;
@@ -821,11 +835,12 @@ rc_deptree_update(void)
 	if (!(fp = popen(GENDEP, "r")))
 		return false;
 
+	config = rc_stringlist_new();
+
 	deptree = xmalloc(sizeof(*deptree));
 	TAILQ_INIT(deptree);
-	config = rc_stringlist_new();
-	while ((rc_getline(&line, &len, fp)))
-	{
+	while ((size = getline(&line, &len, fp)) != -1) {
+		line[size - 1] = '\0';
 		depends = line;
 		service = strsep(&depends, " ");
 		if (!service || !*service)
@@ -835,12 +850,8 @@ rc_deptree_update(void)
 		if (!depinfo || strcmp(depinfo->service, service) != 0) {
 			deptype = NULL;
 			depinfo = get_depinfo(deptree, service);
-			if (!depinfo) {
-				depinfo = xmalloc(sizeof(*depinfo));
-				TAILQ_INIT(&depinfo->depends);
-				depinfo->service = xstrdup(service);
-				TAILQ_INSERT_TAIL(deptree, depinfo, entries);
-			}
+			if (!depinfo)
+				depinfo = make_depinfo(deptree, service);
 		}
 
 		/* We may not have any depends */
@@ -849,20 +860,16 @@ rc_deptree_update(void)
 
 		/* Get the type */
 		if (strcmp(type, "config") != 0) {
-			if (!deptype || strcmp(deptype->type, type) != 0)
+			if (!deptype || strcmp(deptype->type, type) != 0) {
 				deptype = get_deptype(depinfo, type);
-			if (!deptype) {
-				deptype = xmalloc(sizeof(*deptype));
-				deptype->type = xstrdup(type);
-				deptype->services = rc_stringlist_new();
-				TAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
+				if (!deptype)
+					deptype = make_deptype(depinfo, type);
 			}
 		}
 
 		/* Now add each depend to our type.
 		   We do this individually so we handle multiple spaces gracefully */
-		while ((depend = strsep(&depends, " ")))
-		{
+		while ((depend = strsep(&depends, " "))) {
 			if (depend[0] == 0)
 				continue;
 
@@ -871,9 +878,8 @@ rc_deptree_update(void)
 				continue;
 			}
 
-			/* Don't provide ourself */
-			if (strcmp(type, "iprovide") == 0 &&
-			    strcmp(depend, service) == 0)
+			/* Don't depend on ourself */
+			if (strcmp(depend, service) == 0)
 				continue;
 
 			/* .sh files are not init scripts */
@@ -915,6 +921,8 @@ rc_deptree_update(void)
 	/* Phase 2 - if we're a special system, remove services that don't
 	 * work for them. This doesn't stop them from being run directly. */
 	if (sys) {
+		char *nosys, *onosys;
+
 		len = strlen(sys);
 		nosys = xmalloc(len + 2);
 		nosys[0] = '-';
@@ -929,29 +937,30 @@ rc_deptree_update(void)
 			onosys[i + 2] = (char)tolower((unsigned char)sys[i]);
 		onosys[i + 2] = '\0';
 
-		TAILQ_FOREACH_SAFE(depinfo, deptree, entries, depinfo_np)
-			if ((deptype = get_deptype(depinfo, "keyword")))
-				TAILQ_FOREACH(s, deptype->services, entries)
-					if (strcmp(s->value, nosys) == 0 ||
-					    strcmp(s->value, onosys) == 0)
-					{
-						provide = get_deptype(depinfo, "iprovide");
-						TAILQ_REMOVE(deptree, depinfo, entries);
-						TAILQ_FOREACH(di, deptree, entries) {
-							TAILQ_FOREACH_SAFE(dt, &di->depends, entries, dt_np) {
-								rc_stringlist_delete(dt->services, depinfo->service);
-								if (provide)
-									TAILQ_FOREACH(s2, provide->services, entries)
-										rc_stringlist_delete(dt->services, s2->value);
-								if (!TAILQ_FIRST(dt->services)) {
-									TAILQ_REMOVE(&di->depends, dt, entries);
-									free(dt->type);
-									free(dt->services);
-									free(dt);
-								}
-							}
+		TAILQ_FOREACH_SAFE(depinfo, deptree, entries, depinfo_np) {
+			if (!(deptype = get_deptype(depinfo, "keyword")))
+				continue;
+			TAILQ_FOREACH(s, deptype->services, entries) {
+				if (strcmp(s->value, nosys) != 0 && strcmp(s->value, onosys) != 0)
+					continue;
+				provide = get_deptype(depinfo, "iprovide");
+				TAILQ_REMOVE(deptree, depinfo, entries);
+				TAILQ_FOREACH(di, deptree, entries) {
+					TAILQ_FOREACH_SAFE(dt, &di->depends, entries, dt_np) {
+						rc_stringlist_delete(dt->services, depinfo->service);
+						if (provide)
+							TAILQ_FOREACH(s2, provide->services, entries)
+								rc_stringlist_delete(dt->services, s2->value);
+						if (!TAILQ_FIRST(dt->services)) {
+							TAILQ_REMOVE(&di->depends, dt, entries);
+							free(dt->type);
+							free(dt->services);
+							free(dt);
 						}
 					}
+				}
+			}
+		}
 		free(nosys);
 		free(onosys);
 	}
@@ -959,24 +968,20 @@ rc_deptree_update(void)
 	/* Phase 3 - add our providers to the tree */
 	providers = xmalloc(sizeof(*providers));
 	TAILQ_INIT(providers);
-	TAILQ_FOREACH(depinfo, deptree, entries)
-		if ((deptype = get_deptype(depinfo, "iprovide")))
-			TAILQ_FOREACH(s, deptype->services, entries) {
-				TAILQ_FOREACH(di, providers, entries)
-					if (strcmp(di->service, s->value) == 0)
-						break;
-				if (!di) {
-					di = xmalloc(sizeof(*di));
-					TAILQ_INIT(&di->depends);
-					di->service = xstrdup(s->value);
-					TAILQ_INSERT_TAIL(providers, di, entries);
-				}
-			}
+	TAILQ_FOREACH(depinfo, deptree, entries) {
+		if (!(deptype = get_deptype(depinfo, "iprovide")))
+			continue;
+		TAILQ_FOREACH(s, deptype->services, entries) {
+			di = get_depinfo(providers, s->value);
+			if (!di)
+				di = make_depinfo(providers, s->value);
+		}
+	}
 	TAILQ_CONCAT(deptree, providers, entries);
 	free(providers);
 
 	/* Phase 4 - backreference our depends */
-	TAILQ_FOREACH(depinfo, deptree, entries)
+	TAILQ_FOREACH(depinfo, deptree, entries) {
 		for (i = 0; deppairs[i].depend; i++) {
 			deptype = get_deptype(depinfo, deppairs[i].depend);
 			if (!deptype)
@@ -985,33 +990,23 @@ rc_deptree_update(void)
 				di = get_depinfo(deptree, s->value);
 				if (!di) {
 					if (strcmp(deptype->type, "ineed") == 0) {
-						fprintf(stderr,
-							 "Service `%s' needs non"
-							 " existent service `%s'\n",
+						fprintf(stderr, "Service '%s' needs non existent service '%s'\n",
 							 depinfo->service, s->value);
 						dt = get_deptype(depinfo, "broken");
-						if (!dt) {
-							dt = xmalloc(sizeof(*dt));
-							dt->type = xstrdup("broken");
-							dt->services = rc_stringlist_new();
-							TAILQ_INSERT_TAIL(&depinfo->depends, dt, entries);
-						}
+						if (!dt)
+							dt = make_deptype(depinfo, "broken");
 						rc_stringlist_addu(dt->services, s->value);
 					}
 					continue;
 				}
 
 				dt = get_deptype(di, deppairs[i].addto);
-				if (!dt) {
-					dt = xmalloc(sizeof(*dt));
-					dt->type = xstrdup(deppairs[i].addto);
-					dt->services = rc_stringlist_new();
-					TAILQ_INSERT_TAIL(&di->depends, dt, entries);
-				}
+				if (!dt)
+					dt = make_deptype(di, deppairs[i].addto);
 				rc_stringlist_addu(dt->services, depinfo->service);
 			}
 		}
-
+	}
 
 	/* Phase 5 - Remove broken before directives */
 	types = rc_stringlist_new();
@@ -1088,15 +1083,12 @@ rc_deptree_update(void)
 	if ((fp = fopen(deptree_cache, "w"))) {
 		i = 0;
 		TAILQ_FOREACH(depinfo, deptree, entries) {
-			fprintf(fp, "depinfo_%zu_service='%s'\n",
-				i, depinfo->service);
+			fprintf(fp, "depinfo_%zu_service='%s'\n", i, depinfo->service);
 			TAILQ_FOREACH(deptype, &depinfo->depends, entries) {
-				k = 0;
+				size_t k = 0;
 				TAILQ_FOREACH(s, deptype->services, entries) {
-					fprintf(fp,
-						"depinfo_%zu_%s_%zu='%s'\n",
-						i, deptype->type, k, s->value);
-					k++;
+					fprintf(fp, "depinfo_%zu_%s_%zu='%s'\n",
+							i, deptype->type, k++, s->value);
 				}
 			}
 			i++;
@@ -1116,16 +1108,15 @@ rc_deptree_update(void)
 				fprintf(fp, "%s\n", s->value);
 			fclose(fp);
 		} else {
-			fprintf(stderr, "fopen `%s': %s\n",
-				depconfig, strerror(errno));
+			fprintf(stderr, "fopen `%s': %s\n", depconfig, strerror(errno));
 			retval = false;
 		}
 	} else {
 		unlink(depconfig);
 	}
+	free(depconfig);
 
 	rc_stringlist_free(config);
-	free(depconfig);
-	free(deptree);
+	rc_deptree_free(deptree);
 	return retval;
 }
