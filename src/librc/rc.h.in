@@ -275,6 +275,16 @@ RC_STRINGLIST *rc_service_extra_commands(const char *);
  * @return pointer to full path of service */
 char *rc_service_resolve(const char *);
 
+/*! Gets the base service for a multiplexed service
+ * @param multiplexed service to check
+ * @return pointer to base service name or NULL if not multiplexed */
+char *rc_service_base(const char *);
+
+/*! Dynamically multiplexes a service into the runtime directory.
+ * @param service to link
+ * @param target service name */
+char *rc_service_dylink(const char *, const char *);
+
 /*! Schedule a service to be started when another service starts
  * @param service that starts the scheduled service when started
  * @param service_to_start service that will be started */

@@ -1317,6 +1317,35 @@ rc_service_delete(const char *runlevel, const char *service)
 	return (r == 0);
 }
 
+char *
+rc_service_base(const char *service)
+{
+	char *dot = strchr(service, '.');
+	if (!dot)
+		return NULL;
+	return xstrndup(service, dot - service);
+}
+
+char *
+rc_service_dylink(const char *service, const char *target)
+{
+	char *file = rc_service_resolve(service);
+	char *target_file = NULL;
+	if (!exists(file))
+		goto out;
+
+	xasprintf(&target_file, "%s/dynamic/%s", rc_service_dir(), target);
+	if (!exists(target_file) && symlink(file, target_file) == -1) {
+		free(target_file);
+		target_file = NULL;
+		goto out;
+	}
+
+out:
+	free(file);
+	return target_file;
+}
+
 RC_STRINGLIST *
 rc_services_scheduled_by(const char *service)
 {

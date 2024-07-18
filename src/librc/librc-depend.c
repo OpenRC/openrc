@@ -700,6 +700,7 @@ static const char *const depdirs[] =
 	"options",
 	"exclusive",
 	"scheduled",
+	"dynamic",
 	"tmp",
 	NULL
 };

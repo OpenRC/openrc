@@ -18,6 +18,7 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 	char *svc_name = NULL;
 	char *pam_lock = NULL;
 	char *logins, *rundir;
+	char *file;
 	const char *username;
 	struct passwd *pw;
 	int count = 0, fd = -1;
@@ -48,17 +49,26 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 		goto out;
 	}
 
+	file = rc_service_resolve(svc_name);
+	if (!file) {
+		file = rc_service_dylink("user", svc_name);
+		if (!file) {
+			svc_unlock(pam_lock, fd);
+			goto out;
+		}
+	}
+
 	logins = rc_service_value_get(svc_name, "logins");
 	if (logins)
 		sscanf(logins, "%d", &count);
 	free(logins);
 
 	if (opening && count == 0) {
-		pid = service_start(svc_name);
+		pid = service_start(file);
 		rc_service_mark(svc_name, RC_SERVICE_HOTPLUGGED);
 		count++;
 	} else if (count > 0) {
-		pid = service_stop(svc_name);
+		pid = service_stop(file);
 		count--;
 	}
 
