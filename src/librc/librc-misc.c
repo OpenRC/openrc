@@ -131,8 +131,9 @@ rc_proc_getent(const char *ent RC_UNUSED)
 {
 #ifdef __linux__
 	FILE *fp;
-	char *proc, *p, *value = NULL;
+	char *proc = NULL, *p, *value = NULL, *save;
 	size_t i, len;
+	ssize_t size;
 
 	if (!exists("/proc/cmdline"))
 		return NULL;
@@ -140,23 +141,21 @@ rc_proc_getent(const char *ent RC_UNUSED)
 	if (!(fp = fopen("/proc/cmdline", "r")))
 		return NULL;
 
-	proc = NULL;
 	i = 0;
-	if (rc_getline(&proc, &i, fp) == -1 || proc == NULL)
+	if ((size = getline(&proc, &i, fp) == -1)) {
+		free(proc);
 		return NULL;
+	}
+	proc[size - 1] = '\0';
+	save = proc;
 
-	if (proc != NULL) {
-		len = strlen(ent);
-
-		while ((p = strsep(&proc, " "))) {
-			if (strncmp(ent, p, len) == 0 && (p[len] == '\0' || p[len] == ' ' || p[len] == '=')) {
-				p += len;
-
-				if (*p == '=')
-					p++;
-
-				value = xstrdup(p);
-			}
+	len = strlen(ent);
+	while ((p = strsep(&save, " "))) {
+		if (strncmp(ent, p, len) == 0 && (p[len] == '\0' || p[len] == ' ' || p[len] == '=')) {
+			p += len;
+			if (*p == '=')
+				p++;
+			value = xstrdup(p);
 		}
 	}
 
@@ -332,13 +331,14 @@ static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
 {
 	DIR *dp;
 	struct dirent *d;
-	RC_STRINGLIST *rc_conf_d_files = rc_stringlist_new();
+	RC_STRINGLIST *rc_conf_d_files;
 	RC_STRING *fname;
 	RC_STRINGLIST *rc_conf_d_list;
 	char path[PATH_MAX];
 	RC_STRING *line;
 
 	if ((dp = opendir(RC_CONF_D)) != NULL) {
+		rc_conf_d_files = rc_stringlist_new();
 		while ((d = readdir(dp)) != NULL) {
 			if (fnmatch("*.conf", d->d_name, FNM_PATHNAME) == 0) {
 				rc_stringlist_addu(rc_conf_d_files, d->d_name);
@@ -346,22 +346,21 @@ static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
 		}
 		closedir(dp);
 
-		if (rc_conf_d_files) {
-			rc_stringlist_sort(&rc_conf_d_files);
-			TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
-				if (!fname->value)
-					continue;
-				sprintf(path, "%s/%s", RC_CONF_D, fname->value);
-				rc_conf_d_list = rc_config_list(path);
-				TAILQ_FOREACH(line, rc_conf_d_list, entries)
-					if (line->value)
-						rc_config_set_value(config, line->value);
-				rc_stringlist_free(rc_conf_d_list);
-			}
+		rc_stringlist_sort(&rc_conf_d_files);
+		TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
+			if (!fname->value)
+				continue;
+			sprintf(path, "%s/%s", RC_CONF_D, fname->value);
+			rc_conf_d_list = rc_config_list(path);
+			TAILQ_FOREACH(line, rc_conf_d_list, entries)
+				if (line->value)
+					rc_config_set_value(config, line->value);
+			rc_stringlist_free(rc_conf_d_list);
 		}
+
+		rc_stringlist_free(rc_conf_d_files);
 	}
 
-	rc_stringlist_free(rc_conf_d_files);
 	return config;
 }
 
