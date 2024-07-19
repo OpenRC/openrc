@@ -146,7 +146,7 @@ rc_logger_open(const char *level)
 	FILE *log = NULL;
 	FILE *plog = NULL;
 	char *logfile_path;
-	const char *logfile;
+	char *logfile;
 	int log_error = 0;
 
 	if (!rc_conf_yesno("rc_logger"))
@@ -248,12 +248,21 @@ rc_logger_open(const char *level)
 		}
 
 		/* Append the temporary log to the real log */
-		logfile = rc_conf_value("rc_log_path");
-		if (logfile == NULL)
-			logfile = DEFAULTLOG;
-		if (!strcmp(logfile, logfile_path)) {
-			eerror("Cowardly refusing to concatenate a logfile into itself.");
-			eerrorx("Please change rc_log_path to something other than %s to get rid of this message", logfile_path);
+		if (rc_is_user()) {
+			char *env;
+			if ((env = getenv("XDG_STATE_HOME")))
+				xasprintf(&logfile, "%s/openrc.log", env);
+			else if ((env = getenv("HOME")))
+				xasprintf(&logfile, "%s/openrc.log", env);
+			else
+				eerrorx("XDG_STATE_HOME and HOME unset.");
+		} else {
+			const char *config_log = rc_conf_value("rc_log_path");
+			logfile = config_log ? xstrdup(config_log) : xstrdup(DEFAULTLOG);
+			if (!strcmp(logfile, logfile_path)) {
+				eerror("Cowardly refusing to concatenate a logfile into itself.");
+				eerrorx("Please change rc_log_path to something other than %s to get rid of this message", logfile_path);
+			}
 		}
 
 		if ((plog = fopen(logfile, "ae"))) {
@@ -292,6 +301,7 @@ rc_logger_open(const char *level)
 			eerrorx("Warning: temporary logfile left behind: %s", logfile_path);
 
 		free(logfile_path);
+		free(logfile);
 		exit(0);
 		/* NOTREACHED */
 
