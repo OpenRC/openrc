@@ -19,5 +19,5 @@ int main(int argc, char **argv) {
 			|| setuid(user->pw_uid) == -1)
 		return 1;
 
-	execl(user->pw_shell, "-", "-c", USERINIT, argv[2], NULL);
+	execl(user->pw_shell, user->pw_shell, "-c", USERINIT, argv[2], NULL);
 }
