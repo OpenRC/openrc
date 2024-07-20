@@ -1,5 +1,5 @@
 if get_option('pam') and pam_dep.found()
-  shared_library('pam_openrc',
+  shared_module('pam_openrc',
     ['openrc-pam.c', misc_c, version_h],
     c_args : [cc_branding_flags],
     dependencies : [pam_dep],
