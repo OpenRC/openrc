@@ -176,3 +176,15 @@ OpenRC has wrappers for many common output tasks in libeinfo.
 This allows to print colour-coded status notices and other things.
 To make the output consistent the bundled service scripts all use ebegin/eend to 
 print nice messages.
+
+# User services
+
+OpenRC supports managing services for users.
+
+The init scripts are loaded from /etc/user.d/init.d and
+${XDG_CONFIG_HOME:-${HOME}/.config}/openrc/init.d, with the latter taking priority.
+
+User services should have `#!/.../openrc-run --user` as the shebang.
+
+An instance of openrc --user is automatically instantiated when the user logs in
+via a pam module, from the `user` system init script, as user.<username>.
