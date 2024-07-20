@@ -71,7 +71,7 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 	if (opening) {
 		if (count == 0) {
 			pid = service_start(file);
-			rc_service_mark(svc_name, RC_SERVICE_HOTPLUGGED);
+			rc_service_mark(file, RC_SERVICE_HOTPLUGGED);
 		}
 		count++;
 	} else {
