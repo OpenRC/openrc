@@ -3,5 +3,6 @@ support_dir = support_dir / 'support'
 
 subdir('deptree2dot')
 subdir('init.d.examples')
+subdir('user.d.examples')
 subdir('openvpn')
 subdir('sysvinit')
