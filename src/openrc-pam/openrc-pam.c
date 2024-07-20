@@ -63,13 +63,16 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 		sscanf(logins, "%d", &count);
 	free(logins);
 
-	if (opening && count == 0) {
-		pid = service_start(file);
-		rc_service_mark(svc_name, RC_SERVICE_HOTPLUGGED);
+	if (opening) {
+		if (count == 0) {
+			pid = service_start(file);
+			rc_service_mark(svc_name, RC_SERVICE_HOTPLUGGED);
+		}
 		count++;
-	} else if (count > 0) {
-		pid = service_stop(file);
+	} else {
 		count--;
+		if (count == 0)
+			pid = service_stop(file);
 	}
 
 	if (pid > 0) {
