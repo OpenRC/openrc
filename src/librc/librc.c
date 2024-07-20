@@ -1296,8 +1296,7 @@ rc_service_add(const char *runlevel, const char *service)
 		i = binit;
 	}
 
-	xasprintf(&file, "%s/%s/%s", RC_RUNLEVELDIR, runlevel,
-		basename_c(service));
+	xasprintf(&file, "%s/%s/%s", rc_runlevel_dir(), runlevel, basename_c(service));
 	retval = (symlink(i, file) == 0);
 	free(file);
 	free(binit);
