@@ -36,12 +36,17 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 	if (pw->pw_uid == 0)
 		return PAM_SUCCESS;
 
+	xasprintf(&pam_lock, "openrc-pam.%s", pw->pw_name);
+	setenv("EINFO_LOG", pam_lock, true);
+
 	xasprintf(&svc_name, "user.%s", pw->pw_name);
 	service_status = rc_service_state(svc_name);
-	if (service_status & RC_SERVICE_STARTED && !(service_status & RC_SERVICE_HOTPLUGGED))
+	if (service_status & RC_SERVICE_STARTED && !(service_status & RC_SERVICE_HOTPLUGGED)) {
+		elog(LOG_INFO, "service started and not hotplugged, skipping session.");
 		goto out;
+	}
 
-	xasprintf(&pam_lock, "openrc-pam.%s", pw->pw_name);
+	elog(LOG_INFO, opening ? "starting session" : "stopping session");
 	fd = svc_lock(pam_lock, false);
 
 	if (fd == -1) {
@@ -75,6 +80,8 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 			pid = service_stop(file);
 	}
 
+	elog(LOG_INFO, "%d sessions", count);
+
 	if (pid > 0) {
 		waitpid(pid, &status, 0);
 		if (status != 0)
@@ -99,6 +106,7 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 out:
 	free(pam_lock);
 	free(svc_name);
+	unsetenv("EINFO_LOG");
 	return ret;
 }
 
