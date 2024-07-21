@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
 			|| setuid(user->pw_uid) == -1)
 		return 1;
 
+	setenv("HOME", user->pw_dir, true);
 	xasprintf(&cmd, "%s %s", USERINIT, argv[2]);
 	execl(user->pw_shell, user->pw_shell, "-c", cmd, NULL);
 }
