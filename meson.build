@@ -228,6 +228,7 @@ if get_option('pkgconfig')
 
   openrc_pkgconf = pkg.generate(
     name : 'OpenRC',
+    filebase : 'openrc',
     description : 'Universal init system',
     version : meson.project_version(),
     libraries : librc,
