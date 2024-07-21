@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
 		return 1;
 
 	setenv("HOME", user->pw_dir, true);
+	setenv("SHELL", user->pw_shell, true);
 	xasprintf(&cmd, "%s %s", USERINIT, argv[2]);
 	execl(user->pw_shell, user->pw_shell, "-c", cmd, NULL);
 }
