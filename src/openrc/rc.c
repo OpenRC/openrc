@@ -988,12 +988,9 @@ int main(int argc, char **argv)
 	clean_failed();
 
 	xasprintf(&stopping_dir, "%s/%s", rc_service_dir(), RC_STOPPING);
-	if (mkdir(stopping_dir, 0755) != 0) {
-		if (errno == EACCES)
-			eerrorx("%s: superuser access required", applet);
-		eerrorx("%s: failed to create stopping dir `%s': %s",
+	if (mkdir(stopping_dir, 0755) != 0)
+		eerrorx("%s: failed to create stopping dir '%s': %s",
 		    applet, stopping_dir, strerror(errno));
-	}
 
 	/* Create a list of all services which we could stop (assuming
 	* they won't be active in the new or current runlevel) including
