@@ -1249,7 +1249,7 @@ int main(int argc, char **argv)
 
 	atexit(cleanup);
 
-	if (argc < 3)
+	if (argc < 2)
 		usage(EXIT_FAILURE);
 
 	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
