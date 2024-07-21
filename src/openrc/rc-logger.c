@@ -253,7 +253,7 @@ rc_logger_open(const char *level)
 			if ((env = getenv("XDG_STATE_HOME")))
 				xasprintf(&logfile, "%s/openrc.log", env);
 			else if ((env = getenv("HOME")))
-				xasprintf(&logfile, "%s/openrc.log", env);
+				xasprintf(&logfile, "%s/.local/state/openrc.log", env);
 			else
 				eerrorx("XDG_STATE_HOME and HOME unset.");
 		} else {
