@@ -1164,6 +1164,7 @@ int main(int argc, char **argv)
 	char *path = NULL;
 	char *dir, *save = NULL;
 	char *pidstr = NULL;
+	const char *working_dir = "/";
 	size_t l = 0, ll;
 	struct stat stbuf;
 
@@ -1252,8 +1253,12 @@ int main(int argc, char **argv)
 	if (argc < 2)
 		usage(EXIT_FAILURE);
 
-	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
-	if (chdir("/") == -1)
+	/* Change dir to / to ensure all init scripts don't use stuff in pwd
+	 * For user services, change to the user HOME instead. */
+	if (rc_is_user() && !(working_dir = getenv("HOME")))
+		eerrorx("HOME unset in user mode.");
+
+	if (chdir(working_dir) == -1)
 		eerror("chdir: %s", strerror(errno));
 
 	if ((runlevel = xstrdup(getenv("RC_RUNLEVEL"))) == NULL) {
