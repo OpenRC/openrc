@@ -1,8 +1,10 @@
-OpenRC README
+openrc-navi
 =============
 
 OpenRC is a dependency-based init system that works with the
 system-provided init program, normally `/sbin/init`.
+
+This fork provides extra functionality like user services.
 
 ## building and installing
 
@@ -34,19 +36,18 @@ remove them and then install so that the OS hooks into OpenRC.
 
 ## Discussions
 
-We are testing [discussions](https://github.com/OpenRC/openrc/discussions), so
+We are testing [discussions](https://github.com/navi-desu/openrc/discussions), so
 feel free to open topics there.
 
 ## Reporting Bugs
 
-Please report bugs on our [bug tracker](http://github.com/OpenRC/openrc/issues).
+Please report bugs on our [bug tracker](http://github.com/navi-desu/openrc/issues).
 
 If you can contribute code , please feel free to do so by opening
 [pull requests](https://github.com/OpenRC/openrc/pulls).
 
 ## IRC Channel
 
-We have an official irc channel, #openrc on the libera network.
-Please connect your irc client to irc.libera.chat and join #openrc on
+We have an official irc channel, #navi on the libera network.
+Please connect your irc client to irc.libera.chat and join #navi on
 that network.
-
