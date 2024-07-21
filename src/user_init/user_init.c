@@ -4,12 +4,14 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "helpers.h"
 #include "rc.h"
 
 #define USERINIT RC_LIBEXECDIR "/sh/user-init.sh"
 
 int main(int argc, char **argv) {
 	struct passwd *user;
+	char *cmd;
 	if (argc < 3)
 		return 1;
 
@@ -19,5 +21,6 @@ int main(int argc, char **argv) {
 			|| setuid(user->pw_uid) == -1)
 		return 1;
 
-	execl(user->pw_shell, user->pw_shell, "-c", USERINIT, argv[2], NULL);
+	xasprintf(&cmd, "%s %s", USERINIT, argv[2]);
+	execl(user->pw_shell, user->pw_shell, "-c", cmd, NULL);
 }
