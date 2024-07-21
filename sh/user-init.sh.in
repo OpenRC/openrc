@@ -1,5 +1,7 @@
 #!@SHELL@
 
+. @LIBEXECDIR@/sh/functions.sh
+
 sourcex()
 {
 	if [ "$1" = "-e" ]; then
@@ -20,7 +22,7 @@ sourcex -e "$_sysconf/rc.conf"
 case $1 in
 	start) _runlevel="${rc_user_runlevel:-default}";;
 	stop) _runlevel="${rc_user_shutdown_runlevel:-none}";;
-	*) exit 1
+	*) eerror "no argument given to $0"r exit 1
 esac
 
 mkdir -p "$_sysconf/runlevels/$_runlevel"
