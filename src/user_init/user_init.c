@@ -3,6 +3,7 @@
 #include <grp.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 #include "helpers.h"
 #include "rc.h"
@@ -12,6 +13,7 @@
 int main(int argc, char **argv) {
 	struct passwd *user;
 	char *cmd;
+	int nullfd = -1;
 	if (argc < 3)
 		return 1;
 
@@ -23,6 +25,11 @@ int main(int argc, char **argv) {
 
 	setenv("HOME", user->pw_dir, true);
 	setenv("SHELL", user->pw_shell, true);
+
+	nullfd = open("/dev/null", O_RDWR);
+	dup2(nullfd, STDIN_FILENO);
+	close(nullfd);
+
 	xasprintf(&cmd, "%s %s", USERINIT, argv[2]);
-	execl(user->pw_shell, user->pw_shell, "-c", cmd, NULL);
+	execl(user->pw_shell, "-", "-c", cmd, NULL);
 }
