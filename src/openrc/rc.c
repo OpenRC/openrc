@@ -543,12 +543,13 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
 	RC_STRINGLIST *deporder, *tmplist, *kwords;
+	RC_STRINGLIST *types_nw_save = NULL;
 	RC_SERVICE state;
 	RC_STRINGLIST *nostop;
 	bool crashed, nstop;
 
 	if (!types_nw) {
-		types_nw = rc_stringlist_new();
+		types_nw = types_nw_save = rc_stringlist_new();
 		rc_stringlist_add(types_nw, "needsme");
 		rc_stringlist_add(types_nw, "wantsme");
 	}
@@ -637,6 +638,9 @@ stop:
 			}
 		}
 	}
+
+	if (types_nw_save)
+		rc_stringlist_free(types_nw_save);
 
 	rc_stringlist_free(nostop);
 }
