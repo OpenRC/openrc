@@ -137,6 +137,16 @@ make_deptype(RC_DEPINFO *depinfo, const char *type)
 	return deptype;
 }
 
+#ifdef HAVE_MALLOC_EXTENDED_ATTRIBUTE
+__attribute__ ((malloc (rc_deptree_free, 1)))
+#endif
+static RC_DEPTREE *
+make_deptree(void) {
+	RC_DEPTREE *deptree = xmalloc(sizeof(*deptree));
+	TAILQ_INIT(deptree);
+	return deptree;
+}
+
 RC_DEPTREE *
 rc_deptree_load(void) {
 	return rc_deptree_load_file(RC_DEPTREE_CACHE);
@@ -160,8 +170,7 @@ rc_deptree_load_file(const char *deptree_file)
 	if (!(fp = fopen(deptree_file, "r")))
 		return NULL;
 
-	deptree = xmalloc(sizeof(*deptree));
-	TAILQ_INIT(deptree);
+	deptree = make_deptree();
 	while ((size = getline(&line, &len, fp)) != -1) {
 		line[size - 1] = '\0';
 		p = line;
@@ -801,8 +810,7 @@ rc_deptree_update(void)
 
 	config = rc_stringlist_new();
 
-	deptree = xmalloc(sizeof(*deptree));
-	TAILQ_INIT(deptree);
+	deptree = make_deptree();
 	while ((size = getline(&line, &len, fp)) != -1) {
 		line[size - 1] = '\0';
 		depends = line;
