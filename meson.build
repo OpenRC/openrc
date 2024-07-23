@@ -247,6 +247,4 @@ meson.add_install_script('tools/meson_runlevels.sh',
   get_option('sysvinit') ? 'yes' : 'no')
 meson.add_install_script('tools/meson_final.sh',
   rc_libexecdir,
-  sbindir,
-  os,
-  get_option('sysvinit') ? 'yes' : 'no')
+  os)

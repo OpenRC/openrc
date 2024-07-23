@@ -4,9 +4,7 @@ set -e
 set -u
 
 rc_libexecdir="$1"
-sbindir="$2"
-os="$3"
-sysvinit="$4"
+os="$2"
 
 if [ "${os}" != Linux ]; then
 	install -d "${DESTDIR}/${rc_libexecdir}"/init.d
