@@ -7,7 +7,8 @@ ebegin "Checking for x* func usage"
 out=$(cd ${top_srcdir}; find src -name '*.[ch]' \
 	! -name queue.h \
 	-exec grep -n -E '\<(malloc|strdup)[[:space:]]*\(' {} + \
-	| grep -v \
+	| grep -v -E \
+		-e '__attribute__[[:space:]]*\(\(malloc' \
 		-e src/shared/helpers.h \
 		-e src/libeinfo/libeinfo.c)
 
