@@ -6,7 +6,7 @@ project('OpenRC', 'c',
     'prefix=/usr',
     'warning_level=3',
     ],
-  meson_version : '>=0.56.0' # pkgconfig dict support
+  meson_version : '>=0.61.0'
 )
 
 cc = meson.get_compiler('c')
