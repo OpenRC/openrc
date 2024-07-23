@@ -12,6 +12,3 @@ if [ "${os}" != Linux ]; then
 	install -d "${DESTDIR}/${rc_libexecdir}"/init.d
 fi
 install -m 644 "${MESON_BUILD_ROOT}/src/shared/version" "${DESTDIR}/${rc_libexecdir}"
-if [ "${os}" = Linux ] && [ "${sysvinit}" = yes ]; then
-	ln -sf openrc-init "${DESTDIR}/${sbindir}"/init
-fi
