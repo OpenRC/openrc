@@ -152,6 +152,7 @@ cc_warning_flags_test = [
   '-Wdeclaration-after-statement',
   '-Wformat=2',
   '-Winline',
+  '-Wmismatched-dealloc',
   '-Wmissing-declarations',
   '-Wmissing-format-attribute',
   '-Wmissing-noreturn',
