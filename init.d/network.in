@@ -22,7 +22,7 @@ depend()
 	if [ -n "$(interfaces)" ]; then
 		provide net
 	fi
-	keyword -jail -prefix -vserver
+	keyword -jail -vserver
 }
 
 uniqify()

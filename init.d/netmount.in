@@ -26,7 +26,7 @@ depend()
 	use afc-client amd openvpn
 	use dns
 	use root
-	keyword -docker -jail -lxc -prefix -systemd-nspawn -vserver
+	keyword -docker -jail -lxc -systemd-nspawn -vserver
 }
 
 start()

@@ -304,8 +304,6 @@ in
 Same as -jail, but for Linux Resource Containers (LXC).
 .It Dv -openvz
 Same as -jail, but for OpenVZ systems.
-.It Dv -prefix
-Same as -jail, but for Prefix systems.
 .It Dv -rkt
 Same as -jail, but for RKT systems.
 .It Dv -uml
@@ -561,9 +559,6 @@ Default runlevel chosen. Default is default.
 .It Va RC_SYS
 A special variable to describe the system more.
 Possible values are OPENVZ, XENU, XEN0, UML and VSERVER.
-.It Va RC_PREFIX
-In a Gentoo Prefix installation, this variable contains the prefix
-offset. Otherwise it is undefined.
 .It Va RC_UNAME
 The result of `uname -s`.
 .It Va RC_CMD
@@ -615,10 +610,8 @@ rc_provide_tap1="!net"
 # To put in in /etc/rc.conf you would do it like this
 rc_net_tap1_provide="!net"
 
-# It's also possible to negate keywords. This is mainly useful for prefix
-# users testing OpenRC.
-rc_keyword="!-prefix"
-# This can also be used to block a script from running in all
+# It's also possible to negate keywords.
+# This can be used to block a script from running in all
 # containers except one or two
 rc_keyword="!-containers !-docker"
 .Ed

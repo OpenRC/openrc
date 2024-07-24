@@ -16,7 +16,7 @@ depend()
 	need dumpon localmount
 	after clock
 	before encswap
-	keyword -jail -prefix
+	keyword -jail
 }
 
 start()
