@@ -257,6 +257,8 @@ detect_container(const char *systype RC_UNUSED)
 		       return NULL;
 		if (strcmp(systype, RC_SYS_JAIL) == 0)
 			return RC_SYS_JAIL;
+		if (strcmp(systype, RC_SYS_PODMAN) == 0)
+			return RC_SYS_PODMAN;
 	}
 
 	int jailed = 0;
@@ -265,6 +267,9 @@ detect_container(const char *systype RC_UNUSED)
 	if (sysctlbyname("security.jail.jailed", &jailed, &len, NULL, 0) == 0)
 		if (jailed == 1)
 			return RC_SYS_JAIL;
+
+	if (exists("/var/run/.containerenv"))
+		return RC_SYS_PODMAN;
 #endif
 
 #ifdef __linux__
