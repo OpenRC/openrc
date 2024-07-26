@@ -19,18 +19,28 @@ depend()
 
 start()
 {
-	local h source
-	if read -r h _ 2> /dev/null < @SYSCONFDIR@/hostname; then
+	local source
+	if [ -s @SYSCONFDIR@/hostname ]; then
 		source="@SYSCONFDIR@/hostname"
 	elif [ -n "${hostname}" ]; then
-		h=${hostname}
 		source="@SYSCONFDIR@/conf.d/${RC_SVCNAME}"
 	fi
-	if [ -z "$h" ]; then
+	if [ -z "$source" ]; then
 		einfo "Using default system hostname"
 		return 0
 	fi
-	ebegin "Setting hostname to $h from $source"
-	hostname "$h"
+	if [ "$source" = "@SYSCONFDIR@/conf.d/$RC_SVCNAME" ]; then
+		ewarn "Setting hostname in @SYSCONFDIR@/conf.d/$RC_SVCNAME is deprecated"
+		ewarn "and will be removed in the future."
+	fi
+	ebegin "Setting hostname from $source"
+	if [ "$source" = "@SYSCONFDIR@/hostname" ]; then
+	hostname -F "$source"
+	else
+		hostname "$hostname"
+		fi
+		if [ $? ]; then
+		einfo "hostname set to $(hostname)"
+		fi
 	eend $? "Failed to set the hostname"
 }
