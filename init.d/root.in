@@ -57,7 +57,7 @@ start()
 					ewarn "Ignoring 'shared' option for / on non-linux"
 				;;
 			esac
-			eend $? "Root filesystem could not be mounted read/write"
+			eend $? "Root filesystem could not be made shared"
 		;;
 	esac
 
