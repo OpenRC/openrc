@@ -37,6 +37,8 @@ int main(int argc, char **argv)
 	/* size_t l; */
 
 	applet = basename_c(argv[0]);
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
 	if (argc > 1)
 		service = argv[1];
 	else

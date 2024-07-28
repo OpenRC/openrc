@@ -64,6 +64,8 @@ static const char *const env_whitelist[] = {
 	"RC_DEBUG", "RC_NODEPS",
 	"LANG", "LC_MESSAGES", "TERM",
 	"EINFO_COLOR", "EINFO_VERBOSE",
+	"RC_USER_SERVICES", "HOME",
+	"XDG_RUNTIME_DIR", "XDG_CONFIG_HOME",
 	NULL
 };
 
@@ -142,9 +144,11 @@ env_config(void)
 	char *np;
 	char *npp;
 	char *tok;
+	char *dir;
 	const char *sys = rc_sys();
 	char *buffer = NULL;
 	size_t size = 0;
+	const char *svc_dir = rc_service_dir();
 
 	/* Ensure our PATH is prefixed with the system locations first
 	   for a little extra security */
@@ -175,8 +179,10 @@ env_config(void)
 
 	setenv("RC_VERSION", VERSION, 1);
 	setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 1);
-	setenv("RC_SVCDIR", RC_SVCDIR, 1);
-	setenv("RC_TMPDIR", RC_SVCDIR "/tmp", 1);
+	setenv("RC_SVCDIR", svc_dir, 1);
+	xasprintf(&dir, "%s/tmp", svc_dir);
+	setenv("RC_TMPDIR", dir, 1);
+	free(dir);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);
 	e = rc_runlevel_get();
 	setenv("RC_RUNLEVEL", e, 1);
@@ -248,7 +254,7 @@ svc_lock(const char *applet, bool ignore_lock_failure)
 	char *file = NULL;
 	int fd;
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
+	xasprintf(&file, "%s/exclusive/%s", rc_service_dir(), applet);
 	fd = open(file, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
 	free(file);
 	if (fd == -1)
@@ -274,10 +280,11 @@ svc_unlock(const char *applet, int fd)
 {
 	char *file = NULL;
 
-	xasprintf(&file, RC_SVCDIR "/exclusive/%s", applet);
+	xasprintf(&file, "%s/exclusive/%s", rc_service_dir(), applet);
 	close(fd);
 	unlink(file);
 	free(file);
+
 	return -1;
 }
 
@@ -388,12 +395,16 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 
 	t = 0;
 	if (rc_deptree_update_needed(&t, file) || force != 0) {
+		char *deptree_cache;
+		xasprintf(&deptree_cache, "%s/%s", rc_service_dir(), RC_DEPTREE_CACHE);
 		/* Test if we have permission to update the deptree */
-		fd = open(RC_DEPTREE_CACHE, O_WRONLY);
+		fd = open(deptree_cache, O_WRONLY);
 		merrno = errno;
 		errno = serrno;
-		if (fd == -1 && merrno == EACCES)
+		if (fd == -1 && merrno == EACCES) {
+			free(deptree_cache);
 			return rc_deptree_load();
+		}
 		close(fd);
 
 		if (regen)
@@ -403,29 +414,34 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 		eend (retval, "Failed to update the dependency tree");
 
 		if (retval == 0) {
-			if (stat(RC_DEPTREE_CACHE, &st) != 0) {
-				eerror("stat(%s): %s", RC_DEPTREE_CACHE, strerror(errno));
+			char *deptree_skewed;
+			if (stat(deptree_cache, &st) != 0) {
+				eerror("stat(%s): %s", deptree_cache, strerror(errno));
+				free(deptree_cache);
 				return NULL;
 			}
+
+			xasprintf(&deptree_skewed, "%s/%s", rc_service_dir(), RC_DEPTREE_SKEWED);
 			if (st.st_mtime < t) {
 				eerror("Clock skew detected with `%s'", file);
-				eerrorn("Adjusting mtime of `" RC_DEPTREE_CACHE
-				    "' to %s", ctime(&t));
-				fp = fopen(RC_DEPTREE_SKEWED, "w");
+				eerrorn("Adjusting mtime of %s to %s", deptree_cache, ctime(&t));
+				fp = fopen(deptree_skewed, "w");
 				if (fp != NULL) {
 					fprintf(fp, "%s\n", file);
 					fclose(fp);
 				}
 				ut.actime = t;
 				ut.modtime = t;
-				utime(RC_DEPTREE_CACHE, &ut);
+				utime(deptree_cache, &ut);
 			} else {
-				if (exists(RC_DEPTREE_SKEWED))
-					unlink(RC_DEPTREE_SKEWED);
+				if (exists(deptree_skewed))
+					unlink(deptree_skewed);
 			}
+			free(deptree_skewed);
 		}
 		if (force == -1 && regen != NULL)
 			*regen = retval;
+		free(deptree_cache);
 	}
 	return rc_deptree_load();
 }

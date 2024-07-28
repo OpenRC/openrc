@@ -409,35 +409,53 @@ _free_rc_conf(void)
 	rc_stringlist_free(rc_conf);
 }
 
+static inline void
+rc_conf_append(const char *file)
+{
+	RC_STRINGLIST *conf = rc_config_load(file);
+	TAILQ_CONCAT(rc_conf, conf, entries);
+	rc_stringlist_free(conf);
+}
+
 char *
 rc_conf_value(const char *setting)
 {
-	RC_STRINGLIST *old;
-	RC_STRING *s;
-	char *p;
+	RC_STRING *conf;
+	const char *userconf_dir;
 
-	if (!rc_conf) {
-		rc_conf = rc_config_load(RC_CONF);
-		atexit(_free_rc_conf);
+	if (rc_conf)
+		return rc_config_value(rc_conf, setting);
 
-		/* Support old configs. */
-		if (exists(RC_CONF_OLD)) {
-			old = rc_config_load(RC_CONF_OLD);
-			TAILQ_CONCAT(rc_conf, old, entries);
-			rc_stringlist_free(old);
-		}
+	rc_conf = rc_stringlist_new();
+	atexit(_free_rc_conf);
 
-		rc_conf = rc_config_directory(rc_conf);
-		rc_conf = rc_config_kcl(rc_conf);
+	/* Overlay user-specific configuration */
+	if ((userconf_dir = rc_userconf_dir())) {
+		char *user_config;
+		xasprintf(&user_config, "%s/%s", userconf_dir, RC_CONF_FILE);
 
-		/* Convert old uppercase to lowercase */
-		TAILQ_FOREACH(s, rc_conf, entries) {
-			p = s->value;
-			while (p && *p && *p != '=') {
-				if (isupper((unsigned char)*p))
-					*p = tolower((unsigned char)*p);
-				p++;
-			}
+		if (exists(user_config))
+			rc_conf_append(userconf_dir);
+
+		free(user_config);
+	}
+
+	rc_conf_append(RC_CONF);
+
+	/* Support old configs. */
+	if (exists(RC_CONF_OLD))
+		rc_conf_append(RC_CONF_OLD);
+
+	rc_conf = rc_config_directory(rc_conf);
+	rc_conf = rc_config_kcl(rc_conf);
+
+	/* Convert old uppercase to lowercase */
+	TAILQ_FOREACH(conf, rc_conf, entries) {
+		char *p = conf->value;
+		while (p && *p && *p != '=') {
+			if (isupper((unsigned char)*p))
+				*p = tolower((unsigned char)*p);
+			p++;
 		}
 	}
 

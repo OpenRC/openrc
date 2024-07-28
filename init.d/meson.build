@@ -10,12 +10,13 @@ init_common =  [
   'netmount.in',
   'osclock.in',
   'root.in',
+  'runsvdir.in',
+  's6-svscan.in',
   'savecache.in',
   'swap.in',
   'swclock.in',
   'sysctl.in',
-  'runsvdir.in',
-  's6-svscan.in',
+  'user.in',
   ]
 
 if get_option('newnet')
