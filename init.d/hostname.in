@@ -31,6 +31,10 @@ start()
 		return 0
 	fi
 	ebegin "Setting hostname to $h from $source"
-	hostname "$h"
+        case "$RC_UNAME" in
+		Linux) echo "$h" > /proc/sys/kernel/hostname ;;
+   		*) hostname "$h" ;;
+	esac
+       
 	eend $? "Failed to set the hostname"
 }
