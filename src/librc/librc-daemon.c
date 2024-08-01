@@ -141,7 +141,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		fp = fopen("/proc/self/status", "r");
 		if (fp) {
 			while (!feof(fp)) {
-				rc_getline(&line, &len, fp);
+				getline(&line, &len, fp);
 				if (strncmp(line, "envID:\t0", 8) == 0) {
 					openvz_host = true;
 					break;
@@ -197,7 +197,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 				if (!fp)
 					continue;
 				while (!feof(fp)) {
-					rc_getline(&line, &len, fp);
+					getline(&line, &len, fp);
 					if (strncmp(line, "envID:", 6) == 0) {
 						container_pid = !(strncmp(line, "envID:\t0", 8) == 0);
 						break;
@@ -346,7 +346,7 @@ _match_daemon(const char *path, const char *file, RC_STRINGLIST *match)
 	if (!fp)
 		return false;
 
-	while ((rc_getline(&line, &len, fp))) {
+	while ((getline(&line, &len, fp))) {
 		TAILQ_FOREACH(m, match, entries)
 		    if (strcmp(line, m->value) == 0) {
 			    TAILQ_REMOVE(match, m, entries);
@@ -559,7 +559,7 @@ rc_service_daemons_crashed(const char *service)
 		if (!fp)
 			break;
 
-		while ((rc_getline(&line, &len, fp))) {
+		while ((getline(&line, &len, fp))) {
 			p = line;
 			if ((token = strsep(&p, "=")) == NULL || !p)
 				continue;
