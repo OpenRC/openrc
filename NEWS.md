@@ -4,6 +4,19 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.55
+
+OpenRC now supports shared mounts in fstab. This is used for some containers
+which might require  hierarchies to be mounted with different
+propegation than the kernel default of private.
+
+
+Podman containers now can be autodetected.
+
+The openrc-service-script-completion bash completion file has been
+removed since it doesn't work well with modern bash completion which
+prefers lazy loading.
+
 ## OpenRC 0.54
 
 This release drops the support for the split-usr build option.
