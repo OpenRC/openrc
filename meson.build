@@ -46,7 +46,7 @@ endif
 
 if os != 'Linux'
   cap_dep = []
-  kvm_dep = cc.find_library('kvm', required: true)
+  kvm_dep = cc.find_library('kvm')
 else
   cap_dep = dependency('libcap', version: '>=2.33')
   kvm_dep = []
