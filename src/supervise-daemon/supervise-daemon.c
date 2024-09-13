@@ -54,7 +54,7 @@
 static struct pam_conv conv = { NULL, NULL};
 #endif
 
-#ifdef HAVE_CAP
+#ifdef __linux__
 #include <sys/capability.h>
 #endif
 
@@ -182,7 +182,7 @@ static int fifo_fd = 0;
 static char *pidfile = NULL;
 static char *svcname = NULL;
 static bool verbose = false;
-#ifdef HAVE_CAP
+#ifdef __linux__
 static cap_iab_t cap_iab = NULL;
 static unsigned secbits = 0;
 #endif
@@ -443,7 +443,7 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 		eerrorx("%s: unable to set groupid to %d", applet, gid);
 	if (changeuser && initgroups(changeuser, gid))
 		eerrorx("%s: initgroups (%s, %d)", applet, changeuser, gid);
-#ifdef HAVE_CAP
+#ifdef __linux__
 	if (uid && cap_setuid(uid))
 #else
 	if (uid && setuid(uid))
@@ -453,7 +453,7 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	/* Close any fd's to the passwd database */
 	endpwent();
 
-#ifdef HAVE_CAP
+#ifdef __linux__
 	if (cap_iab != NULL) {
 		i = cap_iab_set_proc(cap_iab);
 
@@ -883,7 +883,7 @@ int main(int argc, char **argv)
 			break;
 
 		case LONGOPT_CAPABILITIES:
-#ifdef HAVE_CAP
+#ifdef __linux__
 			cap_iab = cap_iab_from_text(optarg);
 			if (cap_iab == NULL)
 				eerrorx("Could not parse iab: %s", strerror(errno));
@@ -893,7 +893,7 @@ int main(int argc, char **argv)
 			break;
 
         case LONGOPT_SECBITS:
-#ifdef HAVE_CAP
+#ifdef __linux__
 			if (*optarg == '\0')
 				eerrorx("Secbits are empty");
 
