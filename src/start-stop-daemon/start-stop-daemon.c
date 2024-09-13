@@ -62,7 +62,7 @@
 static struct pam_conv conv = { NULL, NULL};
 #endif
 
-#ifdef HAVE_CAP
+#ifdef __linux__
 # include <sys/capability.h>
 #endif
 
@@ -343,7 +343,7 @@ int main(int argc, char **argv)
 	unsigned int start_wait = 0;
 	const char *scheduler = NULL;
 	int sched_prio = -1;
-#ifdef HAVE_CAP
+#ifdef __linux__
 	cap_iab_t cap_iab = NULL;
 	unsigned secbits = 0;
 #endif
@@ -402,7 +402,7 @@ int main(int argc, char **argv)
 		    (int *) 0)) != -1)
 		switch (opt) {
 		case LONGOPT_CAPABILITIES:
-#ifdef HAVE_CAP
+#ifdef __linux__
 			cap_iab = cap_iab_from_text(optarg);
 			if (cap_iab == NULL)
 				eerrorx("Could not parse iab: %s", strerror(errno));
@@ -412,7 +412,7 @@ int main(int argc, char **argv)
 			break;
 
 		case LONGOPT_SECBITS:
-#ifdef HAVE_CAP
+#ifdef __linux__
 			if (*optarg == '\0')
 				eerrorx("Secbits are empty");
 
@@ -955,7 +955,7 @@ int main(int argc, char **argv)
 		if (changeuser && initgroups(changeuser, gid))
 			eerrorx("%s: initgroups (%s, %d)",
 			    applet, changeuser, gid);
-#ifdef HAVE_CAP
+#ifdef __linux__
 		if (uid && cap_setuid(uid))
 #else
 		if (uid && setuid(uid))
@@ -966,7 +966,7 @@ int main(int argc, char **argv)
 		/* Close any fd's to the passwd database */
 		endpwent();
 
-#ifdef HAVE_CAP
+#ifdef __linux__
 		if (cap_iab != NULL) {
 			i = cap_iab_set_proc(cap_iab);
 
