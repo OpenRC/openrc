@@ -175,7 +175,7 @@ file_regex(const char *file, const char *regex)
 {
 	FILE *fp;
 	char *line = NULL;
-	size_t len = 0;
+	size_t size = 0, len = 0;
 	regex_t re;
 	bool retval = true;
 	int result;
@@ -192,7 +192,7 @@ file_regex(const char *file, const char *regex)
 		return false;
 	}
 
-	while ((rc_getline(&line, &len, fp))) {
+	while ((len = rc_getline(&line, &size, fp))) {
 		char *str = line;
 		/* some /proc files have \0 separated content so we have to
 		   loop through the 'line' */
