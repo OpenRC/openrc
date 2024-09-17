@@ -184,7 +184,7 @@ rc_config_list(const char *file)
 	if (!(fp = fopen(file, "r")))
 		return list;
 
-	while ((rc_getline(&buffer, &len, fp))) {
+	while ((getline(&buffer, &len, fp))) {
 		p = buffer;
 		/* Strip leading spaces/tabs */
 		while ((*p == ' ') || (*p == '\t'))
