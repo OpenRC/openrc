@@ -142,7 +142,7 @@ rc_proc_getent(const char *ent RC_UNUSED)
 		return NULL;
 
 	i = 0;
-	if ((size = getline(&proc, &i, fp) == -1)) {
+	if ((size = getline(&proc, &i, fp)) == -1) {
 		free(proc);
 		return NULL;
 	}
