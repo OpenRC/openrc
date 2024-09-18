@@ -26,15 +26,6 @@ Why: Obsolete or replaced by other options.
 
 Who:
 
-# runscript and rc symbolic links
-
-When: 1.0
-
-Why: Deprecated in favor of openrc-run and openrc due to naming
-	 conflicts with other software.
-
-Who:
-
 # support for the opts variable in service scripts
 
 When: 1.0
