@@ -261,7 +261,6 @@ static int read_context_file(const char *filename, char **context)
 	char *p;
 	char *p2;
 	size_t len = 0;
-	ssize_t read;
 
 	xasprintf(&filepath, "%s/%s", selinux_contexts_path(), filename);
 
@@ -272,7 +271,7 @@ static int read_context_file(const char *filename, char **context)
 		return -1;
 	}
 
-	while ((read = getline(&line, &len, fp)) != -1) {
+	while (xgetline(&line, &len, fp) != -1) {
 		/* cut off spaces before the string */
 		p = line;
 		while (isspace(*p) && *p != '\0')

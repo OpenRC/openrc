@@ -160,8 +160,7 @@ rc_deptree_load_file(const char *deptree_file)
 	RC_DEPINFO *depinfo = NULL;
 	RC_DEPTYPE *deptype = NULL;
 	char *line = NULL;
-	size_t len = 0;
-	ssize_t size;
+	size_t size;
 	char *type;
 	char *p;
 	char *e;
@@ -171,8 +170,7 @@ rc_deptree_load_file(const char *deptree_file)
 		return NULL;
 
 	deptree = make_deptree();
-	while ((size = getline(&line, &len, fp)) != -1) {
-		line[size - 1] = '\0';
+	while (xgetline(&line, &size, fp) != -1) {
 		p = line;
 		e = strsep(&p, "_");
 		if (!e || strcmp(e, "depinfo") != 0)
@@ -788,8 +786,7 @@ rc_deptree_update(void)
 	RC_STRINGLIST *config, *dupes, *types, *sorted, *visited;
 	RC_STRING *s, *s2, *s2_np, *s3, *s4;
 	char *line = NULL;
-	size_t len = 0;
-	ssize_t size;
+	size_t size;
 	char *depend, *depends, *service, *type;
 	size_t i, l;
 	bool retval = true;
@@ -811,8 +808,7 @@ rc_deptree_update(void)
 	config = rc_stringlist_new();
 
 	deptree = make_deptree();
-	while ((size = getline(&line, &len, fp)) != -1) {
-		line[size - 1] = '\0';
+	while (xgetline(&line, &size, fp) != -1) {
 		depends = line;
 		service = strsep(&depends, " ");
 		if (!service || !*service)
@@ -894,8 +890,8 @@ rc_deptree_update(void)
 	 * work for them. This doesn't stop them from being run directly. */
 	if (sys) {
 		char *nosys, *onosys;
+		size_t len = strlen(sys);
 
-		len = strlen(sys);
 		nosys = xmalloc(len + 2);
 		nosys[0] = '-';
 		for (i = 0; i < len; i++)

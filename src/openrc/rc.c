@@ -335,11 +335,11 @@ static char *get_krunlevel(void)
 		return NULL;
 	}
 
-	if (getline(&buffer, &i, fp) != -1) {
-		i = strlen(buffer);
-		if (buffer[i - 1] == '\n')
-			buffer[i - 1] = 0;
+	if (xgetline(&buffer, &i, fp) == -1) {
+		free(buffer);
+		buffer = NULL;
 	}
+
 	fclose(fp);
 	return buffer;
 }

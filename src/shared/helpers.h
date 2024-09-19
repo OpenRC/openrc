@@ -165,4 +165,16 @@ RC_UNUSED RC_PRINTF(2,3) static int xasprintf(char **strp, const char *fmt, ...)
 	return len;
 }
 
+RC_UNUSED static ssize_t xgetline(char **restrict lineptr, size_t *restrict n, FILE *restrict stream)
+{
+	ssize_t ret = getline(lineptr, n, stream);
+	if (ret <= 0)
+		return ret;
+
+	if ((*lineptr)[ret - 1] == '\n')
+		(*lineptr)[--ret] = '\0';
+
+	return ret;
+}
+
 #endif
