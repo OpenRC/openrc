@@ -745,7 +745,7 @@ int main(int argc, char **argv)
 		fp = fopen(exec_file, "r");
 		if (fp) {
 			line = NULL;
-			if (getline(&line, &size, fp) == -1)
+			if (xgetline(&line, &size, fp) == -1)
 				eerrorx("%s: %s", applet, strerror(errno));
 			p = line;
 			fclose(fp);
@@ -754,10 +754,6 @@ int main(int argc, char **argv)
 				/* Strip leading spaces */
 				while (*p == ' ' || *p == '\t')
 					p++;
-				/* Remove the trailing newline */
-				len = strlen(p) - 1;
-				if (p[len] == '\n')
-					p[len] = '\0';
 				token = strsep(&p, " ");
 				free(exec_file);
 				xasprintf(&exec_file, "%s", token);

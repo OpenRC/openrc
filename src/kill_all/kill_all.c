@@ -115,7 +115,7 @@ static bool is_user_process(pid_t pid)
 		temp_pid = -1;
 		while (!feof(fp)) {
 			buf = NULL;
-			if (getline(&buf, &size, fp) != -1) {
+			if (xgetline(&buf, &size, fp) != -1) {
 				sscanf(buf, "PPid: %d", &temp_pid);
 				free(buf);
 			} else {

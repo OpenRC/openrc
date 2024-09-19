@@ -133,7 +133,6 @@ rc_proc_getent(const char *ent RC_UNUSED)
 	FILE *fp;
 	char *proc = NULL, *p, *value = NULL, *save;
 	size_t i, len;
-	ssize_t size;
 
 	if (!exists("/proc/cmdline"))
 		return NULL;
@@ -142,11 +141,10 @@ rc_proc_getent(const char *ent RC_UNUSED)
 		return NULL;
 
 	i = 0;
-	if ((size = getline(&proc, &i, fp)) == -1) {
+	if (xgetline(&proc, &i, fp) == -1) {
 		free(proc);
 		return NULL;
 	}
-	proc[size - 1] = '\0';
 	save = proc;
 
 	len = strlen(ent);
@@ -184,7 +182,7 @@ rc_config_list(const char *file)
 	if (!(fp = fopen(file, "r")))
 		return list;
 
-	while ((rc_getline(&buffer, &len, fp))) {
+	while (xgetline(&buffer, &len, fp) != -1) {
 		p = buffer;
 		/* Strip leading spaces/tabs */
 		while ((*p == ' ') || (*p == '\t'))

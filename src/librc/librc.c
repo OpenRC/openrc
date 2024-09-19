@@ -175,7 +175,8 @@ file_regex(const char *file, const char *regex)
 {
 	FILE *fp;
 	char *line = NULL;
-	size_t size = 0, len = 0;
+	size_t size = 0;
+	ssize_t len = 0;
 	regex_t re;
 	bool retval = true;
 	int result;
@@ -192,7 +193,7 @@ file_regex(const char *file, const char *regex)
 		return false;
 	}
 
-	while ((len = rc_getline(&line, &size, fp))) {
+	while ((len = xgetline(&line, &size, fp)) != -1) {
 		char *str = line;
 		/* some /proc files have \0 separated content so we have to
 		   loop through the 'line' */
@@ -702,19 +703,22 @@ rc_service_extra_commands(const char *service)
 	snprintf(cmd, l, OPTSTR, svc);
 	free(svc);
 
-	if ((fp = popen(cmd, "r"))) {
-		rc_getline(&buffer, &len, fp);
+	if (!(fp = popen(cmd, "r"))) {
+		free(cmd);
+		return NULL;
+	}
+
+	if (xgetline(&buffer, &len, fp) != -1) {
 		p = buffer;
 		commands = rc_stringlist_new();
 
 		while ((token = strsep(&p, " ")))
 			if (token[0] != '\0')
 				rc_stringlist_add(commands, token);
-
-		pclose(fp);
-		free(buffer);
 	}
 
+	pclose(fp);
+	free(buffer);
 	free(cmd);
 	return commands;
 }
@@ -726,7 +730,7 @@ rc_service_description(const char *service, const char *option)
 	char *svc;
 	char *cmd;
 	char *desc = NULL;
-	size_t len = 0;
+	size_t size = 0;
 	FILE *fp;
 	size_t l;
 
@@ -741,7 +745,10 @@ rc_service_description(const char *service, const char *option)
 	snprintf(cmd, l, DESCSTR, svc, *option ? "_" : "", option);
 	free(svc);
 	if ((fp = popen(cmd, "r"))) {
-		rc_getline(&desc, &len, fp);
+		if (xgetline(&desc, &size, fp) == -1) {
+			free(desc);
+			desc = NULL;
+		}
 		pclose(fp);
 	}
 	free(cmd);

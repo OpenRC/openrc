@@ -183,17 +183,14 @@ env_config(void)
 	free(e);
 
 	if ((fp = fopen(RC_KRUNLEVEL, "r"))) {
-		if (getline(&buffer, &size, fp) != -1) {
-			l = strlen (buffer) - 1;
-			if (buffer[l] == '\n')
-				buffer[l] = 0;
+		if (xgetline(&buffer, &size, fp) != -1)
 			setenv("RC_DEFAULTLEVEL", buffer, 1);
-		}
+		free(buffer);
 		fclose(fp);
-	} else
+	} else {
 		setenv("RC_DEFAULTLEVEL", RC_LEVEL_DEFAULT, 1);
+	}
 
-	free(buffer);
 	if (sys)
 		setenv("RC_SYS", sys, 1);
 
