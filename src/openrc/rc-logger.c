@@ -46,7 +46,7 @@
 #include "misc.h"
 #include "helpers.h"
 
-#define TMPLOG RC_SVCDIR "/rc.log"
+#define TMPLOG_FILE "rc.log"
 #define DEFAULTLOG "/var/log/rc.log"
 
 static int signal_pipe[2] = { -1, -1 };
@@ -145,7 +145,8 @@ rc_logger_open(const char *level)
 	int i;
 	FILE *log = NULL;
 	FILE *plog = NULL;
-	const char *logfile;
+	char *logfile_path;
+	char *logfile;
 	int log_error = 0;
 
 	if (!rc_conf_yesno("rc_logger"))
@@ -184,7 +185,8 @@ rc_logger_open(const char *level)
 		signal_pipe[1] = -1;
 
 		runlevel = level;
-		if ((log = fopen(TMPLOG, "ae")))
+		xasprintf(&logfile_path, "%s/%s", rc_service_dir(), TMPLOG_FILE);
+		if ((log = fopen(logfile_path, "ae")))
 			write_time(log, "started");
 		else {
 			free(logbuf);
@@ -234,7 +236,7 @@ rc_logger_open(const char *level)
 				break;
 		}
 		if (logbuf) {
-			if ((log = fopen(TMPLOG, "ae"))) {
+			if ((log = fopen(logfile_path, "ae"))) {
 				write_time(log, "started");
 				write_log(fileno(log), logbuf, logbuf_len);
 			}
@@ -246,16 +248,25 @@ rc_logger_open(const char *level)
 		}
 
 		/* Append the temporary log to the real log */
-		logfile = rc_conf_value("rc_log_path");
-		if (logfile == NULL)
-			logfile = DEFAULTLOG;
-		if (!strcmp(logfile, TMPLOG)) {
-			eerror("Cowardly refusing to concatenate a logfile into itself.");
-			eerrorx("Please change rc_log_path to something other than %s to get rid of this message", TMPLOG);
+		if (rc_is_user()) {
+			char *env;
+			if ((env = getenv("XDG_STATE_HOME")))
+				xasprintf(&logfile, "%s/openrc.log", env);
+			else if ((env = getenv("HOME")))
+				xasprintf(&logfile, "%s/.local/state/openrc.log", env);
+			else
+				eerrorx("XDG_STATE_HOME and HOME unset.");
+		} else {
+			const char *config_log = rc_conf_value("rc_log_path");
+			logfile = config_log ? xstrdup(config_log) : xstrdup(DEFAULTLOG);
+			if (!strcmp(logfile, logfile_path)) {
+				eerror("Cowardly refusing to concatenate a logfile into itself.");
+				eerrorx("Please change rc_log_path to something other than %s to get rid of this message", logfile_path);
+			}
 		}
 
 		if ((plog = fopen(logfile, "ae"))) {
-			if ((log = fopen(TMPLOG, "re"))) {
+			if ((log = fopen(logfile_path, "re"))) {
 				while ((bytes = fread(buffer, sizeof(*buffer), BUFSIZ, log)) > 0) {
 					if (fwrite(buffer, sizeof(*buffer), bytes, plog) < bytes) {
 						log_error = 1;
@@ -266,7 +277,7 @@ rc_logger_open(const char *level)
 				fclose(log);
 			} else {
 				log_error = 1;
-				eerror("Error: fopen(%s) failed: %s", TMPLOG, strerror(errno));
+				eerror("Error: fopen(%s) failed: %s", logfile_path, strerror(errno));
 			}
 
 			fclose(plog);
@@ -284,11 +295,13 @@ rc_logger_open(const char *level)
 		/* Try to keep the temporary log in case of errors */
 		if (!log_error) {
 			if (errno != EROFS && ((strcmp(level, RC_LEVEL_SHUTDOWN) != 0) && (strcmp(level, RC_LEVEL_SYSINIT) != 0)))
-				if (unlink(TMPLOG) == -1)
-					eerror("Error: unlink(%s) failed: %s", TMPLOG, strerror(errno));
-		} else if (exists(TMPLOG))
-			eerrorx("Warning: temporary logfile left behind: %s", TMPLOG);
+				if (unlink(logfile_path) == -1)
+					eerror("Error: unlink(%s) failed: %s", logfile_path, strerror(errno));
+		} else if (exists(logfile_path))
+			eerrorx("Warning: temporary logfile left behind: %s", logfile_path);
 
+		free(logfile_path);
+		free(logfile);
 		exit(0);
 		/* NOTREACHED */
 

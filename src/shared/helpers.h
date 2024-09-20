@@ -91,6 +91,22 @@ RC_UNUSED static char *xstrdup(const char *str)
 	/* NOTREACHED */
 }
 
+RC_UNUSED static char *xstrndup(const char *str, size_t n)
+{
+	char *value;
+
+	if (!str)
+		return (NULL);
+
+	value = strndup(str, n);
+
+	if (value)
+		return (value);
+
+	ERRX;
+	/* NOTREACHED */
+}
+
 #undef ERRX
 
 /*

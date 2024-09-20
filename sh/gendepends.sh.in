@@ -53,11 +53,21 @@ depend() {
 	:
 }
 
+_dirs="
+	@SYSCONFDIR@/init.d
+	@PKG_PREFIX@/etc/init.d
+	@LOCAL_PREFIX@/etc/init.d
+"
+
+if yesno "$RC_USER_SERVICES"; then
+	_dirs="
+		@SYSCONFDIR@/user.d/init.d
+		${XDG_CONFIG_HOME:-${HOME}/.config}/openrc/init.d
+	"
+fi
+
 _done_dirs=
-for _dir in \
-@SYSCONFDIR@/init.d \
-@PKG_PREFIX@/etc/init.d \
-@LOCAL_PREFIX@/etc/init.d
+for _dir in ${_dirs}
 do
 	[ -d "$_dir" ] || continue
 
@@ -127,3 +137,4 @@ do
 		)
 	done
 done
+unset _dirs

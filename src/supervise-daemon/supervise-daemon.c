@@ -817,6 +817,7 @@ int main(int argc, char **argv)
 	char **child_argv = NULL;
 	char *str = NULL;
 	char *cmdline = NULL;
+	const char *svc_dir;
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -1084,9 +1085,10 @@ int main(int argc, char **argv)
 		ch_root = expand_home(home, ch_root);
 
 	umask(numask);
+	svc_dir = rc_service_dir();
 	if (!pidfile)
-		xasprintf(&pidfile, "/var/run/supervise-%s.pid", svcname);
-	xasprintf(&fifopath, "%s/supervise-%s.ctl", RC_SVCDIR, svcname);
+		xasprintf(&pidfile, "%s/supervise-%s.pid", rc_is_user() ? svc_dir : "/var/run", svcname); /* FIXME: improve */
+	xasprintf(&fifopath, "%s/supervise-%s.ctl", svc_dir, svcname);
 	if (mkfifo(fifopath, 0600) == -1 && errno != EEXIST)
 		eerrorx("%s: unable to create control fifo: %s",
 				applet, strerror(errno));

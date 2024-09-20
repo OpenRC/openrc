@@ -70,7 +70,7 @@ const char *usagestring = ""					\
 #define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"
 
-#define INTERACTIVE             RC_SVCDIR "/interactive"
+#define INTERACTIVE_SUBDIR      "/interactive"
 
 #define DEVBOOT			"/dev/.rcboot"
 
@@ -95,16 +95,18 @@ clean_failed(void)
 	DIR *dp;
 	struct dirent *d;
 	char *path;
+	char *failed_dir;
 
+	xasprintf(&failed_dir, "%s/failed", rc_service_dir());
 	/* Clean the failed services state dir now */
-	if ((dp = opendir(RC_SVCDIR "/failed"))) {
+	if ((dp = opendir(failed_dir))) {
 		while ((d = readdir(dp))) {
 			if (d->d_name[0] == '.' &&
 			    (d->d_name[1] == '\0' ||
 				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
 				continue;
 
-			xasprintf(&path, RC_SVCDIR "/failed/%s", d->d_name);
+			xasprintf(&path, "%s/%s", failed_dir, d->d_name);
 			if (unlink(path))
 				eerror("%s: unlink `%s': %s",
 				    applet, path, strerror(errno));
@@ -112,16 +114,17 @@ clean_failed(void)
 		}
 		closedir(dp);
 	}
+	free(failed_dir);
 }
 
 static void
 cleanup(void)
 {
 	RC_PID *p, *tmp;
+	char *dir;
 
-	if (!rc_in_logger && !rc_in_plugin &&
-	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
-	{
+	if (!rc_in_logger && !rc_in_plugin && applet &&
+			(strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0)) {
 		if (hook_out)
 			rc_plugin_run(hook_out, runlevel);
 
@@ -133,8 +136,14 @@ cleanup(void)
 		}
 
 		/* Clean runlevel start, stop markers */
-		rmdir(RC_STARTING);
-		rmdir(RC_STOPPING);
+		xasprintf(&dir, "%s/%s", rc_service_dir(), RC_STARTING);
+		rmdir(dir);
+		free(dir);
+
+		xasprintf(&dir, "%s/%s", rc_service_dir(), RC_STOPPING);
+		rmdir(dir);
+		free(dir);
+
 		clean_failed();
 		rc_logger_close();
 	}
@@ -211,9 +220,14 @@ want_interactive(void)
 static void
 mark_interactive(void)
 {
-	FILE *fp = fopen(INTERACTIVE, "w");
+	char *interactive_dir;
+	FILE *fp;
+
+	xasprintf(&interactive_dir, "%s/%s", rc_service_dir(), INTERACTIVE_SUBDIR);
+	fp = fopen(interactive_dir, "w");
 	if (fp)
 		fclose(fp);
+	free(interactive_dir);
 }
 
 static void
@@ -653,9 +667,11 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 	bool interactive = false;
 	RC_SERVICE state;
 	bool crashed = false;
+	char *interactive_dir;
 
+	xasprintf(&interactive_dir, "%s/%s", rc_service_dir(), INTERACTIVE_SUBDIR);
 	if (!rc_yesno(getenv("EINFO_QUIET")))
-		interactive = exists(INTERACTIVE);
+		interactive = exists(interactive_dir);
 	errno = 0;
 	crashed = rc_conf_yesno("rc_crashed_start");
 	if (errno == ENOENT)
@@ -714,10 +730,10 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 		strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0))
 		mark_interactive();
 	else {
-		if (exists(INTERACTIVE))
-			unlink(INTERACTIVE);
+		if (exists(interactive_dir))
+			unlink(interactive_dir);
 	}
-
+	free(interactive_dir);
 }
 
 #ifdef RC_DEBUG
@@ -758,6 +774,9 @@ int main(int argc, char **argv)
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	char *krunlevel = NULL;
 	char *pidstr = NULL;
+	char *deptree_skewed;
+	char *stopping_dir;
+	char *starting_dir;
 	int opt;
 	bool parallel;
 	int regen = 0;
@@ -777,7 +796,6 @@ int main(int argc, char **argv)
 	applet = basename_c(argv[0]);
 	LIST_INIT(&service_pids);
 	LIST_INIT(&free_these_pids);
-	atexit(cleanup);
 	if (!applet)
 		eerrorx("arguments required");
 
@@ -788,10 +806,6 @@ int main(int argc, char **argv)
 	if (chdir("/") == -1)
 		eerror("chdir: %s", strerror(errno));
 
-	/* Ensure our environment is pure
-	 * Also, add our configuration to it */
-	env_filter();
-	env_config();
 
 	/* complain about old configuration settings if they exist */
 	if (exists(RC_CONF_OLD)) {
@@ -840,6 +854,14 @@ int main(int argc, char **argv)
 		case_RC_COMMON_GETOPT
 		}
 	}
+	/* Register cleanup and set up env after flag parsing
+	 * to assure user paths are still valid */
+	atexit(cleanup);
+
+	/* Ensure our environment is pure
+	 * Also, add our configuration to it */
+	env_filter();
+	env_config();
 
 	newlevel = argv[optind++];
 	/* To make life easier, we only have the shutdown runlevel as
@@ -956,18 +978,19 @@ int main(int argc, char **argv)
 	/* Load our deptree */
 	if ((main_deptree = _rc_deptree_load(0, &regen)) == NULL)
 		eerrorx("failed to load deptree");
-	if (exists(RC_DEPTREE_SKEWED))
+
+	xasprintf(&deptree_skewed, "%s/%s", rc_service_dir(), RC_DEPTREE_SKEWED);
+	if (exists(deptree_skewed))
 		ewarn("WARNING: clock skew detected!");
+	free(deptree_skewed);
 
 	/* Clean the failed services state dir */
 	clean_failed();
 
-	if (mkdir(RC_STOPPING, 0755) != 0) {
-		if (errno == EACCES)
-			eerrorx("%s: superuser access required", applet);
-		eerrorx("%s: failed to create stopping dir `%s': %s",
-		    applet, RC_STOPPING, strerror(errno));
-	}
+	xasprintf(&stopping_dir, "%s/%s", rc_service_dir(), RC_STOPPING);
+	if (mkdir(stopping_dir, 0755) != 0)
+		eerrorx("%s: failed to create stopping dir '%s': %s",
+		    applet, stopping_dir, strerror(errno));
 
 	/* Create a list of all services which we could stop (assuming
 	* they won't be active in the new or current runlevel) including
@@ -1048,7 +1071,8 @@ int main(int argc, char **argv)
 	    going_down ? newlevel : runlevel);
 	hook_out = 0;
 
-	rmdir(RC_STOPPING);
+	rmdir(stopping_dir);
+	free(stopping_dir);
 
 	/* Store the new runlevel */
 	if (newlevel) {
@@ -1065,7 +1089,9 @@ int main(int argc, char **argv)
 		rc_logger_close();
 #endif
 
-	mkdir(RC_STARTING, 0755);
+	xasprintf(&starting_dir, "%s/%s", rc_service_dir(), RC_STARTING);
+	mkdir(starting_dir, 0755);
+	free(starting_dir);
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, runlevel);
 	hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 
@@ -1134,8 +1160,12 @@ int main(int argc, char **argv)
 	 * we need to delete them so that they are regenerated again in the
 	 * default runlevel as they may depend on things that are now
 	 * available */
-	if (regen && strcmp(runlevel, bootlevel) == 0)
-		unlink(RC_DEPTREE_CACHE);
+	if (regen && strcmp(runlevel, bootlevel) == 0) {
+		char *deptree_cache;
+		xasprintf(&deptree_cache, "%s/%s", rc_service_dir(), RC_DEPTREE_CACHE);
+		unlink(deptree_cache);
+		free(deptree_cache);
+	}
 
 	return EXIT_SUCCESS;
 }
