@@ -1086,7 +1086,7 @@ int main(int argc, char **argv)
 	umask(numask);
 	if (!pidfile)
 		xasprintf(&pidfile, "/var/run/supervise-%s.pid", svcname);
-	xasprintf(&fifopath, "%s/supervise-%s.ctl", RC_SVCDIR, svcname);
+	xasprintf(&fifopath, "%s/supervise-%s.ctl", rc_svcdir(), svcname);
 	if (mkfifo(fifopath, 0600) == -1 && errno != EEXIST)
 		eerrorx("%s: unable to create control fifo: %s",
 				applet, strerror(errno));

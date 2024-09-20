@@ -35,8 +35,6 @@
 
 #define GENDEP          RC_LIBEXECDIR "/sh/gendepends.sh"
 
-#define RC_DEPCONFIG    RC_SVCDIR "/depconfig"
-
 static const char *bootlevel = NULL;
 
 static char *
@@ -149,7 +147,14 @@ make_deptree(void) {
 
 RC_DEPTREE *
 rc_deptree_load(void) {
-	return rc_deptree_load_file(RC_DEPTREE_CACHE);
+	char *deptree_cache;
+	RC_DEPTREE *deptree;
+
+	xasprintf(&deptree_cache, "%s/deptree", rc_svcdir());
+	deptree = rc_deptree_load_file(deptree_cache);
+	free(deptree_cache);
+
+	return deptree;
 }
 
 RC_DEPTREE *
@@ -687,19 +692,19 @@ static const DEPPAIR deppairs[] = {
 
 static const char *const depdirs[] =
 {
-	RC_SVCDIR,
-	RC_SVCDIR "/starting",
-	RC_SVCDIR "/started",
-	RC_SVCDIR "/stopping",
-	RC_SVCDIR "/inactive",
-	RC_SVCDIR "/wasinactive",
-	RC_SVCDIR "/failed",
-	RC_SVCDIR "/hotplugged",
-	RC_SVCDIR "/daemons",
-	RC_SVCDIR "/options",
-	RC_SVCDIR "/exclusive",
-	RC_SVCDIR "/scheduled",
-	RC_SVCDIR "/tmp",
+	"",
+	"starting",
+	"started",
+	"stopping",
+	"inactive",
+	"wasinactive",
+	"failed",
+	"hotplugged",
+	"daemons",
+	"options",
+	"exclusive",
+	"scheduled",
+	"tmp",
 	NULL
 };
 
@@ -712,16 +717,23 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	int i;
 	struct stat buf;
 	time_t mtime;
+	char *path;
+	char *deptree_cache, *depconfig;
+	const char *service_dir = rc_svcdir();
 
 	/* Create base directories if needed */
-	for (i = 0; depdirs[i]; i++)
-		if (mkdir(depdirs[i], 0755) != 0 && errno != EEXIST)
+	for (i = 0; depdirs[i]; i++) {
+		xasprintf(&path, "%s/%s", service_dir, depdirs[i]);
+		if (mkdir(path, 0755) != 0 && errno != EEXIST)
 			fprintf(stderr, "mkdir `%s': %s\n", depdirs[i], strerror(errno));
+		free(path);
+	}
 
 	/* Quick test to see if anything we use has changed and we have
 	 * data in our deptree. */
 
-	if (stat(RC_DEPTREE_CACHE, &buf) == 0) {
+	xasprintf(&deptree_cache, "%s/deptree", service_dir);
+	if (stat(deptree_cache, &buf) == 0) {
 		mtime = buf.st_mtime;
 	} else {
 		/* No previous cache found.
@@ -731,30 +743,30 @@ rc_deptree_update_needed(time_t *newest, char *file)
 		newer = true;
 		mtime = time(NULL);
 	}
+	free(deptree_cache);
 
-	newer |= !deep_mtime_check(RC_INITDIR,true,&mtime,file);
-	newer |= !deep_mtime_check(RC_CONFDIR,true,&mtime,file);
-#ifdef RC_PKG_INITDIR
-    newer |= !deep_mtime_check(RC_PKG_INITDIR,true,&mtime,file);
-#endif
-#ifdef RC_PKG_CONFDIR
-    newer |= !deep_mtime_check(RC_PKG_CONFDIR,true,&mtime,file);
-#endif
-#ifdef RC_LOCAL_INITDIRs
-    newer |= !deep_mtime_check(RC_LOCAL_INITDIR,true,&mtime,file);
-#endif
-#ifdef RC_LOCAL_CONFDIR
-    newer |= !deep_mtime_check(RC_LOCAL_CONFDIR,true,&mtime,file);
-#endif
-    newer |= !deep_mtime_check(RC_CONF,true,&mtime,file);
+	for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++) {
+		static const char *subdirs[] = { "init.d", "conf.d", NULL };
+		for (const char **subdir = subdirs; *subdir; subdir++) {
+			xasprintf(&path, "%s/%s", *dirs, *subdir);
+			newer |= !deep_mtime_check(path, true, &mtime, file);
+			free(path);
+		}
+	}
+
+	xasprintf(&path, "%s/rc.conf", rc_sysconfdir());
+	newer |= !deep_mtime_check(path, true, &mtime, file);
+	free(path);
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
-	config = rc_config_list(RC_DEPCONFIG);
+	xasprintf(&depconfig, "%s/depconfig", service_dir);
+	config = rc_config_list(depconfig);
 	TAILQ_FOREACH(s, config, entries) {
 		newer |= !deep_mtime_check(s->value, true, &mtime, file);
 	}
 	rc_stringlist_free(config);
+	free(depconfig);
 
 	/* Return newest file time, if requested */
 	if ((newer) && (newest != NULL)) {
@@ -788,6 +800,7 @@ rc_deptree_update(void)
 	char *line = NULL;
 	size_t size;
 	char *depend, *depends, *service, *type;
+	char *deptree_cache, *depconfig;
 	size_t i, l;
 	bool retval = true;
 	const char *sys = rc_sys();
@@ -1047,7 +1060,8 @@ rc_deptree_update(void)
 	   This works and should be entirely shell parseable provided that depend
 	   names don't have any non shell variable characters in
 	   */
-	if ((fp = fopen(RC_DEPTREE_CACHE, "w"))) {
+	xasprintf(&deptree_cache, "%s/deptree", rc_svcdir());
+	if ((fp = fopen(deptree_cache, "w"))) {
 		i = 0;
 		TAILQ_FOREACH(depinfo, deptree, entries) {
 			fprintf(fp, "depinfo_%zu_service='%s'\n", i, depinfo->service);
@@ -1062,24 +1076,26 @@ rc_deptree_update(void)
 		}
 		fclose(fp);
 	} else {
-		fprintf(stderr, "fopen `%s': %s\n",
-			RC_DEPTREE_CACHE, strerror(errno));
+		fprintf(stderr, "fopen '%s': %s\n", deptree_cache, strerror(errno));
 		retval = false;
 	}
+	free(deptree_cache);
 
 	/* Save our external config files to disk */
+	xasprintf(&depconfig, "%s/depconfig", rc_svcdir());
 	if (TAILQ_FIRST(config)) {
-		if ((fp = fopen(RC_DEPCONFIG, "w"))) {
+		if ((fp = fopen(depconfig, "w"))) {
 			TAILQ_FOREACH(s, config, entries)
 				fprintf(fp, "%s\n", s->value);
 			fclose(fp);
 		} else {
-			fprintf(stderr, "fopen `%s': %s\n", RC_DEPCONFIG, strerror(errno));
+			fprintf(stderr, "fopen '%s': %s\n", depconfig, strerror(errno));
 			retval = false;
 		}
 	} else {
-		unlink(RC_DEPCONFIG);
+		unlink(depconfig);
 	}
+	free(depconfig);
 
 	rc_stringlist_free(config);
 	rc_deptree_free(deptree);
