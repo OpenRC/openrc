@@ -1173,6 +1173,9 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
+
 	/* We need to work out the real full path to our service.
 	 * multiplexed services must point to a target in a init dir. */
 	if (!realpath(argv[1], service_path)) {
@@ -1189,8 +1192,6 @@ int main(int argc, char **argv)
 
 	service = normalize_path(argv[1]);
 	applet = basename_c(service);
-
-	atexit(cleanup);
 
 	if (argc < 3)
 		usage(EXIT_FAILURE);
@@ -1284,6 +1285,8 @@ int main(int argc, char **argv)
 			break;
 		case_RC_COMMON_GETOPT
 		}
+
+	atexit(cleanup);
 
 	if (rc_yesno(getenv("RC_NODEPS")))
 		deps = false;
