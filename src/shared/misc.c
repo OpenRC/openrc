@@ -93,6 +93,15 @@ env_filter(void)
 	profile = rc_config_load(profile_path);
 	free(profile_path);
 
+	if (rc_is_user()) {
+		RC_STRINGLIST *usrprofile;
+		xasprintf(&profile_path, "%s/profile.env", rc_usrconfdir());
+		usrprofile = rc_config_load(profile_path);
+		free(profile_path);
+		TAILQ_CONCAT(profile, usrprofile, entries);
+		rc_stringlist_free(usrprofile);
+	}
+
 	/* Copy the env and work from this so we can manipulate it safely */
 	env_list = rc_stringlist_new();
 	while (environ && environ[i]) {

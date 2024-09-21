@@ -574,6 +574,7 @@ static const char * const scriptdirs[] = {
 static struct {
 	bool set;
 	char *svcdir;
+	char *usrconfdir;
 	char *runleveldir;
 	char *scriptdirs[ARRAY_SIZE(scriptdirs)];
 } rc_dirs;
@@ -609,18 +610,20 @@ rc_set_user(void)
 	setenv("RC_USER_SERVICES", "yes", true);
 
 	if ((env = getenv("XDG_CONFIG_HOME"))) {
-		xasprintf(&rc_dirs.scriptdirs[0], "%s/rc", env);
+		xasprintf(&rc_dirs.usrconfdir, "%s/rc", env);
 	} else if ((env = getenv("HOME"))) {
-		xasprintf(&rc_dirs.scriptdirs[0], "%s/.config/rc", env);
+		xasprintf(&rc_dirs.usrconfdir, "%s/.config/rc", env);
 	} else {
 		fprintf(stderr, "XDG_CONFIG_HOME and HOME unset");
 		exit(EXIT_FAILURE);
 	}
 
+	xasprintf(&rc_dirs.runleveldir, "%s/runlevels", rc_dirs.usrconfdir);
+
+	rc_dirs.scriptdirs[0] = rc_dirs.usrconfdir;
+
 	for (size_t i = 0; scriptdirs[i]; i++)
 		xasprintf(&rc_dirs.scriptdirs[i + 1], "%s/user", scriptdirs[i]);
-
-	xasprintf(&rc_dirs.runleveldir, "%s/runlevels", rc_dirs.scriptdirs[0]);
 
 	if (!(env = getenv("XDG_RUNTIME_DIR"))) {
 		/* FIXME: fallback to something else? */
@@ -644,6 +647,15 @@ const char *
 rc_sysconfdir(void)
 {
 	return RC_SYSCONFDIR;
+}
+
+const char *
+rc_usrconfdir(void)
+{
+	if (rc_dirs.set)
+		return rc_dirs.usrconfdir;
+
+	return NULL;
 }
 
 const char *
