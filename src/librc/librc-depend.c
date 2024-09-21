@@ -776,6 +776,35 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	return newer;
 }
 
+static void
+setup_environment(void) {
+	char *scriptdirs, *env;
+	size_t env_size = 0;
+	struct utsname uts;
+
+	for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++)
+		env_size += strlen(*dirs) + sizeof(' ');
+
+	env = scriptdirs = xmalloc(env_size);
+
+	for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++) {
+		int len = snprintf(scriptdirs, env_size, "%s ", *dirs);
+		scriptdirs += len;
+		env_size -= len;
+	}
+
+	setenv("RC_SCRIPTDIRS", env, 1);
+	free(env);
+
+	/* Some init scripts need RC_LIBEXECDIR to source stuff
+	   Ideally we should be setting our full env instead */
+	if (!getenv("RC_LIBEXECDIR"))
+		setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 0);
+
+	if (uname(&uts) == 0)
+		setenv("RC_UNAME", uts.sysname, 1);
+}
+
 /* This is a 7 phase operation
    Phase 1 is a shell script which loads each init script and config in turn
    and echos their dependency info to stdout
@@ -804,17 +833,10 @@ rc_deptree_update(void)
 	size_t i, l;
 	bool retval = true;
 	const char *sys = rc_sys();
-	struct utsname uts;
 	int serrno;
 
-	/* Some init scripts need RC_LIBEXECDIR to source stuff
-	   Ideally we should be setting our full env instead */
-	if (!getenv("RC_LIBEXECDIR"))
-		setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 0);
-
-	if (uname(&uts) == 0)
-		setenv("RC_UNAME", uts.sysname, 1);
 	/* Phase 1 - source all init scripts and print dependencies */
+	setup_environment();
 	if (!(fp = popen(GENDEP, "r")))
 		return false;
 
