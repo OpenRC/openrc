@@ -361,6 +361,9 @@ int main(int argc, char **argv)
 	signal_setup(SIGQUIT, handle_signal);
 	signal_setup(SIGTERM, handle_signal);
 
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
+
 	openlog(applet, LOG_PID, LOG_DAEMON);
 
 	if ((tmp = getenv("SSD_NICELEVEL")))
