@@ -1099,6 +1099,7 @@ int main(int argc, char **argv)
 	char *path = NULL;
 	char *lnk = NULL;
 	char *dir, *save = NULL, *saveLnk = NULL;
+	const char *workingdir = "/";
 	char *pidstr = NULL;
 	size_t l = 0, ll;
 	const char *file;
@@ -1160,8 +1161,12 @@ int main(int argc, char **argv)
 	if (argc < 3)
 		usage(EXIT_FAILURE);
 
-	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
-	if (chdir("/") == -1)
+	/* Change dir to / to ensure all init scripts don't use stuff in pwd
+	 * For user services, change to the user's HOME instead. */
+	if (rc_is_user() && !(workingdir = getenv("HOME")))
+		eerrorx("HOME is unset.");
+
+	if (chdir(workingdir) == -1)
 		eerror("chdir: %s", strerror(errno));
 
 	if ((runlevel = xstrdup(getenv("RC_RUNLEVEL"))) == NULL) {
