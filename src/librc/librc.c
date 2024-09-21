@@ -575,6 +575,7 @@ static const char * const scriptdirs[] = {
 static struct {
 	bool set;
 	char *svcdir;
+	char *usrconfdir;
 	char *runleveldir;
 	char *scriptdirs[ARRAY_SIZE(scriptdirs)];
 } rc_dirs;
@@ -616,6 +617,8 @@ rc_set_user(void)
 	else
 		eerrorx("XDG_CONFIG_HOME and HOME unset");
 
+	rc_dirs.usrconfdir = rc_dirs.scriptdirs[0];
+
 	for (size_t i = 0; scriptdirs[i]; i++)
 		xasprintf(&rc_dirs.scriptdirs[i + 1], "%s/user.d", scriptdirs[i]);
 
@@ -638,7 +641,18 @@ rc_scriptdirs(void)
 const char *
 rc_sysconfdir(void)
 {
+	if (is_user)
+		return RC_SYSCONFDIR "/user.d";
 	return RC_SYSCONFDIR;
+}
+
+const char *
+rc_usrconfdir(void)
+{
+	if (rc_dirs.set)
+		return rc_dirs.usrconfdir;
+
+	return NULL;
 }
 
 const char *

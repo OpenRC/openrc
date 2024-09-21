@@ -140,6 +140,12 @@ const char * const *rc_scriptdirs(void);
  * @return Path to the system configuration directory */
 const char *rc_sysconfdir(void);
 
+/*! The user configuration directory is where rc.conf
+ * will be located for user-mode openrc. It is meant to
+ * override the system wide configs where applicable.
+ * @return Path to the user configuration directory, or NULL if in system mode */
+const char *rc_usrconfdir(void);
+
 /*! @return Path to runlevel directory */
 const char *rc_runleveldir(void);
 

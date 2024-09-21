@@ -758,6 +758,12 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	newer |= !deep_mtime_check(path, true, &mtime, file);
 	free(path);
 
+	if (rc_is_user()) {
+		xasprintf(&path, "%s/rc.conf", rc_usrconfdir());
+		newer |= !deep_mtime_check(path, true, &mtime, file);
+		free(path);
+	}
+
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
 	xasprintf(&depconfig, "%s/depconfig", service_dir);
