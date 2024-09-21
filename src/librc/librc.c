@@ -568,6 +568,7 @@ enum scriptdirs_entries {
 #ifdef RC_PKG_PREFIX
 	SCRIPTDIR_PKG,
 #endif
+	SCRIPTDIR_SVC,
 	SCRIPTDIR_MAX,
 	SCRIPTDIR_CAP
 };
@@ -580,6 +581,7 @@ static const char * const scriptdirs[SCRIPTDIR_CAP] = {
 #ifdef RC_PKG_PREFIX
 	RC_PKG_PREFIX "/etc",
 #endif
+	RC_SVCDIR
 };
 
 static struct {
@@ -651,6 +653,7 @@ rc_set_user(void)
 
 
 	rc_dirs.scriptdirs[SCRIPTDIR_USR] = rc_dirs.usrconfdir;
+	rc_dirs.scriptdirs[SCRIPTDIR_SVC] = rc_dirs.svcdir;
 }
 
 const char * const *
@@ -1265,10 +1268,18 @@ rc_service_add(const char *runlevel, const char *service)
 		i = binit;
 	}
 
-	xasprintf(&file, "%s/%s/%s", rc_runleveldir(), runlevel,
-		basename_c(service));
+	/* We shouldn't add any temporary script to a runlevel */
+	if (strncmp(i, rc_svcdir(), strlen(rc_svcdir())) == 0) {
+		errno = ENOENT;
+		retval = false;
+		goto out;
+	}
+
+	xasprintf(&file, "%s/%s/%s", rc_runleveldir(), runlevel, basename_c(service));
 	retval = (symlink(i, file) == 0);
 	free(file);
+
+out:
 	free(binit);
 	free(init);
 	return retval;
