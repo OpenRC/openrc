@@ -704,6 +704,7 @@ static const char *const depdirs[] =
 	"options",
 	"exclusive",
 	"scheduled",
+	"init.d",
 	"tmp",
 	NULL
 };
