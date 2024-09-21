@@ -43,7 +43,7 @@ sourcex "@LIBEXECDIR@/sh/functions.sh"
 sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
 case $RC_SYS in
 	PREFIX|SYSTEMD-NSPAWN) ;;
-	*) sourcex -e "@LIBEXECDIR@/sh/rc-cgroup.sh";;
+	*) yesno "$RC_USER_SERVICES" || sourcex -e "@LIBEXECDIR@/sh/rc-cgroup.sh";;
 esac
 
 # Support LiveCD foo
