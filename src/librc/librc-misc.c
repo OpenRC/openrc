@@ -301,7 +301,7 @@ static RC_STRINGLIST *rc_config_kcl(RC_STRINGLIST *config)
 	return config;
 }
 
-static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config, char *dir)
+static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config, const char *dir)
 {
 	DIR *dp;
 	struct dirent *d;
@@ -383,28 +383,47 @@ _free_rc_conf(void)
 	rc_stringlist_free(rc_conf);
 }
 
+static void
+rc_conf_append(const char *file)
+{
+	RC_STRINGLIST *conf = rc_config_load(file);
+	TAILQ_CONCAT(rc_conf, conf, entries);
+	rc_stringlist_free(conf);
+}
+
 char *
 rc_conf_value(const char *setting)
 {
 	const char *sysconfdir = rc_sysconfdir();
+	const char *usrconfdir = rc_usrconfdir();
 	RC_STRING *s;
 	char *conf;
 
 	if (rc_conf)
 		return rc_config_value(rc_conf, setting);
 
-	xasprintf(&conf, "%s/%s", sysconfdir, "rc.conf");
-	rc_conf = rc_config_load(conf);
+	rc_conf = rc_stringlist_new();
 	atexit(_free_rc_conf);
 
+	/* Load user configurations first, as they should override
+	 * system wide configs. */
+	if (usrconfdir) {
+		xasprintf(&conf, "%s/%s", usrconfdir, "rc.conf");
+		rc_conf_append(conf);
+		free(conf);
+
+		xasprintf(&conf, "%s/%s", usrconfdir, "rc.conf.d");
+		rc_conf = rc_config_directory(rc_conf, conf);
+		free(conf);
+	}
+
+	xasprintf(&conf, "%s/%s", sysconfdir, "rc.conf");
+	rc_conf_append(sysconfdir);
 	free(conf);
 
 	/* Support old configs. */
-	if (exists(RC_CONF_OLD)) {
-		RC_STRINGLIST *old_conf = rc_config_load(RC_CONF_OLD);
-		TAILQ_CONCAT(rc_conf, old_conf, entries);
-		rc_stringlist_free(old_conf);
-	}
+	if (exists(RC_CONF_OLD))
+		rc_conf_append(RC_CONF_OLD);
 
 	xasprintf(&conf, "%s/%s", sysconfdir, "rc.conf.d");
 	rc_conf = rc_config_directory(rc_conf, conf);
