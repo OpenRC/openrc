@@ -1119,7 +1119,8 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	atexit(cleanup);
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
 
 	/* We need to work out the real full path to our service.
 	 * This works fine, provided that we ONLY allow multiplexed services
@@ -1249,6 +1250,8 @@ int main(int argc, char **argv)
 			break;
 		case_RC_COMMON_GETOPT
 		}
+
+	atexit(cleanup);
 
 	if (rc_yesno(getenv("RC_NODEPS")))
 		deps = false;
