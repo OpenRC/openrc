@@ -700,6 +700,7 @@ static const char *const depdirs[] =
 	"wasinactive",
 	"failed",
 	"hotplugged",
+	"multiplexed",
 	"daemons",
 	"options",
 	"exclusive",

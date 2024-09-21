@@ -655,6 +655,12 @@ rc_service_resolve(const char *service)
 			return file;
 	}
 
+	/* Check dynamically multiplexed services last */
+	free(file);
+	xasprintf(&file, "%s/multiplexed/%s", rc_svcdir(), service);
+	if (stat(file, &buf) == 0)
+		return file;
+
 	free(file);
 	return NULL;
 }
@@ -957,6 +963,32 @@ rc_service_state(const char *service)
 }
 
 char *
+rc_service_multiplex(const char *base, const char *variant)
+{
+	char *service = rc_service_resolve(base);
+	char *target;
+	char *name;
+
+	if (!service)
+		return NULL;
+
+	if (base[0] == '/')
+		base = basename_c(base);
+
+	xasprintf(&name, "%s.%s", base, variant);
+
+	xasprintf(&target, "%s/multiplexed/%s", rc_svcdir(), name);
+	if (!exists(target) && symlink(service, target) == -1) {
+		free(target);
+		target = NULL;
+	}
+
+	free(name);
+	free(service);
+	return target;
+}
+
+char *
 rc_service_value_get(const char *service, const char *option)
 {
 	char *buffer = NULL;
@@ -1135,6 +1167,8 @@ rc_service_add(const char *runlevel, const char *service)
 	char *path;
 	char *binit = NULL;
 	char *i;
+	char *multiplex_dir;
+	int len;
 
 	if (!rc_runlevel_exists(runlevel)) {
 		errno = ENOENT;
@@ -1167,10 +1201,20 @@ rc_service_add(const char *runlevel, const char *service)
 		i = binit;
 	}
 
-	xasprintf(&file, "%s/%s/%s", rc_runleveldir(), runlevel,
-		basename_c(service));
+	/* We shouldn't add any dynamically multiplexed service to a runlevel */
+	len = xasprintf(&multiplex_dir, "%s/multiplexed", rc_svcdir());
+	if (strncmp(i, multiplex_dir, len) == 0) {
+		errno = ENOENT;
+		retval = false;
+		goto out;
+	}
+
+	xasprintf(&file, "%s/%s/%s", rc_runleveldir(), runlevel, basename_c(service));
 	retval = (symlink(i, file) == 0);
 	free(file);
+
+out:
+	free(multiplex_dir);
 	free(binit);
 	free(init);
 	return retval;
