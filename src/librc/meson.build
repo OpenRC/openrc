@@ -13,7 +13,7 @@ librc_sources = [
   'librc-depend.c',
   'librc-misc.c',
   'librc-stringlist.c',
-  ]
+]
 
 rc_h = configure_file(input : 'rc.h.in', output : 'rc.h',
   configuration : rc_h_conf_data)
