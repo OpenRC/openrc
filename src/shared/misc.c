@@ -64,6 +64,8 @@ static const char *const env_whitelist[] = {
 	"RC_DEBUG", "RC_NODEPS",
 	"LANG", "LC_MESSAGES", "TERM",
 	"EINFO_COLOR", "EINFO_VERBOSE",
+	"RC_USER_SERVICES", "HOME",
+	"XDG_RUNTIME_DIR", "XDG_CONFIG_HOME",
 	NULL
 };
 
