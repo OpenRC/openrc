@@ -697,6 +697,7 @@ static const char *const depdirs[] =
 	RC_SVCDIR "/wasinactive",
 	RC_SVCDIR "/failed",
 	RC_SVCDIR "/hotplugged",
+	RC_SVCDIR "/multiplexed",
 	RC_SVCDIR "/daemons",
 	RC_SVCDIR "/options",
 	RC_SVCDIR "/exclusive",

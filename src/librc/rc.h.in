@@ -267,6 +267,11 @@ bool rc_service_schedule_clear(const char *);
  * @return state of the service */
 RC_SERVICE rc_service_state(const char *);
 
+/*! Dynamically multiplexes a base service into a variant as basename.variant
+ * @param basename or full path of service being multiplexed
+ * @param variant to dynamically multiplex */
+char *rc_service_multiplex(const char *, const char *);
+
 /*! Check if the service started the daemon
  * @param service to check
  * @param exec to check
