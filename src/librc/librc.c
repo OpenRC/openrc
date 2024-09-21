@@ -642,6 +642,15 @@ rc_sysconfdir(void)
 }
 
 const char *
+rc_usrconfdir(void)
+{
+	if (!is_user)
+		return NULL;
+
+	return RC_SYSCONFDIR "/user.d";
+}
+
+const char *
 rc_runleveldir(void)
 {
 	if (rc_dirs.set)
