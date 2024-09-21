@@ -35,6 +35,7 @@
 #include "librc.h"
 #include "misc.h"
 #include "rc.h"
+#include "einfo.h"
 #ifdef __FreeBSD__
 #  include <sys/sysctl.h>
 #endif
@@ -567,12 +568,70 @@ static const char * const scriptdirs[] = {
 #ifdef RC_PKG_PREFIX
 	RC_PKG_PREFIX "/etc",
 #endif
+	NULL, /* userconf dir */
 	NULL
 };
+
+static struct {
+	bool set;
+	char *svcdir;
+	char *runleveldir;
+	char *scriptdirs[ARRAY_SIZE(scriptdirs)];
+} rc_dirs;
+
+static void
+free_rc_dirs(void)
+{
+	free(rc_dirs.runleveldir);
+	rc_dirs.runleveldir = NULL;
+	free(rc_dirs.svcdir);
+	rc_dirs.svcdir = NULL;
+	for (size_t i = 0; rc_dirs.scriptdirs[i]; i++)
+		free(rc_dirs.scriptdirs[i]);
+}
+
+static bool is_user = false;
+
+bool
+rc_is_user(void)
+{
+	return is_user;
+}
+
+void
+rc_set_user(void)
+{
+	char *env;
+	if (is_user)
+		return;
+
+	is_user = true;
+	rc_dirs.set = true;
+	setenv("RC_USER_SERVICES", "yes", true);
+
+	if ((env = getenv("XDG_CONFIG_HOME")))
+		xasprintf(&rc_dirs.scriptdirs[0], "%s/rc", env);
+	else if ((env = getenv("HOME")))
+		xasprintf(&rc_dirs.scriptdirs[0], "%s/.config/rc", env);
+	else
+		eerrorx("XDG_CONFIG_HOME and HOME unset");
+
+	for (size_t i = 0; scriptdirs[i]; i++)
+		xasprintf(&rc_dirs.scriptdirs[i + 1], "%s/user", scriptdirs[i]);
+
+	xasprintf(&rc_dirs.runleveldir, "%s/runlevels", rc_dirs.scriptdirs[0]);
+
+	if (!(env = getenv("XDG_RUNTIME_DIR")))
+		eerrorx("XDG_RUNTIME_DIR unset."); /* FIXME: fallback to something else? */
+	xasprintf(&rc_dirs.svcdir, "%s/openrc", env);
+	atexit(free_rc_dirs);
+}
 
 const char * const *
 rc_scriptdirs(void)
 {
+	if (rc_dirs.set)
+		return (const char * const *) rc_dirs.scriptdirs;
 	return scriptdirs;
 }
 
@@ -585,12 +644,16 @@ rc_sysconfdir(void)
 const char *
 rc_runleveldir(void)
 {
+	if (rc_dirs.set)
+		return rc_dirs.runleveldir;
 	return RC_RUNLEVELDIR;
 }
 
 const char *
 rc_svcdir(void)
 {
+	if (rc_dirs.set)
+		return rc_dirs.svcdir;
 	return RC_SVCDIR;
 }
 
