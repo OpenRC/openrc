@@ -1,9 +1,4 @@
 sh_conf_data = configuration_data()
-if rootprefix == '/'
-  sh_conf_data.set('PREFIX', '')
-  else
-  sh_conf_data.set('PREFIX', rootprefix)
-endif
 sh_conf_data.set('BINDIR', bindir)
 sh_conf_data.set('LIBEXECDIR', rc_libexecdir)
 sh_conf_data.set('LOCAL_PREFIX', local_prefix)

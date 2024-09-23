@@ -79,23 +79,15 @@ else
   pkg_prefix = option_pkg_prefix
 endif
 
-rootprefix = get_option('rootprefix')
-if rootprefix == ''
-rootprefix = '/'
-endif
-
-bindir = rootprefix / get_option('bindir')
-libdir = rootprefix / get_option('libdir')
-libexecdir = get_option('libexecdir')
-if os == 'Linux' and libexecdir == 'libexec'
-  libexecdir = 'lib'
-endif
-libexecdir = rootprefix / libexecdir
+bindir = get_option('prefix') / get_option('bindir')
+libdir = get_option('prefix') / get_option('libdir')
+pluginsdir = libdir / 'rc/plugins'
+libexecdir = get_option('prefix') / get_option('libexecdir')
 rc_libexecdir = libexecdir / 'rc'
 rc_bindir = rc_libexecdir / 'bin'
 rc_sbindir = rc_libexecdir / 'sbin'
 rc_shdir = rc_libexecdir / 'sh'
-sbindir = rootprefix / get_option('sbindir')
+sbindir = get_option('prefix') / get_option('sbindir')
 pamdir = get_option('sysconfdir') / 'pam.d'
 
 crypt_dep = []
@@ -230,7 +222,7 @@ if get_option('pkgconfig')
     libraries : librc,
     subdirs : ['openrc'],
     variables: {
-      'rc_path': rc_libexecdir,
+      'pluginsdir': pluginsdir,
     }
   )
 endif

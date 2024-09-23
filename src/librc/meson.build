@@ -1,11 +1,6 @@
 rc_h_conf_data = configuration_data()
-if rootprefix == '/'
-  rc_h_conf_data.set('PREFIX', '')
-  else
-  rc_h_conf_data.set('PREFIX', rootprefix)
-	endif
-rc_h_conf_data.set('LIB', libname)
-rc_h_conf_data.set('LIBEXECDIR', rc_libexecdir)
+rc_h_conf_data.set('RC_LIBEXECDIR', rc_libexecdir)
+rc_h_conf_data.set('RC_PLUGINDIR', pluginsdir)
 rc_h_conf_data.set('LOCAL_PREFIX', local_prefix)
 rc_h_conf_data.set('PKG_PREFIX', pkg_prefix)
 rc_h_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
