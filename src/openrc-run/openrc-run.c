@@ -92,7 +92,7 @@ static RC_STRINGLIST *use_services;
 static RC_STRINGLIST *want_services;
 static RC_HOOK hook_out;
 static int exclusive_fd = -1, master_tty = -1;
-static bool sighup, sigusr1, in_background, deps, dry_run;
+static bool sighup, skip_mark, in_background, deps, dry_run;
 static pid_t service_pid;
 static int signal_pipe[2] = { -1, -1 };
 
@@ -118,7 +118,7 @@ handle_signal(int sig)
 		break;
 
 	case SIGUSR1:
-		sigusr1 = true;
+		skip_mark = true;
 		break;
 
 	case SIGCHLD:
@@ -806,7 +806,7 @@ static void svc_start_real(void)
 		setenv("IN_BACKGROUND", ibsave, 1);
 	hook_out = RC_HOOK_SERVICE_START_DONE;
 	rc_plugin_run(RC_HOOK_SERVICE_START_NOW, applet);
-	sigusr1 = false;
+	skip_mark = false;
 	started = (svc_exec("start", NULL) == 0);
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
@@ -816,7 +816,7 @@ static void svc_start_real(void)
 	else if (!started)
 		eerrorx("ERROR: %s failed to start", applet);
 
-	if (!sigusr1)
+	if (!skip_mark)
 		rc_service_mark(service, RC_SERVICE_STARTED);
 	exclusive_fd = svc_unlock(applet, exclusive_fd);
 	hook_out = RC_HOOK_SERVICE_START_OUT;
@@ -1014,7 +1014,7 @@ svc_stop_real(void)
 		setenv("IN_BACKGROUND", ibsave, 1);
 	hook_out = RC_HOOK_SERVICE_STOP_DONE;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_NOW, applet);
-	sigusr1 = false;
+	skip_mark = false;
 	stopped = (svc_exec("stop", NULL) == 0);
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
@@ -1022,7 +1022,7 @@ svc_stop_real(void)
 	if (!stopped)
 		eerrorx("ERROR: %s failed to stop", applet);
 
-	if (!sigusr1) {
+	if (!skip_mark) {
 		if (in_background)
 		    rc_service_mark(service, RC_SERVICE_INACTIVE);
 		else
