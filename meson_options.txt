@@ -18,8 +18,6 @@ option('pkg_prefix', type : 'string',
   description : 'default location where packages are installed')
 option('pkgconfig', type : 'boolean',
   description : 'build PKGConfig files')
-option('rootprefix', type : 'string',
-  description : 'override the root prefix')
 option('selinux', type : 'feature', value : 'auto',
   description : 'enable SELinux support')
 option('shell', type : 'string', value : '/bin/sh',

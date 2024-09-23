@@ -18,8 +18,6 @@ We don't support building a static OpenRC with PAM.
 `LOCAL_PREFIX` should be set to where user maintained packages are.
 Only set `LOCAL_PREFIX` if different from `PKG_PREFIX`.
 
-`ROOTPREFIX` should be set when the root path is different from '/'.
-
 `rc` and `rc.shutdown` are the hooks from the BSD init into OpenRC.
 
 `devd.conf` is modified from FreeBSD to call `/etc/rc.devd` which is a
@@ -31,6 +29,17 @@ This can be found in the support folder.
 Obviously, if you're installing this onto a system that does not use
 OpenRC by default then you may wish to backup the above listed files,
 remove them and then install so that the OS hooks into OpenRC.
+
+If you are installing this onto a system which has separate / and /usr
+file systems and expects / to be mounted before /usr, you will need to
+make sure the appropriate pieces are installed on / by passing the
+appropriate options to "meson setup" as follows:
+
+```
+$ meson setup \
+        --bindir /bin --libdir /lib64 --libexecdir /lib --sbindir /sbin \
+        build_path
+```
 
 ## Discussions
 
