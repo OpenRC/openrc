@@ -301,7 +301,7 @@ static RC_STRINGLIST *rc_config_kcl(RC_STRINGLIST *config)
 	return config;
 }
 
-static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
+static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config, char *dir)
 {
 	DIR *dp;
 	struct dirent *d;
@@ -311,7 +311,7 @@ static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
 	char path[PATH_MAX];
 	RC_STRING *line;
 
-	if ((dp = opendir(RC_CONF_D)) != NULL) {
+	if ((dp = opendir(dir)) != NULL) {
 		rc_conf_d_files = rc_stringlist_new();
 		while ((d = readdir(dp)) != NULL) {
 			if (fnmatch("*.conf", d->d_name, FNM_PATHNAME) == 0) {
@@ -324,7 +324,7 @@ static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config)
 		TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
 			if (!fname->value)
 				continue;
-			sprintf(path, "%s/%s", RC_CONF_D, fname->value);
+			sprintf(path, "%s/%s", dir, fname->value);
 			rc_conf_d_list = rc_config_list(path);
 			TAILQ_FOREACH(line, rc_conf_d_list, entries)
 				if (line->value)
@@ -386,32 +386,39 @@ _free_rc_conf(void)
 char *
 rc_conf_value(const char *setting)
 {
-	RC_STRINGLIST *old;
+	const char *sysconfdir = rc_sysconfdir();
 	RC_STRING *s;
-	char *p;
+	char *conf;
 
-	if (!rc_conf) {
-		rc_conf = rc_config_load(RC_CONF);
-		atexit(_free_rc_conf);
+	if (rc_conf)
+		return rc_config_value(rc_conf, setting);
 
-		/* Support old configs. */
-		if (exists(RC_CONF_OLD)) {
-			old = rc_config_load(RC_CONF_OLD);
-			TAILQ_CONCAT(rc_conf, old, entries);
-			rc_stringlist_free(old);
-		}
+	xasprintf(&conf, "%s/%s", sysconfdir, "rc.conf");
+	rc_conf = rc_config_load(conf);
+	atexit(_free_rc_conf);
 
-		rc_conf = rc_config_directory(rc_conf);
-		rc_conf = rc_config_kcl(rc_conf);
+	free(conf);
 
-		/* Convert old uppercase to lowercase */
-		TAILQ_FOREACH(s, rc_conf, entries) {
-			p = s->value;
-			while (p && *p && *p != '=') {
-				if (isupper((unsigned char)*p))
-					*p = tolower((unsigned char)*p);
-				p++;
-			}
+	/* Support old configs. */
+	if (exists(RC_CONF_OLD)) {
+		RC_STRINGLIST *old_conf = rc_config_load(RC_CONF_OLD);
+		TAILQ_CONCAT(rc_conf, old_conf, entries);
+		rc_stringlist_free(old_conf);
+	}
+
+	xasprintf(&conf, "%s/%s", sysconfdir, "rc.conf.d");
+	rc_conf = rc_config_directory(rc_conf, conf);
+	free(conf);
+
+	rc_conf = rc_config_kcl(rc_conf);
+
+	/* Convert old uppercase to lowercase */
+	TAILQ_FOREACH(s, rc_conf, entries) {
+		char *p = s->value;
+		while (p && *p && *p != '=') {
+			if (isupper((unsigned char)*p))
+				*p = tolower((unsigned char)*p);
+			p++;
 		}
 	}
 
