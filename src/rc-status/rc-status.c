@@ -69,7 +69,6 @@ const char *usagestring = ""						\
 	"   or: rc-status [options] [-f ini] [-a | -c | -l | -m | -r | -s | -u]";
 
 static RC_DEPTREE *deptree;
-static RC_STRINGLIST *types;
 
 static RC_STRINGLIST *levels, *services, *tmp, *alist;
 static RC_STRINGLIST *sservices, *nservices, *needsme;
@@ -201,44 +200,15 @@ static void print_service(const char *service, enum format_t format)
 	free(status);
 }
 
-static void print_services(const char *runlevel, RC_STRINGLIST *svcs,
-		enum format_t format)
+static void print_services(RC_STRINGLIST *svcs, enum format_t format)
 {
-	RC_STRINGLIST *l = NULL;
-	RC_STRING *s;
-	char *r = NULL;
+	RC_STRING *svc;
 
 	if (!svcs)
 		return;
-	if (!deptree)
-		deptree = _rc_deptree_load(0, NULL);
-	if (!deptree) {
-		TAILQ_FOREACH(s, svcs, entries)
-			if (!runlevel ||
-			    rc_service_in_runlevel(s->value, runlevel))
-				print_service(s->value, format);
-		return;
-	}
-	if (!types) {
-		types = rc_stringlist_new();
-		rc_stringlist_add(types, "ineed");
-		rc_stringlist_add(types, "iuse");
-		rc_stringlist_add(types, "iafter");
-	}
-	if (!runlevel)
-		r = rc_runlevel_get();
-	l = rc_deptree_depends(deptree, types, svcs, r ? r : runlevel,
-			       RC_DEP_STRICT | RC_DEP_TRACE | RC_DEP_START);
-	free(r);
-	if (!l)
-		return;
-	TAILQ_FOREACH(s, l, entries) {
-		if (!rc_stringlist_find(svcs, s->value))
-			continue;
-		if (!runlevel || rc_service_in_runlevel(s->value, runlevel))
-			print_service(s->value, format);
-	}
-	rc_stringlist_free(l);
+
+	TAILQ_FOREACH(svc, svcs, entries)
+		print_service(svc->value, format);
 }
 
 static void print_stacked_services(const char *runlevel, enum format_t format)
@@ -252,7 +222,7 @@ static void print_stacked_services(const char *runlevel, enum format_t format)
 			continue;
 		print_level("Stacked", stackedlevel->value, format);
 		servicelist = rc_services_in_runlevel(stackedlevel->value);
-		print_services(stackedlevel->value, servicelist, format);
+		print_services(servicelist, format);
 		rc_stringlist_free(servicelist);
 	}
 	rc_stringlist_free(stackedlevels);
@@ -319,7 +289,7 @@ int main(int argc, char **argv)
 					free(s->value);
 					free(s);
 				}
-			print_services(NULL, services, format);
+			print_services(services, format);
 			goto exit;
 			/* NOTREACHED */
 		case 'r':
@@ -332,12 +302,12 @@ int main(int argc, char **argv)
 			TAILQ_FOREACH_SAFE(s, services, entries, t)
 				if (!rc_service_value_get(s->value, "child_pid"))
 					TAILQ_REMOVE(services, s, entries);
-			print_services(NULL, services, format);
+			print_services(services, format);
 			goto exit;
 			/* NOTREACHED */
 		case 's':
 			services = rc_services_in_runlevel(NULL);
-			print_services(NULL, services, format);
+			print_services(services, format);
 			goto exit;
 			/* NOTREACHED */
 		case 'u':
@@ -352,7 +322,7 @@ int main(int argc, char **argv)
 						break;
 					}
 			}
-			print_services(NULL, services, format);
+			print_services(services, format);
 			goto exit;
 			/* NOTREACHED */
 
@@ -383,7 +353,7 @@ int main(int argc, char **argv)
 	TAILQ_FOREACH(l, levels, entries) {
 		print_level(NULL, l->value, format);
 		services = rc_services_in_runlevel(l->value);
-		print_services(l->value, services, format);
+		print_services(services, format);
 		print_stacked_services(l->value, format);
 		rc_stringlist_free(nservices);
 		nservices = NULL;
@@ -395,7 +365,7 @@ int main(int argc, char **argv)
 		/* Show hotplugged services */
 		print_level("Dynamic", "hotplugged", format);
 		services = rc_services_in_state(RC_SERVICE_HOTPLUGGED);
-		print_services(NULL, services, format);
+		print_services(services, format);
 		rc_stringlist_free(services);
 		services = NULL;
 
@@ -454,9 +424,9 @@ int main(int argc, char **argv)
 		unsetenv("RC_SVCNAME");
 
 		print_level("Dynamic", "needed/wanted", format);
-		print_services(NULL, nservices, format);
+		print_services(nservices, format);
 		print_level("Dynamic", "manual", format);
-		print_services(NULL, services, format);
+		print_services(services, format);
 	}
 
 exit:
@@ -466,7 +436,6 @@ exit:
 	rc_stringlist_free(sservices);
 	rc_stringlist_free(nservices);
 	rc_stringlist_free(services);
-	rc_stringlist_free(types);
 	rc_stringlist_free(levels);
 	rc_deptree_free(deptree);
 
