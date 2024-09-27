@@ -41,12 +41,12 @@ start()
 	done
 
 	# Save the encoding for use immediately at boot
-	if checkpath -W "$RC_LIBEXECDIR"; then
-		mkdir -p "$RC_LIBEXECDIR"/console
+	if checkpath -m 0755 -d "$RC_CACHEDIR"; then
+		mkdir -p "$RC_CACHEDIR"/console
 		if yesno ${unicode:-yes}; then
-			echo "" > "$RC_LIBEXECDIR"/console/unicode
+			echo "" > "$RC_CACHEDIR"/console/unicode
 		else
-			rm -f "$RC_LIBEXECDIR"/console/unicode
+			rm -f "$RC_CACHEDIR"/console/unicode
 		fi
 	fi
 
