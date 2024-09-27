@@ -65,8 +65,7 @@ Further paragraphs come after blank lines.
 - Use a hanging indent
 
 Reported-by: User Name <email>
-X-[Distro]-Bug: BugID
-X-[Distro]-Bug-URL: URL for the bug (on the distribution's web site typically)
+Bug: URL for the bug
 ```
 
 If you did not write the code and the patch does not include authorship
@@ -76,10 +75,8 @@ git commit command to make the authorship correct.
 The Reported-by tag is required if the person who reported the bug is
 different from the author and committer.
 
-  The X-[Distro]-Bug/Bug-URL tags are required if this commit is related
-  to a bug reported to us by a specific distribution   of linux or a
-  *BSD. Also, [Distro] should be replaced with the name of the
-  distribution, e.g. X-Gentoo-Bug.
+The Bug tag is required if this commit is related to an issue reported via
+an external bug tracker.
 
 [1]	http://en.wikipedia.org/wiki/Indent_style#BSD_KNF_style
 [2] http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
