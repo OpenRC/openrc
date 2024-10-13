@@ -132,8 +132,8 @@ messages to a file), and a few others.
 
 # ulimit and CGroups
 
-Setting `ulimit` and `nice` values per service can be done through the
-`rc_ulimit` variable.
+Setting `ulimit` values per service can be done through the `rc_ulimit`
+variable.
 
 Under Linux, OpenRC can use cgroups for process management as well. Once
 the kernel is configured appropriately, the `rc_cgroup_mode` setting in
