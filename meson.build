@@ -125,7 +125,7 @@ if os == 'Linux' or os == 'GNU-kFreeBSD'
 elif os == 'FreeBSD'
   cc_os_flags = ['-D_BSD_SOURCE']
 elif os == 'GNU'
-  cc_os_flags = ['-D_DEFAULT_SOURCE', '-DMAXPATHLEN=4096', '-DPATH_MAX=4096']
+  cc_os_flags = ['-D_DEFAULT_SOURCE', '-DPATH_MAX=4096']
 endif
 
 # Try and use some good cc flags if we're building from git. We don't use
