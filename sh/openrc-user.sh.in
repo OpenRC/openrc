@@ -1,0 +1,22 @@
+#!@SHELL@
+
+. @LIBEXECDIR@/sh/functions.sh
+
+_sysconf="${XDG_CONFIG_HOME:-${HOME}/.config}/openrc"
+
+for config in "@SYSCONFDIR@/rc.conf" "$_sysconf/rc.conf"; do
+	if [ -e "$config" ] && ! . "$config"; then
+		eerror "openrc-user: Failed loading $config"
+		exit 1
+	fi
+done
+
+case $1 in
+	start) _runlevel="${rc_user_runlevel:-default}";;
+	stop) _runlevel="${rc_user_shutdown_runlevel:-none}";;
+	*) eerror "no argument given to $0" && exit 1
+esac
+
+mkdir -p "$_sysconf/runlevels/$_runlevel"
+
+openrc --user "$_runlevel"

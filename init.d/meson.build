@@ -16,6 +16,7 @@ init_common =  [
   'sysctl.in',
   'runsvdir.in',
   's6-svscan.in',
+  'users.in',
   ]
 
 if get_option('newnet')

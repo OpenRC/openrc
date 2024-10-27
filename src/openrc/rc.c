@@ -1039,23 +1039,24 @@ int main(int argc, char **argv)
 		TAILQ_CONCAT(main_start_services, tmplist, entries);
 		free(tmplist);
 		/* If we are NOT headed for the single-user runlevel... */
-		if (strcmp(newlevel ? newlevel : runlevel,
-			RC_LEVEL_SINGLE) != 0)
-		{
+		if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_SINGLE) != 0) {
 			/* If we are NOT headed for the boot runlevel... */
-			if (strcmp(newlevel ? newlevel : runlevel,
-				bootlevel) != 0)
-			{
+			if (strcmp(newlevel ? newlevel : runlevel, bootlevel) != 0) {
 				tmplist = rc_services_in_runlevel(bootlevel);
 				TAILQ_CONCAT(main_start_services, tmplist, entries);
 				free(tmplist);
 			}
+
 			if (main_hotplugged_services) {
 				TAILQ_FOREACH(service, main_hotplugged_services,
 				    entries)
 				    rc_stringlist_addu(main_start_services,
 					service->value);
 			}
+		}
+
+		if (strcmp(newlevel ? newlevel : runlevel, RC_LEVEL_BOOT) != 0) {
+			rc_stringlist_add(main_start_services, "users");
 		}
 	}
 
