@@ -2,8 +2,10 @@ project('OpenRC', 'c',
   version : '0.55',
   license: 'BSD-2',
   default_options : [
+    'bindir=/bin',
     'c_std=c99',
     'prefix=/usr',
+    'sbindir=/sbin',
     'warning_level=3',
     ],
   meson_version : '>=0.62.0'
