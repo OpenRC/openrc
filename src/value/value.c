@@ -33,6 +33,9 @@ int main(int argc, char **argv)
 	if (service == NULL)
 		eerrorx("%s: no service specified", applet);
 
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
+
 	if (argc < 2 || !argv[1] || *argv[1] == '\0')
 		eerrorx("%s: no option specified", applet);
 

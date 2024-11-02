@@ -40,6 +40,9 @@ int main(int argc, char **argv)
 	if (service == NULL || *service == '\0')
 		eerrorx("%s: no service specified", applet);
 
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
+
 	state = rc_service_state(service);
 	bit = lookup_service_state(applet);
 	if (bit) {
