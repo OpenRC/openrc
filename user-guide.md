@@ -176,3 +176,21 @@ OpenRC has wrappers for many common output tasks in libeinfo.
 This allows to print colour-coded status notices and other things.
 To make the output consistent the bundled service scripts all use ebegin/eend to 
 print nice messages.
+
+# User services
+
+OpenRC supports managing services for users.
+
+The init scripts are loaded from /etc/user/init.d, and
+${XDG_CONFIG_HOME}/rc/init.d with ~/.config should XDG_CONFIG_HOME be unset.
+
+Configurations in ~/.config/rc/conf.d should overwrite /etc/user/conf.d,
+and similarly options set in ~/.config/rc/rc.conf overrides /etc/rc.conf.
+
+Runlevels are kept in ~/.config/rc/runlevels.
+
+`openrc` and all `rc-*` tools provie a --user/-U flag to operate with user-mode
+services and runlevels.
+
+The XDG_RUNTIME_DIR variable must be set before calling openrc --user, as it's
+used to store state for openrc itself and the services it runs.
