@@ -4,6 +4,12 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.56
+
+openrc-run now respects using SIGUSR1 to skip marking a service stopped/started.
+
+RC_ULIMIT now supports setting multiple limits at once.
+
 ## OpenRC 0.55
 
 OpenRC now supports shared mounts in fstab. This is used for some containers
