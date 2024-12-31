@@ -509,3 +509,9 @@ This is a sensible default for daemons that are happy with `0.0.0.0`,
 but lets the user specify something else, like `rc_need="net.wan"` if
 he needs it. The burden is on the user to determine the appropriate
 service whenever he changes the daemon's configuration file.
+
+# User services
+
+User services are ran as the user that starts them. A few things to note
+then, are that command_user shouldn't be set, runtime data (such as pidfiles
+and sockets) should be placed in XDG_RUNTIME_DIR.

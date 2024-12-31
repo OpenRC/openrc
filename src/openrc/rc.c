@@ -772,7 +772,7 @@ int main(int argc, char **argv)
 	RC_STRING *service;
 	bool going_down = false;
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
-	const char *svcdir = rc_svcdir();
+	const char *svcdir;
 	char *rc_starting, *rc_stopping;
 	char *deptree_skewed;
 	char *krunlevel = NULL;
@@ -796,7 +796,6 @@ int main(int argc, char **argv)
 	applet = basename_c(argv[0]);
 	LIST_INIT(&service_pids);
 	LIST_INIT(&free_these_pids);
-	atexit(cleanup);
 	if (!applet)
 		eerrorx("arguments required");
 
@@ -806,11 +805,6 @@ int main(int argc, char **argv)
 	/* Change dir to / to ensure all scripts don't use stuff in pwd */
 	if (chdir("/") == -1)
 		eerror("chdir: %s", strerror(errno));
-
-	/* Ensure our environment is pure
-	 * Also, add our configuration to it */
-	env_filter();
-	env_config();
 
 	/* complain about old configuration settings if they exist */
 	if (exists(RC_CONF_OLD)) {
@@ -859,6 +853,13 @@ int main(int argc, char **argv)
 		}
 	}
 
+	/* Ensure our environment is pure
+	 * Also, add our configuration to it */
+	env_filter();
+	env_config();
+
+	svcdir = rc_svcdir();
+
 	newlevel = argv[optind++];
 	/* To make life easier, we only have the shutdown runlevel as
 	 * nothing really needs to know that we're rebooting.
@@ -869,6 +870,8 @@ int main(int argc, char **argv)
 			setenv("RC_REBOOT", "YES", 1);
 		}
 	}
+
+	atexit(cleanup);
 
 	/* Enable logging */
 	setenv("EINFO_LOG", "openrc", 1);

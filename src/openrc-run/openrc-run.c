@@ -1099,6 +1099,7 @@ int main(int argc, char **argv)
 	char *path = NULL;
 	char *lnk = NULL;
 	char *dir, *save = NULL, *saveLnk = NULL;
+	const char *workingdir = "/";
 	char *pidstr = NULL;
 	size_t l = 0, ll;
 	const char *file;
@@ -1118,7 +1119,8 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	atexit(cleanup);
+	if (rc_yesno(getenv("RC_USER_SERVICES")))
+		rc_set_user();
 
 	/* We need to work out the real full path to our service.
 	 * This works fine, provided that we ONLY allow multiplexed services
@@ -1160,9 +1162,53 @@ int main(int argc, char **argv)
 	if (argc < 3)
 		usage(EXIT_FAILURE);
 
-	/* Change dir to / to ensure all init scripts don't use stuff in pwd */
-	if (chdir("/") == -1)
+	/* Ok, we are ready to go, so setup selinux if applicable */
+	selinux_setup(argv);
+
+	deps = true;
+
+	/* Punt the first arg as its our service name */
+	argc--;
+	argv++;
+
+	/* Right then, parse any options there may be */
+	while ((opt = getopt_long(argc, argv, getoptstring,
+		    longopts, (int *)0)) != -1)
+		switch (opt) {
+		case 'd':
+			setenv("RC_DEBUG", "YES", 1);
+			break;
+		case 'l':
+			exclusive_fd = atoi(optarg);
+			fcntl(exclusive_fd, F_SETFD,
+			    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
+			break;
+		case 's':
+			if (!(rc_service_state(service) & RC_SERVICE_STARTED))
+				exit(EXIT_FAILURE);
+			break;
+		case 'S':
+			if (!(rc_service_state(service) & RC_SERVICE_STOPPED))
+				exit(EXIT_FAILURE);
+			break;
+		case 'D':
+			deps = false;
+			break;
+		case 'Z':
+			dry_run = true;
+			break;
+		case_RC_COMMON_GETOPT
+		}
+
+	/* Change dir to / to ensure all init scripts don't use stuff in pwd
+	 * For user services, change to the user's HOME instead. */
+	if (rc_is_user() && !(workingdir = getenv("HOME")))
+		eerrorx("HOME is unset.");
+
+	if (chdir(workingdir) == -1)
 		eerror("chdir: %s", strerror(errno));
+
+	atexit(cleanup);
 
 	if ((runlevel = xstrdup(getenv("RC_RUNLEVEL"))) == NULL) {
 		env_filter();
@@ -1206,44 +1252,6 @@ int main(int argc, char **argv)
 		memset(prefix + l, 0, 1);
 		eprefix(prefix);
 	}
-
-	/* Ok, we are ready to go, so setup selinux if applicable */
-	selinux_setup(argv);
-
-	deps = true;
-
-	/* Punt the first arg as its our service name */
-	argc--;
-	argv++;
-
-	/* Right then, parse any options there may be */
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *)0)) != -1)
-		switch (opt) {
-		case 'd':
-			setenv("RC_DEBUG", "YES", 1);
-			break;
-		case 'l':
-			exclusive_fd = atoi(optarg);
-			fcntl(exclusive_fd, F_SETFD,
-			    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
-			break;
-		case 's':
-			if (!(rc_service_state(service) & RC_SERVICE_STARTED))
-				exit(EXIT_FAILURE);
-			break;
-		case 'S':
-			if (!(rc_service_state(service) & RC_SERVICE_STOPPED))
-				exit(EXIT_FAILURE);
-			break;
-		case 'D':
-			deps = false;
-			break;
-		case 'Z':
-			dry_run = true;
-			break;
-		case_RC_COMMON_GETOPT
-		}
 
 	if (rc_yesno(getenv("RC_NODEPS")))
 		deps = false;
