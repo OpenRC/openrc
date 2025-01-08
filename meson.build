@@ -213,7 +213,6 @@ if get_option('pkgconfig')
     description : 'Pretty console informational display',
     version : meson.project_version(),
     libraries : libeinfo,
-    subdirs : ['einfo'],
   )
 
   openrc_pkgconf = pkg.generate(
@@ -222,7 +221,6 @@ if get_option('pkgconfig')
     description : 'Universal init system',
     version : meson.project_version(),
     libraries : librc,
-    subdirs : ['openrc'],
     variables: {
       'pluginsdir': pluginsdir,
     }
