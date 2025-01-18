@@ -66,4 +66,17 @@ pid_t get_pid(const char *applet, const char *pidfile);
 
 void cloexec_fds_from(int);
 
+struct ready {
+	enum {
+		READY_NONE = 0,
+		READY_FD,
+	} type;
+
+	int pipe[2];
+	int fd;
+};
+
+struct ready ready_parse(const char *applet, const char *ready_string);
+bool ready_wait(const char *applet, struct ready ready);
+
 #endif
