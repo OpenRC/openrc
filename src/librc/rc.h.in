@@ -22,9 +22,12 @@
 extern "C" {
 #endif
 
+#define RC_PREFIX "@PREFIX@"
 #define RC_SYSCONFDIR		"@SYSCONFDIR@"
 #define RC_LIBEXECDIR           "@RC_LIBEXECDIR@"
-#if defined(__linux__) || (defined(__FreeBSD_kernel__) && \
+#if defined(PREFIX)
+#define RC_SVCDIR               RC_LIBEXECDIR "/init.d"
+#elif defined(__linux__) || (defined(__FreeBSD_kernel__) && \
 		defined(__GLIBC__)) || defined(__GNU__)
 #define RC_SVCDIR               "/run/openrc"
 #else
@@ -353,6 +356,7 @@ bool rc_service_daemons_crashed(const char *);
 #define RC_SYS_NONE    ""
 #define RC_SYS_OPENVZ  "OPENVZ"
 #define RC_SYS_LXC     "LXC"
+#define RC_SYS_PREFIX  "PREFIX"
 #define RC_SYS_RKT  "RKT"
 #define RC_SYS_SYSTEMD_NSPAWN "SYSTEMD-NSPAWN"
 #define RC_SYS_UML     "UML"
