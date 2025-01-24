@@ -8,7 +8,7 @@
 .\" This file may not be copied, modified, propagated, or distributed
 .\"    except according to the terms contained in the LICENSE file.
 .\"
-.Dd November 30, 2017
+.Dd January 24, 2025
 .Dt openrc-run 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -79,7 +79,15 @@ Shows which services would be stopped and/or started without actually stopping
 or starting them.
 .El
 .Pp
-The following variables affect the service script:
+The following variables affect the service script. Variables marked with
+.Sq (*)
+are referenced by the default
+.Fn start
+implementation; variables marked with
+.Sq (**)
+are referenced by the default
+.Fn stop
+implementation.
 .Bl -tag -width "RC_DEFAULTLEVEL"
 .It Ar extra_commands
 Space separated list of extra commands the service defines. These should
@@ -120,7 +128,7 @@ List of arguments passed to start-stop-daemon when starting the daemon.
 .It Ar supervise_daemon_args
 List of arguments passed to supervise-daemon when starting the daemon.
 If undefined, start_stop_daemon_args is used as a fallback.
-.It Ar command
+.It Ar command No (**)
 Daemon to start or stop via
 .Nm start-stop-daemon
 or
@@ -151,14 +159,14 @@ to force the daemon into the background. This forces the
 Set this to "true", "yes" or "1" (case-insensitive) if you want
 .Xr start-stop-daemon 8
 to display a progress meter when waiting for a daemon to stop.
-.It Ar command_user
+.It Ar command_user No (*)
 If the daemon does not support changing to a different user id, you can
 use this to change the user id, and optionally group id,  before
 .Xr start-stop-daemon 8
 or
 .Xr supervise-daemon 8
 launches the daemon.
-.It Ar output_log
+.It Ar output_log No (*)
 This is the path to a file or named pipe where the standard output from
 the service will be redirected. If you are starting this service with
 .Xr start-stop-daemon 8 ,
@@ -167,11 +175,11 @@ the service will be redirected. If you are starting this service with
 to true. Keep in mind that this path will be inside the chroot if the
 .Pa chroot
 variable is set.
-.It Ar error_log
+.It Ar error_log No (*)
 The same thing as
 .Pa output_log
 but for the standard error output.
-.It Ar output_logger
+.It Ar output_logger No (*)
 This is a process which will be used to log the standard output from the
 service.  If you are starting this service with
 .Xr start-stop-daemon 8 ,
@@ -184,27 +192,27 @@ variable is set. Keep in mind also that this command works by accepting
 the stdout of the service on stdin.
 An example of a command that can be run this way is logger if you want
 your service output to go to syslog.
-.It Ar error_logger
+.It Ar error_logger No (*)
 The same thing as
 .Pa output_logger
 but for the standard error output.
-.It Ar directory
+.It Ar directory No (*)
 .Xr start-stop-daemon 8
 and
 .Xr supervise-daemon 8
 will chdir to this directory before starting the daemon.
-.It Ar chroot
+.It Ar chroot No (*)
 .Xr start-stop-daemon 8
 and
 .Xr supervise-daemon 8
 will chroot into this path before writing the pid file or starting the daemon.
-.It Ar pidfile
+.It Ar pidfile No (*)(**)
 Pidfile to use for the above defined command.
 .It Ar name
 Display name used for the above defined command.
-.It Ar procname
+.It Ar procname No (*)(**)
 Process name to match when signaling the daemon.
-.It Ar stopsig
+.It Ar stopsig No (**)
 Signal to send when stopping the daemon.
 .It Ar respawn_delay
 Respawn delay
@@ -224,7 +232,7 @@ Respawn period
 will use for this daemon.  See
 .Xr supervise-daemon 8
 for more information about this setting.
-.It Ar retry
+.It Ar retry No (**)
 Retry schedule to use when stopping the daemon. It can either be a
 timeout in seconds or multiple signal/timeout pairs (like SIGTERM/5).
 .It Ar required_dirs
@@ -237,7 +245,7 @@ used along with in_background_fake to support re-entrant services.
 .It Ar in_background_fake
 Space separated list of commands which should always succeed when
 in_background is yes.
-.It Ar umask
+.It Ar umask No (*)
 Set the umask of the daemon.
 .Pp
 Keep in mind that eval is used to process chroot, command, command_args_*,
