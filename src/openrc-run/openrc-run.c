@@ -58,6 +58,8 @@
 #define WAIT_TIMEOUT	60		/* seconds until we timeout */
 #define WARN_TIMEOUT	10		/* warn about this every N seconds */
 
+static const struct timespec interval = { .tv_nsec = WAIT_INTERVAL };
+
 const char *applet = NULL;
 const char *extraopts = "stop | start | restart | status | describe | zap";
 const char getoptstring[] = "dDsSvl:Z" getoptstring_COMMON;
@@ -367,6 +369,16 @@ svc_exec(const char *arg1, const char *arg2)
 	int slave_tty;
 	sigset_t sigchldmask;
 	sigset_t oldmask;
+	struct timespec timeout = { .tv_sec = WAIT_TIMEOUT };
+	struct timespec warn = { .tv_sec = WARN_TIMEOUT };
+	RC_STRINGLIST *keywords;
+	bool forever;
+
+	keywords = rc_deptree_depend(deptree, service, "keyword");
+	if (rc_stringlist_find(keywords, "-timeout") ||
+			rc_stringlist_find(keywords, "notimeout"))
+		forever = true;
+	rc_stringlist_free(keywords);
 
 	/* Setup our signal pipe */
 	if (pipe(signal_pipe) == -1)
@@ -429,7 +441,7 @@ svc_exec(const char *arg1, const char *arg2)
 	}
 
 	for (;;) {
-		if ((s = poll(fd, master_tty >= 0 ? 2 : 1, -1)) == -1) {
+		if ((s = poll(fd, master_tty >= 0 ? 2 : 1, WAIT_INTERVAL / 1000000)) == -1) {
 			if (errno != EINTR) {
 				eerror("%s: poll: %s",
 				    service, strerror(errno));
@@ -438,7 +450,19 @@ svc_exec(const char *arg1, const char *arg2)
 			}
 		}
 
-		if (s > 0) {
+		if (s == 0 && !forever) {
+			timespecsub(&timeout, &interval, &timeout);
+			if (timeout.tv_sec <= 0) {
+				kill(service_pid, SIGKILL);
+				ret = -1;
+				break;
+			}
+			timespecsub(&warn, &interval, &warn);
+			if (warn.tv_sec <= 0) {
+				ewarn("%s: waiting for %s (%d seconds)", applet, service, (int)timeout.tv_sec);
+				warn = (struct timespec) { .tv_sec = WARN_TIMEOUT };
+			}
+		} else if (s > 0) {
 			if (fd[1].revents & (POLLIN | POLLHUP)) {
 				bytes = read(master_tty, buffer, BUFSIZ);
 				write_prefix(buffer, bytes, &prefixed);
@@ -492,7 +516,7 @@ svc_wait(const char *svc)
 	int fd;
 	bool forever = false;
 	RC_STRINGLIST *keywords;
-	struct timespec interval, timeout, warn;
+	struct timespec timeout, warn;
 
 	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend(deptree, svc, "keyword");
@@ -503,8 +527,6 @@ svc_wait(const char *svc)
 
 	xasprintf(&file, "%s/exclusive/%s", rc_svcdir(), basename_c(svc));
 
-	interval.tv_sec = 0;
-	interval.tv_nsec = WAIT_INTERVAL;
 	timeout.tv_sec = WAIT_TIMEOUT;
 	timeout.tv_nsec = 0;
 	warn.tv_sec = WARN_TIMEOUT;
