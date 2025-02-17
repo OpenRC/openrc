@@ -532,6 +532,46 @@ pid_t get_pid(const char *applet,const char *pidfile)
 	return pid;
 }
 
+struct ready ready_parse(const char *applet, const char *ready_string)
+{
+	struct ready ready = {0};
+	if (sscanf(ready_string, "fd:%d", &ready.fd) != 1)
+		eerrorx("%s: invalid ready '%s'.", applet, optarg);
+
+	ready.type = READY_FD;
+
+	if (pipe(ready.pipe) == -1)
+		eerrorx("%s: pipe failed: %s", applet, strerror(errno));
+
+	return ready;
+}
+
+bool ready_wait(const char *applet, struct ready ready)
+{
+	if (ready.type == READY_NONE)
+		return true;
+
+	close(ready.pipe[1]);
+	ready.fd = ready.pipe[0];
+
+	for (;;) {
+		char buf[BUFSIZ];
+		ssize_t bytes = read(ready.fd, buf, BUFSIZ);
+		if (bytes == -1) {
+			if (errno != EINTR) {
+				eerror("%s: read failed '%s'\n", applet, strerror(errno));
+				return false;
+			}
+			continue;
+		}
+
+		if (memchr(buf, '\n', bytes))
+			break;
+	}
+
+	return true;
+}
+
 #ifndef HAVE_CLOSE_RANGE
 static inline int close_range(int first RC_UNUSED,
 			      int last RC_UNUSED,

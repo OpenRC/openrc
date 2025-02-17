@@ -82,6 +82,7 @@ enum {
   LONGOPT_SECBITS,
   LONGOPT_STDERR_LOGGER,
   LONGOPT_STDOUT_LOGGER,
+  LONGOPT_READY,
 };
 
 const char *applet = NULL;
@@ -116,6 +117,7 @@ const struct option longopts[] = {
 	{ "stdout-logger",1, NULL, LONGOPT_STDOUT_LOGGER},
 	{ "stderr-logger",1, NULL, LONGOPT_STDERR_LOGGER},
 	{ "reexec",       0, NULL, '3'},
+	{ "ready",        1, NULL, LONGOPT_READY},
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -165,6 +167,7 @@ static int devnull_fd = -1;
 static int stdin_fd;
 static int stdout_fd;
 static int stderr_fd;
+static struct ready ready;
 static char *redirect_stderr = NULL;
 static char *redirect_stdout = NULL;
 static char *stderr_process = NULL;
@@ -587,6 +590,9 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 		dup2(stderr_fd, STDERR_FILENO);
 
 	cloexec_fds_from(3);
+
+	if (ready.type == READY_FD)
+		dup2(ready.pipe[1], ready.fd);
 
 	cmdline = make_cmdline(argv);
 	syslog(LOG_INFO, "Child command line: %s", cmdline);
@@ -1070,6 +1076,10 @@ int main(int argc, char **argv)
 			stderr_process = optarg;
 			break;
 
+		case LONGOPT_READY:
+			ready = ready_parse(applet, optarg);
+			break;
+
 		case_RC_COMMON_GETOPT
 		}
 
@@ -1207,8 +1217,8 @@ int main(int argc, char **argv)
 		if (child_pid == -1)
 			eerrorx("%s: fork: %s", applet, strerror(errno));
 		if (child_pid != 0)
-			/* first parent process, do nothing. */
-			exit(EXIT_SUCCESS);
+			exit(ready_wait(applet, ready) ? EXIT_SUCCESS : EXIT_FAILURE);
+
 #ifdef TIOCNOTTY
 		tty_fd = open("/dev/tty", O_RDWR);
 #endif
@@ -1216,10 +1226,16 @@ int main(int argc, char **argv)
 		dup2(devnull_fd, STDIN_FILENO);
 		dup2(devnull_fd, STDOUT_FILENO);
 		dup2(devnull_fd, STDERR_FILENO);
+
+		if (ready.type == READY_FD)
+			close(ready.pipe[0]);
+
 		child_pid = fork();
 		if (child_pid == -1)
 			eerrorx("%s: fork: %s", applet, strerror(errno));
 		else if (child_pid != 0) {
+			if (ready.type == READY_FD)
+				close(ready.pipe[1]);
 			c = argv;
 			x = 0;
 			while (c && *c) {
