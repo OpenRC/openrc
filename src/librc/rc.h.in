@@ -125,11 +125,6 @@ void rc_set_user(void);
 /*! @return true if rc_set_user was called, false otherwise. */
 bool rc_is_user(void);
 
-/*! Sets the root prefix for all librc operations
- * it should be called before any other operation
- * @param root path to prefix */
-void rc_set_root(const char *root);
-
 /*! Get a list of all script directories containing a
  * init.d and conf.d
  * @return NULL terminated array of directory paths. */
