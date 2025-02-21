@@ -559,7 +559,20 @@ rc_runlevel_stacks(const char *runlevel)
 	return stack;
 }
 
-static const char * const scriptdirs[] = {
+enum scriptdirs_entries {
+	SCRIPTDIR_USR,
+#ifdef RC_LOCAL_PREFIX
+	SCRIPTDIR_LOCAL,
+#endif
+	SCRIPTDIR_SYS,
+#ifdef RC_PKG_PREFIX
+	SCRIPTDIR_PKG,
+#endif
+	SCRIPTDIR_MAX,
+	SCRIPTDIR_CAP
+};
+
+static const char * const scriptdirs[SCRIPTDIR_CAP] = {
 #ifdef RC_LOCAL_PREFIX
 	RC_LOCAL_PREFIX "/etc",
 #endif
@@ -567,8 +580,6 @@ static const char * const scriptdirs[] = {
 #ifdef RC_PKG_PREFIX
 	RC_PKG_PREFIX "/etc",
 #endif
-	NULL, /* userconf dir */
-	NULL
 };
 
 static struct {
@@ -576,8 +587,18 @@ static struct {
 	char *svcdir;
 	char *usrconfdir;
 	char *runleveldir;
-	char *scriptdirs[ARRAY_SIZE(scriptdirs)];
-} rc_dirs;
+	const char *scriptdirs[ARRAY_SIZE(scriptdirs)];
+} rc_dirs = {
+	.scriptdirs = {
+#ifdef RC_LOCAL_PREFIX
+		[SCRIPTDIR_LOCAL] = RC_LOCAL_PREFIX "/etc/user",
+#endif
+		[SCRIPTDIR_SYS] = RC_SYSCONFDIR "/user",
+#ifdef RC_PKG_PREFIX
+		[SCRIPTDIR_PKG] = RC_PKG_PREFIX "/etc/user",
+#endif
+	}
+};
 
 static void
 free_rc_dirs(void)
@@ -586,8 +607,7 @@ free_rc_dirs(void)
 	rc_dirs.runleveldir = NULL;
 	free(rc_dirs.svcdir);
 	rc_dirs.svcdir = NULL;
-	for (size_t i = 0; rc_dirs.scriptdirs[i]; i++)
-		free(rc_dirs.scriptdirs[i]);
+	rc_dirs.scriptdirs[0] = NULL;
 }
 
 static bool is_user = false;
@@ -620,11 +640,6 @@ rc_set_user(void)
 
 	xasprintf(&rc_dirs.runleveldir, "%s/runlevels", rc_dirs.usrconfdir);
 
-	rc_dirs.scriptdirs[0] = rc_dirs.usrconfdir;
-
-	for (size_t i = 0; scriptdirs[i]; i++)
-		xasprintf(&rc_dirs.scriptdirs[i + 1], "%s/user", scriptdirs[i]);
-
 	if (!(env = getenv("XDG_RUNTIME_DIR"))) {
 		/* FIXME: fallback to something else? */
 		fprintf(stderr, "XDG_RUNTIME_DIR unset.");
@@ -633,13 +648,16 @@ rc_set_user(void)
 
 	xasprintf(&rc_dirs.svcdir, "%s/openrc", env);
 	atexit(free_rc_dirs);
+
+
+	rc_dirs.scriptdirs[SCRIPTDIR_USR] = rc_dirs.usrconfdir;
 }
 
 const char * const *
 rc_scriptdirs(void)
 {
 	if (rc_dirs.set)
-		return (const char * const *) rc_dirs.scriptdirs;
+		return rc_dirs.scriptdirs;
 	return scriptdirs;
 }
 
