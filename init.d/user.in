@@ -1,0 +1,25 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2017 The OpenRC Authors.
+# See the Authors file at the top-level directory of this distribution and
+# https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
+#
+# This file is part of OpenRC. It is subject to the license terms in
+# the LICENSE file found in the top-level directory of this
+# distribution and at https://github.com/OpenRC/openrc/blob/HEAD/LICENSE
+# This file may not be copied, modified, propagated, or distributed
+# except according to the terms contained in the LICENSE file.
+
+supervisor=supervise-daemon
+description="starts an openrc session for an user"
+user="${RC_SVCNAME#*.}"
+
+command="@RC_LIBEXECDIR@/bin/openrc-user"
+command_args="$user"
+
+start_pre() {
+	if [ "$user" = "$RC_SVCNAME" ]; then
+		eerror "${RC_SVCNAME} cannot be started directly. You must create"
+		eerror "symbolic links to it for the users you want to start"
+		return 1
+	fi
+}

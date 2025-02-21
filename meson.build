@@ -137,7 +137,6 @@ endif
 # warning) so we just silence the warning.
 cc_warning_flags_test = [
   '-Wcast-align',
-  '-Wcast-qual',
   '-Wdeclaration-after-statement',
   '-Wformat=2',
   '-Winline',
@@ -150,7 +149,6 @@ cc_warning_flags_test = [
   '-Wpointer-arith',
   '-Wsequence-point',
   '-Wshadow',
-  '-Wwrite-strings',
   '-Werror=implicit-int',
   '-Werror=implicit-function-declaration',
   '-Werror=int-conversion',
@@ -188,6 +186,7 @@ init_d_conf_data = configuration_data()
 init_d_conf_data.set('SBINDIR', sbindir)
 init_d_conf_data.set('PKG_PREFIX', pkg_prefix)
 init_d_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
+init_d_conf_data.set('RC_LIBEXECDIR', rc_libexecdir)
 
 dl_dep = cc.find_library('dl', required: false)
 util_dep = cc.find_library('util', required: false)
