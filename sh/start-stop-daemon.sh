@@ -56,6 +56,7 @@ ssd_start()
 		${pidfile:+--pidfile} $pidfile \
 		${command_user+--user} $command_user \
 		${umask+--umask} $umask \
+		${ready+--ready} $ready \
 		$_background $start_stop_daemon_args \
 		-- $command_args $command_args_background
 	if eend $? "Failed to start ${name:-$RC_SVCNAME}"; then
