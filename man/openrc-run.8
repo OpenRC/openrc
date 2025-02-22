@@ -243,6 +243,11 @@ Set the umask of the daemon.
 Keep in mind that eval is used to process chroot, command, command_args_*,
 command_user, pidfile and procname. This may affect how they are
 evaluated depending on how they are quoted.
+.It Ar ready
+.Xr start-stop-daemon 8
+and
+.Xr supervise-daemon 8
+will use this to wait until this daemon is ready. See their respective manpages.
 .El
 .Sh DEPENDENCIES
 You should define a

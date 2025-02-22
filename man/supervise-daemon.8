@@ -33,6 +33,7 @@ servicename
 .Ar arg
 .Fl k , -umask
 .Ar value
+.Fl -ready No fd: Ns Ar num
 .Fl m , -respawn-max
 .Ar count
 .Fl N , -nicelevel
@@ -116,6 +117,10 @@ Class can be 0 for none, 1 for real time, 2 for best effort and 3 for idle.
 Data can be from 0 to 7 inclusive.
 .It Fl k , -umask Ar mode
 Set the umask of the daemon.
+.It Fl -ready No fd: Ns Ar num
+Open file descriptor
+.Ar num
+as a pipe, and waits until the daemon writes a newline to it before exiting.
 .It Fl m , -respawn-max Ar count
 Sets the maximum number of times a daemon will be respawned. If a daemon
 crashes more than this number of times,
