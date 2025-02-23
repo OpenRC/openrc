@@ -1112,8 +1112,8 @@ int main(int argc, char **argv)
 		cloexec_fds_from(3);
 
 		if (ready.type == READY_FD) {
-			close(ready.pipe[0]);
-			dup2(ready.pipe[1], ready.fd);
+			if (close(ready.pipe[0]) == -1 || dup2(ready.pipe[1], ready.fd) == -1)
+				eerrorx("Failed to initialize ready fd.");
 		}
 
 		if (scheduler != NULL) {

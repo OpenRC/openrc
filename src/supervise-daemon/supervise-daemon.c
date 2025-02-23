@@ -591,8 +591,8 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 
 	cloexec_fds_from(3);
 
-	if (ready.type == READY_FD)
-		dup2(ready.pipe[1], ready.fd);
+	if (ready.type == READY_FD && dup2(ready.pipe[1], ready.fd) == -1)
+		eerrorx("Failed to initialize ready fd.");
 
 	cmdline = make_cmdline(argv);
 	syslog(LOG_INFO, "Child command line: %s", cmdline);
