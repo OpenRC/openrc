@@ -355,7 +355,7 @@ int main(int argc, char **argv)
 	int pipefd[2];
 	char readbuf[1];
 	ssize_t ss;
-	struct ready ready;
+	struct ready ready = {0};
 	int ret = EXIT_SUCCESS;
 
 	applet = basename_c(argv[0]);
