@@ -234,6 +234,11 @@ if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
 	done
 fi
 
+_usr_conf_d=${XDG_CONFIG_HOME:-${HOME}/.config}/rc
+if yesno "$RC_USER_SERVICES"; then
+	sourcex -e "$_usr_conf_d/rc.conf"
+fi
+
 _conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${RC_SVCNAME%%.*}
@@ -249,6 +254,13 @@ if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
 	sourcex -e "$_conf_d/$RC_SVCNAME"
 fi
 unset _conf_d
+
+if yesno "$RC_USER_SERVICES" && [ $_usr_conf_d != ${RC_SERVICE%/*} ]; then
+	if ! sourcex -e "$_usr_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
+		sourcex -e "$_usr_conf_d/$RC_SVCNAME"
+	fi
+fi
+unset _usr_conf_d
 
 # load service supervisor functions
 sourcex "@LIBEXECDIR@/sh/runit.sh"
