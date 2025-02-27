@@ -177,7 +177,7 @@ This allows to print colour-coded status notices and other things.
 To make the output consistent the bundled service scripts all use ebegin/eend to 
 print nice messages.
 
-# User services
+# User services -- Experimental
 
 OpenRC supports managing services for users.
 
