@@ -196,8 +196,7 @@ bool rc_runlevel_stopping(void);
  * This should allow the use if local init.d directories in the future. */
 
 /*! @brief States a service can be in */
-typedef enum
-{
+enum rc_service_state {
 	/* These are actual states
 	 * The service has to be in one only at all times */
 	RC_SERVICE_STOPPED     = 0x0001,
@@ -214,7 +213,7 @@ typedef enum
 	RC_SERVICE_SCHEDULED   = 0x0400,
 	RC_SERVICE_WASINACTIVE = 0x0800,
 	RC_SERVICE_CRASHED     = 0x1000,
-} RC_SERVICE;
+};
 
 /*! Add the service to the runlevel
  * @param runlevel to add to
@@ -258,7 +257,7 @@ bool rc_service_in_runlevel(const char *, const char *);
  * @param service to mark
  * @param state service should be in
  * @return true if service state change was successful, otherwise false */
-bool rc_service_mark(const char *, RC_SERVICE);
+bool rc_service_mark(const char *, enum rc_service_state);
 
 /*! Lists the extra commands a service has
  * @param service to load the commands from
@@ -289,7 +288,7 @@ bool rc_service_schedule_clear(const char *);
 /*! Checks if a service in in a state
  * @param service to check
  * @return state of the service */
-RC_SERVICE rc_service_state(const char *);
+enum rc_service_state rc_service_state(const char *);
 
 /*! Check if the service started the daemon
  * @param service to check
@@ -326,7 +325,7 @@ RC_STRINGLIST *rc_services_in_runlevel_stacked(const char *);
 /*! List the services in a state
  * @param state to list
  * @return NULL terminated list of services */
-RC_STRINGLIST *rc_services_in_state(RC_SERVICE);
+RC_STRINGLIST *rc_services_in_state(enum rc_service_state);
 
 /*! List the services scheduled to start when this one does
  * @param service to check

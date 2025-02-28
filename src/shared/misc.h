@@ -59,7 +59,7 @@ int parse_mode(mode_t *, char *);
 /* Handy function so we can wrap einfo around our deptree */
 RC_DEPTREE *_rc_deptree_load (int, int *);
 
-RC_SERVICE lookup_service_state(const char *service);
+enum rc_service_state lookup_service_state(const char *service);
 void from_time_t(char *time_string, time_t tv);
 time_t to_time_t(char *timestring);
 pid_t get_pid(const char *applet, const char *pidfile);

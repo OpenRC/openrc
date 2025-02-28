@@ -47,7 +47,7 @@
 FILE *rc_environ_fd = NULL;
 
 typedef struct rc_service_state_name {
-	RC_SERVICE state;
+	enum rc_service_state state;
 	const char *name;
 } rc_service_state_name_t;
 
@@ -358,7 +358,7 @@ rc_sys(void)
 }
 
 static const char *
-rc_parse_service_state(RC_SERVICE state)
+rc_parse_service_state(enum rc_service_state state)
 {
 	int i;
 
@@ -887,7 +887,7 @@ rc_service_in_runlevel(const char *service, const char *runlevel)
 }
 
 bool
-rc_service_mark(const char *service, const RC_SERVICE state)
+rc_service_mark(const char *service, const enum rc_service_state state)
 {
 	char *file, *was;
 	int i = 0;
@@ -1011,7 +1011,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 	return true;
 }
 
-RC_SERVICE
+enum rc_service_state
 rc_service_state(const char *service)
 {
 	int i;
@@ -1191,7 +1191,7 @@ rc_services_in_runlevel_stacked(const char *runlevel)
 }
 
 RC_STRINGLIST *
-rc_services_in_state(RC_SERVICE state)
+rc_services_in_state(enum rc_service_state state)
 {
 	RC_STRINGLIST *services;
 	RC_STRINGLIST *list;

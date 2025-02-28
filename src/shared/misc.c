@@ -454,7 +454,7 @@ out:
 
 static const struct {
 	const char * const name;
-	RC_SERVICE bit;
+	enum rc_service_state bit;
 } service_bits[] = {
 	{ "service_started",     RC_SERVICE_STARTED,     },
 	{ "service_stopped",     RC_SERVICE_STOPPED,     },
@@ -467,7 +467,7 @@ static const struct {
 	{ "service_crashed",     RC_SERVICE_CRASHED,     },
 };
 
-RC_SERVICE lookup_service_state(const char *service)
+enum rc_service_state lookup_service_state(const char *service)
 {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(service_bits); ++i)

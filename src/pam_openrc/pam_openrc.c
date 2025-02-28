@@ -17,7 +17,7 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 {
 	char *svc_name, *pam_lock, *logins, *script = NULL;
 	const char *username, *session;
-	RC_SERVICE service_status;
+	enum rc_service_state service_status;
 	int count = 0, fd, status;
 	int ret = PAM_SUCCESS;
 	struct passwd *user;

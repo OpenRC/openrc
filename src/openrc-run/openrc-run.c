@@ -178,7 +178,7 @@ static void
 start_services(RC_STRINGLIST *list)
 {
 	RC_STRING *svc;
-	RC_SERVICE state = rc_service_state(applet);
+	enum rc_service_state state = rc_service_state(applet);
 
 	if (!list)
 		return;
@@ -206,7 +206,7 @@ start_services(RC_STRINGLIST *list)
 static void
 restore_state(void)
 {
-	RC_SERVICE state;
+	enum rc_service_state state;
 
 	if (rc_in_plugin || exclusive_fd == -1)
 		return;
@@ -616,7 +616,7 @@ setup_deptypes(void)
 static void
 svc_start_check(void)
 {
-	RC_SERVICE state;
+	enum rc_service_state state;
 
 	state = rc_service_state(applet);
 
@@ -661,7 +661,7 @@ svc_start_deps(void)
 {
 	bool first;
 	RC_STRING *svc, *svc2;
-	RC_SERVICE state;
+	enum rc_service_state state;
 	int depoptions = RC_DEP_TRACE;
 	size_t len;
 	char *p, *tmp;
@@ -872,7 +872,7 @@ svc_start(void)
 }
 
 static int
-svc_stop_check(RC_SERVICE *state)
+svc_stop_check(enum rc_service_state *state)
 {
 	*state = rc_service_state(applet);
 
@@ -916,7 +916,7 @@ svc_stop_check(RC_SERVICE *state)
 }
 
 static void
-svc_stop_deps(RC_SERVICE state)
+svc_stop_deps(enum rc_service_state state)
 {
 	int depoptions = RC_DEP_TRACE;
 	RC_STRING *svc;
@@ -1043,7 +1043,7 @@ svc_stop_real(void)
 static int
 svc_stop(void)
 {
-	RC_SERVICE state;
+	enum rc_service_state state;
 
 	state = 0;
 	if (dry_run)

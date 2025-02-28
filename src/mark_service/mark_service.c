@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 	char *openrc_pid;
 	/* char *mtime; */
 	pid_t pid;
-	RC_SERVICE bit;
+	enum rc_service_state bit;
 	/* size_t l; */
 
 	applet = basename_c(argv[0]);

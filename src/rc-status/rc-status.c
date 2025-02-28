@@ -99,7 +99,7 @@ static void print_level(const char *prefix, const char *level,
 
 static char *get_uptime(const char *service)
 {
-	RC_SERVICE state = rc_service_state(service);
+	enum rc_service_state state = rc_service_state(service);
 	char *start_count;
 	char *start_time_string;
 	time_t start_time;
@@ -145,7 +145,7 @@ static void print_service(const char *service, enum format_t format)
 	char *start_time = NULL;
 	int cols;
 	const char *c = ecolor(ECOLOR_GOOD);
-	RC_SERVICE state = rc_service_state(service);
+	enum rc_service_state state = rc_service_state(service);
 	ECOLOR color = ECOLOR_BAD;
 
 	if (state & RC_SERVICE_STOPPING)
@@ -261,7 +261,7 @@ static void print_stacked_services(const char *runlevel, enum format_t format)
 
 int main(int argc, char **argv)
 {
-	RC_SERVICE state;
+	enum rc_service_state state;
 	RC_STRING *s, *l, *t, *level;
 	enum format_t format = FORMAT_DEFAULT;
 	bool levels_given = false;

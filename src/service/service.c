@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	char *service;
 	char *exec;
 	int idx = 0;
-	RC_SERVICE state, bit;
+	enum rc_service_state state, bit;
 
 	applet = basename_c(argv[0]);
 	if (argc > 1)

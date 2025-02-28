@@ -214,7 +214,7 @@ rc_deptree_load_file(const char *deptree_file)
 static bool
 valid_service(const char *runlevel, const char *service, const char *type)
 {
-	RC_SERVICE state;
+	enum rc_service_state state;
 
 	if (!runlevel ||
 	    strcmp(type, "ineed") == 0 ||
@@ -246,10 +246,10 @@ valid_service(const char *runlevel, const char *service, const char *type)
 static bool
 get_provided1(const char *runlevel, RC_STRINGLIST *providers,
 	      RC_DEPTYPE *deptype, const char *level,
-	      bool hotplugged, RC_SERVICE state)
+	      bool hotplugged, enum rc_service_state state)
 {
 	RC_STRING *service;
-	RC_SERVICE st;
+	enum rc_service_state st;
 	bool retval = false;
 	bool ok;
 	const char *svc;

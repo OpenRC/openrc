@@ -559,7 +559,7 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 	RC_STRING *service, *svc1, *svc2;
 	RC_STRINGLIST *deporder, *tmplist, *kwords;
 	RC_STRINGLIST *types_nw_save = NULL;
-	RC_SERVICE state;
+	enum rc_service_state state;
 	RC_STRINGLIST *nostop;
 	bool crashed, nstop;
 
@@ -666,7 +666,7 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 	RC_STRING *service;
 	pid_t pid;
 	bool interactive = false;
-	RC_SERVICE state;
+	enum rc_service_state state;
 	bool crashed = false;
 	char *interactive_dir;
 

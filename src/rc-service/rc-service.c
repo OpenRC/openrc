@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 	char *service;
 	RC_STRINGLIST *list;
 	RC_STRING *s;
-	RC_SERVICE state;
+	enum rc_service_state state;
 	bool if_crashed = false;
 	bool if_exists = false;
 	bool if_inactive = false;
