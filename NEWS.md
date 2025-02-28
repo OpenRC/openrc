@@ -4,13 +4,16 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
-## OpenRC 0.57
+## OpenRC 0.60
 
 openrc now supports s6 "fd" style readiness notification via the `ready`
 variable.
 
 openrc now supports running services in a user session via the --user flag
 and an optional pam module
+
+Both of these features are currently experimental, so it is important to
+report bugs.
 
 ## OpenRC 0.56
 
