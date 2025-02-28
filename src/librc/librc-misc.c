@@ -418,7 +418,7 @@ rc_conf_value(const char *setting)
 	}
 
 	xasprintf(&conf, "%s/%s", sysconfdir, "rc.conf");
-	rc_conf_append(sysconfdir);
+	rc_conf_append(conf);
 	free(conf);
 
 	/* Support old configs. */
