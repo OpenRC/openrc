@@ -84,8 +84,6 @@ int main(int argc, char **argv) {
 	setenv("EINFO_LOG", log, true);
 	free(log);
 
-	elog(LOG_INFO, "uid %ud, gid %ud, euid %ud, egid %ud.", getuid(), getgid(), geteuid(), getegid());
-
 #ifdef HAVE_PAM
 	if ((rc = pam_start("openrc-user", user->pw_name, &conv, &pamh)) != PAM_SUCCESS)
 		elog(LOG_ERR, "Failed to start pam: %s", pam_strerror(pamh, rc));
@@ -106,8 +104,6 @@ int main(int argc, char **argv) {
 		pamh = NULL;
 	}
 #endif
-
-	elog(LOG_INFO, "uid %ud, gid %ud, euid %ud, egid %ud.", getuid(), getgid(), geteuid(), getegid());
 
 	if (!spawn_openrc(user, true)) {
 		ret = -1;

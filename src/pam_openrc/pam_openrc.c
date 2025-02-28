@@ -16,15 +16,19 @@ static int
 exec_openrc(pam_handle_t *pamh, bool opening)
 {
 	char *svc_name, *pam_lock, *logins, *script = NULL;
-	const char *username, *session;
+	const char *username = NULL, *session = NULL;
 	RC_SERVICE service_status;
 	int count = 0, fd, status;
 	int ret = PAM_SUCCESS;
 	struct passwd *user;
 	pid_t pid = -1;
 
-	if (pam_get_item(pamh, PAM_SERVICE, (const void **)&session) != PAM_SUCCESS)
+	setenv("EINFO_LOG", "pam_openrc", true);
+
+	if (pam_get_item(pamh, PAM_SERVICE, (const void **)&session) != PAM_SUCCESS) {
+		elog(LOG_ERR, "Failed to get PAM_SERVICE");
 		return PAM_SESSION_ERR;
+	}
 
 	if (session && strcmp(session, "openrc-user") == 0)
 		return PAM_SUCCESS;
@@ -32,8 +36,15 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 	if (pam_get_item(pamh, PAM_USER, (const void **)&username) != PAM_SUCCESS)
 		return PAM_SESSION_ERR;
 
-	if (!username || !(user = getpwnam(username)))
+	if (!username) {
+		elog(LOG_ERR, "PAM_USER unset.");
 		return PAM_SESSION_ERR;
+	}
+
+	if (!(user = getpwnam(username))) {
+		elog(LOG_ERR, "User '%s' not found.", username);
+		return PAM_SESSION_ERR;
+	}
 
 	if (user->pw_uid == 0)
 		return PAM_SUCCESS;
