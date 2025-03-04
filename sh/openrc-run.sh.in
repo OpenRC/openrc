@@ -164,6 +164,10 @@ _status()
 default_start()
 {
 	local func=ssd_start
+
+	: ${output_logger=${rc_output_logger-"logger -t 'openrc[$RC_SVCNAME]' -p daemon.notice"}}
+	: ${error_logger=${rc_error_logger-"logger -t 'openrc[$RC_SVCNAME]' -p daemon.err"}}
+
 	case "$supervisor" in
 		runit) func=runit_start ;;
 		s6) func=s6_start ;;
