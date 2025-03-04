@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 
 #include "queue.h"
@@ -446,4 +447,40 @@ rc_conf_value(const char *setting)
 	}
 
 	return rc_config_value(rc_conf, setting);
+}
+
+bool rc_export_variable(const char *service, const char *name, const char *value) {
+	FILE *envfile;
+	int dirfd;
+
+	if (!service)
+		service = "rc";
+
+	if ((dirfd = openat(rc_dirfd(RC_DIR_ENVIRONMENT), service, O_RDONLY | O_DIRECTORY)) == -1) {
+		if (errno != ENOENT || mkdirat(rc_dirfd(RC_DIR_ENVIRONMENT), service, 0644) == -1)
+			return false;
+		if ((dirfd = openat(rc_dirfd(RC_DIR_ENVIRONMENT), service, O_RDONLY | O_DIRECTORY)) == -1)
+			return false;
+	}
+
+	if (!value) {
+		unlinkat(dirfd, name, 0);
+		return true;
+	}
+
+	envfile = do_fopenat(dirfd, name, O_WRONLY | O_TRUNC | O_CREAT);
+	close(dirfd);
+
+	if (!envfile)
+		return false;
+
+	/* in case of a race for the same variable, for the same service
+	 * at the same time, let's just use the first that locked. */
+	if (flock(fileno(envfile), LOCK_EX) == -1) {
+		fclose(envfile);
+		return false;
+	}
+
+	fputs(value, envfile);
+	return fclose(envfile) == 0;
 }

@@ -209,6 +209,7 @@ enum rc_dir {
 	RC_DIR_OPTIONS,
 	RC_DIR_EXCLUSIVE,
 	RC_DIR_SCHEDULED,
+	RC_DIR_ENVIRONMENT,
 	RC_DIR_INITD,
 	RC_DIR_TMP,
 	RC_DIR_SYS_MAX,
@@ -346,6 +347,13 @@ char *rc_service_value_get(const char *, const char *);
  * @param value of the option
  * @return true if saved, otherwise false */
 bool rc_service_value_set(const char *, const char *, const char *);
+
+/*! Exports a variable into the enviroment for services
+ * @param service name, if null exports to the global environment
+ * @param name
+ * @param value
+ * @return true on success, false on IO error. */
+bool rc_export_variable(const char *, const char *, const char *);
 
 /*! List the services in a runlevel
  * @param runlevel to list
