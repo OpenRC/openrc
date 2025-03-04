@@ -32,9 +32,10 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *usagestring = ""
-	"Usage: rc-update [options] add <service> [<runlevel>...]\n"
-	"   or: rc-update [options] del <service> [<runlevel>...]\n"
+const char *usagestring = ""							\
+	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] export <variables>...\n"	\
 	"   or: rc-update [options] [show [<runlevel>...]]";
 const char getoptstring[] = "asu" getoptstring_COMMON;
 const struct option longopts[] = {
@@ -191,11 +192,27 @@ show(RC_STRINGLIST *runlevels)
 	rc_stringlist_free(services);
 }
 
+static void
+export(char *variable)
+{
+	char *value = variable;
+	variable = strsep(&value, "=");
+
+	if (!value && !(value = getenv(variable))) {
+		ewarn("%s: environment variable %s not set, skipping.", applet, variable);
+		return;
+	}
+
+	if (!rc_export_variable(NULL, variable, value))
+		eerror("%s: failed to export '%s=%s'", applet, variable, value);
+}
+
 enum update_action {
 	DO_NONE,
 	DO_ADD,
 	DO_DELETE,
 	DO_SHOW,
+	DO_EXPORT
 };
 
 int main(int argc, char **argv)
@@ -239,6 +256,8 @@ int main(int argc, char **argv)
 			action = DO_DELETE;
 		} else if (strcmp(argv[optind], "show") == 0) {
 			action = DO_SHOW;
+		} else if (strcmp(argv[optind], "export") == 0) {
+			action = DO_EXPORT;
 		} else {
 			eerror("%s: invalid command '%s'", applet, argv[optind]);
 			usage(EXIT_FAILURE);
@@ -249,20 +268,22 @@ int main(int argc, char **argv)
 		action = DO_SHOW;
 
 	if (optind >= argc && action != DO_SHOW) {
-		eerror("%s: no service specified", applet);
+		eerror("%s: no %s specified", applet, action == DO_EXPORT ? "variable" : "service");
 		usage(EXIT_FAILURE);
 	}
 
-	service = argv[optind];
-	optind++;
+	if (action != DO_EXPORT) {
+		service = argv[optind];
+		optind++;
 
-	runlevels = rc_stringlist_new();
-	while (optind < argc) {
-		if (rc_runlevel_exists(argv[optind])) {
-			rc_stringlist_add(runlevels, argv[optind++]);
-		} else {
-			rc_stringlist_free(runlevels);
-			eerrorx("%s: '%s' is not a valid runlevel", applet, argv[optind]);
+		runlevels = rc_stringlist_new();
+		while (optind < argc) {
+			if (rc_runlevel_exists(argv[optind])) {
+				rc_stringlist_add(runlevels, argv[optind++]);
+			} else {
+				rc_stringlist_free(runlevels);
+				eerrorx("%s: '%s' is not a valid runlevel", applet, argv[optind]);
+			}
 		}
 	}
 
@@ -283,6 +304,10 @@ int main(int argc, char **argv)
 		rc_stringlist_sort(&runlevels);
 		show(runlevels);
 		goto exit;
+	case DO_EXPORT:
+		while (optind < argc)
+			export(argv[optind++]);
+		return 0;
 	case DO_ADD:
 		if (all_runlevels) {
 			rc_stringlist_free(runlevels);
