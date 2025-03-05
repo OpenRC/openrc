@@ -199,10 +199,10 @@ used to store state for openrc itself and the services it runs.
 
 OpenRC supports automatically managing user service sessions via PAM modules.
 
-Add `pam_openrc.so` to the pam configuration of the prefered login method
+Add `pam_openrc.so` to the pam configuration of the preferred login method
 (i.e. login, ssh), and set up the pam configuration for `openrc-user` as to
 a similar configuration as a usual login session (if XDG_RUNTIME_DIR is set
-via pam modules, it should be include, as well as anything required for a
+via pam modules, it should be included, as well as anything required for a
 usual user session).
 
 ## Launching at boot
