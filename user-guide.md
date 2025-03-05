@@ -189,7 +189,7 @@ and similarly options set in ~/.config/rc/rc.conf overrides /etc/rc.conf.
 
 Runlevels are kept in ~/.config/rc/runlevels.
 
-`openrc` and all `rc-*` tools provie a --user/-U flag to operate with user-mode
+`openrc` and all `rc-*` tools provide a --user/-U flag to operate with user-mode
 services and runlevels.
 
 The XDG_RUNTIME_DIR variable must be set before calling openrc --user, as it's
