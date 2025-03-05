@@ -333,6 +333,11 @@ RC_STRINGLIST *rc_services_in_state(RC_SERVICE);
  * @return  NULL terminated list of services */
 RC_STRINGLIST *rc_services_scheduled(const char *);
 
+/*! Exports a variable into the enviroment for services
+ * @param name
+ * @param value */
+void rc_export_variable(const char *, const char *);
+
 /*! Checks that all daemons started with start-stop-daemon by the service
  * are still running.
  * @param service to check
