@@ -64,7 +64,8 @@ else
   cc_pam_flags = []
 endif
 
-if not pam_dep.found() and get_option('pam')
+pam_required = get_option('pam') or get_option('pam_user')
+if not pam_dep.found() and pam_required
   error('Pam was requested but could not be located')
 endif
 
@@ -98,12 +99,12 @@ selinux_dep = dependency('libselinux', required : get_option('selinux'))
 pam_misc_dep = []
 if selinux_dep.found()
   cc_selinux_flags = '-DHAVE_SELINUX'
-  if pam_dep.found() and get_option('pam')
+  if pam_dep.found() and pam_required
     pam_misc_dep = dependency('pam_misc', required: false)
     if not pam_misc_dep.found()
       pam_misc_dep = cc.find_library('pam_misc', required: false)
     endif
-    if not pam_misc_dep.found() and get_option('pam')
+    if not pam_misc_dep.found() and pam_required
       error('Pam was requested but could not be located')
     endif
   else

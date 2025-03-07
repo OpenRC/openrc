@@ -1,4 +1,4 @@
-if get_option('pam') and pam_dep.found()
+if (get_option('pam') or get_option('pam_user')) and pam_dep.found()
   shared_module('pam_openrc',
     ['pam_openrc.c', misc_c, version_h],
     c_args : [cc_branding_flags],
