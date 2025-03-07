@@ -58,16 +58,28 @@ rc_conf_yesno(const char *setting)
 	return rc_yesno(rc_conf_value (setting));
 }
 
-static const char *const env_whitelist[] = {
+static const char *const env_allowlist[] = {
 	"EERROR_QUIET", "EINFO_QUIET",
 	"IN_BACKGROUND", "IN_DRYRUN", "IN_HOTPLUG",
-	"RC_DEBUG", "RC_NODEPS",
+	"RC_DEBUG", "RC_NODEPS", "RC_USER_SERVICES",
 	"LANG", "LC_MESSAGES", "TERM",
 	"EINFO_COLOR", "EINFO_VERBOSE",
-	"RC_USER_SERVICES", "HOME",
-	"XDG_RUNTIME_DIR", "XDG_CONFIG_HOME",
 	NULL
 };
+
+static const char *const usrenv_allowlist[] = {
+	"HOME", "XDG_RUNTIME_DIR", "XDG_CONFIG_HOME",
+	NULL
+};
+
+static bool
+env_allowed(const char *const list[], const char *value)
+{
+	for (size_t i = 0; list[i]; i++)
+		if (strcmp(list[i], value) == 0)
+			return true;
+	return false;
+}
 
 void
 env_filter(void)
@@ -115,11 +127,9 @@ env_filter(void)
 
 	TAILQ_FOREACH(env, env_list, entries) {
 		/* Check the whitelist */
-		for (i = 0; env_whitelist[i]; i++) {
-			if (strcmp(env_whitelist[i], env->value) == 0)
-				break;
-		}
-		if (env_whitelist[i])
+		if (env_allowed(env_allowlist, env->value))
+			continue;
+		if (rc_is_user() && env_allowed(usrenv_allowlist, env->value))
 			continue;
 
 		/* Check our user defined list */
