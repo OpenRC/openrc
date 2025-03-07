@@ -1332,7 +1332,6 @@ int main(int argc, char **argv)
 			rc_stringlist_free(services);
 			services = NULL;
 		} else if (strcmp (optarg, "status") == 0) {
-			char *save = prefix;
 			eprefix(NULL);
 			prefix = NULL;
 			retval = svc_exec("status", NULL);
