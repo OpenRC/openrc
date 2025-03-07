@@ -130,25 +130,20 @@ elif os == 'GNU'
   cc_os_flags = ['-D_DEFAULT_SOURCE', '-DPATH_MAX=4096']
 endif
 
-# Try and use some good cc flags if we're building from git. We don't use
-# -pedantic as it will warn about our perfectly valid use of %m in our logger.
-# We should be using -Wredundant-decls, but our library hidden proto stuff gives
-# loads of warnings. I don't fully understand it (the hidden proto, not the
-# warning) so we just silence the warning.
+# The following warnings are not included in warning_level = 3, but we
+# are keeping them for now.
 cc_warning_flags_test = [
   '-Wcast-align',
   '-Wcast-qual',
   '-Wdeclaration-after-statement',
   '-Wformat=2',
   '-Winline',
-  '-Wmismatched-dealloc',
   '-Wmissing-declarations',
   '-Wmissing-format-attribute',
   '-Wmissing-noreturn',
   '-Wmissing-prototypes',
   '-Wnested-externs',
   '-Wpointer-arith',
-  '-Wsequence-point',
   '-Wshadow',
   '-Wwrite-strings',
   '-Werror=implicit-int',
