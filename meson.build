@@ -92,6 +92,11 @@ rc_shdir = rc_libexecdir / 'sh'
 sbindir = get_option('prefix') / get_option('sbindir')
 pamdir = get_option('sysconfdir') / 'pam.d'
 
+pam_libdir = get_option('pam_libdir')
+if pam_libdir == ''
+  pam_libdir = libdir / 'security'
+endif
+
 crypt_dep = []
 
 selinux_dep = dependency('libselinux', required : get_option('selinux'))

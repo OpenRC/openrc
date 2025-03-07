@@ -7,5 +7,5 @@ if get_option('pam') and pam_dep.found()
     link_with : [libeinfo, librc],
     include_directories : [incdir, einfo_incdir, rc_incdir],
     install : true,
-    install_dir : libdir / 'security')
+    install_dir : pam_libdir)
 endif
