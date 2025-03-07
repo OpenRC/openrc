@@ -776,6 +776,7 @@ int main(int argc, char **argv)
 	char *rc_starting, *rc_stopping;
 	char *deptree_skewed;
 	char *krunlevel = NULL;
+	const char *workingdir = "/";
 	char *pidstr = NULL;
 	int opt;
 	bool parallel;
@@ -801,10 +802,6 @@ int main(int argc, char **argv)
 
 	argc--;
 	argv++;
-
-	/* Change dir to / to ensure all scripts don't use stuff in pwd */
-	if (chdir("/") == -1)
-		eerror("chdir: %s", strerror(errno));
 
 	/* complain about old configuration settings if they exist */
 	if (exists(RC_CONF_OLD)) {
@@ -852,6 +849,14 @@ int main(int argc, char **argv)
 		case_RC_COMMON_GETOPT
 		}
 	}
+
+	/* Change dir to / to ensure all init scripts don't use stuff in pwd
+	 * For user services, change to the user's HOME instead. */
+	if (rc_is_user() && !(workingdir = getenv("HOME")))
+		eerrorx("HOME is unset.");
+
+	if (chdir(workingdir) == -1)
+		eerror("chdir: %s", strerror(errno));
 
 	/* Ensure our environment is pure
 	 * Also, add our configuration to it */
