@@ -110,6 +110,20 @@ write_time(FILE *f, const char *s)
 	fflush(f);
 }
 
+static void
+mkpath(const char *path)
+{
+	char *dir = xstrdup(path), *slash = dir;
+	while ((slash = strchr(slash + 1, '/'))) {
+		*slash = '\0';
+		if (mkdir(path, 0755) == -1 && errno != EEXIST)
+			break;
+		*slash = '/';
+	}
+	mkdir(path, 0755);
+	free(dir);
+}
+
 void
 rc_logger_close(void)
 {
@@ -145,7 +159,7 @@ rc_logger_open(const char *level)
 	FILE *log = NULL;
 	FILE *plog = NULL;
 	const char *logfile;
-	char *tmplog;
+	char *tmplog, *usrlog = NULL;
 	int log_error = 0;
 
 	if (!rc_conf_yesno("rc_logger"))
@@ -248,8 +262,21 @@ rc_logger_open(const char *level)
 
 		/* Append the temporary log to the real log */
 		logfile = rc_conf_value("rc_log_path");
-		if (logfile == NULL)
-			logfile = DEFAULTLOG;
+		if (logfile == NULL) {
+			if (!rc_is_user()) {
+				logfile = DEFAULTLOG;
+			} else {
+				const char *state_home = getenv("XDG_STATE_HOME");
+				if (state_home) {
+					xasprintf(&usrlog, "%s/rc.log", state_home);
+				} else if ((state_home = getenv("HOME"))) {
+					xasprintf(&usrlog, "%s/.local/state/rc.log", state_home);
+					state_home = ".local/state";
+				}
+				mkpath(state_home);
+				logfile = usrlog;
+			}
+		}
 		if (!strcmp(logfile, tmplog)) {
 			eerror("Cowardly refusing to concatenate a logfile into itself.");
 			eerrorx("Please change rc_log_path to something other than %s to get rid of this message", tmplog);
@@ -281,6 +308,8 @@ rc_logger_open(const char *level)
 				eerror("Error: fopen(%s) failed: %s", logfile, strerror(errno));
 			}
 		}
+
+		free(usrlog);
 
 		/* Try to keep the temporary log in case of errors */
 		if (!log_error) {
