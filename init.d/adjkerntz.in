@@ -14,7 +14,7 @@ extra_commands="save"
 description="Sets the local clock to UTC or Local Time."
 description_save="Saves the current time in the BIOS."
 
-: ${clock:=${CLOCK:-UTC}}
+: "${clock:=${CLOCK:-UTC}}"
 if [ "$clock" = "UTC" ]; then
 	utc="UTC"
 else

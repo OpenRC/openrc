@@ -12,7 +12,7 @@
 description="Configures terminal encoding."
 
 ttyn=${rc_tty_number:-${RC_TTY_NUMBER:-12}}
-: ${unicode:=${UNICODE}}
+: "${unicode:=${UNICODE}}"
 
 depend()
 {
