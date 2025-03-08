@@ -17,8 +17,8 @@ depend()
 	keyword -prefix -timeout
 }
 
-: ${wipe_tmp:=${WIPE_TMP:-yes}}
-: ${log_dmesg:=${LOG_DMESG:-yes}}
+: "${wipe_tmp:=${WIPE_TMP:-yes}}"
+: "${log_dmesg:=${LOG_DMESG:-yes}}"
 
 cleanup_tmp_dir()
 {
