@@ -15,10 +15,10 @@ description="Sets the local clock to UTC or Local Time."
 description_save="Saves the current time in the BIOS."
 description_show="Displays the current time in the BIOS."
 
-: ${clock_adjfile:=${CLOCK_ADJFILE}}
-: ${clock_args:=${CLOCK_OPTS}}
-: ${clock_systohc:=${CLOCK_SYSTOHC}}
-: ${clock:=${CLOCK:-UTC}}
+: "${clock_adjfile:=${CLOCK_ADJFILE}}"
+: "${clock_args:=${CLOCK_OPTS}}"
+: "${clock_systohc:=${CLOCK_SYSTOHC}}"
+: "${clock:=${CLOCK:-UTC}}"
 if [ "$clock" = "UTC" ]; then
 	utc="UTC"
 	utc_cmd="--utc"

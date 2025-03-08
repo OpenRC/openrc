@@ -9,7 +9,7 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
-: ${urandom_seed:=${URANDOM_SEED:-/var/lib/misc/random-seed}}
+: "${urandom_seed:=${URANDOM_SEED:-/var/lib/misc/random-seed}}"
 description="Initializes the random number generator."
 
 depend()
