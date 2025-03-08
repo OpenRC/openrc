@@ -75,6 +75,7 @@ int main(int argc, char **argv) {
 	}
 
 	setenv("USER", user->pw_name, true);
+	setenv("LOGNAME", user->pw_name, true);
 	setenv("HOME", user->pw_dir, true);
 	setenv("SHELL", user->pw_shell, true);
 
