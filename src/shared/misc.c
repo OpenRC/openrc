@@ -584,8 +584,8 @@ bool ready_wait(const char *applet, struct ready ready)
 }
 
 #ifndef HAVE_CLOSE_RANGE
-static inline int close_range(int first RC_UNUSED,
-			      int last RC_UNUSED,
+static inline int close_range(unsigned int first RC_UNUSED,
+			      unsigned int last RC_UNUSED,
 			      unsigned int flags RC_UNUSED)
 {
 #ifdef SYS_close_range
