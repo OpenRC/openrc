@@ -46,11 +46,11 @@ int rc_pipe_command(char *cmd)
 		close(pfd[pipe_write_end]);
 		if (pfd[pipe_read_end] != STDIN_FILENO) {
 			if (dup2(pfd[pipe_read_end], STDIN_FILENO) < 0)
-				exit(1);
+				_exit(1);
 			close(pfd[pipe_read_end]);
 		}
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
-		exit(1);
+		_exit(1);
 	} else {
 		/* error */
 		close(pfd[pipe_read_end]);
