@@ -144,10 +144,11 @@ void broadcast(char *text)
 
 	setutxent();
 
+	size_t len_path_dev = strlen(_PATH_DEV);
 	while ((utmp = getutxent()) != NULL) {
 		if (utmp->ut_type != USER_PROCESS || utmp->ut_user[0] == 0)
 			continue;
-		if (strncmp(utmp->ut_line, _PATH_DEV, strlen(_PATH_DEV)) == 0)
+		if (strncmp(utmp->ut_line, _PATH_DEV, len_path_dev) == 0)
 			xasprintf(&term, "%s", utmp->ut_line);
 		else
 			xasprintf(&term, "%s%s", _PATH_DEV, utmp->ut_line);

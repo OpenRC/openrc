@@ -224,8 +224,8 @@ static void rc_config_set_value(RC_STRINGLIST *config, char *value)
 	replaced = false;
 	/* In shells the last item takes precedence, so we need to remove
 	   any prior values we may already have */
+	i = strlen(entry);
 	TAILQ_FOREACH(cline, config, entries) {
-		i = strlen(entry);
 		if (strncmp(entry, cline->value, i) == 0 && cline->value[i] == '=') {
 			/* We have a match now - to save time we directly replace it */
 			free(cline->value);

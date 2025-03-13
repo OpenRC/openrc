@@ -158,6 +158,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 			my_ns[0] = '\0';
 	}
 
+	size_t len_my_ns = strlen(my_ns);
 	while ((entry = readdir(procdir)) != NULL) {
 		if (sscanf(entry->d_name, "%d", &p) != 1)
 			continue;
@@ -172,7 +173,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 				proc_ns[0] = '\0';
 		}
 		free(buffer);
-		if (pid == 0 && strlen(my_ns) && strlen (proc_ns) && strcmp(my_ns, proc_ns))
+		if (pid == 0 && len_my_ns && strlen (proc_ns) && strcmp(my_ns, proc_ns))
 			continue;
 		if (uid) {
 			xasprintf(&buffer, "/proc/%d", p);
