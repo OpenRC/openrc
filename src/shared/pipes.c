@@ -51,6 +51,10 @@ int rc_pipe_command(char *cmd)
 		}
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
 		exit(1);
+	} else {
+		/* error */
+		close(pfd[pipe_read_end]);
+		close(pfd[pipe_write_end]);
 	}
 	return -1;
 }
