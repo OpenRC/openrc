@@ -42,14 +42,15 @@ Each list should be freed using
 when done.
 .Pp
 .Fn rc_yesno
-returns if
+returns true if
 .Fa value
-is true, yes, on or 1 regardless of case, otherwise false.
-If
+is "true", "yes", "y" or "1" regardless of case. Otherwise if
 .Fa value
-is also not false, no, off or 0 regardless of case then
+is "false", "no", "n" or "0" (regardless of case) returns false. If
+.Fa value
+does not match either, then returns false and sets
 .Va errno
-is set to
+to
 .Va EINVAL .
 .Sh SEE ALSO
 .Xr malloc 3 ,
