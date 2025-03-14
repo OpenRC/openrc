@@ -28,7 +28,7 @@ static const int pipe_write_end = 1;
  * Starts a command with stdin redirected from a pipe
  * Returns the write end of the pipe or -1
  */
-int rc_pipe_command(char *cmd)
+int rc_pipe_command(char *cmd, int devnullfd)
 {
 	int pfd[2];
 	pid_t pid;
@@ -49,6 +49,8 @@ int rc_pipe_command(char *cmd)
 				_exit(1);
 			close(pfd[pipe_read_end]);
 		}
+		dup2(devnullfd, STDOUT_FILENO);
+		dup2(devnullfd, STDERR_FILENO);
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
 		_exit(1);
 	} else {
