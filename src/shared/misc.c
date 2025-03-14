@@ -171,7 +171,7 @@ env_config(void)
 	const char *sys = rc_sys();
 	const char *svcdir = rc_svcdir();
 	char *buffer = NULL;
-	char *tmpdir;
+	char *tmpdir, *cachedir = NULL;
 	size_t size = 0;
 
 	/* Ensure our PATH is prefixed with the system locations first
@@ -202,17 +202,27 @@ env_config(void)
 	}
 
 	xasprintf(&tmpdir, "%s/tmp", svcdir);
+	if (rc_is_user()) {
+		const char *cache_home = getenv("XDG_CACHE_HOME");
+		if (cache_home)
+			xasprintf(&cachedir, "%s/rc", cache_home);
+		else if ((cache_home = getenv("HOME")))
+			xasprintf(&cachedir, "%s/.cache/rc", cache_home);
+	}
+
 	e = rc_runlevel_get();
 
 	setenv("RC_VERSION", VERSION, 1);
 	setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 1);
 	setenv("RC_SVCDIR", svcdir, 1);
 	setenv("RC_TMPDIR", tmpdir, 1);
+	setenv("RC_CACHEDIR", cachedir ? cachedir : "/var/cache/rc", 1);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);
 	setenv("RC_RUNLEVEL", e, 1);
 
 	free(e);
 	free(tmpdir);
+	free(cachedir);
 
 	if ((fp = fopen(RC_KRUNLEVEL, "r"))) {
 		if (xgetline(&buffer, &size, fp) != -1)
