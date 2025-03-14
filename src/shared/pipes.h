@@ -13,6 +13,6 @@
 #ifndef RC_PIPES_H
 #define RC_PIPES_H
 
-int rc_pipe_command(char *cmd);
+int rc_pipe_command(char *cmd, int devnullfd);
 
 #endif
