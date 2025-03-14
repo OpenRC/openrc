@@ -92,7 +92,8 @@ ls_dir(const char *dir, int options)
 				xasprintf(&file, "%s/%s", dir, d->d_name);
 				r = stat(file, &buf);
 				free(file);
-				if (r != 0)
+				/* stacked runlevels are not init scripts */
+				if (r != 0 || S_ISDIR(buf.st_mode))
 					continue;
 
 				/* .sh files are not init scripts */
