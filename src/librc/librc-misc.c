@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 
 #include "queue.h"
@@ -442,4 +443,31 @@ rc_conf_value(const char *setting)
 	}
 
 	return rc_config_value(rc_conf, setting);
+}
+
+bool rc_export_variable(const char *name, const char *value) {
+	char *envpath;
+	FILE *envfile;
+	bool retval;
+
+	xasprintf(&envpath, "%s/env", rc_svcdir());
+	envfile = fopen(envpath, "a+");
+	free(envpath);
+
+	if (!envfile)
+		return false;
+
+	if (flock(fileno(envfile), LOCK_EX) == -1) {
+		fclose(envfile);
+		return false;
+	}
+
+	/* TODO: Remove repeated entries, before inserting a new one. */
+	fprintf(envfile, "export %s=%s\n", name, value);
+
+	fflush(envfile);
+	retval = !ferror(envfile);
+	fclose(envfile);
+
+	return retval;
 }
