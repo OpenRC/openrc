@@ -1079,7 +1079,7 @@ int main(int argc, char **argv)
 				    " for stdout `%s': %s",
 				    applet, redirect_stdout, strerror(errno));
 		}else if (stdout_process) {
-			stdout_fd = rc_pipe_command(stdout_process);
+			stdout_fd = rc_pipe_command(stdout_process, devnull_fd);
 			if (stdout_fd == -1)
 				eerrorx("%s: unable to open the logging process"
 				    " for stdout `%s': %s",
@@ -1093,7 +1093,7 @@ int main(int argc, char **argv)
 				    " for stderr `%s': %s",
 				    applet, redirect_stderr, strerror(errno));
 		}else if (stderr_process) {
-			stderr_fd = rc_pipe_command(stderr_process);
+			stderr_fd = rc_pipe_command(stderr_process, devnull_fd);
 			if (stderr_fd == -1)
 				eerrorx("%s: unable to open the logging process"
 				    " for stderr `%s': %s",
