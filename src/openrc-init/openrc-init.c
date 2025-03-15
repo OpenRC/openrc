@@ -31,6 +31,8 @@
 #include <sys/reboot.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
+#include <poll.h>
 #include <utmp.h>
 
 #ifdef HAVE_SELINUX
@@ -44,6 +46,7 @@
 
 static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
+static int sigpipe[2] = { -1, -1 };
 
 static void do_openrc(const char *runlevel)
 {
@@ -184,9 +187,21 @@ static void handle_single(void)
 	do_openrc("single");
 }
 
-static void reap_zombies(void)
+static void signal_handler(int sig)
 {
+	int saved_errno = errno;
+	write(sigpipe[1], &sig, sizeof(sig));
+	/* ensure the errno doesn't get clobbered in the rare (impossible?)
+	 * case that the write above fails */
+	errno = saved_errno;
+}
+
+static void reap_zombies(int sig)
+{
+	char errmsg[] = "waitpid failed\n";
+	int saved_errno = errno;
 	pid_t pid;
+	(void)sig; /* unused */
 
 	for (;;) {
 		pid = waitpid(-1, NULL, WNOHANG);
@@ -195,39 +210,18 @@ static void reap_zombies(void)
 		else if (pid == -1) {
 			if (errno == ECHILD)
 				break;
-			perror("waitpid");
+			write(2, errmsg, sizeof(errmsg) - 1);
 			continue;
 		}
 	}
-}
-
-static void signal_handler(int sig)
-{
-	switch (sig) {
-		case SIGINT:
-			handle_shutdown("reboot", RB_AUTOBOOT);
-			break;
-		case SIGTERM:
-#ifdef SIGPWR
-		case SIGPWR:
-#endif
-			handle_shutdown("shutdown", RB_HALT_SYSTEM);
-			break;
-		case SIGCHLD:
-			reap_zombies();
-			break;
-		default:
-			printf("Unknown signal received, %d\n", sig);
-			break;
-	}
+	errno = saved_errno;
 }
 
 int main(int argc, char **argv)
 {
 	char *default_runlevel;
 	char buf[2048];
-	int count;
-	FILE *fifo;
+	int count, fifo, sig;
 	bool reexec = false;
 	sigset_t signals;
 	struct sigaction sa;
@@ -261,6 +255,18 @@ int main(int argc, char **argv)
 	}
 #endif
 
+	/* NOTE(NRK): consider using pipe2 maybe... */
+	if (pipe(sigpipe) == -1) {
+		perror("pipe");
+		return 1;
+	}
+	if (fcntl(sigpipe[0], F_SETFD, O_NONBLOCK | FD_CLOEXEC) == -1 ||
+	    fcntl(sigpipe[1], F_SETFD, O_NONBLOCK | FD_CLOEXEC) == -1)
+	{
+		perror("fcntl");
+		return 1;
+	}
+
 	printf("OpenRC init version %s starting\n", VERSION);
 
 	if (argc > 1)
@@ -283,8 +289,9 @@ int main(int argc, char **argv)
 
 	/* install signal  handler */
 	memset(&sa, 0, sizeof(sa));
-	sa.sa_handler = signal_handler;
+	sa.sa_handler = reap_zombies;
 	sigaction(SIGCHLD, &sa, NULL);
+	sa.sa_handler = signal_handler;
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
 #ifdef SIGPWR
@@ -300,33 +307,58 @@ int main(int argc, char **argv)
 
 	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)
 		perror("mkfifo");
+	fifo = open(RC_INIT_FIFO, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+	if (fifo == -1)
+		perror("open");
 
 	for (;;) {
-		/* This will block until a command is sent down the pipe... */
-		fifo = fopen(RC_INIT_FIFO, "r");
-		if (!fifo) {
-			if (errno != EINTR)
-				perror("fopen");
-			continue;
+		enum { FD_FIFO, FD_SIG, FD_COUNT };
+		struct pollfd pfd[] = {
+			[FD_FIFO] = { .fd = fifo, .events = POLLIN },
+			[FD_SIG] = { .fd = sigpipe[0], .events = POLLIN },
+		};
+
+		poll(pfd, FD_COUNT, -1);
+
+		if (pfd[FD_SIG].revents & POLLIN) { /* handle signals first */
+			if (read(sigpipe[0], &sig, sizeof(sig)) != sizeof(sig))
+				continue; /* shouldn't happen */
+			switch (sig) {
+				case SIGINT:
+					handle_shutdown("reboot", RB_AUTOBOOT);
+					break;
+				case SIGTERM:
+#ifdef SIGPWR
+				case SIGPWR:
+#endif
+					handle_shutdown("shutdown", RB_HALT_SYSTEM);
+					break;
+				default:
+					printf("Unknown signal received, %d\n", sig);
+					break;
+			}
 		}
-		count = fread(buf, 1, sizeof(buf) - 1, fifo);
-		buf[count] = 0;
-		fclose(fifo);
-		printf("PID1: Received \"%s\" from FIFO...\n", buf);
-		if (strcmp(buf, "halt") == 0)
-			handle_shutdown("shutdown", RB_HALT_SYSTEM);
-		else if (strcmp(buf, "kexec") == 0)
-			handle_shutdown("reboot", RB_KEXEC);
-		else if (strcmp(buf, "poweroff") == 0)
-			handle_shutdown("shutdown", RB_POWER_OFF);
-		else if (strcmp(buf, "reboot") == 0)
-			handle_shutdown("reboot", RB_AUTOBOOT);
-		else if (strcmp(buf, "reexec") == 0)
-			handle_reexec(argv[0]);
-		else if (strcmp(buf, "single") == 0) {
-			handle_single();
-			open_shell();
-			init(default_runlevel);
+
+		if (pfd[FD_FIFO].revents & POLLIN) {
+			count = read(fifo, buf, sizeof(buf) - 1);
+			buf[count] = 0;
+			printf("PID1: Received \"%s\" from FIFO...\n", buf);
+
+			if (strcmp(buf, "halt") == 0)
+				handle_shutdown("shutdown", RB_HALT_SYSTEM);
+			else if (strcmp(buf, "kexec") == 0)
+				handle_shutdown("reboot", RB_KEXEC);
+			else if (strcmp(buf, "poweroff") == 0)
+				handle_shutdown("shutdown", RB_POWER_OFF);
+			else if (strcmp(buf, "reboot") == 0)
+				handle_shutdown("reboot", RB_AUTOBOOT);
+			else if (strcmp(buf, "reexec") == 0)
+				handle_reexec(argv[0]);
+			else if (strcmp(buf, "single") == 0) {
+				handle_single();
+				open_shell();
+				init(default_runlevel);
+			}
 		}
 	}
 	return 0;
