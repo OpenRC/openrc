@@ -225,8 +225,9 @@ status()
 # Start debug output
 yesno $RC_DEBUG && set -x
 
-# Load configuration settings. First the global ones, then any
-# service-specific settings.
+# Load configuration settings. First the activation environment,
+# then global configuration, then any service-specific settings
+sourcex -e "${RC_SVCDIR}/env"
 sourcex -e "@SYSCONFDIR@/rc.conf"
 if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
 	for _f in "@SYSCONFDIR@"/rc.conf.d/*.conf; do
@@ -255,6 +256,7 @@ if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
 fi
 unset _conf_d
 
+# Overlay user-defined settings for system-wide services
 if yesno "$RC_USER_SERVICES" && [ $_usr_conf_d != ${RC_SERVICE%/*} ]; then
 	if ! sourcex -e "$_usr_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
 		sourcex -e "$_usr_conf_d/$RC_SVCNAME"

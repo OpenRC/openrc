@@ -35,6 +35,7 @@ const char *extraopts = NULL;
 const char *usagestring = ""							\
 	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
 	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] export <variables>...\n"	\
 	"   or: rc-update [options] [show [<runlevel>...]]";
 const char getoptstring[] = "asu" getoptstring_COMMON;
 const struct option longopts[] = {
@@ -50,6 +51,8 @@ const char * const longopts_help[] = {
 	longopts_help_COMMON
 };
 
+extern const char **environ;
+
 /* Return the number of changes made:
  *  -1 = no changes (error)
  *   0 = no changes (nothing to do)
@@ -58,85 +61,76 @@ const char * const longopts_help[] = {
 static int
 add(const char *runlevel, const char *service)
 {
-	int retval = -1;
-
 	if (!rc_service_exists(service)) {
 		if (errno == ENOEXEC)
-			eerror("%s: service `%s' is not executable",
-			    applet, service);
+			eerror("%s: service '%s' is not executable", applet, service);
 		else
-			eerror("%s: service `%s' does not exist",
-			    applet, service);
-	} else if (rc_service_in_runlevel(service, runlevel)) {
-		einfo("%s: %s already installed in runlevel `%s'; skipping",
-		    applet, service, runlevel);
-		retval = 0;
-	} else if (rc_service_add(runlevel, service)) {
-		einfo("service %s added to runlevel %s", service, runlevel);
-		retval = 1;
-	} else
-		eerror("%s: failed to add service `%s' to runlevel `%s': %s",
-		    applet, service, runlevel, strerror (errno));
+			eerror("%s: service '%s' does not exist", applet, service);
+		return -1;
+	}
 
-	return retval;
+	if (rc_service_in_runlevel(service, runlevel)) {
+		einfo("%s: %s already installed in runlevel '%s'; skipping", applet, service, runlevel);
+		return 0;
+	}
+
+	if (rc_service_add(runlevel, service)) {
+		einfo("%s: service %s added to runlevel %s", applet, service, runlevel);
+		return 1;
+	}
+
+	eerror("%s: failed to add service '%s' to runlevel '%s': %s", applet, service, runlevel, strerror(errno));
+	return -1;
 }
 
 static int
 delete(const char *runlevel, const char *service)
 {
-	int retval = -1;
-
-	errno = 0;
 	if (rc_service_delete(runlevel, service)) {
-		einfo("service %s deleted from runlevel %s",
-		    service, runlevel);
+		einfo("%s: service %s deleted from runlevel %s", applet, service, runlevel);
 		return 1;
 	}
 
 	if (errno == ENOENT)
-		eerror("%s: service `%s' is not in the runlevel `%s'",
-		    applet, service, runlevel);
+		eerror("%s: service '%s' is not in the runlevel '%s'", applet, service, runlevel);
 	else
-		eerror("%s: failed to delete service `%s' from runlevel `%s': %s",
-		    applet, service, runlevel, strerror (errno));
+		eerror("%s: failed to delete service '%s' from runlevel '%s': %s", applet, service, runlevel, strerror(errno));
 
-	return retval;
+	return -1;
 }
 
 static int
 addstack(const char *runlevel, const char *stack)
 {
 	if (!rc_runlevel_exists(runlevel)) {
-		eerror("%s: runlevel `%s' does not exist", applet, runlevel);
+		eerror("%s: runlevel '%s' does not exist", applet, runlevel);
 		return -1;
 	}
+
 	if (!rc_runlevel_exists(stack)) {
-		eerror("%s: runlevel `%s' does not exist", applet, stack);
+		eerror("%s: runlevel '%s' does not exist", applet, stack);
 		return -1;
 	}
+
 	if (strcmp(runlevel, stack) == 0) {
-		eerror("%s: cannot stack `%s' onto itself", applet, stack);
+		eerror("%s: cannot stack '%s' onto itself", applet, stack);
 		return -1;
 	}
-	if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0 ||
-	    strcmp(stack, RC_LEVEL_SYSINIT) == 0 ||
-	    strcmp(runlevel, RC_LEVEL_BOOT) == 0 ||
-	    strcmp(stack, RC_LEVEL_BOOT) == 0 ||
-	    strcmp(runlevel, RC_LEVEL_SINGLE) == 0 ||
-	    strcmp(stack, RC_LEVEL_SINGLE) == 0 ||
-	    strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 ||
-	    strcmp(stack, RC_LEVEL_SHUTDOWN) == 0)
-	{
-		eerror("%s: cannot stack the %s runlevel",
-		    applet, RC_LEVEL_SYSINIT);
+
+	if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0 || strcmp(stack, RC_LEVEL_SYSINIT) == 0 ||
+			strcmp(runlevel, RC_LEVEL_BOOT) == 0 || strcmp(stack, RC_LEVEL_BOOT) == 0 ||
+			strcmp(runlevel, RC_LEVEL_SINGLE) == 0 || strcmp(stack, RC_LEVEL_SINGLE) == 0 ||
+			strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 || strcmp(stack, RC_LEVEL_SHUTDOWN) == 0) {
+		eerror("%s: cannot stack the %s runlevel", applet, RC_LEVEL_SYSINIT);
 		return -1;
 	}
+
 	if (!rc_runlevel_stack(runlevel, stack)) {
-		eerror("%s: failed to stack `%s' to `%s': %s",
-		    applet, stack, runlevel, strerror(errno));
+		eerror("%s: failed to stack '%s' to '%s': %s", applet, stack, runlevel, strerror(errno));
 		return -1;
 	}
-	einfo("runlevel %s added to runlevel %s", stack, runlevel);
+
+	einfo("%s: runlevel %s added to runlevel %s", applet, stack, runlevel);
 	return 1;
 }
 
@@ -144,16 +138,14 @@ static int
 delstack(const char *runlevel, const char *stack)
 {
 	if (rc_runlevel_unstack(runlevel, stack)) {
-		einfo("runlevel %s deleted from runlevel %s", stack, runlevel);
+		einfo("%s: runlevel %s deleted from runlevel %s", applet, stack, runlevel);
 		return 1;
 	}
 
 	if (errno == ENOENT)
-		eerror("%s: runlevel `%s' is not in the runlevel `%s'",
-		    applet, stack, runlevel);
+		eerror("%s: runlevel '%s' is not in the runlevel '%s'", applet, stack, runlevel);
 	else
-		eerror("%s: failed to delete runlevel `%s' from runlevel `%s': %s",
-		    applet, stack, runlevel, strerror (errno));
+		eerror("%s: failed to delete runlevel '%s' from runlevel '%s': %s", applet, stack, runlevel, strerror(errno));
 
 	return -1;
 }
@@ -175,25 +167,24 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 		inone = false;
 
 		TAILQ_FOREACH(runlevel, runlevels, entries) {
-			if (rc_service_in_runlevel(service->value,
-				runlevel->value))
-			{
+			if (rc_service_in_runlevel(service->value, runlevel->value)) {
 				rc_stringlist_add(in, runlevel->value);
 				inone = true;
-			} else {
-				l = strlen(runlevel->value);
-				buffer = xmalloc(l+1);
-				memset(buffer, ' ', l);
-				buffer[l] = 0;
-				rc_stringlist_add(in, buffer);
-				free(buffer);
+				continue;
 			}
+
+			l = strlen(runlevel->value);
+			buffer = xmalloc(l+1);
+			memset(buffer, ' ', l);
+			buffer[l] = 0;
+			rc_stringlist_add(in, buffer);
+			free(buffer);
 		}
 
 		if (inone || verbose) {
 			printf(" %20s |", service->value);
 			TAILQ_FOREACH(runlevel, in, entries)
-			    printf (" %s", runlevel->value);
+				printf (" %s", runlevel->value);
 			printf("\n");
 		}
 		rc_stringlist_free(in);
@@ -202,9 +193,27 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 	rc_stringlist_free(services);
 }
 
-#define DOADD    (1 << 1)
-#define DODELETE (1 << 2)
-#define DOSHOW   (1 << 3)
+static void
+export(char *variable)
+{
+	char *value = variable;
+	variable = strsep(&value, "=");
+
+	if (!value && !(value = getenv(variable))) {
+		ewarn("%s: environment variable %s not set, skipping.", applet, variable);
+		return;
+	}
+
+	rc_export_variable(variable, value);
+}
+
+enum update_action {
+	DO_NONE,
+	DO_ADD,
+	DO_DELETE,
+	DO_SHOW,
+	DO_EXPORT
+};
 
 int main(int argc, char **argv)
 {
@@ -213,7 +222,7 @@ int main(int argc, char **argv)
 	RC_STRING *runlevel;
 	char *service = NULL;
 	char *p;
-	int action = 0;
+	enum update_action action = DO_NONE;
 	bool verbose = false, stack = false, all_runlevels = false;
 	int opt;
 	int retval = EXIT_FAILURE;
@@ -222,8 +231,7 @@ int main(int argc, char **argv)
 	int ret;
 
 	applet = basename_c(argv[0]);
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *)0)) != -1)
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts, NULL)) != -1) {
 		switch (opt) {
 		case 'a':
 		    all_runlevels = true;
@@ -238,116 +246,108 @@ int main(int argc, char **argv)
 			return ret;
 		case_RC_COMMON_GETOPT
 		}
-
-	verbose = rc_yesno(getenv ("EINFO_VERBOSE"));
-
-	if ((action & DOSHOW   && action != DOSHOW) ||
-	    (action & DOADD    && action != DOADD) ||
-	    (action & DODELETE && action != DODELETE))
-		eerrorx("%s: cannot mix commands", applet);
-
-	/* We need to be backwards compatible */
-	if (optind < argc) {
-		if (strcmp(argv[optind], "add") == 0)
-			action = DOADD;
-		else if (strcmp(argv[optind], "delete") == 0 ||
-		    strcmp(argv[optind], "del") == 0)
-			action = DODELETE;
-		else if (strcmp(argv[optind], "show") == 0)
-			action = DOSHOW;
-		if (action)
-			optind++;
-		else
-			eerrorx("%s: invalid command `%s'",
-			    applet, argv[optind]);
 	}
-	if (!action)
-		action = DOSHOW;
 
-	runlevels = rc_stringlist_new();
+	verbose = rc_yesno(getenv("EINFO_VERBOSE"));
+	if (optind < argc) {
+		if (strcmp(argv[optind], "add") == 0) {
+			action = DO_ADD;
+		} else if (strcmp(argv[optind], "delete") == 0 ||
+				strcmp(argv[optind], "del") == 0) {
+			action = DO_DELETE;
+		} else if (strcmp(argv[optind], "show") == 0) {
+			action = DO_SHOW;
+		} else if (strcmp(argv[optind], "export") == 0) {
+			action = DO_EXPORT;
+		} else {
+			eerror("%s: invalid command '%s'", applet, argv[optind]);
+			usage(EXIT_FAILURE);
+		}
+		optind++;
+	}
+	if (action == DO_NONE)
+		action = DO_SHOW;
 
-	if (optind >= argc) {
-		if (!(action & DOSHOW))
-			eerrorx("%s: no service specified", applet);
-	} else {
+	if (optind >= argc && action != DO_SHOW) {
+		eerror("%s: no %s specified", applet, action == DO_EXPORT ? "variable" : "service");
+		usage(EXIT_FAILURE);
+	}
+
+	if (action != DO_EXPORT) {
 		service = argv[optind];
 		optind++;
 
-		while (optind < argc)
-			if (rc_runlevel_exists(argv[optind]))
+		runlevels = rc_stringlist_new();
+		while (optind < argc) {
+			if (rc_runlevel_exists(argv[optind])) {
 				rc_stringlist_add(runlevels, argv[optind++]);
-			else {
+			} else {
 				rc_stringlist_free(runlevels);
-				eerrorx ("%s: `%s' is not a valid runlevel",
-				    applet, argv[optind]);
+				eerrorx("%s: '%s' is not a valid runlevel", applet, argv[optind]);
 			}
+		}
 	}
 
 	retval = EXIT_SUCCESS;
-	if (action & DOSHOW) {
+
+	switch (action) {
+	case DO_NONE:
+		break;
+	case DO_SHOW:
 		if (service)
 			rc_stringlist_add(runlevels, service);
+
 		if (!TAILQ_FIRST(runlevels)) {
 			rc_stringlist_free(runlevels);
 			runlevels = rc_runlevel_list();
 		}
 
 		rc_stringlist_sort(&runlevels);
-		show (runlevels, verbose);
-	} else {
-		if (!service)
-			eerror ("%s: no service specified", applet);
-		else {
-			if (action & DOADD) {
-				if (all_runlevels) {
-					rc_stringlist_free(runlevels);
-					eerrorx("%s: the -a option is invalid with add", applet);
-				}
-				actfunc = stack ? addstack : add;
-			} else if (action & DODELETE) {
-				actfunc = stack ? delstack : delete;
-			} else {
-				rc_stringlist_free(runlevels);
-				eerrorx("%s: invalid action", applet);
-			}
+		show(runlevels, verbose);
+		goto exit;
+	case DO_EXPORT:
+		while (optind < argc)
+			export(argv[optind++]);
+		return 0;
+	case DO_ADD:
+		if (all_runlevels) {
+			rc_stringlist_free(runlevels);
+			eerrorx("%s: the -a option is invalid with add", applet);
+		}
+		actfunc = stack ? addstack : add;
+		break;
+	case DO_DELETE:
+		actfunc = stack ? delstack : delete;
+		break;
+	}
 
-			if (!TAILQ_FIRST(runlevels)) {
-				if (all_runlevels) {
-					free(runlevels);
-					runlevels = rc_runlevel_list();
-				} else {
-					p = rc_runlevel_get();
-					rc_stringlist_add(runlevels, p);
-					free(p);
-				}
-			}
-
-			if (!TAILQ_FIRST(runlevels)) {
-				free(runlevels);
-				eerrorx("%s: no runlevels found", applet);
-			}
-
-			TAILQ_FOREACH(runlevel, runlevels, entries) {
-				if (!rc_runlevel_exists(runlevel->value)) {
-					eerror ("%s: runlevel `%s' does not exist",
-					    applet, runlevel->value);
-					continue;
-				}
-
-				ret = actfunc(runlevel->value, service);
-				if (ret < 0)
-					retval = EXIT_FAILURE;
-				num_updated += ret;
-			}
-
-			if (retval == EXIT_SUCCESS &&
-			    num_updated == 0 && action & DODELETE)
-				ewarnx("%s: service `%s' not found in any"
-				    " of the specified runlevels",
-				    applet, service);
+	if (!TAILQ_FIRST(runlevels)) {
+		if (all_runlevels) {
+			free(runlevels);
+			runlevels = rc_runlevel_list();
+		} else {
+			p = rc_runlevel_get();
+			rc_stringlist_add(runlevels, p);
+			free(p);
 		}
 	}
 
+	if (!TAILQ_FIRST(runlevels)) {
+		free(runlevels);
+		eerrorx("%s: no runlevels found", applet);
+	}
+
+	TAILQ_FOREACH(runlevel, runlevels, entries) {
+		ret = actfunc(runlevel->value, service);
+		if (ret < 0)
+			retval = EXIT_FAILURE;
+		num_updated += ret;
+	}
+
+	if (retval == EXIT_SUCCESS && num_updated == 0 && action == DO_DELETE)
+		ewarnx("%s: service '%s' not found in any of the specified runlevels", applet, service);
+
+exit:
 	rc_stringlist_free(runlevels);
 	return retval;
 }
