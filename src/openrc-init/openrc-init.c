@@ -43,6 +43,7 @@
 #include "rc_exec.h"
 #include "plugin.h"
 #include "wtmp.h"
+#include "helpers.h"
 #include "version.h"
 
 static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
@@ -163,15 +164,13 @@ static void signal_handler(int sig)
 	errno = saved_errno;
 }
 
-static void reap_zombies(int sig)
+static void reap_zombies(int sig RC_UNUSED)
 {
 	char errmsg[] = "waitpid() failed\n";
 	int saved_errno = errno;
-	pid_t pid;
-	(void)sig; /* unused */
 
 	for (;;) {
-		pid = waitpid(-1, NULL, WNOHANG);
+		pid_t pid = waitpid(-1, NULL, WNOHANG);
 		if (pid == 0)
 			break;
 		else if (pid == -1) {
