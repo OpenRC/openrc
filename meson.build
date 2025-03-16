@@ -176,7 +176,7 @@ if cc.compiles(malloc_attribute_test, name : 'malloc attribute with arguments')
 endif
 
 if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
-  add_project_arguments('-DHAVE_CLOSE_RANGE', language: 'c')
+  add_project_arguments(['-DHAVE_CLOSE_RANGE', '-D_GNU_SOURCE'], language: 'c')
 elif cc.has_header('linux/close_range.h')
   add_project_arguments('-DHAVE_LINUX_CLOSE_RANGE_H', language: 'c')
 endif

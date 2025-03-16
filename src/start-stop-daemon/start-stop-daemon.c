@@ -21,7 +21,7 @@
 
 #define ONE_MS           1000000
 
-#ifdef __linux__
+#if defined(__linux__) && !defined(_GNU_SOURCE)
 /* For extra SCHED_* defines. */
 # define _GNU_SOURCE
 #endif
