@@ -46,27 +46,6 @@
 /* File stream used for plugins to write environ vars to */
 FILE *rc_environ_fd = NULL;
 
-typedef struct rc_service_state_name {
-	RC_SERVICE state;
-	const char *name;
-} rc_service_state_name_t;
-
-/* We MUST list the states below 0x10 first
- * The rest can be in any order */
-static const rc_service_state_name_t rc_service_state_names[] = {
-	{ RC_SERVICE_STARTED,     "started" },
-	{ RC_SERVICE_STOPPED,     "stopped" },
-	{ RC_SERVICE_STARTING,    "starting" },
-	{ RC_SERVICE_STOPPING,    "stopping" },
-	{ RC_SERVICE_INACTIVE,    "inactive" },
-	{ RC_SERVICE_WASINACTIVE, "wasinactive" },
-	{ RC_SERVICE_HOTPLUGGED,  "hotplugged" },
-	{ RC_SERVICE_FAILED,      "failed" },
-	{ RC_SERVICE_SCHEDULED,   "scheduled"},
-	{ RC_SERVICE_CRASHED,     "crashed"},
-	{ 0, NULL}
-};
-
 #define LS_INITD	0x01
 #define LS_DIR		0x02
 static RC_STRINGLIST *
