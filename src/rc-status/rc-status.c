@@ -329,9 +329,15 @@ int main(int argc, char **argv)
 			/* NOTREACHED */
 		case 'S':
 			services = rc_services_in_state(RC_SERVICE_STARTED);
-			TAILQ_FOREACH_SAFE(s, services, entries, t)
-				if (!rc_service_value_get(s->value, "child_pid"))
+			TAILQ_FOREACH_SAFE(s, services, entries, t) {
+				char *ret = rc_service_value_get(s->value, "child_pid");
+				if (!ret) {
 					TAILQ_REMOVE(services, s, entries);
+					free(s->value);
+					free(s);
+				}
+				free(ret);
+			}
 			print_services(NULL, services, format);
 			goto exit;
 			/* NOTREACHED */
