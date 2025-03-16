@@ -45,6 +45,27 @@ int svc_lock(const char *, bool);
 int svc_unlock(const char *, int);
 pid_t exec_service(const char *, const char *);
 
+typedef struct rc_service_state_name {
+	RC_SERVICE state;
+	const char *name;
+} rc_service_state_name_t;
+
+/* We MUST list the states below 0x10 first
+ * The rest can be in any order */
+static const rc_service_state_name_t rc_service_state_names[] = {
+	{ RC_SERVICE_STARTED,     "started" },
+	{ RC_SERVICE_STOPPED,     "stopped" },
+	{ RC_SERVICE_STARTING,    "starting" },
+	{ RC_SERVICE_STOPPING,    "stopping" },
+	{ RC_SERVICE_INACTIVE,    "inactive" },
+	{ RC_SERVICE_WASINACTIVE, "wasinactive" },
+	{ RC_SERVICE_HOTPLUGGED,  "hotplugged" },
+	{ RC_SERVICE_FAILED,      "failed" },
+	{ RC_SERVICE_SCHEDULED,   "scheduled"},
+	{ RC_SERVICE_CRASHED,     "crashed"},
+	{ 0, NULL}
+};
+
 /*
  * Check whether path is writable or not,
  * this also works properly with read-only filesystems
