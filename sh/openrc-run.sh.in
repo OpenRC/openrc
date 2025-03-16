@@ -234,9 +234,9 @@ if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
 	done
 fi
 
-_usr_conf_d=${XDG_CONFIG_HOME:-${HOME}/.config}/rc
+_usr_conf=${XDG_CONFIG_HOME:-${HOME}/.config}/rc
 if yesno "$RC_USER_SERVICES"; then
-	sourcex -e "$_usr_conf_d/rc.conf"
+	sourcex -e "$_usr_conf/rc.conf"
 fi
 
 _conf_d=${RC_SERVICE%/*}/../conf.d
@@ -255,12 +255,12 @@ if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
 fi
 unset _conf_d
 
-if yesno "$RC_USER_SERVICES" && [ $_usr_conf_d != ${RC_SERVICE%/*} ]; then
-	if ! sourcex -e "$_usr_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
-		sourcex -e "$_usr_conf_d/$RC_SVCNAME"
+if yesno "$RC_USER_SERVICES" && [ "$_usr_conf/init.d" != "${RC_SERVICE%/*}" ]; then
+	if ! sourcex -e "$_usr_conf/conf.d/$RC_SVCNAME.$RC_RUNLEVEL"; then
+		sourcex -e "$_usr_conf/conf.d/$RC_SVCNAME"
 	fi
 fi
-unset _usr_conf_d
+unset _usr_conf
 
 # load service supervisor functions
 sourcex "@LIBEXECDIR@/sh/runit.sh"
