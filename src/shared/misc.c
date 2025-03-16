@@ -154,6 +154,22 @@ env_filter(void)
 	rc_stringlist_free(profile);
 }
 
+static void
+export_script_path(void)
+{
+	const char * const *scriptdirs = rc_scriptdirs();
+	size_t count, size, written = 0;
+	char *path;
+
+	/* build script path in reverse order so configs override each other */
+	for (count = 0; scriptdirs[count]; count++)
+		size += strlen(scriptdirs[count]) + sizeof(':');
+	path = xmalloc(size);
+	for (count--; count; count--)
+		written += snprintf(path + written, size - written, "%s:", scriptdirs[count]);
+	setenv("RC_SCRIPTDIRS", path, true);
+}
+
 void
 env_config(void)
 {
@@ -213,6 +229,8 @@ env_config(void)
 
 	free(e);
 	free(tmpdir);
+
+	export_script_path();
 
 	if ((fp = fopen(RC_KRUNLEVEL, "r"))) {
 		if (xgetline(&buffer, &size, fp) != -1)

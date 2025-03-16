@@ -159,6 +159,13 @@ _status()
 	fi
 }
 
+_load_config()
+{
+	if ! sourcex -e "$1.$RC_RUNLEVEL"; then
+		sourcex -e "$1"
+	fi
+}
+
 # These functions select the appropriate function to call from the
 # supervisor modules
 default_start()
@@ -234,33 +241,17 @@ if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
 	done
 fi
 
-_usr_conf_d=${XDG_CONFIG_HOME:-${HOME}/.config}/rc
 if yesno "$RC_USER_SERVICES"; then
-	sourcex -e "$_usr_conf_d/rc.conf"
+	sourcex -e "${XDG_CONFIG_HOME:-${HOME}/.config}/rc/rc.conf"
 fi
 
-_conf_d=${RC_SERVICE%/*}/../conf.d
-# If we're net.eth0 or openvpn.work then load net or openvpn config
-_c=${RC_SVCNAME%%.*}
-if [ -n "$_c" -a "$_c" != "$RC_SVCNAME" ]; then
-	if ! sourcex -e "$_conf_d/$_c.$RC_RUNLEVEL"; then
-		sourcex -e "$_conf_d/$_c"
-	fi
-fi
-unset _c
-
-# Overlay with our specific config
-if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
-	sourcex -e "$_conf_d/$RC_SVCNAME"
-fi
-unset _conf_d
-
-if yesno "$RC_USER_SERVICES" && [ $_usr_conf_d != ${RC_SERVICE%/*} ]; then
-	if ! sourcex -e "$_usr_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
-		sourcex -e "$_usr_conf_d/$RC_SVCNAME"
-	fi
-fi
-unset _usr_conf_d
+IFS=:
+_c=${RC_SVCNAME%%.*} # If we're net.eth0 or openvpn.work then load net or openvpn config
+for _script_d in $RC_SCRIPTDIRS; do
+	[ "$_c" != "$RC_SVCNAME" ] && _load_config "$_script_d/conf.d/$_c"
+	_load_config "$_script_d/conf.d/$RC_SVCNAME"
+done
+unset IFS _script_d
 
 # load service supervisor functions
 sourcex "@LIBEXECDIR@/sh/runit.sh"
