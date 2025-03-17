@@ -146,10 +146,8 @@ populate_unmount_list(RC_STRINGLIST **list, int argc, char **argv)
 
     /* Open the command for reading */
     fp = popen_vec("mountinfo", argc-2, argv+2);
-    if (fp == NULL) {
-        printf("Failed to run mountinfo command, can't unmount anything!\n");
-        exit(EXIT_FAILURE);
-    }
+    if (fp == NULL)
+        eerrorx("Failed to run mountinfo command, can't unmount anything!");
 
     *list = rc_stringlist_new();
     /* Read the output a line at a time */
@@ -307,16 +305,12 @@ int main(int argc, char **argv)
     outcome_t *pOutcome;        /* Return value of the umount operation */
 
     /* Check first argument provided */
-    if (argc < 2) {
-        printf("No unmounting command provided!\n");
-        exit(EXIT_FAILURE);
-    }
+    if (argc < 2)
+        eerrorx("No unmounting command provided!");
 
     /* Check if fuser is available in PATH */
-    if (system("command -v fuser >/dev/null 2>&1")) {
-        printf("fuser is not installed, can't unmount anything!\n");
-        exit(EXIT_FAILURE);
-    }
+    if (system("command -v fuser >/dev/null 2>&1"))
+        eerrorx("fuser is not installed, can't unmount anything!");
 
     /* Get list of paths to unmount */
     size = populate_unmount_list(&to_unmount, argc, argv);
