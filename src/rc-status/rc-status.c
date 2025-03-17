@@ -292,7 +292,7 @@ int main(int argc, char **argv)
 				format = FORMAT_INI;
 				setenv("EINFO_QUIET", "YES", 1);
 			} else
-				eerrorx("%s: invalid argument to --format switch\n", applet);
+				eerrorx("%s: invalid argument to --format switch", applet);
 			break;
 		case 'l':
 			levels = rc_runlevel_list();
