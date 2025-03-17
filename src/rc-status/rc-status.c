@@ -64,8 +64,8 @@ const char * const longopts_help[] = {
 	"Show services not assigned to any runlevel",
 	longopts_help_COMMON
 };
-const char *usagestring = ""						\
-	"Usage: rc-status [options] [-f ini] <runlevel>...\n"		\
+const char *usagestring = ""
+	"Usage: rc-status [options] [-f ini] <runlevel>...\n"
 	"   or: rc-status [options] [-f ini] [-a | -c | -l | -m | -r | -s | -u]";
 
 static RC_DEPTREE *deptree;

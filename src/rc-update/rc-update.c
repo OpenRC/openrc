@@ -32,9 +32,9 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char *usagestring = ""							\
-	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
-	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
+const char *usagestring = ""
+	"Usage: rc-update [options] add <service> [<runlevel>...]\n"
+	"   or: rc-update [options] del <service> [<runlevel>...]\n"
 	"   or: rc-update [options] [show [<runlevel>...]]";
 const char getoptstring[] = "asu" getoptstring_COMMON;
 const struct option longopts[] = {

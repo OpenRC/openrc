@@ -62,10 +62,10 @@ const char * const longopts_help[] = {
 	"dry run (show what would happen)",
 	longopts_help_COMMON
 };
-const char *usagestring = ""							\
-	"Usage: rc-service [options] [-i] <service> <cmd>...\n"		\
-	"   or: rc-service [options] -e <service>\n"			\
-	"   or: rc-service [options] -l\n"				\
+const char *usagestring = ""
+	"Usage: rc-service [options] [-i] <service> <cmd>...\n"
+	"   or: rc-service [options] -e <service>\n"
+	"   or: rc-service [options] -l\n"
 	"   or: rc-service [options] -r <service>";
 
 int main(int argc, char **argv)
