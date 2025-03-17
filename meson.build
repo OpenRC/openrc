@@ -185,6 +185,14 @@ if cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>'
   add_project_arguments('-DHAVE_STRLCPY', language: 'c')
 endif
 
+if not cc.has_function('pipe2', prefix: '#include <unistd.h>')
+  if cc.has_function('pipe2', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
+    add_project_arguments('-D_GNU_SOURCE', language: 'c')
+  else
+    error('C function pipe2() not found')
+  endif
+endif
+
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
 rc_incdir = include_directories('src/librc')
