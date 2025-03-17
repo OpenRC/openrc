@@ -129,10 +129,8 @@ populate_shared_list(RC_STRINGLIST **list)
 
     /* Close file and free memory */
     fclose(fp);
-    if (line)
-        free(line);
-    if (path)
-        free(path);
+    free(line);
+    free(path);
     #endif
 }
 
@@ -164,8 +162,7 @@ populate_unmount_list(RC_STRINGLIST **list, int argc, char **argv)
     }
 
     pclose(fp);
-    if (path)
-        free(path);
+    free(path);
     return size;
 }
 
@@ -233,8 +230,7 @@ unmount_with_retries(char *command, char *mount_point)
     /* Free memory and close file */
     if (fp)
         fclose(fp);
-    if (pids)
-        free(pids);
+    free(pids);
     free(fuser_command);
     free(kill_command);
 
@@ -288,8 +284,7 @@ unmount_one(void *input)
 
     /* Free memory */
     free(command);
-    if (check_command)
-        free(check_command);
+    free(check_command);
     return pRetval;
 }
 
