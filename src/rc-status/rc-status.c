@@ -65,8 +65,9 @@ const char * const longopts_help[] = {
 	longopts_help_COMMON
 };
 const char *usagestring = ""
-	"Usage: rc-status [options] [-f ini] <runlevel>...\n"
-	"   or: rc-status [options] [-f ini] [-a | -c | -l | -m | -r | -s | -u]";
+	"Usage: rc-status [-C] [-f ini] [runlevel]\n"
+	"   or: rc-status [-C] [-f ini] [-a | -m | -S | -s | -u]\n"
+	"   or: rc-status [-C] [-c | -l | -r]";
 
 static RC_DEPTREE *deptree;
 static RC_STRINGLIST *types;
