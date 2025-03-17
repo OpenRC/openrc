@@ -48,6 +48,7 @@
 static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
 static int sigpipe[2] = { -1, -1 };
+static int quiet = 0;
 
 static void do_openrc(const char *runlevel)
 {
@@ -56,7 +57,8 @@ static void do_openrc(const char *runlevel)
 	struct exec_args args = exec_init(argv);
 	args.setsid = 1;
 
-	printf("Starting %s runlevel\n", runlevel);
+	if (!quiet)
+		printf("Starting %s runlevel\n", runlevel);
 	res = do_exec(&args);
 	if (res.pid < 0) {
 		perror("do_exec");
@@ -97,12 +99,14 @@ static void handle_shutdown(const char *runlevel, int cmd)
 	struct timespec ts;
 
 	do_openrc(runlevel);
-	printf("Sending the final term signal\n");
+	if (!quiet)
+		printf("Sending the final term signal\n");
 	kill(-1, SIGTERM);
 	ts.tv_sec = 3;
 	ts.tv_nsec = 0;
 	nanosleep(&ts, NULL);
-	printf("Sending the final kill signal\n");
+	if (!quiet)
+		printf("Sending the final kill signal\n");
 	kill(-1, SIGKILL);
 	sync();
 	reboot(cmd);
@@ -222,7 +226,10 @@ int main(int argc, char **argv)
 	}
 #endif
 
-	printf("OpenRC init version %s starting\n", VERSION);
+	quiet = rc_yesno(getenv("EINFO_QUIET"));
+
+	if (!quiet)
+		printf("OpenRC init version %s starting\n", VERSION);
 
 	if (argc > 1)
 		default_runlevel = argv[1];
@@ -306,7 +313,8 @@ int main(int argc, char **argv)
 		if (pfd[FD_FIFO].revents & POLLIN) {
 			count = read(fifo, buf, sizeof(buf) - 1);
 			buf[count] = 0;
-			printf("PID1: Received \"%s\" from FIFO...\n", buf);
+			if (!quiet)
+				printf("PID1: Received \"%s\" from FIFO...\n", buf);
 
 			if (strcmp(buf, "halt") == 0)
 				handle_shutdown("shutdown", RB_HALT_SYSTEM);
