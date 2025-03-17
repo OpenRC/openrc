@@ -47,7 +47,7 @@ pid_t exec_service(const char *, const char *);
 
 typedef struct rc_service_state_name {
 	RC_SERVICE state;
-	const char *name;
+	const char *const name;
 } rc_service_state_name_t;
 
 /* We MUST list the states below 0x10 first
