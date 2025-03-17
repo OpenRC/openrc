@@ -181,8 +181,10 @@ elif cc.has_header('linux/close_range.h')
   add_project_arguments('-DHAVE_LINUX_CLOSE_RANGE_H', language: 'c')
 endif
 
-if cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>')
+if cc.has_function('strlcpy', prefix: '#include <string.h>')
   add_project_arguments('-DHAVE_STRLCPY', language: 'c')
+elif cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>')
+  add_project_arguments(['-DHAVE_STRLCPY', '-D_GNU_SOURCE'], language: 'c')
 endif
 
 if not cc.has_function('pipe2', prefix: '#include <unistd.h>')
