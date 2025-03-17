@@ -85,7 +85,7 @@ static void init(const char *default_runlevel)
 	if (!runlevel)
 		runlevel = rc_default_runlevel;
 	if (!rc_runlevel_exists(runlevel)) {
-		printf("%s is an invalid runlevel\n", runlevel);
+		fprintf(stderr, "%s is an invalid runlevel\n", runlevel);
 		runlevel = rc_default_runlevel;
 	}
 	do_openrc(runlevel);
@@ -327,7 +327,7 @@ int main(int argc, char **argv)
 					handle_shutdown("shutdown", RB_HALT_SYSTEM);
 					break;
 				default:
-					printf("Unknown signal received, %d\n", sig);
+					fprintf(stderr, "Unknown signal received, %d\n", sig);
 					break;
 			}
 		}
