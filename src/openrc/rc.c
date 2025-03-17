@@ -64,8 +64,8 @@ const char * const longopts_help[] = {
 	"output the RC system type, if any",
 	longopts_help_COMMON
 };
-const char *usagestring = ""					\
-    "Usage: openrc [options] [<runlevel>]";
+const char *usagestring = ""
+	"Usage: openrc [options] [<runlevel>]";
 
 #define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"

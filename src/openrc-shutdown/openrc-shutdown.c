@@ -71,15 +71,15 @@ const char * const longopts_help[] = {
 	"write wtmp boot record and exit",
 	longopts_help_COMMON
 };
-const char *usagestring = "" \
-						   "Usage: openrc-shutdown -c | --cancel\n" \
-						   "   or: openrc-shutdown -R | --reexec\n" \
-						   "   or: openrc-shutdown -w | --write-only\n" \
-						   "   or: openrc-shutdown -H | --halt time\n" \
-						   "   or: openrc-shutdown -K | --kexec time\n" \
-						   "   or: openrc-shutdown -p | --poweroff time\n" \
-						   "   or: openrc-shutdown -r | --reboot time\n" \
-						   "   or: openrc-shutdown -s | --single time";
+const char *usagestring = ""
+	"Usage: openrc-shutdown -c | --cancel\n"
+	"   or: openrc-shutdown -R | --reexec\n"
+	"   or: openrc-shutdown -w | --write-only\n"
+	"   or: openrc-shutdown -H | --halt time\n"
+	"   or: openrc-shutdown -K | --kexec time\n"
+	"   or: openrc-shutdown -p | --poweroff time\n"
+	"   or: openrc-shutdown -r | --reboot time\n"
+	"   or: openrc-shutdown -s | --single time";
 const char *exclusive = "Select one of "
 	"--cancel, --halt, --kexec, --poweroff, --reexec, --reboot, --single or \n"
 	"--write-only";
