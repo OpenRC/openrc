@@ -10,7 +10,6 @@ sh_conf_data.set('UUCP_GROUP', get_option('uucp_group'))
 
 sh = [
   'rc-functions.sh',
-  'rc-mount.sh',
   'runit.sh',
   's6.sh',
   'start-stop-daemon.sh',

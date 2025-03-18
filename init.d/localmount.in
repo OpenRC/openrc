@@ -112,7 +112,7 @@ stop()
 	# Umount loop devices
 	einfo "Unmounting loop devices"
 	eindent
-	do_unmount "umount -d" --skip-point-regex "$no_umounts_r" \
+	do_unmount -d -- --skip-point-regex "$no_umounts_r" \
 		--node-regex "^/dev/loop"
 	eoutdent
 
@@ -125,7 +125,7 @@ stop()
 		fs="$fs${fs:+|}$x"
 	done
 	[ -n "$fs" ] && fs="^($fs)$"
-	do_unmount umount --skip-point-regex "$no_umounts_r" \
+	do_unmount -- --skip-point-regex "$no_umounts_r" \
 		"${fs:+--skip-fstype-regex}" $fs --nonetdev
 	eoutdent
 
