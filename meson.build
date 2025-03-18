@@ -165,6 +165,8 @@ cc_warning_flags = cc.get_supported_arguments(cc_warning_flags_test)
 cc_flags = [cc_debug_flags, cc_os_flags, cc_warning_flags]
 add_project_arguments(cc_flags, language : 'c')
 
+feature_macros = {}
+
 # Meson's has_function_attribute doesn't know about GCC's extended
 # version (with arguments), so we have to build a test program instead.
 malloc_attribute_test = '''#include<stdlib.h>
@@ -172,28 +174,30 @@ __attribute__ ((malloc (free, 1)))
 int func() { return 0; }
 '''
 if cc.compiles(malloc_attribute_test, name : 'malloc attribute with arguments')
-  add_project_arguments('-DHAVE_MALLOC_EXTENDED_ATTRIBUTE', language: 'c')
+  feature_macros += { '-DHAVE_MALLOC_EXTENDED_ATTRIBUTE': 1 }
 endif
 
 if cc.has_function('close_range', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
-  add_project_arguments(['-DHAVE_CLOSE_RANGE', '-D_GNU_SOURCE'], language: 'c')
+  feature_macros += { '-DHAVE_CLOSE_RANGE': 1, '-D_GNU_SOURCE': 1 }
 elif cc.has_header('linux/close_range.h')
-  add_project_arguments('-DHAVE_LINUX_CLOSE_RANGE_H', language: 'c')
+  feature_macros += { '-DHAVE_LINUX_CLOSE_RANGE_H': 1 }
 endif
 
 if cc.has_function('strlcpy', prefix: '#include <string.h>')
-  add_project_arguments('-DHAVE_STRLCPY', language: 'c')
+  feature_macros += { '-DHAVE_STRLCPY': 1 }
 elif cc.has_function('strlcpy', prefix: '#define _GNU_SOURCE\n#include <string.h>')
-  add_project_arguments(['-DHAVE_STRLCPY', '-D_GNU_SOURCE'], language: 'c')
+  feature_macros += { '-DHAVE_STRLCPY': 1, '-D_GNU_SOURCE': 1 }
 endif
 
 if not cc.has_function('pipe2', prefix: '#include <unistd.h>')
   if cc.has_function('pipe2', prefix: '#define _GNU_SOURCE\n#include <unistd.h>')
-    add_project_arguments('-D_GNU_SOURCE', language: 'c')
+    feature_macros += { '-D_GNU_SOURCE': 1 }
   else
     error('C function pipe2() not found')
   endif
 endif
+
+add_project_arguments(feature_macros.keys(), language: 'c')
 
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
