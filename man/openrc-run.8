@@ -544,6 +544,17 @@ The f, F, n, N, o, O, p, P, e and E options specify what you want to
 search for or skip in the mounted file systems. The i, s and t options
 specify what you want to display. If no mount points are given, all
 mount points will be considered.
+.It Xo
+.Ic rc_unmount
+.Op umount args...
+.Op -- mountinfo args...
+.Xc
+Parallel unmounting utility. All arguments before
+.Ic --
+are passed to
+.Xr umount 1
+and arguments after it are processed the same as
+.Xr mountinfo 1 .
 .It Ic yesno Ar value
 If
 .Ar value
