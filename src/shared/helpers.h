@@ -36,6 +36,8 @@
 #define RC_PRINTF(a, b)  __attribute__((__format__(__printf__, a, b)))
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+#undef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #ifndef HAVE_STRLCPY
 #    define strlcpy(dst, src, size) snprintf(dst, size, "%s", src)
