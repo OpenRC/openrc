@@ -28,6 +28,7 @@ supervise_start()
 		${retry:+--retry} $retry \
 		${directory:+--chdir} $directory  \
 		${chroot:+--chroot} $chroot \
+		${input_file+--stdin} $input_file \
 		${output_log+--stdout} ${output_log} \
 		${error_log+--stderr} $error_log \
 		${output_logger:+--stdout-logger \"$output_logger\"} \
