@@ -143,6 +143,13 @@ on POSIX systems and, additionally, batch and idle on Linux. If
 is an integer, it is passed directly to pthread_setschedparam(3).
 .It Fl -scheduler-priority Ar priority
 Sets the priority parameter of the scheduling policy of the daemon. See sched(7) for details.
+.It Fl 0 , -stdin Ar file
+Redirect the standard input of the process to file when started with
+.Fl background .
+The file Must be an absolute pathname, but relative to the path
+optionally given with
+.Fl r , -chroot .
+The file can also be a named pipe. The file must exist, otherwise an error is emitted.
 .It Fl 1 , -stdout Ar logfile
 Redirect the standard output of the process to logfile when started with
 .Fl background .
