@@ -159,6 +159,8 @@ Redirect the standard output of the process to logfile.
 Must be an absolute pathname, but relative to the path optionally given with
 .Fl r , -chroot .
 The logfile can also be a named pipe.
+The value "/dev/stderr" is treated specially to redirect the process's stdout
+to stderr.
 .It Fl 2 , -stderr Ar logfile
 The same thing as
 .Fl 1 , -stdout

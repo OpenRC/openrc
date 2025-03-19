@@ -150,6 +150,8 @@ The logfile Must be an absolute pathname, but relative to the path
 optionally given with
 .Fl r , -chroot .
 The logfile can also be a named pipe.
+The value "/dev/stderr" is treated specially to redirect the process's stdout
+to stderr.
 .It Fl 2 , -stderr Ar logfile
 Redirect the standard error of the process to logfile when started with
 .Fl background .

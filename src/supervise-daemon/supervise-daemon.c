@@ -554,7 +554,7 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	stdin_fd = devnull_fd;
 	stdout_fd = devnull_fd;
 	stderr_fd = devnull_fd;
-	if (redirect_stdout) {
+	if (redirect_stdout && strcmp(redirect_stdout, "/dev/stderr") != 0) {
 		if ((stdout_fd = open(redirect_stdout,
 			    O_WRONLY | O_CREAT | O_APPEND,
 			    S_IRUSR | S_IWUSR)) == -1)
@@ -582,6 +582,9 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 			    " for stderr `%s': %s",
 			    applet, stderr_process, strerror(errno));
 	}
+
+	if (strcmp(redirect_stdout, "/dev/stderr") == 0)
+		stdout_fd = stderr_fd;
 
 	dup2(stdin_fd, STDIN_FILENO);
 	if (redirect_stdout || stdout_process || rc_yesno(getenv("EINFO_QUIET")))
