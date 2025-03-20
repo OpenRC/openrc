@@ -74,7 +74,7 @@ static int mount_proc(void)
 			while ((rc = wait(&status)) != pid)
 				if (rc < 0 && errno == ECHILD)
 					break;
-			if (rc != pid || WEXITSTATUS(status) != 0)
+			if (rc != pid || !WIFEXITED(status) || WEXITSTATUS(status) != 0)
 				syslog(LOG_ERR, "mount returned non-zero exit status");
 			break;
 	}
