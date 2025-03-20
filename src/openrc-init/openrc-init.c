@@ -40,6 +40,7 @@
 #endif
 
 #include "rc.h"
+#include "rc_exec.h"
 #include "plugin.h"
 #include "wtmp.h"
 #include "version.h"
@@ -50,36 +51,20 @@ static int sigpipe[2] = { -1, -1 };
 
 static void do_openrc(const char *runlevel)
 {
-	pid_t pid;
-	sigset_t all_signals;
-	sigset_t our_signals;
+	const char *argv[] = { "openrc", runlevel, NULL };
+	struct exec_result res;
+	struct exec_args args = exec_init(argv);
+	args.setsid = 1;
 
-	sigfillset(&all_signals);
-	/* block all signals */
-	sigprocmask(SIG_BLOCK, &all_signals, &our_signals);
-	pid = fork();
-	switch (pid) {
-		case -1:
-			perror("fork");
-			exit(1);
-			break;
-		case 0:
-			setsid();
-			/* unblock all signals */
-			sigprocmask(SIG_UNBLOCK, &all_signals, NULL);
-			printf("Starting %s runlevel\n", runlevel);
-			execlp("openrc", "openrc", runlevel, NULL);
-			perror("exec");
-			exit(1);
-			break;
-		default:
-			/* restore our signal mask */
-			sigprocmask(SIG_SETMASK, &our_signals, NULL);
-			while (waitpid(pid, NULL, 0) != pid)
-				if (errno == ECHILD)
-					break;
-			break;
+	printf("Starting %s runlevel\n", runlevel);
+	res = do_exec(&args);
+	if (res.pid < 0) {
+		perror("do_exec");
+		exit(1);
 	}
+	while (waitpid(res.pid, NULL, 0) != res.pid)
+		if (errno == ECHILD)
+			break;
 }
 
 static void init(const char *default_runlevel)
@@ -125,28 +110,10 @@ static void handle_shutdown(const char *runlevel, int cmd)
 
 static void run_program(const char *prog)
 {
-	sigset_t full;
-	sigset_t old;
-	pid_t pid;
-
-	/* We need to block signals until we have forked */
-	sigfillset(&full);
-	sigprocmask(SIG_SETMASK, &full, &old);
-	pid = fork();
-	if (pid == -1) {
-		perror("init");
-		return;
-	}
-	if (pid == 0) {
-		/* Unmask signals */
-		sigprocmask(SIG_SETMASK, &old, NULL);
-		execl(prog, prog, (char *)NULL);
-		perror("init");
-		exit(1);
-	}
-	/* Unmask signals and wait for child */
-	sigprocmask(SIG_SETMASK, &old, NULL);
-	if (rc_waitpid(pid) == -1)
+	const char *argv[] = { prog, NULL };
+	struct exec_args args = exec_init(argv);
+	struct exec_result res = do_exec(&args);
+	if (res.pid < 0 || rc_waitpid(res.pid) == -1)
 		perror("init");
 }
 
