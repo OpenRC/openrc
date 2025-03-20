@@ -356,7 +356,6 @@ svc_exec(const char *arg1, const char *arg2)
 	int ret, fdout = fileno(stdout);
 	struct termios tt;
 	struct winsize ws;
-	int i;
 	int flags = 0;
 	struct pollfd fd[2];
 	int s;
@@ -378,12 +377,8 @@ svc_exec(const char *arg1, const char *arg2)
 	rc_stringlist_free(keywords);
 
 	/* Setup our signal pipe */
-	if (pipe(signal_pipe) == -1)
-		eerrorx("%s: pipe: %s", applet, applet);
-	for (i = 0; i < 2; i++)
-		if ((flags = fcntl(signal_pipe[i], F_GETFD, 0) == -1 ||
-			fcntl(signal_pipe[i], F_SETFD, flags | FD_CLOEXEC) == -1))
-			eerrorx("%s: fcntl: %s", applet, strerror(errno));
+	if (pipe2(signal_pipe, O_CLOEXEC) == -1)
+		eerrorx("%s: pipe2: %s", applet, applet);
 
 	/* Open a pty for our prefixed output
 	 * We do this instead of mapping pipes to stdout, stderr so that

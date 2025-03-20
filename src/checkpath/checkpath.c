@@ -16,7 +16,6 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>

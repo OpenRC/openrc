@@ -26,12 +26,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/reboot.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <fcntl.h>
 #include <poll.h>
 #include <utmp.h>
 
@@ -266,15 +266,8 @@ int main(int argc, char **argv)
 		reexec = true;
 
 
-	/* NOTE(NRK): consider using pipe2 maybe... */
-	if (pipe(sigpipe) == -1) {
-		perror("pipe");
-		return 1;
-	}
-	if (fcntl(sigpipe[0], F_SETFD, O_NONBLOCK | FD_CLOEXEC) == -1 ||
-	    fcntl(sigpipe[1], F_SETFD, O_NONBLOCK | FD_CLOEXEC) == -1)
-	{
-		perror("fcntl");
+	if (pipe2(sigpipe, O_NONBLOCK | O_CLOEXEC) == -1) {
+		perror("pipe2");
 		return 1;
 	}
 

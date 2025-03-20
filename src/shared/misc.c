@@ -15,11 +15,6 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#ifdef HAVE_CLOSE_RANGE
-/* For close_range() */
-# define _GNU_SOURCE
-#endif
-
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>

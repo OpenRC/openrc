@@ -155,7 +155,6 @@ rc_logger_open(const char *level)
 	struct pollfd fd[2];
 	int s = 0;
 	size_t bytes;
-	int i;
 	FILE *log = NULL;
 	FILE *plog = NULL;
 	const char *logfile;
@@ -165,12 +164,8 @@ rc_logger_open(const char *level)
 	if (!rc_conf_yesno("rc_logger"))
 		return;
 
-	if (pipe(signal_pipe) == -1)
-		eerrorx("pipe: %s", strerror(errno));
-	for (i = 0; i < 2; i++)
-		if ((s = fcntl (signal_pipe[i], F_GETFD, 0) == -1 ||
-			fcntl (signal_pipe[i], F_SETFD, s | FD_CLOEXEC) == -1))
-			eerrorx("fcntl: %s", strerror (errno));
+	if (pipe2(signal_pipe, O_CLOEXEC) == -1)
+		eerrorx("pipe2: %s", strerror(errno));
 
 	if (isatty(STDOUT_FILENO)) {
 		tcgetattr(STDOUT_FILENO, &tt);
