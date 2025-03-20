@@ -50,4 +50,6 @@ struct exec_result {
 struct exec_args exec_init(const char **argv);
 struct exec_result do_exec(struct exec_args *args);
 
+int rc_pipe_command(const char *cmd, int devnullfd);
+
 #endif
