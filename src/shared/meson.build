@@ -10,6 +10,10 @@ schedules_c = files([
   'schedules.c',
   ])
 
+rc_exec_c = files([
+  'rc_exec.c',
+  ])
+
 pipes_c = files([
 	'pipes.c',
 	])
