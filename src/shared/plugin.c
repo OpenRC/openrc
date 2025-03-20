@@ -118,8 +118,6 @@ rc_plugin_run(RC_HOOK hook, const char *value)
 	sigset_t empty;
 	sigset_t full;
 	sigset_t old;
-	int i;
-	int flags;
 	int pfd[2];
 	pid_t pid;
 	char *buffer;
@@ -141,19 +139,14 @@ rc_plugin_run(RC_HOOK hook, const char *value)
 
 	TAILQ_FOREACH(plugin, &plugins, entries) {
 		/* We create a pipe so that plugins can affect our environment
-		 * vars, which in turn influence our scripts. */
-		if (pipe(pfd) == -1) {
-			eerror("pipe: %s", strerror(errno));
-			return;
-		}
-
-		/* Stop any scripts from inheriting us.
+		 * vars, which in turn influence our scripts.
+		 * O_CLOEXEC to stop any scripts from inheriting us.
 		 * This is actually quite important as without this, the splash
 		 * plugin will probably hang when running in silent mode. */
-		for (i = 0; i < 2; i++)
-			if ((flags = fcntl (pfd[i], F_GETFD, 0)) < 0 ||
-			    fcntl (pfd[i], F_SETFD, flags | FD_CLOEXEC) < 0)
-				eerror("fcntl: %s", strerror(errno));
+		if (pipe2(pfd, O_CLOEXEC) == -1) {
+			eerror("pipe2: %s", strerror(errno));
+			return;
+		}
 
 		sigprocmask(SIG_SETMASK, &full, &old);
 
