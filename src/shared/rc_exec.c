@@ -132,3 +132,15 @@ exit:
 	errno = saved_errno;
 	return res;
 }
+
+int
+rc_pipe_command(const char *cmd, int devnullfd)
+{
+	const char *argv[] = { "/bin/sh", "-c", cmd, NULL };
+	struct rc_exec_result res;
+	struct rc_exec_args args = rc_exec_args_init(argv);
+	args.redirect_stdin = RC_EXEC_MKPIPE;
+	args.redirect_stdout = args.redirect_stderr = devnullfd;
+	res = rc_exec(&args);
+	return (res.pid > 0) ? res.proc_stdin : -1;
+}

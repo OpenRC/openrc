@@ -70,7 +70,7 @@ static struct pam_conv conv = { NULL, NULL};
 #include "queue.h"
 #include "rc.h"
 #include "misc.h"
-#include "pipes.h"
+#include "rc_exec.h"
 #include "schedules.h"
 #include "_usage.h"
 #include "helpers.h"

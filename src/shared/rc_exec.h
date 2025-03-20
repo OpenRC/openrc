@@ -48,4 +48,6 @@ struct rc_exec_result {
 struct rc_exec_args rc_exec_args_init(const char **argv);
 struct rc_exec_result rc_exec(struct rc_exec_args *args);
 
+int rc_pipe_command(const char *cmd, int devnullfd);
+
 #endif

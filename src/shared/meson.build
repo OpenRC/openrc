@@ -14,10 +14,6 @@ rc_exec_c = files([
   'rc_exec.c',
   ])
 
-pipes_c = files([
-	'pipes.c',
-	])
-
 if selinux_dep.found()
   selinux_c = files([
     'selinux.c',
