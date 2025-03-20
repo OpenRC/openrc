@@ -133,19 +133,16 @@ static void run_program(const char *prog)
 	sigfillset(&full);
 	sigprocmask(SIG_SETMASK, &full, &old);
 	pid = fork();
+	sigprocmask(SIG_SETMASK, &old, NULL);
 	if (pid == -1) {
 		perror("init");
 		return;
 	}
 	if (pid == 0) {
-		/* Unmask signals */
-		sigprocmask(SIG_SETMASK, &old, NULL);
 		execl(prog, prog, (char *)NULL);
 		perror("init");
 		exit(1);
 	}
-	/* Unmask signals and wait for child */
-	sigprocmask(SIG_SETMASK, &old, NULL);
 	if (rc_waitpid(pid) == -1)
 		perror("init");
 }
