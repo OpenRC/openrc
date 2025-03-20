@@ -4,6 +4,12 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.61
+
+This release fixes loading conf.d from user directory and fixes setting
+variables expected for a new session (USER, LOGNAME, SHELL).
+
+
 ## OpenRC 0.60
 
 openrc now supports s6 "fd" style readiness notification via the `ready`
