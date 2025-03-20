@@ -188,6 +188,7 @@ endif
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
 rc_incdir = include_directories('src/librc')
+mountinfo_incdir = include_directories('src/mountinfo')
 
 init_d_conf_data = configuration_data()
 init_d_conf_data.set('SBINDIR', sbindir)
@@ -197,6 +198,7 @@ init_d_conf_data.set('RC_LIBEXECDIR', rc_libexecdir)
 
 dl_dep = cc.find_library('dl', required: false)
 util_dep = cc.find_library('util', required: false)
+thread_dep = dependency('threads')
 
 subdir('bash-completion')
 subdir('conf.d')
