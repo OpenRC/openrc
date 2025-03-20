@@ -50,6 +50,8 @@ servicename
 .Ar chrootpath
 .Fl u , -user
 .Ar user
+.Fl 0 , -stdin
+.Ar file
 .Fl 1 , -stdout
 .Ar logfile
 .Fl 2 , -stderr
@@ -154,11 +156,20 @@ process to communicate with is determined by the name of the service
 taken from the RC_SVCNAME environment variable.
 .It Fl u , -user Ar user
 Start the daemon as the specified user.
-.It Fl 1 , -stdout Ar logfile
-Redirect the standard output of the process to logfile.
+.It Fl 0 , -stdin Ar file
+Redirect the standard input of the process to file.
 Must be an absolute pathname, but relative to the path optionally given with
 .Fl r , -chroot .
-The logfile can also be a named pipe.
+The file can also be a named pipe. Input redirection assumes that the file
+exists already while output redirection via
+.Fl 1 , -stdout
+or
+.Fl 1 , -stderr
+creates it, if it doesn't.
+.It Fl 1 , -stdout Ar logfile
+The same thing as
+.Fl 0 , -stdin
+but with the standard output.
 .It Fl 2 , -stderr Ar logfile
 The same thing as
 .Fl 1 , -stdout

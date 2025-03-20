@@ -87,7 +87,7 @@ enum {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:1:2:3" \
+const char getoptstring[] = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:0:1:2:3" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "healthcheck-timer",        1, NULL, 'a'},
@@ -112,6 +112,7 @@ const struct option longopts[] = {
 	{ "signal",       1, NULL, 's'},
 	{ "start",        0, NULL, 'S'},
 	{ "user",         1, NULL, 'u'},
+	{ "stdin",        1, NULL, '0'},
 	{ "stdout",       1, NULL, '1'},
 	{ "stderr",       1, NULL, '2'},
 	{ "stdout-logger",1, NULL, LONGOPT_STDOUT_LOGGER},
@@ -143,6 +144,7 @@ const char * const longopts_help[] = {
 	"Send a signal to the daemon",
 	"Start daemon",
 	"Change the process user",
+	"Redirect stdin to file",
 	"Redirect stdout to file",
 	"Redirect stderr to file",
 	"Redirect stdout to process",
@@ -168,6 +170,7 @@ static int stdin_fd;
 static int stdout_fd;
 static int stderr_fd;
 static struct ready ready;
+static char *redirect_stdin = NULL;
 static char *redirect_stderr = NULL;
 static char *redirect_stdout = NULL;
 static char *stderr_process = NULL;
@@ -554,6 +557,13 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	stdin_fd = devnull_fd;
 	stdout_fd = devnull_fd;
 	stderr_fd = devnull_fd;
+	if (redirect_stdin) {
+		if ((stdin_fd = open(redirect_stdin,
+			    O_RDONLY)) == -1)
+			eerrorx("%s: unable to open the input file"
+			    " for stdin `%s': %s",
+			    applet, redirect_stdin, strerror(errno));
+	}
 	if (redirect_stdout) {
 		if ((stdout_fd = open(redirect_stdout,
 			    O_WRONLY | O_CREAT | O_APPEND,
@@ -1056,6 +1066,10 @@ int main(int argc, char **argv)
 			}
 		}
 		break;
+
+		case '0':   /* --stdin /path/to/stdin.input-file */
+			redirect_stdin = optarg;
+			break;
 
 		case '1':   /* --stdout /path/to/stdout.lgfile */
 			redirect_stdout = optarg;
