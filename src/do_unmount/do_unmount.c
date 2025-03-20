@@ -16,8 +16,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "helpers.h"
 #include "einfo.h"
+#include "helpers.h"
+#include "libmountinfo.h"
 #include "queue.h"
 #include "rc.h"
 
@@ -60,37 +61,6 @@ typedef struct t_args_t {
     global_args_t *global_args;   /* Parameters shared among all threads */
 } thread_args_t;
 
-/* Pass arguments as vector of string to a command and open standard output as readable file */
-static FILE *
-popen_vec(const char *command, int argc, char **argv)
-{
-    FILE *fp;   /* File pointer to program output */
-    char *cmd;  /* Command with all arguments */
-    int length; /* Length of the command with all arguments */
-    int i;      /* Iterator */
-
-    /* Calculate the length of the command */
-    length = strlen(command) + 1; /* +1 for the null terminator */
-    for (i = 0; i < argc; i++)
-        length += strlen(argv[i]) + 3; /* +3 for the quotes and space */
-
-    /* Allocate memory for the command */
-    cmd = xmalloc(length * sizeof(char));
-    sprintf(cmd, "%s", command);
-
-    /* Craft the command with all passed arguments */
-    for (i = 0; i < argc; i++) {
-        strcat(cmd, " \"");
-        strcat(cmd, argv[i]);
-        strcat(cmd, "\"");
-    }
-
-    /* Open the command, free memory and return output file pointer for reading */
-    fp = popen(cmd, "r");
-    free(cmd);
-    return fp;
-}
-
 /* Populate the list of shared mounts in the system */
 static void
 populate_shared_list(RC_STRINGLIST **list)
@@ -132,36 +102,6 @@ populate_shared_list(RC_STRINGLIST **list)
     free(line);
     free(path);
     #endif
-}
-
-/* Pass arguments to mountinfo and store output in a list of paths to unmount */
-static int
-populate_unmount_list(RC_STRINGLIST **list, int argc, char **argv)
-{
-    int size = 0;       /* Number of paths to unmount */
-    FILE *fp;           /* File pointer to the output of the command */
-    char *path = NULL;  /* Path to add to the list */
-    size_t len = 0;     /* Length of the line read */
-
-
-    /* Open the command for reading */
-    fp = popen_vec("mountinfo", argc-2, argv+2);
-    if (fp == NULL)
-        eerrorx("Failed to run mountinfo command, can't unmount anything!");
-
-    *list = rc_stringlist_new();
-    /* Read the output a line at a time */
-    while (getline(&path, &len, fp) != -1) {
-        path[strlen(path) - 1] = '\0'; /* Remove trailing '\n' */
-        if (strstr(path, "/proc") == NULL) {
-        rc_stringlist_add(*list, path);
-        size++;
-        }
-    }
-
-    pclose(fp);
-    free(path);
-    return size;
 }
 
 /* If unmount command fails terminate the programs using it and retry */
@@ -312,8 +252,11 @@ int main(int argc, char **argv)
     if (system("command -v fuser >/dev/null 2>&1"))
         eerrorx("fuser is not installed, can't unmount anything!");
 
-    /* Get list of paths to unmount */
-    size = populate_unmount_list(&to_unmount, argc, argv);
+    /* Get list of paths to unmount and compute its size */
+    to_unmount = find_filtered_mounts(argc-1, argv+1);
+    size = 0;
+    TAILQ_FOREACH(path, to_unmount, entries)
+        size++;
 
     /* Get list of shared paths in the system */
     populate_shared_list(&global_args.shared);
