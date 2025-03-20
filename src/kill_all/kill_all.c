@@ -31,6 +31,7 @@
 
 #include "einfo.h"
 #include "rc.h"
+#include "rc_exec.h"
 #include "_usage.h"
 #include "helpers.h"
 
@@ -51,33 +52,26 @@ const char *usagestring = NULL;
 
 static int mount_proc(void)
 {
-	pid_t pid;
 	pid_t rc;
 	int status;
+	const char *argv[] = { "mount", "-t", "proc", "proc", "/proc", NULL };
+	struct exec_result res;
+	struct exec_args args = exec_init(argv);
 
 	if (exists("/proc/version"))
 		return 0;
-	pid = fork();
-	switch (pid) {
-		case -1:
-			syslog(LOG_ERR, "Unable to fork");
-			return -1;
-			break;
-		case 0:
-			/* attempt to mount /proc */
-			execlp("mount", "mount", "-t", "proc", "proc", "/proc", NULL);
-			syslog(LOG_ERR, "Unable to execute mount");
-			exit(1);
-			break;
-		default:
-			/* wait for child process */
-			while ((rc = wait(&status)) != pid)
-				if (rc < 0 && errno == ECHILD)
-					break;
-			if (rc != pid || !WIFEXITED(status) || WEXITSTATUS(status) != 0)
-				syslog(LOG_ERR, "mount returned non-zero exit status");
-			break;
+
+	res = do_exec(&args);
+	if (res.pid < 0) {
+		syslog(LOG_ERR, "Failed to execute mount");
+		return -1;
 	}
+	while ((rc = wait(&status)) != res.pid)
+		if (rc < 0 && errno == ECHILD)
+			break;
+	if (rc != res.pid || !WIFEXITED(status) || WEXITSTATUS(status) != 0)
+		syslog(LOG_ERR, "mount returned non-zero exit status");
+
 	if (!exists("/proc/version")) {
 		syslog(LOG_ERR, "Could not mount /proc");
 		return -1;
