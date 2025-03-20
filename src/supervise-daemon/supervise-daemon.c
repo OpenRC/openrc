@@ -296,17 +296,17 @@ static char * expand_home(const char *home, const char *path)
 
 static char *make_cmdline(char **argv)
 {
-	char **c;
+	char *p, **c;
 	char *cmdline = NULL;
 	size_t len = 0;
 
 	for (c = argv; c && *c; c++)
 		len += (strlen(*c) + 1);
-	cmdline = xmalloc(len+1);
-	memset(cmdline, 0, len+1);
+	p = cmdline = xmalloc(len+1);
+	*p = '\0';
 	for (c = argv; c && *c; c++) {
-		strcat(cmdline, *c);
-		strcat(cmdline, " ");
+		p = stpcpy(p, *c);
+		p = stpcpy(p, " ");
 	}
 	return cmdline;
 }

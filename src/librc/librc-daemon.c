@@ -587,9 +587,7 @@ rc_service_daemons_crashed(const char *service)
 		ch_root = rc_service_value_get(basename_c(service), "chroot");
 		spidfile = pidfile;
 		if (ch_root && pidfile) {
-			spidfile = xmalloc(strlen(ch_root) + strlen(pidfile) + 1);
-			strcpy(spidfile, ch_root);
-			strcat(spidfile, pidfile);
+			xasprintf(&spidfile, "%s%s", ch_root, pidfile);
 			free(pidfile);
 			pidfile = spidfile;
 		}
