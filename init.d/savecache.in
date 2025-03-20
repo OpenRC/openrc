@@ -20,47 +20,27 @@ start()
 			return 1
 		fi
 	fi
-	if [ ! -d "$RC_LIBEXECDIR"/cache ]; then
-		if ! checkpath -W "$RC_LIBEXECDIR"; then
-			eerror "${RC_LIBEXECDIR} is not writable!"
-			eerror "Unable to save dependency cache"
-			if yesno "${RC_GOINGDOWN}"; then
-				return 0
-			fi
-			return 1
-		fi
-		rm -rf "$RC_LIBEXECDIR"/cache
-		if ! mkdir -p "$RC_LIBEXECDIR"/cache; then
-			eerror "Unable to create $RC_LIBEXECDIR/cache"
-			eerror "Unable to save dependency cache"
-			if yesno "${RC_GOINGDOWN}"; then
-				return 0
-			fi
-			return 1
-		fi
-	fi
-	if ! checkpath -W "$RC_LIBEXECDIR"/cache; then
-		eerror "${RC_LIBEXECDIR}/cache is not writable!"
+
+	if ! checkpath -m 0755 -d "$RC_CACHEDIR"; then
 		eerror "Unable to save dependency cache"
 		if yesno "${RC_GOINGDOWN}"; then
 			return 0
 		fi
 		return 1
 	fi
+
 	ebegin "Saving dependency cache"
 	local rc=0 save=
-	for x in depconfig deptree rc.log shutdowntime softlevel; do
+	for x in depconfig deptree rc.log shutdowntime; do
 		[ -e "$RC_SVCDIR/$x" ] && save="$save $RC_SVCDIR/$x"
 	done
 	if [ -n "$save" ]; then
-		cp -p $save "$RC_LIBEXECDIR"/cache
+		cp -p $save "$RC_CACHEDIR"
 		rc=$?
 	fi
-	if yesno "${RC_GOINGDOWN}"; then
-		if [ $rc -ne 0 ]; then
-			eerror "Unable to save dependency cache"
-		fi
-		eend 0
-	fi
 	eend $rc "Unable to save dependency cache"
+
+	if yesno "${RC_GOINGDOWN}"; then
+		return 0
+	fi
 }

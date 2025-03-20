@@ -11,6 +11,7 @@
 
 : ${CONSOLE:=/dev/console}
 : ${RC_LIBEXECDIR:=@LIBEXECDIR@}
+: ${RC_CACHEDIR:=/var/cache/rc}
 
 service_present()
 {
@@ -25,7 +26,7 @@ service_present()
 	return 0
 }
 
-if [ -e "$RC_LIBEXECDIR"/console/unicode ]; then
+if [ -e "$RC_CACHEDIR"/console/unicode ]; then
 	termencoding="%G"
 	kmode="-u"
 else
@@ -40,10 +41,10 @@ fi
 if service_present "$RC_DEFAULTLEVEL" consolefont ||
    service_present "$RC_BOOTLEVEL" consolefont; then
 	printf "\033%s" "$termencoding" >"$CONSOLE" 2>/dev/null
-	if [ -r "$RC_LIBEXECDIR"/console/font ] && \
+	if [ -r "$RC_CACHEDIR"/console/font ] && \
 		command -v setfont > /dev/null 2>&1; then
 		[ -c "$CONSOLE" ] && cons="-C $CONSOLE"
-		setfont $cons "$RC_LIBEXECDIR"/console/font 2>/dev/null
+		setfont $cons "$RC_CACHEDIR"/console/font 2>/dev/null
 	fi
 fi
 
@@ -51,8 +52,8 @@ fi
 if service_present "$RC_DEFAULTLEVEL" keymaps ||
    service_present "$RC_BOOTLEVEL" keymaps; then
 	kbd_mode $kmode -C "$CONSOLE" 2>/dev/null
-	if [ -r "$RC_LIBEXECDIR"/console/keymap ]; then
-		loadkeys -q "$RC_LIBEXECDIR"/console/keymap 2>/dev/null
+	if [ -r "$RC_CACHEDIR"/console/keymap ]; then
+		loadkeys -q "$RC_CACHEDIR"/console/keymap 2>/dev/null
 	fi
 fi
 
