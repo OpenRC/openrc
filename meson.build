@@ -188,6 +188,7 @@ endif
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')
 rc_incdir = include_directories('src/librc')
+mountinfo_incdir = include_directories('src/mountinfo')
 
 init_d_conf_data = configuration_data()
 init_d_conf_data.set('SBINDIR', sbindir)

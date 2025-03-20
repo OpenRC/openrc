@@ -15,26 +15,11 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
-#include <stdlib.h>
+#ifndef LIBMOUNTINFO_H
+#define LIBMOUNTINFO_H
 
-#include "libmountinfo.h"
-#include "queue.h"
 #include "rc.h"
 
-int main(int argc, char **argv)
-{
-	RC_STRINGLIST *nodes;
-	RC_STRING *s;
-	int result;
+RC_STRINGLIST *find_filtered_mounts(int argc, char **argv);
 
-	nodes = find_filtered_mounts(argc, argv);
-	result = EXIT_FAILURE;
-
-	TAILQ_FOREACH(s, nodes, entries) {
-		if (!rc_yesno(getenv("EINFO_QUIET")))
-			printf("%s\n", s->value);
-		result = EXIT_SUCCESS;
-	}
-
-	return result;
-}
+#endif
