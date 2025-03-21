@@ -24,9 +24,11 @@
 
 enum {
 	/* default */
-	RC_EXEC_REDIRECT_NONE   = -1,
+	RC_EXEC_REDIRECT_NONE = -1,
 	/* make a pipe and redirect to it */
-	RC_EXEC_MKPIPE          = -2,
+	RC_EXEC_MKPIPE = -2,
+	/* redirect to /dev/null */
+	RC_EXEC_DEVNULL = -3,
 };
 
 struct rc_exec_args {

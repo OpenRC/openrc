@@ -27,6 +27,19 @@ checked_close(int fd)
 		close(fd);
 }
 
+static int
+devnull(void)
+{
+	static int devnullfd = -1;
+	if (devnullfd < 0)
+		devnullfd = open("/dev/null", O_RDWR | O_CLOEXEC);
+	if (devnullfd < 0) {
+		fprintf(stderr, "Failed to open /dev/null: %s", strerror(errno));
+		_exit(1);
+	}
+	return devnullfd;
+}
+
 struct rc_exec_args
 rc_exec_args_init(const char **argv)
 {
@@ -66,6 +79,13 @@ rc_exec(struct rc_exec_args *args)
 			goto exit;
 		args->redirect_stderr = stderr_pipe[1];
 	}
+
+	if (args->redirect_stdin == RC_EXEC_DEVNULL)
+		args->redirect_stdin = devnull();
+	if (args->redirect_stdout == RC_EXEC_DEVNULL)
+		args->redirect_stdout = devnull();
+	if (args->redirect_stderr == RC_EXEC_DEVNULL)
+		args->redirect_stderr = devnull();
 
 	sigfillset(&full);
 	sigprocmask(SIG_SETMASK, &full, &old);
