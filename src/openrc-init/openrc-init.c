@@ -52,8 +52,8 @@ static int sigpipe[2] = { -1, -1 };
 static void do_openrc(const char *runlevel)
 {
 	const char *argv[] = { "openrc", runlevel, NULL };
-	struct rc_exec_result res;
-	struct rc_exec_args args = rc_exec_args_init(argv);
+	rc_exec_result_t res;
+	rc_exec_args_t args = rc_exec_init(argv);
 	args.setsid = 1;
 
 	printf("Starting %s runlevel\n", runlevel);
@@ -111,8 +111,8 @@ static void handle_shutdown(const char *runlevel, int cmd)
 static void run_program(const char *prog)
 {
 	const char *argv[] = { prog, NULL };
-	struct rc_exec_args args = rc_exec_args_init(argv);
-	struct rc_exec_result res = rc_exec(&args);
+	rc_exec_args_t args = rc_exec_init(argv);
+	rc_exec_result_t res = rc_exec(&args);
 	if (res.pid < 0 || rc_waitpid(res.pid) == -1)
 		perror("init");
 }

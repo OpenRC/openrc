@@ -55,8 +55,8 @@ static int mount_proc(void)
 	pid_t rc;
 	int status;
 	const char *argv[] = { "mount", "-t", "proc", "proc", "/proc", NULL };
-	struct rc_exec_result res;
-	struct rc_exec_args args = rc_exec_args_init(argv);
+	rc_exec_result_t res;
+	rc_exec_args_t args = rc_exec_init(argv);
 
 	if (exists("/proc/version"))
 		return 0;

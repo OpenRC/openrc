@@ -20,15 +20,13 @@
 #include "rc_exec.h"
 #include "helpers.h"
 
-static void
-checked_close(int fd)
+static void checked_close(int fd)
 {
 	if (fd >= 0)
 		close(fd);
 }
 
-static int
-devnull(void)
+static int devnull(void)
 {
 	static int devnullfd = -1;
 	if (devnullfd < 0)
@@ -40,10 +38,9 @@ devnull(void)
 	return devnullfd;
 }
 
-struct rc_exec_args
-rc_exec_args_init(const char **argv)
+rc_exec_args_t rc_exec_init(const char **argv)
 {
-	struct rc_exec_args args = {0};
+	rc_exec_args_t args = {0};
 	args.argv = argv;
 	args.redirect_stdin  = RC_EXEC_REDIRECT_NONE;
 	args.redirect_stdout = RC_EXEC_REDIRECT_NONE;
@@ -51,10 +48,9 @@ rc_exec_args_init(const char **argv)
 	return args;
 }
 
-struct rc_exec_result
-rc_exec(struct rc_exec_args *args)
+rc_exec_result_t rc_exec(rc_exec_args_t *args)
 {
-	struct rc_exec_result res = { .pid = -1 };
+	rc_exec_result_t res = { .pid = -1 };
 	sigset_t full, old;
 	int saved_errno, err, n;
 	int execpipe[2] = {-1, -1};
@@ -157,8 +153,8 @@ int
 rc_pipe_command(const char *cmd, int devnullfd)
 {
 	const char *argv[] = { "/bin/sh", "-c", cmd, NULL };
-	struct rc_exec_result res;
-	struct rc_exec_args args = rc_exec_args_init(argv);
+	rc_exec_result_t res;
+	rc_exec_args_t args = rc_exec_init(argv);
 	args.redirect_stdin = RC_EXEC_MKPIPE;
 	args.redirect_stdout = args.redirect_stderr = devnullfd;
 	res = rc_exec(&args);

@@ -31,24 +31,24 @@ enum {
 	RC_EXEC_DEVNULL = -3,
 };
 
-struct rc_exec_args {
+typedef struct {
 	const char **argv;
 	int redirect_stdin;
 	int redirect_stdout;
 	int redirect_stderr;
 	bool setsid : 1;
-};
+} rc_exec_args_t;
 
-struct rc_exec_result {
+typedef struct {
 	pid_t pid;
 	/* returned in case of RC_EXEC_MKPIPE */
 	int proc_stdin;
 	int proc_stdout;
 	int proc_stderr;
-};
+} rc_exec_result_t;
 
-struct rc_exec_args rc_exec_args_init(const char **argv);
-struct rc_exec_result rc_exec(struct rc_exec_args *args);
+rc_exec_args_t rc_exec_init(const char **argv);
+rc_exec_result_t rc_exec(rc_exec_args_t *args);
 
 int rc_pipe_command(const char *cmd, int devnullfd);
 
