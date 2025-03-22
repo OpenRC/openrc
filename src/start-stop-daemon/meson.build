@@ -1,5 +1,5 @@
 executable('start-stop-daemon',
-  ['start-stop-daemon.c', pipes_c, misc_c, schedules_c,
+  ['start-stop-daemon.c', rc_exec_c, misc_c, schedules_c,
 	selinux_c, usage_c, version_h],
   c_args : [cc_audit_flags, cc_branding_flags, cc_pam_flags, cc_selinux_flags],
   link_with: [libeinfo, librc],

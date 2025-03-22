@@ -10,9 +10,9 @@ schedules_c = files([
   'schedules.c',
   ])
 
-pipes_c = files([
-	'pipes.c',
-	])
+rc_exec_c = files([
+  'rc_exec.c',
+  ])
 
 if selinux_dep.found()
   selinux_c = files([
