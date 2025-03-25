@@ -66,18 +66,19 @@ rc_deptree_free(RC_DEPTREE *deptree)
 {
 	RC_DEPINFO *di;
 	RC_DEPINFO *di_save;
-	RC_DEPTYPE *dt;
-	RC_DEPTYPE *dt_save;
 
 	if (!deptree)
 		return;
 
 	TAILQ_FOREACH_SAFE(di, deptree, entries, di_save) {
-		TAILQ_FOREACH_SAFE(dt, &di->depends, entries, dt_save) {
-			TAILQ_REMOVE(&di->depends, dt, entries);
-			rc_stringlist_free(dt->services);
-			free(dt->type);
-			free(dt);
+		for (size_t i = 0; i < RC_DEPTYPE_MAX; i++) {
+			struct rc_dep *dt;
+			struct rc_dep *dt_save;
+
+			TAILQ_FOREACH_SAFE(dt, &di->depends[i], entries, dt_save) {
+				TAILQ_REMOVE(&di->depends[i], dt, entries);
+				free(dt);
+			}
 		}
 		TAILQ_REMOVE(deptree, di, entries);
 		free(di->service);
@@ -104,35 +105,46 @@ static RC_DEPINFO *
 make_depinfo(RC_DEPTREE *deptree, const char *service)
 {
 	RC_DEPINFO *depinfo = xmalloc(sizeof(*depinfo));
-	TAILQ_INIT(&depinfo->depends);
+	for (size_t i = 0; i < RC_DEPTYPE_MAX; i++)
+		TAILQ_INIT(&depinfo->depends[i]);
 	depinfo->service = xstrdup(service);
 	TAILQ_INSERT_TAIL(deptree, depinfo, entries);
 
 	return depinfo;
 }
 
-static RC_DEPTYPE *
-get_deptype(const RC_DEPINFO *depinfo, const char *type)
-{
-	RC_DEPTYPE *dt;
+const char *deptype_map[RC_DEPTYPE_MAX] = {
+	[RC_DEPTYPE_INEED] = "ineed",
+	[RC_DEPTYPE_NEEDSME] = "needsme",
+	[RC_DEPTYPE_IUSE] = "iuse",
+	[RC_DEPTYPE_USESME] = "usesme",
+	[RC_DEPTYPE_IWANT] = "iwant",
+	[RC_DEPTYPE_WANTSME] = "wantsme",
+	[RC_DEPTYPE_IAFTER] = "iafter",
+	[RC_DEPTYPE_AFTERME] = "afterme",
+	[RC_DEPTYPE_IBEFORE] = "ibefore",
+	[RC_DEPTYPE_BEFOREME] = "beforeme",
+	[RC_DEPTYPE_IPROVIDE] = "iprovide",
+	[RC_DEPTYPE_PROVIDEDBY] = "providedby",
+	[RC_DEPTYPE_BROKEN] = "broken",
+	[RC_DEPTYPE_KEYWORD] = "keyword",
+};
 
-	if (depinfo) {
-		TAILQ_FOREACH(dt, &depinfo->depends, entries)
-			if (strcmp(dt->type, type) == 0)
-				return dt;
-	}
-	return NULL;
+enum rc_deptype
+rc_deptype_parse(const char *type)
+{
+	for (size_t i = 0; i < RC_DEPTYPE_MAX; i++)
+		if (deptype_map[i] && strcmp(type, deptype_map[i]) == 0)
+			return i;
+	return RC_DEPTYPE_INVALID;
 }
 
-static RC_DEPTYPE *
-make_deptype(RC_DEPINFO *depinfo, const char *type)
+static struct rc_dep *
+make_dep(RC_DEPINFO *service)
 {
-	RC_DEPTYPE *deptype = xmalloc(sizeof(*deptype));
-	deptype->type = xstrdup(type);
-	deptype->services = rc_stringlist_new();
-	TAILQ_INSERT_TAIL(&depinfo->depends, deptype, entries);
-
-	return deptype;
+	struct rc_dep *dep = xmalloc(sizeof(*dep));
+	dep->service = service;
+	return dep;
 }
 
 #ifdef HAVE_MALLOC_EXTENDED_ATTRIBUTE
@@ -162,8 +174,9 @@ rc_deptree_load_file(const char *deptree_file)
 {
 	FILE *fp;
 	RC_DEPTREE *deptree;
-	RC_DEPINFO *depinfo = NULL;
-	RC_DEPTYPE *deptype = NULL;
+	RC_DEPINFO *depinfo = NULL, *depsvc;
+	struct rc_dep *dependency = NULL;
+	enum rc_deptype type_idx;
 	char *line = NULL;
 	size_t size;
 	char *type;
@@ -180,20 +193,27 @@ rc_deptree_load_file(const char *deptree_file)
 		e = strsep(&p, "_");
 		if (!e || strcmp(e, "depinfo") != 0)
 			continue;
+
 		e = strsep(&p, "_");
 		if (!e || sscanf(e, "%d", &i) != 1)
 			continue;
 		if (!(type = strsep(&p, "_=")))
 			continue;
+
 		if (strcmp(type, "service") == 0) {
 			/* Sanity */
 			e = get_shell_value(p);
 			if (!e || *e == '\0')
 				continue;
-			depinfo = make_depinfo(deptree, e);
-			deptype = NULL;
+			if (!(depinfo = get_depinfo(deptree, e)))
+				depinfo = make_depinfo(deptree, e);
+			dependency = NULL;
 			continue;
 		}
+
+		if ((type_idx = rc_deptype_parse(type)) == RC_DEPTYPE_INVALID)
+			continue;
+
 		e = strsep(&p, "=");
 		if (!e || sscanf(e, "%d", &i) != 1)
 			continue;
@@ -201,9 +221,11 @@ rc_deptree_load_file(const char *deptree_file)
 		e = get_shell_value(p);
 		if (!e || *e == '\0')
 			continue;
-		if (!deptype || strcmp(deptype->type, type) != 0)
-			deptype = make_deptype(depinfo, type);
-		rc_stringlist_add(deptype->services, e);
+		if (!(depsvc = get_depinfo(deptree, e)))
+			depsvc = make_depinfo(deptree, e);
+		dependency = xmalloc(sizeof(*dependency));
+		dependency->service = depsvc;
+		TAILQ_INSERT_TAIL(&depinfo->depends[type_idx], dependency, entries);
 	}
 	fclose(fp);
 	free(line);
@@ -212,23 +234,28 @@ rc_deptree_load_file(const char *deptree_file)
 }
 
 static bool
-valid_service(const char *runlevel, const char *service, const char *type)
+valid_service(const char *runlevel, const char *service, enum rc_deptype type)
 {
 	RC_SERVICE state;
 
-	if (!runlevel ||
-	    strcmp(type, "ineed") == 0 ||
-	    strcmp(type, "needsme") == 0  ||
-	    strcmp(type, "iwant") == 0 ||
-	    strcmp(type, "wantsme") == 0)
+	if (!runlevel)
 		return true;
+
+	switch (type) {
+	case RC_DEPTYPE_INEED:
+	case RC_DEPTYPE_NEEDSME:
+	case RC_DEPTYPE_IWANT:
+	case RC_DEPTYPE_WANTSME:
+		return true;
+	default:
+		break;
+	}
 
 	if (rc_service_in_runlevel(service, runlevel))
 		return true;
-	if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0)
+	if (type == RC_DEPTYPE_IAFTER && strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0)
 		    return false;
-	if (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 &&
-	    strcmp(type, "iafter") == 0)
+	if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0)
 		    return false;
 	if (strcmp(runlevel, bootlevel) != 0) {
 		if (rc_service_in_runlevel(service, bootlevel))
@@ -236,8 +263,7 @@ valid_service(const char *runlevel, const char *service, const char *type)
 	}
 
 	state = rc_service_state(service);
-	if (state & RC_SERVICE_HOTPLUGGED ||
-	    state & RC_SERVICE_STARTED)
+	if (state & RC_SERVICE_HOTPLUGGED || state & RC_SERVICE_STARTED)
 		return true;
 
 	return false;
@@ -245,18 +271,17 @@ valid_service(const char *runlevel, const char *service, const char *type)
 
 static bool
 get_provided1(const char *runlevel, RC_STRINGLIST *providers,
-	      RC_DEPTYPE *deptype, const char *level,
-	      bool hotplugged, RC_SERVICE state)
+		const struct rc_deplist *deplist, const char *level, bool hotplugged, RC_SERVICE state)
 {
-	RC_STRING *service;
 	RC_SERVICE st;
+	struct rc_dep *service;
 	bool retval = false;
 	bool ok;
 	const char *svc;
 
-	TAILQ_FOREACH(service, deptype->services, entries) {
+	TAILQ_FOREACH(service, deplist, entries) {
 		ok = true;
-		svc = service->value;
+		svc = service->service->service;
 		st = rc_service_state(svc);
 
 		if (level)
@@ -302,32 +327,31 @@ get_provided1(const char *runlevel, RC_STRINGLIST *providers,
 static RC_STRINGLIST *
 get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 {
-	RC_DEPTYPE *dt;
+	const struct rc_deplist *deplist = &depinfo->depends[RC_DEPTYPE_PROVIDEDBY];
 	RC_STRINGLIST *providers = rc_stringlist_new();
-	RC_STRING *service;
+	struct rc_dep *dep;
 
-	dt = get_deptype(depinfo, "providedby");
-	if (!dt)
+	if (TAILQ_EMPTY(deplist))
 		return providers;
 
 	/* If we are stopping then all depends are true, regardless of state.
 	   This is especially true for net services as they could force a restart
 	   of the local dns resolver which may depend on net. */
 	if (options & RC_DEP_STOP) {
-		TAILQ_FOREACH(service, dt->services, entries)
-			rc_stringlist_add(providers, service->value);
+		TAILQ_FOREACH(dep, deplist, entries)
+			rc_stringlist_add(providers, dep->service->service);
 		return providers;
 	}
 
 	/* If we're strict or starting, then only use what we have in our
 	 * runlevel and bootlevel. If we starting then check hotplugged too. */
 	if (options & RC_DEP_STRICT || options & RC_DEP_START) {
-		TAILQ_FOREACH(service, dt->services, entries)
-			if (rc_service_in_runlevel(service->value, runlevel) ||
-			    rc_service_in_runlevel(service->value, bootlevel) ||
-			    (options & RC_DEP_START &&
-			     rc_service_state(service->value) & RC_SERVICE_HOTPLUGGED))
-				rc_stringlist_add(providers, service->value);
+		TAILQ_FOREACH(dep, deplist, entries) {
+			const char *svcname = dep->service->service;
+			if (rc_service_in_runlevel(svcname, runlevel) || rc_service_in_runlevel(svcname, bootlevel) ||
+					(options & RC_DEP_START && rc_service_state(svcname) & RC_SERVICE_HOTPLUGGED))
+				rc_stringlist_add(providers, svcname);
+		}
 		if (TAILQ_FIRST(providers))
 			return providers;
 	}
@@ -352,112 +376,97 @@ get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)
 	}
 
 	/* Anything running has to come first */
-	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTED))
+	if (get_provided1(runlevel, providers, deplist, runlevel, false, RC_SERVICE_STARTED))
 	{ DO }
-	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STARTED))
+	if (get_provided1(runlevel, providers, deplist, NULL, true, RC_SERVICE_STARTED))
 	{ DO }
 	if (bootlevel && strcmp(runlevel, bootlevel) != 0 &&
-	    get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTED))
+	    get_provided1(runlevel, providers, deplist, bootlevel, false, RC_SERVICE_STARTED))
 	{ DO }
-	if (get_provided1(runlevel, providers, dt, NULL, false, RC_SERVICE_STARTED))
+	if (get_provided1(runlevel, providers, deplist, NULL, false, RC_SERVICE_STARTED))
 	{ DO }
 
 	/* Check starting services */
-	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STARTING))
+	if (get_provided1(runlevel, providers, deplist, runlevel, false, RC_SERVICE_STARTING))
 		return providers;
-	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STARTING))
+	if (get_provided1(runlevel, providers, deplist, NULL, true, RC_SERVICE_STARTING))
 		return providers;
 	if (bootlevel && strcmp(runlevel, bootlevel) != 0 &&
-	    get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STARTING))
+	    get_provided1(runlevel, providers, deplist, bootlevel, false, RC_SERVICE_STARTING))
 	    return providers;
-	if (get_provided1(runlevel, providers, dt, NULL, false, RC_SERVICE_STARTING))
+	if (get_provided1(runlevel, providers, deplist, NULL, false, RC_SERVICE_STARTING))
 		return providers;
 
 	/* Nothing started then. OK, lets get the stopped services */
-	if (get_provided1(runlevel, providers, dt, runlevel, false, RC_SERVICE_STOPPED))
+	if (get_provided1(runlevel, providers, deplist, runlevel, false, RC_SERVICE_STOPPED))
 		return providers;
-	if (get_provided1(runlevel, providers, dt, NULL, true, RC_SERVICE_STOPPED))
+	if (get_provided1(runlevel, providers, deplist, NULL, true, RC_SERVICE_STOPPED))
 	{ DO }
 	if (bootlevel && (strcmp(runlevel, bootlevel) != 0) &&
-	    get_provided1(runlevel, providers, dt, bootlevel, false, RC_SERVICE_STOPPED))
+	    get_provided1(runlevel, providers, deplist, bootlevel, false, RC_SERVICE_STOPPED))
 		return providers;
 
 	/* Still nothing? OK, list our first provided service. */
-	service = TAILQ_FIRST(dt->services);
-	if (service != NULL)
-		rc_stringlist_add(providers, service->value);
+	if (!TAILQ_EMPTY(deplist))
+		rc_stringlist_add(providers, TAILQ_FIRST(deplist)->service->service);
 
 	return providers;
 }
 
 static void
-visit_service(const RC_DEPTREE *deptree,
-	      const RC_STRINGLIST *types,
-	      RC_STRINGLIST *sorted,
-	      RC_STRINGLIST *visited,
-	      const RC_DEPINFO *depinfo,
-	      const char *runlevel, int options)
+visit_service(const RC_DEPTREE *deptree, enum rc_deptype types, RC_STRINGLIST *sorted,
+		RC_DEPINFO *depinfo, const char *runlevel, int options, int idx)
 {
-	RC_STRING *type;
-	RC_STRING *service;
-	RC_DEPTYPE *dt;
 	RC_DEPINFO *di;
 	RC_STRINGLIST *provided;
 	RC_STRING *p;
 	const char *svcname;
 
 	/* Check if we have already visited this service or not */
-	TAILQ_FOREACH(type, visited, entries)
-		if (strcmp(type->value, depinfo->service) == 0)
-			return;
-	/* Add ourselves as a visited service */
-	rc_stringlist_add(visited, depinfo->service);
+	if (depinfo->visited == idx)
+		return;
+	depinfo->visited = idx;
 
-	TAILQ_FOREACH(type, types, entries)
-	{
-		if (!(dt = get_deptype(depinfo, type->value)))
+	for (size_t i = 0; i < RC_DEPTYPE_MAX; i++) {
+		struct rc_dep *dt;
+		if (!((types >> i) & 1))
 			continue;
 
-		TAILQ_FOREACH(service, dt->services, entries) {
-			if (!(options & RC_DEP_TRACE) ||
-			    strcmp(type->value, "iprovide") == 0)
-			{
-				rc_stringlist_add(sorted, service->value);
+		TAILQ_FOREACH(dt, &depinfo->depends[i], entries) {
+			svcname = dt->service->service;
+			if (!(options & RC_DEP_TRACE) || i == RC_DEPTYPE_IPROVIDE) {
+				rc_stringlist_add(sorted, svcname);
 				continue;
 			}
 
-			if (!(di = get_depinfo(deptree, service->value)))
+			if (!(di = get_depinfo(deptree, svcname)))
 				continue;
 			provided = get_provided(di, runlevel, options);
 
 			if (TAILQ_FIRST(provided)) {
 				TAILQ_FOREACH(p, provided, entries) {
 					di = get_depinfo(deptree, p->value);
-					if (di && valid_service(runlevel, di->service, type->value))
-						visit_service(deptree, types, sorted, visited, di,
-							      runlevel, options | RC_DEP_TRACE);
+					if (di && valid_service(runlevel, di->service, i))
+						visit_service(deptree, types, sorted, di, runlevel, options | RC_DEP_TRACE, idx);
 				}
+			} else if (di && valid_service(runlevel, svcname, i)) {
+				visit_service(deptree, types, sorted, di, runlevel, options | RC_DEP_TRACE, idx);
 			}
-			else if (di && valid_service(runlevel, service->value, type->value))
-				visit_service(deptree, types, sorted, visited, di,
-					      runlevel, options | RC_DEP_TRACE);
 
 			rc_stringlist_free(provided);
 		}
 	}
 
 	/* Now visit the stuff we provide for */
-	if (options & RC_DEP_TRACE &&
-	    (dt = get_deptype(depinfo, "iprovide")))
-	{
-		TAILQ_FOREACH(service, dt->services, entries) {
-			if (!(di = get_depinfo(deptree, service->value)))
+	if (options & RC_DEP_TRACE) {
+		struct rc_dep *dt;
+		TAILQ_FOREACH(dt, &depinfo->depends[RC_DEPTYPE_IPROVIDE], entries) {
+			if (!(di = get_depinfo(deptree, dt->service->service)))
 				continue;
 			provided = get_provided(di, runlevel, options);
 			TAILQ_FOREACH(p, provided, entries)
 				if (strcmp(p->value, depinfo->service) == 0) {
-					visit_service(deptree, types, sorted, visited, di,
-						       runlevel, options | RC_DEP_TRACE);
+					visit_service(deptree, types, sorted, di, runlevel, options | RC_DEP_TRACE, idx);
 					break;
 				}
 			rc_stringlist_free(provided);
@@ -468,44 +477,38 @@ visit_service(const RC_DEPTREE *deptree,
 	   are also the service calling us or we are provided by something */
 	svcname = getenv("RC_SVCNAME");
 	if (!svcname || strcmp(svcname, depinfo->service) != 0) {
-		if (!get_deptype(depinfo, "providedby"))
+		if (TAILQ_EMPTY(&depinfo->depends[RC_DEPTYPE_PROVIDEDBY]))
 			rc_stringlist_add(sorted, depinfo->service);
 	}
 }
 
 RC_STRINGLIST *
-rc_deptree_depend(const RC_DEPTREE *deptree,
-		  const char *service, const char *type)
+rc_deptree_depend(const RC_DEPTREE *deptree, const char *service, enum rc_deptype type)
 {
 	RC_DEPINFO *di;
-	RC_DEPTYPE *dt;
-	RC_STRINGLIST *svcs;
-	RC_STRING *svc;
+	struct rc_dep *dt;
+	RC_STRINGLIST *svcs = rc_stringlist_new();
 
-	svcs = rc_stringlist_new();
-	if (!(di = get_depinfo(deptree, service)) ||
-	    !(dt = get_deptype(di, type)))
+	if (type >= RC_DEPTYPE_MAX || !(di = get_depinfo(deptree, service)) || TAILQ_EMPTY(&di->depends[type]))
 	{
 		errno = ENOENT;
 		return svcs;
 	}
 
 	/* For consistency, we copy the array */
-	TAILQ_FOREACH(svc, dt->services, entries)
-		rc_stringlist_add(svcs, svc->value);
+	TAILQ_FOREACH(dt, &di->depends[type], entries)
+		rc_stringlist_add(svcs, dt->service->service);
 	return svcs;
 }
 
 RC_STRINGLIST *
-rc_deptree_depends(const RC_DEPTREE *deptree,
-		   const RC_STRINGLIST *types,
-		   const RC_STRINGLIST *services,
-		   const char *runlevel, int options)
+rc_deptree_depends(const RC_DEPTREE *deptree, enum rc_deptype types,
+		   const RC_STRINGLIST *services, const char *runlevel, int options)
 {
 	RC_STRINGLIST *sorted = rc_stringlist_new();
-	RC_STRINGLIST *visited = rc_stringlist_new();
-	RC_DEPINFO *di;
 	const RC_STRING *service;
+	RC_DEPINFO *di;
+	static int idx = 2;
 
 	bootlevel = getenv("RC_BOOTLEVEL");
 	if (!bootlevel)
@@ -515,11 +518,8 @@ rc_deptree_depends(const RC_DEPTREE *deptree,
 			errno = ENOENT;
 			continue;
 		}
-		if (types)
-			visit_service(deptree, types, sorted, visited,
-				      di, runlevel, options);
+		visit_service(deptree, types, sorted, di, runlevel, options, idx++);
 	}
-	rc_stringlist_free(visited);
 	return sorted;
 }
 
@@ -528,7 +528,7 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 {
 	RC_STRINGLIST *list;
 	RC_STRINGLIST *list2;
-	RC_STRINGLIST *types;
+	enum rc_deptype types;
 	RC_STRINGLIST *services;
 
 	bootlevel = getenv("RC_BOOTLEVEL");
@@ -566,15 +566,10 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
 
 	/* Now we have our lists, we need to pull in any dependencies
 	   and order them */
-	types = rc_stringlist_new();
-	rc_stringlist_add(types, "ineed");
-	rc_stringlist_add(types, "iuse");
-	rc_stringlist_add(types, "iwant");
-	rc_stringlist_add(types, "iafter");
-	services = rc_deptree_depends(deptree, types, list, runlevel,
-				      RC_DEP_STRICT | RC_DEP_TRACE | options);
+	types = RC_DEP(INEED) | RC_DEP(IUSE) | RC_DEP(IWANT) | RC_DEP(IAFTER);
+	services = rc_deptree_depends(deptree, types, list, runlevel, RC_DEP_STRICT | RC_DEP_TRACE | options);
+
 	rc_stringlist_free(list);
-	rc_stringlist_free(types);
 	return services;
 }
 
@@ -676,18 +671,17 @@ rc_older_than(const char *source, const char *target,
 
 typedef struct deppair
 {
-	const char *depend;
-	const char *addto;
+	enum rc_deptype depend;
+	enum rc_deptype addto;
 } DEPPAIR;
 
 static const DEPPAIR deppairs[] = {
-	{ "ineed",	"needsme" },
-	{ "iuse",	"usesme" },
-	{ "iwant",	"wantsme" },
-	{ "iafter",	"ibefore" },
-	{ "ibefore",	"iafter" },
-	{ "iprovide",	"providedby" },
-	{ NULL, NULL }
+	{ RC_DEPTYPE_INEED,	RC_DEPTYPE_NEEDSME },
+	{ RC_DEPTYPE_IUSE,	RC_DEPTYPE_USESME },
+	{ RC_DEPTYPE_IWANT,	RC_DEPTYPE_WANTSME },
+	{ RC_DEPTYPE_IAFTER,	RC_DEPTYPE_IBEFORE },
+	{ RC_DEPTYPE_IBEFORE,	RC_DEPTYPE_IAFTER },
+	{ RC_DEPTYPE_IPROVIDE,	RC_DEPTYPE_PROVIDEDBY },
 };
 
 static const char *const depdirs[] =
@@ -812,6 +806,18 @@ setup_environment(void) {
 		setenv("RC_UNAME", uts.sysname, 1);
 }
 
+static void
+rc_deplist_delete(struct rc_deplist *list, struct rc_depinfo *svc)
+{
+	struct rc_dep *dep;
+	TAILQ_FOREACH(dep, list, entries)
+		if (dep->service == svc) {
+			TAILQ_REMOVE(list, dep, entries);
+			free(dep);
+			return;
+		}
+}
+
 /* This is a 7 phase operation
    Phase 1 is a shell script which loads each init script and config in turn
    and echos their dependency info to stdout
@@ -828,11 +834,13 @@ rc_deptree_update(void)
 {
 
 	FILE *fp;
-	RC_DEPTREE *deptree, *providers;
+	RC_DEPTREE *deptree;
 	RC_DEPINFO *depinfo = NULL, *depinfo_np, *di;
-	RC_DEPTYPE *deptype = NULL, *dt_np, *dt, *provide;
-	RC_STRINGLIST *config, *dupes, *types, *sorted, *visited;
-	RC_STRING *s, *s2, *s2_np, *s3, *s4;
+	struct rc_deplist *deptype = NULL, *dt, *provide;
+	struct rc_dep *dep, *dep_np;
+	RC_STRINGLIST *config, *dupes, *sorted;
+	enum rc_deptype types;
+	RC_STRING *s, *s3;
 	char *line = NULL;
 	size_t size;
 	char *depend, *depends, *service, *type;
@@ -859,9 +867,10 @@ rc_deptree_update(void)
 		type = strsep(&depends, " ");
 		if (!depinfo || strcmp(depinfo->service, service) != 0) {
 			deptype = NULL;
-			depinfo = get_depinfo(deptree, service);
-			if (!depinfo)
+			if (!(depinfo = get_depinfo(deptree, service))) {
 				depinfo = make_depinfo(deptree, service);
+				depinfo->exists = true;
+			}
 		}
 
 		/* We may not have any depends */
@@ -870,11 +879,10 @@ rc_deptree_update(void)
 
 		/* Get the type */
 		if (strcmp(type, "config") != 0) {
-			if (!deptype || strcmp(deptype->type, type) != 0) {
-				deptype = get_deptype(depinfo, type);
-				if (!deptype)
-					deptype = make_deptype(depinfo, type);
-			}
+			int type_idx = rc_deptype_parse(type);
+			if (type_idx == RC_DEPTYPE_INVALID)
+				continue;
+			deptype = &depinfo->depends[type_idx];
 		}
 
 		/* Now add each depend to our type.
@@ -902,26 +910,27 @@ rc_deptree_update(void)
 
 			/* Remove our dependency if instructed */
 			if (depend[0] == '!') {
-				rc_stringlist_delete(deptype->services, depend + 1);
+				if ((di = get_depinfo(deptree, depend + 1)))
+					rc_deplist_delete(deptype, di);
 				continue;
 			}
 
-			rc_stringlist_add(deptype->services, depend);
+			if (!(di = get_depinfo(deptree, depend)))
+				di = make_depinfo(deptree, depend);
+
+			dep = xmalloc(sizeof(*dep));
+			dep->service = di;
+			TAILQ_INSERT_TAIL(deptype, dep, entries);
 
 			/* We need to allow `after *; before local;` to work.
 			 * Conversely, we need to allow 'before *; after modules' also */
 			/* If we're before something, remove us from the after list */
-			if (strcmp(type, "ibefore") == 0) {
-				if ((dt = get_deptype(depinfo, "iafter")))
-					rc_stringlist_delete(dt->services, depend);
-			}
+			if (strcmp(type, "ibefore") == 0)
+				rc_deplist_delete(&depinfo->depends[RC_DEPTYPE_IAFTER], di);
 			/* If we're after something, remove us from the before list */
-			if (strcmp(type, "iafter") == 0 ||
-			    strcmp(type, "ineed") == 0 ||
-			    strcmp(type, "iwant") == 0 ||
-			    strcmp(type, "iuse") == 0) {
-				if ((dt = get_deptype(depinfo, "ibefore")))
-					rc_stringlist_delete(dt->services, depend);
+			if (strcmp(type, "iafter") == 0 || strcmp(type, "ineed") == 0
+					|| strcmp(type, "iwant") == 0 || strcmp(type, "iuse") == 0) {
+				rc_deplist_delete(&depinfo->depends[RC_DEPTYPE_IBEFORE], di);
 			}
 		}
 	}
@@ -948,24 +957,20 @@ rc_deptree_update(void)
 		onosys[i + 2] = '\0';
 
 		TAILQ_FOREACH_SAFE(depinfo, deptree, entries, depinfo_np) {
-			if (!(deptype = get_deptype(depinfo, "keyword")))
-				continue;
-			TAILQ_FOREACH(s, deptype->services, entries) {
-				if (strcmp(s->value, nosys) != 0 && strcmp(s->value, onosys) != 0)
+			deptype = &depinfo->depends[RC_DEPTYPE_KEYWORD];
+			TAILQ_FOREACH(dep, deptype, entries) {
+				const char *svcname = dep->service->service;
+				if (strcmp(svcname, nosys) != 0 && strcmp(svcname, onosys) != 0)
 					continue;
-				provide = get_deptype(depinfo, "iprovide");
+				provide = &depinfo->depends[RC_DEPTYPE_IPROVIDE];
 				TAILQ_REMOVE(deptree, depinfo, entries);
 				TAILQ_FOREACH(di, deptree, entries) {
-					TAILQ_FOREACH_SAFE(dt, &di->depends, entries, dt_np) {
-						rc_stringlist_delete(dt->services, depinfo->service);
-						if (provide)
-							TAILQ_FOREACH(s2, provide->services, entries)
-								rc_stringlist_delete(dt->services, s2->value);
-						if (!TAILQ_FIRST(dt->services)) {
-							TAILQ_REMOVE(&di->depends, dt, entries);
-							free(dt->type);
-							free(dt->services);
-							free(dt);
+					for (dt = di->depends; dt < di->depends + RC_DEPTYPE_MAX; dt++) {
+						rc_deplist_delete(dt, depinfo);
+						if (!TAILQ_EMPTY(provide)) {
+							struct rc_dep *provided;
+							TAILQ_FOREACH(provided, provide, entries)
+								rc_deplist_delete(dt, provided->service);
 						}
 					}
 				}
@@ -975,98 +980,57 @@ rc_deptree_update(void)
 		free(onosys);
 	}
 
-	/* Phase 3 - add our providers to the tree */
-	providers = xmalloc(sizeof(*providers));
-	TAILQ_INIT(providers);
-	TAILQ_FOREACH(depinfo, deptree, entries) {
-		if (!(deptype = get_deptype(depinfo, "iprovide")))
-			continue;
-		TAILQ_FOREACH(s, deptype->services, entries) {
-			di = get_depinfo(providers, s->value);
-			if (!di)
-				di = make_depinfo(providers, s->value);
-		}
-	}
-	TAILQ_CONCAT(deptree, providers, entries);
-	free(providers);
-
 	/* Phase 4 - backreference our depends */
 	TAILQ_FOREACH(depinfo, deptree, entries) {
-		for (i = 0; deppairs[i].depend; i++) {
-			deptype = get_deptype(depinfo, deppairs[i].depend);
-			if (!deptype)
-				continue;
-			TAILQ_FOREACH(s, deptype->services, entries) {
-				di = get_depinfo(deptree, s->value);
-				if (!di) {
-					if (strcmp(deptype->type, "ineed") == 0) {
+		for (i = 0; i < ARRAY_SIZE(deppairs); i++) {
+			deptype = &depinfo->depends[deppairs[i].depend];
+			TAILQ_FOREACH(dep, deptype, entries) {
+				struct rc_dep *newdep = xmalloc(sizeof(*newdep));
+				newdep->service = dep->service;
+				if (!dep->service->exists) {
+					if (deppairs[i].depend == RC_DEPTYPE_INEED) {
 						fprintf(stderr, "Service '%s' needs non existent service '%s'\n",
 							 depinfo->service, s->value);
-						dt = get_deptype(depinfo, "broken");
-						if (!dt)
-							dt = make_deptype(depinfo, "broken");
-						rc_stringlist_addu(dt->services, s->value);
+						TAILQ_INSERT_TAIL(&depinfo->depends[RC_DEPTYPE_BROKEN], newdep, entries);
 					}
 					continue;
 				}
 
-				dt = get_deptype(di, deppairs[i].addto);
-				if (!dt)
-					dt = make_deptype(di, deppairs[i].addto);
-				rc_stringlist_addu(dt->services, depinfo->service);
+				TAILQ_INSERT_TAIL(&depinfo->depends[deppairs[i].addto], newdep, entries);
 			}
 		}
 	}
 
 	/* Phase 5 - Remove broken before directives */
-	types = rc_stringlist_new();
-	rc_stringlist_add(types, "ineed");
-	rc_stringlist_add(types, "iwant");
-	rc_stringlist_add(types, "iuse");
-	rc_stringlist_add(types, "iafter");
+	types = RC_DEP(INEED) | RC_DEP(IWANT) | RC_DEP(IUSE) | RC_DEP(IAFTER);
 	TAILQ_FOREACH(depinfo, deptree, entries) {
-		deptype = get_deptype(depinfo, "ibefore");
-		if (!deptype)
-			continue;
+		deptype = &depinfo->depends[RC_DEPTYPE_IBEFORE];
 		sorted = rc_stringlist_new();
-		visited = rc_stringlist_new();
-		visit_service(deptree, types, sorted, visited, depinfo,
-			      NULL, 0);
-		rc_stringlist_free(visited);
-		TAILQ_FOREACH_SAFE(s2, deptype->services, entries, s2_np) {
+		visit_service(deptree, types, sorted, depinfo, NULL, 0, 1);
+
+		TAILQ_FOREACH_SAFE(dep, deptype, entries, dep_np) {
 			TAILQ_FOREACH(s3, sorted, entries) {
-				di = get_depinfo(deptree, s3->value);
-				if (!di)
+				struct rc_dep *provided_dep = NULL;
+				if (!(di = get_depinfo(deptree, s3->value)))
 					continue;
-				if (strcmp(s2->value, s3->value) == 0) {
-					dt = get_deptype(di, "iafter");
-					if (dt)
-						rc_stringlist_delete(dt->services, depinfo->service);
+				if (strcmp(dep->service->service, s3->value) == 0) {
+					rc_deplist_delete(&di->depends[RC_DEPTYPE_IAFTER], depinfo);
 					break;
 				}
-				dt = get_deptype(di, "iprovide");
-				if (!dt)
-					continue;
-				TAILQ_FOREACH(s4, dt->services, entries) {
-					if (strcmp(s4->value, s2->value) == 0)
+				TAILQ_FOREACH(provided_dep, &di->depends[RC_DEPTYPE_IPROVIDE], entries) {
+					if (provided_dep->service == dep->service)
 						break;
 				}
-				if (s4) {
-					di = get_depinfo(deptree, s4->value);
-					if (di) {
-						dt = get_deptype(di, "iafter");
-						if (dt)
-							rc_stringlist_delete(dt->services, depinfo->service);
-					}
+				if (provided_dep) {
+					rc_deplist_delete(&provided_dep->service->depends[RC_DEPTYPE_IAFTER], depinfo);
 					break;
 				}
 			}
 			if (s3)
-				rc_stringlist_delete(deptype->services, s2->value);
+				rc_deplist_delete(deptype, dep->service);
 		}
 		rc_stringlist_free(sorted);
 	}
-	rc_stringlist_free(types);
 
 	/* Phase 6 - Print errors for duplicate services */
 	dupes = rc_stringlist_new();
@@ -1094,11 +1058,11 @@ rc_deptree_update(void)
 		i = 0;
 		TAILQ_FOREACH(depinfo, deptree, entries) {
 			fprintf(fp, "depinfo_%zu_service='%s'\n", i, depinfo->service);
-			TAILQ_FOREACH(deptype, &depinfo->depends, entries) {
+			for (size_t d = 0; d < RC_DEPTYPE_MAX; d++) {
 				size_t k = 0;
-				TAILQ_FOREACH(s, deptype->services, entries) {
+				TAILQ_FOREACH(dep, &depinfo->depends[d], entries) {
 					fprintf(fp, "depinfo_%zu_%s_%zu='%s'\n",
-							i, deptype->type, k++, s->value);
+							i, deptype_map[d], k++, dep->service->service);
 				}
 			}
 			i++;

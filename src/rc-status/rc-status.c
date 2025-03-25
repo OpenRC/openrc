@@ -70,10 +70,9 @@ const char *usagestring = ""
 	"   or: rc-status [-C] [-c | -l | -r]";
 
 static RC_DEPTREE *deptree;
-static RC_STRINGLIST *types;
 
 static RC_STRINGLIST *levels, *services, *tmp, *alist;
-static RC_STRINGLIST *sservices, *nservices, *needsme;
+static RC_STRINGLIST *sservices, *nservices;
 
 static void print_level(const char *prefix, const char *level,
 		enum format_t format)
@@ -220,16 +219,10 @@ static void print_services(const char *runlevel, RC_STRINGLIST *svcs,
 				print_service(s->value, format);
 		return;
 	}
-	if (!types) {
-		types = rc_stringlist_new();
-		rc_stringlist_add(types, "ineed");
-		rc_stringlist_add(types, "iuse");
-		rc_stringlist_add(types, "iafter");
-	}
 	if (!runlevel)
 		r = rc_runlevel_get();
-	l = rc_deptree_depends(deptree, types, svcs, r ? r : runlevel,
-			       RC_DEP_STRICT | RC_DEP_TRACE | RC_DEP_START);
+	l = rc_deptree_depends(deptree, RC_DEP(INEED) | RC_DEP(IUSE) | RC_DEP(IAFTER),
+			svcs, r ? r : runlevel, RC_DEP_STRICT | RC_DEP_TRACE | RC_DEP_START);
 	free(r);
 	if (!l)
 		return;
@@ -434,9 +427,6 @@ int main(int argc, char **argv)
 				}
 			}
 		}
-		needsme = rc_stringlist_new();
-		rc_stringlist_add(needsme, "needsme");
-		rc_stringlist_add(needsme, "wantsme");
 		nservices = rc_stringlist_new();
 		alist = rc_stringlist_new();
 		l = rc_stringlist_add(alist, "");
@@ -445,7 +435,7 @@ int main(int argc, char **argv)
 			TAILQ_FOREACH_SAFE(s, services, entries, t) {
 				l->value = s->value;
 				setenv("RC_SVCNAME", l->value, 1);
-				tmp = rc_deptree_depends(deptree, needsme, alist, level->value, RC_DEP_TRACE);
+				tmp = rc_deptree_depends(deptree, RC_DEP(NEEDSME) | RC_DEP(WANTSME), alist, level->value, RC_DEP_TRACE);
 				if (TAILQ_FIRST(tmp)) {
 					TAILQ_REMOVE(services, s, entries);
 					TAILQ_INSERT_TAIL(nservices, s, entries);
@@ -469,11 +459,9 @@ int main(int argc, char **argv)
 exit:
 	free(runlevel);
 	rc_stringlist_free(alist);
-	rc_stringlist_free(needsme);
 	rc_stringlist_free(sservices);
 	rc_stringlist_free(nservices);
 	rc_stringlist_free(services);
-	rc_stringlist_free(types);
 	rc_stringlist_free(levels);
 	rc_deptree_free(deptree);
 

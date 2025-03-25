@@ -58,10 +58,11 @@ const char *usagestring = NULL;
 int main(int argc, char **argv)
 {
 	RC_STRINGLIST *list;
-	RC_STRINGLIST *types;
+	enum rc_deptype types;
 	RC_STRINGLIST *services;
 	RC_STRINGLIST *depends;
 	RC_STRING *s;
+	bool default_types = true;
 	RC_DEPTREE *deptree = NULL;
 	int options = RC_DEP_TRACE, update = 0;
 	bool first = true;
@@ -71,7 +72,6 @@ int main(int argc, char **argv)
 	char *deptree_file = NULL;
 
 	applet = basename_c(argv[0]);
-	types = rc_stringlist_new();
 	while ((opt = getopt_long(argc, argv, getoptstring,
 		    longopts, (int *) 0)) != -1)
 	{
@@ -86,8 +86,13 @@ int main(int argc, char **argv)
 			options |= RC_DEP_STRICT;
 			break;
 		case 't':
-			while ((token = strsep(&optarg, ",")))
-				rc_stringlist_add(types, token);
+			default_types = false;
+			while ((token = strsep(&optarg, ","))) {
+				enum rc_deptype parsed = rc_deptype_parse(token);
+				if (parsed == RC_DEPTYPE_INVALID)
+					eerrorx("Invalid deptype '%s'", token);
+				types |= (1 << parsed);
+			}
 			break;
 		case 'u':
 			update = 1;
@@ -116,23 +121,24 @@ int main(int argc, char **argv)
 
 	services = rc_stringlist_new();
 	while (optind < argc) {
-		list = rc_stringlist_new();
-		rc_stringlist_add(list, argv[optind]);
-		errno = 0;
-		depends = rc_deptree_depends(deptree, NULL, list, runlevel, 0);
+		//list = rc_stringlist_new();
+		//rc_stringlist_add(list, argv[optind]);
+		//errno = 0;
+		/*
+		depends = rc_deptree_depends(deptree, -1, list, runlevel, 0);
 		if (!depends && errno == ENOENT)
 			eerror("no dependency info for service `%s'",
 			    argv[optind]);
 		else
-			rc_stringlist_add(services, argv[optind]);
+		*/
+		rc_stringlist_add(services, argv[optind]);
 
-		rc_stringlist_free(depends);
-		rc_stringlist_free(list);
+		//rc_stringlist_free(depends);
+		//rc_stringlist_free(list);
 		optind++;
 	}
 	if (!TAILQ_FIRST(services)) {
 		rc_stringlist_free(services);
-		rc_stringlist_free(types);
 		rc_deptree_free(deptree);
 		free(runlevel);
 		if (update)
@@ -141,13 +147,10 @@ int main(int argc, char **argv)
 	}
 
 	/* If we don't have any types, then supply some defaults */
-	if (!TAILQ_FIRST(types)) {
-		rc_stringlist_add(types, "ineed");
-		rc_stringlist_add(types, "iuse");
-	}
+	if (default_types)
+		types = RC_DEP(INEED) | RC_DEP(IUSE);
 
-	depends = rc_deptree_depends(deptree, types, services,
-	    runlevel, options);
+	depends = rc_deptree_depends(deptree, types, services, runlevel, options);
 
 	if (TAILQ_FIRST(depends)) {
 		TAILQ_FOREACH(s, depends, entries) {
@@ -161,7 +164,6 @@ int main(int argc, char **argv)
 		printf ("\n");
 	}
 
-	rc_stringlist_free(types);
 	rc_stringlist_free(services);
 	rc_stringlist_free(depends);
 	rc_deptree_free(deptree);

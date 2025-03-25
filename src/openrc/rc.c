@@ -76,8 +76,6 @@ const char *applet = NULL;
 static RC_STRINGLIST *main_hotplugged_services;
 static RC_STRINGLIST *main_stop_services;
 static RC_STRINGLIST *main_start_services;
-static RC_STRINGLIST *main_types_nw;
-static RC_STRINGLIST *main_types_nwua;
 static RC_DEPTREE *main_deptree;
 static char *runlevel;
 static RC_HOOK hook_out;
@@ -161,8 +159,6 @@ cleanup(void)
 	rc_stringlist_free(main_hotplugged_services);
 	rc_stringlist_free(main_stop_services);
 	rc_stringlist_free(main_start_services);
-	rc_stringlist_free(main_types_nw);
-	rc_stringlist_free(main_types_nwua);
 	rc_deptree_free(main_deptree);
 	free(runlevel);
 }
@@ -551,23 +547,15 @@ runlevel_config(const char *service, const char *level)
 }
 
 static void
-do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
-				 const RC_STRINGLIST *stop_services, const RC_DEPTREE *deptree,
-				 const char *newlevel, bool parallel, bool going_down)
+do_stop_services(RC_STRINGLIST *start_services, const RC_STRINGLIST *stop_services,
+		const RC_DEPTREE *deptree, const char *newlevel, bool parallel, bool going_down)
 {
 	pid_t pid;
 	RC_STRING *service, *svc1, *svc2;
 	RC_STRINGLIST *deporder, *tmplist, *kwords;
-	RC_STRINGLIST *types_nw_save = NULL;
 	RC_SERVICE state;
 	RC_STRINGLIST *nostop;
 	bool crashed, nstop;
-
-	if (!types_nw) {
-		types_nw = types_nw_save = rc_stringlist_new();
-		rc_stringlist_add(types_nw, "needsme");
-		rc_stringlist_add(types_nw, "wantsme");
-	}
 
 	crashed = rc_conf_yesno("rc_crashed_stop");
 
@@ -583,7 +571,7 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 			rc_service_mark(service->value, RC_SERVICE_FAILED);
 			continue;
 		}
-		kwords = rc_deptree_depend(deptree, service->value, "keyword");
+		kwords = rc_deptree_depend(deptree, service->value, RC_DEPTYPE_KEYWORD);
 		if (rc_stringlist_find(kwords, "-stop") ||
 		    rc_stringlist_find(kwords, "nostop") ||
 		    (going_down &&
@@ -625,9 +613,8 @@ do_stop_services(RC_STRINGLIST *types_nw, RC_STRINGLIST *start_services,
 		if (!svc1) {
 			tmplist = rc_stringlist_new();
 			rc_stringlist_add(tmplist, service->value);
-			deporder = rc_deptree_depends(deptree, types_nw,
-			    tmplist, newlevel ? newlevel : runlevel,
-			    RC_DEP_STRICT | RC_DEP_TRACE);
+			deporder = rc_deptree_depends(deptree, RC_DEP(NEEDSME) | RC_DEP(WANTSME), tmplist,
+					newlevel ? newlevel : runlevel, RC_DEP_STRICT | RC_DEP_TRACE);
 			rc_stringlist_free(tmplist);
 			svc2 = NULL;
 			TAILQ_FOREACH(svc1, deporder, entries) {
@@ -653,9 +640,6 @@ stop:
 			}
 		}
 	}
-
-	if (types_nw_save)
-		rc_stringlist_free(types_nw_save);
 
 	rc_stringlist_free(nostop);
 }
@@ -1016,15 +1000,9 @@ int main(int argc, char **argv)
 	if (main_stop_services)
 		rc_stringlist_sort(&main_stop_services);
 
-	main_types_nwua = rc_stringlist_new();
-	rc_stringlist_add(main_types_nwua, "ineed");
-	rc_stringlist_add(main_types_nwua, "iwant");
-	rc_stringlist_add(main_types_nwua, "iuse");
-	rc_stringlist_add(main_types_nwua, "iafter");
-
 	if (main_stop_services) {
-		tmplist = rc_deptree_depends(main_deptree, main_types_nwua, main_stop_services,
-		    runlevel, depoptions | RC_DEP_STOP);
+		enum rc_deptype types = RC_DEP(INEED) | RC_DEP(IWANT) | RC_DEP(IUSE) | RC_DEP(IAFTER);
+		tmplist = rc_deptree_depends(main_deptree, types, main_stop_services, runlevel, depoptions | RC_DEP_STOP);
 		rc_stringlist_free(main_stop_services);
 		main_stop_services = tmplist;
 	}
@@ -1068,7 +1046,7 @@ int main(int argc, char **argv)
 
 	/* Now stop the services that shouldn't be running */
 	if (main_stop_services && !nostop)
-		do_stop_services(main_types_nw, main_start_services, main_stop_services, main_deptree, newlevel, parallel, going_down);
+		do_stop_services(main_start_services, main_stop_services, main_deptree, newlevel, parallel, going_down);
 
 	/* Wait for our services to finish */
 	wait_for_services();
@@ -1131,10 +1109,11 @@ int main(int argc, char **argv)
 		{
 			/* Get a list of all the services in that runlevel */
 			RC_STRINGLIST *run_services = rc_services_in_runlevel(rlevel->value);
+			enum rc_deptype types = RC_DEP(INEED) | RC_DEP(IWANT) | RC_DEP(IUSE) | RC_DEP(IAFTER);
 
 			/* Start those services. */
 			rc_stringlist_sort(&run_services);
-			deporder = rc_deptree_depends(main_deptree, main_types_nwua, run_services, rlevel->value, depoptions | RC_DEP_START);
+			deporder = rc_deptree_depends(main_deptree, types, run_services, rlevel->value, depoptions | RC_DEP_START);
 			rc_stringlist_free(run_services);
 			run_services = deporder;
 			do_start_services(run_services, parallel);

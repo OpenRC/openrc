@@ -375,29 +375,51 @@ const char *rc_sys(void);
  * We analyse each init script and cache the resultant dependency tree.
  * This tree can be accessed using the below functions. */
 
+#define RC_DEP(type) (1 << RC_DEPTYPE_ ## type)
+enum rc_deptype {
+	RC_DEPTYPE_INEED,
+	RC_DEPTYPE_NEEDSME,
+	RC_DEPTYPE_IUSE,
+	RC_DEPTYPE_USESME,
+	RC_DEPTYPE_IWANT,
+	RC_DEPTYPE_WANTSME,
+	RC_DEPTYPE_IAFTER,
+	RC_DEPTYPE_AFTERME,
+	RC_DEPTYPE_IBEFORE,
+	RC_DEPTYPE_BEFOREME,
+	RC_DEPTYPE_IPROVIDE,
+	RC_DEPTYPE_PROVIDEDBY,
+	RC_DEPTYPE_KEYWORD,
+	RC_DEPTYPE_BROKEN,
+	RC_DEPTYPE_MAX,
+
+	RC_DEPTYPE_INVALID = -1,
+};
+
+enum rc_deptype rc_deptype_parse(const char *type);
+
 #ifdef _IN_LIBRC
 /*! @name Dependency structures
  * private to librc */
 
-/*! Singly linked list of dependency types that list the services the
- * type is for */
-typedef struct rc_deptype
-{
-	/*! ineed, iuse, iafter, etc */
-	char *type;
-	/*! list of services */
-	RC_STRINGLIST *services;
-	/*! list of types */
-	TAILQ_ENTRY(rc_deptype) entries;
-} RC_DEPTYPE;
+struct rc_dep {
+	struct rc_depinfo *service;
+	TAILQ_ENTRY(rc_dep) entries;
+};
 
 /*! Singly linked list of services and their dependencies */
 typedef struct rc_depinfo
 {
 	/*! Name of service */
 	char *service;
+
+	/*! Used during dependency resolution */
+	bool exists;
+	int visited;
+
 	/*! Dependencies */
-	TAILQ_HEAD(, rc_deptype) depends;
+	TAILQ_HEAD(rc_deplist, rc_dep) depends[RC_DEPTYPE_MAX];
+
 	/*! List of entries */
 	TAILQ_ENTRY(rc_depinfo) entries;
 } RC_DEPINFO;
@@ -472,7 +494,7 @@ RC_DEPTREE *rc_deptree_load_file(const char *);
  * @param type to use (keywords, etc)
  * @param service to check
  * @return NULL terminated list of services in order */
-RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *, const char *, const char *);
+RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *, const char *, enum rc_deptype);
 
 /*! List all the services in order that the given services have
  * for the given types and options.
@@ -481,8 +503,7 @@ RC_STRINGLIST *rc_deptree_depend(const RC_DEPTREE *, const char *, const char *)
  * @param services to check
  * @param options to pass
  * @return NULL terminated list of services in order */
-RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *, const RC_STRINGLIST *,
-				  const RC_STRINGLIST *, const char *, int);
+RC_STRINGLIST *rc_deptree_depends(const RC_DEPTREE *, enum rc_deptype, const RC_STRINGLIST *, const char *, int);
 
 /*! List all the services that should be stopped and then started, in order,
  * for the given runlevel, including sysinit and boot services where
