@@ -44,6 +44,8 @@ struct exec_args exec_init(const char **argv)
 	args.redirect_stdin  = EXEC_NO_REDIRECT;
 	args.redirect_stdout = EXEC_NO_REDIRECT;
 	args.redirect_stderr = EXEC_NO_REDIRECT;
+	args.uid = (uid_t)-1;
+	args.gid = (gid_t)-1;
 	return args;
 }
 
@@ -99,6 +101,10 @@ struct exec_result do_exec(struct exec_args *args)
 			goto child_err;
 		if (args->redirect_stderr != EXEC_NO_REDIRECT &&
 		    dup2(args->redirect_stderr, STDERR_FILENO) < 0)
+			goto child_err;
+		if (args->gid != (gid_t)-1 && setgid(args->gid) < 0)
+			goto child_err;
+		if (args->uid != (uid_t)-1 && setuid(args->uid) < 0)
 			goto child_err;
 		if (args->setsid && setsid() < 0)
 			goto child_err;

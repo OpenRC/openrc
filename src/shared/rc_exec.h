@@ -36,6 +36,8 @@ struct exec_args {
 	int redirect_stdin;
 	int redirect_stdout;
 	int redirect_stderr;
+	uid_t uid;
+	gid_t gid;
 	bool setsid : 1;
 };
 
