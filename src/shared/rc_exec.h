@@ -33,6 +33,7 @@ enum {
 
 struct exec_args {
 	const char **argv;
+	const char *cmd;  /* if NULL, argv[0] is used */
 	int redirect_stdin;
 	int redirect_stdout;
 	int redirect_stderr;
