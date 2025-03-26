@@ -41,7 +41,6 @@
 
 #include "rc.h"
 #include "rc_exec.h"
-#include "plugin.h"
 #include "wtmp.h"
 #include "version.h"
 
