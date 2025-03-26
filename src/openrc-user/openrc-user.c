@@ -19,33 +19,23 @@
 
 #include "helpers.h"
 #include "rc.h"
+#include "rc_exec.h"
 
 static bool spawn_openrc(const struct passwd *user, bool start) {
-	int status = 0;
-	pid_t pid;
-
-	switch ((pid = fork())) {
-	case 0:
-		if (setgid(user->pw_gid) == -1 || setuid(user->pw_uid) == -1) {
-			elog(LOG_ERR, "Failed to set user ids: %s", strerror(errno));
-			exit(-1);
-		}
-
-		execl(user->pw_shell, "-", "-c", start ? USER_SH "start" : USER_SH "stop", NULL);
-		elog(LOG_ERR, "execl: %s", strerror(errno));
-		exit(-1);
-		break;
-
-	case -1:
-		elog(LOG_ERR, "fork: %s", strerror(errno));
+	const char *argv[] = {
+		user->pw_shell, "-", "-c",
+		start ? USER_SH "start" : USER_SH "stop", NULL
+	};
+	struct exec_result res;
+	struct exec_args args = exec_init(argv);
+	args.uid = user->pw_uid;
+	args.gid = user->pw_gid;
+	res = do_exec(&args);
+	if (res.pid < 0) {
+		elog(LOG_ERR, "do_exec: %s", strerror(errno));
 		return false;
-
-	default:
-		waitpid(pid, &status, 0);
-		break;
 	}
-
-	return status == 0;
+	return rc_waitpid(res.pid) == 0;
 }
 
 int main(int argc, char **argv) {
