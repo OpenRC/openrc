@@ -27,7 +27,6 @@
  * Mainly used in atexit code. */
 extern bool rc_in_plugin;
 
-int rc_waitpid(pid_t pid);
 void rc_plugin_load(void);
 void rc_plugin_unload(void);
 void rc_plugin_run(RC_HOOK, const char *value);

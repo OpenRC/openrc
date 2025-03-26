@@ -148,6 +148,18 @@ exit:
 	return res;
 }
 
+int rc_waitpid(pid_t pid)
+{
+	int status;
+	while (waitpid(pid, &status, 0) == -1) {
+		if (errno != EINTR) {
+			status = -1;
+			break;
+		}
+	}
+	return status;
+}
+
 int rc_pipe_command(const char *cmd, int devnullfd)
 {
 	const char *argv[] = { "/bin/sh", "-c", cmd, NULL };

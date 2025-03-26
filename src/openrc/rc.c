@@ -41,6 +41,7 @@
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
+#include "rc_exec.h"
 #include "rc-logger.h"
 #include "misc.h"
 #include "plugin.h"

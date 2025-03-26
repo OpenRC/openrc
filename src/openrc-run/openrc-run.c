@@ -48,6 +48,7 @@
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
+#include "rc_exec.h"
 #include "misc.h"
 #include "plugin.h"
 #include "selinux.h"

@@ -30,6 +30,7 @@
 #include "einfo.h"
 #include "queue.h"
 #include "rc.h"
+#include "rc_exec.h"
 #include "plugin.h"
 #include "helpers.h"
 
@@ -94,20 +95,6 @@ rc_plugin_load(void)
 		}
 	}
 	closedir(dp);
-}
-
-int
-rc_waitpid(pid_t pid)
-{
-	int status;
-
-	while (waitpid(pid, &status, 0) == -1) {
-		if (errno != EINTR) {
-			status = -1;
-			break;
-		}
-	}
-	return status;
 }
 
 void
