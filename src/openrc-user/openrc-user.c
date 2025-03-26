@@ -23,11 +23,11 @@
 
 static bool spawn_openrc(const struct passwd *user, bool start) {
 	const char *argv[] = {
-		user->pw_shell, "-", "-c",
-		start ? USER_SH "start" : USER_SH "stop", NULL
+		"-", "-c", start ? USER_SH "start" : USER_SH "stop", NULL
 	};
 	struct exec_result res;
 	struct exec_args args = exec_init(argv);
+	args.cmd = user->pw_shell;
 	args.uid = user->pw_uid;
 	args.gid = user->pw_gid;
 	res = do_exec(&args);
