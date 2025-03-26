@@ -58,6 +58,7 @@ struct exec_result do_exec(struct exec_args *args)
 	int stdin_pipe[2] = {-1, -1};
 	int stdout_pipe[2] = {-1, -1};
 	int stderr_pipe[2] = {-1, -1};
+	const char *cmd = args->cmd ? args->cmd : args->argv[0];
 
 	if (pipe2(execpipe, O_CLOEXEC) < 0)
 		goto exit;
@@ -109,7 +110,7 @@ struct exec_result do_exec(struct exec_args *args)
 		if (args->setsid && setsid() < 0)
 			goto child_err;
 		sigprocmask(SIG_SETMASK, &old, NULL);
-		execvp(args->argv[0], UNCONST(args->argv));
+		execvp(cmd, UNCONST(args->argv));
 child_err:
 		saved_errno = errno;
 		write(execpipe[1], &saved_errno, sizeof saved_errno);
