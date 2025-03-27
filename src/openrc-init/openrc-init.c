@@ -42,7 +42,14 @@
 #include "rc.h"
 #include "rc_exec.h"
 #include "wtmp.h"
+#include "helpers.h"
 #include "version.h"
+
+/* on linux CLOCK_BOOTTIME provides proper POSIX CLOCK_MONOTONIC behavior. */
+#if defined(__linux__)
+#  undef  CLOCK_MONOTONIC
+#  define CLOCK_MONOTONIC CLOCK_BOOTTIME
+#endif
 
 static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
@@ -93,15 +100,40 @@ static void handle_reexec(char *my_name)
 
 static void handle_shutdown(const char *runlevel, int cmd)
 {
-	struct timespec ts;
+	const long ms_to_ns = 1000000L;
+	struct timespec start, now, tmp, remain;
 
 	do_openrc(runlevel);
-	printf("Sending the final term signal\n");
+	printf("Sending the final TERM signal\n");
 	kill(-1, SIGTERM);
-	ts.tv_sec = 3;
-	ts.tv_nsec = 0;
-	nanosleep(&ts, NULL);
-	printf("Sending the final kill signal\n");
+	clock_gettime(CLOCK_MONOTONIC, &start);
+
+	/* ensure *at least* half a second of grace time before KILL */
+	tmp.tv_sec = 0;
+	tmp.tv_nsec = 500 * ms_to_ns;
+	while (clock_nanosleep(CLOCK_MONOTONIC, 0, &tmp, &remain) < 0 && errno == EINTR)
+		tmp = remain;
+
+	for (;;) {
+		pid_t pid = waitpid(-1, NULL, WNOHANG);
+		if (pid == -1 && errno == ECHILD) {
+			/* all children reaped, safe to exit */
+			break;
+		}
+
+		clock_gettime(CLOCK_MONOTONIC, &now);
+		timespecsub(&now, &start, &tmp);
+		if (tmp.tv_sec >= 3) {
+			/* it's been 3 seconds already, go for the KILL hammer */
+			break;
+		}
+
+		tmp.tv_sec = 0;
+		tmp.tv_nsec = 100 * ms_to_ns;
+		clock_nanosleep(CLOCK_MONOTONIC, 0, &tmp, NULL);
+	}
+
+	printf("Sending the final KILL signal\n");
 	kill(-1, SIGKILL);
 	sync();
 	reboot(cmd);
@@ -162,15 +194,13 @@ static void signal_handler(int sig)
 	errno = saved_errno;
 }
 
-static void reap_zombies(int sig)
+static void reap_zombies(int sig RC_UNUSED)
 {
 	char errmsg[] = "waitpid() failed\n";
 	int saved_errno = errno;
-	pid_t pid;
-	(void)sig; /* unused */
 
 	for (;;) {
-		pid = waitpid(-1, NULL, WNOHANG);
+		pid_t pid = waitpid(-1, NULL, WNOHANG);
 		if (pid == 0)
 			break;
 		else if (pid == -1) {
