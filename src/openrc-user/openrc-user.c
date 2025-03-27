@@ -22,15 +22,24 @@
 #include "rc_exec.h"
 
 static bool spawn_openrc(const struct passwd *user, bool start) {
+	char *argv0;
 	const char *argv[] = {
-		"-", "-c", start ? USER_SH "start" : USER_SH "stop", NULL
+		NULL /* replaced below */, "-c",
+		start ? USER_SH "start" : USER_SH "stop", NULL
 	};
 	struct exec_result res;
-	struct exec_args args = exec_init(argv);
+	struct exec_args args;
+
+	/* shell might be a multicall binary, e.g busybox.
+	 * so setting argv[0] to "-" might not work */
+	xasprintf(&argv0, "-%s", user->pw_shell);
+	argv[0] = argv0;
+	args = exec_init(argv);
 	args.cmd = user->pw_shell;
 	args.uid = user->pw_uid;
 	args.gid = user->pw_gid;
 	res = do_exec(&args);
+	free(argv0);
 	if (res.pid < 0) {
 		elog(LOG_ERR, "do_exec: %s", strerror(errno));
 		return false;
