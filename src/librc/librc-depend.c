@@ -784,21 +784,19 @@ rc_deptree_update_needed(time_t *newest, char *file)
 }
 
 static void
-setup_environment(void) {
-	char *scriptdirs, *env;
-	size_t env_size = 0;
+setup_environment(void)
+{
 	struct utsname uts;
-
-	for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++)
-		env_size += strlen(*dirs) + sizeof(' ');
-
-	env = scriptdirs = xmalloc(env_size);
+	size_t env_size;
+	char *env;
+	FILE *mem = xopen_memstream(&env, &env_size);
 
 	for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++) {
-		int len = snprintf(scriptdirs, env_size, "%s ", *dirs);
-		scriptdirs += len;
-		env_size -= len;
+		fputs(*dirs, mem);
+		if (dirs[1])
+			fputc(' ', mem);
 	}
+	xclose_memstream(mem);
 
 	setenv("RC_SCRIPTDIRS", env, 1);
 	free(env);
