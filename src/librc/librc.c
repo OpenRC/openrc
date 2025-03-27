@@ -636,7 +636,7 @@ rc_set_user(void)
 	} else if ((env = getenv("HOME"))) {
 		xasprintf(&rc_dirs.usrconfdir, "%s/.config/rc", env);
 	} else {
-		fprintf(stderr, "XDG_CONFIG_HOME and HOME unset");
+		fprintf(stderr, "XDG_CONFIG_HOME and HOME unset.\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -644,7 +644,7 @@ rc_set_user(void)
 
 	if (!(env = getenv("XDG_RUNTIME_DIR"))) {
 		/* FIXME: fallback to something else? */
-		fprintf(stderr, "XDG_RUNTIME_DIR unset.");
+		fprintf(stderr, "XDG_RUNTIME_DIR unset.\n");
 		exit(EXIT_FAILURE);
 	}
 

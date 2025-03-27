@@ -27,7 +27,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define ERRX fprintf (stderr, "out of memory\n"); exit (1)
+#define ERRX do { fprintf (stderr, "out of memory\n"); exit (1); } while (0)
 
 #define UNCONST(a)		((void *)(uintptr_t)(const void *)(a))
 
@@ -89,6 +89,21 @@ RC_UNUSED static char *xstrdup(const char *str)
 
 	ERRX;
 	/* NOTREACHED */
+}
+
+RC_UNUSED static FILE *xopen_memstream(char **ptr, size_t *sizeloc)
+{
+	FILE *f = open_memstream(ptr, sizeloc);
+	if (f)
+		return f;
+	ERRX;
+}
+
+RC_UNUSED static void xclose_memstream(FILE *f)
+{
+	fflush(f);
+	if (ferror(f) || fclose(f) != 0)
+		ERRX;
 }
 
 #undef ERRX

@@ -300,17 +300,16 @@ static char * expand_home(const char *home, const char *path)
 static char *make_cmdline(char **argv)
 {
 	char **c;
-	char *cmdline = NULL;
-	size_t len = 0;
+	char *cmdline;
+	size_t len;
+	FILE *mem = xopen_memstream(&cmdline, &len);
 
-	for (c = argv; c && *c; c++)
-		len += (strlen(*c) + 1);
-	cmdline = xmalloc(len+1);
-	memset(cmdline, 0, len+1);
 	for (c = argv; c && *c; c++) {
-		strcat(cmdline, *c);
-		strcat(cmdline, " ");
+		fputs(*c, mem);
+		if (c[1])
+			fputc(' ', mem);
 	}
+	xclose_memstream(mem);
 	return cmdline;
 }
 

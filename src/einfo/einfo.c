@@ -142,20 +142,13 @@ int main(int argc, char **argv)
 	}
 
 	if (argc > 0) {
-		for (i = 0; i < argc; i++)
-			l += strlen(argv[i]) + 1;
-
-		message = xmalloc(l);
-		p = message;
-
+		FILE *mem = xopen_memstream(&message, &l);
 		for (i = 0; i < argc; i++) {
 			if (i > 0)
-				*p++ = ' ';
-			l = strlen(argv[i]);
-			memcpy(p, argv[i], l);
-			p += l;
+				fputc(' ', mem);
+			fputs(argv[i], mem);
 		}
-		*p = 0;
+		xclose_memstream(mem);
 	}
 
 	if (strcmp(applet, "einfo") == 0)
