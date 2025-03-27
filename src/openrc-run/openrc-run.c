@@ -657,8 +657,9 @@ svc_start_deps(void)
 	RC_STRING *svc, *svc2;
 	RC_SERVICE state;
 	int depoptions = RC_DEP_TRACE;
-	size_t len;
-	char *p, *tmp;
+	size_t len, svc_count;
+	char *tmp;
+	FILE *mem;
 	pid_t pid;
 
 	errno = 0;
@@ -765,7 +766,8 @@ svc_start_deps(void)
 
 		rc_stringlist_free(use_services);
 		use_services = NULL;
-		len = 0;
+		mem = xopen_memstream(&tmp, &len);
+		svc_count = 0;
 		TAILQ_FOREACH(svc, tmplist, entries) {
 			rc_service_schedule_start(svc->value, applet);
 			use_services = rc_deptree_depend(deptree,
@@ -774,20 +776,16 @@ svc_start_deps(void)
 			    rc_service_schedule_start(svc2->value, applet);
 			rc_stringlist_free(use_services);
 			use_services = NULL;
-			len += strlen(svc->value) + 2;
+			if (svc_count > 0)
+				fputs(", ", mem);
+			fputs(svc->value, mem);
+			++svc_count;
 		}
-
-		len += 5;
-		tmp = p = xmalloc(sizeof(char) * len);
-		TAILQ_FOREACH(svc, tmplist, entries) {
-			if (p != tmp)
-				p += snprintf(p, len, ", ");
-			p += snprintf(p, len - (p - tmp),
-			    "%s", svc->value);
-		}
+		xclose_memstream(mem);
 		rc_stringlist_free(tmplist);
 		tmplist = NULL;
-		ewarnx("WARNING: %s will start when %s has started", applet, tmp);
+		ewarnx("WARNING: %s will start when %s %s started",
+			applet, tmp, svc_count > 1 ? "have" : "has");
 		free(tmp);
 	}
 
