@@ -190,6 +190,34 @@ bool rc_runlevel_starting(void);
  * @return true if yes, otherwise false */
 bool rc_runlevel_stopping(void);
 
+enum rc_dir {
+	RC_DIR_SVCDIR,
+	RC_DIR_STARTING,
+	RC_DIR_STARTED,
+	RC_DIR_STOPPING,
+	RC_DIR_INACTIVE,
+	RC_DIR_WASINACTIVE,
+	RC_DIR_FAILED,
+	RC_DIR_HOTPLUGGED,
+	RC_DIR_DAEMONS,
+	RC_DIR_OPTIONS,
+	RC_DIR_EXCLUSIVE,
+	RC_DIR_SCHEDULED,
+	RC_DIR_INITD,
+	RC_DIR_TMP,
+	RC_DIR_SYS_MAX,
+	RC_DIR_SYSCONF = RC_DIR_SYS_MAX,
+	RC_DIR_USRCONF,
+	RC_DIR_RUNLEVEL,
+	RC_DIR_MAX,
+
+	RC_DIR_INVALID = -1
+};
+
+/*! @param runtime rc directory
+ * @return an open file descriptor, which should not be closed */
+int rc_dirfd(enum rc_dir);
+
 /*! @name RC
  * A service can be given as a full path or just its name.
  * If it's just a name then we try to resolve the service to a full path.
