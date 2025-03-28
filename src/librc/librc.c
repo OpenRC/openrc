@@ -15,6 +15,7 @@
  *    except according to the terms contained in the LICENSE file.
  */
 
+#include <assert.h>
 #include <helpers.h>
 #include <ctype.h>
 #include <dirent.h>
@@ -45,6 +46,36 @@
 
 /* File stream used for plugins to write environ vars to */
 FILE *rc_environ_fd = NULL;
+static int dirfds[RC_DIR_MAX];
+
+int rc_dirfd(enum rc_dir dir) {
+	int flags = O_RDONLY | O_CLOEXEC | O_DIRECTORY;
+	if (dir >= RC_DIR_MAX)
+		return -1;
+	if (dirfds[dir] <= 0) {
+		switch (dir) {
+		case RC_DIR_INVALID:
+			return -1;
+		case RC_DIR_SVCDIR:
+			dirfds[dir] = open(rc_svcdir(), flags);
+			break;
+		case RC_DIR_RUNLEVEL:
+			dirfds[dir] = open(rc_runleveldir(), flags);
+			break;
+		case RC_DIR_SYSCONF:
+			dirfds[dir] = open(rc_sysconfdir(), flags);
+			break;
+		case RC_DIR_USRCONF:
+			dirfds[dir] = open(rc_usrconfdir(), flags);
+			break;
+		default:
+			assert(dirnames[dir]);
+			dirfds[dir] = openat(rc_dirfd(RC_DIR_SVCDIR), dirnames[dir], flags);
+			break;
+		}
+	}
+	return dirfds[dir];
+}
 
 #define LS_INITD	0x01
 #define LS_DIR		0x02
