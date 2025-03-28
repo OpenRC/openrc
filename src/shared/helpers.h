@@ -26,6 +26,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #define ERRX do { fprintf (stderr, "out of memory\n"); exit (1); } while (0)
 
@@ -121,6 +124,13 @@ RC_UNUSED static const char *basename_c(const char *path)
 	return (path);
 }
 
+RC_UNUSED static bool existsat(int dirfd, const char *pathname)
+{
+	struct stat buf;
+
+	return (fstatat(dirfd, pathname, &buf, 0) == 0);
+}
+
 RC_UNUSED static bool exists(const char *pathname)
 {
 	struct stat buf;
@@ -133,6 +143,61 @@ RC_UNUSED static bool existss(const char *pathname)
 	struct stat buf;
 
 	return (stat(pathname, &buf) == 0 && buf.st_size != 0);
+}
+
+RC_UNUSED static FILE *do_fopenat(int dirfd, const char *pathname, int mode)
+{
+	int fd = openat(dirfd, pathname, mode, 0666);
+	const char *fmode;
+	FILE *fp;
+
+	if (fd == -1)
+		return NULL;
+
+	/* O_CREAT and O_TRUNC in modes 'a', 'w+', 'a+' don't
+	 * really matter after the file has been opened.
+	 *
+	 * Some implementations have O_RDONLY defined to zero,
+	 * thus making it impossible to detect, so, we default
+	 * to "r" if no other mask fully matches. */
+	if ((mode & O_RDWR) == O_RDWR)
+		fmode = "r+";
+	else if ((mode & O_WRONLY) == O_WRONLY)
+		fmode = "w";
+	else
+		fmode = "r";
+
+	if (!(fp = fdopen(fd, fmode)))
+		close(fd);
+	return fp;
+}
+
+RC_UNUSED static DIR *do_opendirat(int dirfd, const char *pathname)
+{
+	int fd = openat(dirfd, pathname, O_RDONLY | O_DIRECTORY);
+	DIR *dp;
+
+	if (fd == -1)
+		return NULL;
+
+	if (!(dp = fdopendir(fd)))
+		close(fd);
+
+	return dp;
+}
+
+RC_UNUSED static DIR *do_dopendir(int dirfd)
+{
+	int fd = dup(dirfd);
+	DIR *dp;
+
+	if (fd == -1)
+		return NULL;
+
+	if (!(dp = fdopendir(fd)))
+		close(fd);
+
+	return dp;
 }
 
 /*

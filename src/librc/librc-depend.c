@@ -145,22 +145,9 @@ make_deptree(void) {
 	return deptree;
 }
 
-RC_DEPTREE *
-rc_deptree_load(void) {
-	char *deptree_cache;
-	RC_DEPTREE *deptree;
-
-	xasprintf(&deptree_cache, "%s/deptree", rc_svcdir());
-	deptree = rc_deptree_load_file(deptree_cache);
-	free(deptree_cache);
-
-	return deptree;
-}
-
-RC_DEPTREE *
-rc_deptree_load_file(const char *deptree_file)
+static RC_DEPTREE *
+deptree_load_file(int dirfd, const char *pathname)
 {
-	FILE *fp;
 	RC_DEPTREE *deptree;
 	RC_DEPINFO *depinfo = NULL;
 	RC_DEPTYPE *deptype = NULL;
@@ -170,8 +157,9 @@ rc_deptree_load_file(const char *deptree_file)
 	char *p;
 	char *e;
 	int i;
+	FILE *fp;
 
-	if (!(fp = fopen(deptree_file, "r")))
+	if (!(fp = do_fopenat(dirfd, pathname, O_RDONLY)))
 		return NULL;
 
 	deptree = make_deptree();
@@ -205,10 +193,22 @@ rc_deptree_load_file(const char *deptree_file)
 			deptype = make_deptype(depinfo, type);
 		rc_stringlist_add(deptype->services, e);
 	}
-	fclose(fp);
 	free(line);
+	fclose(fp);
 
 	return deptree;
+}
+
+RC_DEPTREE *
+rc_deptree_load(void)
+{
+	return deptree_load_file(rc_dirfd(RC_DIR_SVCDIR), "deptree");
+}
+
+RC_DEPTREE *
+rc_deptree_load_file(const char *deptree_file)
+{
+	return deptree_load_file(AT_FDCWD, deptree_file);
 }
 
 static bool
@@ -584,18 +584,15 @@ rc_deptree_order(const RC_DEPTREE *deptree, const char *runlevel, int options)
    oldest (or newest) found.
 */
 static bool
-deep_mtime_check(const char *target, bool newer,
-	    time_t *rel, char *file)
+deep_mtime_check(int target_dir, const char *target, bool newer, time_t *rel, char *file)
 {
 	struct stat buf;
 	bool retval = true;
 	DIR *dp;
 	struct dirent *d;
-	char path[PATH_MAX];
-	int serrno = errno;
 
 	/* If target does not exist, return true to mimic shell test */
-	if (stat(target, &buf) != 0)
+	if (fstatat(target_dir, target, &buf, 0) != 0)
 		return true;
 
 	if (newer) {
@@ -616,21 +613,18 @@ deep_mtime_check(const char *target, bool newer,
 		}
 	}
 
-	/* If not a dir then reset errno */
-	if (!(dp = opendir(target))) {
-		errno = serrno;
+	if (!S_ISDIR(buf.st_mode) || !(dp = do_opendirat(target_dir, target)))
 		return retval;
-	}
 
 	/* Check all the entries in the dir */
 	while ((d = readdir(dp))) {
 		if (d->d_name[0] == '.')
 			continue;
-		snprintf(path, sizeof(path), "%s/%s", target, d->d_name);
-		if (!deep_mtime_check(path, newer, rel, file)) {
+		if (!deep_mtime_check(dirfd(dp), d->d_name, newer, rel, file)) {
 			retval = false;
 		}
 	}
+
 	closedir(dp);
 	return retval;
 }
@@ -640,8 +634,7 @@ deep_mtime_check(const char *target, bool newer,
  * the return value arguments are non-null).
  */
 static bool
-mtime_check(const char *source, const char *target, bool newer,
-	    time_t *rel, char *file)
+mtime_check(int dirfd, const char *source, const char *target, bool newer, time_t *rel, char *file)
 {
 	struct stat buf;
 	time_t mtime;
@@ -652,7 +645,7 @@ mtime_check(const char *source, const char *target, bool newer,
 		return false;
 	mtime = buf.st_mtime;
 
-	retval = deep_mtime_check(target,newer,&mtime,file);
+	retval = deep_mtime_check(dirfd, target,newer,&mtime,file);
 	if (rel) {
 		*rel = mtime;
 	}
@@ -660,18 +653,16 @@ mtime_check(const char *source, const char *target, bool newer,
 }
 
 bool
-rc_newer_than(const char *source, const char *target,
-	      time_t *newest, char *file)
+rc_newer_than(const char *source, const char *target, time_t *newest, char *file)
 {
 
-	return mtime_check(source, target, true, newest, file);
+	return mtime_check(AT_FDCWD, source, target, true, newest, file);
 }
 
 bool
-rc_older_than(const char *source, const char *target,
-	      time_t *oldest, char *file)
+rc_older_than(const char *source, const char *target, time_t *oldest, char *file)
 {
-	return mtime_check(source, target, false, oldest, file);
+	return mtime_check(AT_FDCWD, source, target, false, oldest, file);
 }
 
 typedef struct deppair
@@ -690,51 +681,30 @@ static const DEPPAIR deppairs[] = {
 	{ NULL, NULL }
 };
 
-static const char *const depdirs[] =
-{
-	"",
-	"starting",
-	"started",
-	"stopping",
-	"inactive",
-	"wasinactive",
-	"failed",
-	"hotplugged",
-	"daemons",
-	"options",
-	"exclusive",
-	"scheduled",
-	"init.d",
-	"tmp",
-	NULL
-};
-
 bool
 rc_deptree_update_needed(time_t *newest, char *file)
 {
 	bool newer = false;
 	RC_STRINGLIST *config;
 	RC_STRING *s;
-	int i;
 	struct stat buf;
 	time_t mtime;
 	char *path;
-	char *deptree_cache, *depconfig;
 	const char *service_dir = rc_svcdir();
 
 	/* Create base directories if needed */
-	for (i = 0; depdirs[i]; i++) {
-		xasprintf(&path, "%s/%s", service_dir, depdirs[i]);
-		if (mkdir(path, 0755) != 0 && errno != EEXIST)
-			fprintf(stderr, "mkdir `%s': %s\n", depdirs[i], strerror(errno));
-		free(path);
+	if (mkdir(service_dir, 0755) != 0 && errno != EEXIST)
+		fprintf(stderr, "mkdir '%s': %s\n", service_dir, strerror(errno));
+
+	for (size_t i = 1; i < RC_DIR_SYS_MAX; i++) {
+		if (mkdirat(rc_dirfd(RC_DIR_SVCDIR), dirnames[i], 0755) != 0 && errno != EEXIST)
+			fprintf(stderr, "mkdir `%s': %s\n", dirnames[i], strerror(errno));
 	}
 
 	/* Quick test to see if anything we use has changed and we have
 	 * data in our deptree. */
 
-	xasprintf(&deptree_cache, "%s/deptree", service_dir);
-	if (stat(deptree_cache, &buf) == 0) {
+	if (fstatat(rc_dirfd(RC_DIR_SVCDIR), "deptree", &buf, 0) == 0) {
 		mtime = buf.st_mtime;
 	} else {
 		/* No previous cache found.
@@ -744,36 +714,26 @@ rc_deptree_update_needed(time_t *newest, char *file)
 		newer = true;
 		mtime = time(NULL);
 	}
-	free(deptree_cache);
 
 	for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++) {
 		static const char *subdirs[] = { "init.d", "conf.d", NULL };
 		for (const char **subdir = subdirs; *subdir; subdir++) {
 			xasprintf(&path, "%s/%s", *dirs, *subdir);
-			newer |= !deep_mtime_check(path, true, &mtime, file);
+			newer |= !deep_mtime_check(AT_FDCWD, path, true, &mtime, file);
 			free(path);
 		}
 	}
 
-	xasprintf(&path, "%s/rc.conf", rc_sysconfdir());
-	newer |= !deep_mtime_check(path, true, &mtime, file);
-	free(path);
-
-	if (rc_is_user()) {
-		xasprintf(&path, "%s/rc.conf", rc_usrconfdir());
-		newer |= !deep_mtime_check(path, true, &mtime, file);
-		free(path);
-	}
+	newer |= !deep_mtime_check(rc_dirfd(RC_DIR_SYSCONF), "rc.conf", true, &mtime, file);
+	if (rc_is_user())
+		newer |= !deep_mtime_check(rc_dirfd(RC_DIR_USRCONF), "rc.conf", true, &mtime, file);
 
 	/* Some init scripts dependencies change depending on config files
 	 * outside of baselayout, like syslog-ng, so we check those too. */
-	xasprintf(&depconfig, "%s/depconfig", service_dir);
-	config = rc_config_list(depconfig);
-	TAILQ_FOREACH(s, config, entries) {
-		newer |= !deep_mtime_check(s->value, true, &mtime, file);
-	}
+	config = config_list(rc_dirfd(RC_DIR_SVCDIR), "depconfig");
+	TAILQ_FOREACH(s, config, entries)
+		newer |= !deep_mtime_check(AT_FDCWD, s->value, true, &mtime, file);
 	rc_stringlist_free(config);
-	free(depconfig);
 
 	/* Return newest file time, if requested */
 	if ((newer) && (newest != NULL)) {
@@ -834,7 +794,6 @@ rc_deptree_update(void)
 	char *line = NULL;
 	size_t size;
 	char *depend, *depends, *service, *type;
-	char *deptree_cache, *depconfig;
 	size_t i, l;
 	bool retval = true;
 	const char *sys = rc_sys();
@@ -1087,8 +1046,7 @@ rc_deptree_update(void)
 	   This works and should be entirely shell parseable provided that depend
 	   names don't have any non shell variable characters in
 	   */
-	xasprintf(&deptree_cache, "%s/deptree", rc_svcdir());
-	if ((fp = fopen(deptree_cache, "w"))) {
+	if ((fp = do_fopenat(rc_dirfd(RC_DIR_SVCDIR), "deptree", O_WRONLY | O_CREAT | O_TRUNC))) {
 		i = 0;
 		TAILQ_FOREACH(depinfo, deptree, entries) {
 			fprintf(fp, "depinfo_%zu_service='%s'\n", i, depinfo->service);
@@ -1103,26 +1061,23 @@ rc_deptree_update(void)
 		}
 		fclose(fp);
 	} else {
-		fprintf(stderr, "fopen '%s': %s\n", deptree_cache, strerror(errno));
+		fprintf(stderr, "fopen '%s/deptree': %s\n", rc_svcdir(), strerror(errno));
 		retval = false;
 	}
-	free(deptree_cache);
 
 	/* Save our external config files to disk */
-	xasprintf(&depconfig, "%s/depconfig", rc_svcdir());
 	if (TAILQ_FIRST(config)) {
-		if ((fp = fopen(depconfig, "w"))) {
+		if ((fp = do_fopenat(rc_dirfd(RC_DIR_SVCDIR), "depconfig", O_WRONLY | O_CREAT | O_TRUNC))) {
 			TAILQ_FOREACH(s, config, entries)
 				fprintf(fp, "%s\n", s->value);
 			fclose(fp);
 		} else {
-			fprintf(stderr, "fopen '%s': %s\n", depconfig, strerror(errno));
+			fprintf(stderr, "fopen '%s/depconfig': %s\n", rc_svcdir(), strerror(errno));
 			retval = false;
 		}
 	} else {
-		unlink(depconfig);
+		unlinkat(rc_dirfd(RC_DIR_SVCDIR), "depconfig", 0);
 	}
-	free(depconfig);
 
 	rc_stringlist_free(config);
 	rc_deptree_free(deptree);
