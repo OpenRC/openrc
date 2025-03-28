@@ -72,4 +72,6 @@ static const char *const dirnames[RC_DIR_SYS_MAX] =
 	[RC_DIR_TMP] = "tmp",
 };
 
+RC_STRINGLIST *config_list(int dirfd, const char *pathname);
+
 #endif

@@ -47,23 +47,24 @@ pid_t exec_service(const char *, const char *);
 
 typedef struct rc_service_state_name {
 	RC_SERVICE state;
+	enum rc_dir dir;
 	const char *const name;
 } rc_service_state_name_t;
 
 /* We MUST list the states below 0x10 first
  * The rest can be in any order */
 static const rc_service_state_name_t rc_service_state_names[] = {
-	{ RC_SERVICE_STARTED,     "started" },
-	{ RC_SERVICE_STOPPED,     "stopped" },
-	{ RC_SERVICE_STARTING,    "starting" },
-	{ RC_SERVICE_STOPPING,    "stopping" },
-	{ RC_SERVICE_INACTIVE,    "inactive" },
-	{ RC_SERVICE_WASINACTIVE, "wasinactive" },
-	{ RC_SERVICE_HOTPLUGGED,  "hotplugged" },
-	{ RC_SERVICE_FAILED,      "failed" },
-	{ RC_SERVICE_SCHEDULED,   "scheduled"},
-	{ RC_SERVICE_CRASHED,     "crashed"},
-	{ 0, NULL}
+	{ RC_SERVICE_STARTED,     RC_DIR_STARTED,     "started" },
+	{ RC_SERVICE_STOPPED,     RC_DIR_INVALID,     "stopped" },
+	{ RC_SERVICE_STARTING,    RC_DIR_STARTING,    "starting" },
+	{ RC_SERVICE_STOPPING,    RC_DIR_STOPPING,    "stopping" },
+	{ RC_SERVICE_INACTIVE,    RC_DIR_INACTIVE,    "inactive" },
+	{ RC_SERVICE_WASINACTIVE, RC_DIR_WASINACTIVE, "wasinactive" },
+	{ RC_SERVICE_HOTPLUGGED,  RC_DIR_HOTPLUGGED,  "hotplugged" },
+	{ RC_SERVICE_FAILED,      RC_DIR_FAILED,      "failed" },
+	{ RC_SERVICE_SCHEDULED,   RC_DIR_SCHEDULED,   "scheduled"},
+	{ RC_SERVICE_CRASHED,     RC_DIR_INVALID,     "crashed"},
+	{ 0, -1, NULL}
 };
 
 /*
