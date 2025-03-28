@@ -130,6 +130,10 @@ bool rc_is_user(void);
  * @return NULL terminated array of directory paths. */
 const char * const *rc_scriptdirs(void);
 
+/*! @param pointer to string returned by rc_scriptdirs
+ * @return file descriptor for the specified scriptdir */
+int rc_scriptdirfd(const char * const *scriptdir);
+
 /*! The system configuration directory is where rc.conf
  * and other configuration files are stored.
  * @return Path to the system configuration directory */

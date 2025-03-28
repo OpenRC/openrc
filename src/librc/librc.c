@@ -617,6 +617,24 @@ rc_is_user(void)
 	return is_user;
 }
 
+int scriptdirfds[SCRIPTDIR_MAX];
+
+int rc_scriptdirfd(const char * const *scriptdir) {
+	const char * const *scriptdir_array = is_user ? rc_dirs.scriptdirs : scriptdirs;
+	size_t idx;
+
+	if (!scriptdir || !*scriptdir || scriptdir < scriptdir_array)
+		return -1;
+
+	if ((idx = scriptdir - scriptdir_array) > SCRIPTDIR_MAX)
+		return -1;
+
+	if (scriptdirfds[idx] <= 0)
+		scriptdirfds[idx] = open(*scriptdir, O_RDONLY | O_CLOEXEC | O_DIRECTORY);
+
+	return scriptdirfds[idx];
+}
+
 void
 rc_set_user(void)
 {
