@@ -167,12 +167,8 @@ handle_signal(int sig)
 static void
 unhotplug(void)
 {
-	char *file = NULL;
-
-	xasprintf(&file, "%s/hotplugged/%s", rc_svcdir(), applet);
-	if (exists(file) && unlink(file) != 0)
-		eerror("%s: unlink `%s': %s", applet, file, strerror(errno));
-	free(file);
+	if (unlinkat(rc_dirfd(RC_DIR_HOTPLUGGED), applet, 0) != 0 && errno != ENOENT)
+		eerror("%s: unlink '%s/hotplugged/%s': %s", applet, rc_svcdir(), applet, strerror(errno));
 }
 
 static void
@@ -286,7 +282,6 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	size_t i, j;
 	const char *ec = ecolor(ECOLOR_HILITE);
 	const char *ec_normal = ecolor(ECOLOR_NORMAL);
-	char *prefix_lock;
 	ssize_t ret = 0;
 	int fd = fileno(stdout), lock_fd = -1;
 
@@ -294,9 +289,7 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	 * Lock the prefix.
 	 * open() may fail here when running as user, as RC_SVCDIR may not be writable.
 	 */
-	xasprintf(&prefix_lock, "%s/prefix.lock", rc_svcdir());
-	lock_fd = open(prefix_lock, O_WRONLY | O_CREAT, 0664);
-	free(prefix_lock);
+	lock_fd = openat(rc_dirfd(RC_DIR_SVCDIR), "prefix.lock", O_WRONLY | O_CREAT, 0664);
 
 	if (lock_fd != -1) {
 		while (flock(lock_fd, LOCK_EX) != 0) {
@@ -503,11 +496,11 @@ svc_exec(const char *arg1, const char *arg2)
 static bool
 svc_wait(const char *svc)
 {
-	char *file = NULL;
 	int fd;
 	bool forever = false;
 	RC_STRINGLIST *keywords;
 	struct timespec timeout, warn;
+	const char *base = basename_c(svc);
 
 	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend(deptree, svc, "keyword");
@@ -516,30 +509,24 @@ svc_wait(const char *svc)
 		forever = true;
 	rc_stringlist_free(keywords);
 
-	xasprintf(&file, "%s/exclusive/%s", rc_svcdir(), basename_c(svc));
-
 	timeout.tv_sec = WAIT_TIMEOUT;
 	timeout.tv_nsec = 0;
 	warn.tv_sec = WARN_TIMEOUT;
 	warn.tv_nsec = 0;
 	for (;;) {
-		fd = open(file, O_RDONLY | O_NONBLOCK);
+		fd = openat(rc_dirfd(RC_DIR_EXCLUSIVE), base, O_RDONLY | O_NONBLOCK);
 		if (fd != -1) {
 			if (flock(fd, LOCK_SH | LOCK_NB) == 0) {
 				close(fd);
-				free(file);
 				return true;
 			}
 			close(fd);
 		}
 		if (errno == ENOENT) {
-			free(file);
 			return true;
 		}
 		if (errno != EWOULDBLOCK) {
-			eerror("%s: open `%s': %s", applet, file,
-			    strerror(errno));
-			free(file);
+			eerror("%s: open '%s/exclusive/%s': %s", applet, rc_svcdir(), base, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		if (nanosleep(&interval, NULL) == -1) {
@@ -560,7 +547,6 @@ svc_wait(const char *svc)
 		}
 	}
 finish:
-	free(file);
 	return false;
 }
 
