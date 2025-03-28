@@ -688,7 +688,6 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	RC_STRING *s;
 	struct stat buf;
 	time_t mtime;
-	char *path;
 	const char *service_dir = rc_svcdir();
 
 	/* Create base directories if needed */
@@ -716,11 +715,8 @@ rc_deptree_update_needed(time_t *newest, char *file)
 
 	for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++) {
 		static const char *subdirs[] = { "init.d", "conf.d", NULL };
-		for (const char **subdir = subdirs; *subdir; subdir++) {
-			xasprintf(&path, "%s/%s", *dirs, *subdir);
-			newer |= !deep_mtime_check(AT_FDCWD, path, true, &mtime, file);
-			free(path);
-		}
+		for (const char **subdir = subdirs; *subdir; subdir++)
+			newer |= !deep_mtime_check(rc_scriptdirfd(dirs), *subdir, true, &mtime, file);
 	}
 
 	newer |= !deep_mtime_check(rc_dirfd(RC_DIR_SYSCONF), "rc.conf", true, &mtime, file);
