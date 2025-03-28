@@ -1112,15 +1112,11 @@ rc_services_in_runlevel(const char *runlevel)
 	if (!runlevel) {
 		list = rc_stringlist_new();
 		for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++) {
-			char *initd;
 			RC_STRINGLIST *svcs;
 
-			xasprintf(&initd, "%s/init.d", *dirs);
-			svcs = ls_dir(AT_FDCWD, initd, LS_INITD);
+			svcs = ls_dir(rc_scriptdirfd(dirs), "init.d", LS_INITD);
 			TAILQ_CONCAT(list, svcs, entries);
-
 			rc_stringlist_free(svcs);
-			free(initd);
 		}
 		return list;
 	}
