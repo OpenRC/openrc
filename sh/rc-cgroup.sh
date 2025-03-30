@@ -11,6 +11,10 @@
 extra_stopped_commands="${extra_stopped_commands} cgroup_cleanup"
 description_cgroup_cleanup="Kill all processes in the cgroup"
 
+if [ "${rc_cgroup_mode:-unified}" != unified ]; then
+	eerror "cgroups v1 is deprecated. Please unset rc_cgroup_mode."
+fi
+
 cgroup_find_path()
 {
 	local OIFS name dir result

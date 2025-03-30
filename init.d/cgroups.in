@@ -21,6 +21,7 @@ depend()
 
 cgroup1_base()
 {
+	eerror "cgroups v1 is deprecated. Please unset rc_cgroup_mode."
 	grep -qw cgroup /proc/filesystems || return 0
 	if ! mountinfo -q /sys/fs/cgroup; then
 		ebegin "Mounting cgroup filesystem"
