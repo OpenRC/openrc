@@ -110,21 +110,18 @@ cgroups_hybrid()
 	cgroup2_base
 	cgroup2_controllers
 	cgroup1_controllers
-	return 0
 }
 
 cgroups_legacy()
 {
 	cgroup1_base
 	cgroup1_controllers
-	return 0
 }
 
 cgroups_unified()
 {
 	cgroup2_base
 	cgroup2_controllers
-	return 0
 }
 
 mount_cgroups()
@@ -134,7 +131,6 @@ mount_cgroups()
 	legacy) cgroups_legacy ;;
 	unified) cgroups_unified ;;
 	esac
-	return 0
 }
 
 restorecon_cgroups()
@@ -144,7 +140,6 @@ restorecon_cgroups()
 		restorecon -rF /sys/fs/cgroup >/dev/null 2>&1
 		eend $?
 	fi
-	return 0
 }
 
 start()
