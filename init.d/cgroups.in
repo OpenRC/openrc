@@ -68,38 +68,42 @@ cgroup1_controllers()
 cgroup2_base()
 {
 	grep -qw cgroup2 /proc/filesystems || return 0
-	local base
-	base="$(cgroup2_find_path)"
-	mkdir -p "${base}"
-	mount -t cgroup2 cgroup2 -o "${cgroup_opts},nsdelegate" "${base}" 2> /dev/null ||
-		mount -t cgroup2 cgroup2 -o "${cgroup_opts}" "${base}"
+	mkdir -p "${cgroup_root}"
+	mount -t cgroup2 cgroup2 -o "${cgroup_opts},nsdelegate" "${cgroup_root}" 2> /dev/null ||
+		mount -t cgroup2 cgroup2 -o "${cgroup_opts}" "${cgroup_root}"
+	mkdir -p "${cgroup_root}/rc"
 	return 0
 }
 
-cgroup2_controllers()
+setup_controller()
 {
-	grep -qw cgroup2 /proc/filesystems || return 0
-	local active cgroup_path x y
-	cgroup_path="$(cgroup2_find_path)"
-	[ -z "${cgroup_path}" ] && return 0
-	[ ! -e "${cgroup_path}/cgroup.controllers" ] && return 0
-	[ ! -e "${cgroup_path}/cgroup.subtree_control" ]&& return 0
-	read -r active < "${cgroup_path}/cgroup.controllers"
-	for x in ${active}; do
-	case "${rc_cgroup_mode:-unified}" in
-		unified)
-			echo "+${x}"  > "${cgroup_path}/cgroup.subtree_control"
-			;;
+	local root="$1" controller allowed
+	shift
+
+	[ ! -e "${root}/cgroup.controllers" ] && return 0
+	[ ! -e "${root}/cgroup.subtree_control" ] && return 0
+
+	for controller; do
+		case "${rc_cgroup_mode:-unified}" in
+		unified) echo "+${controller}" > "${root}/cgroup.subtree_control" ;;
 		hybrid)
-			for y in ${rc_cgroup_controllers}; do
-				if [ "$x" = "$y" ]; then
-					echo "+${x}"  > "${cgroup_path}/cgroup.subtree_control"
+			for allowed in ${rc_cgroup_controllers}; do
+				if [ "$controller" = "$allowed" ]; then
+					echo "+${controller}" > "${root}/cgroup.subtree_control"
 				fi
 			done
 			;;
 		esac
 	done
-	return 0
+}
+
+cgroup2_controllers()
+{
+	grep -qw cgroup2 /proc/filesystems || return 0
+	local active
+	read -r active < "${cgroup_root}/cgroup.controllers"
+	setup_controller "${cgroup_root}" $active
+	setup_controller "${cgroup_root}/rc" $active
 }
 
 cgroups_hybrid()

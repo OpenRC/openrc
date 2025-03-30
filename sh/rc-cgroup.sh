@@ -11,11 +11,165 @@
 extra_stopped_commands="${extra_stopped_commands} cgroup_cleanup"
 description_cgroup_cleanup="Kill all processes in the cgroup"
 
-if [ "${rc_cgroup_mode:-unified}" != unified ]; then
-	eerror "cgroups v1 is deprecated. Please unset rc_cgroup_mode."
+cgroup_root="/sys/fs/cgroup"
+if [ "${rc_cgroup_mode:-unified}" = hybrid ]; then
+	cgroup_root="/sys/fs/cgroup/unified"
 fi
 
-cgroup_find_path()
+# use 'rc' for the supervision root cgroup to avoid issues with our old cgroup v1 style
+cgroup_path="${cgroup_root}/rc/${RC_SVCNAME}"
+
+if [ -d "/sys/fs/cgroup/openrc.${RC_SVCNAME}" ]; then
+	cgroup_path="${cgroup_root}/openrc.${RC_SVCNAME}"
+fi
+
+cgroup_running()
+{
+	[ -d "${cgroup_path}" ] ||
+		[ -d "/sys/fs/cgroup/openrc.${RC_SVCNAME}" ] ||
+		[ -d "/sys/fs/cgroup/unified/openrc.${RC_SVCNAME}" ] ||
+		[ -d "/sys/fs/cgroup/openrc/${RC_SVCNAME}" ] # cgroup v1, deperecated
+}
+
+cgroup_add_service()
+{
+	if [ "${rc_cgroup_mode:-unified}" != unified ]; then
+		eerror "cgroups v1 is deprecated. Please unset rc_cgroup_mode and reboot."
+
+		if [ ! -w /sys/fs/cgroup ]; then
+			eerror "No permission to apply cgroup settings"
+			return 1
+		fi
+
+		# relocate starting process to the top of the cgroup
+		# it prevents from unwanted inheriting of the user
+		# cgroups. But may lead to a problems where that inheriting
+		# is needed.
+		for d in /sys/fs/cgroup/* ; do
+			[ -w "${d}"/tasks ] && printf "%d" 0 > "${d}"/tasks
+		done
+
+		openrc_cgroup=/sys/fs/cgroup/openrc
+		if [ -d "$openrc_cgroup" ]; then
+			cgroup="$openrc_cgroup/$RC_SVCNAME"
+			mkdir -p "$cgroup"
+			[ -w "$cgroup/tasks" ] && printf "%d" 0 > "$cgroup/tasks"
+		fi
+
+		if [ "${rc_cgroup_mode}" != hybrid ]; then
+			return 0
+		fi
+	fi
+
+	mountinfo -q "${cgroup_root}" || return 0
+
+	if [ ! -w "${cgroup_root}" ]; then
+		eerror "No permission to apply cgroup settings"
+		return 1
+	fi
+
+	[ ! -d "${cgroup_path}" ] && mkdir -p "${cgroup_path}"
+	[ -f "${cgroup_path}"/cgroup.procs ] && printf 0 > "${cgroup_path}"/cgroup.procs
+}
+
+cgroup_remove()
+{
+	[ ! -d "${cgroup_path}" ] || [ ! -e "${cgroup_path}"/cgroup.events ] && return 0
+
+	local key populated value
+
+	while read -r key value; do
+		[ "$key" = populated ] && [ "$value" = 1 ] && return 0
+	done < "${cgroup_path}/cgroup.events"
+
+	rmdir "${cgroup_path}"
+}
+
+cgroup_set_limits()
+{
+	[ "${rc_cgroup_mode:-unified}" != unified ] && cgroup1_set_limits
+	mountinfo -q "${cgroup_root}" || return 0
+
+	[ -z "${rc_cgroup_settings}" ] && return 0
+
+	echo "${rc_cgroup_settings}" | while read -r key value; do
+		[ -z "${key}" ] || [ -z "${value}" ] && continue
+		[ ! -f "${cgroup_path}/${key}" ] && continue
+		veinfo "${RC_SVCNAME}: cgroups: setting ${key} to ${value}"
+		printf "%s" "${value}" > "${cgroup_path}/${key}"
+	done
+}
+
+# This extracts all pids in a cgroup and puts them in the cgroup_pids
+# variable.
+# It is done this way to avoid subshells so we don't have to worry about
+# locating the pid of the subshell in the cgroup.
+# https://github.com/openrc/openrc/issues/396
+cgroup_get_pids()
+{
+	local cgroup_procs p
+	cgroup_pids=
+
+	if [ "${rc_cgroup_mode:-unified}" != legacy ]; then
+		cgroup_procs="${cgroup_path}/cgroup.procs"
+	else
+		cgroup_procs="/sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks"
+	fi
+	[ -f "${cgroup_procs}" ] || return 0
+
+	while read -r p; do
+		[ "$p" -eq $$ ] && continue
+		cgroup_pids="${cgroup_pids} ${p}"
+	done < "${cgroup_procs}"
+	return 0
+}
+
+cgroup_fallback_cleanup() {
+	ebegin "Starting fallback cgroups cleanup"
+	local loops=0
+	cgroup_get_pids
+	if [ -n "${cgroup_pids}" ]; then
+		kill -s CONT ${cgroup_pids} 2> /dev/null
+		kill -s "${stopsig:-TERM}" ${cgroup_pids} 2> /dev/null
+		yesno "${rc_send_sighup:-no}" && kill -s HUP ${cgroup_pids} 2> /dev/null
+		kill -s "${stopsig:-TERM}" ${cgroup_pids} 2> /dev/null
+		cgroup_get_pids
+		while [ -n "${cgroup_pids}" ] &&
+			[ "${loops}" -lt "${rc_timeout_stopsec:-90}" ]; do
+			loops=$((loops+1))
+			sleep 1
+			cgroup_get_pids
+		done
+		if [ -n "${cgroup_pids}" ] && yesno "${rc_send_sigkill:-yes}"; then
+			kill -s KILL ${cgroup_pids} 2> /dev/null
+		fi
+	fi
+	eend $?
+}
+
+cgroup_cleanup()
+{
+	cgroup_running || return 0
+	ebegin "Starting cgroups cleanup"
+
+	if [ -f "${cgroup_path}"/cgroup.kill ]; then
+		# move ourselves to the root cgroup before killing.
+		printf "%d" 0 > "${cgroup_root}/cgroup.procs"
+		printf "%d" 1 > "${cgroup_path}"/cgroup.kill
+	else
+		cgroup_fallback_cleanup
+	fi
+
+	cgroup_remove
+	cgroup_get_pids
+	[ -z "${cgroup_pids}" ]
+	eend $? "Unable to stop all processes"
+	return 0
+}
+
+## deprecated
+
+cgroup1_find_path()
 {
 	local OIFS name dir result
 	[ -n "$1" ] || return 0
@@ -28,37 +182,7 @@ cgroup_find_path()
 	printf "%s" "${result}"
 }
 
-# This extracts all pids in a cgroup and puts them in the cgroup_pids
-# variable.
-# It is done this way to avoid subshells so we don't have to worry about
-# locating the pid of the subshell in the cgroup.
-# https://github.com/openrc/openrc/issues/396
-cgroup_get_pids()
-{
-	local cgroup_procs p
-	cgroup_pids=
-	cgroup_procs="$(cgroup2_find_path)"
-	if [ -n "${cgroup_procs}" ]; then
-		cgroup_procs="${cgroup_procs}/openrc.${RC_SVCNAME}/cgroup.procs"
-	else
-		cgroup_procs="/sys/fs/cgroup/openrc/${RC_SVCNAME}/tasks"
-	fi
-	[ -f "${cgroup_procs}" ] || return 0
-	while read -r p; do
-		[ "$p" -eq $$ ] && continue
-		cgroup_pids="${cgroup_pids} ${p}"
-	done < "${cgroup_procs}"
-	return 0
-}
-
-cgroup_running()
-{
-	[ -d "/sys/fs/cgroup/unified/${RC_SVCNAME}" ] ||
-			[ -d "/sys/fs/cgroup/${RC_SVCNAME}" ] ||
-			[ -d "/sys/fs/cgroup/openrc/${RC_SVCNAME}" ]
-}
-
-cgroup_set_values()
+cgroup1_set_values()
 {
 	[ -n "$1" ] && [ -n "$2" ] && [ -d "/sys/fs/cgroup/$1" ] || return 0
 
@@ -102,25 +226,7 @@ cgroup_set_values()
 	return 0
 }
 
-cgroup_add_service()
-{
-    # relocate starting process to the top of the cgroup
-    # it prevents from unwanted inheriting of the user
-    # cgroups. But may lead to a problems where that inheriting
-    # is needed.
-	for d in /sys/fs/cgroup/* ; do
-		[ -w "${d}"/tasks ] && printf "%d" 0 > "${d}"/tasks
-	done
-
-	openrc_cgroup=/sys/fs/cgroup/openrc
-	if [ -d "$openrc_cgroup" ]; then
-		cgroup="$openrc_cgroup/$RC_SVCNAME"
-		mkdir -p "$cgroup"
-		[ -w "$cgroup/tasks" ] && printf "%d" 0 > "$cgroup/tasks"
-	fi
-}
-
-cgroup_set_limits()
+cgroup1_set_limits()
 {
 	local blkio="${rc_cgroup_blkio:-$RC_CGROUP_BLKIO}"
 	[ -n "$blkio" ] && cgroup_set_values blkio "$blkio"
@@ -155,104 +261,3 @@ cgroup_set_limits()
 	return 0
 }
 
-cgroup2_find_path()
-{
-	if grep -qw cgroup2 /proc/filesystems; then
-		case "${rc_cgroup_mode:-unified}" in
-			hybrid) printf "/sys/fs/cgroup/unified" ;;
-			unified) printf "/sys/fs/cgroup" ;;
-		esac
-	fi
-		return 0
-}
-
-cgroup2_remove()
-{
-	local cgroup_path rc_cgroup_path
-	cgroup_path="$(cgroup2_find_path)"
-	[ -z "${cgroup_path}" ] && return 0
-	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
-	[ ! -d "${rc_cgroup_path}" ] ||
-		[ ! -e "${rc_cgroup_path}"/cgroup.events ] &&
-		return 0
-	grep -qx "$$" "${rc_cgroup_path}/cgroup.procs" &&
-		printf "%d" 0 > "${cgroup_path}/cgroup.procs"
-	local key populated vvalue
-	while read -r key value; do
-		case "${key}" in
-			populated) populated=${value} ;;
-			*) ;;
-		esac
-	done < "${rc_cgroup_path}/cgroup.events"
-	[ "${populated}" = 1 ] && return 0
-	rmdir "${rc_cgroup_path}"
-	return 0
-}
-
-cgroup2_set_limits()
-{
-	local cgroup_path
-	cgroup_path="$(cgroup2_find_path)"
-	[ -z "${cgroup_path}" ] && return 0
-	mountinfo -q "${cgroup_path}"|| return 0
-	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
-	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
-	[ -f "${rc_cgroup_path}"/cgroup.procs ] &&
-		printf 0 > "${rc_cgroup_path}"/cgroup.procs
-	[ -z "${rc_cgroup_settings}" ] && return 0
-	echo "${rc_cgroup_settings}" | while read -r key value; do
-		[ -z "${key}" ] && continue
-		[ -z "${value}" ] && continue
-		[ ! -f "${rc_cgroup_path}/${key}" ] && continue
-		veinfo "${RC_SVCNAME}: cgroups: setting ${key} to ${value}"
-		printf "%s" "${value}" > "${rc_cgroup_path}/${key}"
-	done
-	return 0
-}
-
-cgroup2_kill_cgroup() {
-	local cgroup_path
-	cgroup_path="$(cgroup2_find_path)"
-	[ -z "${cgroup_path}" ] && return 1
-	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
-	if [ -f "${rc_cgroup_path}"/cgroup.kill ]; then
-		printf "%d" 1 > "${rc_cgroup_path}"/cgroup.kill
-	fi
-	return
-}
-
-cgroup_fallback_cleanup() {
-	ebegin "Starting fallback cgroups cleanup"
-	local loops=0
-	cgroup_get_pids
-	if [ -n "${cgroup_pids}" ]; then
-		kill -s CONT ${cgroup_pids} 2> /dev/null
-		kill -s "${stopsig:-TERM}" ${cgroup_pids} 2> /dev/null
-		yesno "${rc_send_sighup:-no}" &&
-			kill -s HUP ${cgroup_pids} 2> /dev/null
-		kill -s "${stopsig:-TERM}" ${cgroup_pids} 2> /dev/null
-		cgroup_get_pids
-		while [ -n "${cgroup_pids}" ] &&
-			[ "${loops}" -lt "${rc_timeout_stopsec:-90}" ]; do
-			loops=$((loops+1))
-			sleep 1
-			cgroup_get_pids
-		done
-		if [ -n "${cgroup_pids}" ] && yesno "${rc_send_sigkill:-yes}"; then
-			kill -s KILL ${cgroup_pids} 2> /dev/null
-		fi
-	fi
-	eend $?
-}
-
-cgroup_cleanup()
-{
-	cgroup_running || return 0
-	ebegin "Starting cgroups cleanup"
-	cgroup2_kill_cgroup || cgroup_fallback_cleanup
-	cgroup2_remove
-	cgroup_get_pids
-	[ -z "${cgroup_pids}" ]
-	eend $? "Unable to stop all processes"
-	return 0
-}
