@@ -45,24 +45,22 @@ cgroup1_controllers()
 {
 	yesno "${rc_controller_cgroups:-YES}" && [ -e /proc/cgroups ]  &&
 	grep -qw cgroup /proc/filesystems || return 0
+
 	while read -r name _ _ enabled _; do
-		case "${enabled}" in
-			1)	mountinfo -q "/sys/fs/cgroup/${name}" && continue
-				local x
-				for x in $rc_cgroup_controllers; do
-				[ "${name}" = "blkio" ] && [ "${x}" = "io" ] &&
-					continue 2
-				[ "${name}" = "${x}" ] &&
-				continue 2
-				done
-				mkdir "/sys/fs/cgroup/${name}"
-				mount -n -t cgroup -o "${cgroup_opts},${name}" \
-					"${name}" "/sys/fs/cgroup/${name}"
-				yesno "${rc_cgroup_memory_use_hierarchy:-no}" &&
-					[ "${name}" = memory ] &&
-					echo 1 > /sys/fs/cgroup/memory/memory.use_hierarchy
-				;;
-		esac
+		[ "$enabled" = 1 ] || continue;
+		mountinfo -q "/sys/fs/cgroup/${name}" && continue
+
+		local x
+		for x in $rc_cgroup_controllers; do
+			[ "${name}" = "blkio" ] && [ "${x}" = "io" ] && continue 2
+			[ "${name}" = "${x}" ] && continue 2
+		done
+
+		mkdir "/sys/fs/cgroup/${name}"
+		mount -n -t cgroup -o "${cgroup_opts},${name}" "${name}" "/sys/fs/cgroup/${name}"
+		if [ yesno "${rc_cgroup_memory_use_hierarchy:-no}" && [ "${name}" = memory ]; then
+			echo 1 > /sys/fs/cgroup/memory/memory.use_hierarchy
+		fi
 	done < /proc/cgroups
 	return 0
 }
@@ -149,5 +147,6 @@ start()
 		mount_cgroups
 		restorecon_cgroups
 	fi
+
 	return 0
 }
