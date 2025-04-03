@@ -629,8 +629,6 @@ svc_start_check(void)
 	if (exclusive_fd == -1)
 		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
-		if (errno == EACCES)
-			eerrorx("%s: superuser access required", applet);
 		if (state & RC_SERVICE_STOPPING)
 			ewarnx("WARNING: %s is stopping", applet);
 		else
@@ -883,8 +881,6 @@ svc_stop_check(RC_SERVICE *state)
 	if (exclusive_fd == -1)
 		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
-		if (errno == EACCES)
-			eerrorx("%s: superuser access required", applet);
 		if (*state & RC_SERVICE_STOPPING)
 			ewarnx("WARNING: %s is already stopping", applet);
 		eerrorx("ERROR: %s stopped by something else", applet);
