@@ -21,7 +21,7 @@
 # We need to add a flag to resolvconf to say
 # "these nameservers should only be used for the listed search domains
 #  if other global nameservers are present on other interfaces"
-# This however, will break compatibility with Debians resolvconf
+# This however, will break compatibility with Debian's resolvconf
 # A possible workaround would be to just list multiple domain lines
 # and try and let resolvconf handle it
 
@@ -68,7 +68,7 @@ fi
 # If we have a service specific script, run this now
 [ -x "${RC_SVCNAME}"-up.sh ] && "${RC_SVCNAME}"-up.sh
 
-# Re-enter the init script to start any dependant services
+# Re-enter the init script to start any dependent services
 if [ -x "${RC_SERVICE}" ]; then
 	if ! "${RC_SERVICE}" --quiet status; then
 		IN_BACKGROUND=YES

@@ -970,7 +970,7 @@ svc_stop_deps(RC_SERVICE state)
 			continue;
 		if (rc_runlevel_stopping()) {
 			/* If shutting down, we should stop even
-			 * if a dependant failed */
+			 * if a dependent failed */
 			if (runlevel &&
 			    (strcmp(runlevel,
 				RC_LEVEL_SHUTDOWN) == 0 ||

@@ -31,7 +31,7 @@
 #include "einfo.h"
 #include "helpers.h"
 
-/* Incase we cannot work out how many columns from ioctl, supply a default */
+/* In case we cannot work out how many columns from ioctl, supply a default */
 #define DEFAULT_COLS		 80
 
 #define OK			"ok"

@@ -2,7 +2,7 @@
   start-stop-daemon
  * Starts, stops, tests and signals daemons
  *
- * This is essentially a ground up re-write of Debians
+ * This is essentially a ground up re-write of Debian's
  * start-stop-daemon for cleaner code and to integrate into our RC
  * system so we can monitor daemons a little.
  */

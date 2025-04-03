@@ -16,13 +16,13 @@
 if command -v resolvconf >/dev/null 2>&1; then
 	resolvconf -d "${dev}"
 elif [ -e /etc/resolv.conf-"${dev}".sv ]; then
-	# Important that we copy instead of move incase resolv.conf is
+	# Important that we copy instead of move in case resolv.conf is
 	# a symlink and not an actual file
 	cp -p /etc/resolv.conf-"${dev}".sv /etc/resolv.conf
 	rm -f /etc/resolv.conf-"${dev}".sv
 fi
 
-# Re-enter the init script to stop any dependant services
+# Re-enter the init script to stop any dependent services
 if [ -x "${RC_SERVICE}" ]; then
 	if "${RC_SERVICE}" --quiet status; then
 		IN_BACKGROUND=YES

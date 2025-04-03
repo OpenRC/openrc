@@ -31,7 +31,7 @@ RC_ULIMIT now supports setting multiple limits at once.
 
 OpenRC now supports shared mounts in fstab. This is used for some containers
 which might require  hierarchies to be mounted with different
-propegation than the kernel default of private.
+propagation than the kernel default of private.
 
 
 Podman containers now can be autodetected.
@@ -73,7 +73,7 @@ This benefits users since it will assign each service to its own cgroup,
 making resource nanagement better over all.
 
 OUTPUT_LOGGER and ERROR_LOGGER have been implemented for
-supervise-daemon. For mor einformation on these settings, please check
+supervise-daemon. For more information on these settings, please check
 the man page.
 
 ## OpenRC 0.50
@@ -225,7 +225,7 @@ information:
 
 https://github.com/openrc/openrc/issues/238
 
-This version adds timed shutdown and cancelation of shutdown to
+This version adds timed shutdown and cancellation of shutdown to
 openrc-shutdown. Shutdowns can now be delayed for a certain amount of
 time or scheduled for an exact time.
 

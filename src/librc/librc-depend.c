@@ -293,11 +293,11 @@ get_provided1(const char *runlevel, RC_STRINGLIST *providers,
 /* Work out if a service is provided by another service.
    For example metalog provides logger.
    We need to be able to handle syslogd providing logger too.
-   We do this by checking whats running, then what's starting/stopping,
+   We do this by checking what's running, then what's starting/stopping,
    then what's run in the runlevels and finally alphabetical order.
 
    If there are any bugs in rc-depend, they will probably be here as
-   provided dependancy can change depending on runlevel state.
+   provided dependency can change depending on runlevel state.
    */
 static RC_STRINGLIST *
 get_provided(const RC_DEPINFO *depinfo, const char *runlevel, int options)

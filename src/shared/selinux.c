@@ -397,7 +397,7 @@ void selinux_setup(char **argv)
 
 	/*
 	 * exec will recycle ptys so try and use open_init_pty if it exists
-	 * which will open the pty with initrc_devpts_t, if it doesnt exist,
+	 * which will open the pty with initrc_devpts_t, if it doesn't exist,
 	 * fall back to plain exec
 	 */
 	if (!access("/usr/sbin/open_init_pty", X_OK)) {
