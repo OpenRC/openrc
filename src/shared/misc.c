@@ -34,6 +34,8 @@
 #endif
 #include <sys/types.h>
 #include <sys/utsname.h>
+#include <sys/un.h>
+#include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
 #include <utime.h>
@@ -541,24 +543,45 @@ pid_t get_pid(const char *applet,const char *pidfile)
 struct ready ready_parse(const char *applet, const char *ready_string)
 {
 	struct ready ready = {0};
-	if (sscanf(ready_string, "fd:%d", &ready.fd) != 1)
+	if (sscanf(ready_string, "fd:%d", &ready.fd) == 1) {
+		ready.type = READY_FD;
+		if (pipe(ready.pipe) == -1)
+			eerrorx("%s: pipe: %s", applet, strerror(errno));
+	} else if (strcmp(ready_string, "socket") == 0) {
+		union {
+			struct sockaddr header;
+			struct sockaddr_un unix;
+		} addr = { .unix = { .sun_family = AF_UNIX } };
+		int written = snprintf(addr.unix.sun_path, sizeof(addr.unix.sun_path), "%s/supervise-%s.sock", rc_svcdir(), applet);
+
+		if (written > (int) sizeof(addr.unix.sun_path))
+			eerrorx("%s: socket path '%s/supervise-%s.sock' too long.", applet, rc_svcdir(), applet);
+		setenv("NOTIFY_SOCKET", addr.unix.sun_path, true);
+
+		ready.type = READY_SOCKET;
+		if ((ready.fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
+			eerrorx("%s: socket: %s", applet, strerror(errno));
+		if (bind(ready.fd, &addr.header, sizeof(addr.unix)) == -1)
+			eerrorx("%s: bind: %s", applet, strerror(errno));
+	} else {
 		eerrorx("%s: invalid ready '%s'.", applet, optarg);
-
-	ready.type = READY_FD;
-
-	if (pipe(ready.pipe) == -1)
-		eerrorx("%s: pipe failed: %s", applet, strerror(errno));
+	}
 
 	return ready;
 }
 
 bool ready_wait(const char *applet, struct ready ready)
 {
-	if (ready.type == READY_NONE)
+	switch (ready.type) {
+	case READY_NONE:
 		return true;
-
-	close(ready.pipe[1]);
-	ready.fd = ready.pipe[0];
+	case READY_FD:
+		close(ready.pipe[1]);
+		ready.fd = ready.pipe[0];
+		break;
+	case READY_SOCKET:
+		break;
+	}
 
 	for (;;) {
 		char buf[BUFSIZ];
@@ -571,8 +594,24 @@ bool ready_wait(const char *applet, struct ready ready)
 			continue;
 		}
 
-		if (memchr(buf, '\n', bytes))
+		switch (ready.type) {
+		case READY_NONE:
 			break;
+		case READY_FD:
+			if (memchr(buf, '\n', bytes))
+				return true;
+			break;
+		case READY_SOCKET:
+			buf[bytes] = '\0';
+			if (strstr(buf, "READY=1")) {
+				char *path;
+				xasprintf(&path, "%s/supervise-%s.sock", rc_svcdir(), applet);
+				unlink(path);
+				free(path);
+				return true;
+			}
+			break;
+		}
 	}
 
 	return true;
