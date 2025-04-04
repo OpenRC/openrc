@@ -571,7 +571,7 @@ struct ready ready_parse(const char *applet, const char *ready_string)
 		} addr = { .unix = { .sun_family = AF_UNIX } };
 		int written = snprintf(addr.unix.sun_path, sizeof(addr.unix.sun_path), "%s/supervise-%s.sock", rc_svcdir(), applet);
 
-		if (written > (int) sizeof(addr.unix.sun_path))
+		if (written >= (int)sizeof(addr.unix.sun_path))
 			eerrorx("%s: socket path '%s/supervise-%s.sock' too long.", applet, rc_svcdir(), applet);
 		setenv("NOTIFY_SOCKET", addr.unix.sun_path, true);
 
