@@ -3,6 +3,8 @@
 . @LIBEXECDIR@/sh/functions.sh
 
 _sysconf="${XDG_CONFIG_HOME:-${HOME}/.config}/rc"
+_cachedir="${XDG_CACHE_HOME:-${HOME}/.cache}/rc"
+_svcdir="${XDG_RUNTIME_DIR?}/openrc"
 
 for config in "@SYSCONFDIR@/rc.conf" "$_sysconf/rc.conf"; do
 	if [ -e "$config" ] && ! . "$config"; then
@@ -11,9 +13,18 @@ for config in "@SYSCONFDIR@/rc.conf" "$_sysconf/rc.conf"; do
 	fi
 done
 
+mkdir -p "$_svcdir"
+mkdir -p "$_cachedir"
+
 case $1 in
-	start) _runlevel="${rc_default_runlevel:-default}";;
-	stop) _runlevel="shutdown";;
+	start)
+		_runlevel="${rc_default_runlevel:-default}"
+		cp -p "$_cachedir"/* "$_svcdir" 2>/dev/null
+		;;
+	stop)
+		_runlevel="shutdown"
+		cp -p "$_svcdir"/dep* "$_cachedir" 2>/dev/null
+		;;
 	*) eerror "no argument given to $0" && exit 1
 esac
 
