@@ -15,6 +15,7 @@ user="${RC_SVCNAME#*.}"
 
 command="@RC_LIBEXECDIR@/bin/openrc-user"
 command_args="$user"
+ready="fd:3"
 
 start_pre() {
 	if [ "$user" = "$RC_SVCNAME" ]; then
