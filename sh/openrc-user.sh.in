@@ -16,18 +16,19 @@ done
 mkdir -p "$svcdir"
 mkdir -p "$cachedir"
 
+for runlevel in boot "${rc_default_runlevel:-default}" shutdown; do
+	mkdir -p "$sysconf/runlevels/$runlevel"
+done
+
 case $1 in
 	start)
-		runlevel="${rc_default_runlevel:-default}"
 		cp -pr "$cachedir"/* "$_svcdir" 2>/dev/null
+		openrc --user boot || exit 1
+		exec openrc --user "${rc_default_runlevel:-default}"
 		;;
 	stop)
-		runlevel="shutdown"
 		cp -pr "$svcdir"/dep* "$svcdir/init.d" "$svcdir/conf.d" "$cachedir" 2>/dev/null
+		exec openrc --user shutdown
 		;;
 	*) eerror "no argument given to $0" && exit 1
 esac
-
-mkdir -p "$sysconf/runlevels/$runlevel"
-
-exec openrc --user "$_runlevel"
