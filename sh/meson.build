@@ -28,7 +28,7 @@ scripts_config = [
 
 if os == 'Linux'
   sh += [
-    'rc-cgroup.sh',
+    'cgroups.sh',
     ]
   scripts_config += [
     'binfmt.sh.in',
