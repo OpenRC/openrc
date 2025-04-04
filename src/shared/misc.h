@@ -70,8 +70,10 @@ struct ready {
 	enum {
 		READY_NONE = 0,
 		READY_FD,
+		READY_SOCKET
 	} type;
 
+	char *path;
 	int pipe[2];
 	int fd;
 };
