@@ -2,32 +2,32 @@
 
 . @LIBEXECDIR@/sh/functions.sh
 
-_sysconf="${XDG_CONFIG_HOME:-${HOME}/.config}/rc"
-_cachedir="${XDG_CACHE_HOME:-${HOME}/.cache}/rc"
-_svcdir="${XDG_RUNTIME_DIR?}/openrc"
+sysconfdir="${XDG_CONFIG_HOME:-${HOME}/.config}/rc"
+cachedir="${XDG_CACHE_HOME:-${HOME}/.cache}/rc"
+svcdir="${XDG_RUNTIME_DIR?}/openrc"
 
-for config in "@SYSCONFDIR@/rc.conf" "$_sysconf/rc.conf"; do
+for config in "@SYSCONFDIR@/rc.conf" "$sysconfdir/rc.conf"; do
 	if [ -e "$config" ] && ! . "$config"; then
 		eerror "openrc-user: Failed loading $config"
 		exit 1
 	fi
 done
 
-mkdir -p "$_svcdir"
-mkdir -p "$_cachedir"
+mkdir -p "$svcdir"
+mkdir -p "$cachedir"
 
 case $1 in
 	start)
-		_runlevel="${rc_default_runlevel:-default}"
-		cp -pr "$_cachedir"/* "$_svcdir" 2>/dev/null
+		runlevel="${rc_default_runlevel:-default}"
+		cp -pr "$cachedir"/* "$_svcdir" 2>/dev/null
 		;;
 	stop)
-		_runlevel="shutdown"
-		cp -pr "$_svcdir"/dep* "$_svcdir/init.d" "$_svcdir/conf.d" "$_cachedir" 2>/dev/null
+		runlevel="shutdown"
+		cp -pr "$svcdir"/dep* "$svcdir/init.d" "$svcdir/conf.d" "$cachedir" 2>/dev/null
 		;;
 	*) eerror "no argument given to $0" && exit 1
 esac
 
-mkdir -p "$_sysconf/runlevels/$_runlevel"
+mkdir -p "$sysconf/runlevels/$runlevel"
 
 exec openrc --user "$_runlevel"
