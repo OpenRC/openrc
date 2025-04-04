@@ -61,9 +61,9 @@ start()
 	eend $retval
 
 	# Store the font so we can use it ASAP on boot
-	if [ $retval -eq 0 ] && checkpath -W "$RC_LIBEXECDIR"; then
-		mkdir -p "$RC_LIBEXECDIR"/console
-		setfont -O "$RC_LIBEXECDIR"/console/font
+	if [ $retval -eq 0 ] && checkpath -m 0755 -d "$RC_CACHEDIR" 2>/dev/null; then
+		mkdir -p "$RC_CACHEDIR"/console
+		setfont -O "$RC_CACHEDIR"/console/font
 	fi
 
 	return $retval

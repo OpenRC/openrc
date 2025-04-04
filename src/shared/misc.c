@@ -196,6 +196,23 @@ env_config(void)
 		free(e);
 	}
 
+	if (!rc_is_user()) {
+		setenv("RC_CACHEDIR", "/var/cache/rc", 1);
+	} else {
+		const char *cache_home = getenv("XDG_CACHE_HOME");
+		char *cachedir = NULL;
+
+		if (cache_home)
+			xasprintf(&cachedir, "%s/rc", cache_home);
+		else if ((cache_home = getenv("HOME")))
+			xasprintf(&cachedir, "%s/.cache/rc", cache_home);
+
+		if (cachedir)
+			setenv("RC_CACHEDIR", cachedir, 1);
+
+		free(cachedir);
+	}
+
 	xasprintf(&tmpdir, "%s/tmp", svcdir);
 	e = rc_runlevel_get();
 
