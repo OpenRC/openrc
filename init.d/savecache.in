@@ -31,11 +31,11 @@ start()
 
 	ebegin "Saving dependency cache"
 	local rc=0 save=
-	for x in depconfig deptree rc.log shutdowntime; do
+	for x in depconfig deptree rc.log shutdowntime init.d conf.d; do
 		[ -e "$RC_SVCDIR/$x" ] && save="$save $RC_SVCDIR/$x"
 	done
 	if [ -n "$save" ]; then
-		cp -p $save "$RC_CACHEDIR"
+		cp -pr $save "$RC_CACHEDIR"
 		rc=$?
 	fi
 	eend $rc "Unable to save dependency cache"
