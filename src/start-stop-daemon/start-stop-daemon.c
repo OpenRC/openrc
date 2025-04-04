@@ -633,7 +633,7 @@ int main(int argc, char **argv)
 			break;
 
 		case LONGOPT_READY:
-			ready = ready_parse(applet, optarg);
+			ready = ready_parse(svcname ? svcname : applet, optarg);
 			break;
 
 		case_RC_COMMON_GETOPT
