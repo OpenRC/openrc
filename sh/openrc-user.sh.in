@@ -24,6 +24,7 @@ case $1 in
 	start)
 		cp -pr "$cachedir"/* "$_svcdir" 2>/dev/null
 		openrc --user boot || exit 1
+		printf '\n' >&3
 		exec openrc --user "${rc_default_runlevel:-default}"
 		;;
 	stop)
