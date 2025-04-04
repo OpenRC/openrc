@@ -870,6 +870,9 @@ int main(int argc, char **argv)
 	 * nothing really needs to know that we're rebooting.
 	 * But for those that do, you can test against RC_REBOOT. */
 	if (newlevel) {
+		if (rc_is_user() && strcmp(newlevel, RC_LEVEL_SYSINIT) == 0)
+			eerrorx("%s: the sysinit runlevel can't be used for user services.", applet);
+
 		if (strcmp(newlevel, "reboot") == 0) {
 			newlevel = UNCONST(RC_LEVEL_SHUTDOWN);
 			setenv("RC_REBOOT", "YES", 1);
