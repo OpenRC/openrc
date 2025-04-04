@@ -31,7 +31,7 @@ start()
 
 	ebegin "Saving dependency cache"
 	local rc=0 save=
-	for x in depconfig deptree rc.log shutdowntime softlevel; do
+	for x in depconfig deptree rc.log shutdowntime; do
 		[ -e "$RC_SVCDIR/$x" ] && save="$save $RC_SVCDIR/$x"
 	done
 	if [ -n "$save" ]; then
