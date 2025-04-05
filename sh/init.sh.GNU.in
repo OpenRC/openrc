@@ -36,8 +36,8 @@ ebegin "Creating $RC_SVCDIR"
 mkdir -p $RC_SVCDIR
 eend $?
 
-if [ -e "$RC_LIBEXECDIR"/cache/softlevel ]; then
-    cp -pr "$RC_LIBEXECDIR"/cache/* "$RC_SVCDIR" 2>/dev/null
+if [ -d "$RC_CACHEDIR" ]; then
+	cp -pr "$RC_CACHEDIR"/* "$RC_SVCDIR" 2>/dev/null
 fi
 
 echo sysinit >"$RC_SVCDIR"/softlevel
