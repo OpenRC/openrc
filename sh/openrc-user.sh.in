@@ -17,7 +17,7 @@ mkdir -p "$svcdir"
 mkdir -p "$cachedir"
 
 for runlevel in boot "${rc_default_runlevel:-default}" shutdown; do
-	mkdir -p "$sysconf/runlevels/$runlevel"
+	mkdir -p "$sysconfdir/runlevels/$runlevel"
 done
 
 case $1 in
