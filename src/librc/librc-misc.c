@@ -146,7 +146,7 @@ rc_proc_getent(const char *ent RC_UNUSED)
 }
 
 RC_STRINGLIST *
-rc_config_list(const char *file)
+config_list(int dirfd, const char *pathname)
 {
 	FILE *fp;
 	char *buffer = NULL;
@@ -155,7 +155,7 @@ rc_config_list(const char *file)
 	char *token;
 	RC_STRINGLIST *list = rc_stringlist_new();
 
-	if (!(fp = fopen(file, "r")))
+	if (!(fp = do_fopenat(dirfd, pathname, O_RDONLY)))
 		return list;
 
 	while (xgetline(&buffer, &len, fp) != -1) {
@@ -177,10 +177,16 @@ rc_config_list(const char *file)
 			}
 		}
 	}
-	fclose(fp);
 	free(buffer);
+	fclose(fp);
 
 	return list;
+}
+
+RC_STRINGLIST *
+rc_config_list(const char *file)
+{
+	return config_list(AT_FDCWD, file);
 }
 
 static void rc_config_set_value(RC_STRINGLIST *config, char *value)
@@ -301,51 +307,52 @@ static RC_STRINGLIST *rc_config_kcl(RC_STRINGLIST *config)
 	return config;
 }
 
-static RC_STRINGLIST * rc_config_directory(RC_STRINGLIST *config, const char *dir)
+static void
+rc_config_directory(RC_STRINGLIST *config, int targetfd, const char *dir)
 {
 	DIR *dp;
 	struct dirent *d;
 	RC_STRINGLIST *rc_conf_d_files;
 	RC_STRING *fname;
 	RC_STRINGLIST *rc_conf_d_list;
-	char path[PATH_MAX];
 	RC_STRING *line;
 
-	if ((dp = opendir(dir)) != NULL) {
-		rc_conf_d_files = rc_stringlist_new();
-		while ((d = readdir(dp)) != NULL) {
-			if (fnmatch("*.conf", d->d_name, FNM_PATHNAME) == 0) {
-				rc_stringlist_addu(rc_conf_d_files, d->d_name);
-			}
-		}
-		closedir(dp);
+	if (!(dp = do_opendirat(targetfd, dir)))
+		return;
 
-		rc_stringlist_sort(&rc_conf_d_files);
-		TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
-			if (!fname->value)
-				continue;
-			sprintf(path, "%s/%s", dir, fname->value);
-			rc_conf_d_list = rc_config_list(path);
-			TAILQ_FOREACH(line, rc_conf_d_list, entries)
-				if (line->value)
-					rc_config_set_value(config, line->value);
-			rc_stringlist_free(rc_conf_d_list);
+	rc_conf_d_files = rc_stringlist_new();
+	while ((d = readdir(dp)) != NULL) {
+		if (fnmatch("*.conf", d->d_name, FNM_PATHNAME) == 0) {
+			rc_stringlist_addu(rc_conf_d_files, d->d_name);
 		}
-
-		rc_stringlist_free(rc_conf_d_files);
 	}
 
-	return config;
+	rc_stringlist_sort(&rc_conf_d_files);
+	TAILQ_FOREACH(fname, rc_conf_d_files, entries) {
+		if (!fname->value)
+			continue;
+
+		rc_conf_d_list = config_list(dirfd(dp), fname->value);
+		TAILQ_FOREACH(line, rc_conf_d_list, entries)
+			if (line->value)
+				rc_config_set_value(config, line->value);
+		rc_stringlist_free(rc_conf_d_list);
+	}
+
+	rc_stringlist_free(rc_conf_d_files);
+	closedir(dp);
+
+	return;
 }
 
-RC_STRINGLIST *
-rc_config_load(const char *file)
+static RC_STRINGLIST *
+config_load(int dirfd, const char *pathname)
 {
 	RC_STRINGLIST *list;
 	RC_STRINGLIST *config;
 	RC_STRING *line;
 
-	list = rc_config_list(file);
+	list = config_list(dirfd, pathname);
 	config = rc_stringlist_new();
 	TAILQ_FOREACH(line, list, entries) {
 		rc_config_set_value(config, line->value);
@@ -353,6 +360,12 @@ rc_config_load(const char *file)
 	rc_stringlist_free(list);
 
 	return config;
+}
+
+RC_STRINGLIST *
+rc_config_load(const char *file)
+{
+	return config_load(AT_FDCWD, file);
 }
 
 char *
@@ -384,9 +397,9 @@ _free_rc_conf(void)
 }
 
 static void
-rc_conf_append(const char *file)
+rc_conf_append(enum rc_dir dir)
 {
-	RC_STRINGLIST *conf = rc_config_load(file);
+	RC_STRINGLIST *conf = config_load(rc_dirfd(dir), "rc.conf");
 	TAILQ_CONCAT(rc_conf, conf, entries);
 	rc_stringlist_free(conf);
 }
@@ -394,10 +407,7 @@ rc_conf_append(const char *file)
 char *
 rc_conf_value(const char *setting)
 {
-	const char *sysconfdir = rc_sysconfdir();
-	const char *usrconfdir = rc_usrconfdir();
 	RC_STRING *s;
-	char *conf;
 
 	if (rc_conf)
 		return rc_config_value(rc_conf, setting);
@@ -407,27 +417,21 @@ rc_conf_value(const char *setting)
 
 	/* Load user configurations first, as they should override
 	 * system wide configs. */
-	if (usrconfdir) {
-		xasprintf(&conf, "%s/%s", usrconfdir, "rc.conf");
-		rc_conf_append(conf);
-		free(conf);
-
-		xasprintf(&conf, "%s/%s", usrconfdir, "rc.conf.d");
-		rc_conf = rc_config_directory(rc_conf, conf);
-		free(conf);
+	if (rc_is_user()) {
+		rc_conf_append(RC_DIR_USRCONF);
+		rc_config_directory(rc_conf, rc_dirfd(RC_DIR_USRCONF), "rc.conf.d");
 	}
 
-	xasprintf(&conf, "%s/%s", sysconfdir, "rc.conf");
-	rc_conf_append(conf);
-	free(conf);
+	rc_conf_append(RC_DIR_SYSCONF);
 
 	/* Support old configs. */
-	if (exists(RC_CONF_OLD))
-		rc_conf_append(RC_CONF_OLD);
+	if (exists(RC_CONF_OLD)) {
+		RC_STRINGLIST *old_conf = config_load(AT_FDCWD, RC_CONF_OLD);
+		TAILQ_CONCAT(rc_conf, old_conf, entries);
+		rc_stringlist_free(old_conf);
+	}
 
-	xasprintf(&conf, "%s/%s", sysconfdir, "rc.conf.d");
-	rc_conf = rc_config_directory(rc_conf, conf);
-	free(conf);
+	rc_config_directory(rc_conf, rc_dirfd(RC_DIR_SYSCONF), "rc.conf.d");
 
 	rc_conf = rc_config_kcl(rc_conf);
 

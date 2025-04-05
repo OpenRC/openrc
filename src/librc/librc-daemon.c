@@ -329,17 +329,17 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 #endif
 
 static bool
-_match_daemon(const char *path, const char *file, RC_STRINGLIST *match)
+_match_daemon(const char *svcname, const char *instance, RC_STRINGLIST *match)
 {
 	char *line = NULL;
 	size_t len = 0;
-	char *ffile = NULL;
 	FILE *fp;
 	RC_STRING *m;
+	char *daemon;
 
-	xasprintf(&ffile, "%s/%s", path, file);
-	fp = fopen(ffile, "r");
-	free(ffile);
+	xasprintf(&daemon, "%s/%s", svcname, instance);
+	fp = do_fopenat(rc_dirfd(RC_DIR_DAEMONS), daemon, O_RDONLY);
+	free(daemon);
 
 	if (!fp)
 		return false;
@@ -393,7 +393,6 @@ rc_service_daemon_set(const char *service, const char *exec,
     const char *const *argv,
     const char *pidfile, bool started)
 {
-	char *dirpath = NULL;
 	char *file = NULL;
 	int nfiles = 0;
 	char oldfile[PATH_MAX] = { '\0' };
@@ -403,23 +402,22 @@ rc_service_daemon_set(const char *service, const char *exec,
 	RC_STRINGLIST *match, *renamelist;
 	int i = 0;
 	FILE *fp;
+	const char *base = basename_c(service);
 
 	if (!exec && !pidfile) {
 		errno = EINVAL;
 		return false;
 	}
 
-	xasprintf(&dirpath, "%s/daemons/%s", rc_svcdir(), basename_c(service));
-
 	/* Regardless, erase any existing daemon info */
-	if ((dp = opendir(dirpath))) {
+	if ((dp = do_opendirat(rc_dirfd(RC_DIR_DAEMONS), base))) {
 		match = _match_list(exec, argv, pidfile);
 		renamelist = rc_stringlist_new();
 		while ((d = readdir(dp))) {
 			if (d->d_name[0] == '.')
 				continue;
 
-			xasprintf(&file, "%s/%s", dirpath, d->d_name);
+			xasprintf(&file, "%s/daemons/%s/%s", rc_svcdir(), base, d->d_name);
 			if (rc_stringlist_find(renamelist, file)) {
 				free(file);
 				continue;
@@ -428,7 +426,7 @@ rc_service_daemon_set(const char *service, const char *exec,
 			nfiles++;
 
 			if (!*oldfile) {
-				if (_match_daemon(dirpath, d->d_name, match)) {
+				if (_match_daemon(base, d->d_name, match)) {
 					unlink(file);
 					strlcpy(oldfile, file, sizeof(oldfile));
 					nfiles--;
@@ -448,30 +446,29 @@ rc_service_daemon_set(const char *service, const char *exec,
 	}
 
 	/* Now store our daemon info */
-	if (started) {
-		if (mkdir(dirpath, 0755) == 0 || errno == EEXIST) {
-			xasprintf(&file, "%s/%03d", dirpath, nfiles + 1);
-			if ((fp = fopen(file, "w"))) {
-				fprintf(fp, "exec=");
-				if (exec)
-					fprintf(fp, "%s", exec);
-				while (argv && argv[i]) {
-					fprintf(fp, "\nargv_%d=%s", i, argv[i]);
-					i++;
-				}
-				fprintf(fp, "\npidfile=");
-				if (pidfile)
-					fprintf(fp, "%s", pidfile);
-				fprintf(fp, "\n");
-				fclose(fp);
-				retval = true;
-			}
-			free(file);
-		}
-	} else
-		retval = true;
+	if (!started)
+		return true;
 
-	free(dirpath);
+	if (mkdirat(rc_dirfd(RC_DIR_DAEMONS), base, 0755) == 0 || errno == EEXIST) {
+		xasprintf(&file, "%s/daemons/%s/%03d", rc_svcdir(), base, nfiles + 1);
+		if ((fp = fopen(file, "w"))) {
+			fprintf(fp, "exec=");
+			if (exec)
+				fprintf(fp, "%s", exec);
+			while (argv && argv[i]) {
+				fprintf(fp, "\nargv_%d=%s", i, argv[i]);
+				i++;
+			}
+			fprintf(fp, "\npidfile=");
+			if (pidfile)
+				fprintf(fp, "%s", pidfile);
+			fprintf(fp, "\n");
+			fclose(fp);
+			retval = true;
+		}
+		free(file);
+	}
+
 	return retval;
 }
 
@@ -479,7 +476,7 @@ bool
 rc_service_started_daemon(const char *service,
     const char *exec, const char *const *argv, int indx)
 {
-	char *dirpath = NULL;
+	const char *base = basename_c(service);
 	char *file = NULL;
 	RC_STRINGLIST *match;
 	bool retval = false;
@@ -489,28 +486,23 @@ rc_service_started_daemon(const char *service,
 	if (!service || !exec)
 		return false;
 
-	xasprintf(&dirpath, "%s/daemons/%s", rc_svcdir(), basename_c(service));
 	match = _match_list(exec, argv, NULL);
 
 	if (indx > 0) {
 		xasprintf(&file, "%03d", indx);
-		retval = _match_daemon(dirpath, file, match);
+		retval = _match_daemon(base, file, match);
 		free(file);
-	} else {
-		if ((dp = opendir(dirpath))) {
-			while ((d = readdir(dp))) {
-				if (d->d_name[0] == '.')
-					continue;
-				retval = _match_daemon(dirpath, d->d_name, match);
-				if (retval)
-					break;
-			}
-			closedir(dp);
+	} else if ((dp = do_opendirat(rc_dirfd(RC_DIR_DAEMONS), base))) {
+		while ((d = readdir(dp))) {
+			if (d->d_name[0] == '.')
+				continue;
+			if ((retval = _match_daemon(base, d->d_name, match)))
+				break;
 		}
+		closedir(dp);
 	}
 
 	rc_stringlist_free(match);
-	free(dirpath);
 	return retval;
 }
 
