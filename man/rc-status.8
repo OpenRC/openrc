@@ -18,6 +18,7 @@
 .Nm
 .Op Fl C
 .Op Fl f Ar ini
+.Op Fl i Ar state
 .Op Ar runlevel
 .Nm
 .Op Fl C
@@ -48,6 +49,21 @@ List all services that have crashed (in any runlevel) in plain text format.
 .It Fl f , -format
 Select a format for the output. Currently, the only one that can be
 specified is ini, which outputs in *.ini format.
+.It Fl i , -in-state
+Show services in given state. Can be combined, e.g
+.Ar -i started -i crashed
+will select any services which are either in started or crashed state.
+Available states are:
+.Dq stopped ,
+.Dq started ,
+.Dq stopping ,
+.Dq starting ,
+.Dq inactive ,
+.Dq hotplugged ,
+.Dq failed ,
+.Dq scheduled
+and
+.Dq crashed .
 .It Fl l , -list
 List all defined runlevels.
 .It Fl m , -manual
