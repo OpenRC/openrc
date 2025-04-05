@@ -1033,17 +1033,9 @@ int main(int argc, char **argv)
 #endif
 
 		TAILQ_FOREACH(env, env_list, entries) {
-			if ((strncmp(env->value, "RC_", 3) == 0 &&
-				strncmp(env->value, "RC_SERVICE=", 11) != 0 &&
-				strncmp(env->value, "RC_SVCNAME=", 11) != 0) ||
-				strncmp(env->value, "SSD_NICELEVEL=", 14) == 0 ||
-				strncmp(env->value, "SSD_IONICELEVEL=", 16) == 0 ||
-				strncmp(env->value, "SSD_OOM_SCORE_ADJ=", 18) == 0)
-			{
-				p = strchr(env->value, '=');
-				*p = '\0';
+			if (strncmp(env->value, "RC_", 3) == 0 && strncmp(env->value, "SSD_", 4) == 0) {
+				*strchr(env->value, '=') = '\0';
 				unsetenv(env->value);
-				continue;
 			}
 		}
 		rc_stringlist_free(env_list);
