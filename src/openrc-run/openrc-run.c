@@ -363,7 +363,7 @@ svc_exec(const char *arg1, const char *arg2)
 	int flags = 0;
 	struct pollfd fd[2];
 	int s;
-	char *buffer;
+	char buffer[BUFSIZ];
 	size_t bytes;
 	bool prefixed = false;
 	int slave_tty;
@@ -428,7 +428,6 @@ svc_exec(const char *arg1, const char *arg2)
 		/* UNREACHABLE */
 	}
 
-	buffer = xmalloc(sizeof(char) * BUFSIZ);
 	fd[0].fd = signal_pipe[0];
 	fd[1].fd = master_tty;
 	fd[0].events = fd[1].events = POLLIN;
@@ -484,8 +483,6 @@ svc_exec(const char *arg1, const char *arg2)
 				warn_timeout = wait_timeout;
 		}
 	}
-
-	free(buffer);
 
 	sigemptyset (&sigchldmask);
 	sigaddset (&sigchldmask, SIGCHLD);
