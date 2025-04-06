@@ -430,13 +430,9 @@ svc_exec(const char *arg1, const char *arg2)
 
 	buffer = xmalloc(sizeof(char) * BUFSIZ);
 	fd[0].fd = signal_pipe[0];
+	fd[1].fd = master_tty;
 	fd[0].events = fd[1].events = POLLIN;
 	fd[0].revents = fd[1].revents = 0;
-	if (master_tty >= 0) {
-		fd[1].fd = master_tty;
-		fd[1].events = POLLIN;
-		fd[1].revents = 0;
-	}
 
 	for (;;) {
 		int timeout;
