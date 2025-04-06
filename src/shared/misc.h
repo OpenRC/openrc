@@ -72,8 +72,8 @@ static const rc_service_state_name_t rc_service_state_names[] = {
  */
 int is_writable(const char *);
 
-#define service_start(service) exec_service(service, "start");
-#define service_stop(service)  exec_service(service, "stop");
+#define service_start(service) exec_service(service, "start")
+#define service_stop(service)  exec_service(service, "stop")
 
 int parse_mode(mode_t *, char *);
 
