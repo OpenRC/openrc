@@ -696,24 +696,19 @@ svc_start_deps(void)
 	use_services = rc_deptree_depends(deptree, deptypes_nwu,
 	    applet_list, runlevel, depoptions);
 
-	if (!rc_runlevel_starting()) {
-		TAILQ_FOREACH(svc, use_services, entries) {
-			state = rc_service_state(svc->value);
-			/* Don't stop failed services again.
-			 * If you remove this check, ensure that the
-			 * exclusive file isn't created. */
-			if (state & RC_SERVICE_FAILED &&
-			    rc_runlevel_starting())
+	TAILQ_FOREACH(svc, use_services, entries) {
+		state = rc_service_state(svc->value);
+		/* Don't stop failed services again. If you remove this check, ensure that the exclusive file isn't created. */
+		if (state & RC_SERVICE_FAILED && rc_runlevel_starting())
+			continue;
+		if (state & RC_SERVICE_STOPPED) {
+			if (dry_run) {
+				printf(" %s", svc->value);
 				continue;
-			if (state & RC_SERVICE_STOPPED) {
-				if (dry_run) {
-					printf(" %s", svc->value);
-					continue;
-				}
-				pid = service_start(svc->value);
-				if (!rc_conf_yesno("rc_parallel"))
-					rc_waitpid(pid);
 			}
+			pid = service_start(svc->value);
+			if (!rc_conf_yesno("rc_parallel"))
+				rc_waitpid(pid);
 		}
 	}
 

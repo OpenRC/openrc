@@ -769,7 +769,6 @@ int main(int argc, char **argv)
 	const char *bootlevel = NULL;
 	char *newlevel = NULL;
 	const char *systype = NULL;
-	RC_STRINGLIST *deporder = NULL;
 	RC_STRINGLIST *tmplist;
 	RC_STRING *service;
 	bool going_down = false;
@@ -1130,20 +1129,9 @@ int main(int argc, char **argv)
 		RC_STRING *rlevel;
 		TAILQ_FOREACH_REVERSE(rlevel, runlevel_chain, rc_stringlist, entries)
 		{
-			/* Get a list of all the services in that runlevel */
 			RC_STRINGLIST *run_services = rc_services_in_runlevel(rlevel->value);
-
-			/* Start those services. */
-			rc_stringlist_sort(&run_services);
-			deporder = rc_deptree_depends(main_deptree, main_types_nwua, run_services, rlevel->value, depoptions | RC_DEP_START);
-			rc_stringlist_free(run_services);
-			run_services = deporder;
 			do_start_services(run_services, parallel);
-
-			/* Wait for our services to finish */
 			wait_for_services();
-
-			/* Free the list of services, we're done with it. */
 			rc_stringlist_free(run_services);
 		}
 		rc_stringlist_free(runlevel_chain);
