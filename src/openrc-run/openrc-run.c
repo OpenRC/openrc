@@ -35,6 +35,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #if defined(__linux__) || (defined(__FreeBSD_kernel__) && defined(__GLIBC__)) \
 	|| defined(__GNU__)
@@ -50,16 +51,14 @@
 #include "rc.h"
 #include "rc_exec.h"
 #include "misc.h"
+#include "timeutils.h"
 #include "plugin.h"
 #include "selinux.h"
 #include "_usage.h"
 #include "helpers.h"
 
-#define WAIT_INTERVAL	20000000	/* usecs to poll the lock file */
 #define WAIT_TIMEOUT	60		/* seconds until we timeout */
 #define WARN_TIMEOUT	10		/* warn about this every N seconds */
-
-static const struct timespec interval = { .tv_nsec = WAIT_INTERVAL };
 
 const char *applet = NULL;
 const char *extraopts = "stop | start | restart | status | describe | zap";
@@ -364,8 +363,7 @@ svc_exec(const char *arg1, const char *arg2)
 	int slave_tty;
 	sigset_t sigchldmask;
 	sigset_t oldmask;
-	struct timespec timeout = { .tv_sec = WAIT_TIMEOUT };
-	struct timespec warn = { .tv_sec = WARN_TIMEOUT };
+	int64_t wait_timeout, warn_timeout, now;
 	RC_STRINGLIST *keywords;
 	bool forever;
 
@@ -401,6 +399,9 @@ svc_exec(const char *arg1, const char *arg2)
 			fcntl(slave_tty, F_SETFD, flags | FD_CLOEXEC);
 	}
 
+	now = tm_now();
+	wait_timeout = now + (WAIT_TIMEOUT * 1000);
+	warn_timeout = now + (WARN_TIMEOUT * 1000);
 	service_pid = fork();
 	if (service_pid == -1)
 		eerrorx("%s: fork: %s", applet, strerror(errno));
@@ -432,45 +433,53 @@ svc_exec(const char *arg1, const char *arg2)
 	}
 
 	for (;;) {
-		if ((s = poll(fd, master_tty >= 0 ? 2 : 1, WAIT_INTERVAL / 1000000)) == -1) {
+		int timeout;
+		if (forever) {
+			timeout = -1;
+		} else if ((timeout = warn_timeout - tm_now()) < 0) {
+			timeout = 0;
+		}
+
+		if (poll(fd, master_tty >= 0 ? 2 : 1, timeout) == -1) {
 			if (errno != EINTR) {
 				eerror("%s: poll: %s", applet, strerror(errno));
 				ret = -1;
 				break;
 			}
+			continue;
 		}
 
-		if (s == 0 && !forever) {
-			timespecsub(&timeout, &interval, &timeout);
-			if (timeout.tv_sec <= 0) {
-				kill(service_pid, SIGKILL);
+		if (fd[1].revents & (POLLIN | POLLHUP)) {
+			bytes = read(master_tty, buffer, BUFSIZ);
+			write_prefix(buffer, bytes, &prefixed);
+		}
+
+		/* signal_pipe receives service_pid's exit status */
+		if (fd[0].revents & (POLLIN | POLLHUP)) {
+			if ((s = read(signal_pipe[0], &ret, sizeof(ret))) != sizeof(ret)) {
+				eerror("%s: receive failed: %s", applet, s < 0 ? strerror(errno) : "short read");
 				ret = -1;
 				break;
 			}
-			timespecsub(&warn, &interval, &warn);
-			if (warn.tv_sec <= 0) {
-				ewarn("%s: waiting for service (%d seconds)", applet, (int)timeout.tv_sec);
-				warn = (struct timespec) { .tv_sec = WARN_TIMEOUT };
-			}
-		} else if (s > 0) {
-			if (fd[1].revents & (POLLIN | POLLHUP)) {
-				bytes = read(master_tty, buffer, BUFSIZ);
-				write_prefix(buffer, bytes, &prefixed);
-			}
+			ret = WEXITSTATUS(ret);
+			if (ret != 0 && errno == ECHILD)
+				/* killall5 -9 could cause this */
+				ret = 0;
+			break;
+		}
 
-			/* signal_pipe receives service_pid's exit status */
-			if (fd[0].revents & (POLLIN | POLLHUP)) {
-				if ((s = read(signal_pipe[0], &ret, sizeof(ret))) != sizeof(ret)) {
-					eerror("%s: receive failed: %s", applet, s < 0 ? strerror(errno) : "short read");
-					ret = -1;
-					break;
-				}
-				ret = WEXITSTATUS(ret);
-				if (ret != 0 && errno == ECHILD)
-					/* killall5 -9 could cause this */
-					ret = 0;
-				break;
-			}
+		if (forever)
+			continue;
+
+		if ((now = tm_now()) >= wait_timeout) {
+			kill(service_pid, SIGKILL);
+			ret = -1;
+			break;
+		} else if (now >= warn_timeout) {
+			/* the timer might get off by a few ms, add 500ms so we get round numbers matching svc_wait. */
+			ewarn("%s: waiting for service (%"PRId64" seconds)", applet, (wait_timeout - now + 500) / 1000);
+			if ((warn_timeout += (WARN_TIMEOUT * 1000)) > wait_timeout)
+				warn_timeout = wait_timeout;
 		}
 	}
 
