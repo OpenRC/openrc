@@ -367,7 +367,7 @@ exec_service(const char *service, const char *arg)
 		fprintf(stderr, "fork: %s\n",strerror (errno));
 		svc_unlock(basename_c(service), fd);
 	} else
-		fcntl(fd, F_SETFD, fcntl(fd, F_GETFD, 0) | FD_CLOEXEC);
+		close(fd);
 
 	sigprocmask(SIG_SETMASK, &old, NULL);
 	free(file);
