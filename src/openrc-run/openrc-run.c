@@ -94,7 +94,7 @@ static RC_STRINGLIST *want_services;
 static RC_HOOK hook_out;
 static int exclusive_fd = -1, master_tty = -1;
 static bool in_background, deps, dry_run;
-static volatile bool sighup, skip_mark;
+static volatile bool sighup, skip_mark, timedout;
 static pid_t service_pid;
 static int signal_pipe[2] = { -1, -1 };
 
@@ -156,6 +156,10 @@ handle_signal(int sig)
 		eerror("%s: caught %s, aborting", applet, signame);
 		exit(EXIT_FAILURE);
 		/* NOTREACHED */
+
+	case SIGALRM:
+		timedout = true;
+		break;
 
 	default:
 		eerror("%s: caught unknown signal %d", applet, sig);
@@ -500,55 +504,44 @@ svc_wait(const char *svc)
 	int fd;
 	bool forever = false;
 	RC_STRINGLIST *keywords;
-	struct timespec timeout, warn;
 	const char *base = basename_c(svc);
+	int timeout = WAIT_TIMEOUT;
+	bool retval = false;
 
 	/* Some services don't have a timeout, like fsck */
 	keywords = rc_deptree_depend(deptree, svc, "keyword");
-	if (rc_stringlist_find(keywords, "-timeout") ||
-	    rc_stringlist_find(keywords, "notimeout"))
+	if (rc_stringlist_find(keywords, "-timeout") || rc_stringlist_find(keywords, "notimeout"))
 		forever = true;
 	rc_stringlist_free(keywords);
 
-	timeout.tv_sec = WAIT_TIMEOUT;
-	timeout.tv_nsec = 0;
-	warn.tv_sec = WARN_TIMEOUT;
-	warn.tv_nsec = 0;
+	if ((fd = openat(rc_dirfd(RC_DIR_EXCLUSIVE), base, O_RDONLY | O_NONBLOCK)) == -1)
+		return errno == ENOENT;
+
+	timedout = false;
 	for (;;) {
-		fd = openat(rc_dirfd(RC_DIR_EXCLUSIVE), base, O_RDONLY | O_NONBLOCK);
-		if (fd != -1) {
-			if (flock(fd, LOCK_SH | LOCK_NB) == 0) {
-				close(fd);
-				return true;
-			}
-			close(fd);
+		if (!forever)
+			alarm(WARN_TIMEOUT);
+
+		if (flock(fd, LOCK_SH) == 0) {
+			retval = true;
+			break;
 		}
-		if (errno == ENOENT) {
-			return true;
-		}
-		if (errno != EWOULDBLOCK) {
-			eerror("%s: open '%s/exclusive/%s': %s", applet, rc_svcdir(), base, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-		if (nanosleep(&interval, NULL) == -1) {
-			if (errno != EINTR)
-				goto finish;
-		}
-		if (!forever) {
-			timespecsub(&timeout, &interval, &timeout);
-			if (timeout.tv_sec <= 0)
-				goto finish;
-			timespecsub(&warn, &interval, &warn);
-			if (warn.tv_sec <= 0) {
-				ewarn("%s: waiting for %s (%d seconds)",
-				    applet, svc, (int)timeout.tv_sec);
-				warn.tv_sec = WARN_TIMEOUT;
-				warn.tv_nsec = 0;
-			}
+
+		if (errno != EINTR)
+			break;
+
+		if (!forever && timedout) {
+			timedout = false;
+			if ((timeout -= WARN_TIMEOUT) > 0)
+				ewarn("%s: waiting for %s (%d seconds)", applet, base, timeout);
+			else
+				break;
 		}
 	}
-finish:
-	return false;
+
+	alarm(0);
+	close(fd);
+	return retval;
 }
 
 static void
@@ -1237,6 +1230,7 @@ int main(int argc, char **argv)
 
 	/* Setup a signal handler */
 	signal_setup(SIGHUP, handle_signal);
+	signal_setup(SIGALRM, handle_signal);
 	signal_setup(SIGUSR1, handle_signal);
 	signal_setup(SIGINT, handle_signal);
 	signal_setup(SIGQUIT, handle_signal);
