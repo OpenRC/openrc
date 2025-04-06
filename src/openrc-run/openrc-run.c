@@ -93,7 +93,8 @@ static RC_STRINGLIST *use_services;
 static RC_STRINGLIST *want_services;
 static RC_HOOK hook_out;
 static int exclusive_fd = -1, master_tty = -1;
-static bool sighup, skip_mark, in_background, deps, dry_run;
+static bool in_background, deps, dry_run;
+static volatile bool sighup, skip_mark;
 static pid_t service_pid;
 static int signal_pipe[2] = { -1, -1 };
 
