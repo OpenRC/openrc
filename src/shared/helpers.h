@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #define ERRX do { fprintf (stderr, "out of memory\n"); exit (1); } while (0)
 
@@ -107,6 +108,13 @@ RC_UNUSED static void xclose_memstream(FILE *f)
 }
 
 #undef ERRX
+
+RC_UNUSED static int64_t clock_ms(void)
+{
+	struct timespec t;
+	clock_gettime(CLOCK_MONOTONIC, &t);
+	return (t.tv_sec * 1000) + (t.tv_nsec / 1000000);
+}
 
 /*
  * basename_c never modifies the argument. As such, if there is a trailing
