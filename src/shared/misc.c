@@ -557,14 +557,14 @@ pid_t get_pid(const char *applet,const char *pidfile)
 	return pid;
 }
 
-struct ready ready_parse(const char *applet, const char *ready_string)
+struct notify notify_parse(const char *applet, const char *notify_string)
 {
-	struct ready ready = {0};
-	if (sscanf(ready_string, "fd:%d", &ready.fd) == 1) {
-		ready.type = READY_FD;
-		if (pipe(ready.pipe) == -1)
+	struct notify notify = {0};
+	if (sscanf(notify_string, "fd:%d", &notify.fd) == 1) {
+		notify.type = NOTIFY_FD;
+		if (pipe(notify.pipe) == -1)
 			eerrorx("%s: pipe: %s", applet, strerror(errno));
-	} else if (strcmp(ready_string, "socket") == 0) {
+	} else if (strcmp(notify_string, "socket") == 0) {
 		union {
 			struct sockaddr header;
 			struct sockaddr_un unix;
@@ -575,34 +575,34 @@ struct ready ready_parse(const char *applet, const char *ready_string)
 			eerrorx("%s: socket path '%s/supervise-%s.sock' too long.", applet, rc_svcdir(), applet);
 		setenv("NOTIFY_SOCKET", addr.unix.sun_path, true);
 
-		ready.type = READY_SOCKET;
-		if ((ready.fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
+		notify.type = NOTIFY_SOCKET;
+		if ((notify.fd = socket(AF_UNIX, SOCK_DGRAM, 0)) == -1)
 			eerrorx("%s: socket: %s", applet, strerror(errno));
-		if (bind(ready.fd, &addr.header, sizeof(addr.unix)) == -1)
+		if (bind(notify.fd, &addr.header, sizeof(addr.unix)) == -1)
 			eerrorx("%s: bind: %s", applet, strerror(errno));
 	} else {
 		eerrorx("%s: invalid ready '%s'.", applet, optarg);
 	}
 
-	return ready;
+	return notify;
 }
 
-bool ready_wait(const char *applet, struct ready ready)
+bool notify_wait(const char *applet, struct notify notify)
 {
-	switch (ready.type) {
-	case READY_NONE:
+	switch (notify.type) {
+	case NOTIFY_NONE:
 		return true;
-	case READY_FD:
-		close(ready.pipe[1]);
-		ready.fd = ready.pipe[0];
+	case NOTIFY_FD:
+		close(notify.pipe[1]);
+		notify.fd = notify.pipe[0];
 		break;
-	case READY_SOCKET:
+	case NOTIFY_SOCKET:
 		break;
 	}
 
 	for (;;) {
 		char buf[BUFSIZ];
-		ssize_t bytes = read(ready.fd, buf, BUFSIZ);
+		ssize_t bytes = read(notify.fd, buf, BUFSIZ);
 		if (bytes == -1) {
 			if (errno != EINTR) {
 				eerror("%s: read failed '%s'\n", applet, strerror(errno));
@@ -611,14 +611,14 @@ bool ready_wait(const char *applet, struct ready ready)
 			continue;
 		}
 
-		switch (ready.type) {
-		case READY_NONE:
+		switch (notify.type) {
+		case NOTIFY_NONE:
 			break;
-		case READY_FD:
+		case NOTIFY_FD:
 			if (memchr(buf, '\n', bytes))
 				return true;
 			break;
-		case READY_SOCKET:
+		case NOTIFY_SOCKET:
 			buf[bytes] = '\0';
 			if (strstr(buf, "READY=1")) {
 				char *path;

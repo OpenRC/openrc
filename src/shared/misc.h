@@ -87,11 +87,11 @@ pid_t get_pid(const char *applet, const char *pidfile);
 
 void cloexec_fds_from(int);
 
-struct ready {
+struct notify {
 	enum {
-		READY_NONE = 0,
-		READY_FD,
-		READY_SOCKET
+		NOTIFY_NONE = 0,
+		NOTIFY_FD,
+		NOTIFY_SOCKET
 	} type;
 
 	char *path;
@@ -99,7 +99,7 @@ struct ready {
 	int fd;
 };
 
-struct ready ready_parse(const char *applet, const char *ready_string);
-bool ready_wait(const char *applet, struct ready ready);
+struct notify notify_parse(const char *applet, const char *ready_string);
+bool notify_wait(const char *applet, struct notify ready);
 
 #endif
