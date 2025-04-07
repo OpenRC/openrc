@@ -20,6 +20,11 @@ supervise_start()
 		return 1
 	fi
 
+	if [ -n "$ready" ]; then
+		ewarn "Use 'notify=$ready' instead of 'ready=$ready'"
+		notify="$ready"
+	fi
+
 	ebegin "Starting ${name:-$RC_SVCNAME}"
 	# The eval call is necessary for cases like:
 	# command_args="this \"is a\" test"
@@ -44,7 +49,7 @@ supervise_start()
 		${no_new_privs:+--no-new-privs} \
 		${command_user+--user} $command_user \
 		${umask+--umask} $umask \
-		${ready+--ready} $ready \
+		${notify+--notify} $notify \
 		${supervise_daemon_args-${start_stop_daemon_args}} \
 		$command \
 		-- $command_args $command_args_foreground

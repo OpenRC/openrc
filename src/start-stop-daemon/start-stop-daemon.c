@@ -89,7 +89,7 @@ enum {
   LONGOPT_SCHEDULER,
   LONGOPT_SCHEDULER_PRIO,
   LONGOPT_SECBITS,
-  LONGOPT_READY,
+  LONGOPT_NOTIFY,
 };
 
 const char *applet = NULL;
@@ -132,7 +132,7 @@ const struct option longopts[] = {
 	{ "progress",     0, NULL, 'P'},
 	{ "scheduler",    1, NULL, LONGOPT_SCHEDULER},
 	{ "scheduler-priority",    1, NULL, LONGOPT_SCHEDULER_PRIO},
-	{ "ready",        1, NULL, LONGOPT_READY},
+	{ "notify",        1, NULL, LONGOPT_NOTIFY},
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -358,7 +358,7 @@ int main(int argc, char **argv)
 	int pipefd[2];
 	char readbuf[1];
 	ssize_t ss;
-	struct ready ready = {0};
+	struct notify notify = {0};
 	int ret = EXIT_SUCCESS;
 
 	applet = basename_c(argv[0]);
@@ -632,8 +632,8 @@ int main(int argc, char **argv)
 			sscanf(optarg, "%d", &sched_prio);
 			break;
 
-		case LONGOPT_READY:
-			ready = ready_parse(svcname ? svcname : applet, optarg);
+		case LONGOPT_NOTIFY:
+			notify = notify_parse(svcname ? svcname : applet, optarg);
 			break;
 
 		case_RC_COMMON_GETOPT
@@ -1117,9 +1117,9 @@ int main(int argc, char **argv)
 
 		cloexec_fds_from(3);
 
-		if (ready.type == READY_FD) {
-			if (close(ready.pipe[0]) == -1 || dup2(ready.pipe[1], ready.fd) == -1)
-				eerrorx("Failed to initialize ready fd.");
+		if (notify.type == NOTIFY_FD) {
+			if (close(notify.pipe[0]) == -1 || dup2(notify.pipe[1], notify.fd) == -1)
+				eerrorx("Failed to initialize notify fd.");
 		}
 
 		if (scheduler != NULL) {
@@ -1206,8 +1206,8 @@ int main(int argc, char **argv)
 			start_wait = 0;
 	}
 
-	if (ready.type != READY_NONE) {
-		if (!ready_wait(applet, ready))
+	if (notify.type != NOTIFY_NONE) {
+		if (!notify_wait(applet, notify))
 			ret = EXIT_FAILURE;
 	} else if (start_wait > 0) {
 		struct timespec ts;
