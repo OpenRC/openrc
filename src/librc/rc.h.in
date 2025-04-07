@@ -355,6 +355,11 @@ bool rc_service_value_set(const char *, const char *, const char *);
  * @return true on success, false on IO error. */
 bool rc_export_variable(const char *, const char *, const char *);
 
+/*! Imports a variable from the enviroment of a service
+ * @param service name, if null imports the global environment
+ * @return true on success, false on IO error. */
+bool rc_import_variables(const char *);
+
 /*! List the services in a runlevel
  * @param runlevel to list
  * @return NULL terminated list of services */
