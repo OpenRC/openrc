@@ -274,4 +274,14 @@ RC_UNUSED static bool env_unsetenv(const char *var, size_t size, const char *env
 	return false;
 }
 
+RC_UNUSED static char *env_findvar(const char *name, char **envp)
+{
+	size_t len = strlen(name);
+
+	for (char **var = envp; *var; var++)
+		if (strncmp(name, *var, len) == 0 && (*var)[len] == '=')
+			return *var;
+	return NULL;
+}
+
 #endif
