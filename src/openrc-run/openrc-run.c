@@ -99,6 +99,7 @@ static bool in_background, deps, dry_run;
 static volatile bool sighup, skip_mark, timedout;
 static pid_t service_pid;
 static int signal_pipe[2] = { -1, -1 };
+static struct rc_environ env;
 
 static RC_STRINGLIST *deptypes_b;	/* broken deps */
 static RC_STRINGLIST *deptypes_n;	/* needed deps */
@@ -247,6 +248,7 @@ cleanup(void)
 
 	rc_plugin_unload();
 
+	rc_environ_free(&env);
 	rc_stringlist_free(deptypes_b);
 	rc_stringlist_free(deptypes_n);
 	rc_stringlist_free(deptypes_nw);
@@ -345,6 +347,7 @@ svc_exec(const char *command)
 	sigset_t sigchldmask;
 	sigset_t oldmask;
 	char *openrc_sh;
+	const char **envp = NULL;
 	const char *argv[] = {
 		RC_LIBEXECDIR "/sh/openrc-run.sh",
 		service,
@@ -388,11 +391,15 @@ svc_exec(const char *command)
 		argv[0] = openrc_sh;
 	}
 
+	if (env.count)
+		rc_environ_export(&env, (const char *const *) environ, &envp);
+
 	einfov("Executing: %s %s %s", openrc_sh, service, command);
-	if ((errno = posix_spawn(&service_pid, argv[0], &tty, NULL, UNCONST(argv), environ)))
+	if ((errno = posix_spawn(&service_pid, argv[0], &tty, NULL, UNCONST(argv), envp ? UNCONST(envp) : environ)))
 		eerrorx("%s: exec '%s': %s", service, argv[0], strerror(errno));
 
 	posix_spawn_file_actions_destroy(&tty);
+	free(envp);
 
 	fd[0].fd = signal_pipe[0];
 	fd[1].fd = master_tty;
@@ -653,8 +660,10 @@ svc_start_deps(void)
 	tmplist = rc_stringlist_new();
 	TAILQ_FOREACH(svc, services, entries) {
 		state = rc_service_state(svc->value);
-		if (state & RC_SERVICE_STARTED)
+		if (state & RC_SERVICE_STARTED) {
+			rc_service_getenv(svc->value, &env);
 			continue;
+		}
 
 		/* Don't wait for services which went inactive but are
 		 * now in starting state which we are after */
@@ -669,8 +678,10 @@ svc_start_deps(void)
 		if (!svc_wait(svc->value))
 			eerror("%s: timed out waiting for %s", applet, svc->value);
 		state = rc_service_state(svc->value);
-		if (state & RC_SERVICE_STARTED)
+		if (state & RC_SERVICE_STARTED) {
+			rc_service_getenv(svc->value, &env);
 			continue;
+		}
 		if (rc_stringlist_find(need_services, svc->value)) {
 			if (state & (RC_SERVICE_INACTIVE | RC_SERVICE_WASINACTIVE))
 				rc_stringlist_add(tmplist, svc->value);
@@ -899,8 +910,9 @@ svc_stop_deps(RC_SERVICE state)
 		return;
 
 	TAILQ_FOREACH(svc, tmplist, entries) {
-		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
 			continue;
+		}
 		svc_wait(svc->value);
 		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
 			continue;
@@ -929,9 +941,25 @@ svc_stop_deps(RC_SERVICE state)
 }
 
 static void
+load_dep_env(void)
+{
+	RC_STRINGLIST *depsvcs;
+	RC_STRING *svc;
+
+	depsvcs = rc_deptree_depends(deptree, deptypes_nwu, applet_list, runlevel, 0);
+
+	TAILQ_FOREACH(svc, depsvcs, entries)
+		rc_service_getenv(svc->value, &env);
+
+	rc_stringlist_free(services);
+}
+
+static void
 svc_stop_real(void)
 {
 	bool stopped;
+
+	load_dep_env();
 
 	/* If we're stopping localmount, set LC_ALL=C so that
 	 * bash doesn't load anything blocking the unmounting of /usr */
@@ -962,9 +990,8 @@ svc_stop_real(void)
 static int
 svc_stop(void)
 {
-	RC_SERVICE state;
+	RC_SERVICE state = 0;
 
-	state = 0;
 	if (dry_run)
 		einfon("stop:");
 	else
