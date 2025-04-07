@@ -689,17 +689,6 @@ rc_deptree_update_needed(time_t *newest, char *file)
 	RC_STRING *s;
 	struct stat buf;
 	time_t mtime;
-	char *path;
-	const char *service_dir = rc_svcdir();
-
-	/* Create base directories if needed */
-	if (mkdir(service_dir, 0755) != 0 && errno != EEXIST)
-		fprintf(stderr, "mkdir '%s': %s\n", service_dir, strerror(errno));
-
-	for (size_t i = 1; i < RC_DIR_SYS_MAX; i++) {
-		if (mkdirat(rc_dirfd(RC_DIR_SVCDIR), dirnames[i], 0755) != 0 && errno != EEXIST)
-			fprintf(stderr, "mkdir `%s': %s\n", dirnames[i], strerror(errno));
-	}
 
 	/* Quick test to see if anything we use has changed and we have
 	 * data in our deptree. */
