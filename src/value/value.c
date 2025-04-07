@@ -25,9 +25,9 @@ const char *applet = NULL;
 
 int main(int argc, char **argv)
 {
-	bool ok = false;
 	char *service = getenv("RC_SVCNAME");
-	char *option;
+	enum { GET, SET, EXPORT } action;
+	char *option = NULL;
 
 	applet = basename_c(argv[0]);
 	if (service == NULL)
@@ -36,23 +36,34 @@ int main(int argc, char **argv)
 	if (rc_yesno(getenv("RC_USER_SERVICES")))
 		rc_set_user();
 
-	if (argc < 2 || !argv[1] || *argv[1] == '\0')
-		eerrorx("%s: no option specified", applet);
-
-	if (strcmp(applet, "service_get_value") == 0 ||
-	    strcmp(applet, "get_options") == 0)
-	{
-		option = rc_service_value_get(service, argv[1]);
-		if (option) {
-			printf("%s", option);
-			free(option);
-			ok = true;
-		}
-	} else if (strcmp(applet, "service_set_value") == 0 ||
-	    strcmp(applet, "save_options") == 0)
-		ok = rc_service_value_set(service, argv[1], argv[2]);
+	if (strcmp(applet, "service_get_value") == 0 || strcmp(applet, "get_options") == 0)
+		action = GET;
+	else if (strcmp(applet, "service_set_value") == 0 || strcmp(applet, "save_options") == 0)
+		action = SET;
+	else if (strcmp(applet, "service_export") == 0)
+		action = EXPORT;
 	else
 		eerrorx("%s: unknown applet", applet);
 
-	return ok ? EXIT_SUCCESS : EXIT_FAILURE;
+	if (argc < 2 || !argv[1] || *argv[1] == '\0')
+		eerrorx("%s: no %s specified", applet, action == EXPORT ? "variable" : "option");
+
+	switch (action) {
+	case GET:
+		if (!(option = rc_service_value_get(service, argv[1])))
+			return EXIT_FAILURE;
+		printf("%s", option);
+		free(option);
+		return EXIT_SUCCESS;
+	case SET:
+		return rc_service_value_set(service, argv[1], argv[2]) ? EXIT_SUCCESS : EXIT_FAILURE;
+	case EXPORT:
+		for (int i; i < argc; i++) {
+			char *value = argv[i], *name = strsep(&value, "=");
+			if (!value && !(value = getenv(name)))
+				ewarn("%s not found.", name);
+			else
+				rc_service_setenv(service, name, value);
+		}
+	}
 }
