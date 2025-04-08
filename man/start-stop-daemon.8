@@ -117,10 +117,14 @@ Set the environment variable VAR to VALUE.
 Start the daemon as in the group.
 .It Fl k , -umask Ar mode
 Set the umask of the daemon.
-.It Fl -ready No fd: Ns Ar num
+.It Fl -notify No fd: Ns Ar num | No socket
 Open file descriptor
 .Ar num
 as a pipe, and waits until the daemon writes a newline to it before exiting.
+Or waits for
+.Ar READY=1
+in the datagram socket opened at
+.Ar $NOTIFY_SOCKET Ns .
 .It Fl m , -make-pidfile
 Saves the pid of the daemon in the file specified by the
 .Fl p , -pidfile
