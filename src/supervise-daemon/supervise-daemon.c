@@ -89,7 +89,7 @@ enum {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "A:a:D:d:e:g:H:I:Kk:m:N:p:R:r:s:Su:0:1:2:3" \
+const char getoptstring[] = "A:a:D:d:e:g:I:Kk:m:N:p:R:r:s:Su:0:1:2:3" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "healthcheck-timer",        1, NULL, 'a'},
@@ -984,11 +984,6 @@ int main(int argc, char **argv)
 				eerrorx("%s: group `%s' not found",
 				    applet, optarg);
 			gid = gr->gr_gid;
-			break;
-
-		case 'H':  /* --healthcheck-timer <minutes> */
-			if (sscanf(optarg, "%d", &healthchecktimer) != 1 || healthchecktimer < 1)
-				eerrorx("%s: invalid health check timer %s", applet, optarg);
 			break;
 
 		case 'k':
