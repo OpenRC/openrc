@@ -35,4 +35,6 @@ int64_t tm_sleep(int64_t, enum tm_sleep_flags);
  */
 int64_t parse_duration(const char *duration);
 
+#define TM_SEC(N)  ((N) * INT64_C(1000))
+
 #endif
