@@ -23,6 +23,7 @@
 #define ONE_MS           1000000
 
 #include <errno.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <getopt.h>
 #include <limits.h>
@@ -65,6 +66,7 @@ static struct pam_conv conv = { NULL, NULL};
 #include "rc_exec.h"
 #include "plugin.h"
 #include "schedules.h"
+#include "timeutils.h"
 #include "_usage.h"
 #include "helpers.h"
 
@@ -180,9 +182,9 @@ static int tty_fd = -1;
 #endif
 static pid_t child_pid;
 static int respawn_count = 0;
-static int respawn_delay = 0;
+static int64_t respawn_delay;
 static int respawn_max = 10;
-static int respawn_period = 0;
+static int64_t respawn_period;
 static char *fifopath = NULL;
 static int fifo_fd = 0;
 static char *pidfile = NULL;
@@ -624,9 +626,8 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 	sigset_t old_signals;
 	sigset_t signals;
 	struct sigaction sa;
-	struct timespec ts;
-	time_t respawn_now= 0;
-	time_t first_spawn= 0;
+	int64_t respawn_now = 0;
+	int64_t first_spawn = 0;
 
 	/* block all signals we do not handle */
 	sigfillset(&signals);
@@ -736,7 +737,7 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 			do_healthcheck = 0;
 			healthcheck_respawn = 0;
 			alarm(0);
-			respawn_now = time(NULL);
+			respawn_now = tm_now();
 			if (first_spawn == 0)
 				first_spawn = respawn_now;
 			if ((respawn_period > 0)
@@ -752,9 +753,7 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 				failing = 1;
 				continue;
 			}
-			ts.tv_sec = respawn_delay;
-			ts.tv_nsec = 0;
-			nanosleep(&ts, NULL);
+			tm_sleep(respawn_delay, TM_NO_EINTR);
 			if (exiting)
 				continue;
 			child_pid = fork();
@@ -824,6 +823,8 @@ int main(int argc, char **argv)
 	char **child_argv = NULL;
 	char *str = NULL;
 	char *cmdline = NULL;
+	const char *respawn_delay_str  = "0";
+	const char *respawn_period_str = "0";
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -924,9 +925,7 @@ int main(int argc, char **argv)
 			break;
 
 		case 'D':  /* --respawn-delay time */
-			n = sscanf(optarg, "%d", &respawn_delay);
-			if (n	!= 1 || respawn_delay < 1)
-				eerrorx("Invalid respawn-delay value '%s'", optarg);
+			respawn_delay_str = optarg;
 			break;
 
 		case 'I': /* --ionice */
@@ -957,9 +956,7 @@ int main(int argc, char **argv)
 			break;
 
 		case 'P':  /* --respawn-period time */
-			n = sscanf(optarg, "%d", &respawn_period);
-			if (n	!= 1 || respawn_period < 1)
-				eerrorx("Invalid respawn-period value '%s'", optarg);
+			respawn_period_str = optarg;
 			break;
 
 		case 's':  /* --signal */
@@ -1094,6 +1091,13 @@ int main(int argc, char **argv)
 	argv += optind;
 	exec = *argv;
 
+	respawn_delay = parse_duration(respawn_delay_str);
+	if (respawn_delay < 0)
+		eerrorx("Invalid respawn-delay value '%s'", respawn_delay_str);
+	respawn_period = parse_duration(respawn_period_str);
+	if (respawn_period < 0)
+		eerrorx("Invalid respawn-period value '%s'", respawn_period_str);
+
 	/* Expand ~ */
 	if (ch_dir && *ch_dir == '~')
 		ch_dir = expand_home(home, ch_dir);
@@ -1134,7 +1138,7 @@ int main(int argc, char **argv)
 			parse_schedule(applet, NULL, sig);
 
 		str = rc_service_value_get(svcname, "respawn_delay");
-		sscanf(str, "%d", &respawn_delay);
+		respawn_delay = parse_duration(str);
 		str = rc_service_value_get(svcname, "respawn_max");
 		sscanf(str, "%d", &respawn_max);
 		supervisor(exec, child_argv);
@@ -1183,8 +1187,8 @@ int main(int argc, char **argv)
 
 		if (respawn_period > 0 && respawn_delay * respawn_max > respawn_period)
 			ewarn("%s: Please increase the value of --respawn-period to more "
-				"than %d to avoid infinite respawning", applet,
-				respawn_delay * respawn_max);
+				"than %"PRId64" to avoid infinite respawning", applet,
+				(respawn_delay * respawn_max + 500)/1000);
 
 		if (retry) {
 			parse_schedule(applet, retry, sig);
@@ -1208,15 +1212,11 @@ int main(int argc, char **argv)
 		fclose(fp);
 
 		rc_service_value_set(svcname, "pidfile", pidfile);
+		rc_service_value_set(svcname, "respawn_delay", respawn_delay_str);
+		rc_service_value_set(svcname, "respawn_period", respawn_period_str);
 		varbuf = NULL;
-		xasprintf(&varbuf, "%i", respawn_delay);
-		rc_service_value_set(svcname, "respawn_delay", varbuf);
-		free(varbuf);
 		xasprintf(&varbuf, "%i", respawn_max);
 		rc_service_value_set(svcname, "respawn_max", varbuf);
-		free(varbuf);
-		xasprintf(&varbuf, "%i", respawn_period);
-		rc_service_value_set(svcname, "respawn_period", varbuf);
 		free(varbuf);
 		child_pid = fork();
 		if (child_pid == -1)
