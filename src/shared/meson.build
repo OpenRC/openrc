@@ -10,6 +10,10 @@ schedules_c = files([
   'schedules.c',
   ])
 
+timeutils_c = files([
+  'timeutils.c'
+  ])
+
 rc_exec_c = files([
   'rc_exec.c',
   ])
