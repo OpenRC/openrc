@@ -53,6 +53,15 @@
 	} while (/* CONSTCOND */ 0)
 #endif
 
+#ifndef timespecisset
+#define timespecisset(ts) ((ts)->tv_sec || (ts)->tv_nsec)
+#endif
+
+#ifndef timespeccmp
+#define timespeccmp(lhs, rhs, cmp) (((lhs)->tv_sec == (rhs)->tv_sec) ? \
+		((lhs)->tv_nsec cmp (rhs)->tv_nsec) : ((lhs)->tv_sec cmp (rhs)->tv_sec))
+#endif
+
 RC_UNUSED static void *xmalloc (size_t size)
 {
 	void *value = malloc(size);
