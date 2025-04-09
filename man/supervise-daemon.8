@@ -22,7 +22,7 @@ servicename
 .Fl A , -healthcheck-delay
 .Ar seconds
 .Fl D , -respawn-delay
-.Ar seconds
+.Ar duration
 .Fl d , -chdir
 .Ar path
 .Fl e , -env
@@ -43,7 +43,7 @@ servicename
 .Fl p , -pidfile
 .Ar supervisorpidfile
 .Fl P , -respawn-period
-.Ar seconds
+.Ar duration
 .Fl R , -retry
 .Ar arg
 .Fl r , -chroot
@@ -104,9 +104,11 @@ Run the healthcheck() command, possibly followed by the unhealthy()
 command every time this number of seconds passes.
 .It Fl A , -healthcheck-delay Ar seconds
 Wait this long before the first health check.
-.It Fl D , -respawn-delay Ar seconds
-Wait this number of seconds before restarting a daemon after it crashes.
+.It Fl D , -respawn-delay Ar duration
+Wait for the specified duration before restarting a daemon after it crashes.
 The default is 0.
+Duration is an integer optionally followed by a unit.
+Supported units are: ms, sec, min, hour (defaults to sec if none is provided).
 .It Fl d , -chdir Ar path
 chdir to this directory before starting the daemon.
 .It Fl e , -env Ar VAR=VALUE
@@ -144,9 +146,9 @@ file of the process that is being supervised.
 Modifies the scheduling priority of the daemon.
 .It Fl -oom-score-adj Ar adj
 Modifies the OOM score adjustment of the daemon.
-.It Fl P , -respawn-period Ar seconds
-Sets the length of a respawn period. See the
-description of --respawn-max for more information.
+.It Fl P , -respawn-period Ar duration
+Sets the duration of a respawn period. See the
+description of --respawn-max and --respawn-delay for more information.
 .It Fl R , -retry Ar timeout | Ar signal Ns / Ns Ar timeout
 The retry specification can be either a timeout in seconds or multiple
 signal/timeout pairs (like SIGTERM/5).
