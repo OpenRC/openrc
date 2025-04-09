@@ -180,8 +180,8 @@ static int tty_fd = -1;
 #endif
 static pid_t child_pid;
 static int respawn_count = 0;
-static struct timespec respawn_period;
-static struct timespec respawn_delay;
+static struct timespec respawn_period = { .tv_sec = 5 * 60 };
+static struct timespec respawn_delay = { .tv_nsec = 200 * 1000 };
 static int respawn_max = 10;
 static char *fifopath = NULL;
 static int fifo_fd = 0;
