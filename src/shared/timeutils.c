@@ -50,3 +50,41 @@ int64_t tm_sleep(int64_t ms, enum tm_sleep_flags flags)
 	}
 	return 0;
 }
+
+int64_t parse_duration(const char *duration)
+{
+	enum delay_unit {
+		UNIT_INVALID = -1,
+		UNIT_MS   = 1,
+		UNIT_SEC  = 1000,
+		UNIT_MIN  = UNIT_SEC * 60,
+		UNIT_HOUR = UNIT_MIN * 60,
+	} unit = UNIT_INVALID;
+	struct { const char *ext; enum delay_unit unit; } exts[] = {
+		{ "ms", UNIT_MS }, { "miliseconds", UNIT_MS },
+		{ "s", UNIT_SEC }, { "sec", UNIT_SEC }, { "seconds", UNIT_SEC }, { "", UNIT_SEC },
+		{ "m", UNIT_MIN }, { "min", UNIT_MIN }, { "minutes", UNIT_MIN },
+		{ "h", UNIT_HOUR }, { "hour", UNIT_HOUR }
+	};
+	char *end;
+	long val;
+
+	errno = 0;
+	val = strtol(duration, &end, 10);
+	if (errno == ERANGE || *duration == '\0' || val < 0)
+		return -1;
+	for (size_t i = 0; i < ARRAY_SIZE(exts); ++i) {
+		if (strcmp(end, exts[i].ext) == 0) {
+			unit = exts[i].unit;
+			break;
+		}
+	}
+	switch (unit) {
+	case UNIT_INVALID:
+		return -1;
+	default:
+		if (INT64_MAX/unit < val) /* overflow */
+			return -1;
+		return (int64_t)val * unit;
+	}
+}

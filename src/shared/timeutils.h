@@ -30,5 +30,9 @@ int64_t tm_now(void);
  * failed due to EINTR.
  */
 int64_t tm_sleep(int64_t, enum tm_sleep_flags);
+/* parse a integer followed by an optional time unit (e.g "sec", "ms").
+ * returns negative on failure
+ */
+int64_t parse_duration(const char *duration);
 
 #endif
