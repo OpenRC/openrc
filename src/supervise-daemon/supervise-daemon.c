@@ -814,6 +814,7 @@ int main(int argc, char **argv)
 	int n;
 	char *exec_file = NULL;
 	char *varbuf = NULL;
+	char numbuf[64];
 	struct timespec ts;
 	struct passwd *pw;
 	struct group *gr;
@@ -1209,10 +1210,8 @@ int main(int argc, char **argv)
 		rc_service_value_set(svcname, "pidfile", pidfile);
 		rc_service_value_set(svcname, "respawn_delay", respawn_delay_str);
 		rc_service_value_set(svcname, "respawn_period", respawn_period_str);
-		varbuf = NULL;
-		xasprintf(&varbuf, "%i", respawn_max);
-		rc_service_value_set(svcname, "respawn_max", varbuf);
-		free(varbuf);
+		snprintf(numbuf, sizeof(numbuf), "%i", respawn_max);
+		rc_service_value_set(svcname, "respawn_max", numbuf);
 		child_pid = fork();
 		if (child_pid == -1)
 			eerrorx("%s: fork: %s", applet, strerror(errno));
@@ -1247,9 +1246,8 @@ int main(int argc, char **argv)
 				x++;
 				c++;
 			}
-			xasprintf(&varbuf, "%d", x);
-			rc_service_value_set(svcname, "argc", varbuf);
-			free(varbuf);
+			snprintf(numbuf, sizeof(numbuf), "%d", x);
+			rc_service_value_set(svcname, "argc", numbuf);
 			rc_service_value_set(svcname, "exec", exec);
 			supervisor(exec, argv);
 		} else
