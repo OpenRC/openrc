@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2016 The OpenRC Authors.
+ * Copyright (c) 2016-2025 The OpenRC Authors.
  * See the Authors file at the top-level directory of this distribution and
  * https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
  *
@@ -15,12 +15,6 @@
  * This file may not be copied, modified, propagated, or distributed
  *    except according to the terms contained in the LICENSE file.
  */
-
-/* nano seconds */
-#define POLL_INTERVAL   20000000
-#define WAIT_PIDFILE   500000000
-#define ONE_SECOND    1000000000
-#define ONE_MS           1000000
 
 #include <errno.h>
 #include <inttypes.h>
