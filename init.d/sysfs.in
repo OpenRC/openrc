@@ -105,6 +105,15 @@ mount_misc()
 			efivarfs /sys/firmware/efi/efivars 2> /dev/null
 		eend 0
 	fi
+
+	# set up kernel support for bpf filesystem
+	if [ -d /sys/fs/bpf ] && ! mountinfo -q /sys/fs/bpf; then
+		if grep -qs 'bpf$' /proc/filesystems; then
+			ebegin "Mounting bpf filesystem"
+			mount -n -t bpf -o ${sysfs_opts} bpf /sys/fs/bpf
+			eend $?
+		fi
+	fi
 }
 
 restorecon_sys()
