@@ -55,6 +55,6 @@ struct exec_result do_exec(struct exec_args *args);
 
 /* some exec related helplers */
 int rc_waitpid(pid_t pid);
-int rc_pipe_command(const char *cmd, int devnullfd);
+int rc_pipe_command(const char *cmd);
 
 #endif

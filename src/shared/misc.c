@@ -383,7 +383,7 @@ exec_service(const char *service, const char *arg)
 }
 
 int
-parse_mode(mode_t *mode, char *text)
+parse_mode(mode_t *mode, const char *text)
 {
 	char *p;
 	unsigned long l;

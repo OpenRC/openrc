@@ -55,4 +55,23 @@
 #include "rc.h"
 #include "misc.h"
 
+static const char *const dirnames[RC_DIR_SYS_MAX] =
+{
+	[RC_DIR_STARTING] = "starting",
+	[RC_DIR_STARTED] = "started",
+	[RC_DIR_STOPPING] = "stopping",
+	[RC_DIR_INACTIVE] = "inactive",
+	[RC_DIR_WASINACTIVE] = "wasinactive",
+	[RC_DIR_FAILED] = "failed",
+	[RC_DIR_HOTPLUGGED] = "hotplugged",
+	[RC_DIR_DAEMONS] = "daemons",
+	[RC_DIR_OPTIONS] = "options",
+	[RC_DIR_EXCLUSIVE] = "exclusive",
+	[RC_DIR_SCHEDULED] = "scheduled",
+	[RC_DIR_INITD] = "init.d",
+	[RC_DIR_TMP] = "tmp",
+};
+
+RC_STRINGLIST *config_list(int dirfd, const char *pathname);
+
 #endif
