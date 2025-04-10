@@ -69,6 +69,9 @@ int64_t parse_duration(const char *duration)
 	char *end;
 	long val;
 
+	if (!duration)
+		return 0;
+
 	errno = 0;
 	val = strtol(duration, &end, 10);
 	if (errno == ERANGE || *duration == '\0' || val < 0)
