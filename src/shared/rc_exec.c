@@ -167,13 +167,13 @@ int rc_waitpid(pid_t pid)
 	return status;
 }
 
-int rc_pipe_command(const char *cmd, int devnullfd)
+int rc_pipe_command(const char *cmd)
 {
 	const char *argv[] = { "/bin/sh", "-c", cmd, NULL };
 	struct exec_result res;
 	struct exec_args args = exec_init(argv);
 	args.redirect_stdin = EXEC_MKPIPE;
-	args.redirect_stdout = args.redirect_stderr = devnullfd;
+	args.redirect_stdout = args.redirect_stderr = EXEC_DEVNULL;
 	res = do_exec(&args);
 	return (res.pid > 0) ? res.proc_stdin : -1;
 }
