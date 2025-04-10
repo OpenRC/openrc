@@ -636,6 +636,13 @@ rc_set_user(void)
 
 	rc_dirs.scriptdirs[SCRIPTDIR_USR] = rc_dirs.usrconfdir;
 	rc_dirs.scriptdirs[SCRIPTDIR_SVC] = rc_dirs.svcdir;
+
+	for (size_t i = 0; i < RC_DIR_MAX; i++) {
+		if (dirfds[i] == -1)
+			continue;
+		close(dirfds[i]);
+		dirfds[i] = -1;
+	}
 }
 
 const char * const *
