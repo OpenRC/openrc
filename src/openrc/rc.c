@@ -93,37 +93,26 @@ clean_failed(void)
 {
 	DIR *dp;
 	struct dirent *d;
-	char *path;
-	char *failed_dir;
-
-	xasprintf(&failed_dir, "%s/failed", rc_svcdir());
 
 	/* Clean the failed services state dir now */
-	if ((dp = opendir(failed_dir))) {
-		while ((d = readdir(dp))) {
-			if (d->d_name[0] == '.' &&
-			    (d->d_name[1] == '\0' ||
-				(d->d_name[1] == '.' && d->d_name[2] == '\0')))
-				continue;
+	if (!(dp = do_opendirat(rc_dirfd(RC_DIR_SVCDIR), "failed")))
+		return;
 
-			xasprintf(&path, "%s/%s", failed_dir, d->d_name);
-			if (unlink(path))
-				eerror("%s: unlink `%s': %s",
-				    applet, path, strerror(errno));
-			free(path);
-		}
-		closedir(dp);
+	while ((d = readdir(dp))) {
+		if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
+			continue;
+
+		if (unlinkat(dirfd(dp), d->d_name, 0) == -1)
+			eerror("%s: unlink '%s/failed/%s': %s", applet, rc_svcdir(), d->d_name, strerror(errno));
 	}
-
-	free(failed_dir);
+	closedir(dp);
 }
 
 static void
 cleanup(void)
 {
+	int svcdirfd = rc_dirfd(RC_DIR_SVCDIR);
 	RC_PID *p, *tmp;
-	const char *svcdir = rc_svcdir();
-	static const char *subdirs[] = { "rc.starting", "rc.stopping" };
 
 	if (!rc_in_logger && !rc_in_plugin &&
 	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
@@ -139,12 +128,8 @@ cleanup(void)
 		}
 
 		/* Clean runlevel start, stop markers */
-		for (size_t i = 0; i < ARRAY_SIZE(subdirs); i++) {
-			char *path;
-			xasprintf(&path, "%s/%s", svcdir, subdirs[i]);
-			rmdir(path);
-			free(path);
-		}
+		unlinkat(svcdirfd, "rc.starting", AT_REMOVEDIR);
+		unlinkat(svcdirfd, "rc.stopping", AT_REMOVEDIR);
 
 		clean_failed();
 		rc_logger_close();
@@ -223,13 +208,9 @@ static void
 mark_interactive(void)
 {
 	FILE *fp;
-	char *dir;
 
-	xasprintf(&dir, "%s/interactive", rc_svcdir());
-	if ((fp = fopen(dir, "w")))
+	if ((fp = do_fopenat(rc_dirfd(RC_DIR_SVCDIR), "interactive", O_WRONLY | O_CREAT | O_TRUNC)))
 		fclose(fp);
-
-	free(dir);
 }
 
 static void
@@ -670,11 +651,9 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 	bool interactive = false;
 	RC_SERVICE state;
 	bool crashed = false;
-	char *interactive_dir;
 
-	xasprintf(&interactive_dir, "%s/interactive", rc_svcdir());
 	if (!rc_yesno(getenv("EINFO_QUIET")))
-		interactive = exists(interactive_dir);
+		interactive = existsat(rc_dirfd(RC_DIR_SVCDIR), "interactive");
 	errno = 0;
 	crashed = rc_conf_yesno("rc_crashed_start");
 	if (errno == ENOENT)
@@ -733,9 +712,7 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 			 strcmp(runlevel, getenv("RC_BOOTLEVEL")) == 0))
 		mark_interactive();
 	else
-		if (exists(interactive_dir))
-			unlink(interactive_dir);
-	free(interactive_dir);
+		unlinkat(rc_dirfd(RC_DIR_SVCDIR), "interactive", 0);
 }
 
 #ifdef RC_DEBUG
@@ -775,8 +752,6 @@ int main(int argc, char **argv)
 	bool going_down = false;
 	int depoptions = RC_DEP_STRICT | RC_DEP_TRACE;
 	const char *svcdir;
-	char *rc_starting, *rc_stopping;
-	char *deptree_skewed;
 	char *krunlevel = NULL;
 	const char *workingdir = "/";
 	char *pidstr = NULL;
@@ -988,17 +963,14 @@ int main(int argc, char **argv)
 	if ((main_deptree = _rc_deptree_load(0, &regen)) == NULL)
 		eerrorx("failed to load deptree");
 
-	xasprintf(&deptree_skewed, "%s/clock-skewed", svcdir);
-	if (exists(deptree_skewed))
+	if (existsat(rc_dirfd(RC_DIR_SVCDIR), "clock-skewed"))
 		ewarn("WARNING: clock skew detected!");
-	free(deptree_skewed);
 
 	/* Clean the failed services state dir */
 	clean_failed();
 
-	xasprintf(&rc_stopping, "%s/rc.stopping", svcdir);
-	if (mkdir(rc_stopping, 0755) != 0)
-		eerrorx("%s: failed to create stopping dir '%s': %s", applet, rc_stopping, strerror(errno));
+	if (mkdirat(rc_dirfd(RC_DIR_SVCDIR), "rc.stopping", 0755) != 0)
+		eerrorx("%s: failed to create stopping dir '%s/rc.stopping': %s", applet, rc_svcdir(), strerror(errno));
 
 	/* Create a list of all services which we could stop (assuming
 	* they won't be active in the new or current runlevel) including
@@ -1079,8 +1051,7 @@ int main(int argc, char **argv)
 	    going_down ? newlevel : runlevel);
 	hook_out = 0;
 
-	rmdir(rc_stopping);
-	free(rc_stopping);
+	unlinkat(rc_dirfd(RC_DIR_SVCDIR), "rc.stopping", AT_REMOVEDIR);
 
 	/* Store the new runlevel */
 	if (newlevel) {
@@ -1097,9 +1068,7 @@ int main(int argc, char **argv)
 		rc_logger_close();
 #endif
 
-	xasprintf(&rc_starting, "%s/rc.starting", svcdir);
-	mkdir(rc_starting, 0755);
-	free(rc_starting);
+	mkdirat(rc_dirfd(RC_DIR_SVCDIR), "rc.starting", 0755);
 
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, runlevel);
 	hook_out = RC_HOOK_RUNLEVEL_START_OUT;
@@ -1169,12 +1138,8 @@ int main(int argc, char **argv)
 	 * we need to delete them so that they are regenerated again in the
 	 * default runlevel as they may depend on things that are now
 	 * available */
-	if (regen && strcmp(runlevel, bootlevel) == 0) {
-		char *deptree_cache;
-		xasprintf(&deptree_cache, "%s/deptree", svcdir);
-		unlink(deptree_cache);
-		free(deptree_cache);
-	}
+	if (regen && strcmp(runlevel, bootlevel) == 0)
+		unlinkat(rc_dirfd(RC_DIR_SVCDIR), "deptree", 0);
 
 	return EXIT_SUCCESS;
 }
