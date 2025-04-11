@@ -17,6 +17,11 @@ command="@RC_LIBEXECDIR@/bin/openrc-user"
 command_args="$user"
 notify="fd:3"
 
+# If it's rapidly failing, usually due to XDG_RUNTIME_DIR being unset,
+# we should just quit fast.
+respawn_max=3
+respawn_period=1
+
 start_pre() {
 	if [ "$user" = "$RC_SVCNAME" ]; then
 		eerror "${RC_SVCNAME} cannot be started directly. You must create"
