@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2016 The OpenRC Authors.
+ * Copyright (c) 2016-2025 The OpenRC Authors.
  * See the Authors file at the top-level directory of this distribution and
  * https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
  *
@@ -15,12 +15,6 @@
  * This file may not be copied, modified, propagated, or distributed
  *    except according to the terms contained in the LICENSE file.
  */
-
-/* nano seconds */
-#define POLL_INTERVAL   20000000
-#define WAIT_PIDFILE   500000000
-#define ONE_SECOND    1000000000
-#define ONE_MS           1000000
 
 #include <errno.h>
 #include <inttypes.h>
@@ -85,6 +79,8 @@ enum {
   LONGOPT_STDERR_LOGGER,
   LONGOPT_STDOUT_LOGGER,
   LONGOPT_NOTIFY,
+  LONGOPT_RESPAWN_DELAY_STEP,
+  LONGOPT_RESPAWN_DELAY_CAP,
 };
 
 const char *applet = NULL;
@@ -98,6 +94,8 @@ const struct option longopts[] = {
 	{ "secbits",      1, NULL, LONGOPT_SECBITS},
 	{ "no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
 	{ "respawn-delay",        1, NULL, 'D'},
+	{ "respawn-delay-step",   1, NULL, LONGOPT_RESPAWN_DELAY_STEP},
+	{ "respawn-delay-cap",    1, NULL, LONGOPT_RESPAWN_DELAY_CAP},
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
 	{ "group",        1, NULL, 'g'},
@@ -130,6 +128,8 @@ const char * const longopts_help[] = {
 	"Set the security-bits for the program",
 	"Set the No New Privs flag for the program",
 	"Set a respawn delay",
+	"Increase the respawn delay by this amount for every retry",
+	"Set maximum respawn delay when respawn-delay-step is also active",
 	"Change the PWD",
 	"Set an environment string",
 	"Change the process group",
@@ -182,9 +182,11 @@ static int tty_fd = -1;
 #endif
 static pid_t child_pid;
 static int respawn_count = 0;
-static int64_t respawn_delay;
+static int64_t respawn_delay; /* default set inside main() */
+static int64_t respawn_delay_step = TM_MS(128);
+static int64_t respawn_delay_cap = TM_SEC(30);
+static int64_t respawn_period; /* default set inside main() */
 static int respawn_max = 10;
-static int64_t respawn_period;
 static char *fifopath = NULL;
 static int fifo_fd = 0;
 static char *pidfile = NULL;
@@ -628,6 +630,7 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 	struct sigaction sa;
 	int64_t respawn_now = 0;
 	int64_t first_spawn = 0;
+	int64_t sleep_for;
 
 	/* block all signals we do not handle */
 	sigfillset(&signals);
@@ -753,7 +756,10 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 				failing = 1;
 				continue;
 			}
-			tm_sleep(respawn_delay, TM_NO_EINTR);
+			sleep_for = respawn_delay + (respawn_delay_step * respawn_count);
+			if (respawn_delay_step > 0 && sleep_for > respawn_delay_cap)
+				sleep_for = respawn_delay_cap;
+			tm_sleep(sleep_for, TM_NO_EINTR);
 			if (exiting)
 				continue;
 			child_pid = fork();
@@ -814,6 +820,7 @@ int main(int argc, char **argv)
 	int n;
 	char *exec_file = NULL;
 	char *varbuf = NULL;
+	char numbuf[64];
 	struct timespec ts;
 	struct passwd *pw;
 	struct group *gr;
@@ -824,7 +831,7 @@ int main(int argc, char **argv)
 	char *str = NULL;
 	char *cmdline = NULL;
 	const char *respawn_delay_str  = "0";
-	const char *respawn_period_str = "0";
+	const char *respawn_period_str = "12sec";
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -1077,6 +1084,18 @@ int main(int argc, char **argv)
 			notify = notify_parse(svcname, optarg);
 			break;
 
+		case LONGOPT_RESPAWN_DELAY_STEP:
+			respawn_delay_step = parse_duration(optarg);
+			if (respawn_delay_step < 0)
+				eerrorx("Invalid respawn-delay-step value '%s'", optarg);
+			break;
+
+		case LONGOPT_RESPAWN_DELAY_CAP:
+			respawn_delay_cap = parse_duration(optarg);
+			if (respawn_delay_cap < 0)
+				eerrorx("Invalid respawn-delay-cap value '%s'", optarg);
+			break;
+
 		case_RC_COMMON_GETOPT
 		}
 
@@ -1134,6 +1153,10 @@ int main(int argc, char **argv)
 
 		str = rc_service_value_get(svcname, "respawn_delay");
 		respawn_delay = parse_duration(str);
+		str = rc_service_value_get(svcname, "respawn_delay_step");
+		sscanf(str, "%"SCNd64, &respawn_delay_step);
+		str = rc_service_value_get(svcname, "respawn_delay_cap");
+		sscanf(str, "%"SCNd64, &respawn_delay_cap);
 		str = rc_service_value_get(svcname, "respawn_max");
 		sscanf(str, "%d", &respawn_max);
 		supervisor(exec, child_argv);
@@ -1184,6 +1207,10 @@ int main(int argc, char **argv)
 			ewarn("%s: Please increase the value of --respawn-period to more "
 				"than %"PRId64" to avoid infinite respawning", applet,
 				(respawn_delay * respawn_max + 500)/1000);
+		if (respawn_delay_step > 0 && respawn_delay > respawn_delay_cap)
+			ewarn("%s: Please increase the value of --respawn-delay (%"PRId64"ms) to more "
+				"than --respawn-delay-cap (%"PRId64"ms)", applet,
+				respawn_delay, respawn_delay_cap);
 
 		if (retry) {
 			parse_schedule(applet, retry, sig);
@@ -1209,10 +1236,12 @@ int main(int argc, char **argv)
 		rc_service_value_set(svcname, "pidfile", pidfile);
 		rc_service_value_set(svcname, "respawn_delay", respawn_delay_str);
 		rc_service_value_set(svcname, "respawn_period", respawn_period_str);
-		varbuf = NULL;
-		xasprintf(&varbuf, "%i", respawn_max);
-		rc_service_value_set(svcname, "respawn_max", varbuf);
-		free(varbuf);
+		snprintf(numbuf, sizeof(numbuf), "%"PRId64, respawn_delay_step);
+		rc_service_value_set(svcname, "respawn_delay_step", numbuf);
+		snprintf(numbuf, sizeof(numbuf), "%"PRId64, respawn_delay_cap);
+		rc_service_value_set(svcname, "respawn_delay_cap", numbuf);
+		snprintf(numbuf, sizeof(numbuf), "%i", respawn_max);
+		rc_service_value_set(svcname, "respawn_max", numbuf);
 		child_pid = fork();
 		if (child_pid == -1)
 			eerrorx("%s: fork: %s", applet, strerror(errno));
@@ -1247,9 +1276,8 @@ int main(int argc, char **argv)
 				x++;
 				c++;
 			}
-			xasprintf(&varbuf, "%d", x);
-			rc_service_value_set(svcname, "argc", varbuf);
-			free(varbuf);
+			snprintf(numbuf, sizeof(numbuf), "%d", x);
+			rc_service_value_set(svcname, "argc", numbuf);
 			rc_service_value_set(svcname, "exec", exec);
 			supervisor(exec, argv);
 		} else
