@@ -182,10 +182,10 @@ static int tty_fd = -1;
 #endif
 static pid_t child_pid;
 static int respawn_count = 0;
-static int64_t respawn_delay;
+static int64_t respawn_delay; /* default set inside main() */
 static int64_t respawn_delay_step = TM_MS(128);
 static int64_t respawn_delay_cap = TM_SEC(30);
-static int64_t respawn_period;
+static int64_t respawn_period; /* default set inside main() */
 static int respawn_max = 10;
 static char *fifopath = NULL;
 static int fifo_fd = 0;
@@ -831,7 +831,7 @@ int main(int argc, char **argv)
 	char *str = NULL;
 	char *cmdline = NULL;
 	const char *respawn_delay_str  = "0";
-	const char *respawn_period_str = "0";
+	const char *respawn_period_str = "12sec";
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
