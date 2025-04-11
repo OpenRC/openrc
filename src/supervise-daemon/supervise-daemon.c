@@ -183,7 +183,7 @@ static int tty_fd = -1;
 static pid_t child_pid;
 static int respawn_count = 0;
 static int64_t respawn_delay;
-static int64_t respawn_delay_step = 0;
+static int64_t respawn_delay_step = TM_MS(128);
 static int64_t respawn_delay_cap = TM_SEC(30);
 static int64_t respawn_period;
 static int respawn_max = 10;
