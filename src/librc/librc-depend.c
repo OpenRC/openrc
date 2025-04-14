@@ -685,6 +685,7 @@ bool
 rc_deptree_update_needed(time_t *newest, char *file)
 {
 	bool newer = false;
+	const int *dirfds;
 	RC_STRINGLIST *config;
 	RC_STRING *s;
 	struct stat buf;
@@ -704,13 +705,9 @@ rc_deptree_update_needed(time_t *newest, char *file)
 		mtime = time(NULL);
 	}
 
-	for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++) {
-		static const char *subdirs[] = { "init.d", "conf.d", NULL };
-		for (const char **subdir = subdirs; *subdir; subdir++) {
-			xasprintf(&path, "%s/%s", *dirs, *subdir);
-			newer |= !deep_mtime_check(AT_FDCWD, path, true, &mtime, file);
-			free(path);
-		}
+	for (size_t i = 0, count = rc_scriptdirfds(&dirfds); i < count; i++) {
+		newer |= !deep_mtime_check(dirfds[i], "init.d", true, &mtime, file);
+		newer |= !deep_mtime_check(dirfds[i], "conf.d", true, &mtime, file);
 	}
 
 	newer |= !deep_mtime_check(rc_dirfd(RC_DIR_SYSCONF), "rc.conf", true, &mtime, file);
