@@ -130,6 +130,12 @@ bool rc_is_user(void);
  * @return NULL terminated array of directory paths. */
 const char * const *rc_scriptdirs(void);
 
+/*! Get a list of fds for existing script directories
+ * containing a init.d and conf.d
+ * @param out pointer to store the list.
+ * @return number of fds in the list. */
+size_t rc_scriptdirfds(const int **fds);
+
 /*! The system configuration directory is where rc.conf
  * and other configuration files are stored.
  * @return Path to the system configuration directory */

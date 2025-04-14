@@ -653,6 +653,28 @@ rc_scriptdirs(void)
 	return scriptdirs;
 }
 
+size_t
+rc_scriptdirfds(const int **fds)
+{
+	static int scriptdirfds[SCRIPTDIR_MAX];
+	static size_t len = 0;
+
+	if (len == 0) {
+		const char * const *current_scriptdirs = rc_scriptdirs();
+		for (size_t i = 0; current_scriptdirs[i]; i++) {
+			int fd = open(current_scriptdirs[i], O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+
+			if (fd == -1)
+				continue;
+
+			scriptdirfds[len++] = fd;
+		}
+	}
+
+	*fds = scriptdirfds;
+	return len;
+}
+
 const char *
 rc_sysconfdir(void)
 {
@@ -1085,17 +1107,14 @@ rc_services_in_runlevel(const char *runlevel)
 	RC_STRINGLIST *list = NULL;
 
 	if (!runlevel) {
+		const int *scriptdirfds;
 		list = rc_stringlist_new();
-		for (const char * const *dirs = rc_scriptdirs(); *dirs; dirs++) {
-			char *initd;
+		for (size_t i = 0, count = rc_scriptdirfds(&scriptdirfds); i < count; i++) {
 			RC_STRINGLIST *svcs;
 
-			xasprintf(&initd, "%s/init.d", *dirs);
-			svcs = ls_dir(AT_FDCWD, initd, LS_INITD);
+			svcs = ls_dir(scriptdirfds[i], "init.d", LS_INITD);
 			TAILQ_CONCAT(list, svcs, entries);
-
 			rc_stringlist_free(svcs);
-			free(initd);
 		}
 		return list;
 	}
