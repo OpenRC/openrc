@@ -76,7 +76,7 @@ int is_writable(const char *);
 #define service_start(service) exec_service(service, "start")
 #define service_stop(service)  exec_service(service, "stop")
 
-int parse_mode(mode_t *, char *);
+int parse_mode(mode_t *, const char *);
 
 /* Handy function so we can wrap einfo around our deptree */
 RC_DEPTREE *_rc_deptree_load (int, int *);

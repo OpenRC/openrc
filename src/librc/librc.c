@@ -1041,30 +1041,52 @@ rc_service_value_get(const char *service, const char *option)
 	return buffer;
 }
 
+static inline int
+open_optiondir(const char *service)
+{
+	if (mkdirat(rc_dirfd(RC_DIR_OPTIONS), service, 0755) != 0 && errno != EEXIST)
+		return -1;
+
+	return openat(rc_dirfd(RC_DIR_OPTIONS), service, O_RDONLY | O_DIRECTORY);
+}
+
+RC_PRINTF(3, 4) bool
+rc_service_value_fmt(const char *service, const char *option, const char *fmt, ...)
+{
+	int optdirfd = open_optiondir(service);
+	va_list ap;
+	FILE *fp;
+
+	if (optdirfd == -1)
+		return false;
+
+	if (!(fp = do_fopenat(optdirfd, option, O_WRONLY | O_CREAT | O_TRUNC))) {
+		close(optdirfd);
+		return false;
+	}
+
+	va_start(ap, fmt);
+	vfprintf(fp, fmt, ap);
+	va_end(ap);
+
+	fclose(fp);
+	return true;
+}
+
 bool
 rc_service_value_set(const char *service, const char *option, const char *value)
 {
-	bool ret = true;
 	int optdirfd;
-	FILE *fp;
 
-	if (mkdirat(rc_dirfd(RC_DIR_OPTIONS), service, 0755) != 0 && errno != EEXIST)
-		return false;
-
-	if ((optdirfd = openat(rc_dirfd(RC_DIR_OPTIONS), service, O_RDONLY | O_DIRECTORY)) == -1)
-		return false;
-
-	if (!value) {
-		unlinkat(optdirfd, option, 0);
-	} else if ((fp = do_fopenat(optdirfd, option, O_WRONLY | O_CREAT | O_TRUNC))) {
-		fprintf(fp, "%s", value);
-		fclose(fp);
-	} else {
-		ret = false;
+	if (value) {
+		return rc_service_value_fmt(service, option, "%s", value);
 	}
 
+	if ((optdirfd = open_optiondir(service)) == -1)
+		return false;
+	unlinkat(optdirfd, option, 0);
 	close(optdirfd);
-	return ret;
+	return true;
 }
 
 bool

@@ -78,6 +78,22 @@ RC_UNUSED static void *xrealloc(void *ptr, size_t size)
 	/* NOTREACHED */
 }
 
+RC_UNUSED static char *xstrndup(const char *str, size_t n)
+{
+	char *value;
+
+	if (!str)
+		return (NULL);
+
+	value = strndup(str, n);
+
+	if (value)
+		return (value);
+
+	ERRX;
+	/* NOTREACHED */
+}
+
 RC_UNUSED static char *xstrdup(const char *str)
 {
 	char *value;

@@ -340,6 +340,14 @@ bool rc_service_started_daemon(const char *, const char *,
  * @return saved value */
 char *rc_service_value_get(const char *, const char *);
 
+/*! Format and save a persistent value for a service
+ * @param service to save for
+ * @param option to save
+ * @param format string
+ * @return true if saved, otherwise false */
+__attribute__((__format__(__printf__, 3, 4)))
+bool rc_service_value_fmt(const char *, const char *, const char *, ...);
+
 /*! Save a persistent value for a service
  * @param service to save for
  * @param option to save
