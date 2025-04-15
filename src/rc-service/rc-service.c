@@ -31,7 +31,7 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "cdDe:ilr:INsSZ" getoptstring_COMMON;
+const char getoptstring[] = "cdDe:ilr:INsSZ" getoptstring_DIRS getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "debug",     0, NULL, 'd' },
 	{ "nodeps",     0, NULL, 'D' },
@@ -45,6 +45,7 @@ const struct option longopts[] = {
 	{ "list",     0, NULL, 'l' },
 	{ "resolve",  1, NULL, 'r' },
 	{ "dry-run",     0, NULL, 'Z' },
+	longopts_DIRS
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -60,6 +61,7 @@ const char * const longopts_help[] = {
 	"list all available services",
 	"resolve the service name to an init script",
 	"dry run (show what would happen)",
+	longopts_help_DIRS
 	longopts_help_COMMON
 };
 const char *usagestring = ""
@@ -142,6 +144,7 @@ int main(int argc, char **argv)
 			setenv("IN_DRYRUN", "yes", 1);
 			break;
 
+		case_RC_DIRS_GETOPT
 		case_RC_COMMON_GETOPT
 		}
 	}

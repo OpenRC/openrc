@@ -21,8 +21,6 @@ sh_config = [
   ]
 
 scripts_config = [
-  'gendepends.sh.in',
-  'openrc-run.sh.in',
   'openrc-user.sh.in'
   ]
 
@@ -61,12 +59,18 @@ foreach file : sh_config
     install_dir : rc_shdir)
 endforeach
 
+openrc_run_sh = configure_file(input : 'openrc-run.sh.in',
+  output : '@BASENAME@', configuration : sh_conf_data,
+  install_dir : rc_shdir, install_mode : 'rwxr-xr-x')
+
+gendepends_sh = configure_file(input : 'gendepends.sh.in',
+  output : '@BASENAME@', configuration : sh_conf_data,
+  install_dir : rc_shdir, install_mode : 'rwxr-xr-x')
+
 foreach file : scripts_config
   configure_file(input : file,
-    output : '@BASENAME@',
-    configuration : sh_conf_data,
-    install_dir : rc_shdir,
-    install_mode : 'rwxr-xr-x')
+    output : '@BASENAME@', configuration : sh_conf_data,
+    install_dir : rc_shdir, install_mode : 'rwxr-xr-x')
 endforeach
 
 foreach file : scripts_config_os

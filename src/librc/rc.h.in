@@ -122,6 +122,9 @@ typedef TAILQ_HEAD(rc_stringlist, rc_string) RC_STRINGLIST;
 /*! Set user-wide paths for the rc_*dir functions. */
 void rc_set_user(void);
 
+/*! Set a root prefix for the rc_*dir functions. */
+void rc_set_root(const char *);
+
 /*! @return true if rc_set_user was called, false otherwise. */
 bool rc_is_user(void);
 

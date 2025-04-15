@@ -50,12 +50,13 @@
 #include "helpers.h"
 
 const char *extraopts = NULL;
-const char getoptstring[] = "a:no:s:S" getoptstring_COMMON;
+const char getoptstring[] = "a:no:s:S" getoptstring_DIRS getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "no-stop", 0, NULL, 'n' },
 	{ "override",    1, NULL, 'o' },
 	{ "service",     1, NULL, 's' },
 	{ "sys",         0, NULL, 'S' },
+	longopts_DIRS
 	longopts_COMMON
 };
 const char * const longopts_help[] = {
@@ -63,6 +64,7 @@ const char * const longopts_help[] = {
 	"override the next runlevel to change into\nwhen leaving single user or boot runlevels",
 	"runs the service specified with the rest\nof the arguments",
 	"output the RC system type, if any",
+	longopts_help_DIRS
 	longopts_help_COMMON
 };
 const char *usagestring = ""
@@ -822,6 +824,7 @@ int main(int argc, char **argv)
 				printf("%s\n", systype);
 			exit(EXIT_SUCCESS);
 			/* NOTREACHED */
+		case_RC_DIRS_GETOPT
 		case_RC_COMMON_GETOPT
 		}
 	}

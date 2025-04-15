@@ -1,4 +1,4 @@
-executable('rc-update',
+rc_update = executable('rc-update',
   ['rc-update.c', misc_c, usage_c, version_h],
   c_args : cc_branding_flags,
   link_with: [libeinfo, librc],

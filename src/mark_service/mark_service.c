@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 {
 	bool ok = false;
 	char *svcname = getenv("RC_SVCNAME");
-	char *service = NULL;
+	char *service = NULL, *root;
 	char *openrc_pid;
 	/* char *mtime; */
 	pid_t pid;
@@ -47,6 +47,8 @@ int main(int argc, char **argv)
 
 	if (rc_yesno(getenv("RC_USER_SERVICES")))
 		rc_set_user();
+	else if ((root = getenv("RC_ROOT")))
+		rc_set_root(root);
 
 	if (!strncmp(applet, "mark_", 5) &&
 	    (bit = lookup_service_state(applet + 5)))

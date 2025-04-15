@@ -58,7 +58,7 @@ rc_conf_yesno(const char *setting)
 static const char *const env_allowlist[] = {
 	"EERROR_QUIET", "EINFO_QUIET",
 	"IN_BACKGROUND", "IN_DRYRUN", "IN_HOTPLUG",
-	"RC_DEBUG", "RC_NODEPS", "RC_USER_SERVICES",
+	"RC_DEBUG", "RC_NODEPS", "RC_ROOT", "RC_USER_SERVICES",
 	"LANG", "LC_MESSAGES", "TERM",
 	"EINFO_COLOR", "EINFO_VERBOSE",
 	NULL

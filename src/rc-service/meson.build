@@ -1,4 +1,4 @@
-executable('rc-service',
+rc_service = executable('rc-service',
   ['rc-service.c', misc_c, usage_c, version_h],
   c_args : cc_branding_flags,
   link_with: [libeinfo, librc],

@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 	char *exec;
 	int idx = 0;
 	RC_SERVICE state, bit;
+	char *root;
 
 	applet = basename_c(argv[0]);
 	if (argc > 1)
@@ -42,6 +43,8 @@ int main(int argc, char **argv)
 
 	if (rc_yesno(getenv("RC_USER_SERVICES")))
 		rc_set_user();
+	else if ((root = getenv("RC_ROOT")))
+		rc_set_root(root);
 
 	state = rc_service_state(service);
 	bit = lookup_service_state(applet);

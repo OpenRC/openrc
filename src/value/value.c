@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 {
 	bool ok = false;
 	char *service = getenv("RC_SVCNAME");
-	char *option;
+	char *option, *root;
 
 	applet = basename_c(argv[0]);
 	if (service == NULL)
@@ -35,6 +35,8 @@ int main(int argc, char **argv)
 
 	if (rc_yesno(getenv("RC_USER_SERVICES")))
 		rc_set_user();
+	else if ((root = getenv("RC_ROOT")))
+		rc_set_root(root);
 
 	if (argc < 2 || !argv[1] || *argv[1] == '\0')
 		eerrorx("%s: no option specified", applet);
