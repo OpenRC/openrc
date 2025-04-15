@@ -382,6 +382,8 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	char start_count_string[20];
 	char start_time_string[20];
 	FILE *fp;
+	gid_t group_buf[32], *group_list = group_buf;
+	int group_count = ARRAY_SIZE(group_buf);
 
 #ifdef HAVE_PAM
 	pam_handle_t *pamh = NULL;
@@ -428,12 +430,6 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 		fclose(fp);
 	}
 
-	if (ch_root && chroot(ch_root) < 0)
-		eerrorx("%s: chroot `%s': %s", applet, ch_root, strerror(errno));
-
-	if (ch_dir && chdir(ch_dir) < 0)
-		eerrorx("%s: chdir `%s': %s", applet, ch_dir, strerror(errno));
-
 #ifdef HAVE_PAM
 	if (changeuser != NULL) {
 		pamr = pam_start("supervise-daemon",
@@ -448,19 +444,33 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	}
 #endif
 
+	if (changeuser && getgrouplist(changeuser, gid, group_list, &group_count) < 0) {
+		group_list = xmalloc(group_count * sizeof(*group_list));
+		if (getgrouplist(changeuser, gid, group_list, &group_count) < 0)
+			eerrorx("%s: getgrouplist(%s, %"PRIuMAX")", applet, changeuser, (uintmax_t)gid);
+	}
+
+	/* Close any fd's to the passwd database */
+	endpwent();
+
+	if (ch_root && chroot(ch_root) < 0)
+		eerrorx("%s: chroot `%s': %s", applet, ch_root, strerror(errno));
+
+	if (ch_dir && chdir(ch_dir) < 0)
+		eerrorx("%s: chdir `%s': %s", applet, ch_dir, strerror(errno));
+
 	if (gid && setgid(gid))
 		eerrorx("%s: unable to set groupid to %"PRIuMAX, applet, (uintmax_t)gid);
-	if (changeuser && initgroups(changeuser, gid))
-		eerrorx("%s: initgroups (%s, %"PRIuMAX")", applet, changeuser, (uintmax_t)gid);
+	if (changeuser && setgroups(group_count, group_list) < 0)
+		eerrorx("%s: setgroups() failed", applet);
+	if (group_list != group_buf)
+		free(group_list);
 #ifdef __linux__
 	if (uid && cap_setuid(uid))
 #else
 	if (uid && setuid(uid))
 #endif
 		eerrorx ("%s: unable to set userid to %"PRIuMAX, applet, (uintmax_t)uid);
-
-	/* Close any fd's to the passwd database */
-	endpwent();
 
 #ifdef __linux__
 	if (cap_iab != NULL) {
@@ -909,7 +919,7 @@ int main(int argc, char **argv)
 #endif
 			break;
 
-        case LONGOPT_SECBITS:
+		case LONGOPT_SECBITS:
 #ifdef __linux__
 			if (*optarg == '\0')
 				eerrorx("Secbits are empty");

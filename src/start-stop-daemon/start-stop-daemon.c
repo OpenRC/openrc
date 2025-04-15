@@ -47,6 +47,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <inttypes.h>
 #include <sys/wait.h>
 #ifdef __linux__
 # include <sys/syscall.h> /* For io priority */
@@ -890,6 +891,8 @@ int main(int argc, char **argv)
 
 	/* Child process - lets go! */
 	if (pid == 0) {
+		gid_t group_buf[32], *group_list = group_buf;
+		int group_count = ARRAY_SIZE(group_buf);
 		pid_t mypid = getpid();
 		close(pipefd[0]); /* Close the read end of the pipe. */
 		umask(numask);
@@ -933,6 +936,29 @@ int main(int argc, char **argv)
 			fclose(fp);
 		}
 
+#ifdef HAVE_PAM
+		if (changeuser != NULL) {
+			pamr = pam_start("start-stop-daemon",
+			    changeuser, &conv, &pamh);
+
+			if (pamr == PAM_SUCCESS)
+				pamr = pam_acct_mgmt(pamh, PAM_SILENT);
+			if (pamr == PAM_SUCCESS)
+				pamr = pam_open_session(pamh, PAM_SILENT);
+			if (pamr != PAM_SUCCESS)
+				eerrorx("%s: pam error: %s",
+					applet, pam_strerror(pamh, pamr));
+		}
+#endif
+		if (changeuser && getgrouplist(changeuser, gid, group_list, &group_count) < 0) {
+			group_list = xmalloc(group_count * sizeof(*group_list));
+			if (getgrouplist(changeuser, gid, group_list, &group_count) < 0)
+				eerrorx("%s: getgrouplist(%s, %"PRIuMAX")", applet, changeuser, (uintmax_t)gid);
+		}
+
+		/* Close any fd's to the passwd database */
+		endpwent();
+
 		if (ch_root && chroot(ch_root) < 0)
 			eerrorx("%s: chroot `%s': %s",
 			    applet, ch_root, strerror(errno));
@@ -950,27 +976,14 @@ int main(int argc, char **argv)
 			fclose(fp);
 		}
 
-#ifdef HAVE_PAM
-		if (changeuser != NULL) {
-			pamr = pam_start("start-stop-daemon",
-			    changeuser, &conv, &pamh);
-
-			if (pamr == PAM_SUCCESS)
-				pamr = pam_acct_mgmt(pamh, PAM_SILENT);
-			if (pamr == PAM_SUCCESS)
-				pamr = pam_open_session(pamh, PAM_SILENT);
-			if (pamr != PAM_SUCCESS)
-				eerrorx("%s: pam error: %s",
-					applet, pam_strerror(pamh, pamr));
-		}
-#endif
 
 		if (gid && setgid(gid))
 			eerrorx("%s: unable to set groupid to %"PRIuMAX,
 			    applet, (uintmax_t)gid);
-		if (changeuser && initgroups(changeuser, gid))
-			eerrorx("%s: initgroups (%s, %"PRIuMAX")",
-			    applet, changeuser, (uintmax_t)gid);
+		if (changeuser && setgroups(group_count, group_list))
+			eerrorx("%s: setgroups() failed", applet);
+		if (group_list != group_buf)
+			free(group_list);
 #ifdef __linux__
 		if (uid && cap_setuid(uid))
 #else
@@ -978,9 +991,6 @@ int main(int argc, char **argv)
 #endif
 			eerrorx ("%s: unable to set userid to %"PRIuMAX,
 			    applet, (uintmax_t)uid);
-
-		/* Close any fd's to the passwd database */
-		endpwent();
 
 #ifdef __linux__
 		if (cap_iab != NULL) {
