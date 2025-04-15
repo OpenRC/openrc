@@ -448,8 +448,8 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 			eerrorn("Adjusting mtime of '%s/deptree' to %s", rc_svcdir(), ctime(&t));
 			if ((fp = do_fopenat(svcdirfd, "clock-skewed", O_WRONLY | O_CREAT | O_TRUNC))) {
 				fprintf(fp, "%s\n", file);
+				futimens(fileno(fp), (struct timespec[]) {{ .tv_sec = t }, { .tv_sec = t }});
 				fclose(fp);
-				futimens(fileno(fp), (struct timespec[]) {{ .tv_sec = t }, { .tv_sec = t}});
 			}
 		}
 
