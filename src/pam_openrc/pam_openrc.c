@@ -69,21 +69,17 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 	}
 
 	if (!(script = rc_service_resolve(svc_name))) {
-		char *user_script = rc_service_resolve("user");
-		if (!user_script) {
+		if (!(script = rc_service_resolve("user"))) {
 			elog(LOG_ERR, "Failed to resolve %s.", svc_name);
 			ret = PAM_SESSION_ERR;
 			goto out;
 		}
 
-		xasprintf(&script, "%s/init.d/%s", rc_svcdir(), svc_name);
-		if (symlink(user_script, script) != 0) {
+		if (symlinkat(script, rc_dirfd(RC_DIR_INITD), svc_name) != 0) {
 			elog(LOG_ERR, "symlink: %s", strerror(errno));
 			ret = PAM_SESSION_ERR;
-			free(user_script);
 			goto out;
 		}
-		free(user_script);
 	}
 
 	logins = rc_service_value_get(svc_name, "logins");
@@ -93,14 +89,14 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 
 	if (opening) {
 		if (count == 0) {
-			pid = service_start(script);
-			rc_service_mark(script, RC_SERVICE_HOTPLUGGED);
+			pid = service_start(svc_name);
+			rc_service_mark(svc_name, RC_SERVICE_HOTPLUGGED);
 		}
 		count++;
 	} else {
 		count--;
 		if (count == 0)
-			pid = service_stop(script);
+			pid = service_stop(svc_name);
 	}
 
 	elog(LOG_INFO, "%d sessions", count);
