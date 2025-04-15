@@ -284,12 +284,8 @@ signal_setup_restart(int sig, void (*handler)(int))
 int
 svc_lock(const char *applet, bool ignore_lock_failure)
 {
-	char *file = NULL;
-	int fd;
+	int fd = openat(rc_dirfd(RC_DIR_EXCLUSIVE), applet, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
 
-	xasprintf(&file, "%s/exclusive/%s", rc_svcdir(), applet);
-	fd = open(file, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
-	free(file);
 	if (fd == -1)
 		return -1;
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
@@ -311,12 +307,8 @@ svc_lock(const char *applet, bool ignore_lock_failure)
 int
 svc_unlock(const char *applet, int fd)
 {
-	char *file = NULL;
-
-	xasprintf(&file, "%s/exclusive/%s", rc_svcdir(), applet);
+	unlinkat(rc_dirfd(RC_DIR_EXCLUSIVE), applet, 0);
 	close(fd);
-	unlink(file);
-	free(file);
 	return -1;
 }
 
@@ -421,59 +413,51 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 	int merrno;
 	time_t t;
 	char file[PATH_MAX];
-	const char *svcdir = rc_svcdir();
+	int svcdirfd = rc_dirfd(RC_DIR_SVCDIR);
 	struct stat st;
-	struct utimbuf ut;
 	FILE *fp;
 
 	t = 0;
 	if (rc_deptree_update_needed(&t, file) || force != 0) {
-		char *deptree_cache, *deptree_skewed;
-		xasprintf(&deptree_cache, "%s/deptree", svcdir);
-
 		/* Test if we have permission to update the deptree */
-		fd = open(deptree_cache, O_WRONLY);
+		fd = openat(svcdirfd, "deptree", O_WRONLY);
 		merrno = errno;
 		errno = serrno;
 		if (fd == -1 && merrno == EACCES)
-			goto out;
+			return rc_deptree_load();
 		close(fd);
 
 		if (regen)
 			*regen = 1;
 		ebegin("Caching service dependencies");
 		retval = rc_deptree_update() ? 0 : -1;
-		eend (retval, "Failed to update the dependency tree");
+		eend(retval, "Failed to update the dependency tree");
 
 		if (retval == 0) {
-			if (stat(deptree_cache, &st) != 0) {
-				eerror("stat(%s): %s", deptree_cache, strerror(errno));
-				free(deptree_cache);
+			if (fstatat(svcdirfd, "deptree", &st, 0) != 0) {
+				eerror("stat(%s): %s/deptree", rc_svcdir(), strerror(errno));
 				return NULL;
 			}
-			xasprintf(&deptree_skewed, "%s/clock-skewed", svcdir);
-			if (st.st_mtime < t) {
-				eerror("Clock skew detected with '%s'", file);
-				eerrorn("Adjusting mtime of '%s' to %s", deptree_cache, ctime(&t));
-				fp = fopen(deptree_skewed, "w");
-				if (fp != NULL) {
-					fprintf(fp, "%s\n", file);
-					fclose(fp);
-				}
-				ut.actime = t;
-				ut.modtime = t;
-				utime(deptree_cache, &ut);
-			} else {
-				if (exists(deptree_skewed))
-					unlink(deptree_skewed);
+
+			if (st.st_mtime >= t) {
+				unlinkat(svcdirfd, "clock-skewed", 0);
+				goto out;
 			}
-			free(deptree_skewed);
+
+			eerror("Clock skew detected with '%s/clock-skewed'", rc_svcdir());
+			eerrorn("Adjusting mtime of '%s/deptree' to %s", rc_svcdir(), ctime(&t));
+			if ((fp = do_fopenat(svcdirfd, "clock-skewed", O_WRONLY | O_CREAT | O_TRUNC))) {
+				fprintf(fp, "%s\n", file);
+				fclose(fp);
+				futimens(fileno(fp), (struct timespec[]) {{ .tv_sec = t }, { .tv_sec = t}});
+			}
 		}
+
+out:
 		if (force == -1 && regen != NULL)
 			*regen = retval;
-out:
-		free(deptree_cache);
 	}
+
 	return rc_deptree_load();
 }
 
