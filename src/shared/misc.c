@@ -340,8 +340,11 @@ exec_service(const char *service, const char *arg)
 		sigaction(SIGUSR1, &sa, NULL);
 		sigaction(SIGWINCH, &sa, NULL);
 
-		/* Unmask signals */
-		sigprocmask(SIG_SETMASK, &old, NULL);
+		/* Unmask all signals.
+		 * We might've been called from pam_openrc by
+		 * a process that masked signals we rely on.
+		 * Bug: https://bugs.gentoo.org/953748 */
+		sigprocmask(SIG_UNBLOCK, &full, NULL);
 
 		/* Safe to run now */
 		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
