@@ -365,7 +365,7 @@ svc_exec(const char *arg1, const char *arg2)
 	sigset_t oldmask;
 	int64_t wait_timeout, warn_timeout, now;
 	RC_STRINGLIST *keywords;
-	bool forever;
+	bool forever = false;
 
 	keywords = rc_deptree_depend(deptree, applet, "keyword");
 	if (rc_stringlist_find(keywords, "-timeout") ||
