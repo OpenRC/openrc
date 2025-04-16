@@ -449,15 +449,15 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 #endif
 
 	if (gid && setgid(gid))
-		eerrorx("%s: unable to set groupid to %d", applet, gid);
+		eerrorx("%s: unable to set groupid to %"PRIuMAX, applet, (uintmax_t)gid);
 	if (changeuser && initgroups(changeuser, gid))
-		eerrorx("%s: initgroups (%s, %d)", applet, changeuser, gid);
+		eerrorx("%s: initgroups (%s, %"PRIuMAX")", applet, changeuser, (uintmax_t)gid);
 #ifdef __linux__
 	if (uid && cap_setuid(uid))
 #else
 	if (uid && setuid(uid))
 #endif
-		eerrorx ("%s: unable to set userid to %d", applet, uid);
+		eerrorx ("%s: unable to set userid to %"PRIuMAX, applet, (uintmax_t)uid);
 
 	/* Close any fd's to the passwd database */
 	endpwent();
