@@ -270,18 +270,6 @@ signal_setup(int sig, void (*handler)(int))
 }
 
 int
-signal_setup_restart(int sig, void (*handler)(int))
-{
-	struct sigaction sa;
-
-	memset(&sa, 0, sizeof (sa));
-	sigemptyset(&sa.sa_mask);
-	sa.sa_handler = handler;
-	sa.sa_flags = SA_RESTART;
-	return sigaction(sig, &sa, NULL);
-}
-
-int
 svc_lock(const char *applet, bool ignore_lock_failure)
 {
 	int fd = openat(rc_dirfd(RC_DIR_EXCLUSIVE), applet, O_WRONLY | O_CREAT | O_NONBLOCK, 0664);
