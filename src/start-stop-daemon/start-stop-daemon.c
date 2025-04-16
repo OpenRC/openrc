@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <limits.h>
+#include <inttypes.h>
 #include <grp.h>
 #include <pthread.h>
 #include <pwd.h>
@@ -855,9 +856,9 @@ int main(int argc, char **argv)
 		printf("\n");
 		eindent();
 		if (uid != 0)
-			einfo("as user id %d", uid);
+			einfo("as user id %"PRIuMAX, (uintmax_t)uid);
 		if (gid != 0)
-			einfo("as group id %d", gid);
+			einfo("as group id %"PRIuMAX, (uintmax_t)gid);
 		if (ch_root)
 			einfo("in root `%s'", ch_root);
 		if (ch_dir)
@@ -965,18 +966,18 @@ int main(int argc, char **argv)
 #endif
 
 		if (gid && setgid(gid))
-			eerrorx("%s: unable to set groupid to %d",
-			    applet, gid);
+			eerrorx("%s: unable to set groupid to %"PRIuMAX,
+			    applet, (uintmax_t)gid);
 		if (changeuser && initgroups(changeuser, gid))
-			eerrorx("%s: initgroups (%s, %d)",
-			    applet, changeuser, gid);
+			eerrorx("%s: initgroups (%s, %"PRIuMAX")",
+			    applet, changeuser, (uintmax_t)gid);
 #ifdef __linux__
 		if (uid && cap_setuid(uid))
 #else
 		if (uid && setuid(uid))
 #endif
-			eerrorx ("%s: unable to set userid to %d",
-			    applet, uid);
+			eerrorx ("%s: unable to set userid to %"PRIuMAX,
+			    applet, (uintmax_t)uid);
 
 		/* Close any fd's to the passwd database */
 		endpwent();
