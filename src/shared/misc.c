@@ -548,13 +548,20 @@ struct notify notify_parse(const char *applet, const char *notify_string)
 		notify.type = NOTIFY_FD;
 		if (pipe(notify.pipe) == -1)
 			eerrorx("%s: pipe: %s", applet, strerror(errno));
-	} else if (strcmp(notify_string, "socket") == 0) {
+	} else if (strncmp(notify_string, "socket", sizeof("socket") - 1) == 0) {
 		union {
 			struct sockaddr header;
 			struct sockaddr_un unix;
 		} addr = { .unix = { .sun_family = AF_UNIX } };
-		int written = snprintf(addr.unix.sun_path, sizeof(addr.unix.sun_path), "%s/supervise-%s.sock", rc_svcdir(), applet);
+		int written;
+		const char *opts = strchr(notify_string, ':');
 
+		if (!opts || opts[1] == '\0')
+			return notify;
+		if (strcmp(opts + 1, "ready") != 0)
+			return notify;
+
+		written = snprintf(addr.unix.sun_path, sizeof(addr.unix.sun_path), "%s/supervise-%s.sock", rc_svcdir(), applet);
 		if (written >= (int)sizeof(addr.unix.sun_path))
 			eerrorx("%s: socket path '%s/supervise-%s.sock' too long.", applet, rc_svcdir(), applet);
 		setenv("NOTIFY_SOCKET", addr.unix.sun_path, true);
