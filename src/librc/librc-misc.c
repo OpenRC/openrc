@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 
 #include "queue.h"
@@ -55,35 +56,25 @@ rc_yesno(const char *value)
 	return false;
 }
 
-
-/**
- * Read the entire @file into the buffer and set @len to the
- * size of the buffer when finished. For C strings, this will
- * be strlen(buffer) + 1.
- * Don't forget to free the buffer afterwards!
- */
-bool
-rc_getfile(const char *file, char **buffer, size_t *len)
+static bool
+do_getfileat(int dirfd, const char *file, char **buffer, size_t *size)
 {
 	bool ret = false;
 	FILE *fp;
-	int fd;
 	struct stat st;
 	size_t done, left;
 
-	fp = fopen(file, "re");
+	fp = do_fopenat(dirfd, file, O_RDONLY);
 	if (!fp)
 		return false;
 
 	/* assume fileno() never fails */
-	fd = fileno(fp);
-
-	if (fstat(fd, &st))
+	if (fstat(fileno(fp), &st))
 		goto finished;
 
 	left = st.st_size;
-	*len = left + 1; /* NUL terminator */
-	*buffer = xrealloc(*buffer, *len);
+	*size = left + 1; /* NUL terminator */
+	*buffer = xrealloc(*buffer, *size);
 	while (left) {
 		done = fread(*buffer, sizeof(*buffer[0]), left, fp);
 		if (done == 0 && ferror(fp))
@@ -95,11 +86,23 @@ rc_getfile(const char *file, char **buffer, size_t *len)
  finished:
 	if (!ret) {
 		free(*buffer);
-		*len = 0;
+		*size = 0;
 	} else
-		(*buffer)[*len - 1] = '\0';
+		(*buffer)[*size - 1] = '\0';
 	fclose(fp);
 	return ret;
+}
+
+/**
+ * Read the entire @file into the buffer and set @len to the
+ * size of the buffer when finished. For C strings, this will
+ * be strlen(buffer) + 1.
+ * Don't forget to free the buffer afterwards!
+ */
+bool
+rc_getfile(const char *file, char **buffer, size_t *len)
+{
+	return do_getfileat(AT_FDCWD, file, buffer, len);
 }
 
 char *
@@ -446,4 +449,64 @@ rc_conf_value(const char *setting)
 	}
 
 	return rc_config_value(rc_conf, setting);
+}
+
+bool rc_export_variable(const char *service, const char *name, const char *value) {
+	FILE *envfile;
+	int dirfd;
+
+	if (!service)
+		service = "rc";
+
+	if ((dirfd = openat(rc_dirfd(RC_DIR_ENVIRONMENT), service, O_RDONLY | O_DIRECTORY)) == -1) {
+		if (errno != ENOENT || mkdirat(rc_dirfd(RC_DIR_ENVIRONMENT), service, 0644) == -1)
+			return false;
+		if ((dirfd = openat(rc_dirfd(RC_DIR_ENVIRONMENT), service, O_RDONLY | O_DIRECTORY)) == -1)
+			return false;
+	}
+
+	if (!value) {
+		unlinkat(dirfd, name, 0);
+		return true;
+	}
+
+	envfile = do_fopenat(dirfd, name, O_WRONLY | O_TRUNC | O_CREAT);
+	close(dirfd);
+
+	if (!envfile)
+		return false;
+
+	/* in case of a race for the same variable, for the same service
+	 * at the same time, let's just use the first that locked. */
+	if (flock(fileno(envfile), LOCK_EX) == -1) {
+		fclose(envfile);
+		return false;
+	}
+
+	fputs(value, envfile);
+	return fclose(envfile) == 0;
+}
+
+bool rc_import_variables(const char *service) {
+	DIR *envdir = do_opendirat(rc_dirfd(RC_DIR_ENVIRONMENT), service ? service : "rc");
+	bool retval = true;
+	struct dirent *d;
+
+	if (!envdir)
+		return errno == ENOENT;
+
+	while ((d = readdir(envdir))) {
+		char *value;
+		size_t size;
+
+		if (!do_getfileat(rc_dirfd(RC_DIR_ENVIRONMENT), d->d_name, &value, &size)) {
+			retval = false;
+			continue;
+		}
+		setenv(d->d_name, value, true);
+		free(value);
+	}
+
+	closedir(envdir);
+	return retval;
 }

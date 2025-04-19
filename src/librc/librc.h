@@ -68,6 +68,7 @@ static const char *const dirnames[RC_DIR_SYS_MAX] =
 	[RC_DIR_OPTIONS] = "options",
 	[RC_DIR_EXCLUSIVE] = "exclusive",
 	[RC_DIR_SCHEDULED] = "scheduled",
+	[RC_DIR_ENVIRONMENT] = "environment",
 	[RC_DIR_INITD] = "init.d",
 	[RC_DIR_TMP] = "tmp",
 };
