@@ -4,6 +4,37 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.62
+
+supervise-daemon and start-stop-daemon now support -1/--stdin as means
+of piping a file or fifo to the standard input of the daemon.
+
+openrc-init now checks for reapable children instead of always waiting
+3 seconds at shutdown.
+
+the `ready` variable was renamed to `notify` to better match other software.
+
+`notify` now supports `socket` as a general compatibility setting for
+systemd's "notify-socket" mechanism. at the moment, `notify=socket:ready`
+enables readiness notification with `READY=1`
+
+openrc no longer attempts to store cache in libexec, instead using
+`/var/cache/rc` if /var is available at boot
+
+openrc-user now starts the `boot` runlevel before starting `default`, and
+pam_openrc will wait for `boot` to finish before continuing with the login
+flow, this allows for users to start services that need to be up reliably
+early at login.
+
+openrc-init now respects the EINFO_QUIET variable, to allow for quiet boots.
+
+rc-status now has -i/--in-state to allow filtering of service status to a
+given state.
+
+openrc now mounts /sys/fs/bpf if available.
+
+fixed issues with openrc-run hanging should it be launched with SIGCHLD masked.
+
 ## OpenRC 0.61
 
 This release fixes loading conf.d from user directory and fixes setting
