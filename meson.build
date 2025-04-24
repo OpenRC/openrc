@@ -8,7 +8,7 @@ project('OpenRC', 'c',
     'sbindir=/sbin',
     'warning_level=3',
     ],
-  meson_version : '>=0.62.0'
+  meson_version : '>=1.7.0'
 )
 
 cc = meson.get_compiler('c')

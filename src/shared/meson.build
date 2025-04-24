@@ -40,4 +40,6 @@ version_h = vcs_tag(
 
 version_f = vcs_tag(
   input : 'version.in',
-  output : 'version')
+  output : 'version',
+  install : true,
+  install_dir : rc_libexecdir)
