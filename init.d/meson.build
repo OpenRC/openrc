@@ -105,8 +105,7 @@ if get_option('sysvinit') == true and os == 'Linux'
   default_runlevel_dir = get_option('sysconfdir') / 'runlevels' / 'default'
   foreach x : get_option('agetty')
     link_name = 'agetty.' + x
-    install_symlink(link_name, install_dir: init_d_dir,
-      pointing_to: init_d_dir / 'agetty')
+    install_symlink(link_name, install_dir: init_d_dir, pointing_to: 'agetty')
     install_symlink(link_name, install_dir: default_runlevel_dir,
       pointing_to: init_d_dir / link_name)
   endforeach
