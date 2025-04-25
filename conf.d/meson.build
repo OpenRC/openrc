@@ -60,3 +60,11 @@ elif os == 'NetBSD'
 endif
 
 install_data(conf_data, install_dir : conf_d_dir)
+
+if get_option('sysvinit') == true and os == 'Linux'
+  foreach x : get_option('agetty')
+    getty_name = 'agetty.' + x
+    install_data('agetty', install_dir: conf_d_dir,
+      rename: getty_name)
+  endforeach
+endif
