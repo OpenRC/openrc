@@ -585,6 +585,9 @@ bool notify_wait(const char *applet, struct notify notify)
 	for (;;) {
 		char buf[BUFSIZ];
 		ssize_t bytes = read(notify.fd, buf, BUFSIZ);
+
+		if (bytes == 0)
+			return false;
 		if (bytes == -1) {
 			if (errno != EINTR) {
 				eerror("%s: read failed '%s'\n", applet, strerror(errno));
