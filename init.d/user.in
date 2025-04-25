@@ -20,7 +20,7 @@ notify="fd:3"
 # If it's rapidly failing, usually due to XDG_RUNTIME_DIR being unset,
 # we should just quit fast.
 respawn_max=3
-respawn_period=1
+respawn_period=5
 
 start_pre() {
 	if [ "$user" = "$RC_SVCNAME" ]; then
