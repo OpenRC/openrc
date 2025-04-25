@@ -17,19 +17,19 @@
 .Sh SYNOPSIS
 .Nm
 .Op Fl s , -stack
-.Ar add
+.Ic add
 .Ar service
 .Op Ar runlevel ...
 .Nm
 .Op Fl s , -stack
 .Op Fl a , -all
-.Ar delete
+.Ic delete
 .Ar service
 .Op Ar runlevel ...
 .Nm
 .Op Fl u , -update
 .Op Fl v , -verbose
-.Ar show
+.Ic show
 .Op Ar runlevel ...
 .Sh DESCRIPTION
 OpenRC uses named runlevels.  Rather than editing some obscure
@@ -45,7 +45,7 @@ They must also be standard OpenRC scripts, meaning they must use
 openrc-run.
 .Pp
 .Bl -tag -width "Fl a , -delete service"
-.It Ar add Ar service
+.It Ic add Ar service
 Add the
 .Ar service
 to the
@@ -53,13 +53,13 @@ to the
 or the current one if none given.
 Services added to the boot runlevel must exist in
 .Pa /etc/init.d .
-.It Ar delete Ar service
+.It Ic delete Ar service
 Delete the
 .Ar service
 from the
 .Ar runlevel
 or the current one if none given.
-.It Ar show
+.It Ic show
 Show all enabled services and the runlevels they belong to.  If you specify
 runlevels to show, then only those will be included in the output.
 .It Fl v , -verbose
