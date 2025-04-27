@@ -90,5 +90,3 @@ if ! test -d "${DESTDIR}${shutdowndir}"; then
 		ln -snf "${init_d_dir}/$x" "${DESTDIR}${shutdowndir}/$x"
 	done
 fi
-
-ln -snf "${rc_libexecdir}"/sh/functions.sh "${DESTDIR}/${init_d_dir}"
