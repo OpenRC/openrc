@@ -105,7 +105,7 @@ static int get_dirfd(char *path, bool symlinks)
 	if (!symlinks)
 		flags |= O_NOFOLLOW;
 	flags |= O_RDONLY;
-	while (dirfd > 0 && item && components > 1) {
+	while (item && components > 1) {
 		str = xstrdup(linkpath ? linkpath : item);
 		new_dirfd = openat(dirfd, str, flags);
 		if (new_dirfd == -1)
