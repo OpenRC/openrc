@@ -138,7 +138,7 @@ rm_dir(int targetfd, const char *pathname, bool top)
 	if (!(dp = do_opendirat(targetfd, pathname)))
 		return false;
 
-	while (!(d = readdir(dp))) {
+	while ((d = readdir(dp))) {
 		if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
 			continue;
 		if (fstatat(dirfd(dp), pathname, &s, 0) != 0) {
