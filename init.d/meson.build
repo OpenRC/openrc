@@ -100,6 +100,9 @@ foreach init_d_file : init_data
     install_dir: init_d_dir,
     install_mode: 'rwxr-xr-x')
 endforeach
+install_symlink('functions.sh',
+  pointing_to: rc_shdir / 'functions.sh',
+  install_dir: init_d_dir)
 
 if get_option('sysvinit') == true and os == 'Linux'
   default_runlevel_dir = get_option('sysconfdir') / 'runlevels' / 'default'
