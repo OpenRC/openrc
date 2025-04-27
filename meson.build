@@ -213,6 +213,7 @@ subdir('etc')
 subdir('init.d')
 subdir('local.d')
 subdir('man')
+subdir('runlevels')
 subdir('sh')
 subdir('src')
 subdir('support')
@@ -242,11 +243,6 @@ if get_option('pkgconfig')
   )
 endif
 
-meson.add_install_script('tools/meson_runlevels.sh',
-  os,
-  get_option('newnet') ? 'yes' : 'no',
-  rc_libexecdir,
-  get_option('sysconfdir'))
 meson.add_install_script('tools/meson_final.sh',
   rc_libexecdir,
   os)
