@@ -638,8 +638,11 @@ rc_set_user(void)
 	rc_dirs.scriptdirs[SCRIPTDIR_SVC] = rc_dirs.svcdir;
 
 	for (size_t i = 0; i < RC_DIR_MAX; i++) {
-		if (dirfds[i] == -1)
+		/* dirfd is zero-initialized, though zero is a valid
+		 * FD, dirfd should never contain FDs which are <= 2. */
+		if (dirfds[i] <= 0)
 			continue;
+
 		close(dirfds[i]);
 		dirfds[i] = -1;
 	}
