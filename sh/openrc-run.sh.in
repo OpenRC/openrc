@@ -277,6 +277,12 @@ if yesno "${rc_verbose:-$RC_VERBOSE}"; then
 	export EINFO_VERBOSE
 fi
 
+# Ensure exported vars are actually exported
+for _var in $export; do
+	export $var
+done
+unset _var
+
 for _cmd; do
 	if [ "$_cmd" != status -a "$_cmd" != describe ]; then
 		# Apply any ulimit(s) defined
@@ -391,6 +397,12 @@ while [ -n "$1" ]; do
 				if [ "$(command -v "$1_post")" = "$1_post" ]
 				then
 					"$1"_post || exit $?
+				fi
+				# export vars to our dependees
+				if [ "$1" = "start" ]; then
+					for _var in $export; do
+						service_set_environment $_var
+					done
 				fi
 				[ "$(command -v cgroup_cleanup)" = "cgroup_cleanup" ] &&
 					[ "$1" = "stop" ] &&
