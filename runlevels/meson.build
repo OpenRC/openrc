@@ -89,4 +89,11 @@ foreach runlevel: runlevels.keys()
       install_dir: runlevel_dir / runlevel,
       pointing_to: init_d_dir / service) 
   endforeach
+  if get_option('sysvinit') == true and os == 'Linux' and runlevel == 'default'
+    foreach tty : get_option('agetty')
+      install_symlink('agetty.' + tty,
+        install_dir: runlevel_dir / runlevel,
+        pointing_to: init_d_dir / 'agetty.' + tty)
+    endforeach
+  endif
 endforeach
