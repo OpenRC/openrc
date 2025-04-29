@@ -21,7 +21,6 @@ notify="fd:3"
 # we should just quit fast.
 respawn_max=3
 respawn_period=5
-respawn_delay=500ms
 
 start_pre() {
 	if [ "$user" = "$RC_SVCNAME" ]; then
