@@ -20,9 +20,9 @@ Service scripts are shell scripts. OpenRC aims at using only the standardized
 POSIX sh subset for portability reasons. The default interpreter (build-time 
 toggle) is `/bin/sh`, so using for example mksh is not a problem.
 
-OpenRC has been tested with busybox sh, ash, dash, bash, mksh, zsh and possibly 
-others. Using busybox sh has been difficult as it replaces commands with 
-builtins that don't offer the expected features.
+OpenRC has been tested with busybox's sh, `ash`, `dash`, `bash`, `mksh`, `zsh`
+and possibly  others. Using busybox's sh has been difficult as it replaces
+commands with builtins that don't offer the expected features.
 
 The interpreter for service scripts is `#!/sbin/openrc-run`.
 Not using this interpreter will break the use of dependencies and is not 
@@ -75,22 +75,17 @@ depend() {
 }
 ```
 
-`need` declares a hard dependency - net always needs to be started before this 
+- `need` declares a hard dependency - net always needs to be started before this
 	service does
-
-`use` is a soft dependency - if dns, logger or netmount is in this runlevel 
+- `use` is a soft dependency - if dns, logger or netmount is in this runlevel 
 	start it before, but we don't care if it's not in this runlevel.
-	
-`want` is between need and use - try to start coolservice if it is
+- `want` is between need and use - try to start coolservice if it is
 	installed on the system, regardless of whether it is in the
 	runlevel, but we don't care if it starts.
-
-`before` declares that we need to be started before another service
-
-`after` declares that we need to be started after another service, without 
+- `before` declares that we need to be started before another service
+- `after` declares that we need to be started after another service, without 
 	creating a dependency (so on calling stop the two are independent)
-
-`provide` allows multiple implementations to provide one service type, e.g.:
+- `provide` allows multiple implementations to provide one service type, e.g.:
 	`provide cron` is set in all cron-daemons, so any one of them started 
 	satisfies a cron dependency
 
