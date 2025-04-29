@@ -1091,7 +1091,7 @@ rc_service_schedule_start(const char *service, const char *service_to_start)
 
 	init = rc_service_resolve(service_to_start);
 
-	retval = existsat(schedfd, base_to_start) == 0 || symlinkat(init, schedfd, base_to_start) == 0;
+	retval = existsat(schedfd, base_to_start) || (symlinkat(init, schedfd, base_to_start) == 0);
 
 	close(schedfd);
 	free(init);
