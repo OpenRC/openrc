@@ -1,10 +1,10 @@
-libeinfo_version = '1'
-
-libeinfo = library('einfo', ['libeinfo.c'],
-  include_directories : incdir,
-  link_depends : 'einfo.map',
-  version : libeinfo_version,
-  install : true,
-  install_dir : libdir)
+einfo = declare_dependency(
+  include_directories: '.',
+  link_with: library('einfo', 'libeinfo.c',
+    include_directories: incdir,
+    link_depends: 'einfo.map',
+    install_dir: libdir,
+    install: true,
+    version: '1'))
 
 install_headers('einfo.h')

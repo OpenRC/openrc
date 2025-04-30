@@ -15,7 +15,7 @@ if os == 'Linux'
   shared_sources += 'wtmp.c'
 endif
 
-shared_deps = []
+shared_deps = [einfo]
 
 if selinux_dep.found()
   shared_sources += 'selinux.c'
@@ -26,5 +26,5 @@ shared = declare_dependency(sources: version_h,
   link_with: static_library('shared', shared_sources,
     c_args: [cc_pam_flags, cc_selinux_flags],
     dependencies: shared_deps,
-    link_with: [librc, libeinfo],
-    include_directories: [rc_incdir, einfo_incdir]))
+    link_with: librc,
+    include_directories: rc_incdir))

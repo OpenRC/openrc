@@ -228,7 +228,7 @@ if get_option('pkgconfig')
     name : 'einfo',
     description : 'Pretty console informational display',
     version : meson.project_version(),
-    libraries : libeinfo,
+    libraries : einfo,
   )
 
   openrc_pkgconf = pkg.generate(
