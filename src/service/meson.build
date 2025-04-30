@@ -11,10 +11,10 @@ service_execs = [
   ]
 
 foreach exec : service_execs
-  executable(exec,
-    ['service.c', misc_c, version_h],
+  executable(exec, 'service.c',
     include_directories: [incdir, einfo_incdir, rc_incdir],
     link_with: [libeinfo, librc],
+    dependencies: shared,
     install: true,
     install_dir: rc_bindir)
 endforeach
