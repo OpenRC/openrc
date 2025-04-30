@@ -1,6 +1,6 @@
-executable('openrc-user', ['openrc-user.c', rc_exec_c],
+executable('openrc-user', 'openrc-user.c',
   c_args: [cc_pam_flags],
-  dependencies: pam_dep,
+  dependencies: [shared, pam_dep],
   include_directories: [incdir, einfo_incdir, rc_incdir],
   link_with: [libeinfo, librc],
   install: true,
