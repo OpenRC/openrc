@@ -1,8 +1,8 @@
 executable('start-stop-daemon', 'start-stop-daemon.c',
   c_args : [cc_audit_flags, cc_branding_flags, cc_pam_flags, cc_selinux_flags],
-  link_with: [libeinfo, librc],
-  dependencies: [shared, audit_dep, dl_dep, pam_dep, cap_dep, pam_misc_dep, util_dep, selinux_dep, crypt_dep, dependency('threads')],
-  include_directories: [incdir, einfo_incdir, rc_incdir],
+  link_with: librc,
+  dependencies: [einfo, shared, audit_dep, dl_dep, pam_dep, cap_dep, pam_misc_dep, util_dep, selinux_dep, crypt_dep, dependency('threads')],
+  include_directories: [incdir, rc_incdir],
   install: true,
   install_dir: sbindir)
 
