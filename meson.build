@@ -236,7 +236,7 @@ if get_option('pkgconfig')
     filebase : 'openrc',
     description : 'Universal init system',
     version : meson.project_version(),
-    libraries : librc,
+    libraries : rc,
     variables: {
       'pluginsdir': pluginsdir,
     }
