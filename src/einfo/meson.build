@@ -24,9 +24,8 @@ einfo_execs = [
 
 foreach exec: einfo_execs
   executable(exec, 'einfo.c',
-    include_directories: [incdir, rc_incdir],
-    link_with: librc,
-    dependencies: einfo,
+    include_directories: incdir,
+    dependencies: [rc, einfo],
     install: true,
     install_dir: rc_bindir)
 endforeach
