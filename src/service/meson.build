@@ -12,9 +12,8 @@ service_execs = [
 
 foreach exec : service_execs
   executable(exec, 'service.c',
-    include_directories: [incdir, rc_incdir],
-    link_with: librc,
-    dependencies: [einfo, shared],
+    include_directories: incdir,
+    dependencies: [rc, einfo, shared],
     install: true,
     install_dir: rc_bindir)
 endforeach
