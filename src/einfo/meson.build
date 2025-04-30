@@ -23,8 +23,7 @@ einfo_execs = [
   ]
 
 foreach exec: einfo_execs
-  executable(exec,
-    ['einfo.c', version_h],
+  executable(exec, 'einfo.c',
     include_directories: [incdir, einfo_incdir, rc_incdir],
     link_with: [libeinfo, librc],
     install: true,
