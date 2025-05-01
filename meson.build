@@ -14,17 +14,15 @@ project('OpenRC', 'c',
 cc = meson.get_compiler('c')
 fs = import('fs')
 
+c_flags = []
+
 audit_dep = dependency('audit', required : get_option('audit'))
 if audit_dep.found()
-  cc_audit_flags = '-DHAVE_AUDIT'
-else
-  cc_audit_flags = []
+  c_flags += '-DHAVE_AUDIT'
 endif
 
 if get_option('branding') != ''
-  cc_branding_flags = '-DBRANDING=' + get_option('branding')
-else
-  cc_branding_flags = []
+  c_flags += '-DBRANDING=' + get_option('branding')
 endif
 
 libname = get_option('libdir').split('/')[-1]
@@ -59,9 +57,7 @@ if not pam_dep.found()
   pam_dep = cc.find_library('pam', required: false)
 endif
 if pam_dep.found() and get_option('pam')
-  cc_pam_flags = '-DHAVE_PAM'
-else
-  cc_pam_flags = []
+  c_flags += '-DHAVE_PAM'
 endif
 
 if not pam_dep.found() and get_option('pam')
@@ -102,7 +98,7 @@ crypt_dep = []
 selinux_dep = dependency('libselinux', required : get_option('selinux'))
 pam_misc_dep = []
 if selinux_dep.found()
-  cc_selinux_flags = '-DHAVE_SELINUX'
+  c_flags += '-DHAVE_SELINUX'
   if pam_dep.found() and get_option('pam')
     pam_misc_dep = dependency('pam_misc', required: false)
     if not pam_misc_dep.found()
@@ -117,27 +113,23 @@ if selinux_dep.found()
       crypt_dep = cc.find_library('crypt', required : true)
     endif
   endif
-else
-  cc_selinux_flags = []
 endif
 
 if get_option('buildtype').startswith('debug')
-  cc_debug_flags = ['-DRC_DEBUG']
-else
-  cc_debug_flags = []
+  c_flags += '-DRC_DEBUG'
 endif
 
 if os == 'Linux' or os == 'GNU-kFreeBSD'
-  cc_os_flags = ['-D_DEFAULT_SOURCE']
+  c_flags += '-D_DEFAULT_SOURCE'
 elif os == 'FreeBSD'
-  cc_os_flags = ['-D_BSD_SOURCE']
+  c_flags += '-D_BSD_SOURCE'
 elif os == 'GNU'
-  cc_os_flags = ['-D_DEFAULT_SOURCE', '-DPATH_MAX=4096']
+  c_flags += ['-D_DEFAULT_SOURCE', '-DPATH_MAX=4096']
 endif
 
 # The following warnings are not included in warning_level = 3, but we
 # are keeping them for now.
-cc_warning_flags_test = [
+c_flags += cc.get_supported_arguments([
   '-Wcast-align',
   '-Wcast-qual',
   '-Wdeclaration-after-statement',
@@ -155,10 +147,8 @@ cc_warning_flags_test = [
   '-Werror=implicit-function-declaration',
   '-Werror=int-conversion',
   '-Werror=incompatible-function-pointer-types',
-  ]
-cc_warning_flags = cc.get_supported_arguments(cc_warning_flags_test)
-cc_flags = [cc_debug_flags, cc_os_flags, cc_warning_flags]
-add_project_arguments(cc_flags, language : 'c')
+])
+add_project_arguments(c_flags, language : 'c')
 
 feature_macros = {}
 
