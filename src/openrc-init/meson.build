@@ -1,6 +1,5 @@
 if os == 'Linux'
   executable('openrc-init', 'openrc-init.c',
-    c_args : cc_selinux_flags,
     include_directories: incdir,
     dependencies: [rc, einfo, shared, dl_dep, selinux_dep],
     install: true,

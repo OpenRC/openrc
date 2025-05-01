@@ -1,5 +1,4 @@
 executable('supervise-daemon', 'supervise-daemon.c',
-  c_args : [cc_branding_flags, cc_pam_flags, cc_selinux_flags],
   dependencies: [rc, einfo, shared, dl_dep, pam_dep, cap_dep, util_dep, selinux_dep],
   include_directories: incdir,
   install: true,

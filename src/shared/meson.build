@@ -22,5 +22,4 @@ if selinux_dep.found()
   shared_deps += selinux_dep
 endif
 
-shared = declare_dependency(sources: version_h,
-  link_with: static_library('shared', shared_sources, c_args: [cc_pam_flags, cc_selinux_flags], dependencies: shared_deps))
+shared = declare_dependency(sources: version_h, link_with: static_library('shared', shared_sources, dependencies: shared_deps))
