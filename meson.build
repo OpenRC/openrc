@@ -27,21 +27,16 @@ endif
 
 libname = get_option('libdir').split('/')[-1]
 
-option_local_prefix = get_option('local_prefix')
-if option_local_prefix == ''
+local_prefix = get_option('local_prefix')
+if local_prefix == ''
   local_prefix = get_option('prefix') / 'usr' / 'local'
-else
-  local_prefix = option_local_prefix
 endif
 
-option_os = get_option('os')
-if option_os == ''
-  uname = find_program('uname')
-  r = run_command(uname, '-s', check: true)
+os = get_option('os')
+if os == ''
+  r = run_command(find_program('uname'), '-s', check: true)
   os = r.stdout().strip()
   os = '-'.join(os.split('/'))
-else
-  os = option_os
 endif
 
 if os != 'Linux'
@@ -52,20 +47,17 @@ else
   kvm_dep = []
 endif
 
-pam_dep = dependency('pam', required: false)
-if not pam_dep.found()
-  pam_dep = cc.find_library('pam', required: false)
-endif
-if pam_dep.found() and get_option('pam')
+pam_dep = []
+if get_option('pam')
+  pam_dep = dependency('pam', required: false)
+  if not pam_dep.found()
+    pam_dep = cc.find_library('pam') # bsds don't ship pam's pkg-config for whatever reason
+  endif
   c_flags += '-DHAVE_PAM'
 endif
 
-if not pam_dep.found() and get_option('pam')
-  error('Pam was requested but could not be located')
-endif
-
-option_pkg_prefix = get_option('pkg_prefix')
-if option_pkg_prefix == ''
+pkg_prefix = get_option('pkg_prefix')
+if pkg_prefix == ''
   if os == 'Dragonfly' or os == 'FreeBSD'
     pkg_prefix = '/usr/local'
   elif os == 'GNU' or os == 'GNU-kFreeBSD' or os == 'Linux'
@@ -73,8 +65,6 @@ if option_pkg_prefix == ''
   elif os == 'NetBSD'
     pkg_prefix = '/usr/pkg'
   endif
-else
-  pkg_prefix = option_pkg_prefix
 endif
 
 bindir = get_option('prefix') / get_option('bindir')
@@ -93,25 +83,15 @@ if pam_libdir == ''
   pam_libdir = libdir / 'security'
 endif
 
-crypt_dep = []
-
-selinux_dep = dependency('libselinux', required : get_option('selinux'))
+selinux_dep = dependency('libselinux', required: get_option('selinux'))
 pam_misc_dep = []
+crypt_dep = []
 if selinux_dep.found()
   c_flags += '-DHAVE_SELINUX'
-  if pam_dep.found() and get_option('pam')
-    pam_misc_dep = dependency('pam_misc', required: false)
-    if not pam_misc_dep.found()
-      pam_misc_dep = cc.find_library('pam_misc', required: false)
-    endif
-    if not pam_misc_dep.found() and get_option('pam')
-      error('Pam was requested but could not be located')
-    endif
+  if get_option('pam')
+    pam_misc_dep = dependency('pam_misc')
   else
-    crypt_dep = dependency('libcrypt', required : false)
-    if not crypt_dep.found()
-      crypt_dep = cc.find_library('crypt', required : true)
-    endif
+    crypt_dep = dependency('libcrypt')
   endif
 endif
 
@@ -214,14 +194,14 @@ subdir('zsh-completion')
 if get_option('pkgconfig')
   pkg = import('pkgconfig')
 
-  einfo_pkgconf = pkg.generate(
+  pkg.generate(
     name : 'einfo',
     description : 'Pretty console informational display',
     version : meson.project_version(),
     libraries : einfo,
   )
 
-  openrc_pkgconf = pkg.generate(
+  pkg.generate(
     name : 'OpenRC',
     filebase : 'openrc',
     description : 'Universal init system',
