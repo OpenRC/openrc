@@ -10,7 +10,7 @@ option('newnet', type : 'boolean',
   description : 'build and install our networking scripts')
 option('os', type : 'combo',
   choices :
-    [ '', 'DragonFly', 'FreeBSD', 'GNU', 'GNU-kFreeBSD', 'Linux', 'NetBSD' ],
+    [ '', 'DragonFly', 'FreeBSD', 'GNU', 'Linux', 'NetBSD' ],
   description : 'Operating System (autodetected if not specified)')
 option('pam', type : 'boolean',
   description : 'enable PAM support')

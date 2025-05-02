@@ -60,7 +60,7 @@ pkg_prefix = get_option('pkg_prefix')
 if pkg_prefix == ''
   if os == 'Dragonfly' or os == 'FreeBSD'
     pkg_prefix = '/usr/local'
-  elif os == 'GNU' or os == 'GNU-kFreeBSD' or os == 'Linux'
+  elif os == 'GNU' or os == 'Linux'
     pkg_prefix = '/usr'
   elif os == 'NetBSD'
     pkg_prefix = '/usr/pkg'
@@ -99,7 +99,7 @@ if get_option('buildtype').startswith('debug')
   c_flags += '-DRC_DEBUG'
 endif
 
-if os == 'Linux' or os == 'GNU-kFreeBSD'
+if os == 'Linux'
   c_flags += '-D_DEFAULT_SOURCE'
 elif os == 'FreeBSD'
   c_flags += '-D_BSD_SOURCE'
