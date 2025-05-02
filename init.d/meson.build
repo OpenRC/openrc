@@ -85,7 +85,7 @@ init_NetBSD =  [
 init_data = init_common
 if os == 'Dragonfly'
   init_data = init_data + init_BSD
-elif os == 'FreeBSD' or os == 'Gnu-kFreeBSD'
+elif os == 'FreeBSD'
   init_data = init_data + init_BSD + init_FreeBSD
 elif os == 'Linux'
   init_data = init_data + init_Linux
