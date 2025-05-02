@@ -43,10 +43,6 @@ elif os == 'GNU'
   scripts_config_os = [
     ['init.sh.GNU.in', 'init.sh'],
     ]
-elif os == 'Gnu-KFreeBSD'
-  scripts_config_os = [
-    ['init.sh.GNU-kFreeBSD.in', 'init.sh'],
-    ]
 else
   scripts_config_os = [
     ['init.sh.BSD.in', 'init.sh'],

@@ -53,7 +53,7 @@ if get_option('newnet')
 endif
 if os == 'DragonFly'
   boot += boot_bsd
-elif os == 'FreeBSD' or os == 'GNU-kFreeBSD'
+elif os == 'FreeBSD'
   boot += boot_bsd + boot_freebsd
 elif os == 'Linux'
   boot += boot_linux
