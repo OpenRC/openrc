@@ -11,7 +11,7 @@ shared_sources = [
   version_h,
 ]
 
-if os == 'Linux'
+if os == 'linux'
   shared_sources += 'wtmp.c'
 endif
 

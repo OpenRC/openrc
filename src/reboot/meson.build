@@ -1,4 +1,4 @@
-if os == 'Linux' and get_option('sysvinit')
+if os == 'linux' and get_option('sysvinit')
   configure_file(input : 'reboot.in',
     output : '@BASENAME@',
     configuration : script_conf_data,

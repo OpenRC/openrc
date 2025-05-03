@@ -1,4 +1,4 @@
-if os == 'Linux'
+if os == 'linux'
   executable('openrc-shutdown',
     ['openrc-shutdown.c', 'broadcast.c', 'sysvinit.c'],
     include_directories: incdir,
