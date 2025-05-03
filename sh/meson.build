@@ -27,7 +27,7 @@ scripts_config = [
   's6-svscanboot.sh.in'
   ]
 
-if os == 'Linux'
+if os == 'linux'
   sh += [
     'rc-cgroup.sh',
     ]
@@ -39,7 +39,7 @@ if os == 'Linux'
     ['init-early.sh.Linux.in', 'init-early.sh'],
     ['init.sh.Linux.in', 'init.sh'],
     ]
-elif os == 'GNU'
+elif os == 'gnu'
   scripts_config_os = [
     ['init.sh.GNU.in', 'init.sh'],
     ]

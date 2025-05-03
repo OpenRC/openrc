@@ -1,7 +1,7 @@
 etc_conf_data = configuration_data()
-if os == 'FreeBSD'
+if os == 'freebsd'
   etc_conf_data.set('TERM', 'cons25')
-elif os == 'Linux'
+elif os == 'linux'
   etc_conf_data.set('TERM', 'wsvt25')
 endif
 
@@ -25,7 +25,7 @@ etc_bin_NetBSD =  [
 install_data(etc_conf_common,
   install_dir : get_option('sysconfdir'))
 
-  if os == 'FreeBSD'
+  if os == 'freebsd'
   install_data(etc_bin_FreeBSD,
     install_dir : get_option('sysconfdir'),
     install_mode: 'rwxr-xr-x')
@@ -33,7 +33,7 @@ install_data(etc_conf_common,
     install_dir : get_option('sysconfdir'))
 endif
 
-if os == 'FreeBSD' or os == 'NetBSD'
+if os == 'freebsd' or os == 'netbsd'
   foreach file : etc_bin_NetBSD
     configure_file(input : file,
       output : '@BASENAME@',

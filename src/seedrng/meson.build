@@ -1,4 +1,4 @@
-if os == 'Linux'
+if os == 'linux'
   executable('seedrng', 'seedrng.c',
     include_directories: incdir,
     dependencies: [rc, einfo, shared],
