@@ -19,7 +19,7 @@ man8 = [
   'supervise-daemon.8',
   ]
 
-if os == 'Linux'
+if os == 'linux'
   man8 = man8 + [
     'rc-sstat.8',
     'openrc-init.8',

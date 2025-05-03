@@ -1,4 +1,4 @@
-if os == 'Linux'
+if os == 'linux'
   executable('openrc-init', 'openrc-init.c',
     include_directories: incdir,
     dependencies: [rc, einfo, shared, dl_dep, selinux_dep],

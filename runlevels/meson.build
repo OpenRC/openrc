@@ -6,7 +6,7 @@ sysinit_linux = [
   'devfs',
   'dmesg',
   'sysfs']
-if os == 'Linux'
+if os == 'linux'
   sysinit += sysinit_linux
 endif
 
@@ -53,11 +53,11 @@ if get_option('newnet')
 endif
 if os == 'DragonFly'
   boot += boot_bsd
-elif os == 'FreeBSD'
+elif os == 'freebsd'
   boot += boot_bsd + boot_freebsd
-elif os == 'Linux'
+elif os == 'linux'
   boot += boot_linux
-elif os == 'NetBSD'
+elif os == 'netbsd'
   boot += boot_bsd + boot_netbsd
 endif
 
@@ -71,7 +71,7 @@ shutdown = ['savecache']
 shutdown_linux = [
   'killprocs',
   'mount-ro']
-if os == 'Linux'
+if os == 'linux'
   shutdown += shutdown_linux
 endif
 
@@ -89,7 +89,7 @@ foreach runlevel: runlevels.keys()
       install_dir: runlevel_dir / runlevel,
       pointing_to: init_d_dir / service) 
   endforeach
-  if get_option('sysvinit') == true and os == 'Linux' and runlevel == 'default'
+  if get_option('sysvinit') == true and os == 'linux' and runlevel == 'default'
     foreach tty : get_option('agetty')
       install_symlink('agetty.' + tty,
         install_dir: runlevel_dir / runlevel,

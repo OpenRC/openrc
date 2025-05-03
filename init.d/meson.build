@@ -83,13 +83,13 @@ init_NetBSD =  [
   ]
 
 init_data = init_common
-if os == 'Dragonfly'
+if os == 'dragonfly'
   init_data = init_data + init_BSD
-elif os == 'FreeBSD'
+elif os == 'freebsd'
   init_data = init_data + init_BSD + init_FreeBSD
-elif os == 'Linux'
+elif os == 'linux'
   init_data = init_data + init_Linux
-elif os == 'NetBSD'
+elif os == 'netbsd'
   init_data = init_data + init_BSD + init_NetBSD
   endif
 
@@ -104,7 +104,7 @@ install_symlink('functions.sh',
   pointing_to: rc_shdir / 'functions.sh',
   install_dir: init_d_dir)
 
-if get_option('sysvinit') == true and os == 'Linux'
+if get_option('sysvinit') == true and os == 'linux'
   foreach x : get_option('agetty')
     link_name = 'agetty.' + x
     install_symlink(link_name,

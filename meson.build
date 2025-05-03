@@ -32,14 +32,8 @@ if local_prefix == ''
   local_prefix = get_option('prefix') / 'usr' / 'local'
 endif
 
-os = get_option('os')
-if os == ''
-  r = run_command(find_program('uname'), '-s', check: true)
-  os = r.stdout().strip()
-  os = '-'.join(os.split('/'))
-endif
-
-if os != 'Linux'
+os = host_machine.system()
+if os != 'linux'
   cap_dep = []
   kvm_dep = cc.find_library('kvm')
 else
@@ -58,11 +52,11 @@ endif
 
 pkg_prefix = get_option('pkg_prefix')
 if pkg_prefix == ''
-  if os == 'Dragonfly' or os == 'FreeBSD'
+  if os == 'dragonfly' or os == 'freebsd'
     pkg_prefix = '/usr/local'
-  elif os == 'GNU' or os == 'Linux'
+  elif os == 'gnu' or os == 'linux'
     pkg_prefix = '/usr'
-  elif os == 'NetBSD'
+  elif os == 'netbsd'
     pkg_prefix = '/usr/pkg'
   endif
 endif
@@ -99,11 +93,11 @@ if get_option('buildtype').startswith('debug')
   c_flags += '-DRC_DEBUG'
 endif
 
-if os == 'Linux'
+if os == 'linux'
   c_flags += '-D_DEFAULT_SOURCE'
-elif os == 'FreeBSD'
+elif os == 'freebsd'
   c_flags += '-D_BSD_SOURCE'
-elif os == 'GNU'
+elif os == 'gnu'
   c_flags += ['-D_DEFAULT_SOURCE', '-DPATH_MAX=4096']
 endif
 
