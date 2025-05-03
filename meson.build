@@ -33,12 +33,14 @@ if local_prefix == ''
 endif
 
 os = host_machine.system()
-if os != 'linux'
-  cap_dep = []
-  kvm_dep = cc.find_library('kvm')
-else
+
+cap_dep = []
+kvm_dep = []
+
+if os == 'linux'
   cap_dep = dependency('libcap', version: '>=2.33')
-  kvm_dep = []
+elif os.contains('bsd') or os == 'dragonfly'
+  kvm_dep = cc.find_library('kvm')
 endif
 
 pam_dep = []
