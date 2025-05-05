@@ -1118,8 +1118,10 @@ int main(int argc, char **argv)
 		cloexec_fds_from(3);
 
 		if (notify.type == NOTIFY_FD) {
-			if (close(notify.pipe[0]) == -1 || dup2(notify.pipe[1], notify.fd) == -1)
-				eerrorx("Failed to initialize notify fd.");
+			if (close(notify.pipe[0]) == -1)
+				eerrorx("%s: failed to close notify pipe[0]: %s", applet, strerror(errno));
+			if (dup2(notify.pipe[1], notify.fd) == -1)
+				eerrorx("%s: failed to initialize notify fd: %s", applet, strerror(errno));
 		}
 
 		if (scheduler != NULL) {
