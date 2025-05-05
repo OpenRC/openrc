@@ -171,6 +171,7 @@ const char * const longopts_help[] = {
 	"Print dots each second while waiting",
 	"Set process scheduler",
 	"Set process scheduler priority",
+	"Configures experimental notification behaviour",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
