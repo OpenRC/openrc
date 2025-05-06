@@ -1,8 +1,5 @@
-executable('openrc',
-  ['rc.c', 'rc-logger.c', misc_c, plugin_c, rc_exec_c, usage_c, version_h],
-  c_args : cc_branding_flags,
-  link_with: [libeinfo, librc],
-  dependencies: [dl_dep, util_dep],
-  include_directories: [incdir, einfo_incdir, rc_incdir],
+executable('openrc', ['rc.c', 'rc-logger.c'],
+  dependencies: [rc, einfo, shared, dl_dep, util_dep],
+  include_directories: incdir,
   install: true,
   install_dir: sbindir)

@@ -1,9 +1,9 @@
 script_conf_data = configuration_data()
 script_conf_data.set('SBINDIR', sbindir)
 
-subdir('shared')
-subdir('libeinfo')
 subdir('librc')
+subdir('libeinfo')
+subdir('shared')
 subdir('checkpath')
 subdir('einfo')
 subdir('fstabinfo')

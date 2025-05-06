@@ -1,7 +1,5 @@
-executable('mountinfo',
-  ['mountinfo.c', misc_c, usage_c, version_h],
-  c_args : cc_branding_flags,
-  include_directories: [incdir, einfo_incdir, rc_incdir],
-  link_with: [libeinfo, librc],
+executable('mountinfo', 'mountinfo.c',
+  include_directories: incdir,
+  dependencies: [rc, einfo, shared],
   install: true,
   install_dir: rc_bindir)

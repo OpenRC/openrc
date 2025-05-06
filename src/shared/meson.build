@@ -1,43 +1,25 @@
-misc_c = files([
+version_h = vcs_tag(input : 'version.h.in', output : 'version.h')
+vcs_tag(input : 'version.in', output : 'version')
+
+shared_sources = [
   'misc.c',
-  ])
-
-plugin_c = files([
   'plugin.c',
-  ])
-
-schedules_c = files([
   'schedules.c',
-  ])
-
-timeutils_c = files([
-  'timeutils.c'
-  ])
-
-rc_exec_c = files([
+  'timeutils.c',
   'rc_exec.c',
-  ])
+  '_usage.c',
+  version_h,
+]
 
-if selinux_dep.found()
-  selinux_c = files([
-    'selinux.c',
-    ])
-else
-  selinux_c = []
+if os == 'linux'
+  shared_sources += 'wtmp.c'
 endif
 
-wtmp_c = files([
-  'wtmp.c',
-  ])
+shared_deps = [rc, einfo]
 
-usage_c = files([
-  '_usage.c',
-  ])
+if selinux_dep.found()
+  shared_sources += 'selinux.c'
+  shared_deps += selinux_dep
+endif
 
-version_h = vcs_tag(
-  input : 'version.h.in',
-  output : 'version.h')
-
-version_f = vcs_tag(
-  input : 'version.in',
-  output : 'version')
+shared = declare_dependency(sources: version_h, link_with: static_library('shared', shared_sources, dependencies: shared_deps))
