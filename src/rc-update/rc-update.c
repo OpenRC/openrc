@@ -39,7 +39,8 @@ const char *usagestring = ""
 #define opts(opt, opt_long) \
 	opt(a, all, no_argument, "Process all runlevels") \
 	opt(s, stack, no_argument, "Stack a runlevel instead of a service") \
-	opt(u, update, no_argument, "Force an update of the dependency tree")
+	opt(u, update, no_argument, "Force an update of the dependency tree") \
+	opt(U, user, no_argument, "Run in user mode")
 cmdline_opts(opts)
 
 /* Return the number of changes made:

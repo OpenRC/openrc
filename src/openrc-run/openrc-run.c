@@ -69,7 +69,8 @@ const char *extraopts = "stop | start | restart | status | describe | zap";
 	opt(s, ifstarted, no_argument, "only run commands when started") \
 	opt(S, ifstopped, no_argument, "only run commands when stopped") \
 	opt(D, nodeps, no_argument, "ignore dependencies") \
-	opt(l, lockfd, required_argument, "fd of the exclusive lock from rc")
+	opt(l, lockfd, required_argument, "fd of the exclusive lock from rc") \
+	opt(U, user, no_argument, "Run in user mode")
 cmdline_opts(opts)
 
 static char *service, *runlevel, *ibsave, *prefix;

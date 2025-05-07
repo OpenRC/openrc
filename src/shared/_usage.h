@@ -29,7 +29,6 @@
 	opt(V, version, no_argument, "Display software version")              \
 	opt(v, verbose, no_argument, "Run verbosely")                         \
 	opt(q, quiet, no_argument, "Run quietly (repeat to suppress errors)") \
-	opt(U, user, no_argument, "Run in user mode")
 
 #define cmdline_opts(opts)                                                                       \
 	const struct option longopts[] = { opts(longopt, longopt_only) common_opts(longopt) };       \

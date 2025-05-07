@@ -49,7 +49,8 @@ const char *extraopts = NULL;
 	opt(r, runlevel, no_argument, "Show the name of the current runlevel") \
 	opt(s, servicelist, no_argument, "Show service list") \
 	opt(S, supervised, no_argument, "show supervised services") \
-	opt(u, unused, no_argument, "Show services not assigned to any runlevel")
+	opt(u, unused, no_argument, "Show services not assigned to any runlevel") \
+	opt(U, user, no_argument, "Run in user mode")
 cmdline_opts(opts)
 const char *usagestring = ""
 	"Usage: rc-status [-C] [-f ini] [-i state] [runlevel]\n"

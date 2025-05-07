@@ -39,7 +39,8 @@ const char *extraopts = NULL;
 	opt(T, notrace, no_argument, "Don't trace service dependencies") \
 	opt(s, strict, no_argument, "Only use what is in the runlevels") \
 	opt(u, update, no_argument, "Force an update of the dependency tree") \
-	opt(F, deptree-file, required_argument, "File to load cached deptree from")
+	opt(F, deptree-file, required_argument, "File to load cached deptree from") \
+	opt(U, user, no_argument, "Run in user mode")
 cmdline_opts(opts)
 const char *usagestring = NULL;
 
