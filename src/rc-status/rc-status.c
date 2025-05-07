@@ -39,33 +39,18 @@ enum format_t {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "acf:i:lmrsSu" getoptstring_COMMON;
-const struct option longopts[] = {
-	{"all",         0, NULL, 'a'},
-	{"crashed",     0, NULL, 'c'},
-	{"format",     1, NULL, 'f'},
-	{"in-state",   1, NULL, 'i'},
-	{"list",        0, NULL, 'l'},
-	{"manual",        0, NULL, 'm'},
-	{"runlevel",    0, NULL, 'r'},
-	{"servicelist", 0, NULL, 's'},
-	{"supervised", 0, NULL, 'S'},
-	{"unused",      0, NULL, 'u'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"Show services from all run levels",
-	"Show crashed services",
-	"format status to be parsable (currently arg must be ini)",
-	"Show services which are in this state",
-	"Show list of run levels",
-	"Show manually started services",
-	"Show the name of the current runlevel",
-	"Show service list",
-	"show supervised services",
-	"Show services not assigned to any runlevel",
-	longopts_help_COMMON
-};
+#define opts(opt, opt_long) \
+	opt(a, all, no_argument, "Show services from all run levels") \
+	opt(c, crashed, no_argument, "Show crashed services") \
+	opt(f, format, required_argument, "format status to be parsable (currently arg must be ini)") \
+	opt(i, in-state, required_argument, "Show services which are in this state") \
+	opt(l, list, no_argument, "Show list of run levels") \
+	opt(m, manual, no_argument, "Show manually started services") \
+	opt(r, runlevel, no_argument, "Show the name of the current runlevel") \
+	opt(s, servicelist, no_argument, "Show service list") \
+	opt(S, supervised, no_argument, "show supervised services") \
+	opt(u, unused, no_argument, "Show services not assigned to any runlevel")
+cmdline_opts(opts)
 const char *usagestring = ""
 	"Usage: rc-status [-C] [-f ini] [-i state] [runlevel]\n"
 	"   or: rc-status [-C] [-f ini] [-a | -m | -S | -s | -u]\n"

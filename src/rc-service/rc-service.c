@@ -31,37 +31,21 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "cdDe:ilr:INsSZ" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "debug",     0, NULL, 'd' },
-	{ "nodeps",     0, NULL, 'D' },
-	{ "exists",   1, NULL, 'e' },
-	{ "ifcrashed", 0, NULL, 'c' },
-	{ "ifexists", 0, NULL, 'i' },
-	{ "ifinactive", 0, NULL, 'I' },
-	{ "ifnotstarted", 0, NULL, 'N' },
-	{ "ifstarted", 0, NULL, 's' },
-	{ "ifstopped", 0, NULL, 'S' },
-	{ "list",     0, NULL, 'l' },
-	{ "resolve",  1, NULL, 'r' },
-	{ "dry-run",     0, NULL, 'Z' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"set xtrace when running the command",
-	"ignore dependencies",
-	"tests if the service exists or not",
-	"if the service is crashed run the command",
-	"if the service exists run the command",
-	"if the service is inactive run the command",
-	"if the service is not started run the command",
-	"if the service is started run the command",
-	"if the service is stopped run the command",
-	"list all available services",
-	"resolve the service name to an init script",
-	"dry run (show what would happen)",
-	longopts_help_COMMON
-};
+#define opts(opt, opt_long) \
+	opt(d, debug, no_argument, "set xtrace when running the command") \
+	opt(D, nodeps, no_argument, "ignore dependencies") \
+	opt(e, exists, required_argument, "tests if the service exists or not") \
+	opt(c, ifcrashed, no_argument, "if the service is crashed run the command") \
+	opt(i, ifexists, no_argument, "if the service exists run the command") \
+	opt(I, ifinactive, no_argument, "if the service is inactive run the command") \
+	opt(N, ifnotstarted, no_argument, "if the service is not started run the command") \
+	opt(s, ifstarted, no_argument, "if the service is started run the command") \
+	opt(S, ifstopped, no_argument, "if the service is stopped run the command") \
+	opt(l, list, no_argument, "list all available services") \
+	opt(r, resolve, required_argument, "resolve the service name to an init script") \
+	opt(Z, dry-run, no_argument, "dry run (show what would happen)")
+cmdline_opts(opts)
+
 const char *usagestring = ""
 	"Usage: rc-service [options] [-i] <service> <cmd>...\n"
 	"   or: rc-service [options] -e <service>\n"
