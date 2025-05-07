@@ -1,4 +1,5 @@
-runlevel_dir =get_option('sysconfdir') / 'runlevels'
+runlevel_dir = get_option('sysconfdir') / 'runlevels'
+init_d_dir = get_option('sysconfdir') / 'init.d'
 
 sysinit = []
 sysinit_linux = [
