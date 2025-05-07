@@ -1,0 +1,23 @@
+#!@SHELL@ -e
+
+scandir="$1/s6-scan"
+logdir="$1/s6-logs"
+execlineb=`command -v execlineb`
+
+mkdir -p "$logdir"
+mkdir -p -m 02755 "$scandir/s6-svscan-log"
+echo 3 > "$scandir/s6-svscan-log/notification-fd"
+mkfifo -m 0600 "$scandir/s6-svscan-log/fifo" 2>/dev/null || :
+cat > "$scandir/s6-svscan-log/run" <<EOF
+#!$execlineb -S1
+fdmove -c 1 2
+redirfd -rnb 0 fifo
+exec -c
+s6-log -bpd3 -- t s1048576 n10 "$logdir"
+EOF
+chmod 0755 "$scandir/s6-svscan-log/run"
+
+# when notify=fd is fixed, add -d4 after -X3
+exec redirfd -wnb 1 "$scandir/s6-svscan-log/fifo" \
+fdmove -c 2 1 \
+s6-svscan -X3 -- "$scandir" 0</dev/null 3>/dev/console

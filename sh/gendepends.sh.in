@@ -120,6 +120,9 @@ do
 
 		if . "$_dir/$RC_SVCNAME"; then
 			echo "$RC_SVCNAME" >&3
+			if [ -n "$supervisor" ] && [ "$supervisor" = s6 ]; then
+				need s6-svscan
+			fi
 			_depend
 		fi
 		)
