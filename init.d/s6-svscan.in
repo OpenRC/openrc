@@ -1,5 +1,5 @@
 #!@SBINDIR@/openrc-run
-# Copyright (c) 2015 The OpenRC Authors.
+# Copyright 2025 The OpenRC Authors.
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
 #
@@ -9,34 +9,47 @@
 # This file may not be copied, modified, propagated, or distributed
 # except according to the terms contained in the LICENSE file.
 
-command=/bin/s6-svscan
-command_args="${RC_SVCDIR}"/s6-scan
+# We currently start the s6 supervision tree as an
+# openrc service. It's using ssd for now; we may
+# switch to supervise-daemon later.
+
+command="${RC_LIBEXECDIR}/sh/s6-svscanboot.sh"
+command_args="$RC_SVCDIR"
 command_background=yes
 pidfile=/var/run/s6-svscan.pid
+umask=022
+# notify=fd:4  # when notify=fd is fixed, uncomment here and in svscanboot
 
-depend()
-{
-	need localmount
+depend() {
+        need localmount
 }
 
-start_pre()
-{
-	if [ ! -e "$command" ]; then
-		eerror "$command is missing (please install s6)"
-	else
-		einfo "Creating s6 scan directory"
-		checkpath -d -m 0755 "$RC_SVCDIR"/s6-scan
+_stop_and_crop() {
+        if s6-svok "$1" 2>/dev/null ; then
+                s6-svc -dwDkx "$1"
+        fi
+        rm -rf "$1/supervise" "$1/event"
+}
+
+stop() {
+        local scandir="$RC_SVCDIR/s6-scan" servicedirs="$RC_SVCDIR/s6-services"
+        default_stop
+	if test -d "$servicedirs" ; then
+	        ebegin "Cleaning stray supervised processes"
+	        rm -rf "$scandir"
+	        for i in `ls -1 "$servicedirs"` ; do
+	                _stop_and_crop "$servicedirs/$i" &
+	                if test -d "$servicedirs/$i/log" ; then
+	                        _stop_and_crop "$servicedirs/$i/log" &
+	                fi
+	        done
+	        wait
+	        eend 0
+	        if test -d "$RC_CACHEDIR" ; then
+	                ebegin "Storing service directories in cache"
+	                rm -rf "$RC_CACHEDIR/s6-services"
+	                cp -pPR "$servicedirs" "$RC_CACHEDIR/"
+	                eend $?
+	        fi
 	fi
-	return
-}
-
-stop_post()
-{
-	ebegin "Stopping any remaining s6 services"
-	s6-svc -dx "${RC_SVCDIR}"/s6-scan/* 2>/dev/null || true
-	eend $?
-
-	ebegin "Stopping any remaining s6 service loggers"
-	s6-svc -dx "${RC_SVCDIR}"/s6-scan/*/log 2>/dev/null || true
-	eend $?
 }
