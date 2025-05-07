@@ -54,7 +54,8 @@
 	opt(o, override, required_argument, "override the next runlevel to change into\n"               \
 		"when leaving single user or boot runlevels")                                               \
 	opt(s, service, required_argument, "runs the service specified with the rest of the arguments") \
-	opt(S, sys, no_argument, "output the RC system type, if any")
+	opt(S, sys, no_argument, "output the RC system type, if any")                                   \
+	opt(U, user, no_argument, "Run in user mode")
 cmdline_opts(opts)
 
 const char *extraopts = NULL;

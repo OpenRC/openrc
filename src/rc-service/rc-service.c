@@ -43,7 +43,8 @@ const char *extraopts = NULL;
 	opt(S, ifstopped, no_argument, "if the service is stopped run the command") \
 	opt(l, list, no_argument, "list all available services") \
 	opt(r, resolve, required_argument, "resolve the service name to an init script") \
-	opt(Z, dry-run, no_argument, "dry run (show what would happen)")
+	opt(Z, dry-run, no_argument, "dry run (show what would happen)") \
+	opt(U, user, no_argument, "Run in user mode")
 cmdline_opts(opts)
 
 const char *usagestring = ""
