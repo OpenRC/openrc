@@ -34,17 +34,10 @@
 
 const char *applet = NULL;
 const char *extraopts = "file";
-const char getoptstring[] = "sw" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "save", 0, NULL, 's' },
-	{ "warn", 0, NULL, 'w' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"saves the time",
-	"no error if no reference file",
-	longopts_help_COMMON
-};
+#define opts(opt, opt_long) \
+	opt(s, save, no_argument, "saves the time") \
+	opt(w, warn, no_argument, "no error if no reference file")
+cmdline_opts(opts)
 const char *usagestring = NULL;
 
 int main(int argc, char **argv)

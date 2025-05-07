@@ -32,27 +32,15 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "aot:suTF:" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "starting", 0, NULL, 'a'},
-	{ "stopping", 0, NULL, 'o'},
-	{ "type",     1, NULL, 't'},
-	{ "notrace",  0, NULL, 'T'},
-	{ "strict",   0, NULL, 's'},
-	{ "update",   0, NULL, 'u'},
-	{ "deptree-file", 1, NULL, 'F'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"Order services as if runlevel is starting",
-	"Order services as if runlevel is stopping",
-	"Type(s) of dependency to list",
-	"Don't trace service dependencies",
-	"Only use what is in the runlevels",
-	"Force an update of the dependency tree",
-	"File to load cached deptree from",
-	longopts_help_COMMON
-};
+#define opts(opt, opt_long) \
+	opt(a, starting, no_argument, "Order services as if runlevel is starting") \
+	opt(o, stopping, no_argument, "Order services as if runlevel is stopping") \
+	opt(t, type, required_argument, "Type(s) of dependency to list") \
+	opt(T, notrace, no_argument, "Don't trace service dependencies") \
+	opt(s, strict, no_argument, "Only use what is in the runlevels") \
+	opt(u, update, no_argument, "Force an update of the dependency tree") \
+	opt(F, deptree-file, required_argument, "File to load cached deptree from")
+cmdline_opts(opts)
 const char *usagestring = NULL;
 
 int main(int argc, char **argv)

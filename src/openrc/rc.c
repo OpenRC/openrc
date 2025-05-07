@@ -49,24 +49,16 @@
 #include "_usage.h"
 #include "helpers.h"
 
+#define opts(opt, opt_long)                                                                         \
+	opt(n, no-stop, no_argument, "do not stop any services")                                        \
+	opt(o, override, required_argument, "override the next runlevel to change into\n"               \
+		"when leaving single user or boot runlevels")                                               \
+	opt(s, service, required_argument, "runs the service specified with the rest of the arguments") \
+	opt(S, sys, no_argument, "output the RC system type, if any")
+cmdline_opts(opts)
+
 const char *extraopts = NULL;
-const char getoptstring[] = "a:no:s:S" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "no-stop", 0, NULL, 'n' },
-	{ "override",    1, NULL, 'o' },
-	{ "service",     1, NULL, 's' },
-	{ "sys",         0, NULL, 'S' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"do not stop any services",
-	"override the next runlevel to change into\nwhen leaving single user or boot runlevels",
-	"runs the service specified with the rest\nof the arguments",
-	"output the RC system type, if any",
-	longopts_help_COMMON
-};
-const char *usagestring = ""
-	"Usage: openrc [options] [<runlevel>]";
+const char *usagestring = "Usage: openrc [options] [<runlevel>]";
 
 #define INITSH                  RC_LIBEXECDIR "/sh/init.sh"
 #define INITEARLYSH             RC_LIBEXECDIR "/sh/init-early.sh"
