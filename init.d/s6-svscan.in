@@ -1,5 +1,5 @@
 #!@SBINDIR@/openrc-run
-# Copyright 2025 The OpenRC Authors.
+# Copyright (c) 2025 The OpenRC Authors.
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
 #
