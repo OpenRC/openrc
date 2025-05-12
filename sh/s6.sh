@@ -34,11 +34,11 @@ _s6_set_variables() {
 }
 
 _s6_available() {
-	s6-svscanctl "$_scandir" 2>/dev/null
+	s6-svscanctl -- "$_scandir" 2>/dev/null
 }
 
 _execline_available() {
-	test -n "$_execlineb" && "$_execlineb" -Pc true 2>/dev/null
+	test -n "$_execlineb" && "$_execlineb" -Pc 'exit 0' 2>/dev/null
 }
 
 _s6_sanity_checks() {
@@ -90,7 +90,7 @@ _s6_servicedir_creation_needed() {
 	fi
 	if test "$RC_SERVICE" -nt "$dir" || test -f "$conffile" -a "$conffile" -nt "$dir" ; then
 		_s6_force_stop
-		rm -rf "$dir"
+		rm -rf -- "$dir"
 		return 0
 	fi
 	return 1
@@ -99,7 +99,7 @@ _s6_servicedir_creation_needed() {
 _s6_servicedir_create() {
 	local logger="${output_logger}${error_logger}" dir="$_servicedirs/$name"
 
-	mkdir -p -m 0700 "$dir"
+	mkdir -p -m 0700 -- "$dir"
 	if test -n "$notify" && test "${notify##fd:}" != "$notify" ; then
 		echo "${notify##fd:}" > "$dir/notification-fd"
 	fi
@@ -120,13 +120,13 @@ _s6_servicedir_create() {
 		if test -n "$error_logger" ; then
 			echo 'fdmove -c 2 1'
 		elif test -n "$error_log" ; then
-			echo "redirfd -w 2 \"$error_log\""
+			echo "redirfd -w 2 -- \"$error_log\""
 		fi
 		if test -n "$output_log" ; then
-			echo "redirfd -w 1 \"$output_log\""
+			echo "redirfd -w 1 -- \"$output_log\""
 		fi
 		if test -n "$input_file" ; then
-			echo "redirfd -r 0 \"$input_file\""
+			echo "redirfd -r 0 -- \"$input_file\""
 		fi
 		if test -n "$chroot" ; then
 			echo "cd \"$chroot\" chroot ."
@@ -175,7 +175,7 @@ s6_start()
 	else
 		ebegin "Starting $name (using cached service directory)"
 	fi
-	if s6-svlink "$_scandir" "$_servicedirs/$name" ; then : ; else
+	if s6-svlink -- "$_scandir" "$_servicedirs/$name" ; then : ; else
 		r=$?
 		eend $r "Failed to s6-svlink $name into $_scandir"
 		return $r
