@@ -76,7 +76,7 @@ _s6_sanity_checks() {
 }
 
 _s6_force_stop() {
-	s6-svunlink "$_scandir" "$name"
+	s6-svunlink -- "$_scandir" "$name"
 }
 
 _s6_servicedir_creation_needed() {
@@ -85,7 +85,7 @@ _s6_servicedir_creation_needed() {
 		return 0
 	fi
 	if ! test -d "$dir" ; then
-		rm -f "$dir"
+		rm -f -- "$dir"
 		return 0
 	fi
 	if test "$RC_SERVICE" -nt "$dir" || test -f "$conffile" -a "$conffile" -nt "$dir" ; then
