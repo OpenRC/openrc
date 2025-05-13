@@ -18,38 +18,37 @@ command_args="$RC_SVCDIR"
 command_background=yes
 pidfile=/var/run/s6-svscan.pid
 umask=022
-# notify=fd:4  # when notify=fd is fixed, uncomment here and in svscanboot
+# notify=fd:4  # when notify=fd is fixed, uncomment here and add -d4 in svscanboot
 
 depend() {
-        need localmount
+	need localmount
 }
 
 _stop_and_crop() {
-        if s6-svok "$1" 2>/dev/null ; then
-                s6-svc -dwDkx "$1"
-        fi
-        rm -rf "$1/supervise" "$1/event"
+	if s6-svok "$1" 2>/dev/null ; then
+		s6-svc -dwD -kx -- "$1"
+	fi
+	rm -rf -- "$1/supervise" "$1/event"
 }
 
-stop() {
-        local scandir="$RC_SVCDIR/s6-scan" servicedirs="$RC_SVCDIR/s6-services"
-        default_stop
+stop_post() {
+	local scandir="$RC_SVCDIR/s6-scan" servicedirs="$RC_SVCDIR/s6-services"
+	rm -rf -- "$scandir"
 	if test -d "$servicedirs" ; then
-	        ebegin "Cleaning stray supervised processes"
-	        rm -rf "$scandir"
-	        for i in `ls -1 "$servicedirs"` ; do
-	                _stop_and_crop "$servicedirs/$i" &
-	                if test -d "$servicedirs/$i/log" ; then
-	                        _stop_and_crop "$servicedirs/$i/log" &
-	                fi
-	        done
-	        wait
-	        eend 0
-	        if test -d "$RC_CACHEDIR" ; then
-	                ebegin "Storing service directories in cache"
-	                rm -rf "$RC_CACHEDIR/s6-services"
-	                cp -pPR "$servicedirs" "$RC_CACHEDIR/"
-	                eend $?
-	        fi
+		ebegin "Cleaning stray supervised processes"
+		for i in `ls -1 "$servicedirs"` ; do
+			_stop_and_crop "$servicedirs/$i" &
+			if test -d "$servicedirs/$i/log" ; then
+				_stop_and_crop "$servicedirs/$i/log" &
+			fi
+		done
+		wait
+		eend 0
+		if test -d "$RC_CACHEDIR" ; then
+			ebegin "Storing service directories in cache"
+			rm -rf -- "$RC_CACHEDIR/s6-services"
+			cp -pPR -- "$servicedirs" "$RC_CACHEDIR/"
+			eend $?
+		fi
 	fi
 }
