@@ -14,71 +14,53 @@ project('OpenRC', 'c',
 cc = meson.get_compiler('c')
 fs = import('fs')
 
+c_flags = []
+
 audit_dep = dependency('audit', required : get_option('audit'))
 if audit_dep.found()
-  cc_audit_flags = '-DHAVE_AUDIT'
-else
-  cc_audit_flags = []
+  c_flags += '-DHAVE_AUDIT'
 endif
 
 if get_option('branding') != ''
-  cc_branding_flags = '-DBRANDING=' + get_option('branding')
-else
-  cc_branding_flags = []
+  c_flags += '-DBRANDING=' + get_option('branding')
 endif
 
 libname = get_option('libdir').split('/')[-1]
 
-option_local_prefix = get_option('local_prefix')
-if option_local_prefix == ''
+local_prefix = get_option('local_prefix')
+if local_prefix == ''
   local_prefix = get_option('prefix') / 'usr' / 'local'
-else
-  local_prefix = option_local_prefix
 endif
 
-option_os = get_option('os')
-if option_os == ''
-  uname = find_program('uname')
-  r = run_command(uname, '-s', check: true)
-  os = r.stdout().strip()
-  os = '-'.join(os.split('/'))
-else
-  os = option_os
-endif
+os = host_machine.system()
 
-if os != 'Linux'
-  cap_dep = []
-  kvm_dep = cc.find_library('kvm')
-else
+cap_dep = []
+kvm_dep = []
+
+if os == 'linux'
   cap_dep = dependency('libcap', version: '>=2.33')
-  kvm_dep = []
+elif os.contains('bsd') or os == 'dragonfly'
+  kvm_dep = cc.find_library('kvm')
 endif
 
-pam_dep = dependency('pam', required: false)
-if not pam_dep.found()
-  pam_dep = cc.find_library('pam', required: false)
-endif
-if pam_dep.found() and get_option('pam')
-  cc_pam_flags = '-DHAVE_PAM'
-else
-  cc_pam_flags = []
-endif
-
-if not pam_dep.found() and get_option('pam')
-  error('Pam was requested but could not be located')
+pam_dep = []
+if get_option('pam')
+  pam_dep = dependency('pam', required: false)
+  if not pam_dep.found()
+    pam_dep = cc.find_library('pam') # bsds don't ship pam's pkg-config for whatever reason
+  endif
+  c_flags += '-DHAVE_PAM'
 endif
 
-option_pkg_prefix = get_option('pkg_prefix')
-if option_pkg_prefix == ''
-  if os == 'Dragonfly' or os == 'FreeBSD'
+pkg_prefix = get_option('pkg_prefix')
+if pkg_prefix == ''
+  if os == 'dragonfly' or os == 'freebsd'
     pkg_prefix = '/usr/local'
-  elif os == 'GNU' or os == 'GNU-kFreeBSD' or os == 'Linux'
+  elif os == 'gnu' or os == 'linux'
     pkg_prefix = '/usr'
-  elif os == 'NetBSD'
+  elif os == 'netbsd'
     pkg_prefix = '/usr/pkg'
   endif
-else
-  pkg_prefix = option_pkg_prefix
 endif
 
 bindir = get_option('prefix') / get_option('bindir')
@@ -97,47 +79,33 @@ if pam_libdir == ''
   pam_libdir = libdir / 'security'
 endif
 
-crypt_dep = []
-
-selinux_dep = dependency('libselinux', required : get_option('selinux'))
+selinux_dep = dependency('libselinux', required: get_option('selinux'))
 pam_misc_dep = []
+crypt_dep = []
 if selinux_dep.found()
-  cc_selinux_flags = '-DHAVE_SELINUX'
-  if pam_dep.found() and get_option('pam')
-    pam_misc_dep = dependency('pam_misc', required: false)
-    if not pam_misc_dep.found()
-      pam_misc_dep = cc.find_library('pam_misc', required: false)
-    endif
-    if not pam_misc_dep.found() and get_option('pam')
-      error('Pam was requested but could not be located')
-    endif
+  c_flags += '-DHAVE_SELINUX'
+  if get_option('pam')
+    pam_misc_dep = dependency('pam_misc')
   else
-    crypt_dep = dependency('libcrypt', required : false)
-    if not crypt_dep.found()
-      crypt_dep = cc.find_library('crypt', required : true)
-    endif
+    crypt_dep = dependency('libcrypt')
   endif
-else
-  cc_selinux_flags = []
 endif
 
 if get_option('buildtype').startswith('debug')
-  cc_debug_flags = ['-DRC_DEBUG']
-else
-  cc_debug_flags = []
+  c_flags += '-DRC_DEBUG'
 endif
 
-if os == 'Linux' or os == 'GNU-kFreeBSD'
-  cc_os_flags = ['-D_DEFAULT_SOURCE']
-elif os == 'FreeBSD'
-  cc_os_flags = ['-D_BSD_SOURCE']
-elif os == 'GNU'
-  cc_os_flags = ['-D_DEFAULT_SOURCE', '-DPATH_MAX=4096']
+if os == 'linux'
+  c_flags += '-D_DEFAULT_SOURCE'
+elif os == 'freebsd'
+  c_flags += '-D_BSD_SOURCE'
+elif os == 'gnu'
+  c_flags += ['-D_DEFAULT_SOURCE', '-DPATH_MAX=4096']
 endif
 
 # The following warnings are not included in warning_level = 3, but we
 # are keeping them for now.
-cc_warning_flags_test = [
+c_flags += cc.get_supported_arguments([
   '-Wcast-align',
   '-Wcast-qual',
   '-Wdeclaration-after-statement',
@@ -155,10 +123,8 @@ cc_warning_flags_test = [
   '-Werror=implicit-function-declaration',
   '-Werror=int-conversion',
   '-Werror=incompatible-function-pointer-types',
-  ]
-cc_warning_flags = cc.get_supported_arguments(cc_warning_flags_test)
-cc_flags = [cc_debug_flags, cc_os_flags, cc_warning_flags]
-add_project_arguments(cc_flags, language : 'c')
+])
+add_project_arguments(c_flags, language : 'c')
 
 feature_macros = {}
 
@@ -224,19 +190,19 @@ subdir('zsh-completion')
 if get_option('pkgconfig')
   pkg = import('pkgconfig')
 
-  einfo_pkgconf = pkg.generate(
+  pkg.generate(
     name : 'einfo',
     description : 'Pretty console informational display',
     version : meson.project_version(),
-    libraries : libeinfo,
+    libraries : einfo,
   )
 
-  openrc_pkgconf = pkg.generate(
+  pkg.generate(
     name : 'OpenRC',
     filebase : 'openrc',
     description : 'Universal init system',
     version : meson.project_version(),
-    libraries : librc,
+    libraries : rc,
     variables: {
       'pluginsdir': pluginsdir,
     }

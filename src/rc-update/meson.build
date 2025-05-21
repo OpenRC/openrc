@@ -1,7 +1,5 @@
-executable('rc-update',
-  ['rc-update.c', misc_c, usage_c, version_h],
-  c_args : cc_branding_flags,
-  link_with: [libeinfo, librc],
-  include_directories: [incdir, einfo_incdir, rc_incdir],
+executable('rc-update', 'rc-update.c',
+  include_directories: incdir,
+  dependencies: [rc, einfo, shared],
   install: true,
   install_dir: sbindir)

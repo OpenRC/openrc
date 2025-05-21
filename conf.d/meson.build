@@ -51,11 +51,11 @@ conf_data = conf_common
 if get_option('newnet')
   conf_data = conf_data + conf_net
 endif
-if os == 'FreeBSD'
+if os == 'freebsd'
   conf_data = conf_data + conf_FreeBSD
-elif os == 'Linux'
+elif os == 'linux'
   conf_data = conf_data + conf_Linux
-elif os == 'NetBSD'
+elif os == 'netbsd'
   conf_data = conf_data + conf_NetBSD
 endif
 
