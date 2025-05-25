@@ -4,7 +4,7 @@
 */
 
 /*
- * Copyright (c) 2007-2024 The OpenRC Authors.
+ * Copyright (c) 2007-2025 The OpenRC Authors.
  * See the Authors file at the top-level directory of this distribution and
  * https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
  *
@@ -793,8 +793,6 @@ eindent(void)
 			amount = 0;
 	}
 	amount += INDENT_WIDTH;
-	if (amount > INDENT_MAX)
-		amount = INDENT_MAX;
 	xasprintf(&num, "%08d", amount);
 	setenv("EINFO_INDENT", num, 1);
 	free(num);
