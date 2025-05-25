@@ -459,7 +459,6 @@ _eindent(FILE * EINFO_RESTRICT stream)
 {
 	char *env = getenv("EINFO_INDENT");
 	int amount = 0;
-	char indent[INDENT_MAX];
 
 	if (env) {
 		errno = 0;
@@ -468,14 +467,9 @@ _eindent(FILE * EINFO_RESTRICT stream)
 			amount = 0;
 		else if (amount > INDENT_MAX)
 			amount = INDENT_MAX;
-
-		if (amount > 0)
-			memset(indent, ' ', (size_t)amount);
 	}
 
-	/* Terminate it */
-	memset(indent + amount, 0, 1);
-	return fprintf(stream, "%s", indent);
+	return fprintf(stream, "%*s", amount, "");
 }
 
 static const char *
