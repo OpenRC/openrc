@@ -1,7 +1,7 @@
 # Allow any sh script to work with einfo functions and friends
 # We also provide a few helpful functions for other programs to use
 
-# Copyright (c) 2007-2015 The OpenRC Authors.
+# Copyright (c) 2007-2025 The OpenRC Authors.
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
 #
@@ -16,7 +16,6 @@ RC_GOT_FUNCTIONS="yes"
 eindent()
 {
 	: $(( EINFO_INDENT = ${EINFO_INDENT:-0} + 2 ))
-	[ "$EINFO_INDENT" -gt 40 ] && EINFO_INDENT=40
 	export EINFO_INDENT
 }
 
