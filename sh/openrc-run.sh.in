@@ -65,8 +65,8 @@ if sourcex -e "/sbin/livecd-functions.sh"; then
 	livecd_read_commandline
 fi
 
-if [ -z "$1" -o -z "$2" ]; then
-	eerror "$RC_SVCNAME: not enough arguments"
+if [ $# != 2 ]; then
+	eerror "$RC_SVCNAME: invalid arguments"
 	exit 1
 fi
 
