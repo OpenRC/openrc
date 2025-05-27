@@ -337,19 +337,7 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 }
 
 static int
-openrc_sh_exec(const char *openrc_sh, const char *arg1, const char *arg2)
-{
-	if (arg2)
-		einfov("Executing: %s %s %s %s %s", openrc_sh, openrc_sh, service, arg1, arg2);
-	else
-		einfov("Executing: %s %s %s %s", openrc_sh, openrc_sh, service, arg1);
-	execl(openrc_sh, openrc_sh, service, arg1, arg2, (char *) NULL);
-	eerror("%s: exec '%s': %s", service, openrc_sh, strerror(errno));
-	_exit(EXIT_FAILURE);
-}
-
-static int
-svc_exec(const char *arg1, const char *arg2)
+svc_exec(const char *command)
 {
 	int ret, fdout = fileno(stdout);
 	struct termios tt;
@@ -414,10 +402,14 @@ svc_exec(const char *arg1, const char *arg2)
 			dup2(slave_tty, STDERR_FILENO);
 		}
 
-		if (access(openrc_sh, F_OK) == 0)
-			openrc_sh_exec(openrc_sh, arg1, arg2);
-		else
-			openrc_sh_exec(RC_LIBEXECDIR "/sh/openrc-run.sh", arg1, arg2);
+		if (access(openrc_sh, F_OK) != 0)
+			openrc_sh = UNCONST(RC_LIBEXECDIR "/sh/openrc-run.sh");
+
+		einfov("Executing: %s %s %s", openrc_sh, service, command);
+
+		execl(openrc_sh, openrc_sh, service, command, NULL);
+		eerror("%s: exec '%s': %s", service, openrc_sh, strerror(errno));
+		_exit(EXIT_FAILURE);
 
 		/* UNREACHABLE */
 	}
@@ -787,7 +779,7 @@ static void svc_start_real(void)
 	hook_out = RC_HOOK_SERVICE_START_DONE;
 	rc_plugin_run(RC_HOOK_SERVICE_START_NOW, applet);
 	skip_mark = false;
-	started = (svc_exec("start", NULL) == 0);
+	started = (svc_exec("start") == 0);
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
 
@@ -993,7 +985,7 @@ svc_stop_real(void)
 	hook_out = RC_HOOK_SERVICE_STOP_DONE;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_NOW, applet);
 	skip_mark = false;
-	stopped = (svc_exec("stop", NULL) == 0);
+	stopped = (svc_exec("stop") == 0);
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
 
@@ -1270,7 +1262,7 @@ int main(int argc, char **argv)
 			char *save = prefix;
 			eprefix(NULL);
 			prefix = NULL;
-			svc_exec(optarg, NULL);
+			svc_exec(optarg);
 			eprefix(save);
 			prefix = save;
 		} else if (strcmp(optarg, "ineed") == 0 ||
@@ -1307,7 +1299,7 @@ int main(int argc, char **argv)
 		} else if (strcmp (optarg, "status") == 0) {
 			eprefix(NULL);
 			prefix = NULL;
-			retval = svc_exec("status", NULL);
+			retval = svc_exec("status");
 		} else {
 			if (strcmp(optarg, "conditionalrestart") == 0 ||
 			    strcmp(optarg, "condrestart") == 0)
@@ -1346,7 +1338,7 @@ int main(int argc, char **argv)
 					    strerror(errno));
 				unhotplug();
 			} else
-				retval = svc_exec(optarg, NULL);
+				retval = svc_exec(optarg);
 
 			/* We should ensure this list is empty after
 			 * an action is done */
