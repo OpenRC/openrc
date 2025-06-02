@@ -152,6 +152,7 @@ const char * const longopts_help[] = {
 	"Redirect stdout to process",
 	"Redirect stderr to process",
 	"reexec (used internally)",
+	"Configures experimental notification behaviour",
 	longopts_help_COMMON
 };
 const char *usagestring = NULL;
