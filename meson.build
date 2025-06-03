@@ -6,6 +6,7 @@ project('OpenRC', 'c',
     'c_std=c99',
     'prefix=/usr',
     'sbindir=/sbin',
+    'gentooprefix=',
     'warning_level=3',
     ],
   meson_version : '>=0.62.0'
