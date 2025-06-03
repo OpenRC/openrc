@@ -435,7 +435,7 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 				goto out;
 			}
 
-			eerror("Clock skew detected with '%s/clock-skewed'", rc_svcdir());
+			eerror("Clock skew detected with '%s'", file);
 			eerrorn("Adjusting mtime of '%s/deptree' to %s", rc_svcdir(), ctime(&t));
 			if ((fp = do_fopenat(svcdirfd, "clock-skewed", O_WRONLY | O_CREAT | O_TRUNC))) {
 				fprintf(fp, "%s\n", file);
