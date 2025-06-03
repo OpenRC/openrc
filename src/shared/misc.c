@@ -437,9 +437,10 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 
 			eerror("Clock skew detected with '%s'", file);
 			eerrorn("Adjusting mtime of '%s/deptree' to %s", rc_svcdir(), ctime(&t));
+			utimensat(rc_dirfd(RC_DIR_SVCDIR), "deptree", (struct timespec[]) {{ .tv_sec = t }, { .tv_sec = t }}, 0);
+
 			if ((fp = do_fopenat(svcdirfd, "clock-skewed", O_WRONLY | O_CREAT | O_TRUNC))) {
 				fprintf(fp, "%s\n", file);
-				futimens(fileno(fp), (struct timespec[]) {{ .tv_sec = t }, { .tv_sec = t }});
 				fclose(fp);
 			}
 		}
