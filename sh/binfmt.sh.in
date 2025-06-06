@@ -54,7 +54,7 @@ if [ $# -gt 0 ]; then
 else
 	# The hardcoding of these paths is intentional; we are following the
 	# systemd spec.
-	binfmt_dirs='/usr/lib/binfmt.d/ /run/binfmt.d/ /etc/binfmt.d/'
+	binfmt_dirs='/usr/lib/binfmt.d/ /usr/local/lib/binfmt.d/ /run/binfmt.d/ /etc/binfmt.d/'
 	binfmt_basenames=''
 	binfmt_d=''
 
