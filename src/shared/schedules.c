@@ -155,7 +155,7 @@ static SCHEDULEITEM *parse_schedule_item(const char *applet, const char *string)
 		item->type = SC_TIMEOUT;
 		errno = 0;
 		if (sscanf(string, "%d", &item->value) != 1)
-			eerrorx("%s: invalid timeout value in schedule `%s'",
+			eerrorx("%s: invalid timeout value in schedule '%s'",
 			    applet, string);
 	} else if ((after_hyph = string + (string[0] == '-')) &&
 	    ((sig = parse_signal(applet, after_hyph)) != -1))
@@ -198,8 +198,8 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 		TAILQ_INSERT_TAIL(&schedule, item, entries);
 		if (string) {
 			if (sscanf(string, "%d", &item->value) != 1)
-				eerrorx("%s: invalid timeout in schedule",
-				    applet);
+				eerrorx("%s: invalid timeout value in schedule '%s'",
+					applet, string);
 		} else
 			item->value = 5;
 
