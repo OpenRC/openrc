@@ -693,6 +693,8 @@ rc_deptree_update_needed(time_t *newest, char *file)
 
 	/* Quick test to see if anything we use has changed and we have
 	 * data in our deptree. */
+	if (mkdir(rc_svcdir(), 0755) != 0 && errno != EEXIST)
+		fprintf(stderr, "mkdir '%s': %s\n", rc_svcdir(), strerror(errno));
 
 	if (fstatat(rc_dirfd(RC_DIR_SVCDIR), "deptree", &buf, 0) == 0) {
 		mtime = buf.st_mtime;

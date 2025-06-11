@@ -50,8 +50,7 @@ static int dirfds[RC_DIR_MAX];
 
 int rc_dirfd(enum rc_dir dir) {
 	int flags = O_RDONLY | O_CLOEXEC | O_DIRECTORY;
-	int dirfd = AT_FDCWD;
-	const char *dirname;
+	int dirfd;
 
 	if (dir >= RC_DIR_MAX)
 		return -1;
@@ -66,19 +65,16 @@ int rc_dirfd(enum rc_dir dir) {
 		case RC_DIR_RUNLEVEL:
 			return dirfds[dir] = open(rc_runleveldir(), flags);
 		case RC_DIR_SVCDIR:
-			dirname = rc_svcdir();
-			break;
+			return dirfds[dir] = open(rc_svcdir(), flags);
 		default:
 			assert(dirnames[dir]);
-			dirname = dirnames[dir];
 			dirfd = rc_dirfd(RC_DIR_SVCDIR);
+			if ((dirfds[dir] = openat(dirfd, dirnames[dir], flags)) == -1 && errno == ENOENT) {
+				if (mkdirat(dirfd, dirnames[dir], 0755) == -1 && errno != EEXIST)
+					return -1;
+				dirfds[dir] = openat(dirfd, dirnames[dir], flags);
+			}
 			break;
-		}
-
-		if ((dirfds[dir] = openat(dirfd, dirname, flags)) == -1 && errno == ENOENT) {
-			if (mkdirat(dirfd, dirname, 0755) == -1 && errno != EEXIST)
-				return -1;
-			dirfds[dir] = openat(dirfd, dirname, flags);
 		}
 	}
 	return dirfds[dir];
@@ -704,9 +700,7 @@ rc_runleveldir(void)
 const char *
 rc_svcdir(void)
 {
-	const char *path = rc_dirs.set ? rc_dirs.svcdir : RC_SVCDIR;
-	mkdir(path, 0755);
-	return path;
+	return rc_dirs.set ? rc_dirs.svcdir : RC_SVCDIR;
 }
 
 static ssize_t
