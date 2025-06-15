@@ -825,7 +825,7 @@ int main(int argc, char **argv)
 		 * remove information about it as it may have unexpectedly
 		 * crashed out. We should also return success as the end
 		 * result would be the same. */
-		if (pidfile && access(pidfile, F_OK) == 0)
+		if (pidfile)
 			unlink(pidfile);
 		if (svcname)
 			rc_service_daemon_set(svcname, exec,

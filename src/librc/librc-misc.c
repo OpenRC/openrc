@@ -110,9 +110,6 @@ rc_proc_getent(const char *ent RC_UNUSED)
 	char *proc = NULL, *p, *value = NULL, *save;
 	size_t i, len;
 
-	if (access("/proc/cmdline", F_OK) != 0)
-		return NULL;
-
 	if (!(fp = fopen("/proc/cmdline", "r")))
 		return NULL;
 

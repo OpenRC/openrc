@@ -101,8 +101,8 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	bool container_pid = false;
 	bool openvz_host = false;
 	char *line = NULL;
-	char my_ns[30];
-	char proc_ns[30];
+	char my_ns[30] = {0};
+	char proc_ns[30] = {0};
 	size_t len = 0;
 	pid_t p;
 	char *buffer = NULL;
@@ -137,26 +137,18 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	from our list of pids.
 	*/
 
-	if (access("/proc/self/status", F_OK) == 0) {
-		fp = fopen("/proc/self/status", "r");
-		if (fp) {
-			while (xgetline(&line, &len, fp) != -1) {
-				if (strncmp(line, "envID:\t0", 8) == 0) {
-					openvz_host = true;
-					break;
-				}
+	if ((fp = fopen("/proc/self/status", "r"))) {
+		while (xgetline(&line, &len, fp) != -1) {
+			if (strncmp(line, "envID:\t0", 8) == 0) {
+				openvz_host = true;
+				break;
 			}
-			fclose(fp);
 		}
+		fclose(fp);
 	}
 
-	memset(my_ns, 0, sizeof(my_ns));
-	memset(proc_ns, 0, sizeof(proc_ns));
-	if (access("/proc/self/ns/pid", F_OK) == 0) {
-		rc = readlink("/proc/self/ns/pid", my_ns, sizeof(my_ns)-1);
-		if (rc <= 0)
-			my_ns[0] = '\0';
-	}
+	if ((rc = readlink("/proc/self/ns/pid", my_ns, sizeof(my_ns)-1)) <= 0)
+		my_ns[0] = '\0';
 
 	while ((entry = readdir(procdir)) != NULL) {
 		if (sscanf(entry->d_name, "%d", &p) != 1)
@@ -166,11 +158,8 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		if (pid != 0 && pid != p)
 			continue;
 		xasprintf(&buffer, "/proc/%d/ns/pid", p);
-		if (access(buffer, F_OK) == 0) {
-			rc = readlink(buffer, proc_ns, sizeof(proc_ns)-1);
-			if (rc <= 0)
-				proc_ns[0] = '\0';
-		}
+		if ((rc = readlink(buffer, proc_ns, sizeof(proc_ns)-1)) <= 0)
+			proc_ns[0] = '\0';
 		free(buffer);
 		if (pid == 0 && strlen(my_ns) && strlen (proc_ns) && strcmp(my_ns, proc_ns))
 			continue;
@@ -190,19 +179,17 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		/* If this is an OpenVZ host, filter out container processes */
 		if (openvz_host) {
 			xasprintf(&buffer, "/proc/%d/status", p);
-			if (access(buffer, F_OK) == 0) {
-				fp = fopen(buffer, "r");
-				free(buffer);
-				if (!fp)
-					continue;
-				while (xgetline(&line, &len, fp) != -1) {
-					if (strncmp(line, "envID:", 6) == 0) {
-						container_pid = !(strncmp(line, "envID:\t0", 8) == 0);
-						break;
-					}
+			fp = fopen(buffer, "r");
+			free(buffer);
+			if (!fp)
+				continue;
+			while (xgetline(&line, &len, fp) != -1) {
+				if (strncmp(line, "envID:", 6) == 0) {
+					container_pid = !(strncmp(line, "envID:\t0", 8) == 0);
+					break;
 				}
-				fclose(fp);
 			}
+			fclose(fp);
 		}
 		if (container_pid)
 			continue;

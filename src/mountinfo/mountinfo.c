@@ -294,10 +294,8 @@ getmntfile(const char *file)
 	struct mntent *ent = NULL;
 	FILE *fp;
 
-	if (access("/etc/fstab", F_OK) == 0)
+	if (!(fp = setmntent("/etc/fstab", "r")))
 		return NULL;
-
-	fp = setmntent("/etc/fstab", "r");
 	while ((ent = getmntent(fp)))
 		if (strcmp(file, ent->mnt_dir) == 0)
 			break;
