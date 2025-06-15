@@ -124,13 +124,6 @@ RC_UNUSED static const char *basename_c(const char *path)
 	return (path);
 }
 
-RC_UNUSED static bool existss(const char *pathname)
-{
-	struct stat buf;
-
-	return (stat(pathname, &buf) == 0 && buf.st_size != 0);
-}
-
 RC_UNUSED static FILE *do_fopenat(int dirfd, const char *pathname, int mode)
 {
 	int fd = openat(dirfd, pathname, mode, 0666);
