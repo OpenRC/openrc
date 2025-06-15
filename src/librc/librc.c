@@ -231,6 +231,19 @@ get_systype(void)
 }
 
 static const char *
+detect_prefix(const char *systype)
+{
+	if (systype) {
+		if (strcmp(systype, RC_SYS_NONE) == 0)
+			return NULL;
+		if (strcmp(systype, RC_SYS_PREFIX) == 0)
+			return RC_SYS_PREFIX;
+	}
+
+	return NULL;
+}
+
+static const char *
 detect_container(const char *systype RC_UNUSED)
 {
 #ifdef __FreeBSD__
@@ -347,9 +360,12 @@ rc_sys(void)
 	const char *sys;
 
 	systype = get_systype();
-	sys = detect_container(systype);
+	sys = detect_prefix(systype);
 	if (!sys) {
-		sys = detect_vm(systype);
+		sys = detect_container(systype);
+		if (!sys) {
+			sys = detect_vm(systype);
+		}
 	}
 
 	return sys;
