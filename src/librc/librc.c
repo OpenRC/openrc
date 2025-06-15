@@ -250,7 +250,7 @@ detect_container(const char *systype RC_UNUSED)
 		if (jailed == 1)
 			return RC_SYS_JAIL;
 
-	if (exists("/var/run/.containerenv"))
+	if (access("/var/run/.containerenv", F_OK) == 0)
 		return RC_SYS_PODMAN;
 #endif
 
@@ -280,7 +280,7 @@ detect_container(const char *systype RC_UNUSED)
 	else if (file_regex("/proc/self/status",
 		"(s_context|VxID):[[:space:]]*[1-9]"))
 		return RC_SYS_VSERVER;
-	else if (exists("/proc/vz/veinfo") && !exists("/proc/vz/version"))
+	else if (access("/proc/vz/veinfo", F_OK) == 0 && access("/proc/vz/version", F_OK) != 0)
 		return RC_SYS_OPENVZ;
 	else if (file_regex("/proc/self/status",
 		"envID:[[:space:]]*[1-9]"))
@@ -291,9 +291,9 @@ detect_container(const char *systype RC_UNUSED)
 		return RC_SYS_RKT;
 	else if (file_regex("/proc/1/environ", "container=systemd-nspawn"))
 		return RC_SYS_SYSTEMD_NSPAWN;
-	else if (exists("/run/.containerenv"))
+	else if (access("/run/.containerenv", F_OK) == 0)
 		return RC_SYS_PODMAN;
-	else if (exists("/.dockerenv"))
+	else if (access("/.dockerenv", F_OK) == 0)
 		return RC_SYS_DOCKER;
 	/* old test, I'm not sure when this was valid. */
 	else if (file_regex("/proc/1/environ", "container=docker"))
@@ -315,9 +315,9 @@ detect_vm(const char *systype RC_UNUSED)
 		if (strcmp(systype, RC_SYS_XENU) == 0)
 			return RC_SYS_XENU;
 	}
-	if (exists("/kern/xen/privcmd"))
+	if (access("/kern/xen/privcmd", F_OK) == 0)
 		return RC_SYS_XEN0;
-	if (exists("/kern/xen"))
+	if (access("/kern/xen", F_OK) == 0)
 		return RC_SYS_XENU;
 #endif
 
@@ -330,7 +330,7 @@ detect_vm(const char *systype RC_UNUSED)
 		if (strcmp(systype, RC_SYS_XENU) == 0)
 			return RC_SYS_XENU;
 	}
-	if (exists("/proc/xen")) {
+	if (access("/proc/xen", F_OK) == 0) {
 		if (file_regex("/proc/xen/capabilities", "control_d"))
 			return RC_SYS_XEN0;
 		return RC_SYS_XENU;
@@ -433,13 +433,13 @@ get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list, RC_STRINGLIS
 bool
 rc_runlevel_starting(void)
 {
-	return existsat(rc_dirfd(RC_DIR_SVCDIR), "rc.starting");
+	return faccessat(rc_dirfd(RC_DIR_SVCDIR), "rc.starting", F_OK, 0) == 0;
 }
 
 bool
 rc_runlevel_stopping(void)
 {
-	return existsat(rc_dirfd(RC_DIR_SVCDIR), "rc.stopping");
+	return faccessat(rc_dirfd(RC_DIR_SVCDIR), "rc.stopping", F_OK, 0) == 0;
 }
 
 RC_STRINGLIST *rc_runlevel_list(void)
@@ -880,7 +880,7 @@ rc_service_in_runlevel(const char *service, const char *runlevel)
 	bool r;
 
 	xasprintf(&file, "%s/%s/%s", rc_runleveldir(), runlevel, basename_c(service));
-	r = exists(file);
+	r = access(file, F_OK) == 0;
 	free(file);
 	return r;
 }
@@ -900,7 +900,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 	base = basename_c(service);
 	if (state != RC_SERVICE_STOPPED) {
 		int state_dirfd = rc_dirfd(rc_parse_service_state_dirfd(state));
-		if (!exists(init)) {
+		if (access(init, F_OK) != 0) {
 			free(init);
 			return false;
 		}
@@ -935,7 +935,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 				continue;
 			/* fall-through */
 		default:
-			if (!existsat(state_dirfd, base))
+			if (faccessat(state_dirfd, base, F_OK, 0) != 0)
 				continue;
 			if ((state == RC_SERVICE_STARTING || state == RC_SERVICE_STOPPING) && s == RC_SERVICE_INACTIVE) {
 				if (symlinkat(init, rc_dirfd(RC_DIR_WASINACTIVE), base) == -1) {
@@ -994,7 +994,7 @@ rc_service_state(const char *service)
 	int i;
 
 	for (i = 0; rc_service_state_names[i].name; i++) {
-		if (existsat(rc_dirfd(rc_service_state_names[i].dir), base)) {
+		if (faccessat(rc_dirfd(rc_service_state_names[i].dir), base, F_OK, 0) == 0) {
 			if (rc_service_state_names[i].state <= 0x10)
 				state = rc_service_state_names[i].state;
 			else
@@ -1011,7 +1011,7 @@ rc_service_state(const char *service)
 		if (dp) {
 			struct dirent *d;
 			while ((d = readdir(dp))) {
-				if (existsat(dirfd(dp), service)) {
+				if (faccessat(dirfd(dp), service, F_OK, 0) == 0) {
 					state |= RC_SERVICE_SCHEDULED;
 					break;
 				}
@@ -1085,7 +1085,7 @@ rc_service_schedule_start(const char *service, const char *service_to_start)
 
 	init = rc_service_resolve(service_to_start);
 
-	retval = existsat(schedfd, base_to_start) || (symlinkat(init, schedfd, base_to_start) == 0);
+	retval = (faccessat(schedfd, base_to_start, F_OK, 0) == 0) || (symlinkat(init, schedfd, base_to_start) == 0);
 
 	close(schedfd);
 	free(init);
@@ -1250,7 +1250,7 @@ rc_services_scheduled_by(const char *service)
 	while ((d = readdir(dp))) {
 		char *file;
 		xasprintf(&file, "%s/%s", d->d_name, service);
-		if (existsat(dirfd(dp), file))
+		if (faccessat(dirfd(dp), file, F_OK, 0) == 0)
 			rc_stringlist_add(list, d->d_name);
 		free(file);
 	}

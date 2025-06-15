@@ -302,10 +302,8 @@ set_krunlevel(const char *level)
 	    strcmp(level, RC_LEVEL_SINGLE) == 0 ||
 	    strcmp(level, RC_LEVEL_SYSINIT) == 0)
 	{
-		if (exists(RC_KRUNLEVEL) &&
-		    unlink(RC_KRUNLEVEL) != 0)
-			eerror("unlink `%s': %s", RC_KRUNLEVEL,
-			    strerror(errno));
+		if (access(RC_KRUNLEVEL, F_OK) == 0 && unlink(RC_KRUNLEVEL) != 0)
+			eerror("unlink `%s': %s", RC_KRUNLEVEL, strerror(errno));
 		return false;
 	}
 
@@ -325,7 +323,7 @@ static char *get_krunlevel(void)
 	FILE *fp;
 	size_t i = 0;
 
-	if (!exists(RC_KRUNLEVEL))
+	if (access(RC_KRUNLEVEL, F_OK) != 0)
 		return NULL;
 	if (!(fp = fopen(RC_KRUNLEVEL, "r"))) {
 		eerror("fopen `%s': %s", RC_KRUNLEVEL, strerror(errno));
@@ -479,7 +477,7 @@ do_sysinit(void)
 	/* exec init-early.sh if it exists
 	 * This should just setup the console to use the correct
 	 * font. Maybe it should setup the keyboard too? */
-	if (exists(INITEARLYSH))
+	if (access(INITEARLYSH, F_OK) == 0)
 		run_program(INITEARLYSH);
 
 	uname(&uts);
@@ -527,7 +525,7 @@ runlevel_config(const char *service, const char *level)
 
 	dir = dirname(dirname(init));
 	xasprintf(&conf, "%s/conf.d/%s.%s", dir, service, level);
-	retval = exists(conf);
+	retval = access(conf, F_OK) == 0;
 	free(conf);
 	free(init);
 	return retval;
@@ -653,7 +651,7 @@ do_start_services(const RC_STRINGLIST *start_services, bool parallel)
 	bool crashed = false;
 
 	if (!rc_yesno(getenv("EINFO_QUIET")))
-		interactive = existsat(rc_dirfd(RC_DIR_SVCDIR), "interactive");
+		interactive = faccessat(rc_dirfd(RC_DIR_SVCDIR), "interactive", F_OK, 0) == 0;
 	errno = 0;
 	crashed = rc_conf_yesno("rc_crashed_start");
 	if (errno == ENOENT)
@@ -780,7 +778,7 @@ int main(int argc, char **argv)
 	argv++;
 
 	/* complain about old configuration settings if they exist */
-	if (exists(RC_CONF_OLD)) {
+	if (access(RC_CONF_OLD, F_OK) == 0) {
 		ewarn("%s still exists on your system and should be removed.", RC_CONF_OLD);
 		ewarn("Please migrate to the appropriate settings in %s", RC_CONF);
 	}
@@ -897,7 +895,7 @@ int main(int argc, char **argv)
 		strcmp(newlevel, RC_LEVEL_SINGLE) == 0))
 	{
 		going_down = true;
-		if (!exists(RC_KRUNLEVEL))
+		if (access(RC_KRUNLEVEL, F_OK) != 0)
 			set_krunlevel(runlevel);
 		rc_runlevel_set(newlevel);
 		setenv("RC_RUNLEVEL", newlevel, 1);
@@ -960,7 +958,7 @@ int main(int argc, char **argv)
 	if ((main_deptree = _rc_deptree_load(0, &regen)) == NULL)
 		eerrorx("failed to load deptree");
 
-	if (existsat(rc_dirfd(RC_DIR_SVCDIR), "clock-skewed"))
+	if (faccessat(rc_dirfd(RC_DIR_SVCDIR), "clock-skewed", F_OK, 0) == 0)
 		ewarn("WARNING: clock skew detected!");
 
 	/* Clean the failed services state dir */

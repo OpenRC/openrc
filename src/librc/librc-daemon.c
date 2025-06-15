@@ -137,7 +137,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 	from our list of pids.
 	*/
 
-	if (exists("/proc/self/status")) {
+	if (access("/proc/self/status", F_OK) == 0) {
 		fp = fopen("/proc/self/status", "r");
 		if (fp) {
 			while (xgetline(&line, &len, fp) != -1) {
@@ -152,7 +152,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 
 	memset(my_ns, 0, sizeof(my_ns));
 	memset(proc_ns, 0, sizeof(proc_ns));
-	if (exists("/proc/self/ns/pid")) {
+	if (access("/proc/self/ns/pid", F_OK) == 0) {
 		rc = readlink("/proc/self/ns/pid", my_ns, sizeof(my_ns)-1);
 		if (rc <= 0)
 			my_ns[0] = '\0';
@@ -166,7 +166,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		if (pid != 0 && pid != p)
 			continue;
 		xasprintf(&buffer, "/proc/%d/ns/pid", p);
-		if (exists(buffer)) {
+		if (access(buffer, F_OK) == 0) {
 			rc = readlink(buffer, proc_ns, sizeof(proc_ns)-1);
 			if (rc <= 0)
 				proc_ns[0] = '\0';
@@ -190,7 +190,7 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 		/* If this is an OpenVZ host, filter out container processes */
 		if (openvz_host) {
 			xasprintf(&buffer, "/proc/%d/status", p);
-			if (exists(buffer)) {
+			if (access(buffer, F_OK) == 0) {
 				fp = fopen(buffer, "r");
 				free(buffer);
 				if (!fp)

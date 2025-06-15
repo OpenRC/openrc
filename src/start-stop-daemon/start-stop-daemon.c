@@ -741,7 +741,7 @@ int main(int argc, char **argv)
 					xasprintf(&exec_file, "%s/%s/%s", ch_root, token, exec);
 				else
 					xasprintf(&exec_file, "%s/%s", token, exec);
-				if (exec_file && exists(exec_file))
+				if (exec_file && access(exec_file, F_OK) == 0)
 					break;
 				free(exec_file);
 				exec_file = NULL;
@@ -749,7 +749,7 @@ int main(int argc, char **argv)
 			free(tmp);
 		}
 	}
-	if (start && !exists(exec_file)) {
+	if (start && access(exec_file, F_OK) != 0) {
 		eerror("%s: %s does not exist", applet,
 		    exec_file ? exec_file : exec);
 		free(exec_file);
@@ -825,7 +825,7 @@ int main(int argc, char **argv)
 		 * remove information about it as it may have unexpectedly
 		 * crashed out. We should also return success as the end
 		 * result would be the same. */
-		if (pidfile && exists(pidfile))
+		if (pidfile && access(pidfile, F_OK) == 0)
 			unlink(pidfile);
 		if (svcname)
 			rc_service_daemon_set(svcname, exec,

@@ -294,7 +294,7 @@ getmntfile(const char *file)
 	struct mntent *ent = NULL;
 	FILE *fp;
 
-	if (!exists("/etc/fstab"))
+	if (access("/etc/fstab", F_OK) == 0)
 		return NULL;
 
 	fp = setmntent("/etc/fstab", "r");

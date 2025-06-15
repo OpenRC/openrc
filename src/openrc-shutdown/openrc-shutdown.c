@@ -333,7 +333,7 @@ int main(int argc, char **argv)
 	unlink(nologin_file);
 	unlink(shutdown_pid);
 	if (do_halt) {
-		if (exists("/run/initctl")) {
+		if (access("/run/initctl", F_OK) == 0) {
 			sysvinit_setenv("INIT_HALT", "HALT");
 			sysvinit_runlevel('0');
 		} else
@@ -341,18 +341,18 @@ int main(int argc, char **argv)
 	} else if (do_kexec)
 		send_cmd("kexec");
 	else if (do_poweroff) {
-		if (exists("/run/initctl")) {
+		if (access("/run/initctl", F_OK) == 0) {
 			sysvinit_setenv("INIT_HALT", "POWEROFF");
 			sysvinit_runlevel('0');
 		} else
 			send_cmd("poweroff");
 	} else if (do_reboot) {
-		if (exists("/run/initctl"))
+		if (access("/run/initctl", F_OK) == 0)
 			sysvinit_runlevel('6');
 		else
 			send_cmd("reboot");
 	} else if (do_single) {
-		if (exists("/run/initctl"))
+		if (access("/run/initctl", F_OK) == 0)
 			sysvinit_runlevel('S');
 		else
 			send_cmd("single");
