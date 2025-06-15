@@ -58,7 +58,7 @@ static int mount_proc(void)
 	struct exec_result res;
 	struct exec_args args = exec_init(argv);
 
-	if (exists("/proc/version"))
+	if (access("/proc/version", F_OK) == 0)
 		return 0;
 
 	res = do_exec(&args);
@@ -72,7 +72,7 @@ static int mount_proc(void)
 	if (rc != res.pid || !WIFEXITED(status) || WEXITSTATUS(status) != 0)
 		syslog(LOG_ERR, "mount returned non-zero exit status");
 
-	if (!exists("/proc/version")) {
+	if (access("/proc/version", F_OK) != 0) {
 		syslog(LOG_ERR, "Could not mount /proc");
 		return -1;
 	}

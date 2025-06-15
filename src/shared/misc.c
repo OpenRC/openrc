@@ -315,7 +315,7 @@ exec_service(const char *service, const char *arg)
 		return -1;
 
 	file = rc_service_resolve(service);
-	if (!exists(file)) {
+	if (access(file, F_OK) != 0) {
 		rc_service_mark(service, RC_SERVICE_STOPPED);
 		svc_unlock(basename_c(service), fd);
 		free(file);
@@ -385,15 +385,6 @@ parse_mode(mode_t *mode, char *text)
 	/* We currently don't check g+w type stuff */
 	errno = EINVAL;
 	return -1;
-}
-
-int
-is_writable(const char *path)
-{
-	if (access(path, W_OK) == 0)
-		return 1;
-
-	return 0;
 }
 
 RC_DEPTREE * _rc_deptree_load(int force, int *regen)

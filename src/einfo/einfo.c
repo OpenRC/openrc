@@ -123,7 +123,7 @@ int main(int argc, char **argv)
 		for (i = 0; i < argc; i++) {
 			ebeginv("Waiting for %s", argv[i]);
 			for (;;) {
-				if (exists(argv[i]))
+				if (access(argv[i], F_OK) == 0)
 					break;
 				if (nanosleep(&ts, NULL) == -1)
 					return EXIT_FAILURE;

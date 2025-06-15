@@ -110,17 +110,12 @@ rc_proc_getent(const char *ent RC_UNUSED)
 	char *proc = NULL, *p, *value = NULL, *save;
 	size_t i, len;
 
-	if (!exists("/proc/cmdline"))
-		return NULL;
-
 	if (!(fp = fopen("/proc/cmdline", "r")))
 		return NULL;
 
 	i = 0;
-	if (xgetline(&proc, &i, fp) == -1) {
-		free(proc);
-		return NULL;
-	}
+	if (xgetline(&proc, &i, fp) == -1)
+		goto out;
 	save = proc;
 
 	len = strlen(ent);
@@ -136,6 +131,7 @@ rc_proc_getent(const char *ent RC_UNUSED)
 	if (!value)
 		errno = ENOENT;
 
+out:
 	fclose(fp);
 	free(proc);
 
@@ -425,7 +421,7 @@ rc_conf_value(const char *setting)
 	rc_conf_append(RC_DIR_SYSCONF);
 
 	/* Support old configs. */
-	if (exists(RC_CONF_OLD)) {
+	if (access(RC_CONF_OLD, F_OK) == 0) {
 		RC_STRINGLIST *old_conf = config_load(AT_FDCWD, RC_CONF_OLD);
 		TAILQ_CONCAT(rc_conf, old_conf, entries);
 		rc_stringlist_free(old_conf);

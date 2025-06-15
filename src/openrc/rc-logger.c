@@ -311,7 +311,7 @@ rc_logger_open(const char *level)
 			if (errno != EROFS && ((strcmp(level, RC_LEVEL_SHUTDOWN) != 0) && (strcmp(level, RC_LEVEL_SYSINIT) != 0)))
 				if (unlink(tmplog) == -1)
 					eerror("Error: unlink(%s) failed: %s", tmplog, strerror(errno));
-		} else if (exists(tmplog)) {
+		} else if (access(tmplog, F_OK) == 0) {
 			eerrorx("Warning: temporary logfile left behind: %s", tmplog);
 		}
 

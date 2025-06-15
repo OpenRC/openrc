@@ -66,12 +66,6 @@ static const rc_service_state_name_t rc_service_state_names[] = {
 	{ 0, -1, NULL}
 };
 
-/*
- * Check whether path is writable or not,
- * this also works properly with read-only filesystems
- */
-int is_writable(const char *);
-
 #define service_start(service) exec_service(service, "start")
 #define service_stop(service)  exec_service(service, "stop")
 
