@@ -802,9 +802,9 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 		if (failing)
 			rc_service_mark(svcname, RC_SERVICE_FAILED);
 	}
-	if (pidfile && access(pidfile, F_OK) == 0)
+	if (pidfile)
 		unlink(pidfile);
-	if (fifopath && access(fifopath, F_OK) == 0)
+	if (fifopath)
 		unlink(fifopath);
 	exit(EXIT_SUCCESS);
 }
@@ -1314,7 +1314,7 @@ int main(int argc, char **argv)
 		 * remove information about it as it may have unexpectedly
 		 * crashed out. We should also return success as the end
 		 * result would be the same. */
-		if (pidfile && access(pidfile, F_OK) == 0)
+		if (pidfile)
 			unlink(pidfile);
 		if (svcname) {
 			rc_service_daemon_set(svcname, exec,
