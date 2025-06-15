@@ -387,15 +387,6 @@ parse_mode(mode_t *mode, char *text)
 	return -1;
 }
 
-int
-is_writable(const char *path)
-{
-	if (access(path, W_OK) == 0)
-		return 1;
-
-	return 0;
-}
-
 RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 {
 	int fd;

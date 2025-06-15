@@ -445,7 +445,7 @@ int main(int argc, char **argv)
 	while (optind < argc) {
 		path = clean_path(argv[optind]);
 		if (writable)
-			exit(!is_writable(path));
+			exit(access(path, W_OK) != 0);
 		if (do_check(path, uid, gid, mode, type, trunc, chowner,
 					symlinks, selinux_on))
 			retval = EXIT_FAILURE;
