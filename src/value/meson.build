@@ -1,6 +1,7 @@
 value_execs = [
   'service_get_value',
   'service_set_value',
+  'service_set_environemnt',
   'get_options',
   'save_options',
   ]
