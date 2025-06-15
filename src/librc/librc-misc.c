@@ -114,10 +114,8 @@ rc_proc_getent(const char *ent RC_UNUSED)
 		return NULL;
 
 	i = 0;
-	if (xgetline(&proc, &i, fp) == -1) {
-		free(proc);
-		return NULL;
-	}
+	if (xgetline(&proc, &i, fp) == -1)
+		goto out;
 	save = proc;
 
 	len = strlen(ent);
@@ -133,6 +131,7 @@ rc_proc_getent(const char *ent RC_UNUSED)
 	if (!value)
 		errno = ENOENT;
 
+out:
 	fclose(fp);
 	free(proc);
 
