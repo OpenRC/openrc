@@ -414,7 +414,7 @@ svc_exec(const char *arg1, const char *arg2)
 			dup2(slave_tty, STDERR_FILENO);
 		}
 
-		if (exists(openrc_sh))
+		if (access(openrc_sh, F_OK) == 0)
 			openrc_sh_exec(openrc_sh, arg1, arg2);
 		else
 			openrc_sh_exec(RC_LIBEXECDIR "/sh/openrc-run.sh", arg1, arg2);
@@ -1091,7 +1091,7 @@ int main(int argc, char **argv)
 	struct stat stbuf;
 
 	/* Show help if insufficient args */
-	if (argc < 2 || !exists(argv[1])) {
+	if (argc < 2 || access(argv[1], F_OK) != 0) {
 		fprintf(stderr, "openrc-run should not be run directly\n");
 		exit(EXIT_FAILURE);
 	}

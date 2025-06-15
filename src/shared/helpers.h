@@ -124,20 +124,6 @@ RC_UNUSED static const char *basename_c(const char *path)
 	return (path);
 }
 
-RC_UNUSED static bool existsat(int dirfd, const char *pathname)
-{
-	struct stat buf;
-
-	return (fstatat(dirfd, pathname, &buf, 0) == 0);
-}
-
-RC_UNUSED static bool exists(const char *pathname)
-{
-	struct stat buf;
-
-	return (stat(pathname, &buf) == 0);
-}
-
 RC_UNUSED static bool existss(const char *pathname)
 {
 	struct stat buf;

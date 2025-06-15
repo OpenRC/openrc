@@ -327,7 +327,7 @@ static pid_t exec_command(const char *cmd)
 	struct sigaction sa;
 
 	file = rc_service_resolve(svcname);
-	if (!exists(file)) {
+	if (access(file, F_OK) != 0) {
 		free(file);
 		return 0;
 	}
@@ -802,9 +802,9 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 		if (failing)
 			rc_service_mark(svcname, RC_SERVICE_FAILED);
 	}
-	if (pidfile && exists(pidfile))
+	if (pidfile && access(pidfile, F_OK) == 0)
 		unlink(pidfile);
-	if (fifopath && exists(fifopath))
+	if (fifopath && access(fifopath, F_OK) == 0)
 		unlink(fifopath);
 	exit(EXIT_SUCCESS);
 }
@@ -1192,14 +1192,14 @@ int main(int argc, char **argv)
 						xasprintf(&exec_file, "%s/%s/%s", ch_root, token, exec);
 					else
 						xasprintf(&exec_file, "%s/%s", token, exec);
-					if (exec_file && exists(exec_file))
+					if (exec_file && access(exec_file, F_OK) == 0)
 						break;
 					free(exec_file);
 					exec_file = NULL;
 				}
 				free(tmp);
 			}
-			if (!exists(exec_file)) {
+			if (access(exec_file, F_OK) != 0) {
 				eerror("%s: %s does not exist", applet,
 				    exec_file ? exec_file : exec);
 				free(exec_file);
@@ -1314,7 +1314,7 @@ int main(int argc, char **argv)
 		 * remove information about it as it may have unexpectedly
 		 * crashed out. We should also return success as the end
 		 * result would be the same. */
-		if (pidfile && exists(pidfile))
+		if (pidfile && access(pidfile, F_OK) == 0)
 			unlink(pidfile);
 		if (svcname) {
 			rc_service_daemon_set(svcname, exec,

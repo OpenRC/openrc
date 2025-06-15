@@ -400,7 +400,7 @@ void selinux_setup(char **argv)
 	 * which will open the pty with initrc_devpts_t, if it doesn't exist,
 	 * fall back to plain exec
 	 */
-	if (!access("/usr/sbin/open_init_pty", X_OK)) {
+	if (access("/usr/sbin/open_init_pty", X_OK) == 0) {
 		if (execvp("/usr/sbin/open_init_pty", argv)) {
 			perror("execvp");
 			exit(-1);
