@@ -525,8 +525,11 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	}
 #endif
 
+	unsetenv("SVCNAME");
 	TAILQ_FOREACH(env, env_list, entries) {
-		if (strncmp(env->value, "RC_", 3) == 0 || strncmp(env->value, "SSD_", 4) == 0) {
+		if (strncmp(env->value, "RC_", 3) == 0
+				|| strncmp(env->value, "SSD_", 4) == 0
+				|| strncmp(env->value, "EINFO_", 6) == 0) {
 			*strchr(env->value, '=') = '\0';
 			unsetenv(env->value);
 		}
