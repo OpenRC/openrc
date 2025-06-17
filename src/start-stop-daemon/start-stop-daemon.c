@@ -1033,7 +1033,7 @@ int main(int argc, char **argv)
 #endif
 
 		TAILQ_FOREACH(env, env_list, entries) {
-			if (strncmp(env->value, "RC_", 3) == 0 && strncmp(env->value, "SSD_", 4) == 0) {
+			if (strncmp(env->value, "RC_", 3) == 0 || strncmp(env->value, "SSD_", 4) == 0) {
 				*strchr(env->value, '=') = '\0';
 				unsetenv(env->value);
 			}
