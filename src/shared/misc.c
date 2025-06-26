@@ -404,12 +404,13 @@ RC_DEPTREE * _rc_deptree_load(int force, int *regen)
 	int merrno;
 	time_t t;
 	char file[PATH_MAX];
-	int svcdirfd = rc_dirfd(RC_DIR_SVCDIR);
 	struct stat st;
 	FILE *fp;
 
 	t = 0;
 	if (rc_deptree_update_needed(&t, file) || force != 0) {
+		int svcdirfd = rc_dirfd(RC_DIR_SVCDIR);
+
 		/* Test if we have permission to update the deptree */
 		fd = openat(svcdirfd, "deptree", O_WRONLY);
 		merrno = errno;
