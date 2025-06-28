@@ -73,5 +73,6 @@ static const char *const dirnames[RC_DIR_SYS_MAX] =
 };
 
 RC_STRINGLIST *config_list(int dirfd, const char *pathname);
+void clear_dirfds(void);
 
 #endif

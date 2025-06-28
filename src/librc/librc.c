@@ -80,6 +80,18 @@ int rc_dirfd(enum rc_dir dir) {
 	return dirfds[dir];
 }
 
+void clear_dirfds(void) {
+	for (size_t i = 0; i < RC_DIR_MAX; i++) {
+		/* dirfd is zero-initialized, though zero is a valid
+		 * FD, dirfd should never contain FDs which are <= 2. */
+		if (dirfds[i] <= 0)
+			continue;
+
+		close(dirfds[i]);
+		dirfds[i] = -1;
+	}
+}
+
 #define LS_INITD	0x01
 #define LS_DIR		0x02
 static RC_STRINGLIST *
@@ -633,15 +645,7 @@ rc_set_user(void)
 	rc_dirs.scriptdirs[SCRIPTDIR_USR] = rc_dirs.usrconfdir;
 	rc_dirs.scriptdirs[SCRIPTDIR_SVC] = rc_dirs.svcdir;
 
-	for (size_t i = 0; i < RC_DIR_MAX; i++) {
-		/* dirfd is zero-initialized, though zero is a valid
-		 * FD, dirfd should never contain FDs which are <= 2. */
-		if (dirfds[i] <= 0)
-			continue;
-
-		close(dirfds[i]);
-		dirfds[i] = -1;
-	}
+	clear_dirfds();
 }
 
 const char * const *
