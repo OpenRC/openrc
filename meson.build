@@ -1,5 +1,5 @@
 project('OpenRC', 'c',
-  version : '0.62.4',
+  version : '0.62.5',
   license: 'BSD-2',
   default_options : [
     'bindir=/bin',
