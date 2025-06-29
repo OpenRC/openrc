@@ -83,7 +83,7 @@ elif ! mountinfo -q /run; then
 fi
 
 checkpath -d "$RC_SVCDIR"
-checkpath -d -m 0775 -o root:uucp /run/lock
+checkpath -d /run/lock
 
 # Try to mount xenfs as early as possible, otherwise rc_sys() will always
 # return RC_SYS_XENU and will think that we are in a domU while it's not.
