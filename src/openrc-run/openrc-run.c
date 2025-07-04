@@ -364,15 +364,6 @@ svc_exec(const char *arg1, const char *arg2)
 	int slave_tty;
 	sigset_t sigchldmask;
 	sigset_t oldmask;
-	int64_t wait_timeout, warn_timeout, now;
-	RC_STRINGLIST *keywords;
-	bool forever = false;
-
-	keywords = rc_deptree_depend(deptree, applet, "keyword");
-	if (rc_stringlist_find(keywords, "-timeout") ||
-			rc_stringlist_find(keywords, "notimeout"))
-		forever = true;
-	rc_stringlist_free(keywords);
 
 	/* Setup our signal pipe */
 	if (pipe2(signal_pipe, O_CLOEXEC) == -1)
@@ -400,9 +391,6 @@ svc_exec(const char *arg1, const char *arg2)
 			fcntl(slave_tty, F_SETFD, flags | FD_CLOEXEC);
 	}
 
-	now = tm_now();
-	wait_timeout = now + (WAIT_TIMEOUT * 1000);
-	warn_timeout = now + (WARN_TIMEOUT * 1000);
 	sigfillset(&full);
 	/* block SIGCHLD around the fork, so service_pid is set properly in handler */
 	sigprocmask(SIG_SETMASK, &full, &old);
@@ -433,14 +421,7 @@ svc_exec(const char *arg1, const char *arg2)
 	fd[0].revents = fd[1].revents = 0;
 
 	for (;;) {
-		int timeout;
-		if (forever) {
-			timeout = -1;
-		} else if ((timeout = warn_timeout - tm_now()) < 0) {
-			timeout = 0;
-		}
-
-		if (poll(fd, master_tty >= 0 ? 2 : 1, timeout) == -1) {
+		if (poll(fd, master_tty >= 0 ? 2 : 1, -1) == -1) {
 			if (errno != EINTR) {
 				eerror("%s: poll: %s", applet, strerror(errno));
 				ret = -1;
@@ -466,20 +447,6 @@ svc_exec(const char *arg1, const char *arg2)
 				/* killall5 -9 could cause this */
 				ret = 0;
 			break;
-		}
-
-		if (forever)
-			continue;
-
-		if ((now = tm_now()) >= wait_timeout) {
-			kill(service_pid, SIGKILL);
-			ret = -1;
-			break;
-		} else if (now >= warn_timeout) {
-			/* the timer might get off by a few ms, add 500ms so we get round numbers matching svc_wait. */
-			ewarn("%s: waiting for service (%"PRId64" seconds)", applet, (wait_timeout - now + 500) / 1000);
-			if ((warn_timeout += (WARN_TIMEOUT * 1000)) > wait_timeout)
-				warn_timeout = wait_timeout;
 		}
 	}
 
