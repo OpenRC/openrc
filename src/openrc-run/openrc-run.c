@@ -356,6 +356,7 @@ svc_exec(const char *arg1, const char *arg2)
 	struct winsize ws;
 	int flags = 0;
 	struct pollfd fd[2];
+	sigset_t full, old;
 	int s;
 	char buffer[BUFSIZ];
 	size_t bytes;
@@ -402,7 +403,11 @@ svc_exec(const char *arg1, const char *arg2)
 	now = tm_now();
 	wait_timeout = now + (WAIT_TIMEOUT * 1000);
 	warn_timeout = now + (WARN_TIMEOUT * 1000);
+	sigfillset(&full);
+	/* block SIGCHLD around the fork, so service_pid is set properly in handler */
+	sigprocmask(SIG_SETMASK, &full, &old);
 	service_pid = fork();
+	sigprocmask(SIG_SETMASK, &old, NULL);
 	if (service_pid == -1)
 		eerrorx("%s: fork: %s", applet, strerror(errno));
 	if (service_pid == 0) {
