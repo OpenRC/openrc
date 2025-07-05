@@ -351,7 +351,7 @@ openrc_sh_exec(const char *openrc_sh, const char *arg1, const char *arg2)
 static int
 svc_exec(const char *arg1, const char *arg2)
 {
-	int ret, fdout = fileno(stdout);
+	int ret, fdout = fileno(stdout), tmp;
 	struct termios tt;
 	struct winsize ws;
 	int flags = 0;
@@ -488,8 +488,11 @@ svc_exec(const char *arg1, const char *arg2)
 	sigprocmask (SIG_BLOCK, &sigchldmask, &oldmask);
 
 	close(signal_pipe[0]);
-	close(signal_pipe[1]);
+	/* We should set signal_pipe[1] to -1 before closing it to avoid invalid write if
+	 * sighandler runs between close() and cleaning the variable */
+	tmp = signal_pipe[1];
 	signal_pipe[0] = signal_pipe[1] = -1;
+	close(tmp);
 
 	sigprocmask (SIG_SETMASK, &oldmask, NULL);
 
