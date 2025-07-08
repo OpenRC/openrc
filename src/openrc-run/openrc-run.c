@@ -717,8 +717,11 @@ svc_start_deps(void)
 	tmplist = rc_stringlist_new();
 	TAILQ_FOREACH(svc, services, entries) {
 		state = rc_service_state(svc->value);
-		if (state & RC_SERVICE_STARTED)
+		if (state & RC_SERVICE_STARTED) {
+			if (!rc_import_variables(svc->value))
+				eerror("%s: failed to import variables from %s: %s", applet, svc->value, strerror(errno));
 			continue;
+		}
 
 		/* Don't wait for services which went inactive but are
 		 * now in starting state which we are after */
@@ -735,8 +738,11 @@ svc_start_deps(void)
 			eerror("%s: timed out waiting for %s",
 			    applet, svc->value);
 		state = rc_service_state(svc->value);
-		if (state & RC_SERVICE_STARTED)
+		if (state & RC_SERVICE_STARTED) {
+			if (!rc_import_variables(svc->value))
+				eerror("%s: failed to import variables from %s: %s", applet, svc->value, strerror(errno));
 			continue;
+		}
 		if (rc_stringlist_find(need_services, svc->value)) {
 			if (state & RC_SERVICE_INACTIVE ||
 			    state & RC_SERVICE_WASINACTIVE)
@@ -841,6 +847,8 @@ static void svc_start_real(void)
 static void
 svc_start(void)
 {
+	if (!rc_import_variables(NULL))
+		eerror("%s: failed to import variables: %s", applet, strerror(errno));
 	if (dry_run)
 		einfon("start:");
 	else
@@ -951,8 +959,9 @@ svc_stop_deps(RC_SERVICE state)
 		return;
 
 	TAILQ_FOREACH(svc, tmplist, entries) {
-		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
 			continue;
+		}
 		svc_wait(svc->value);
 		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
 			continue;
@@ -1023,9 +1032,10 @@ svc_stop_real(void)
 static int
 svc_stop(void)
 {
-	RC_SERVICE state;
+	RC_SERVICE state = 0;
 
-	state = 0;
+	rc_import_variables(NULL);
+
 	if (dry_run)
 		einfon("stop:");
 	else
