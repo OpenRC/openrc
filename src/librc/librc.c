@@ -1193,8 +1193,8 @@ rc_service_add(const char *runlevel, const char *service)
 	i = init = rc_service_resolve(service);
 
 	/* We need to ensure that only things in /etc/init.d are added
-	 * to the boot runlevel */
-	if (strcmp(runlevel, RC_LEVEL_BOOT) == 0) {
+	 * to the boot runlevel -- not applicable for user services. */
+	if (!rc_is_user() && strcmp(runlevel, RC_LEVEL_BOOT) == 0) {
 		path = realpath(dirname(init), NULL);
 		if (path == NULL) {
 			free(init);
