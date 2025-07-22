@@ -44,8 +44,10 @@
 #include <unistd.h>
 
 #if defined(BSD) && !defined(__GNU__)
+  #if !defined(__NetBSD__)
+  #include <sys/user.h>
+  #endif
 #include <sys/param.h>
-#include <sys/user.h>
 #include <sys/sysctl.h>
 #include <kvm.h>
 #else

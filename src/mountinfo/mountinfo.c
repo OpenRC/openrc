@@ -20,6 +20,11 @@
 #  include <sys/mount.h>
 
 #  define F_FLAGS f_flags
+#elif defined(__NetBSD__)
+#  include <sys/mount.h>
+
+#  define statfs statvfs
+#  define F_FLAGS f_flag
 #elif defined(BSD) && !defined(__GNU__)
 #  include <sys/statvfs.h>
 
