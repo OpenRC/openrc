@@ -97,6 +97,7 @@ static bool term_is_cons25 = false;
  * Only terminals without "color" in the name need to be explicitly listed */
 static const char *const color_terms[] = {
 	"Eterm",
+	"alacritty",
 	"ansi",
 	"con132x25",
 	"con132x30",
