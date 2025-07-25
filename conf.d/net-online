@@ -3,6 +3,11 @@
 # default is all interfaces that support ethernet.
 #interfaces=""
 
+# The minimum_up setting controls how many interfaces the net-online
+# service expects to be "up" when deciding whether the network is active.
+# The default is the number of detected/specified interfaces.
+#minimum_up=
+
 # This setting controls whether a ping test is included in the test for
 # network connectivity after all interfaces are active.
 #include_ping_test=no
