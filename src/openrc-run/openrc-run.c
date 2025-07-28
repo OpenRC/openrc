@@ -588,8 +588,10 @@ svc_start_check(void)
 	if (exclusive_fd == -1) {
 		if (state & RC_SERVICE_STOPPING)
 			ewarnx("WARNING: %s is stopping", applet);
-		else
+		else if (state & RC_SERVICE_STARTING)
 			ewarnx("WARNING: %s is already starting", applet);
+		else
+			eerrorx("%s: %s", applet, strerror(errno));
 	}
 	fcntl(exclusive_fd, F_SETFD,
 	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
@@ -838,7 +840,10 @@ svc_stop_check(RC_SERVICE *state)
 	if (exclusive_fd == -1) {
 		if (*state & RC_SERVICE_STOPPING)
 			ewarnx("WARNING: %s is already stopping", applet);
-		eerrorx("ERROR: %s stopped by something else", applet);
+		else if (errno == EACCES)
+			eerrorx("%s: %s", applet, strerror(errno));
+		else
+			eerrorx("ERROR: %s stopped by something else", applet);
 	}
 	fcntl(exclusive_fd, F_SETFD,
 	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
