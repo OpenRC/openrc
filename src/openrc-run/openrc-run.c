@@ -797,7 +797,7 @@ static void svc_start_real(void)
 	rc_plugin_run(RC_HOOK_SERVICE_START_OUT, applet);
 }
 
-static void
+static int
 svc_start(void)
 {
 	if (dry_run)
@@ -810,6 +810,8 @@ svc_start(void)
 		printf(" %s\n", applet);
 	else
 		svc_start_real();
+
+	return 0;
 }
 
 static int
@@ -1000,7 +1002,7 @@ svc_stop(void)
 	return 0;
 }
 
-static void
+static int
 svc_restart(void)
 {
 	if (!(rc_service_state(applet) & RC_SERVICE_STOPPED)) {
@@ -1015,6 +1017,8 @@ svc_restart(void)
 	start_services(restart_services);
 	rc_stringlist_free(restart_services);
 	restart_services = NULL;
+
+	return 0;
 }
 
 static bool
@@ -1047,11 +1051,130 @@ service_plugable(void)
 	return allow;
 }
 
+static int
+simple_command(void)
+{
+	char *save = prefix;
+	int retval;
+
+	eprefix(NULL);
+	prefix = NULL;
+
+	retval = svc_exec(optarg);
+
+	eprefix(save);
+	prefix = save;
+
+	return retval;
+}
+
+static int
+resolve_deptype(void)
+{
+	int depoptions = RC_DEP_TRACE;
+	RC_STRING *svc;
+
+	errno = 0;
+	if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
+		depoptions |= RC_DEP_STRICT;
+
+	if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL))
+		eerrorx("failed to load deptree");
+
+	tmplist = rc_stringlist_new();
+	rc_stringlist_add(tmplist, optarg);
+	services = rc_deptree_depends(deptree, tmplist, applet_list, runlevel, depoptions);
+	rc_stringlist_free(tmplist);
+
+	tmplist = NULL;
+	TAILQ_FOREACH(svc, services, entries)
+		printf("%s ", svc->value);
+	printf ("\n");
+
+	rc_stringlist_free(services);
+	services = NULL;
+
+	return 0;
+}
+
+static int
+cmd_condrestart(void)
+{
+	if (rc_service_state(applet) & RC_SERVICE_STARTED)
+		svc_restart();
+	return 0;
+}
+
+static int
+cmd_stop(void)
+{
+	RC_STRING *svc;
+
+	if (strcmp(optarg, "pause") == 0) {
+		ewarn("WARNING: 'pause' is deprecated; please use '--nodeps stop'");
+		deps = false;
+	}
+
+	if (deps && in_background)
+		get_started_services();
+
+	if (svc_stop() == 1)
+		return 0; /* Service has been stopped already */
+
+	if (deps) {
+		if (!in_background && !rc_runlevel_stopping() && rc_service_state(applet) & RC_SERVICE_STOPPED)
+			unhotplug();
+
+		if (in_background && rc_service_state(applet) & RC_SERVICE_INACTIVE) {
+			TAILQ_FOREACH(svc, restart_services, entries)
+				if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+					rc_service_schedule_start(applet, svc->value);
+		}
+	}
+
+	return 0;
+}
+
+static int
+cmd_zap(void)
+{
+	einfo("Manually resetting %s to stopped state", applet);
+	if (!rc_service_mark(applet, RC_SERVICE_STOPPED))
+		eerrorx("rc_service_mark: %s", strerror(errno));
+	unhotplug();
+
+	return 0;
+}
+
+struct {
+	const char *name;
+	int (*handler)(void);
+	bool reset_restart_list;
+} commands[] = {
+	{ "describe",           simple_command,  false },
+	{ "help",               simple_command,  false },
+	{ "depend",             simple_command,  false },
+	{ "status",             simple_command,  false },
+	{ "ineed",              resolve_deptype, false },
+	{ "iuse",               resolve_deptype, false },
+	{ "iwant",              resolve_deptype, false },
+	{ "needsme",            resolve_deptype, false },
+	{ "usesme",             resolve_deptype, false },
+	{ "wantsme",            resolve_deptype, false },
+	{ "iafter",             resolve_deptype, false },
+	{ "ibefore",            resolve_deptype, false },
+	{ "iprovide",           resolve_deptype, false },
+	{ "start",              svc_start,       true  },
+	{ "stop",               cmd_stop,        true  },
+	{ "restart",            svc_restart,     true  },
+	{ "condrestart",        cmd_condrestart, true  },
+	{ "conditionalrestart", cmd_condrestart, true  },
+	{ "zap",                cmd_zap,         true  },
+};
+
 int main(int argc, char **argv)
 {
-	bool doneone = false;
-	int retval, opt, depoptions = RC_DEP_TRACE;
-	RC_STRING *svc;
+	int retval, opt;
 	const char *workingdir = "/";
 	char *pidstr = NULL;
 	size_t l = 0, ll;
@@ -1066,8 +1189,7 @@ int main(int argc, char **argv)
 	applet = basename_c(argv[0]);
 
 	if (stat(argv[1], &stbuf) != 0) {
-		fprintf(stderr, "openrc-run `%s': %s\n",
-		    argv[1], strerror(errno));
+		fprintf(stderr, "openrc-run `%s': %s\n", argv[1], strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
@@ -1151,6 +1273,7 @@ int main(int argc, char **argv)
 
 	/* eprefix is kinda klunky, but it works for our purposes */
 	if (rc_conf_yesno("rc_parallel")) {
+		RC_STRING *svc;
 		/* Get the longest service name */
 		services = rc_services_in_runlevel(NULL);
 		TAILQ_FOREACH(svc, services, entries) {
@@ -1212,9 +1335,15 @@ int main(int argc, char **argv)
 	applet_list = rc_stringlist_new();
 	rc_stringlist_add(applet_list, applet);
 
+	if (optind >= argc)
+		usage(EXIT_FAILURE);
+
 	/* Now run each option */
 	retval = EXIT_SUCCESS;
+
+next_cmd:
 	while (optind < argc) {
+		int cmdval;
 		optarg = argv[optind++];
 
 		/* Abort on a sighup here */
@@ -1228,101 +1357,27 @@ int main(int argc, char **argv)
 		unsetenv("RC_CMD");
 		setenv("RC_CMD", optarg, 1);
 
-		doneone = true;
+		for (size_t i = 0; i < ARRAY_SIZE(commands); i++) {
+			if (strcmp(optarg, commands[i].name) != 0)
+				continue;
 
-		if (strcmp(optarg, "describe") == 0 ||
-		    strcmp(optarg, "help") == 0 ||
-		    strcmp(optarg, "depend") == 0)
-		{
-			char *save = prefix;
-			eprefix(NULL);
-			prefix = NULL;
-			svc_exec(optarg);
-			eprefix(save);
-			prefix = save;
-		} else if (strcmp(optarg, "ineed") == 0 ||
-		    strcmp(optarg, "iuse") == 0 ||
-		    strcmp(optarg, "iwant") == 0 ||
-		    strcmp(optarg, "needsme") == 0 ||
-		    strcmp(optarg, "usesme") == 0 ||
-		    strcmp(optarg, "wantsme") == 0 ||
-		    strcmp(optarg, "iafter") == 0 ||
-		    strcmp(optarg, "ibefore") == 0 ||
-		    strcmp(optarg, "iprovide") == 0)
-		{
-			errno = 0;
-			if (rc_conf_yesno("rc_depend_strict") ||
-			    errno == ENOENT)
-				depoptions |= RC_DEP_STRICT;
+			if ((cmdval = commands[i].handler()) != 0)
+				retval = cmdval;
 
-			if (!deptree &&
-			    ((deptree = _rc_deptree_load(0, NULL)) == NULL))
-				eerrorx("failed to load deptree");
+			if (commands[i].reset_restart_list) {
+				/* We should ensure this list is empty after
+				 * an action is done */
+				rc_stringlist_free(restart_services);
+				restart_services = NULL;
+			}
 
-			tmplist = rc_stringlist_new();
-			rc_stringlist_add(tmplist, optarg);
-			services = rc_deptree_depends(deptree, tmplist,
-			    applet_list,
-			    runlevel, depoptions);
-			rc_stringlist_free(tmplist);
-			tmplist = NULL;
-			TAILQ_FOREACH(svc, services, entries)
-			    printf("%s ", svc->value);
-			printf ("\n");
-			rc_stringlist_free(services);
-			services = NULL;
-		} else if (strcmp (optarg, "status") == 0) {
-			eprefix(NULL);
-			prefix = NULL;
-			retval = svc_exec("status");
-		} else {
-			if (strcmp(optarg, "conditionalrestart") == 0 ||
-			    strcmp(optarg, "condrestart") == 0)
-			{
-				if (rc_service_state(applet) & RC_SERVICE_STARTED)
-					svc_restart();
-			} else if (strcmp(optarg, "restart") == 0) {
-				svc_restart();
-			} else if (strcmp(optarg, "start") == 0) {
-				svc_start();
-			} else if (strcmp(optarg, "stop") == 0 || strcmp(optarg, "pause") == 0) {
-				if (strcmp(optarg, "pause") == 0) {
-					ewarn("WARNING: 'pause' is deprecated; please use '--nodeps stop'");
-					deps = false;
-				}
-				if (deps && in_background)
-					get_started_services();
-				if (svc_stop() == 1)
-					continue; /* Service has been stopped already */
-				if (deps) {
-					if (!in_background && !rc_runlevel_stopping() && rc_service_state(applet) & RC_SERVICE_STOPPED)
-						unhotplug();
-
-					if (in_background && rc_service_state(applet) & RC_SERVICE_INACTIVE) {
-						TAILQ_FOREACH(svc, restart_services, entries)
-							if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
-								rc_service_schedule_start(applet, svc->value);
-					}
-				}
-			} else if (strcmp(optarg, "zap") == 0) {
-				einfo("Manually resetting %s to stopped state",
-				    applet);
-				if (!rc_service_mark(applet,
-					RC_SERVICE_STOPPED))
-					eerrorx("rc_service_mark: %s",
-					    strerror(errno));
-				unhotplug();
-			} else
-				retval = svc_exec(optarg);
-
-			/* We should ensure this list is empty after
-			 * an action is done */
-			rc_stringlist_free(restart_services);
-			restart_services = NULL;
+			goto next_cmd;
 		}
 
-		if (!doneone)
-			usage(EXIT_FAILURE);
+		if ((cmdval = svc_exec(optarg)) != 0)
+			retval = cmdval;
+		rc_stringlist_free(restart_services);
+		restart_services = NULL;
 	}
 
 	return retval;
