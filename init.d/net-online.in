@@ -45,10 +45,10 @@ start ()
 	ifcount=0
  	for dev in ${interfaces}; do
 		: $((ifcount += 1))
-		read carrier < /sys/class/net/$dev/carrier 2> /dev/null ||
+		read carrier 2> /dev/null < /sys/class/net/$dev/carrier ||
 			carrier=
 		[ "$carrier" = 1 ] && : $((carriers += 1))
-		read operstate < /sys/class/net/$dev/operstate 2> /dev/null ||
+		read operstate 2> /dev/null < /sys/class/net/$dev/operstate ||
 			operstate=
 		[ "$operstate" = up ] && : $((configured += 1))
 	done
