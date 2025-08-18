@@ -50,6 +50,7 @@ start ()
 		[ "$carrier" = 1 ] && : $((carriers += 1))
 		read operstate 2> /dev/null < /sys/class/net/$dev/operstate ||
 			operstate=
+		[ -e /sys/class/net/$dev/tun_flags ] && operstate=up
 		[ "$operstate" = up ] && : $((configured += 1))
 	done
 	[ $configured -eq $ifcount ] && [ $carriers -ge 1 ] && break
