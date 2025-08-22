@@ -15,7 +15,7 @@ depend()
 {
 	after clock
 	need localmount
-	keyword -docker -podman -jail -lxc -openvz -prefix -systemd-nspawn
+	keyword -docker -podman -jail -lxc -openvz -prefix -systemd-nspawn -wsl
 	provide urandom
 }
 
