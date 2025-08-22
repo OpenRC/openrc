@@ -286,6 +286,8 @@ detect_container(const char *systype RC_UNUSED)
 				return RC_SYS_DOCKER;
 		if (strcmp(systype, RC_SYS_PODMAN) == 0)
 			return RC_SYS_PODMAN;
+		if (strcmp(systype, RC_SYS_WSL) == 0)
+			return RC_SYS_WSL;
 	}
 	if (file_regex("/proc/cpuinfo", "UML"))
 		return RC_SYS_UML;
@@ -310,6 +312,12 @@ detect_container(const char *systype RC_UNUSED)
 	/* old test, I'm not sure when this was valid. */
 	else if (file_regex("/proc/1/environ", "container=docker"))
 		return RC_SYS_DOCKER;
+	else if (file_regex("/proc/sys/kernel/osrelease", "microsoft"))
+		return RC_SYS_WSL;
+	else if (getenv("WSL_DISTRO_NAME"))
+		return RC_SYS_WSL;
+	else if (access("/proc/sys/fs/binfmt_misc/WSLInterop", F_OK) == 0)
+		return RC_SYS_WSL;
 #endif
 
 	return NULL;
