@@ -388,6 +388,7 @@ bool rc_service_daemons_crashed(const char *);
 #define RC_SYS_VSERVER "VSERVER"
 #define RC_SYS_XEN0    "XEN0"
 #define RC_SYS_XENU    "XENU"
+#define RC_SYS_WSL     "WSL"
 
 /*! Returns the type of subsystem
  * @return string from RC_SYS_* types or NULL if none detected */
