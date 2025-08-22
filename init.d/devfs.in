@@ -15,7 +15,7 @@ depend()
 {
 	provide dev-mount
 	before dev
-	keyword -docker -podman -prefix -systemd-nspawn -vserver
+	keyword -docker -podman -prefix -systemd-nspawn -vserver -wsl
 }
 
 mount_dev()

@@ -14,7 +14,7 @@ depend()
 	need localmount
 	before logger
 	after clock root sysctl
-	keyword -prefix -timeout
+	keyword -prefix -timeout -wsl
 }
 
 : "${wipe_tmp:=${WIPE_TMP:-yes}}"
