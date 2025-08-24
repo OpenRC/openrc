@@ -27,6 +27,9 @@
 .Ar service
 .Op Ar runlevel ...
 .Nm
+.Ic export
+.Ar variable ...
+.Nm
 .Op Fl u , -update
 .Op Fl v , -verbose
 .Ic show
@@ -59,6 +62,10 @@ Delete the
 from the
 .Ar runlevel
 or the current one if none given.
+.It Ic export Ar variable ...
+Exports listed
+.Ar variables
+to the starting environment of all services.
 .It Ic show
 Show all enabled services and the runlevels they belong to.  If you specify
 runlevels to show, then only those will be included in the output.
