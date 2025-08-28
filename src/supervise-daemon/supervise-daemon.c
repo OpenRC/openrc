@@ -85,76 +85,39 @@ enum {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "A:a:D:d:e:g:I:Kk:m:N:p:R:r:s:Su:0:1:2:3" \
-	getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "healthcheck-timer",        1, NULL, 'a'},
-	{ "healthcheck-delay",        1, NULL, 'A'},
-	{ "capabilities", 1, NULL, LONGOPT_CAPABILITIES},
-	{ "secbits",      1, NULL, LONGOPT_SECBITS},
-	{ "no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
-	{ "respawn-delay",        1, NULL, 'D'},
-	{ "respawn-delay-step",   1, NULL, LONGOPT_RESPAWN_DELAY_STEP},
-	{ "respawn-delay-cap",    1, NULL, LONGOPT_RESPAWN_DELAY_CAP},
-	{ "chdir",        1, NULL, 'd'},
-	{ "env",          1, NULL, 'e'},
-	{ "group",        1, NULL, 'g'},
-	{ "ionice",       1, NULL, 'I'},
-	{ "stop",         0, NULL, 'K'},
-	{ "umask",        1, NULL, 'k'},
-	{ "respawn-max",    1, NULL, 'm'},
-	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL, LONGOPT_OOM_SCORE_ADJ},
-	{ "pidfile",      1, NULL, 'p'},
-	{ "respawn-period",        1, NULL, 'P'},
-	{ "retry",       1, NULL, 'R'},
-	{ "chroot",       1, NULL, 'r'},
-	{ "signal",       1, NULL, 's'},
-	{ "start",        0, NULL, 'S'},
-	{ "user",         1, NULL, 'u'},
-	{ "stdin",        1, NULL, '0'},
-	{ "stdout",       1, NULL, '1'},
-	{ "stderr",       1, NULL, '2'},
-	{ "stdout-logger",1, NULL, LONGOPT_STDOUT_LOGGER},
-	{ "stderr-logger",1, NULL, LONGOPT_STDERR_LOGGER},
-	{ "reexec",       0, NULL, '3'},
-	{ "notify",       1, NULL, LONGOPT_NOTIFY},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"set an initial health check delay",
-	"set a health check timer",
-	"Set the inheritable, ambient and bounding capabilities",
-	"Set the security-bits for the program",
-	"Set the No New Privs flag for the program",
-	"Set a respawn delay",
-	"Increase the respawn delay by this amount for every retry",
-	"Set maximum respawn delay when respawn-delay-step is also active",
-	"Change the PWD",
-	"Set an environment string",
-	"Change the process group",
-	"Set an ionice class:data when starting",
-	"Stop daemon",
-	"Set the umask for the daemon",
-	"set maximum number of respawn attempts",
-	"Set a nicelevel when starting",
-	"Set OOM score adjustment when starting",
-	"Match pid found in this file",
-	"Set respawn time period",
-	"Retry schedule to use when stopping",
-	"Chroot to this directory",
-	"Send a signal to the daemon",
-	"Start daemon",
-	"Change the process user",
-	"Redirect stdin to file",
-	"Redirect stdout to file",
-	"Redirect stderr to file",
-	"Redirect stdout to process",
-	"Redirect stderr to process",
-	"reexec (used internally)",
-	"Configures experimental notification behaviour",
-	longopts_help_COMMON
-};
+#define opts(opt, opt_long) \
+	opt(a, healthcheck-timer, required_argument, "set an initial health check delay") \
+	opt(A, healthcheck-delay, required_argument, "set a health check timer") \
+	opt(D, respawn-delay, required_argument, "Set a respawn delay") \
+	opt(d, chdir, required_argument, "Change the PWD") \
+	opt(e, env, required_argument, "Set an environment string") \
+	opt(g, group, required_argument, "Change the process group") \
+	opt(I, ionice, required_argument, "Set an ionice class:data when starting") \
+	opt(K, stop, no_argument, "Stop daemon") \
+	opt(k, umask, required_argument, "Set the umask for the daemon") \
+	opt(m, respawn-max, required_argument, "set maximum number of respawn attempts") \
+	opt(N, nicelevel, required_argument, "Set a nicelevel when starting") \
+	opt(p, pidfile, required_argument, "Match pid found in this file") \
+	opt(P, respawn-period, required_argument, "Set respawn time period") \
+	opt(R, retry, required_argument, "Retry schedule to use when stopping") \
+	opt(r, chroot, required_argument, "Chroot to this directory") \
+	opt(s, signal, required_argument, "Send a signal to the daemon") \
+	opt(S, start, no_argument, "Start daemon") \
+	opt(u, user, required_argument, "Change the process user") \
+	opt(no_argument, stdin, required_argument, "Redirect stdin to file") \
+	opt(required_argument, stdout, required_argument, "Redirect stdout to file") \
+	opt(2, stderr, required_argument, "Redirect stderr to file") \
+	opt(3, reexec, no_argument, "reexec (used internally)") \
+	opt_long(LONGOPT_CAPABILITIES, "capabilities", required_argument, "Set the inheritable, ambient and bounding capabilities") \
+	opt_long(LONGOPT_SECBITS, "secbits", required_argument, "Set the security-bits for the program") \
+	opt_long(LONGOPT_NO_NEW_PRIVS, "no-new-privs", no_argument, "Set the No New Privs flag for the program") \
+	opt_long(LONGOPT_RESPAWN_DELAY_STEP, "respawn-delay-step", required_argument, "Increase the respawn delay by this amount for every retry") \
+	opt_long(LONGOPT_RESPAWN_DELAY_CAP, "respawn-delay-cap", required_argument, "Set maximum respawn delay when respawn-delay-step is also active") \
+	opt_long(LONGOPT_OOM_SCORE_ADJ, "oom-score-adj",required_argument, "Set OOM score adjustment when starting") \
+	opt_long(LONGOPT_STDOUT_LOGGER, "stdout-logger",required_argument, "Redirect stdout to process") \
+	opt_long(LONGOPT_STDERR_LOGGER, "stderr-logger",required_argument, "Redirect stderr to process") \
+	opt_long(LONGOPT_NOTIFY, "notify", required_argument, "Configures experimental notification behaviour")
+cmdline_opts(opts)
 const char *usagestring = NULL;
 
 static int healthcheckdelay = 0;
