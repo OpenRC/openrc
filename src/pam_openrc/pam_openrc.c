@@ -28,6 +28,8 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 		return PAM_SUCCESS;
 
 	setenv("EINFO_LOG", "pam_openrc", true);
+	setenv("EINFO_QUIET", "yes", true);
+	setenv("EERROR_QUIET", "yes", true);
 
 	if (pam_get_item(pamh, PAM_SERVICE, (const void **)&session) != PAM_SUCCESS) {
 		elog(LOG_ERR, "Failed to get PAM_SERVICE");
