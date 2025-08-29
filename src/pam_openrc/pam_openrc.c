@@ -13,7 +13,7 @@
 #include "einfo.h"
 
 static int
-exec_openrc(pam_handle_t *pamh, bool opening)
+exec_openrc(pam_handle_t *pamh, bool opening, bool quiet)
 {
 	char *svc_name, *pam_lock, *logins, *script = NULL;
 	const char *username = NULL, *session = NULL;
@@ -28,6 +28,11 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 		return PAM_SUCCESS;
 
 	setenv("EINFO_LOG", "pam_openrc", true);
+
+	if (quiet) {
+		setenv("EINFO_QUIET", "yes", true);
+		setenv("EERROR_QUIET", "yes", true);
+	}
 
 	if (pam_get_item(pamh, PAM_SERVICE, (const void **)&session) != PAM_SUCCESS) {
 		elog(LOG_ERR, "Failed to get PAM_SERVICE");
@@ -127,9 +132,8 @@ out:
 PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
 	(void) argc;
 	(void) argv;
-	(void) flags;
 
-	return exec_openrc(pamh, true);
+	return exec_openrc(pamh, true, flags & PAM_SILENT);
 }
 
 PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
@@ -137,5 +141,5 @@ PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, con
 	(void) argv;
 	(void) flags;
 
-	return exec_openrc(pamh, false);
+	return exec_openrc(pamh, false, flags & PAM_SILENT);
 }
