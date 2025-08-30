@@ -23,7 +23,13 @@ exec_openrc(pam_handle_t *pamh, bool opening)
 	struct passwd *user;
 	pid_t pid = -1;
 
+	errno = 0;
+	if (!rc_yesno(rc_conf_value("rc_autostart_users")) && errno == 0)
+		return PAM_SUCCESS;
+
 	setenv("EINFO_LOG", "pam_openrc", true);
+	setenv("EINFO_QUIET", "yes", true);
+	setenv("EERROR_QUIET", "yes", true);
 
 	if (pam_get_item(pamh, PAM_SERVICE, (const void **)&session) != PAM_SUCCESS) {
 		elog(LOG_ERR, "Failed to get PAM_SERVICE");
