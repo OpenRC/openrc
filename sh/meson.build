@@ -21,9 +21,9 @@ sh_config = [
   ]
 
 scripts_config = [
-  'gendepends.sh.in',
   'openrc-run.sh.in',
   'openrc-user.sh.in',
+  'gendepends.sh.in',
   's6-svscanboot.sh.in'
   ]
 
@@ -49,8 +49,12 @@ else
     ]
 endif
 
-install_data(sh,
-  install_dir : rc_shdir)
+fs = import('fs')
+script_deps = []
+foreach file : sh
+  script_deps += fs.copyfile(file, install: true, install_dir: rc_shdir)
+endforeach
+
 foreach file : sh_config
   configure_file(input : file,
     output : '@BASENAME@',
@@ -60,10 +64,8 @@ endforeach
 
 foreach file : scripts_config
   configure_file(input : file,
-    output : '@BASENAME@',
-    configuration : sh_conf_data,
-    install_dir : rc_shdir,
-    install_mode : 'rwxr-xr-x')
+    output : '@BASENAME@', configuration : sh_conf_data,
+    install_dir : rc_shdir, install_mode : 'rwxr-xr-x')
 endforeach
 
 foreach file : scripts_config_os
