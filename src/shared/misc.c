@@ -60,7 +60,7 @@ static const char *const env_allowlist[] = {
 	"EERROR_QUIET", "EINFO_QUIET",
 	"IN_BACKGROUND", "IN_DRYRUN", "IN_HOTPLUG",
 	"RC_DEBUG", "RC_NODEPS", "RC_USER_SERVICES",
-	"RC_SVCDIR", "RC_PATH",
+	"RC_SVCDIR", "RC_PATH", "RC_LIBEXECDIR",
 	"LANG", "LC_MESSAGES", "TERM",
 	"EINFO_COLOR", "EINFO_VERBOSE",
 	NULL
@@ -218,11 +218,13 @@ env_config(void)
 		free(cachedir);
 	}
 
+	e = getenv("RC_LIBEXECDIR");
+	setenv("RC_LIBEXECDIR", e ? e : RC_LIBEXECDIR, 1);
+
 	xasprintf(&tmpdir, "%s/tmp", svcdir);
 	e = rc_runlevel_get();
 
 	setenv("RC_VERSION", VERSION, 1);
-	setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 1);
 	setenv("RC_SVCDIR", svcdir, 1);
 	setenv("RC_TMPDIR", tmpdir, 1);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);

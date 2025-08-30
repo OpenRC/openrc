@@ -53,11 +53,11 @@ apply_ulimits()
 	done
 }
 
-sourcex "@LIBEXECDIR@/sh/functions.sh"
-sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
+sourcex "$RC_LIBEXECDIR/sh/functions.sh"
+sourcex "$RC_LIBEXECDIR/sh/rc-functions.sh"
 case $RC_SYS in
 	PREFIX|SYSTEMD-NSPAWN) ;;
-	*) yesno "$RC_USER_SERVICES" || sourcex -e "@LIBEXECDIR@/sh/rc-cgroup.sh";;
+	*) yesno "$RC_USER_SERVICES" || sourcex -e "$RC_LIBEXECDIR/sh/rc-cgroup.sh";;
 esac
 
 # Support LiveCD foo
@@ -259,10 +259,10 @@ done
 unset _c _f _conf_d
 
 # load service supervisor functions
-sourcex "@LIBEXECDIR@/sh/runit.sh"
-sourcex "@LIBEXECDIR@/sh/s6.sh"
-sourcex "@LIBEXECDIR@/sh/start-stop-daemon.sh"
-sourcex "@LIBEXECDIR@/sh/supervise-daemon.sh"
+sourcex "$RC_LIBEXECDIR/sh/runit.sh"
+sourcex "$RC_LIBEXECDIR/sh/s6.sh"
+sourcex "$RC_LIBEXECDIR/sh/start-stop-daemon.sh"
+sourcex "$RC_LIBEXECDIR/sh/supervise-daemon.sh"
 
 # Load our script
 sourcex "$RC_SERVICE"
