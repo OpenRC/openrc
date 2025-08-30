@@ -790,11 +790,18 @@ rc_deptree_update(void)
 	size_t i, l;
 	bool retval = true;
 	const char *sys = rc_sys();
+	char *gendep;
 	int serrno;
 
 	/* Phase 1 - source all init scripts and print dependencies */
 	setup_environment();
-	if (!(fp = popen(GENDEP, "r")))
+	xasprintf(&gendep, "%s/gendepends.sh", rc_svcdir());
+	if (access(gendep, F_OK) == 0)
+		fp = popen(gendep, "r");
+	else
+		fp = popen(GENDEP, "r");
+
+	if (!fp)
 		return false;
 
 	config = rc_stringlist_new();
