@@ -6,6 +6,8 @@ the information in this file is in reverse order.
 
 ## OpenRC 0.62
 
+User services are no longer considered experimental.
+
 supervise-daemon and start-stop-daemon now support -1/--stdin as means
 of piping a file or fifo to the standard input of the daemon.
 
