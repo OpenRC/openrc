@@ -59,6 +59,15 @@ mount_misc()
 		fi
 	fi
 
+	# Setup Kernel Support for tracefs
+	if [ -d /sys/kernel/tracing ] && ! mountinfo -q /sys/kernel/tracing; then
+		if grep -qs tracefs /proc/filesystems; then
+			ebegin "Mounting trace filesystem"
+			mount -n -t tracefs -o ${sysfs_opts} tracefs /sys/kernel/tracing
+			eend $?
+		fi
+	fi
+
 	# Setup Kernel Support for configfs
 	if [ -d /sys/kernel/config ] && ! mountinfo -q /sys/kernel/config; then
 		if grep -qs configfs /proc/filesystems; then
