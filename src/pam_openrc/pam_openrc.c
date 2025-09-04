@@ -15,6 +15,7 @@
 static int
 exec_openrc(pam_handle_t *pamh, bool opening, bool quiet)
 {
+	char *do_autostart = rc_conf_value("rc_autostart_user");
 	char *svc_name, *pam_lock, *logins, *script = NULL;
 	const char *username = NULL, *session = NULL;
 	RC_SERVICE service_status;
@@ -24,7 +25,7 @@ exec_openrc(pam_handle_t *pamh, bool opening, bool quiet)
 	pid_t pid = -1;
 
 	errno = 0;
-	if (!rc_yesno(rc_conf_value("rc_autostart_user")) && errno == 0)
+	if (!rc_yesno(do_autostart) && errno == 0)
 		return PAM_SUCCESS;
 
 	setenv("EINFO_LOG", "pam_openrc", true);
