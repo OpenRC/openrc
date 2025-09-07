@@ -16,10 +16,6 @@ sh = [
   'supervise-daemon.sh',
   ]
 
-sh_config = [
-  'functions.sh.in',
-  ]
-
 scripts_config = [
   'gendepends.sh.in',
   'openrc-run.sh.in',
@@ -49,14 +45,10 @@ else
     ]
 endif
 
-install_data(sh,
-  install_dir : rc_shdir)
-foreach file : sh_config
-  configure_file(input : file,
-    output : '@BASENAME@',
-    configuration : sh_conf_data,
-    install_dir : rc_shdir)
-endforeach
+install_data(sh, install_dir : rc_shdir)
+configure_file(input : 'functions.sh.in', output : '@BASENAME@',
+    configuration : sh_conf_data, install_dir : rc_shdir)
+install_symlink('functions.sh', pointing_to: rc_shdir / 'functions.sh', install_dir: init_d_dir)
 
 foreach file : scripts_config
   configure_file(input : file,
