@@ -71,9 +71,8 @@ exec_openrc(pam_handle_t *pamh, bool opening, bool quiet)
 	}
 
 	elog(LOG_INFO, opening ? "starting session" : "stopping session");
-	fd = svc_lock(pam_lock, false);
 
-	if (fd == -1) {
+	if ((fd = svc_lock(pam_lock, false)) == -1) {
 		ret = PAM_SESSION_ERR;
 		goto out;
 	}
@@ -82,13 +81,13 @@ exec_openrc(pam_handle_t *pamh, bool opening, bool quiet)
 		if (!(script = rc_service_resolve("user"))) {
 			elog(LOG_ERR, "Failed to resolve %s.", svc_name);
 			ret = PAM_SESSION_ERR;
-			goto out;
+			goto unlock;
 		}
 
 		if (symlinkat(script, rc_dirfd(RC_DIR_INITD), svc_name) != 0) {
 			elog(LOG_ERR, "symlink: %s", strerror(errno));
 			ret = PAM_SESSION_ERR;
-			goto out;
+			goto unlock;
 		}
 	}
 
@@ -121,8 +120,9 @@ exec_openrc(pam_handle_t *pamh, bool opening, bool quiet)
 	rc_service_value_set(svc_name, "logins", logins);
 	free(logins);
 
-out:
+unlock:
 	svc_unlock(pam_lock, fd);
+out:
 	free(pam_lock);
 	free(svc_name);
 	free(script);
