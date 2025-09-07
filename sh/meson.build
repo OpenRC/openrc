@@ -6,6 +6,7 @@ sh_conf_data.set('PKG_PREFIX', pkg_prefix)
 sh_conf_data.set('SBINDIR', sbindir)
 sh_conf_data.set('SHELL', get_option('shell'))
 sh_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
+sh_conf_data.set('UUCP_GROUP', get_option('uucp_group'))
 
 sh = [
   'rc-functions.sh',

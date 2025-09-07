@@ -24,6 +24,8 @@ option('sysvinit', type : 'boolean', value : false,
   description : 'enable SysVinit compatibility (linux only)')
 option('zsh-completions', type : 'boolean',
   description : 'install zsh completions')
+option('uucp_group', type : 'string', value : 'uucp',
+  description : 'group to use for /run/lock')
 option('agetty', type: 'array',
   value: ['tty1', 'tty2', 'tty3', 'tty4', 'tty5', 'tty6'],
   description : 'agetty symlinks to install when sysvinit is also specified')
