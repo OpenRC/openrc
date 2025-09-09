@@ -297,6 +297,9 @@ set_krunlevel(const char *level)
 {
 	FILE *fp;
 
+	if (rc_is_user())
+		return true;
+
 	if (!level ||
 	    strcmp(level, getenv ("RC_BOOTLEVEL")) == 0 ||
 	    strcmp(level, RC_LEVEL_SINGLE) == 0 ||
@@ -322,6 +325,9 @@ static char *get_krunlevel(void)
 	char *buffer = NULL;
 	FILE *fp;
 	size_t i = 0;
+
+	if (rc_is_user())
+		return NULL;
 
 	if (access(RC_KRUNLEVEL, F_OK) != 0)
 		return NULL;
@@ -799,6 +805,8 @@ int main(int argc, char **argv)
 				eerror("runlevel `%s' does not exist", optarg);
 				exit(EXIT_FAILURE);
 			}
+			if (rc_is_user())
+				eerrorx("user services do not currently support --override");
 			if (!set_krunlevel(optarg))
 				exit(EXIT_FAILURE);
 			einfo("Overriding next runlevel to %s", optarg);
