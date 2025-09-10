@@ -827,9 +827,7 @@ rc_service_extra_commands(const char *service)
 	if (!(svc = rc_service_resolve(service)))
 		return NULL;
 
-	l = strlen(OPTSTR) + strlen(svc) + 1;
-	cmd = xmalloc(sizeof(char) * l);
-	snprintf(cmd, l, OPTSTR, svc);
+	xasprintf(&cmd, OPTSTR, svc);
 	free(svc);
 
 	if (!(fp = popen(cmd, "r"))) {
