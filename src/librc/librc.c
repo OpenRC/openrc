@@ -193,11 +193,10 @@ file_regex(const char *file, const char *regex)
 		return false;
 
 	if ((result = regcomp(&re, regex, REG_EXTENDED | REG_NOSUB)) != 0) {
+		char buf[BUFSIZ];
 		fclose(fp);
-		line = xmalloc(sizeof(char) * BUFSIZ);
-		regerror(result, &re, line, BUFSIZ);
-		fprintf(stderr, "file_regex: %s", line);
-		free(line);
+		regerror(result, &re, buf, sizeof(buf));
+		fprintf(stderr, "file_regex: %s", buf);
 		return false;
 	}
 
