@@ -656,12 +656,30 @@ rc_set_user(void)
 	clear_dirfds();
 }
 
+static const char **env_scriptdirs;
+
 const char * const *
 rc_scriptdirs(void)
 {
+	static bool set = false;
+	const char *dirs;
+
 	if (rc_dirs.set)
 		return rc_dirs.scriptdirs;
-	return scriptdirs;
+
+	if (!set && (dirs = getenv("RC_SCRIPTDIRS"))) {
+		char *tmp = xstrdup(dirs);
+		unsigned entries = 0;
+
+		for (const char *entry = dirs; *entry; entry++)
+			entries += *entry == ':';
+		env_scriptdirs = calloc(entries + 2, sizeof(*scriptdirs));
+
+		for (size_t i = 0; i < entries + 1 && tmp; i++)
+			env_scriptdirs[i] = strsep(&tmp, ":");
+	}
+
+	return env_scriptdirs ? env_scriptdirs : scriptdirs;
 }
 
 size_t
@@ -712,7 +730,18 @@ rc_runleveldir(void)
 const char *
 rc_svcdir(void)
 {
-	return rc_dirs.set ? rc_dirs.svcdir : RC_SVCDIR;
+	static const char *svcdir;
+	static bool set = false;
+
+	if (rc_dirs.set)
+		return rc_dirs.svcdir;
+
+	if (!set && !rc_dirs.set) {
+		svcdir = getenv("RC_SVCDIR");
+		set = true;
+	}
+
+	return svcdir ? svcdir : RC_SVCDIR;
 }
 
 static ssize_t
