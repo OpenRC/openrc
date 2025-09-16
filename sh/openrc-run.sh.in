@@ -237,6 +237,11 @@ fi
 _usr_conf=${XDG_CONFIG_HOME:-${HOME}/.config}/rc
 if yesno "$RC_USER_SERVICES"; then
 	sourcex -e "$_usr_conf/rc.conf"
+	if [ -d "$_usr_conf/rc.conf.d" ]; then
+		for _f in "$_usr_conf"/rc.conf.d/*.conf; do
+			sourcex -e "$_f"
+		done
+	fi
 fi
 
 _conf_d=${RC_SERVICE%/*}/../conf.d
