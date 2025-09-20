@@ -149,7 +149,7 @@ rm_dir(int targetfd, const char *pathname, bool top)
 	while ((d = readdir(dp))) {
 		if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
 			continue;
-		if (fstatat(dirfd(dp), pathname, &s, 0) != 0) {
+		if (fstatat(dirfd(dp), d->d_name, &s, 0) != 0) {
 			retval = false;
 			break;
 		}
