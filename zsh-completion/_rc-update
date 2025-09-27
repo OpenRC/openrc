@@ -1,31 +1,47 @@
 #compdef rc-update
 
-local used_init
-used_init=(${=${(M)${(f)"$(rc-update show 2>/dev/null)"}:#*|*[a-z]*}% |*})
+_rc_actions() {
+  _values "actions" \
+    'add[Add the service to the runlevel or the current one if none given]' \
+    'del[Delete the service from the runlevel or the current one if none given]' \
+    'show[Show all enabled services and the runlevels they belong to]'
+}
 
-if (( CURRENT == 2 )); then
-  _values "rc-update actions" \
-    'add[Add script to a runlevel]' \
-    'del[Delete script from a runlevel]' \
-    'show[Show scripts in  a runlevel]' \
-    '-a[Process all runlevels]' \
-    '-s[Stack a runlevel instead of a service]'
-elif (( CURRENT == 3 )); then
-  case "$words[2]" in
-    add)
-      _values "service" $(rc-service --list)
-      ;;
-    del)
-      _values "service" $used_init
-      ;;
-    show)
-      _values "runlevels" $(rc-status --list) \
-        '-v[Show all service scripts]' \
-        '--verbose[Show all service scripts]'
-      ;;
+_rc_service() {
+  case $line[1] in
+  add)
+    _values "service" $(rc-service "${opt_args[(i)-U|--user]}" --list)
+    ;;
+  del)
+    _values "service" ${=${(M)${(f)"$(rc-update ${opt_args[(i)-U|--user]} show 2>/dev/null)"}:#*|*[a-z]*}% |*}
+    ;;
+  show)
+    _values "runlevels" $(rc-status "${opt_args[(i)-U|--user]}" --list)
+    _values "options" '(-v --verbose)'{-v,--verbose}'[Show all service scripts]'
+    ;;
   esac
-elif (( CURRENT == 4 )); then
-  _values "runlevels" $(rc-status --list)
-fi
+}
+
+_rc_runlevels() {
+  if [[ $line[1] == show ]]; then
+    _nothing
+  else
+    _values "runlevels" $(rc-status "${opt_args[(i)-U|--user]}" --list)
+  fi
+}
+
+_arguments -C -s \
+  '(-a --all)'{-a,--all}'[Process all runlevels]' \
+  '(-s --stack)'{-s,--stack}'[Stack a runlevel instead of a service]' \
+  '(-u --update)'{-u,--update}'[Force an update of the dependency tree]' \
+  '(- :)'{-h,--help}'[Display this help output]' \
+  '(-C --nocolor)'{-C,--nocolor}'[Disable color output]' \
+  '(- :)'{-V,--version}'[Display software version]' \
+  '(-v --verbose)'{-v,--verbose}'[Run verbosely]' \
+  '(-q --quiet)'{-q,--quiet}'[Run quietly (repeat to suppress errors)]' \
+  '(-U --user)'{-U,--user}'[Run in user mode]' \
+  '1:actions:_rc_actions' \
+  '2:service:_rc_service' \
+  '3:runlevels:_rc_runlevels'
 
 # vim: set et sw=2 ts=2 ft=zsh:

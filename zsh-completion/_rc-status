@@ -1,18 +1,26 @@
 #compdef rc-status
 
-_arguments -s \
-  {'(--all)-a','(-a)--all'}'[Show services at all runlevels]' \
-  {'(--crashed)-c','(-c)--crashed'}'[Show crashed services]' \
-  {'(--list)-l','(-l)--list'}'[Show list of runlevels]' \
-  {'(--runlevel)-r','(-r)--runlevel'}'[Show the name of the current runlevel]' \
-  {'(--servicelist)-s','(-s)--servicelist'}'[Show all services]' \
-  {'(--unused)-u','(-u)--unused'}'[Show services not assigned to any run level]' \
-  {'(--help)-h','(-h)--help'}'[Print this help output]' \
-  {'(--nocolor)-C','(-C)--nocolor'}'[Disable color output]' \
-  {'(--version)-V','(-V)--version'}'[Display software version]' \
-  {'(--verbose)-v','(-v)--verbose'}'[Run verbosely]' \
-  {'(--quiet)-q','(-q)--quiet'}'[Run quietly (Does not affect errors)]'
+_rc_runlevels() {
+  _values runlevels $(rc-status "${opt_args[(i)-U|--user]}" --list)
+}
 
-_values 'runlevels' $(rc-status --list)
+_arguments -s \
+  '(-a --all)'{-a,--all}'[Show services from all run levels]' \
+  '(-c --crashed)'{-c,--crashed}'[Show crashed services]' \
+  '(-f --format)'{-f,--format}'[format status to be parsable (currently arg must be ini)]:format:(ini)' \
+  '(-i --in-state)'{-i,--in-state}'[Show services which are in this state]:state:(stopped started stopping starting inactive hotplugged failed scheduled crashed)' \
+  '(-l --list)'{-l,--list}'[Show list of run levels]' \
+  '(-m --manual)'{-m,--manual}'[Show manually started services]' \
+  '(-r --runlevel)'{-r,--runlevel}'[Show the name of the current runlevel]' \
+  '(-s --servicelist)'{-s,--servicelist}'[Show service list]' \
+  '(-S --supervised)'{-S,--supervised}'[show supervised services]' \
+  '(-u --unused)'{-u,--unused}'[Show services not assigned to any runlevel]' \
+  '(- :)'{-h,--help}'[Display this help output]' \
+  '(-C --nocolor)'{-C,--nocolor}'[Disable color output]' \
+  '(- :)'{-V,--version}'[Display software version]' \
+  '(-v --verbose)'{-v,--verbose}'[Run verbosely]' \
+  '(-q --quiet)'{-q,--quiet}'[Run quietly (repeat to suppress errors)]' \
+  '(-U --user)'{-U,--user}'[Run in user mode]' \
+  '1:runlevels:_rc_runlevels'
 
 # vim: set et sw=2 ts=2 ft=zsh:
