@@ -4,33 +4,44 @@ _rc_services() {
   if [[ -n "${opt_args[(i)-l|--list]}" ]]; then
     _nothing
   else
-    _values 'service' $(rc-service -l)
+    _values 'service' $(rc-service "${opt_args[(i)-U|--user]}" -l)
   fi
 }
 
 _rc_actions() {
   local service="${line[1]}"
 
-  if [[ -n "${opt_args[(i)-e|--exists|-r|--resolve]}" ]] || ! $(rc-service -e $service) ; then
+  if [[ -n "${opt_args[(i)-e|--exists|-r|--resolve]}" ]] || ! $(rc-service "${opt_args[(i)-U|--user]}" -e $service) ; then
     _nothing
   else
-    local -a actions=(${(f)"$(rc-service -C $service describe 2>&1)"})
+    local -a actions=(${(f)"$(rc-service "${opt_args[(i)-U|--user]}" -C $service describe 2>&1)"})
     shift actions
     actions=(${actions# \* })
     actions=(${actions/:*})
-    actions=(stop start restart describe zap ${actions[@]})
+    actions=(stop start restart status describe zap ${actions[@]})
     _describe -V 'action' actions
   fi
-
 }
 
 _arguments -C -s \
+  '(-d --debug)'{-d,--debug}'[set xtrace when running the command]' \
+  '(-D --nodeps)'{-D,--nodeps}'[ignore dependencies]' \
   '(-e --exists)'{-e,--exists}'[tests if the service exists or not]' \
+  '(-c --ifcrashed)'{-c,--ifcrashed}'[if the service is crashed run the command]' \
+  '(-i --ifexists)'{-i,--ifexists}'[if the service exists run the command]' \
+  '(-I --ifinactive)'{-I,--ifinactive}'[if the service is inactive run the command]' \
+  '(-N --ifnotstarted)'{-N,--ifnotstarted}'[if the service is not started run the command]' \
+  '(-s --ifstarted)'{-s,--ifstarted}'[if the service is started run the command]' \
+  '(-S --ifstopped)'{-S,--ifstopped}'[if the service is stopped run the command]' \
   '(-l --list)'{-l,--list}'[list all available services]' \
   '(-r --resolve)'{-r,--resolve}'[resolve the service name to an init script]' \
+  '(-Z --dry-run)'{-Z,--dry-run}'[dry run (show what would happen)]' \
+  '(- :)'{-h,--help}'[Display this help output]' \
   '(-C --nocolor)'{-C,--nocolor}'[Disable color output]' \
+  '(- :)'{-V,--version}'[Display software version]' \
   '(-v --verbose)'{-v,--verbose}'[Run verbosely]' \
-  '(-q --quiet)'{-q,--quiet}'[Run quietly]' \
+  '(-q --quiet)'{-q,--quiet}'[Run quietly (repeat to suppress errors)]' \
+  '(-U --user)'{-U,--user}'[Run in user mode]' \
   '1:service:_rc_services' \
   '2:action:_rc_actions'
 
