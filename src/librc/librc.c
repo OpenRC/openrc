@@ -1268,3 +1268,68 @@ rc_services_scheduled(const char *service)
 {
 	return ls_dir(rc_dirfd(RC_DIR_SCHEDULED), basename_c(service), LS_INITD);
 }
+
+bool
+rc_service_setenv(const char *service, const char *name, const char *value)
+{
+	FILE *envfile;
+	int dirfd;
+
+	if (!service)
+		service = "rc";
+
+	if (mkdirat(rc_dirfd(RC_DIR_ENVIRONMENT), service, 0644) == -1 && errno != EEXIST)
+		return false;
+	if ((dirfd = openat(rc_dirfd(RC_DIR_ENVIRONMENT), service, O_RDONLY | O_DIRECTORY)) == -1)
+		return false;
+
+	if (!value) {
+		bool ret = unlinkat(dirfd, name, 0) == 0;
+		close(dirfd);
+		return ret;
+	}
+
+	envfile = do_fopenat(dirfd, name, O_WRONLY | O_TRUNC | O_CREAT);
+	close(dirfd);
+
+	if (!envfile)
+		return false;
+
+	fputs(value, envfile);
+	return fclose(envfile) == 0;
+}
+
+bool
+rc_environ_open(struct rc_environ *env, const char *service)
+{
+	DIR *envdir = do_opendirat(rc_dirfd(RC_DIR_ENVIRONMENT), service ? basename_c(service) : "rc");
+	if (!envdir)
+		return false;
+	*env = (struct rc_environ) { .envdir = envdir };
+	return true;
+}
+
+bool
+rc_environ_get(struct rc_environ *env, const char **name, const char **value)
+{
+	for (struct dirent *entry; (entry = readdir(env->envdir));) {
+		if (entry->d_name[0] == '.')
+			continue;
+
+		if (!rc_getfileat(dirfd(env->envdir), entry->d_name, &env->bytes, &env->size))
+			continue;
+
+		*name = entry->d_name;
+		*value = env->bytes;
+		return true;
+	}
+
+	return false;
+}
+
+void
+rc_environ_close(struct rc_environ *env)
+{
+	closedir(env->envdir);
+	free(env->bytes);
+}

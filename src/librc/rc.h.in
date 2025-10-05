@@ -14,6 +14,7 @@
 #define __RC_H__
 
 #include <sys/types.h>
+#include <dirent.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -60,6 +61,10 @@ extern "C" {
 #ifdef RC_LOCAL_PREFIX
 #  define RC_LOCAL_INITDIR      RC_LOCAL_PREFIX "/etc/init.d"
 #  define RC_LOCAL_CONFDIR      RC_LOCAL_PREFIX "/etc/conf.d"
+#endif
+
+#ifndef rc_private
+#define rc_private __attribute__((deprecated("private field")))
 #endif
 
 #ifndef _SYS_QUEUE_H_
@@ -209,6 +214,7 @@ enum rc_dir {
 	RC_DIR_OPTIONS,
 	RC_DIR_EXCLUSIVE,
 	RC_DIR_SCHEDULED,
+	RC_DIR_ENVIRONMENT,
 	RC_DIR_INITD,
 	RC_DIR_TMP,
 	RC_DIR_SYS_MAX,
@@ -372,6 +378,38 @@ RC_STRINGLIST *rc_services_scheduled(const char *);
  * @param service to check
  * @return true if all daemons started are still running, otherwise false */
 bool rc_service_daemons_crashed(const char *);
+
+/*! Sets a variable into the enviroment for a given service.
+ * @param service name, if null, sets the variable to the global environment.
+ * @param variable name.
+ * @param variable value.
+ * @return true on success, false on IO error. */
+bool rc_service_setenv(const char *, const char *, const char *);
+
+struct rc_environ {
+	rc_private DIR *envdir;
+	rc_private char *bytes;
+	rc_private size_t size;
+};
+
+/*! Opens the environment of a given service.
+ * @param environ to initialize.
+ * @param serivce name.
+ * @return true on success, false on IO error. */
+bool rc_environ_open(struct rc_environ *, const char *);
+
+/*! Gets the environment of a given service. the name and value are only
+ * valid until the next rc_environ_get or rc_environ_close call with the
+ * same environment object.
+ * @param environment to iterate.
+ * @param out variable name.
+ * @param out variable value.
+ * @return true on success, false when there's no more variables. */
+bool rc_environ_get(struct rc_environ *, const char **, const char **);
+
+/*! Closes the environment and frees the resources.
+ * @param environ to cleanup. */
+void rc_environ_close(struct rc_environ *);
 
 /*! @name System types
  * OpenRC can support some special sub system types, normally virtualization.
