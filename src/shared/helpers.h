@@ -236,4 +236,42 @@ RC_UNUSED static ssize_t xgetline(char **restrict lineptr, size_t *restrict n, F
 	return ret;
 }
 
+RC_UNUSED static bool env_putenv(const char *var, size_t size, const char *env[static size]) {
+	size_t var_idx, last = size - 1, name_len = strcspn(var, "=");
+
+	if (!var[name_len])
+		return false;
+
+	for (var_idx = 0; env[var_idx] && var_idx < last; var_idx++)
+		if (strncmp(var, env[var_idx], name_len) == 0)
+			break;
+
+	if (var_idx == last)
+		return false;
+
+	if (!env[var_idx])
+		env[var_idx + 1] = NULL;
+	env[var_idx] = var;
+
+	return true;
+}
+
+RC_UNUSED static bool env_unsetenv(const char *var, size_t size, const char *env[static size]) {
+	size_t last = size - 1;
+
+	if (strchr(var, '='))
+		return false;
+
+	for (size_t i = 0; i < last && env[i]; i++) {
+		if (strcmp(var, env[i]) != 0)
+			continue;
+		env[i] = env[last];
+		env[last] = NULL;
+
+		return true;
+	}
+
+	return false;
+}
+
 #endif
