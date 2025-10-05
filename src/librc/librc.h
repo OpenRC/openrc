@@ -74,6 +74,7 @@ static const char *const dirnames[RC_DIR_SYS_MAX] =
 	[RC_DIR_TMP] = "tmp",
 };
 
+bool do_getfileat(int dirfd, const char *file, char **buffer, size_t *size);
 RC_STRINGLIST *config_list(int dirfd, const char *pathname);
 void clear_dirfds(void);
 

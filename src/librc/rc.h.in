@@ -661,6 +661,7 @@ typedef LIST_HEAD(rc_pidlist, rc_pid) RC_PIDLIST;
 RC_PIDLIST *rc_find_pids(const char *, const char *const *, uid_t, pid_t);
 
 /* Basically the same as getline(), it just returns multiple lines */
+bool rc_getfileat(int, const char *, char **, size_t *);
 bool rc_getfile(const char *, char **, size_t *);
 
 /* __END_DECLS */
