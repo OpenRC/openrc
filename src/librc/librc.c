@@ -1038,6 +1038,7 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 	if (state == RC_SERVICE_STOPPED) {
 		rm_dir(rc_dirfd(RC_DIR_OPTIONS), base, true);
 		rm_dir(rc_dirfd(RC_DIR_DAEMONS), base, true);
+		rm_dir(rc_dirfd(RC_DIR_ENVIRON), base, true);
 		rc_service_schedule_clear(service);
 	}
 
