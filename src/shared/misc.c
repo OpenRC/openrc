@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <spawn.h>
 #include <sys/file.h>
 #include <sys/time.h>
 #ifdef __linux__
@@ -304,63 +305,39 @@ pid_t
 exec_service(const char *service, const char *arg)
 {
 	char *file, sfd[32];
-	int fd;
-	pid_t pid = -1;
+	const char *argv[] = { service, "--lockfd", sfd, arg, NULL };
+	int fd = svc_lock(basename_c(service), false);
+	posix_spawnattr_t chldmask;
 	sigset_t full;
-	sigset_t old;
-	struct sigaction sa;
+	pid_t pid = 0;
 
-	fd = svc_lock(basename_c(service), false);
 	if (fd == -1)
 		return -1;
+	snprintf(sfd, sizeof(sfd), "%d", fd);
 
 	file = rc_service_resolve(service);
 	if (access(file, F_OK) != 0) {
 		rc_service_mark(service, RC_SERVICE_STOPPED);
 		svc_unlock(basename_c(service), fd);
-		free(file);
-		return 0;
+		goto out;
 	}
-	snprintf(sfd, sizeof(sfd), "%d", fd);
 
-	/* We need to block signals until we have forked */
-	memset(&sa, 0, sizeof (sa));
-	sa.sa_handler = SIG_DFL;
-	sigemptyset(&sa.sa_mask);
+	/* Unmask all signals.
+	 * We might've been called from pam_openrc by
+	 * a process that masked signals we rely on.
+	 * Bug: https://bugs.gentoo.org/953748 */
 	sigfillset(&full);
-	sigprocmask(SIG_SETMASK, &full, &old);
+	posix_spawnattr_init(&chldmask);
+	posix_spawnattr_setsigmask(&chldmask, &full);
 
-	if ((pid = fork()) == 0) {
-		/* Restore default handlers */
-		sigaction(SIGCHLD, &sa, NULL);
-		sigaction(SIGHUP, &sa, NULL);
-		sigaction(SIGINT, &sa, NULL);
-		sigaction(SIGQUIT, &sa, NULL);
-		sigaction(SIGTERM, &sa, NULL);
-		sigaction(SIGUSR1, &sa, NULL);
-		sigaction(SIGWINCH, &sa, NULL);
-
-		/* Unmask all signals.
-		 * We might've been called from pam_openrc by
-		 * a process that masked signals we rely on.
-		 * Bug: https://bugs.gentoo.org/953748 */
-		sigprocmask(SIG_UNBLOCK, &full, NULL);
-
-		/* Safe to run now */
-		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
-		fprintf(stderr, "unable to exec `%s': %s\n",
-		    file, strerror(errno));
+	if ((errno = posix_spawn(&pid, file, NULL, &chldmask, UNCONST(argv), environ))) {
+		fprintf(stderr, "posix_spawn: %s\n", strerror(errno));
 		svc_unlock(basename_c(service), fd);
-		_exit(EXIT_FAILURE);
 	}
 
-	if (pid == -1) {
-		fprintf(stderr, "fork: %s\n",strerror (errno));
-		svc_unlock(basename_c(service), fd);
-	} else
-		close(fd);
+	posix_spawnattr_destroy(&chldmask);
 
-	sigprocmask(SIG_SETMASK, &old, NULL);
+out:
 	free(file);
 	return pid;
 }
