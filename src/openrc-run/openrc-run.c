@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <spawn.h>
 #include <sys/ioctl.h>
 #include <sys/file.h>
 #include <sys/stat.h>
@@ -59,6 +60,8 @@
 
 #define WAIT_TIMEOUT	60		/* seconds until we timeout */
 #define WARN_TIMEOUT	10		/* warn about this every N seconds */
+
+extern char **environ;
 
 const char *applet = NULL;
 const char *extraopts = "stop | start | restart | status | describe | zap";
@@ -340,19 +343,28 @@ static int
 svc_exec(const char *command)
 {
 	int ret = -1, fdout = fileno(stdout), tmp;
+	posix_spawn_file_actions_t tty;
 	struct termios tt;
 	struct winsize ws;
 	int flags = 0;
 	struct pollfd fd[2];
-	sigset_t full, old;
 	bool prefixed = false;
 	int slave_tty;
 	sigset_t sigchldmask;
 	sigset_t oldmask;
+	char *openrc_sh;
+	const char *argv[] = {
+		RC_LIBEXECDIR "sh/openrc-run.sh",
+		service,
+		command,
+		NULL
+	};
 
 	/* Setup our signal pipe */
 	if (pipe2(signal_pipe, O_CLOEXEC) == -1)
 		eerrorx("%s: pipe2: %s", applet, applet);
+
+	posix_spawn_file_actions_init(&tty);
 
 	/* Open a pty for our prefixed output
 	 * We do this instead of mapping pipes to stdout, stderr so that
@@ -374,35 +386,21 @@ svc_exec(const char *command)
 		if (slave_tty >=0 &&
 		    (flags = fcntl(slave_tty, F_GETFD, 0)) == 0)
 			fcntl(slave_tty, F_SETFD, flags | FD_CLOEXEC);
+
+		posix_spawn_file_actions_adddup2(&tty, slave_tty, STDOUT_FILENO);
+		posix_spawn_file_actions_adddup2(&tty, slave_tty, STDERR_FILENO);
 	}
 
-	sigfillset(&full);
-	/* block SIGCHLD around the fork, so service_pid is set properly in handler */
-	sigprocmask(SIG_SETMASK, &full, &old);
-	service_pid = fork();
-	sigprocmask(SIG_SETMASK, &old, NULL);
-	if (service_pid == -1)
-		eerrorx("%s: fork: %s", applet, strerror(errno));
-	if (service_pid == 0) {
-		char *openrc_sh;
+	if (faccessat(rc_dirfd(RC_DIR_SVCDIR), "openrc-run.sh", F_OK, 0) == 0) {
 		xasprintf(&openrc_sh, "%s/openrc-run.sh", rc_svcdir());
-
-		if (slave_tty >= 0) {
-			dup2(slave_tty, STDOUT_FILENO);
-			dup2(slave_tty, STDERR_FILENO);
-		}
-
-		if (access(openrc_sh, F_OK) != 0)
-			openrc_sh = UNCONST(RC_LIBEXECDIR "/sh/openrc-run.sh");
-
-		einfov("Executing: %s %s %s", openrc_sh, service, command);
-
-		execl(openrc_sh, openrc_sh, service, command, NULL);
-		eerror("%s: exec '%s': %s", service, openrc_sh, strerror(errno));
-		_exit(EXIT_FAILURE);
-
-		/* UNREACHABLE */
+		argv[0] = openrc_sh;
 	}
+
+	einfov("Executing: %s %s %s", openrc_sh, service, command);
+	if ((errno = posix_spawn(&service_pid, argv[0], &tty, NULL, UNCONST(argv), environ)))
+		eerrorx("%s: exec '%s': %s", service, openrc_sh, strerror(errno));
+
+	posix_spawn_file_actions_destroy(&tty);
 
 	fd[0].fd = signal_pipe[0];
 	fd[1].fd = master_tty;
