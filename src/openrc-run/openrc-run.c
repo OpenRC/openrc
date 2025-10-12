@@ -339,15 +339,12 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 static int
 svc_exec(const char *command)
 {
-	int ret, fdout = fileno(stdout), tmp;
+	int ret = -1, fdout = fileno(stdout), tmp;
 	struct termios tt;
 	struct winsize ws;
 	int flags = 0;
 	struct pollfd fd[2];
 	sigset_t full, old;
-	int s;
-	char buffer[BUFSIZ];
-	size_t bytes;
 	bool prefixed = false;
 	int slave_tty;
 	sigset_t sigchldmask;
@@ -414,29 +411,22 @@ svc_exec(const char *command)
 
 	for (;;) {
 		if (poll(fd, master_tty >= 0 ? 2 : 1, -1) == -1) {
-			if (errno != EINTR) {
-				eerror("%s: poll: %s", applet, strerror(errno));
-				ret = -1;
-				break;
-			}
-			continue;
+			if (errno == EINTR)
+				continue;
+			eerror("%s: poll: %s", applet, strerror(errno));
+			break;
 		}
 
 		if (fd[1].revents & (POLLIN | POLLHUP)) {
-			bytes = read(master_tty, buffer, BUFSIZ);
-			write_prefix(buffer, bytes, &prefixed);
+			char buffer[BUFSIZ];
+			write_prefix(buffer, read(master_tty, buffer, BUFSIZ), &prefixed);
 		}
 
 		/* signal_pipe receives service_pid's exit status */
 		if (fd[0].revents & (POLLIN | POLLHUP)) {
-			if ((s = read(signal_pipe[0], &ret, sizeof(ret))) != sizeof(ret)) {
-				eerror("%s: receive failed: %s", applet, s < 0 ? strerror(errno) : "short read");
-				ret = -1;
-				break;
-			}
-			ret = WEXITSTATUS(ret);
-			if (ret != 0 && errno == ECHILD)
-				/* killall5 -9 could cause this */
+			if (errno = 0, read(signal_pipe[0], &ret, sizeof(ret)) < sizeof(ret))
+				eerror("%s: receive failed: %s", applet, errno ? strerror(errno) : "short read");
+			else if ((ret = WEXITSTATUS(ret)) != 0 && errno == ECHILD) /* killall5 -9 could cause this */
 				ret = 0;
 			break;
 		}
