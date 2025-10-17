@@ -191,7 +191,9 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 		}
 
 		if (inone || verbose) {
-			printf(" %20s |", service->value);
+			/* For more information on why padding is 26, see issue 937: */
+			/* https://github.com/OpenRC/openrc/issues/937 */
+			printf(" %26s |", service->value);
 			TAILQ_FOREACH(runlevel, in, entries)
 			    printf (" %s", runlevel->value);
 			printf("\n");
