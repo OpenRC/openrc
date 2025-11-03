@@ -205,6 +205,8 @@ if get_option('pkgconfig')
     libraries : rc,
     variables: {
       'pluginsdir': pluginsdir,
+      'initdir': rc_libexecdir / 'init.d',
+      'confdir': rc_libexecdir / 'conf.d',
     }
   )
 endif
