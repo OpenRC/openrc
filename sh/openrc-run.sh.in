@@ -225,47 +225,38 @@ status()
 # Start debug output
 yesno $RC_DEBUG && set -x
 
+# Parse RC_PATH in reverse order, so later conf.d files override earlier ones
+IFS=:
+for _f in $RC_PATH; do
+	_conf_d="$_f $_conf_d"
+done
+unset IFS
+
 # Load configuration settings. First the global ones, then any
 # service-specific settings.
-sourcex -e "@SYSCONFDIR@/rc.conf"
-if [ -d "@SYSCONFDIR@/rc.conf.d" ]; then
-	for _f in "@SYSCONFDIR@"/rc.conf.d/*.conf; do
+for _f in $_conf_d; do
+	sourcex -e "$_f/rc.conf"
+	for _f in "$_f"/rc.conf.d/*.conf; do
 		sourcex -e "$_f"
 	done
-fi
+done
 
-_usr_conf=${XDG_CONFIG_HOME:-${HOME}/.config}/rc
-if yesno "$RC_USER_SERVICES"; then
-	sourcex -e "$_usr_conf/rc.conf"
-	if [ -d "$_usr_conf/rc.conf.d" ]; then
-		for _f in "$_usr_conf"/rc.conf.d/*.conf; do
-			sourcex -e "$_f"
-		done
-	fi
-fi
-
-_conf_d=${RC_SERVICE%/*}/../conf.d
 # If we're net.eth0 or openvpn.work then load net or openvpn config
 _c=${RC_SVCNAME%%.*}
-if [ -n "$_c" -a "$_c" != "$RC_SVCNAME" ]; then
-	if ! sourcex -e "$_conf_d/$_c.$RC_RUNLEVEL"; then
-		sourcex -e "$_conf_d/$_c"
-	fi
+if [ "$_c" != "$RC_SVCNAME" ]; then
+	# Overlay with our specific config
+	_c="$_c $RC_SVCNAME"
 fi
-unset _c
 
-# Overlay with our specific config
-if ! sourcex -e "$_conf_d/$RC_SVCNAME.$RC_RUNLEVEL"; then
-	sourcex -e "$_conf_d/$RC_SVCNAME"
-fi
-unset _conf_d
+for _c in $_c; do
+	for _f in $_conf_d; do
+		if ! sourcex -e "$_f/$_c.$RC_RUNLEVEL"; then
+			sourcex -e "$_f/$_c"
+		fi
+	done
+done
 
-if yesno "$RC_USER_SERVICES" && [ "$_usr_conf/init.d" != "${RC_SERVICE%/*}" ]; then
-	if ! sourcex -e "$_usr_conf/conf.d/$RC_SVCNAME.$RC_RUNLEVEL"; then
-		sourcex -e "$_usr_conf/conf.d/$RC_SVCNAME"
-	fi
-fi
-unset _usr_conf
+unset _c _f _conf_d
 
 # load service supervisor functions
 sourcex "@LIBEXECDIR@/sh/runit.sh"
