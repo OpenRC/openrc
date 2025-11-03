@@ -557,48 +557,18 @@ rc_runlevel_stacks(const char *runlevel)
 	return stack;
 }
 
-enum scriptdirs_entries {
-	SCRIPTDIR_USR,
-#ifdef RC_LOCAL_PREFIX
-	SCRIPTDIR_LOCAL,
-#endif
-	SCRIPTDIR_SYS,
-#ifdef RC_PKG_PREFIX
-	SCRIPTDIR_PKG,
-#endif
-	SCRIPTDIR_SVC,
-	SCRIPTDIR_MAX,
-	SCRIPTDIR_CAP
-};
-
-static const char * const scriptdirs[SCRIPTDIR_CAP] = {
-#ifdef RC_LOCAL_PREFIX
-	RC_LOCAL_PREFIX "/etc",
-#endif
-	RC_SYSCONFDIR,
-#ifdef RC_PKG_PREFIX
-	RC_PKG_PREFIX "/etc",
-#endif
-	RC_SVCDIR
-};
-
 static struct {
 	bool set;
 	char *svcdir;
 	char *usrconfdir;
 	char *runleveldir;
-	const char *scriptdirs[ARRAY_SIZE(scriptdirs)];
-} rc_dirs = {
-	.scriptdirs = {
-#ifdef RC_LOCAL_PREFIX
-		[SCRIPTDIR_LOCAL] = RC_LOCAL_PREFIX "/etc/user",
-#endif
-		[SCRIPTDIR_SYS] = RC_SYSCONFDIR "/user",
-#ifdef RC_PKG_PREFIX
-		[SCRIPTDIR_PKG] = RC_PKG_PREFIX "/etc/user",
-#endif
-	}
-};
+
+	char *dynamic_path;
+	size_t dynamic_len;
+	int *path_fds;
+	size_t path_len;
+	const char **path;
+} rc_dirs;
 
 static void
 free_rc_dirs(void)
@@ -607,7 +577,90 @@ free_rc_dirs(void)
 	rc_dirs.runleveldir = NULL;
 	free(rc_dirs.svcdir);
 	rc_dirs.svcdir = NULL;
-	rc_dirs.scriptdirs[0] = NULL;
+
+	if (rc_dirs.dynamic_path) {
+		free(rc_dirs.dynamic_path);
+		free(rc_dirs.path);
+		rc_dirs.dynamic_path = NULL;
+	}
+
+	rc_dirs.path = NULL;
+}
+
+
+static size_t
+parse_path_string(const char *path, const char *suffix)
+{
+	FILE *fp = xopen_memstream(&rc_dirs.dynamic_path, &rc_dirs.dynamic_len);
+	size_t count = 0;
+
+	for (const char *entry = path; (path = strchrnul(entry, ':')); entry = path + 1) {
+		size_t entry_len = path - entry;
+
+		if (!entry_len)
+			continue;
+
+		fwrite(entry, 1, entry_len, fp);
+		fputs(suffix, fp);
+		fputc('\0', fp);
+		count++;
+
+		if (!*path)
+			break;
+	}
+
+	xclose_memstream(fp);
+	return count;
+}
+
+static void
+load_dynamic_path(bool user)
+{
+	static const char *default_path[] = {
+		RC_SYSCONFDIR "/rc",
+		RC_SYSCONFDIR,
+#ifdef RC_LOCAL_PREFIX
+		RC_LOCAL_PREFIX "/etc/rc",
+		RC_LOCAL_PREFIX "/etc",
+#endif
+#ifdef RC_PKG_PREFIX
+		RC_PKG_PREFIX "/etc/rc",
+		RC_PKG_PREFIX "/etc",
+#endif
+		RC_LIBEXECDIR,
+	};
+	size_t count = 0, size = ARRAY_SIZE(default_path) + 2;
+	const char *path, *suffix = user ? "/rc/user" : "/rc";
+	bool add_default = true;
+
+	if ((path = getenv("RC_PATH"))) {
+		add_default = false; /* do not append suffixes to RC_PATH */
+		suffix = "";
+	} else if (!(path = getenv("XDG_CONFIG_DIRS"))) {
+		path = RC_SYSCONFDIR "/xdg";
+	}
+
+	size += parse_path_string(path, suffix);
+
+	rc_dirs.path = xmalloc((size + 1) * sizeof(*rc_dirs.path));
+
+	if (user)
+		rc_dirs.path[count++] = rc_dirs.usrconfdir;
+	for (size_t i = 0; i < rc_dirs.dynamic_len && count < size; i += strlen(&rc_dirs.dynamic_path[i]) + 1)
+		rc_dirs.path[count++] = &rc_dirs.dynamic_path[i];
+
+	if (add_default) {
+		for (size_t i = 0; i < ARRAY_SIZE(default_path) && count < size; i++)
+			rc_dirs.path[count++] = default_path[i];
+		rc_dirs.path[count++] = rc_dirs.svcdir ? rc_dirs.svcdir : RC_SVCDIR;
+	}
+	rc_dirs.path[count] = NULL;
+	rc_dirs.path_len = count;
+
+	if (!rc_dirs.set) {
+		atexit(free_rc_dirs);
+		rc_dirs.set = true;
+	}
 }
 
 static bool is_user = false;
@@ -624,6 +677,11 @@ rc_set_user(void)
 	char *env;
 	if (is_user)
 		return;
+
+	if (!rc_dirs.set)
+		atexit(free_rc_dirs);
+	else
+		free_rc_dirs();
 
 	is_user = true;
 	rc_dirs.set = true;
@@ -647,10 +705,8 @@ rc_set_user(void)
 	}
 
 	xasprintf(&rc_dirs.svcdir, "%s/openrc", env);
-	atexit(free_rc_dirs);
 
-	rc_dirs.scriptdirs[SCRIPTDIR_USR] = rc_dirs.usrconfdir;
-	rc_dirs.scriptdirs[SCRIPTDIR_SVC] = rc_dirs.svcdir;
+	load_dynamic_path(true);
 
 	clear_dirfds();
 }
@@ -658,30 +714,32 @@ rc_set_user(void)
 const char * const *
 rc_scriptdirs(void)
 {
-	if (rc_dirs.set)
-		return rc_dirs.scriptdirs;
-	return scriptdirs;
+	if (!rc_dirs.path)
+		load_dynamic_path(false);
+	return rc_dirs.path;
 }
 
 size_t
 rc_scriptdirfds(const int **fds)
 {
-	static int scriptdirfds[SCRIPTDIR_MAX];
 	static size_t len = 0;
 
 	if (len == 0) {
-		const char * const *current_scriptdirs = rc_scriptdirs();
-		for (size_t i = 0; current_scriptdirs[i]; i++) {
-			int fd = open(current_scriptdirs[i], O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+		if (!rc_dirs.path)
+			load_dynamic_path(false);
+
+		rc_dirs.path_fds = xmalloc(rc_dirs.path_len * sizeof(*rc_dirs.path_fds));
+		for (size_t i = 0; i < rc_dirs.path_len; i++) {
+			int fd = open(rc_dirs.path[i], O_RDONLY | O_DIRECTORY | O_CLOEXEC);
 
 			if (fd == -1)
 				continue;
 
-			scriptdirfds[len++] = fd;
+			rc_dirs.path_fds[len++] = fd;
 		}
 	}
 
-	*fds = scriptdirfds;
+	*fds = rc_dirs.path_fds;
 	return len;
 }
 
