@@ -555,57 +555,128 @@ rc_runlevel_stacks(const char *runlevel)
 	return stack;
 }
 
-enum scriptdirs_entries {
-	SCRIPTDIR_USR,
-#ifdef RC_LOCAL_PREFIX
-	SCRIPTDIR_LOCAL,
-#endif
-	SCRIPTDIR_SYS,
-#ifdef RC_PKG_PREFIX
-	SCRIPTDIR_PKG,
-#endif
-	SCRIPTDIR_SVC,
-	SCRIPTDIR_MAX,
-	SCRIPTDIR_CAP
-};
-
-static const char * const scriptdirs[SCRIPTDIR_CAP] = {
-#ifdef RC_LOCAL_PREFIX
-	RC_LOCAL_PREFIX "/etc",
-#endif
-	RC_SYSCONFDIR,
-#ifdef RC_PKG_PREFIX
-	RC_PKG_PREFIX "/etc",
-#endif
-	RC_SVCDIR
-};
-
 static struct {
 	bool set;
-	char *svcdir;
-	char *usrconfdir;
-	char *runleveldir;
-	const char *scriptdirs[ARRAY_SIZE(scriptdirs)];
-} rc_dirs = {
-	.scriptdirs = {
-#ifdef RC_LOCAL_PREFIX
-		[SCRIPTDIR_LOCAL] = RC_LOCAL_PREFIX "/etc/user",
-#endif
-		[SCRIPTDIR_SYS] = RC_SYSCONFDIR "/user",
-#ifdef RC_PKG_PREFIX
-		[SCRIPTDIR_PKG] = RC_PKG_PREFIX "/etc/user",
-#endif
-	}
-};
+	char *svcdir, *confdir, *datadir, *runleveldir;
+} rc_dirs;
+
+static struct {
+	char *buffer;
+	size_t count;
+	int *fds;
+	const char **entries;
+} rc_path;
 
 static void
 free_rc_dirs(void)
 {
-	free(rc_dirs.runleveldir);
-	rc_dirs.runleveldir = NULL;
-	free(rc_dirs.svcdir);
-	rc_dirs.svcdir = NULL;
-	rc_dirs.scriptdirs[0] = NULL;
+#define X(ptr) ptr = (free(ptr), NULL)
+	X(rc_dirs.svcdir);
+	X(rc_dirs.confdir);
+	X(rc_dirs.datadir);
+	X(rc_dirs.runleveldir);
+
+	X(rc_path.buffer);
+	X(rc_path.entries);
+	X(rc_path.fds);
+#undef X
+}
+
+static inline size_t
+append_path(FILE *buf, int path_len, const char path[static path_len], const char *suffix)
+{
+	fprintf(buf, "%.*s%s%c", path_len, path, suffix ? suffix : "", '\0');
+	return 1;
+}
+
+static size_t
+append_path_string(FILE *buf, const char *path, const char *suffix)
+{
+	size_t count = 0;
+
+	for (const char *entry = path; (path = strchrnul(entry, ':')); entry = path + 1) {
+		size_t entry_len = path - entry;
+
+		if (!entry_len)
+			continue;
+		count += append_path(buf, entry_len, entry, suffix);
+		if (!*path)
+			break;
+	}
+
+	return count;
+}
+
+static inline size_t
+append_path_xdg(FILE *buf, const char *home, const char *dirs, const char *fallback, bool user)
+{
+	const char *path;
+	size_t count = 0;
+
+	if (!(path = getenv(dirs)))
+		path = fallback;
+
+	if (home)
+		count += append_path(buf, strlen(home), home, NULL);
+	return count + append_path_string(buf, path, user ? "/rc/user" : "/rc");
+}
+
+static inline size_t
+append_path_array(FILE *buf, size_t path_len, const char **path, bool user)
+{
+	size_t count = 0;
+	while (count < path_len) {
+		const char *entry = path[count++];
+		append_path(buf, strlen(entry), entry, user ? "/user" : "");
+	}
+	return count;
+}
+
+static void
+load_dynamic_path(bool user)
+{
+	static const char *config_path[] = {
+		RC_SYSCONFDIR "/rc",
+		RC_SYSCONFDIR,
+#ifdef RC_LOCAL_PREFIX
+		RC_LOCAL_PREFIX "/etc/rc",
+		RC_LOCAL_PREFIX "/etc",
+#endif
+#ifdef RC_PKG_PREFIX
+		RC_PKG_PREFIX "/etc/rc",
+		RC_PKG_PREFIX "/etc",
+#endif
+		RC_LIBEXECDIR,
+	};
+
+	const char *path;
+	size_t size;
+	FILE *fp = xopen_memstream(&rc_path.buffer, &size);
+
+	rc_path.count = 0;
+	if ((path = getenv("RC_PATH"))) {
+		rc_path.count += append_path_string(fp, path, NULL);
+	} else {
+		const char *svcdir = rc_dirs.svcdir ? rc_dirs.svcdir : RC_SVCDIR;
+
+		/* first check config paths, then data paths.
+		 * and within those, check dynamic paths first, then hardcoded ones */
+		rc_path.count += append_path_xdg(fp, rc_dirs.confdir, "XDG_CONFIG_DIRS", "/etc/xdg", user);
+		rc_path.count += append_path_array(fp, ARRAY_SIZE(config_path), config_path, user);
+		rc_path.count += append_path(fp, strlen(svcdir), svcdir, NULL);
+	}
+	xclose_memstream(fp);
+
+	rc_path.entries = calloc(rc_path.count + 1, sizeof(*rc_path.entries));
+
+	for (size_t count = 0, i = 0; i < size && count < rc_path.count; i += strlen(&rc_path.buffer[i]) + 1)
+		rc_path.entries[count++] = &rc_path.buffer[i];
+	rc_path.entries[rc_path.count] = NULL;
+
+	if (!rc_dirs.set) {
+		atexit(free_rc_dirs);
+		rc_dirs.set = true;
+	}
 }
 
 static bool is_user = false;
@@ -620,23 +691,29 @@ void
 rc_set_user(void)
 {
 	char *env;
+
 	if (is_user)
 		return;
+
+	if (!rc_dirs.set)
+		atexit(free_rc_dirs);
+	else
+		free_rc_dirs();
 
 	is_user = true;
 	rc_dirs.set = true;
 	setenv("RC_USER_SERVICES", "yes", true);
 
 	if ((env = getenv("XDG_CONFIG_HOME"))) {
-		xasprintf(&rc_dirs.usrconfdir, "%s/rc", env);
+		xasprintf(&rc_dirs.confdir, "%s/rc", env);
 	} else if ((env = getenv("HOME"))) {
-		xasprintf(&rc_dirs.usrconfdir, "%s/.config/rc", env);
+		xasprintf(&rc_dirs.confdir, "%s/.config/rc", env);
 	} else {
 		fprintf(stderr, "XDG_CONFIG_HOME and HOME unset.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	xasprintf(&rc_dirs.runleveldir, "%s/runlevels", rc_dirs.usrconfdir);
+	xasprintf(&rc_dirs.runleveldir, "%s/runlevels", rc_dirs.confdir);
 
 	if (!(env = getenv("XDG_RUNTIME_DIR"))) {
 		/* FIXME: fallback to something else? */
@@ -645,10 +722,8 @@ rc_set_user(void)
 	}
 
 	xasprintf(&rc_dirs.svcdir, "%s/openrc", env);
-	atexit(free_rc_dirs);
 
-	rc_dirs.scriptdirs[SCRIPTDIR_USR] = rc_dirs.usrconfdir;
-	rc_dirs.scriptdirs[SCRIPTDIR_SVC] = rc_dirs.svcdir;
+	load_dynamic_path(true);
 
 	clear_dirfds();
 }
@@ -656,30 +731,32 @@ rc_set_user(void)
 const char * const *
 rc_scriptdirs(void)
 {
-	if (rc_dirs.set)
-		return rc_dirs.scriptdirs;
-	return scriptdirs;
+	if (!rc_path.entries)
+		load_dynamic_path(false);
+	return rc_path.entries;
 }
 
 size_t
 rc_scriptdirfds(const int **fds)
 {
-	static int scriptdirfds[SCRIPTDIR_MAX];
 	static size_t len = 0;
 
 	if (len == 0) {
-		const char * const *current_scriptdirs = rc_scriptdirs();
-		for (size_t i = 0; current_scriptdirs[i]; i++) {
-			int fd = open(current_scriptdirs[i], O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+		if (!rc_path.entries)
+			load_dynamic_path(false);
+
+		rc_path.fds = xmalloc(rc_path.count * sizeof(*rc_path.fds));
+		for (size_t i = 0; i < rc_path.count; i++) {
+			int fd = open(rc_path.entries[i], O_RDONLY | O_DIRECTORY | O_CLOEXEC);
 
 			if (fd == -1)
 				continue;
 
-			scriptdirfds[len++] = fd;
+			rc_path.fds[len++] = fd;
 		}
 	}
 
-	*fds = scriptdirfds;
+	*fds = rc_path.fds;
 	return len;
 }
 
@@ -692,7 +769,7 @@ rc_sysconfdir(void)
 const char *
 rc_usrconfdir(void)
 {
-	return rc_dirs.usrconfdir ? rc_dirs.usrconfdir : NULL;
+	return rc_dirs.confdir ? rc_dirs.confdir : NULL;
 }
 
 const char *
