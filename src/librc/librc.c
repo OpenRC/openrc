@@ -692,18 +692,13 @@ rc_sysconfdir(void)
 const char *
 rc_usrconfdir(void)
 {
-	if (rc_dirs.set)
-		return rc_dirs.usrconfdir;
-
-	return NULL;
+	return rc_dirs.usrconfdir ? rc_dirs.usrconfdir : NULL;
 }
 
 const char *
 rc_runleveldir(void)
 {
-	if (rc_dirs.set)
-		return rc_dirs.runleveldir;
-	return RC_RUNLEVELDIR;
+	return rc_dirs.runleveldir ? rc_dirs.runleveldir : RC_RUNLEVELDIR;
 }
 
 const char *
