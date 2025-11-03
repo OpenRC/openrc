@@ -704,7 +704,11 @@ rc_runleveldir(void)
 const char *
 rc_svcdir(void)
 {
-	return rc_dirs.set ? rc_dirs.svcdir : RC_SVCDIR;
+	static const char *svcdir;
+
+	if (!rc_dirs.svcdir && !svcdir && !(svcdir = getenv("RC_SVCDIR")))
+		svcdir = RC_SVCDIR;
+	return rc_dirs.svcdir ? rc_dirs.svcdir : svcdir;
 }
 
 static ssize_t
