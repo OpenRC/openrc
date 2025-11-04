@@ -41,7 +41,7 @@ start()
 	done
 
 	# Save the encoding for use immediately at boot
-	if checkpath -m 0755 -d "$RC_CACHEDIR"; then
+	if checkpath -W -m 0755 -d "$RC_CACHEDIR"; then
 		mkdir -p "$RC_CACHEDIR"/console
 		if yesno ${unicode:-yes}; then
 			echo "" > "$RC_CACHEDIR"/console/unicode
