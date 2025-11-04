@@ -21,7 +21,7 @@ start()
 		fi
 	fi
 
-	if ! checkpath -m 0755 -d "$RC_CACHEDIR" 2>/dev/null; then
+	if ! checkpath -W -m 0755 -d "$RC_CACHEDIR" 2>/dev/null; then
 		eerror "Unable to save dependency cache"
 		if yesno "${RC_GOINGDOWN}"; then
 			return 0
