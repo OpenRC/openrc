@@ -168,21 +168,20 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 {
 	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW;
 	const char *name = basename_c(path);
-	int dirfd, fd, readfd, r, u;
+	int dirfd, fd, readfd, r;
 	struct stat st;
 
 	memset(&st, 0, sizeof(st));
 	dirfd = get_dirfd(path, symlinks);
 	readfd = openat(dirfd, name, flags);
 	if (readfd == -1 || (type == inode_file && trunc)) {
+		int mask = umask(0);
 		switch (type) {
 		case inode_file:
 			einfo("%s: creating file", path);
 			if (!mode) /* 664 */
 				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
-			u = umask(0);
 			fd = openat(dirfd, name, O_CREAT | (trunc ? O_TRUNC : 0) | flags, mode);
-			umask(u);
 			if (fd == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
@@ -195,10 +194,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			einfo("%s: creating directory", path);
 			if (!mode) /* 775 */
 				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
-			u = umask(0);
 			/* We do not recursively create parents */
 			r = mkdirat(dirfd, name, mode);
-			umask(u);
 			if (r == -1 && errno != EEXIST) {
 				eerror("%s: mkdirat: %s", applet, strerror (errno));
 				return -1;
@@ -213,9 +210,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			einfo("%s: creating fifo", path);
 			if (!mode) /* 600 */
 				mode = S_IRUSR | S_IWUSR;
-			u = umask(0);
 			r = mkfifo(path, mode);
-			umask(u);
 			if (r == -1 && errno != EEXIST) {
 				eerror("%s: mkfifo: %s", applet, strerror (errno));
 				return -1;
@@ -229,6 +224,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 		case inode_unknown:
 			break;
 		}
+		umask(mask);
 	}
 
 	if (fstat(readfd, &st) == -1) {
