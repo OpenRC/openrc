@@ -188,12 +188,7 @@ static int do_create(inode_t type, const char *path, int dirfd, const char *name
 	switch (type) {
 	case inode_file:
 		einfo("%s: creating file", path);
-
-		if ((fd = openat(dirfd, name, O_CREAT | flags, mode)) == -1) {
-			eerror("%s: open: %s", applet, strerror(errno));
-			return -1;
-		}
-
+		flags |= O_CREAT;
 		break;
 	case inode_dir:
 		einfo("%s: creating directory", path);
@@ -201,11 +196,6 @@ static int do_create(inode_t type, const char *path, int dirfd, const char *name
 		/* We do not recursively create parents */
 		if (mkdirat(dirfd, name, mode) == -1 && errno != EEXIST) {
 			eerror("%s: mkdirat: %s", applet, strerror (errno));
-			return -1;
-		}
-
-		if ((fd = openat(dirfd, name, flags)) == -1) {
-			eerror("%s: unable to open directory: %s", applet, strerror(errno));
 			return -1;
 		}
 
@@ -218,17 +208,16 @@ static int do_create(inode_t type, const char *path, int dirfd, const char *name
 			return -1;
 		}
 
-		if ((fd = openat(dirfd, name, flags)) == -1) {
-			eerror("%s: unable to open fifo: %s", applet, strerror(errno));
-			return -1;
-		}
-
 		break;
 	case inode_unknown:
 		break;
 	}
 	umask(mask);
 
+	if ((fd = openat(dirfd, name, flags, mode)) == -1) {
+		eerror("%s: open: %s", applet, strerror(errno));
+		return -1;
+	}
 	return fd;
 }
 
