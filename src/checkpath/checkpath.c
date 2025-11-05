@@ -236,67 +236,57 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 
 	if (fstat(fd, &st) == -1) {
 		eerror("fstat: %s: %s", path, strerror(errno));
-		close(fd);
-		return -1;
+		goto err;
 	}
 
 	if (type != inode_dir && S_ISDIR(st.st_mode)) {
 		eerror("%s: is a directory", path);
-		close(fd);
-		return 1;
+		goto err;
 	}
 
 	if (type != inode_file && S_ISREG(st.st_mode)) {
 		eerror("%s: is a file", path);
-		close(fd);
-		return 1;
+		goto err;
 	}
 
 	if (type != inode_fifo && S_ISFIFO(st.st_mode)) {
 		eerror("%s: is a fifo", path);
-		close(fd);
-		return -1;
+		goto err;
 	}
 
 	if (mode && (st.st_mode & 07777) != mode) {
 		if ((type != inode_dir) && (st.st_nlink > 1)) {
 			eerror("%s: chmod: Too many hard links to %s", applet, path);
-			close(fd);
-			return -1;
+			goto err;
 		}
 
 		if (S_ISLNK(st.st_mode)) {
 			eerror("%s: chmod: %s %s", applet, path, " is a symbolic link");
-			close(fd);
-			return -1;
+			goto err;
 		}
 
 		einfo("%s: correcting mode", path);
 		if (fchmod(fd, mode)) {
 			eerror("%s: chmod: %s", applet, strerror(errno));
-			close(fd);
-			return -1;
+			goto err;
 		}
 	}
 
 	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
 		if ((type != inode_dir) && (st.st_nlink > 1)) {
 			eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
-			close(fd);
-			return -1;
+			goto err;
 		}
 
 		if (S_ISLNK(st.st_mode)) {
 			eerror("%s: chown: %s %s", applet, path, " is a symbolic link");
-			close(fd);
-			return -1;
+			goto err;
 		}
 
 		einfo("%s: correcting owner", path);
 		if (fchown(fd, uid, gid)) {
 			eerror("%s: chown: %s", applet, strerror(errno));
-			close(fd);
-			return -1;
+			goto err;
 		}
 	}
 
@@ -305,6 +295,9 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	close(fd);
 
 	return 0;
+err:
+	close(fd);
+	return -1;
 }
 
 static int parse_owner(struct passwd **user, struct group **group, const char *owner)
