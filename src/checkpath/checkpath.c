@@ -166,25 +166,14 @@ static char *clean_path(char *path)
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
 {
-	int dirfd, fd, flags, readfd, readflags, r, u;
+	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW;
 	const char *name = basename_c(path);
+	int dirfd, fd, readfd, r, u;
 	struct stat st;
 
 	memset(&st, 0, sizeof(st));
-	flags = O_CREAT|O_NDELAY|O_WRONLY|O_NOCTTY;
-	readflags = O_NDELAY|O_NOCTTY|O_RDONLY;
-#ifdef O_CLOEXEC
-	flags |= O_CLOEXEC;
-	readflags |= O_CLOEXEC;
-#endif
-#ifdef O_NOFOLLOW
-	flags |= O_NOFOLLOW;
-	readflags |= O_NOFOLLOW;
-#endif
-	if (trunc)
-		flags |= O_TRUNC;
 	dirfd = get_dirfd(path, symlinks);
-	readfd = openat(dirfd, name, readflags);
+	readfd = openat(dirfd, name, flags);
 	if (readfd == -1 || (type == inode_file && trunc)) {
 		switch (type) {
 		case inode_file:
@@ -192,7 +181,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			if (!mode) /* 664 */
 				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 			u = umask(0);
-			fd = openat(dirfd, name, flags, mode);
+			fd = openat(dirfd, name, O_CREAT | (trunc ? O_TRUNC : 0) | flags, mode);
 			umask(u);
 			if (fd == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
@@ -214,7 +203,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				eerror("%s: mkdirat: %s", applet, strerror (errno));
 				return -1;
 			}
-			readfd = openat(dirfd, name, readflags);
+			readfd = openat(dirfd, name, flags);
 			if (readfd == -1) {
 				eerror("%s: unable to open directory: %s", applet, strerror(errno));
 				return -1;
@@ -231,7 +220,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				eerror("%s: mkfifo: %s", applet, strerror (errno));
 				return -1;
 			}
-			readfd = openat(dirfd, name, readflags);
+			readfd = openat(dirfd, name, flags);
 			if (readfd == -1) {
 				eerror("%s: unable to open fifo: %s", applet, strerror(errno));
 				return -1;
