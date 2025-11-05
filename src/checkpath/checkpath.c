@@ -73,17 +73,10 @@ const char *usagestring = NULL;
 
 static int get_dirfd(char *path, bool symlinks)
 {
-	char *ch;
-	char *item;
-	char *linkpath = NULL;
-	char *path_dupe;
-	char *str;
-	int components = 0;
-	int dirfd;
-	int flags = 0;
-	int new_dirfd;
-	struct stat st;
+	char *ch, *item, *path_dupe, *str, *linkpath = NULL;
+	int components = 0, dirfd, flags = 0, new_dirfd;
 	ssize_t linksize;
+	struct stat st;
 
 	if (!path || *path != '/')
 		eerrorx("%s: empty or relative path", applet);
@@ -144,9 +137,8 @@ static int get_dirfd(char *path, bool symlinks)
 
 static char *clean_path(char *path)
 {
-	char *ch;
-	char *ch2;
-	char *str;
+	char *ch, *ch2, *str;
+
 	str = xmalloc(strlen(path) + 1);
 	ch = path;
 	ch2 = str;
@@ -174,15 +166,9 @@ static char *clean_path(char *path)
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
 {
-	struct stat st;
+	int dirfd, fd, flags, readfd, readflags, r, u;
 	char *name = NULL;
-	int dirfd;
-	int fd;
-	int flags;
-	int r;
-	int readfd;
-	int readflags;
-	int u;
+	struct stat st;
 
 	memset(&st, 0, sizeof(st));
 	flags = O_CREAT|O_NDELAY|O_WRONLY|O_NOCTTY;
@@ -339,10 +325,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 
 static int parse_owner(struct passwd **user, struct group **group, const char *owner)
 {
-	char *u = xstrdup (owner);
-	char *g = strchr (u, ':');
-	int id = 0;
-	int retval = 0;
+	char *u = xstrdup(owner), *g = strchr(u, ':');
+	int id = 0, retval = 0;
 
 	if (g)
 		*g++ = '\0';
