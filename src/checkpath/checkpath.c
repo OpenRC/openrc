@@ -173,14 +173,14 @@ static size_t masks[] = {
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
 {
-	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW;
+	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW | (trunc ? O_TRUNC : 0);
 	const char *name = basename_c(path);
 	int dirfd, fd, readfd;
 	struct stat st;
 
 	dirfd = get_dirfd(path, symlinks);
 	readfd = openat(dirfd, name, flags);
-	if (readfd == -1 || (type == inode_file && trunc)) {
+	if (readfd == -1) {
 		int mask = umask(0);
 		static const mode_t default_mode[] = {
 			[inode_file] = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH, /* 664 */
@@ -196,7 +196,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 		case inode_file:
 			einfo("%s: creating file", path);
 
-			if ((fd = openat(dirfd, name, O_CREAT | (trunc ? O_TRUNC : 0) | flags, mode)) == -1) {
+			if ((fd = openat(dirfd, name, O_CREAT | flags, mode)) == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
 			}
