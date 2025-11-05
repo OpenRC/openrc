@@ -201,7 +201,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	dirfd = get_dirfd(path, symlinks);
 	readfd = openat(dirfd, name, readflags);
 	if (readfd == -1 || (type == inode_file && trunc)) {
-		if (type == inode_file) {
+		switch (type) {
+		case inode_file:
 			einfo("%s: creating file", path);
 			if (!mode) /* 664 */
 				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
@@ -216,7 +217,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			if (readfd != -1 && trunc)
 				close(readfd);
 			readfd = fd;
-		} else if (type == inode_dir) {
+			break;
+		case inode_dir:
 			einfo("%s: creating directory", path);
 			if (!mode) /* 775 */
 				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
@@ -235,7 +237,8 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				eerror("%s: unable to open directory: %s", applet, strerror(errno));
 				return -1;
 			}
-		} else if (type == inode_fifo) {
+			break;
+		case inode_fifo:
 			einfo("%s: creating fifo", path);
 			if (!mode) /* 600 */
 				mode = S_IRUSR | S_IWUSR;
@@ -253,6 +256,9 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 				eerror("%s: unable to open fifo: %s", applet, strerror(errno));
 				return -1;
 			}
+			break;
+		case inode_unknown:
+			break;
 		}
 	}
 
