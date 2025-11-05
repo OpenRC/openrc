@@ -167,7 +167,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
 {
 	int dirfd, fd, flags, readfd, readflags, r, u;
-	char *name = NULL;
+	const char *name = basename_c(path);
 	struct stat st;
 
 	memset(&st, 0, sizeof(st));
@@ -183,7 +183,6 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 #endif
 	if (trunc)
 		flags |= O_TRUNC;
-	xasprintf(&name, "%s", basename_c(path));
 	dirfd = get_dirfd(path, symlinks);
 	readfd = openat(dirfd, name, readflags);
 	if (readfd == -1 || (type == inode_file && trunc)) {
@@ -196,7 +195,6 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			fd = openat(dirfd, name, flags, mode);
 			umask(u);
 			if (fd == -1) {
-				free(name);
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
 			}
@@ -213,13 +211,11 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			r = mkdirat(dirfd, name, mode);
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
-				free(name);
 				eerror("%s: mkdirat: %s", applet, strerror (errno));
 				return -1;
 			}
 			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
-				free(name);
 				eerror("%s: unable to open directory: %s", applet, strerror(errno));
 				return -1;
 			}
@@ -232,13 +228,11 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			r = mkfifo(path, mode);
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
-				free(name);
 				eerror("%s: mkfifo: %s", applet, strerror (errno));
 				return -1;
 			}
 			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
-				free(name);
 				eerror("%s: unable to open fifo: %s", applet, strerror(errno));
 				return -1;
 			}
@@ -247,8 +241,6 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			break;
 		}
 	}
-
-	free(name);
 
 	if (fstat(readfd, &st) == -1) {
 		eerror("fstat: %s: %s", path, strerror(errno));
