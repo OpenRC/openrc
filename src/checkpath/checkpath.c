@@ -163,6 +163,13 @@ static char *clean_path(char *path)
 	return str;
 }
 
+static size_t masks[] = {
+	[inode_unknown] = 0,
+	[inode_file] = S_IFREG,
+	[inode_dir] = S_IFDIR,
+	[inode_fifo] = S_IFIFO,
+};
+
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
 {
@@ -171,7 +178,6 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	int dirfd, fd, readfd, r;
 	struct stat st;
 
-	memset(&st, 0, sizeof(st));
 	dirfd = get_dirfd(path, symlinks);
 	readfd = openat(dirfd, name, flags);
 	if (readfd == -1 || (type == inode_file && trunc)) {
