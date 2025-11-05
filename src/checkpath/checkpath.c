@@ -393,12 +393,12 @@ int main(int argc, char **argv)
 			break;
 		case 'm':
 			if (parse_mode(&mode, optarg) != 0)
-				eerrorx("%s: invalid mode `%s'", applet, optarg);
+				eerrorx("%s: invalid mode '%s'", applet, optarg);
 			break;
 		case 'o':
 			chowner = true;
 			if (parse_owner(&pw, &gr, optarg) != 0)
-				eerrorx("%s: owner `%s' not found", applet, optarg);
+				eerrorx("%s: owner '%s' not found", applet, optarg);
 			break;
 		case 's':
 #ifndef O_PATH
