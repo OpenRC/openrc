@@ -175,7 +175,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 {
 	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW;
 	const char *name = basename_c(path);
-	int dirfd, fd, readfd, r;
+	int dirfd, fd, readfd;
 	struct stat st;
 
 	dirfd = get_dirfd(path, symlinks);
@@ -185,47 +185,54 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 		switch (type) {
 		case inode_file:
 			einfo("%s: creating file", path);
+
 			if (!mode) /* 664 */
 				mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
-			fd = openat(dirfd, name, O_CREAT | (trunc ? O_TRUNC : 0) | flags, mode);
-			if (fd == -1) {
+
+			if ((fd = openat(dirfd, name, O_CREAT | (trunc ? O_TRUNC : 0) | flags, mode)) == -1) {
 				eerror("%s: open: %s", applet, strerror(errno));
 				return -1;
 			}
+
 			if (readfd != -1 && trunc)
 				close(readfd);
 			readfd = fd;
+
 			break;
 		case inode_dir:
 			einfo("%s: creating directory", path);
+
 			if (!mode) /* 775 */
 				mode = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH;
+
 			/* We do not recursively create parents */
-			r = mkdirat(dirfd, name, mode);
-			if (r == -1 && errno != EEXIST) {
+			if (mkdirat(dirfd, name, mode) == -1 && errno != EEXIST) {
 				eerror("%s: mkdirat: %s", applet, strerror (errno));
 				return -1;
 			}
-			readfd = openat(dirfd, name, flags);
-			if (readfd == -1) {
+
+			if ((readfd = openat(dirfd, name, flags)) == -1) {
 				eerror("%s: unable to open directory: %s", applet, strerror(errno));
 				return -1;
 			}
+
 			break;
 		case inode_fifo:
 			einfo("%s: creating fifo", path);
+
 			if (!mode) /* 600 */
 				mode = S_IRUSR | S_IWUSR;
-			r = mkfifo(path, mode);
-			if (r == -1 && errno != EEXIST) {
+
+			if (mkfifo(path, mode) == -1 && errno != EEXIST) {
 				eerror("%s: mkfifo: %s", applet, strerror (errno));
 				return -1;
 			}
-			readfd = openat(dirfd, name, flags);
-			if (readfd == -1) {
+
+			if ((readfd = openat(dirfd, name, flags)) == -1) {
 				eerror("%s: unable to open fifo: %s", applet, strerror(errno));
 				return -1;
 			}
+
 			break;
 		case inode_unknown:
 			break;
