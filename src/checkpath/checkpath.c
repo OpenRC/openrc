@@ -89,8 +89,7 @@ static int get_dirfd(char *path, bool symlinks)
 		eerrorx("%s: empty or relative path", applet);
 	dirfd = openat(AT_FDCWD, "/", O_RDONLY);
 	if (dirfd == -1)
-		eerrorx("%s: unable to open the root directory: %s",
-				applet, strerror(errno));
+		eerrorx("%s: unable to open the root directory: %s", applet, strerror(errno));
 	ch = path;
 	while (*ch) {
 		if (*ch == '/')
@@ -109,15 +108,12 @@ static int get_dirfd(char *path, bool symlinks)
 		str = xstrdup(linkpath ? linkpath : item);
 		new_dirfd = openat(dirfd, str, flags);
 		if (new_dirfd == -1)
-			eerrorx("%s: %s: could not open %s: %s", applet, path, str,
-					strerror(errno));
+			eerrorx("%s: %s: could not open %s: %s", applet, path, str, strerror(errno));
 		if (fstat(new_dirfd, &st) == -1)
-			eerrorx("%s: %s: unable to stat %s: %s", applet, path, item,
-					strerror(errno));
+			eerrorx("%s: %s: unable to stat %s: %s", applet, path, item, strerror(errno));
 		if (S_ISLNK(st.st_mode) ) {
 			if (st.st_uid != 0)
-				eerrorx("%s: %s: symbolic link %s not owned by root",
-						applet, path, str);
+				eerrorx("%s: %s: symbolic link %s not owned by root", applet, path, str);
 			linksize = st.st_size+1;
 			if (linkpath)
 				free(linkpath);
@@ -230,15 +226,13 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
 				free(name);
-				eerror("%s: mkdirat: %s", applet,
-				    strerror (errno));
+				eerror("%s: mkdirat: %s", applet, strerror (errno));
 				return -1;
 			}
 			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
 				free(name);
-				eerror("%s: unable to open directory: %s", applet,
-						strerror(errno));
+				eerror("%s: unable to open directory: %s", applet, strerror(errno));
 				return -1;
 			}
 		} else if (type == inode_fifo) {
@@ -250,15 +244,13 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 			umask(u);
 			if (r == -1 && errno != EEXIST) {
 				free(name);
-				eerror("%s: mkfifo: %s", applet,
-				    strerror (errno));
+				eerror("%s: mkfifo: %s", applet, strerror (errno));
 				return -1;
 			}
 			readfd = openat(dirfd, name, readflags);
 			if (readfd == -1) {
 				free(name);
-				eerror("%s: unable to open fifo: %s", applet,
-						strerror(errno));
+				eerror("%s: unable to open fifo: %s", applet, strerror(errno));
 				return -1;
 			}
 		}
@@ -332,8 +324,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	return 0;
 }
 
-static int parse_owner(struct passwd **user, struct group **group,
-	const char *owner)
+static int parse_owner(struct passwd **user, struct group **group, const char *owner)
 {
 	char *u = xstrdup (owner);
 	char *g = strchr (u, ':');
@@ -383,9 +374,7 @@ int main(int argc, char **argv)
 	char *path = NULL;
 
 	applet = basename_c(argv[0]);
-	while ((opt = getopt_long(argc, argv, getoptstring,
-		    longopts, (int *) 0)) != -1)
-	{
+	while ((opt = getopt_long(argc, argv, getoptstring, longopts, (int *) 0)) != -1) {
 		switch (opt) {
 		case 'D':
 			trunc = true;
@@ -404,14 +393,12 @@ int main(int argc, char **argv)
 			break;
 		case 'm':
 			if (parse_mode(&mode, optarg) != 0)
-				eerrorx("%s: invalid mode `%s'",
-				    applet, optarg);
+				eerrorx("%s: invalid mode `%s'", applet, optarg);
 			break;
 		case 'o':
 			chowner = true;
 			if (parse_owner(&pw, &gr, optarg) != 0)
-				eerrorx("%s: owner `%s' not found",
-				    applet, optarg);
+				eerrorx("%s: owner `%s' not found", applet, optarg);
 			break;
 		case 's':
 #ifndef O_PATH
@@ -446,8 +433,7 @@ int main(int argc, char **argv)
 		path = clean_path(argv[optind]);
 		if (writable)
 			exit(access(path, W_OK) != 0);
-		if (do_check(path, uid, gid, mode, type, trunc, chowner,
-					symlinks, selinux_on))
+		if (do_check(path, uid, gid, mode, type, trunc, chowner, symlinks, selinux_on))
 			retval = EXIT_FAILURE;
 		optind++;
 		free(path);
