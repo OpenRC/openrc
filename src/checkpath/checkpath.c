@@ -170,118 +170,122 @@ static size_t masks[] = {
 	[inode_fifo] = S_IFIFO,
 };
 
+static int do_create(inode_t type, const char *path, int dirfd, const char *name, int flags, mode_t mode)
+{
+	int mask = umask(0);
+	int fd;
+
+	static const mode_t default_mode[] = {
+		[inode_file] = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH, /* 664 */
+		[inode_dir] = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH, /* 775 */
+		[inode_fifo] = S_IRUSR | S_IWUSR, /* 600 */
+		[inode_unknown] = 0,
+	};
+
+	if (!mode)
+		mode = default_mode[type];
+
+	switch (type) {
+	case inode_file:
+		einfo("%s: creating file", path);
+
+		if ((fd = openat(dirfd, name, O_CREAT | flags, mode)) == -1) {
+			eerror("%s: open: %s", applet, strerror(errno));
+			return -1;
+		}
+
+		break;
+	case inode_dir:
+		einfo("%s: creating directory", path);
+
+		/* We do not recursively create parents */
+		if (mkdirat(dirfd, name, mode) == -1 && errno != EEXIST) {
+			eerror("%s: mkdirat: %s", applet, strerror (errno));
+			return -1;
+		}
+
+		if ((fd = openat(dirfd, name, flags)) == -1) {
+			eerror("%s: unable to open directory: %s", applet, strerror(errno));
+			return -1;
+		}
+
+		break;
+	case inode_fifo:
+		einfo("%s: creating fifo", path);
+
+		if (mkfifo(path, mode) == -1 && errno != EEXIST) {
+			eerror("%s: mkfifo: %s", applet, strerror (errno));
+			return -1;
+		}
+
+		if ((fd = openat(dirfd, name, flags)) == -1) {
+			eerror("%s: unable to open fifo: %s", applet, strerror(errno));
+			return -1;
+		}
+
+		break;
+	case inode_unknown:
+		break;
+	}
+	umask(mask);
+
+	return fd;
+}
+
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
 {
 	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW | (trunc ? O_TRUNC : 0);
 	const char *name = basename_c(path);
-	int dirfd, fd, readfd;
 	struct stat st;
+	int dirfd, fd;
 
 	dirfd = get_dirfd(path, symlinks);
-	readfd = openat(dirfd, name, flags);
-	if (readfd == -1) {
-		int mask = umask(0);
-		static const mode_t default_mode[] = {
-			[inode_file] = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH, /* 664 */
-			[inode_dir] = S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH, /* 775 */
-			[inode_fifo] = S_IRUSR | S_IWUSR, /* 600 */
-			[inode_unknown] = 0,
-		};
+	if ((fd = openat(dirfd, name, flags)) == -1
+			&& (fd = do_create(type, path, dirfd, name, flags, mode)) == -1)
+		return -1;
 
-		if (!mode)
-			mode = default_mode[type];
-
-		switch (type) {
-		case inode_file:
-			einfo("%s: creating file", path);
-
-			if ((fd = openat(dirfd, name, O_CREAT | flags, mode)) == -1) {
-				eerror("%s: open: %s", applet, strerror(errno));
-				return -1;
-			}
-
-			if (readfd != -1 && trunc)
-				close(readfd);
-			readfd = fd;
-
-			break;
-		case inode_dir:
-			einfo("%s: creating directory", path);
-
-			/* We do not recursively create parents */
-			if (mkdirat(dirfd, name, mode) == -1 && errno != EEXIST) {
-				eerror("%s: mkdirat: %s", applet, strerror (errno));
-				return -1;
-			}
-
-			if ((readfd = openat(dirfd, name, flags)) == -1) {
-				eerror("%s: unable to open directory: %s", applet, strerror(errno));
-				return -1;
-			}
-
-			break;
-		case inode_fifo:
-			einfo("%s: creating fifo", path);
-
-			if (mkfifo(path, mode) == -1 && errno != EEXIST) {
-				eerror("%s: mkfifo: %s", applet, strerror (errno));
-				return -1;
-			}
-
-			if ((readfd = openat(dirfd, name, flags)) == -1) {
-				eerror("%s: unable to open fifo: %s", applet, strerror(errno));
-				return -1;
-			}
-
-			break;
-		case inode_unknown:
-			break;
-		}
-		umask(mask);
-	}
-
-	if (fstat(readfd, &st) == -1) {
+	if (fstat(fd, &st) == -1) {
 		eerror("fstat: %s: %s", path, strerror(errno));
-		close(readfd);
+		close(fd);
 		return -1;
 	}
 
 	if (type != inode_dir && S_ISDIR(st.st_mode)) {
 		eerror("%s: is a directory", path);
-		close(readfd);
+		close(fd);
 		return 1;
 	}
 
 	if (type != inode_file && S_ISREG(st.st_mode)) {
 		eerror("%s: is a file", path);
-		close(readfd);
+		close(fd);
 		return 1;
 	}
 
 	if (type != inode_fifo && S_ISFIFO(st.st_mode)) {
 		eerror("%s: is a fifo", path);
-		close(readfd);
+		close(fd);
 		return -1;
 	}
 
 	if (mode && (st.st_mode & 07777) != mode) {
 		if ((type != inode_dir) && (st.st_nlink > 1)) {
 			eerror("%s: chmod: Too many hard links to %s", applet, path);
-			close(readfd);
+			close(fd);
 			return -1;
 		}
 
 		if (S_ISLNK(st.st_mode)) {
 			eerror("%s: chmod: %s %s", applet, path, " is a symbolic link");
-			close(readfd);
+			close(fd);
 			return -1;
 		}
 
 		einfo("%s: correcting mode", path);
-		if (fchmod(readfd, mode)) {
+		if (fchmod(fd, mode)) {
 			eerror("%s: chmod: %s", applet, strerror(errno));
-			close(readfd);
+			close(fd);
 			return -1;
 		}
 	}
@@ -289,27 +293,27 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
 		if ((type != inode_dir) && (st.st_nlink > 1)) {
 			eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
-			close(readfd);
+			close(fd);
 			return -1;
 		}
 
 		if (S_ISLNK(st.st_mode)) {
 			eerror("%s: chown: %s %s", applet, path, " is a symbolic link");
-			close(readfd);
+			close(fd);
 			return -1;
 		}
 
 		einfo("%s: correcting owner", path);
-		if (fchown(readfd, uid, gid)) {
+		if (fchown(fd, uid, gid)) {
 			eerror("%s: chown: %s", applet, strerror(errno));
-			close(readfd);
+			close(fd);
 			return -1;
 		}
 	}
 
 	if (selinux_on)
 		selinux_util_label(path);
-	close(readfd);
+	close(fd);
 
 	return 0;
 }
