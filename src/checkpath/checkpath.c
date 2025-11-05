@@ -203,7 +203,7 @@ static int do_create(inode_t type, const char *path, int dirfd, const char *name
 	case inode_fifo:
 		einfo("%s: creating fifo", path);
 
-		if (mkfifo(path, mode) == -1 && errno != EEXIST) {
+		if (mkfifoat(dirfd, name, mode) == -1 && errno != EEXIST) {
 			eerror("%s: mkfifo: %s", applet, strerror (errno));
 			return -1;
 		}
