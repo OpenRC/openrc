@@ -1218,11 +1218,11 @@ int main(int argc, char **argv)
 				eerrorx("%s: %s is already running", applet, exec);
 
 		if (respawn_period > 0 && respawn_delay * respawn_max > respawn_period)
-			ewarn("%s: Please increase the value of --respawn-period to more "
+			ewarn("%s: Please decrease the value of --respawn-period to less "
 				"than %"PRId64" to avoid infinite respawning", applet,
 				(respawn_delay * respawn_max + 500)/1000);
 		if (respawn_delay_step > 0 && respawn_delay > respawn_delay_cap)
-			ewarn("%s: Please increase the value of --respawn-delay (%"PRId64"ms) to more "
+			ewarn("%s: Please decrease the value of --respawn-delay (%"PRId64"ms) to less "
 				"than --respawn-delay-cap (%"PRId64"ms)", applet,
 				respawn_delay, respawn_delay_cap);
 
