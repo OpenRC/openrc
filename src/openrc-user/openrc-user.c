@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <syslog.h>
+#include <string.h>
 #include <unistd.h>
 #include <signal.h>
 #include <spawn.h>
@@ -21,6 +22,28 @@
 #include "rc.h"
 #include "rc_exec.h"
 
+static bool valid_shell(const char *shell) {
+	FILE *fp = fopen(RC_SYSCONFDIR "/shells", "r");
+	bool ret = false;
+	char *line = NULL;
+	size_t size;
+
+	if (!fp)
+		return true;
+
+	while (xgetline(&line, &size, fp) != -1) {
+		if (line[0] == '#')
+			continue;
+		if (strcmp(line, shell) == 0) {
+			ret = true;
+			break;
+		}
+	}
+
+	free(line);
+	return ret;
+}
+
 static bool spawn_openrc(const struct passwd *user, bool start) {
 	char *argv0;
 	const char *argv[] = {
@@ -32,7 +55,7 @@ static bool spawn_openrc(const struct passwd *user, bool start) {
 
 	/* shell might be a multicall binary, e.g busybox.
 	 * so setting argv[0] to "-" might not work */
-	xasprintf(&argv0, "-%s", user->pw_shell);
+	xasprintf(&argv0, "-%s", valid_shell(user->pw_shell) ? user->pw_shell : "/bin/sh");
 	argv[0] = argv0;
 	args = exec_init(argv);
 	args.cmd = user->pw_shell;
