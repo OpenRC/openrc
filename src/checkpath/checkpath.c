@@ -261,7 +261,7 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 		}
 
 		if (S_ISLNK(st.st_mode)) {
-			eerror("%s: chmod: %s %s", applet, path, " is a symbolic link");
+			eerror("%s: chmod: %s is a symbolic link", applet, path);
 			goto err;
 		}
 
@@ -274,12 +274,12 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
 
 	if (chowner && (st.st_uid != uid || st.st_gid != gid)) {
 		if ((type != inode_dir) && (st.st_nlink > 1)) {
-			eerror("%s: chown: %s %s", applet, "Too many hard links to", path);
+			eerror("%s: chown: Too many hardlinks to %s", applet, path);
 			goto err;
 		}
 
 		if (S_ISLNK(st.st_mode)) {
-			eerror("%s: chown: %s %s", applet, path, " is a symbolic link");
+			eerror("%s: chown: %s is a symbolic link", applet, path);
 			goto err;
 		}
 
