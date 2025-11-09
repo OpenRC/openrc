@@ -221,17 +221,24 @@ static int do_create(inode_t type, const char *path, int dirfd, const char *name
 	return fd;
 }
 
-static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode,
-	inode_t type, bool trunc, bool chowner, bool symlinks, bool selinux_on)
+static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
+		bool trunc, bool chowner, bool writable, bool symlinks, bool selinux_on)
 {
 	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW | (trunc ? O_TRUNC : 0);
 	const char *name = basename_c(path);
 	struct stat st;
 	int dirfd, fd;
 
+	if (writable) {
+		if (access(path, W_OK) == 0)
+			return 0;
+		if (errno != ENOENT || type == inode_unknown)
+			return -1;
+	}
+
 	dirfd = get_dirfd(path, symlinks);
-	if ((fd = openat(dirfd, name, flags)) == -1
-			&& (fd = do_create(type, path, dirfd, name, flags, mode)) == -1)
+	if ((fd = openat(dirfd, name, flags)) == -1 &&
+			(fd = do_create(type, path, dirfd, name, flags, mode)) == -1)
 		return -1;
 
 	if (fstat(fd, &st) == -1) {
@@ -390,9 +397,6 @@ int main(int argc, char **argv)
 	if (optind >= argc)
 		usage(EXIT_FAILURE);
 
-	if (writable && type != inode_unknown)
-		eerrorx("%s: -W cannot be specified along with -d, -f or -p", applet);
-
 	if (pw) {
 		uid = pw->pw_uid;
 		gid = pw->pw_gid;
@@ -405,9 +409,7 @@ int main(int argc, char **argv)
 
 	while (optind < argc) {
 		path = clean_path(argv[optind]);
-		if (writable)
-			exit(access(path, W_OK) != 0);
-		if (do_check(path, uid, gid, mode, type, trunc, chowner, symlinks, selinux_on))
+		if (do_check(path, uid, gid, mode, type, trunc, chowner, writable, symlinks, selinux_on))
 			retval = EXIT_FAILURE;
 		optind++;
 		free(path);
