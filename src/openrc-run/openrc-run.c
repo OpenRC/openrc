@@ -346,7 +346,7 @@ svc_exec(const char *command)
 	sigset_t oldmask;
 	char *openrc_sh;
 	const char *argv[] = {
-		RC_LIBEXECDIR "sh/openrc-run.sh",
+		RC_LIBEXECDIR "/sh/openrc-run.sh",
 		service,
 		command,
 		NULL
@@ -388,7 +388,7 @@ svc_exec(const char *command)
 
 	einfov("Executing: %s %s %s", openrc_sh, service, command);
 	if ((errno = posix_spawn(&service_pid, argv[0], &tty, NULL, UNCONST(argv), environ)))
-		eerrorx("%s: exec '%s': %s", service, openrc_sh, strerror(errno));
+		eerrorx("%s: exec '%s': %s", service, argv[0], strerror(errno));
 
 	posix_spawn_file_actions_destroy(&tty);
 
