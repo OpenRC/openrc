@@ -336,6 +336,7 @@ exec_service(const char *service, const char *arg)
 	}
 
 	posix_spawnattr_destroy(&chldmask);
+	close(fd);
 
 out:
 	free(file);
