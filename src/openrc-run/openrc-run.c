@@ -356,7 +356,8 @@ svc_exec(const char *command)
 	if (pipe2(signal_pipe, O_CLOEXEC) == -1)
 		eerrorx("%s: pipe2: %s", applet, applet);
 
-	posix_spawn_file_actions_init(&tty);
+	if ((errno = posix_spawn_file_actions_init(&tty)))
+		eerrorx("%s: posix_spawn_file_actions_init: %s", applet, strerror(errno));
 
 	/* Open a pty for our prefixed output
 	 * We do this instead of mapping pipes to stdout, stderr so that
@@ -377,8 +378,9 @@ svc_exec(const char *command)
 		if (slave_tty >= 0 && (flags = fcntl(slave_tty, F_GETFD, 0)) == 0)
 			fcntl(slave_tty, F_SETFD, flags | FD_CLOEXEC);
 
-		posix_spawn_file_actions_adddup2(&tty, slave_tty, STDOUT_FILENO);
-		posix_spawn_file_actions_adddup2(&tty, slave_tty, STDERR_FILENO);
+		if ((errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDOUT_FILENO))
+				|| (errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDOUT_FILENO)))
+			eerrorx("%s: posix_spawn_file_actions_adddup2: %s", applet, strerror(errno));
 	}
 
 	if (faccessat(rc_dirfd(RC_DIR_SVCDIR), "openrc-run.sh", F_OK, 0) == 0) {
