@@ -97,23 +97,33 @@ timeout_kill means no SIGKILL will be sent.
 
 ## How it works internally, starting with 0.63
 
+If the `command` variable is empty *and* there is a user-provided
+service directory in `/var/svc.d` with the same name as the service
+being called, then everything works as it did previously: the
+`/var/svc.d/foo` service directory is linked into the scan directory,
+and that's it: you are in full manual control of your service directory.
+You can still use the `timeout_ready` and `timeout_down` variables to
+tune OpenRC's behaviour, but the other variables have no impact.
+
+The rest of this section assumes that the `command` variable is not
+empty. In that case, you don't need to provide a service directory in
+the s6 format: OpenRC will craft one for you.
+
 The first time start() is called, OpenRC uses all the variables in the
-service file to build a service directory for s6: a run script, possibly
-a notification-fd file, etc. This service directory is then linked into
+service file to build a service directory: a run script, possibly a
+notification-fd file, etc. This service directory is then linked into
 the scan directory and s6-svscan is told to register it and spawn a
 s6-supervise process on it.
 
 This means that all the information needed for your service should be
 given, declaratively, in your service file (and your configuration file
-if you have one). You do not need to build your service directory
-yourself anymore, this is done automatically: in true OpenRC fashion,
-the service file is the One True Source of information for running
-your service.
+if you have one). In true OpenRC fashion, the service file is the One
+True Source of information for running your service.
 
 The run script for the s6 service directory is built with in the
 execline language, because execline makes script generation easier
 than sh. However, the daemon execution itself is still done via
-  sh -c "$command $command_args $command_args_foreground"
+  `sh -c "$command $command_args $command_args_foreground"`
 for compatibility with other backends. In other words: you can forget
 that execline is even there, all the user-facing parts use sh as their
 interpreter and it's all you need to worry about.
