@@ -79,6 +79,10 @@ _s6_force_stop() {
 	s6-svunlink -- "$_scandir" "$name"
 }
 
+_s6_have_legacy_servicedir() {
+	test -z "$command" && test -x "/var/svc.d/$name/run"
+}
+
 _s6_servicedir_creation_needed() {
 	local dir="$_servicedirs/$name" conffile="{$RC_SERVICE%/*}/../conf.d/${RC_SERVICE##*/}"
 	if ! test -e "$dir" ; then
@@ -163,21 +167,25 @@ _s6_servicedir_create() {
 
 s6_start()
 {
-	local r waitcommand waitname
+	local servicepath r waitcommand waitname
 	_s6_set_variables
 	if ! _s6_sanity_checks ; then
 		eerror "s6 sanity checks failed, cannot start service"
  		return 1
 	fi
-	if _s6_servicedir_creation_needed ; then
+	servicepath="$_servicedirs/$name"
+	if _s6_have_legacy_servicedir ; then
+		servicepath="/var/svc.d/$name"
+		ebegin "Starting $name (via user-provided service directory)"
+	elif _s6_servicedir_creation_needed ; then
 		ebegin "Starting $name"
 		_s6_servicedir_create
 	else
 		ebegin "Starting $name (using cached service directory)"
 	fi
-	if s6-svlink -- "$_scandir" "$_servicedirs/$name" ; then : ; else
+	if s6-svlink -- "$_scandir" "$servicepath" ; then : ; else
 		r=$?
-		eend $r "Failed to s6-svlink $name into $_scandir"
+		eend $r "Failed to s6-svlink $servicepath into $_scandir"
 		return $r
 	fi
 	if test -n "$timeout_ready" ; then
