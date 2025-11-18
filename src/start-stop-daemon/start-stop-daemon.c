@@ -1130,13 +1130,25 @@ int main(int argc, char **argv)
 				|| rc_yesno(getenv("EINFO_QUIET")))
 			dup2(stderr_fd, STDERR_FILENO);
 
-		cloexec_fds_from(3);
+		cloexec_fds_from(3); /* FIXME: this is problematic, see right below */
 
 		if (notify.type == NOTIFY_FD) {
 			if (close(notify.pipe[0]) == -1)
 				eerrorx("%s: failed to close notify pipe[0]: %s", applet, strerror(errno));
 			if (dup2(notify.pipe[1], notify.fd) == -1)
 				eerrorx("%s: failed to initialize notify fd: %s", applet, strerror(errno));
+
+			/* if notify.pipe[1] == notify.fd then the FD_CLOEXEC flag is not cleared by dup2,
+			   leading to failure. The workaround here is to clear it manually, but the
+			   real fix is that we should never close/cloexec fds in bulk like this */
+			if (notify.pipe[1] == notify.fd) {
+				int flags = fcntl(notify.fd, F_GETFD, 0);
+				if (flags == -1)
+					eerrorx("%s: failed to get flags for notify fd: %s", applet, strerror(errno));
+				if (fcntl(notify.fd, F_SETFD, flags & ~FD_CLOEXEC) == -1)
+					eerrorx("%s: failed to set flags for notify fd: %s", applet, strerror(errno));
+			}
+
 		}
 
 		if (scheduler != NULL) {
