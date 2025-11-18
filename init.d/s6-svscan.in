@@ -18,7 +18,7 @@ command_args="$RC_SVCDIR"
 command_background=yes
 pidfile=/var/run/s6-svscan.pid
 umask=022
-# notify=fd:4  # when notify=fd is fixed, uncomment here and add -d4 in svscanboot
+notify=fd:4
 
 depend() {
 	need localmount
