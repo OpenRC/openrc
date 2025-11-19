@@ -610,8 +610,20 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 
 	cloexec_fds_from(3);
 
-	if (notify.type == NOTIFY_FD && dup2(notify.pipe[1], notify.fd) == -1)
-		eerrorx("%s: failed to dup ready fd: %s", applet, strerror(errno));
+	if (notify.type == NOTIFY_FD) {
+		int error;
+
+		if (notify.fd == notify.pipe[1]) {
+			int flags = error = fcntl(notify.fd, F_GETFD, 0);
+			if (flags != -1)
+				error = fcntl(notify.fd, F_SETFD, flags & ~FD_CLOEXEC);
+		} else {
+			error = dup2(notify.pipe[1], notify.fd);
+		}
+
+		if (error)
+			eerrorx("%s: failed to dup ready fd: %s", applet, strerror(errno));
+	}
 
 	cmdline = make_cmdline(argv);
 	syslog(LOG_INFO, "Child command line: %s", cmdline);
