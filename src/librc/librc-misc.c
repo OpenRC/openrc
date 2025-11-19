@@ -55,6 +55,42 @@ rc_yesno(const char *value)
 	return false;
 }
 
+bool
+rc_getfileat(int dirfd, const char *file, char **buffer, size_t *size)
+{
+	bool ret = false;
+	FILE *fp;
+	struct stat st;
+	size_t done, left;
+
+	fp = do_fopenat(dirfd, file, O_RDONLY);
+	if (!fp)
+		return false;
+
+	/* assume fileno() never fails */
+	if (fstat(fileno(fp), &st))
+		goto finished;
+
+	left = st.st_size;
+	*size = left + 1; /* NUL terminator */
+	*buffer = xrealloc(*buffer, *size);
+	while (left) {
+		done = fread(*buffer, sizeof(*buffer[0]), left, fp);
+		if (done == 0 && ferror(fp))
+			goto finished;
+		left -= done;
+	}
+	ret = true;
+
+finished:
+	if (!ret) {
+		free(*buffer);
+		*size = 0;
+	} else
+		(*buffer)[*size - 1] = '\0';
+	fclose(fp);
+	return ret;
+}
 
 /**
  * Read the entire @file into the buffer and set @len to the
@@ -65,41 +101,7 @@ rc_yesno(const char *value)
 bool
 rc_getfile(const char *file, char **buffer, size_t *len)
 {
-	bool ret = false;
-	FILE *fp;
-	int fd;
-	struct stat st;
-	size_t done, left;
-
-	fp = fopen(file, "re");
-	if (!fp)
-		return false;
-
-	/* assume fileno() never fails */
-	fd = fileno(fp);
-
-	if (fstat(fd, &st))
-		goto finished;
-
-	left = st.st_size;
-	*len = left + 1; /* NUL terminator */
-	*buffer = xrealloc(*buffer, *len);
-	while (left) {
-		done = fread(*buffer, sizeof(*buffer[0]), left, fp);
-		if (done == 0 && ferror(fp))
-			goto finished;
-		left -= done;
-	}
-	ret = true;
-
- finished:
-	if (!ret) {
-		free(*buffer);
-		*len = 0;
-	} else
-		(*buffer)[*len - 1] = '\0';
-	fclose(fp);
-	return ret;
+	return rc_getfileat(AT_FDCWD, file, buffer, len);
 }
 
 char *
