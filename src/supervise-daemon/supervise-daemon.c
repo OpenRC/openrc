@@ -384,7 +384,7 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	char start_time_string[20];
 	FILE *fp;
 	gid_t group_buf[32], *group_list = group_buf;
-	int group_count = ARRAY_SIZE(group_buf);
+	int group_count = 0;
 
 #ifdef HAVE_PAM
 	pam_handle_t *pamh = NULL;
@@ -445,10 +445,14 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	}
 #endif
 
-	if (changeuser && getgrouplist(changeuser, gid, group_list, &group_count) < 0) {
-		group_list = xmalloc(group_count * sizeof(*group_list));
-		if (getgrouplist(changeuser, gid, group_list, &group_count) < 0)
-			eerrorx("%s: getgrouplist(%s, %"PRIuMAX")", applet, changeuser, (uintmax_t)gid);
+	if (changeuser) {
+		/* getgrouplist is a stupid api. */
+		group_count = ARRAY_SIZE(group_buf);
+		if (getgrouplist(changeuser, gid, group_list, &group_count) < 0) {
+			group_list = xmalloc(group_count * sizeof(*group_list));
+			if (getgrouplist(changeuser, gid, group_list, &group_count) < 0)
+				eerrorx("%s: getgrouplist(%s, %"PRIuMAX")", applet, changeuser, (uintmax_t)gid);
+		}
 	}
 
 	/* Close any fd's to the passwd database */
@@ -462,7 +466,7 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 
 	if (gid && setgid(gid))
 		eerrorx("%s: unable to set groupid to %"PRIuMAX, applet, (uintmax_t)gid);
-	if (changeuser && setgroups(group_count, group_list) < 0)
+	if (setgroups(group_count, group_list) < 0)
 		eerrorx("%s: setgroups() failed", applet);
 	if (group_list != group_buf)
 		free(group_list);
