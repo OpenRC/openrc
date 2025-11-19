@@ -168,6 +168,7 @@ env_config(void)
 	char *tok;
 	const char *sys = rc_sys();
 	const char *svcdir = rc_svcdir();
+	const char *const *init_path = rc_scriptdirs();
 	char *buffer = NULL;
 	char *tmpdir;
 	size_t size = 0;
@@ -225,6 +226,16 @@ env_config(void)
 	setenv("RC_TMPDIR", tmpdir, 1);
 	setenv("RC_BOOTLEVEL", RC_LEVEL_BOOT, 1);
 	setenv("RC_RUNLEVEL", e, 1);
+
+	fp = xopen_memstream(&path, &size);
+	fputs("RC_PATH=", fp);
+	for (bool first = true; *init_path; init_path++, first = false) {
+		if (!first)
+			fputc(':', fp);
+		fputs(*init_path, fp);
+	}
+	xclose_memstream(fp);
+	putenv(path);
 
 	free(e);
 	free(tmpdir);
