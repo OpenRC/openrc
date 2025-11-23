@@ -96,92 +96,48 @@ enum {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:0:1:2:3:4:" \
-	getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "capabilities", 1, NULL, LONGOPT_CAPABILITIES},
-	{ "secbits",      1, NULL, LONGOPT_SECBITS},
-	{ "no-new-privs", 0, NULL, LONGOPT_NO_NEW_PRIVS},
-	{ "ionice",       1, NULL, 'I'},
-	{ "stop",         0, NULL, 'K'},
-	{ "nicelevel",    1, NULL, 'N'},
-	{ "oom-score-adj",1, NULL, LONGOPT_OOM_SCORE_ADJ},
-	{ "retry",        1, NULL, 'R'},
-	{ "start",        0, NULL, 'S'},
-	{ "startas",      1, NULL, 'a'},
-	{ "background",   0, NULL, 'b'},
-	{ "chuid",        1, NULL, 'c'},
-	{ "chdir",        1, NULL, 'd'},
-	{ "env",          1, NULL, 'e'},
-	{ "umask",        1, NULL, 'k'},
-	{ "group",        1, NULL, 'g'},
-	{ "interpreted",  0, NULL, 'i'},
-	{ "make-pidfile", 0, NULL, 'm'},
-	{ "name",         1, NULL, 'n'},
-	{ "oknodo",       0, NULL, 'o'},
-	{ "pidfile",      1, NULL, 'p'},
-	{ "signal",       1, NULL, 's'},
-	{ "test",         0, NULL, 't'},
-	{ "user",         1, NULL, 'u'},
-	{ "chroot",       1, NULL, 'r'},
-	{ "wait",         1, NULL, 'w'},
-	{ "exec",         1, NULL, 'x'},
-	{ "stdin",        1, NULL, '0'},
-	{ "stdout",       1, NULL, '1'},
-	{ "stderr",       1, NULL, '2'},
-	{ "stdout-logger",1, NULL, '3'},
-	{ "stderr-logger",1, NULL, '4'},
-	{ "progress",     0, NULL, 'P'},
-	{ "scheduler",    1, NULL, LONGOPT_SCHEDULER},
-	{ "scheduler-priority",    1, NULL, LONGOPT_SCHEDULER_PRIO},
-	{ "notify",        1, NULL, LONGOPT_NOTIFY},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"Set the inheritable, ambient and bounding capabilities",
-	"Set the security-bits for the program",
-	"Set the No New Privs flag for the program",
-	"Set an ionice class:data when starting",
-	"Stop daemon",
-	"Set a nicelevel when starting",
-	"Set OOM score adjustment when starting",
-	"Retry schedule to use when stopping",
-	"Start daemon",
-	"deprecated, use --exec or --name",
-	"Force daemon to background",
-	"deprecated, use --user",
-	"Change the PWD",
-	"Set an environment string",
-	"Set the umask for the daemon",
-	"Change the process group",
-	"Match process name by interpreter",
-	"Create a pidfile",
-	"Match process name",
-	"deprecated",
-	"Match pid found in this file",
-	"Send a different signal",
-	"Test actions, don't do them",
-	"Change the process user",
-	"Chroot to this directory",
-	"Milliseconds to wait for daemon start",
-	"Binary to start/stop",
-	"Redirect stdin to file",
-	"Redirect stdout to file",
-	"Redirect stderr to file",
-	"Redirect stdout to process",
-	"Redirect stderr to process",
-	"Print dots each second while waiting",
-	"Set process scheduler",
-	"Set process scheduler priority",
-	"Configures experimental notification behaviour",
-	longopts_help_COMMON
-};
+#define opts(opt, opt_long) \
+	opt(I, ionice, required_argument, "Set an ionice class:data when starting") \
+	opt(K, stop, no_argument, "Stop daemon") \
+	opt(N, nicelevel, required_argument, "Set a nicelevel when starting") \
+	opt(R, retry, required_argument, "Retry schedule to use when stopping") \
+	opt(S, start, no_argument, "Start daemon") \
+	opt(a, startas, required_argument, "deprecated, use --exec or --name") \
+	opt(b, background, no_argument, "Force daemon to background") \
+	opt(c, chuid, required_argument, "deprecated, use --user") \
+	opt(d, chdir, required_argument, "Change the PWD") \
+	opt(e, env, required_argument, "Set an environment string") \
+	opt(k, umask, required_argument, "Set the umask for the daemon") \
+	opt(g, group, required_argument, "Change the process group") \
+	opt(i, interpreted, no_argument, "Match process name by interpreter") \
+	opt(m, make-pidfile, no_argument, "Create a pidfile") \
+	opt(n, name, required_argument, "Match process name") \
+	opt(o, oknodo, no_argument, "deprecated") \
+	opt(p, pidfile, required_argument, "Match pid found in this file") \
+	opt(s, signal, required_argument, "Send a different signal") \
+	opt(t, test, no_argument, "Test actions, don't do them") \
+	opt(u, user, required_argument, "Change the process user") \
+	opt(r, chroot, required_argument, "Chroot to this directory") \
+	opt(w, wait, required_argument, "Milliseconds to wait for daemon start") \
+	opt(x, exec, required_argument, "Binary to start/stop") \
+	opt(no_argument, stdin, required_argument, "Redirect stdin to file") \
+	opt(required_argument, stdout, required_argument, "Redirect stdout to file") \
+	opt(2, stderr, required_argument, "Redirect stderr to file") \
+	opt(3, stdout-logger, required_argument, "Redirect stdout to process") \
+	opt(4, stderr-logger, required_argument, "Redirect stderr to process") \
+	opt(P, progress, no_argument, "Print dots each second while waiting") \
+	opt_long(LONGOPT_CAPABILITIES, "capabilities", required_argument, "Set the inheritable, ambient and bounding capabilities") \
+	opt_long(LONGOPT_SECBITS, "secbits", required_argument, "Set the security-bits for the program") \
+	opt_long(LONGOPT_NO_NEW_PRIVS, "no-new-privs", no_argument, "Set the No New Privs flag for the program") \
+	opt_long(LONGOPT_OOM_SCORE_ADJ, "oom-score-adj",required_argument, "Set OOM score adjustment when starting") \
+	opt_long(LONGOPT_SCHEDULER, "scheduler", required_argument, "Set process scheduler") \
+	opt_long(LONGOPT_SCHEDULER_PRIO, "scheduler-priority", required_argument, "Set process scheduler priority") \
+	opt_long(LONGOPT_NOTIFY, "notify", required_argument, "Configures experimental notification behaviour")
+cmdline_opts(opts)
+
 const char *usagestring = NULL;
-
 static char **nav;
-
 static char *changeuser, *ch_root, *ch_dir;
-
 extern char **environ;
 
 #if !defined(SYS_ioprio_set) && defined(__NR_ioprio_set)
