@@ -52,12 +52,10 @@ int rc_dirfd(enum rc_dir dir) {
 	int flags = O_RDONLY | O_CLOEXEC | O_DIRECTORY;
 	int dirfd;
 
-	if (dir >= RC_DIR_MAX)
+	if (dir < 0 || dir >= RC_DIR_MAX)
 		return -1;
 	if (dirfds[dir] <= 0) {
 		switch (dir) {
-		case RC_DIR_INVALID:
-			return -1;
 		case RC_DIR_SYSCONF:
 			return dirfds[dir] = open(rc_sysconfdir(), flags);
 		case RC_DIR_USRCONF:
