@@ -23,6 +23,10 @@ if [ -d "/sys/fs/cgroup/openrc.${RC_SVCNAME}" ]; then
 	cgroup_path="${cgroup_root}/openrc.${RC_SVCNAME}"
 fi
 
+if yesno "$RC_USER_SERVICES" && [ -d "${cgroup_path}/daemons" ]; then
+	cgroup_path="${cgroup_path}/daemons"
+fi
+
 cgroup_running()
 {
 	[ -d "${cgroup_path}" ] ||
