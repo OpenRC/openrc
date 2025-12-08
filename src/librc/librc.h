@@ -70,10 +70,12 @@ static const char *const dirnames[RC_DIR_SYS_MAX] =
 	[RC_DIR_OPTIONS] = "options",
 	[RC_DIR_EXCLUSIVE] = "exclusive",
 	[RC_DIR_SCHEDULED] = "scheduled",
+	[RC_DIR_ENVIRONMENT] = "environment",
 	[RC_DIR_INITD] = "init.d",
 	[RC_DIR_TMP] = "tmp",
 };
 
+bool do_getfileat(int dirfd, const char *file, char **buffer, size_t *size);
 RC_STRINGLIST *config_list(int dirfd, const char *pathname);
 void clear_dirfds(void);
 
