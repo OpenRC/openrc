@@ -115,7 +115,7 @@ _s6_servicedir_create() {
 	fi
 
 	{
-		# We use execline here because it makes code generation easier.
+		# Generating execline code here because it is much easier than generating sh.
 		# The command will still be interpreted by sh in the end.
 		echo "#!$_execlineb -S1"
 		if test -n "$umask" ; then
@@ -222,12 +222,9 @@ s6_status() {
 	fi
 }
 
-restart() {
+s6_reload() {
 	_s6_set_variables
-	s6-svc -r -- "$_service"
-}
-
-reload() {
-	_s6_set_variables
+	ebegin "Reloading $name"
 	s6-svc -h -- "$_service"
+	eend $? "s6-svc -h command failed"
 }
