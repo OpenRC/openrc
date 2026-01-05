@@ -203,6 +203,17 @@ default_status()
 	$func
 }
 
+default_reload()
+{
+	case "$supervisor" in
+		s6) s6_reload ;;
+		?*)
+			eerror "$RC_SVCNAME: undefined function 'reload'"
+			exit 1
+			;;
+	esac
+}
+
 # Template start / stop / status functions
 # package init scripts may override these, but the bodies are as minimal as
 # possible, so that the init scripts can creatively wrap default_*
@@ -220,6 +231,11 @@ stop()
 status()
 {
 	default_status
+}
+
+reload()
+{
+	default_reload
 }
 
 # Start debug output
