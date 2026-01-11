@@ -1361,8 +1361,7 @@ next_cmd:
 		   This is important as we stamp on the restart function now but
 		   some start/stop routines still need to behave differently if
 		   restarting. */
-		unsetenv("RC_CMD");
-		setenv("RC_CMD", optarg, 1);
+		setenv("RC_CMD", optarg, true);
 
 		for (size_t i = 0; i < ARRAY_SIZE(commands); i++) {
 			if (strcmp(optarg, commands[i].name) != 0)
