@@ -29,6 +29,7 @@ case $1 in
 	start)
 		cp -pr "$cachedir"/* "$svcdir" 2>/dev/null
 		openrc --user boot || exit 1
+		rc-environ --user -0n -r boot > "$userdir/environ" || ewarn "failed to export boot environment"
 		printf '\n' >&3
 		exec openrc --user "${rc_default_runlevel:-default}"
 		;;

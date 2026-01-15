@@ -13,6 +13,8 @@ supervisor=supervise-daemon
 description="starts an openrc session for an user"
 user="${RC_SVCNAME#*.}"
 
+export userdir="$RC_SVCDIR/user/$user"
+
 command="@RC_LIBEXECDIR@/bin/openrc-user"
 command_args="$user"
 notify="fd:3"
@@ -28,4 +30,13 @@ start_pre() {
 		eerror "symbolic links to it for the users you want to start"
 		return 1
 	fi
+
+	checkpath -d -m 0755 "$RC_SVCDIR/user"
+	checkpath -d -m 0700 -o "$user:root" "$userdir"
+
+	return 0
+}
+
+stop_post() {
+	rm -r "$userdir"
 }
