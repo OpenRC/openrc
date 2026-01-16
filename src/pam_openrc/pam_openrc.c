@@ -11,6 +11,33 @@
 
 #include "librc.h"
 #include "einfo.h"
+#include "helpers.h"
+
+static bool
+import_env(pam_handle_t *pamh, const char *user)
+{
+	char *path, *string = NULL;
+	bool ret = false;
+	size_t size;
+	FILE *fp;
+
+	xasprintf(&path, "user/%s/environ", user);
+
+	if (!(fp = do_fopenat(rc_dirfd(RC_DIR_SVCDIR), path, O_RDONLY)))
+		goto out;
+
+	while (getdelim(&string, &size, '\0', fp) != -1)
+		pam_putenv(pamh, string);
+
+	free(string);
+	fclose(fp);
+
+	ret = true;
+out:
+	free(path);
+
+	return ret;
+}
 
 static int
 exec_openrc(pam_handle_t *pamh, bool opening, bool quiet)
@@ -123,6 +150,9 @@ exec_openrc(pam_handle_t *pamh, bool opening, bool quiet)
 unlock:
 	svc_unlock(pam_lock, fd);
 out:
+	if (opening)
+		import_env(pamh, user->pw_name);
+
 	free(pam_lock);
 	free(svc_name);
 	free(script);
