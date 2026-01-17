@@ -168,6 +168,6 @@ int main(int argc, char **argv)
 		return 0;
 	*argv = service;
 	execv(*argv, argv);
-	eerrorx("%s: %s", applet, strerror(errno));
+	eerrorx("%s: Failed executing '%s': %s", applet, *argv, strerror(errno));
 	/* NOTREACHED */
 }
