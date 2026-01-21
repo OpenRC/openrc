@@ -119,7 +119,15 @@ command_args=
 pidfile=
 ```
 
-Thus the 'smallest' service scripts can be half a dozen lines long
+Thus the 'smallest' service scripts can be half a dozen lines long.
+
+## Use conf.d to specify default shell variables
+
+These are also colloquially referred to as "environment variables", however in 
+this case they are only set for the process tree started by the service, not the
+"environment" as a whole. 
+
+See: https://github.com/OpenRC/openrc/blob/master/user-guide.md#the-magic-of-confd
 
 ## Don't write your own start/stop functions
 
