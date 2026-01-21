@@ -11,6 +11,10 @@
 # The default is google.com.
 #ping_test_host=some.host.name
 
+# This setting controls wether we should additionaly wait for ip (v4)
+# addresses on all interfaces (needs ip cmd from sys-apps/iproute2).
+#wait_for_ipaddr=no
+
 # The timeout setting controls how long the net-online service waits
 # for the network to be configured.
 # The default is 120 seconds.
