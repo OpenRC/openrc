@@ -21,7 +21,7 @@ apply_file() {
 	LINENUM=0
 
 	### FILE FORMAT ###
-	# See https://www.kernel.org/doc/Documentation/binfmt_misc.txt
+	# See https://www.kernel.org/doc/html/latest/admin-guide/binfmt-misc.html
 	while read -r line; do
 		LINENUM=$(( LINENUM+1 ))
 		case $line in
