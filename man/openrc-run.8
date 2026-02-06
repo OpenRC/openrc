@@ -259,6 +259,11 @@ which will export
 .Ar $NOTIFY_SOCKET
 and listen for notifications. At the moment supporting
 .Ar READY=1 Ns .
+.It Ar no_new_privs
+Set no_new_privs on the daemon process, preventing it from gaining any
+additional privilege, including through setuid/setgid binaries, file
+capabilities, etc. See
+.Xr capabilities 7 .
 .El
 .Sh DEPENDENCIES
 You should define a
