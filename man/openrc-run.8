@@ -259,11 +259,23 @@ which will export
 .Ar $NOTIFY_SOCKET
 and listen for notifications. At the moment supporting
 .Ar READY=1 Ns .
+.El
+.Pp
+The following options affect the ambient capabilities of processes on Linux.
+See
+.Xr capabilities 7 .
+.Bl -tag -width "RC_DEFAULTLEVEL"
 .It Ar no_new_privs
 Set no_new_privs on the daemon process, preventing it from gaining any
 additional privilege, including through setuid/setgid binaries, file
-capabilities, etc. See
-.Xr capabilities 7 .
+capabilities, etc.
+.It Ar capabilities Ar CAPABILITIES
+Set additional ambient capabilities for the process.
+.It Ar secbits AR SECBITS
+Set the
+.Fl securebits
+for the process, adjusting how the kernel treats ambient capabilities for this
+process.
 .El
 .Sh DEPENDENCIES
 You should define a
