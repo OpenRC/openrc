@@ -31,6 +31,8 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <spawn.h>
+#include <sys/wait.h>
 
 #include "queue.h"
 #include "librc.h"
@@ -172,6 +174,60 @@ rm_dir(int targetfd, const char *pathname, bool top)
 		return false;
 
 	return true;
+}
+
+/*
+ * Execute a command and returns its output.
+ * The caller is responsible for freeing the returned string.
+ */
+static char *
+execute_get_output(const char *command)
+{
+	posix_spawn_file_actions_t action;
+	int out[2];
+	char *line = NULL;
+	size_t len = 0;
+	pid_t pid;
+	FILE *fp;
+	char *const args[] = {
+		(char *)"sh",
+		(char *)"-c",
+		(char *)command,
+		NULL
+	};
+
+	if (pipe(out) != 0)
+		return NULL;
+
+	if (posix_spawn_file_actions_init(&action) != 0) {
+		close(out[0]);
+		close(out[1]);
+		return NULL;
+	}
+	posix_spawn_file_actions_addclose(&action, out[0]);
+	posix_spawn_file_actions_adddup2(&action, out[1], STDOUT_FILENO);
+	posix_spawn_file_actions_addclose(&action, out[1]);
+
+	if (posix_spawnp(&pid, "sh", &action, NULL, args, NULL) != 0) {
+		posix_spawn_file_actions_destroy(&action);
+		close(out[0]);
+		close(out[1]);
+		return NULL;
+	}
+	posix_spawn_file_actions_destroy(&action);
+	close(out[1]);
+
+	if ((fp = fdopen(out[0], "r"))) {
+		if (xgetline(&line, &len, fp) == -1) {
+			free(line);
+			line = NULL;
+		}
+		fclose(fp);
+	} else
+		close(out[0]);
+
+	waitpid(pid, NULL, 0);
+	return line;
 }
 
 /* Other systems may need this at some point, but for now it's Linux only */
@@ -891,11 +947,9 @@ rc_service_extra_commands(const char *service)
 	char *svc;
 	char *cmd = NULL;
 	char *buffer = NULL;
-	size_t len = 0;
 	RC_STRINGLIST *commands = NULL;
 	char *token;
 	char *p;
-	FILE *fp;
 
 	if (!(svc = rc_service_resolve(service)))
 		return NULL;
@@ -903,12 +957,8 @@ rc_service_extra_commands(const char *service)
 	xasprintf(&cmd, OPTSTR, svc);
 	free(svc);
 
-	if (!(fp = popen(cmd, "r"))) {
-		free(cmd);
-		return NULL;
-	}
-
-	if (xgetline(&buffer, &len, fp) != -1) {
+	buffer = execute_get_output(cmd);
+	if (buffer) {
 		p = buffer;
 		commands = rc_stringlist_new();
 
@@ -917,7 +967,6 @@ rc_service_extra_commands(const char *service)
 				rc_stringlist_add(commands, token);
 	}
 
-	pclose(fp);
 	free(buffer);
 	free(cmd);
 	return commands;
@@ -930,8 +979,6 @@ rc_service_description(const char *service, const char *option)
 	char *svc;
 	char *cmd;
 	char *desc = NULL;
-	size_t size = 0;
-	FILE *fp;
 
 	if (!(svc = rc_service_resolve(service)))
 		return NULL;
@@ -941,13 +988,7 @@ rc_service_description(const char *service, const char *option)
 
 	xasprintf(&cmd, DESCSTR, svc, *option ? "_" : "", option);
 	free(svc);
-	if ((fp = popen(cmd, "r"))) {
-		if (xgetline(&desc, &size, fp) == -1) {
-			free(desc);
-			desc = NULL;
-		}
-		pclose(fp);
-	}
+	desc = execute_get_output(cmd);
 	free(cmd);
 	return desc;
 }
