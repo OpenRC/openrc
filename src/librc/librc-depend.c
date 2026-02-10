@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <spawn.h>
 
 #include "queue.h"
 #include "librc.h"
@@ -791,11 +792,26 @@ rc_deptree_update(void)
 	bool retval = true;
 	const char *sys = rc_sys();
 	int serrno;
+	pid_t pid;
+	char *argv[] = { "sh", "-c", GENDEP, NULL };
+	int pipe_fd[2];
 
 	/* Phase 1 - source all init scripts and print dependencies */
 	setup_environment();
-	if (!(fp = popen(GENDEP, "r")))
+	if (pipe(pipe_fd) == -1)
 		return false;
+
+	if (posix_spawnp(&pid, argv[0], NULL, NULL, argv, NULL) != 0) {
+		close(pipe_fd[0]);
+		close(pipe_fd[1]);
+		return false;
+	}
+	close(pipe_fd[1]);
+	fp = fdopen(pipe_fd[0], "r");
+	if (!fp) {
+		close(pipe_fd[0]);
+		return false;
+	}
 
 	config = rc_stringlist_new();
 
@@ -876,7 +892,7 @@ rc_deptree_update(void)
 		}
 	}
 	free(line);
-	pclose(fp);
+	fclose(fp);
 
 	/* Phase 2 - if we're a special system, remove services that don't
 	 * work for them. This doesn't stop them from being run directly. */
