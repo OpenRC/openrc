@@ -557,7 +557,9 @@ svc_start_check(void)
 	if (exclusive_fd == -1)
 		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
-		if (state & RC_SERVICE_STOPPING)
+		if (errno != EWOULDBLOCK)
+			eerrorx("%s: failed to acquire lock: %s", applet, strerror(errno));
+		else if (state & RC_SERVICE_STOPPING)
 			ewarnx("WARNING: %s is stopping", applet);
 		else
 			ewarnx("WARNING: %s is already starting", applet);
@@ -631,6 +633,10 @@ svc_start_deps(void)
 					printf(" %s", svc->value);
 					continue;
 				}
+				/* FIXME(NRK): service_start() can return -1 on
+				 * failure and feeding that to rc_waitpid seems
+				 * very suspicious. needs investigation.
+				 */
 				pid = service_start(svc->value);
 				if (!rc_conf_yesno("rc_parallel"))
 					rc_waitpid(pid);
@@ -792,7 +798,9 @@ svc_stop_check(RC_SERVICE *state)
 	if (exclusive_fd == -1)
 		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
-		if (*state & RC_SERVICE_STOPPING)
+		if (errno != EWOULDBLOCK)
+			eerrorx("%s: failed to acquire lock: %s", applet, strerror(errno));
+		else if (*state & RC_SERVICE_STOPPING)
 			ewarnx("WARNING: %s is already stopping", applet);
 		eerrorx("ERROR: %s stopped by something else", applet);
 	}

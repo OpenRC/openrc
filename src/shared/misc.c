@@ -289,6 +289,7 @@ svc_lock(const char *applet, bool ignore_lock_failure)
 	if (fd == -1)
 		return -1;
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
+		int saved_errno = errno;
 		if (ignore_lock_failure) {
 			/* Two services with a need b, and b's start()
 			 * calling restart --no-deps on a would cause
@@ -299,6 +300,7 @@ svc_lock(const char *applet, bool ignore_lock_failure)
 		}
 		eerror("Call to flock failed: %s", strerror(errno));
 		close(fd);
+		errno = saved_errno;
 		return -1;
 	}
 	return fd;
