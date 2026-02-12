@@ -575,6 +575,13 @@ svc_start_check(void)
 			    " next runlevel", applet);
 	}
 
+	if (state & RC_SERVICE_STARTED) {
+		ewarn("WARNING: %s has already been started", applet);
+		exit(EXIT_SUCCESS);
+	} else if (state & RC_SERVICE_INACTIVE && !in_background) {
+		ewarnx("WARNING: %s has already started, but is inactive", applet);
+	}
+
 	if (exclusive_fd == -1)
 		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
@@ -587,14 +594,6 @@ svc_start_check(void)
 	}
 	fcntl(exclusive_fd, F_SETFD,
 	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
-
-	if (state & RC_SERVICE_STARTED) {
-		ewarn("WARNING: %s has already been started", applet);
-		exit(EXIT_SUCCESS);
-	}
-	else if (state & RC_SERVICE_INACTIVE && !in_background)
-		ewarnx("WARNING: %s has already started, but is inactive",
-		    applet);
 
 	rc_service_mark(applet, RC_SERVICE_STARTING);
 	hook_out = RC_HOOK_SERVICE_START_OUT;
@@ -833,6 +832,11 @@ svc_stop_check(RC_SERVICE *state)
 	    !(*state & RC_SERVICE_INACTIVE))
 		exit(EXIT_FAILURE);
 
+	if (*state & RC_SERVICE_STOPPED) {
+		ewarn("WARNING: %s is already stopped", applet);
+		return 1;
+	}
+
 	if (exclusive_fd == -1)
 		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
@@ -844,11 +848,6 @@ svc_stop_check(RC_SERVICE *state)
 	}
 	fcntl(exclusive_fd, F_SETFD,
 	    fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
-
-	if (*state & RC_SERVICE_STOPPED) {
-		ewarn("WARNING: %s is already stopped", applet);
-		return 1;
-	}
 
 	rc_service_mark(applet, RC_SERVICE_STOPPING);
 	hook_out = RC_HOOK_SERVICE_STOP_OUT;
