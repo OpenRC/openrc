@@ -57,7 +57,7 @@ sourcex "@LIBEXECDIR@/sh/functions.sh"
 sourcex "@LIBEXECDIR@/sh/rc-functions.sh"
 case $RC_SYS in
 	PREFIX|SYSTEMD-NSPAWN) ;;
-	*) yesno "$RC_USER_SERVICES" || sourcex -e "@LIBEXECDIR@/sh/rc-cgroup.sh";;
+	*) sourcex -e "@LIBEXECDIR@/sh/cgroups.sh";;
 esac
 
 # Support LiveCD foo
@@ -296,20 +296,12 @@ status|describe) ;;
 	[ -n "${rc_ulimit:-$RC_ULIMIT}" ] && apply_ulimits ${rc_ulimit:-$RC_ULIMIT}
 
 	# Apply cgroups settings if defined
-	if [ "$(command -v cgroup_add_service)" = "cgroup_add_service" ]; then
-		if grep -qs /sys/fs/cgroup /proc/1/mountinfo
-		then
-			if [ -d /sys/fs/cgroup -a ! -w /sys/fs/cgroup ]; then
-				eerror "No permission to apply cgroup settings"
-				break
-			fi
-		fi
-		cgroup_add_service
-	fi
+	[ -n "$cgroup_path" ] || break
 
-	[ "$(command -v cgroup_set_limits)" = "cgroup_set_limits" ] && cgroup_set_limits
-	[ "$(command -v cgroup2_set_limits)" = "cgroup2_set_limits" ] && cgroup2_set_limits
-	;;
+	cgroup_add_service
+	cgroup_set_limits
+
+	break
 esac
 
 eval "printf '%s\n' $required_dirs" | while read _d; do
