@@ -37,18 +37,12 @@
 
 const char *applet = NULL;
 const char *extraopts = "[signal number]";
-const char getoptstring[] = "do:" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "dry-run",        0, NULL, 'd' },
-	{ "omit",        1, NULL, 'o' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"print what would be done",
-	"omit this pid (can be repeated)",
-	longopts_help_COMMON
-};
 const char *usagestring = NULL;
+
+#define opts(opt, opt_long) \
+	opt(d, dry-run, no_argument, "print what would be done") \
+	opt(o, omit, required_argument, "omit this pid (can be repeated)")
+cmdline_opts(opts)
 
 static int mount_proc(void)
 {

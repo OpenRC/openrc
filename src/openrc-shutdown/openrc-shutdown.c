@@ -44,33 +44,19 @@
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "cdDfFHKpRrsw" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "cancel",        no_argument, NULL, 'c'},
-	{ "no-write",        no_argument, NULL, 'd'},
-	{ "dry-run",        no_argument, NULL, 'D'},
-	{ "halt",        no_argument, NULL, 'H'},
-	{ "kexec",        no_argument, NULL, 'K'},
-	{ "poweroff",        no_argument, NULL, 'p'},
-	{ "reexec",        no_argument, NULL, 'R'},
-	{ "reboot",        no_argument, NULL, 'r'},
-	{ "single",        no_argument, NULL, 's'},
-	{ "write-only",        no_argument, NULL, 'w'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"cancel a pending shutdown",
-	"do not write wtmp record",
-	"print actions instead of executing them",
-	"halt the system",
-	"reboot the system using kexec",
-	"power off the system",
-	"re-execute init (use after upgrading)",
-	"reboot the system",
-	"single user mode",
-	"write wtmp boot record and exit",
-	longopts_help_COMMON
-};
+#define opts(opt, opt_long) \
+	opt(c, cancel, no_argument, "cancel a pending shutdown") \
+	opt(d, no-write, no_argument, "do not write wtmp record") \
+	opt(D, dry-run, no_argument, "print actions instead of executing them") \
+	opt(H, halt, no_argument, "halt the system") \
+	opt(K, kexec, no_argument, "reboot the system using kexec") \
+	opt(p, poweroff, no_argument, "power off the system") \
+	opt(R, reexec, no_argument, "re-execute init (use after upgrading)") \
+	opt(r, reboot, no_argument, "reboot the system") \
+	opt(s, single, no_argument, "single user mode") \
+	opt(w, write-only, no_argument, "write wtmp boot record and exit")
+cmdline_opts(opts)
+
 const char *usagestring = ""
 	"Usage: openrc-shutdown -c | --cancel\n"
 	"   or: openrc-shutdown -R | --reexec\n"
