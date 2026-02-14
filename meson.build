@@ -158,7 +158,7 @@ if not cc.has_function('pipe2', prefix: '#include <unistd.h>')
   endif
 endif
 
-add_project_arguments(feature_macros.keys(), language: 'c')
+add_project_arguments([feature_macros.keys(), '-Drc_private='], language: 'c')
 
 incdir = include_directories('src/shared')
 einfo_incdir = include_directories('src/libeinfo')

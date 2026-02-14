@@ -179,6 +179,20 @@ unhotplug(void)
 }
 
 static void
+add_environment(const char *svcname)
+{
+	struct rc_environ svc_env;
+
+	if (!rc_environ_open(&svc_env, svcname))
+		return;
+
+	for (const char *name, *value; rc_environ_get(&svc_env, &name, &value);)
+		setenv(name, value, true);
+
+	rc_environ_close(&svc_env);
+}
+
+static void
 start_services(RC_STRINGLIST *list)
 {
 	RC_STRING *svc;
@@ -653,8 +667,10 @@ svc_start_deps(void)
 	tmplist = rc_stringlist_new();
 	TAILQ_FOREACH(svc, services, entries) {
 		state = rc_service_state(svc->value);
-		if (state & RC_SERVICE_STARTED)
+		if (state & RC_SERVICE_STARTED) {
+			add_environment(svc->value);
 			continue;
+		}
 
 		/* Don't wait for services which went inactive but are
 		 * now in starting state which we are after */
@@ -669,8 +685,10 @@ svc_start_deps(void)
 		if (!svc_wait(svc->value))
 			eerror("%s: timed out waiting for %s", applet, svc->value);
 		state = rc_service_state(svc->value);
-		if (state & RC_SERVICE_STARTED)
+		if (state & RC_SERVICE_STARTED) {
+			add_environment(svc->value);
 			continue;
+		}
 		if (rc_stringlist_find(need_services, svc->value)) {
 			if (state & (RC_SERVICE_INACTIVE | RC_SERVICE_WASINACTIVE))
 				rc_stringlist_add(tmplist, svc->value);
@@ -768,6 +786,8 @@ static void svc_start_real(void)
 static int
 svc_start(void)
 {
+	add_environment(NULL);
+
 	if (dry_run)
 		einfon("start:");
 	else
@@ -873,8 +893,9 @@ svc_stop_deps(RC_SERVICE state)
 		return;
 
 	TAILQ_FOREACH(svc, tmplist, entries) {
-		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
 			continue;
+		}
 		svc_wait(svc->value);
 		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
 			continue;
@@ -936,9 +957,10 @@ svc_stop_real(void)
 static int
 svc_stop(void)
 {
-	RC_SERVICE state;
+	RC_SERVICE state = 0;
 
-	state = 0;
+	add_environment(NULL);
+
 	if (dry_run)
 		einfon("stop:");
 	else

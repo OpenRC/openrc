@@ -447,6 +447,20 @@ for later retrieval. Saved values are lost when the service stops.
 .It Ic service_get_value Ar name
 Returns the saved value called
 .Ar name .
+.It Xo
+.Ic service_export Ar NAME Ns Op = Ns Ar VALUE
+.Ar ...
+.Xc
+Exports
+.Ar NAME
+for dependee services. Exported variables are lost when the service stops.
+
+If
+.Ar VALUE
+is not provided, it's taken from the environment.
+
+Exported variables only take effect when dependees start, so it makes
+little sense to export anywhere but on start_pre, start, or start_post.
 .It Ic service_started Op Ar service
 If the service is started, return 0 otherwise 1.
 .It Ic service_starting Op Ar service
