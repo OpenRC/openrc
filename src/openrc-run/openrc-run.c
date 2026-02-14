@@ -301,6 +301,9 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	else
 		ewarnv("Couldn't open the prefix lock, please make sure you have enough permissions");
 
+	size_t len_ec = strlen(ec);
+	size_t len_prefix = strlen(prefix);
+	size_t len_ec_normal = strlen(ec_normal);
 	for (i = 0; i < bytes; i++) {
 		/* We don't prefix eend calls (cursor up) */
 		if (buffer[i] == '\033' && !*prefixed) {
@@ -313,9 +316,9 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 		}
 
 		if (!*prefixed) {
-			ret += write(fd, ec, strlen(ec));
-			ret += write(fd, prefix, strlen(prefix));
-			ret += write(fd, ec_normal, strlen(ec_normal));
+			ret += write(fd, ec, len_ec);
+			ret += write(fd, prefix, len_prefix);
+			ret += write(fd, ec_normal, len_ec_normal);
 			ret += write(fd, "|", 1);
 			*prefixed = true;
 		}
