@@ -29,6 +29,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #define ERRX do { fprintf (stderr, "out of memory\n"); exit (1); } while (0)
 
@@ -282,6 +283,18 @@ RC_UNUSED static char *env_findvar(const char *name, char **envp)
 		if (strncmp(name, *var, len) == 0 && (*var)[len] == '=')
 			return *var;
 	return NULL;
+}
+
+RC_UNUSED static int xopen_nonblock(const char *filename, int flags, mode_t mode)
+{
+	int fd = open(filename, flags | O_NONBLOCK, mode);
+	if (fd >= 0 && fcntl(F_SETFL, fd, flags & ~O_NONBLOCK) < 0) {
+		int saved_errno = errno;
+		close(fd);
+		fd = -1;
+		errno = saved_errno;
+	}
+	return fd;
 }
 
 #endif

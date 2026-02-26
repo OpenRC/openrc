@@ -1086,17 +1086,17 @@ int main(int argc, char **argv)
 		stdout_fd = devnull_fd;
 		stderr_fd = devnull_fd;
 		if (redirect_stdin) {
-			if ((stdin_fd = open(redirect_stdin,
-				    O_RDONLY)) == -1)
-				eerrorx("%s: unable to open the input file"
+			if ((stdin_fd = xopen_nonblock(redirect_stdin,
+				    O_RDONLY, 0)) == -1)
+				eerrorx("%s: unable to redirect the input file"
 				    " for stdin `%s': %s",
 				    applet, redirect_stdin, strerror(errno));
 		}
 		if (redirect_stdout) {
-			if ((stdout_fd = open(redirect_stdout,
+			if ((stdout_fd = xopen_nonblock(redirect_stdout,
 				    O_WRONLY | O_CREAT | O_APPEND,
 				    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) == -1)
-				eerrorx("%s: unable to open the logfile"
+				eerrorx("%s: unable to redirect the logfile"
 				    " for stdout `%s': %s",
 				    applet, redirect_stdout, strerror(errno));
 		}else if (stdout_process) {
@@ -1107,10 +1107,10 @@ int main(int argc, char **argv)
 				    applet, stdout_process, strerror(errno));
 		}
 		if (redirect_stderr) {
-			if ((stderr_fd = open(redirect_stderr,
+			if ((stderr_fd = xopen_nonblock(redirect_stderr,
 				    O_WRONLY | O_CREAT | O_APPEND,
 				    S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP)) == -1)
-				eerrorx("%s: unable to open the logfile"
+				eerrorx("%s: unable to redirect the logfile"
 				    " for stderr `%s': %s",
 				    applet, redirect_stderr, strerror(errno));
 		}else if (stderr_process) {
