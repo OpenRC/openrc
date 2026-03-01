@@ -44,7 +44,7 @@ static bool valid_shell(const char *shell) {
 	return ret;
 }
 
-static bool spawn_openrc(const struct passwd *user, bool start) {
+static bool spawn_openrc(uid_t uid, gid_t gid, const char *shell, bool start) {
 	char *argv0;
 	const char *argv[] = {
 		NULL /* replaced below */, "-c",
@@ -55,12 +55,12 @@ static bool spawn_openrc(const struct passwd *user, bool start) {
 
 	/* shell might be a multicall binary, e.g busybox.
 	 * so setting argv[0] to "-" might not work */
-	xasprintf(&argv0, "-%s", valid_shell(user->pw_shell) ? user->pw_shell : "/bin/sh");
+	xasprintf(&argv0, "-%s", valid_shell(shell) ? shell : "/bin/sh");
 	argv[0] = argv0;
 	args = exec_init(argv);
-	args.cmd = user->pw_shell;
-	args.uid = user->pw_uid;
-	args.gid = user->pw_gid;
+	args.cmd = shell;
+	args.uid = uid;
+	args.gid = gid;
 	res = do_exec(&args);
 	free(argv0);
 	if (res.pid < 0) {
@@ -72,9 +72,11 @@ static bool spawn_openrc(const struct passwd *user, bool start) {
 
 int main(int argc, char **argv) {
 	const struct passwd *user;
+	char *log, *shell;
 	sigset_t sigmask;
 	int sig, ret = 0;
-	char *log;
+	uid_t uid;
+	gid_t gid;
 #ifdef HAVE_PAM
 	struct pam_conv conv = { NULL, NULL };
 	pam_handle_t *pamh = NULL;
@@ -88,13 +90,19 @@ int main(int argc, char **argv) {
 		elog(LOG_ERR, "Invalid usage. %s <username>", argv[0]);
 		return -1;
 	}
-
 	/* We can't rely on the supervisor to drop perms since
 	 * pam modules might need root perms. */
 	if (!(user = getpwnam(argv[1]))) {
 		elog(LOG_ERR, "Invalid username %s.", argv[1]);
 		return -1;
 	}
+
+	/* sssd's pam module wrongly calls getpwnam, meaning
+	 * pam_open_session can clobber user. So we need to copy the
+	 * parts we need, see https://bugs.gentoo.org/970235 */
+	uid = user->pw_uid;
+	gid = user->pw_gid;
+	shell = xstrdup(user->pw_shell);
 
 	setenv("USER", user->pw_name, true);
 	setenv("LOGNAME", user->pw_name, true);
@@ -128,7 +136,7 @@ int main(int argc, char **argv) {
 	}
 #endif
 
-	if (!spawn_openrc(user, true)) {
+	if (!spawn_openrc(uid, gid, shell, true)) {
 		ret = -1;
 		goto out;
 	}
@@ -141,7 +149,7 @@ int main(int argc, char **argv) {
 
 	sigwait(&sigmask, &sig);
 
-	if (!spawn_openrc(user, false))
+	if (!spawn_openrc(uid, gid, shell, false))
 		ret = -1;
 
 out:
@@ -153,5 +161,6 @@ out:
 	}
 #endif
 
+	free(shell);
 	return ret;
 }
