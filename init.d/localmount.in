@@ -69,6 +69,12 @@ stop()
 		no_umounts_r="$no_umounts_r|$x"
 	done
 
+	if yesno ${rc_logger:-NO}; then
+		[ ! -f "${rc_log_path}" ] && touch "${rc_log_path}"
+		local rc_log_mntpnt=$(stat --format %m "${rc_log_path}")
+		no_umounts_r="$no_umounts_r|${rc_log_mntpnt}"
+	fi
+
 	if [ "$RC_UNAME" = Linux ]; then
 		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/run|/sys|/sys/.*"
 		if [ -e "$rc_svcdir"/usr_premounted ]; then
