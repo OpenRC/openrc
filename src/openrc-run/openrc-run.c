@@ -22,6 +22,7 @@
 #include <getopt.h>
 #include <libgen.h>
 #include <poll.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,6 +108,11 @@ static RC_STRINGLIST *deptypes_nwu;	/* need+want+use deps */
 static RC_STRINGLIST *deptypes_nwua;	/* need+want+use+after deps */
 static RC_STRINGLIST *deptypes_m;	/* needed deps for stopping */
 static RC_STRINGLIST *deptypes_mwua;	/* need+want+use+after deps for stopping */
+
+struct service_thread_data {
+	char *service;
+	bool *success;
+};
 
 static void
 handle_signal(int sig)
@@ -493,6 +499,19 @@ svc_wait(const char *svc)
 	return retval;
 }
 
+static void *
+svc_wait_thread(void *arg)
+{
+	struct service_thread_data *data = arg;
+	if (!svc_wait(data->service)) {
+		*data->success = false;
+		eerror("%s: timed out waiting for %s", applet, data->service);
+	}
+	free(data->service);
+	free(data);
+	return NULL;
+}
+
 static void
 get_started_services(void)
 {
@@ -651,31 +670,119 @@ svc_start_deps(void)
 	services = rc_deptree_depends(deptree, deptypes_nwua, applet_list, runlevel, depoptions);
 	/* We use tmplist to hold our scheduled by list */
 	tmplist = rc_stringlist_new();
-	TAILQ_FOREACH(svc, services, entries) {
-		state = rc_service_state(svc->value);
-		if (state & RC_SERVICE_STARTED)
-			continue;
-
-		/* Don't wait for services which went inactive but are
-		 * now in starting state which we are after */
-		if (state & (RC_SERVICE_STARTING | RC_SERVICE_WASINACTIVE))
-		{
-			if (!rc_stringlist_find(need_services, svc->value) &&
-					!rc_stringlist_find(want_services, svc->value) &&
-					!rc_stringlist_find(use_services, svc->value))
-				continue;
+	if (rc_conf_yesno("rc_parallel")) {
+		int num_services = 0;
+		TAILQ_FOREACH(svc, services, entries) {
+			num_services++;
 		}
 
-		if (!svc_wait(svc->value))
-			eerror("%s: timed out waiting for %s", applet, svc->value);
-		state = rc_service_state(svc->value);
-		if (state & RC_SERVICE_STARTED)
-			continue;
-		if (rc_stringlist_find(need_services, svc->value)) {
-			if (state & (RC_SERVICE_INACTIVE | RC_SERVICE_WASINACTIVE))
-				rc_stringlist_add(tmplist, svc->value);
-			else if (!TAILQ_FIRST(tmplist))
-				eerrorx("ERROR: cannot start %s as %s would not start", applet, svc->value);
+		pthread_t threads[num_services];
+		struct service_thread_data *thread_data[num_services];
+		bool success[num_services];
+		int i = 0;
+
+		TAILQ_FOREACH(svc, services, entries) {
+			state = rc_service_state(svc->value);
+			if (state & RC_SERVICE_STARTED) {
+				success[i] = true;
+				threads[i] = 0;
+				i++;
+				continue;
+			}
+
+			/* Don't wait for services which went inactive but are
+			 * now in starting state which we are after */
+			if (state & (RC_SERVICE_STARTING | RC_SERVICE_WASINACTIVE))
+			{
+				if (!rc_stringlist_find(need_services, svc->value) &&
+				    !rc_stringlist_find(want_services, svc->value) &&
+				    !rc_stringlist_find(use_services, svc->value))
+				{
+					success[i] = true;
+					threads[i] = 0;
+					i++;
+					continue;
+				}
+			}
+
+			success[i] = true;
+			thread_data[i] = xmalloc(sizeof(*thread_data[i]));
+			thread_data[i]->service = xstrdup(svc->value);
+			thread_data[i]->success = &success[i];
+			if (pthread_create(&threads[i], NULL, svc_wait_thread, thread_data[i])) {
+				eerror("pthread_create: %s", strerror(errno));
+				success[i] = false;
+				threads[i] = 0;
+			}
+			i++;
+		}
+
+		for (int j = 0; j < i; j++) {
+			if (threads[j] != 0) {
+				pthread_join(threads[j], NULL);
+			}
+		}
+
+		i = 0;
+		TAILQ_FOREACH(svc, services, entries) {
+			state = rc_service_state(svc->value);
+			if (state & RC_SERVICE_STARTED) {
+				i++;
+				continue;
+			}
+			if (state & (RC_SERVICE_STARTING | RC_SERVICE_WASINACTIVE))
+			{
+				if (!rc_stringlist_find(need_services, svc->value) &&
+				    !rc_stringlist_find(want_services, svc->value) &&
+				    !rc_stringlist_find(use_services, svc->value))
+				{
+					i++;
+					continue;
+				}
+			}
+
+			if (!success[i]) {
+				/* The error is already printed in the thread */
+			} else {
+				state = rc_service_state(svc->value);
+				if (!(state & RC_SERVICE_STARTED)) {
+					if (rc_stringlist_find(need_services, svc->value)) {
+						if (state & (RC_SERVICE_INACTIVE | RC_SERVICE_WASINACTIVE))
+							rc_stringlist_add(tmplist, svc->value);
+						else if (!TAILQ_FIRST(tmplist))
+							eerrorx("ERROR: cannot start %s as %s would not start", applet, svc->value);
+					}
+				}
+			}
+			i++;
+		}
+	} else {
+		TAILQ_FOREACH(svc, services, entries) {
+			state = rc_service_state(svc->value);
+			if (state & RC_SERVICE_STARTED)
+				continue;
+
+			/* Don't wait for services which went inactive but are
+			 * now in starting state which we are after */
+			if (state & (RC_SERVICE_STARTING | RC_SERVICE_WASINACTIVE))
+			{
+				if (!rc_stringlist_find(need_services, svc->value) &&
+				    !rc_stringlist_find(want_services, svc->value) &&
+				    !rc_stringlist_find(use_services, svc->value))
+					continue;
+			}
+
+			if (!svc_wait(svc->value))
+				eerror("%s: timed out waiting for %s", applet, svc->value);
+			state = rc_service_state(svc->value);
+			if (state & RC_SERVICE_STARTED)
+				continue;
+			if (rc_stringlist_find(need_services, svc->value)) {
+				if (state & (RC_SERVICE_INACTIVE | RC_SERVICE_WASINACTIVE))
+					rc_stringlist_add(tmplist, svc->value);
+				else if (!TAILQ_FIRST(tmplist))
+					eerrorx("ERROR: cannot start %s as %s would not start", applet, svc->value);
+			}
 		}
 	}
 
@@ -872,20 +979,83 @@ svc_stop_deps(RC_SERVICE state)
 	if (dry_run)
 		return;
 
-	TAILQ_FOREACH(svc, tmplist, entries) {
-		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
-			continue;
-		svc_wait(svc->value);
-		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
-			continue;
-		if (rc_runlevel_stopping()) {
-			/* If shutting down, we should stop even
-			 * if a dependent failed */
-			if (runlevel && (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 || strcmp(runlevel, RC_LEVEL_SINGLE) == 0))
-				continue;
-			rc_service_mark(applet, RC_SERVICE_FAILED);
+	if (rc_conf_yesno("rc_parallel")) {
+		int num_services = 0;
+		TAILQ_FOREACH(svc, tmplist, entries) {
+			num_services++;
 		}
-		eerrorx("ERROR: cannot stop %s as %s is still up", applet, svc->value);
+
+		pthread_t threads[num_services];
+		struct service_thread_data *thread_data[num_services];
+		bool success[num_services];
+		int i = 0;
+
+		TAILQ_FOREACH(svc, tmplist, entries) {
+			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
+				success[i] = true;
+				threads[i] = 0;
+				i++;
+				continue;
+			}
+			success[i] = true;
+			thread_data[i] = xmalloc(sizeof(*thread_data[i]));
+			thread_data[i]->service = xstrdup(svc->value);
+			thread_data[i]->success = &success[i];
+			if (pthread_create(&threads[i], NULL, svc_wait_thread, thread_data[i])) {
+				eerror("pthread_create: %s", strerror(errno));
+				success[i] = false;
+				threads[i] = 0;
+			}
+			i++;
+		}
+
+		for (int j = 0; j < i; j++) {
+			if (threads[j] != 0) {
+				pthread_join(threads[j], NULL);
+			}
+		}
+
+		i = 0;
+		TAILQ_FOREACH(svc, tmplist, entries) {
+			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
+				i++;
+				continue;
+			}
+			if (!success[i]) {
+				/* error already printed */
+			} else if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
+				i++;
+				continue;
+			}
+
+			if (rc_runlevel_stopping()) {
+				/* If shutting down, we should stop even
+				 * if a dependent failed */
+				if (runlevel && (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 || strcmp(runlevel, RC_LEVEL_SINGLE) == 0)) {
+					i++;
+					continue;
+				}
+				rc_service_mark(applet, RC_SERVICE_FAILED);
+			}
+			eerrorx("ERROR: cannot stop %s as %s is still up", applet, svc->value);
+			i++;
+		}
+	} else {
+		TAILQ_FOREACH(svc, tmplist, entries) {
+			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+				continue;
+			svc_wait(svc->value);
+			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+				continue;
+			if (rc_runlevel_stopping()) {
+				/* If shutting down, we should stop even
+				 * if a dependent failed */
+				if (runlevel && (strcmp(runlevel, RC_LEVEL_SHUTDOWN) == 0 || strcmp(runlevel, RC_LEVEL_SINGLE) == 0))
+					continue;
+				rc_service_mark(applet, RC_SERVICE_FAILED);
+			}
+			eerrorx("ERROR: cannot stop %s as %s is still up", applet, svc->value);
+		}
 	}
 	rc_stringlist_free(tmplist);
 	tmplist = NULL;
@@ -893,10 +1063,45 @@ svc_stop_deps(RC_SERVICE state)
 	/* We now wait for other services that may use us and are
 	 * stopping. This is important when a runlevel stops */
 	services = rc_deptree_depends(deptree, deptypes_mwua, applet_list, runlevel, depoptions);
-	TAILQ_FOREACH(svc, services, entries) {
-		if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
-			continue;
-		svc_wait(svc->value);
+	if (rc_conf_yesno("rc_parallel")) {
+		int num_services = 0;
+		TAILQ_FOREACH(svc, services, entries) {
+			num_services++;
+		}
+
+		pthread_t threads[num_services];
+		struct service_thread_data *thread_data[num_services];
+		bool success[num_services];
+		int i = 0;
+
+		TAILQ_FOREACH(svc, services, entries) {
+			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED) {
+				threads[i] = 0;
+				i++;
+				continue;
+			}
+			success[i] = true;
+			thread_data[i] = xmalloc(sizeof(*thread_data[i]));
+			thread_data[i]->service = xstrdup(svc->value);
+			thread_data[i]->success = &success[i];
+			if (pthread_create(&threads[i], NULL, svc_wait_thread, thread_data[i])) {
+				eerror("pthread_create: %s", strerror(errno));
+				threads[i] = 0;
+			}
+			i++;
+		}
+
+		for (int j = 0; j < i; j++) {
+			if (threads[j] != 0) {
+				pthread_join(threads[j], NULL);
+			}
+		}
+	} else {
+		TAILQ_FOREACH(svc, services, entries) {
+			if (rc_service_state(svc->value) & RC_SERVICE_STOPPED)
+				continue;
+			svc_wait(svc->value);
+		}
 	}
 	rc_stringlist_free(services);
 	services = NULL;
