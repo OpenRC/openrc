@@ -95,9 +95,9 @@ static void init(const char *default_runlevel)
 	log_wtmp("reboot", "~~", 0, RUN_LVL, "~~");
 }
 
-static void handle_reexec(char *my_name)
+static void handle_reexec(void)
 {
-	execlp(my_name, my_name, "reexec", NULL);
+	execlp(progname, progname, "reexec", NULL);
 	return;
 }
 
@@ -362,7 +362,7 @@ int main(int argc, char **argv)
 			else if (strcmp(buf, "reboot") == 0)
 				handle_shutdown("reboot", RB_AUTOBOOT);
 			else if (strcmp(buf, "reexec") == 0)
-				handle_reexec(argv[0]);
+				handle_reexec();
 			else if (strcmp(buf, "single") == 0)
 				handle_single();
 		}
