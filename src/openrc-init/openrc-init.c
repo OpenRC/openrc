@@ -219,7 +219,7 @@ static void reap_zombies(int sig RC_UNUSED)
 
 int main(int argc, char **argv)
 {
-	char *default_runlevel;
+	char *cmdline_runlevel = NULL;
 	char buf[2048];
 	int count, fifo, sig;
 	bool reexec = false;
@@ -260,14 +260,12 @@ int main(int argc, char **argv)
 	if (!quiet)
 		printf("OpenRC init version %s starting\n", VERSION);
 
-	if (argc > 1)
-		default_runlevel = argv[1];
-	else
-		default_runlevel = NULL;
-
-	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
-		reexec = true;
-
+	if (argc > 1) {
+		if (strcmp(argv[1], "reexec") == 0)
+			reexec = true;
+		else
+			cmdline_runlevel = argv[1];
+	}
 
 	if (pipe2(sigpipe, O_NONBLOCK | O_CLOEXEC) == -1) {
 		perror("pipe2");
@@ -300,7 +298,7 @@ int main(int argc, char **argv)
 	setenv("PATH", path_default, 1);
 
 	if (!reexec)
-		init(default_runlevel);
+		init(cmdline_runlevel);
 
 	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)
 		perror("mkfifo");
@@ -358,7 +356,7 @@ int main(int argc, char **argv)
 			else if (strcmp(buf, "single") == 0) {
 				handle_single();
 				open_shell();
-				init(default_runlevel);
+				init(NULL);
 			}
 		}
 	}
