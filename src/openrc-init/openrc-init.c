@@ -236,7 +236,7 @@ int main(int argc, char **argv)
 	sigset_t signals;
 	struct sigaction sa;
 #ifdef HAVE_SELINUX
-	int			enforce = 0;
+	int enforce = 0;
 #endif
 
 	progname = argv[0];
