@@ -187,6 +187,8 @@ static void open_shell(void)
 static void handle_single(void)
 {
 	do_openrc("single");
+	open_shell();
+	init(NULL);
 }
 
 static void signal_handler(int sig)
@@ -353,11 +355,8 @@ int main(int argc, char **argv)
 				handle_shutdown("reboot", RB_AUTOBOOT);
 			else if (strcmp(buf, "reexec") == 0)
 				handle_reexec(argv[0]);
-			else if (strcmp(buf, "single") == 0) {
+			else if (strcmp(buf, "single") == 0)
 				handle_single();
-				open_shell();
-				init(NULL);
-			}
 		}
 	}
 	return 0;
