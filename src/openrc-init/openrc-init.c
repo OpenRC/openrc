@@ -219,6 +219,13 @@ static void reap_zombies(int sig RC_UNUSED)
 	errno = saved_errno;
 }
 
+static int open_fifo(const char *path)
+{
+	if (mkfifo(path, 0600) == -1 && errno != EEXIST)
+		return -1;
+	return open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+}
+
 int main(int argc, char **argv)
 {
 	char *cmdline_runlevel = NULL;
@@ -302,11 +309,9 @@ int main(int argc, char **argv)
 	if (!reexec)
 		init(cmdline_runlevel);
 
-	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)
-		perror("mkfifo");
-	fifo = open(RC_INIT_FIFO, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+	fifo = open_fifo(RC_INIT_FIFO);
 	if (fifo == -1)
-		perror("open");
+		perror("open_fifo");
 
 	for (;;) {
 		enum { FD_FIFO, FD_SIG, FD_COUNT };
