@@ -39,6 +39,7 @@
 #  include <selinux/selinux.h>
 #endif
 
+#include "initreq.h"
 #include "rc.h"
 #include "rc_exec.h"
 #include "wtmp.h"
@@ -56,6 +57,7 @@ static const char *rc_default_runlevel = "default";
 static int sigpipe[2] = { -1, -1 };
 static bool quiet = false;
 static const char *progname;
+static bool init_halt = false;
 
 static void do_openrc(const char *runlevel)
 {
@@ -142,6 +144,9 @@ static void handle_shutdown(const char *runlevel, int cmd)
 	kill(-1, SIGKILL);
 	sync();
 	reboot(cmd);
+	/* reboot normally if kexec fails */
+	if (cmd == RB_KEXEC)
+		reboot(RB_AUTOBOOT);
 }
 
 static void run_program(const char *prog)
@@ -252,6 +257,76 @@ static void dispatch_fifo(int fifo)
 		handle_single();
 }
 
+static void sysvinit_runlevel(int runlevel)
+{
+	switch (runlevel) {
+		case '0':
+			handle_shutdown("shutdown", init_halt ? RB_HALT_SYSTEM : RB_POWER_OFF);
+			break;
+		case '1':
+		case 'S':
+		case 's':
+			handle_single();
+			break;
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+			/* TODO: switch to default runlevel? */
+			break;
+		case '6':
+			/* RB_KEXEC: Gentoo inittab calls /sbin/reboot -k */
+			handle_shutdown("reboot", RB_KEXEC);
+			break;
+		case 'Q':
+		case 'q':
+			/* TODO: purge rc_conf cache on reload command? */
+			break;
+		case 'U':
+		case 'u':
+			handle_reexec();
+			break;
+	}
+}
+
+static void sysvinit_setenv(char *data, size_t size)
+{
+	data[size - 1] = '\0';
+	for (char *end = data + size; data && data < end && *data; data = strchr(data, '\0') + 1) {
+		/* We only care about the INIT_HALT variable */
+		if (!strcmp(data, "INIT_HALT=HALT"))
+			init_halt = true;
+		else if (!strcmp(data, "INIT_HALT") || !strncmp(data, "INIT_HALT=", 10))
+			init_halt = false;
+	}
+}
+
+static void dispatch_initctl(int fd)
+{
+	struct init_request req;
+	ssize_t count = read(fd, &req, sizeof(req));
+
+	if (count < 0) {
+		perror("error reading from initctl");
+		return;
+	}
+
+	if (count != sizeof(req) || req.magic != INIT_MAGIC) {
+		fputs("bad read from initctl\n", stderr);
+		return;
+	}
+
+	switch (req.cmd) {
+		case INIT_CMD_RUNLVL:
+			sysvinit_runlevel(req.runlevel);
+			break;
+		case INIT_CMD_SETENV:
+		case INIT_CMD_UNSETENV:
+			sysvinit_setenv(req.i.data, sizeof(req.i.data));
+			break;
+	}
+}
+
 static void signal_handler(int sig)
 {
 	int saved_errno = errno;
@@ -290,7 +365,7 @@ static int open_fifo(const char *path)
 int main(int argc, char **argv)
 {
 	char *cmdline_runlevel = NULL;
-	int fifo;
+	int fifo, initctl;
 	bool reexec = false;
 	sigset_t signals;
 	struct sigaction sa;
@@ -375,11 +450,19 @@ int main(int argc, char **argv)
 	if (fifo == -1)
 		perror("open_fifo");
 
+	initctl = open_fifo("/run/initctl");
+	if (initctl == -1)
+		perror("error opening /run/initctl");
+	else
+		/* /dev/initctl used by old versions of sysvinit */
+		symlink("/run/initctl", "/dev/initctl");
+
 	for (;;) {
-		enum { FD_FIFO, FD_SIG, FD_COUNT };
+		enum { FD_FIFO, FD_SIG, FD_INITCTL, FD_COUNT };
 		struct pollfd pfd[] = {
 			[FD_FIFO] = { .fd = fifo, .events = POLLIN },
 			[FD_SIG] = { .fd = sigpipe[0], .events = POLLIN },
+			[FD_INITCTL] = { .fd = initctl, .events = POLLIN },
 		};
 
 		poll(pfd, FD_COUNT, -1);
@@ -389,6 +472,9 @@ int main(int argc, char **argv)
 
 		if (pfd[FD_FIFO].revents & POLLIN)
 			dispatch_fifo(fifo);
+
+		if (pfd[FD_INITCTL].revents & POLLIN)
+			dispatch_initctl(initctl);
 	}
 	return 0;
 }
