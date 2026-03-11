@@ -55,6 +55,7 @@ static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
 static int sigpipe[2] = { -1, -1 };
 static bool quiet = false;
+static const char *progname;
 
 static void do_openrc(const char *runlevel)
 {
@@ -237,6 +238,8 @@ int main(int argc, char **argv)
 #ifdef HAVE_SELINUX
 	int			enforce = 0;
 #endif
+
+	progname = argv[0];
 
 	if (getpid() != 1)
 		return 1;
