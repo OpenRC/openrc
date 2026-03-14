@@ -39,6 +39,7 @@
 #  include <selinux/selinux.h>
 #endif
 
+#include "initreq.h"
 #include "rc.h"
 #include "rc_exec.h"
 #include "wtmp.h"
@@ -55,6 +56,8 @@ static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
 static int sigpipe[2] = { -1, -1 };
 static bool quiet = false;
+static const char *progname;
+static bool init_halt = false;
 
 static void do_openrc(const char *runlevel)
 {
@@ -94,9 +97,9 @@ static void init(const char *default_runlevel)
 	log_wtmp("reboot", "~~", 0, RUN_LVL, "~~");
 }
 
-static void handle_reexec(char *my_name)
+static void handle_reexec(void)
 {
-	execlp(my_name, my_name, "reexec", NULL);
+	execlp(progname, progname, "reexec", NULL);
 	return;
 }
 
@@ -141,6 +144,9 @@ static void handle_shutdown(const char *runlevel, int cmd)
 	kill(-1, SIGKILL);
 	sync();
 	reboot(cmd);
+	/* reboot normally if kexec fails */
+	if (cmd == RB_KEXEC)
+		reboot(RB_AUTOBOOT);
 }
 
 static void run_program(const char *prog)
@@ -187,6 +193,138 @@ static void open_shell(void)
 static void handle_single(void)
 {
 	do_openrc("single");
+	open_shell();
+	init(NULL);
+}
+
+static void dispatch_signal(int sigfd)
+{
+	int sig;
+	ssize_t count = read(sigfd, &sig, sizeof(sig));
+
+	if (count < 0) {
+		perror("read(sigpipe)");
+		return;
+	}
+
+	if (count != sizeof(sig)) {
+		fputs("bad read from sigpipe\n", stderr);
+		return;
+	}
+
+	switch (sig) {
+		case SIGINT:
+			handle_shutdown("reboot", RB_AUTOBOOT);
+			break;
+		case SIGTERM:
+#ifdef SIGPWR
+		case SIGPWR:
+#endif
+			handle_shutdown("shutdown", RB_HALT_SYSTEM);
+			break;
+		default:
+			fprintf(stderr, "Unknown signal received, %d\n", sig);
+			break;
+	}
+}
+
+static void dispatch_fifo(int fifo)
+{
+	char buf[2048];
+	ssize_t count = read(fifo, buf, sizeof(buf) - 1);
+
+	if (count < 0) {
+		perror("read(fifo)");
+		return;
+	}
+
+	buf[count] = 0;
+
+	if (!quiet)
+		printf("PID1: Received \"%s\" from FIFO...\n", buf);
+
+	if (strcmp(buf, "halt") == 0)
+		handle_shutdown("shutdown", RB_HALT_SYSTEM);
+	else if (strcmp(buf, "kexec") == 0)
+		handle_shutdown("reboot", RB_KEXEC);
+	else if (strcmp(buf, "poweroff") == 0)
+		handle_shutdown("shutdown", RB_POWER_OFF);
+	else if (strcmp(buf, "reboot") == 0)
+		handle_shutdown("reboot", RB_AUTOBOOT);
+	else if (strcmp(buf, "reexec") == 0)
+		handle_reexec();
+	else if (strcmp(buf, "single") == 0)
+		handle_single();
+}
+
+static void sysvinit_runlevel(int runlevel)
+{
+	switch (runlevel) {
+		case '0':
+			handle_shutdown("shutdown", init_halt ? RB_HALT_SYSTEM : RB_POWER_OFF);
+			break;
+		case '1':
+		case 'S':
+		case 's':
+			handle_single();
+			break;
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+			/* TODO: switch to default runlevel? */
+			break;
+		case '6':
+			/* RB_KEXEC: Gentoo inittab calls /sbin/reboot -k */
+			handle_shutdown("reboot", RB_KEXEC);
+			break;
+		case 'Q':
+		case 'q':
+			/* TODO: purge rc_conf cache on reload command? */
+			break;
+		case 'U':
+		case 'u':
+			handle_reexec();
+			break;
+	}
+}
+
+static void sysvinit_setenv(char *data, size_t size)
+{
+	data[size - 1] = '\0';
+	for (char *end = data + size; data && data < end && *data; data = strchr(data, '\0') + 1) {
+		/* We only care about the INIT_HALT variable */
+		if (!strcmp(data, "INIT_HALT=HALT"))
+			init_halt = true;
+		else if (!strcmp(data, "INIT_HALT") || !strncmp(data, "INIT_HALT=", 10))
+			init_halt = false;
+	}
+}
+
+static void dispatch_initctl(int fd)
+{
+	struct init_request req;
+	ssize_t count = read(fd, &req, sizeof(req));
+
+	if (count < 0) {
+		perror("error reading from initctl");
+		return;
+	}
+
+	if (count != sizeof(req) || req.magic != INIT_MAGIC) {
+		fputs("bad read from initctl\n", stderr);
+		return;
+	}
+
+	switch (req.cmd) {
+		case INIT_CMD_RUNLVL:
+			sysvinit_runlevel(req.runlevel);
+			break;
+		case INIT_CMD_SETENV:
+		case INIT_CMD_UNSETENV:
+			sysvinit_setenv(req.i.data, sizeof(req.i.data));
+			break;
+	}
 }
 
 static void signal_handler(int sig)
@@ -217,17 +355,25 @@ static void reap_zombies(int sig RC_UNUSED)
 	errno = saved_errno;
 }
 
+static int open_fifo(const char *path)
+{
+	if (mkfifo(path, 0600) == -1 && errno != EEXIST)
+		return -1;
+	return open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+}
+
 int main(int argc, char **argv)
 {
-	char *default_runlevel;
-	char buf[2048];
-	int count, fifo, sig;
+	char *cmdline_runlevel = NULL;
+	int fifo, initctl;
 	bool reexec = false;
 	sigset_t signals;
 	struct sigaction sa;
 #ifdef HAVE_SELINUX
-	int			enforce = 0;
+	int enforce = 0;
 #endif
+
+	progname = argv[0];
 
 	if (getpid() != 1)
 		return 1;
@@ -260,14 +406,12 @@ int main(int argc, char **argv)
 	if (!quiet)
 		printf("OpenRC init version %s starting\n", VERSION);
 
-	if (argc > 1)
-		default_runlevel = argv[1];
-	else
-		default_runlevel = NULL;
-
-	if (default_runlevel && strcmp(default_runlevel, "reexec") == 0)
-		reexec = true;
-
+	if (argc > 1) {
+		if (strcmp(argv[1], "reexec") == 0)
+			reexec = true;
+		else
+			cmdline_runlevel = argv[1];
+	}
 
 	if (pipe2(sigpipe, O_NONBLOCK | O_CLOEXEC) == -1) {
 		perror("pipe2");
@@ -300,67 +444,37 @@ int main(int argc, char **argv)
 	setenv("PATH", path_default, 1);
 
 	if (!reexec)
-		init(default_runlevel);
+		init(cmdline_runlevel);
 
-	if (mkfifo(RC_INIT_FIFO, 0600) == -1 && errno != EEXIST)
-		perror("mkfifo");
-	fifo = open(RC_INIT_FIFO, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+	fifo = open_fifo(RC_INIT_FIFO);
 	if (fifo == -1)
-		perror("open");
+		perror("open_fifo");
+
+	initctl = open_fifo("/run/initctl");
+	if (initctl == -1)
+		perror("error opening /run/initctl");
+	else
+		/* /dev/initctl used by old versions of sysvinit */
+		symlink("/run/initctl", "/dev/initctl");
 
 	for (;;) {
-		enum { FD_FIFO, FD_SIG, FD_COUNT };
+		enum { FD_FIFO, FD_SIG, FD_INITCTL, FD_COUNT };
 		struct pollfd pfd[] = {
 			[FD_FIFO] = { .fd = fifo, .events = POLLIN },
 			[FD_SIG] = { .fd = sigpipe[0], .events = POLLIN },
+			[FD_INITCTL] = { .fd = initctl, .events = POLLIN },
 		};
 
 		poll(pfd, FD_COUNT, -1);
 
-		if (pfd[FD_SIG].revents & POLLIN) { /* handle signals first */
-			if (read(sigpipe[0], &sig, sizeof(sig)) != sizeof(sig)) {
-				/* shouldn't happen */
-				perror("read(sigpipe)");
-				continue;
-			}
-			switch (sig) {
-				case SIGINT:
-					handle_shutdown("reboot", RB_AUTOBOOT);
-					break;
-				case SIGTERM:
-#ifdef SIGPWR
-				case SIGPWR:
-#endif
-					handle_shutdown("shutdown", RB_HALT_SYSTEM);
-					break;
-				default:
-					fprintf(stderr, "Unknown signal received, %d\n", sig);
-					break;
-			}
-		}
+		if (pfd[FD_SIG].revents & POLLIN) /* handle signals first */
+			dispatch_signal(sigpipe[0]);
 
-		if (pfd[FD_FIFO].revents & POLLIN) {
-			count = read(fifo, buf, sizeof(buf) - 1);
-			buf[count] = 0;
-			if (!quiet)
-				printf("PID1: Received \"%s\" from FIFO...\n", buf);
+		if (pfd[FD_FIFO].revents & POLLIN)
+			dispatch_fifo(fifo);
 
-			if (strcmp(buf, "halt") == 0)
-				handle_shutdown("shutdown", RB_HALT_SYSTEM);
-			else if (strcmp(buf, "kexec") == 0)
-				handle_shutdown("reboot", RB_KEXEC);
-			else if (strcmp(buf, "poweroff") == 0)
-				handle_shutdown("shutdown", RB_POWER_OFF);
-			else if (strcmp(buf, "reboot") == 0)
-				handle_shutdown("reboot", RB_AUTOBOOT);
-			else if (strcmp(buf, "reexec") == 0)
-				handle_reexec(argv[0]);
-			else if (strcmp(buf, "single") == 0) {
-				handle_single();
-				open_shell();
-				init(default_runlevel);
-			}
-		}
+		if (pfd[FD_INITCTL].revents & POLLIN)
+			dispatch_initctl(initctl);
 	}
 	return 0;
 }
