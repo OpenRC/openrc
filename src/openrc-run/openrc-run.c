@@ -414,7 +414,7 @@ svc_exec(const char *command)
 
 		/* signal_pipe receives service_pid's exit status */
 		if (fd[0].revents & (POLLIN | POLLHUP)) {
-			if (errno = 0, read(signal_pipe[0], &ret, sizeof(ret)) < sizeof(ret))
+			if (errno = 0, read(signal_pipe[0], &ret, sizeof(ret)) < (ssize_t)sizeof(ret))
 				eerror("%s: receive failed: %s", applet, errno ? strerror(errno) : "short read");
 			else if ((ret = WEXITSTATUS(ret)) != 0 && errno == ECHILD) /* killall5 -9 could cause this */
 				ret = 0;
