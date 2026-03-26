@@ -209,6 +209,11 @@ Display name used for the above defined command.
 Process name to match when signaling the daemon.
 .It Ar stopsig
 Signal to send when stopping the daemon.
+If using
+.Xr supervise-daemon 8
+then using
+.Pa retry
+is preferred.
 .It Ar respawn_delay
 Respawn delay
 .Xr supervise-daemon 8
@@ -290,7 +295,7 @@ respawn_period::start:
 retry:stop:start:
 s6_log_arguments:::start
 secbits:start:start:
-stopsig:stop::stop
+stopsig:stop:start:stop
 supervise_daemon_args::start:
 timeout_down:::stop
 timeout_kill:::stop

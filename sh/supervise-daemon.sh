@@ -20,6 +20,14 @@ supervise_start()
 		return 1
 	fi
 
+	if [ -n "$stopsig" ]; then
+		if [ -z "$retry" ]; then
+			retry="$stopsig/5"
+		else
+			ewarn "Both \$retry and \$stopsig set, ignoring \$stopsig"
+		fi
+	fi
+
 	if [ -n "$ready" ]; then
 		ewarn "Use 'notify=$ready' instead of 'ready=$ready'"
 		notify="$ready"
