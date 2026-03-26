@@ -163,13 +163,6 @@ static char *clean_path(char *path)
 	return str;
 }
 
-static size_t masks[] = {
-	[inode_unknown] = 0,
-	[inode_file] = S_IFREG,
-	[inode_dir] = S_IFDIR,
-	[inode_fifo] = S_IFIFO,
-};
-
 static int do_create(inode_t type, const char *path, int dirfd, const char *name, int flags, mode_t mode)
 {
 	int mask = umask(0);
