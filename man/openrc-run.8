@@ -347,6 +347,10 @@ The service provides this virtual service. For example, named provides dns.
 Note that it is not legal to have a virtual and real service with the
 same name. If you do this, you will receive an error message, and you
 must rename either the real or virtual service.
+.It Ic reexport
+The service reexports the listed variables to it's dependees. Variables
+listed must already be exported to the shell's environment by the time the
+service finishes starting.
 .It Ic config
 We should recalculate our dependencies if the listed files have changed.
 .It Ic keyword

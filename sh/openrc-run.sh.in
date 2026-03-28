@@ -401,6 +401,7 @@ esac
 "$1" || exit $?
 [ "$(command -v "$1_post")" = "$1_post" ] && { "$1"_post || exit $?; }
 
+[ "$1" = start ] && [ -n "$RC_REEXPORT" ] && service_export $RC_REEXPORT
 [ "$(command -v cgroup_cleanup)" = cgroup_cleanup ] && [ "$1" = stop ] && yesno "${rc_cgroup_cleanup}" && cgroup_cleanup
 [ "$(command -v cgroup2_remove)" = cgroup2_remove ] && { [ "$1" = stop ] || [ -z "${command}" ]; } && cgroup2_remove
 

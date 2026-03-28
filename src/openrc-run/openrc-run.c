@@ -713,10 +713,36 @@ svc_start_deps(void)
 	services = NULL;
 }
 
+
+static void set_reexports(void)
+{
+	RC_STRINGLIST *list = rc_deptree_depend(deptree, applet, "reexport");
+	RC_STRING *envvar;
+	size_t size;
+	char *buf;
+	FILE *fp;
+
+	if (TAILQ_EMPTY(list))
+		goto out;
+
+	fp = xopen_memstream(&buf, &size);
+
+	fputs("RC_REEXPORT=", fp);
+	TAILQ_FOREACH(envvar, list, entries)
+		fprintf(fp, "%s ", envvar->value);
+
+	fclose(fp);
+	putenv(buf);
+out:
+	rc_stringlist_free(list);
+}
+
 static void svc_start_real(void)
 {
 	bool started;
 	RC_STRING *svc, *svc2;
+
+	set_reexports();
 
 	if (ibsave)
 		setenv("IN_BACKGROUND", ibsave, 1);

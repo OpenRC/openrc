@@ -35,6 +35,9 @@ after() {
 provide() {
 	[ -n "$*" ] && echo "$RC_SVCNAME iprovide $*" >&3
 }
+reexport() {
+	[ -n "$*" ] && echo "$RC_SVCNAME reexport $*" >&3
+}
 keyword() {
 	local c x
 	set -- $*
