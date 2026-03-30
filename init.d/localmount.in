@@ -61,7 +61,7 @@ stop()
 	# Bug 381783
 	local rc_svcdir=$(printf '%s\n' "$RC_SVCDIR" | sed 's:/lib\(32\|64\)\?/:/lib(32|64)?/:g')
 
-	local x= no_umounts_r="/|/dev|/dev/.*|${rc_svcdir}"
+	local x= no_umounts_r="/|/dev|/dev/.*|/etc|/etc/.*|${rc_svcdir}"
 	no_umounts_r="${no_umounts_r}|/bin|/sbin|/lib(32|64)?|/libexec"
 	# RC_NO_UMOUNTS is an env var that can be set by plugins
 	local IFS="$IFS:"
