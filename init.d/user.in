@@ -28,4 +28,13 @@ start_pre() {
 		eerror "symbolic links to it for the users you want to start"
 		return 1
 	fi
+
+	if [ -d "$cgroup_path" ]; then
+		local user_cgroup=${cgroup_path}/daemons
+
+		mkdir "$user_cgroup"
+		chown "$user:$user" "$user_cgroup"
+
+		cgroup_path="${cgroup_path}/system"
+	fi
 }
