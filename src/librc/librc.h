@@ -77,4 +77,30 @@ static const char *const dirnames[RC_DIR_SYS_MAX] =
 RC_STRINGLIST *config_list(int dirfd, const char *pathname);
 void clear_dirfds(void);
 
+/*
+ * Log an event for a specific service.
+ * Events are logged to <RC_DIR_SVCDIR>/events/services/<service>
+ *
+ * @param service name of the service
+ * @param state new state of the service
+ */
+void rc_eventlog_service(const char *service, RC_SERVICE state);
+
+/*
+ * Log a global system event.
+ * Events are logged to <RC_DIR_SVCDIR>/events/global
+ *
+ * @param event_type type of event (e.g., "runlevel", "boot", "shutdown")
+ * @param message event message with details
+ */
+void rc_eventlog_global(const char *event_type, const char *message);
+
+/*
+ * Initialize the eventlog system.
+ * Creates necessary directories under <RC_DIR_SVCDIR>/events/
+ *
+ * @return 0 on success, -1 on failure
+ */
+int rc_eventlog_init(void);
+
 #endif

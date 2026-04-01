@@ -1061,6 +1061,10 @@ rc_service_mark(const char *service, const RC_SERVICE state)
 			closedir(dp);
 		}
 	}
+
+	/* Log the service state change to the eventlog */
+	rc_eventlog_service(service, state);
+
 	free(init);
 	return true;
 }

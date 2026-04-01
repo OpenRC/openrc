@@ -906,6 +906,7 @@ int main(int argc, char **argv)
 		if (access(RC_KRUNLEVEL, F_OK) != 0)
 			set_krunlevel(runlevel);
 		rc_runlevel_set(newlevel);
+		rc_eventlog_global("runlevel", newlevel);
 		setenv("RC_RUNLEVEL", newlevel, 1);
 		setenv("RC_GOINGDOWN", "YES", 1);
 	} else {
@@ -1059,6 +1060,7 @@ int main(int argc, char **argv)
 	/* Store the new runlevel */
 	if (newlevel) {
 		rc_runlevel_set(newlevel);
+		rc_eventlog_global("runlevel", newlevel);
 		free(runlevel);
 		runlevel = xstrdup(newlevel);
 		setenv("RC_RUNLEVEL", runlevel, 1);
