@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "einfo.h"
+#include "initreq.h"
 #include "sysvinit.h"
 
 static void sysvinit_send_cmd(struct init_request *request)

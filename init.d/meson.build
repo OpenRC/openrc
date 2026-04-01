@@ -46,6 +46,7 @@ init_Linux =  [
   'save-termencoding.in',
   'seedrng.in',
   'sysfs.in',
+  'sysv-initctl.in',
   'termencoding.in',
   ]
 
