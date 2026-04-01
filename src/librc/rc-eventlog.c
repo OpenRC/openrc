@@ -17,6 +17,8 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,26 +49,15 @@ static const char *rc_service_state_name(RC_SERVICE state)
 }
 
 /*
- * Format the current time as an ISO 8601 timestamp with milliseconds.
- * Returns a dynamically allocated string that must be freed by the caller.
+ * Get the current monotonic time in milliseconds.
  */
-static char *format_timestamp(void)
+static int64_t tm_now(void)
 {
-	time_t now;
-	struct tm *tm;
-	char timebuf[32];
-	char *result;
-	int ms;
+	struct timespec tv;
+	int64_t sec_to_ms = 1000, round_up = 500000, ns_to_ms = 1000000;
 
-	clock_gettime(CLOCK_REALTIME, &ts);
-	tm = localtime(&ts.tv_sec);
-	ms = (int)(ts.tv_nsec / 1000000);
-
-	strftime(timebuf, sizeof(timebuf), "%Y-%m-%dT%H:%M:%S", tm);
-	xasprintf(&result, "%s.%03d%+03ld%02ld", timebuf, ms,
-		tm->tm_gmtoff / 3600, (labs(tm->tm_gmtoff) % 3600) / 60);
-
-	return result;
+	clock_gettime(CLOCK_MONOTONIC, &tv);
+	return (tv.tv_sec * sec_to_ms) + ((tv.tv_nsec + round_up) / ns_to_ms);
 }
 
 /*
@@ -96,7 +87,6 @@ void rc_eventlog_service(const char *service, RC_SERVICE state)
 {
 	int svcfd;
 	int eventsfd;
-	char *timestamp;
 	FILE *fp;
 	const char *state_name;
 
@@ -116,21 +106,16 @@ void rc_eventlog_service(const char *service, RC_SERVICE state)
 
 	service = basename_c(service);
 
-	timestamp = format_timestamp();
-
 	state_name = rc_service_state_name(state);
 
 	fp = do_fopenat(eventsfd, service, O_WRONLY | O_CREAT | O_APPEND);
 	close(eventsfd);
 
-	if (!fp) {
-		free(timestamp);
+	if (!fp)
 		return;
-	}
 
-	fprintf(fp, "%s %s\n", timestamp, state_name);
+	fprintf(fp, "%" PRId64 " %s\n", tm_now(), state_name);
 	fclose(fp);
-	free(timestamp);
 }
 
 /*
@@ -139,7 +124,6 @@ void rc_eventlog_service(const char *service, RC_SERVICE state)
 void rc_eventlog_global(const char *event_type, const char *message)
 {
 	int svcfd;
-	char *timestamp;
 	FILE *fp;
 
 	if (!event_type || !message)
@@ -152,15 +136,10 @@ void rc_eventlog_global(const char *event_type, const char *message)
 	if (rc_eventlog_init() != 0)
 		return;
 
-	timestamp = format_timestamp();
-
 	fp = do_fopenat(svcfd, RC_EVENTLOG_GLOBAL, O_WRONLY | O_CREAT | O_APPEND);
-	if (!fp) {
-		free(timestamp);
+	if (!fp)
 		return;
-	}
 
-	fprintf(fp, "%s %s %s\n", timestamp, event_type, message);
+	fprintf(fp, "%" PRId64 " %s %s\n", tm_now(), event_type, message);
 	fclose(fp);
-	free(timestamp);
 }
