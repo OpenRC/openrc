@@ -142,6 +142,9 @@ static void handle_shutdown(const char *runlevel, int cmd)
 	kill(-1, SIGKILL);
 	sync();
 	reboot(cmd);
+	/* reboot normally if kexec fails */
+	if (cmd == RB_KEXEC)
+		reboot(RB_AUTOBOOT);
 }
 
 static void run_program(const char *prog)
