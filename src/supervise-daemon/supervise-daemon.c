@@ -618,7 +618,7 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 			if (flags != -1)
 				error = fcntl(notify.fd, F_SETFD, flags & ~FD_CLOEXEC);
 		} else {
-			error = dup2(notify.pipe[1], notify.fd);
+			error = dup2(notify.pipe[1], notify.fd) == -1;
 		}
 
 		if (error)
