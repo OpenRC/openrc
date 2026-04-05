@@ -288,7 +288,7 @@ RC_UNUSED static char *env_findvar(const char *name, char **envp)
 RC_UNUSED static int xopen_nonblock(const char *filename, int flags, mode_t mode)
 {
 	int fd = open(filename, flags | O_NONBLOCK, mode);
-	if (fd >= 0 && fcntl(F_SETFL, fd, flags & ~O_NONBLOCK) < 0) {
+	if (fd >= 0 && fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) < 0) {
 		int saved_errno = errno;
 		close(fd);
 		fd = -1;
