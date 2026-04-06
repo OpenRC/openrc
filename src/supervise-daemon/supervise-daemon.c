@@ -85,7 +85,7 @@ enum {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "A:a:D:d:e:g:I:Kk:m:N:p:R:r:s:Su:0:1:2:3" \
+const char getoptstring[] = "A:a:D:d:e:Gg:I:Kk:m:N:p:R:r:s:Su:0:1:2:3" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "healthcheck-timer",        1, NULL, 'a'},
@@ -99,6 +99,7 @@ const struct option longopts[] = {
 	{ "chdir",        1, NULL, 'd'},
 	{ "env",          1, NULL, 'e'},
 	{ "group",        1, NULL, 'g'},
+	{ "stop-group",   0, NULL, 'G'},
 	{ "ionice",       1, NULL, 'I'},
 	{ "stop",         0, NULL, 'K'},
 	{ "umask",        1, NULL, 'k'},
@@ -133,6 +134,7 @@ const char * const longopts_help[] = {
 	"Change the PWD",
 	"Set an environment string",
 	"Change the process group",
+	"Stop the whole process group",
 	"Set an ionice class:data when starting",
 	"Stop daemon",
 	"Set the umask for the daemon",
@@ -168,6 +170,7 @@ static int oom_score_adj = INT_MIN;
 static char *changeuser, *ch_root, *ch_dir;
 static uid_t uid = 0;
 static gid_t gid = 0;
+static bool stopgroup = false;
 static int devnull_fd = -1;
 static int stdin_fd;
 static int stdout_fd;
@@ -735,7 +738,7 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 				rc_waitpid(health_pid);
 				syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 				nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
-						false, false, true);
+						stopgroup, false, false, true);
 				if (nkilled < 0)
 					syslog(LOG_INFO, "Unable to kill %d: %s",
 							child_pid, strerror(errno));
@@ -747,7 +750,7 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 			alarm(0);
 			syslog(LOG_INFO, "stopping %s, pid %d", exec, child_pid);
 			nkilled = run_stop_schedule(applet, NULL, NULL, child_pid, 0,
-					false, false, true);
+					stopgroup, false, false, true);
 			if (nkilled > 0)
 				syslog(LOG_INFO, "killed %d processes", nkilled);
 			continue;
@@ -1018,6 +1021,10 @@ int main(int argc, char **argv)
 			gid = gr->gr_gid;
 			break;
 
+		case 'G': /* -G */
+			stopgroup = true;
+			break;
+
 		case 'k':
 			if (parse_mode(&numask, optarg))
 				eerrorx("%s: invalid mode `%s'",
@@ -1225,7 +1232,7 @@ int main(int argc, char **argv)
 		pid = get_pid(applet, pidfile);
 		if (pid != -1)
 			if (do_stop(applet, exec, (const char * const *)argv, pid, uid,
-						0, false, true) > 0)
+						0, false, false, true) > 0)
 				eerrorx("%s: %s is already running", applet, exec);
 
 		if (respawn_period > 0 && respawn_delay * respawn_max > respawn_period)
