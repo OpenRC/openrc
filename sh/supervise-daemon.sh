@@ -58,6 +58,7 @@ supervise_start()
 		${command_user+--user} $command_user \
 		${umask+--umask} $umask \
 		${notify+--notify} $notify \
+		${stopgroup+--stop-group} \
 		${supervise_daemon_args-${start_stop_daemon_args}} \
 		$command \
 		-- $command_args $command_args_foreground

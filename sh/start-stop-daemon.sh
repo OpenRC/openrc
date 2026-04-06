@@ -100,6 +100,7 @@ ssd_stop()
 		${procname:+--name} $procname \
 		${pidfile:+--pidfile} $chroot$pidfile \
 		${stopsig:+--signal} $stopsig \
+		${stopgroup+--stop-group} \
 		${_progress}
 
 	eend $? "Failed to stop ${name:-$RC_SVCNAME}"

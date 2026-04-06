@@ -96,7 +96,7 @@ enum {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:g:ik:mn:op:s:tu:r:w:x:0:1:2:3:4:" \
+const char getoptstring[] = "I:KN:PR:Sa:bc:d:e:Gg:ik:mn:op:s:tu:r:w:x:0:1:2:3:4:" \
 	getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "capabilities", 1, NULL, LONGOPT_CAPABILITIES},
@@ -115,6 +115,7 @@ const struct option longopts[] = {
 	{ "env",          1, NULL, 'e'},
 	{ "umask",        1, NULL, 'k'},
 	{ "group",        1, NULL, 'g'},
+	{ "stop-group",   0, NULL, 'G'},
 	{ "interpreted",  0, NULL, 'i'},
 	{ "make-pidfile", 0, NULL, 'm'},
 	{ "name",         1, NULL, 'n'},
@@ -154,6 +155,7 @@ const char * const longopts_help[] = {
 	"Set an environment string",
 	"Set the umask for the daemon",
 	"Change the process group",
+	"Stop the whole process group",
 	"Match process name by interpreter",
 	"Create a pidfile",
 	"Match process name",
@@ -343,6 +345,7 @@ int main(int argc, char **argv)
 	char *exec_file = NULL;
 	struct passwd *pw;
 	struct group *gr;
+	bool stopgroup = false;
 	char *line = NULL;
 	FILE *fp;
 	size_t len;
@@ -456,6 +459,10 @@ int main(int argc, char **argv)
 
 		case 'K':  /* --stop */
 			stop = true;
+			break;
+
+		case 'G':  /* --stop-group */
+			stopgroup = true;
 			break;
 
 		case 'N':  /* --nice */
@@ -810,7 +817,7 @@ int main(int argc, char **argv)
 			pid = 0;
 		}
 		i = run_stop_schedule(applet, exec, (const char *const *)margv,
-		    pid, uid, test, progress, false);
+		    pid, uid, stopgroup, test, progress, false);
 
 		if (i < 0)
 			/* We failed to stop something */
@@ -1263,7 +1270,7 @@ int main(int argc, char **argv)
 			} else
 				pid = 0;
 			if (do_stop(applet, exec, (const char *const *)margv,
-				pid, uid, 0, test, false) > 0)
+				pid, uid, 0, false, test, false) > 0)
 				alive = true;
 		}
 
