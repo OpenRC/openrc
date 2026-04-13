@@ -1,6 +1,10 @@
 name: ci_alpine_linux
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 jobs:
 
