@@ -290,15 +290,14 @@ if yesno "${rc_verbose:-$RC_VERBOSE}"; then
 fi
 
 _setup_cgroup() {
-	# Apply cgroups settings if defined
-	if [ "$(command -v cgroup_add_service)" = "cgroup_add_service" ]; then
-		if grep -qs /sys/fs/cgroup /proc/1/mountinfo && [ -d /sys/fs/cgroup ] && ! [ -w /sys/fs/cgroup ]; then
-			eerror "No permission to apply cgroup settings"
-			return
-		fi
-		cgroup_add_service
-	fi
+	grep -qs /sys/fs/cgroup /proc/1/mountinfo || return
+	[ -w /sys/fs/cgroup ] || {
+		yesno "$RC_USER_SERVICES" || eerror "No permission to apply cgroup settings"
+		return
+	}
 
+	# Apply cgroups settings if defined
+	[ "$(command -v cgroup_add_service)" = "cgroup_add_service" ] && cgroup_add_service
 	[ "$(command -v cgroup_set_limits)" = "cgroup_set_limits" ] && cgroup_set_limits
 	[ "$(command -v cgroup2_set_limits)" = "cgroup2_set_limits" ] && cgroup2_set_limits
 }
