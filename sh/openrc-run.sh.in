@@ -289,27 +289,27 @@ if yesno "${rc_verbose:-$RC_VERBOSE}"; then
 	export EINFO_VERBOSE
 fi
 
-case $1 in
-status|describe) ;;
-*)
-	# Apply any ulimit(s) defined
-	[ -n "${rc_ulimit:-$RC_ULIMIT}" ] && apply_ulimits ${rc_ulimit:-$RC_ULIMIT}
-
+_setup_cgroup() {
 	# Apply cgroups settings if defined
 	if [ "$(command -v cgroup_add_service)" = "cgroup_add_service" ]; then
-		if grep -qs /sys/fs/cgroup /proc/1/mountinfo
-		then
-			if [ -d /sys/fs/cgroup -a ! -w /sys/fs/cgroup ]; then
-				eerror "No permission to apply cgroup settings"
-				break
-			fi
+		if grep -qs /sys/fs/cgroup /proc/1/mountinfo && [ -d /sys/fs/cgroup ] && ! [ -w /sys/fs/cgroup ]; then
+			eerror "No permission to apply cgroup settings"
+			return
 		fi
 		cgroup_add_service
 	fi
 
 	[ "$(command -v cgroup_set_limits)" = "cgroup_set_limits" ] && cgroup_set_limits
 	[ "$(command -v cgroup2_set_limits)" = "cgroup2_set_limits" ] && cgroup2_set_limits
-	;;
+}
+
+case $1 in
+	status|describe) ;;
+	*)
+		# Apply any ulimit(s) defined
+		[ -n "${rc_ulimit:-$RC_ULIMIT}" ] && apply_ulimits ${rc_ulimit:-$RC_ULIMIT}
+		_setup_cgroup
+		;;
 esac
 
 eval "printf '%s\n' $required_dirs" | while read _d; do
