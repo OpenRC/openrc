@@ -93,7 +93,6 @@ static RC_STRINGLIST *restart_services;
 static RC_STRINGLIST *need_services;
 static RC_STRINGLIST *use_services;
 static RC_STRINGLIST *want_services;
-static RC_HOOK hook_out;
 static int exclusive_fd = -1, master_tty = -1;
 static bool in_background, deps, dry_run;
 static volatile bool sighup, skip_mark, timedout;
@@ -234,14 +233,6 @@ cleanup(void)
 	restore_state();
 
 	if (!rc_in_plugin) {
-		if (hook_out) {
-			rc_plugin_run(hook_out, applet);
-			if (hook_out == RC_HOOK_SERVICE_START_DONE)
-				rc_plugin_run(RC_HOOK_SERVICE_START_OUT, applet);
-			else if (hook_out == RC_HOOK_SERVICE_STOP_DONE)
-				rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
-		}
-
 		if (restart_services)
 			start_services(restart_services);
 	}
@@ -557,13 +548,15 @@ setup_deptypes(void)
 static void
 svc_start_check(void)
 {
+	int ret = EXIT_FAILURE;
 	RC_SERVICE state;
 
 	state = rc_service_state(applet);
 
 	if (in_background) {
 		if (!(state & (RC_SERVICE_INACTIVE | RC_SERVICE_STOPPED)))
-			exit(EXIT_FAILURE);
+			goto exit;
+
 		if (rc_yesno(getenv("IN_HOTPLUG")))
 			rc_service_mark(applet, RC_SERVICE_HOTPLUGGED);
 		if (strcmp(runlevel, RC_LEVEL_SYSINIT) == 0)
@@ -572,7 +565,8 @@ svc_start_check(void)
 
 	if (state & RC_SERVICE_STARTED) {
 		ewarn("WARNING: %s has already been started", applet);
-		exit(EXIT_SUCCESS);
+		ret = EXIT_SUCCESS;
+		goto exit;
 	} else if (state & RC_SERVICE_INACTIVE && !in_background) {
 		ewarnx("WARNING: %s has already started, but is inactive", applet);
 	}
@@ -580,9 +574,12 @@ svc_start_check(void)
 	if (exclusive_fd == -1)
 		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
-		if (errno != EWOULDBLOCK)
-			eerrorx("%s: failed to acquire lock: %s", applet, strerror(errno));
-		else if (state & RC_SERVICE_STOPPING)
+		if (errno != EWOULDBLOCK) {
+			eerror("%s: failed to acquire lock: %s", applet, strerror(errno));
+			goto exit;
+		}
+
+		if (state & RC_SERVICE_STOPPING)
 			ewarnx("WARNING: %s is stopping", applet);
 		else
 			ewarnx("WARNING: %s is already starting", applet);
@@ -590,8 +587,13 @@ svc_start_check(void)
 	fcntl(exclusive_fd, F_SETFD, fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 
 	rc_service_mark(applet, RC_SERVICE_STARTING);
-	hook_out = RC_HOOK_SERVICE_START_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_START_IN, applet);
+
+	return;
+
+exit:
+	rc_plugin_run(RC_HOOK_SERVICE_START_OUT, applet);
+	exit(ret);
 }
 
 static void
@@ -610,8 +612,11 @@ svc_start_deps(void)
 	if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
 		depoptions |= RC_DEP_STRICT;
 
-	if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL))
-		eerrorx("failed to load deptree");
+	if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL)) {
+		eerror("failed to load deptree");
+		goto exit;
+	}
+
 	if (!deptypes_b)
 		setup_deptypes();
 
@@ -628,7 +633,7 @@ svc_start_deps(void)
 			fprintf(stderr, "%s", svc->value);
 		}
 		fprintf(stderr, "\n");
-		exit(EXIT_FAILURE);
+		goto exit;
 	}
 	rc_stringlist_free(services);
 	services = NULL;
@@ -692,10 +697,12 @@ svc_start_deps(void)
 			continue;
 		}
 		if (rc_stringlist_find(need_services, svc->value)) {
-			if (state & (RC_SERVICE_INACTIVE | RC_SERVICE_WASINACTIVE))
+			if (state & (RC_SERVICE_INACTIVE | RC_SERVICE_WASINACTIVE)) {
 				rc_stringlist_add(tmplist, svc->value);
-			else if (!TAILQ_FIRST(tmplist))
-				eerrorx("ERROR: cannot start %s as %s would not start", applet, svc->value);
+			} else if (!TAILQ_FIRST(tmplist)) {
+				eerror("ERROR: cannot start %s as %s would not start", applet, svc->value);
+				goto exit;
+			}
 		}
 	}
 
@@ -731,6 +738,12 @@ svc_start_deps(void)
 	tmplist = NULL;
 	rc_stringlist_free(services);
 	services = NULL;
+
+	return;
+
+exit:
+	rc_plugin_run(RC_HOOK_SERVICE_START_OUT, applet);
+	exit(EXIT_FAILURE);
 }
 
 
@@ -766,12 +779,16 @@ static void svc_start_real(void)
 
 	if (ibsave)
 		setenv("IN_BACKGROUND", ibsave, 1);
-	hook_out = RC_HOOK_SERVICE_START_DONE;
 	rc_plugin_run(RC_HOOK_SERVICE_START_NOW, applet);
 	skip_mark = false;
 	started = (svc_exec("start") == 0);
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
+
+	if (!started) {
+		rc_plugin_run(RC_HOOK_SERVICE_START_DONE, applet);
+		rc_plugin_run(RC_HOOK_SERVICE_START_OUT, applet);
+	}
 
 	if (rc_service_state(applet) & RC_SERVICE_INACTIVE)
 		ewarnx("WARNING: %s has started, but is inactive", applet);
@@ -781,7 +798,6 @@ static void svc_start_real(void)
 	if (!skip_mark)
 		rc_service_mark(applet, RC_SERVICE_STARTED);
 	exclusive_fd = svc_unlock(applet, exclusive_fd);
-	hook_out = RC_HOOK_SERVICE_START_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_START_DONE, applet);
 
 	/* Now start any scheduled services */
@@ -807,7 +823,6 @@ static void svc_start_real(void)
 		tmplist = NULL;
 	}
 
-	hook_out = 0;
 	rc_plugin_run(RC_HOOK_SERVICE_START_OUT, applet);
 }
 
@@ -836,10 +851,10 @@ svc_stop_check(RC_SERVICE *state)
 	*state = rc_service_state(applet);
 
 	if (rc_runlevel_stopping() && *state & RC_SERVICE_FAILED)
-		exit(EXIT_FAILURE);
+		goto exit;
 
 	if (in_background && !(*state & (RC_SERVICE_STARTED) && !(*state & RC_SERVICE_INACTIVE)))
-		exit(EXIT_FAILURE);
+		goto exit;
 
 	if (*state & RC_SERVICE_STOPPED) {
 		ewarn("WARNING: %s is already stopped", applet);
@@ -850,15 +865,16 @@ svc_stop_check(RC_SERVICE *state)
 		exclusive_fd = svc_lock(applet, !deps);
 	if (exclusive_fd == -1) {
 		if (errno != EWOULDBLOCK)
-			eerrorx("%s: failed to acquire lock: %s", applet, strerror(errno));
+			eerror("%s: failed to acquire lock: %s", applet, strerror(errno));
 		else if (*state & RC_SERVICE_STOPPING)
-			ewarnx("WARNING: %s is already stopping", applet);
-		eerrorx("ERROR: %s stopped by something else", applet);
+			ewarn("WARNING: %s is already stopping", applet);
+		else
+			eerror("ERROR: %s stopped by something else", applet);
+		goto exit;
 	}
 	fcntl(exclusive_fd, F_SETFD, fcntl(exclusive_fd, F_GETFD, 0) | FD_CLOEXEC);
 
 	rc_service_mark(applet, RC_SERVICE_STOPPING);
-	hook_out = RC_HOOK_SERVICE_STOP_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_IN, applet);
 
 	if (!rc_runlevel_stopping()) {
@@ -869,6 +885,10 @@ svc_stop_check(RC_SERVICE *state)
 	}
 
 	return 0;
+
+exit:
+	rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
+	exit(EXIT_FAILURE);
 }
 
 static void
@@ -885,8 +905,10 @@ svc_stop_deps(RC_SERVICE state)
 	if (rc_conf_yesno("rc_depend_strict") || errno == ENOENT)
 		depoptions |= RC_DEP_STRICT;
 
-	if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL))
+	if (!deptree && ((deptree = _rc_deptree_load(0, NULL)) == NULL)) {
+		rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
 		eerrorx("failed to load deptree");
+	}
 
 	if (!deptypes_m)
 		setup_deptypes();
@@ -932,6 +954,7 @@ svc_stop_deps(RC_SERVICE state)
 				continue;
 			rc_service_mark(applet, RC_SERVICE_FAILED);
 		}
+		rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
 		eerrorx("ERROR: cannot stop %s as %s is still up", applet, svc->value);
 	}
 	rc_stringlist_free(tmplist);
@@ -977,23 +1000,20 @@ svc_stop_real(void)
 
 	if (ibsave)
 		setenv("IN_BACKGROUND", ibsave, 1);
-	hook_out = RC_HOOK_SERVICE_STOP_DONE;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_NOW, applet);
 	skip_mark = false;
 	stopped = (svc_exec("stop") == 0);
 	if (ibsave)
 		unsetenv("IN_BACKGROUND");
 
-	if (!stopped)
-		eerrorx("ERROR: %s failed to stop", applet);
-
-	if (!skip_mark)
+	if (stopped && !skip_mark)
 		rc_service_mark(applet, in_background ? RC_SERVICE_INACTIVE : RC_SERVICE_STOPPED);
 
-	hook_out = RC_HOOK_SERVICE_STOP_OUT;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_DONE, applet);
-	hook_out = 0;
 	rc_plugin_run(RC_HOOK_SERVICE_STOP_OUT, applet);
+
+	if (!stopped)
+		eerrorx("ERROR: %s failed to stop", applet);
 }
 
 static int
