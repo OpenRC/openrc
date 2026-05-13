@@ -81,7 +81,6 @@ static RC_STRINGLIST *main_types_nw;
 static RC_STRINGLIST *main_types_nwua;
 static RC_DEPTREE *main_deptree;
 static char *runlevel;
-static RC_HOOK hook_out;
 
 struct termios *termios_orig = NULL;
 
@@ -117,9 +116,6 @@ cleanup(void)
 	if (!rc_in_logger && !rc_in_plugin &&
 	    applet && (strcmp(applet, "rc") == 0 || strcmp(applet, "openrc") == 0))
 	{
-		if (hook_out)
-			rc_plugin_run(hook_out, runlevel);
-
 		rc_plugin_unload();
 
 		if (termios_orig) {
@@ -229,8 +225,10 @@ run_program(const char *prog)
 	sigprocmask(SIG_SETMASK, &full, &old);
 	pid = fork();
 
-	if (pid == -1)
+	if (pid == -1) {
+		rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, runlevel);
 		eerrorx("%s: fork: %s", applet, strerror(errno));
+	}
 	if (pid == 0) {
 		/* Restore default handlers */
 		sigaction(SIGCHLD, &sa, NULL);
@@ -255,8 +253,10 @@ run_program(const char *prog)
 
 	/* Unmask signals and wait for child */
 	sigprocmask(SIG_SETMASK, &old, NULL);
-	if (rc_waitpid(pid) == -1)
+	if (rc_waitpid(pid) == -1) {
+		rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, runlevel);
 		eerrorx("%s: failed to exec `%s'", applet, prog);
+	}
 }
 
 static void
@@ -954,17 +954,20 @@ int main(int argc, char **argv)
 	} else {
 		rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_IN, runlevel);
 	}
-	hook_out = RC_HOOK_RUNLEVEL_STOP_OUT;
 
 	/* Check if runlevel is valid if we're changing */
 	if (newlevel && strcmp(runlevel, newlevel) != 0 && !going_down) {
-		if (!rc_runlevel_exists(newlevel))
+		if (!rc_runlevel_exists(newlevel)) {
+			rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_OUT, runlevel);
 			eerrorx("%s: is not a valid runlevel", newlevel);
+		}
 	}
 
 	/* Load our deptree */
-	if ((main_deptree = _rc_deptree_load(0, &regen)) == NULL)
+	if ((main_deptree = _rc_deptree_load(0, &regen)) == NULL) {
+		rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_OUT, runlevel);
 		eerrorx("failed to load deptree");
+	}
 
 	if (faccessat(rc_dirfd(RC_DIR_SVCDIR), "clock-skewed", F_OK, 0) == 0)
 		ewarn("WARNING: clock skew detected!");
@@ -972,8 +975,10 @@ int main(int argc, char **argv)
 	/* Clean the failed services state dir */
 	clean_failed();
 
-	if (mkdirat(rc_dirfd(RC_DIR_SVCDIR), "rc.stopping", 0755) != 0)
+	if (mkdirat(rc_dirfd(RC_DIR_SVCDIR), "rc.stopping", 0755) != 0) {
+		rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_OUT, runlevel);
 		eerrorx("%s: failed to create stopping dir '%s/rc.stopping': %s", applet, rc_svcdir(), strerror(errno));
+	}
 
 	/* Create a list of all services which we could stop (assuming
 	* they won't be active in the new or current runlevel) including
@@ -1052,7 +1057,6 @@ int main(int argc, char **argv)
 	/* Notify the plugins we have finished */
 	rc_plugin_run(RC_HOOK_RUNLEVEL_STOP_OUT,
 	    going_down ? newlevel : runlevel);
-	hook_out = 0;
 
 	unlinkat(rc_dirfd(RC_DIR_SVCDIR), "rc.stopping", AT_REMOVEDIR);
 
@@ -1074,7 +1078,6 @@ int main(int argc, char **argv)
 	mkdirat(rc_dirfd(RC_DIR_SVCDIR), "rc.starting", 0755);
 
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_IN, runlevel);
-	hook_out = RC_HOOK_RUNLEVEL_START_OUT;
 
 	/* Re-add our hotplugged services if they stopped */
 	if (main_hotplugged_services)
@@ -1135,7 +1138,6 @@ int main(int argc, char **argv)
 #endif
 
 	rc_plugin_run(RC_HOOK_RUNLEVEL_START_OUT, runlevel);
-	hook_out = 0;
 
 	/* If we're in the boot runlevel and we regenerated our dependencies
 	 * we need to delete them so that they are regenerated again in the
