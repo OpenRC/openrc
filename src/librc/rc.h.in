@@ -394,7 +394,7 @@ struct rc_environ {
 	size_t size, count;
 };
 
-/*! Sets the shared enviroment for 'service'.
+/*! Sets the shared environment for 'service'.
  * @param service name
  * @param null terminated environment variable array in NAME=VALUE format.
  * @return true on success, false on IO error. */
