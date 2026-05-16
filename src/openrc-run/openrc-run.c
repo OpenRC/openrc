@@ -356,11 +356,15 @@ svc_exec(const char *command)
 	};
 
 	/* Setup our signal pipe */
-	if (pipe2(signal_pipe, O_CLOEXEC) == -1)
-		eerrorx("%s: pipe2: %s", applet, applet);
+	if (pipe2(signal_pipe, O_CLOEXEC) == -1) {
+		eerror("%s: pipe2: %s", applet, applet);
+		return 1;
+	}
 
-	if ((errno = posix_spawn_file_actions_init(&tty)))
-		eerrorx("%s: posix_spawn_file_actions_init: %s", applet, strerror(errno));
+	if ((errno = posix_spawn_file_actions_init(&tty))) {
+		eerror("%s: posix_spawn_file_actions_init: %s", applet, strerror(errno));
+		return 1;
+	}
 
 	/* Open a pty for our prefixed output
 	 * We do this instead of mapping pipes to stdout, stderr so that
@@ -382,8 +386,10 @@ svc_exec(const char *command)
 			fcntl(slave_tty, F_SETFD, flags | FD_CLOEXEC);
 
 		if ((errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDOUT_FILENO))
-				|| (errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDERR_FILENO)))
-			eerrorx("%s: posix_spawn_file_actions_adddup2: %s", applet, strerror(errno));
+				|| (errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDERR_FILENO))) {
+			eerror("%s: posix_spawn_file_actions_adddup2: %s", applet, strerror(errno));
+			return 1;
+		}
 	}
 
 	if (faccessat(rc_dirfd(RC_DIR_SVCDIR), "openrc-run.sh", F_OK, 0) == 0) {
@@ -395,8 +401,10 @@ svc_exec(const char *command)
 		rc_environ_export(&env, (const char *const *) environ, &envp);
 
 	einfov("Executing: %s %s %s", argv[0], service, command);
-	if ((errno = posix_spawn(&service_pid, argv[0], &tty, NULL, UNCONST(argv), envp ? UNCONST(envp) : environ)))
-		eerrorx("%s: exec '%s': %s", service, argv[0], strerror(errno));
+	if ((errno = posix_spawn(&service_pid, argv[0], &tty, NULL, UNCONST(argv), envp ? UNCONST(envp) : environ))) {
+		eerror("%s: exec '%s': %s", service, argv[0], strerror(errno));
+		return 1;
+	}
 
 	posix_spawn_file_actions_destroy(&tty);
 	free(openrc_sh);
