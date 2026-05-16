@@ -354,8 +354,10 @@ svc_exec(const char *command)
 	sigset_t oldmask;
 
 	/* Setup our signal pipe */
-	if (pipe2(signal_pipe, O_CLOEXEC) == -1)
-		eerrorx("%s: pipe2: %s", applet, applet);
+	if (pipe2(signal_pipe, O_CLOEXEC) == -1) {
+		eerror("%s: pipe2: %s", applet, applet);
+		return 1;
+	}
 
 	/* Open a pty for our prefixed output
 	 * We do this instead of mapping pipes to stdout, stderr so that
@@ -384,8 +386,10 @@ svc_exec(const char *command)
 	sigprocmask(SIG_SETMASK, &full, &old);
 	service_pid = fork();
 	sigprocmask(SIG_SETMASK, &old, NULL);
-	if (service_pid == -1)
-		eerrorx("%s: fork: %s", applet, strerror(errno));
+	if (service_pid == -1) {
+		eerror("%s: fork: %s", applet, strerror(errno));
+		return 1;
+	}
 	if (service_pid == 0) {
 		char *openrc_sh;
 		xasprintf(&openrc_sh, "%s/openrc-run.sh", rc_svcdir());
