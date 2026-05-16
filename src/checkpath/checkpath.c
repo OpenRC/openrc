@@ -224,7 +224,7 @@ static int do_create(inode_t type, const char *path, int dirfd, const char *name
 static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
 		bool trunc, bool chowner, bool writable, bool symlinks, bool selinux_on)
 {
-	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW | (trunc ? O_TRUNC : 0);
+	int flags = O_NDELAY | O_NOCTTY | O_RDONLY | O_CLOEXEC | O_NOFOLLOW;
 	const char *name = basename_c(path);
 	struct stat st;
 	int dirfd, fd;
@@ -235,6 +235,9 @@ static int do_check(char *path, uid_t uid, gid_t gid, mode_t mode, inode_t type,
 		if (errno != ENOENT || type == inode_unknown)
 			return -1;
 	}
+
+	if (trunc && type == inode_file)
+		flags |= O_TRUNC;
 
 	dirfd = get_dirfd(path, symlinks);
 	if ((fd = openat(dirfd, name, flags)) == -1 &&
