@@ -2,6 +2,8 @@
 
 . @LIBEXECDIR@/sh/functions.sh
 
+exec 3>&1 >&2
+
 if [ -z "${XDG_RUNTIME_DIR}" ]; then
 	logger -p daemon.err "XDG_RUNTIME_DIR unset, user services cannot start."
 	exit 1

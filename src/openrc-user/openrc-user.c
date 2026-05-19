@@ -61,6 +61,7 @@ static bool spawn_openrc(uid_t uid, gid_t gid, const char *shell, bool start) {
 	args.cmd = shell;
 	args.uid = uid;
 	args.gid = gid;
+	args.redirect_stdout = 3;
 	res = do_exec(&args);
 	free(argv0);
 	if (res.pid < 0) {
