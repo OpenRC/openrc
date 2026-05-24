@@ -51,7 +51,6 @@
 #  define CLOCK_MONOTONIC CLOCK_BOOTTIME
 #endif
 
-static const char *path_default = "/sbin:/usr/sbin:/bin:/usr/bin";
 static const char *rc_default_runlevel = "default";
 static int sigpipe[2] = { -1, -1 };
 static bool quiet = false;
@@ -368,8 +367,10 @@ int main(int argc, char **argv)
 #endif
 	reboot(RB_DISABLE_CAD);
 
+	if (!quiet)
+		printf("Setting environment PATH to %s\n", RC_INIT_DEFAULT_PATH);
 	/* set default path */
-	setenv("PATH", path_default, 1);
+	setenv("PATH", RC_INIT_DEFAULT_PATH, 1);
 
 	if (!reexec)
 		init(cmdline_runlevel);
