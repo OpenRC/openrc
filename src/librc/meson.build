@@ -11,6 +11,7 @@ librc_sources = [
   'librc-depend.c',
   'librc-misc.c',
   'librc-stringlist.c',
+  'rc-eventlog.c',
 ]
 
 rc_h = configure_file(input : 'rc.h.in', output : 'rc.h',
