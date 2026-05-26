@@ -892,7 +892,7 @@ int main(int argc, char **argv)
 	/* Child process - lets go! */
 	if (pid == 0) {
 		gid_t group_buf[32], *group_list = group_buf;
-		int group_count = ARRAY_SIZE(group_buf);
+		int group_count = 0;
 		pid_t mypid = getpid();
 		close(pipefd[0]); /* Close the read end of the pipe. */
 		umask(numask);
@@ -950,10 +950,13 @@ int main(int argc, char **argv)
 					applet, pam_strerror(pamh, pamr));
 		}
 #endif
-		if (changeuser && getgrouplist(changeuser, gid, group_list, &group_count) < 0) {
-			group_list = xmalloc(group_count * sizeof(*group_list));
-			if (getgrouplist(changeuser, gid, group_list, &group_count) < 0)
-				eerrorx("%s: getgrouplist(%s, %"PRIuMAX")", applet, changeuser, (uintmax_t)gid);
+		if (changeuser) {
+			group_count = ARRAY_SIZE(group_buf);
+			if (getgrouplist(changeuser, gid, group_list, &group_count) < 0) {
+				group_list = xmalloc(group_count * sizeof(*group_list));
+				if (getgrouplist(changeuser, gid, group_list, &group_count) < 0)
+					eerrorx("%s: getgrouplist(%s, %"PRIuMAX")", applet, changeuser, (uintmax_t)gid);
+			}
 		}
 
 		/* Close any fd's to the passwd database */
@@ -980,7 +983,7 @@ int main(int argc, char **argv)
 		if (gid && setgid(gid))
 			eerrorx("%s: unable to set groupid to %"PRIuMAX,
 			    applet, (uintmax_t)gid);
-		if (changeuser && setgroups(group_count, group_list))
+		if (setgroups(group_count, group_list))
 			eerrorx("%s: setgroups() failed", applet);
 		if (group_list != group_buf)
 			free(group_list);
