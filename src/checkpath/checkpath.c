@@ -42,33 +42,20 @@ typedef enum {
 	inode_fifo = 3,
 } inode_t;
 
+#define opts(opt, opt_long) \
+	opt(d, directory, no_argument, "Create a directory if not exists") \
+	opt(D, directory-truncate, no_argument, "Create/empty directory") \
+	opt(f, file, no_argument, "Create a file if not exists") \
+	opt(F, file-truncate, no_argument, "Truncate file") \
+	opt(p, pipe, no_argument, "Create a named pipe (FIFO) if not exists") \
+	opt(m, mode, required_argument, "Mode to check") \
+	opt(o, owner, required_argument, "Owner to check (user:group)") \
+	opt(s, symlinks, no_argument, "follow symbolic links (irrelevant on linux)") \
+	opt(W, writable, no_argument, "Check whether the path is writable or not")
+cmdline_opts(opts)
+
 const char *applet = NULL;
 const char *extraopts ="path1 [path2] [...]";
-const char getoptstring[] = "dDfFpm:o:sW" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "directory",          0, NULL, 'd'},
-	{ "directory-truncate", 0, NULL, 'D'},
-	{ "file",               0, NULL, 'f'},
-	{ "file-truncate",      0, NULL, 'F'},
-	{ "pipe",               0, NULL, 'p'},
-	{ "mode",               1, NULL, 'm'},
-	{ "owner",              1, NULL, 'o'},
-	{ "symlinks",           0, NULL, 's'},
-	{ "writable",           0, NULL, 'W'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"Create a directory if not exists",
-	"Create/empty directory",
-	"Create a file if not exists",
-	"Truncate file",
-	"Create a named pipe (FIFO) if not exists",
-	"Mode to check",
-	"Owner to check (user:group)",
-	"follow symbolic links (irrelevant on linux)",
-	"Check whether the path is writable or not",
-	longopts_help_COMMON
-};
 const char *usagestring = NULL;
 
 static int get_dirfd(char *path, bool symlinks)
