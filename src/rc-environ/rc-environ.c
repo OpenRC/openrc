@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <rc.h>
 #include <queue.h>
+#include <string.h>
 
 #include "_usage.h"
 #include "helpers.h"
@@ -28,6 +29,41 @@ const char *const longopts_help[] = {
 	"Add services in runlevel to the list of environments to print",
 	longopts_help_COMMON
 };
+
+static int
+set_environment(const char *service, char *vars[])
+{
+	RC_DEPTREE *deptree = _rc_deptree_load(0, NULL);
+	RC_STRINGLIST *reexports = rc_deptree_depend(deptree, service, "reexport");
+	RC_STRING *reexport;
+
+	if (!(rc_service_state(service) & RC_SERVICE_STARTING)) {
+		eerror("service %s is not in the starting state", service);
+		return 1;
+	}
+
+	for (const char *var; (var = *vars); vars++) {
+		const char *var = *vars++;
+		size_t name_len = strcspn(var, "=");
+
+		TAILQ_FOREACH(reexport, reexports, entries) {
+			if (strncmp(reexport->value, var, name_len) != 0)
+				continue;
+			if (var[name_len] == '=')
+				rc_service_putenv(service, var);
+			else
+				rc_service_setenv(service, var, getenv(var));
+			goto next;
+		}
+
+		ewarn("service %s does not reexport %.*s, skipping", service, (int)name_len, var);
+next:;
+	}
+
+	rc_stringlist_free(reexports);
+	rc_deptree_free(deptree);
+	return 0;
+}
 
 static void escape_variable(const char *value) {
 	char ch;
@@ -129,8 +165,8 @@ int main(int argc, char **argv) {
 	argc -= optind;
 	argv += optind;
 
-	if (argc)
-		usage(EXIT_FAILURE);
+	if (!argc)
+		return print_environment(services, escape, export, sep);
 
-	return print_environment(services, escape, export, sep);
+	return set_environment(argv[0], &argv[1]);
 }
