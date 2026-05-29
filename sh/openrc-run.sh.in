@@ -13,7 +13,7 @@
 
 verify_boot()
 {
-	if [ ! -e ${RC_SVCDIR}/softlevel ]; then
+	if ! yesno "$RC_USER_SERVICES" && [ ! -e ${RC_SVCDIR}/softlevel ]; then
 		eerror "You are attempting to run an openrc service on a"
 		eerror "system which openrc did not boot."
 		eerror "You may be inside a chroot or you may have used"
