@@ -555,6 +555,22 @@ rc_runlevel_stacks(const char *runlevel)
 	return stack;
 }
 
+static const char *config_path[] = {
+	RC_SYSCONFDIR "/rc",
+	RC_SYSCONFDIR,
+#ifdef RC_LOCAL_PREFIX
+	RC_LOCAL_PREFIX "/etc/rc",
+	RC_LOCAL_PREFIX "/etc",
+#endif
+#ifdef RC_PKG_PREFIX
+	RC_PKG_PREFIX "/etc/rc",
+	RC_PKG_PREFIX "/etc",
+#endif
+	RC_LIBEXECDIR,
+	RC_SVCDIR,
+	NULL,
+};
+
 static struct {
 	bool set;
 	char *svcdir, *confdir, *runleveldir;
@@ -564,7 +580,7 @@ static struct {
 	char *buffer;
 	size_t count;
 	int *fds;
-	const char **entries;
+	const char **entries, **allocd;
 } rc_path;
 
 static void
@@ -574,108 +590,130 @@ free_rc_dirs(void)
 	X(rc_dirs.svcdir);
 	X(rc_dirs.confdir);
 	X(rc_dirs.runleveldir);
-
+	X(rc_path.allocd);
 	X(rc_path.buffer);
-	X(rc_path.entries);
 	X(rc_path.fds);
 #undef X
 }
 
-static inline size_t
-append_path(FILE *buf, int path_len, const char path[static path_len], const char *suffix)
+__attribute__((__format__(__printf__, 2, 3)))
+static void
+append_path(FILE *fp, const char *fmt, ...)
 {
-	fprintf(buf, "%.*s%s%c", path_len, path, suffix ? suffix : "", '\0');
-	return 1;
+	va_list va;
+
+	va_start(va, fmt);
+	vfprintf(fp, fmt, va);
+	fputc('\0', fp);
+	va_end(va);
+
+	rc_path.count++;
 }
 
-static size_t
-append_path_string(FILE *buf, const char *path, const char *suffix)
+static const char *
+strnsep(const char **str, size_t *size, const char sep)
 {
-	size_t count = 0;
+	const char *ret = *str;
 
-	for (const char *entry = path; (path = strchrnul(entry, ':')); entry = path + 1) {
-		size_t entry_len = path - entry;
+	if (!ret)
+		return NULL;
 
-		if (!entry_len)
-			continue;
-		count += append_path(buf, entry_len, entry, suffix);
-		if (!*path)
-			break;
+	*str = strchrnul(ret, sep);
+	*size = *str - ret;
+	if (!**str)
+		*str = NULL;
+	else
+		*str += 1;
+
+	return ret;
+}
+
+static const char *
+strnullsep(const char **str, size_t *size)
+{
+	const char *ret = *str;
+	size_t len;
+
+	if (!ret)
+		return NULL;
+
+	len = strnlen(ret, *size - 1) + 1;
+
+	if ((*size -= len))
+		*str += len;
+	else
+		*str = NULL;
+
+	return ret;
+}
+
+static void
+append_user_path(FILE *fp)
+{
+	const char *xdg, *entry;
+	size_t size;
+
+	append_path(fp, "%s", rc_dirs.confdir);
+	if (!(xdg = getenv("XDG_CONFIG_DIRS")))
+		append_path(fp, "/etc/xdg/rc");
+	else while ((entry = strnsep(&xdg, &size, ':')))
+		if (size) append_path(fp, "%.*s/rc", (int) size, entry);
+
+	for (size_t i = 0; i < ARRAY_SIZE(config_path) - 2; i++)
+		append_path(fp, "%s/user", config_path[i]);
+	append_path(fp, "%s", rc_dirs.svcdir);
+}
+
+static void
+append_rc_path(FILE *fp, const char *path, bool user)
+{
+	bool has_user = false;
+	const char *entry;
+	size_t size;
+
+	while ((entry = strnsep(&path, &size, ':'))) {
+		if (size)
+			append_path(fp, "%.*s", (int)size, entry);
+		else if (user && !has_user)
+			append_user_path(fp), has_user = true;
+		else if (!user) while (*rc_path.entries)
+			append_path(fp, "%s", *rc_path.entries++);
 	}
-
-	return count;
-}
-
-static inline size_t
-append_path_xdg(FILE *buf, const char *home, const char *dirs, const char *fallback, bool user)
-{
-	const char *path;
-	size_t count = 0;
-
-	if (!(path = getenv(dirs)))
-		path = fallback;
-
-	if (home)
-		count += append_path(buf, strlen(home), home, NULL);
-	return count + append_path_string(buf, path, user ? "/rc/user" : "/rc");
-}
-
-static inline size_t
-append_path_array(FILE *buf, size_t path_len, const char **path, bool user)
-{
-	size_t count = 0;
-	while (count < path_len) {
-		const char *entry = path[count++];
-		append_path(buf, strlen(entry), entry, user ? "/user" : "");
-	}
-	return count;
 }
 
 static void
 load_dynamic_path(bool user)
 {
-	static const char *config_path[] = {
-		RC_SYSCONFDIR "/rc",
-		RC_SYSCONFDIR,
-#ifdef RC_LOCAL_PREFIX
-		RC_LOCAL_PREFIX "/etc/rc",
-		RC_LOCAL_PREFIX "/etc",
-#endif
-#ifdef RC_PKG_PREFIX
-		RC_PKG_PREFIX "/etc/rc",
-		RC_PKG_PREFIX "/etc",
-#endif
-		RC_LIBEXECDIR,
-	};
-
-	const char *path;
-	size_t size;
-	FILE *fp = xopen_memstream(&rc_path.buffer, &size);
-
-	rc_path.count = 0;
-	if ((path = getenv("RC_PATH"))) {
-		rc_path.count += append_path_string(fp, path, NULL);
-	} else {
-		const char *svcdir = rc_dirs.svcdir ? rc_dirs.svcdir : RC_SVCDIR;
-
-		/* first check config paths, then data paths.
-		 * and within those, check dynamic paths first, then hardcoded ones */
-		rc_path.count += append_path_xdg(fp, rc_dirs.confdir, "XDG_CONFIG_DIRS", "/etc/xdg", user);
-		rc_path.count += append_path_array(fp, ARRAY_SIZE(config_path), config_path, user);
-		rc_path.count += append_path(fp, strlen(svcdir), svcdir, NULL);
-	}
-	xclose_memstream(fp);
-
-	rc_path.entries = calloc(rc_path.count + 1, sizeof(*rc_path.entries));
-
-	for (size_t count = 0, i = 0; i < size && count < rc_path.count; i += strlen(&rc_path.buffer[i]) + 1)
-		rc_path.entries[count++] = &rc_path.buffer[i];
-	rc_path.entries[rc_path.count] = NULL;
+	const char *path, *entry;
+	size_t size, count = 0;
+	FILE *fp;
 
 	if (!rc_dirs.set) {
 		atexit(free_rc_dirs);
 		rc_dirs.set = true;
 	}
+
+	rc_path.entries = config_path;
+	rc_path.count = ARRAY_SIZE(config_path) - 1;
+
+	if (!(path = getenv("RC_PATH")) && !user)
+		return;
+
+	rc_path.count = 0;
+	fp = xopen_memstream(&rc_path.buffer, &size);
+	if (path)
+		append_rc_path(fp, path, user);
+	else
+		append_user_path(fp);
+	xclose_memstream(fp);
+
+	rc_path.allocd = rc_path.entries = calloc(rc_path.count + 1, sizeof(*rc_path.entries));
+
+	path = rc_path.buffer;
+
+	while ((entry = strnullsep(&path, &size)) && count < rc_path.count)
+		rc_path.entries[count++] = entry;
+	rc_path.entries[rc_path.count] = NULL;
 }
 
 static bool is_user = false;
