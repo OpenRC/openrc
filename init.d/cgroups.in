@@ -74,6 +74,27 @@ cgroup2_base()
 	mkdir -p "${cgroup_path}"
 	mount -t cgroup2 cgroup2 -o "${cgroup_opts},nsdelegate" "${cgroup_path}" 2> /dev/null ||
 		mount -t cgroup2 cgroup2 -o "${cgroup_opts}" "${cgroup_path}"
+	mountinfo -q -f '^cgroup2$' "${cgroup_path}" &&
+		mkdir -p "${cgroup_path}/rc.init"
+	return 0
+}
+
+cgroup2_move_init_procs()
+{
+	grep -qw cgroup2 /proc/filesystems || return 0
+	local cgroup_path init_cgroup pid pids
+	cgroup_path="$(cgroup2_find_path)"
+	[ -z "${cgroup_path}" ] && return 0
+	[ ! -e "${cgroup_path}/cgroup.procs" ] && return 0
+	init_cgroup="${cgroup_path}/rc.init"
+	[ ! -e "${init_cgroup}/cgroup.procs" ] && return 0
+	pids=
+	while read -r pid; do
+		[ -n "${pid}" ] && pids="${pids} ${pid}"
+	done < "${cgroup_path}/cgroup.procs"
+	for pid in ${pids}; do
+		printf "%s" "${pid}" > "${init_cgroup}/cgroup.procs"
+	done
 	return 0
 }
 
@@ -107,6 +128,7 @@ cgroups_hybrid()
 {
 	cgroup1_base
 	cgroup2_base
+	cgroup2_move_init_procs
 	cgroup2_controllers
 	cgroup1_controllers
 	return 0
@@ -122,6 +144,7 @@ cgroups_legacy()
 cgroups_unified()
 {
 	cgroup2_base
+	cgroup2_move_init_procs
 	cgroup2_controllers
 	return 0
 }
