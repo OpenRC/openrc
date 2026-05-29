@@ -557,7 +557,7 @@ rc_runlevel_stacks(const char *runlevel)
 
 static struct {
 	bool set;
-	char *svcdir, *confdir, *datadir, *runleveldir;
+	char *svcdir, *confdir, *runleveldir;
 } rc_dirs;
 
 static struct {
@@ -573,7 +573,6 @@ free_rc_dirs(void)
 #define X(ptr) ptr = (free(ptr), NULL)
 	X(rc_dirs.svcdir);
 	X(rc_dirs.confdir);
-	X(rc_dirs.datadir);
 	X(rc_dirs.runleveldir);
 
 	X(rc_path.buffer);
