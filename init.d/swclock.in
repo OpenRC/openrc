@@ -24,7 +24,9 @@ start()
 {
 	ebegin "Setting the local clock based on last shutdown time"
 	if ! swclock "${swclock_file}" 2> /dev/null; then
-	swclock --warn @SBINDIR@/openrc-run
+		local curr_mtime="$(mktemp -q)"
+		swclock --warn "${curr_mtime}"
+		rm -f "${curr_mtime}"
 	fi
 	eend $?
 }
