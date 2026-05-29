@@ -165,15 +165,22 @@ cgroup2_find_path()
 
 cgroup2_remove()
 {
-	local cgroup_path rc_cgroup_path
+	local cgroup_path rc_cgroup_path return_cgroup_procs
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
 	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
 	[ ! -d "${rc_cgroup_path}" ] ||
 		[ ! -e "${rc_cgroup_path}"/cgroup.events ] &&
 		return 0
-	grep -qx "$$" "${rc_cgroup_path}/cgroup.procs" &&
-		printf "%d" 0 > "${cgroup_path}/cgroup.procs"
+	return_cgroup_procs="${cgroup_path}/cgroup.procs"
+	# rc.init is absent after a live upgrade from versions which did not
+	# create it, so retain the old hierarchy-root fallback in that case.
+	[ -e "${cgroup_path}/rc.init/cgroup.procs" ] &&
+		return_cgroup_procs="${cgroup_path}/rc.init/cgroup.procs"
+	[ ! -e "${return_cgroup_procs}" ] && return 0
+	if grep -qx "$$" "${rc_cgroup_path}/cgroup.procs"; then
+		printf "%d" 0 > "${return_cgroup_procs}" || return 0
+	fi
 	local key populated value
 	while read -r key value; do
 		case "${key}" in
@@ -191,7 +198,7 @@ cgroup2_set_limits()
 	local cgroup_path rc_cgroup_path key value
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
-	mountinfo -q "${cgroup_path}"|| return 0
+	mountinfo -q -f '^cgroup2$' "${cgroup_path}" || return 0
 	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
 	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
 	[ -f "${rc_cgroup_path}"/cgroup.procs ] &&
