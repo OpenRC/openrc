@@ -79,6 +79,23 @@ cgroup2_base()
 	return 0
 }
 
+cgroup2_process_is_kthread()
+{
+	local flags line pid
+	pid="$1"
+
+	[ -r "/proc/${pid}/stat" ] || return 1
+	read -r line < "/proc/${pid}/stat" || return 1
+	line="${line##*) }"
+	set -- ${line}
+	# After removing pid and comm, /proc/pid/stat field 9 (flags) is $7
+	flags="$7"
+	[ -n "${flags}" ] || return 1
+
+	# PF_KTHREAD is 0x00200000 = 2097152 in decimal
+	[ $(( flags & 2097152 )) -ne 0 ]
+}
+
 cgroup2_move_init_procs()
 {
 	grep -qw cgroup2 /proc/filesystems || return 0
@@ -93,6 +110,8 @@ cgroup2_move_init_procs()
 		[ -n "${pid}" ] && pids="${pids} ${pid}"
 	done < "${cgroup_path}/cgroup.procs"
 	for pid in ${pids}; do
+		[ -d "/proc/${pid}" ] || continue
+		cgroup2_process_is_kthread "${pid}" && continue
 		printf "%s" "${pid}" > "${init_cgroup}/cgroup.procs"
 	done
 	return 0
