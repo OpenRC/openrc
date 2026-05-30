@@ -42,17 +42,17 @@ cgroup1_base()
 
 cgroup1_controllers()
 {
-	yesno "${rc_controller_cgroups:-YES}" && [ -e /proc/cgroups ]  &&
+	yesno "${rc_controller_cgroups:-YES}" && [ -e /proc/cgroups ] &&
 	grep -qw cgroup /proc/filesystems || return 0
 	while read -r name _ _ enabled _; do
 		case "${enabled}" in
 			1)	mountinfo -q "/sys/fs/cgroup/${name}" && continue
-				local x
-				for x in $rc_cgroup_controllers; do
-				[ "${name}" = "blkio" ] && [ "${x}" = "io" ] &&
-					continue 2
-				[ "${name}" = "${x}" ] &&
-				continue 2
+				local controller
+				for controller in ${rc_cgroup_controllers}; do
+					[ "${name}" = "blkio" ] && [ "${controller}" = "io" ] &&
+						continue 2
+					[ "${name}" = "${controller}" ] &&
+						continue 2
 				done
 				mkdir "/sys/fs/cgroup/${name}"
 				mount -n -t cgroup -o "${cgroup_opts},${name}" \
@@ -69,32 +69,72 @@ cgroup1_controllers()
 cgroup2_base()
 {
 	grep -qw cgroup2 /proc/filesystems || return 0
-	local base
-	base="$(cgroup2_find_path)"
-	mkdir -p "${base}"
-	mount -t cgroup2 cgroup2 -o "${cgroup_opts},nsdelegate" "${base}" 2> /dev/null ||
-		mount -t cgroup2 cgroup2 -o "${cgroup_opts}" "${base}"
+	local cgroup_path
+	cgroup_path="$(cgroup2_find_path)"
+	mkdir -p "${cgroup_path}"
+	mount -t cgroup2 cgroup2 -o "${cgroup_opts},nsdelegate" "${cgroup_path}" 2> /dev/null ||
+		mount -t cgroup2 cgroup2 -o "${cgroup_opts}" "${cgroup_path}"
+	mountinfo -q -f '^cgroup2$' "${cgroup_path}" &&
+		mkdir -p "${cgroup_path}/rc.init"
+	return 0
+}
+
+cgroup2_process_is_kthread()
+{
+	local flags line pid
+	pid="$1"
+
+	[ -r "/proc/${pid}/stat" ] || return 1
+	read -r line < "/proc/${pid}/stat" || return 1
+	line="${line##*) }"
+	set -- ${line}
+	# After removing pid and comm, /proc/pid/stat field 9 (flags) is $7
+	flags="$7"
+	[ -n "${flags}" ] || return 1
+
+	# PF_KTHREAD is 0x00200000 = 2097152 in decimal
+	[ $(( flags & 2097152 )) -ne 0 ]
+}
+
+cgroup2_move_init_procs()
+{
+	grep -qw cgroup2 /proc/filesystems || return 0
+	local cgroup_path init_cgroup pid pids
+	cgroup_path="$(cgroup2_find_path)"
+	[ -z "${cgroup_path}" ] && return 0
+	[ ! -e "${cgroup_path}/cgroup.procs" ] && return 0
+	init_cgroup="${cgroup_path}/rc.init"
+	[ ! -e "${init_cgroup}/cgroup.procs" ] && return 0
+	pids=
+	while read -r pid; do
+		[ -n "${pid}" ] && pids="${pids} ${pid}"
+	done < "${cgroup_path}/cgroup.procs"
+	for pid in ${pids}; do
+		[ -d "/proc/${pid}" ] || continue
+		cgroup2_process_is_kthread "${pid}" && continue
+		printf "%s" "${pid}" > "${init_cgroup}/cgroup.procs"
+	done
 	return 0
 }
 
 cgroup2_controllers()
 {
 	grep -qw cgroup2 /proc/filesystems || return 0
-	local active cgroup_path x y
+	local cgroup_path controller controllers rc_controller
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
 	[ ! -e "${cgroup_path}/cgroup.controllers" ] && return 0
-	[ ! -e "${cgroup_path}/cgroup.subtree_control" ]&& return 0
-	read -r active < "${cgroup_path}/cgroup.controllers"
-	for x in ${active}; do
+	[ ! -e "${cgroup_path}/cgroup.subtree_control" ] && return 0
+	read -r controllers < "${cgroup_path}/cgroup.controllers"
+	for controller in ${controllers}; do
 	case "${rc_cgroup_mode:-unified}" in
 		unified)
-			echo "+${x}"  > "${cgroup_path}/cgroup.subtree_control"
+			echo "+${controller}" > "${cgroup_path}/cgroup.subtree_control"
 			;;
 		hybrid)
-			for y in ${rc_cgroup_controllers}; do
-				if [ "$x" = "$y" ]; then
-					echo "+${x}"  > "${cgroup_path}/cgroup.subtree_control"
+			for rc_controller in ${rc_cgroup_controllers}; do
+				if [ "${controller}" = "${rc_controller}" ]; then
+					echo "+${controller}" > "${cgroup_path}/cgroup.subtree_control"
 				fi
 			done
 			;;
@@ -107,6 +147,7 @@ cgroups_hybrid()
 {
 	cgroup1_base
 	cgroup2_base
+	cgroup2_move_init_procs
 	cgroup2_controllers
 	cgroup1_controllers
 	return 0
@@ -122,6 +163,7 @@ cgroups_legacy()
 cgroups_unified()
 {
 	cgroup2_base
+	cgroup2_move_init_procs
 	cgroup2_controllers
 	return 0
 }

@@ -164,15 +164,17 @@ cgroup2_find_path()
 
 cgroup2_remove()
 {
-	local cgroup_path rc_cgroup_path
+	local cgroup_path init_cgroup rc_cgroup_path
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
+	init_cgroup="${cgroup_path}/rc.init"
+	[ ! -e "${init_cgroup}/cgroup.procs" ] && return 0
 	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
 	[ ! -d "${rc_cgroup_path}" ] ||
 		[ ! -e "${rc_cgroup_path}"/cgroup.events ] &&
 		return 0
 	grep -qx "$$" "${rc_cgroup_path}/cgroup.procs" &&
-		printf "%d" 0 > "${cgroup_path}/cgroup.procs"
+		printf "%d" 0 > "${init_cgroup}/cgroup.procs"
 	local key populated vvalue
 	while read -r key value; do
 		case "${key}" in
@@ -187,10 +189,11 @@ cgroup2_remove()
 
 cgroup2_set_limits()
 {
-	local cgroup_path
+	local cgroup_path init_cgroup
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
-	mountinfo -q "${cgroup_path}"|| return 0
+	init_cgroup="${cgroup_path}/rc.init"
+	[ ! -e "${init_cgroup}/cgroup.procs" ] && return 0
 	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
 	[ ! -d "${rc_cgroup_path}" ] && mkdir "${rc_cgroup_path}"
 	[ -f "${rc_cgroup_path}"/cgroup.procs ] &&
