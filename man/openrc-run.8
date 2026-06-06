@@ -191,6 +191,14 @@ your service output to go to syslog.
 The same thing as
 .Pa output_logger
 but for the standard error output.
+.It Ar merge_stderr
+Set to any value to redirect stderr to stdout.
+Use this to combine all output to a single
+.Pa output_logger .
+Cannot be used with
+.Pa error_log
+or
+.Pa error_logger .
 .It Ar directory
 .Xr start-stop-daemon 8
 and
@@ -280,6 +288,7 @@ command_user:start:start:start
 directory:start:start:start
 error_log:start:start:start
 error_logger:start:start:start
+merge_stderr::start:
 healthcheck_delay::start:
 healthcheck_timer::start:
 input_file:start:start:start
