@@ -135,6 +135,7 @@ static const char *const color_terms[] = {
 	"xterm",
 	"xterm-debian",
 	"xterm-kitty",
+    "xterm-ghostty",
 	NULL
 };
 
