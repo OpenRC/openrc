@@ -62,37 +62,41 @@ print_environment(RC_STRINGLIST *services, bool escape, bool export, char sep)
 {
 	/* from POSIX.2024 Shell Command Language 2.2, excluding `=` */
 	static const char special_chars[] = "|&;<>()$`\\\"' \t\n*?[]^-!#~%{},";
-	struct rc_environ env = {0};
+	RC_DEPTREE *deptree = _rc_deptree_load(0, NULL);
 	RC_STRING *service;
-	const char **envp;
+	char *value = NULL;
 	int ret = 0;
 
 	if (!services)
 		services = rc_services_in_state(RC_SERVICE_STARTED);
 
 	TAILQ_FOREACH(service, services, entries) {
-		if (!rc_service_getenv(service->value, &env)) {
-			ewarn("%s: failed to read environment for '%s': %s", applet, service->value, strerror(errno));
-			ret = 1;
+		RC_STRINGLIST *reexports = rc_deptree_depend(deptree, service->value, "reexport");
+		RC_STRING *reexport;
+
+		TAILQ_FOREACH(reexport, reexports, entries) {
+			if (rc_service_getenv(service->value, reexport->value, &value) == -1) {
+				ewarn("%s: failed to read variable '%s' for '%s': %s",
+					applet, reexport->value, service->value, strerror(errno));
+				ret = 1;
+				continue;
+			}
+
+			if (export)
+				fputs("export ", stdout);
+			printf("%s=", reexport->value);
+			if (escape && strpbrk(value, special_chars))
+				escape_variable(value);
+			else
+				fputs(value, stdout);
+			fputc(sep, stdout);
 		}
+
+		rc_stringlist_free(reexports);
 	}
 
-	rc_environ_export(&env, NULL, &envp);
-
-	for (size_t i = 0; envp[i]; i++) {
-		int name_len = strcspn(envp[i], "=");
-		const char *value = &envp[i][name_len + 1];
-
-		printf("%s%.*s=", export ? "export " : "", name_len, envp[i]);
-
-		if (escape && strpbrk(value, special_chars))
-			escape_variable(value);
-		else
-			fputs(value, stdout);
-		fputc(sep, stdout);
-	}
-
-	free(envp), rc_environ_free(&env);
+	free(value);
+	rc_deptree_free(deptree);
 	return ret;
 }
 

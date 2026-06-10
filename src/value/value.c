@@ -29,7 +29,6 @@ int main(int argc, char **argv)
 	char *service = getenv("RC_SVCNAME");
 	enum { GET, SET, EXPORT } action;
 	char *option = NULL;
-	int envidx = 0;
 
 	applet = basename_c(argv[0]);
 	if (service == NULL)
@@ -61,15 +60,14 @@ int main(int argc, char **argv)
 		return rc_service_value_set(service, argv[1], argv[2]) ? EXIT_SUCCESS : EXIT_FAILURE;
 	case EXPORT:
 		for (int i = 1; i < argc; i++) {
-			char *var = env_findvar(argv[i], environ);
-			if (var)
-				argv[envidx++] = var;
+			char *var;
+			if (rc_service_getenv(service, argv[i], NULL) > 0)
+				continue;
+			else if ((var = getenv(argv[i])))
+				rc_service_setenv(service, argv[i], var);
 			else
 				ewarn("%s: Missing reexport variable '%s'", service, argv[i]);
 		}
-		argv[envidx] = NULL;
-
-		rc_service_setenv(service, (const char *const *) argv);
 		return EXIT_SUCCESS;
 	}
 }

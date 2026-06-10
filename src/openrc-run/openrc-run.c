@@ -98,7 +98,6 @@ static bool in_background, deps, dry_run;
 static volatile bool sighup, skip_mark, timedout;
 static pid_t service_pid;
 static int signal_pipe[2] = { -1, -1 };
-static struct rc_environ env;
 
 static RC_STRINGLIST *deptypes_b;	/* broken deps */
 static RC_STRINGLIST *deptypes_n;	/* needed deps */
@@ -239,7 +238,6 @@ cleanup(void)
 
 	rc_plugin_unload();
 
-	rc_environ_free(&env);
 	rc_stringlist_free(deptypes_b);
 	rc_stringlist_free(deptypes_n);
 	rc_stringlist_free(deptypes_nw);
@@ -259,6 +257,22 @@ cleanup(void)
 	free(prefix);
 	free(runlevel);
 	free(service);
+}
+
+static void
+svc_getenv(const char *svc)
+{
+	RC_STRINGLIST *reexports = rc_deptree_depend(deptree, svc, "reexport");
+	RC_STRING *reexport;
+	char *var = NULL;
+
+	TAILQ_FOREACH(reexport, reexports, entries) {
+		if (rc_service_getenv(svc, reexport->value, &var) == -1)
+			continue;
+		setenv(reexport->value, var, true);
+	}
+
+	free(var);
 }
 
 /* Buffer and lock all output messages so that we get readable content */
@@ -338,7 +352,6 @@ svc_exec(const char *command)
 	sigset_t sigchldmask;
 	sigset_t oldmask;
 	char *openrc_sh = NULL;
-	const char **envp = NULL;
 	const char *argv[] = {
 		RC_LIBEXECDIR "/sh/openrc-run.sh",
 		service,
@@ -388,18 +401,14 @@ svc_exec(const char *command)
 		argv[0] = openrc_sh;
 	}
 
-	if (env.count)
-		rc_environ_export(&env, (const char *const *) environ, &envp);
-
 	einfov("Executing: %s %s %s", argv[0], service, command);
-	if ((errno = posix_spawn(&service_pid, argv[0], &tty, NULL, UNCONST(argv), envp ? UNCONST(envp) : environ))) {
+	if ((errno = posix_spawn(&service_pid, argv[0], &tty, NULL, UNCONST(argv), environ))) {
 		eerror("%s: exec '%s': %s", service, argv[0], strerror(errno));
 		return 1;
 	}
 
 	posix_spawn_file_actions_destroy(&tty);
 	free(openrc_sh);
-	free(envp);
 
 	fd[0].fd = signal_pipe[0];
 	fd[1].fd = master_tty;
@@ -675,7 +684,7 @@ svc_start_deps(void)
 	TAILQ_FOREACH(svc, services, entries) {
 		state = rc_service_state(svc->value);
 		if (state & RC_SERVICE_STARTED) {
-			rc_service_getenv(svc->value, &env);
+			svc_getenv(svc->value);
 			continue;
 		}
 
@@ -693,7 +702,7 @@ svc_start_deps(void)
 			eerror("%s: timed out waiting for %s", applet, svc->value);
 		state = rc_service_state(svc->value);
 		if (state & RC_SERVICE_STARTED) {
-			rc_service_getenv(svc->value, &env);
+			svc_getenv(svc->value);
 			continue;
 		}
 		if (rc_stringlist_find(need_services, svc->value)) {
@@ -981,7 +990,7 @@ load_dep_env(void)
 	depsvcs = rc_deptree_depends(deptree, deptypes_nwu, applet_list, runlevel, 0);
 
 	TAILQ_FOREACH(svc, depsvcs, entries)
-		rc_service_getenv(svc->value, &env);
+		svc_getenv(svc->value);
 
 	rc_stringlist_free(services);
 }

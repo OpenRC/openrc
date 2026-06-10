@@ -1345,97 +1345,76 @@ rc_services_scheduled(const char *service)
 }
 
 bool
-rc_service_setenv(const char *service, const char *const env[])
+rc_service_putenv(const char *service, const char *env)
 {
+	size_t name_len = strcspn(env, "=");
+	char var[strlen(service) + sizeof("/") + name_len];
+	int dfp = rc_dirfd(RC_DIR_ENVIRON);
 	FILE *fp;
 
-	for (const char *const *var = env; *var; var++)
-		if (!strchr(*var, '='))
-			return errno = EINVAL, false;
+	if (env[name_len] != '=')
+		return errno = EINVAL, false;
 
-	if (!(fp = do_fopenat(rc_dirfd(RC_DIR_ENVIRON), service, O_WRONLY | O_CREAT | O_TRUNC)))
+	snprintf(var, sizeof(var), "%s/%.*s", service, (int) name_len, env);
+
+	if (mkdirat(dfp, service, 0700) == -1 && errno != EEXIST)
 		return false;
 
-	for (const char *const *var = env; *var; var++)
-		if (fprintf(fp, "%s%c", *var, '\0') == -1)
-			return fclose(fp), false;
+	if (!(fp = do_fopenat(dfp, var, O_WRONLY | O_CREAT | O_TRUNC)))
+		return false;
+
+	fputs(&env[name_len + 1], fp);
 
 	return fclose(fp) == 0;
 }
 
 bool
-rc_service_getenv(const char *service, struct rc_environ *env)
+rc_service_setenv(const char *service, const char *name, const char *value)
 {
-	size_t end = env->size, count = 0;
-	struct stat stat;
-	char *envstr;
-	int serrno;
+	char var[strlen(service) + sizeof("/") + strlen(name)];
+	int dfp = rc_dirfd(RC_DIR_ENVIRON);
 	FILE *fp;
 
-	if (!(fp = do_fopenat(rc_dirfd(RC_DIR_ENVIRON), service, O_RDONLY)))
-		return errno == ENOENT;
+	snprintf(var, sizeof(var), "%s/%s", service, name);
 
-	if (fstat(fileno(fp), &stat) == -1)
-		goto err;
+	if (mkdirat(dfp, service, 0700) == -1 && errno != EEXIST)
+		return false;
 
-	if (!(envstr = xrealloc(env->bytes, env->size + stat.st_size)))
-		goto err;
-	env->bytes = envstr;
+	if (!(fp = do_fopenat(dfp, var, O_WRONLY | O_CREAT | O_TRUNC)))
+		return false;
 
-	if (fread(&env->bytes[end], 1, stat.st_size, fp) < (size_t) stat.st_size)
-		goto err;
-	env->size += stat.st_size;
-	env->bytes[env->size - 1] = '\0';
+	fputs(value, fp);
+
+	return fclose(fp) == 0;
+}
+
+ssize_t
+rc_service_getenv(const char *service, const char *name, char **buf)
+{
+	char var[strlen(service) + sizeof("/") + strlen(name)], *value;
+	int serrno, dfd = rc_dirfd(RC_DIR_ENVIRON);
+	struct stat stat;
+	size_t count;
+	FILE *fp;
+
+	snprintf(var, sizeof(var), "%s/%s", service, name);
+
+	if (fstatat(dfd, var, &stat, 0) == -1)
+		return -1;
+
+	if (!buf)
+		return stat.st_size;
+
+	if (!(value = xrealloc(*buf, stat.st_size + 1)))
+		return -1;
+
+	if (!(fp = do_fopenat(dfd, var, O_RDONLY)))
+		return -1;
+
+	count = fread(value, 1, stat.st_size, fp);
+	value[count] = '\0';
 
 	fclose(fp);
-
-	for (off_t i = 0; i < stat.st_size; i += strlen(&env->bytes[end + i]) + 1) {
-		if (!strchr(&env->bytes[i], '='))
-			return env->size = end, errno = EINVAL, false;
-		count++;
-	}
-
-	env->count += count;
-	return true;
-
-err:
-	serrno = errno;
-	fclose(fp);
-	errno = serrno;
-	return false;
-}
-
-void
-rc_environ_merge(const struct rc_environ *env, const char *const defaults[], size_t envp_size, const char *envp[static envp_size])
-{
-	size_t i = 0;
-	if (defaults) for (; i < envp_size - 1 && defaults[i]; i++)
-		envp[i] = defaults[i];
-	envp[i] = NULL;
-
-	for (size_t pos = 0; pos < env->size; pos += strlen(&env->bytes[pos]) + 1)
-		env_putenv(&env->bytes[pos], envp_size, envp);
-}
-
-size_t
-rc_environ_export(const struct rc_environ *env, const char *const defaults[], const char ***envp_out)
-{
-	const char **envp;
-	size_t size = 0;
-
-	if (defaults) while (defaults[size])
-		size++;
-
-	size += env->count + 1;
-	envp = xmalloc(sizeof(*envp) * size);
-
-	rc_environ_merge(env, defaults, size, envp);
-	*envp_out = envp;
-	return size;
-}
-
-void
-rc_environ_free(struct rc_environ *env)
-{
-	env->bytes = (free(env->bytes), NULL);
+	*buf = value;
+	return count;
 }
