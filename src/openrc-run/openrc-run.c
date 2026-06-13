@@ -764,9 +764,6 @@ static void set_reexports(void)
 	char *buf;
 	FILE *fp;
 
-	if (TAILQ_EMPTY(list))
-		goto out;
-
 	fp = xopen_memstream(&buf, &size);
 
 	fputs("RC_REEXPORT=", fp);
@@ -775,7 +772,6 @@ static void set_reexports(void)
 
 	fclose(fp);
 	putenv(buf);
-out:
 	rc_stringlist_free(list);
 }
 
