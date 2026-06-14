@@ -12,6 +12,19 @@ librc_sources = [
   'librc-stringlist.c',
 ]
 
+sysconfdir = get_option('sysconfdir')
+rc_path = get_option('rc_path')
+if rc_path.length() == 0
+  rc_path = [
+    sysconfdir / 'rc',
+    sysconfdir,
+    local_prefix / 'rc',
+    local_prefix,
+    rc_libexecdir,
+  ]
+endif
+rc_path += '/run/openrc'
+
 rc_h = configure_file(input : 'rc.h.in', output : 'rc.h',
   configuration : rc_h_conf_data)
 
@@ -19,6 +32,7 @@ rc = declare_dependency(
   include_directories: '.',
   sources: rc_h,
   link_with: library('rc', librc_sources,
+    c_args: [ '-D_RC_PATH="@0@"'.format('","'.join(rc_path)) ],
     dependencies: kvm_dep,
     include_directories : incdir,
     link_depends : 'rc.map',

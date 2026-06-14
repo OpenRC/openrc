@@ -27,3 +27,11 @@ option('uucp_group', type : 'string', value : 'uucp',
 option('agetty', type: 'array',
   value: ['tty1', 'tty2', 'tty3', 'tty4', 'tty5', 'tty6'],
   description : 'agetty symlinks to install when sysvinit is also specified')
+option('rc_path', type: 'array',
+  description : '''compile-time default RC_PATH, if unset, defaults to:
+    $sysconfdir/rc, $sysconfdir, $local_prefix/etc/rc, $local_prefix, $libexecdir/rc
+
+    consider using the runtime environment variable RC_PATH over setting this, though
+    if setting a custom compile-time time is strictly necessary, it is recommended to
+    set it as close to the default as possible
+  ''')
