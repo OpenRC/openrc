@@ -21,8 +21,8 @@ start()
 {
 	ebegin "Starting local rc services"
 	local svc= enabled= retval=0 service= pkgdir=
-	[ -n "@PKG_PREFIX@" ] && pkgdir="@PKG_PREFIX@/etc/rc.d/*"
-	for svc in $(rcorder /etc/rc.d/* $pkgdir 2>/dev/null); do
+	[ -n "@LOCAL_PREFIX@" ] && localdir="@LOCAL_PREFIX@/etc/rc.d/*"
+	for svc in $(rcorder /etc/rc.d/* $localdir 2>/dev/null); do
 		[ -x "$svc" ] || continue
 		service=${svc##*/}
 

@@ -61,12 +61,11 @@ _sanitize_path()
 		case "$p" in
 			@LIBEXECDIR@/bin|@LIBEXECDIR@/sbin);;
 			@BINDIR@|@SBINDIR@|/usr/bin|/usr/sbin);;
-			@PKG_PREFIX@/bin|@PKG_PREFIX@/sbin);;
 			@LOCAL_PREFIX@/bin|@LOCAL_PREFIX@/sbin);;
 			*) path="$path${path:+:}$p";;
 		esac
 	done
-	echo "$path"
+	[ "$path" ] && echo ":$path"
 }
 
 # Allow our scripts to support zsh
@@ -78,20 +77,8 @@ if [ -n "$ZSH_VERSION" ]; then
 fi
 
 # Make a sane PATH
-_PKG_PREFIX=@PKG_PREFIX@
-_LOCAL_PREFIX=@LOCAL_PREFIX@
-_LOCAL_PREFIX=${_LOCAL_PREFIX:-/usr/local}
-_PATH="@LIBEXECDIR@/bin:/bin:/sbin:/usr/bin:/usr/sbin"
-
-if [ -n "$_PKG_PREFIX" ]; then
-	_PATH="$_PATH:$_PKG_PREFIX/bin:$_PKG_PREFIX/sbin"
-fi
-if [ -n "$_LOCAL_PREFIX" ]; then
-	_PATH="$_PATH:$_LOCAL_PREFIX/bin:$_LOCAL_PREFIX/sbin"
-fi
-_path="$(_sanitize_path "$PATH")"
-PATH="$_PATH${_path:+:}$_path" ; export PATH
-unset _sanitize_path _PREFIX _PKG_PREFIX _LOCAL_PREFIX _PATH _path
+export PATH="@LIBEXECDIR@/bin:/bin:/sbin:/usr/bin:/usr/sbin:@LOCAL_PREFIX@/bin:@LOCAL_PREFIX@/sbin$(_sanitize_path)"
+unset _sanitize_path
 
 for arg; do
 	case "$arg" in

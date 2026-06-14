@@ -13,11 +13,6 @@ usual methods for this build system to build and install.
 
 We don't support building a static OpenRC with PAM.
 
-`PKG_PREFIX` should be set to where packages install to by default.
-
-`LOCAL_PREFIX` should be set to where user maintained packages are.
-Only set `LOCAL_PREFIX` if different from `PKG_PREFIX`.
-
 `rc` and `rc.shutdown` are the hooks from the BSD init into OpenRC.
 
 `devd.conf` is modified from FreeBSD to call `/etc/rc.devd` which is a
