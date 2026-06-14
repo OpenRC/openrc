@@ -29,7 +29,11 @@ libname = get_option('libdir').split('/')[-1]
 
 local_prefix = get_option('local_prefix')
 if local_prefix == ''
-  local_prefix = get_option('prefix') / 'usr' / 'local'
+  if os == 'netbsd'
+    local_prefix = '/usr/pkg'
+  else
+    local_prefix = '/usr/local'
+  endif
 endif
 
 os = host_machine.system()
@@ -50,17 +54,6 @@ if get_option('pam')
     pam_dep = cc.find_library('pam') # bsds don't ship pam's pkg-config for whatever reason
   endif
   c_flags += '-DHAVE_PAM'
-endif
-
-pkg_prefix = get_option('pkg_prefix')
-if pkg_prefix == ''
-  if os == 'dragonfly' or os == 'freebsd'
-    pkg_prefix = '/usr/local'
-  elif os == 'gnu' or os == 'linux'
-    pkg_prefix = '/usr'
-  elif os == 'netbsd'
-    pkg_prefix = '/usr/pkg'
-  endif
 endif
 
 bindir = get_option('prefix') / get_option('bindir')
@@ -166,7 +159,7 @@ rc_incdir = include_directories('src/librc')
 
 init_d_conf_data = configuration_data()
 init_d_conf_data.set('SBINDIR', sbindir)
-init_d_conf_data.set('PKG_PREFIX', pkg_prefix)
+init_d_conf_data.set('LOCAL_PREFIX', local_prefix)
 init_d_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
 init_d_conf_data.set('RC_LIBEXECDIR', rc_libexecdir)
 
