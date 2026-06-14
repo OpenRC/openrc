@@ -555,21 +555,7 @@ rc_runlevel_stacks(const char *runlevel)
 	return stack;
 }
 
-static const char *config_path[] = {
-	RC_SYSCONFDIR "/rc",
-	RC_SYSCONFDIR,
-#ifdef RC_LOCAL_PREFIX
-	RC_LOCAL_PREFIX "/etc/rc",
-	RC_LOCAL_PREFIX "/etc",
-#endif
-#ifdef RC_PKG_PREFIX
-	RC_PKG_PREFIX "/etc/rc",
-	RC_PKG_PREFIX "/etc",
-#endif
-	RC_LIBEXECDIR,
-	RC_SVCDIR,
-	NULL,
-};
+static const char *config_path[] = { _RC_PATH, NULL };
 
 static struct {
 	bool set;
