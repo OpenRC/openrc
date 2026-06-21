@@ -659,7 +659,7 @@ append_rc_path(FILE *fp, const char *path, bool user)
 
 	while ((entry = strnsep(&path, &size, ':'))) {
 		if (size)
-			append_path(fp, "%.*s", (int)size, entry);
+			append_path(fp, "%.*s%s", (int)size, entry, user ? "/user" : "");
 		else if (user && !has_user)
 			append_user_path(fp), has_user = true;
 		else if (!user) while (*rc_path.entries)
