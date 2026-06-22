@@ -10,6 +10,7 @@ librc_sources = [
   'librc-depend.c',
   'librc-misc.c',
   'librc-stringlist.c',
+  'rc-eventlog.c',
 ]
 
 sysconfdir = get_option('sysconfdir')

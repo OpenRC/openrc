@@ -12,6 +12,7 @@ man3 = [
 man8 = [
   'openrc.8',
   'openrc-run.8',
+  'rc-analyze.8',
   'rc-service.8',
   'rc-status.8',
   'rc-update.8',
