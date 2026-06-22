@@ -107,7 +107,7 @@ rc_plugin_run(RC_HOOK hook, const char *value)
 	sigset_t old;
 	int pfd[2];
 	pid_t pid;
-	char *buffer;
+	char buffer[BUFSIZ];
 	char *token;
 	char *p;
 	ssize_t nr;
@@ -169,10 +169,12 @@ rc_plugin_run(RC_HOOK hook, const char *value)
 
 		sigprocmask(SIG_SETMASK, &old, NULL);
 		close(pfd[1]);
-		buffer = xmalloc(sizeof(char) * BUFSIZ);
-		memset(buffer, 0, BUFSIZ);
 
-		while ((nr = read(pfd[0], buffer, BUFSIZ)) > 0) {
+		/* FIXME: this will be buggy if `read` cuts the buffer in the
+		 * middle. getdelim() could work, but this function is
+		 * currently being called from within a signal handler. */
+		while ((nr = read(pfd[0], buffer, sizeof(buffer) - 1)) > 0) {
+			buffer[nr] = '\0';
 			p = buffer;
 			while (*p && p - buffer < nr) {
 				token = strsep(&p, "=");
@@ -187,7 +189,6 @@ rc_plugin_run(RC_HOOK hook, const char *value)
 			}
 		}
 
-		free(buffer);
 		close(pfd[0]);
 
 		rc_waitpid(pid);
