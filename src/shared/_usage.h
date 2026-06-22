@@ -14,41 +14,35 @@
 #include <stdlib.h>
 #include "librc.h"
 
-#define getoptstring_COMMON "ChqVvU"
+#define longopt(short, long, args, help) { #long, args, NULL, #short[0] },
+#define longopt_only(short, long, args, help) { #long, args, NULL, short },
+#define shortopt_no_argument
+#define shortopt_required_argument ":"
+#define shortopt_optional_argument "::"
+#define shortopt(short, long, args, help) #short shortopt_##args
+#define opt_null(short, long, args, help)
+#define helpstring(short, long, args, help) #help,
 
-#define longopts_COMMON							      \
-	{ "help",           0, NULL, 'h'},				      \
-	{ "nocolor",        0, NULL, 'C'},				      \
-	{ "version",        0, NULL, 'V'},				      \
-	{ "verbose",        0, NULL, 'v'},				      \
-	{ "quiet",          0, NULL, 'q'},				      \
-	{ "user",           0, NULL, 'U'},				      \
-	{ NULL,             0, NULL,  0 }
+#define common_opts(opt)                                                  \
+	opt(h, help, no_argument, "Display this help output")                 \
+	opt(C, nocolor, no_argument, "Disable color output")                  \
+	opt(V, version, no_argument, "Display software version")              \
+	opt(v, verbose, no_argument, "Run verbosely")                         \
+	opt(q, quiet, no_argument, "Run quietly (repeat to suppress errors)") \
 
-#define longopts_help_COMMON						      \
-	"Display this help output",					      \
-	"Disable color output",						      \
-	"Display software version",			              \
-	"Run verbosely",						      \
-	"Run quietly (repeat to suppress errors)",         \
-	"Run in user mode"
+#define cmdline_opts(opts)                                                                       \
+	const struct option longopts[] = { opts(longopt, longopt_only) common_opts(longopt) };       \
+	const char getoptstring[] = opts(shortopt, opt_null) common_opts(shortopt);                  \
+	const char * const longopts_help[] = { opts(helpstring, opt_null) common_opts(helpstring) }; \
 
-#define case_RC_COMMON_getopt_case_C  setenv ("EINFO_COLOR", "NO", 1);
-#define case_RC_COMMON_getopt_case_h  usage (EXIT_SUCCESS);
-#define case_RC_COMMON_getopt_case_V  if (argc == 2) show_version();
-#define case_RC_COMMON_getopt_case_v  setenv ("EINFO_VERBOSE", "YES", 1);
-#define case_RC_COMMON_getopt_case_q  set_quiet_options();
-#define case_RC_COMMON_getopt_case_U  rc_set_user();
-#define case_RC_COMMON_getopt_default usage (EXIT_FAILURE);
-
-#define case_RC_COMMON_GETOPT						      \
-	case 'C': case_RC_COMMON_getopt_case_C; break;			      \
-	case 'h': case_RC_COMMON_getopt_case_h; break;			      \
-	case 'V': case_RC_COMMON_getopt_case_V; break;			      \
-	case 'v': case_RC_COMMON_getopt_case_v; break;			      \
-	case 'q': case_RC_COMMON_getopt_case_q; break;			      \
-	case 'U': case_RC_COMMON_getopt_case_U; break;			      \
-	default:  case_RC_COMMON_getopt_default; break;
+#define case_RC_COMMON_GETOPT                           \
+	case 'C': setenv("EINFO_COLOR", "NO", 1);    break; \
+	case 'h': usage(EXIT_SUCCESS);               break; \
+	case 'V': if (argc == 2) show_version();     break; \
+	case 'v': setenv("EINFO_VERBOSE", "YES", 1); break; \
+	case 'q': set_quiet_options();               break; \
+	case 'U': rc_set_user();                     break; \
+	default:  usage(EXIT_FAILURE);               break;
 
 extern const char *applet;
 extern const char *extraopts;
