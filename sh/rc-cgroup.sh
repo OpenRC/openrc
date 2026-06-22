@@ -49,16 +49,16 @@ cgroup_get_pids()
 
 cgroup_running()
 {
-	[ -d "/sys/fs/cgroup/unified/${RC_SVCNAME}" ] ||
-			[ -d "/sys/fs/cgroup/${RC_SVCNAME}" ] ||
-			[ -d "/sys/fs/cgroup/openrc/${RC_SVCNAME}" ]
+	[ -d "/sys/fs/cgroup/unified/openrc.${RC_SVCNAME}" ] ||
+		[ -d "/sys/fs/cgroup/openrc.${RC_SVCNAME}" ] ||
+		[ -d "/sys/fs/cgroup/openrc/${RC_SVCNAME}" ]
 }
 
 cgroup_set_values()
 {
 	[ -n "$1" ] && [ -n "$2" ] && [ -d "/sys/fs/cgroup/$1" ] || return 0
 
-	local controller h
+	local cgroup controller h
 	controller="$1"
 	h=$(cgroup_find_path "$1")
 	cgroup="/sys/fs/cgroup/${1}${h}openrc_${RC_SVCNAME}"
@@ -100,10 +100,11 @@ cgroup_set_values()
 
 cgroup_add_service()
 {
-    # relocate starting process to the top of the cgroup
-    # it prevents from unwanted inheriting of the user
-    # cgroups. But may lead to a problems where that inheriting
-    # is needed.
+	# relocate starting process to the top of the cgroup
+	# it prevents unwanted inheriting of the user
+	# cgroups. But may lead to problems where that inheriting
+	# is needed.
+	local cgroup d openrc_cgroup
 	for d in /sys/fs/cgroup/* ; do
 		[ -w "${d}"/tasks ] && printf "%d" 0 > "${d}"/tasks
 	done
@@ -127,7 +128,7 @@ cgroup_set_limits()
 	local cpuacct="${rc_cgroup_cpuacct:-$RC_CGROUP_CPUACCT}"
 	[ -n "$cpuacct" ] && cgroup_set_values cpuacct "$cpuacct"
 
-	local cpuset="${rc_cgroup_cpuset:-$RC_CGROUP_cpuset}"
+	local cpuset="${rc_cgroup_cpuset:-$RC_CGROUP_CPUSET}"
 	[ -n "$cpuset" ] && cgroup_set_values cpuset "$cpuset"
 
 	local devices="${rc_cgroup_devices:-$RC_CGROUP_DEVICES}"
@@ -173,7 +174,7 @@ cgroup2_remove()
 		return 0
 	grep -qx "$$" "${rc_cgroup_path}/cgroup.procs" &&
 		printf "%d" 0 > "${cgroup_path}/cgroup.procs"
-	local key populated vvalue
+	local key populated value
 	while read -r key value; do
 		case "${key}" in
 			populated) populated=${value} ;;
@@ -187,7 +188,7 @@ cgroup2_remove()
 
 cgroup2_set_limits()
 {
-	local cgroup_path
+	local cgroup_path rc_cgroup_path key value
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 0
 	mountinfo -q "${cgroup_path}"|| return 0
@@ -206,8 +207,9 @@ cgroup2_set_limits()
 	return 0
 }
 
-cgroup2_kill_cgroup() {
-	local cgroup_path
+cgroup2_kill_cgroup()
+{
+	local cgroup_path rc_cgroup_path
 	cgroup_path="$(cgroup2_find_path)"
 	[ -z "${cgroup_path}" ] && return 1
 	rc_cgroup_path="${cgroup_path}/openrc.${RC_SVCNAME}"
@@ -217,7 +219,8 @@ cgroup2_kill_cgroup() {
 	return
 }
 
-cgroup_fallback_cleanup() {
+cgroup_fallback_cleanup()
+{
 	ebegin "Starting fallback cgroups cleanup"
 	local loops=0
 	cgroup_get_pids
