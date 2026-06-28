@@ -402,9 +402,9 @@ case $_func in
 	start|stop|status) verify_boot;;
 esac
 
-[ "$(command -v "$_func_pre")" = "$1_pre" ] && { "$1"_pre || exit $?; }
+[ "$(command -v "${_func}_pre")" = "${_func}_pre" ] && { "${_func}_pre" || exit $?; }
 "$_func" || exit $?
-[ "$(command -v "$_func_post")" = "$1_post" ] && { "$1"_post || exit $?; }
+[ "$(command -v "${_func}_post")" = "${_func}_post" ] && { "${_func}_post" || exit $?; }
 
 [ "$_func" = start ] && [ -n "$RC_REEXPORT" ] && service_export $RC_REEXPORT
 [ "$(command -v cgroup_cleanup)" = cgroup_cleanup ] && [ "$_func" = stop ] && yesno "${rc_cgroup_cleanup}" && cgroup_cleanup
