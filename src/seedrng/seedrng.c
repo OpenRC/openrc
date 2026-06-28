@@ -61,18 +61,11 @@ enum long_opts {
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "seed-dir", 1, NULL, LONGOPT_SEED_DIR },
-	{ "skip-credit", 0, NULL, LONGOPT_SKIP_CREDIT },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"Directory for seed files (default: " DEFAULT_SEED_DIR ")",
-	"Skip crediting entropy of seeds",
-	longopts_help_COMMON
-};
 const char *usagestring = NULL;
+#define opts(opt, opt_long) \
+	opt_long(LONGOPT_SEED_DIR, seed-dir, required_argument, "Directory for seed files (default: " DEFAULT_SEED_DIR ")") \
+	opt_long(LONGOPT_SKIP_CREDIT, skip-credit, no_argument, "Skip crediting entropy of seeds")
+cmdline_opts(opts)
 
 enum blake2s_lengths {
 	BLAKE2S_BLOCK_LEN = 64,
