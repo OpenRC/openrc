@@ -351,6 +351,7 @@ fi
 # See if we have the required function and run it
 for _cmd in describe start stop status ${extra_commands:-$opts} $extra_started_commands $extra_stopped_commands; do
 	[ "$_cmd" = "$1" ] || continue
+	_func="$_cmd"
 	if [ "$(command -v "$1")" != "$1" ]; then
 		case $_cmd in
 			start|stop)
@@ -363,45 +364,50 @@ for _cmd in describe start stop status ${extra_commands:-$opts} $extra_started_c
 	fi
 done
 
+if ! [ "$_func" ]; then
+	eerror "$RC_SVCNAME: command '$1' not a default nor extra command"
+	exit 1
+fi
+
 # If we're in the background, we may wish to fake some commands. We do this so we can
 # "start" ourselves from inactive which then triggers other services to start which
 # depend on us. A good example of this is openvpn.
 if yesno $IN_BACKGROUND; then
 	for _cmd in $in_background_fake; do
-		if [ "$_cmd" = "$1" ]; then
+		if [ "$_cmd" = "$_func" ]; then
 			exit 0
 		fi
 	done
 fi
 
 for _cmd in $extra_started_commands; do
-	[ "$_cmd" = "$1" ] || continue
+	[ "$_cmd" = "$_func" ] || continue
 	if verify_boot && ! service_started; then
-		eerror "$RC_SVCNAME: cannot '$1' as it has not been started"
+		eerror "$RC_SVCNAME: cannot '$_func' as it has not been started"
 		exit 1
 	fi
 done
 
 for _cmd in $extra_stopped_commands; do
-	[ "$_cmd" = "$1" ] || continue
+	[ "$_cmd" = "$_func" ] || continue
 	if verify_boot && ! service_stopped; then
-		eerror "$RC_SVCNAME: cannot '$1' as it has not been stopped"
+		eerror "$RC_SVCNAME: cannot '$_func' as it has not been stopped"
 		exit 1
 	fi
 done
 
 unset _cmd
 
-case $1 in
+case $_func in
 	start|stop|status) verify_boot;;
 esac
 
-[ "$(command -v "$1_pre")" = "$1_pre" ] && { "$1"_pre || exit $?; }
-"$1" || exit $?
-[ "$(command -v "$1_post")" = "$1_post" ] && { "$1"_post || exit $?; }
+[ "$(command -v "$_func_pre")" = "$1_pre" ] && { "$1"_pre || exit $?; }
+"$_func" || exit $?
+[ "$(command -v "$_func_post")" = "$1_post" ] && { "$1"_post || exit $?; }
 
-[ "$1" = start ] && [ -n "$RC_REEXPORT" ] && service_export $RC_REEXPORT
-[ "$(command -v cgroup_cleanup)" = cgroup_cleanup ] && [ "$1" = stop ] && yesno "${rc_cgroup_cleanup}" && cgroup_cleanup
-[ "$(command -v cgroup2_remove)" = cgroup2_remove ] && { [ "$1" = stop ] || [ -z "${command}" ]; } && cgroup2_remove
+[ "$_func" = start ] && [ -n "$RC_REEXPORT" ] && service_export $RC_REEXPORT
+[ "$(command -v cgroup_cleanup)" = cgroup_cleanup ] && [ "$_func" = stop ] && yesno "${rc_cgroup_cleanup}" && cgroup_cleanup
+[ "$(command -v cgroup2_remove)" = cgroup2_remove ] && { [ "$_func" = stop ] || [ -z "${command}" ]; } && cgroup2_remove
 
 exit 0
