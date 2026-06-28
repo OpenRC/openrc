@@ -245,13 +245,17 @@ void parse_schedule(const char *applet, const char *string, int timeout)
 
 /* return number of processes killed, -1 on error */
 int do_stop(const char *applet, const char *exec, const char *const *argv,
-    pid_t pid, uid_t uid,int sig, bool test, bool quiet)
+    pid_t pid, uid_t uid, int sig, bool group, bool test, bool quiet)
 {
 	RC_PIDLIST *pids;
 	RC_PID *pi;
 	RC_PID *np;
 	bool killed;
 	int nkilled = 0;
+	uid_t target;
+	char* kind = "PID";
+	if (group)
+		kind = "GID";
 
 	if (pid > 0)
 		pids = rc_find_pids(NULL, NULL, 0, pid);
@@ -263,24 +267,28 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 
 	LIST_FOREACH_SAFE(pi, pids, entries, np) {
 		if (test) {
-			einfo("Would send signal %d to PID %d", sig, pi->pid);
+			einfo("Would send signal %d to %s %d", sig, kind, pi->pid);
 			nkilled++;
 		} else {
 			if (sig) {
-				syslog(LOG_DEBUG, "Sending signal %d to PID %d", sig, pi->pid);
+				syslog(LOG_DEBUG, "Sending signal %d to %s %d", sig, kind, pi->pid);
 				if (!quiet)
-					ebeginv("Sending signal %d to PID %d", sig, pi->pid);
+					ebeginv("Sending signal %d to %s %d", sig, kind, pi->pid);
 			}
 			errno = 0;
-			killed = (kill(pi->pid, sig) == 0 ||
+			if (group)
+				target = -pi->pid;
+			else
+				target = pi->pid;
+			killed = (kill(target, sig) == 0 ||
 			    errno == ESRCH ? true : false);
 			if (!quiet)
 				eendv(killed ? 0 : 1,
-				"%s: failed to send signal %d to PID %d: %s",
-				applet, sig, pi->pid, strerror(errno));
+				"%s: failed to send signal %d to %s %d: %s",
+				applet, sig, kind, pi->pid, strerror(errno));
 			else if (!killed)
-				syslog(LOG_ERR, "Failed to send signal %d to PID %d: %s",
-						sig, pi->pid, strerror(errno));
+				syslog(LOG_ERR, "Failed to send signal %d to %s %d: %s",
+						sig, kind, pi->pid, strerror(errno));
 			if (!killed) {
 				nkilled = -1;
 			} else {
@@ -297,7 +305,7 @@ int do_stop(const char *applet, const char *exec, const char *const *argv,
 
 int run_stop_schedule(const char *applet,
 		const char *exec, const char *const *argv,
-		pid_t pid, uid_t uid,
+		pid_t pid, uid_t uid, bool group,
     bool test, bool progress, bool quiet)
 {
 	SCHEDULEITEM *item = TAILQ_FIRST(&schedule);
@@ -317,8 +325,13 @@ int run_stop_schedule(const char *applet,
 		syslog(LOG_DEBUG, "Will stop %s", exec);
 	}
 	if (pid > 0) {
-		einfov("Will stop PID %d", pid);
-		syslog(LOG_DEBUG, "Will stop PID %d", pid);
+		if (!group) {
+			einfov("Will stop PID %d", pid);
+			syslog(LOG_DEBUG, "Will stop PID %d", pid);
+		} else {
+			einfov("Will stop GID %d", pid);
+			syslog(LOG_DEBUG, "Will stop GID %d", pid);
+		}
 	}
 	if (uid) {
 		einfov("Will stop processes owned by UID %d", uid);
@@ -344,8 +357,8 @@ int run_stop_schedule(const char *applet,
 
 		case SC_SIGNAL:
 			nrunning = 0;
-			nkilled = do_stop(applet, exec, argv, pid, uid, item->value, test,
-					quiet);
+			nkilled = do_stop(applet, exec, argv, pid, uid, item->value, group,
+					test, quiet);
 			if (nkilled == 0) {
 				if (tkilled == 0) {
 					if (progressed)
@@ -375,7 +388,7 @@ int run_stop_schedule(const char *applet,
 				     nloops++)
 				{
 					if ((nrunning = do_stop(applet, exec, argv,
-						    pid, uid, 0, test, quiet)) == 0)
+						    pid, uid, 0, group, test, quiet)) == 0)
 						return 0;
 
 
