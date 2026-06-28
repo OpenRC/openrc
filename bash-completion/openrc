@@ -16,8 +16,26 @@ _openrc()
 	local cur
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
-	if [[ ${#COMP_WORDS[*]} -le 2 ]]; then
-		COMPREPLY=($(compgen -W "$(rc-status --list)" -- $cur))
+
+	user_flag=
+	non_flag_args=0
+
+	for i in "${COMP_WORDS[@]}"; do
+		case "$i" in
+			--user|-U)
+				user_flag=--user
+				;;
+			-*)
+				;;
+			*)
+				non_flag_args=$((non_flag_args+1))
+				;;
+		esac
+	done
+
+	# runlevel is the second word that is not a flag
+	if [[ $non_flag_args -eq 2 ]]; then
+		COMPREPLY=($(compgen -W "$(rc-status ${user_flag} --list)" -- $cur))
 	fi
 	return 0
 } &&
