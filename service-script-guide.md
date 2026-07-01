@@ -103,6 +103,7 @@ All service scripts are assumed to have the following functions:
 ```
 start()
 stop()
+reload()
 status()
 ```
 
@@ -117,6 +118,7 @@ script:
 command=
 command_args=
 pidfile=
+reloadsig=
 ```
 
 Thus the 'smallest' service scripts can be half a dozen lines long
@@ -131,6 +133,7 @@ following OpenRC variables are likely all that you'll need:
   * command
   * command_args
   * pidfile
+  * reloadsig
 
 Given those three pieces of information, OpenRC will be able to start
 and stop the daemon on its own. The following is taken from an
@@ -242,7 +245,17 @@ To recap, in order of preference:
 
 Many daemons will reload their configuration files in response to a
 signal. Suppose your daemon will reload its configuration in response
-to a `SIGHUP`. It's possible to add a new "reload" command to your
+to a `SIGHUP`. You can simply add the following to your service script:
+
+```sh
+reloadsig=HUP
+```
+
+For most daemons this is sufficient, though note it only works on OpenRC TODO.
+(older versions need a custom `reload()` function, see below)
+
+If this approach is not enough, or the daemon has a completely different
+way of reloading, it's still possible to add a new "reload" command to your
 service script that performs this action. First, tell the service
 script about the new command.
 
