@@ -13,18 +13,18 @@
 .Os OpenRC
 .Sh NAME
 .Nm rc-update
-.Nd add and remove services to and from a runlevel
+.Nd add and remove dependencies to and from a runlevel
 .Sh SYNOPSIS
 .Nm
 .Op Fl s , -stack
 .Ic add
-.Ar service
+.Ar dep
 .Op Ar runlevel ...
 .Nm
 .Op Fl s , -stack
 .Op Fl a , -all
 .Ic delete
-.Ar service
+.Ar dep
 .Op Ar runlevel ...
 .Nm
 .Op Fl u , -update
@@ -72,12 +72,12 @@ system clock).
 .Pp
 If the
 .Fl s , -stack
-option is given then we either add or remove the runlevel from the runlevel.
+option is given then the dependency we add or remove must be another runlevel.
 This allows inheritance of runlevels.
 .Pp
 If the
 .Fl a, -all
-option is given, we remove the service from all runlevels. This is
+option is given, we remove the service/runlevel from all runlevels. This is
 useful, for example, to clean up the dangling symlinks after a service
 is removed.
 .Sh SEE ALSO

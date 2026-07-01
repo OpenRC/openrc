@@ -82,9 +82,10 @@ depend() {
 - `want` is between need and use - try to start coolservice if it is
 	installed on the system, regardless of whether it is in the
 	runlevel, but we don't care if it starts.
-- `before` declares that we need to be started before another service
 - `after` declares that we need to be started after another service, without 
-	creating a dependency (so on calling stop the two are independent)
+	creating a dependency (so on calling stop the two are independent). Has no
+  effect on services in different stacked runlevels.
+- `before` is the reverse of `after`.
 - `provide` allows multiple implementations to provide one service type, e.g.:
 	`provide cron` is set in all cron-daemons, so any one of them started 
 	satisfies a cron dependency
