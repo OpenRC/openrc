@@ -78,6 +78,7 @@ enum {
   LONGOPT_SECBITS,
   LONGOPT_STDERR_LOGGER,
   LONGOPT_STDOUT_LOGGER,
+  LONGOPT_MERGE_STDERR,
   LONGOPT_NOTIFY,
   LONGOPT_RESPAWN_DELAY_STEP,
   LONGOPT_RESPAWN_DELAY_CAP,
@@ -117,6 +118,7 @@ const struct option longopts[] = {
 	{ "stderr",       1, NULL, '2'},
 	{ "stdout-logger",1, NULL, LONGOPT_STDOUT_LOGGER},
 	{ "stderr-logger",1, NULL, LONGOPT_STDERR_LOGGER},
+	{ "merge-stderr", 0, NULL, LONGOPT_MERGE_STDERR},
 	{ "reexec",       0, NULL, '3'},
 	{ "notify",       1, NULL, LONGOPT_NOTIFY},
 	longopts_COMMON
@@ -151,6 +153,7 @@ const char * const longopts_help[] = {
 	"Redirect stderr to file",
 	"Redirect stdout to process",
 	"Redirect stderr to process",
+	"Merge stderr into stdout",
 	"reexec (used internally)",
 	"Configures experimental notification behaviour",
 	longopts_help_COMMON
@@ -178,6 +181,7 @@ static char *redirect_stderr = NULL;
 static char *redirect_stdout = NULL;
 static char *stderr_process = NULL;
 static char *stdout_process = NULL;
+static bool merge_stderr = false;
 #ifdef TIOCNOTTY
 static int tty_fd = -1;
 #endif
@@ -599,12 +603,14 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 			eerrorx("%s: unable to open the logging process"
 			    " for stderr `%s': %s",
 			    applet, stderr_process, strerror(errno));
+	} else if (merge_stderr) {
+		stderr_fd = stdout_fd;
 	}
 
 	dup2(stdin_fd, STDIN_FILENO);
 	if (redirect_stdout || stdout_process || rc_yesno(getenv("EINFO_QUIET")))
 		dup2(stdout_fd, STDOUT_FILENO);
-	if (redirect_stderr || stderr_process || rc_yesno(getenv("EINFO_QUIET")))
+	if (redirect_stderr || stderr_process || merge_stderr || rc_yesno(getenv("EINFO_QUIET")))
 		dup2(stderr_fd, STDERR_FILENO);
 
 	cloexec_fds_from(3);
@@ -1101,6 +1107,10 @@ int main(int argc, char **argv)
 			stdout_process = optarg;
 			break;
 
+		case LONGOPT_MERGE_STDERR:
+			merge_stderr = true;
+			break;
+
 		case LONGOPT_STDERR_LOGGER:  /* --stderr-logger "command to run for stderr logging" */
 			stderr_process = optarg;
 			break;
@@ -1129,6 +1139,13 @@ int main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 	exec = *argv;
+
+	if (merge_stderr) {
+		if (redirect_stderr)
+			eerrorx("%s: --merge-stderr cannot be used with --stderr", applet);
+		if (stderr_process)
+			eerrorx("%s: --merge-stderr cannot be used with --stderr-logger", applet);
+	}
 
 	respawn_delay = parse_duration(respawn_delay_str);
 	if (respawn_delay < 0)
