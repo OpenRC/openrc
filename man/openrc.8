@@ -22,11 +22,11 @@
 .Sh DESCRIPTION
 .Nm
 first stops any services that are not in the specified runlevel unless
---no-stop is specified, then starts any services in the runlevel and
-stacked runlevels added by
+--no-stop is specified, then starts any services added by
 .Nm rc-update
-that are not currently started.
-If no runlevel is specified, we use the current runlevel.
+that are not currently started. Services in a stacked runlevel are started
+before those in the specified runlevel. If no runlevel is specified, we use the
+current runlevel.
 .Pp
 There are some special runlevels that you should be aware of:
 .Bl -tag -width "shutdown"
