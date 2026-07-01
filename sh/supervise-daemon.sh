@@ -82,6 +82,22 @@ supervise_stop()
 	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
 }
 
+supervise_reload()
+{
+	if [ -n $reloadsig ]; then
+		eerror "There is nothing for ${name:-$RC_SVCNAME} to reload."
+		return 0
+	fi
+
+	local startchroot="$(service_get_value "chroot")"
+	local startpidfile="$(service_get_value "pidfile")"
+	chroot="${startchroot:-$chroot}"
+	pidfile="${startpidfile:-$pidfile}"
+	ebegin "Reloading ${name:-$RC_SVCNAME}"
+	supervise-daemon "${RC_SVCNAME}" --signal $reloadsig \
+		${pidfile:+--pidfile} $chroot$pidfile
+}
+
 _check_supervised()
 {
 	local child_pid start_time
