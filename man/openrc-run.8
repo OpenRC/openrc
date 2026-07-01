@@ -8,7 +8,7 @@
 .\" This file may not be copied, modified, propagated, or distributed
 .\"    except according to the terms contained in the LICENSE file.
 .\"
-.Dd February 14, 2026
+.Dd July 1, 2026
 .Dt openrc-run 8 SMM
 .Os OpenRC
 .Sh NAME
@@ -51,6 +51,9 @@ Stops and starts the service, including dependencies. This cannot be
 overridden. See the description of the RC_CMD variable below for the
 method to make your service behave differently when restart is being
 executed.
+.It Ar reload
+Sends a signal to the service to reload its configuration. The signal to
+send is defined by the reloadsig variable.
 .It Ar status
 Shows the status of the service. The return code matches the status, with the
 exception of "started" returning 0 to match standard command behaviour.
@@ -207,6 +210,8 @@ Pidfile to use for the above defined command.
 Display name used for the above defined command.
 .It Ar procname
 Process name to match when signaling the daemon.
+.It Ar reloadsig
+Signal to send when reloading the daemon.
 .It Ar stopsig
 Signal to send when stopping the daemon.
 If using
