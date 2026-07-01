@@ -344,9 +344,11 @@ to the runlevel.
 The service will attempt to start any services it wants, regardless of
 whether they have been added to the runlevel.
 .It Ic after
-The service will start after these services and stop before these services.
+The service will start after these services and stop before these services, if
+they have been added to the runlevel.
 .It Ic before
-The service will start before these services and stop after these services.
+The service will start before these services and stop after these services, if
+they have been added to the runlevel.
 .It Ic provide
 The service provides this virtual service. For example, named provides dns.
 Note that it is not legal to have a virtual and real service with the
