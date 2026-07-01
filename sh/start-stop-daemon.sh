@@ -105,6 +105,33 @@ ssd_stop()
 	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
 }
 
+ssd_reload()
+{
+	if [ -n $reloadsig ]; then
+		eerror "There is nothing for ${name:-$RC_SVCNAME} to reload."
+		return 0
+	fi
+
+	local _progress=
+	local startchroot="$(service_get_value "chroot")"
+	local startpidfile="$(service_get_value "pidfile")"
+	local startprocname="$(service_get_value "procname")"
+	chroot="${startchroot:-$chroot}"
+	pidfile="${startpidfile:-$pidfile}"
+	procname="${startprocname:-$procname}"
+	[ -n "$command" -o -n "$procname" -o -n "$pidfile" ] || return 0
+	yesno "${command_progress}" && _progress=--progress
+
+	ebegin "Reloading ${name:-$RC_SVCNAME}"
+	start-stop-daemon \
+		${procname:+--name} $procname \
+		${pidfile:+--pidfile} $chroot$pidfile \
+		--signal ${reloadsig} \
+		${_progress}
+
+	eend $? "Failed to reload ${name:-$RC_SVCNAME}"
+}
+
 ssd_status()
 {
 	_status
