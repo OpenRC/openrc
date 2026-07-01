@@ -28,6 +28,7 @@ endif
 
 init_Linux =  [
   'agetty.in',
+  'backlight.in',
   'binfmt.in',
   'cgroups.in',
   'consolefont.in',

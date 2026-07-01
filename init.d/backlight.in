@@ -1,0 +1,51 @@
+#!@SBINDIR@/openrc-run
+# Copyright (c) 2026 The OpenRC Authors.
+# See the Authors file at the top-level directory of this distribution and
+# https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
+#
+# This file is part of OpenRC. It is subject to the license terms in
+# the LICENSE file found in the top-level directory of this
+# distribution and at https://github.com/OpenRC/openrc/blob/HEAD/LICENSE
+# This file may not be copied, modified, propagated, or distributed
+# except according to the terms contained in the LICENSE file.
+
+description="Save and restore brightness"
+
+depend() {
+	need sysfs
+	keyword -containers
+}
+
+start() {
+	if ! [ -e "$RC_CACHEDIR"/backlight ]; then
+		return 0
+	fi
+
+	for bl in /sys/class/backlight/*; do
+		save_path="$RC_CACHEDIR/backlight/$(basename "$bl")"
+		if ! [ -e "$save_path" ]; then
+			continue
+		fi
+		ebegin "$bl: restoring brightness"
+		max_brightness="$(cat "$bl"/max_brightness)"
+		saved_brightness="$(cat "$save_path")"
+		if [ "$saved_brightness" -gt "$max_brightness" ]; then
+			eend 1 "$bl: saved brightness is too high ($saved_brightness > $max_brightness)"
+			continue
+		fi
+		echo "$saved_brightness" > "$bl"/brightness
+		eend $? "Failed to restore brightness from $save_path"
+	done
+}
+
+stop() {
+	mkdir -p "$RC_CACHEDIR"/backlight
+
+	for bl in /sys/class/backlight/*; do
+		ebegin "$bl: saving brightness"
+		save_path="$RC_CACHEDIR/backlight/$(basename "$bl")"
+		cat "$bl"/brightness > "$save_path"
+		eend $? "Failed to save brightness to $save_path"
+	done
+}
+
