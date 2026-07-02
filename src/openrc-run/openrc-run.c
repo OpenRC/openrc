@@ -713,11 +713,12 @@ svc_start_deps(void)
 			    state & RC_SERVICE_WASINACTIVE)
 			{
 				rc_stringlist_add(tmplist, svc->value);
-			} else if (!TAILQ_FIRST(tmplist))
+			} else if (!TAILQ_FIRST(tmplist)) {
 				eerror("ERROR: cannot start %s as"
 				    " %s would not start",
 				    applet, svc->value);
 				goto exit;
+			}
 		}
 	}
 
