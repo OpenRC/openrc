@@ -64,27 +64,17 @@
 extern char **environ;
 
 const char *applet = NULL;
-const char *extraopts = "stop | start | restart | status | describe | zap";
-const char getoptstring[] = "dDsSvl:Z" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "debug",      0, NULL, 'd'},
-	{ "dry-run",    0, NULL, 'Z'},
-	{ "ifstarted",  0, NULL, 's'},
-	{ "ifstopped",  0, NULL, 'S'},
-	{ "nodeps",     0, NULL, 'D'},
-	{ "lockfd",     1, NULL, 'l'},
-	longopts_COMMON
-};
-const char *const longopts_help[] = {
-	"set xtrace when running the script",
-	"show what would be done",
-	"only run commands when started",
-	"only run commands when stopped",
-	"ignore dependencies",
-	"fd of the exclusive lock from rc",
-	longopts_help_COMMON
-};
 const char *usagestring = NULL;
+const char *extraopts = "stop | start | restart | status | describe | zap";
+#define opts(opt, opt_long) \
+	opt(d, debug, no_argument, "set xtrace when running the script") \
+	opt(Z, dry-run, no_argument, "show what would be done") \
+	opt(s, ifstarted, no_argument, "only run commands when started") \
+	opt(S, ifstopped, no_argument, "only run commands when stopped") \
+	opt(D, nodeps, no_argument, "ignore dependencies") \
+	opt(l, lockfd, required_argument, "fd of the exclusive lock from rc") \
+	opt(U, user, no_argument, "Run in user mode")
+cmdline_opts(opts)
 
 static char *service, *runlevel, *ibsave, *prefix;
 static RC_DEPTREE *deptree;

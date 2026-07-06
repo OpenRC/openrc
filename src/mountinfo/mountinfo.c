@@ -56,40 +56,22 @@
 const char *applet = NULL;
 const char *procmounts = "/proc/mounts";
 const char *extraopts = "[mount1] [mount2] ...";
-const char getoptstring[] = "f:F:n:N:o:O:p:P:iste:E:" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "fstype-regex",        1, NULL, 'f'},
-	{ "skip-fstype-regex",   1, NULL, 'F'},
-	{ "node-regex",          1, NULL, 'n'},
-	{ "skip-node-regex",     1, NULL, 'N'},
-	{ "options-regex",       1, NULL, 'o'},
-	{ "skip-options-regex",  1, NULL, 'O'},
-	{ "point-regex",         1, NULL, 'p'},
-	{ "skip-point-regex",    1, NULL, 'P'},
-	{ "options",             0, NULL, 'i'},
-	{ "fstype",              0, NULL, 's'},
-	{ "node",                0, NULL, 't'},
-	{ "netdev",              0, NULL, 'e'},
-	{ "nonetdev",            0, NULL, 'E'},
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"fstype regex to find",
-	"fstype regex to skip",
-	"node regex to find",
-	"node regex to skip",
-	"options regex to find",
-	"options regex to skip",
-	"point regex to find",
-	"point regex to skip",
-	"print options",
-	"print fstype",
-	"print node",
-	"is it a network device",
-	"is it not a network device",
-	longopts_help_COMMON
-};
 const char *usagestring = NULL;
+#define opts(opt, opt_long) \
+	opt(f, fstype-regex, required_argument, "fstype regex to find") \
+	opt(F, skip-fstype-regex, required_argument, "fstype regex to skip") \
+	opt(n, node-regex, required_argument, "node regex to find") \
+	opt(N, skip-node-regex, required_argument, "node regex to skip") \
+	opt(o, options-regex, required_argument, "options regex to find") \
+	opt(O, skip-options-regex, required_argument, "options regex to skip") \
+	opt(p, point-regex, required_argument, "point regex to find") \
+	opt(P, skip-point-regex, required_argument, "point regex to skip") \
+	opt(i, options, no_argument, "print options") \
+	opt(s, fstype, no_argument, "print fstype") \
+	opt(t, node, no_argument, "print node") \
+	opt(e, netdev, no_argument, "is it a network device") \
+	opt(E, nonetdev, no_argument, "is it not a network device")
+cmdline_opts(opts)
 
 #define UMOUNT_ARGS_MAX 16
 #define RUN_MAX 32

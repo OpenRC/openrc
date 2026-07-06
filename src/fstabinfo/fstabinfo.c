@@ -68,28 +68,16 @@ extern char **environ;
 
 const char *applet = NULL;
 const char *extraopts = NULL;
-const char getoptstring[] = "MRbmop:t:" getoptstring_COMMON;
-const struct option longopts[] = {
-	{ "mount",          0, NULL, 'M' },
-	{ "remount",        0, NULL, 'R' },
-	{ "blockdevice",    0, NULL, 'b' },
-	{ "mountargs",      0, NULL, 'm' },
-	{ "options",        0, NULL, 'o' },
-	{ "passno",         1, NULL, 'p' },
-	{ "fstype",         1, NULL, 't' },
-	longopts_COMMON
-};
-const char * const longopts_help[] = {
-	"Mounts the filesystem from the mountpoint",
-	"Remounts the filesystem based on the information in fstab",
-	"Extract the block device",
-	"Show arguments needed to mount the entry",
-	"Extract the options field",
-	"Extract or query the pass number field",
-	"List entries with matching file system type",
-	longopts_help_COMMON
-};
 const char *usagestring = NULL;
+#define opts(opt, opt_long) \
+	opt(M, mount, no_argument, "Mounts the filesystem from the mountpoint") \
+	opt(R, remount, no_argument, "Remounts the filesystem based on the information in fstab") \
+	opt(b, blockdevice, no_argument, "Extract the block device") \
+	opt(m, mountargs, no_argument, "Show arguments needed to mount the entry") \
+	opt(o, options, no_argument, "Extract the options field") \
+	opt(p, passno, required_argument, "Extract or query the pass number field") \
+	opt(t, fstype, required_argument, "List entries with matching file system type")
+cmdline_opts(opts)
 
 #ifdef HAVE_GETMNTENT
 static struct mntent *
