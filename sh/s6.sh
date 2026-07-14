@@ -83,6 +83,30 @@ _s6_have_legacy_servicedir() {
 	test -z "$command" && test -x "/var/svc.d/$name/run"
 }
 
+_s6_make_envdir() {
+	local envs="`env | grep -v \
+		-e ^EERROR_QUIET= \
+		-e ^EINFO_QUIET= \
+		-e ^IN_BACKGROUND= \
+		-e ^IN_DRYRUN= \
+		-e ^IN_HOTPLUG= \
+		-e ^TERM= \
+		-e ^EINFO_COLOR= \
+		-e ^EINFO_VERBOSE= \
+		-e ^RC_`"
+	if test -z "$envs" ; then
+		return 1
+	fi
+	mkdir -p -m 0755 "$1"
+	echo "$envs" | {
+		IFS==
+		while read var val ; do
+			printf %s\\n "$val" > "$1/$var"
+		done
+	}
+	return 0
+}
+
 _s6_servicedir_creation_needed() {
 	local dir="$_servicedirs/$name" conffile="{$RC_SERVICE%/*}/../conf.d/${RC_SERVICE##*/}"
 	if ! test -e "$dir" ; then
@@ -131,6 +155,9 @@ _s6_servicedir_create() {
 		fi
 		if test -n "$input_file" ; then
 			echo "redirfd -r 0 -- \"$input_file\""
+		fi
+		if _s6_make_envdir "$dir/env" ; then
+			echo "s6-envdir env"
 		fi
 		if test -n "$chroot" ; then
 			echo "cd \"$chroot\" chroot ."
