@@ -66,8 +66,12 @@ static const char *const env_allowlist[] = {
 };
 
 static const char *const usrenv_allowlist[] = {
-	"USER", "LOGNAME", "HOME", "SHELL", "XDG_RUNTIME_DIR",
-	"XDG_CONFIG_HOME", "XDG_STATE_HOME", "XDG_CACHE_HOME",
+	"USER", "LOGNAME", "HOME", "SHELL",
+	"XDG_CACHE_HOME", "XDG_CONFIG_DIRS",
+	"XDG_CONFIG_HOME", "XDG_CURRENT_DESKTOP",
+	"XDG_DATA_DIRS", "XDG_DATA_HOME",
+	"XDG_RUNTIME_DIR", "XDG_SESSION_TYPE",
+	"XDG_STATE_HOME",
 	NULL
 };
 
