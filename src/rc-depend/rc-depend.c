@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 	}
 
 	if (!runlevel)
-		runlevel = rc_runlevel_get();
+		runlevel = default_runlevel();
 
 	services = rc_stringlist_new();
 	while (optind < argc) {
