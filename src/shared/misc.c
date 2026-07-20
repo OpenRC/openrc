@@ -161,6 +161,21 @@ next:;
 	rc_stringlist_free(profile);
 }
 
+char *
+default_runlevel(void)
+{
+	char *runlevel = rc_runlevel_get();
+
+	if (!runlevel)
+		runlevel = xstrdup(rc_conf_value("rc_default_runlevel"));
+	if (!runlevel || !*runlevel) {
+		free(runlevel);
+		runlevel = xstrdup(RC_LEVEL_DEFAULT);
+	}
+
+	return runlevel;
+}
+
 void
 env_config(void)
 {
@@ -227,7 +242,7 @@ env_config(void)
 	}
 
 	xasprintf(&tmpdir, "%s/tmp", svcdir);
-	e = rc_runlevel_get();
+	e = default_runlevel();
 
 	setenv("RC_VERSION", VERSION, 1);
 	setenv("RC_LIBEXECDIR", RC_LIBEXECDIR, 1);
@@ -249,13 +264,17 @@ env_config(void)
 	free(e);
 	free(tmpdir);
 
-	if ((fp = fopen(RC_KRUNLEVEL, "r"))) {
+	/* krunlevel is a system-wide override; it never applies to
+	 * user sessions. */
+	if (!rc_is_user() && (fp = fopen(RC_KRUNLEVEL, "r"))) {
 		if (xgetline(&buffer, &size, fp) != -1)
 			setenv("RC_DEFAULTLEVEL", buffer, 1);
+		else
+			setenv("RC_DEFAULTLEVEL", default_runlevel(), 1);
 		free(buffer);
 		fclose(fp);
 	} else {
-		setenv("RC_DEFAULTLEVEL", RC_LEVEL_DEFAULT, 1);
+		setenv("RC_DEFAULTLEVEL", default_runlevel(), 1);
 	}
 
 	if (sys)

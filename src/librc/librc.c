@@ -486,7 +486,7 @@ rc_runlevel_get(void)
 
 	if (!runlevel || !*runlevel) {
 		free(runlevel);
-		runlevel = xstrdup(RC_LEVEL_SYSINIT);
+		runlevel = NULL;
 	}
 
 	return runlevel;
