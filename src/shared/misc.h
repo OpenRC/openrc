@@ -37,6 +37,8 @@
 
 char *rc_conf_value(const char *var);
 bool rc_conf_yesno(const char *var);
+const char *default_runlevel(void);
+char *effective_runlevel(void);
 void env_filter(void);
 void env_config(void);
 int signal_setup(int sig, void (*handler)(int));

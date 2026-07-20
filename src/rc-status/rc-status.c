@@ -233,7 +233,7 @@ static void print_services_in_state(const char *runlevel, RC_STRINGLIST *svcs,
 		rc_stringlist_add(types, "iafter");
 	}
 	if (!runlevel)
-		r = rc_runlevel_get();
+		r = effective_runlevel();
 	l = rc_deptree_depends(deptree, types, svcs, r ? r : runlevel,
 			       RC_DEP_STRICT | RC_DEP_TRACE | RC_DEP_START);
 	free(r);
@@ -377,7 +377,7 @@ int main(int argc, char **argv)
 			/* NOTREACHED */
 		case 'r':
 			runlevel = rc_runlevel_get();
-			printf("%s\n", runlevel);
+			printf("%s\n", runlevel ? runlevel : "");
 			goto exit;
 			/* NOTREACHED */
 		case 'S':
@@ -432,7 +432,7 @@ int main(int argc, char **argv)
 	if (opt == 0)
 		exit(EXIT_FAILURE);
 	if (!TAILQ_FIRST(levels)) {
-		runlevel = rc_runlevel_get();
+		runlevel = effective_runlevel();
 		rc_stringlist_add(levels, runlevel);
 	}
 
@@ -463,7 +463,7 @@ int main(int argc, char **argv)
 			rc_stringlist_free(levels);
 			levels = rc_stringlist_new();
 			if (!runlevel)
-				runlevel = rc_runlevel_get();
+				runlevel = effective_runlevel();
 			rc_stringlist_add(levels, runlevel);
 		}
 		rc_stringlist_add(levels, RC_LEVEL_SYSINIT);

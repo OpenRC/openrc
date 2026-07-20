@@ -319,7 +319,8 @@ int main(int argc, char **argv)
 					runlevels = rc_runlevel_list();
 				} else {
 					p = rc_runlevel_get();
-					rc_stringlist_add(runlevels, p);
+					rc_stringlist_add(runlevels,
+					    p ? p : default_runlevel());
 					free(p);
 				}
 			}

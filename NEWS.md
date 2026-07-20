@@ -4,6 +4,19 @@ OpenRC NEWS
 This file will contain a list of notable changes for each release. Note
 the information in this file is in reverse order.
 
+## OpenRC 0.64
+
+librc: rc_runlevel_get() now returns NULL when no runlevel has been set,
+instead of falling back to "sysinit".
+
+rc-update now adds/deletes services in the default runlevel when invoked
+without a runlevel if none is set (for example in a chroot).
+
+rc-status -r now prints an empty line when no runlevel has been set.
+
+The RC_DEFAULTLEVEL environment variable now honours the
+rc_default_runlevel setting from rc.conf.
+
 ## OpenRC 0.62
 
 User services are no longer considered experimental.
