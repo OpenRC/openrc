@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <fnmatch.h>
 #include <limits.h>
 #ifdef HAVE_LINUX_CLOSE_RANGE_H
 #  include <linux/close_range.h>
@@ -125,6 +126,8 @@ env_filter(void)
 	}
 
 	TAILQ_FOREACH(env, env_list, entries) {
+		RC_STRING *var;
+
 		/* Check the whitelist */
 		if (env_allowed(env_allowlist, env->value))
 			continue;
@@ -132,11 +135,13 @@ env_filter(void)
 			continue;
 
 		/* Check our user defined list */
-		if (rc_stringlist_find(env_allow, env->value))
-			continue;
+		TAILQ_FOREACH(var, env_allow, entries)
+			if (fnmatch(var->value, env->value, FNM_NOESCAPE | FNM_PERIOD) == 0)
+				goto next;
 
 		/* OK, not allowed! */
 		unsetenv(env->value);
+next:;
 	}
 
 	/* Now add anything missing from the profile */
