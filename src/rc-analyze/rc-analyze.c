@@ -69,6 +69,9 @@ struct service_time {
 	int64_t end_time;
 	double duration;
 	bool valid;
+	bool printed;
+	bool visiting;
+	struct service_time* parent;
 	TAILQ_ENTRY(service_time)
 	entries;
 };
@@ -286,6 +289,171 @@ static struct service_time* find_service_time(struct service_time_list* list, co
 	return NULL;
 }
 
+static struct service_time* find_critical_dependency(const RC_DEPTREE* deptree,
+	struct service_time_list* all_services, const char* service)
+{
+	static const char* const types[] = { "ineed", "iuse", "iafter" };
+	struct service_time* service_time;
+	struct service_time* critical = NULL;
+	RC_STRINGLIST* dependencies;
+	RC_STRING* dependency;
+	size_t i;
+
+	service_time = find_service_time(all_services, service);
+	if (!service_time || !service_time->valid)
+		return NULL;
+
+	for (i = 0; i < sizeof(types) / sizeof(types[0]); i++) {
+		dependencies = rc_deptree_depend(deptree, service, types[i]);
+		TAILQ_FOREACH(dependency, dependencies, entries)
+		{
+			struct service_time* dependency_time;
+
+			dependency_time = find_service_time(all_services,
+				dependency->value);
+			if (!dependency_time || !dependency_time->valid ||
+			    dependency_time->end_time > service_time->end_time)
+				continue;
+
+			if (!critical || dependency_time->end_time > critical->end_time)
+				critical = dependency_time;
+		}
+		rc_stringlist_free(dependencies);
+	}
+
+	return critical;
+}
+
+static bool chain_contains(char** chain, size_t chain_length, const char* service)
+{
+	size_t i;
+
+	for (i = 0; i < chain_length; i++) {
+		if (strcmp(chain[i], service) == 0)
+			return true;
+	}
+
+	return false;
+}
+
+static int compare_service_end_time(const void* a, const void* b)
+{
+	const struct service_time* const* sa = a;
+	const struct service_time* const* sb = b;
+
+	if ((*sa)->end_time < (*sb)->end_time)
+		return -1;
+	if ((*sa)->end_time > (*sb)->end_time)
+		return 1;
+	return strcmp((*sa)->name, (*sb)->name);
+}
+
+static void print_tree_entry(const struct service_time* st, int64_t earliest,
+	const bool* last_branch, size_t depth)
+{
+	char* duration_str;
+	size_t i;
+
+	for (i = 0; i < depth; i++) {
+		if (i == depth - 1)
+			printf(last_branch[i] ? "└─" : "├─");
+		else
+			printf(last_branch[i] ? "  " : "│ ");
+	}
+
+	duration_str = format_duration(st->duration);
+	printf("%s @%.3fs +%s\n", st->name,
+		ms_to_seconds(st->end_time - earliest), duration_str);
+	free(duration_str);
+}
+
+static void print_dependency_subtree(struct service_time_list* all_services,
+	struct service_time* service,
+	int64_t earliest, bool* last_branch, size_t depth)
+{
+	struct service_time* candidate;
+	struct service_time** children = NULL;
+	size_t children_length = 0;
+	size_t children_size = 0;
+	size_t i;
+
+	service->printed = true;
+	service->visiting = true;
+	print_tree_entry(service, earliest, last_branch, depth);
+
+	TAILQ_FOREACH(candidate, all_services, entries)
+	{
+		if (!candidate->valid || candidate->printed || candidate->visiting ||
+		    candidate->parent != service)
+			continue;
+
+		if (children_length == children_size) {
+			children_size = children_size ? children_size * 2 : 8;
+			children = xrealloc(children,
+				children_size * sizeof(*children));
+		}
+		children[children_length++] = candidate;
+	}
+
+	qsort(children, children_length, sizeof(*children),
+		compare_service_end_time);
+	for (i = 0; i < children_length; i++) {
+		last_branch[depth] = i == children_length - 1;
+		print_dependency_subtree(all_services, children[i],
+			earliest, last_branch, depth + 1);
+	}
+
+	free(children);
+	service->visiting = false;
+}
+
+static void print_dependency_forest(const RC_DEPTREE* deptree,
+	struct service_time_list* all_services, int64_t earliest)
+{
+	struct service_time* service;
+	struct service_time** roots = NULL;
+	bool* last_branch;
+	size_t roots_length = 0;
+	size_t roots_size = 0;
+	size_t service_count = 0;
+	size_t i;
+
+	TAILQ_FOREACH(service, all_services, entries)
+	{
+		if (!service->valid)
+			continue;
+		service_count++;
+		service->parent = find_critical_dependency(deptree, all_services,
+			service->name);
+		if (service->parent)
+			continue;
+		if (roots_length == roots_size) {
+			roots_size = roots_size ? roots_size * 2 : 8;
+			roots = xrealloc(roots, roots_size * sizeof(*roots));
+		}
+		roots[roots_length++] = service;
+	}
+
+	qsort(roots, roots_length, sizeof(*roots), compare_service_end_time);
+	last_branch = xmalloc((service_count + 1) * sizeof(*last_branch));
+	for (i = 0; i < roots_length; i++) {
+		if (!roots[i]->printed)
+			print_dependency_subtree(all_services, roots[i],
+				earliest, last_branch, 0);
+	}
+
+	/* Include components with no root, such as dependency cycles. */
+	TAILQ_FOREACH(service, all_services, entries)
+	{
+		if (service->valid && !service->printed)
+			print_dependency_subtree(all_services, service,
+				earliest, last_branch, 0);
+	}
+
+	free(last_branch);
+	free(roots);
+}
+
 /*
  * Print a service in the critical chain tree format.
  * depth=0 is the root (first dependency), increasing depth goes toward target.
@@ -331,15 +499,12 @@ static int do_critical_chain(const char* target_service)
 	struct service_time_list all_services;
 	struct service_time *st, *st_tmp;
 	RC_DEPTREE* deptree;
-	RC_STRINGLIST* types;
-	RC_STRINGLIST* services;
-	RC_STRINGLIST* depends;
-	RC_STRING* s;
-	char* runlevel = NULL;
 	int64_t earliest_start = 0;
 	bool has_earliest = false;
-	size_t dep_count, i;
-	char** dep_array = NULL;
+	size_t chain_length = 0;
+	size_t chain_size = 0;
+	size_t i;
+	char** chain = NULL;
 
 	TAILQ_INIT(&all_services);
 
@@ -388,79 +553,43 @@ static int do_critical_chain(const char* target_service)
 		goto cleanup;
 	}
 
-	runlevel = rc_runlevel_get();
-
-	types = rc_stringlist_new();
-	rc_stringlist_add(types, "ineed");
-	rc_stringlist_add(types, "iuse");
-	rc_stringlist_add(types, "iafter");
-
 	printf("The time when unit became active is printed after '@'.\n");
 	printf("The time the unit took to start is printed after '+'.\n\n");
 
 	if (!target_service) {
-		/* Find the service that finished last */
-		int64_t max_end = 0;
-		struct service_time* last_service = NULL;
-
-		TAILQ_FOREACH(st, &all_services, entries)
-		{
-			if (st->valid) {
-				if (st->end_time > max_end) {
-					max_end = st->end_time;
-					last_service = st;
-				}
-			}
-		}
-
-		if (!last_service) {
+		if (!has_earliest) {
 			printf("No timing data available.\n");
 			goto done;
 		}
-		target_service = last_service->name;
+		print_dependency_forest(deptree, &all_services, earliest_start);
+		goto done;
 	}
 
-	services = rc_stringlist_new();
-	rc_stringlist_add(services, target_service);
+	while (target_service) {
+		struct service_time* dependency;
 
-	depends = rc_deptree_depends(deptree, types, services,
-		runlevel, RC_DEP_TRACE | RC_DEP_STRICT | RC_DEP_START);
-
-	dep_count = 0;
-	if (depends) {
-		TAILQ_FOREACH(s, depends, entries)
-		{
-			if (strcmp(s->value, target_service) != 0)
-				dep_count++;
+		if (chain_contains(chain, chain_length, target_service))
+			break;
+		if (chain_length == chain_size) {
+			chain_size = chain_size ? chain_size * 2 : 8;
+			chain = xrealloc(chain, chain_size * sizeof(*chain));
 		}
+		chain[chain_length++] = xstrdup(target_service);
+
+		dependency = find_critical_dependency(deptree, &all_services,
+			target_service);
+		target_service = dependency ? dependency->name : NULL;
 	}
 
-	if (dep_count > 0) {
-		dep_array = xmalloc(dep_count * sizeof(*dep_array));
-		i = 0;
-		TAILQ_FOREACH(s, depends, entries)
-		{
-			if (strcmp(s->value, target_service) != 0)
-				dep_array[i++] = s->value;
-		}
-	}
-
-	/* Print dependencies first (from root to leaf), then target. */
-	for (i = 0; i < dep_count; i++) {
-		print_chain_entry(dep_array[i], &all_services, earliest_start, (int)i);
-	}
-
-	/* Print the target service as the final leaf */
-	print_chain_entry(target_service, &all_services, earliest_start, (int)dep_count);
-
-	free(dep_array);
-	rc_stringlist_free(depends);
-	rc_stringlist_free(services);
+	for (i = chain_length; i > 0; i--)
+		print_chain_entry(chain[i - 1], &all_services, earliest_start,
+			(int)(chain_length - i));
+	for (i = 0; i < chain_length; i++)
+		free(chain[i]);
+	free(chain);
 
 done:
-	rc_stringlist_free(types);
 	rc_deptree_free(deptree);
-	free(runlevel);
 
 cleanup:
 	TAILQ_FOREACH_SAFE(st, &all_services, entries, st_tmp)
