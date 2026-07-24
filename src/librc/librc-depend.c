@@ -189,6 +189,8 @@ deptree_load_file(int dirfd, const char *pathname)
 		e = get_shell_value(p);
 		if (!e || *e == '\0')
 			continue;
+		if (!depinfo)
+			continue;
 		if (!deptype || strcmp(deptype->type, type) != 0)
 			deptype = make_deptype(depinfo, type);
 		rc_stringlist_add(deptype->services, e);
