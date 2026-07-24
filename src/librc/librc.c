@@ -474,9 +474,9 @@ rc_runlevel_get(void)
 	if ((fp = do_fopenat(rc_dirfd(RC_DIR_SVCDIR), "softlevel", O_RDONLY))) {
 		runlevel = xmalloc(sizeof(char) * PATH_MAX);
 		if (fgets(runlevel, PATH_MAX, fp)) {
-			i = strlen(runlevel) - 1;
-			if (runlevel[i] == '\n')
-				runlevel[i] = 0;
+			i = strlen(runlevel);
+			if (i && runlevel[i - 1] == '\n')
+				runlevel[i - 1] = 0;
 		} else
 			*runlevel = '\0';
 		fclose(fp);
