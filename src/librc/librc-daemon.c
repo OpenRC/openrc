@@ -81,12 +81,12 @@ pid_is_argv(pid_t pid, const char *const *argv)
 	buffer[bytes] = '\0';
 	p = buffer;
 	while (*argv) {
+		if ((unsigned)(p - buffer) >= sizeof(buffer))
+			return false;
 		if (strcmp(*argv, p) != 0)
 			return false;
 		argv++;
 		p += strlen(p) + 1;
-		if ((unsigned)(p - buffer) > sizeof(buffer))
-			return false;
 	}
 	return true;
 }
