@@ -519,6 +519,7 @@ static int EINFO_PRINTF(3, 0)
 	va_list ap;
 
 	if (last &&
+	    *last &&
 	    !colour_terminal(f) &&
 	    strcmp(last, "ewarn") != 0 &&
 	    last[strlen(last) - 1] == 'n')
