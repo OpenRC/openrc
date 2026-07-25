@@ -285,9 +285,30 @@ static void reap_zombies(int sig RC_UNUSED)
 
 static int open_fifo(const char *path)
 {
+	int dummy_writer;
+	int reader;
+	int saved_errno;
+
 	if (mkfifo(path, 0600) == -1 && errno != EEXIST)
 		return -1;
-	return open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+
+	reader = open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+	if (reader == -1)
+		return -1;
+
+	/*
+	 * Keep the dummy writer open for the lifetime of the process so that the
+	 * read end does not continuously report POLLHUP when a client disconnects.
+	 */
+	dummy_writer = open(path, O_WRONLY | O_NONBLOCK | O_CLOEXEC);
+	if (dummy_writer == -1) {
+		saved_errno = errno;
+		close(reader);
+		errno = saved_errno;
+		return -1;
+	}
+
+	return reader;
 }
 
 int main(int argc, char **argv)
