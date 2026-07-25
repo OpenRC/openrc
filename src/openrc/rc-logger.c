@@ -155,6 +155,7 @@ rc_logger_open(const char *level)
 	struct pollfd fd[2];
 	int s = 0;
 	size_t bytes;
+	ssize_t bytes_read;
 	FILE *log = NULL;
 	FILE *plog = NULL;
 	const char *logfile;
@@ -191,6 +192,8 @@ rc_logger_open(const char *level)
 		rc_in_logger = true;
 		close(signal_pipe[1]);
 		signal_pipe[1] = -1;
+		close(slave_tty);
+		slave_tty = -1;
 
 		runlevel = level;
 		xasprintf(&tmplog, "%s/rc.log", rc_svcdir());
@@ -217,25 +220,36 @@ rc_logger_open(const char *level)
 			} else if (s == 0)
 				continue;
 
-			if (fd[1].revents & (POLLIN | POLLHUP)) {
+			if (rc_logger_tty >= 0 &&
+			    (fd[1].revents & (POLLIN | POLLHUP))) {
 				memset(buffer, 0, BUFSIZ);
-				bytes = read(rc_logger_tty, buffer, BUFSIZ);
-				if (write(STDOUT_FILENO, buffer, bytes) == -1)
-					eerror("write: %s", strerror(errno));
+				bytes_read = read(rc_logger_tty, buffer, BUFSIZ);
+				if (bytes_read > 0) {
+					bytes = (size_t)bytes_read;
+					if (write(STDOUT_FILENO, buffer, bytes) == -1)
+						eerror("write: %s", strerror(errno));
 
-				if (log)
-					write_log(fileno (log), buffer, bytes);
-				else {
-					if (logbuf_size - logbuf_len < bytes) {
-						logbuf_size += BUFSIZ * 10;
-						logbuf = xrealloc(logbuf,
-						    sizeof(char ) *
-						    logbuf_size);
+					if (log)
+						write_log(fileno (log), buffer, bytes);
+					else {
+						if (logbuf_size - logbuf_len < bytes) {
+							logbuf_size += BUFSIZ * 10;
+							logbuf = xrealloc(logbuf,
+							    sizeof(char ) *
+							    logbuf_size);
+						}
+
+						memcpy(logbuf + logbuf_len,
+						    buffer, bytes);
+						logbuf_len += bytes;
 					}
-
-					memcpy(logbuf + logbuf_len,
-					    buffer, bytes);
-					logbuf_len += bytes;
+				} else if (bytes_read == 0 ||
+				    (bytes_read == -1 && errno != EINTR)) {
+					if (bytes_read == -1 && errno != EIO)
+						eerror("read: %s", strerror(errno));
+					close(rc_logger_tty);
+					rc_logger_tty = -1;
+					fd[1].fd = -1;
 				}
 			}
 
