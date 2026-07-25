@@ -382,17 +382,25 @@ svc_exec(const char *command)
 
 		/* If the below call fails due to not enough ptys then we don't
 		 * prefix the output, but we still work */
-		openpty(&master_tty, &slave_tty, NULL, &tt, &ws);
-		if (master_tty >= 0 && (flags = fcntl(master_tty, F_GETFD, 0)) == 0)
-			fcntl(master_tty, F_SETFD, flags | FD_CLOEXEC);
+		if (openpty(&master_tty, &slave_tty, NULL, &tt, &ws) == 0) {
+			if (master_tty >= 0 &&
+			    (flags = fcntl(master_tty, F_GETFD, 0)) == 0)
+				fcntl(master_tty, F_SETFD,
+				    flags | FD_CLOEXEC);
 
-		if (slave_tty >= 0 && (flags = fcntl(slave_tty, F_GETFD, 0)) == 0)
-			fcntl(slave_tty, F_SETFD, flags | FD_CLOEXEC);
+			if (slave_tty >= 0 &&
+			    (flags = fcntl(slave_tty, F_GETFD, 0)) == 0)
+				fcntl(slave_tty, F_SETFD,
+				    flags | FD_CLOEXEC);
 
-		if ((errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDOUT_FILENO))
-				|| (errno = posix_spawn_file_actions_adddup2(&tty, slave_tty, STDERR_FILENO))) {
-			eerror("%s: posix_spawn_file_actions_adddup2: %s", applet, strerror(errno));
-			return 1;
+			if ((errno = posix_spawn_file_actions_adddup2(&tty,
+				    slave_tty, STDOUT_FILENO)) ||
+			    (errno = posix_spawn_file_actions_adddup2(&tty,
+				    slave_tty, STDERR_FILENO))) {
+				eerror("%s: posix_spawn_file_actions_adddup2: %s",
+				    applet, strerror(errno));
+				return 1;
+			}
 		}
 	}
 
