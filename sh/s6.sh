@@ -168,7 +168,9 @@ _s6_servicedir_create() {
 		if test -n "$command_user" ; then
 			echo "s6-setuidgid \"$command_user\""
 		fi
-		echo "sh -c \"exec $command $command_args $command_args_foreground\""
+		eval set -- $command $command_args $command_args_foreground
+		printf '"%s"' $1 ; shift
+		printf ' "%s"' "$@" ; echo
 	} > "$dir/run"
 	chmod 0755 "$dir/run"
 
