@@ -14,7 +14,7 @@
 # command, command_args, command_args_foreground (command will be interpreted by sh)
 # output_logger, error_logger, output_log, error_log (the former two are mutually exclusive)
 # input_file, directory, chroot, umask, command_user
-# notify (only fd), stopsig
+# notify (only fd), stopsig, reloadsig
 #
 # Extra variables:
 # Timeouts: all in milliseconds, 0 for infinity, undefined for no waiting
@@ -135,7 +135,18 @@ _s6_servicedir_create() {
 		echo "$timeout_kill" > "$dir/timeout-kill"
 	fi
 	if test -n "$stopsig" ; then
-		echo "$stopsig" > "$dir/down-signal"
+		if kill -s "$stopsig" 0 ; then
+			echo "$stopsig" > "$dir/down-signal"
+		else
+			ewarn "Invalid stop signal: $stopsig"
+		fi
+	fi
+	if test -n "$reloadsig" ; then
+		if kill -s "$reloadsig" 0 ; then
+			echo "$reloadsig" > "$dir/reload-signal"
+		else
+			ewarn "Invalid reload signal: $reloadsig"
+		fi
 	fi
 
 	{
@@ -252,6 +263,6 @@ s6_status() {
 s6_reload() {
 	_s6_set_variables
 	ebegin "Reloading $name"
-	s6-svc -h -- "$_service"
-	eend $? "s6-svc -h command failed"
+	s6-svc -l -- "$_service"
+	eend $? "s6-svc -l command failed"
 }
