@@ -577,8 +577,11 @@ free_rc_dirs(void)
 	X(rc_dirs.confdir);
 	X(rc_dirs.runleveldir);
 	X(rc_path.allocd);
+	/* entries alias freed allocation */
+	rc_path.entries = NULL;
 	X(rc_path.buffer);
 	X(rc_path.fds);
+	rc_path.count = 0;
 #undef X
 }
 
