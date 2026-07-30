@@ -63,6 +63,8 @@ int rc_dirfd(enum rc_dir dir) {
 		case RC_DIR_RUNLEVEL:
 			return dirfds[dir] = open(rc_runleveldir(), flags);
 		case RC_DIR_SVCDIR:
+			if (mkdir(rc_svcdir(), 0755) == -1 && errno != EEXIST)
+				return -1;
 			return dirfds[dir] = open(rc_svcdir(), flags);
 		default:
 			assert(dirnames[dir]);
