@@ -273,6 +273,7 @@ svc_getenv(const char *svc)
 	}
 
 	free(var);
+	rc_stringlist_free(reexports);
 }
 
 /* Buffer and lock all output messages so that we get readable content */
@@ -996,7 +997,7 @@ load_dep_env(void)
 	TAILQ_FOREACH(svc, depsvcs, entries)
 		svc_getenv(svc->value);
 
-	rc_stringlist_free(services);
+	rc_stringlist_free(depsvcs);
 }
 
 static void
@@ -1314,6 +1315,7 @@ int main(int argc, char **argv)
 	 * for safety.
 	 */
 	setenv("RC_RUNSCRIPT_PID", pidstr, 1);
+	free(pidstr);
 
 	/* eprefix is kinda klunky, but it works for our purposes */
 	if (rc_conf_yesno("rc_parallel")) {
