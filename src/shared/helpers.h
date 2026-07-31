@@ -259,4 +259,42 @@ RC_UNUSED static int xopen_nonblock(const char *filename, int flags, mode_t mode
 	return fd;
 }
 
+RC_UNUSED static int open_rwfifo(const char *path, bool nonblock)
+{
+	int r, w, err;
+
+	if (mkfifo(path, 0600) == -1 && errno != EEXIST)
+		return -1;
+
+	if ((r = open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC)) == -1)
+		return -1;
+
+	/* Leak an open writeable fd for the life of the process
+	 * to keep the read end valid after a client disconnects.
+	 * On linux, opening O_RDWR would solve this, but posix
+	 * leaves that behaviour undefined, and for example, hurd
+	 * does not properly handle it. */
+	if ((w = open(path, O_WRONLY | O_NONBLOCK | O_CLOEXEC) == -1)) {
+		err = errno;
+		goto r_err;
+	}
+
+	if (!nonblock) {
+		int flags = fcntl(r, F_GETFL);
+		if (flags == -1 || fcntl(r, flags & ~O_NONBLOCK) == -1) {
+			err = errno;
+			goto w_err;
+		}
+	}
+
+	return r;
+
+w_err:
+	close(w);
+r_err:
+	close(r);
+	errno = err;
+	return -1;
+}
+
 #endif

@@ -11,6 +11,7 @@
 #include <rc.h>
 
 #include "initreq.h"
+#include "helpers.h"
 
 static bool init_halt = false;
 
@@ -73,13 +74,9 @@ int main(void) {
 	int fifo;
 
 	openlog("sysv-initctl", 0, LOG_DAEMON);
-	if (mkfifo("/run/initctl", 0600) == -1 && errno != EEXIST) {
-		syslog(LOG_ERR, "mkfifo: %s", strerror(errno));
-		return 1;
-	}
 	symlink("/run/initctl", "/dev/initctl");
-	if ((fifo = open("/run/initctl", O_RDONLY | O_NONBLOCK)) == -1) {
-		syslog(LOG_ERR, "open: %s", strerror(errno));
+	if ((fifo = open_rwfifo("/run/initctl", false)) == -1) {
+		syslog(LOG_ERR, "open_rwfifo: %s", strerror(errno));
 		return 1;
 	}
 
