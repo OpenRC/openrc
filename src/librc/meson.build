@@ -3,6 +3,13 @@ rc_h_conf_data.set('RC_LIBEXECDIR', rc_libexecdir)
 rc_h_conf_data.set('RC_PLUGINDIR', pluginsdir)
 rc_h_conf_data.set('LOCAL_PREFIX', local_prefix)
 rc_h_conf_data.set('SYSCONFDIR', get_option('sysconfdir'))
+rc_h_conf_data.set('SBINDIR', sbindir)
+
+rc_init_bindir = bindir
+if rc_init_bindir != '/bin'
+  rc_init_bindir += ':/bin'
+endif
+rc_h_conf_data.set('RC_INIT_BINDIR', rc_init_bindir)
 
 librc_sources = [
   'librc.c',
