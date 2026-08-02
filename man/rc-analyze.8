@@ -1,0 +1,46 @@
+.\" Copyright (c) 2026 The OpenRC Authors.
+.\" See the Authors file at the top-level directory of this distribution and
+.\" https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
+.\"
+.\" This file is part of OpenRC. It is subject to the license terms in
+.\" the LICENSE file found in the top-level directory of this
+.\" distribution and at https://github.com/OpenRC/openrc/blob/HEAD/LICENSE
+.\" This file may not be copied, modified, propagated, or distributed
+.\"    except according to the terms contained in the LICENSE file.
+.\"
+.Dd April 2, 2026
+.Dt RC-ANALYZE 8 SMM
+.Os OpenRC
+.Sh NAME
+.Nm rc-analyze
+.Nd analyze OpenRC startup performance
+.Sh SYNOPSIS
+.Nm
+.Ar blame | critical-chain | time
+.Sh DESCRIPTION
+The
+.Nm
+utility provides commands to analyze the boot performance of an OpenRC-based
+system.
+.Sh COMMANDS
+The following commands are available:
+.Bl -tag -width ".Fl critical-chain"
+.It Nm blame
+Prints a list of all services that were started, sorted by the time they took
+to start up (longest first). This helps identify the slowest services during
+boot.
+.It Nm critical-chain
+.Op Ar service
+Shows the chain of dependencies that led to the specified
+.Ar service
+starting. If no service is specified, it shows the chain for the last service
+to start in the default runlevel. The output is a tree where each dependency
+is a parent of the service that depends on it. The time at which each service
+became active and the time it took to start are printed.
+.It Nm time
+Prints a summary of the time spent getting to the default runlevel.
+.El
+.Sh SEE ALSO
+.Xr openrc 8 ,
+.Sh AUTHORS
+.An The OpenRC Authors <openrc@lists.gentoo.org>
