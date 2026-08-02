@@ -166,6 +166,7 @@ int main(int argc, char **argv)
 		return 0;
 	if (if_stopped && !(state & RC_SERVICE_STOPPED))
 		return 0;
+	env_filter();
 	env_config();
 	*argv = service;
 	execv(*argv, argv);
