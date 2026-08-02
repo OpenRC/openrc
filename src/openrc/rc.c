@@ -875,7 +875,7 @@ int main(int argc, char **argv)
 	* won't actually be starting them all.
 	*/
 	bootlevel = getenv("RC_BOOTLEVEL");
-	runlevel = rc_runlevel_get();
+	runlevel = effective_runlevel();
 
 	rc_logger_open(newlevel ? newlevel : runlevel);
 
@@ -890,7 +890,7 @@ int main(int argc, char **argv)
 	if (newlevel && strcmp(newlevel, RC_LEVEL_SYSINIT) == 0) {
 		do_sysinit();
 		free(runlevel);
-		runlevel = rc_runlevel_get();
+		runlevel = effective_runlevel();
 	}
 
 	rc_plugin_load();

@@ -1299,7 +1299,7 @@ int main(int argc, char **argv)
 	if ((runlevel = xstrdup(getenv("RC_RUNLEVEL"))) == NULL) {
 		env_filter();
 		env_config();
-		runlevel = rc_runlevel_get();
+		runlevel = effective_runlevel();
 	}
 
 	setenv("EINFO_LOG", applet, 1);

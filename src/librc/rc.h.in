@@ -158,7 +158,7 @@ const char *rc_runleveldir(void);
 const char *rc_svcdir(void);
 
 /*! Return the current runlevel.
- * @return the current runlevel */
+ * @return the current runlevel, or NULL if no runlevel has been set */
 char *rc_runlevel_get(void);
 
 /*! Checks if the runlevel exists or not
