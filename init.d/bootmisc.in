@@ -190,14 +190,16 @@ start()
 	fi
 
 	if checkpath -W /var/run; then
-		ebegin "Creating user login records"
-		local xtra=
-		[ "$RC_UNAME" = NetBSD ] && xtra=x
-		for x in "" $xtra; do
-			mkutmp /var/run/utmp$x
-		done
-		[ -e /var/log/wtmp ] || mkutmp /var/log/wtmp
-		eend 0
+		if ! yesno ${disable_utmp_creation:-no}; then
+			ebegin "Creating user login records"
+			local xtra=
+			[ "$RC_UNAME" = NetBSD ] && xtra=x
+			for x in "" $xtra; do
+				mkutmp /var/run/utmp$x
+			done
+			[ -e /var/log/wtmp ] || mkutmp /var/log/wtmp
+			eend 0
+		fi
 
 		mountinfo -q -f tmpfs /var/run || cleanup_var_run_dir
 	fi
@@ -243,7 +245,7 @@ stop()
 {
 	# Write a halt record if we're shutting down
 	if [ "$RC_RUNLEVEL" = shutdown ]; then
-		if [ "$RC_UNAME" = Linux ]; then
+		if [ "$RC_UNAME" = Linux ] && ! yesno ${disable_utmp_creation:-no}; then
 			if [ -x /sbin/halt ]; then
 				halt -w
 			else
