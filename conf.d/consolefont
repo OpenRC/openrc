@@ -16,3 +16,7 @@ consolefont="default8x16"
 # default one. Have a look in /usr/share/unimaps for a selection of map files
 # you can use.
 #unicodemap="iso01"
+
+# customflags is used to pass custom arguments to the setfont command;
+# e.g. "-d" for doubling the font size on high pixel density displays.
+#customflags=""
