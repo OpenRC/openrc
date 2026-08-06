@@ -37,12 +37,66 @@ BSD_sysctl()
 	return $retval
 }
 
-Linux_sysctl()
+linux_sysctl()
 {
 	local quiet
 	yesno $rc_verbose || quiet=-q
 
-	sysctl ${quiet} --system
+	# if sysctl supports --system, use it, otherwise implement
+	# our own uapi config mechanism with -p.
+	# notably, busybox's and toybox's sysctl do not support --system.
+	sysctl ${quiet} --system && return 0
+
+	eindent
+
+	local files=
+	for f in /lib/sysctl.d/*.conf /usr/lib/sysctl.d/*.conf; do
+		if  [ -f /etc/sysctl.d/"${f##*/}" ]; then
+			veinfo "Ignoring $f due to /etc/sysctl.d/${f##*/}"
+			continue
+		fi
+
+		if [ -f /run/sysctl.d/"${f##*/}" ]; then
+			veinfo "Ignoring $f due to /run/sysctl.d/${f##*/}"
+			continue
+		fi
+
+		if [ -f "$f" ]; then
+			ebegin "applying $f"
+			sysctl $quiet -p "$f"
+			# Don't change retval= since we expect some package/distro provided
+			# sysctl configurations to break, so just warn when the user wants
+			# verbose messages
+			ewend $? "Unable to configure kernel parameters from $f"
+		fi
+	done
+
+	for f in /etc/sysctl.d/*.conf; do
+		if [ -f /run/sysctl.d/"${f##*/}" ]; then
+			veinfo "Ignoring $f due to /run/sysctl.d/${f##*/}"
+			continue
+		fi
+
+		files="$files $f"
+	done
+
+	[ -f /etc/sysctl.conf ] && files="$files /etc/sysctl.conf"
+
+	for f in /run/sysctl.d/*.conf; do
+		[ -f "$f" ] && files="$files $f"
+	done
+
+	for f in $files; do
+		ebegin "Applying $f"
+		sysctl $quiet -p "$f"
+		if ! eend $? "Unable to configure kernel parameters from $f"; then
+			retval=1
+		fi
+	done
+
+	eoutdent
+
+	return $retval
 }
 
 start()
@@ -52,7 +106,7 @@ start()
 	ebegin "Configuring kernel parameters"
 	case "$RC_UNAME" in
 	*BSD|GNU) BSD_sysctl; rc=$? ;;
-	Linux) Linux_sysctl; rc=$? ;;
+	Linux) linux_sysctl; rc=$? ;;
 	esac
 	eend $rc "Unable to configure some kernel parameters"
 }
