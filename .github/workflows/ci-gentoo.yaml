@@ -1,0 +1,101 @@
+name: ci_gentoo
+
+on: [push, pull_request]
+
+jobs:
+
+  glibc:
+    runs-on: ubuntu-latest
+    container: gentoo/stage3:latest
+    steps:
+      - name: Sync portage tree
+        run: emerge-webrsync
+      - name: Install git
+        run: emerge -v dev-vcs/git
+      - name: Allow portage build latest master
+        run: echo 'sys-apps/openrc **' > /etc/portage/package.accept_keywords
+      - name: Build
+        run: emerge -v sys-apps/openrc
+        env:
+          EGIT_OVERRIDE_REPO_OPENRC_OPENRC: ${{ github.server_url }}/${{ github.repository }}.git
+          EGIT_OVERRIDE_BRANCH_OPENRC_OPENRC: ${{ github.head_ref }}
+
+  musl:
+    runs-on: ubuntu-latest
+    container: gentoo/stage3:musl
+    steps:
+      - name: Sync portage tree
+        run: emerge-webrsync
+      - name: Install git
+        run: emerge -v dev-vcs/git
+      - name: Allow portage build latest master
+        run: echo 'sys-apps/openrc **' > /etc/portage/package.accept_keywords
+      - name: Build
+        run: emerge -v sys-apps/openrc
+        env:
+          EGIT_OVERRIDE_REPO_OPENRC_OPENRC: ${{ github.server_url }}/${{ github.repository }}.git
+          EGIT_OVERRIDE_BRANCH_OPENRC_OPENRC: ${{ github.head_ref }}
+
+  hardened-glibc:
+    runs-on: ubuntu-latest
+    container: gentoo/stage3:hardened
+    steps:
+      - name: Sync portage tree
+        run: emerge-webrsync
+      - name: Install git
+        run: emerge -v dev-vcs/git
+      - name: Allow portage build latest master
+        run: echo 'sys-apps/openrc **' > /etc/portage/package.accept_keywords
+      - name: Build
+        run: emerge -v sys-apps/openrc
+        env:
+          EGIT_OVERRIDE_REPO_OPENRC_OPENRC: ${{ github.server_url }}/${{ github.repository }}.git
+          EGIT_OVERRIDE_BRANCH_OPENRC_OPENRC: ${{ github.head_ref }}
+
+  hardened-musl:
+    runs-on: ubuntu-latest
+    container: gentoo/stage3:musl-hardened
+    steps:
+      - name: Sync portage tree
+        run: emerge-webrsync
+      - name: Install git
+        run: emerge -v dev-vcs/git
+      - name: Allow portage build latest master
+        run: echo 'sys-apps/openrc **' > /etc/portage/package.accept_keywords
+      - name: Build
+        run: emerge -v sys-apps/openrc
+        env:
+          EGIT_OVERRIDE_REPO_OPENRC_OPENRC: ${{ github.server_url }}/${{ github.repository }}.git
+          EGIT_OVERRIDE_BRANCH_OPENRC_OPENRC: ${{ github.head_ref }}
+
+  nomultilib-glibc:
+    runs-on: ubuntu-latest
+    container: gentoo/stage3:nomultilib
+    steps:
+      - name: Sync portage tree
+        run: emerge-webrsync
+      - name: Install git
+        run: emerge -v dev-vcs/git
+      - name: Allow portage build latest master
+        run: echo 'sys-apps/openrc **' > /etc/portage/package.accept_keywords
+      - name: Build
+        run: emerge -v sys-apps/openrc
+        env:
+          EGIT_OVERRIDE_REPO_OPENRC_OPENRC: ${{ github.server_url }}/${{ github.repository }}.git
+          EGIT_OVERRIDE_BRANCH_OPENRC_OPENRC: ${{ github.head_ref }}
+
+  hardened-nomultilib-glibc:
+    runs-on: ubuntu-latest
+    container: gentoo/stage3:hardened-nomultilib
+    steps:
+      - name: Sync portage tree
+        run: emerge-webrsync
+      - name: Install git
+        run: emerge -v dev-vcs/git
+      - name: Allow portage build latest master
+        run: echo 'sys-apps/openrc **' > /etc/portage/package.accept_keywords
+      - name: Build
+        run: emerge -v sys-apps/openrc
+        env:
+          EGIT_OVERRIDE_REPO_OPENRC_OPENRC: ${{ github.server_url }}/${{ github.repository }}.git
+          EGIT_OVERRIDE_BRANCH_OPENRC_OPENRC: ${{ github.head_ref }}
