@@ -1,0 +1,34 @@
+name: ci_freebsd
+
+on: [push, pull_request]
+
+jobs:
+
+  freebsd:
+    name: FreeBSD ${{ matrix.release }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        release:
+          - '14'
+          - '15'
+    steps:
+    - uses: actions/checkout@v7
+    - name: Build and test
+      uses: vmactions/freebsd-vm@v1
+      with:
+        release: ${{ matrix.release }}
+        usesh: true
+        copyback: false
+        cache-after-prepare: true
+        prepare: pkg install -y meson
+        run: |
+          set -e
+          set -u
+          set -x
+          # Carried over from .cirrus.yml, which mounted procfs before the tests.
+          [ -f /proc/curproc ] || mount -t procfs proc /proc
+          meson setup builddir/
+          meson compile -C builddir
+          meson test --verbose -C builddir
