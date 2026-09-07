@@ -54,3 +54,8 @@ We have an official irc channel, #openrc on the libera network.
 Please connect your irc client to irc.libera.chat and join #openrc on
 that network.
 
+## No LLM contributions policy
+
+Use of generative AI/LLMs is strictly forbidden for all contributions to openrc.
+
+For a rationale, refer to gentoo's policy on the topic: https://wiki.gentoo.org/wiki/Project:Council/AI_policy
