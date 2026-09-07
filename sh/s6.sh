@@ -14,11 +14,11 @@
 # command, command_args, command_args_foreground (command will be interpreted by sh)
 # output_logger, error_logger, output_log, error_log (the former two are mutually exclusive)
 # input_file, directory, chroot, umask, command_user
-# notify (only fd), stopsig
+# notify, stopsig
 #
 # Extra variables:
 # Timeouts: all in milliseconds, 0 for infinity, undefined for no waiting
-# timeout_ready: wait for the service to become up, or ready if notify=fd:X
+# timeout_ready: wait for the service to become up, or ready if notify= is set
 # timeout_down: wait for the service to stop
 # timeout_kill: if not stopped after that amount, send a SIGKILL
 
@@ -50,8 +50,8 @@ _s6_sanity_checks() {
 		eerror "No execlineb interpreter accessible"
 		return 1
 	fi
-	if test -n "$notify" && test "${notify##fd:}" = "$notify" ; then
-		ewarn "Only the notify=fd method is supported - notify setting will be ignored"
+	if test -n "$notify" && test "${notify##fd:}" = "$notify" && test "$notify" != socket:ready ; then
+		ewarn "invalid notify= value - the notify setting will be ignored"
 		notify=
 	fi
 	if test -n "$output_logger" && test -n "$error_logger" ; then
@@ -128,8 +128,12 @@ _s6_servicedir_create() {
 	local logger="${output_logger}${error_logger}" dir="$_servicedirs/$name"
 
 	mkdir -p -m 0700 -- "$dir"
-	if test -n "$notify" && test "${notify##fd:}" != "$notify" ; then
-		echo "${notify##fd:}" > "$dir/notification-fd"
+	if test -n "$notify" ; then
+		if test "${notify##fd:}" != "$notify" ; then
+			echo "${notify##fd:}" > "$dir/notification-fd"
+		elif test "$notify" = socket:ready ; then
+			echo 3 > "$dir/notification-fd"
+		fi
 	fi
 	if test -n "$timeout_kill" ; then
 		echo "$timeout_kill" > "$dir/timeout-kill"
@@ -140,7 +144,6 @@ _s6_servicedir_create() {
 
 	{
 		# Generating execline code here because it is much easier than generating sh.
-		# The command will still be interpreted by sh in the end.
 		echo "#!$_execlineb -S1"
 		if test -n "$umask" ; then
 			echo "umask \"$umask\""
@@ -157,7 +160,7 @@ _s6_servicedir_create() {
 			echo "redirfd -r 0 -- \"$input_file\""
 		fi
 		if _s6_make_envdir "$dir/env" ; then
-			echo "s6-envdir env"
+			echo 's6-envdir env'
 		fi
 		if test -n "$chroot" ; then
 			echo "cd \"$chroot\" chroot ."
@@ -167,6 +170,9 @@ _s6_servicedir_create() {
 		fi
 		if test -n "$command_user" ; then
 			echo "s6-setuidgid \"$command_user\""
+		fi
+		if test "$notify" = socket:ready ; then
+			echo s6-notify-fd-from-socket
 		fi
 		eval set -- $command $command_args $command_args_foreground
 		printf '"%s"' $1 ; shift
