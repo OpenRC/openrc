@@ -13,19 +13,37 @@
 #
 _rcstatus()
 {
-	local cur
+	local cur prev complete_runlevel user_flag
 	cur="${COMP_WORDS[COMP_CWORD]}"
-	if [[ $COMP_CWORD -eq 1 ]]; then
-		if [[ "${cur}" == --* ]]; then
-			COMPREPLY=($(compgen -W '--all --list --unused' -- ${cur}))
-		elif [[ "${cur}" == -* ]]; then
-			COMPREPLY=($(compgen -W '-a -l -u' -- ${cur}))
-		else
-			COMPREPLY=($(compgen -W "$(rc-status --list)" -- ${cur}))
-		fi
-	else
-		unset COMPREPLY
-	fi
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    complete_runlevel="TRUE"
+    user_flag=""
+
+	for i in "${COMP_WORDS[@]}"; do
+		case "$i" in
+			-a|-m|-S|-s|-u|-c|-l|-r|--all|--manual|--supervised|--servicelist|--unused|--crashed|--list|--runlevel)
+                complete_runlevel="FALSE"
+                ;;
+            -U|--user)
+                user_flag="--user"
+                ;;
+		esac
+	done
+
+    if [[ "${cur}" == --* ]]; then
+        COMPREPLY=($(compgen -W '--all --list --unused --user --crashed --manual --supervised --servicelist --nocolor' -- ${cur}))
+    elif [[ "${cur}" == -* ]]; then
+        COMPREPLY=($(compgen -W '-a -c -C -l -m -u -U -S -s' -- ${cur}))
+    elif [[ "${prev}" == -f ]] || [[ "${prev}" == --format ]]; then
+        COMPREPLY=($(compgen -W 'ini' -- ${cur}))
+    elif [[ "${prev}" == -i ]] || [[ "${prev}" == --in-state ]]; then
+        states='stopped started stopping starting inactive hotplugged failed scheduled crashed'
+        COMPREPLY=($(compgen -W "${states}" -- ${cur}))
+    elif [[ "${complete_runlevel}" == "TRUE" ]]; then
+        COMPREPLY=($(compgen -W "$(rc-status ${user_flag} --list)" -- ${cur}))
+    else
+        unset COMPREPLY
+    fi
 	return 0
 } &&
 complete -F _rcstatus rc-status
