@@ -393,9 +393,9 @@ _free_rc_conf(void)
 }
 
 static void
-rc_conf_append(enum rc_dir dir)
+rc_conf_append(int dirfd)
 {
-	RC_STRINGLIST *conf = config_load(rc_dirfd(dir), "rc.conf");
+	RC_STRINGLIST *conf = config_load(dirfd, "rc.conf");
 	TAILQ_CONCAT(rc_conf, conf, entries);
 	rc_stringlist_free(conf);
 }
@@ -403,6 +403,8 @@ rc_conf_append(enum rc_dir dir)
 char *
 rc_conf_value(const char *setting)
 {
+	const int *dirfds;
+	size_t dir_count = rc_scriptdirfds(&dirfds);
 	RC_STRING *s;
 
 	if (rc_conf)
@@ -411,23 +413,19 @@ rc_conf_value(const char *setting)
 	rc_conf = rc_stringlist_new();
 	atexit(_free_rc_conf);
 
-	/* Load user configurations first, as they should override
-	 * system wide configs. */
-	if (rc_is_user()) {
-		rc_conf_append(RC_DIR_USRCONF);
-		rc_config_directory(rc_conf, rc_dirfd(RC_DIR_USRCONF), "rc.conf.d");
+	for (size_t i = 0; i < dir_count; i++) {
+		/* load configs in reverse order, so earlier entries override later ones */
+		size_t idx = dir_count - 1 - i;
+		rc_conf_append(dirfds[idx]);
+		rc_config_directory(rc_conf, dirfds[idx], "rc.conf.d");
 	}
 
-	rc_conf_append(RC_DIR_SYSCONF);
-
 	/* Support old configs. */
-	if (access(RC_CONF_OLD, F_OK) == 0) {
+	if (!rc_is_user() && access(RC_CONF_OLD, F_OK) == 0) {
 		RC_STRINGLIST *old_conf = config_load(AT_FDCWD, RC_CONF_OLD);
 		TAILQ_CONCAT(rc_conf, old_conf, entries);
 		rc_stringlist_free(old_conf);
 	}
-
-	rc_config_directory(rc_conf, rc_dirfd(RC_DIR_SYSCONF), "rc.conf.d");
 
 	rc_conf = rc_config_kcl(rc_conf);
 
