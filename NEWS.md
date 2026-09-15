@@ -17,6 +17,13 @@ rc-status -r now prints an empty line when no runlevel has been set.
 The RC_DEFAULTLEVEL environment variable now honours the
 rc_default_runlevel setting from rc.conf.
 
+
+openrc now looks up RC_PATH for init scripts and configuration. As a side
+effect, user services no longer load the system-wide /etc/rc.conf
+
+if compatibility is needed, a symlink /etc/user/rc.conf > /etc/rc.conf, or
+similar can be used
+
 ## OpenRC 0.62
 
 User services are no longer considered experimental.
