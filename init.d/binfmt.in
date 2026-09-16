@@ -3,6 +3,13 @@
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
 #
+# This is a reimplementation of the systemd binfmt.d code to register
+# misc binary formats with the kernel.
+#
+# See the binfmt.d manpage as well:
+# https://www.freedesktop.org/software/systemd/man/latest/binfmt.d.html
+# This script should match the manpage as of 2026/09/16
+#
 # This file is part of OpenRC. It is subject to the license terms in
 # the LICENSE file found in the top-level directory of this
 # distribution and at https://github.com/OpenRC/openrc/blob/HEAD/LICENSE
@@ -13,15 +20,101 @@ description="Register misc binary format handlers"
 
 depend()
 {
-	after clock procfs
+	need procfs
+	after clock
 	use modules devfs
 	keyword -docker -podman -lxc -openvz -prefix -systemd-nspawn -vserver -wsl
 }
 
+apply_file() {
+	local file="$1" linenum=0 error=0 sep reg name
+
+	### FILE FORMAT ###
+	# See https://www.kernel.org/doc/html/latest/admin-guide/binfmt-misc.html
+	veinfo "Applying $file"
+	eindent
+	while read -r line; do
+		linenum=$(( linenum+1 ))
+		case $line in
+			'#'*|';'*|'') continue ;;
+		esac
+
+		sep=${line%%${line#?}} reg=${line#$sep} name=${reg%%${sep}*}
+		[ -e /proc/sys/fs/binfmt_misc/${name} ] && echo -1 > /proc/sys/fs/binfmt_misc/${name}
+
+		veinfo "Registering $line"
+		if ! echo "${line}" > /proc/sys/fs/binfmt_misc/register 2>/dev/null; then
+			eerror "invalid entry on line %d of '%s': %s\n" "$linenum" "$file" "$line"
+			error=1
+		fi
+		printf '\n%s' "$name" >&3
+	done < $file
+	eoutdent
+	return $error
+}
+
 start()
 {
+	if ! [ -w /proc/sys/fs/binfmt_misc/register ]; then
+		eerror "missing binfmt register"
+		return 1
+	fi
+
 	ebegin "Loading custom binary format handlers"
-	"$RC_LIBEXECDIR"/sh/binfmt.sh
+
+	local rc=0 dir file entry
+
+	eindent
+	binfmts=$(
+		# The hardcoding of these paths is intentional
+		# we are following the systemd spec.
+		set -- /etc /run /usr/local/lib /usr/lib
+
+		# Build a list of sorted unique basenames
+		# directories declared later in the list will override earlier
+		# directories, on a per file basename basis.
+		for dir; do
+			for file in $dir/binfmt.d/*; do
+				[ -e $file ] && printf '%s\n' "${file##*/}"
+			done
+		done | sort -u | while read -r file; do
+			for dir; do
+				entry="$dir/binfmt.d/$file"
+				if [ -e "$entry" ]; then
+					apply_file "$entry" 3>&1 1>&2 || rc=$?
+					continue 2
+				fi
+			done
+		done
+		exit $rc
+	)
+	eoutdent
+
 	eend $?
+
+	[ -n "$binfmts" ] && service_set_value fmts "$binfmts"
 	return 0
+}
+
+stop()
+{
+	local fmt entry rc=0
+
+	# no need to unload handlers if we're shutting down
+	yesno $RC_GOINGDOWN && return 0
+
+	ebegin "Unloading custom binary format handlers"
+	eindent
+	for fmt in $(service_get_value fmts); do
+		entry=/proc/sys/fs/binfmt_misc/"$fmt"
+		if [ -e "$entry" ]; then
+			veinfo "Unloading $fmt handle"
+			if ! echo -1 > "$entry"; then
+				rc=$?
+				eerror "Failed to unload $fmt"
+			fi
+		fi
+	done
+	eoutdent
+	eend $rc
 }

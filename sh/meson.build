@@ -31,7 +31,6 @@ if os == 'linux'
     'rc-cgroup.sh',
     ]
   scripts_config += [
-    'binfmt.sh.in',
     'cgroup-release-agent.sh.in',
    ]
   scripts_config_os = [
