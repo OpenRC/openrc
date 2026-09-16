@@ -69,6 +69,23 @@ stop()
 		no_umounts_r="$no_umounts_r|$x"
 	done
 
+	# Prevent file system housing rc.log from been unmounted to keep log file writable during shutdown
+	if yesno ${rc_logger:-NO}; then
+		local _log_file=${rc_log_path:-'/var/log/rc.log'}
+
+		if [ ! -f "${_log_file}" ]; then
+			touch "${_log_file}" || unset _log_file
+		fi
+
+		if [ -n "${_log_file}" ]; then
+			local rc_log_mntpnt="$(df ${_log_file} 2>/dev/null | awk 'NR==2 { print $6 }')"
+
+			if [ $rc_log_mntpnt != '/' ]; then
+				no_umounts_r="$no_umounts_r|${rc_log_mntpnt}"
+			fi
+		fi
+	fi
+
 	if [ "$RC_UNAME" = Linux ]; then
 		no_umounts_r="$no_umounts_r|/proc|/proc/.*|/run|/sys|/sys/.*"
 		if [ -e "$rc_svcdir"/usr_premounted ]; then
