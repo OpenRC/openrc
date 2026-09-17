@@ -68,19 +68,14 @@ static const char *const env_allowlist[] = {
 
 static const char *const usrenv_allowlist[] = {
 	"USER", "LOGNAME", "HOME", "SHELL",
-	"XDG_CACHE_HOME", "XDG_CONFIG_DIRS",
-	"XDG_CONFIG_HOME", "XDG_CURRENT_DESKTOP",
-	"XDG_DATA_DIRS", "XDG_DATA_HOME",
-	"XDG_RUNTIME_DIR", "XDG_SESSION_TYPE",
-	"XDG_STATE_HOME",
-	NULL
+	"XDG_*", NULL
 };
 
 static bool
 env_allowed(const char *const list[], const char *value)
 {
 	for (size_t i = 0; list[i]; i++)
-		if (strcmp(list[i], value) == 0)
+		if (fnmatch(list[i], value, FNM_NOESCAPE | FNM_PERIOD) == 0)
 			return true;
 	return false;
 }
