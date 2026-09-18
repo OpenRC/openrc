@@ -13,3 +13,6 @@ log_dmesg="YES"
 # This may be useful if you need to compare the current boot to the
 # previous one.
 #previous_dmesg=no
+
+# Whether utmp/wtmp files should be created during boot
+#disable_utmp_creation="no"
