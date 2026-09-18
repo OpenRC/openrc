@@ -345,7 +345,7 @@ exec_service(const char *service, const char *arg)
 	const char *argv[] = { service, "--lockfd", sfd, arg, NULL };
 	int fd = svc_lock(basename_c(service), false);
 	posix_spawnattr_t chldmask;
-	sigset_t full;
+	sigset_t empty;
 	pid_t pid = 0;
 
 	if (fd == -1)
@@ -363,9 +363,10 @@ exec_service(const char *service, const char *arg)
 	 * We might've been called from pam_openrc by
 	 * a process that masked signals we rely on.
 	 * Bug: https://bugs.gentoo.org/953748 */
-	sigfillset(&full);
+	sigemptyset(&empty);
 	posix_spawnattr_init(&chldmask);
-	posix_spawnattr_setsigmask(&chldmask, &full);
+	posix_spawnattr_setflags(&chldmask, POSIX_SPAWN_SETSIGMASK);
+	posix_spawnattr_setsigmask(&chldmask, &empty);
 
 	if ((errno = posix_spawn(&pid, file, NULL, &chldmask, UNCONST(argv), environ))) {
 		fprintf(stderr, "posix_spawn: %s\n", strerror(errno));
