@@ -1,0 +1,53 @@
+.\" Copyright (c) 2026 The OpenRC Authors.
+.\" See the Authors file at the top-level directory of this distribution and
+.\" https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
+.\"
+.\" This file is part of OpenRC. It is subject to the license terms in
+.\" the LICENSE file found in the top-level directory of this
+.\" distribution and at https://github.com/OpenRC/openrc/blob/HEAD/LICENSE
+.\" This file may not be copied, modified, propagated, or distributed
+.\"    except according to the terms contained in the LICENSE file.
+.\"
+.Dd Sep 18, 2026 
+.Dt RC-ENVIRON 8 SMM
+.Os OpenRC
+.Sh NAME
+.Nm rc-environ
+.Nd Print the stored enviroment variables for a given service
+.Sh SYNOPSIS
+.Nm
+.Op -s <service>
+.Op -r <runlevel>
+.Op -en0
+.Sh DESCRIPTION
+.Nm
+prints the stored environment variables for a service.
+.Pp
+The options are as follows:
+.Bl -tag -width ".Fl test , test string"
+.It Fl e , -export
+Prepend "export" to printed variables
+.It Fl n , -no-escape
+Do not perform shell sensitive escape on variable values
+.It Fl 0 , -null
+End each output line with NUL, not newline
+.It Fl s , -service Ar <arg>
+Add service to the list of environments to print
+.It Fl r , -runlevel Ar <arg>
+Add services in runlevel to the list of environments to print
+.It Fl h , -help
+Display this help output
+.It Fl C , -nocolor
+Disable color output
+.It Fl V, -version
+Display software version
+.It Fl v , -verbose
+Run verbosely
+.It Fl q , -quiet
+Run quietly (repeat to suppress errors)
+.It Fl U , -user
+Run in user mode
+.El
+.Sh AUTHORS
+.An Matthias Geiger <werdahias@debian.org>
+.An navi <navi@vlhl.dev>
