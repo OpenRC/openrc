@@ -69,7 +69,8 @@ static const char *const env_allowlist[] = {
 
 static const char *const usrenv_allowlist[] = {
 	"USER", "LOGNAME", "HOME", "SHELL",
-	"XDG_*", "DIFFTOOL", "LESS", "PAGER", NULL
+	"XDG_*", "DIFFTOOL", "LESS", "PAGER",
+	"EDITOR", "VISUAL", NULL
 };
 
 static bool
