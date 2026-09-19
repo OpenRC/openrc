@@ -46,6 +46,7 @@ extern "C" {
 #define RC_CONF_OLD     RC_SYSCONFDIR "/conf.d/rc"
 
 #define RC_PATH_PREFIX     RC_LIBEXECDIR "/bin:/bin:/sbin:/usr/bin:/usr/sbin"
+#define RC_PATH_DEFAULT    "@LOCAL_PREFIX@/bin:@LOCAL_PREFIX@/sbin:/usr/bin:/usr/sbin:/bin:/sbin"
 
 /* LOCAL_PREFIX is used for packages not part of the base system */
 #define RC_LOCAL_PREFIX		"@LOCAL_PREFIX@"

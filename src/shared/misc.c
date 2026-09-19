@@ -176,17 +176,11 @@ default_runlevel(void)
 void
 env_config(void)
 {
-	size_t pplen = strlen(RC_PATH_PREFIX);
 	char *path;
 	char *p;
 	char *e;
-	size_t l;
 	struct utsname uts;
 	FILE *fp;
-	char *token;
-	char *np;
-	char *npp;
-	char *tok;
 	const char *sys = rc_sys();
 	const char *svcdir = rc_svcdir();
 	const char *const *init_path = rc_scriptdirs();
@@ -194,32 +188,13 @@ env_config(void)
 	char *tmpdir;
 	size_t size = 0;
 
-	/* Ensure our PATH is prefixed with the system locations first
-	   for a little extra security */
-	path = getenv("PATH");
-	if (!path)
-		setenv("PATH", RC_PATH_PREFIX, 1);
-	else if (strncmp (RC_PATH_PREFIX, path, pplen) != 0) {
-		l = strlen(path) + pplen + 3;
-		e = p = xmalloc(sizeof(char) * l);
-		p += snprintf(p, l, "%s", RC_PATH_PREFIX);
-
-		/* Now go through the env var and only add bits not in our
-		 * PREFIX */
-		while ((token = strsep(&path, ":"))) {
-			np = npp = xstrdup(RC_PATH_PREFIX);
-			while ((tok = strsep(&npp, ":")))
-				if (strcmp(tok, token) == 0)
-					break;
-			if (!tok)
-				p += snprintf(p, l - (p - e), ":%s", token);
-			free (np);
-		}
-		*p++ = '\0';
-		unsetenv("PATH");
-		setenv("PATH", e, 1);
-		free(e);
+	if ((path = getenv("PATH"))) {
+		xasprintf(&p, "%s:%s", RC_PATH_PREFIX, path);
+	} else {
+		xasprintf(&p, "%s:%s", RC_PATH_PREFIX, RC_PATH_DEFAULT);
 	}
+	setenv("PATH", p, 1);
+	free(p);
 
 	if (!rc_is_user()) {
 		setenv("RC_CACHEDIR", "/var/cache/rc", 1);
