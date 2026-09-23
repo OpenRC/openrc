@@ -416,6 +416,11 @@ svc_exec(const char *command)
 		return 1;
 	}
 
+	if (slave_tty >= 0) {
+		close(slave_tty);
+		slave_tty = -1;
+	}
+
 	posix_spawn_file_actions_destroy(&tty);
 	free(openrc_sh);
 
@@ -432,9 +437,22 @@ svc_exec(const char *command)
 			break;
 		}
 
-		if (fd[1].revents & (POLLIN | POLLHUP)) {
+		if (master_tty >= 0 &&
+		    (fd[1].revents & (POLLIN | POLLHUP))) {
 			char buffer[BUFSIZ];
-			write_prefix(buffer, read(master_tty, buffer, BUFSIZ), &prefixed);
+			ssize_t bytes;
+
+			bytes = read(master_tty, buffer, BUFSIZ);
+			if (bytes > 0)
+				write_prefix(buffer, (size_t)bytes, &prefixed);
+			else if (bytes == 0 ||
+			    (bytes == -1 && errno != EINTR)) {
+				if (bytes == -1 && errno != EIO)
+					eerror("%s: read: %s", applet, strerror(errno));
+				close(master_tty);
+				master_tty = -1;
+				fd[1].fd = -1;
+			}
 		}
 
 		/* signal_pipe receives service_pid's exit status */
