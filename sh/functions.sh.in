@@ -54,20 +54,6 @@ rc_runlevel()
     rc-status --runlevel
 }
 
-_sanitize_path()
-{
-	local IFS=":" p= path=
-	for p in $PATH; do
-		case "$p" in
-			@LIBEXECDIR@/bin|@LIBEXECDIR@/sbin);;
-			@BINDIR@|@SBINDIR@|/usr/bin|/usr/sbin);;
-			@LOCAL_PREFIX@/bin|@LOCAL_PREFIX@/sbin);;
-			*) path="$path${path:+:}$p";;
-		esac
-	done
-	[ "$path" ] && echo ":$path"
-}
-
 # Allow our scripts to support zsh
 if [ -n "$ZSH_VERSION" ]; then
 	emulate sh
@@ -76,9 +62,8 @@ if [ -n "$ZSH_VERSION" ]; then
 	setopt NO_GLOB_SUBST
 fi
 
-# Make a sane PATH
-export PATH="@LIBEXECDIR@/bin:/bin:/sbin:/usr/bin:/usr/sbin:@LOCAL_PREFIX@/bin:@LOCAL_PREFIX@/sbin$(_sanitize_path)"
-unset _sanitize_path
+# Add libexec to PATH
+export PATH="@LIBEXECDIR@/bin:$PATH"
 
 for arg; do
 	case "$arg" in
