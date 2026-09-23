@@ -172,7 +172,7 @@ _s6_servicedir_create() {
 			echo "s6-setuidgid \"$command_user\""
 		fi
 		if test "$notify" = socket:ready ; then
-			echo s6-notify-fd-from-socket
+			echo 's6-notify-fd-from-socket --'
 		fi
 		eval set -- $command $command_args $command_args_foreground
 		printf '"%s"' $1 ; shift
