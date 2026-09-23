@@ -192,6 +192,9 @@ Runlevels are kept in ~/.config/rc/runlevels.
 `openrc` and all `rc-*` tools provide a --user/-U flag to operate with user-mode
 services and runlevels.
 
+You will need to logout and log back in after creating the above directories for
+`openrc` to recognize them.
+
 The XDG_RUNTIME_DIR variable must be set before calling openrc --user, as it's
 used to store state for openrc itself and the services it runs.
 
