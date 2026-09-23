@@ -824,17 +824,17 @@ int main(int argc, char **argv)
 			break;
 		}
 		now = tm_now();
-		if (next_retry > now) {
+		if ((rp->pid > 0 || rp->fuser_pid > 0) && next_retry > now) {
 			int64_t sleep_for = next_retry - now;
 			/* a child may become available for reaping *before* we
 			 * enter sleep. cap the timeout to stay responsive. */
 			if (sleep_for > 500)
 				sleep_for = 500;
-			if (tm_sleep(sleep_for, 0) != 0 && errno == EINTR)
-				state = STATE_REAP;
+			tm_sleep(sleep_for, 0);
+			state = STATE_REAP;
 			now = tm_now();
 		}
-		if (next_retry <= now) {
+		if ((rp->pid == -1 && rp->fuser_pid == -1) || next_retry <= now) {
 			if (rp->fuser_pid > 0) {
 				kill(rp->fuser_pid, SIGKILL);
 				waitpid(rp->fuser_pid, NULL, 0);
