@@ -205,13 +205,16 @@ default_status()
 
 default_reload()
 {
+	local func=ssd_reload
 	case "$supervisor" in
-		s6) s6_reload ;;
+		s6) func=s6_reload ;;
+		supervise-daemon) func=supervise_reload ;;
 		?*)
 			eerror "$RC_SVCNAME: undefined function 'reload'"
 			exit 1
 			;;
 	esac
+	$func
 }
 
 # Template start / stop / status functions
@@ -380,7 +383,7 @@ if yesno $IN_BACKGROUND; then
 	done
 fi
 
-for _cmd in $extra_started_commands; do
+for _cmd in reload $extra_started_commands; do
 	[ "$_cmd" = "$_func" ] || continue
 	if verify_boot && ! service_started; then
 		eerror "$RC_SVCNAME: cannot '$_func' as it has not been started"
