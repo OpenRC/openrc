@@ -339,7 +339,7 @@ int main(int argc, char **argv)
 	char *svcname = getenv("RC_SVCNAME");
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
-	char *tmp, *newpath, *np;
+	char *tmp, *newpath;
 	char *p;
 	char *token;
 	char *exec_file = NULL;
@@ -1059,31 +1059,19 @@ int main(int argc, char **argv)
 		}
 		rc_stringlist_free(env_list);
 
-		/* For the path, remove the rcscript bin dir from it */
+		/* For the path, remove the RC_PATH_PREFIX prefix from it */
 		if ((token = getenv("PATH"))) {
-			len = strlen(token);
-			newpath = np = xmalloc(len + 1);
-			while (token && *token) {
-				p = strchr(token, ':');
-				if (p) {
-					*p++ = '\0';
-					while (*p == ':')
-						p++;
-				}
-				if (strcmp(token, RC_LIBEXECDIR "/bin") != 0 &&
-				    strcmp(token, RC_LIBEXECDIR "/sbin") != 0)
-				{
-					len = strlen(token);
-					if (np != newpath)
-						*np++ = ':';
-					memcpy(np, token, len);
-					np += len;
-				}
-				token = p;
+			len = strlen(RC_PATH_PREFIX ":");
+			if (strncmp(token, RC_PATH_PREFIX ":", len) == 0) {
+				newpath = xmalloc(strlen(token) - len + 1);
+				strcpy(newpath, token + len);
+			} else {
+				newpath = xmalloc(strlen(token) + 1);
+				strcpy(newpath, token);
 			}
-			*np = '\0';
 			unsetenv("PATH");
 			setenv("PATH", newpath, 1);
+			free(newpath);
 		}
 
 		stdin_fd = devnull_fd;

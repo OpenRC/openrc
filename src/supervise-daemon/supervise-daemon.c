@@ -376,11 +376,9 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	RC_STRINGLIST *env_list;
 	RC_STRING *env;
 	int i;
-	char *p;
 	char *token;
 	size_t len;
 	char *newpath;
-	char *np;
 	char *cmdline = NULL;
 	time_t start_time;
 	char start_count_string[20];
@@ -539,31 +537,19 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	}
 	rc_stringlist_free(env_list);
 
-	/* For the path, remove the rcscript bin dir from it */
+	/* For the path, remove the RC_PATH_PREFIX prefix from it */
 	if ((token = getenv("PATH"))) {
-		len = strlen(token);
-		newpath = np = xmalloc(len + 1);
-		while (token && *token) {
-			p = strchr(token, ':');
-			if (p) {
-				*p++ = '\0';
-				while (*p == ':')
-					p++;
-			}
-			if (strcmp(token, RC_LIBEXECDIR "/bin") != 0 &&
-			    strcmp(token, RC_LIBEXECDIR "/sbin") != 0)
-			{
-				len = strlen(token);
-				if (np != newpath)
-					*np++ = ':';
-				memcpy(np, token, len);
-				np += len;
-				}
-			token = p;
+		len = strlen(RC_PATH_PREFIX ":");
+		if (strncmp(token, RC_PATH_PREFIX ":", len) == 0) {
+			newpath = xmalloc(strlen(token) - len + 1);
+			strcpy(newpath, token + len);
+		} else {
+			newpath = xmalloc(strlen(token) + 1);
+			strcpy(newpath, token);
 		}
-		*np = '\0';
 		unsetenv("PATH");
 		setenv("PATH", newpath, 1);
+		free(newpath);
 	}
 
 	stdin_fd = devnull_fd;
