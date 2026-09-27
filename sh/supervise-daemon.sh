@@ -85,10 +85,15 @@ supervise_stop()
 
 supervise_reload()
 {
-	ebegin "Reloading ${name:-$RC_SVCNAME}"
-	supervise-daemon "${RC_SVCNAME}" --signal SIGHUP
-	eend $? "Failed to reload ${name:-$RC_SVCNAME}"
-}
+	case "${reloadsig}" in
+			"") eerror "Reloading is disabled for ${name:-$RC_SVCNAME}" ;;
+			*)
+				ebegin "Reloading ${name:-$RC_SVCNAME}"
+				supervise-daemon "${RC_SVCNAME}" --signal "${reloadsig:-"HUP"}"
+				eend $? "Failed to reload ${name:-$RC_SVCNAME}"
+				;;
+	esac
+}	
 
 _check_supervised()
 {
