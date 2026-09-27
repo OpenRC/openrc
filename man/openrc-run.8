@@ -28,7 +28,7 @@ is basically an interpreter for shell scripts which provides an easy interface
 to the often complex system commands and daemons.
 When a service runs a command it first loads its multiplexed configuration
 file, then its master configuration file, then
-.Pa /etc/rc.conf
+.Pa rc.conf
 and finally the script itself. At this point
 .Nm
 then runs the command given.
@@ -383,7 +383,7 @@ When in a jail, exclude this service from any dependencies. The service can
 still be run directly. Set via
 .Ic rc_sys
 in
-.Pa /etc/rc.conf
+.Pa rc.conf
 .It Dv -lxc
 Same as -jail, but for Linux Resource Containers (LXC).
 .It Dv -openvz
@@ -637,6 +637,28 @@ matches YES, TRUE, ON or 1 regardless of case then we return 0, otherwise 1.
 .El
 .Sh ENVIRONMENT
 .Nm
+uses the following environment variables for finding service and control directories:
+.Bl -tag -width "RC_DEFAULTLEVEL"
+
+.It Va RC_PATH
+Colon separated list of paths to look services and configurations in.
+Each entry is looked up for
+.Pa init.d/ ,
+.Pa conf.d/ ,
+and
+.Pa rc.conf
+entries .
+
+.It Va RC_SVCDIR
+Path to the service control directory.
+Default to
+.Pa /run/openrc
+for system services, and
+.Pa $XDG_RUNTIME_DIR/openrc
+for user services.
+.El
+
+.Nm
 sets the following environment variables for use in the service scripts:
 .Bl -tag -width "RC_DEFAULTLEVEL"
 .It Va RC_SVCNAME
@@ -677,21 +699,22 @@ should not be unmounted.
 .El
 .Sh FILES
 .Pp
-Configuration files, relative to the location of the service.
+Configuration files, are sourced in a loop for each entry in
+.Ev RC_PATH .
 If a file ending with .${RC_RUNLEVEL} exists then we use that instead.
 .Bl -ohang
-.It Pa ../conf.d/${RC_SVCNAME%%.*}
+.It Pa conf.d/${RC_SVCNAME%%.*}
 multiplexed configuration file.
 Example: if ${RC_SVCNAME} is net.eth1 then look for
-.Pa ../conf.d/net .
-.It Pa ../conf.d/${RC_SVCNAME}
+.Pa conf.d/net .
+.It Pa conf.d/${RC_SVCNAME}
 service configuration file.
-.It Pa /etc/rc.conf
+.It Pa rc.conf
 host configuration file.
 .El
 .Pp
 With the exception of
-.Pa /etc/rc.conf ,
+.Pa rc.conf ,
 the configuration files can also influence the dependencies of the service
 through variables. Simply prefix the name of the dependency with rc_.
 Examples:
