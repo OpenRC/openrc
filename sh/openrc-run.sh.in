@@ -165,6 +165,7 @@ default_start()
 {
 	local func=ssd_start
 	case "$supervisor" in
+		start-stop-daemon) ;;
 		runit) func=runit_start ;;
 		s6) func=s6_start ;;
 		supervise-daemon) func=supervise_start ;;
@@ -179,6 +180,7 @@ default_stop()
 {
 	local func=ssd_stop
 	case "$supervisor" in
+		start-stop-daemon) ;;
 		runit) func=runit_stop ;;
 		s6) func=s6_stop ;;
 		supervise-daemon) func=supervise_stop ;;
@@ -193,6 +195,7 @@ default_status()
 {
 	local func=ssd_status
 	case "$supervisor" in
+		start-stop-daemon) ;;
 		runit) func=runit_status ;;
 		s6) func=s6_status ;;
 		supervise-daemon) func=supervise_status ;;
