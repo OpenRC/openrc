@@ -85,13 +85,8 @@ supervise_stop()
 
 supervise_reload()
 {
-	local startchroot="$(service_get_value "chroot")"
-	local startpidfile="$(service_get_value "pidfile")"
-	chroot="${startchroot:-$chroot}"
-	pidfile="${startpidfile:-$pidfile}"
 	ebegin "Reloading ${name:-$RC_SVCNAME}"
-	supervise-daemon "${RC_SVCNAME}" --signal SIGHUP \
-		${pidfile:+--pidfile} $chroot$pidfile
+	supervise-daemon "${RC_SVCNAME}" --signal SIGHUP
 	eend $? "Failed to reload ${name:-$RC_SVCNAME}"
 }
 
