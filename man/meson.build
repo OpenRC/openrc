@@ -10,7 +10,8 @@ man3 = [
   ]
 
 man7 = [
-  'openrc-service-guide.7'
+  'openrc-service-guide.7',
+  'openrc-user-services.7'
   ]
 
 man8 = [
