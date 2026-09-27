@@ -93,15 +93,14 @@ String describing the service.
 .It Ar description_$command
 String describing the extra command.
 .It Ar supervisor
-Supervisor to use to monitor this daemon. If this is unset or invalid,
-start-stop-daemon will be used.
-Currently, we support start-stop-daemon, s6 from skarnet software and supervise-daemon
-which is a light-weight supervisor internal to OpenRC.
-To use s6, set
-supervisor=s6,
+Supervisor to use to monitor this daemon. This defaults to start-stop-daemon for historical reasons.
+Currently, we support supervise-daemon which is light-weight supervisor internal to OpenRC and 
+is the recommended option; s6 from skarnet software; and start-stop-daemon which doesn't provide any process supervision.
+To use supervise-daemon, set
+supervisor=supervise-daemon,
 set
-supervisor=supervise-daemon
-to use supervise-daemon,
+supervisor=s6
+to use s6,
 or
 supervisor=start-stop-daemon 
 to use start-stop-daemon.
