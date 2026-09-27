@@ -1,7 +1,6 @@
 #!/bin/sh
 
 set -e
-set -u
 
 rc_libexecdir="$1"
 os="$2"
