@@ -93,7 +93,7 @@ supervise_reload()
 				eend $? "Failed to reload ${name:-$RC_SVCNAME}"
 				;;
 	esac
-}	
+}
 
 _check_supervised()
 {
