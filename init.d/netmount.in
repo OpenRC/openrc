@@ -15,8 +15,8 @@ depend()
 {
 	local opts mywant=""
 	for opts in $(fstabinfo -o -t nfs,nfs4); do
-		case $opts in
-			noauto) ;;
+		case ,$opts, in
+			*,noauto,*) ;;
 			*) mywant="$mywant nfsclient"; break ;;
 		esac
 	done
