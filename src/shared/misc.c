@@ -200,6 +200,7 @@ env_config(void)
 	if (!path)
 		setenv("PATH", RC_PATH_PREFIX, 1);
 	else if (strncmp (RC_PATH_PREFIX, path, pplen) != 0) {
+		setenv("RC_PREV_PATH", path, 1);
 		l = strlen(path) + pplen + 3;
 		e = p = xmalloc(sizeof(char) * l);
 		p += snprintf(p, l, "%s", RC_PATH_PREFIX);

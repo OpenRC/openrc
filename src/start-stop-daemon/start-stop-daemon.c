@@ -366,6 +366,7 @@ int main(int argc, char **argv)
 	ssize_t ss;
 	struct notify notify = {0};
 	int ret = EXIT_SUCCESS;
+	char *prev_path;
 
 	applet = basename_c(argv[0]);
 	atexit(cleanup);
@@ -1025,6 +1026,10 @@ int main(int argc, char **argv)
 		ioctl(tty_fd, TIOCNOTTY, 0);
 		close(tty_fd);
 #endif
+
+		prev_path = getenv("RC_PREV_PATH");
+		if (prev_path)
+			setenv("PATH", prev_path, 1);
 
 		/* Clean the environment of any RC_ variables */
 		env_list = rc_stringlist_new();

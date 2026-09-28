@@ -388,6 +388,7 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	FILE *fp;
 	gid_t group_buf[32], *group_list = group_buf;
 	int group_count = ARRAY_SIZE(group_buf);
+	char *prev_path;
 
 #ifdef HAVE_PAM
 	pam_handle_t *pamh = NULL;
@@ -505,6 +506,10 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	ioctl(tty_fd, TIOCNOTTY, 0);
 	close(tty_fd);
 #endif
+
+	prev_path = getenv("RC_PREV_PATH");
+	if (prev_path)
+		setenv("PATH", prev_path, 1);
 
 	/* Clean the environment of any RC_ variables */
 	env_list = rc_stringlist_new();
