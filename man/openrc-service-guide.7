@@ -1,0 +1,113 @@
+.Dd $Mdocdate$
+.Dt openrc-intro 7
+.Os
+
+.Sh NAME
+.Nm openrc-intro
+.Nd An introduction to openrc init scripts
+
+.Sh SYNTAX
+
+openrc init scripts are POSIX shell scripts, interpreted by
+.Xr openrc-run 8
+
+.Sh DEFAULT FUNCTIONS
+openrc requires that every service provides the
+.Ic start Ns () ,
+.Ic stop Ns () ,
+and
+.Ic status Ns ()
+commands.
+
+In order to simplify init scripts, openrc provides default implementations to
+all required commands, configured via shell variables, thus most services then
+are composed of only a couple variable assignments.
+
+Do not define custom
+.Ic start Ns ()
+or
+.Ic stop Ns ()
+functions for managing daemons.
+
+Any service that start a daemon must define
+.Va command .
+For a full list of all variables, refer to
+.Xr openrc-run 8 .
+
+.Sh _pre AND _post FUNCTIONS
+In order to run preparation and checks, the init script can define pre-command
+and post-command function for any command, by defining a function with said
+command name, suffixed with _pre or _post.
+
+If those functions return a non-0 exit status, openrc will not proceed with
+executing the command proper, thus
+.Ic start_pre Ns ()
+and
+.Ic stop_pre Ns ()
+can be used to run precondition checks and disallowing the service to be
+started or stopped should they fail.
+
+.Sh CUSTOM COMMANDS
+Custom commands can be declared and made available to users.
+
+Define a function for the command, and include it in either
+.Va extra_commands ,
+.Va extra_started_commands ,
+or
+.Va extra_stopped_commands .
+
+.Sh DEPENDENCIES
+Dependencies across services are declared in the
+.Ic depend Ns ()
+function, openrc will attempt to start any
+.Ic need
+or
+.Ic want
+service beforehand, and will stop/restart services when
+.Ic need
+services are stopped/restarted.
+
+For a full list of dependency types, refer to
+.Xr openrc-run 8 .
+
+.Sh SUPERVISION
+openrc provides
+.Xr supervise-daemon 8
+to supervise services, it is recommended for init scripts to make use of it
+in order to improve system reliability.
+
+To use supervise-daemon, make sure the daemon does not fork, and stays in the
+foreground, then set the
+.Va supervisor
+variable to
+.Qq Dv supervise-daemon
+
+.Sh EXAMPLE
+.Bd -literal
+#!/sbin/openrc-run
+
+depend() {
+	need nya
+}
+
+supervisor=supervise-daemon
+command=/bin/foo
+command_user=foo:foo
+extra_commands="checkconfig"
+
+checkconfig() {
+	/bin/foo --check-config
+}
+
+start_pre() {
+	checkpath -o $command_user /run/foo
+
+	checkconfig
+}
+.Ed
+
+.Sh SEE ALSO
+.Xr openrc-run 8
+
+.Sh AUTHORS
+.An navi Aq Mt navi@vlhl.dev

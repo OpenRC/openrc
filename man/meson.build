@@ -9,6 +9,11 @@ man3 = [
   'rc_stringlist.3',
   ]
 
+man7 = [
+  'openrc-service-guide.7',
+  'openrc-user-services.7'
+  ]
+
 man8 = [
   'openrc.8',
   'openrc-run.8',
@@ -30,6 +35,8 @@ endif
 
 install_data(man3,
   install_dir : get_option('mandir') / 'man3')
+install_data(man7,
+  install_dir : get_option('mandir') / 'man7')
 install_data(man8,
   install_dir : get_option('mandir') / 'man8')
-meson.add_install_script('meson_man_links.sh', get_option('mandir'), man3 + man8)
+meson.add_install_script('meson_man_links.sh', get_option('mandir'), man3 + man7 + man8)
