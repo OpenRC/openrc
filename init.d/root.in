@@ -21,7 +21,7 @@ depend()
 start()
 {
 	local root_opts=",$(fstabinfo -o /),"
-	case "$root_opts" in
+	case ",${root_opts}," in
 		*,ro,*)
 		;;
 		*)
@@ -46,7 +46,7 @@ start()
 		;;
 	esac
 
-	case "$root_opts" in
+	case ",${root_opts}," in
 		*,shared,*|*,rshared,*)
 			ebegin "Making root filesystem shared"
 			case "$RC_UNAME" in
