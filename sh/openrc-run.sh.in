@@ -210,6 +210,7 @@ default_reload()
 {
 	case "$supervisor" in
 		s6) s6_reload ;;
+		supervise-daemon) supervise_reload ;;
 		?*)
 			eerror "$RC_SVCNAME: undefined function 'reload'"
 			exit 1

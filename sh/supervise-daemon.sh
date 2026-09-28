@@ -10,7 +10,7 @@
 # This file may not be copied, modified, propagated, or distributed
 #    except according to the terms contained in the LICENSE file.
 
-extra_commands="healthcheck unhealthy ${extra_commands}"
+extra_commands="healthcheck unhealthy reload ${extra_commands}"
 
 supervise_start()
 {
@@ -81,6 +81,18 @@ supervise_stop()
 		${pidfile:+--pidfile} $chroot$pidfile
 
 	eend $? "Failed to stop ${name:-$RC_SVCNAME}"
+}
+
+supervise_reload()
+{
+	case "${reloadsig}" in
+			"") eerror "Reloading is disabled for ${name:-$RC_SVCNAME}" ;;
+			*)
+				ebegin "Reloading ${name:-$RC_SVCNAME}"
+				supervise-daemon "${RC_SVCNAME}" --signal "${reloadsig:-"HUP"}"
+				eend $? "Failed to reload ${name:-$RC_SVCNAME}"
+				;;
+	esac
 }
 
 _check_supervised()
