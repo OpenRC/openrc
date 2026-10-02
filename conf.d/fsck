@@ -38,3 +38,8 @@ fsck_shutdown="NO"
 # This is useful when periodic filesystem checks are causing undesirable
 # aborts.
 fsck_abort_on_errors="YES"
+
+# Log fsck output to /var/log/fsck/checkfs
+#
+fsck_log="NO"
+fsck_log_path="/var/log/fsck/checkfs"
