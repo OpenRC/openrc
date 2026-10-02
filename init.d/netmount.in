@@ -78,7 +78,13 @@ stop()
 		fs="$fs${fs:+|}$x"
 	done
 	[ -n "$fs" ] && fs="^($fs)$"
-	do_unmount -- ${fs:+--fstype-regex} $fs --netdev
+	local IFS="$IFS:" no_umounts_r=
+	for x in $no_umounts; do
+		no_umounts_r="$no_umounts_r${no_umounts_r:+|}$x"
+	done
+	[ -n "$no_umounts_r" ] && no_umounts_r="^($no_umounts_r)$"
+	do_unmount umount ${no_umounts_r:+--skip-point-regex} $no_umounts_r \
+		${fs:+--fstype-regex} $fs --netdev
 	retval=$?
 
 	eoutdent
