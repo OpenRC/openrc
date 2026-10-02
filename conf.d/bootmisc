@@ -1,4 +1,6 @@
-# List of /tmp directories we should clean up
+# List of /tmp-like directories we should clean up.  tmpfs mounts are ignored
+# since they will be empty at boot.
+# Use of tmpfs for /tmp itself is strongly recommended if possible.
 clean_tmp_dirs="/tmp"
 
 # Should we wipe the tmp paths completely or just selectively remove known
