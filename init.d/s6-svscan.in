@@ -1,5 +1,5 @@
 #!@SBINDIR@/openrc-run
-# Copyright (c) 2025 The OpenRC Authors.
+# Copyright (c) 2025-2026 The OpenRC Authors.
 # See the Authors file at the top-level directory of this distribution and
 # https://github.com/OpenRC/openrc/blob/HEAD/AUTHORS
 #
@@ -13,12 +13,14 @@
 # openrc service. It's using ssd for now; we may
 # switch to supervise-daemon later.
 
-command="${RC_LIBEXECDIR}/sh/s6-svscanboot.sh"
-command_args="$RC_SVCDIR"
-command_background=yes
-pidfile=/var/run/s6-svscan.pid
+supervisor=supervise-daemon
+command=fdmove
+command_args="-c 1 2 s6-svscan -d3 -- $RC_SVCDIR/s6-scan"
 umask=022
-notify=fd:4
+notify=fd:3
+respawn_max=0  # unlimited
+respawn_delay=1
+error_logger="s6-log -b -- t s1048576 n10 $RC_SVCDIR/s6-logs"
 
 depend() {
 	need localmount

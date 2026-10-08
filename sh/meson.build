@@ -23,7 +23,6 @@ scripts_config = [
   'gendepends.sh.in',
   'openrc-run.sh.in',
   'openrc-user.sh.in',
-  's6-svscanboot.sh.in'
   ]
 
 if os == 'linux'
