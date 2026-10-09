@@ -49,18 +49,14 @@ _rc_service()
 		done
 	fi
 
-	if [[ ${COMP_CWORD} -eq 3 ]]; then
-		return 1
-	fi
-
 	# check if an option was typed
 	if [[ ${cur} == -* ]]; then
 		if [[ ${cur} == --* ]]; then
-			opts="--list --exists --resolve"
+			opts="--user --list --exists --resolve --ifcrashed --debug --nodeps --ifexists --ifnotstarted --ifstarted --ifstopped --dry-run"
 			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 			return 0
 		elif [[ ${cur} == -* ]]; then
-			opts="-l -e -r"
+			opts="-U -l -e -r -c -d -D -i -I -s -S -Z"
 			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 			return 0
 		fi
@@ -83,30 +79,32 @@ _rc_service()
 
 		return 0
 	else
-		# no option was typed
-		if [[ ${COMP_CWORD} -eq 1 ]]; then			  # if first word typed
+		user_flag=
+
+		for i in "${COMP_WORDS[@]}"; do
+			case "$i" in
+				--user|-U)
+					user_flag=--user
+					;;
+			esac
+		done
+
+		# first non-flag argument
+		if [[ ${COMP_CWORD} -eq 1 ]] || ( [[ ${prev} == -* ]] && [[ ${action} != list ]] ); then
 			# complete for init scripts
-			COMPREPLY=($(for i in $(rc-service --list) ; do \
-				[[ ${i} == "${cur}"* ]] && echo ${i} ; \
-			done))
+			COMPREPLY=($(compgen -W "$(rc-service ${user_flag} --list)" -- "$cur"))
 			return 0
-		elif [[ ${COMP_CWORD} -eq 2 ]] && [[ ${prev} != -* ]]; then # if second word typed and we didn't type in a function
+		# if next argument after a service name
+		elif [[ ${COMP_CWORD} -gt 1 ]] && [[ ${prev} != -* ]] && [[ ${action} == "" ]]; then
 			rc-service --exists "$prev" || return
 			while read -r _ line; do
 				if [[ $line == +([[:alnum:]_]):* ]]; then
 					opts+="${line%%:*} "
 				fi
-			done < <(rc-service "$prev" describe 2>&1)
+			done < <(rc-service "${user_flag}" "$prev" describe 2>&1)
 			COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
 			return 0
 		fi
-	fi
-	if [[ ${action} == '--exists' ]] || [[ ${action} == '-e' ]] || \
-		[[ ${action} == '--resolve' ]]  || [[ ${action} == '-r' ]]; then
-		COMPREPLY=($(for i in $(rc-service --list) ; do \
-			[[ ${i} == "${cur}"* ]] && echo ${i} ; \
-		done))
-		return 0
 	fi
 	return 0
 } &&

@@ -13,29 +13,55 @@
 #
 _rc_update()
 {
-	local cur show
+	local cur show stack
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
-	if [[ $COMP_CWORD -eq 1 ]]; then
-		if [[ "${cur}" == -* ]]; then
-			COMPREPLY=($(compgen -W '-a -d -s' -- ${cur}))
-		else
-			COMPREPLY=($(compgen -W 'add del show' ${cur}))
-		fi
-	else
-		if [[ "${COMP_WORDS[1]}" == "show" ]] || [[ "${COMP_WORDS[1]}" == "-s" ]]; then
-			show="TRUE"
-		fi
-		if ([[ $COMP_CWORD -eq 3 ]] && [[ -z "$show" ]]) || \
-			([[ $COMP_CWORD -eq 2 ]] && [[ -n "$show" ]]); then
-		COMPREPLY=($(compgen -W "$(rc-status --list)" -- $cur))
-		elif [[ $COMP_CWORD -eq 2 ]]; then
-			COMPREPLY=($(compgen -W "$(rc-service --list)" $cur))
-		elif [[ ${#COMP_WORDS[*]} -gt 2 ]] ; then
-			COMPREPLY=($(compgen -W "$(rc-status --list)" -- $cur))
+
+	user_flag=
+	non_flag_args=0
+
+	for i in "${COMP_WORDS[@]}"; do
+		case "$i" in
+			--user|-U)
+				user_flag=--user
+				;;
+			show)
+				show="TRUE"
+				non_flag_args=$((non_flag_args+1))
+				;;
+            -s)
+                stack="TRUE"
+                ;;
+			-*)
+				;;
+			*)
+				non_flag_args=$((non_flag_args+1))
+				;;
+		esac
+	done
+
+	if [[ "${cur}" == --* ]]; then
+		COMPREPLY=($(compgen -W '--all --verbose --update --user' -- ${cur}))
+	elif [[ "${cur}" == -* ]]; then
+		COMPREPLY=($(compgen -W '-a -v -u -U' -- ${cur}))
+	elif [[ ${non_flag_args} -eq 2 ]]; then
+		COMPREPLY=($(compgen -W 'add del show' ${cur}))
+	elif [[ "${show}" == "TRUE" ]]; then
+		if [[ ${non_flag_args} -eq 3 ]]; then
+			COMPREPLY=($(compgen -W "$(rc-status ${user_flag} --list)" -- "$cur"))
 		else
 			unset COMPREPLY
 		fi
+	elif [[ ${non_flag_args} -eq 3 ]]; then
+        if [[ "${stack}" == "TRUE" ]]; then
+            COMPREPLY=($(compgen -W "$(rc-status ${user_flag} --list)" -- "$cur"))
+        else
+            COMPREPLY=($(compgen -W "$(rc-service ${user_flag} --list)" -- "$cur"))
+        fi
+	elif [[ ${non_flag_args} -gt 3 ]] ; then
+		COMPREPLY=($(compgen -W "$(rc-status ${user_flag} --list)" -- "$cur"))
+	else
+		unset COMPREPLY
 	fi
 	return 0
 } &&
