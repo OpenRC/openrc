@@ -35,7 +35,7 @@ use them.
 
 Extra functions can be added easily:
 
-```
+```sh
 extra_commands="checkconfig"
 checkconfig() {
 	doSomething
@@ -58,7 +58,7 @@ restart is internally mapped to `stop()` + `start()` (plus handling dependencies
 If a service needs to behave differently when it is being restarted vs
 started or stopped, it should test the `$RC_CMD` variable, for example:
 
-```
+```sh
 [ "$RC_CMD" = restart ] && do_something
 ```
 
