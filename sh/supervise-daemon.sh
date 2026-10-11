@@ -46,6 +46,7 @@ supervise_start()
 		${error_log+--stderr} $error_log \
 		${output_logger:+--stdout-logger \"$output_logger\"} \
 		${error_logger:+--stderr-logger \"$error_logger\"} \
+		${merge_stderr:+--merge-stderr} \
 		${pidfile:+--pidfile} $pidfile \
 		${respawn_delay:+--respawn-delay} $respawn_delay \
 		${respawn_max:+--respawn-max} $respawn_max \
