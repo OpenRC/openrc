@@ -30,11 +30,24 @@ file systems and expects / to be mounted before /usr, you will need to
 make sure the appropriate pieces are installed on / by passing the
 appropriate options to "meson setup" as follows:
 
-```
+```shell
 $ meson setup \
         --bindir /bin --libdir /lib64 --libexecdir /lib --sbindir /sbin \
-        build_path
+        build
 ```
+### Custom openrc directory
+
+If you want to install openrc into a custom directory such as /opt/openrc
+```shell
+$ CUSTOM_PREFIX=/opt/openrc && meson setup 
+  --prefix="$CUSTOM_PREFIX" --bindir=bin --sbindir=sbin --sysconfdir="$CUSTOM_PREFIX/etc" \
+  build
+```
+After, setting it up install openrc by this command. 
+```shell
+$ meson install --destdir='' -C build
+```
+In our case, openrc is going to be correctly installed at /opt/openrc
 
 ## Discussions
 
