@@ -76,8 +76,11 @@ if [ -n "$ZSH_VERSION" ]; then
 	setopt NO_GLOB_SUBST
 fi
 
-# Make a sane PATH
-export PATH="@LIBEXECDIR@/bin:/bin:/sbin:/usr/bin:/usr/sbin:@LOCAL_PREFIX@/bin:@LOCAL_PREFIX@/sbin$(_sanitize_path)"
+# retro-compatibility
+if [ -z "$RC_OPENRC_PID" ]; then
+	# Make a sane PATH
+	export PATH="@LIBEXECDIR@/bin:/bin:/sbin:/usr/bin:/usr/sbin:@LOCAL_PREFIX@/bin:@LOCAL_PREFIX@/sbin$(_sanitize_path)"
+fi
 unset _sanitize_path
 
 for arg; do
