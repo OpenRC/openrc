@@ -42,6 +42,8 @@ start()
 {
 	local fsck_opts= p= check_extra=
 
+	checkpath ${fsck_log_path}
+
 	if [ -e /fastboot ]; then
 		ewarn "Skipping fsck due to /fastboot"
 		return 0
@@ -93,7 +95,11 @@ start()
 	fi
 
 	trap : INT QUIT
-	fsck ${fsck_args:--p} $fsck_opts "$@"
+	if yesno ${fsck_log:YES}
+		fsck ${fsck_args:--p} $fsck_opts "$@" > ${fsck_log_path}
+	else
+		fsck ${fsck_args:--p} $fsck_opts "$@"
+	fi
 	case $? in
 	0)	eend 0; return 0;;
 	1)	ewend 1 "Filesystems repaired"; return 0;;
