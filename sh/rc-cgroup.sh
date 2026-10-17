@@ -104,7 +104,7 @@ cgroup_add_service()
 	# it prevents unwanted inheriting of the user
 	# cgroups. But may lead to problems where that inheriting
 	# is needed.
-	local cgroup d openrc_cgroup
+	local attempts cgroup d openrc_cgroup
 	for d in /sys/fs/cgroup/* ; do
 		[ -w "${d}"/tasks ] && printf "%d" 0 > "${d}"/tasks
 	done
@@ -112,8 +112,18 @@ cgroup_add_service()
 	openrc_cgroup=/sys/fs/cgroup/openrc
 	if [ -d "$openrc_cgroup" ]; then
 		cgroup="$openrc_cgroup/$RC_SVCNAME"
-		mkdir -p "$cgroup"
-		[ -w "$cgroup/tasks" ] && printf "%d" 0 > "$cgroup/tasks"
+		attempts=0
+		# The asynchronous release agent may remove an empty cgroup
+		# between creating it and writing to tasks, so retry both.
+		while [ "$attempts" -lt 3 ]; do
+			mkdir -p "$cgroup" || return 0
+			if [ -w "$cgroup/tasks" ] &&
+				{ printf "%d" 0 > "$cgroup/tasks"; } 2> /dev/null
+			then
+				return 0
+			fi
+			attempts=$((attempts+1))
+		done
 	fi
 }
 
