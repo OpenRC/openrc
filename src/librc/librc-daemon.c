@@ -316,13 +316,16 @@ rc_find_pids(const char *exec, const char *const *argv, uid_t uid, pid_t pid)
 #endif
 
 static bool
-_match_daemon(const char *svcname, const char *instance, RC_STRINGLIST *match)
+_match_daemon(const char *svcname, const char *instance,
+    const RC_STRINGLIST *match)
 {
 	char *line = NULL;
 	size_t len = 0;
 	FILE *fp;
 	RC_STRING *m;
+	RC_STRINGLIST *match_copy;
 	char *daemon;
+	bool retval;
 
 	xasprintf(&daemon, "%s/%s", svcname, instance);
 	fp = do_fopenat(rc_dirfd(RC_DIR_DAEMONS), daemon, O_RDONLY);
@@ -331,20 +334,26 @@ _match_daemon(const char *svcname, const char *instance, RC_STRINGLIST *match)
 	if (!fp)
 		return false;
 
+	match_copy = rc_stringlist_new();
+	TAILQ_FOREACH(m, match, entries)
+		rc_stringlist_add(match_copy, m->value);
+
 	while (xgetline(&line, &len, fp) != -1) {
-		TAILQ_FOREACH(m, match, entries)
+		TAILQ_FOREACH(m, match_copy, entries)
 		    if (strcmp(line, m->value) == 0) {
-			    TAILQ_REMOVE(match, m, entries);
+			    TAILQ_REMOVE(match_copy, m, entries);
+			    free(m->value);
+			    free(m);
 			    break;
 		    }
-		if (!TAILQ_FIRST(match))
+		if (!TAILQ_FIRST(match_copy))
 			break;
 	}
 	fclose(fp);
 	free(line);
-	if (TAILQ_FIRST(match))
-		return false;
-	return true;
+	retval = !TAILQ_FIRST(match_copy);
+	rc_stringlist_free(match_copy);
+	return retval;
 }
 
 static RC_STRINGLIST *
