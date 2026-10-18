@@ -41,6 +41,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <spawn.h>
 
 #ifdef HAVE_PAM
 #include <security/pam_appl.h>
@@ -172,9 +173,9 @@ static uid_t uid = 0;
 static gid_t gid = 0;
 static bool stopgroup = false;
 static int devnull_fd = -1;
-static int stdin_fd;
-static int stdout_fd;
-static int stderr_fd;
+static int stdin_fds[2], stdout_fds[2], stderr_fds[2];
+static int stdout_pid = -1;
+static int stderr_pid = -1;
 static struct notify notify;
 static char *redirect_stdin = NULL;
 static char *redirect_stderr = NULL;
@@ -250,7 +251,7 @@ static void handle_signal(int sig)
 			while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
 		else {
 			while ((pid = waitpid((pid_t)(-1), NULL, WNOHANG|WNOWAIT)) > 0) {
-				if (pid == child_pid)
+				if (pid == child_pid || pid == stdout_pid || pid == stderr_pid)
 					break;
 				pid = waitpid(pid, NULL, WNOHANG);
 			}
@@ -500,12 +501,6 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 	}
 #endif
 
-	/* remove the controlling tty */
-#ifdef TIOCNOTTY
-	ioctl(tty_fd, TIOCNOTTY, 0);
-	close(tty_fd);
-#endif
-
 	/* Clean the environment of any RC_ variables */
 	env_list = rc_stringlist_new();
 	i = 0;
@@ -566,49 +561,11 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 		setenv("PATH", newpath, 1);
 	}
 
-	stdin_fd = devnull_fd;
-	stdout_fd = devnull_fd;
-	stderr_fd = devnull_fd;
-	if (redirect_stdin) {
-		if ((stdin_fd = xopen_nonblock(redirect_stdin, O_RDONLY, 0)) == -1)
-			eerrorx("%s: unable to redirect the input file"
-			    " for stdin `%s': %s",
-			    applet, redirect_stdin, strerror(errno));
-	}
-	if (redirect_stdout) {
-		if ((stdout_fd = xopen_nonblock(redirect_stdout,
-			    O_WRONLY | O_CREAT | O_APPEND,
-			    S_IRUSR | S_IWUSR)) == -1)
-			eerrorx("%s: unable to redirect the logfile"
-				    " for stdout `%s': %s",
-				    applet, redirect_stdout, strerror(errno));
-	} else if (stdout_process) {
-		stdout_fd = rc_pipe_command(stdout_process, devnull_fd);
-		if (stdout_fd == -1)
-			eerrorx("%s: unable to open the logging process"
-			    " for stdout `%s': %s",
-			    applet, stdout_process, strerror(errno));
-	}
-	if (redirect_stderr) {
-		if ((stderr_fd = xopen_nonblock(redirect_stderr,
-			    O_WRONLY | O_CREAT | O_APPEND,
-			    S_IRUSR | S_IWUSR)) == -1)
-			eerrorx("%s: unable to redirect the logfile"
-			    " for stderr `%s': %s",
-			    applet, redirect_stderr, strerror(errno));
-	} else if (stderr_process) {
-		stderr_fd = rc_pipe_command(stderr_process, devnull_fd);
-		if (stderr_fd == -1)
-			eerrorx("%s: unable to open the logging process"
-			    " for stderr `%s': %s",
-			    applet, stderr_process, strerror(errno));
-	}
-
-	dup2(stdin_fd, STDIN_FILENO);
+	dup2(stdin_fds[1], STDIN_FILENO);
 	if (redirect_stdout || stdout_process || rc_yesno(getenv("EINFO_QUIET")))
-		dup2(stdout_fd, STDOUT_FILENO);
+		dup2(stdout_fds[1], STDOUT_FILENO);
 	if (redirect_stderr || stderr_process || rc_yesno(getenv("EINFO_QUIET")))
-		dup2(stderr_fd, STDERR_FILENO);
+		dup2(stderr_fds[1], STDERR_FILENO);
 
 	cloexec_fds_from(3);
 
@@ -637,6 +594,43 @@ RC_NORETURN static void child_process(char *exec, char **argv)
 		pam_close_session(pamh, PAM_SILENT);
 #endif
 	eerrorx("%s: failed to exec `%s': %s", applet, exec,strerror(errno));
+}
+
+static inline int spawn_logger(const char *process, pid_t *pid, int stdin)
+{
+	const char *command[] = { "sh", "-c", process, NULL };
+	posix_spawn_file_actions_t fds;
+	int err = 0;
+
+	if ((err = posix_spawn_file_actions_init(&fds)))
+		goto out;
+	if ((err = posix_spawn_file_actions_adddup2(&fds, stdin, STDIN_FILENO)))
+		goto out;
+	if ((err = posix_spawn_file_actions_adddup2(&fds, devnull_fd, STDOUT_FILENO)))
+		goto out;
+	if ((err = posix_spawn_file_actions_adddup2(&fds, devnull_fd, STDERR_FILENO)))
+		goto out;
+
+	err = posix_spawnp(pid, "sh", &fds, NULL, UNCONST(command), environ);
+out:
+	posix_spawn_file_actions_destroy(&fds);
+	return err;
+}
+
+static inline void kill_logger(pid_t pid)
+{
+	sigset_t set;
+	int sig;
+
+	sigemptyset(&set);
+	sigaddset(&set, SIGCHLD);
+	sigaddset(&set, SIGALRM);
+
+	kill(pid, SIGTERM);
+	alarm(5);
+	sigwait(&set, &sig);
+	if (sig == SIGALRM)
+		kill(pid, SIGKILL);
 }
 
 RC_NORETURN static void supervisor(char *exec, char **argv)
@@ -683,12 +677,6 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 	if (svcname)
 		rc_service_daemon_set(svcname, exec, (const char * const *) argv,
 				pidfile, true);
-
-	/* remove the controlling tty */
-#ifdef TIOCNOTTY
-	ioctl(tty_fd, TIOCNOTTY, 0);
-	close(tty_fd);
-#endif
 
 	/*
 	 * Supervisor main loop
@@ -753,8 +741,22 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 					stopgroup, false, false, true);
 			if (nkilled > 0)
 				syslog(LOG_INFO, "killed %d processes", nkilled);
+
+			if (stdout_process)
+				kill_logger(stdout_pid);
+			if (stderr_process)
+				kill_logger(stderr_pid);
 			continue;
 		}
+
+		if (waitpid(stdout_pid, NULL, WNOHANG) == stdout_pid)
+			if ((errno = spawn_logger(stdout_process, &stdout_pid, stdout_fds[0])))
+				syslog(LOG_ERR, "failed to respawn logger '%s': %s", stdout_process, strerror(errno));
+
+		if (waitpid(stderr_pid, NULL, WNOHANG) == stderr_pid)
+			if ((errno = spawn_logger(stderr_process, &stderr_pid, stderr_fds[0])))
+				syslog(LOG_ERR, "failed to respawn logger '%s': %s", stderr_process, strerror(errno));
+
 		wait_pid = waitpid(child_pid, &i, WNOHANG);
 		if (wait_pid == child_pid) {
 			if (WIFEXITED(i))
@@ -824,6 +826,21 @@ RC_NORETURN static void supervisor(char *exec, char **argv)
 	if (fifopath)
 		unlink(fifopath);
 	exit(EXIT_SUCCESS);
+}
+
+static inline void setup_fd(const char *redirect, const char *process, int fd[2], pid_t *pid) {
+	int err;
+
+	if (redirect) {
+		if ((fd[1] = xopen_nonblock(redirect, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR)) == -1)
+			eerrorx("%s: unable to redirect the logfile for stdout '%s': %s", applet, redirect, strerror(errno));
+	} else if (process) {
+		pipe2(fd, O_CLOEXEC);
+		if ((err = spawn_logger(process, pid, fd[0])))
+			eerrorx("%s: unable to open the logging process '%s': %s", applet, process, strerror(err));
+	} else {
+		fd[0] = fd[1] = devnull_fd;
+	}
 }
 
 int main(int argc, char **argv)
@@ -1280,11 +1297,17 @@ int main(int argc, char **argv)
 
 #ifdef TIOCNOTTY
 		tty_fd = open("/dev/tty", O_RDWR);
+		ioctl(tty_fd, TIOCNOTTY, 0);
+		close(tty_fd);
 #endif
 		devnull_fd = open("/dev/null", O_RDWR);
 		dup2(devnull_fd, STDIN_FILENO);
 		dup2(devnull_fd, STDOUT_FILENO);
 		dup2(devnull_fd, STDERR_FILENO);
+
+		setup_fd(redirect_stdin, NULL, stdin_fds, NULL);
+		setup_fd(redirect_stdout, stdout_process, stdout_fds, &stdout_pid);
+		setup_fd(redirect_stderr, stderr_process, stderr_fds, &stderr_pid);
 
 		if (notify.type == NOTIFY_FD)
 			close(notify.pipe[0]);
