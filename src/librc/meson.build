@@ -16,9 +16,9 @@ sysconfdir = get_option('sysconfdir')
 rc_path = get_option('rc_path')
 if rc_path.length() == 0
   rc_path = [
-    sysconfdir / 'rc',
+    sysconfdir / 'openrc',
     sysconfdir,
-    local_prefix / 'rc',
+    local_prefix / 'openrc',
     local_prefix,
     rc_libexecdir,
   ]
