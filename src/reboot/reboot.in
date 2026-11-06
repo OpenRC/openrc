@@ -6,8 +6,8 @@ while getopts :nwdfhik opt; do
 	case "$opt" in
 		n) ;;
 		w) poweroff_arg=--write-only ;;
-		d) option_arg=--no-write ;;
-		f) ;;
+		d) option_arg="${option_arg:+$option_arg }--no-write" ;;
+		f) option_arg="${option_arg:+$option_arg }--force" ;;
 		h) ;;
 		i) ;;
 		k) poweroff_arg=--kexec ;;
