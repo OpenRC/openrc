@@ -108,7 +108,7 @@ _s6_make_envdir() {
 }
 
 _s6_servicedir_creation_needed() {
-	local dir="$_servicedirs/$name" conffile="{$RC_SERVICE%/*}/../conf.d/${RC_SERVICE##*/}"
+	local dir="$_servicedirs/$name" conffile="${RC_SERVICE%/*}/../conf.d/${RC_SERVICE##*/}"
 	if ! test -e "$dir" ; then
 		return 0
 	fi
