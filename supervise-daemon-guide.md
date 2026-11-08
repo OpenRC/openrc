@@ -45,58 +45,43 @@ other than restarting the service to be run.
 
 ## Variable settings
 
-The most important setting is the supervisor variable. At the top of
-your service script, you should set this variable as follows:
+This is a non-exhaustive selection listed for convenience. Please
+refer to `openrc-run` man page for full documentation.
 
-```sh
-supervisor=supervise-daemon
-```
+### `supervisor=supervise-daemon`
 
-Several other variables affect the way services behave under
-supervise-daemon. They are documented on the  openrc-run man page, but I
-will list them here for convenience:
+The most important setting is the supervisor variable that enables the
+use of `supervise-daemon`. As such tt should be set at the top of the script.
 
-```sh
-command_args_foreground="arguments"
-```
+### `command_args_foreground`
 
 This should be used if the daemon you want to monitor
 forks and goes to the background by default. This should be set to the
 command line option that instructs the daemon to stay in the foreground.
 
-```sh
-healthcheck_delay=seconds
-```
+### `healthcheck_delay` [s]
 
 This is the delay, in seconds, before the first health check is run.
 If it is not set, we use the value of `healthcheck_timer`.
 
-```sh
-healthcheck_timer=seconds
-```
+### `healthcheck_timer` [s]
 
 This is the  number of seconds between health checks. If it is not set,
 no health checks will be run.
 
-```sh
-respawn_delay
-```
+### `respawn_delay` [s]
 
 This is the number of seconds to delay before attempting to respawn a
 supervised process after it dies unexpectedly.
 The default is to respawn immediately.
 
-```sh
-respawn_max=x
-```
+### `respawn_max`
 
 This is the maximum number of times to respawn a supervised process
 during the given respawn period.
 The default is 10. 0 means unlimited.
 
-```sh
-respawn_period=seconds
-```
+### `respawn_period` [s]
 
 This works in conjunction with `respawn_max` and `respawn_delay` above to
 decide if a process should not be respawned for some reason.
