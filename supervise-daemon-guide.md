@@ -45,16 +45,15 @@ other than restarting the service to be run.
 
 ## Variable settings
 
-The most important setting is the supervisor variable. At the top of
-your service script, you should set this variable as follows:
+This is a non-exhaustive selection listed for convenience. Please
+refer to `openrc-run` man page for full documentation.
 
 ```sh
 supervisor=supervise-daemon
 ```
 
-Several other variables affect the way services behave under
-supervise-daemon. They are documented on the  openrc-run man page, but I
-will list them here for convenience:
+The most important setting is the supervisor variable that enables the
+use of `supervise-daemon`. As such tt should be set at the top of the script.
 
 ```sh
 command_args_foreground="arguments"
