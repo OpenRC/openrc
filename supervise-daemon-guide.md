@@ -79,7 +79,7 @@ This is the  number of seconds between health checks. If it is not set,
 no health checks will be run.
 
 ```sh
-respawn_delay
+respawn_delay=seconds
 ```
 
 This is the number of seconds to delay before attempting to respawn a
