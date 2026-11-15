@@ -2,7 +2,7 @@
 
 . @LIBEXECDIR@/sh/functions.sh
 
-exec 3>&1 >&2
+exec >&2
 
 if [ -z "${XDG_RUNTIME_DIR}" ]; then
 	logger -p daemon.err "XDG_RUNTIME_DIR unset, user services cannot start."
@@ -33,9 +33,11 @@ case $1 in
 		openrc --user boot || exit 1
 		rc-environ --user -0n -r boot > "$userdir/environ" || ewarn "failed to export boot environment"
 		printf '\n' >&3
+		exec 3>&-
 		exec openrc --user "${rc_default_runlevel:-default}"
 		;;
 	stop)
+		exec 3>&-
 		cp -pr "$svcdir"/dep* "$svcdir/init.d" "$svcdir/conf.d" "$cachedir" 2>/dev/null
 		exec openrc --user shutdown
 		;;
