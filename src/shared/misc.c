@@ -63,6 +63,7 @@ static const char *const env_allowlist[] = {
 	"RC_DEBUG", "RC_NODEPS", "RC_USER_SERVICES",
 	"RC_SVCDIR", "RC_PATH", "LANG", "LC_MESSAGES",
 	"TERM", "EINFO_COLOR", "EINFO_VERBOSE",
+	"SSD_*",
 	"HOSTNAME", "CHARSET", "LC_*",
 	NULL
 };
