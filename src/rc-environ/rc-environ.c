@@ -4,6 +4,7 @@
 #include <rc.h>
 #include <queue.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "_usage.h"
 #include "helpers.h"
@@ -84,7 +85,10 @@ static void escape_variable(const char *value) {
 		case '\\':
 			break;
 		default:
-			putchar(ch);
+			if (isprint((unsigned char)ch))
+				putchar(ch);
+			else
+				printf("\\x%hhx", ch);
 			continue;
 		}
 		printf("\\%c", ch);
@@ -92,11 +96,17 @@ static void escape_variable(const char *value) {
 	printf("\'");
 }
 
+static bool print_only(const char *value)
+{
+	for (const char *p = value; *p; p++)
+		if (!isprint((unsigned char)*p) || *p == '\\')
+			return false;
+	return true;
+}
+
 static int
 print_environment(RC_STRINGLIST *services, bool escape, bool export, char sep)
 {
-	/* from POSIX.2024 Shell Command Language 2.2, excluding `=` */
-	static const char special_chars[] = "|&;<>()$`\\\"' \t\n*?[]^-!#~%{},";
 	RC_DEPTREE *deptree = _rc_deptree_load(0, NULL);
 	RC_STRING *service;
 	char *value = NULL;
@@ -120,10 +130,10 @@ print_environment(RC_STRINGLIST *services, bool escape, bool export, char sep)
 			if (export)
 				fputs("export ", stdout);
 			printf("%s=", reexport->value);
-			if (escape && strpbrk(value, special_chars))
+			if (escape && !print_only(value))
 				escape_variable(value);
 			else
-				fputs(value, stdout);
+				printf("'%s'", value);
 			fputc(sep, stdout);
 		}
 
