@@ -1288,9 +1288,6 @@ rc_service_add(const char *runlevel, const char *service)
 	bool retval;
 	char *init;
 	char *file;
-	char *path;
-	char *binit = NULL;
-	char *i;
 
 	if (!rc_runlevel_exists(runlevel)) {
 		errno = ENOENT;
@@ -1302,40 +1299,20 @@ rc_service_add(const char *runlevel, const char *service)
 		return false;
 	}
 
-	i = init = rc_service_resolve(service);
-
-	/* We need to ensure that only things in /etc/init.d are added
-	 * to the boot runlevel -- not applicable for user services. */
-	if (!rc_is_user() && strcmp(runlevel, RC_LEVEL_BOOT) == 0) {
-		path = realpath(dirname(init), NULL);
-		if (path == NULL) {
-			free(init);
-			return false;
-		}
-		retval = (strcmp(path, RC_INITDIR) == 0);
-		free(path);
-		if (!retval) {
-			free(init);
-			errno = EPERM;
-			return false;
-		}
-		xasprintf(&binit, "%s/%s", RC_INITDIR, service);
-		i = binit;
-	}
+	init = rc_service_resolve(service);
 
 	/* We shouldn't add any temporary script to a runlevel */
-	if (strncmp(i, rc_svcdir(), strlen(rc_svcdir())) == 0) {
+	if (strncmp(init, rc_svcdir(), strlen(rc_svcdir())) == 0) {
 		errno = ENOENT;
 		retval = false;
 		goto out;
 	}
 
 	xasprintf(&file, "%s/%s/%s", rc_runleveldir(), runlevel, basename_c(service));
-	retval = (symlink(i, file) == 0);
+	retval = (symlink(init, file) == 0);
 	free(file);
 
 out:
-	free(binit);
 	free(init);
 	return retval;
 }
