@@ -38,32 +38,31 @@ supervisor=s6
 Several other variables affect s6 services. Some of them are generic,
 whether you're using start-stop-daemon, supervise-daemon or s6:
 
-command, command_args, command_args_foreground: these variables  will be
+- command, command_args, command_args_foreground: these variables  will be
 run as a shell command line. Do not start with "exec", the s6 backend
 will add it automatically.
 
 Some variables are used with supervisor=s6 the same way as with
 supervisor=supervise-daemon:
 
-output_logger, error_logger (mutually exclusive, you can only have
+- output_logger, error_logger (mutually exclusive, you can only have
 one logger; error_logger will log _both_ stdout and stderr, unless
 you also define an output_log which will log your stdout separately
 to a file.)
 
-input_file, output_log, error_log (a corresponding _logger program
+- input_file, output_log, error_log (a corresponding _logger program
 overrides a _log file)
 
-directory, chroot, umask, command_user (command_user must be a username
+- directory, chroot, umask, command_user (command_user must be a username
 appearing in your user database, not a numerical uid)
 
-notify (only the fd:X method is supported: when ready, your daemon must
-write a (possibly empty) line to file descriptor X)
+- notify
 
-stopsig (accepts signal names and numbers)
+- stopsig (accepts signal names and numbers)
 
 Some variables are specific to the supervisor=s6 backend:
 
-error_logger=auto, s6_log_arguments: if you set your error_logger
+- error_logger=auto, s6_log_arguments: if you set your error_logger
 (or your output_logger, but error_logger is recommended) to "auto",
 then a logger service is automatically built using the s6-log
 program, logging to the /var/log/$RC_SVCNAME directory with TAI64N
@@ -73,7 +72,7 @@ via the s6_log_arguments variable (but not the logging directory;
 for more control you can still set error_logger manually, even to
 an s6-log command line!)
 
-timeout_ready=N: wait for up to N milliseconds for the service to
+- timeout_ready=N: wait for up to N milliseconds for the service to
 become up, and fail otherwise. If notify=fd:X has been set, it waits
 for the service to be _ready_ instead, which is what you really want.
 If N=0, OpenRC will wait indefinitely until the service is up/ready.
@@ -81,13 +80,13 @@ If this variable is not set, it will not wait at all and report
 success as soon as the command to bring the service up has
 successfully been sent.
 
-timeout_down=N: wait for up to N milliseconds when stopping the service,
+- timeout_down=N: wait for up to N milliseconds when stopping the service,
 until s6 reports it as down. If it fails, the service might still be
 successfully brought down. If N=0, OpenRC will wait indefinitely for
 the service to die (this works well in conjunction with timeout_kill,
 see below); if the variable is unset, it will not wait at all.
 
-timeout_kill=N: when openrc tries to stop the service, s6 sends a SIGTERM
+- timeout_kill=N: when openrc tries to stop the service, s6 sends a SIGTERM
 (or the value of stopsig). If that signal has not managed to bring the
 service down after N milliseconds, a SIGKILL will be sent. This is
 useful when you want to make sure your service is down; use in
@@ -120,14 +119,6 @@ given, declaratively, in your service file (and your configuration file
 if you have one). In true OpenRC fashion, the service file is the One
 True Source of information for running your service.
 
-The run script for the s6 service directory is built with in the
-execline language, because execline makes script generation easier
-than sh. However, the daemon execution itself is still done via
-  `sh -c "$command $command_args $command_args_foreground"`
-for compatibility with other backends. In other words: you can forget
-that execline is even there, all the user-facing parts use sh as their
-interpreter and it's all you need to worry about.
-
 When the service is stopped, the service directory is unlinked from the
 scan directory, but the service directory itself remains. If the service
 is started again, the same service directory is linked again: it does
@@ -141,10 +132,10 @@ are stored into the OpenRC cache, and restored at the next boot.
 ### Logging
 
 If you don't set a logger at all, the stdout and stderr of your service
-will fall through to the catch-all logger of the s6-svscan service, which
-logs all s6 services that don't have a dedicated logger. These logs are
-accessible in /run/openrc/s6-logs (or whatever $RC_SVCDIR/s6-logs is on
-your machine).
+will fall through to the logger of the s6-svscan service, which is
+supervised by OpenRC and logs all s6 services that don't have a dedicated
+logger. These logs are accessible in /run/openrc/s6-logs (or whatever
+$RC_SVCDIR/s6-logs is on your machine).
 
 
 ## Future direction
