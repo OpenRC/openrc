@@ -304,11 +304,11 @@ start()
 
 	if [ -n "$defaultroute6" ]; then
 		ebegin "Setting default route $defaultroute6"
-		if [ "$RC_UNAME" = Linux ]; then
-			routecmd="route -A inet6 add"
-		else
-			routecmd="route -inet6 add"
-		fi
+		case "$RC_UNAME" in
+			Linux) routecmd="route -A inet6 add" ;;
+			FreeBSD) routecmd="route -6 add" ;;
+			*) routecmd="route -inet6 add" ;;
+		esac
 		$routecmd default $defaultroute6
 		eend $?
 	elif [ -n "$defaultiproute6" ]; then
