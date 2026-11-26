@@ -1,0 +1,96 @@
+.Dd $Mdocdate$
+.Dt openrc-user-serivces 7
+.Os
+
+.Sh NAME
+.Nm User Services
+.Nd Overview of user services for openrc
+
+.Sh DESCRIPTION
+
+The core of openrc does not require superuser permissions,
+however historically some part of it assumed such permissions,
+notably for the control directory and features such as cgroups.
+
+.Sh ENVIRONMENT
+
+For directories,
+.Ev RC_PATH
+and
+.Ev RC_SVCDIR
+were introduced. See
+.Xr openrc-run 8
+for more details about them.
+
+When
+.Fl -user
+is used, openrc prepends
+.Pa ${XDG_CONFIG_HOME}/rc
+to
+.Ev RC_PATH ,
+as well as appending
+.Pa /user
+to all other entries, and sets
+.Ev RC_SVCDIR
+to
+.Pa ${XDG_RUNTIME_DIR}/openrc
+
+.Sh RUNLEVELS
+
+.Ss boot
+
+The
+.Sx SYSTEM SERVICE
+will start the boot runlevel for users, and wait for the runlevel change
+to complete before marking itself as ready.
+
+When combined with the
+.Sx PAM
+module, this guarantees that boot services are up before the user session
+starts, additionally, any environment variables reexported by boot services
+are made available to the new pam session. Useful for services like dbus and
+.Ev DBUS_SESSION_BUS_ADDRESS .
+
+.Ss default
+
+After starting the boot runlevel, the default runlevel is started asynchronously.
+The
+.Sx PAM
+module does not wait for default services to start before returning flow back to pam.
+
+.Ss shutdown
+
+When stopping, the
+.Sx SYSTEM SERVICE
+will switch to this runlevel, which stops services from boot and default.
+Long running services must not be started in the shutdown runlevel.
+System policies may enforce that all user processes are killed on last logout.
+
+.Sh PAM
+openrc ships
+.Lb pam_openrc.so
+for the purpose of starting and stopping services on session open and session close.
+
+It does so by counting session and starting the system
+.Dv user
+service, multiplexed to the current user as
+.Dv user.$USER .
+
+.Sh SYSTEM SERVICE
+
+The system service starts a new pam session for the target user, to get access to resources
+like
+.Ev XDG_RUNTIME_DIR
+should it be made available via pam, e.g. with logind or pam_xdg.
+
+then executes runlevels as specified in
+.Sx RUNLEVELS .
+
+.Sh BUGS
+
+At the moment, the service cgroup options don't work for user services, as openrc
+lacks the ability to delegate cgroups.
+
+.Sh SEE ALSO
+
+.Xr openrc-run 8
