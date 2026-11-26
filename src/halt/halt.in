@@ -7,7 +7,7 @@ while getopts :nwdfiph opt; do
 		n) ;;
 		w) poweroff_arg=--write-only ;;
 		d) option_arg=--no-write ;;
-		f) ;;
+		f) option_arg=--force;;
 		i) ;;
 		p) poweroff_arg=--poweroff ;;
 		[?]) printf "%s\n" "${0##*/}: invalid command line option" >&2

@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
+#include <sys/reboot.h>
 #include <sys/types.h>
 #include <strings.h>
 #include <unistd.h>
@@ -48,6 +49,7 @@ const char getoptstring[] = "cdDfFHKpRrsw" getoptstring_COMMON;
 const struct option longopts[] = {
 	{ "cancel",        no_argument, NULL, 'c'},
 	{ "no-write",        no_argument, NULL, 'd'},
+	{ "force",			no_argument, NULL, 'f'},
 	{ "dry-run",        no_argument, NULL, 'D'},
 	{ "halt",        no_argument, NULL, 'H'},
 	{ "kexec",        no_argument, NULL, 'K'},
@@ -61,6 +63,7 @@ const struct option longopts[] = {
 const char * const longopts_help[] = {
 	"cancel a pending shutdown",
 	"do not write wtmp record",
+	"force the shutdown"
 	"print actions instead of executing them",
 	"halt the system",
 	"reboot the system using kexec",
@@ -96,6 +99,7 @@ static bool do_reexec = false;
 static bool do_single = false;
 static bool do_wtmp = true;
 static bool do_wtmp_only = false;
+static bool do_force = false;
 
 static void cancel_shutdown(void)
 {
@@ -207,6 +211,9 @@ int main(int argc, char **argv)
 				break;
 			case 'd':
 				do_wtmp = false;
+				break;
+			case 'f':
+				do_force = true;
 				break;
 		case 'D':
 			do_dryrun = true;
@@ -347,7 +354,9 @@ int main(int argc, char **argv)
 		} else
 			send_cmd("poweroff");
 	} else if (do_reboot) {
-		if (access("/run/initctl", F_OK) == 0)
+		if (do_force)
+			reboot(RB_AUTOBOOT); /* hard reboot */
+		else if (access("/run/initctl", F_OK) == 0)
 			sysvinit_runlevel('6');
 		else
 			send_cmd("reboot");
