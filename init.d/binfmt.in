@@ -29,6 +29,12 @@ depend()
 apply_file() {
 	local file="$1" linenum=0 error=0 sep reg name
 
+	if ! [ -w /proc/sys/fs/binfmt_misc/register ]; then
+		eerror "Missing binfmt register"
+		# exit the subshell to propagate the error
+		exit 1
+	fi
+
 	### FILE FORMAT ###
 	# See https://www.kernel.org/doc/html/latest/admin-guide/binfmt-misc.html
 	veinfo "Applying $file"
@@ -55,11 +61,6 @@ apply_file() {
 
 start()
 {
-	if ! [ -w /proc/sys/fs/binfmt_misc/register ]; then
-		eerror "missing binfmt register"
-		return 1
-	fi
-
 	ebegin "Loading custom binary format handlers"
 
 	local rc=0 dir file entry
@@ -86,7 +87,7 @@ start()
 				fi
 			done
 		done
-		exit $rc
+		exit ${rc:=$?}
 	)
 	eoutdent
 
