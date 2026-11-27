@@ -133,9 +133,3 @@ _depend() {
 		$1 $_depends
 	done
 }
-
-# Add our sbin to $PATH
-case "$PATH" in
-	"$RC_LIBEXECDIR"/sbin|"$RC_LIBEXECDIR"/sbin:*);;
-	*) PATH="$RC_LIBEXECDIR/sbin:$PATH" ; export PATH ;;
-esac
