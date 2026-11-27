@@ -299,7 +299,7 @@ int main(int argc, char **argv)
 			services = rc_services_in_state(RC_SERVICE_STARTED);
 			retval = 1;
 			TAILQ_FOREACH(s, services, entries)
-				if (rc_service_daemons_crashed(s->value)) {
+				if (rc_service_daemons_crashed(s->value) && errno != EACCES) {
 					printf("%s\n", s->value);
 					retval = 0;
 				}
