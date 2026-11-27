@@ -263,15 +263,16 @@ env_config(void)
 
 	/* krunlevel is a system-wide override; it never applies to
 	 * user sessions. */
+	e = rc_conf_value("rc_default_runlevel");
 	if (!rc_is_user() && (fp = fopen(RC_KRUNLEVEL, "r"))) {
 		if (xgetline(&buffer, &size, fp) != -1)
 			setenv("RC_DEFAULTLEVEL", buffer, 1);
 		else
-			setenv("RC_DEFAULTLEVEL", default_runlevel(), 1);
+			setenv("RC_DEFAULTLEVEL", e && *e ? e : RC_LEVEL_DEFAULT, 1);
 		free(buffer);
 		fclose(fp);
 	} else {
-		setenv("RC_DEFAULTLEVEL", default_runlevel(), 1);
+		setenv("RC_DEFAULTLEVEL", e && *e ? e : RC_LEVEL_DEFAULT, 1);
 	}
 
 	if (sys)
