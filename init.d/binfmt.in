@@ -39,12 +39,12 @@ apply_file() {
 			'#'*|';'*|'') continue ;;
 		esac
 
-		sep=${line%%${line#?}} reg=${line#$sep} name=${reg%%${sep}*}
-		[ -e /proc/sys/fs/binfmt_misc/${name} ] && echo -1 > /proc/sys/fs/binfmt_misc/${name}
+		sep=${line%%"${line#?}"} reg=${line#"$sep"} name=${reg%%"$sep"*}
+		[ -e "/proc/sys/fs/binfmt_misc/${name}" ] && echo -1 > "/proc/sys/fs/binfmt_misc/${name}"
 
 		veinfo "Registering $line"
 		if ! echo "${line}" > /proc/sys/fs/binfmt_misc/register 2>/dev/null; then
-			eerror "invalid entry on line %d of '%s': %s\n" "$linenum" "$file" "$line"
+			eerror "invalid entry on line $linenum of '$file': $line"
 			error=1
 		fi
 		printf '\n%s' "$name" >&3
